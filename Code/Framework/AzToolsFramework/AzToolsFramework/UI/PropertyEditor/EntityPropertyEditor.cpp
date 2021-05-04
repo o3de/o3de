@@ -21,6 +21,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/FileIO.h>
@@ -111,7 +112,10 @@ void initEntityPropertyEditorResources()
 namespace AzToolsFramework
 {
     static const char* kComponentEditorIndexMimeType = "editor/componentEditorIndices";
-    static const char* kComponentEditorRowWidgetType = "editor/componentEditorRowWidget"; 
+    static const char* kComponentEditorRowWidgetType = "editor/componentEditorRowWidget";
+
+    static const QString kPropertyEditorMenuActionMoveUp("editor/propertyEditorMoveUp");
+    static const QString kPropertyEditorMenuActionMoveDown("editor/propertyEditorMoveDown");
 
     //since component editors are spaced apart to make room for drop indicator,
     //giving drop logic simple buffer so drops between editors don't go to the bottom
@@ -180,11 +184,18 @@ namespace AzToolsFramework
             bool drag = false;
             bool drop = false;
 
-            PropertyRowWidget* highlightedWidget = m_editor->GetHighlightedRowWidget();
+            EntityPropertyEditor::ReorderState currentState = m_editor->GetReorderState();
+            ComponentEditor* rowWidgetEditor = m_editor->GetEditorForCurrentReorderRowWidget();
+            PropertyRowWidget* dragRowWidget =  m_editor->GetReorderRowWidget();
+            PropertyRowWidget* dropTarget = m_editor->GetReorderDropTarget();
+            EntityPropertyEditor::DropArea dropArea = m_editor->GetReorderDropArea();
+            QPixmap dragImage = m_editor->GetReorderRowWidgetImage();
+            QSize dragImageSize = m_editor->GetReorderRowWidgetImageSize();
+            float indicatorAlpha = m_editor->GetMoveIndicatorAlpha();
 
-            ComponentEditor* rowWidgetDragEditor = m_editor->GetEditorContainingDraggedRowWidget();
-            if (rowWidgetDragEditor)
+            if (currentState == EntityPropertyEditor::ReorderState::DraggingRowWidget)
             {
+                // The user is dragging a row widget.
                 for (auto componentEditor : m_editor->m_componentEditors)
                 {
                     if (!componentEditor->isVisible())
@@ -192,7 +203,7 @@ namespace AzToolsFramework
                         continue;
                     }
 
-                    if (componentEditor != rowWidgetDragEditor)
+                    if (componentEditor != rowWidgetEditor)
                     {
                         continue;
                     }
@@ -214,7 +225,7 @@ namespace AzToolsFramework
                         currRect.setLeft(LeftMargin + 2);
                         currRect.setWidth(rowWidget->GetParentWidgetWidth() - (RightMargin + LeftMargin));
 
-                        if (rowWidget->IsBeingDragged())
+                        if (rowWidget == dragRowWidget)
                         {
                             QStyleOption opt;
                             opt.init(this);
@@ -223,10 +234,10 @@ namespace AzToolsFramework
                             drag = true;
                         }
 
-                        if (rowWidget->IsDropTarget())
+                        if (rowWidget == dropTarget)
                         {
                             QRect dropRect = currRect;
-                            if (rowWidget->GetDropArea() == PropertyRowWidget::Above)
+                            if (dropArea == EntityPropertyEditor::DropArea::Above)
                             {
                                 dropRect.setTop(currRect.top() - m_dropIndicatorRowWidgetOffset);
                             }
@@ -247,26 +258,55 @@ namespace AzToolsFramework
                     }
                 }
             }
-            else if (highlightedWidget)
+            else if (
+                currentState == EntityPropertyEditor::ReorderState::UsingMenu ||
+                currentState == EntityPropertyEditor::ReorderState::MenuOperationInProgress)
             {
-                const QImage highlightImage = m_editor->GetHighlightedRowWidgetImage();
+                // User has the context menu open with a movable row selected.
 
-                QRect globalRect = m_editor->GetWidgetAndVisibleChildrenGlobalRect(highlightedWidget);
+                float alpha = 1.0f;
+                if (currentState == EntityPropertyEditor::ReorderState::MenuOperationInProgress)
+                {
+                    alpha = indicatorAlpha;
+                }
 
+                QRect globalRect = m_editor->GetWidgetAndVisibleChildrenGlobalRect(dragRowWidget);
+                
                 int top = mapFromGlobal(globalRect.topLeft()).y();
-                currRect = QRect(
-                    QPoint(LeftMargin + 1, top),
-                    QPoint(LeftMargin + 1 + highlightImage.width(), top + highlightImage.height()));
+                currRect = QRect(QPoint(LeftMargin + 1, top), QPoint(LeftMargin + 1 + dragImageSize.width(), top + dragImageSize.height()));
 
-                QStyleOption opt;
-                opt.init(this);
-                opt.rect = currRect;
-                static_cast<AzQtComponents::Style*>(style())->drawDragIndicator(&opt, &painter, this);
+                painter.setOpacity(alpha);
+                painter.drawPixmap(currRect, dragImage);
 
-                painter.drawImage(currRect, highlightImage);
+                if (dropTarget)
+                {
+                    // A move row menu command is highlighted. Draw an indicator to show where the current row will move to.
+                    globalRect = m_editor->GetWidgetAndVisibleChildrenGlobalRect(dropTarget);
+                    QRect dropRect = QRect(
+                        QPoint(mapFromGlobal(globalRect.topLeft()) + QPoint(LeftMargin, TopMargin)),
+                        QPoint(mapFromGlobal(globalRect.bottomRight()) - QPoint(RightMargin, TopMargin)));
+
+                    if (dropArea == EntityPropertyEditor::DropArea::Above)
+                    {
+                        dropRect.setTop(dropRect.top() - m_dropIndicatorRowWidgetOffset);
+                    }
+                    else
+                    {
+                        dropRect.setTop(dropRect.bottom());
+                    }
+                    dropRect.setHeight(0);
+
+                    painter.setOpacity(alpha);
+                    QStyleOption lineOpt;
+                    lineOpt.init(this);
+                    lineOpt.rect = dropRect;
+                    style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &lineOpt, &painter, this);
+                    painter.setOpacity(1.0f);
+                }
             }
             else
             {
+                // Check for a component editor being dragged.
                 for (auto componentEditor : m_editor->m_componentEditors)
                 {
                     if (!componentEditor->isVisible())
@@ -1917,6 +1957,12 @@ namespace AzToolsFramework
             return;
         }
 
+        // Don't show if a move operation is pending.
+        if (m_currentReorderState == ReorderState::MenuOperationInProgress)
+        {
+            return;
+        }
+
         // Locate the owning component and class data corresponding to the clicked node.
         InstanceDataNode* componentNode = node;
         while (componentNode->GetParent())
@@ -1955,8 +2001,12 @@ namespace AzToolsFramework
 
                 if (!menu.actions().empty())
                 {
+                    m_currentReorderState = EntityPropertyEditor::ReorderState::UsingMenu;
                     menu.exec(position);
-                    SetRowWidgetUnhilighted();
+                    if (m_currentReorderState != EntityPropertyEditor::ReorderState::MenuOperationInProgress)
+                    {
+                        m_currentReorderState = EntityPropertyEditor::ReorderState::Inactive;
+                    }
                 }
             }
         }
@@ -2129,30 +2179,32 @@ namespace AzToolsFramework
         AZ_Assert(componentEditorIterator != m_componentToEditorMap.end(), "Unable to find a component editor for the given component");
         if (componentEditorIterator != m_componentToEditorMap.end())
         {
-            auto componentEditor = componentEditorIterator->second;
-            PropertyRowWidget* widget = componentEditor->GetPropertyEditor()->GetWidgetFromNode(fieldNode);
+            m_reorderRowWidgetEditor = componentEditorIterator->second;
+            PropertyRowWidget* widget = componentEditorIterator->second->GetPropertyEditor()->GetWidgetFromNode(fieldNode);
             if (widget->CanBeReordered())
             {
+                m_reorderRowWidget = widget;
                 SetRowWidgetHighlighted(widget);
+
                 QAction* moveUpAction = menu.addAction(tr("Move %1 Up").arg(widget->GetNameLabel()->text()));
                 moveUpAction->setEnabled(false);
-
+                moveUpAction->setData(kPropertyEditorMenuActionMoveUp);
                 if (widget->CanMoveUp())
                 {
                     moveUpAction->setEnabled(true);
-                    connect(moveUpAction, &QAction::triggered, this, [this, fieldNode, componentEditor] {
-                        ContextMenuActionMoveItemUp(componentEditor, fieldNode);
+                    connect(moveUpAction, &QAction::triggered, this, [this, fieldNode] {
+                        ContextMenuActionMoveItemUp(m_reorderRowWidgetEditor, fieldNode);
                     });
                 }
 
                 QAction* moveDownAction = menu.addAction(tr("Move %1 Down").arg(widget->GetNameLabel()->text()));
                 moveDownAction->setEnabled(false);
-
+                moveDownAction->setData(kPropertyEditorMenuActionMoveDown);
                 if (widget->CanMoveDown())
                 {
                     moveDownAction->setEnabled(true);
-                    connect(moveDownAction, &QAction::triggered, this, [this, fieldNode, componentEditor] {
-                        ContextMenuActionMoveItemDown(componentEditor, fieldNode);
+                    connect(moveDownAction, &QAction::triggered, this, [this, fieldNode] {
+                        ContextMenuActionMoveItemDown(m_reorderRowWidgetEditor, fieldNode);
                     });
                 }
 
@@ -2457,14 +2509,50 @@ namespace AzToolsFramework
         }
     }
 
+    void EntityPropertyEditor::BeginMoveRowWidgetFade()
+    {
+        // Fade out the highlights and indicator bar for two seconds before moving.
+        m_moveFadeTimeRemaining = MoveStartFadeTime;
+        m_currentReorderState = EntityPropertyEditor::ReorderState::MenuOperationInProgress;
+        AZ::TickBus::Handler::BusConnect();
+    }
+
+    void EntityPropertyEditor::OnTick(float deltaTime, AZ::ScriptTimePoint /*time*/)
+    {
+        m_moveFadeTimeRemaining -= deltaTime;
+        if (m_moveFadeTimeRemaining <= 0.0f)
+        {
+            m_moveFadeTimeRemaining = 0.0f;
+            AZ::TickBus::Handler::BusDisconnect();
+
+            if (m_moveDirectionAfterFade == DropArea::Above)
+            {
+                m_reorderRowWidgetEditor->GetPropertyEditor()->MoveNodeUp(m_nodeToMode);
+            }
+            else
+            {
+                m_reorderRowWidgetEditor->GetPropertyEditor()->MoveNodeDown(m_nodeToMode);
+            }
+
+            m_currentReorderState = ReorderState::Inactive;
+        }
+        repaint(0, 0, -1, -1);
+    }
+
     void EntityPropertyEditor::ContextMenuActionMoveItemUp(ComponentEditor* componentEditor, InstanceDataNode* node)
     {
-        componentEditor->GetPropertyEditor()->MoveNodeUp(node);
+        m_reorderRowWidgetEditor = componentEditor;
+        m_nodeToMode = node;
+        m_moveDirectionAfterFade = DropArea::Above;
+        BeginMoveRowWidgetFade();
     }
 
     void EntityPropertyEditor::ContextMenuActionMoveItemDown(ComponentEditor* componentEditor, InstanceDataNode* node)
     {
-        componentEditor->GetPropertyEditor()->MoveNodeDown(node);
+        m_reorderRowWidgetEditor = componentEditor;
+        m_nodeToMode = node;
+        m_moveDirectionAfterFade = DropArea::Below;
+        BeginMoveRowWidgetFade();
     }
 
     void EntityPropertyEditor::CalculateAndAdjustNodeAddress(const InstanceDataNode& componentFieldNode, AddressRootType rootType, InstanceDataNode::Address& outAddress) const
@@ -2850,9 +2938,7 @@ namespace AzToolsFramework
 
         if (!menu.actions().empty())
         {
-            m_isShowingContextMenu = true;
             menu.exec(position);
-            m_isShowingContextMenu = false;
         }
     }
 
@@ -3579,6 +3665,45 @@ namespace AzToolsFramework
         return rect;
     }
 
+    PropertyRowWidget* EntityPropertyEditor::GetRowWidgetAtSameLevelAfter(PropertyRowWidget* widget) const
+    {
+        PropertyRowWidget* parent = widget->GetParentRow();
+
+        bool found = false;
+        for (PropertyRowWidget* child : parent->GetChildrenRows())
+        {
+            if (found)
+            {
+                return child;
+            }
+
+            if (child == widget)
+            {
+                found = true;
+            }
+        }
+
+        return nullptr;
+    }
+
+    PropertyRowWidget* EntityPropertyEditor::GetRowWidgetAtSameLevelBefore(PropertyRowWidget* widget) const
+    {
+        PropertyRowWidget* parent = widget->GetParentRow();
+
+        PropertyRowWidget* previous = nullptr;
+        for (PropertyRowWidget* child : parent->GetChildrenRows())
+        {
+            if (child == widget)
+            {
+                return previous;
+            }
+
+            previous = child;
+        }
+
+        return nullptr;
+    }
+
     QRect EntityPropertyEditor::GetWidgetGlobalRect(const QWidget* widget) const
     {
         return QRect(
@@ -4001,9 +4126,66 @@ namespace AzToolsFramework
         event->accept();
     }
 
+    bool EntityPropertyEditor::HandleMenuEvent(QObject* /*object*/, QEvent* event)
+    {
+        QMenu* menu = qobject_cast<QMenu*>(QApplication::activePopupWidget());
+        if (!menu)
+        {
+            return false;
+        }
+
+        PropertyRowWidget* lastReorderDropTarget = m_reorderDropTarget;
+
+        switch (event->type())
+        {
+        case QEvent::Leave:
+            m_reorderDropTarget = nullptr;
+            break;
+        case QEvent::Enter:
+            // Drop through.
+        case QEvent::MouseMove:
+            QMouseEvent* originalMouseEvent = static_cast<QMouseEvent*>(event);
+            QAction* action = menu->actionAt(originalMouseEvent->pos());
+            if (!action)
+            {
+                m_reorderDropTarget = nullptr;
+                break;
+            }
+
+            if (action->data() == kPropertyEditorMenuActionMoveUp)
+            {
+                m_reorderDropTarget =
+                    GetRowWidgetAtSameLevelBefore(m_reorderRowWidget);
+
+                m_reorderDropArea = EntityPropertyEditor::DropArea::Above;
+            }
+            else if (action->data() == kPropertyEditorMenuActionMoveDown)
+            {
+                m_reorderDropTarget =
+                    GetRowWidgetAtSameLevelAfter(m_reorderRowWidget);
+
+                if (m_reorderDropTarget)
+                {
+                    m_reorderDropArea = EntityPropertyEditor::DropArea::Below;
+                }
+            }
+
+            break;
+        }
+
+        if (lastReorderDropTarget != m_reorderDropTarget)
+        {
+            // Force a redraw as the menu is preventing automatic updates.
+            repaint(0, 0, -1, -1);
+        }
+
+        return false;
+    }
+
     //overridden to intercept application level mouse events for component editor selection
     bool EntityPropertyEditor::eventFilter(QObject* object, QEvent* event)
     {
+        HandleMenuEvent(object, event);
         HandleSelectionEvents(object, event);
         return false;
     }
@@ -4413,9 +4595,9 @@ namespace AzToolsFramework
     {
         const QRect globalRect(globalPos, globalPos);
 
-        AZ_Assert(m_draggingRowWidgetEditor, "Missing editor for row widget drag.");
+        AZ_Assert(m_reorderRowWidgetEditor, "Missing editor for row widget drag.");
 
-        AzToolsFramework::ReflectedPropertyEditor::WidgetList widgets = m_draggingRowWidgetEditor->GetPropertyEditor()->GetWidgets();
+        AzToolsFramework::ReflectedPropertyEditor::WidgetList widgets = m_reorderRowWidgetEditor->GetPropertyEditor()->GetWidgets();
         for (auto widgetPair : widgets)
         {
             PropertyRowWidget* widget = widgetPair.second;
@@ -4426,25 +4608,20 @@ namespace AzToolsFramework
 
             if (DoesIntersectWidget(globalRect, reinterpret_cast<QWidget*>(widget)))
             {
-                if (widget->CanBeReordered() && widget->GetParentRow() == m_draggingRowWidget->GetParentRow())
+                if (widget->CanBeReordered() && widget->GetParentRow() == m_reorderRowWidget->GetParentRow())
                 {
-                    if (m_currentDropTarget && widget != m_currentDropTarget)
-                    {
-                        m_currentDropTarget->SetDropTarget(false);
-                    }
-
-                    m_currentDropTarget = widget;
+                    m_reorderDropTarget = widget;
 
                     QRect widgetRect = GetWidgetAndVisibleChildrenGlobalRect(widget);
                     if (globalPos.y() < widgetRect.center().y())
                     {
-                        widget->SetDropArea(PropertyRowWidget::Above);
+                        m_reorderDropArea = EntityPropertyEditor::DropArea::Above;
                     }
                     else
                     {
-                        widget->SetDropArea(PropertyRowWidget::Below);
+                        m_reorderDropArea = EntityPropertyEditor::DropArea::Below;
                     }
-                    widget->SetDropTarget(true);
+
                     return true;
                 }
 
@@ -4452,25 +4629,21 @@ namespace AzToolsFramework
                 PropertyRowWidget* parent = widget->GetParentRow();
                 while (parent)
                 {
-                    if (parent->CanBeReordered() && parent->GetParentRow() == m_draggingRowWidget->GetParentRow())
+                    if (parent->CanBeReordered() &&
+                        parent->GetParentRow() == m_reorderRowWidget->GetParentRow())
                     {
-                        if (m_currentDropTarget && parent != m_currentDropTarget)
-                        {
-                            m_currentDropTarget->SetDropTarget(false);
-                        }
-
-                        m_currentDropTarget = parent;
+                        m_reorderDropTarget = parent;
 
                         QRect widgetRect = GetWidgetAndVisibleChildrenGlobalRect(parent);
                         if (globalPos.y() < widgetRect.center().y())
                         {
-                            parent->SetDropArea(PropertyRowWidget::Above);
+                            m_reorderDropArea = EntityPropertyEditor::DropArea::Above;
                         }
                         else
                         {
-                            parent->SetDropArea(PropertyRowWidget::Below);
+                            m_reorderDropArea = EntityPropertyEditor::DropArea::Below;
                         }
-                        parent->SetDropTarget(true);
+
                         return true;
                     }
                     parent = parent->GetParentRow();
@@ -4486,15 +4659,14 @@ namespace AzToolsFramework
         const QPoint globalPos(mapToGlobal(localPos));
         const QRect globalRect(globalPos, globalPos);
 
-        if (!m_draggingRowWidget)
+        if (!m_reorderRowWidget)
         {
             return false;
         }
 
-        if (m_currentDropTarget)
+        if (m_reorderDropTarget)
         {
-            m_currentDropTarget->SetDropTarget(false);
-            m_currentDropTarget = nullptr;
+            m_reorderDropTarget = nullptr;
         }
 
         UpdateOverlay();
@@ -4516,7 +4688,7 @@ namespace AzToolsFramework
         const QPoint globalPos(mapToGlobal(localPos));
         const QRect globalRect(globalPos, globalPos);
 
-        if (m_draggingRowWidget)
+        if (m_reorderRowWidget)
         {
             UpdateRowWidgetDrag(localPos, mouseButtons, mimeData);
             QueueAutoScroll();
@@ -4611,13 +4783,12 @@ namespace AzToolsFramework
                     {
                         if (DoesIntersectWidget(dragRect, reinterpret_cast<QWidget*>(w.second)) && w.second->CanBeReordered())
                         {
-                            m_draggingRowWidget = w.second;
-                            m_draggingRowWidget->SetBeingDragged(true);
-                            m_draggingRowWidgetEditor = componentEditor;
-                            if (m_currentDropTarget)
+                            m_currentReorderState = EntityPropertyEditor::ReorderState::DraggingRowWidget;
+                            m_reorderRowWidget = w.second;
+                            m_reorderRowWidgetEditor = componentEditor;
+                            if (m_reorderDropTarget)
                             {
-                                m_currentDropTarget->SetDropTarget(false);
-                                m_currentDropTarget = nullptr;
+                                m_reorderDropTarget = nullptr;
                             }
                             break;
                         }
@@ -4626,7 +4797,7 @@ namespace AzToolsFramework
             }
         }
 
-        if (!intersectsHeader && !m_draggingRowWidget)
+        if (!intersectsHeader && !m_reorderRowWidget)
         {
             return false;
         }
@@ -4638,14 +4809,15 @@ namespace AzToolsFramework
 
         QRect dragImageRect;
 
-        if (m_draggingRowWidget)
+        if (m_reorderRowWidget)
         {
             // We're dragging a PropertyRowWidget, grab the image from that.
             mimeData->setData(kComponentEditorRowWidgetType, QByteArray());
 
             drag->setMimeData(mimeData);
-            drag->setPixmap(QPixmap::fromImage(m_draggingRowWidget->createDragImage()));
-            drag->setHotSpot(m_dragStartPosition - GetWidgetGlobalRect(m_draggingRowWidget).topLeft());
+            QSize imageSize;
+            drag->setPixmap(m_reorderRowWidget->createDragImage(QColor("#8E863E"), QColor("#EAECAA"), 0.5f, imageSize));
+            drag->setHotSpot(m_dragStartPosition - GetWidgetGlobalRect(m_reorderRowWidget).topLeft());
             drag->exec(Qt::MoveAction, Qt::MoveAction);
         }
         else
@@ -4741,24 +4913,8 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::SetRowWidgetHighlighted(PropertyRowWidget* rowWidget)
     {
-        m_highlightedRow = rowWidget;
-
-        m_highlightedRowImage = m_highlightedRow->createDragImage();
-    }
-
-    void EntityPropertyEditor::SetRowWidgetUnhilighted()
-    {
-        m_highlightedRow = nullptr;
-    }
-
-    PropertyRowWidget* EntityPropertyEditor::GetHighlightedRowWidget() const
-    {
-        return m_highlightedRow;
-    }
-
-    const QImage EntityPropertyEditor::GetHighlightedRowWidgetImage() const
-    {
-        return m_highlightedRowImage;
+        m_reorderRowWidget = rowWidget;
+        m_reorderRowImage = rowWidget->createDragImage(QColor("#8E863E"), QColor("#EAECAA"), 0.5f, m_reorderRowImageSize);
     }
 
     bool EntityPropertyEditor::HandleDrop(QDropEvent* event)
@@ -4766,29 +4922,28 @@ namespace AzToolsFramework
         const QPoint globalPos(mapToGlobal(event->pos()));
         const QMimeData* mimeData = event->mimeData();
 
-        if (m_draggingRowWidget)
+        if (m_currentReorderState == EntityPropertyEditor::ReorderState::DraggingRowWidget)
         {
             if (FindAllowedRowWidgetReorderDropTarget(globalPos))
             {
-                if (m_currentDropTarget->GetDropArea() == PropertyRowWidget::Above)
+                if (m_reorderDropArea == EntityPropertyEditor::DropArea::Above)
                 {
-                    m_draggingRowWidgetEditor->GetPropertyEditor()->MoveNodeBefore(
-                        m_draggingRowWidget->GetNode(), m_currentDropTarget->GetNode());
+                    m_reorderRowWidgetEditor->GetPropertyEditor()->MoveNodeBefore(
+                        m_reorderRowWidget->GetNode(), m_reorderDropTarget->GetNode());
                 }
                 else
                 {
-                    m_draggingRowWidgetEditor->GetPropertyEditor()->MoveNodeAfter(
-                        m_draggingRowWidget->GetNode(), m_currentDropTarget->GetNode());
+                    m_reorderRowWidgetEditor->GetPropertyEditor()->MoveNodeAfter(
+                        m_reorderRowWidget->GetNode(), m_reorderDropTarget->GetNode());
                 }
             }
 
             event->acceptProposedAction();
 
-            m_currentDropTarget->SetDropTarget(false);
-            m_currentDropTarget = nullptr;
-            m_draggingRowWidget->SetBeingDragged(false);
-            m_draggingRowWidget = nullptr;
-            m_draggingRowWidgetEditor = nullptr;
+            m_reorderDropTarget = nullptr;
+            m_reorderRowWidget = nullptr;
+            m_reorderDropTarget = nullptr;
+            m_currentReorderState = EntityPropertyEditor::ReorderState::Inactive;
             m_overlay->setVisible(false);
         }
         else
@@ -5158,11 +5313,6 @@ namespace AzToolsFramework
         UpdateContents();
     }
 
-    ComponentEditor* EntityPropertyEditor::GetEditorContainingDraggedRowWidget()
-    {
-        return m_draggingRowWidgetEditor;
-    }
-
     void EntityPropertyEditor::OnEntityComponentPropertyChanged(AZ::ComponentId componentId)
     {
         // When m_initiatingPropertyChangeNotification is true, it means this EntityPropertyEditor was
@@ -5304,6 +5454,51 @@ namespace AzToolsFramework
         {
             componentEditor->ActiveComponentModeChanged(componentType);
         }
+    }
+
+    EntityPropertyEditor::ReorderState EntityPropertyEditor::GetReorderState() const
+    {
+        return m_currentReorderState;
+    }
+
+    ComponentEditor* EntityPropertyEditor::GetEditorForCurrentReorderRowWidget() const
+    {
+        return m_reorderRowWidgetEditor;
+    }
+
+    PropertyRowWidget* EntityPropertyEditor::GetReorderRowWidget() const
+    {
+        return m_reorderRowWidget;
+    }
+
+    PropertyRowWidget* EntityPropertyEditor::GetReorderDropTarget() const
+    {
+        return m_reorderDropTarget;
+    }
+
+    EntityPropertyEditor::DropArea EntityPropertyEditor::GetReorderDropArea() const
+    {
+        return m_reorderDropArea;
+    }
+
+    QPixmap EntityPropertyEditor::GetReorderRowWidgetImage() const
+    {
+        return m_reorderRowImage;
+    }
+
+    QSize EntityPropertyEditor::GetReorderRowWidgetImageSize() const
+    {
+        return m_reorderRowImageSize;
+    }
+
+    float EntityPropertyEditor::GetMoveIndicatorAlpha() const
+    {
+        if (m_currentReorderState != ReorderState::MenuOperationInProgress)
+        {
+            return 1.0f;
+        }
+
+        return m_moveFadeTimeRemaining / MoveStartFadeTime;
     }
 }
 

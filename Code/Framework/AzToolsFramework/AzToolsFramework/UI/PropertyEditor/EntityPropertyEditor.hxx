@@ -23,6 +23,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/EntityBus.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
@@ -113,11 +114,26 @@ namespace AzToolsFramework
         , public EditorInspectorComponentNotificationBus::MultiHandler
         , private AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler
         , public AZ::EntitySystemBus::Handler
+        , public AZ::TickBus::Handler
     {
         Q_OBJECT;
     public:
 
         AZ_CLASS_ALLOCATOR(EntityPropertyEditor, AZ::SystemAllocator, 0)
+
+        enum class ReorderState
+        {
+            Inactive,               // No row widget reordering operation is in progress.
+            DraggingRowWidget,      // User is dragging a row widget around.
+            UsingMenu,              // User has the context menu open and may hover over a move up/down operation.
+            MenuOperationInProgress // User has selected a move/up down menu item.
+        };
+
+        enum class DropArea
+        {
+            Above,
+            Below
+        };
 
         EntityPropertyEditor(QWidget* pParent = NULL, Qt::WindowFlags flags = Qt::WindowFlags(), bool isLevelEntityEditor = false);
         virtual ~EntityPropertyEditor();
@@ -148,13 +164,20 @@ namespace AzToolsFramework
 
         void SetSystemEntityEditor(bool isSystemEntityEditor);
 
-        ComponentEditor* GetEditorContainingDraggedRowWidget();
-
         static void SortComponentsByPriority(AZ::Entity::ComponentArrayType& componentsOnEntity);
 
         bool IsLockedToSpecificEntities() const { return !m_overrideSelectedEntityIds.empty(); }
 
         static bool AreComponentsCopyable(const AZ::Entity::ComponentArrayType& components, const ComponentFilter& filter);
+
+        ReorderState GetReorderState() const;
+        ComponentEditor* GetEditorForCurrentReorderRowWidget() const;
+        PropertyRowWidget* GetReorderRowWidget() const;
+        PropertyRowWidget* GetReorderDropTarget() const;
+        DropArea GetReorderDropArea() const;
+        QPixmap GetReorderRowWidgetImage() const;
+        QSize GetReorderRowWidgetImageSize() const;
+        float GetMoveIndicatorAlpha() const;
     Q_SIGNALS:
         void SelectedEntityNameChanged(const AZ::EntityId& entityId, const AZStd::string& name);
 
@@ -213,6 +236,9 @@ namespace AzToolsFramework
         // EntityPropertEditorRequestBus
         void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) override;
         void GetSelectedEntities(EntityIdList& selectedEntityIds) override;
+
+        // TickBus
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         bool IsEntitySelected(const AZ::EntityId& id) const;
         bool IsSingleEntitySelected(const AZ::EntityId& id) const;
@@ -341,8 +367,6 @@ namespace AzToolsFramework
         QAction* m_actionToMoveComponentsBottom = nullptr;
         QAction* m_resetToSliceAction = nullptr;
 
-        bool m_isShowingContextMenu = false;
-
         void CreateActions();
         void UpdateActions();
 
@@ -392,6 +416,8 @@ namespace AzToolsFramework
         bool DoesOwnFocus() const;
         AZ::u32 GetHeightOfRowAndVisibleChildren(const PropertyRowWidget* row) const;
         QRect GetWidgetAndVisibleChildrenGlobalRect(const PropertyRowWidget* widget) const;
+        PropertyRowWidget* GetRowWidgetAtSameLevelAfter(PropertyRowWidget* widget) const;
+        PropertyRowWidget* GetRowWidgetAtSameLevelBefore(PropertyRowWidget* widget) const;
         QRect GetWidgetGlobalRect(const QWidget* widget) const;
         bool DoesIntersectWidget(const QRect& globalRect, const QWidget* widget) const;
         bool DoesIntersectSelectedComponentEditor(const QRect& globalRect) const;
@@ -447,6 +473,8 @@ namespace AzToolsFramework
         bool HandleSelectionEvents(QObject* object, QEvent* event);
         bool m_selectionEventAccepted;
 
+        bool HandleMenuEvent(QObject* object, QEvent* event);
+
         // drag and drop events
         QRect GetInflatedRectFromPoint(const QPoint& point, int radius) const;
         bool GetComponentsAtDropEventPosition(QDropEvent* event, AZ::Entity::ComponentArrayType& targetComponents);
@@ -473,9 +501,6 @@ namespace AzToolsFramework
         bool CanDropForComponentAssets(const QMimeData* mimeData) const;
         bool CanDropForAssetBrowserEntries(const QMimeData* mimeData) const;
         void SetRowWidgetHighlighted(PropertyRowWidget* rowWidget);
-        void SetRowWidgetUnhilighted();
-        PropertyRowWidget* GetHighlightedRowWidget() const;
-        const QImage GetHighlightedRowWidgetImage() const;
 
         AZStd::vector<AZ::s32> ExtractComponentEditorIndicesFromMimeData(const QMimeData* mimeData) const;
         ComponentEditorVector GetComponentEditorsFromIndices(const AZStd::vector<AZ::s32>& indices) const;
@@ -569,18 +594,25 @@ namespace AzToolsFramework
         QIcon m_emptyIcon;
         QIcon m_clearIcon;
 
-        PropertyRowWidget* m_draggingRowWidget = nullptr;
-        PropertyRowWidget* m_currentDropTarget = nullptr;
-        ComponentEditor* m_draggingRowWidgetEditor = nullptr;
-
-        PropertyRowWidget* m_highlightedRow = nullptr;
-        QImage m_highlightedRowImage;
-
         QStandardItem* m_comboItems[StatusItems];
         EntityIdSet m_overrideSelectedEntityIds;
 
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         bool m_prefabsAreEnabled = false;
+
+        // Reordering row widgets within the RPE.
+        const float MoveStartFadeTime = 0.5f;
+
+        ReorderState m_currentReorderState = ReorderState::Inactive;
+        ComponentEditor* m_reorderRowWidgetEditor = nullptr;
+        InstanceDataNode* m_nodeToMode = nullptr;
+        PropertyRowWidget* m_reorderRowWidget = nullptr;
+        PropertyRowWidget* m_reorderDropTarget = nullptr;
+        DropArea m_reorderDropArea = DropArea::Above;
+        QPixmap m_reorderRowImage;
+        QSize m_reorderRowImageSize;
+        float m_moveFadeTimeRemaining;
+        DropArea m_moveDirectionAfterFade;
 
         // When m_initiatingPropertyChangeNotification is set to true, it means this EntityPropertyEditor is
         // broadcasting a change to all listeners about a property change for a given entity.  This is needed
@@ -589,6 +621,7 @@ namespace AzToolsFramework
         void ConnectToEntityBuses(const AZ::EntityId& entityId);
         void DisconnectFromEntityBuses(const AZ::EntityId& entityId);
 
+        void BeginMoveRowWidgetFade();
     private slots:
         void OnPropertyRefreshRequired(); // refresh is needed for a property.
         void UpdateContents();

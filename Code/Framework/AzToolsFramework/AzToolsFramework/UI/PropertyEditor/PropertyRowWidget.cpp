@@ -1775,67 +1775,45 @@ namespace AzToolsFramework
         return ypos - ystart;
     }
 
-    QImage PropertyRowWidget::createDragImage()
+    QPixmap PropertyRowWidget::createDragImage(const QColor backgroundColor, const QColor borderColor, const float alpha, QSize& size)
     {
         // Make the drag box as wide as the containing editor minus a gap each side for the border.
         static int ParentEditorBorderSize = 2;
         int width = GetParentWidgetWidth() - ParentEditorBorderSize * 2;
-
         int height = GetHeightOfRowAndVisibleChildren();
-        
-        QRect imageRect = QRect(0, 0, width, height);
 
-        QImage dragImage(imageRect.size(), QImage::Format_ARGB32_Premultiplied);
+        size.setWidth(width);
+        size.setHeight(height);
+
+        const auto dpr = devicePixelRatioF();
+        QPixmap dragImage(width * dpr, height * dpr);
+        dragImage.setDevicePixelRatio(dpr);
+        dragImage.fill(Qt::transparent);
+
+        QRect imageRect = QRect(0, 0, width, height);
 
         QPainter dragPainter(&dragImage);
         dragPainter.setCompositionMode(QPainter::CompositionMode_Source);
-        dragPainter.fillRect(imageRect, Qt::transparent);
+        dragPainter.fillRect(imageRect, Qt::transparent); 
         dragPainter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        dragPainter.setOpacity(0.35f);
-        dragPainter.fillRect(imageRect, QColor("#F6F99E"));
+        dragPainter.setOpacity(alpha);
+        dragPainter.fillRect(imageRect, backgroundColor);
 
-        int marginWidth = (imageRect.width() - rect().width()) / 2 + ParentEditorBorderSize;
+        dragPainter.setOpacity(1.0f);
+
+        int marginWidth = (imageRect.width() - rect().width()) / 2 + ParentEditorBorderSize - 1;
 
         DrawDragImageAndVisibleChildrenInto(dragPainter, marginWidth, 0);
 
         QPen pen;
-        pen.setColor(QColor("#EAECAA"));
+        pen.setColor(QColor(borderColor));
         pen.setWidth(1);
         dragPainter.setPen(pen);
         dragPainter.drawRect(0, 0, imageRect.width() - 1, imageRect.height() - 1);
 
         dragPainter.end();
+
         return dragImage;
-    }
-
-    void PropertyRowWidget::SetDropTarget(bool dropTarget)
-    {
-        m_isDropTarget = dropTarget;
-    }
-
-    void PropertyRowWidget::SetDropArea(DropArea dropArea)
-    {
-        m_dropArea = dropArea;
-    }
-
-    bool PropertyRowWidget::IsDropTarget() const
-    {
-        return m_isDropTarget;
-    }
-
-    PropertyRowWidget::DropArea PropertyRowWidget::GetDropArea() const
-    {
-        return m_dropArea;
-    }
-
-    void PropertyRowWidget::SetBeingDragged(bool beingDragged)
-    {
-        m_isBeingDragged = beingDragged;
-    }
-
-    bool PropertyRowWidget::IsBeingDragged()
-    {
-        return m_isBeingDragged;
     }
 }
 

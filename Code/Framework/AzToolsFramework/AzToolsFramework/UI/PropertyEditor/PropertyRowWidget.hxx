@@ -156,20 +156,7 @@ namespace AzToolsFramework
         bool CanMoveDown() const;
 
         int GetParentWidgetWidth();
-        QImage createDragImage();
-
-        enum class DropArea
-        {
-            Above,
-            Below
-        };
-
-        void SetDropTarget(bool dropTarget);
-        void SetDropArea(DropArea dropArea);
-        bool IsDropTarget() const;
-        DropArea GetDropArea() const;
-        void SetBeingDragged(bool beingDragged);
-        bool IsBeingDragged();
+        QPixmap createDragImage(const QColor backgroundColor, const QColor borderColor, const float alpha, QSize& size);
 
     protected:
         int CalculateLabelWidth() const;
@@ -256,10 +243,6 @@ namespace AzToolsFramework
         int m_treeDepth = 0;
         int m_treeIndentation = 14;
         int m_leafIndentation = 16;
-
-        DropArea m_dropArea = DropArea::Above;
-        bool m_isDropTarget = false;
-        bool m_isBeingDragged = false;
 
         QIcon m_iconOpen;
         QIcon m_iconClosed;

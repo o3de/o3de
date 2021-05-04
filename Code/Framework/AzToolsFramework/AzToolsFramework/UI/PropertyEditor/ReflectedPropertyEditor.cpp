@@ -1730,9 +1730,9 @@ namespace AzToolsFramework
         }
 
         // Need to refresh any pinned inspectors as well to keep the container state in sync
-        QueueInvalidation(Refresh_EntireTree);
+        QueueInvalidation(Refresh_Values);
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
     }
 
     void ReflectedPropertyEditor::MoveNodeUp(InstanceDataNode* node)
@@ -1831,6 +1831,18 @@ namespace AzToolsFramework
         }
 
         ChangeNodeIndex(pContainerNode, nodeToMove, elementIndex, elementIndexTarget);
+    }
+
+    int ReflectedPropertyEditor::GetNodeIndexInContainer(InstanceDataNode* node)
+    {
+        InstanceDataNode* pContainerNode = FindContainerNodeForNode(node);
+
+        AZ::SerializeContext::IDataContainer* container = pContainerNode->GetClassMetadata()->m_container;
+
+        AZStd::vector<void*> nodeInstancesOut;
+        size_t elementIndex = CalculateElementIndexInContainer(node, pContainerNode->GetInstance(0), container, nodeInstancesOut);
+
+        return elementIndex;
     }
 
     void ReflectedPropertyEditor::OnPropertyRowRequestContainerRemoveItem(PropertyRowWidget* widget, InstanceDataNode* node)

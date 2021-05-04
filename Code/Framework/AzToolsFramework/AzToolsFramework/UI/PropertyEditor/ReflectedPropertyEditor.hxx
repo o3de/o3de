@@ -161,6 +161,7 @@ namespace AzToolsFramework
         void MoveNodeBefore(InstanceDataNode* nodeToMove, InstanceDataNode* nodeToMoveBefore);
         void MoveNodeAfter(InstanceDataNode* nodeToMove, InstanceDataNode* nodeToMoveBefore);
 
+        int GetNodeIndexInContainer(InstanceDataNode* node);
     signals:
         void OnExpansionContractionDone();
     private:
