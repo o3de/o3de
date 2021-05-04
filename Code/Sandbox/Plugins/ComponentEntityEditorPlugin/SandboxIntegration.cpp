@@ -161,13 +161,6 @@ void SandboxIntegrationManager::Setup()
     AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
-    // turn on the this debug display request bus implementation if no other implementation is active
-    if( !(AzFramework::DebugDisplayRequestBus::HasHandlers()))
-    {
-        m_debugDisplayBusImplementationActive = true;
-        AzFramework::DebugDisplayRequestBus::Handler::BusConnect(
-            AzToolsFramework::ViewportInteraction::g_mainViewportEntityDebugDisplayId);
-    }
 
     AzFramework::DisplayContextRequestBus::Handler::BusConnect();
     SetupFileExtensionMap();

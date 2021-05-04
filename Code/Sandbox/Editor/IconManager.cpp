@@ -114,13 +114,6 @@ int CIconManager::GetIconTexture(const char* iconName)
         return 0;
     }
 
-    ITexture* texture = GetIEditor()->GetRenderer() ? GetIEditor()->GetRenderer()->EF_LoadTexture(iconName) : nullptr;
-    if (texture)
-    {
-        id = texture->GetTextureID();
-        m_textures[iconName] = id;
-    }
-
     return id;
 }
 
