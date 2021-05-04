@@ -419,7 +419,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     // This directory is related to the editor root.
     QString strStandardTempDirectory;
-    QString strEditorEnv;
 
     SGUI_Settings gui;
 
@@ -478,7 +477,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     bool bVisualizeNavigationAccessibility;
     int  navigationDebugAgentType;
 
-    bool bIsSearchFilterActive;
     int backgroundUpdatePeriod;
     const char* g_TemporaryLevelName;
 

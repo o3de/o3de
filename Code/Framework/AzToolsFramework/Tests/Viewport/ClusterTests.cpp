@@ -20,35 +20,35 @@
 
 namespace UnitTest
 {
-    using Cluster = AzToolsFramework::ViewportUi::Internal::Cluster;
+    using ButtonGroup = AzToolsFramework::ViewportUi::Internal::ButtonGroup;
     using ButtonId = AzToolsFramework::ViewportUi::ButtonId;
 
     TEST(ClusterTest, AddButtonAddsButtonToClusterAndReturnsId)
     {
-        auto cluster = AZStd::make_unique<Cluster>();
-        auto buttonId = cluster->AddButton("");
+        auto buttonGroup = AZStd::make_unique<ButtonGroup>();
+        auto buttonId = buttonGroup->AddButton("");
 
-        auto button = cluster->GetButton(buttonId);
+        auto button = buttonGroup->GetButton(buttonId);
         EXPECT_TRUE(button != nullptr);
     }
 
     TEST(ClusterTest, SetHighlightedButtonChangesButtonStateToSelected)
     {
-        auto cluster = AZStd::make_unique<Cluster>();
-        auto buttonId = cluster->AddButton("");
+        auto buttonGroup = AZStd::make_unique<ButtonGroup>();
+        auto buttonId = buttonGroup->AddButton("");
 
         // check button is not highlighted by default
-        auto button = cluster->GetButton(buttonId);
+        auto button = buttonGroup->GetButton(buttonId);
         EXPECT_FALSE(button->m_state == AzToolsFramework::ViewportUi::Internal::Button::State::Selected);
 
-        cluster->SetHighlightedButton(buttonId);
+        buttonGroup->SetHighlightedButton(buttonId);
         EXPECT_TRUE(button->m_state == AzToolsFramework::ViewportUi::Internal::Button::State::Selected);
     }
 
     TEST(ClusterTest, ConnectEventHandlerConnectsHandlerToButtonTriggeredEvent)
     {
-        auto cluster = AZStd::make_unique<Cluster>();
-        auto buttonId = cluster->AddButton("");
+        auto buttonGroup = AZStd::make_unique<ButtonGroup>();
+        auto buttonId = buttonGroup->AddButton("");
 
         // create a handler which will be triggered by the cluster
         bool handlerTriggered = false;
@@ -62,8 +62,8 @@ namespace UnitTest
                 }
             });
 
-        cluster->ConnectEventHandler(handler);
-        cluster->PressButton(buttonId);
+        buttonGroup->ConnectEventHandler(handler);
+        buttonGroup->PressButton(buttonId);
 
         EXPECT_TRUE(handlerTriggered);
     }

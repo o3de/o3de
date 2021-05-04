@@ -77,6 +77,7 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         // EditorEntityContextRequestBus
         AzFramework::EntityContextId GetEditorEntityContextId() override { return GetContextId(); }
+        AzFramework::EntityContext* GetEditorEntityContextInstance() override { return this; }
         void ResetEditorContext() override;
 
         AZ::EntityId CreateNewEditorEntity(const char* name) override;

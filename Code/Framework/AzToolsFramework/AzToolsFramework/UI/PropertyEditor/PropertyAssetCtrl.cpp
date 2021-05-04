@@ -544,7 +544,7 @@ namespace AzToolsFramework
             m_errorButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
             m_errorButton->setFixedSize(QSize(16, 16));
             m_errorButton->setMouseTracking(true);
-            m_errorButton->setIcon(QIcon("Editor/Icons/PropertyEditor/error_icon.png"));
+            m_errorButton->setIcon(QIcon("Icons/PropertyEditor/error_icon.png"));
             m_errorButton->setToolTip("Show Errors");
 
             // Insert the error button after the asset label
@@ -678,6 +678,13 @@ namespace AzToolsFramework
         }
 
         AzQtComponents::BrowseEdit::removeDropTargetStyle(m_browseEdit);
+    }
+
+    AssetSelectionModel PropertyAssetCtrl::GetAssetSelectionModel()
+    {
+        auto selectionModel = AssetSelectionModel::AssetTypeSelection(GetCurrentAssetType());
+        selectionModel.SetTitle(m_title);
+        return selectionModel;
     }
 
     void PropertyAssetCtrl::UpdateTabOrder()
@@ -1058,6 +1065,11 @@ namespace AzToolsFramework
         m_editButton->setIcon(icon);
     }
 
+    void PropertyAssetCtrl::SetTitle(const QString& title)
+    {
+        m_title = title;
+    }
+
     void PropertyAssetCtrl::SetEditNotifyTarget(void* editNotifyTarget)
     {
         m_editNotifyTarget = editNotifyTarget;
@@ -1193,7 +1205,16 @@ namespace AzToolsFramework
     {
         (void)debugName;
 
-        if (attrib == AZ_CRC("EditCallback", 0xb74f2ee1))
+        if (attrib == AZ_CRC_CE("AssetPickerTitle"))
+        {
+            AZStd::string title;
+            attrValue->Read<AZStd::string>(title);
+            if (!title.empty())
+            {
+                GUI->SetTitle(title.c_str());
+            }
+        }
+        else if (attrib == AZ_CRC("EditCallback", 0xb74f2ee1))
         {
             PropertyAssetCtrl::EditCallbackType* func = azdynamic_cast<PropertyAssetCtrl::EditCallbackType*>(attrValue->GetAttribute());
             if (func)
@@ -1283,7 +1304,11 @@ namespace AzToolsFramework
         }
         else if (attrib == AZ_CRC_CE("Thumbnail"))
         {
-            GUI->SetShowThumbnail(true);
+            bool showThumbnail = false;
+            if (attrValue->Read<bool>(showThumbnail))
+            {
+                GUI->SetShowThumbnail(showThumbnail);
+            }
         }
         else if (attrib == AZ_CRC_CE("ThumbnailCallback"))
         {

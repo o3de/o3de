@@ -589,7 +589,7 @@ void CLayoutViewPane::ShowTitleMenu()
     action->setChecked(IsFullscreen());
 
     action = root.addAction(tr("Configure Layout..."));
-    if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
+    if (!CViewManager::IsMultiViewportEnabled())
     {
         action->setDisabled(true);
     }
@@ -663,12 +663,6 @@ void CLayoutViewPane::SetFullscreenViewport(bool b)
         m_viewport->setParent(this);
         GetIEditor()->GetRenderer()->ChangeResolution(800, 600, 32, 80, false, false);
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CLayoutViewPane::SetFocusToViewportSearch()
-{
-    m_viewportTitleDlg.SetFocusToSearchField();
 }
 
 //////////////////////////////////////////////////////////////////////////

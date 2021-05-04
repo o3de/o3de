@@ -95,11 +95,9 @@ private:
     void ExportOcclusionMesh(const char* pszGamePath);
     void ExportMapInfo(XmlNodeRef& node);
 
-    void ExportLevelLensFlares(const QString& path);
     void ExportLevelResourceList(const QString& path);
     void ExportLevelUsedResourceList(const QString& path);
     void ExportLevelShaderCache(const QString& path);
-    void ExportMaterials(XmlNodeRef& levelDataNode, const QString& path);
     void ExportGameData(const QString& path);
     void ExportFileList(const QString& path, const QString& levelName);
 

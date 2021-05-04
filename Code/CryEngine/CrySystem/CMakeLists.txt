@@ -60,8 +60,6 @@ ly_add_target(
             Legacy::CrySystem.XMLBinary
             Legacy::RemoteConsoleCore
             AZ::AzFramework
-    RUNTIME_DEPENDENCIES
-        Legacy::Cry3DEngine
 )
 
 ly_add_source_properties(
@@ -92,8 +90,6 @@ ly_add_target(
             AZ::AzCore
             Legacy::CryCommon
             Legacy::CryCommon.EngineSettings.Static
-    RUNTIME_DEPENDENCIES
-        Legacy::CryFont
 )
 
 ################################################################################

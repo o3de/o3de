@@ -247,8 +247,10 @@
                     }
                 },
                 {
-                    "Name": "ReflectionScreenSpacePass",
-                    "TemplateName": "ReflectionScreenSpacePassTemplate",
+                    // Using cut-down version of screen space reflection for handling the attachment format compatibility issues.
+                    // This is used for mobile devices with limited capabilities.
+                    "Name": "ReflectionScreenSpaceMobilePass",
+                    "TemplateName": "ReflectionScreenSpaceMobilePassTemplate",
                     "Enabled": false,
                     "Connections": [
                         {

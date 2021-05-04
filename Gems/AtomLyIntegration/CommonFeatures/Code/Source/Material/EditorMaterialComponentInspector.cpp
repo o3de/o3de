@@ -203,6 +203,7 @@ namespace AZ
                     propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupNameId, shaderInputStr).GetCStr();
                     propertyConfig.m_nameId = shaderInputStr;
                     propertyConfig.m_displayName = shaderInputStr;
+                    propertyConfig.m_groupName = groupDisplayName;
                     propertyConfig.m_description = shaderInputStr;
                     propertyConfig.m_defaultValue = uvName;
                     propertyConfig.m_originalValue = uvName;
@@ -244,10 +245,15 @@ namespace AZ
                         for (const auto& propertyDefinition : propertyListItr->second)
                         {
                             AtomToolsFramework::DynamicPropertyConfig propertyConfig;
+
+                            // Assign id before conversion so it can be used in dynamic description
+                            propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupNameId, propertyDefinition.m_nameId).GetFullName();
+
                             AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, propertyDefinition);
 
-                            propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupNameId, propertyDefinition.m_nameId).GetFullName();
+                            propertyConfig.m_groupName = groupDisplayName;
                             const auto& propertyIndex = m_editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
+                            propertyConfig.m_showThumbnail = true;
                             propertyConfig.m_defaultValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
                             propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
                             propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);

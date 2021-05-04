@@ -161,20 +161,6 @@ def run():
             # Deletion/Undo/Redo test
             verify_deletion_undo_redo(self.component_name, entity_obj)
 
-    # Area Light Component
-    area_light = "Area Light"
-    ComponentTests(
-        area_light, lambda entity_obj: verify_required_component_addition(
-            entity_obj, ["Capsule Shape"], area_light))
-
-    # Decal Component
-    material_asset_path = os.path.join("Materials", "basic_grey.material")
-    material_asset = asset.AssetCatalogRequestBus(
-        bus.Broadcast, "GetAssetIdByPath", material_asset_path, math.Uuid(), False)
-    ComponentTests(
-        "Decal", lambda entity_obj: verify_set_property(
-            entity_obj, "Settings|Decal Settings|Material", material_asset))
-
     # DepthOfField Component
     camera_entity = hydra.Entity("camera_entity")
     camera_entity.create_entity(math.Vector3(512.0, 512.0, 34.0), ["Camera"])
@@ -184,6 +170,14 @@ def run():
         lambda entity_obj: verify_required_component_addition(entity_obj, ["PostFX Layer"], depth_of_field),
         lambda entity_obj: verify_set_property(
             entity_obj, "Controller|Configuration|Camera Entity", camera_entity.id))
+
+    # Decal Component
+    material_asset_path = os.path.join("AutomatedTesting", "Materials", "basic_grey.material")
+    material_asset = asset.AssetCatalogRequestBus(
+        bus.Broadcast, "GetAssetIdByPath", material_asset_path, math.Uuid(), False)
+    ComponentTests(
+        "Decal (Atom)", lambda entity_obj: verify_set_property(
+            entity_obj, "Controller|Configuration|Material", material_asset))
 
     # Directional Light Component
     ComponentTests(
@@ -212,9 +206,6 @@ def run():
 
     # Physical Sky Component
     ComponentTests("Physical Sky")
-
-    # Point Light Component
-    ComponentTests("Point Light")
 
     # PostFX Layer Component
     ComponentTests("PostFX Layer")

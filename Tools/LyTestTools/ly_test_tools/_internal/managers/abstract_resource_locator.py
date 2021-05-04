@@ -254,7 +254,7 @@ class AbstractResourceLocator(object):
         return os.path.join(self.engine_root(), 'bootstrap.cfg')
 
     def asset_processor_config_file(self):
-        return os.path.join(self.engine_root(), 'AssetProcessorPlatformConfig.setreg')
+        return os.path.join(self.engine_root(), 'Registry', 'AssetProcessorPlatformConfig.setreg')
 
     def autoexec_file(self):
         return os.path.join(

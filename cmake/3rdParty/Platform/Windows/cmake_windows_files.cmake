@@ -11,9 +11,6 @@
 
 set(FILES
     BuiltInPackages_windows.cmake
-    Crashpad_windows.cmake
-    dyad_windows.cmake
     FbxSdk_windows.cmake
-    libav_windows.cmake
     Wwise_windows.cmake
 )

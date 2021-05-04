@@ -80,7 +80,7 @@ void PropertyRowLocalFrameBase::reset(QPropertyTree* tree)
 
 void PropertyRowLocalFrameBase::redraw(const PropertyDrawContext& context)
 {
-    static QIcon gizmo("Editor/Icons/animation/gizmo_location.png");
+    static QIcon gizmo("Icons/animation/gizmo_location.png");
     gizmo.paint(context.painter, context.widgetRect.adjusted(1, 1, 1, 1), Qt::AlignRight);
 }
 
