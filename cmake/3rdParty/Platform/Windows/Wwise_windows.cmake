@@ -10,12 +10,7 @@
 #
 
 set(WWISE_WINDOWS_LIB_NAMES
-    ASIOSourceSink
     AkAutobahn
-    AkMotionGeneratorSource
-    AkMotionSink
-    AkMotionSourceSource
-    MSSpatialSink
     SFLib
 )
 

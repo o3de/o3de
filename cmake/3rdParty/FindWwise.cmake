@@ -9,6 +9,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
+set(WWISE_VERSION 2021.1.0.7575)
+
+function(check_wwise)
+    set(stamp_file install-${WWISE_VERSION}.stamp)
+    if (EXISTS ${stamp_file})
+        return()
+    endif()
+
+    message(STATUS "Checking for Wwise...")
+
+    # Check various file paths for the Wwise version...
+    # If found, touch the stamp file
+    #file(TOUCH ${stamp_file})
+endfunction()
+
+check_wwise()
+
 set(WWISE_COMMON_LIB_NAMES
     # Core AK
     AkMemoryMgr
@@ -55,35 +72,17 @@ set(WWISE_NON_RELEASE_LIB_NAMES
     CommunicationCentral
 )
 
-# Additional Libraries
-# These can be added/enabled to the linker depending on what your Wwise project uses.
-# In addition to uncommenting the libraries here, be sure to add the appropriate plugin factory
-# header includes to PluginRegistration_wwise.h.
-
 set(WWISE_ADDITIONAL_LIB_NAMES
-# Common
+    # Additional Libraries (i.e. Plugins)
+    # These can be added/enabled to the linker depending on what your Wwise project uses.
+    # In addition to adding libraries here, be sure to add the appropriate plugin factory
+    # header includes to PluginRegistration_wwise.h.
+
+# Examples...
     #AkConvolutionReverbFX
     #AkReflectFX
     #AkRouterMixerFX
-    #ResonanceAudioFX
-    #MasteringSuiteFX
-    #AkSoundSeedImpactFX
-    #AkSoundSeedGrainSource
-    #AkSoundSeedWindSource
-    #AkSoundSeedWooshSource
-    #AuroHeadphoneFX
-    #CrankcaseAudioREVModelPlayerSource
-    #McDSPFutzBoxFX
-    #McDSPLimiterFX
-
-# iZotope
-    #iZHybridReverbFX
-    #iZTrashBoxModelerFX
-    #iZTrashDelayFX
-    #iZTrashDistortionFX
-    #iZTrashDynamicsFX
-    #iZTrashFiltersFX
-    #iZTrashMultibandDistortionFX
+    # ...
 )
 
 set(WWISE_COMPILE_DEFINITIONS
@@ -92,7 +91,7 @@ set(WWISE_COMPILE_DEFINITIONS
 
 ly_add_external_target(
     NAME Wwise
-    VERSION 2019.2.8.7432
+    VERSION ${WWISE_VERSION}
     INCLUDE_DIRECTORIES SDK/include
     COMPILE_DEFINITIONS ${WWISE_COMPILE_DEFINITIONS}
 )
