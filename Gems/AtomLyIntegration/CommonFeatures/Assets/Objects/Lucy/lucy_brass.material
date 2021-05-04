@@ -18,7 +18,7 @@
             ],
             "factor": 1.0,
             "textureBlendMode": "Lerp",
-            "textureMap": "Objects/Lucy/Lucy_bronzet_BaseColor.png",
+            "textureMap": "Objects/Lucy/Lucy_bronze_BaseColor.png",
             "textureMapUv": "Unwrapped"
         },
         "general": {
