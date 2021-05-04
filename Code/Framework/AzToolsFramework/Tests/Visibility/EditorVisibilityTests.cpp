@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  */
-#pragma optimize("", off)
+
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Visibility/BoundsBus.h>

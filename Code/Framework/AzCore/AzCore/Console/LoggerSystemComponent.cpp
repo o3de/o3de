@@ -126,7 +126,6 @@ namespace AZ
         char buffer[MaxLogBufferSize];
 
         const AZStd::size_t length = azvsnprintf(buffer, MaxLogBufferSize, format, args);
-        //buffer[AZStd::min<AZStd::size_t>(length, MaxLogBufferSize - 2)] = '\n';
         buffer[AZStd::min<AZStd::size_t>(length + 1, MaxLogBufferSize - 1)] = '\0';
 
         switch (level)
