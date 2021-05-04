@@ -4143,7 +4143,8 @@ namespace AzToolsFramework
         {
             if (!componentEditor ||
                 !componentEditor->isVisible() ||
-                !AreComponentsRemovable(componentEditor->GetComponents()))
+                !AreComponentsRemovable(componentEditor->GetComponents()) ||
+                !AreComponentsDraggable(componentEditor->GetComponents()))
             {
                 return false;
             }
@@ -4293,6 +4294,7 @@ namespace AzToolsFramework
         while (targetComponentEditor
             && (targetComponentEditor->IsDragged()
                 || !AreComponentsRemovable(targetComponentEditor->GetComponents())
+                || !AreComponentsDraggable(targetComponentEditor->GetComponents())
                 || (globalRect.center().y() > GetWidgetGlobalRect(targetComponentEditor).center().y())))
         {
             if (targetItr == m_componentEditors.end() || targetComponentEditor == m_componentEditors.back() || !targetComponentEditor->isVisible())
