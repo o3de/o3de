@@ -57,6 +57,7 @@ def C18243589_Joints_BallSoftLimitsConstrained():
     """
     import os
     import sys
+    import math
 
     import ImportPathHelper as imports
 
@@ -95,13 +96,38 @@ def C18243589_Joints_BallSoftLimitsConstrained():
     Report.info_vector3(follower.position, "follower initial position:")
     leadInitialPosition = lead.position
     followerInitialPosition = follower.position
+    
+    followerMovedAboveJoint = False
+    #calculate  the start vector from follower and lead positions
+    normalizedStartPos = JointsHelper.getRelativeVector(lead.position, follower.position)
+    normalizedStartPos = normalizedStartPos.GetNormalizedSafe()
+    #the targeted angle to reach between the initial vector and the current follower-lead vector
+    targetAngleDeg = 45
+    targetAngle = math.radians(targetAngleDeg)
 
-    # 4) Wait for several seconds
-    general.idle_wait(1.0) # wait for lead and follower to move
+    maxTotalWaitTime = 2.0 #seconds
+    waitTime = 0.0
+    waitStep = 0.2
+    angleAchieved = 0.0
+    while waitTime < maxTotalWaitTime:
+        waitTime = waitTime + waitStep
+        general.idle_wait(waitStep) # wait for lead and follower to move
+
+        #calculate the current follower-lead vector
+        normalVec = JointsHelper.getRelativeVector(lead.position, follower.position)
+        normalVec = normalVec.GetNormalizedSafe()
+        #dot product + acos to get the angle
+        angleAchieved = math.acos(normalizedStartPos.Dot(normalVec))
+        #is it above target?
+        if angleAchieved > targetAngle:
+            followerMovedAboveJoint = True
+            break
 
     # 5) Check to see if lead and follower behaved as expected
-    Report.info_vector3(lead.position, "lead position after 1 second:")
-    Report.info_vector3(follower.position, "follower position after 1 second:")
+    Report.info_vector3(lead.position, "lead position after {:.2f} second:".format(waitTime))
+    Report.info_vector3(follower.position, "follower position after {:.2f} second:".format(waitTime))
+    angleAchievedDeg = math.degrees(angleAchieved)
+    Report.info("Angle achieved {:.2f} Target {:.2f}".format(angleAchievedDeg, targetAngleDeg))
 
     leadPositionDelta = lead.position.Subtract(leadInitialPosition)
     leadRemainedStill = JointsHelper.vector3SmallerThanScalar(leadPositionDelta, FLOAT_EPSILON)
@@ -111,7 +137,6 @@ def C18243589_Joints_BallSoftLimitsConstrained():
     followerMovedinXYZ = JointsHelper.vector3LargerThanScalar(followerPositionDelta, FLOAT_EPSILON)
     Report.critical_result(Tests.check_follower_position, followerMovedinXYZ)
 
-    followerMovedAboveJoint = follower.position.z > (followerInitialPosition.z + 2.5) # (followerInitialPosition.z + 2.5) is the z position past the 45 degree limit. This is to show that the follower swinged past the 45 degree cone limit, above the joint position.
     Report.critical_result(Tests.check_follower_above_joint, followerMovedAboveJoint)
 
     # 6) Exit Game Mode
