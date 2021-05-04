@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <AzCore/std/limits.h>
 #include <AzCore/Component/Entity.h>
 
 #include <NvCloth/Types.h>
@@ -26,10 +27,10 @@ namespace NvCloth
     struct SkinningInfluence
     {
         //! Weight of the joint that influences the vertex.
-        float m_jointWeight;
+        float m_jointWeight = 0.0f;
 
         //! Index of the joint that influences the vertex.
-        AZ::u16 m_jointIndex;
+        AZ::u16 m_jointIndex = AZStd::numeric_limits<AZ::u16>::max();
     };
 
     //! Class to retrieve skinning information from an actor on the same entity
@@ -61,7 +62,7 @@ namespace NvCloth
 
         //! Applies skinning to a list of positions and vectors whose vertices
         //! have not been used for simulation.
-        virtual void ApplySkinninOnNonSimulatedVertices(
+        virtual void ApplySkinningOnNonSimulatedVertices(
             const MeshClothInfo& originalData,
             ClothComponentMesh::RenderData& renderData) = 0;
 

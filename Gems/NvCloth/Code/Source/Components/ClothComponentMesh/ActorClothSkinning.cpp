@@ -223,7 +223,7 @@ namespace NvCloth
         void ApplySkinning(
             const AZStd::vector<AZ::Vector4>& originalPositions,
             AZStd::vector<AZ::Vector4>& positions) override;
-        void ApplySkinninOnNonSimulatedVertices(
+        void ApplySkinningOnNonSimulatedVertices(
             const MeshClothInfo& originalData,
             ClothComponentMesh::RenderData& renderData) override;
 
@@ -266,7 +266,7 @@ namespace NvCloth
         }
     }
 
-    void ActorClothSkinningLinear::ApplySkinninOnNonSimulatedVertices(
+    void ActorClothSkinningLinear::ApplySkinningOnNonSimulatedVertices(
         const MeshClothInfo& originalData,
         ClothComponentMesh::RenderData& renderData)
     {
@@ -328,7 +328,7 @@ namespace NvCloth
         void ApplySkinning(
             const AZStd::vector<AZ::Vector4>& originalPositions,
             AZStd::vector<AZ::Vector4>& positions) override;
-        void ApplySkinninOnNonSimulatedVertices(
+        void ApplySkinningOnNonSimulatedVertices(
             const MeshClothInfo& originalData,
             ClothComponentMesh::RenderData& renderData) override;
 
@@ -371,7 +371,7 @@ namespace NvCloth
         }
     }
 
-    void ActorClothSkinningDualQuaternion::ApplySkinninOnNonSimulatedVertices(
+    void ActorClothSkinningDualQuaternion::ApplySkinningOnNonSimulatedVertices(
         const MeshClothInfo& originalData,
         ClothComponentMesh::RenderData& renderData)
     {
