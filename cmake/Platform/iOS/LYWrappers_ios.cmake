@@ -14,13 +14,6 @@ include(cmake/Platform/Common/LYWrappers_default.cmake)
 function(ly_apply_platform_properties target)
     get_target_property(target_type ${target} TYPE)
 
-    set_target_properties(${target}
-        PROPERTIES
-        XCODE_ATTRIBUTE_DEPLOYMENT_POSTPROCESSING[variant=debug] "NO"
-        XCODE_ATTRIBUTE_DEPLOYMENT_POSTPROCESSING[variant=profile] "NO"
-        XCODE_ATTRIBUTE_DEPLOYMENT_POSTPROCESSING[variant=release] "YES"
-    )
-
     if(${target_type} STREQUAL "SHARED_LIBRARY")
         # Some projects use an "_" in their target name which is not allowed in a bundle identifier
         get_target_property(target_name ${target} NAME)
