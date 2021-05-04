@@ -259,12 +259,6 @@
             "isOptional": false
         },
         {
-            "file": "Registry/assets_scan_folders.setreg",
-            "origin": "Registry/assets_scan_folders.setreg",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
             "file": "gem.json",
             "origin": "gem.json",
             "isTemplated": true,
@@ -349,10 +343,6 @@
         {
             "dir": "Platform/iOS",
             "origin": "Platform/iOS"
-        },
-        {
-            "dir": "Registry",
-            "origin": "Registry"
         }
     ]
 }
