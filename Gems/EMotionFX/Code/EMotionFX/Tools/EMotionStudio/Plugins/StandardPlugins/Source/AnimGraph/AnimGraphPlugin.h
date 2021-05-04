@@ -49,7 +49,6 @@ namespace EMotionFX
     class AnimGraphObjectFactory;
 }
 
-
 namespace EMStudio
 {
     // forward declarations
@@ -151,8 +150,6 @@ namespace EMStudio
         void LoadOptions();
         void SaveOptions();
 
-        void RegisterKeyboardShortcuts() override;
-
         bool CheckIfCanCreateObject(EMotionFX::AnimGraphObject* parentObject, const EMotionFX::AnimGraphObject* object, EMotionFX::AnimGraphObject::ECategory category) const;
 
         void ProcessFrame(float timePassedInSeconds) override;
@@ -170,6 +167,27 @@ namespace EMStudio
 
         /// Is the given anim graph running on any selected actor instance?
         bool IsAnimGraphActive(EMotionFX::AnimGraph* animGraph) const;
+
+        inline static constexpr AZStd::string_view s_animGraphWindowShortcutGroupName = "Anim Graph Window";
+        inline static constexpr AZStd::string_view s_fitEntireGraphShortcutName = "Fit Entire Graph";
+        inline static constexpr AZStd::string_view s_zoomOnSelectedNodesShortcutName = "Zoom On Selected Nodes";
+        inline static constexpr AZStd::string_view s_openParentNodeShortcutName = "Open Parent Node";
+        inline static constexpr AZStd::string_view s_openSelectedNodeShortcutName = "Open Selected Node";
+        inline static constexpr AZStd::string_view s_historyBackShortcutName = "History Back";
+        inline static constexpr AZStd::string_view s_historyForwardShortcutName = "History Forward";
+        inline static constexpr AZStd::string_view s_alignLeftShortcutName = "Align Left";
+        inline static constexpr AZStd::string_view s_alignRightShortcutName = "Align Right";
+        inline static constexpr AZStd::string_view s_alignTopShortcutName = "Align Top";
+        inline static constexpr AZStd::string_view s_alignBottomShortcutName = "Align Bottom";
+        inline static constexpr AZStd::string_view s_cutShortcutName = "Cut";
+        inline static constexpr AZStd::string_view s_copyShortcutName = "Copy";
+        inline static constexpr AZStd::string_view s_pasteShortcutName = "Paste";
+        inline static constexpr AZStd::string_view s_selectAllShortcutName = "Select All";
+        inline static constexpr AZStd::string_view s_unselectAllShortcutName = "Unselect All";
+        inline static constexpr AZStd::string_view s_deleteSelectedNodesShortcutName = "Delete Selected Nodes";
+
+    signals:
+        void ActionFilterChanged();
 
     public slots:
         void OnFileOpen();

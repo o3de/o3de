@@ -43,7 +43,7 @@ namespace AWSCore
 
     void AWSScriptBehaviorS3::ReflectBehaviors(AZ::BehaviorContext* behaviorContext)
     {
-        behaviorContext->Class<AWSScriptBehaviorS3>("AWSScriptBehaviorS3")
+        behaviorContext->Class<AWSScriptBehaviorS3>(AWSScriptBehaviorS3Name)
             ->Attribute(AZ::Script::Attributes::Category, "AWSCore")
             ->Method("GetObject", &AWSScriptBehaviorS3::GetObject,
                 {{{"Bucket Resource KeyName", "The resource key name of the bucket in resource mapping config file."},
@@ -86,7 +86,9 @@ namespace AWSCore
     void AWSScriptBehaviorS3::GetObjectRaw(
         const AZStd::string& bucket, const AZStd::string& objectKey, const AZStd::string& region, const AZStd::string& outFile)
     {
-        if (!ValidateGetObjectRequest(&AWSScriptBehaviorS3NotificationBus::Events::OnGetObjectError, bucket, objectKey, region, outFile))
+        AZStd::string normalizedOutFile = outFile;
+        if (!ValidateGetObjectRequest(
+                &AWSScriptBehaviorS3NotificationBus::Events::OnGetObjectError, bucket, objectKey, region, normalizedOutFile))
         {
             return;
         }
@@ -112,10 +114,10 @@ namespace AWSCore
 
         job->request.SetBucket(Aws::String(bucket.c_str()));
         job->request.SetKey(Aws::String(objectKey.c_str()));
-        Aws::String outFileName(outFile.c_str());
+        Aws::String outFileName(normalizedOutFile.c_str());
         job->request.SetResponseStreamFactory([outFileName]() {
             return Aws::New<Aws::FStream>(
-                "AWSScriptBehaviorS3", outFileName.c_str(),
+                AWSScriptBehaviorS3Name, outFileName.c_str(),
                 std::ios_base::out | std::ios_base::in | std::ios_base::binary | std::ios_base::trunc);
         });
         job->Start();
@@ -163,20 +165,44 @@ namespace AWSCore
     }
 
     bool AWSScriptBehaviorS3::ValidateGetObjectRequest(S3NotificationFunctionType notificationFunc,
-        const AZStd::string& bucket, const AZStd::string& objectKey, const AZStd::string& region, const AZStd::string& outFile)
+        const AZStd::string& bucket, const AZStd::string& objectKey, const AZStd::string& region, AZStd::string& outFile)
     {
         if (ValidateHeadObjectRequest(notificationFunc, bucket, objectKey, region))
         {
-            if (!AzFramework::StringFunc::Path::IsValid(outFile.c_str()))
+            AzFramework::StringFunc::Path::Normalize(outFile);
+            if (outFile.empty())
             {
-                AZ_Warning("AWSScriptBehaviorS3", false, "Request validation failed, outfile is not valid.");
-                AWSScriptBehaviorS3NotificationBus::Broadcast(notificationFunc, "Request validation failed, outfile is not valid.");
+                AZ_Warning(AWSScriptBehaviorS3Name, false, OutputFileIsEmptyErrorMessage);
+                AWSScriptBehaviorS3NotificationBus::Broadcast(notificationFunc, OutputFileIsEmptyErrorMessage);
                 return false;
+            }
+            if (!AzFramework::StringFunc::Path::HasDrive(outFile.c_str()))
+            {
+                AZ_Warning(AWSScriptBehaviorS3Name, false, OutputFileMissFullPathErrorMessage);
+                AWSScriptBehaviorS3NotificationBus::Broadcast(notificationFunc, OutputFileMissFullPathErrorMessage);
+                return false;
+            }
+            if (AZ::IO::FileIOBase::GetInstance()->IsDirectory(outFile.c_str()))
+            {
+                AZ_Warning(AWSScriptBehaviorS3Name, false, OutputFileIsDirectoryErrorMessage);
+                AWSScriptBehaviorS3NotificationBus::Broadcast(notificationFunc, OutputFileIsDirectoryErrorMessage);
+                return false;
+            }
+            auto lastSeparator = outFile.find_last_of(AZ_CORRECT_FILESYSTEM_SEPARATOR);
+            if (lastSeparator != AZStd::string::npos)
+            {
+                auto parentPath = outFile.substr(0, lastSeparator);
+                if (!AZ::IO::FileIOBase::GetInstance()->Exists(parentPath.c_str()))
+                {
+                    AZ_Warning(AWSScriptBehaviorS3Name, false, OutputFileDirectoryNotExistErrorMessage);
+                    AWSScriptBehaviorS3NotificationBus::Broadcast(notificationFunc, OutputFileDirectoryNotExistErrorMessage);
+                    return false;
+                }
             }
             if (AZ::IO::FileIOBase::GetInstance()->IsReadOnly(outFile.c_str()))
             {
-                AZ_Warning("AWSScriptBehaviorS3", false, "Request validation failed, outfile is read-only.");
-                AWSScriptBehaviorS3NotificationBus::Broadcast(notificationFunc, "Request validation failed, outfile is read-only.");
+                AZ_Warning(AWSScriptBehaviorS3Name, false, OutputFileIsReadOnlyErrorMessage);
+                AWSScriptBehaviorS3NotificationBus::Broadcast(notificationFunc, OutputFileIsReadOnlyErrorMessage);
                 return false;
             }
             return true;
@@ -189,20 +215,20 @@ namespace AWSCore
     {
         if (bucket.empty())
         {
-            AZ_Warning("AWSScriptBehaviorS3", false, "Request validation failed, bucket name is required.");
-            AWSScriptBehaviorS3NotificationBus::Broadcast(notificationFunc, "Request validation failed, bucket name is required.");
+            AZ_Warning(AWSScriptBehaviorS3Name, false, BucketNameIsEmptyErrorMessage);
+            AWSScriptBehaviorS3NotificationBus::Broadcast(notificationFunc, BucketNameIsEmptyErrorMessage);
             return false;
         }
         if (objectKey.empty())
         {
-            AZ_Warning("AWSScriptBehaviorS3", false, "Request validation failed, object key name is required.");
-            AWSScriptBehaviorS3NotificationBus::Broadcast(notificationFunc, "Request validation failed, object key name is required.");
+            AZ_Warning(AWSScriptBehaviorS3Name, false, ObjectKeyNameIsEmptyErrorMessage);
+            AWSScriptBehaviorS3NotificationBus::Broadcast(notificationFunc, ObjectKeyNameIsEmptyErrorMessage);
             return false;
         }
         if (region.empty())
         {
-            AZ_Warning("AWSScriptBehaviorS3", false, "Request validation failed, region name is required.");
-            AWSScriptBehaviorS3NotificationBus::Broadcast(notificationFunc, "Request validation failed, region name is required.");
+            AZ_Warning(AWSScriptBehaviorS3Name, false, RegionNameIsEmptyErrorMessage);
+            AWSScriptBehaviorS3NotificationBus::Broadcast(notificationFunc, RegionNameIsEmptyErrorMessage);
             return false;
         }
         return true;
