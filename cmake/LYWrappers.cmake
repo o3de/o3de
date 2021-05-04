@@ -333,10 +333,6 @@ function(ly_add_target)
     endif()
 
     if(NOT ly_add_target_IMPORTED)
-        if(NOT ly_add_target_INSTALL_COMPONENT)
-            set(ly_add_target_INSTALL_COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT})
-        endif()
-
         ly_install_target(
             ${ly_add_target_NAME}
             NAMESPACE ${ly_add_target_NAMESPACE}
@@ -344,7 +340,7 @@ function(ly_add_target)
             BUILD_DEPENDENCIES ${ly_add_target_BUILD_DEPENDENCIES}
             RUNTIME_DEPENDENCIES ${ly_add_target_RUNTIME_DEPENDENCIES}
             COMPILE_DEFINITIONS ${ly_add_target_COMPILE_DEFINITIONS}
-            COMPONENT ${ly_add_target_INSTALL_COMPONENT}
+            COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
         )
     endif()
 
