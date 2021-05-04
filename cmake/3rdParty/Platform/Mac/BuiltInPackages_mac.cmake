@@ -47,5 +47,5 @@ ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-mac              TARGETS mik
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-mac          TARGETS googletest      PACKAGE_HASH cbf020d5ef976c5db8b6e894c6c63151ade85ed98e7c502729dd20172acae5a8)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-mac     TARGETS GoogleBenchmark PACKAGE_HASH ad25de0146769c91e179953d845de2bec8ed4a691f973f47e3eb37639381f665)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev1-mac            TARGETS OpenSSL         PACKAGE_HASH 28adc1c0616ac0482b2a9d7b4a3a3635a1020e87b163f8aba687c501cf35f96c)
-ly_associate_package(PACKAGE_NAME qt-5.15.2-rev3-mac                 TARGETS Qt              PACKAGE_HASH 29966f22ec253dc9904e88ad48fe6b6a669302b2dc7049f2e2bbd4949e79e595)
+ly_associate_package(PACKAGE_NAME qt-5.15.2-rev3-mac                 TARGETS Qt              PACKAGE_HASH 4723ac43b19d4633c3fa4b9642f27c992d30cdc689f769f82869786f1c22a728)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-mac       TARGETS libsamplerate   PACKAGE_HASH b912af40c0ac197af9c43d85004395ba92a6a859a24b7eacd920fed5854a97fe)
