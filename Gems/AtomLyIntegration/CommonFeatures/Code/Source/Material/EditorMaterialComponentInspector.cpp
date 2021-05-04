@@ -245,9 +245,12 @@ namespace AZ
                         for (const auto& propertyDefinition : propertyListItr->second)
                         {
                             AtomToolsFramework::DynamicPropertyConfig propertyConfig;
+
+                            // Assign id before conversion so it can be used in dynamic description
+                            propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupNameId, propertyDefinition.m_nameId).GetFullName();
+
                             AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, propertyDefinition);
 
-                            propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupNameId, propertyDefinition.m_nameId).GetFullName();
                             propertyConfig.m_groupName = groupDisplayName;
                             const auto& propertyIndex = m_editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
                             propertyConfig.m_showThumbnail = true;

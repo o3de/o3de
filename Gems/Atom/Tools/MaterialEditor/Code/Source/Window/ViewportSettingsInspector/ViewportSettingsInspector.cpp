@@ -36,6 +36,7 @@ namespace MaterialEditor
                 ->Field("enableShadowCatcher", &GeneralViewportSettings::m_enableShadowCatcher)
                 ->Field("enableAlternateSkybox", &GeneralViewportSettings::m_enableAlternateSkybox)
                 ->Field("fieldOfView", &GeneralViewportSettings::m_fieldOfView)
+                ->Field("displayMapperOperationType", &GeneralViewportSettings::m_displayMapperOperationType)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())
@@ -50,6 +51,12 @@ namespace MaterialEditor
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &GeneralViewportSettings::m_fieldOfView, "Field Of View", "")
                         ->Attribute(AZ::Edit::Attributes::Min, 60.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 120.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GeneralViewportSettings::m_displayMapperOperationType, "Display Mapper Type", "")
+                    ->EnumAttribute(AZ::Render::DisplayMapperOperationType::Aces, "Aces")
+                    ->EnumAttribute(AZ::Render::DisplayMapperOperationType::AcesLut, "AcesLut")
+                    ->EnumAttribute(AZ::Render::DisplayMapperOperationType::Passthrough, "Passthrough")
+                    ->EnumAttribute(AZ::Render::DisplayMapperOperationType::GammaSRGB, "GammaSRGB")
+                    ->EnumAttribute(AZ::Render::DisplayMapperOperationType::Reinhard, "Reinhard")
                     ;
             }
         }
@@ -66,6 +73,7 @@ namespace MaterialEditor
                 ->Property("enableShadowCatcher", BehaviorValueProperty(&GeneralViewportSettings::m_enableShadowCatcher))
                 ->Property("enableAlternateSkybox", BehaviorValueProperty(&GeneralViewportSettings::m_enableAlternateSkybox))
                 ->Property("fieldOfView", BehaviorValueProperty(&GeneralViewportSettings::m_fieldOfView))
+                ->Property("displayMapperOperationType", BehaviorValueProperty(&GeneralViewportSettings::m_displayMapperOperationType))
                 ;
         }
     }
@@ -298,6 +306,7 @@ namespace MaterialEditor
         MaterialViewportRequestBus::BroadcastResult(
             m_generalSettings.m_enableAlternateSkybox, &MaterialViewportRequestBus::Events::GetAlternateSkyboxEnabled);
         MaterialViewportRequestBus::BroadcastResult(m_generalSettings.m_fieldOfView, &MaterialViewportRequestBus::Handler::GetFieldOfView);
+        MaterialViewportRequestBus::BroadcastResult(m_generalSettings.m_displayMapperOperationType, &MaterialViewportRequestBus::Handler::GetDisplayMapperOperationType);
 
         AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
         AtomToolsFramework::InspectorWidget::Reset();
@@ -343,6 +352,12 @@ namespace MaterialEditor
         RefreshGroup("general");
     }
 
+    void ViewportSettingsInspector::OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType)
+    {
+        m_generalSettings.m_displayMapperOperationType = operationType;
+        RefreshGroup("general");
+    }
+
     void ViewportSettingsInspector::BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode)
     {
         AZ_UNUSED(pNode);
@@ -370,6 +385,7 @@ namespace MaterialEditor
         MaterialViewportRequestBus::Broadcast(
             &MaterialViewportRequestBus::Events::SetAlternateSkyboxEnabled, m_generalSettings.m_enableAlternateSkybox);
         MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Handler::SetFieldOfView, m_generalSettings.m_fieldOfView);
+        MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Handler::SetDisplayMapperOperationType, m_generalSettings.m_displayMapperOperationType);
     }
 
     AZStd::string ViewportSettingsInspector::GetDefaultUniqueSaveFilePath(const AZStd::string& baseName) const

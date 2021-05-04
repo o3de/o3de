@@ -18,7 +18,6 @@
 #include "FormatUtils.h"
 
 #include <AzCore/Debug/AssetTracking.h>
-#include <Common/Memory/VRAMDrillerBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/JSON/filewritestream.h>
 #include <AzCore/JSON/rapidjson.h>

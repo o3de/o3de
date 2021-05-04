@@ -44,7 +44,6 @@ private:
     void GetFilesFromObjects();
     void GetFilesFromVarBlock(CVarBlock* pVB);
     void GetFilesFromVariable(IVariable* pVar);
-    void GetFilesFromMaterials();
 };
 
 #endif // CRYINCLUDE_EDITOR_GAMERESOURCESEXPORTER_H
