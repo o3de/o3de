@@ -28,6 +28,7 @@
 
 #include <IRenderer.h>
 #include <IRenderAuxGeom.h>
+#include <IConsole.h>
 
 #include <CryPhysicsDeprecation.h>
 
