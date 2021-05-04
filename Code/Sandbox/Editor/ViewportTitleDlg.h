@@ -28,7 +28,6 @@ class CLayoutViewPane;
 class CPopupMenuItem;
 
 class QAbstractButton;
-class QActionGroup;
 class QMenu;
 
 struct ICVar;
@@ -53,22 +52,6 @@ public:
     void SetTitle(const QString& title);
     void OnViewportSizeChanged(int width, int height);
     void OnViewportFOVChanged(float fov);
-    void SetFocusToSearchField();
-
-    // Dialog Data
-    enum ESearchResultHandling
-    {
-        ESRH_HIDE_OTHERS = 0,
-        ESRH_FREEZE_OTHERS,
-        ESRH_JUST_SELECT,
-    };
-
-    enum ESearchMode
-    {
-        ESM_BY_NAME = 0,
-        ESM_BY_TYPE,
-        ESM_BY_ASSET,
-    };
 
     static void AddFOVMenus(QMenu* menu, std::function<void(float)> callback, const QStringList& customPresets);
     static void AddAspectRatioMenus(QMenu* menu, std::function<void(int, int)> callback, const QStringList& customPresets);
@@ -87,7 +70,6 @@ public:
 
 protected:
     virtual void OnInitDialog();
-    QMenu *InitializeViewportSearchMenu();
 
     virtual void OnEditorNotifyEvent(EEditorNotifyEvent event);
     void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
@@ -95,17 +77,10 @@ protected:
     void OnMaximize();
     void OnToggleHelpers();
     void OnToggleDisplayInfo();
-    void OnSearchTermChange();
-    void OnViewportSearchButtonClicked(const QAction* clickedAction);
-    void OnViewportSearchClear();
 
     QString m_title;
 
     CLayoutViewPane* m_pViewPane;
-
-    ESearchMode m_searchMode;
-    ESearchResultHandling m_searchResultHandling;
-    bool m_bOR;
 
     static const int MAX_NUM_CUSTOM_PRESETS = 10;
     QStringList m_customResPresets;
@@ -113,13 +88,6 @@ protected:
     QStringList m_customAspectRatioPresets;
 
     uint64 m_displayInfoCallbackIndex;
-
-    void UnhideUnfreezeAll();
-    void SearchByType(const QStringList& terms);
-    void SearchByName(const QStringList& terms);
-    void SearchByAsset(const QStringList& terms);
-    void UpdateSearchOptionsText();
-    void InputNamesToSearchFromSelection();
 
     void OnMenuFOVCustom();
 
@@ -139,18 +107,6 @@ protected:
     QMenu* m_resolutionMenu = nullptr;
 
     QScopedPointer<Ui::ViewportTitleDlg> m_ui;
-
-    QActionGroup* m_searchModeActionGroup;
-    QAction* m_searchByNameAction;
-    QAction* m_searchByTypeAction;
-    QAction* m_searchByAssetAction;
-    QActionGroup* m_searchResultHandlingActionGroup;
-    QAction* m_searchHideOthersAction;
-    QAction* m_searchFreezeOthersAction;
-    QAction* m_searchJustSelectAction;
-    QActionGroup* m_searchMatchTypeActionGroup;
-    QAction* m_searchAndAction;
-    QAction* m_searchOrAction;
 };
 
 namespace AzToolsFramework

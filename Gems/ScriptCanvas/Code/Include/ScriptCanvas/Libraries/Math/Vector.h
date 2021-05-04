@@ -41,7 +41,7 @@ namespace ScriptCanvas
                         {
                             editContext->Class<Vector2>("Vector2", "A 2D vector value")
                                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                                ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Vector.png")
+                                ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Vector.png")
                                 ;
                         }
                     }
@@ -70,7 +70,7 @@ namespace ScriptCanvas
                         {
                             editContext->Class<Vector3>("Vector3", "A 3D vector value")
                                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                                ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Vector.png")
+                                ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Vector.png")
                                 ;
                         }
                     }
@@ -99,7 +99,7 @@ namespace ScriptCanvas
                         {
                             editContext->Class<Vector4>("Vector4", "A 4D vector value")
                                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                                ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Vector.png")
+                                ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Vector.png")
                                 ;
                         }
                     }

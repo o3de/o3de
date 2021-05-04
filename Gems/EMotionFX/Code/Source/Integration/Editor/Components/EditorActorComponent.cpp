@@ -26,8 +26,6 @@
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
-
 #include <Integration/Editor/Components/EditorActorComponent.h>
 #include <Integration/AnimGraphComponentBus.h>
 #include <Integration/Rendering/RenderBackendManager.h>
@@ -255,11 +253,6 @@ namespace EMotionFX
         {
             if (m_actorInstance)
             {
-                // Send general mesh destruction notification to interested parties.
-                LmbrCentral::MeshComponentNotificationBus::Event(
-                    GetEntityId(),
-                    &LmbrCentral::MeshComponentNotifications::OnMeshDestroyed);
-
                 ActorComponentNotificationBus::Event(
                     GetEntityId(),
                     &ActorComponentNotificationBus::Events::OnActorInstanceDestroyed,
@@ -650,7 +643,6 @@ namespace EMotionFX
             }
 
             distance = std::numeric_limits<float>::max();
-            bool isHit = false;
 
             // Get the MCore::Ray used by Mesh::Intersects
             // Convert the input source position and direction to a line segment by using the frustum depth as line length.
@@ -659,12 +651,13 @@ namespace EMotionFX
             const AZ::Vector3 dest = src + dir * frustumDepth;
             const MCore::Ray ray(src, dest);
 
-            // Update the mesh deformers so the intersection test will hit the actor if it is being
-            // animated by a motion component that is previewing the animation in the editor
+            // Update the mesh deformers (apply software skinning and morphing) so the intersection test will hit the actor
+            // if it is being animated by a motion component that is previewing the animation in the editor.
             m_actorInstance->UpdateMeshDeformers(0.0f, true);
 
             const TransformData* transformData = m_actorInstance->GetTransformData();
             const Pose* currentPose = transformData->GetCurrentPose();
+            bool isHit = false;
 
             // Iterate through the meshes in the actor, looking for the closest hit
             const AZ::u32 lodLevel = m_actorInstance->GetLODLevel();
@@ -822,7 +815,7 @@ namespace EMotionFX
 
         bool EditorActorComponent::IsAtomDisabled() const
         {
-            return !AZ::Interface<AzFramework::AtomActiveInterface>::Get();
+            return false;
         }
 
         void EditorActorComponent::OnActorReady(Actor* actor)
@@ -848,11 +841,6 @@ namespace EMotionFX
 
             if (m_actorInstance)
             {
-                // Send general mesh destruction notification to interested parties.
-                LmbrCentral::MeshComponentNotificationBus::Event(
-                    GetEntityId(),
-                    &LmbrCentral::MeshComponentNotifications::OnMeshDestroyed);
-
                 ActorComponentNotificationBus::Event(
                     GetEntityId(),
                     &ActorComponentNotificationBus::Events::OnActorInstanceDestroyed,
@@ -941,9 +929,6 @@ namespace EMotionFX
             {
                 LmbrCentral::AttachmentComponentRequestBus::Event(attachment, &LmbrCentral::AttachmentComponentRequestBus::Events::Reattach, true);
             }
-
-            // Send general mesh creation notification to interested parties.
-            LmbrCentral::MeshComponentNotificationBus::Event(GetEntityId(), &LmbrCentral::MeshComponentNotifications::OnMeshCreated, m_actorAsset);
         }
     } //namespace Integration
 } // namespace EMotionFX

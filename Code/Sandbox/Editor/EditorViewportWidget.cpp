@@ -40,7 +40,6 @@
 #   include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 #endif // defined(AZ_PLATFORM_WINDOWS)
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>                   // for AzFramework::InputDeviceMouse
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
 
 // AzQtComponents
@@ -230,10 +229,6 @@ EditorViewportWidget::~EditorViewportWidget()
 //////////////////////////////////////////////////////////////////////////
 int EditorViewportWidget::OnCreate()
 {
-    m_renderer = GetIEditor()->GetRenderer();
-    m_engine = GetIEditor()->Get3DEngine();
-    assert(m_engine);
-
     CreateRenderContext();
 
     return 0;
@@ -427,7 +422,7 @@ void EditorViewportWidget::Update()
         return;
     }
 
-    if (!m_engine || m_rcClient.isEmpty() || GetIEditor()->IsInMatEditMode())
+    if (m_rcClient.isEmpty() || GetIEditor()->IsInMatEditMode())
     {
         return;
     }
@@ -793,8 +788,10 @@ void EditorViewportWidget::OnRender()
         // This is necessary so that automated editor tests using the null renderer to test systems like dynamic vegetation
         // are still able to manipulate the current logical camera position, even if nothing is rendered.
         GetIEditor()->GetSystem()->SetViewCamera(m_Camera);
-        GetIEditor()->GetRenderer()->SetCamera(gEnv->pSystem->GetViewCamera());
-        m_engine->RenderWorld(0, SRenderingPassInfo::CreateGeneralPassRenderingInfo(m_Camera), __FUNCTION__);
+        if (GetIEditor()->GetRenderer())
+        {
+            GetIEditor()->GetRenderer()->SetCamera(gEnv->pSystem->GetViewCamera());
+        }
         return;
     }
 
@@ -886,7 +883,7 @@ void EditorViewportWidget::OnBeginPrepareRender()
                 fov = 2 * atanf((h * tan(fov / 2)) / maxTargetHeight);
             }
         }
-        m_Camera.SetFrustum(w, h, fov, fNearZ, gEnv->p3DEngine->GetMaxViewDistance());
+        m_Camera.SetFrustum(w, h, fov, fNearZ);
     }
 
     GetIEditor()->GetSystem()->SetViewCamera(m_Camera);
@@ -1236,6 +1233,7 @@ void EditorViewportWidget::SetViewportId(int id)
 
     if (ed_useNewCameraSystem)
     {
+        AzFramework::ReloadCameraKeyBindings();
         m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::ModernViewportCameraController>());
     }
     else
@@ -1504,10 +1502,10 @@ bool EditorViewportWidget::AddCameraMenuItems(QMenu* menu)
     }
 
     action = customCameraMenu->addAction(tr("Look through entity"));
-    AzToolsFramework::EntityIdList selectedEntityList;
-    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-    action->setCheckable(selectedEntityList.size() > 0 || m_viewSourceType == ViewSourceType::AZ_Entity);
-    action->setEnabled(selectedEntityList.size() > 0 || m_viewSourceType == ViewSourceType::AZ_Entity);
+    bool areAnyEntitiesSelected = false;
+    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(areAnyEntitiesSelected, &AzToolsFramework::ToolsApplicationRequests::AreAnyEntitiesSelected);
+    action->setCheckable(areAnyEntitiesSelected || m_viewSourceType == ViewSourceType::AZ_Entity);
+    action->setEnabled(areAnyEntitiesSelected || m_viewSourceType == ViewSourceType::AZ_Entity);
     action->setChecked(m_viewSourceType == ViewSourceType::AZ_Entity);
     connect(action, &QAction::triggered, this, [this](bool isChecked)
         {
@@ -1628,8 +1626,8 @@ void EditorViewportWidget::keyPressEvent(QKeyEvent* event)
         QCoreApplication::sendEvent(GetIEditor()->GetEditorMainWindow(), event);
     }
 
-    // NOTE: we keep track of keypresses and releases explicitly because the OS/Qt will insert a slight delay between sending
-    // keyevents when the key is held down. This is standard, but makes responding to key events for game style input silly
+    // NOTE: we keep track of key presses and releases explicitly because the OS/Qt will insert a slight delay between sending
+    // key events when the key is held down. This is standard, but makes responding to key events for game style input silly
     // because we want the movement to be butter smooth.
     if (!event->isAutoRepeat())
     {
@@ -1809,11 +1807,6 @@ void EditorViewportWidget::SetViewTM(const Matrix34& viewTM, bool bMoveOnly)
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::RenderSelectedRegion()
 {
-    if (!m_engine)
-    {
-        return;
-    }
-
     AABB box;
     GetIEditor()->GetSelectedRegion(box);
     if (box.IsEmpty())
@@ -2423,7 +2416,10 @@ void EditorViewportWidget::SetDefaultCamera()
         return;
     }
     ResetToViewSourceType(ViewSourceType::None);
-    gEnv->p3DEngine->GetPostEffectBaseGroup()->SetParam("Dof_Active", 0.0f);
+    if (gEnv->p3DEngine)
+    {
+        gEnv->p3DEngine->GetPostEffectBaseGroup()->SetParam("Dof_Active", 0.0f);
+    }
     GetViewManager()->SetCameraObjectId(m_cameraObjectId);
     SetName(m_defaultViewName);
     SetViewTM(m_defaultViewTM);
@@ -2606,8 +2602,7 @@ bool EditorViewportWidget::GetActiveCameraPosition(AZ::Vector3& cameraPos)
     {
         if (GetIEditor()->IsInGameMode())
         {
-            const Vec3 camPos = m_engine->GetRenderingCamera().GetPosition();
-            cameraPos = LYVec3ToAZVec3(camPos);
+            cameraPos = m_renderViewport->GetViewportContext()->GetCameraTransform().GetTranslation();
         }
         else
         {
@@ -2819,14 +2814,16 @@ void EditorViewportWidget::RestoreViewportAfterGameMode()
 
 void EditorViewportWidget::UpdateScene()
 {
-    AZStd::vector<AzFramework::Scene*> scenes;
-    AzFramework::SceneSystemRequestBus::BroadcastResult(scenes, &AzFramework::SceneSystemRequests::GetAllScenes);
-    if (scenes.size() > 0)
+    auto sceneSystem = AzFramework::SceneSystemInterface::Get();
+    if (sceneSystem)
     {
-        AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
-        auto scene = scenes[0];
-        m_renderViewport->SetScene(scene);
-        AZ::RPI::SceneNotificationBus::Handler::BusConnect(m_renderViewport->GetViewportContext()->GetRenderScene()->GetId());
+        AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
+        if (mainScene)
+        {
+            AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
+            m_renderViewport->SetScene(mainScene);
+            AZ::RPI::SceneNotificationBus::Handler::BusConnect(m_renderViewport->GetViewportContext()->GetRenderScene()->GetId());
+        }
     }
 }
 

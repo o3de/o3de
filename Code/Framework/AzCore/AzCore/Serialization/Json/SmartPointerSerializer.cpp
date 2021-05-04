@@ -23,13 +23,6 @@ namespace AZ
     {
         namespace JSR = JsonSerializationResult;
 
-        if (IsExplicitDefault(inputValue))
-        {
-            // Do nothing if the input is an explicit default.
-            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed,
-                "Default value for smart pointer requested so no change was made.");
-        }
-
         const SerializeContext::ClassData* containerClass = context.GetSerializeContext()->FindClassData(outputValueTypeId);
         if (!containerClass)
         {
@@ -153,8 +146,7 @@ namespace AZ
 
         if (defaultValue)
         {
-            bool typesMatch = false;
-            auto defaultInputCallback = [&defaultValue, &inputPtrType, &typesMatch]
+            auto defaultInputCallback = [&defaultValue]
                 (void* elementPtr, const Uuid&, const SerializeContext::ClassData*, const SerializeContext::ClassElement*)
                 {
                     defaultValue = elementPtr;
@@ -164,11 +156,6 @@ namespace AZ
         }
 
         JSR::ResultCode result = ContinueStoring(outputValue, inputValue, defaultValue, inputPtrType, context, Flags::ResolvePointer);
-        if (result.GetOutcome() == JSR::Outcomes::DefaultsUsed)
-        {
-            outputValue = GetExplicitDefault();
-            return context.Report(result, "Smart pointer used all defaults.");
-        }
         return context.Report(result, result.GetProcessing() != JSR::Processing::Halted ?
             "Successfully processed smart pointer." : "A problem occurred while processing a smart pointer.");
     }
