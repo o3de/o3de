@@ -148,12 +148,14 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     if(o_debugDrawMode == DebugDrawMode::DepthMaps)
     {
         GetDepth_Setup(IN.m_blendMask);
-        float depth = GetDepth(IN.m_uv[MaterialSrg::m_parallaxUvIndex], float2(0,0), float2(0,0));
+        float depth = GetNormalizedDepth(-MaterialSrg::m_displacementMax, -MaterialSrg::m_displacementMin, IN.m_uv[MaterialSrg::m_parallaxUvIndex], float2(0,0), float2(0,0));
         return MakeDebugOutput(IN, float3(depth,depth,depth));
     }
 
     // ------- Parallax -------
     
+    bool displacementIsClipped = false;
+
     // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scatteirng is enabled
     if(ShouldHandleParallax())
     {
@@ -162,10 +164,11 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
         float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
         
-        float parallaxMainDepthOffset = 0.0;
-        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_parallaxMainDepthFactor, parallaxMainDepthOffset,
+        float parallaxOverallOffset = MaterialSrg::m_displacementMax;
+        float parallaxOverallFactor = MaterialSrg::m_displacementMax - MaterialSrg::m_displacementMin;
+        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], parallaxOverallFactor, parallaxOverallOffset, 
                          ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
-                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depth);
+                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depth, displacementIsClipped);
 
         // Adjust directional light shadow coorinates for parallax correction
         if(o_parallax_enablePixelDepthOffset)
@@ -227,6 +230,11 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     float3 layer2_baseColor = BlendBaseColor(layer2_sampledColor, MaterialSrg::m_layer2_m_baseColor.rgb, MaterialSrg::m_layer2_m_baseColorFactor, o_layer2_o_baseColorTextureBlendMode, o_layer2_o_baseColor_useTexture);
     float3 layer3_baseColor = BlendBaseColor(layer3_sampledColor, MaterialSrg::m_layer3_m_baseColor.rgb, MaterialSrg::m_layer3_m_baseColorFactor, o_layer3_o_baseColorTextureBlendMode, o_layer3_o_baseColor_useTexture);
     float3 baseColor = BlendLayers(layer1_baseColor, layer2_baseColor, layer3_baseColor, blendMaskValues);
+    
+    if(o_parallax_highlightClipping && displacementIsClipped)
+    {
+        ApplyParallaxClippingHighlight(baseColor);
+    }
 
     // ------- Metallic -------
 

@@ -119,12 +119,12 @@ void GetSurfaceShape(float2 uv, out float depth, out float3 normal)
 }
 
 // Callback function for ParallaxMapping.azsli
-float GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
+DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
     float depth;
     float3 normal;
     GetSurfaceShape(uv, depth, normal);
-    return depth;
+    return DepthResultNormalized(depth);
 }
 
 ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)

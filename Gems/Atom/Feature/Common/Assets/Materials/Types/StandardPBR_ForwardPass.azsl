@@ -157,7 +157,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     
     if(o_parallax_highlightClipping && displacementIsClipped)
     {
-        baseColor = lerp(baseColor, float3(1.0,0.0,1.0), 0.5); 
+        ApplyParallaxClippingHighlight(baseColor);
     }
 
     // ------- Metallic -------

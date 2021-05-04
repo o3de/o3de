@@ -94,10 +94,11 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 }
 
 // Callback function for ParallaxMapping.azsli
-float GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
+DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
     return SampleDepthOrHeightMap(MaterialSrg::m_depthInverted, MaterialSrg::m_depthMap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
 }
+
 
 COMMON_OPTIONS_PARALLAX()
 
