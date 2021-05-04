@@ -16,7 +16,9 @@ function(ly_apply_platform_properties target)
 
     set_target_properties(${target}
         PROPERTIES
-        XCODE_ATTRIBUTE_DEPLOYMENT_POSTPROCESSING "YES"
+        XCODE_ATTRIBUTE_DEPLOYMENT_POSTPROCESSING[variant=debug] "NO"
+        XCODE_ATTRIBUTE_DEPLOYMENT_POSTPROCESSING[variant=profile] "NO"
+        XCODE_ATTRIBUTE_DEPLOYMENT_POSTPROCESSING[variant=release] "YES"
     )
 
     if(${target_type} STREQUAL "SHARED_LIBRARY")
