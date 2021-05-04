@@ -296,9 +296,9 @@ def _instantiate_template(template_json_data: dict,
     :param replacements: optional list of strings uses to make concrete names out of templated parameters. X->Y pairs
         Ex. ${Name},TestGem,${Player},TestGemPlayer
         This will cause all references to ${Name} be replaced by TestGem, and all ${Player} replaced by 'TestGemPlayer'
-    :param keep_restricted_in_instance: whether or not you want ot keep the templates restricted files in your instance
+    :param keep_restricted_in_instance: whether or not you want to keep the templates restricted files in your instance
      or separate them out into the restricted folder
-    :param keep_license_text: whether or not you want ot keep the templates license text in your instance.
+    :param keep_license_text: whether or not you want to keep the templates license text in your instance.
         template can have license blocks starting with {BEGIN_LICENSE} and ending with {END_LICENSE},
         this controls if you want to keep the license text from the template in the new instance. It is false by default
         because most customers will not want license text in their instances, but we may want to keep them.
@@ -361,7 +361,7 @@ def create_template(source_path: str,
                     keep_license_text: bool = False,
                     replace: list = None) -> int:
     """
-    Create a generic template from a source directory using replacement
+    Create a template from a source directory using replacement
 
     :param source_path: The path to the source that you want to make into a template
     :param template_path: the path of the template to create, can be absolute or relative to default templates path
@@ -377,8 +377,8 @@ def create_template(source_path: str,
      Note these replacements are executed in order, so if you have larger matches, do them first, i.e.
      TestGemPlayer,${Player},TestGem,${Name}
      TestGemPlayer will get matched first and become ${Player} and will not become ${Name}Player
-    :param keep_restricted_in_template: whether or not you want ot keep the templates restricted in your template.
-    :param keep_license_text: whether or not you want ot keep the templates license text in your instance.
+    :param keep_restricted_in_template: whether or not you want to keep the templates restricted in your template.
+    :param keep_license_text: whether or not you want to keep the templates license text in your instance.
      Templated files can have license blocks starting with {BEGIN_LICENSE} and ending with {END_LICENSE},
      this controls if you want to keep the license text from the template in the new instance. It is false by default
      because most people will not want license text in their instances.
@@ -1008,21 +1008,19 @@ def create_from_template(destination_path: str,
     """
     Generic template instantiation for non o3de object templates. This function makes NO assumptions!
      Assumptions are made only for specializations like create_project or create_gem etc... So this function
-     will NOT try to deduce if the template even if it is an o3de type template and therefore will not link
-     the instance to the restricted! However, it will make the restricted and name it for the destination just
-     as an o3de object would.
+     will NOT try to divine intent.
     :param destination_path: the folder you want to instantiate the template into
     :param template_path: the path to the template you want to instance
-    :param template_name: the name of the template you want to instance
+    :param template_name: the name of the template you want to instance, resolves template_path
     :param destination_restricted_path: path to the projects restricted folder
-    :param destination_restricted_name: name of the projects restricted folder
+    :param destination_restricted_name: name of the projects restricted folder, resolves destination_restricted_path
     :param template_restricted_path: path of the templates restricted folder
-    :param template_restricted_name: name of the templates restricted folder
+    :param template_restricted_name: name of the templates restricted folder, resolves template_restricted_path
     :param destination_restricted_platform_relative_path: any path after the platform in the destination restricted
     :param template_restricted_platform_relative_path: any path after the platform in the template restricted
-    :param keep_restricted_in_instance: whether or not you want ot keep the templates restricted files in your instance
+    :param keep_restricted_in_instance: whether or not you want to keep the templates restricted files in your instance
      or separate them out into the restricted folder
-    :param keep_license_text: whether or not you want ot keep the templates license text in your instance.
+    :param keep_license_text: whether or not you want to keep the templates license text in your instance.
         template can have license blocks starting with {BEGIN_LICENSE} and ending with {END_LICENSE},
         this controls if you want to keep the license text from the template in the new instance. It is false by default
         because most customers will not want license text in their instances, but we may want to keep them.
@@ -1297,20 +1295,20 @@ def create_project(project_path: str,
                    editor_system_component_class_id: str = None,
                    module_id: str = None) -> int:
     """
-    Template instantiation that make all default assumptions for a Project template instantiation, reducing the effort
-        needed in instancing a project
+    Template instantiation specialization that makes all default assumptions for a Project template instantiation,
+     reducing the effort needed in instancing a project
     :param project_path: the project path, can be absolute or relative to default projects path
     :param template_path: the path to the template you want to instance, can be absolute or relative to default templates path
-    :param template_name: the name the registered template you want to instance, defaults to DefaultProject
+    :param template_name: the name the registered template you want to instance, defaults to DefaultProject, resolves template_path
     :param project_restricted_path: path to the projects restricted folder, can be absolute or relative to the restricted='projects'
-    :param project_restricted_name: name of the registered projects restricted path
+    :param project_restricted_name: name of the registered projects restricted path, resolves project_restricted_path
     :param template_restricted_path: templates restricted path can be absolute or relative to restricted='templates'
-    :param template_restricted_name: name of the registered templates restricted path
+    :param template_restricted_name: name of the registered templates restricted path, resolves template_restricted_path
     :param project_restricted_platform_relative_path: any path after the platform to append to the project_restricted_path
     :param template_restricted_platform_relative_path: any path after the platform to append to the template_restricted_path
-    :param keep_restricted_in_project: whether or not you want ot keep the templates restricted files in your project or
+    :param keep_restricted_in_project: whether or not you want to keep the templates restricted files in your project or
      separate them out into the restricted folder
-    :param keep_license_text: whether or not you want ot keep the templates license text in your instance.
+    :param keep_license_text: whether or not you want to keep the templates license text in your instance.
         template can have license blocks starting with {BEGIN_LICENSE} and ending with {END_LICENSE},
         this controls if you want to keep the license text from the template in the new instance. It is false by default
         because most customers will not want license text in their instances, but we may want to keep them.
@@ -1678,20 +1676,20 @@ def create_gem(gem_path: str,
                editor_system_component_class_id: str = None,
                module_id: str = None) -> int:
     """
-    Template instantiation that make all default assumptions for a Gem template instantiation, reducing the effort
-        needed in instancing a gem
+    Template instantiation specialization that makes all default assumptions for a Gem template instantiation,
+     reducing the effort needed in instancing a gem
     :param gem_path: the gem path, can be absolute or relative to default gems path
     :param template_path: the template path you want to instance, can be absolute or relative to default templates path
-    :param template_name: the name of the registered template you want to instance, defaults to DefaultGem
+    :param template_name: the name of the registered template you want to instance, defaults to DefaultGem, resolves template_path
     :param gem_restricted_path: path to the gems restricted folder, can be absolute or relative to the restricted='gems'
-    :param gem_restricted_name: str = name of the registered gems restricted path
+    :param gem_restricted_name: str = name of the registered gems restricted path, resolves gem_restricted_path
     :param template_restricted_path: the templates restricted path, can be absolute or relative to the restricted='templates'
-    :param template_restricted_name: name of the registered templates restricted path
+    :param template_restricted_name: name of the registered templates restricted path, resolves template_restricted_path
     :param gem_restricted_platform_relative_path: any path after the platform to append to the gem_restricted_path
     :param template_restricted_platform_relative_path: any path after the platform to append to the template_restricted_path
-    :param keep_restricted_in_gem: whether or not you want ot keep the templates restricted files in your instance or
+    :param keep_restricted_in_gem: whether or not you want to keep the templates restricted files in your instance or
      separate them out into the restricted folder
-    :param keep_license_text: whether or not you want ot keep the templates license text in your instance. template can
+    :param keep_license_text: whether or not you want to keep the templates license text in your instance. template can
      have license blocks starting with {BEGIN_LICENSE} and ending with {END_LICENSE}, this controls if you want to keep
       the license text from the template in the new instance. It is false by default because most customers will not
        want license text in their instances, but we may want to keep them.
