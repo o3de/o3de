@@ -52,7 +52,6 @@ define_property(TARGET PROPERTY GEM_MODULE
 # \arg:HEADERONLY (bool) defines this target to be a header only library. A ${NAME}_HEADERS project will be created for the IDE
 # \arg:EXECUTABLE (bool) defines this target to be an executable
 # \arg:APPLICATION (bool) defines this target to be an application (executable that is not a console)
-# \arg:UNKNOWN (bool) defines this target to be unknown. This is used when importing installed targets from Find files
 # \arg:IMPORTED (bool) defines this target to be imported.
 # \arg:NAMESPACE namespace declaration for this target. It will be used for IDE and dependencies
 # \arg:OUTPUT_NAME (optional) overrides the name of the output target. If not specified, the name will be used.
@@ -76,7 +75,7 @@ define_property(TARGET PROPERTY GEM_MODULE
 # \arg:AUTOGEN_RULES a set of AutoGeneration rules to be passed to the AzAutoGen expansion system
 function(ly_add_target)
 
-    set(options STATIC SHARED MODULE GEM_MODULE HEADERONLY EXECUTABLE APPLICATION UNKNOWN IMPORTED AUTOMOC AUTOUIC AUTORCC NO_UNITY)
+    set(options STATIC SHARED MODULE GEM_MODULE HEADERONLY EXECUTABLE APPLICATION IMPORTED AUTOMOC AUTOUIC AUTORCC NO_UNITY)
     set(oneValueArgs NAME NAMESPACE OUTPUT_SUBDIRECTORY OUTPUT_NAME)
     set(multiValueArgs FILES_CMAKE GENERATED_FILES INCLUDE_DIRECTORIES COMPILE_DEFINITIONS BUILD_DEPENDENCIES RUNTIME_DEPENDENCIES PLATFORM_INCLUDE_FILES TARGET_PROPERTIES AUTOGEN_RULES)
 
@@ -128,12 +127,12 @@ function(ly_add_target)
         set(linking_options APPLICATION)
         set(linking_count "${linking_count}1")
     endif()
-    if(ly_add_target_UNKNOWN)
-        set(linking_options UNKNOWN)
+    if(ly_add_target_IMPORTED)
+        set(linking_options UNKNOWN IMPORTED GLOBAL)
         set(linking_count "${linking_count}1")
     endif()
     if(NOT ("${linking_count}" STREQUAL "1"))
-        message(FATAL_ERROR "More than one of the following options [STATIC | SHARED | MODULE | HEADERONLY | EXECUTABLE | APPLICATION | UNKNOWN] was specified and they are mutually exclusive")
+        message(FATAL_ERROR "More than one of the following options [STATIC | SHARED | MODULE | HEADERONLY | EXECUTABLE | APPLICATION | IMPORTED] was specified and they are mutually exclusive")
     endif()
 
     if(ly_add_target_NAMESPACE)
@@ -159,10 +158,9 @@ function(ly_add_target)
             ${linking_options}
             ${ALLFILES} ${ly_add_target_GENERATED_FILES}
         )
-    elseif(ly_add_target_UNKNOWN)
+    elseif(ly_add_target_IMPORTED)
         add_library(${ly_add_target_NAME}
             ${linking_options}
-            IMPORTED
         )
     else()
         add_library(${ly_add_target_NAME}

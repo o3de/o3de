@@ -11,7 +11,7 @@
 
 set(CMAKE_INSTALL_MESSAGE NEVER) # Simplify messages to reduce output noise
 
-ly_set(LY_DEFAULT_INSTALL_COMPONENT "Core")
+ly_set(LY_DEFAULT_INSTALL_COMPONENT Core)
 
 file(RELATIVE_PATH runtime_output_directory ${CMAKE_BINARY_DIR} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 file(RELATIVE_PATH library_output_directory ${CMAKE_BINARY_DIR} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
@@ -74,20 +74,9 @@ function(ly_install_target ly_install_target_NAME)
             COMPONENT ${ly_install_target_COMPONENT}
     )
 
-    ly_generate_target_find_file(
-        NAME ${ly_install_target_NAME}
-        ${ARGN}
-    )
+    ly_generate_target_find_file(NAME ${ly_install_target_NAME} ${ARGN})
     ly_generate_target_config_file(${ly_install_target_NAME})
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${ly_install_target_NAME}_$<CONFIG>.cmake"
-        DESTINATION cmake_autogen/${ly_install_target_NAME}
-        COMPONENT ${ly_install_target_COMPONENT}
-    )
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/Find${ly_install_target_NAME}.cmake"
-        DESTINATION cmake
-        COMPONENT ${ly_install_target_COMPONENT}
-    )
-
+    
 endfunction()
 
 
@@ -129,16 +118,21 @@ function(ly_generate_target_find_file)
 
     # Includes need additional processing to add the install root
     foreach(include ${include_directories_interface_props})
-        set(installed_include_prefix "\${LY_ROOT_FOLDER}/include/")
         file(RELATIVE_PATH relative_path ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/${include})
-        list(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "include/${relative_path}")
+        string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "\${LY_ROOT_FOLDER}/include/${relative_path}\n")
     endforeach()
-    string(REPLACE ";" "\n" INCLUDE_DIRECTORIES_PLACEHOLDER "${INCLUDE_DIRECTORIES_PLACEHOLDER}")
 
     string(REPLACE ";" "\n" BUILD_DEPENDENCIES_PLACEHOLDER "${BUILD_DEPENDENCIES_PLACEHOLDER}")
     string(REPLACE ";" "\n" RUNTIME_DEPENDENCIES_PLACEHOLDER "${RUNTIME_DEPENDENCIES_PLACEHOLDER}")
 
-    configure_file(${LY_ROOT_FOLDER}/cmake/FindTarget.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/Find${ly_generate_target_find_file_NAME}.cmake @ONLY)
+    # Since a CMakeLists could contain multiple targets, we generate it in a folder per target
+    configure_file(${LY_ROOT_FOLDER}/cmake/install/TargetCMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/install/${ly_generate_target_find_file_NAME}/CMakeLists.txt @ONLY)
+    get_target_property(target_source_dir ${ly_generate_target_find_file_NAME} SOURCE_DIR)
+    file(RELATIVE_PATH target_source_dir_relative ${CMAKE_SOURCE_DIR} ${target_source_dir})
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/install/${ly_generate_target_find_file_NAME}/CMakeLists.txt"
+        DESTINATION ${target_source_dir_relative}/${ly_generate_target_find_file_NAME}
+        COMPONENT ${ly_install_target_COMPONENT}
+    )
 
 endfunction()
 
@@ -183,7 +177,13 @@ endif()
 ")
     endif()
 
-    file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${NAME}_$<CONFIG>.cmake" CONTENT "${target_file_contents}")
+    file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/install/${NAME}/${NAME}_$<CONFIG>.cmake" CONTENT "${target_file_contents}")
+    get_target_property(target_source_dir ${NAME} SOURCE_DIR)
+    file(RELATIVE_PATH target_source_dir_relative ${CMAKE_SOURCE_DIR} ${target_source_dir})
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/install/${NAME}_$<CONFIG>.cmake"
+        DESTINATION ${target_source_dir_relative}/${NAME}
+        COMPONENT ${ly_install_target_COMPONENT}
+    )
 
 endfunction()
 
@@ -254,11 +254,12 @@ function(ly_setup_cmake_install)
     get_property(all_targets GLOBAL PROPERTY LY_ALL_TARGETS)
     unset(FIND_PACKAGES_PLACEHOLDER)
     foreach(target IN LISTS all_targets)
-        string(APPEND FIND_PACKAGES_PLACEHOLDER "    find_package(${target})\n")
+        get_target_property(target_source_dir ${target} SOURCE_DIR)
+        file(RELATIVE_PATH target_source_dir_relative ${CMAKE_SOURCE_DIR} ${target_source_dir})
+        string(APPEND FIND_PACKAGES_PLACEHOLDER "    add_subdirectory(${target_source_dir_relative}/${target})\n")
     endforeach()
 
-    configure_file(${LY_ROOT_FOLDER}/cmake/Findo3de.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/Findo3de.cmake @ONLY)
-
+    configure_file(${LY_ROOT_FOLDER}/cmake/install/Findo3de.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/Findo3de.cmake @ONLY)
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/cmake/Findo3de.cmake"
         DESTINATION cmake
         COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
