@@ -105,8 +105,9 @@ namespace Audio
         // See AkMemoryMgr.h
         inline static const char* MemoryManagerCategories[]
         {
-            "Object", "Event", "Structure", "Media", "GameObject", "Processing", "ProcessingPlugin", "Streaming", "StreamingIO", "SpatialAudio",
-            "SpatialAudioGeometry", "SpatialAudioPaths", "GameSim", "MonitorQueue", "Profiler", "FilePackage", "SoundEngine"
+            "Object", "Event", "Structure", "Media", "GameObject", "Processing", "ProcessingPlugin", "Streaming", "StreamingIO",
+            "SpatialAudio", "SpatialAudioGeometry", "SpatialAudioPaths", "GameSim", "MonitorQueue", "Profiler", "FilePackage",
+            "SoundEngine", "Integration"
         };
 
         static_assert(AZ_ARRAY_SIZE(MemoryManagerCategories) == AkMemID_NUM,
