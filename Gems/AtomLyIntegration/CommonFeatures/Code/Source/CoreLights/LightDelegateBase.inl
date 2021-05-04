@@ -101,6 +101,20 @@ namespace AZ
         template <typename FeatureProcessorType>
         void LightDelegateBase<FeatureProcessorType>::OnShapeChanged(ShapeChangeReasons changeReason)
         {
+            // Shape change events should only be sent to light types which use a shape
+            // However this method may be called with `changeReason==TransformChanged' even when there is no shape
+            // Handle this as a special case
+            if (m_shapeBus == nullptr)
+            {
+                AZ_Assert(changeReason == ShapeChangeReasons::TransformChanged, AZ_FUNCTION_SIGNATURE " - got shape change event but we have no shape");
+                AZ_Assert(TransformNotificationBus::Handler::BusIsConnected(), AZ_FUNCTION_SIGNATURE " - got shape change event for light with neither a shape nor a transform handler");
+
+                const AZ::EntityId entityId = TransformNotificationBus::Handler::m_node.GetBusId();
+                TransformBus::EventResult(m_transform, entityId, &TransformBus::Events::GetWorldTM);
+                HandleShapeChanged();
+                return;
+            }
+
             if (changeReason == ShapeChangeReasons::TransformChanged)
             {
                 AZ::Aabb aabb; // unused, but required for GetTransformAndLocalBounds()
