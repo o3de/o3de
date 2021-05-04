@@ -16,7 +16,6 @@
 #include "SurfaceTypeValidator.h"
 
 // Editor
-#include "Material/Material.h"
 #include "Include/IObjectManager.h"
 #include "Objects/BaseObject.h"
 #include "ErrorReport.h"

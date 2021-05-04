@@ -27,7 +27,6 @@ public:
 
 private:
     void ValidateObjects();
-    void ValidateMaterials();
 
     IErrorReport* m_pReport;
 };

@@ -92,7 +92,7 @@ TAG_DIR_LY_BUILD = str('build')
 TAG_QT_PLUGIN_PATH = str('QT_PLUGIN_PATH')
 
 # filesystem markers, stub file names.
-STUB_LY_DEV = str('engineroot.txt')
+STUB_LY_DEV = str('engine.json')
 STUB_LY_ROOT_PROJECT = str('ly_project_stub')
 STUB_LY_ROOT_DCCSI = str('dccsi_stub')
 STUB_LY_DCCSI_AZPY = str('dccsi_azpy_stub')
