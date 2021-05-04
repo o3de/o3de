@@ -12,7 +12,6 @@
 set(FILES
     BuiltInPackages_windows.cmake
     Clang_windows.cmake
-    dyad_windows.cmake
     libav_windows.cmake
     Wwise_windows.cmake
 )

@@ -12,7 +12,6 @@
 set(FILES
     BuiltInPackages.cmake
     FindClang.cmake
-    Finddyad.cmake
     Findlibav.cmake
     FindRadTelemetry.cmake
     FindVkValidation.cmake
