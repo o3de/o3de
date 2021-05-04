@@ -111,14 +111,12 @@ private:
             {
             case ePropertyTexture:
             case ePropertyModel:
-            case ePropertyMaterial:
                 newPath.replace("\\\\", "/");
             }
             switch (m_propertyType)
             {
             case ePropertyTexture:
             case ePropertyModel:
-            case ePropertyMaterial:
             case ePropertyFile:
                 if (newPath.size() > MAX_PATH)
                 {

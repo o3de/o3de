@@ -43,7 +43,6 @@ namespace ImGui
 
     class ImGuiLYAssetExplorer
         : public ImGuiAssetExplorerRequestBus::Handler
-        , public AZ::TickBus::Handler
 
     {
     public:
@@ -60,10 +59,6 @@ namespace ImGui
         // -- ImGuiAssetExplorerRequestBus::Handler Interface ----------------------
         void SetEnabled(bool enabled) override { m_enabled = enabled; m_meshDebugEnabled = enabled; }
         // -- ImGuiAssetExplorerRequestBus::Handler Interface ----------------------
-
-        // -- AZ::TickBus::Handler Interface ---------------------------------------
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        // -- AZ::TickBus::Handler Interface ---------------------------------------
 
         // Toggle the menu on and off
         void ToggleEnabled() { m_enabled = !m_enabled; }
@@ -117,9 +112,6 @@ namespace ImGui
         void ImGuiUpdate_DrawMeshMouseOver(MeshInstanceDisplayList& meshDisplayList);
         void ImGuiUpdate_DrawEntityInstanceMouseOver(MeshInstanceDisplayList& meshDisplayList, AZ::EntityId& entityInstance, AZStd::string& entityName, MeshInstanceOptions& instanceOptions);
 
-        // Helper functions for the OnTick callback
-        void OnTick_DrawEntity(const AZ::EntityId& entity, const AZ::Data::AssetId& assetId, IRenderer* renderer, const AZ::Vector3& cameraPos);
-        void OnTick_FindAssets();
     };
 }
 #endif // IMGUI_ENABLED

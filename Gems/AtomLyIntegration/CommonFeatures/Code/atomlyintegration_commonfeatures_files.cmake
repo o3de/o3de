@@ -10,6 +10,8 @@
 #
 
 set(FILES
+    Source/Animation/AttachmentComponent.h
+    Source/Animation/AttachmentComponent.cpp
     Source/CoreLights/AreaLightComponent.h
     Source/CoreLights/AreaLightComponent.cpp
     Source/CoreLights/AreaLightComponentConfig.cpp

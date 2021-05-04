@@ -26,8 +26,6 @@
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
-
 #include <Integration/Editor/Components/EditorActorComponent.h>
 #include <Integration/AnimGraphComponentBus.h>
 #include <Integration/Rendering/RenderBackendManager.h>
@@ -255,11 +253,6 @@ namespace EMotionFX
         {
             if (m_actorInstance)
             {
-                // Send general mesh destruction notification to interested parties.
-                LmbrCentral::MeshComponentNotificationBus::Event(
-                    GetEntityId(),
-                    &LmbrCentral::MeshComponentNotifications::OnMeshDestroyed);
-
                 ActorComponentNotificationBus::Event(
                     GetEntityId(),
                     &ActorComponentNotificationBus::Events::OnActorInstanceDestroyed,
@@ -848,11 +841,6 @@ namespace EMotionFX
 
             if (m_actorInstance)
             {
-                // Send general mesh destruction notification to interested parties.
-                LmbrCentral::MeshComponentNotificationBus::Event(
-                    GetEntityId(),
-                    &LmbrCentral::MeshComponentNotifications::OnMeshDestroyed);
-
                 ActorComponentNotificationBus::Event(
                     GetEntityId(),
                     &ActorComponentNotificationBus::Events::OnActorInstanceDestroyed,
@@ -941,9 +929,6 @@ namespace EMotionFX
             {
                 LmbrCentral::AttachmentComponentRequestBus::Event(attachment, &LmbrCentral::AttachmentComponentRequestBus::Events::Reattach, true);
             }
-
-            // Send general mesh creation notification to interested parties.
-            LmbrCentral::MeshComponentNotificationBus::Event(GetEntityId(), &LmbrCentral::MeshComponentNotifications::OnMeshCreated, m_actorAsset);
         }
     } //namespace Integration
 } // namespace EMotionFX

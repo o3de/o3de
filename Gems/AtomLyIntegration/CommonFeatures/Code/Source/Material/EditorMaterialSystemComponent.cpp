@@ -93,7 +93,6 @@ namespace AZ
 
         void EditorMaterialSystemComponent::Activate()
         {
-            AzFramework::TargetManagerClient::Bus::Handler::BusConnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusConnect();
             AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
@@ -105,7 +104,6 @@ namespace AZ
 
         void EditorMaterialSystemComponent::Deactivate()
         {
-            AzFramework::TargetManagerClient::Bus::Handler::BusDisconnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusDisconnect();
             AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
@@ -123,36 +121,11 @@ namespace AZ
 
         void EditorMaterialSystemComponent::OpenInMaterialEditor(const AZStd::string& sourcePath)
         {
-            if (m_materialEditorTarget.IsValid())
-            {
-                AzFramework::TmMsg openDocumentMsg(AZ_CRC("OpenInMaterialEditor", 0x9f92aac8));
-                openDocumentMsg.AddCustomBlob(sourcePath.c_str(), sourcePath.size() + 1);
-                AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_materialEditorTarget, openDocumentMsg);
-            }
-            else
-            {
-                AZ_TracePrintf("MaterialComponent", "Launching Material Editor");
+            AZ_TracePrintf("MaterialComponent", "Launching Material Editor");
 
-                QStringList arguments;
-                    arguments.append(sourcePath.c_str());
-                AtomToolsFramework::LaunchTool("MaterialEditor", ".exe", arguments);
-            }
-        }
-
-        void EditorMaterialSystemComponent::TargetJoinedNetwork(AzFramework::TargetInfo info)
-        {
-            if (AZ::StringFunc::Equal(info.GetDisplayName(), "MaterialEditor"))
-            {
-                m_materialEditorTarget = info;
-            }
-        }
-
-        void EditorMaterialSystemComponent::TargetLeftNetwork(AzFramework::TargetInfo info)
-        {
-            if (AZ::StringFunc::Equal(info.GetDisplayName(), "MaterialEditor"))
-            {
-                m_materialEditorTarget = {};
-            }
+            QStringList arguments;
+            arguments.append(sourcePath.c_str());
+            AtomToolsFramework::LaunchTool("MaterialEditor", ".exe", arguments);
         }
 
         void EditorMaterialSystemComponent::OnApplicationAboutToStop()
