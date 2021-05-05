@@ -10,36 +10,36 @@
  *
  */
 
-#include <Qt/GemCatalog.h>
+#include <FirstTimeUse.h>
 
-#include <Qt/ui_GemCatalog.h>
+#include <Source/ui_FirstTimeUse.h>
 
 namespace O3DE::ProjectManager
 {
-    GemCatalog::GemCatalog(ProjectManagerWindow* window)
+    FirstTimeUse::FirstTimeUse(ProjectManagerWindow* window)
         : ScreenWidget(window)
-        , m_ui(new Ui::GemCatalogClass())
+        , m_ui(new Ui::FirstTimeUseClass())
     {
         m_ui->setupUi(this);
 
         ConnectSlotsAndSignals();
     }
 
-    GemCatalog::~GemCatalog()
+    FirstTimeUse::~FirstTimeUse()
     {
     }
 
-    void GemCatalog::ConnectSlotsAndSignals()
+    void FirstTimeUse::ConnectSlotsAndSignals()
     {
-        QObject::connect(m_ui->backButton, &QPushButton::pressed, this, &GemCatalog::HandleBackButton);
-        QObject::connect(m_ui->confirmButton, &QPushButton::pressed, this, &GemCatalog::HandleConfirmButton);
+        QObject::connect(m_ui->createProjectButton, &QPushButton::pressed, this, &FirstTimeUse::HandleNewProjectButton);
+        QObject::connect(m_ui->openProjectButton, &QPushButton::pressed, this, &FirstTimeUse::HandleOpenProjectButton);
     }
 
-    void GemCatalog::HandleBackButton()
+    void FirstTimeUse::HandleNewProjectButton()
     {
         m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::NewProjectSettings);
     }
-    void GemCatalog::HandleConfirmButton()
+    void FirstTimeUse::HandleOpenProjectButton()
     {
         m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::ProjectsHome);
     }

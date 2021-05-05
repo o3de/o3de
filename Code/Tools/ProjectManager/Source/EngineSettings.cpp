@@ -9,31 +9,27 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  */
-#pragma once
 
-#if !defined(Q_MOC_RUN)
-#include <Qt/ScreenWidget.h>
-#endif
+#include <EngineSettings.h>
 
-namespace Ui
-{
-    class EngineSettingsClass;
-}
+#include <Source/ui_EngineSettings.h>
 
 namespace O3DE::ProjectManager
 {
-    class EngineSettings
-        : public ScreenWidget
+    EngineSettings::EngineSettings(ProjectManagerWindow* window)
+        : ScreenWidget(window)
+        , m_ui(new Ui::EngineSettingsClass())
     {
-    public:
-        explicit EngineSettings(ProjectManagerWindow* window);
-        ~EngineSettings();
+        m_ui->setupUi(this);
+    }
 
-    protected:
-        void ConnectSlotsAndSignals() override;
+    EngineSettings::~EngineSettings()
+    {
+    }
 
-    private:
-        QScopedPointer<Ui::EngineSettingsClass> m_ui;
-    };
+    void EngineSettings::ConnectSlotsAndSignals()
+    {
+        // Do nothing for now
+    }
 
 } // namespace O3DE::ProjectManager
