@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 EDITOR_TIMEOUT = 200
 HYDRA_SCRIPT_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
-S3_BUCKET_NAME = 'testing-atom-artifacts-for-github'
+S3_BUCKET_NAME = 'atom-test-artifacts-us-west-2'
 
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
@@ -37,12 +37,10 @@ S3_BUCKET_NAME = 'testing-atom-artifacts-for-github'
 class TestAtomEditorComponentsMain(object):
 
     @pytest.mark.test_case_id(
-        "C32078117",  # Area Light
         "C32078130",  # Display Mapper
         "C32078129",  # Light
         "C32078131",  # Radius Weight Modifier
         "C32078127",  # PostFX Layer
-        "C32078126",  # Point Light
         "C32078125",  # Physical Sky
         "C32078115",  # Global Skylight (IBL)
         "C32078121",  # Exposure Control
@@ -53,18 +51,6 @@ class TestAtomEditorComponentsMain(object):
         cfg_args = [level]
 
         expected_lines = [
-            # Area Light Component
-            "Area Light Entity successfully created",
-            "Area Light_test: Component added to the entity: True",
-            "Area Light_test: Component removed after UNDO: True",
-            "Area Light_test: Component added after REDO: True",
-            "Area Light_test: Entered game mode: True",
-            "Area Light_test: Entity enabled after adding required components: True",
-            "Area Light_test: Entity is hidden: True",
-            "Area Light_test: Entity is shown: True",
-            "Area Light_test: Entity deleted: True",
-            "Area Light_test: UNDO entity deletion works: True",
-            "Area Light_test: REDO entity deletion works: True",
             # Decal (Atom) Component
             "Decal (Atom) Entity successfully created",
             "Decal (Atom)_test: Component added to the entity: True",
@@ -148,18 +134,6 @@ class TestAtomEditorComponentsMain(object):
             "Physical Sky_test: Entity deleted: True",
             "Physical Sky_test: UNDO entity deletion works: True",
             "Physical Sky_test: REDO entity deletion works: True",
-            # Point Light Component
-            "Point Light Entity successfully created",
-            "Point Light_test: Component added to the entity: True",
-            "Point Light_test: Component removed after UNDO: True",
-            "Point Light_test: Component added after REDO: True",
-            "Point Light_test: Entered game mode: True",
-            "Point Light_test: Exit game mode: True",
-            "Point Light_test: Entity is hidden: True",
-            "Point Light_test: Entity is shown: True",
-            "Point Light_test: Entity deleted: True",
-            "Point Light_test: UNDO entity deletion works: True",
-            "Point Light_test: REDO entity deletion works: True",
             # PostFX Layer Component
             "PostFX Layer Entity successfully created",
             "PostFX Layer_test: Component added to the entity: True",
@@ -207,7 +181,7 @@ class TestAtomEditorComponentsMain(object):
             "Display Mapper_test: Entity is shown: True",
             "Display Mapper_test: Entity deleted: True",
             "Display Mapper_test: UNDO entity deletion works: True",
-            "Display Mapper_test: REDO entity deletion works: asdasdTrue",
+            "Display Mapper_test: REDO entity deletion works: True",
         ]
 
         unexpected_lines = [
@@ -215,8 +189,6 @@ class TestAtomEditorComponentsMain(object):
             "failed to open",
             "Traceback (most recent call last):",
         ]
-        import pdb; pdb.set_trace()
-        return
         try:
             hydra.launch_and_validate_results(
                 request,
@@ -230,27 +202,25 @@ class TestAtomEditorComponentsMain(object):
                 null_renderer=True,
                 cfg_args=cfg_args,
             )
-        except (AssertionError, log_monitor.LogMonitorException) as e:
+        except (AssertionError, log_monitor.LogMonitorException) as test_error:
             # Create s3 folder to upload test artifacts to.
             s3_folder_timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')  # For unique folder string.
-            s3_folder_name = f"{s3_folder_timestamp}_Atom_AutomatedTesting_TestArtifacts"
-            s3_uploader.create_folder_in_bucket(bucket_name=S3_BUCKET_NAME, folder_key=s3_folder_name)
+            s3_folder_object = s3_uploader.create_folder_in_bucket(
+                bucket_name=S3_BUCKET_NAME, folder_key=f"{s3_folder_timestamp}_Atom_AutomatedTesting_TestArtifacts")
 
             # Upload the test artifacts to the newly created s3 folder.
-            # atom_test_artifacts = collect_atom_test_artifacts.get_atom_test_artifacts(
-            #     engine_root=workspace.paths.engine_root())
-            # for atom_test_artifact in atom_test_artifacts:
-            #     s3_uploader.upload_to_bucket(
-            #         bucket_name=S3_BUCKET_NAME,
-            #         file_path=atom_test_artifact,
-            #         file_key=s3_folder_name,
-            #         overwrite=False)
-            #
-            # # Link to the s3 test artifact storage for failure debugging.
-            # s3_link = ''
-            # atom_test_artifact_file_types = collect_atom_test_artifacts.VALID_ARTIFACT_FILE_TYPES
+            atom_test_artifacts = collect_atom_test_artifacts.get_atom_test_artifacts(
+                engine_root=workspace.paths.engine_root())
+            s3_uploader.bulk_upload_to_bucket(
+                bucket_name=S3_BUCKET_NAME, list_of_file_paths=atom_test_artifacts, file_key=s3_folder_object.key)
+
+            # Link to the s3 test artifact storage for failure debugging.
+            s3_link = (f"https://s3.console.aws.amazon.com/s3/buckets/{S3_BUCKET_NAME}"
+                       f"?region=us-west-2&prefix={s3_folder_object.key}/&showversions=false")
+            atom_test_artifact_file_types = collect_atom_test_artifacts.VALID_ARTIFACT_FILE_TYPES
             logger.error(
-                'test_Atom_MainSuite.test_AtomEditorComponents_AddedToEntity failed.\n')
-                # f'Review the {project} Atom renderer test artifacts on s3 for debugging: {s3_link}\n'
-                # f'Atom renderer test artifact file types uploaded to s3 are: {atom_test_artifact_file_types}')
-            raise e
+                'test_AtomEditorComponents_AddedToEntity failed.\n\n'
+                f'Review the {project} Atom renderer test artifacts on s3 for debugging: {s3_link}\n\n'
+                f'Valid file types for test artifacts uploaded: {atom_test_artifact_file_types}\n\n')
+
+            raise test_error

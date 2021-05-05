@@ -11,24 +11,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 Used for uploading Atom test artifacts to s3 to debug failures.
 """
 
-import boto3
-import botocore.exceptions
 import logging
 import os
+
+import boto3
+import botocore.exceptions
 from botocore.config import Config
 
-import ly_test_tools.environment.file_system as file_system
 
 logger = logging.getLogger(__name__)
-s3 = boto3.client(
-    's3',
-    config=Config(
-        region_name='us-west-2',
-        signature_version='v4',
-        retries={
-            'max_attempts': 10,
-            'mode': 'standard'})
-)
+s3_config = Config(
+    region_name='us-west-2',
+    signature_version='s3v4',
+    s3={"payload_signing_enabled": True},
+    retries={'max_attempts': 10, 'mode': 'standard'})
+s3 = boto3.resource('s3', config=s3_config)
 
 
 class BucketDoesNotExistError(Exception):
@@ -36,23 +33,8 @@ class BucketDoesNotExistError(Exception):
     pass
 
 
-class BucketExistsError(Exception):
-    """Raised when a bucket_name param references an s3 bucket that exists."""
-    pass
-
-
 class FileKeyExistsError(Exception):
     """Raised when a referenced file key already exists."""
-    pass
-
-
-class KeyDoesNotExistError(Exception):
-    """Raised when a referenced file key does not exist."""
-    pass
-
-
-class S3UploaderError(Exception):
-    """Raised when the s3 uploader fails to perform an expected function."""
     pass
 
 
@@ -62,48 +44,16 @@ def _bucket_exists_in_s3(bucket_name):
     :param bucket_name: Name of the S3 bucket that may or may not exist.
     :return: True if the bucket exists. False otherwise.
     """
-    bucket_exists = True
+    bucket_exists = False
 
     try:
-        s3.head_bucket(Bucket=bucket_name)
+        s3.meta.client.head_bucket(Bucket=bucket_name)
+        bucket_exists = True
     except botocore.exceptions.ClientError as err:
-        if err.response['Error']['Code'] == '404':
+        if err.response['Error']['Code'] in ['400', '404']:
             bucket_exists = False
 
     return bucket_exists
-
-
-def _key_exists_in_bucket(bucket_name, file_key):
-    """
-    Verifies that the given key does not already exist in the given S3 bucket.
-    :param bucket_name: Name of the S3 bucket that may or may not contain the file key.
-    :param file_key: Name of the file key in question.
-    :return: True if the key exists. False otherwise.
-    """
-    key_exists = True
-    obj_summary = s3.ObjectSummary(bucket_name, file_key)
-
-    # Attempting to access any member of ObjectSummary for a nonexistent key will throw an exception
-    # There is no built-in way to check key existence otherwise
-    try:
-        obj_summary.size
-    except botocore.exceptions.ClientError as err:
-        if err.response['Error']['Code'] == '404':
-            key_exists = False
-
-    return key_exists
-
-
-def create_bucket(bucket_name):
-    """
-    Given a bucket name, creates a new bucket using the current s3 client info from boto3.
-    :param bucket_name: name of the bucket to create
-    :return:
-    """
-    if not _bucket_exists_in_s3(bucket_name):
-        s3.meta.client.create_bucket(Bucket=bucket_name)
-    else:
-        raise BucketExistsError(f'Bucket "{bucket_name}" already exists, cannot create a bucket with that name.')
 
 
 def create_folder_in_bucket(bucket_name, folder_key):
@@ -111,72 +61,48 @@ def create_folder_in_bucket(bucket_name, folder_key):
     Given bucket name and folder key will create specified folder if it doesn't exist
     :param bucket_name: name of the bucket where folder will be created
     :param folder_key: key in s3 where folder will be created (i.e. specifying full path to folder in s3)
-    :return: True if folder was successfully created, False otherwise, will raise BucketNotExists exception if
-             bucket doesn't exist
+    :return: s3.Object class containing the newly created folder key as part of its 'key' attribute
+            or raises an BucketDoesNotExistError exception.
     """
     if not _bucket_exists_in_s3(bucket_name):
         raise BucketDoesNotExistError(f"Bucket {bucket_name} does not exist. Please supply a valid bucket_name param.")
-
-    if _key_exists_in_bucket(bucket_name, f'{folder_key}/'):
-        logger.error(f"Key {folder_key} already exists in bucket {bucket_name}")
-        return False
-
-    s3_bucket = s3.Bucket(bucket_name)
     logger.info(f"Creating {folder_key} folder in a {bucket_name} bucket")
-    s3_bucket.put_object(Bucket=bucket_name, Key=(folder_key + '/'))
-    return True
+
+    return s3.Object(bucket_name=bucket_name, key=f"{folder_key}")
 
 
-def upload_to_bucket(bucket_name, file_path, file_key=None, overwrite=False):
+def upload_to_bucket(bucket_name, file_path, file_key=None):
     """
     Uploads a given file to the given S3 bucket.
     :param bucket_name: Name of the S3 bucket where the file should be uploaded.
     :param file_path: Full Path to the target file on hard drive.
     :param file_key: Needed path to file on s3 (including file name).
-    :param overwrite: Overwrite the key if it exists.
     """
     if not _bucket_exists_in_s3(bucket_name):
         raise BucketDoesNotExistError(
             f'S3 Bucket: {bucket_name} does not exist, please create it first or '
             f'set the bucket_must_exist param to False.')
 
-    s3_bucket = s3.Bucket(bucket_name)
-
     if file_key is None:
         file_key = os.path.basename(file_path)
 
-    if not overwrite and _key_exists_in_bucket(bucket_name, file_key):
-        raise FileKeyExistsError(f"Key '{file_key}' already exists in S3 bucket {bucket_name}")
-
-    s3_bucket.upload_file(file_path, file_key)
-    logger.info(f"Uploading {file_key} to S3 bucket {bucket_name}")
+    s3_bucket = s3.Bucket(name=bucket_name)
+    s3_bucket.upload_file(Filename=file_path, Key=file_key)
+    logger.info(f"Uploading '{file_path}' to S3 bucket '{bucket_name}' in s3 file key: '{file_key}'")
 
 
-def download_from_bucket(bucket_name, file_key, destination_dir, file_name=None):
+def bulk_upload_to_bucket(bucket_name, list_of_file_paths, file_key=None):
     """
-    Download the given key from the given S3 bucket to the given destination. Logs an error if there is not enough \
-    space available for the download.
-    :param bucket_name: Name of the S3 bucket containing the desired file.
-    :param file_key: Name of the file stored in S3.
-    :param destination_dir: Directory where the file should be downloaded to.
-    :param file_name: The name of the file you want to save it as. Defaults to the file_key.
+    Uploads a list of given file paths to a given s3 bucket.
+    :param bucket_name: Name of the S3 bucket where the file should be uploaded.
+    :param list_of_file_paths: List containing full paths to each target file on the hard drive.
+    :param file_key: Needed path to file on s3 (including file name).
     """
-    _bucket_exists_in_s3(bucket_name)
-
-    if not _key_exists_in_bucket(bucket_name, file_key):
-        raise KeyDoesNotExistError(f"Key '{file_key}' does not exist in S3 bucket {bucket_name}")
-
-    obj_summary = s3.ObjectSummary(bucket_name, file_key)
-    required_space = obj_summary.size
-    disk_name = os.path.splitdrive(destination_dir)[0]
-
-    file_system.check_free_space(disk_name, required_space, "Insufficient space available for download:")
-
-    if not os.path.exists(destination_dir):
-        os.makedirs(destination_dir)
-
-    if file_name is None:
-        file_name = file_key
-    destination_path = os.path.join(destination_dir, file_name)
-    s3.Object(bucket_name, file_key).download_file(destination_path)
-    logger.info(f"Downloading {file_key} to {destination_path}")
+    for file_path in list_of_file_paths:
+        parsed_file_path, parsed_file_extension = os.path.splitext(file_path)
+        parsed_file_name = parsed_file_path.split('\\')[-1]  # The last index is the file name (including extension)
+        s3_file_upload = f"{parsed_file_name}{parsed_file_extension}"
+        upload_to_bucket(
+            bucket_name=bucket_name,
+            file_path=file_path,
+            file_key=f"{file_key}/{s3_file_upload}")
