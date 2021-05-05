@@ -10,7 +10,7 @@
  *
  */
 
-#include <Qt/ProjectManagerWindow.h>
+#include <ProjectManagerWindow.h>
 #include <ScreenFactory.h>
 
 #include <AzQtComponents/Components/StyleManager.h>
@@ -18,7 +18,7 @@
 
 #include <QDir>
 
-#include <Qt/ui_ProjectManagerWindow.h>
+#include <Source/ui_ProjectManagerWindow.h>
 
 namespace O3DE::ProjectManager
 {

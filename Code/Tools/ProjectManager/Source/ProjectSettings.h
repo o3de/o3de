@@ -11,14 +11,32 @@
  */
 #pragma once
 
-#include <ScreenDefs.h>
+#if !defined(Q_MOC_RUN)
+#include <ScreenWidget.h>
+#endif
 
-#include <Qt/ProjectManagerWindow.h>
-
-#include <QWidget>
-
+namespace Ui
+{
+    class ProjectSettingsClass;
+}
 
 namespace O3DE::ProjectManager
 {
-    QWidget* BuildScreen(ProjectManagerWindow* window, ProjectManagerScreen screen);
+    class ProjectSettings
+        : public ScreenWidget
+    {
+    public:
+        explicit ProjectSettings(ProjectManagerWindow* window);
+        ~ProjectSettings();
+
+    protected:
+        void ConnectSlotsAndSignals() override;
+
+    protected slots:
+        void HandleGemsButton();
+
+    private:
+        QScopedPointer<Ui::ProjectSettingsClass> m_ui;
+    };
+
 } // namespace O3DE::ProjectManager
