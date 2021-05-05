@@ -25,7 +25,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TEST_SUITE main
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/physics/TestSuite_Main.py
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
             Legacy::CryRenderNULL
@@ -39,7 +39,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TEST_SUITE periodic
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/physics/TestSuite_Periodic.py
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
             Legacy::CryRenderNULL
@@ -53,7 +53,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TEST_SUITE sandbox
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/physics/TestSuite_Sandbox.py
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
             Legacy::CryRenderNULL
@@ -101,7 +101,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TEST_SUITE main
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/WhiteBox/TestSuite_Active.py
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
             Legacy::CryRenderNULL
