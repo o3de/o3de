@@ -17,7 +17,6 @@ VALID_ARTIFACT_FILE_TYPES = ['.csv', '.dmp', '.json', '.log', '.xml', '.ppm', '.
 
 
 def _find_artifact_files(directory):
-    # type: (str) -> list
     """
     Returns a fully built list of artifact files paths.
     :param directory: a path to search with os.walk() for all sub-directories and files.

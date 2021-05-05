@@ -51,7 +51,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TEST_SUITE sandbox
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/physics/TestSuite_Sandbox.py
-        TIMEOUT 1500
+        TIMEOUT 3600
         RUNTIME_DEPENDENCIES
             Legacy::Editor
             AZ::AssetProcessor
