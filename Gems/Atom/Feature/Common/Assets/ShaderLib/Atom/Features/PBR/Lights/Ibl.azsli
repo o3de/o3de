@@ -33,7 +33,7 @@ void ApplyIblDiffuse(
 void ApplyIblSpecular(
     float3 position, 
     float3 normal, 
-    float3 specularF0, 
+    float3 specularResponse,
     float roughnessLinear, 
     float3 dirToCamera, 
     float2 brdf, 
@@ -44,7 +44,7 @@ void ApplyIblSpecular(
 
     // global
     outSpecular = SceneSrg::m_specularEnvMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(reflectDir), GetRoughnessMip(roughnessLinear)).rgb;
-    outSpecular *= (specularF0 * brdf.x + brdf.y);
+    outSpecular *= (specularResponse * brdf.x + brdf.y);
     
     // reflection probe
     if (ObjectSrg::m_reflectionProbeData.m_useReflectionProbe)
@@ -60,7 +60,7 @@ void ApplyIblSpecular(
         }
     
         float3 probeSpecular = ObjectSrg::m_reflectionProbeCubeMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(reflectDir), GetRoughnessMip(roughnessLinear)).rgb;
-        probeSpecular *= (specularF0 * brdf.x + brdf.y);
+        probeSpecular *= (specularResponse * brdf.x + brdf.y);
     
         // compute blend amount based on world position in the reflection probe volume
         float blendAmount = ComputeLerpBetweenInnerOuterAABBs(
@@ -92,7 +92,7 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
             ApplyIblSpecular(
                 surface.position, 
                 surface.normal, 
-                surface.specularF0, 
+                lightingData.specularResponse, 
                 surface.roughnessLinear, 
                 lightingData.dirToCamera, 
                 lightingData.brdf, 
@@ -112,7 +112,7 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
             ApplyIblSpecular(
                 surface.position, 
                 surface.normal, 
-                surface.specularF0, 
+                lightingData.specularResponse,
                 surface.roughnessLinear, 
                 lightingData.dirToCamera, 
                 lightingData.brdf, 
@@ -150,7 +150,6 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
                 }
             }
 
-            
             float iblExposureFactor = pow(2.0f, SceneSrg::m_iblExposure);
             lightingData.specularLighting += (iblSpecular * iblExposureFactor);
         }

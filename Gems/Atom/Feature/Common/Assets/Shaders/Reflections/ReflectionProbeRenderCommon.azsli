@@ -59,7 +59,8 @@ bool ComputeProbeSpecular(float2 screenCoords, float3 positionWS, float3 aabbMin
 
     // compute final specular amount
     float3 multiScatterCompensation = GetMultiScatterCompensation(specularF0, brdf, multiScatterCompensationEnabled);
-    specular = probeSpecular * multiScatterCompensation * (specularF0.xyz * brdf.x + brdf.y);
+    float3 specularResponse = FresnelSchlickWithRoughness(NdotV, specularF0, roughness);
+    specular = probeSpecular * multiScatterCompensation * (specularResponse * brdf.x + brdf.y);
 
     return true;
 }

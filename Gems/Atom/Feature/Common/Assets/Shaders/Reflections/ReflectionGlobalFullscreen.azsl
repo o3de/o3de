@@ -106,7 +106,8 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     NdotV = max(NdotV, 0.01f);    // [GFX TODO][ATOM-4466] This is a current band-aid for specular noise at grazing angles.
     float2 brdf = PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, GetBRDFTexCoords(roughness, NdotV)).rg;
     float3 multiScatterCompensation = GetMultiScatterCompensation(specularF0, brdf, multiScatterCompensationEnabled);
-    float3 specular = blendWeight * globalSpecular * multiScatterCompensation * (specularF0 * brdf.x + brdf.y);
+    float3 specularResponse = FresnelSchlickWithRoughness(NdotV, specularF0, roughness);
+    float3 specular = blendWeight * globalSpecular * multiScatterCompensation * (specularResponse * brdf.x + brdf.y);
 
     // apply exposure setting
     specular *= pow(2.0, SceneSrg::m_iblExposure);
