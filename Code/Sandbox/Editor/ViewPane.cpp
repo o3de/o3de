@@ -569,7 +569,7 @@ void CLayoutViewPane::ShowTitleMenu()
 
     // Create pop up menu.
     QMenu root(this);
-    if (EditorViewportWidget* vp = qobject_cast<EditorViewportWidget*>(m_viewport))
+    if (QtViewport* vp = qobject_cast<QtViewport*>(m_viewport))
     {
         vp->OnTitleMenu(&root);
     }
