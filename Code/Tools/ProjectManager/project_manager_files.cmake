@@ -12,6 +12,8 @@
 set(FILES
     project_manager.qrc
     source/main.cpp
+    source/GemCatalog/GemInfo.h
+    source/GemCatalog/GemInfo.cpp
     Qt/FirstTimeUse.h
     Qt/FirstTimeUse.cpp
     Qt/FirstTimeUse.ui
