@@ -119,9 +119,16 @@ namespace WhiteBox
         modelLodCreator.BeginMesh();
         modelLodCreator.SetMeshAabb(meshData.GetAabb());
 
-        // set the default material
-        auto materialAsset =
-            AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>(TexturedMaterialPath.data());
+        const AZ::Data::AssetId materialAssetId =
+            AZ::RPI::AssetUtils::GetAssetIdForProductPath(TexturedMaterialPath.data(), AZ::RPI::AssetUtils::TraceLevel::Warning);
+
+        auto materialAsset = AZ::Data::AssetManager::Instance().FindAsset(materialAssetId, AZ::Data::AssetLoadBehavior::Default);
+        if (!materialAsset)
+        {
+            // set the default material
+            materialAsset = AZ::RPI::AssetUtils::LoadAssetById<AZ::RPI::MaterialAsset>(materialAssetId);
+        }
+
         if (materialAsset)
         {
             modelLodCreator.SetMeshMaterialAsset(materialAsset);
