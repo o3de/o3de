@@ -10,9 +10,9 @@
 #
 
 # Set the user home directory
-set(O3DE_OVERRIDE_HOME_PATH "" CACHE PATH "Override the user home to this path")
-if(O3DE_OVERRIDE_HOME_PATH)
-    set(home_directory ${O3DE_OVERRIDE_HOME_PATH})
+set(O3DE_HOME_PATH "" CACHE PATH "Override the user home to this path")
+if(O3DE_HOME_PATH)
+    set(home_directory ${O3DE_HOME_PATH})
 elseif(CMAKE_HOST_WIN32)
     file(TO_CMAKE_PATH "$ENV{USERPROFILE}" home_directory)
 else()
