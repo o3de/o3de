@@ -1473,13 +1473,14 @@ void OutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin(AZ::EntityId parentI
     emit EnableSelectionUpdates(false);
     auto parentIndex = GetIndexFromEntity(parentId);
     auto childIndex = GetIndexFromEntity(childId);
-    beginRemoveRows(parentIndex, childIndex.row(), childIndex.row());
+    beginResetModel();
 }
 
 void OutlinerListModel::OnEntityInfoUpdatedRemoveChildEnd(AZ::EntityId parentId, AZ::EntityId childId)
 {
     (void)childId;
     AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+
     endRemoveRows();
 
     //must refresh partial lock/visibility of parents
