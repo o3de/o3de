@@ -157,7 +157,7 @@ function(ly_generate_target_config_file NAME)
             string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${NAME}>\"")
         elseif(target_type STREQUAL SHARED_LIBRARY)
             string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${NAME}>\"")
-            string(APPEND target_file_contents "ly_add_dependencies(${NAME} \"\${LY_ROOT_FOLDER}/${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${NAME}>\")\n")
+            string(APPEND target_file_contents "ly_add_target_files(TARGET ${NAME} FILES \"\${LY_ROOT_FOLDER}/${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${NAME}>\")\n")
         else() # STATIC_LIBRARY, OBJECT_LIBRARY, INTERFACE_LIBRARY
             string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${NAME}>\"")
         endif()
