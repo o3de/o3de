@@ -39,7 +39,7 @@ namespace
 
         template <typename T, AZStd::size_t Len>
         auto SetupAssetAndConvert(const AZStd::array<T, Len>& data, AZ::u32 dimensions,
-            ImageProcessing::EPixelFormat format, AZStd::size_t bytesPerPixel, const GradientSignal::ImageSettings& settings)
+            ImageProcessingAtom::EPixelFormat format, AZStd::size_t bytesPerPixel, const GradientSignal::ImageSettings& settings)
         {
             GradientSignal::ImageAsset asset;
 
@@ -121,7 +121,7 @@ namespace
         auto inputData = Detail::GenerateInput<AZ::u8, imageDimensions, numChannels>(scaling);
 
         auto asset = Detail::SetupAssetAndConvert(inputData, imageDimensions,
-            ImageProcessing::EPixelFormat::ePixelFormat_R8, bytesPerPixel,
+            ImageProcessingAtom::EPixelFormat::ePixelFormat_R8, bytesPerPixel,
             settings);
 
         AZStd::array<AZ::u8, outputSize> expectedValues;
@@ -165,7 +165,7 @@ namespace
         auto inputData = Detail::GenerateInput<float, imageDimensions, numChannels>();
 
         auto asset = Detail::SetupAssetAndConvert(inputData, imageDimensions,
-            ImageProcessing::EPixelFormat::ePixelFormat_R32G32B32A32F, bytesPerPixel,
+            ImageProcessingAtom::EPixelFormat::ePixelFormat_R32G32B32A32F, bytesPerPixel,
             settings);
 
         AZStd::array<float, outputSize> expectedValues;
@@ -215,7 +215,7 @@ namespace
         auto inputData = Detail::GenerateInput<AZ::u8, imageDimensions, numChannels>();
 
         auto asset = Detail::SetupAssetAndConvert(inputData, imageDimensions,
-            ImageProcessing::EPixelFormat::ePixelFormat_R8G8, bytesPerPixel,
+            ImageProcessingAtom::EPixelFormat::ePixelFormat_R8G8, bytesPerPixel,
             settings);
 
         // max(N, N + 1) = N + 1
@@ -263,7 +263,7 @@ namespace
         auto inputData = Detail::GenerateInput<float, imageDimensions, numChannels>();
 
         auto asset = Detail::SetupAssetAndConvert(inputData, imageDimensions,
-            ImageProcessing::EPixelFormat::ePixelFormat_R32F, bytesPerPixel,
+            ImageProcessingAtom::EPixelFormat::ePixelFormat_R32F, bytesPerPixel,
             settings);
 
         // 0 - 8 range
@@ -310,7 +310,7 @@ namespace
         auto inputData = Detail::GenerateInput<AZ::u16, imageDimensions, numChannels>(scaling);
 
         auto asset = Detail::SetupAssetAndConvert(inputData, imageDimensions,
-            ImageProcessing::EPixelFormat::ePixelFormat_R16G16B16A16, bytesPerPixel,
+            ImageProcessingAtom::EPixelFormat::ePixelFormat_R16G16B16A16, bytesPerPixel,
             settings);
 
         // Scaled = N * 100
@@ -344,7 +344,7 @@ namespace
         settings.m_autoScale = true;
 
         asset = Detail::SetupAssetAndConvert(expectedValues, imageDimensions,
-            ImageProcessing::EPixelFormat::ePixelFormat_R32, sizeof(AZ::u32),
+            ImageProcessingAtom::EPixelFormat::ePixelFormat_R32, sizeof(AZ::u32),
             settings);
 
         // Similar process as above.
@@ -392,7 +392,7 @@ namespace
         auto inputData = Detail::GenerateInput<float, imageDimensions, numChannels>(-100.0f);
 
         auto asset = Detail::SetupAssetAndConvert(inputData, imageDimensions,
-            ImageProcessing::EPixelFormat::ePixelFormat_R32F, bytesPerPixel,
+            ImageProcessingAtom::EPixelFormat::ePixelFormat_R32F, bytesPerPixel,
             settings);
 
         // min-max equal to 1000 -> all values get scaled 
@@ -433,14 +433,14 @@ namespace
         auto inputData = Detail::GenerateInput<float, imageDimensions, numChannels>();
 
         auto asset = Detail::SetupAssetAndConvert(inputData, imageDimensions,
-            ImageProcessing::EPixelFormat::ePixelFormat_R32F, bytesPerPixel,
+            ImageProcessingAtom::EPixelFormat::ePixelFormat_R32F, bytesPerPixel,
             settings);
 
         EXPECT_TRUE(asset->m_imageData.empty());
     }
 
     template<typename TType, typename TImageDimension, AZStd::size_t outputSize>
-    void testCommon(GradientSignal::ExportFormat outFormat, ImageProcessing::EPixelFormat pFormat, const AZStd::array<TType, outputSize>& goldenValues)
+    void testCommon(GradientSignal::ExportFormat outFormat, ImageProcessingAtom::EPixelFormat pFormat, const AZStd::array<TType, outputSize>& goldenValues)
     {
         using namespace GradientSignal;
 
@@ -521,10 +521,10 @@ namespace
             1.0f
         };
 
-        testCommon<AZ::u8, decltype(imageDimensions), outputSize>(ExportFormat::U8, ImageProcessing::EPixelFormat::ePixelFormat_R8, goldenValues1);
-        testCommon<AZ::u16, decltype(imageDimensions), outputSize>(ExportFormat::U16, ImageProcessing::EPixelFormat::ePixelFormat_R16, goldenValues2);
-        testCommon<AZ::u32, decltype(imageDimensions), outputSize>(ExportFormat::U32, ImageProcessing::EPixelFormat::ePixelFormat_R32, goldenValues3);
-        testCommon<float, decltype(imageDimensions), outputSize>(ExportFormat::F32, ImageProcessing::EPixelFormat::ePixelFormat_R32F, goldenValues4);
+        testCommon<AZ::u8, decltype(imageDimensions), outputSize>(ExportFormat::U8, ImageProcessingAtom::EPixelFormat::ePixelFormat_R8, goldenValues1);
+        testCommon<AZ::u16, decltype(imageDimensions), outputSize>(ExportFormat::U16, ImageProcessingAtom::EPixelFormat::ePixelFormat_R16, goldenValues2);
+        testCommon<AZ::u32, decltype(imageDimensions), outputSize>(ExportFormat::U32, ImageProcessingAtom::EPixelFormat::ePixelFormat_R32, goldenValues3);
+        testCommon<float, decltype(imageDimensions), outputSize>(ExportFormat::F32, ImageProcessingAtom::EPixelFormat::ePixelFormat_R32F, goldenValues4);
     }
 
     TEST_F(ImageAssetTest, GradientImageAssetTransformsSuccessful)
@@ -551,7 +551,7 @@ namespace
         auto inputData = Detail::GenerateInput<AZ::u16, imageDimensions, numChannels>();
 
         auto asset = Detail::SetupAssetAndConvert(inputData, imageDimensions,
-            ImageProcessing::EPixelFormat::ePixelFormat_R16G16B16A16, bytesPerPixel,
+            ImageProcessingAtom::EPixelFormat::ePixelFormat_R16G16B16A16, bytesPerPixel,
             settings);
 
         // 0, 1, 2, ... -> (RGB / 3 + A) = 2N + 4
@@ -573,7 +573,7 @@ namespace
         settings.m_useB = false;
 
         asset = Detail::SetupAssetAndConvert(inputData, imageDimensions,
-            ImageProcessing::EPixelFormat::ePixelFormat_R16G16B16A16, bytesPerPixel,
+            ImageProcessingAtom::EPixelFormat::ePixelFormat_R16G16B16A16, bytesPerPixel,
             settings);
 
         // Assertion: (N + N + 1) / 2 - (N + 3) = -5 / 2
@@ -637,7 +637,7 @@ namespace
         auto inputData = Detail::GenerateInput<float, imageDimensions, numChannels>();
 
         auto asset = Detail::SetupAssetAndConvert(inputData, imageDimensions,
-            ImageProcessing::EPixelFormat::ePixelFormat_R32G32B32A32F, bytesPerPixel,
+            ImageProcessingAtom::EPixelFormat::ePixelFormat_R32G32B32A32F, bytesPerPixel,
             settings);
 
         // 0 - 400,  (red * 256 + green + blue / 256) - 32768

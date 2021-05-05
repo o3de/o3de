@@ -467,21 +467,136 @@ namespace UnitTest
         EXPECT_THAT(matrix.Multiply3x3(axisDirection), IsClose(forwardDirection));
     }
 
-    TEST(MATH_Matrix3x4, MultiplyByMatrix3x4)
+    TEST(MATH_Matrix3x4, TestMatrixMultiplication)
     {
-        const AZ::Matrix3x4 matrix1 = AZ::Matrix3x4::CreateFromValue(1.2f);
-        const AZ::Matrix3x4 matrix2 = AZ::Matrix3x4::CreateDiagonal(AZ::Vector3(1.3f, 1.5f, 0.4f));
-        const AZ::Matrix3x4 matrix3 = AZ::Matrix3x4::CreateFromQuaternionAndTranslation(
-            AZ::Quaternion(0.42f, 0.46f, -0.66f, 0.42f), AZ::Vector3(2.8f, -3.7f, 1.6f));
-        const AZ::Matrix3x4 matrix4 = AZ::Matrix3x4::CreateRotationX(-0.7f) * AZ::Matrix3x4::CreateScale(AZ::Vector3(0.6f, 1.3f, 0.7f));
-        AZ::Matrix3x4 matrix5 = matrix1;
-        matrix5 *= matrix4;
-        const AZ::Vector3 vector(1.9f, 2.3f, 0.2f);
-        EXPECT_TRUE((matrix1 * (matrix2 * matrix3)).IsClose((matrix1 * matrix2) * matrix3));
-        EXPECT_THAT((matrix3 * matrix4) * vector, IsClose(matrix3 * (matrix4 * vector)));
-        EXPECT_TRUE((matrix2 * AZ::Matrix3x4::Identity()).IsClose(matrix2));
-        EXPECT_TRUE((matrix3 * AZ::Matrix3x4::Identity()).IsClose(AZ::Matrix3x4::Identity() * matrix3));
-        EXPECT_TRUE(matrix5.IsClose(matrix1 * matrix4));
+        AZ::Matrix3x4 m1;
+        m1.SetRow(0, 1.0f, 2.0f, 3.0f, 4.0f);
+        m1.SetRow(1, 5.0f, 6.0f, 7.0f, 8.0f);
+        m1.SetRow(2, 9.0f, 10.0f, 11.0f, 12.0f);
+        AZ::Matrix3x4 m2;
+        m2.SetRow(0, 7.0f, 8.0f, 9.0f, 10.0f);
+        m2.SetRow(1, 11.0f, 12.0f, 13.0f, 14.0f);
+        m2.SetRow(2, 15.0f, 16.0f, 17.0f, 18.0f);
+        AZ::Matrix3x4 m3 = m1 * m2;
+        EXPECT_THAT(m3.GetRow(0), IsClose(AZ::Vector4(74.0f, 80.0f, 86.0f, 96.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(AZ::Vector4(206.0f, 224.0f, 242.0f, 268.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(AZ::Vector4(338.0f, 368.0f, 398.0f, 440.0f)));
+        AZ::Matrix3x4 m4 = m1;
+        m4 *= m2;
+        EXPECT_THAT(m4.GetRow(0), IsClose(AZ::Vector4(74.0f, 80.0f, 86.0f, 96.0f)));
+        EXPECT_THAT(m4.GetRow(1), IsClose(AZ::Vector4(206.0f, 224.0f, 242.0f, 268.0f)));
+        EXPECT_THAT(m4.GetRow(2), IsClose(AZ::Vector4(338.0f, 368.0f, 398.0f, 440.0f)));
+    }
+
+    TEST(MATH_Matrix3x4, TestSum)
+    {
+        AZ::Matrix3x4 m1;
+        m1.SetRow(0, 1.0f, 2.0f, 3.0f, 4.0f);
+        m1.SetRow(1, 5.0f, 6.0f, 7.0f, 8.0f);
+        m1.SetRow(2, 9.0f, 10.0f, 11.0f, 12.0f);
+        AZ::Matrix3x4 m2;
+        m2.SetRow(0, 7.0f, 8.0f, 9.0f, 10.0f);
+        m2.SetRow(1, 11.0f, 12.0f, 13.0f, 14.0f);
+        m2.SetRow(2, 15.0f, 16.0f, 17.0f, 18.0f);
+
+        AZ::Matrix3x4 m3 = m1 + m2;
+        EXPECT_THAT(m3.GetRow(0), IsClose(AZ::Vector4(8.0f, 10.0f, 12.0f, 14.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(AZ::Vector4(16.0f, 18.0f, 20.0f, 22.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(AZ::Vector4(24.0f, 26.0f, 28.0f, 30.0f)));
+
+        m3 = m1;
+        m3 += m2;
+        EXPECT_THAT(m3.GetRow(0), IsClose(AZ::Vector4(8.0f, 10.0f, 12.0f, 14.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(AZ::Vector4(16.0f, 18.0f, 20.0f, 22.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(AZ::Vector4(24.0f, 26.0f, 28.0f, 30.0f)));
+    }
+
+    TEST(MATH_Matrix3x4, TestDifference)
+    {
+        AZ::Matrix3x4 m1;
+        m1.SetRow(0, 1.0f, 2.0f, 3.0f, 4.0f);
+        m1.SetRow(1, 5.0f, 6.0f, 7.0f, 8.0f);
+        m1.SetRow(2, 9.0f, 10.0f, 11.0f, 12.0f);
+        AZ::Matrix3x4 m2;
+        m2.SetRow(0, 7.0f, 8.0f, 9.0f, 10.0f);
+        m2.SetRow(1, 11.0f, 12.0f, 13.0f, 14.0f);
+        m2.SetRow(2, 15.0f, 16.0f, 17.0f, 18.0f);
+
+        AZ::Matrix3x4 m3 = m1 - m2;
+        EXPECT_THAT(m3.GetRow(0), IsClose(AZ::Vector4(-6.0f, -6.0f, -6.0f, -6.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(AZ::Vector4(-6.0f, -6.0f, -6.0f, -6.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(AZ::Vector4(-6.0f, -6.0f, -6.0f, -6.0f)));
+        m3 = m1;
+        m3 -= m2;
+        EXPECT_THAT(m3.GetRow(0), IsClose(AZ::Vector4(-6.0f, -6.0f, -6.0f, -6.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(AZ::Vector4(-6.0f, -6.0f, -6.0f, -6.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(AZ::Vector4(-6.0f, -6.0f, -6.0f, -6.0f)));
+    }
+
+    TEST(MATH_Matrix3x4, TestScalarMultiplication)
+    {
+        AZ::Matrix3x4 m1;
+        m1.SetRow(0, 1.0f, 2.0f, 3.0f, 4.0f);
+        m1.SetRow(1, 5.0f, 6.0f, 7.0f, 8.0f);
+        m1.SetRow(2, 9.0f, 10.0f, 11.0f, 12.0f);
+        AZ::Matrix3x4 m2;
+        m2.SetRow(0, 7.0f, 8.0f, 9.0f, 10.0f);
+        m2.SetRow(1, 11.0f, 12.0f, 13.0f, 14.0f);
+        m2.SetRow(2, 15.0f, 16.0f, 17.0f, 18.0f);
+
+        AZ::Matrix3x4 m3 = m1 * 2.0f;
+        EXPECT_THAT(m3.GetRow(0), IsClose(AZ::Vector4(2.0f, 4.0f, 6.0f, 8.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(AZ::Vector4(10.0f, 12.0f, 14.0f, 16.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(AZ::Vector4(18.0f, 20.0f, 22.0f, 24.0f)));
+        m3 = m1;
+        m3 *= 2.0f;
+        EXPECT_THAT(m3.GetRow(0), IsClose(AZ::Vector4(2.0f, 4.0f, 6.0f, 8.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(AZ::Vector4(10.0f, 12.0f, 14.0f, 16.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(AZ::Vector4(18.0f, 20.0f, 22.0f, 24.0f)));
+        m3 = 2.0f * m1;
+        EXPECT_THAT(m3.GetRow(0), IsClose(AZ::Vector4(2.0f, 4.0f, 6.0f, 8.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(AZ::Vector4(10.0f, 12.0f, 14.0f, 16.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(AZ::Vector4(18.0f, 20.0f, 22.0f, 24.0f)));
+    }
+
+    TEST(MATH_Matrix3x4, TestScalarDivision)
+    {
+        AZ::Matrix3x4 m1;
+        m1.SetRow(0, 1.0f, 2.0f, 3.0f, 4.0f);
+        m1.SetRow(1, 5.0f, 6.0f, 7.0f, 8.0f);
+        m1.SetRow(2, 9.0f, 10.0f, 11.0f, 12.0f);
+        AZ::Matrix3x4 m2;
+        m2.SetRow(0, 7.0f, 8.0f, 9.0f, 10.0f);
+        m2.SetRow(1, 11.0f, 12.0f, 13.0f, 14.0f);
+        m2.SetRow(2, 15.0f, 16.0f, 17.0f, 18.0f);
+
+        AZ::Matrix3x4 m3 = m1 / 0.5f;
+        EXPECT_THAT(m3.GetRow(0), IsClose(AZ::Vector4(2.0f, 4.0f, 6.0f, 8.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(AZ::Vector4(10.0f, 12.0f, 14.0f, 16.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(AZ::Vector4(18.0f, 20.0f, 22.0f, 24.0f)));
+        m3 = m1;
+        m3 /= 0.5f;
+        EXPECT_THAT(m3.GetRow(0), IsClose(AZ::Vector4(2.0f, 4.0f, 6.0f, 8.0f)));
+        EXPECT_THAT(m3.GetRow(1), IsClose(AZ::Vector4(10.0f, 12.0f, 14.0f, 16.0f)));
+        EXPECT_THAT(m3.GetRow(2), IsClose(AZ::Vector4(18.0f, 20.0f, 22.0f, 24.0f)));
+    }
+
+    TEST(MATH_Matrix3x4, TestNegation)
+    {
+        AZ::Matrix3x4 m1;
+        m1.SetRow(0, 1.0f, 2.0f, 3.0f, 4.0f);
+        m1.SetRow(1, 5.0f, 6.0f, 7.0f, 8.0f);
+        m1.SetRow(2, 9.0f, 10.0f, 11.0f, 12.0f);
+        EXPECT_THAT(-(-m1), IsClose(m1));
+        EXPECT_THAT(-AZ::Matrix3x4::CreateZero(), IsClose(AZ::Matrix3x4::CreateZero()));
+
+        AZ::Matrix3x4 m2 = -m1;
+        EXPECT_THAT(m2.GetRow(0), IsClose(AZ::Vector4(-1.0f, -2.0f, -3.0f, -4.0f)));
+        EXPECT_THAT(m2.GetRow(1), IsClose(AZ::Vector4(-5.0f, -6.0f, -7.0f, -8.0f)));
+        EXPECT_THAT(m2.GetRow(2), IsClose(AZ::Vector4(-9.0f, -10.0f, -11.0f, -12.0f)));
+
+        AZ::Matrix3x4 m3 = m1 + (-m1);
+        EXPECT_THAT(m3, IsClose(AZ::Matrix3x4::CreateZero()));
     }
 
     TEST(MATH_Matrix3x4, MultiplyByVector3)
@@ -650,6 +765,34 @@ namespace UnitTest
         EXPECT_THAT(scaledMatrix.RetrieveScale(), IsClose(scale));
         scaledMatrix.ExtractScale();
         EXPECT_THAT(scaledMatrix.RetrieveScale(), IsClose(AZ::Vector3::CreateOne()));
+    }
+
+    TEST_P(Matrix3x4ScaleFixture, ScaleSq)
+    {
+        const AZ::Matrix3x4 orthogonalMatrix = GetParam();
+        EXPECT_THAT(orthogonalMatrix.RetrieveScaleSq(), IsClose(AZ::Vector3::CreateOne()));
+        AZ::Matrix3x4 unscaledMatrix = orthogonalMatrix;
+        unscaledMatrix.ExtractScale();
+        EXPECT_THAT(unscaledMatrix.RetrieveScaleSq(), IsClose(AZ::Vector3::CreateOne()));
+        const AZ::Vector3 scale(2.8f, 0.7f, 1.3f);
+        AZ::Matrix3x4 scaledMatrix = orthogonalMatrix;
+        scaledMatrix.MultiplyByScale(scale);
+        EXPECT_THAT(scaledMatrix.RetrieveScaleSq(), IsClose(scale * scale));
+        EXPECT_THAT(scaledMatrix.RetrieveScaleSq(), IsClose(scaledMatrix.RetrieveScale() * scaledMatrix.RetrieveScale()));
+        scaledMatrix.ExtractScale();
+        EXPECT_THAT(scaledMatrix.RetrieveScaleSq(), IsClose(AZ::Vector3::CreateOne()));
+    }
+
+    TEST_P(Matrix3x4ScaleFixture, GetReciprocalScaled)
+    {
+        const AZ::Matrix3x4 orthogonalMatrix = GetParam();
+        EXPECT_THAT(orthogonalMatrix.GetReciprocalScaled(), IsClose(orthogonalMatrix));
+        const AZ::Vector3 scale(2.8f, 0.7f, 1.3f);
+        AZ::Matrix3x4 scaledMatrix = orthogonalMatrix;
+        scaledMatrix.MultiplyByScale(scale);
+        AZ::Matrix3x4 reciprocalScaledMatrix = orthogonalMatrix;
+        reciprocalScaledMatrix.MultiplyByScale(scale.GetReciprocal());
+        EXPECT_THAT(scaledMatrix.GetReciprocalScaled(), IsClose(reciprocalScaledMatrix));
     }
 
     INSTANTIATE_TEST_CASE_P(MATH_Matrix3x4, Matrix3x4ScaleFixture, ::testing::ValuesIn(MathTestData::OrthogonalMatrix3x4s));
