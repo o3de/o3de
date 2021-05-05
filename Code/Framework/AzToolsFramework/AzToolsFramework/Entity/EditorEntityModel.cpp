@@ -1207,7 +1207,7 @@ namespace AzToolsFramework
         if (childItr != m_childIndexCache.end())
         {
             // Take the last entry and move it into the removed spot instead of deleting the entry and having to move all
-                // following entries one step down.
+            // following entries one step down.
             AZ::EntityId backEntity = m_children.back();
             m_children[childItr->second] = backEntity;
             // Update cached index for the moved id to the new index.
