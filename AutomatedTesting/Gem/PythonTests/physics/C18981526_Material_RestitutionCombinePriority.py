@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C18981526
 # Test Case Title : Verify when two objects with different materials collide, the restitution combine priority works
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/18981526
+
 
 
 # fmt: off

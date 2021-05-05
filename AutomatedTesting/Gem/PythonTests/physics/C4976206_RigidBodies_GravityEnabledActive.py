@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C4976206
 # Test Case Title : VErify that when Gravity enables is checked, the object falls down due to gravity [sic]
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4976206
+
 
 # fmt: off
 class Tests:

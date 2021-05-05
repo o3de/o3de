@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test Case ID    : C15308221
 # Test Case Title : Verify that material library and slots are always in sync and work consistently through the different places of usage
-# Test Case URL   : https://testrail.agscollab.com/index.php?/cases/view/15308221
+
 
 
 # fmt: off
