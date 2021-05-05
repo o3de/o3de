@@ -306,19 +306,19 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','C4976245_PhysXCollider_CollisionLayerTest.setreg', 'AutomatedTesting/Registry')
+    @fm.file_override('Registry/physxsystemconfiguration.setreg','RegistryOverrides/C4976245_PhysXCollider_CollisionLayerTest.setreg', 'AutomatedTesting')
     def test_C4976245_PhysXCollider_CollisionLayerTest(self, request, workspace, editor, launcher_platform):
         from . import C4976245_PhysXCollider_CollisionLayerTest as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','C4976244_Collider_SameGroupSameLayerCollision.setreg', 'AutomatedTesting/Registry')
+    @fm.file_override('Registry/physxsystemconfiguration.setreg','RegistryOverrides/C4976244_Collider_SameGroupSameLayerCollision.setreg', 'AutomatedTesting')
     def test_C4976244_Collider_SameGroupSameLayerCollision(self, request, workspace, editor, launcher_platform):
         from . import C4976244_Collider_SameGroupSameLayerCollision as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    @fm.file_override('physxdefaultsceneconfiguration.setreg','C14195074_ScriptCanvas_PostUpdateEvent.setreg', 'AutomatedTesting/Registry')
+    @fm.file_override('Registry/physxdefaultsceneconfiguration.setreg','RegistryOverrides/C14195074_ScriptCanvas_PostUpdateEvent.setreg', 'AutomatedTesting')
     def test_C14195074_ScriptCanvas_PostUpdateEvent(self, request, workspace, editor, launcher_platform):
         from . import C14195074_ScriptCanvas_PostUpdateEvent as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -329,7 +329,7 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    @fm.file_override('physxdefaultsceneconfiguration.setreg','C14902097_ScriptCanvas_PreUpdateEvent.setreg', 'AutomatedTesting/Registry')
+    @fm.file_override('Registry/physxdefaultsceneconfiguration.setreg','RegistryOverrides/C14902097_ScriptCanvas_PreUpdateEvent.setreg', 'AutomatedTesting')
     def test_C14902097_ScriptCanvas_PreUpdateEvent(self, request, workspace, editor, launcher_platform):
         from . import C14902097_ScriptCanvas_PreUpdateEvent as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -363,7 +363,7 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','C4976227_Collider_NewGroup.setreg', 'AutomatedTesting/Registry')
+    @fm.file_override('Registry/physxsystemconfiguration.setreg','RegistryOverrides/C4976227_Collider_NewGroup.setreg', 'AutomatedTesting')
     def test_C4976227_Collider_NewGroup(self, request, workspace, editor, launcher_platform):
         from . import C4976227_Collider_NewGroup as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -448,7 +448,7 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','C3510644_Collider_CollisionGroups.setreg', 'AutomatedTesting/Registry')
+    @fm.file_override('Registry/physxsystemconfiguration.setreg','RegistryOverrides/C3510644_Collider_CollisionGroups.setreg', 'AutomatedTesting')
     def test_C3510644_Collider_CollisionGroups(self, request, workspace, editor, launcher_platform):
         from . import C3510644_Collider_CollisionGroups as test_module
         self._run_test(request, workspace, editor, test_module)
