@@ -360,7 +360,7 @@ namespace EMotionFX
             ApplyMorphSetup();
             UpdateSkinningMatrices();
             UpdateAttachments();
-       }
+        }
 
         // update the bounds when needed
         if (GetBoundsUpdateEnabled() && mBoundsUpdateType != BOUNDS_MESH_BASED)
@@ -418,7 +418,8 @@ namespace EMotionFX
         }
 
         // Update the bounds when we are set to use mesh based bounds.
-        if (GetBoundsUpdateEnabled() == BOUNDS_MESH_BASED)
+        if (GetBoundsUpdateEnabled() &&
+            GetBoundsUpdateType() == BOUNDS_MESH_BASED)
         {
             mBoundsUpdatePassedTime += timePassedInSeconds;
             if (mBoundsUpdatePassedTime >= mBoundsUpdateFrequency)
@@ -449,7 +450,8 @@ namespace EMotionFX
         }
 
         // Update the bounds when we are set to use mesh based bounds.
-        if (GetBoundsUpdateEnabled() == BOUNDS_MESH_BASED)
+        if (GetBoundsUpdateEnabled() &&
+            GetBoundsUpdateType() == BOUNDS_MESH_BASED)
         {
             mBoundsUpdatePassedTime += timePassedInSeconds;
             if (mBoundsUpdatePassedTime >= mBoundsUpdateFrequency)

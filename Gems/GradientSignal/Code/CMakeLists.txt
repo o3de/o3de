@@ -24,7 +24,6 @@ ly_add_target(
             Legacy::CryCommon
             Gem::LmbrCentral
             Gem::SurfaceData
-            Gem::ImageProcessing.Headers
             Gem::ImageProcessingAtom.Headers
 )
 
@@ -42,7 +41,6 @@ ly_add_target(
         PRIVATE
             Gem::GradientSignal.Static
         PUBLIC
-            Gem::ImageProcessing.Headers # ImageProcessing/PixelFormats.h is part of a header in Includes
             Gem::ImageProcessingAtom.Headers # Atom/ImageProcessing/PixelFormats.h is part of a header in Includes
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral

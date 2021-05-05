@@ -26,7 +26,7 @@
 #include "smartptr.h"
 #include <IFlares.h> // <> required for Interfuscator
 #include "VertexFormats.h"
-#include <RenderDll/Common/Shaders/Vertex.h>
+#include <Vertex.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/containers/map.h>
 
@@ -52,7 +52,6 @@ struct SShaderItem;
 class ITexture;
 struct IMaterial;
 struct SParam;
-class CMaterial;
 struct SShaderSerializeContext;
 struct IAnimNode;
 struct SSkinningData;

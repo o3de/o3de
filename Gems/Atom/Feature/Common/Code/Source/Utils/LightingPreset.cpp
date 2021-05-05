@@ -30,7 +30,7 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<ExposureControlConfig>()
-                    ->Version(3)
+                    ->Version(4)
                     ->Field("compensateValue", &ExposureControlConfig::m_manualCompensationValue)
                     ->Field("exposureControlType", &ExposureControlConfig::m_exposureControlType)
                     ->Field("autoExposureMin", &ExposureControlConfig::m_autoExposureMin)

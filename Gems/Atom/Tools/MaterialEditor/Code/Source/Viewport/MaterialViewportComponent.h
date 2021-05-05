@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include <ACES/Aces.h>
+
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 
@@ -85,6 +87,8 @@ namespace MaterialEditor
         bool GetAlternateSkyboxEnabled() const override;
         void SetFieldOfView(float fieldOfView) override;
         float GetFieldOfView() const override;
+        void SetDisplayMapperOperationType(AZ::Render::DisplayMapperOperationType operationType) override;
+        AZ::Render::DisplayMapperOperationType GetDisplayMapperOperationType() const override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -111,5 +115,6 @@ namespace MaterialEditor
         bool m_gridEnabled = true;
         bool m_alternateSkyboxEnabled = false;
         float m_fieldOfView = 90.0f;
+        AZ::Render::DisplayMapperOperationType m_displayMapperOperationType = AZ::Render::DisplayMapperOperationType::Aces;
     };
 }

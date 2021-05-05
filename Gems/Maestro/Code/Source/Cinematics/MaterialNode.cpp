@@ -17,7 +17,6 @@
 #include "AnimTrack.h"
 
 #include <ISystem.h>
-#include <I3DEngine.h>
 #include <IRenderer.h>
 #include <IShader.h>
 
@@ -393,35 +392,9 @@ void CAnimMaterialNode::AnimateNamedParameter(SAnimContext& ec, IRenderShaderRes
     }
 }
 
-_smart_ptr<IMaterial> CAnimMaterialNode::GetMaterialByName(const char* pName)
+_smart_ptr<IMaterial> CAnimMaterialNode::GetMaterialByName(const char*)
 {
-    const char* pCh = strstr(pName, ".[");
-
-    if (pCh)
-    {
-        char MatName[256];
-        cry_strcpy(MatName, pName, (size_t)(pCh - pName));
-        _smart_ptr<IMaterial> pMat = gEnv->p3DEngine->GetMaterialManager()->FindMaterial(MatName);
-        if (!pMat)
-        {
-            return NULL;
-        }
-        pCh += 2;
-        if (!(*pCh))
-        {
-            return NULL;
-        }
-        int index = atoi(pCh) - 1;
-        if (index < 0 || index >= pMat->GetSubMtlCount())
-        {
-            return NULL;
-        }
-        return pMat->GetSubMtl(index);
-    }
-    else
-    {
-        return gEnv->p3DEngine->GetMaterialManager()->FindMaterial(GetName());
-    }
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////

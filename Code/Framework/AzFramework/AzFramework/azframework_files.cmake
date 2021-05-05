@@ -14,7 +14,6 @@ set(FILES
     AzFrameworkModule.h
     AzFrameworkModule.cpp
     API/ApplicationAPI.h
-    API/AtomActiveInterface.h
     Application/Application.cpp
     Application/Application.h
     Archive/Archive.cpp
@@ -194,10 +193,11 @@ set(FILES
     Logging/MissingAssetLogger.h
     Logging/MissingAssetNotificationBus.h
     Scene/Scene.h
+    Scene/Scene.inl
     Scene/Scene.cpp
-    Scene/SceneSystemBus.h
     Scene/SceneSystemComponent.h
     Scene/SceneSystemComponent.cpp
+    Scene/SceneSystemInterface.h
     Script/ScriptComponent.h
     Script/ScriptComponent.cpp
     Script/ScriptDebugAgentBus.h

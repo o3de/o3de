@@ -400,8 +400,6 @@ void    CObjectManager::DeleteObject(CBaseObject* obj)
         CUndo::Record(new CUndoBaseObjectDelete(obj));
     }
 
-    OnObjectModified(obj, true, false);
-
     AABB objAAB;
     obj->GetBoundBox(objAAB);
     GetIEditor()->GetGameEngine()->OnAreaModified(objAAB);
@@ -1314,7 +1312,7 @@ void CObjectManager::ForceUpdateVisibleObjectCache(DisplayContext& dc)
     FindDisplayableObjects(dc, false);
 }
 
-void CObjectManager::FindDisplayableObjects(DisplayContext& dc, bool bDisplay)
+void CObjectManager::FindDisplayableObjects(DisplayContext& dc, [[maybe_unused]] bool bDisplay)
 {
     // if the new IVisibilitySystem is being used, do not run this logic
     if (ed_visibility_use)
@@ -1341,8 +1339,6 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, bool bDisplay)
     pDispayedViewObjects->ClearObjects();
     pDispayedViewObjects->Reserve(m_visibleObjects.size());
 
-    const bool newViewportInteractionModelEnabled = GetIEditor()->IsNewViewportInteractionModelEnabled();
-
     if (dc.flags & DISPLAY_2D)
     {
         int numVis = m_visibleObjects.size();
@@ -1354,14 +1350,6 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, bool bDisplay)
             if (dc.box.IsIntersectBox(bbox))
             {
                 pDispayedViewObjects->AddObject(obj);
-
-                if (bDisplay && dc.settings->IsDisplayHelpers() && (gSettings.viewports.nShowFrozenHelpers || !obj->IsFrozen()))
-                {
-                    if (!newViewportInteractionModelEnabled)
-                    {
-                        obj->Display(dc);
-                    }
-                }
             }
         }
     }
@@ -1399,14 +1387,6 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, bool bDisplay)
                 if (visRatio > m_maxObjectViewDistRatio || (dc.flags & DISPLAY_SELECTION_HELPERS) || obj->IsSelected())
                 {
                     pDispayedViewObjects->AddObject(obj);
-
-                    if (bDisplay && dc.settings->IsDisplayHelpers() && (gSettings.viewports.nShowFrozenHelpers || !obj->IsFrozen()) && !obj->CheckFlags(OBJFLAG_HIDE_HELPERS))
-                    {
-                        if (!newViewportInteractionModelEnabled)
-                        {
-                            obj->Display(dc);
-                        }
-                    }
                 }
             }
         }
@@ -2356,10 +2336,7 @@ void CObjectManager::UpdateVisibilityList()
         // in the view (frustum) to the visible objects list so we can draw feedback for
         // entities being hidden in the viewport when selected in the  entity outliner
         // (EditorVisibleEntityDataCache must be populated even if entities are 'hidden')
-        if (visible || GetIEditor()->IsNewViewportInteractionModelEnabled())
-        {
-            m_visibleObjects.push_back(obj);
-        }
+        m_visibleObjects.push_back(obj);
     }
 
     m_isUpdateVisibilityList = false;
@@ -2496,17 +2473,6 @@ void CObjectManager::GatherUsedResources(CUsedResources& resources)
 IGizmoManager* CObjectManager::GetGizmoManager()
 {
     return m_gizmoManager;
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::OnObjectModified(CBaseObject* pObject, [[maybe_unused]] bool bDelete, [[maybe_unused]] bool boModifiedTransformOnly)
-{
-    if (IRenderNode* pRenderNode = pObject->GetEngineNode())
-    {
-        GetIEditor()->Get3DEngine()->OnObjectModified(pRenderNode, pRenderNode->GetRndFlags());
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

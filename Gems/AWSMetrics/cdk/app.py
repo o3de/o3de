@@ -17,11 +17,11 @@ from aws_metrics.aws_metrics_construct import AWSMetrics
 import os
 
 """Configuration"""
-REGION = os.environ.get('O3D_AWS_DEPLOY_REGION', os.environ['CDK_DEFAULT_REGION'])
-ACCOUNT = os.environ.get('O3D_AWS_DEPLOY_ACCOUNT', os.environ['CDK_DEFAULT_ACCOUNT'])
+REGION = os.environ.get('O3DE_AWS_DEPLOY_REGION', os.environ['CDK_DEFAULT_REGION'])
+ACCOUNT = os.environ.get('O3DE_AWS_DEPLOY_ACCOUNT', os.environ['CDK_DEFAULT_ACCOUNT'])
 
 # Set the common prefix to group stacks in a project together. Defaults to LY-AWS<UUID>.
-PROJECT_NAME = os.environ.get('O3D_AWS_PROJECT_NAME', f'AWS-PROJECT').upper()
+PROJECT_NAME = os.environ.get('O3DE_AWS_PROJECT_NAME', f'O3DE-AWS-PROJECT').upper()
 
 # The name of this feature
 FEATURE_NAME = 'AWSMetrics'

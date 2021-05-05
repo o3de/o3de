@@ -326,9 +326,6 @@ public:
     // Gathers all resources used by all objects.
     void GatherUsedResources(CUsedResources& resources);
 
-    // Called when object gets modified.
-    void OnObjectModified(CBaseObject* pObject, bool bDelete, bool boModifiedTransformOnly);
-
     virtual bool IsLightClass(CBaseObject* pObject);
 
     virtual void FindAndRenameProperty2(const char* property2Name, const QString& oldValue, const QString& newValue);

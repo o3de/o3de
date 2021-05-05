@@ -294,7 +294,7 @@ namespace AZ
 
                 // probe classification
                 {
-                    RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetClassificationImageAttachmentId(), diffuseProbeGrid->GetClassificationImage());
+                    [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetClassificationImageAttachmentId(), diffuseProbeGrid->GetClassificationImage());
                     AZ_Assert(result == RHI::ResultCode::Success, "Failed to import probeClassificationImage");
 
                     RHI::ImageScopeAttachmentDescriptor desc;

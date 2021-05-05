@@ -27,7 +27,7 @@
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/Scene/Scene.h>
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
 

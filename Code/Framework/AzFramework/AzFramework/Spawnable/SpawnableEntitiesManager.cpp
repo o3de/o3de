@@ -114,6 +114,16 @@ namespace AzFramework
         }
     }
 
+    void SpawnableEntitiesManager::AddOnSpawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>>::Handler& handler)
+    {
+        handler.Connect(m_onSpawnedEvent);
+    }
+
+    void SpawnableEntitiesManager::AddOnDespawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>>::Handler& handler)
+    {
+        handler.Connect(m_onDespawnedEvent);
+    }
+
     auto SpawnableEntitiesManager::ProcessQueue() -> CommandQueueStatus
     {
         AZStd::queue<Requests> pendingRequestQueue;
@@ -223,6 +233,8 @@ namespace AzFramework
                     ticket.m_spawnedEntities.begin() + spawnedEntitiesCount, ticket.m_spawnedEntities.end()));
             }
 
+            m_onSpawnedEvent.Signal(ticket.m_spawnable);
+
             ticket.m_currentTicketId++;
             return true;
         }
@@ -257,6 +269,8 @@ namespace AzFramework
                     ticket.m_spawnedEntities.begin() + spawnedEntitiesCount, ticket.m_spawnedEntities.end()));
             }
 
+            m_onSpawnedEvent.Signal(ticket.m_spawnable);
+
             ticket.m_currentTicketId++;
             return true;
         }
@@ -289,6 +303,8 @@ namespace AzFramework
                 request.m_completionCallback(*request.m_ticket);
             }
 
+            m_onDespawnedEvent.Signal(ticket.m_spawnable);
+
             ticket.m_currentTicketId++;
             return true;
         }
@@ -315,6 +331,8 @@ namespace AzFramework
                         &GameEntityContextRequestBus::Events::DestroyGameEntityAndDescendants, entity->GetId());
                 }
             }
+
+            m_onDespawnedEvent.Signal(ticket.m_spawnable);
             
             // Rebuild the list of entities.
             ticket.m_spawnedEntities.clear();
@@ -350,6 +368,9 @@ namespace AzFramework
             }
 
             ticket.m_currentTicketId++;
+
+            m_onSpawnedEvent.Signal(ticket.m_spawnable);
+
             return true;
         }
         else
