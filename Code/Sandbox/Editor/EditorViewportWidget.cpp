@@ -1305,20 +1305,20 @@ namespace AZ::ViewportHelpers
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::OnTitleMenu(QMenu* menu)
 {
-    const int nWireframe = gEnv->pConsole->GetCVar("r_wireframe")->GetIVal();
+    const int nWireframe = 0;// gEnv->pConsole->GetCVar("r_wireframe")->GetIVal();
     QAction* action = menu->addAction(tr("Wireframe"));
     connect(action, &QAction::triggered, action, []()
     {
-        ICVar* piVar(gEnv->pConsole->GetCVar("r_wireframe"));
-        int nRenderMode = piVar->GetIVal();
-        if (nRenderMode != R_WIREFRAME_MODE)
-        {
-            piVar->Set(R_WIREFRAME_MODE);
-        }
-        else
-        {
-            piVar->Set(R_SOLID_MODE);
-        }
+//         ICVar* piVar(gEnv->pConsole->GetCVar("r_wireframe"));
+//         int nRenderMode = piVar->GetIVal();
+//         if (nRenderMode != R_WIREFRAME_MODE)
+//         {
+//             piVar->Set(R_WIREFRAME_MODE);
+//         }
+//         else
+//         {
+//             piVar->Set(R_SOLID_MODE);
+//         }
     });
     action->setCheckable(true);
     action->setChecked(nWireframe == R_WIREFRAME_MODE);
