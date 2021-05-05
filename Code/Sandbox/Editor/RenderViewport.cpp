@@ -55,7 +55,6 @@
 
 
 // CryCommon
-#include <CryCommon/I3DEngine.h>
 #include <CryCommon/HMDBus.h>
 
 // AzFramework
@@ -88,6 +87,10 @@
 #include <LmbrCentral/Rendering/EditorCameraCorrectionBus.h>
 
 #include <QtGui/private/qhighdpiscaling_p.h>
+
+#include <IEntityRenderState.h>
+#include <IPhysics.h>
+#include <IStatObj.h>
 
 AZ_CVAR(
     bool, ed_visibility_use, true, nullptr, AZ::ConsoleFunctorFlags::Null,
@@ -249,10 +252,6 @@ CRenderViewport::~CRenderViewport()
 //////////////////////////////////////////////////////////////////////////
 int CRenderViewport::OnCreate()
 {
-    m_renderer = GetIEditor()->GetRenderer();
-    m_engine = GetIEditor()->Get3DEngine();
-    assert(m_engine);
-
     CreateRenderContext();
 
     return 0;
@@ -1033,7 +1032,7 @@ void CRenderViewport::Update()
         return;
     }
 
-    if (!m_renderer || !m_engine || m_rcClient.isEmpty() || GetIEditor()->IsInMatEditMode())
+    if (!m_renderer || m_rcClient.isEmpty() || GetIEditor()->IsInMatEditMode())
     {
         return;
     }
@@ -1156,9 +1155,6 @@ void CRenderViewport::Update()
 
         m_renderer->SetClearColor(Vec3(0.4f, 0.4f, 0.4f));
 
-        // 3D engine stats
-        GetIEditor()->GetSystem()->RenderBegin();
-
         InitDisplayContext();
 
         OnRender();
@@ -1183,8 +1179,6 @@ void CRenderViewport::Update()
                 (*itr)->OnPostRender();
             }
         }
-
-        GetIEditor()->GetSystem()->RenderEnd(m_bRenderStats);
 
         gEnv->pSystem->SetViewCamera(CurCamera);
     }
@@ -1421,8 +1415,6 @@ void CRenderViewport::OnRender()
         // This is necessary so that automated editor tests using the null renderer to test systems like dynamic vegetation
         // are still able to manipulate the current logical camera position, even if nothing is rendered.
         GetIEditor()->GetSystem()->SetViewCamera(m_Camera);
-        GetIEditor()->GetRenderer()->SetCamera(gEnv->pSystem->GetViewCamera());
-        m_engine->RenderWorld(0, SRenderingPassInfo::CreateGeneralPassRenderingInfo(m_Camera), __FUNCTION__);
         return;
     }
 
@@ -1495,7 +1487,7 @@ void CRenderViewport::OnRender()
             }
         }
 
-        m_Camera.SetFrustum(w, h, fov, fNearZ, gEnv->p3DEngine->GetMaxViewDistance());
+        m_Camera.SetFrustum(w, h, fov, fNearZ);
     }
 
     GetIEditor()->GetSystem()->SetViewCamera(m_Camera);
@@ -1556,11 +1548,6 @@ void CRenderViewport::OnRender()
         m_renderer->ClearTargetsLater(FRT_CLEAR_COLOR, viewportBackgroundColor);
         DrawBackground();
     }
-
-    if (!m_renderer->IsStereoEnabled())
-    {
-        GetIEditor()->GetSystem()->RenderStatistics();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1590,7 +1577,6 @@ void CRenderViewport::InitDisplayContext()
     displayContext.settings = GetIEditor()->GetDisplaySettings();
     displayContext.view = this;
     displayContext.renderer = m_renderer;
-    displayContext.engine = m_engine;
     displayContext.box.min = Vec3(-100000.0f, -100000.0f, -100000.0f);
     displayContext.box.max = Vec3(100000.0f, 100000.0f, 100000.0f);
     displayContext.camera = &m_Camera;
@@ -2467,7 +2453,6 @@ void CRenderViewport::ToggleCameraObject()
 {
     if (m_viewSourceType == ViewSourceType::SequenceCamera)
     {
-        gEnv->p3DEngine->GetPostEffectBaseGroup()->SetParam("Dof_Active", 0.0f);
         ResetToViewSourceType(ViewSourceType::LegacyCamera);
     }
     else
@@ -2789,11 +2774,6 @@ void CRenderViewport::SetViewTM(const Matrix34& viewTM, bool bMoveOnly)
 //////////////////////////////////////////////////////////////////////////
 void CRenderViewport::RenderSelectedRegion()
 {
-    if (!m_engine)
-    {
-        return;
-    }
-
     AABB box;
     GetIEditor()->GetSelectedRegion(box);
     if (box.IsEmpty())
@@ -3385,19 +3365,9 @@ bool CRenderViewport::AdjustObjectPosition(const ray_hit& hit, Vec3& outNormal, 
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CRenderViewport::RayRenderMeshIntersection(IRenderMesh* pRenderMesh, const Vec3& vInPos, const Vec3& vInDir, Vec3& vOutPos, Vec3& vOutNormal) const
+bool CRenderViewport::RayRenderMeshIntersection(IRenderMesh*, const Vec3&, const Vec3&, Vec3&, Vec3&) const
 {
-    SRayHitInfo hitInfo;
-    hitInfo.bUseCache = false;
-    hitInfo.bInFirstHit = false;
-    hitInfo.inRay.origin = vInPos;
-    hitInfo.inRay.direction = vInDir.GetNormalized();
-    hitInfo.inReferencePoint = vInPos;
-    hitInfo.fMaxHitDistance = 0;
-    bool bRes = GetIEditor()->Get3DEngine()->RenderMeshRayIntersection(pRenderMesh, hitInfo, nullptr);
-    vOutPos = hitInfo.vHitPos;
-    vOutNormal = hitInfo.vHitNormal;
-    return bRes;
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3682,7 +3652,6 @@ void CRenderViewport::SetDefaultCamera()
         return;
     }
     ResetToViewSourceType(ViewSourceType::None);
-    gEnv->p3DEngine->GetPostEffectBaseGroup()->SetParam("Dof_Active", 0.0f);
     GetViewManager()->SetCameraObjectId(m_cameraObjectId);
     SetName(m_defaultViewName);
     SetViewTM(m_defaultViewTM);
@@ -3861,23 +3830,8 @@ void CRenderViewport::SetViewAndMovementLockFromEntityPerspective(const AZ::Enti
 
 bool CRenderViewport::GetActiveCameraPosition(AZ::Vector3& cameraPos)
 {
-    if (m_pPrimaryViewport == this)
-    {
-        if (GetIEditor()->IsInGameMode())
-        {
-            const Vec3 camPos = m_engine->GetRenderingCamera().GetPosition();
-            cameraPos = LYVec3ToAZVec3(camPos);
-        }
-        else
-        {
-            // Use viewTM, which is synced with the camera and guaranteed to be up-to-date
-            cameraPos = LYVec3ToAZVec3(m_viewTM.GetTranslation());
-        }
-
-        return true;
-    }
-
-    return false;
+    cameraPos = LYVec3ToAZVec3(m_viewTM.GetTranslation());
+    return true;
 }
 
 bool CRenderViewport::GetActiveCameraState(AzFramework::CameraState& cameraState)
@@ -3886,9 +3840,7 @@ bool CRenderViewport::GetActiveCameraState(AzFramework::CameraState& cameraState
     {
         if (GetIEditor()->IsInGameMode())
         {
-            const auto& renderingCamera = m_engine->GetRenderingCamera();
-            cameraState = CameraStateFromCCamera(
-                renderingCamera, renderingCamera.GetFov(), m_rcClient.width(), m_rcClient.height());
+            return false;
         }
         else
         {

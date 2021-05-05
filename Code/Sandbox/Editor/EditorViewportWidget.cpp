@@ -54,7 +54,6 @@
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 
 // CryCommon
-#include <CryCommon/I3DEngine.h>
 #include <CryCommon/HMDBus.h>
 
 // AzFramework
@@ -96,6 +95,10 @@
 #include <AzCore/Math/MatrixUtils.h>
 
 #include <QtGui/private/qhighdpiscaling_p.h>
+
+#include <IEntityRenderState.h>
+#include <IPhysics.h>
+#include <IStatObj.h>
 
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null,
@@ -249,11 +252,6 @@ void EditorViewportWidget::resizeEvent(QResizeEvent* event)
     m_rcClient.setBottomRight(WidgetToViewport(m_rcClient.bottomRight()));
 
     gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_RESIZE, width(), height());
-
-    if (gEnv->pRenderer)
-    {
-        gEnv->pRenderer->EF_DisableTemporalEffects();
-    }
 
     // We queue the window resize event because the render overlay may be hidden.
     // If the render overlay is not visible, the native window that is backing it will
@@ -520,9 +518,6 @@ void EditorViewportWidget::Update()
     // Render
     {
         // TODO: Move out this logic to a controller and refactor to work with Atom
-        // m_renderer->SetClearColor(Vec3(0.4f, 0.4f, 0.4f));
-        // 3D engine stats
-        GetIEditor()->GetSystem()->RenderBegin();
 
         OnRender();
 
@@ -546,8 +541,6 @@ void EditorViewportWidget::Update()
                 (*itr)->OnPostRender();
             }
         }
-
-        GetIEditor()->GetSystem()->RenderEnd(m_bRenderStats);
 
         gEnv->pSystem->SetViewCamera(CurCamera);
     }
@@ -1556,7 +1549,6 @@ void EditorViewportWidget::ToggleCameraObject()
 {
     if (m_viewSourceType == ViewSourceType::SequenceCamera)
     {
-        gEnv->p3DEngine->GetPostEffectBaseGroup()->SetParam("Dof_Active", 0.0f);
         ResetToViewSourceType(ViewSourceType::LegacyCamera);
     }
     else
@@ -2136,17 +2128,23 @@ bool EditorViewportWidget::AdjustObjectPosition(const ray_hit& hit, Vec3& outNor
 //////////////////////////////////////////////////////////////////////////
 bool EditorViewportWidget::RayRenderMeshIntersection(IRenderMesh* pRenderMesh, const Vec3& vInPos, const Vec3& vInDir, Vec3& vOutPos, Vec3& vOutNormal) const
 {
-    SRayHitInfo hitInfo;
+    AZ_UNUSED(pRenderMesh);
+    AZ_UNUSED(vInPos);
+    AZ_UNUSED(vInDir);
+    AZ_UNUSED(vOutPos);
+    AZ_UNUSED(vOutNormal);
+    return false;
+    /*SRayHitInfo hitInfo;
     hitInfo.bUseCache = false;
     hitInfo.bInFirstHit = false;
     hitInfo.inRay.origin = vInPos;
     hitInfo.inRay.direction = vInDir.GetNormalized();
     hitInfo.inReferencePoint = vInPos;
     hitInfo.fMaxHitDistance = 0;
-    bool bRes = GetIEditor()->Get3DEngine()->RenderMeshRayIntersection(pRenderMesh, hitInfo, nullptr);
+    bool bRes = ???->RenderMeshRayIntersection(pRenderMesh, hitInfo, nullptr);
     vOutPos = hitInfo.vHitPos;
     vOutNormal = hitInfo.vHitNormal;
-    return bRes;
+    return bRes;*/
 }
 
 void EditorViewportWidget::UnProjectFromScreen(float sx, float sy, float sz, float* px, float* py, float* pz) const
@@ -2417,10 +2415,6 @@ void EditorViewportWidget::SetDefaultCamera()
         return;
     }
     ResetToViewSourceType(ViewSourceType::None);
-    if (gEnv->p3DEngine)
-    {
-        gEnv->p3DEngine->GetPostEffectBaseGroup()->SetParam("Dof_Active", 0.0f);
-    }
     GetViewManager()->SetCameraObjectId(m_cameraObjectId);
     SetName(m_defaultViewName);
     SetViewTM(m_defaultViewTM);

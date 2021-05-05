@@ -230,11 +230,9 @@ public:
     void OnFileEditEditorini();
     void OnPreferences();
     void OnReloadTextures();
-    void OnReloadGeometry();
     void OnRedo();
     void OnUpdateRedo(QAction* action);
     void OnUpdateUndo(QAction* action);
-    void OnGenerateCgfThumbnails();
     void OnSwitchPhysics();
     void OnSwitchPhysicsUpdate(QAction* action);
     void OnSyncPlayer();
@@ -419,7 +417,6 @@ private:
     void OnFileSavelevelresources();
     void OnClearRegistryData();
     void OnValidatelevel();
-    void OnValidateObjectPositions();
     void OnToolsPreferences();
     void OnGraphicsSettings();
     void OnSwitchToDefaultCamera();
@@ -434,7 +431,6 @@ private:
     void OnOpenTrackView();
     void OnOpenAudioControlsEditor();
     void OnOpenUICanvasEditor();
-    void OnTimeOfDay();
     void OnChangeGameSpec(UINT nID);
     void SetGameSpecCheck(ESystemConfigSpec spec, ESystemConfigPlatform platform, int &nCheck, bool &enable);
     void OnUpdateGameSpec(QAction* action);

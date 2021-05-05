@@ -18,7 +18,6 @@
 #include "VisRegTest.h"
 
 #include "ISystem.h"
-#include "I3DEngine.h"
 #include "IRenderer.h"
 #include "IConsole.h"
 #include "ITimer.h"

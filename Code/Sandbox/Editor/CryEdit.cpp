@@ -78,7 +78,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 
 // CryCommon
-#include <CryCommon/I3DEngine.h>
 #include <CryCommon/ITimer.h>
 #include <CryCommon/IPhysics.h>
 #include <CryCommon/ILevelSystem.h>
@@ -99,7 +98,6 @@ AZ_POP_DISABLE_WARNING
 #include "GridSettingsDialog.h"
 #include "LayoutConfigDialog.h"
 #include "ViewManager.h"
-#include "ModelViewport.h"
 #include "FileTypeUtils.h"
 #include "PluginManager.h"
 
@@ -109,14 +107,12 @@ AZ_POP_DISABLE_WARNING
 #include "GameEngine.h"
 
 #include "StartupTraceHandler.h"
-#include "ThumbnailGenerator.h"
 #include "ToolsConfigPage.h"
 #include "Objects/SelectionGroup.h"
 #include "Include/IObjectManager.h"
 #include "WaitProgress.h"
 
 #include "ToolBox.h"
-#include "Geometry/EdMesh.h"
 #include "LevelInfo.h"
 #include "EditorPreferencesDialog.h"
 #include "GraphicsSettingsDialog.h"
@@ -392,7 +388,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_FILE_RESAVESLICES, OnFileResaveSlices)
     ON_COMMAND(ID_FILE_EDITEDITORINI, OnFileEditEditorini)
     ON_COMMAND(ID_PREFERENCES, OnPreferences)
-    ON_COMMAND(ID_RELOAD_GEOMETRY, OnReloadGeometry)
     ON_COMMAND(ID_REDO, OnRedo)
     ON_COMMAND(ID_TOOLBAR_WIDGET_REDO, OnRedo)
     ON_COMMAND(ID_RELOAD_TEXTURES, OnReloadTextures)
@@ -401,7 +396,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_FILE_NEW_SLICE, OnCreateSlice)
     ON_COMMAND(ID_FILE_OPEN_SLICE, OnOpenSlice)
 #endif
-    ON_COMMAND(ID_RESOURCES_GENERATECGFTHUMBNAILS, OnGenerateCgfThumbnails)
     ON_COMMAND(ID_SWITCH_PHYSICS, OnSwitchPhysics)
     ON_COMMAND(ID_GAME_SYNCPLAYER, OnSyncPlayer)
     ON_COMMAND(ID_RESOURCES_REDUCEWORKINGSET, OnResourcesReduceworkingset)
@@ -457,7 +451,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_FILE_SAVELEVELRESOURCES, OnFileSavelevelresources)
     ON_COMMAND(ID_CLEAR_REGISTRY, OnClearRegistryData)
     ON_COMMAND(ID_VALIDATELEVEL, OnValidatelevel)
-    ON_COMMAND(ID_TOOLS_VALIDATEOBJECTPOSITIONS, OnValidateObjectPositions)
     ON_COMMAND(ID_TOOLS_PREFERENCES, OnToolsPreferences)
     ON_COMMAND(ID_GRAPHICS_SETTINGS, OnGraphicsSettings)
     ON_COMMAND(ID_SWITCHCAMERA_DEFAULTCAMERA, OnSwitchToDefaultCamera)
@@ -471,8 +464,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_DISPLAY_SHOWHELPERS, OnShowHelpers)
     ON_COMMAND(ID_OPEN_TRACKVIEW, OnOpenTrackView)
     ON_COMMAND(ID_OPEN_UICANVASEDITOR, OnOpenUICanvasEditor)
-    ON_COMMAND(ID_TERRAIN_TIMEOFDAY, OnTimeOfDay)
-    ON_COMMAND(ID_TERRAIN_TIMEOFDAYBUTTON, OnTimeOfDay)
 
     ON_COMMAND_RANGE(ID_GAME_PC_ENABLELOWSPEC, ID_GAME_PC_ENABLEVERYHIGHSPEC, OnChangeGameSpec)
 
@@ -1912,11 +1903,6 @@ void CCryEditApp::LoadFile(QString fileName)
     {
         return;
     }
-    CViewport* vp = GetIEditor()->GetViewManager()->GetView(0);
-    if (CModelViewport* mvp = viewport_cast<CModelViewport*>(vp))
-    {
-        mvp->LoadObject(fileName, 1);
-    }
 
     LoadTagLocations();
 
@@ -2953,43 +2939,6 @@ void CCryEditApp::OnReloadTextures()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnReloadGeometry()
-{
-    CErrorsRecorder errRecorder(GetIEditor());
-    CWaitProgress wait("Reloading static geometry");
-
-    CLogFile::WriteLine("Reloading Static objects geometries.");
-    CEdMesh::ReloadAllGeometries();
-
-    GetIEditor()->GetObjectManager()->SendEvent(EVENT_UNLOAD_GEOM);
-
-    GetIEditor()->GetObjectManager()->SendEvent(EVENT_RELOAD_GEOM);
-    GetIEditor()->Notify(eNotify_OnReloadTrackView);
-
-    // Rephysicalize viewport meshes
-    for (int i = 0; i < GetIEditor()->GetViewManager()->GetViewCount(); ++i)
-    {
-        CViewport* vp = GetIEditor()->GetViewManager()->GetView(i);
-        if (CModelViewport* mvp = viewport_cast<CModelViewport*>(vp))
-        {
-            mvp->RePhysicalize();
-        }
-    }
-
-    IRenderNode** plist = new IRenderNode*[
-            gEnv->p3DEngine->GetObjectsByType(eERType_StaticMeshRenderComponent,0)
-    ];
-    for (const EERType type : AZStd::array<EERType, 3>{eERType_Dummy_10, eERType_StaticMeshRenderComponent})
-    {
-        for (int j = gEnv->p3DEngine->GetObjectsByType(type, plist) - 1; j >= 0; j--)
-        {
-            plist[j]->Physicalize(true);
-        }
-    }
-    delete[] plist;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnUndo()
 {
     //GetIEditor()->GetObjectManager()->UndoLastOp();
@@ -3153,15 +3102,6 @@ void CCryEditApp::OnSyncPlayerUpdate(QAction* action)
     action->setChecked(!GetIEditor()->GetGameEngine()->IsSyncPlayerPosition());
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnGenerateCgfThumbnails()
-{
-    qApp->setOverrideCursor(Qt::BusyCursor);
-    CThumbnailGenerator gen;
-    gen.GenerateForDirectory("Objects\\");
-    qApp->restoreOverrideCursor();
-}
-
 void CCryEditApp::OnUpdateNonGameMode(QAction* action)
 {
     action->setEnabled(!GetIEditor()->IsInGameMode());
@@ -3263,7 +3203,6 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
         GetIEditor()->GetGameEngine()->LoadLevel(GetIEditor()->GetGameEngine()->GetMissionName(), true, true);
         GetIEditor()->GetSystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_PRECACHE_START, 0, 0);
 
-        GetIEditor()->GetGameEngine()->ReloadEnvironment();
         GetIEditor()->GetSystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_PRECACHE_END, 0, 0);
     }
 
@@ -3883,119 +3822,6 @@ void CCryEditApp::OnValidatelevel()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnValidateObjectPositions()
-{
-    IObjectManager* objMan = GetIEditor()->GetObjectManager();
-
-    if (!objMan)
-    {
-        return;
-    }
-
-    CErrorReport errorReport;
-    errorReport.SetCurrentFile("");
-    errorReport.SetImmediateMode(false);
-
-    int objCount = objMan->GetObjectCount();
-    AABB bbox1;
-    AABB bbox2;
-    int bugNo = 0;
-    QString statTxt("");
-
-    std::vector<CBaseObject*> objects;
-    objMan->GetObjects(objects);
-
-    std::vector<CBaseObject*> foundObjects;
-
-    std::vector<GUID> objIDs;
-
-    for (int i1 = 0; i1 < objCount; ++i1)
-    {
-        CBaseObject* pObj1 = objects[i1];
-
-        if (!pObj1)
-        {
-            continue;
-        }
-
-        // Object must have geometry
-        if (!pObj1->GetGeometry())
-        {
-            continue;
-        }
-
-        pObj1->GetBoundBox(bbox1);
-
-        // Check if object has other objects inside its bbox
-        foundObjects.clear();
-        objMan->FindObjectsInAABB(bbox1, foundObjects);
-
-        for (int i2 = 0; i2 < foundObjects.size(); ++i2)
-        {
-            CBaseObject* pObj2 = objects[i2];
-            if (!pObj2)
-            {
-                continue;
-            }
-
-            if (pObj2->GetId() == pObj1->GetId())
-            {
-                continue;
-            }
-
-            if (pObj2->GetParent())
-            {
-                continue;
-            }
-
-            if (stl::find(objIDs, pObj2->GetId()))
-            {
-                continue;
-            }
-
-            if (!pObj2->GetGeometry())
-            {
-                continue;
-            }
-
-            pObj2->GetBoundBox(bbox2);
-
-            if (!bbox1.IsContainPoint(bbox2.max))
-            {
-                continue;
-            }
-
-            if (!bbox1.IsContainPoint(bbox2.min))
-            {
-                continue;
-            }
-
-            objIDs.push_back(pObj2->GetId());
-
-            CErrorRecord error;
-            error.pObject = pObj2;
-            error.count = bugNo;
-            error.error = tr("%1 inside %2 object").arg(pObj2->GetName(), pObj1->GetName());
-            error.description = "Object left inside other object";
-            errorReport.ReportError(error);
-            ++bugNo;
-        }
-
-        statTxt = tr("%1/%2 [Reported Objects: %3]").arg(i1).arg(objCount).arg(bugNo);
-        GetIEditor()->SetStatusText(statTxt);
-    }
-
-    if (errorReport.GetErrorCount() == 0)
-    {
-        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("No Errors Found"));
-    }
-    else
-    {
-        errorReport.Display();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnToolsPreferences()
 {
     EditorPreferencesDialog dlg(MainWindow::instance());
@@ -4141,12 +3967,6 @@ void CCryEditApp::OnOpenAudioControlsEditor()
 void CCryEditApp::OnOpenUICanvasEditor()
 {
     QtViewPaneManager::instance()->OpenPane(LyViewPane::UiEditor);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnTimeOfDay()
-{
-    GetIEditor()->OpenView("Time Of Day");
 }
 
 //////////////////////////////////////////////////////////////////////////

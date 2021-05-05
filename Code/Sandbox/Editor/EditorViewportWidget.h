@@ -481,10 +481,6 @@ protected:
     OBB m_GroundOBB;
     Vec3 m_GroundOBBPos;
 
-    //-------------------------------------------
-    // Render options.
-    bool m_bRenderStats = true;
-
     // Index of camera objects.
     mutable GUID m_cameraObjectId;
     mutable AZ::EntityId m_viewEntityId;
