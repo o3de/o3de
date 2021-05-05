@@ -102,32 +102,27 @@ def C18243589_Joints_BallSoftLimitsConstrained():
     normalizedStartPos = JointsHelper.getRelativeVector(lead.position, follower.position)
     normalizedStartPos = normalizedStartPos.GetNormalizedSafe()
     #the targeted angle to reach between the initial vector and the current follower-lead vector
-    targetAngleDeg = 45
-    targetAngle = math.radians(targetAngleDeg)
-
-    maxTotalWaitTime = 2.0 #seconds
-    waitTime = 0.0
-    waitStep = 0.2
+    TARGET_ANGLE_DEG = 45
+    targetAngle = math.radians(TARGET_ANGLE_DEG)
     angleAchieved = 0.0
-    while waitTime < maxTotalWaitTime:
-        waitTime = waitTime + waitStep
-        general.idle_wait(waitStep) # wait for lead and follower to move
 
+    def checkAngleMet():
         #calculate the current follower-lead vector
         normalVec = JointsHelper.getRelativeVector(lead.position, follower.position)
         normalVec = normalVec.GetNormalizedSafe()
         #dot product + acos to get the angle
         angleAchieved = math.acos(normalizedStartPos.Dot(normalVec))
         #is it above target?
-        if angleAchieved > targetAngle:
-            followerMovedAboveJoint = True
-            break
+        return angleAchieved > targetAngle
+
+    MAX_WAIT_TIME = 2.0 #seconds
+    followerMovedAboveJoint = helper.wait_for_condition(checkAngleMet, MAX_WAIT_TIME)
 
     # 5) Check to see if lead and follower behaved as expected
-    Report.info_vector3(lead.position, "lead position after {:.2f} second:".format(waitTime))
-    Report.info_vector3(follower.position, "follower position after {:.2f} second:".format(waitTime))
+    Report.info_vector3(lead.position, "lead position:")
+    Report.info_vector3(follower.position, "follower position:")
     angleAchievedDeg = math.degrees(angleAchieved)
-    Report.info("Angle achieved {:.2f} Target {:.2f}".format(angleAchievedDeg, targetAngleDeg))
+    Report.info(f"Angle achieved {angleAchievedDeg:.2f} Target {TARGET_ANGLE_DEG:.2f}")
 
     leadPositionDelta = lead.position.Subtract(leadInitialPosition)
     leadRemainedStill = JointsHelper.vector3SmallerThanScalar(leadPositionDelta, FLOAT_EPSILON)
