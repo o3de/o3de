@@ -22,7 +22,7 @@ namespace O3DE::ProjectManager
     {
         m_ui->setupUi(this);
 
-        Setup();
+        ConnectSlotsAndSignals();
     }
 
     GemCatalog::~GemCatalog()

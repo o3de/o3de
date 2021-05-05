@@ -21,8 +21,6 @@ namespace O3DE::ProjectManager
         , m_ui(new Ui::EngineSettingsClass())
     {
         m_ui->setupUi(this);
-
-        Setup();
     }
 
     EngineSettings::~EngineSettings()

@@ -30,10 +30,6 @@ namespace O3DE::ProjectManager
         }
 
     protected:
-        virtual void Setup()
-        {
-            ConnectSlotsAndSignals();
-        }
         virtual void ConnectSlotsAndSignals() = 0;
 
         ProjectManagerWindow* m_projectManagerWindow;
