@@ -163,9 +163,15 @@ namespace AZ
         
         enum Flags
         {
-            None = 0, //! No extra flags.
+            None = 0,                //! No extra flags.
             ResolvePointer = 1 << 0, //! The pointer passed in contains a pointer. The (de)serializer will attempt to resolve to an instance.
             ReplaceDefault = 1 << 1  //! The default value provided for storing will be replaced with a newly created one.
+        };
+
+        enum class OperationFlags
+        {
+            None = 0,               //! No flags that control how the custom json serializer is used.
+            ManualDefault = 1 << 0  //! Even if an (explicit) default is found the custom json serializer will still be called.
         };
 
         virtual ~BaseJsonSerializer() = default;
@@ -179,6 +185,9 @@ namespace AZ
         //! an error is returned and sets the rapidjson value to a null value.
         virtual JsonSerializationResult::Result Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
             const Uuid& valueTypeId, JsonSerializerContext& context) = 0;
+
+        //! Returns the operation flags which tells the Json Serialization how this custom json serializer can be used.
+        virtual OperationFlags GetOperationsFlags() const;
 
     protected:
         //! Continues loading of a (sub)value. Use this function to load member variables for instance. This is more optimal than 
@@ -239,5 +248,6 @@ namespace AZ
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::BaseJsonSerializer::Flags)
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::BaseJsonSerializer::OperationFlags)
 
 } // namespace AZ
