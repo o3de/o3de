@@ -16,11 +16,11 @@ URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92562
 
 # fmt: off
 class Tests():
-    pane_open = ("Script Canvas pane successfully opened", "Script Canvas pane failed to open")
-    click_expand = ("Category expanded on left click", "Category failed to expand on left click")
-    click_collapse = ("Category collapsed on left click", "Category failed to collapse on left click")
-    dClick_expand = ("Category expanded on double click", "Category failed to expand on double click")
-    dClick_collapse = ("Category collapsed on double click", "Category failed to collapse on double click")
+    pane_open       = ("Script Canvas pane successfully opened", "Script Canvas pane failed to open")
+    click_expand    = ("Category expanded on left click",        "Category failed to expand on left click")
+    click_collapse  = ("Category collapsed on left click",       "Category failed to collapse on left click")
+    dClick_expand   = ("Category expanded on double click",      "Category failed to expand on double click")
+    dClick_collapse = ("Category collapsed on double click",     "Category failed to collapse on double click")
 # fmt: on
 
 
@@ -47,30 +47,29 @@ def NodeCategory_ExpandOnClick():
      11) Verify it collapsed
 
     Note:
-     - This test file must be called from the Lumberyard Editor command terminal
+     - This test file must be called from the Open 3D Engine Editor command terminal
      - Any passed and failed tests are written to the Editor.log file.
             Parsing the file or running a log_monitor are required to observe the test results.
 
     :return: None
     """
-    import ImportPathHelper as imports
-    imports.init()
     from utils import Report
     from PySide2 import QtCore, QtWidgets, QtTest
     from PySide2.QtTest import QTest
     import pyside_utils
     import azlmbr.legacy.general as general
-    general.idle_enable(True)
 
-    LEVEL_NAME = "tmp_level"
-    WAIT_TIME = 3.0  # SECONDS
-
-    def click_on_arrow(item_view, index):
+    def left_click_arrow(item_view, index):
         original_state = item_view.isExpanded(index)
         rect_center_y = item_view.visualRect(index).center().y()
         rect_left_x = item_view.visualRect(index).left()
         for i in range(5):  # this range can be increased for safe side
-            QtTest.QTest.mouseClick(item_view.viewport(), QtCore.Qt.LeftButton, QtCore.Qt.NoModifier, QtCore.QPoint(rect_left_x - i, rect_center_y))
+            QtTest.QTest.mouseClick(
+                item_view.viewport(),
+                QtCore.Qt.LeftButton,
+                QtCore.Qt.NoModifier,
+                QtCore.QPoint(rect_left_x - i, rect_center_y),
+            )
             if item_view.isExpanded(index) != original_state:
                 break
 
@@ -99,14 +98,13 @@ def NodeCategory_ExpandOnClick():
     nodeTree.collapseAll()
 
     # 4) Left-Click on a node category arrow to expand it
-    # arrow_click(nodeTree, ai_index)
-    click_on_arrow(nodeTree, ai_index)
+    left_click_arrow(nodeTree, ai_index)
 
     # 5) Verify it expanded
     Report.result(Tests.click_expand, nodeTree.isExpanded(ai_index))
 
     # 6) Left-Click on a node category arrow to collapse it
-    click_on_arrow(nodeTree, ai_index)
+    left_click_arrow(nodeTree, ai_index)
 
     # 7) Verify it collapsed
     Report.result(Tests.click_collapse, not nodeTree.isExpanded(ai_index))
@@ -127,7 +125,5 @@ def NodeCategory_ExpandOnClick():
 if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
-
     from utils import Report
-
     Report.start_test(NodeCategory_ExpandOnClick)
