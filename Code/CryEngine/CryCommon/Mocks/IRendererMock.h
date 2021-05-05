@@ -16,6 +16,11 @@
 #include <IImage.h>
 #include <gmock/gmock.h>
 
+struct SRendItemSorter {};
+struct SRenderingPassInfo {};
+struct SClipVolumeBlendInfo {};
+struct SFogVolumeData {};
+
 // the following was generated using google's python script to autogenerate mocks.
 // however, it needed some hand-editing to make it work, so if you add functions to IRenderer,
 // it will probably be better to just manually add them here than try to run the script again
