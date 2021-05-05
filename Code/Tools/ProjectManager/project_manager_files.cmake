@@ -11,30 +11,30 @@
 
 set(FILES
     project_manager.qrc
-    source/main.cpp
-    source/ScreenDefs.h
-    source/ScreenFactory.h
-    source/ScreenFactory.cpp
-    source/ScreenWidget.h
-    source/FirstTimeUse.h
-    source/FirstTimeUse.cpp
-    source/FirstTimeUse.ui
-    source/ProjectManagerWindow.h
-    source/ProjectManagerWindow.cpp
-    source/ProjectManagerWindow.ui
-    source/NewProjectSettings.h
-    source/NewProjectSettings.cpp
-    source/NewProjectSettings.ui
-    source/GemCatalog.h
-    source/GemCatalog.cpp
-    source/GemCatalog.ui
-    source/ProjectsHome.h
-    source/ProjectsHome.cpp
-    source/ProjectsHome.ui
-    source/ProjectSettings.h
-    source/ProjectSettings.cpp
-    source/ProjectSettings.ui
-    source/EngineSettings.h
-    source/EngineSettings.cpp
-    source/EngineSettings.ui
+    Source/main.cpp
+    Source/ScreenDefs.h
+    Source/ScreenFactory.h
+    Source/ScreenFactory.cpp
+    Source/ScreenWidget.h
+    Source/FirstTimeUse.h
+    Source/FirstTimeUse.cpp
+    Source/FirstTimeUse.ui
+    Source/ProjectManagerWindow.h
+    Source/ProjectManagerWindow.cpp
+    Source/ProjectManagerWindow.ui
+    Source/NewProjectSettings.h
+    Source/NewProjectSettings.cpp
+    Source/NewProjectSettings.ui
+    Source/GemCatalog.h
+    Source/GemCatalog.cpp
+    Source/GemCatalog.ui
+    Source/ProjectsHome.h
+    Source/ProjectsHome.cpp
+    Source/ProjectsHome.ui
+    Source/ProjectSettings.h
+    Source/ProjectSettings.cpp
+    Source/ProjectSettings.ui
+    Source/EngineSettings.h
+    Source/EngineSettings.cpp
+    Source/EngineSettings.ui
 )
