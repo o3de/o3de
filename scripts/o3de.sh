@@ -17,7 +17,7 @@ SCRIPT_DIR=$(cd `dirname $0` && pwd)
 
 #python should be in the base path
 BASE_PATH=$(dirname "$SCRIPT_DIR")
-PYTHON_DIRECTORY="BASE_PATH/python"
+PYTHON_DIRECTORY="$BASE_PATH/python"
 
 #If engine python exists use it, if not try the system python
 if [ ! -d "$PYTHON_DIRECTORY" ]; then
