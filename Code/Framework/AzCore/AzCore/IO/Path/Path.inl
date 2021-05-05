@@ -915,6 +915,11 @@ namespace AZ::IO
         return compare_string_view(path);
     }
 
+    constexpr AZStd::fixed_string<MaxPathLength> PathView::FixedMaxPathString() const noexcept
+    {
+        return AZStd::fixed_string<MaxPathLength>(m_path.begin(), m_path.end());
+    }
+
     // decomposition
     constexpr auto PathView::RootName() const -> PathView
     {

@@ -14,6 +14,7 @@
 #include "ProductAssetTreeItemData.h"
 
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 namespace AssetProcessor
@@ -159,31 +160,33 @@ namespace AssetProcessor
             return;
         }
 
+        AZ::IO::Path productNamePath(product.m_productName, AZ::IO::PosixPathSeparator);
 
-        AZStd::vector<AZStd::string> tokens;
-        AzFramework::StringFunc::Tokenize(product.m_productName.c_str(), tokens, AZ_CORRECT_DATABASE_SEPARATOR, false, true);
-
-        if (tokens.empty())
+        if (productNamePath.empty())
         {
             AZ_Warning("AssetProcessor", false, "Product id %d has an invalid name: %s", product.m_productID, product.m_productName.c_str());
             return;
         }
 
         AssetTreeItem* parentItem = m_root.get();
-        AZStd::string fullFolderName;
-        for (int i = 0; i < tokens.size() - 1; ++i)
+        AZ::IO::Path currentFullFolderPath;
+        const AZ::IO::PathView filename = productNamePath.Filename();
+        const AZ::IO::PathView fullPathWithoutFilename = productNamePath.RemoveFilename();
+        AZStd::fixed_string<AZ::IO::MaxPathLength> currentPath;
+        for (auto pathIt = fullPathWithoutFilename.begin(); pathIt != fullPathWithoutFilename.end(); ++pathIt)
         {
-            AzFramework::StringFunc::AssetDatabasePath::Join(fullFolderName.c_str(), tokens[i].c_str(), fullFolderName);
-            AssetTreeItem* nextParent = parentItem->GetChildFolder(tokens[i].c_str());
+            currentPath = pathIt->FixedMaxPathString();
+            currentFullFolderPath /= currentPath;
+            AssetTreeItem* nextParent = parentItem->GetChildFolder(currentPath.c_str());
             if (!nextParent)
             {
                 if (!modelIsResetting)
                 {
-                    QModelIndex parentIndex = parentItem == m_root.get() ? QModelIndex() : createIndex(parentItem->GetRow(), 0, parentItem);
+                    QModelIndex parentIndex = createIndex(parentItem->GetRow(), 0, parentItem);
                     beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
                 }
-                nextParent = parentItem->CreateChild(ProductAssetTreeItemData::MakeShared(nullptr, fullFolderName, tokens[i].c_str(), true, AZ::Uuid::CreateNull()));
-                m_productToTreeItem[fullFolderName] = nextParent;
+                nextParent = parentItem->CreateChild(ProductAssetTreeItemData::MakeShared(nullptr, currentFullFolderPath.Native(), currentPath.c_str(), true, AZ::Uuid::CreateNull()));
+                m_productToTreeItem[currentFullFolderPath.Native()] = nextParent;
                 // m_productIdToTreeItem is not used for folders, folders don't have product IDs.
 
                 if (!modelIsResetting)
@@ -205,12 +208,12 @@ namespace AssetProcessor
 
         if (!modelIsResetting)
         {
-            QModelIndex parentIndex = parentItem == m_root.get() ? QModelIndex() : createIndex(parentItem->GetRow(), 0, parentItem);
+            QModelIndex parentIndex = createIndex(parentItem->GetRow(), 0, parentItem);
             beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
         }
 
         AZStd::shared_ptr<ProductAssetTreeItemData> productItemData =
-            ProductAssetTreeItemData::MakeShared(&product, product.m_productName, tokens[tokens.size() - 1].c_str(), false, sourceId);
+            ProductAssetTreeItemData::MakeShared(&product, product.m_productName, AZStd::fixed_string<AZ::IO::MaxPathLength>(filename.Native()).c_str(), false, sourceId);
         m_productToTreeItem[product.m_productName] =
             parentItem->CreateChild(productItemData);
         m_productIdToTreeItem[product.m_productID] = m_productToTreeItem[product.m_productName];
