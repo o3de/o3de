@@ -372,7 +372,7 @@ namespace Multiplayer
         INetworkEntityManager::EntityList returnList;
 
         auto spawnableAssetId = m_networkPrefabLibrary.GetAssetIdByName(prefabEntryId.m_prefabName);
-		// Required for sync-instantiation. Todo: keep the reference in NetworkSpawnableLibrary
+        // Required for sync-instantiation. Todo: keep the reference in NetworkSpawnableLibrary
         auto netSpawnableAsset = AZ::Data::AssetManager::Instance().GetAsset<AzFramework::Spawnable>(spawnableAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
         AZ::Data::AssetManager::Instance().BlockUntilLoadComplete(netSpawnableAsset);
        
@@ -508,6 +508,6 @@ namespace Multiplayer
 
     void NetworkEntityManager::OnDespawned([[maybe_unused]]AZ::Data::Asset<AzFramework::Spawnable> spawnable)
     {
-		// TODO: Remove entities instantiated from the spawnable
+        // TODO: Remove entities instantiated from the spawnable
     }
 }
