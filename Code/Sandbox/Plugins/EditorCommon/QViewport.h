@@ -28,7 +28,6 @@ struct SRenderingPassInfo;
 struct SRendParams;
 struct Ray;
 struct IRenderer;
-struct I3DEngine;
 struct SSystemGlobalEnvironment;
 namespace Serialization {
     class IArchive;

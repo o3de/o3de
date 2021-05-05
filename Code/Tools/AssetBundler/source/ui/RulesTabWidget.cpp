@@ -45,14 +45,22 @@ namespace AssetBundler
         m_ui->fileTableView->setModel(m_fileTableModel.data());
 
         // Table View of all Rules files
-        m_fileTableFilterModel.reset(new AssetBundlerFileTableFilterModel(this, m_fileTableModel->GetFileNameColumnIndex(), m_fileTableModel->GetTimeStampColumnIndex()));
+        m_fileTableFilterModel.reset(new AssetBundlerFileTableFilterModel(
+            this,
+            m_fileTableModel->GetFileNameColumnIndex(),
+            m_fileTableModel->GetTimeStampColumnIndex()));
 
         m_fileTableFilterModel->setSourceModel(m_fileTableModel.data());
         m_ui->fileTableView->setModel(m_fileTableFilterModel.data());
-        connect(m_ui->fileFilteredSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
-            m_fileTableFilterModel.data(), static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetBundlerFileTableFilterModel::FilterChanged));
+        connect(m_ui->fileFilteredSearchWidget,
+            &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
+            m_fileTableFilterModel.data(),
+            static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetBundlerFileTableFilterModel::FilterChanged));
 
-        connect(m_ui->fileTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &RulesTabWidget::FileSelectionChanged);
+        connect(m_ui->fileTableView->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &RulesTabWidget::FileSelectionChanged);
 
         m_ui->fileTableView->setIndentation(0);
 
@@ -76,7 +84,10 @@ namespace AssetBundler
 
     void RulesTabWidget::Reload()
     {
-        m_fileTableModel->Reload(AzToolsFramework::AssetFileInfoListComparison::GetComparisonRulesFileExtension(), m_watchedFolders, m_watchedFiles);
+        m_fileTableModel->Reload(
+            AzToolsFramework::AssetFileInfoListComparison::GetComparisonRulesFileExtension(),
+            m_watchedFolders,
+            m_watchedFiles);
         FileSelectionChanged();
     }
 
@@ -223,7 +234,8 @@ namespace AssetBundler
         AZStd::vector<AZStd::string> outputFilePaths;
         bool hasFileGenerationErrors = false;
 
-        AZStd::fixed_vector<AZStd::string, AzFramework::NumPlatforms> selectedPlatformNames = AzFramework::PlatformHelper::GetPlatforms(runRuleDialog.GetPlatformFlags());
+        AZStd::fixed_vector<AZStd::string, AzFramework::NumPlatforms> selectedPlatformNames =
+            AzFramework::PlatformHelper::GetPlatforms(runRuleDialog.GetPlatformFlags());
         for (const AZStd::string& platformName : selectedPlatformNames)
         {
             // We do not want to modify the original Rules file, as we do not save Asset List file paths to disk
@@ -238,7 +250,8 @@ namespace AssetBundler
                 {
                     if (comparisonStep.m_cachedFirstInputPath.empty())
                     {
-                        AZ_Error("AssetBundler", false, "Unable to run Rule: Comparison Step #%u has no specified first input.", comparisonStepIndex);
+                        AZ_Error("AssetBundler", false,
+                            "Unable to run Rule: Comparison Step #%u has no specified first input.", comparisonStepIndex);
                         return;
                     }
 
@@ -251,7 +264,8 @@ namespace AssetBundler
                 {
                     if (comparisonStep.m_cachedSecondInputPath.empty())
                     {
-                        AZ_Error("AssetBundler", false, "Unable to run Rule: Comparison Step #%u has no specified second input.", comparisonStepIndex);
+                        AZ_Error("AssetBundler", false,
+                            "Unable to run Rule: Comparison Step #%u has no specified second input.", comparisonStepIndex);
                         return;
                     }
 
@@ -313,17 +327,28 @@ namespace AssetBundler
         }
     }
 
-    void RulesTabWidget::CreateComparisonDataCard(AZStd::shared_ptr<AzToolsFramework::AssetFileInfoListComparison> comparisonList, size_t comparisonDataIndex)
+    void RulesTabWidget::CreateComparisonDataCard(
+        AZStd::shared_ptr<AzToolsFramework::AssetFileInfoListComparison> comparisonList,
+        size_t comparisonDataIndex)
     {
-        ComparisonDataCard* comparisonDataCard = new ComparisonDataCard(comparisonList, comparisonDataIndex, m_guiApplicationManager->GetAssetListsFolder());
+        ComparisonDataCard* comparisonDataCard = new ComparisonDataCard(
+            comparisonList,
+            comparisonDataIndex,
+            m_guiApplicationManager->GetAssetListsFolder());
         comparisonDataCard->setTitle(tr("Step %1").arg(static_cast<int>(comparisonDataIndex) + 1));
         m_ui->comparisonDataListLayout->addWidget(comparisonDataCard);
         m_comparisonDataCardList.push_back(comparisonDataCard);
 
         ComparisonDataWidget* comparisonDataWidget = comparisonDataCard->GetComparisonDataWidget();
-        connect(comparisonDataCard, &ComparisonDataCard::comparisonDataCardContextMenuRequested, this, &RulesTabWidget::OnComparisonDataCardContextMenuRequested);
+        connect(comparisonDataCard,
+            &ComparisonDataCard::comparisonDataCardContextMenuRequested,
+            this,
+            &RulesTabWidget::OnComparisonDataCardContextMenuRequested);
         connect(comparisonDataWidget, &ComparisonDataWidget::comparisonDataChanged, this, &RulesTabWidget::MarkFileChanged);
-        connect(comparisonDataWidget, &ComparisonDataWidget::comparisonDataTokenNameChanged, this, &RulesTabWidget::OnAnyTokenNameChanged);
+        connect(comparisonDataWidget,
+            &ComparisonDataWidget::comparisonDataTokenNameChanged,
+            this,
+            &RulesTabWidget::OnAnyTokenNameChanged);
 
         comparisonDataCard->show();
     }

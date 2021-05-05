@@ -93,6 +93,7 @@ ly_add_target(
 ly_add_target(
     NAME MaterialEditor EXECUTABLE
     NAMESPACE Gem
+    AUTOMOC
     FILES_CMAKE
         materialeditor_files.cmake
         Source/Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake

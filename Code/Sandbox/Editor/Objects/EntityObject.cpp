@@ -25,7 +25,6 @@
 #include "Settings.h"
 #include "Viewport.h"
 #include "LineGizmo.h"
-#include "Material/MaterialManager.h"
 #include "Include/IObjectManager.h"
 #include "Objects/ObjectManager.h"
 #include "ViewManager.h"
@@ -33,6 +32,8 @@
 #include "HitContext.h"
 #include "Objects/SelectionGroup.h"
 
+#include <IEntityRenderState.h>
+#include <IStatObj.h>
 
 //////////////////////////////////////////////////////////////////////////
 //! Undo Entity Link
@@ -1077,11 +1078,6 @@ XmlNodeRef CEntityObject::Export([[maybe_unused]] const QString& levelPath, XmlN
 
     objNode->setAttr("Name", GetName().toUtf8().data());
 
-    if (GetMaterial())
-    {
-        objNode->setAttr("Material", GetMaterial()->GetName().toUtf8().data());
-    }
-
     Vec3 pos = GetPos(), scale = GetScale();
     Quat rotate = GetRotation();
 
@@ -1861,17 +1857,6 @@ void CEntityObject::OnLoadFailed()
 }
 
 //////////////////////////////////////////////////////////////////////////
-CMaterial* CEntityObject::GetRenderMaterial() const
-{
-    if (GetMaterial())
-    {
-        return GetMaterial();
-    }
-
-    return NULL;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CEntityObject::SetHelperScale(float scale)
 {
     m_helperScale = scale;
@@ -1941,71 +1926,6 @@ void CEntityObject::OnContextMenu(QMenu* pMenu)
     // Events
 
     CBaseObject::OnContextMenu(pMenu);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CEntityObject::OnMaterialChanged(MaterialChangeFlags change)
-{
-    if (change & MATERIALCHANGE_SURFACETYPE)
-    {
-        m_statObjValidator.Validate(0, GetRenderMaterial());
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-QString CEntityObject::GetTooltip() const
-{
-    return m_statObjValidator.GetDescription();
-}
-
-//////////////////////////////////////////////////////////////////////////
-IOpticsElementBasePtr CEntityObject::GetOpticsElement()
-{
-    CDLight* pLight = GetLightProperty();
-    if (pLight == NULL)
-    {
-        return NULL;
-    }
-    return pLight->GetLensOpticsElement();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CEntityObject::SetOpticsName(const QString& opticsFullName)
-{
-    if (opticsFullName.isEmpty())
-    {
-        CDLight* pLight = GetLightProperty();
-        if (pLight)
-        {
-            pLight->SetLensOpticsElement(NULL);
-        }
-        SetMaterial(NULL);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-CDLight* CEntityObject::GetLightProperty() const
-{
-    const PodArray<ILightSource*>* pLightEntities = GetIEditor()->Get3DEngine()->GetLightEntities();
-    if (pLightEntities == NULL)
-    {
-        return NULL;
-    }
-    for (int i = 0, iLightSize(pLightEntities->Count()); i < iLightSize; ++i)
-    {
-        ILightSource* pLightSource = pLightEntities->GetAt(i);
-        if (pLightSource == NULL)
-        {
-            continue;
-        }
-        CDLight& lightProperty = pLightSource->GetLightProperties();
-        if (GetName() != lightProperty.m_sName)
-        {
-            continue;
-        }
-        return &lightProperty;
-    }
-    return NULL;
 }
 
 //////////////////////////////////////////////////////////////////////////

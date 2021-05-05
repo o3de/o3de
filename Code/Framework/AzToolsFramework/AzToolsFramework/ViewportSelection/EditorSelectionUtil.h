@@ -45,7 +45,7 @@ namespace AzToolsFramework
         const AZ::Vector3& worldPosition, const AzFramework::CameraState& cameraState);
 
     /// Map from world space to screen space.
-    QPoint GetScreenPosition(int viewportId, const AZ::Vector3& worldTranslation);
+     AzFramework::ScreenPoint GetScreenPosition(int viewportId, const AZ::Vector3& worldTranslation);
 
     /// Given a mouse interaction, determine if the pick ray from its position
     /// in screen space intersected an aabb in world space.

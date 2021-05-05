@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 Test case ID : C4982803
 Test Case Title : Verify that when the shape Physics Asset is selected,
     PxMesh option gets enabled and a Px Mesh can be selected and assigned to the object
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4982803
+
 """
 
 # fmt: off

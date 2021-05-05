@@ -57,7 +57,6 @@ set(FILES
     UnixConsole.h
     SystemInit.h
     Serialization/MemoryReader.h
-    Statistics/LocalMemoryUsage.h
     MemoryFragmentationProfiler.h
     XML/ReadWriteXMLSink.h
     Serialization/ArchiveHost.h
@@ -151,7 +150,6 @@ set(FILES
     MiniGUI/MiniInfoBox.h
     MiniGUI/MiniMenu.h
     MiniGUI/MiniTable.h
-    Statistics/LocalMemoryUsage.cpp
     ZLibCompressor.cpp
     ZLibCompressor.h
     SoftCode/SoftCodeMgr.cpp
