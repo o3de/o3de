@@ -45,6 +45,8 @@ namespace AZ
 
         private:
             RHI::Ptr<RHI::BufferPool> m_commonPools[static_cast<uint8_t>(CommonBufferPoolType::Count)];
+
+            bool m_initialized = false;
         };
     } // namespace RPI
 } // namespace AZ

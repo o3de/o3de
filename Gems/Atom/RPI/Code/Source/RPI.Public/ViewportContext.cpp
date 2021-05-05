@@ -26,6 +26,7 @@ namespace AZ
             , m_windowContext(AZStd::make_shared<WindowContext>())
             , m_manager(manager)
             , m_name(name)
+            , m_viewportSize(1, 1)
         {
             m_windowContext->Initialize(device, nativeWindow);
             AzFramework::WindowRequestBus::EventResult(
