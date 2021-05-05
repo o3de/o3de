@@ -89,7 +89,9 @@
 
 #include <QtGui/private/qhighdpiscaling_p.h>
 
-#include <physinterface.h>
+#include <IEntityRenderState.h>
+#include <IPhysics.h>
+#include <IStatObj.h>
 
 AZ_CVAR(
     bool, ed_visibility_use, true, nullptr, AZ::ConsoleFunctorFlags::Null,
@@ -3366,7 +3368,7 @@ bool CRenderViewport::AdjustObjectPosition(const ray_hit& hit, Vec3& outNormal, 
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CRenderViewport::RayRenderMeshIntersection(IRenderMesh* pRenderMesh, const Vec3& vInPos, const Vec3& vInDir, Vec3& vOutPos, Vec3& vOutNormal) const
+bool CRenderViewport::RayRenderMeshIntersection(IRenderMesh*, const Vec3&, const Vec3&, Vec3&, Vec3&) const
 {
     return false;
 }

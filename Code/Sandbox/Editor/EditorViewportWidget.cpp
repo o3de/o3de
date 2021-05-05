@@ -97,7 +97,9 @@
 
 #include <QtGui/private/qhighdpiscaling_p.h>
 
-#include <physinterface.h>
+#include <IEntityRenderState.h>
+#include <IPhysics.h>
+#include <IStatObj.h>
 
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null,
