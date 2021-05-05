@@ -36,7 +36,7 @@ namespace PhysX
     protected:
     };
 
-    TEST_F(PhysXColliderPrefabTests, StoreAndLoad_DefaultPhysicsTypes_ValuesNotNull)
+    TEST_F(PhysXColliderPrefabTests, StoreAndLoad_DefaultPhysicsTypes_ValuesEqual)
     {
         //create a prefab for storing data
         AzToolsFramework::Prefab::PrefabDom prefabDom;
@@ -130,58 +130,58 @@ namespace PhysX
         EXPECT_NE(nullptr, updatedColliderConfigPtr);
     }
 
-    TEST_F(PhysXColliderPrefabTests, StoreAndLoad_DefaultPhysicsColliderComponents_PointersNotNull)
+    TEST_F(PhysXColliderPrefabTests, StoreAndLoad_DefaultPhysicsColliderComponents_ValuesEqual)
     {
         //create a prefab for storing data
         AzToolsFramework::Prefab::PrefabDom prefabDom;
 
         //shared pointer - box collider - defaults only
-        auto boxColliderPtr = AZStd::make_shared<BoxColliderComponent>();
+        BoxColliderComponent boxColliderComponent;
         AZ::JsonSerializationResult::ResultCode result
-            = AZ::JsonSerialization::Store(prefabDom, prefabDom.GetAllocator(), boxColliderPtr);
+            = AZ::JsonSerialization::Store(prefabDom, prefabDom.GetAllocator(), boxColliderComponent);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Processing::Completed, result.GetProcessing());
 
-        boxColliderPtr = nullptr;
-        result = AZ::JsonSerialization::Load(boxColliderPtr, prefabDom);
+        BoxColliderComponent newBoxColliderComponent;
+        result = AZ::JsonSerialization::Load(newBoxColliderComponent, prefabDom);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Processing::Completed, result.GetProcessing());
-        EXPECT_NE(nullptr, boxColliderPtr);
+        EXPECT_EQ(newBoxColliderComponent.GetCollisionLayerName(), boxColliderComponent.GetCollisionLayerName());
 
         //shared pointer - sphere collider - defaults only
-        auto sphereColliderPtr = AZStd::make_shared<SphereColliderComponent>();
-        result = AZ::JsonSerialization::Store(prefabDom, prefabDom.GetAllocator(), sphereColliderPtr);
+        SphereColliderComponent sphereColliderComponent;
+        result = AZ::JsonSerialization::Store(prefabDom, prefabDom.GetAllocator(), sphereColliderComponent);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Processing::Completed, result.GetProcessing());
 
-        sphereColliderPtr = nullptr;
-        result = AZ::JsonSerialization::Load(sphereColliderPtr, prefabDom);
+        SphereColliderComponent newSphereColliderComponent;
+        result = AZ::JsonSerialization::Load(newSphereColliderComponent, prefabDom);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Processing::Completed, result.GetProcessing());
-        EXPECT_NE(nullptr, sphereColliderPtr);
+        EXPECT_EQ(newSphereColliderComponent.GetCollisionLayerName(), sphereColliderComponent.GetCollisionLayerName());
 
         //shared pointer - capsule collider - defaults only
-        auto capsuleColliderPtr = AZStd::make_shared<CapsuleColliderComponent>();
-        result = AZ::JsonSerialization::Store(prefabDom, prefabDom.GetAllocator(), capsuleColliderPtr);
+        CapsuleColliderComponent capsuleColliderComponent;
+        result = AZ::JsonSerialization::Store(prefabDom, prefabDom.GetAllocator(), capsuleColliderComponent);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Processing::Completed, result.GetProcessing());
 
-        capsuleColliderPtr = nullptr;
-        result = AZ::JsonSerialization::Load(capsuleColliderPtr, prefabDom);
+        CapsuleColliderComponent newCapsuleColliderComponent;
+        result = AZ::JsonSerialization::Load(newCapsuleColliderComponent, prefabDom);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Processing::Completed, result.GetProcessing());
-        EXPECT_NE(nullptr, capsuleColliderPtr);
+        EXPECT_EQ(newCapsuleColliderComponent.GetCollisionLayerName(), capsuleColliderComponent.GetCollisionLayerName());
 
         //shared pointer - shape collider - defaults only
-        auto shapeColliderPtr = AZStd::make_shared<ShapeColliderComponent>();
-        result = AZ::JsonSerialization::Store(prefabDom, prefabDom.GetAllocator(), shapeColliderPtr);
+        ShapeColliderComponent shapeColliderComponent;
+        result = AZ::JsonSerialization::Store(prefabDom, prefabDom.GetAllocator(), shapeColliderComponent);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Processing::Completed, result.GetProcessing());
 
-        shapeColliderPtr = nullptr;
-        result = AZ::JsonSerialization::Load(shapeColliderPtr, prefabDom);
+        ShapeColliderComponent newShapeColliderComponent;
+        result = AZ::JsonSerialization::Load(newShapeColliderComponent, prefabDom);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Processing::Completed, result.GetProcessing());
-        EXPECT_NE(nullptr, shapeColliderPtr);
+        EXPECT_EQ(newShapeColliderComponent.GetCollisionLayerName(), shapeColliderComponent.GetCollisionLayerName());
     }
 }
