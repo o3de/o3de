@@ -10,9 +10,9 @@
  *
  */
 
-#include <Qt/GemCatalog.h>
+#include <GemCatalog.h>
 
-#include <Qt/ui_GemCatalog.h>
+#include <Source/ui_GemCatalog.h>
 
 namespace O3DE::ProjectManager
 {

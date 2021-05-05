@@ -10,9 +10,9 @@
  *
  */
 
-#include <Qt/FirstTimeUse.h>
+#include <FirstTimeUse.h>
 
-#include <Qt/ui_FirstTimeUse.h>
+#include <Source/ui_FirstTimeUse.h>
 
 namespace O3DE::ProjectManager
 {

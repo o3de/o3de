@@ -10,9 +10,9 @@
  *
  */
 
-#include <Qt/EngineSettings.h>
+#include <EngineSettings.h>
 
-#include <Qt/ui_EngineSettings.h>
+#include <Source/ui_EngineSettings.h>
 
 namespace O3DE::ProjectManager
 {

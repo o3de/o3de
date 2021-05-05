@@ -10,9 +10,9 @@
  *
  */
 
-#include <Qt/NewProjectSettings.h>
+#include <NewProjectSettings.h>
 
-#include <Qt/ui_NewProjectSettings.h>
+#include <Source/ui_NewProjectSettings.h>
 
 namespace O3DE::ProjectManager
 {

@@ -16,7 +16,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/IO/Path/Path.h>
 
-#include <Qt/ProjectManagerWindow.h>
+#include <ProjectManagerWindow.h>
 
 #include <QApplication>
 #include <QCoreApplication>

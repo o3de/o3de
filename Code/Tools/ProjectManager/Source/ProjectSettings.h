@@ -12,7 +12,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <Qt/ScreenWidget.h>
+#include <ScreenWidget.h>
 #endif
 
 namespace Ui

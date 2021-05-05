@@ -13,7 +13,7 @@
 
 #include <ScreenDefs.h>
 
-#include <Qt/ProjectManagerWindow.h>
+#include <ProjectManagerWindow.h>
 
 #include <QWidget>
 

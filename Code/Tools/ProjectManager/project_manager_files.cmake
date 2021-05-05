@@ -15,26 +15,26 @@ set(FILES
     source/ScreenDefs.h
     source/ScreenFactory.h
     source/ScreenFactory.cpp
-    source/Qt/ScreenWidget.h
-    source/Qt/FirstTimeUse.h
-    source/Qt/FirstTimeUse.cpp
-    source/Qt/FirstTimeUse.ui
-    source/Qt/ProjectManagerWindow.h
-    source/Qt/ProjectManagerWindow.cpp
-    source/Qt/ProjectManagerWindow.ui
-    source/Qt/NewProjectSettings.h
-    source/Qt/NewProjectSettings.cpp
-    source/Qt/NewProjectSettings.ui
-    source/Qt/GemCatalog.h
-    source/Qt/GemCatalog.cpp
-    source/Qt/GemCatalog.ui
-    source/Qt/ProjectsHome.h
-    source/Qt/ProjectsHome.cpp
-    source/Qt/ProjectsHome.ui
-    source/Qt/ProjectSettings.h
-    source/Qt/ProjectSettings.cpp
-    source/Qt/ProjectSettings.ui
-    source/Qt/EngineSettings.h
-    source/Qt/EngineSettings.cpp
-    source/Qt/EngineSettings.ui
+    source/ScreenWidget.h
+    source/FirstTimeUse.h
+    source/FirstTimeUse.cpp
+    source/FirstTimeUse.ui
+    source/ProjectManagerWindow.h
+    source/ProjectManagerWindow.cpp
+    source/ProjectManagerWindow.ui
+    source/NewProjectSettings.h
+    source/NewProjectSettings.cpp
+    source/NewProjectSettings.ui
+    source/GemCatalog.h
+    source/GemCatalog.cpp
+    source/GemCatalog.ui
+    source/ProjectsHome.h
+    source/ProjectsHome.cpp
+    source/ProjectsHome.ui
+    source/ProjectSettings.h
+    source/ProjectSettings.cpp
+    source/ProjectSettings.ui
+    source/EngineSettings.h
+    source/EngineSettings.cpp
+    source/EngineSettings.ui
 )
