@@ -55,7 +55,7 @@ namespace AWSCore
         static constexpr const char ResourceMappingFileNotLoadedErrorMessage[] =
             "Resource mapping config file is not loaded, please confirm %s is setup correctly.";
         static constexpr const char ResourceMappingFileLoadFailureErrorMessage[] =
-            "Resource mapping config file is failed to load, please confirm file is present and in correct format.";
+            "Resource mapping config file failed to load, please confirm file is present and in correct format.";
         static constexpr const char ResourceMappingRESTApiIdAndStageInconsistentErrorMessage[] =
             "Resource mapping %s and %s have inconsistent region value, return empty service url.";
         static constexpr const char ResourceMappingRESTApiInvalidServiceUrlErrorMessage[] =

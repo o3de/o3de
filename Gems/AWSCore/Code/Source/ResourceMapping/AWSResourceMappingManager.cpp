@@ -120,8 +120,8 @@ namespace AWSCore
     AZStd::string AWSResourceMappingManager::GetServiceUrlByServiceName(const AZStd::string& serviceName) const
     {
         return GetServiceUrlByRESTApiIdAndStage(
-            AZStd::string::format("%s%s", serviceName.c_str(), AWSFeatureGemRESTApiIdKeyNamSuffix),
-            AZStd::string::format("%s%s", serviceName.c_str(), AWSFeatureGemRESTApiStageKeyNamSuffix));
+            AZStd::string::format("%s%s", serviceName.c_str(), AWSFeatureGemRESTApiIdKeyNameSuffix),
+            AZStd::string::format("%s%s", serviceName.c_str(), AWSFeatureGemRESTApiStageKeyNameSuffix));
     }
 
     AZStd::string AWSResourceMappingManager::GetServiceUrlByRESTApiIdAndStage(

@@ -16,8 +16,8 @@ namespace AWSCore
 {
     static constexpr const char AWSChinaRegionPrefix[] = "cn-";
 
-    static constexpr const char AWSFeatureGemRESTApiIdKeyNamSuffix[] = ".RESTApiId";
-    static constexpr const char AWSFeatureGemRESTApiStageKeyNamSuffix[] = ".RESTApiStage";
+    static constexpr const char AWSFeatureGemRESTApiIdKeyNameSuffix[] = ".RESTApiId";
+    static constexpr const char AWSFeatureGemRESTApiStageKeyNameSuffix[] = ".RESTApiStage";
 
     static constexpr const char ResourceMappingAccountIdKeyName[] = "AccountId";
     static constexpr const char ResourceMappingResourcesKeyName[] = "AWSResourceMappings";
