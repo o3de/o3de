@@ -3960,18 +3960,6 @@ void CRenderViewport::RenderConstructionPlane()
         Ang3 angles = Ang3(pGrid->rotationAngles.x * gf_PI / 180.0, pGrid->rotationAngles.y * gf_PI / 180.0, pGrid->rotationAngles.z * gf_PI / 180.0);
         Matrix34 tm = Matrix33::CreateRotationXYZ(angles);
 
-        if (gSettings.snap.bGridGetFromSelected)
-        {
-            CSelectionGroup* sel = GetIEditor()->GetSelection();
-            if (sel->GetCount() > 0)
-            {
-                CBaseObject* obj = sel->GetObject(0);
-                tm = obj->GetWorldTM();
-                tm.OrthonormalizeFast();
-                tm.SetTranslation(Vec3(0, 0, 0));
-            }
-        }
-
         u = tm * u;
         v = tm * v;
     }
@@ -4026,11 +4014,6 @@ void CRenderViewport::RenderConstructionPlane()
 void CRenderViewport::RenderSnappingGrid()
 {
     // First, Check whether we should draw the grid or not.
-    CSelectionGroup* pSelGroup = GetIEditor()->GetSelection();
-    if (pSelGroup == nullptr || pSelGroup->GetCount() != 1)
-    {
-        return;
-    }
     CGrid* pGrid = GetViewManager()->GetGrid();
     if (pGrid->IsEnabled() == false && pGrid->IsAngleSnapEnabled() == false)
     {
