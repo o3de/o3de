@@ -46,11 +46,8 @@ class CGameEngine;
 struct IIconManager;
 class CToolBoxManager;
 class CClassFactory;
-class CMaterialManager;
 class CMusicManager;
-class CMaterail;
 struct IEditorParticleManager;
-class CLensFlareManager;
 class CEAXPresetManager;
 class CErrorReport;
 class CBaseLibraryItem;
@@ -545,8 +542,6 @@ struct IEditor
     virtual CSettingsManager* GetSettingsManager() = 0;
     //! Get DB manager that own items of specified type.
     virtual IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType) = 0;
-    //! Get Manager of Materials.
-    virtual CMaterialManager* GetMaterialManager() = 0;
     virtual IBaseLibraryManager* GetMaterialManagerLibrary() = 0; // Vladimir@conffx
     virtual IEditorMaterialManager* GetIEditorMaterialManager() = 0; // Vladimir@Conffx
     //! Returns IconManager.
@@ -555,8 +550,6 @@ struct IEditor
     virtual IEditorPanelUtils* GetEditorPanelUtils() = 0;
     //! Get Music Manager.
     virtual CMusicManager* GetMusicManager() = 0;
-    //! Get Lens Flare Manager.
-    virtual CLensFlareManager* GetLensFlareManager() = 0;
     virtual float GetTerrainElevation(float x, float y) = 0;
     virtual Editor::EditorQtApplication* GetEditorQtApplication() = 0;
     virtual const QColor& GetColorByName(const QString& name) = 0;
@@ -759,8 +752,6 @@ struct IEditor
 
     // reloads the plugins
     virtual void LoadPlugins() = 0;
-
-    virtual bool IsNewViewportInteractionModelEnabled() const = 0;
 };
 
 //! Callback used by editor when initializing for info in UI dialogs

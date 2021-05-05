@@ -413,13 +413,9 @@ private:
     void OnDisplayGotoPosition();
     void OnSnapangle();
     void OnUpdateSnapangle(QAction* action);
-    void OnEditRenameobject();
     void OnChangemovespeedIncrease();
     void OnChangemovespeedDecrease();
     void OnChangemovespeedChangestep();
-    void OnMaterialAssigncurrent();
-    void OnMaterialResettodefault();
-    void OnMaterialGetmaterial();
     void OnFileSavelevelresources();
     void OnClearRegistryData();
     void OnValidatelevel();

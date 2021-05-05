@@ -72,6 +72,9 @@ namespace EMStudio
             Bottom
         };
 
+    signals:
+        void PasteStateChanged();
+
     public slots:
         void Copy();
         void Cut();
@@ -95,6 +98,7 @@ namespace EMStudio
         void DeleteSelectedNodes();
 
         void NavigateToNode();
+        void NavigateToParent();
 
         void OpenReferencedAnimGraph(EMotionFX::AnimGraphReferenceNode* referenceNode);
 
@@ -126,5 +130,7 @@ namespace EMStudio
         AnimGraphPlugin* m_plugin;
         AZStd::vector<QPersistentModelIndex> m_pasteItems;
         PasteOperation m_pasteOperation;
+
+        void SetPasteOperation(PasteOperation newOperation);
     };
 } // namespace EMStudio

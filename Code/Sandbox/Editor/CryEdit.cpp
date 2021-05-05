@@ -102,7 +102,6 @@ AZ_POP_DISABLE_WARNING
 #include "ModelViewport.h"
 #include "FileTypeUtils.h"
 #include "PluginManager.h"
-#include "Material/MaterialManager.h"
 
 #include "IEditorImpl.h"
 #include "StartupLogoDialog.h"
@@ -156,9 +155,6 @@ AZ_POP_DISABLE_WARNING
 #include "EditorToolsApplication.h"
 
 #include "Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h"
-
-// LmbrCentral
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
 
 // AWSNativeSDK
 #include <AzToolsFramework/Undo/UndoSystem.h>
@@ -455,13 +451,9 @@ void CCryEditApp::RegisterActionHandlers()
 #endif
     ON_COMMAND(ID_DISPLAY_GOTOPOSITION, OnDisplayGotoPosition)
     ON_COMMAND(ID_SNAPANGLE, OnSnapangle)
-    ON_COMMAND(ID_EDIT_RENAMEOBJECT, OnEditRenameobject)
     ON_COMMAND(ID_CHANGEMOVESPEED_INCREASE, OnChangemovespeedIncrease)
     ON_COMMAND(ID_CHANGEMOVESPEED_DECREASE, OnChangemovespeedDecrease)
     ON_COMMAND(ID_CHANGEMOVESPEED_CHANGESTEP, OnChangemovespeedChangestep)
-    ON_COMMAND(ID_MATERIAL_ASSIGNCURRENT, OnMaterialAssigncurrent)
-    ON_COMMAND(ID_MATERIAL_RESETTODEFAULT, OnMaterialResettodefault)
-    ON_COMMAND(ID_MATERIAL_GETMATERIAL, OnMaterialGetmaterial)
     ON_COMMAND(ID_FILE_SAVELEVELRESOURCES, OnFileSavelevelresources)
     ON_COMMAND(ID_CLEAR_REGISTRY, OnClearRegistryData)
     ON_COMMAND(ID_VALIDATELEVEL, OnValidatelevel)
@@ -3832,59 +3824,6 @@ void CCryEditApp::OnUpdateSnapangle(QAction* action)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnEditRenameobject()
-{
-    CSelectionGroup* pSelection = GetIEditor()->GetSelection();
-    if (pSelection->IsEmpty())
-    {
-        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("No Selected Objects!"));
-        return;
-    }
-
-    IObjectManager* pObjMan = GetIEditor()->GetObjectManager();
-
-    if (!pObjMan)
-    {
-        return;
-    }
-
-    StringDlg dlg(QObject::tr("Rename Object(s)"));
-    if (dlg.exec() == QDialog::Accepted)
-    {
-        CUndo undo("Rename Objects");
-        QString newName;
-        QString str = dlg.GetString();
-        int num = 0;
-
-        for (int i = 0; i < pSelection->GetCount(); ++i)
-        {
-            CBaseObject* pObject = pSelection->GetObject(i);
-
-            if (pObject)
-            {
-                if (pObjMan->IsDuplicateObjectName(str))
-                {
-                    pObjMan->ShowDuplicationMsgWarning(pObject, str, true);
-                    return;
-                }
-            }
-        }
-
-        for (int i = 0; i < pSelection->GetCount(); ++i)
-        {
-            newName = QStringLiteral("%1%2").arg(str).arg(num);
-            ++num;
-            CBaseObject* pObject = pSelection->GetObject(i);
-
-            if (pObject)
-            {
-                pObjMan->ChangeObjectName(pObject, newName);
-            }
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnChangemovespeedIncrease()
 {
     gSettings.cameraMoveSpeed += m_moveSpeedStep;
@@ -4178,25 +4117,6 @@ void CCryEditApp::OnSwitchcameraNext()
     {
         rvp->CycleCamera();
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnMaterialAssigncurrent()
-{
-    CUndo undo("Assign Material To Selection");
-    GetIEditor()->GetMaterialManager()->Command_AssignToSelection();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnMaterialResettodefault()
-{
-    GetIEditor()->GetMaterialManager()->Command_ResetSelection();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnMaterialGetmaterial()
-{
-    GetIEditor()->GetMaterialManager()->Command_SelectFromObject();
 }
 
 //////////////////////////////////////////////////////////////////////////
