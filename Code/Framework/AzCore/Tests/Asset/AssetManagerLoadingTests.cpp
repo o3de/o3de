@@ -589,7 +589,7 @@ namespace UnitTest
         }
     };
 
-    TEST_F(AssetJobsFloodTest, Cancel)
+    TEST_F(AssetJobsFloodTest, RapidAcquireAndRelease)
     {
         DebugListener listener;  
         auto assetUuids = {
@@ -2677,7 +2677,7 @@ namespace UnitTest
 #if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetManagerCancelTests, DISABLED_CancelLoad_NoReferences_LoadCancels)
 #else
-    // Asset cancellation is temporarily disabled, re-enable this test when cancellation is more stable
+    // Asset cancellation is temporarily disabled, re-enable this test when cancellation is more stable. LYN-3263
     TEST_F(AssetManagerCancelTests, DISABLED_CancelLoad_NoReferences_LoadCancels)
 #endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
@@ -2718,7 +2718,7 @@ namespace UnitTest
 #if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetManagerCancelTests, DISABLED_CanceledLoad_CanBeLoadedAgainLater)
 #else
-    // Asset cancellation is temporarily disabled, re-enable this test when cancellation is more stable
+    // Asset cancellation is temporarily disabled, re-enable this test when cancellation is more stable. LYN-3263
     TEST_F(AssetManagerCancelTests, DISABLED_CanceledLoad_CanBeLoadedAgainLater)
 #endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
@@ -2768,7 +2768,7 @@ namespace UnitTest
 #if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetManagerCancelTests, DISABLED_CancelLoad_InProgressLoad_Continues)
 #else
-    // Asset cancellation is temporarily disabled, re-enable this test when cancellation is more stable
+    // Asset cancellation is temporarily disabled, re-enable this test when cancellation is more stable. LYN-3263
     TEST_F(AssetManagerCancelTests, DISABLED_CancelLoad_InProgressLoad_Continues)
 #endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
@@ -2991,7 +2991,7 @@ namespace UnitTest
     TEST_F(AssetManagerClearAssetReferenceTests,
             DISABLED_ContainerLoadTest_AssetLosesAndGainsReferencesDuringLoadAndSuspendedRelease_AssetSuccessfullyFinishesLoading)
 #else
-    // Asset cancellation is temporarily disabled, re-enable this test when cancellation is more stable
+    // Asset cancellation is temporarily disabled, re-enable this test when cancellation is more stable. LYN-3263
     TEST_F(AssetManagerClearAssetReferenceTests,
             DISABLED_ContainerLoadTest_AssetLosesAndGainsReferencesDuringLoadAndSuspendedRelease_AssetSuccessfullyFinishesLoading)
 #endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
@@ -3050,7 +3050,7 @@ namespace UnitTest
 #if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetManagerClearAssetReferenceTests, DISABLED_ContainerLoadTest_RootAssetDestroyedWhileContainerLoading_ContainerFinishesLoad)
 #else
-    // Asset cancellation is temporarily disabled, re-enable this test when cancellation is more stable
+    // Asset cancellation is temporarily disabled, re-enable this test when cancellation is more stable. LYN-3263
     TEST_F(AssetManagerClearAssetReferenceTests, DISABLED_ContainerLoadTest_RootAssetDestroyedWhileContainerLoading_ContainerFinishesLoad)
 #endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
