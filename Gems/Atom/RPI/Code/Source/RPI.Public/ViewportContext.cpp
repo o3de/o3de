@@ -187,12 +187,7 @@ namespace AZ
 
         AZ::Transform ViewportContext::GetCameraTransform() const
         {
-            const Matrix4x4& worldToViewMatrix = GetDefaultView()->GetViewToWorldMatrix();
-            const Quaternion zUpToYUp = Quaternion::CreateRotationX(-AZ::Constants::HalfPi);
-            return AZ::Transform::CreateFromQuaternionAndTranslation(
-                Quaternion::CreateFromMatrix4x4(worldToViewMatrix) * zUpToYUp,
-                worldToViewMatrix.GetTranslation()
-            ).GetOrthogonalized();
+            return GetDefaultView()->GetCameraTransform();
         }
 
         void ViewportContext::SetCameraTransform(const AZ::Transform& transform)
