@@ -12,12 +12,8 @@
 
 #include <AzCore/Math/Transform.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
-#include <SceneAPI/FbxSceneBuilder/ImportContexts/FbxImportContexts.h>
 #include <SceneAPI/FbxSceneBuilder/ImportContexts/AssImpImportContexts.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/FbxImporterUtilities.h>
-#include <SceneAPI/FbxSDKWrapper/FbxNodeWrapper.h>
-#include <SceneAPI/FbxSDKWrapper/FbxSceneWrapper.h>
-#include <SceneAPI/FbxSDKWrapper/FbxTypeConverter.h>
+#include <SceneAPI/FbxSceneBuilder/Importers/ImporterUtilities.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
@@ -50,19 +46,7 @@ namespace AZ
                 dataPopulated.m_scene.GetGraph().SetContent(dataPopulated.m_currentGraphPosition,
                     AZStd::move(dataPopulated.m_graphData));
 
-                if (azrtti_istypeof<SceneDataPopulatedContext>(dataPopulated))
-                {
-                    SceneDataPopulatedContext* dataPopulatedContext = azrtti_cast<SceneDataPopulatedContext*>(&dataPopulated);
-                    SceneNodeAppendedContext nodeAppended(*dataPopulatedContext, dataPopulated.m_currentGraphPosition);
-                    nodeResults += Events::Process(nodeAppended);
-
-                    SceneNodeAddedAttributesContext addedAttributes(nodeAppended);
-                    nodeResults += Events::Process(addedAttributes);
-
-                    SceneNodeFinalizeContext finalizeNode(addedAttributes);
-                    nodeResults += Events::Process(finalizeNode);
-                }
-                else
+                if (azrtti_istypeof<AssImpSceneDataPopulatedContext>(dataPopulated))
                 {
                     AssImpSceneDataPopulatedContext* dataPopulatedContext = azrtti_cast<AssImpSceneDataPopulatedContext*>(&dataPopulated);
                     AssImpSceneNodeAppendedContext nodeAppended(*dataPopulatedContext, dataPopulated.m_currentGraphPosition);
@@ -91,13 +75,7 @@ namespace AZ
 
                 dataPopulated.m_scene.GetGraph().SetContent(dataPopulated.m_currentGraphPosition,
                     AZStd::move(dataPopulated.m_graphData));
-                if (azrtti_istypeof<SceneAttributeDataPopulatedContext>(dataPopulated))
-                {
-                    SceneAttributeDataPopulatedContext* dataPopulatedContext = azrtti_cast<SceneAttributeDataPopulatedContext*>(&dataPopulated);
-                    SceneAttributeNodeAppendedContext nodeAppended(*dataPopulatedContext, dataPopulated.m_currentGraphPosition);
-                    nodeResults += Events::Process(nodeAppended);
-                }
-                else
+                if (azrtti_istypeof<AssImpSceneAttributeDataPopulatedContext>(dataPopulated))
                 {
                     AssImpSceneAttributeDataPopulatedContext* dataPopulatedContext = azrtti_cast<AssImpSceneAttributeDataPopulatedContext*>(&dataPopulated);
                     AssImpSceneAttributeNodeAppendedContext nodeAppended(*dataPopulatedContext, dataPopulated.m_currentGraphPosition);
@@ -456,48 +434,6 @@ namespace AZ
 
                 return true;
             }
-
-            bool GetBindPoseLocalTransform(const FbxSDKWrapper::FbxSceneWrapper& sceneWrapper,
-                FbxSDKWrapper::FbxNodeWrapper& nodeWrapper, SceneAPI::DataTypes::MatrixType& xf)
-            {
-                PoseList poseList;
-                FbxArray<int> nodeIndices;
-
-                FbxNode* node = nodeWrapper.GetFbxNode();
-
-                FbxScene* scene = sceneWrapper.GetFbxScene();
-                FbxMatrix nodeMatrix;
-                if (FbxPose::GetBindPoseContaining(scene, node, poseList, nodeIndices))
-                {
-                    nodeMatrix = poseList[0]->GetMatrix(nodeIndices[0]);
-                }
-                else
-                {
-                    return false;
-                }
-
-                // We are after the local transform of the node while fbx bind pose provides the global transform. 
-                // To get the local transform, we multiply with the inverse of the parent's global transform. 
-                FbxNode* parentNode = node->GetParent();
-                FbxMatrix parentMatrix;
-                if (parentNode)
-                {
-                    poseList.Clear();
-                    nodeIndices.Clear();
-                    if (FbxPose::GetBindPoseContaining(scene, parentNode, poseList, nodeIndices))
-                    {
-                        parentMatrix = poseList[0]->GetMatrix(nodeIndices[0]);
-                    }
-                    else
-                    {
-                        parentMatrix = parentNode->EvaluateGlobalTransform();
-                    }
-                }
-                FbxMatrix nodeLocalMatrix = parentMatrix.Inverse() * nodeMatrix;
-                xf = FbxSDKWrapper::FbxTypeConverter::ToTransform(nodeLocalMatrix);
-                return true;
-            }
-
         } // namespace FbxSceneBuilder
     } // namespace SceneAPI
 } // namespace AZ

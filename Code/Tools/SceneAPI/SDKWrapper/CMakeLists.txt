@@ -9,4 +9,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(FBXSDK_LIBS ${BASE_PATH}/lib/vs2015/x64/$<IF:$<CONFIG:Debug>,debug,release>/libfbxsdk-md.lib)
+if (NOT PAL_TRAIT_BUILD_HOST_TOOLS)
+    return()
+endif()
+
+set(sdkwrapper_dir ${CMAKE_CURRENT_LIST_DIR}/../SDKWrapper)
+
+ly_add_target(
+    NAME SDKWrapper STATIC
+    NAMESPACE AZ
+    FILES_CMAKE
+        sdkwrapper_files.cmake
+    INCLUDE_DIRECTORIES
+        PUBLIC
+            .
+            ../..
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+            AZ::AzToolsFramework
+        PUBLIC
+            3rdParty::assimplib
+)
