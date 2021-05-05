@@ -33,17 +33,17 @@ namespace AZ
                 "Target object for Json Serialization is pointing to nothing during loading.");
         }
 
-        if (IsExplicitDefault(value))
-        {
-            return context.Report(Tasks::ReadField, Outcomes::DefaultsUsed, "Value has an explicit default.");
-        }
-
         BaseJsonSerializer* serializer = context.GetRegistrationContext()->GetSerializerForType(typeId);
         if (serializer)
         {
-            return serializer->Load(object, typeId, value, context);
+            bool isExplicitDefault = IsExplicitDefault(value);
+            bool manuallyDefaults = (serializer->GetOperationsFlags() & BaseJsonSerializer::OperationFlags::ManualDefault) ==
+                BaseJsonSerializer::OperationFlags::ManualDefault;
+            return !isExplicitDefault || (isExplicitDefault && manuallyDefaults)
+                ? serializer->Load(object, typeId, value, context)
+                : context.Report(Tasks::ReadField, Outcomes::DefaultsUsed, "Value has an explicit default.");
         }
-        
+
         const SerializeContext::ClassData* classData = context.GetSerializeContext()->FindClassData(typeId);
         if (!classData)
         {
@@ -56,8 +56,18 @@ namespace AZ
             serializer = context.GetRegistrationContext()->GetSerializerForType(classData->m_azRtti->GetGenericTypeId());
             if (serializer)
             {
-                return serializer->Load(object, typeId, value, context);
+                bool isExplicitDefault = IsExplicitDefault(value);
+                bool manuallyDefaults = (serializer->GetOperationsFlags() & BaseJsonSerializer::OperationFlags::ManualDefault) ==
+                    BaseJsonSerializer::OperationFlags::ManualDefault;
+                return !isExplicitDefault || (isExplicitDefault && manuallyDefaults)
+                    ? serializer->Load(object, typeId, value, context)
+                    : context.Report(Tasks::ReadField, Outcomes::DefaultsUsed, "Value has an explicit default.");
             }
+        }
+
+        if (IsExplicitDefault(value))
+        {
+            return context.Report(Tasks::ReadField, Outcomes::DefaultsUsed, "Value has an explicit default.");
         }
         
         if (classData->m_azRtti && (classData->m_azRtti->GetTypeTraits() & AZ::TypeTraits::is_enum) == AZ::TypeTraits::is_enum)

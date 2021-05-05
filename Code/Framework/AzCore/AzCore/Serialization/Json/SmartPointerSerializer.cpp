@@ -159,4 +159,9 @@ namespace AZ
         return context.Report(result, result.GetProcessing() != JSR::Processing::Halted ?
             "Successfully processed smart pointer." : "A problem occurred while processing a smart pointer.");
     }
+
+    BaseJsonSerializer::OperationFlags JsonSmartPointerSerializer::GetOperationsFlags() const
+    {
+        return OperationFlags::ManualDefault;
+    }
 } // namespace AZ

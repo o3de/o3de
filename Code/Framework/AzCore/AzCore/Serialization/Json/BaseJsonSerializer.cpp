@@ -208,6 +208,11 @@ namespace AZ
     // BaseJsonSerializer
     //
 
+    BaseJsonSerializer::OperationFlags BaseJsonSerializer::GetOperationsFlags() const
+    {
+        return OperationFlags::None;
+    }
+
     JsonSerializationResult::ResultCode BaseJsonSerializer::ContinueLoading(void* object, const Uuid& typeId, const rapidjson::Value& value,
         JsonDeserializerContext& context, Flags flags)
     {
