@@ -180,7 +180,7 @@ endif()
     file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/install/${NAME}/${NAME}_$<CONFIG>.cmake" CONTENT "${target_file_contents}")
     get_target_property(target_source_dir ${NAME} SOURCE_DIR)
     file(RELATIVE_PATH target_source_dir_relative ${CMAKE_SOURCE_DIR} ${target_source_dir})
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/install/${NAME}_$<CONFIG>.cmake"
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/install/${NAME}/${NAME}_$<CONFIG>.cmake"
         DESTINATION ${target_source_dir_relative}/${NAME}
         COMPONENT ${ly_install_target_COMPONENT}
     )
