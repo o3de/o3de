@@ -10,11 +10,9 @@
 *
 */
 
-#ifndef AZ_COLLECTING_PARTIAL_SRGS
-#error Do not include this file directly. Include the main .srgi file instead.
-#endif
+#include <Atom/Features/SrgSemantics.azsli>
 
-partial ShaderResourceGroup RayTracingSceneSrg
+ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
 {
     RaytracingAccelerationStructure m_scene;
 
@@ -153,5 +151,3 @@ partial ShaderResourceGroup RayTracingSceneSrg
     
     ByteAddressBuffer m_meshBuffers[];
 }
-
-
