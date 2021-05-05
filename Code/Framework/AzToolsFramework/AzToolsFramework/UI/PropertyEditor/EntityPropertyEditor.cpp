@@ -514,6 +514,9 @@ namespace AzToolsFramework
         m_emptyIcon = QIcon();
         m_clearIcon = QIcon(":/AssetBrowser/Resources/close.png");
 
+        QIcon icon = QIcon(QStringLiteral(":/Cursors/Grabbing.svg"));
+        m_dragCursor = QCursor(icon.pixmap(32), 10, 5);
+
         m_serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         AZ_Assert(m_serializeContext, "Failed to acquire application serialize context.");
@@ -4193,11 +4196,24 @@ namespace AzToolsFramework
     void EntityPropertyEditor::mousePressEvent(QMouseEvent* event)
     {
         ResetDrag(event);
+
+        PropertyRowWidget* rowWidget = FindPropertyRowWidgetAt(event->globalPos());
+        if (rowWidget && rowWidget->CanBeReordered() && event->buttons() & Qt::LeftButton)
+        {
+            QApplication::setOverrideCursor(m_dragCursor);
+
+        }
     }
 
     void EntityPropertyEditor::mouseReleaseEvent(QMouseEvent* event)
     {
         ResetDrag(event);
+
+        Qt::MouseButtons realButtons = QApplication::mouseButtons();
+        if (QApplication::overrideCursor() && !(event->buttons() & Qt::LeftButton))
+        {
+            QApplication::restoreOverrideCursor();
+        }
     }
 
     void EntityPropertyEditor::mouseMoveEvent(QMouseEvent* event)
@@ -4237,6 +4253,11 @@ namespace AzToolsFramework
     void EntityPropertyEditor::dropEvent(QDropEvent* event)
     {
         HandleDrop(event);
+
+        if (QApplication::overrideCursor())
+        {
+            QApplication::restoreOverrideCursor();
+        }
     }
 
     bool EntityPropertyEditor::HandleSelectionEvents(QObject* object, QEvent* event)
@@ -4729,6 +4750,31 @@ namespace AzToolsFramework
         return false;
     }
 
+    PropertyRowWidget* EntityPropertyEditor::FindPropertyRowWidgetAt(QPoint globalPos)
+    {
+        const QRect globalRect(globalPos, globalPos);
+
+        const bool dragSelected = DoesIntersectSelectedComponentEditor(globalRect);
+        const auto& componentEditors = dragSelected ? GetSelectedComponentEditors() : GetIntersectingComponentEditors(globalRect);
+
+        for (auto componentEditor : componentEditors)
+        {
+            AzToolsFramework::ReflectedPropertyEditor::WidgetList widgets = componentEditor->GetPropertyEditor()->GetWidgets();
+            for (AZStd::pair<InstanceDataNode*, PropertyRowWidget*> w : widgets)
+            {
+                if (w.second)
+                {
+                    if (DoesIntersectWidget(globalRect, reinterpret_cast<QWidget*>(w.second)) && w.second->CanBeReordered())
+                    {
+                        return w.second;
+                    }
+                }
+            }
+        }
+
+        return nullptr;
+    }
+
     bool EntityPropertyEditor::StartDrag(QMouseEvent* event)
     {
         // do not initiate a drag if property editor is disabled
@@ -4818,7 +4864,9 @@ namespace AzToolsFramework
             QSize imageSize;
             drag->setPixmap(m_reorderRowWidget->createDragImage(QColor("#8E863E"), QColor("#EAECAA"), 0.5f, imageSize));
             drag->setHotSpot(m_dragStartPosition - GetWidgetGlobalRect(m_reorderRowWidget).topLeft());
+            drag->setDragCursor(m_dragCursor.pixmap(), Qt::DropAction::MoveAction);
             drag->exec(Qt::MoveAction, Qt::MoveAction);
+            
         }
         else
         {

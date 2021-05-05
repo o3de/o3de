@@ -353,10 +353,15 @@ namespace AzToolsFramework
             delete m_containerAddButton;
         }
 
+        this->unsetCursor();
+
         if ((m_parentRow) && (m_parentRow->IsContainerEditable()))
         {
             if (!m_elementRemoveButton)
             {
+                QIcon icon = QIcon(QStringLiteral(":/Cursors/Grab_release.svg"));
+                this->setCursor(QCursor(icon.pixmap(32), 10, 5));
+
                 static QIcon s_iconRemove(QStringLiteral(":/stylesheet/img/UI20/delete-16.svg"));
                 m_elementRemoveButton = new QToolButton(this);
                 m_elementRemoveButton->setAutoRaise(true);
