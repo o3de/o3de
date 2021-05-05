@@ -254,6 +254,8 @@ class TestAutomation(TestAutomationBase):
         from . import C4044697_Material_PerfaceMaterialValidation as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.xfail(
+        reason="This test will sometimes fail as the ball will continue to roll before the timeout is reached.")
     @revert_physics_config
     def test_C4976202_RigidBody_StopsWhenBelowKineticThreshold(self, request, workspace, editor, launcher_platform):
         from . import C4976202_RigidBody_StopsWhenBelowKineticThreshold as test_module
@@ -468,12 +470,12 @@ class TestAutomation(TestAutomationBase):
         from . import C6090547_ForceRegion_ParentChildForceRegions as test_module
         self._run_test(request, workspace, editor, test_module)
         
-        @revert_physics_config
+    @revert_physics_config
     def test_C19578021_ShapeCollider_CanBeAdded(self, request, workspace, editor, launcher_platform):
         from . import C19578021_ShapeCollider_CanBeAdded as test_module
         self._run_test(request, workspace, editor, test_module)
         
-        @revert_physics_config
+    @revert_physics_config
     def test_C15425929_Undo_Redo(self, request, workspace, editor, launcher_platform):
         from . import C15425929_Undo_Redo as test_module
         self._run_test(request, workspace, editor, test_module)

@@ -1042,33 +1042,6 @@ bool CExportManager::AddSelectedEntityObjects()
     return true;
 }
 
-
-bool CExportManager::AddSelectedObjects()
-{
-    CSelectionGroup* pSelection = GetIEditor()->GetSelection();
-
-    int numObjects = pSelection->GetCount();
-    if (numObjects > m_data.m_objects.size())
-    {
-        m_data.m_objects.reserve(numObjects + 1); // +1 for terrain
-    }
-    // First run pipeline to precache geometry
-    m_isPrecaching = true;
-    for (int i = 0; i < numObjects; i++)
-    {
-        AddObject(pSelection->GetObject(i));
-    }
-
-    // Repeat pipeline to collect geometry
-    m_isPrecaching = false;
-    for (int i = 0; i < numObjects; i++)
-    {
-        AddObject(pSelection->GetObject(i));
-    }
-
-    return true;
-}
-
 bool CExportManager::AddSelectedRegionObjects()
 {
     AABB box;
@@ -1132,7 +1105,7 @@ bool CExportManager::ExportToFile(const char* filename, bool bClearDataAfterExpo
 }
 
 
-bool CExportManager::Export(const char* defaultName, const char* defaultExt, const char* defaultPath, bool isSelectedObjects, bool isSelectedRegionObjects, bool isOccluder, bool bAnimationExport)
+bool CExportManager::Export(const char* defaultName, const char* defaultExt, const char* defaultPath, [[maybe_unused]] bool isSelectedObjects, bool isSelectedRegionObjects, bool isOccluder, bool bAnimationExport)
 {
     m_bAnimationExport = bAnimationExport;
 
@@ -1176,10 +1149,6 @@ bool CExportManager::Export(const char* defaultName, const char* defaultExt, con
     if (m_bAnimationExport || CFileUtil::SelectSaveFile(filters, defaultExt, defaultPath, newFilename))
     {
         WaitCursor wait;
-        if (isSelectedObjects)
-        {
-            AddSelectedObjects();
-        }
         if (isSelectedRegionObjects)
         {
             AddSelectedRegionObjects();

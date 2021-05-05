@@ -411,7 +411,6 @@ private:
     void OnDisplayGotoPosition();
     void OnSnapangle();
     void OnUpdateSnapangle(QAction* action);
-    void OnEditRenameobject();
     void OnChangemovespeedIncrease();
     void OnChangemovespeedDecrease();
     void OnChangemovespeedChangestep();

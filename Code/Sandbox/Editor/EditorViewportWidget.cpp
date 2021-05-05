@@ -318,8 +318,8 @@ AzToolsFramework::ViewportInteraction::MousePick EditorViewportWidget::BuildMous
     using namespace AzToolsFramework::ViewportInteraction;
 
     MousePick mousePick;
-    mousePick.m_screenCoordinates = AzFramework::ScreenPoint(point.x(), point.y());
-    const auto& ray = m_renderViewport->ViewportScreenToWorldRay(point);
+    mousePick.m_screenCoordinates = ScreenPointFromQPoint(point);
+    const auto& ray = m_renderViewport->ViewportScreenToWorldRay(mousePick.m_screenCoordinates);
     if (ray.has_value())
     {
         mousePick.m_rayOrigin = ray.value().origin;
@@ -1124,14 +1124,14 @@ float EditorViewportWidget::AngleStep()
     return GetViewManager()->GetGrid()->GetAngleSnap();
 }
 
-AZ::Vector3 EditorViewportWidget::PickTerrain(const QPoint& point)
+AZ::Vector3 EditorViewportWidget::PickTerrain(const AzFramework::ScreenPoint& point)
 {
     FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
 
-    return LYVec3ToAZVec3(ViewToWorld(point, nullptr, true));
+    return LYVec3ToAZVec3(ViewToWorld(AzToolsFramework::ViewportInteraction::QPointFromScreenPoint(point), nullptr, true));
 }
 
-AZ::EntityId EditorViewportWidget::PickEntity(const QPoint& point)
+AZ::EntityId EditorViewportWidget::PickEntity(const AzFramework::ScreenPoint& point)
 {
     FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
 
@@ -1140,7 +1140,7 @@ AZ::EntityId EditorViewportWidget::PickEntity(const QPoint& point)
     AZ::EntityId entityId;
     HitContext hitInfo;
     hitInfo.view = this;
-    if (HitTest(point, hitInfo))
+    if (HitTest(AzToolsFramework::ViewportInteraction::QPointFromScreenPoint(point), hitInfo))
     {
         if (hitInfo.object && (hitInfo.object->GetType() == OBJTYPE_AZENTITY))
         {
@@ -1166,7 +1166,7 @@ void EditorViewportWidget::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visi
     visibleEntitiesOut.assign(m_entityVisibilityQuery.Begin(), m_entityVisibilityQuery.End());
 }
 
-QPoint EditorViewportWidget::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
+AzFramework::ScreenPoint EditorViewportWidget::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
 {
     return m_renderViewport->ViewportWorldToScreen(worldPosition);
 }
@@ -1993,7 +1993,7 @@ Vec3 EditorViewportWidget::WorldToView3D(const Vec3& wp, [[maybe_unused]] int nF
 //////////////////////////////////////////////////////////////////////////
 QPoint EditorViewportWidget::WorldToView(const Vec3& wp) const
 {
-    return m_renderViewport->ViewportWorldToScreen(LYVec3ToAZVec3(wp));
+    return AzToolsFramework::ViewportInteraction::QPointFromScreenPoint(m_renderViewport->ViewportWorldToScreen(LYVec3ToAZVec3(wp)));
 }
 //////////////////////////////////////////////////////////////////////////
 QPoint EditorViewportWidget::WorldToViewParticleEditor(const Vec3& wp, int width, int height) const
@@ -2015,7 +2015,8 @@ QPoint EditorViewportWidget::WorldToViewParticleEditor(const Vec3& wp, int width
 }
 
 //////////////////////////////////////////////////////////////////////////
-Vec3 EditorViewportWidget::ViewToWorld(const QPoint& vp, bool* collideWithTerrain, bool onlyTerrain, bool bSkipVegetation, bool bTestRenderMesh, bool* collideWithObject) const
+Vec3 EditorViewportWidget::ViewToWorld(
+    const QPoint& vp, bool* collideWithTerrain, bool onlyTerrain, bool bSkipVegetation, bool bTestRenderMesh, bool* collideWithObject) const
 {
     AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
 
@@ -2026,7 +2027,7 @@ Vec3 EditorViewportWidget::ViewToWorld(const QPoint& vp, bool* collideWithTerrai
     AZ_UNUSED(bSkipVegetation)
     AZ_UNUSED(collideWithObject)
 
-    auto ray = m_renderViewport->ViewportScreenToWorldRay(vp);
+    auto ray = m_renderViewport->ViewportScreenToWorldRay(AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(vp));
     if (!ray.has_value())
     {
         return Vec3(0, 0, 0);
@@ -2149,7 +2150,7 @@ bool EditorViewportWidget::RayRenderMeshIntersection(IRenderMesh* pRenderMesh, c
 void EditorViewportWidget::UnProjectFromScreen(float sx, float sy, float sz, float* px, float* py, float* pz) const
 {
     AZ::Vector3 wp;
-    wp = m_renderViewport->ViewportScreenToWorld({(int)sx, m_rcClient.bottom() - ((int)sy)}, sz).value_or(wp);
+    wp = m_renderViewport->ViewportScreenToWorld(AzFramework::ScreenPoint{(int)sx, m_rcClient.bottom() - ((int)sy)}, sz).value_or(wp);
     *px = wp.GetX();
     *py = wp.GetY();
     *pz = wp.GetZ();
@@ -2157,9 +2158,9 @@ void EditorViewportWidget::UnProjectFromScreen(float sx, float sy, float sz, flo
 
 void EditorViewportWidget::ProjectToScreen(float ptx, float pty, float ptz, float* sx, float* sy, float* sz) const
 {
-    QPoint screenPosition = m_renderViewport->ViewportWorldToScreen(AZ::Vector3{ptx, pty, ptz});
-    *sx = screenPosition.x();
-    *sy = screenPosition.y();
+    AzFramework::ScreenPoint screenPosition = m_renderViewport->ViewportWorldToScreen(AZ::Vector3{ptx, pty, ptz});
+    *sx = screenPosition.m_x;
+    *sy = screenPosition.m_y;
     *sz = 0.f;
 }
 

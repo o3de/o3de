@@ -2017,14 +2017,14 @@ float CRenderViewport::AngleStep()
     return GetViewManager()->GetGrid()->GetAngleSnap();
 }
 
-AZ::Vector3 CRenderViewport::PickTerrain(const QPoint& point)
+AZ::Vector3 CRenderViewport::PickTerrain(const AzFramework::ScreenPoint& point)
 {
     FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
 
-    return LYVec3ToAZVec3(ViewToWorld(point, nullptr, true));
+    return LYVec3ToAZVec3(ViewToWorld(AzToolsFramework::ViewportInteraction::QPointFromScreenPoint(point), nullptr, true));
 }
 
-AZ::EntityId CRenderViewport::PickEntity(const QPoint& point)
+AZ::EntityId CRenderViewport::PickEntity(const AzFramework::ScreenPoint& point)
 {
     FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
 
@@ -2033,7 +2033,7 @@ AZ::EntityId CRenderViewport::PickEntity(const QPoint& point)
     AZ::EntityId entityId;
     HitContext hitInfo;
     hitInfo.view = this;
-    if (HitTest(point, hitInfo))
+    if (HitTest(AzToolsFramework::ViewportInteraction::QPointFromScreenPoint(point), hitInfo))
     {
         if (hitInfo.object && (hitInfo.object->GetType() == OBJTYPE_AZENTITY))
         {
@@ -2074,12 +2074,13 @@ void CRenderViewport::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEn
     }
 }
 
-QPoint CRenderViewport::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
+AzFramework::ScreenPoint CRenderViewport::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
 {
     FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
 
     PreWidgetRendering();
-    const QPoint screenPosition = WorldToView(AZVec3ToLYVec3(worldPosition));
+    const AzFramework::ScreenPoint screenPosition =
+        AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(WorldToView(AZVec3ToLYVec3(worldPosition)));
     PostWidgetRendering();
 
     return screenPosition;
@@ -3911,18 +3912,6 @@ void CRenderViewport::RenderConstructionPlane()
         Ang3 angles = Ang3(pGrid->rotationAngles.x * gf_PI / 180.0, pGrid->rotationAngles.y * gf_PI / 180.0, pGrid->rotationAngles.z * gf_PI / 180.0);
         Matrix34 tm = Matrix33::CreateRotationXYZ(angles);
 
-        if (gSettings.snap.bGridGetFromSelected)
-        {
-            CSelectionGroup* sel = GetIEditor()->GetSelection();
-            if (sel->GetCount() > 0)
-            {
-                CBaseObject* obj = sel->GetObject(0);
-                tm = obj->GetWorldTM();
-                tm.OrthonormalizeFast();
-                tm.SetTranslation(Vec3(0, 0, 0));
-            }
-        }
-
         u = tm * u;
         v = tm * v;
     }
@@ -3977,11 +3966,6 @@ void CRenderViewport::RenderConstructionPlane()
 void CRenderViewport::RenderSnappingGrid()
 {
     // First, Check whether we should draw the grid or not.
-    CSelectionGroup* pSelGroup = GetIEditor()->GetSelection();
-    if (pSelGroup == nullptr || pSelGroup->GetCount() != 1)
-    {
-        return;
-    }
     CGrid* pGrid = GetViewManager()->GetGrid();
     if (pGrid->IsEnabled() == false && pGrid->IsAngleSnapEnabled() == false)
     {
