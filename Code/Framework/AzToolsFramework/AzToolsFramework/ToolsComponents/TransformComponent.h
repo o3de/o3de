@@ -32,6 +32,8 @@ namespace AzToolsFramework
 {
     namespace Components
     {
+        // this is a workaround for a bug which causes the button to appear with incorrect placement if added directly
+        // to the transform component
         class AddNonUniformScaleButton
         {
         public:
