@@ -116,11 +116,6 @@ namespace LmbrCentral
         return "Editor/Icons/Components/LensFlare.svg";
     }
 
-    AZ::Uuid LensFlareAssetHandler::GetComponentTypeId() const
-    {
-        return AZ::Uuid("{4B85E77D-91F9-40C5-8FCB-B494000A9E69}");
-    }
-
     void LensFlareAssetHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)
     {
         extensions.push_back(LENS_FLARE_EXT);
