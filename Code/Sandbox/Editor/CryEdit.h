@@ -230,7 +230,6 @@ public:
     void OnFileEditEditorini();
     void OnPreferences();
     void OnReloadTextures();
-    void OnReloadGeometry();
     void OnRedo();
     void OnUpdateRedo(QAction* action);
     void OnUpdateUndo(QAction* action);

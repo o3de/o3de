@@ -856,9 +856,6 @@ set(FILES
     Grid.h
     LayoutWnd.cpp
     LayoutWnd.h
-    ModelViewport.cpp
-    ModelViewport.h
-    ModelViewportDC.cpp
     EditorViewportWidget.cpp
     EditorViewportWidget.h
     ViewportManipulatorController.cpp

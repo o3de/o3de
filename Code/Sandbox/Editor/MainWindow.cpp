@@ -1081,8 +1081,6 @@ void MainWindow::InitActions()
     // Tools actions
     am->AddAction(ID_RELOAD_TEXTURES, tr("Reload Textures/Shaders"))
         .SetStatusTip(tr("Reload all textures."));
-    am->AddAction(ID_RELOAD_GEOMETRY, tr("Reload Geometry"))
-        .SetStatusTip(tr("Reload all geometries."));
     am->AddAction(ID_TOOLS_ENABLEFILECHANGEMONITORING, tr("Enable File Change Monitoring"));
     am->AddAction(ID_CLEAR_REGISTRY, tr("Clear Registry Data"))
         .SetStatusTip(tr("Clear Registry Data"));

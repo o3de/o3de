@@ -98,7 +98,6 @@ AZ_POP_DISABLE_WARNING
 #include "GridSettingsDialog.h"
 #include "LayoutConfigDialog.h"
 #include "ViewManager.h"
-#include "ModelViewport.h"
 #include "FileTypeUtils.h"
 #include "PluginManager.h"
 
@@ -389,7 +388,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_FILE_RESAVESLICES, OnFileResaveSlices)
     ON_COMMAND(ID_FILE_EDITEDITORINI, OnFileEditEditorini)
     ON_COMMAND(ID_PREFERENCES, OnPreferences)
-    ON_COMMAND(ID_RELOAD_GEOMETRY, OnReloadGeometry)
     ON_COMMAND(ID_REDO, OnRedo)
     ON_COMMAND(ID_TOOLBAR_WIDGET_REDO, OnRedo)
     ON_COMMAND(ID_RELOAD_TEXTURES, OnReloadTextures)
@@ -1906,11 +1904,6 @@ void CCryEditApp::LoadFile(QString fileName)
     {
         return;
     }
-    CViewport* vp = GetIEditor()->GetViewManager()->GetView(0);
-    if (CModelViewport* mvp = viewport_cast<CModelViewport*>(vp))
-    {
-        mvp->LoadObject(fileName, 1);
-    }
 
     LoadTagLocations();
 
@@ -2944,30 +2937,6 @@ void CCryEditApp::OnReloadTextures()
     CLogFile::WriteLine("Reloading Static objects textures and shaders.");
     GetIEditor()->GetObjectManager()->SendEvent(EVENT_RELOAD_TEXTURES);
     GetIEditor()->GetRenderer()->EF_ReloadTextures();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnReloadGeometry()
-{
-    CErrorsRecorder errRecorder(GetIEditor());
-    CWaitProgress wait("Reloading static geometry");
-
-    CLogFile::WriteLine("Reloading Static objects geometries.");
-
-    GetIEditor()->GetObjectManager()->SendEvent(EVENT_UNLOAD_GEOM);
-
-    GetIEditor()->GetObjectManager()->SendEvent(EVENT_RELOAD_GEOM);
-    GetIEditor()->Notify(eNotify_OnReloadTrackView);
-
-    // Rephysicalize viewport meshes
-    for (int i = 0; i < GetIEditor()->GetViewManager()->GetViewCount(); ++i)
-    {
-        CViewport* vp = GetIEditor()->GetViewManager()->GetView(i);
-        if (CModelViewport* mvp = viewport_cast<CModelViewport*>(vp))
-        {
-            mvp->RePhysicalize();
-        }
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

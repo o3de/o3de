@@ -89,6 +89,8 @@
 
 #include <QtGui/private/qhighdpiscaling_p.h>
 
+#include <physinterface.h>
+
 AZ_CVAR(
     bool, ed_visibility_use, true, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Enable/disable using the new IVisibilitySystem for Entity visibility determination");

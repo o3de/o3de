@@ -133,7 +133,6 @@
 #define ID_FILE_EDITEDITORINI                      33543
 #define ID_FILE_EDITLOGFILE                        33544
 #define ID_PREFERENCES                             33546
-#define ID_RELOAD_GEOMETRY                         33549
 #define ID_REDO                                    33550
 #define ID_SWITCH_PHYSICS                          33555
 #define ID_REF_COORDS_SYS                          33556
