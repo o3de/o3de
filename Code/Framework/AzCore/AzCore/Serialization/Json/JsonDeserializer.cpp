@@ -33,11 +33,6 @@ namespace AZ
                 "Target object for Json Serialization is pointing to nothing during loading.");
         }
 
-        /*if (IsExplicitDefault(value))
-        {
-            return context.Report(Tasks::ReadField, Outcomes::DefaultsUsed, "Value has an explicit default.");
-        }*/
-
         BaseJsonSerializer* serializer = context.GetRegistrationContext()->GetSerializerForType(typeId);
         if (serializer)
         {
