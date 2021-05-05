@@ -145,7 +145,6 @@ def OnEntityActivatedDeactivated_PrintMessage():
 
     def locate_expected_lines(line_list: list):
         found_lines = [printInfo.message.strip() for printInfo in section_tracer.prints]
-        print(f"bhanu: {found_lines}")
         return all(line in found_lines for line in line_list)
 
     # 1) Create temp level
