@@ -27,7 +27,7 @@ class CoreStack(core.Stack):
     """
 
     # Resource groups cannot start with 'AWS' or 'aws' so add this prefix
-    RESOURCE_GROUP_PREFIX = 'O3D'
+    RESOURCE_GROUP_PREFIX = 'O3DE'
 
     def __init__(self, scope: core.Construct, id_: str, project_name: str, feature_name: str, **kwargs) -> None:
         super().__init__(scope, id_, **kwargs)

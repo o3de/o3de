@@ -33,7 +33,6 @@
 
 // AzFramework
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzCore/Interface/Interface.h>
 
 // Editor
@@ -663,12 +662,6 @@ void CLayoutViewPane::SetFullscreenViewport(bool b)
         m_viewport->setParent(this);
         GetIEditor()->GetRenderer()->ChangeResolution(800, 600, 32, 80, false, false);
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CLayoutViewPane::SetFocusToViewportSearch()
-{
-    m_viewportTitleDlg.SetFocusToSearchField();
 }
 
 //////////////////////////////////////////////////////////////////////////

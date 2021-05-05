@@ -46,13 +46,11 @@ namespace AzToolsFramework
             }
 
             void RemoveLink(
-                TemplateId sourceTemplateId, TemplateId targetTemplateId, const InstanceAlias& instanceAlias,
-                LinkId linkId, UndoSystem::URSequencePoint* undoBatch)
+                TemplateId sourceTemplateId, TemplateId targetTemplateId, const InstanceAlias& instanceAlias, LinkId linkId,
+                PrefabDomReference linkPatches, UndoSystem::URSequencePoint* undoBatch)
             {
                 auto linkRemoveUndo = aznew PrefabUndoInstanceLink("Remove Link");
-                PrefabDom emptyLinkDom;
-                linkRemoveUndo->Capture(
-                    targetTemplateId, sourceTemplateId, instanceAlias, emptyLinkDom, linkId);
+                linkRemoveUndo->Capture(targetTemplateId, sourceTemplateId, instanceAlias, linkPatches, linkId);
                 linkRemoveUndo->SetParent(undoBatch);
                 linkRemoveUndo->Redo();
             }

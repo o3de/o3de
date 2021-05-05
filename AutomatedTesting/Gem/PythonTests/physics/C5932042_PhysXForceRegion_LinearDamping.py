@@ -135,7 +135,7 @@ def C5932042_PhysXForceRegion_LinearDamping():
 
     # Constants
     CLOSE_ENOUGH = 0.001
-    TIME_OUT = 2.0
+    TIME_OUT = 3.0
     INITIAL_VELOCITY = azmath.Vector3(0.0, 0.0, -10.0)
 
     # 1) Open level / Enter game mode
