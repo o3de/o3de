@@ -12,27 +12,32 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <QMainWindow>
-
-#include <AzCore/IO/Path/Path_fwd.h>
+#include <Qt/ScreenWidget.h>
 #endif
 
 namespace Ui
 {
-    class ProjectManagerWindowClass;
+    class NewProjectSettingsClass;
 }
 
-namespace ProjectManager
+namespace O3DE::ProjectManager
 {
-    class ProjectManagerWindow : public QMainWindow
+    class NewProjectSettings
+        : public ScreenWidget
     {
-
     public:
-        explicit ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& engineRootPath);
-        ~ProjectManagerWindow();
+        explicit NewProjectSettings(ProjectManagerWindow* window);
+        ~NewProjectSettings();
+
+    protected:
+        void ConnectSlotsAndSignals() override;
+
+    protected slots:
+        void HandleBackButton();
+        void HandleNextButton();
 
     private:
-        QScopedPointer<Ui::ProjectManagerWindowClass> m_ui;
+        QScopedPointer<Ui::NewProjectSettingsClass> m_ui;
     };
 
-} // namespace ProjectManager
+} // namespace O3DE::ProjectManager

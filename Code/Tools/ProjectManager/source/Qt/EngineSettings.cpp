@@ -10,22 +10,26 @@
  *
  */
 
-#include <Qt/FirstTimeUse.h>
+#include <Qt/EngineSettings.h>
 
-#include <Qt/ui_FirstTimeUse.h>
+#include <Qt/ui_EngineSettings.h>
 
-namespace ProjectManager
+namespace O3DE::ProjectManager
 {
-    FirstTimeUse::FirstTimeUse(QWidget* parent)
-        : QWidget(parent)
-        , m_ui(new Ui::FirstTimeUseClass())
+    EngineSettings::EngineSettings(ProjectManagerWindow* window)
+        : ScreenWidget(window)
+        , m_ui(new Ui::EngineSettingsClass())
     {
         m_ui->setupUi(this);
     }
 
-    FirstTimeUse::~FirstTimeUse()
+    EngineSettings::~EngineSettings()
     {
     }
 
-    //#include <Qt/moc_FirstTimeUse.cpp>
-} // namespace ProjectManager
+    void EngineSettings::ConnectSlotsAndSignals()
+    {
+        // Do nothing for now
+    }
+
+} // namespace O3DE::ProjectManager

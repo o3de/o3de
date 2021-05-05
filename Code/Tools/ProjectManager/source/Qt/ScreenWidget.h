@@ -12,25 +12,27 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <Qt/ProjectManagerWindow.h>
+
 #include <QWidget>
 #endif
 
-namespace Ui
+namespace O3DE::ProjectManager
 {
-    class FirstTimeUseClass;
-}
-
-namespace ProjectManager
-{
-    class FirstTimeUse : public QWidget
+    class ScreenWidget
+        : public QWidget
     {
-
     public:
-        explicit FirstTimeUse(QWidget* parent);
-        ~FirstTimeUse();
+        explicit ScreenWidget(ProjectManagerWindow* window)
+            : QWidget(window->GetScreenStack())
+            , m_projectManagerWindow(window)
+        {
+        }
 
-    private:
-        QScopedPointer<Ui::FirstTimeUseClass> m_ui;
+    protected:
+        virtual void ConnectSlotsAndSignals() = 0;
+
+        ProjectManagerWindow* m_projectManagerWindow;
     };
 
-} // namespace ProjectManager
+} // namespace O3DE::ProjectManager
