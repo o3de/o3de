@@ -832,32 +832,7 @@ void CTrackViewNodesCtrl::UpdateAnimNodeRecord(CRecord* record, CTrackViewAnimNo
     }
     else if (nodeType == AnimNodeType::Material)
     {
-        // Check if a valid material can be found by the node name.
-        _smart_ptr<IMaterial> pMaterial = nullptr;
-        QString matName;
-        int subMtlIndex = GetMatNameAndSubMtlIndexFromName(matName, animNode->GetName());
-        pMaterial = gEnv->p3DEngine->GetMaterialManager()->FindMaterial(matName.toUtf8().data());
-        if (pMaterial)
-        {
-            bool bMultiMat = pMaterial->GetSubMtlCount() > 0;
-            bool bMultiMatWithoutValidIndex = bMultiMat && (subMtlIndex < 0 || subMtlIndex >= pMaterial->GetSubMtlCount());
-            bool bLeafMatWithIndex = !bMultiMat && subMtlIndex != -1;
-            if (bMultiMatWithoutValidIndex || bLeafMatWithIndex)
-            {
-                pMaterial = nullptr;
-            }
-        }
-
-        if (!pMaterial)
-        {
-            record->setForeground(0, TextColorForInvalidMaterial);
-        }
-        else
-        {
-            // set to default color from palette
-            // materials that originally pointed to material groups and are changed to sub-materials need this to reset their color
-            record->setForeground(0, palette().color(foregroundRole()));
-        }
+        record->setForeground(0, TextColorForInvalidMaterial);
     }
 
     // Mark the active director and other directors properly.
@@ -2161,43 +2136,6 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
         contextMenu.main.addAction("Edit Events...")->setData(eMI_EditEvents);
         bAppended = true;
-    }
-
-    // Sub material menu
-    if (bOnNode && animNode->GetType() == AnimNodeType::Material)
-    {
-        QString matName;
-        int subMtlIndex = GetMatNameAndSubMtlIndexFromName(matName, animNode->GetName());
-        _smart_ptr<IMaterial> pMtl = gEnv->p3DEngine->GetMaterialManager()->FindMaterial(matName.toUtf8().data());
-        bool bMultMatNode = pMtl ? pMtl->GetSubMtlCount() > 0 : false;
-
-        bool bMatAppended = false;
-
-        if (bMultMatNode)
-        {
-            for (int k = 0; k < pMtl->GetSubMtlCount(); ++k)
-            {
-                _smart_ptr<IMaterial> pSubMaterial = pMtl->GetSubMtl(k);
-
-                if (pSubMaterial)
-                {
-                    QString subMaterialName = pSubMaterial->GetName();
-
-                    if (!subMaterialName.isEmpty())
-                    {
-                        AddMenuSeperatorConditional(contextMenu.main, bAppended);
-                        QString subMatName = QString("[%1] %2").arg(k + 1).arg(subMaterialName);
-                        QAction* a = contextMenu.main.addAction(subMatName);
-                        a->setData(eMI_SelectSubmaterialBase + k);
-                        a->setCheckable(true);
-                        a->setChecked(k == subMtlIndex);
-                        bMatAppended = true;
-                    }
-                }
-            }
-        }
-
-        bAppended = bAppended || bMatAppended;
     }
 
     // Delete track menu

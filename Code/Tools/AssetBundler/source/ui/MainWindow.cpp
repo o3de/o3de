@@ -63,7 +63,10 @@ namespace AssetBundler
         // Set up Tabs
         AssetBundlerTabWidget::InitAssetBundlerSettings(m_guiApplicationManager->GetCurrentProjectFolder().c_str());
 
-        m_seedListTab.reset(new SeedTabWidget(this, m_guiApplicationManager, QString(m_guiApplicationManager->GetAssetBundlingFolder().c_str())));
+        m_seedListTab.reset(new SeedTabWidget(
+            this,
+            m_guiApplicationManager,
+            QString(m_guiApplicationManager->GetAssetBundlingFolder().c_str())));
         m_ui->tabWidget->addTab(m_seedListTab.data(), m_seedListTab->GetTabTitle());
 
         m_assetListTab.reset(new AssetListTabWidget(this, m_guiApplicationManager));

@@ -50,8 +50,6 @@
 #include "Include/IObjectManager.h"
 #include "CryEditDoc.h"
 #include "QtViewPaneManager.h"
-#include "AzAssetBrowser/Preview/LegacyPreviewerFactory.h"
-
 
 namespace AzAssetBrowserRequestHandlerPrivate
 {
@@ -230,18 +228,15 @@ namespace AzAssetBrowserRequestHandlerPrivate
 }
 
 AzAssetBrowserRequestHandler::AzAssetBrowserRequestHandler()
-    : m_previewerFactory(aznew LegacyPreviewerFactory)
 {
     using namespace AzToolsFramework::AssetBrowser;
 
     AssetBrowserInteractionNotificationBus::Handler::BusConnect();
     AzQtComponents::DragAndDropEventsBus::Handler::BusConnect(AzQtComponents::DragAndDropContexts::EditorViewport);
-    AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusConnect();
 }
 
 AzAssetBrowserRequestHandler::~AzAssetBrowserRequestHandler()
 {
-    AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusDisconnect();
     AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
     AzQtComponents::DragAndDropEventsBus::Handler::BusDisconnect();
 }
@@ -525,15 +520,6 @@ void AzAssetBrowserRequestHandler::Drop(QDropEvent* event, AzQtComponents::DragA
     {
         ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, spawnedEntities);
     }
-}
-
-const AzToolsFramework::AssetBrowser::PreviewerFactory* AzAssetBrowserRequestHandler::GetPreviewerFactory(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const
-{
-    if (m_previewerFactory->IsEntrySupported(entry))
-    {
-        return m_previewerFactory.get();
-    }
-    return nullptr;
 }
 
 void AzAssetBrowserRequestHandler::AddSourceFileOpeners(const char* fullSourceFileName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers)

@@ -12,10 +12,29 @@
 set(FILES
     project_manager.qrc
     source/main.cpp
-    Qt/FirstTimeUse.h
-    Qt/FirstTimeUse.cpp
-    Qt/FirstTimeUse.ui
-    Qt/ProjectManagerWindow.h
-    Qt/ProjectManagerWindow.cpp
-    Qt/ProjectManagerWindow.ui
+    source/ScreenDefs.h
+    source/ScreenFactory.h
+    source/ScreenFactory.cpp
+    source/Qt/ScreenWidget.h
+    source/Qt/FirstTimeUse.h
+    source/Qt/FirstTimeUse.cpp
+    source/Qt/FirstTimeUse.ui
+    source/Qt/ProjectManagerWindow.h
+    source/Qt/ProjectManagerWindow.cpp
+    source/Qt/ProjectManagerWindow.ui
+    source/Qt/NewProjectSettings.h
+    source/Qt/NewProjectSettings.cpp
+    source/Qt/NewProjectSettings.ui
+    source/Qt/GemCatalog.h
+    source/Qt/GemCatalog.cpp
+    source/Qt/GemCatalog.ui
+    source/Qt/ProjectsHome.h
+    source/Qt/ProjectsHome.cpp
+    source/Qt/ProjectsHome.ui
+    source/Qt/ProjectSettings.h
+    source/Qt/ProjectSettings.cpp
+    source/Qt/ProjectSettings.ui
+    source/Qt/EngineSettings.h
+    source/Qt/EngineSettings.cpp
+    source/Qt/EngineSettings.ui
 )

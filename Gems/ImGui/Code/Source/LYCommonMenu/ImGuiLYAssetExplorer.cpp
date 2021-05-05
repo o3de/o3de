@@ -24,6 +24,7 @@
 #include <LmbrCentral/Rendering/RenderNodeBus.h>
 #include <IRenderAuxGeom.h>
 #include <IViewSystem.h>
+#include <IConsole.h>
 
 #include "ImGuiColorDefines.h"
 
