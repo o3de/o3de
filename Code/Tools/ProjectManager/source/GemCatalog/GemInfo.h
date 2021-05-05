@@ -25,10 +25,10 @@ namespace O3DE::ProjectManager
     public:
         enum Platform
         {
-            ANDROID = 0x0,
-            IOS = 0x1,
-            LINUX = 0x2,
-            WINDOWS = 0x3,
+            Android = 0x0,
+            iOS = 0x1,
+            Linux = 0x2,
+            Windows = 0x3,
         };
         Q_DECLARE_FLAGS(Platforms, Platform)
 
