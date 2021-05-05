@@ -28,7 +28,8 @@ namespace O3DE::ProjectManager
             Android = 0x0,
             iOS = 0x1,
             Linux = 0x2,
-            Windows = 0x3,
+            macOS = 0x3,
+            Windows = 0x4
         };
         Q_DECLARE_FLAGS(Platforms, Platform)
 
