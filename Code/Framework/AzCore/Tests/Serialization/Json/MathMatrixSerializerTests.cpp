@@ -171,7 +171,7 @@ namespace JsonSerializationTests
 
         typename Descriptor::MatrixType CreateMatrixInstance(InputTypes testType)
         {
-            Descriptor::MatrixType matrix;
+            typename Descriptor::MatrixType matrix;
             if (testType == InputTypes::Zero)
             {
                 matrix = Descriptor::MatrixType::CreateZero();
@@ -208,9 +208,9 @@ namespace JsonSerializationTests
             float pitch = random.GetRandomFloat() * 360.0f;
             float yaw = random.GetRandomFloat() * 360.0f;
             const AZ::Vector3 eulerRadians = AZ::Vector3DegToRad(AZ::Vector3{ roll, pitch, yaw });
-            const auto rotX = Descriptor::MatrixType::CreateRotationX(eulerRadians.GetX());
-            const auto rotY = Descriptor::MatrixType::CreateRotationY(eulerRadians.GetY());
-            const auto rotZ = Descriptor::MatrixType::CreateRotationZ(eulerRadians.GetZ());
+            const auto rotX = typename Descriptor::MatrixType::CreateRotationX(eulerRadians.GetX());
+            const auto rotY = typename Descriptor::MatrixType::CreateRotationY(eulerRadians.GetY());
+            const auto rotZ = typename Descriptor::MatrixType::CreateRotationZ(eulerRadians.GetZ());
             auto matrix = rotX * rotY * rotZ;
 
             // apply a scale
@@ -242,7 +242,7 @@ namespace JsonSerializationTests
         constexpr static size_t ColumnCount = 3;
         constexpr static size_t ElementCount = RowCount * ColumnCount;
         constexpr static bool HasTranslation = false;
-        using CreateQuaternionFunc = AZ::Quaternion(*) (const class MatrixType&);
+        using CreateQuaternionFunc = AZ::Quaternion(*) (const typename MatrixType&);
         constexpr static CreateQuaternionFunc CreateQuaternion = &AZ::Quaternion::CreateFromMatrix3x3;
     };
 
@@ -254,7 +254,7 @@ namespace JsonSerializationTests
         constexpr static size_t ColumnCount = 4;
         constexpr static size_t ElementCount = RowCount * ColumnCount;
         constexpr static bool HasTranslation = true;
-        using CreateQuaternionFunc = AZ::Quaternion(*) (const class MatrixType&);
+        using CreateQuaternionFunc = AZ::Quaternion(*) (const typename MatrixType&);
         constexpr static CreateQuaternionFunc CreateQuaternion = &AZ::Quaternion::CreateFromMatrix3x4;
     };
 
@@ -266,7 +266,7 @@ namespace JsonSerializationTests
         constexpr static size_t ColumnCount = 4;
         constexpr static size_t ElementCount = RowCount * ColumnCount;
         constexpr static bool HasTranslation = true;
-        using CreateQuaternionFunc = AZ::Quaternion(*) (const class MatrixType&);
+        using CreateQuaternionFunc = AZ::Quaternion(*) (const typename MatrixType&);
         constexpr static CreateQuaternionFunc CreateQuaternion = &AZ::Quaternion::CreateFromMatrix4x4;
     };
 
@@ -479,7 +479,7 @@ namespace JsonSerializationTests
     TYPED_TEST(JsonMathMatrixSerializerTests, LoadSave_Arbitrary_SavesAndLoadsArbitraryMatrix)
     {
         using namespace AZ::JsonSerializationResult;
-        using Descriptor = JsonMathMatrixSerializerTests<TypeParam>::Descriptor;
+        using Descriptor = typename JsonMathMatrixSerializerTests<TypeParam>::Descriptor;
 
         auto defaultValue = Descriptor::MatrixType::CreateIdentity();
         auto elementCount = Descriptor::RowCount * Descriptor::ColumnCount;

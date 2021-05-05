@@ -293,7 +293,7 @@ namespace AZ::JsonMathMatrixSerializerInternal
     }
 
     template<typename MatrixType>
-    AZ::Quaternion CreateQuaternion(typename const MatrixType& matrix);
+    AZ::Quaternion CreateQuaternion(const typename MatrixType& matrix);
 
     template<>
     AZ::Quaternion CreateQuaternion<AZ::Matrix3x3>(const AZ::Matrix3x3& matrix)
