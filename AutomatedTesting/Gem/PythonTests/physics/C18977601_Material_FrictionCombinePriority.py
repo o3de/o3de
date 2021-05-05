@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C18977601
 # Test Case Title : Verify that when two objects with different materials collide, the friction combine priority works
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/18977601
+
 
 
 # fmt: off
