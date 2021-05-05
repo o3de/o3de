@@ -310,8 +310,8 @@ endif()
 ## Smoke ##
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_pytest(
-        NAME AutomatedTesting::SmokeTest_Periodic
-        TEST_SUITE periodic
+        NAME AutomatedTesting::SmokeTest
+        TEST_SUITE smoke
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/smoke
         TIMEOUT 3600
