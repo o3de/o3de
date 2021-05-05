@@ -20,7 +20,7 @@ namespace Ui
     class NewProjectSettingsClass;
 }
 
-namespace O3de::ProjectManager
+namespace O3DE::ProjectManager
 {
     class NewProjectSettings
         : public ScreenWidget
@@ -40,4 +40,4 @@ namespace O3de::ProjectManager
         QScopedPointer<Ui::NewProjectSettingsClass> m_ui;
     };
 
-} // namespace O3de::ProjectManager
+} // namespace O3DE::ProjectManager

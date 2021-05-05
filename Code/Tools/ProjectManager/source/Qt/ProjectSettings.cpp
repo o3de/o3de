@@ -14,7 +14,7 @@
 
 #include <Qt/ui_ProjectSettings.h>
 
-namespace O3de::ProjectManager
+namespace O3DE::ProjectManager
 {
     ProjectSettings::ProjectSettings(ProjectManagerWindow* window)
         : ScreenWidget(window)
@@ -39,4 +39,4 @@ namespace O3de::ProjectManager
         m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::GemCatalog);
     }
 
-} // namespace O3de::ProjectManager
+} // namespace O3DE::ProjectManager

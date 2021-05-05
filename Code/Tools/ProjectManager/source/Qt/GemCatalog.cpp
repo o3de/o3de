@@ -14,7 +14,7 @@
 
 #include <Qt/ui_GemCatalog.h>
 
-namespace O3de::ProjectManager
+namespace O3DE::ProjectManager
 {
     GemCatalog::GemCatalog(ProjectManagerWindow* window)
         : ScreenWidget(window)
@@ -44,4 +44,4 @@ namespace O3de::ProjectManager
         m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::ProjectsHome);
     }
 
-} // namespace O3de::ProjectManager
+} // namespace O3DE::ProjectManager

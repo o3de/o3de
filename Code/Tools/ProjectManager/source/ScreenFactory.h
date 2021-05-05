@@ -18,7 +18,7 @@
 #include <QWidget>
 
 
-namespace O3de::ProjectManager
+namespace O3DE::ProjectManager
 {
     QWidget* BuildScreen(ProjectManagerWindow* window, ProjectManagerScreen screen);
-} // namespace O3de::ProjectManager
+} // namespace O3DE::ProjectManager

@@ -20,7 +20,7 @@ namespace Ui
     class FirstTimeUseClass;
 }
 
-namespace O3de::ProjectManager
+namespace O3DE::ProjectManager
 {
     class FirstTimeUse
         : public ScreenWidget
@@ -40,4 +40,4 @@ namespace O3de::ProjectManager
         QScopedPointer<Ui::FirstTimeUseClass> m_ui;
     };
 
-} // namespace O3de::ProjectManager
+} // namespace O3DE::ProjectManager

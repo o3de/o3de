@@ -20,7 +20,7 @@
 
 #include <Qt/ui_ProjectManagerWindow.h>
 
-namespace O3de::ProjectManager
+namespace O3DE::ProjectManager
 {
     ProjectManagerWindow::ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& engineRootPath)
         : QMainWindow(parent)
@@ -103,4 +103,4 @@ namespace O3de::ProjectManager
         ChangeToScreen(ProjectManagerScreen::EngineSettings);
     }
 
-} // namespace O3de::ProjectManager
+} // namespace O3DE::ProjectManager

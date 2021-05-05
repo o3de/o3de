@@ -17,7 +17,7 @@
 #include <QWidget>
 #endif
 
-namespace O3de::ProjectManager
+namespace O3DE::ProjectManager
 {
     class ScreenWidget
         : public QWidget
@@ -39,4 +39,4 @@ namespace O3de::ProjectManager
         ProjectManagerWindow* m_projectManagerWindow;
     };
 
-} // namespace O3de::ProjectManager
+} // namespace O3DE::ProjectManager

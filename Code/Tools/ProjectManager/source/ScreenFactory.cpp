@@ -18,7 +18,7 @@
 #include <Qt/ProjectSettings.h>
 #include <Qt/EngineSettings.h>
 
-namespace O3de::ProjectManager
+namespace O3DE::ProjectManager
 {
     QWidget* BuildScreen(ProjectManagerWindow* window, ProjectManagerScreen screen)
     {
@@ -40,4 +40,4 @@ namespace O3de::ProjectManager
             return new QWidget(window->GetScreenStack());
         }
     }
-} // namespace O3de::ProjectManager
+} // namespace O3DE::ProjectManager
