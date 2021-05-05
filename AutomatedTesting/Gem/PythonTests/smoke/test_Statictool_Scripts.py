@@ -45,4 +45,4 @@ class TestStatictoolScripts(object):
 
         for tool in static_tools:
             verify_help_message(tool)
-            
+              

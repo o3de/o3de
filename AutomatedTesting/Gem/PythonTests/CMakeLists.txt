@@ -316,9 +316,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         PATH ${CMAKE_CURRENT_LIST_DIR}/smoke
         TIMEOUT 3600
         RUNTIME_DEPENDENCIES
-	        AZ::AssetProcessor
+            AZ::AssetProcessor
             AZ::PythonBindingsExample
             Legacy::Editor
             AutomatedTesting.GameLauncher
             AutomatedTesting.Assets
-
+   
