@@ -31,7 +31,6 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Logging/MissingAssetLogger.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzCore/Interface/Interface.h>
 
 
@@ -1148,31 +1147,6 @@ void CSystem::SleepIfInactive()
     {
         return;
     }
-
-#if defined(WIN32)
-    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        WIN_HWND hRendWnd = GetIRenderer()->GetHWND();
-        if (!hRendWnd)
-        {
-            return;
-        }
-
-        AZ_TRACE_METHOD();
-        // Loop here waiting for window to be activated.
-        for (int nLoops = 0; nLoops < 5; nLoops++)
-        {
-            WIN_HWND hActiveWnd = ::GetActiveWindow();
-            if (hActiveWnd == hRendWnd)
-            {
-                break;
-            }
-
-            AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::PumpSystemEventLoopUntilEmpty);
-            Sleep(5);
-        }
-    }
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////

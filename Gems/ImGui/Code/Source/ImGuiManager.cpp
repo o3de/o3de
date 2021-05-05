@@ -26,7 +26,6 @@
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <IConsole.h>
 #include <ITimer.h>
 #include <imgui/imgui_internal.h>
@@ -380,14 +379,8 @@ void ImGuiManager::Render()
     io.DeltaTime = gEnv->pTimer->GetFrameTime();
     //// END FROM PREUPDATE
 
-    AZ::u32 backBufferWidth = 0;
-    AZ::u32 backBufferHeight = 0;
-
-    if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        backBufferWidth = m_windowSize.m_width;
-        backBufferHeight = m_windowSize.m_height;
-    }
+    AZ::u32 backBufferWidth = m_windowSize.m_width;
+    AZ::u32 backBufferHeight = m_windowSize.m_height;
 
     // Find ImGui Render Resolution. 
     int renderRes[2];
@@ -759,10 +752,7 @@ void ImGuiManager::RenderImGuiBuffers(const ImVec2& scaleRects)
     //@rky: Only render the main ImGui if it is visible
     if (m_clientMenuBarState != DisplayState::Hidden)
     {
-        if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-        {
-            OtherActiveImGuiRequestBus::Broadcast(&OtherActiveImGuiRequestBus::Events::RenderImGuiBuffers, *drawData);
-        }
+        OtherActiveImGuiRequestBus::Broadcast(&OtherActiveImGuiRequestBus::Events::RenderImGuiBuffers, *drawData);
     }
 }
 

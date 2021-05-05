@@ -24,7 +24,6 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <QImageReader>
 #include <QDirIterator>
 #include <GradientSignalSystemComponent.h>

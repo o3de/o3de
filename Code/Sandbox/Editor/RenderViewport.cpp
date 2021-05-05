@@ -42,7 +42,6 @@
 #   include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 #endif // defined(AZ_PLATFORM_WINDOWS)
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>                   // for AzFramework::InputDeviceMouse
-#include <AzFramework/API/AtomActiveInterface.h>
 
 // AzQtComponents
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
@@ -274,13 +273,10 @@ void CRenderViewport::resizeEvent(QResizeEvent* event)
 
     gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_RESIZE, width(), height());
 
-    if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        // We queue the window resize event because the render overlay may be hidden.
-        // If the render overlay is not visible, the native window that is backing it will
-        // also be hidden, and it will not resize until it becomes visible.
-        m_windowResizedEvent = true;
-    }
+    // We queue the window resize event because the render overlay may be hidden.
+    // If the render overlay is not visible, the native window that is backing it will
+    // also be hidden, and it will not resize until it becomes visible.
+    m_windowResizedEvent = true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3621,11 +3617,8 @@ bool CRenderViewport::CreateRenderContext()
     {
         m_bRenderContextCreated = true;
 
-        if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-        {
-            AzFramework::WindowRequestBus::Handler::BusConnect(renderOverlayHWND());
-            AzFramework::WindowSystemNotificationBus::Broadcast(&AzFramework::WindowSystemNotificationBus::Handler::OnWindowCreated, renderOverlayHWND());
-        }
+        AzFramework::WindowRequestBus::Handler::BusConnect(renderOverlayHWND());
+        AzFramework::WindowSystemNotificationBus::Broadcast(&AzFramework::WindowSystemNotificationBus::Handler::OnWindowCreated, renderOverlayHWND());
 
         WIN_HWND oldContext = m_renderer->GetCurrentContextHWND();
         m_renderer->CreateContext(renderOverlayHWND());

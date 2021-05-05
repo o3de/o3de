@@ -18,7 +18,6 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 
 namespace WhiteBox
 {

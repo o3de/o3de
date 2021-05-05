@@ -36,8 +36,6 @@
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Interface/Interface.h>
 
-#include <AzFramework/API/AtomActiveInterface.h>
-
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
 
 // Class to implement the WindowRequestBus::Handler instead of the QViewport class.
@@ -256,7 +254,7 @@ bool QViewport::CreateRenderContext()
 
     HWND windowHandle = reinterpret_cast<HWND>(QWidget::winId());
 
-    if( AZ::Interface<AzFramework::AtomActiveInterface>::Get() && m_renderContextCreated && windowHandle == m_lastHwnd)
+    if( m_renderContextCreated && windowHandle == m_lastHwnd)
     {
         // the hwnd has not changed, no need to destroy and recreate context (and swap chain etc)
         return false;
@@ -268,13 +266,10 @@ bool QViewport::CreateRenderContext()
     {
         m_renderContextCreated = true;
 
-        if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-        {
-            m_viewportRequests.get()->BusConnect(windowHandle);
-            AzFramework::WindowSystemNotificationBus::Broadcast(&AzFramework::WindowSystemNotificationBus::Handler::OnWindowCreated, windowHandle);
+        m_viewportRequests.get()->BusConnect(windowHandle);
+        AzFramework::WindowSystemNotificationBus::Broadcast(&AzFramework::WindowSystemNotificationBus::Handler::OnWindowCreated, windowHandle);
 
-            m_lastHwnd = windowHandle;
-        }
+        m_lastHwnd = windowHandle;
 
         StorePreviousContext();
         GetIEditor()->GetEnv()->pRenderer->CreateContext(windowHandle);

@@ -138,7 +138,7 @@ namespace AssetBundler
         m_watchedFolders.insert(m_guiApplicationManager->GetSeedListsFolder().c_str());
 
         // Get the list of default Seed List files
-        m_filePathToGemNameMap = AssetBundler::GetDefaultSeedListFiles(GetCachedEngineRoot().c_str(), m_guiApplicationManager->GetCurrentProjectName(),
+        m_filePathToGemNameMap = AssetBundler::GetDefaultSeedListFiles(AZStd::string_view{ AZ::Utils::GetEnginePath() }, m_guiApplicationManager->GetCurrentProjectName(),
             m_guiApplicationManager->GetGemInfoList(), m_guiApplicationManager->GetEnabledPlatforms());
 
         // Get the list of default Seeds that are not stored in a Seed List file on-disk
