@@ -112,8 +112,7 @@ bool ViewportManipulatorControllerInstance::HandleInputChannelEvent(const AzFram
             m_state.m_mousePick.m_screenCoordinates = screenPosition;
             AZStd::optional<ProjectedViewportRay> ray;
             ViewportInteractionRequestBus::EventResult(
-                ray, GetViewportId(), &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay,
-                QPoint(screenPosition.m_x, screenPosition.m_y));
+                ray, GetViewportId(), &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay, screenPosition);
 
             if (ray.has_value())
             {
