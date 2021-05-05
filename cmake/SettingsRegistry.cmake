@@ -125,15 +125,14 @@ function(ly_delayed_generate_settings_registry)
             endif()
             get_property(gem_relative_source_dir TARGET ${gem_target} PROPERTY SOURCE_DIR)
             if(gem_relative_source_dir)
-                # Most gems CMakeLists.txt files reside in the <GemSourceDir>/Code/  so remove "Code/"  from the path
-                while(gem_relative_source_dir MATCHES ".*/Code$")
+                # Most gems SOURCE dir is nested in the path, we need to find the path to the gem.json file
+                while(NOT EXISTS ${gem_relative_source_dir}/gem.json)
                     get_filename_component(gem_relative_source_dir ${gem_relative_source_dir} DIRECTORY)
                 endwhile()
                 file(TO_CMAKE_PATH ${LY_ROOT_FOLDER} ly_root_folder_cmake)
                 file(RELATIVE_PATH gem_relative_source_dir ${ly_root_folder_cmake} ${gem_relative_source_dir})
             endif()
 
-            message("gem_target: ${gem_target}, gem_relative_source_dir: ${gem_relative_source_dir}")
             # Strip target namespace from gem targets before configuring them into the json template
             ly_strip_target_namespace(TARGET ${gem_target} OUTPUT_VARIABLE stripped_gem_target)
             string(CONFIGURE ${gem_module_template} gem_module_json @ONLY)
