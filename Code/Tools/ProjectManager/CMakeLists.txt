@@ -24,11 +24,8 @@ ly_add_target(
         project_manager_files.cmake
         Platform/${PAL_PLATFORM_NAME}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
-        PUBLIC
-            .
         PRIVATE
             Source
-
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::Qt::Core
