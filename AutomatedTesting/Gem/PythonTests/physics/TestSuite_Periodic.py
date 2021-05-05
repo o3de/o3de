@@ -450,7 +450,7 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','C3510644_Collider_CollisionGroups.setreg', 'AutomatedTesting/Registry')
+    @fm.file_override('physxsystemconfiguration.setreg','C3510644_Collider_CollisionGroups.setreg_override', 'AutomatedTesting/Registry')
     def test_C3510644_Collider_CollisionGroups(self, request, workspace, editor, launcher_platform):
         from . import C3510644_Collider_CollisionGroups as test_module
         self._run_test(request, workspace, editor, test_module)
