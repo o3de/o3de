@@ -330,4 +330,163 @@ namespace UnitTest
         }
     }
 
-}
+    // The AssetManagerStreamerImmediateCompletionTests class adjusts the asset loading to force it to complete immediately,
+    // while still within the callstack for GetAsset().  This can be used to test various conditions in which the load thread
+    // completes more rapidly than expected, and can expose subtle race conditions.
+    // There are a few key things that this class does to make this work:
+    // - The file I/O streamer is mocked
+    // - The asset stream data is mocked to a 0-byte length for the asset so that the stream load will bypass the I/O streamer and
+    //   just immediately return completion.
+    // - The number of JobManager threads is set to 0, forcing jobs to execute synchronously inline when they are started.
+    // With these changes, GetAssetInternal() will queue the stream, which will immediately call the callback that creates LoadAssetJob,
+    // which immediately executes in-place to process the asset due to the synchronous JobManager.
+    // Note that if we just created the asset in a Ready state, most of the asset loading code is completely bypassed, and so we
+    // wouldn't be able to test for race conditions in the AssetContainer.
+    // 
+    // This class also unregisters the catalog and asset handler before shutting down the asset manager.  This is done to catch
+    // any outstanding asset references that exist due to loads not completing and cleaning up successfully.
+    struct AssetManagerStreamerImmediateCompletionTests : public BaseAssetManagerTest,
+                                                          public AZ::Data::AssetCatalogRequestBus::Handler,
+                                                          public AZ::Data::AssetHandler,
+                                                          public AZ::Data::AssetCatalog
+    {
+        static inline const AZ::Uuid TestAssetId{"{E970B177-5F45-44EB-A2C4-9F29D9A0B2A2}"};
+        static inline constexpr AZStd::string_view TestAssetPath = "test";
+
+        void SetUp() override
+        {
+            BaseAssetManagerTest::SetUp();
+            AssetManager::Descriptor desc;
+            AssetManager::Create(desc);
+
+            // Register the handler and catalog after creation, because we intend to destroy them before AssetManager destruction.
+            // The specific asset we load is irrelevant, so register EmptyAsset.
+            AZ::Data::AssetManager::Instance().RegisterHandler(this, AZ::AzTypeInfo<EmptyAsset>::Uuid());
+            AZ::Data::AssetManager::Instance().RegisterCatalog(this, AZ::AzTypeInfo<EmptyAsset>::Uuid());
+
+            // Intercept messages for finding assets by name so that we can mock out the asset we're loading.
+            AZ::Data::AssetCatalogRequestBus::Handler::BusConnect();
+        }
+
+        void TearDown() override
+        {
+            // Unregister before destroying AssetManager.
+            // This will catch any assets that got stuck in a loading state without getting cleaned up.
+            AZ::Data::AssetManager::Instance().UnregisterCatalog(this);
+            AZ::Data::AssetManager::Instance().UnregisterHandler(this);
+
+            AZ::Data::AssetCatalogRequestBus::Handler::BusDisconnect();
+
+            AssetManager::Destroy();
+            BaseAssetManagerTest::TearDown();
+        }
+
+        size_t GetNumJobManagerThreads() const override
+        {
+            // Return 0 threads so that the Job Manager executes jobs synchronously inline.  This lets us finish a load while still
+            // in the callstack that initiates the load.
+            return 0;
+        }
+
+        // Create a mock streamer instead of a real one, since we don't really want to load an asset.
+        IO::IStreamer* CreateStreamer() override
+        {
+            m_mockStreamer = AZStd::make_unique<StreamerWrapper>();
+            return &(m_mockStreamer->m_mockStreamer);
+        }
+
+        void DestroyStreamer([[maybe_unused]] IO::IStreamer* streamer) override
+        {
+            m_mockStreamer = nullptr;
+        }
+
+        // AssetHandler implementation
+
+        // Minimalist mock to create a new EmptyAsset with the desired asset ID.
+        AZ::Data::AssetPtr CreateAsset(const AZ::Data::AssetId& id, [[maybe_unused]] const AZ::Data::AssetType& type) override
+        {
+            return new EmptyAsset(id);
+        }
+
+        void DestroyAsset(AZ::Data::AssetPtr ptr) override
+        {
+            delete ptr;
+        }
+
+        // The mocked-out Asset Catalog handles EmptyAsset types.
+        void GetHandledAssetTypes(AZStd::vector<AZ::Data::AssetType>& assetTypes) override
+        {
+            assetTypes.push_back(AZ::AzTypeInfo<EmptyAsset>::Uuid());
+        }
+
+        // This is a mocked-out load, so just immediately return completion without doing anything.
+        AZ::Data::AssetHandler::LoadResult LoadAssetData(
+            [[maybe_unused]] const AZ::Data::Asset<AZ::Data::AssetData>& asset,
+            [[maybe_unused]] AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
+            [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB)
+        {
+            return AZ::Data::AssetHandler::LoadResult::LoadComplete;
+        }
+
+        // AssetCatalogRequestBus implementation
+        
+        // Minimalist mocks to provide our desired asset path or asset id
+        AZStd::string GetAssetPathById([[maybe_unused]] const AZ::Data::AssetId& id) override
+        {
+            return TestAssetPath;
+        }
+        AZ::Data::AssetId GetAssetIdByPath(
+            [[maybe_unused]] const char* path, [[maybe_unused]] const AZ::Data::AssetType& typeToRegister,
+            [[maybe_unused]] bool autoRegisterIfNotFound) override
+        {
+            return TestAssetId;
+        }
+
+        // Return the mocked-out information for our test asset
+        AZ::Data::AssetInfo GetAssetInfoById([[maybe_unused]] const AZ::Data::AssetId& id) override
+        {
+            AZ::Data::AssetInfo assetInfo;
+            assetInfo.m_assetId = TestAssetId;
+            assetInfo.m_assetType = AZ::AzTypeInfo<EmptyAsset>::Uuid();
+            assetInfo.m_relativePath = TestAssetPath;
+            return assetInfo;
+        }
+
+        // AssetCatalog implementation
+        
+        // Set the mocked-out asset load to have a 0-byte length so that the load skips I/O and immediately returns success
+        AZ::Data::AssetStreamInfo GetStreamInfoForLoad(
+            [[maybe_unused]] const AZ::Data::AssetId& id, const AZ::Data::AssetType& type) override
+        {
+            EXPECT_TRUE(type == AZ::AzTypeInfo<EmptyAsset>::Uuid());
+            AZ::Data::AssetStreamInfo info;
+            info.m_dataOffset = 0;
+            info.m_streamName = TestAssetPath;
+            info.m_dataLen = 0;
+            info.m_streamFlags = AZ::IO::OpenMode::ModeRead;
+
+            return info;
+        }
+
+        AZStd::unique_ptr<StreamerWrapper> m_mockStreamer;
+    };
+
+    // This test will verify that even if the asset loading stream/job returns immediately, all of the loading
+    // code works successfully.  The test here is fairly simple - it just loads the asset and verifies that it
+    // loaded successfully.  The bulk of the test is really in the setup class above, where the load is forced
+    // to complete immediately.  Also, the true failure condition is caught in the setup class too, which is
+    // the presence of any assets at the point that the asset handler is unregistered.  If they're present, then
+    // the immediate load wasn't truly successful, as it left around extra references to the asset that haven't
+    // been cleaned up.
+    TEST_F(AssetManagerStreamerImmediateCompletionTests, LoadAssetWithImmediateJobCompletion_WorksSuccessfully)
+    {
+        AZ::Data::AssetLoadParameters loadParams;
+
+        auto testAsset =
+            AssetManager::Instance().GetAsset<EmptyAsset>(TestAssetId, AZ::Data::AssetLoadBehavior::Default, loadParams);
+
+        AZ::Data::AssetManager::Instance().DispatchEvents();
+        EXPECT_TRUE(testAsset.IsReady());
+    }
+
+} // namespace UnitTest

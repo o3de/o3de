@@ -244,9 +244,6 @@ namespace AZ::AtomBridge
     }
     ////////////////////////////////////////////////////////////////////////
 
-    // Partial implementation of the DebugDisplayRequestBus on Atom. 
-    // Commented out function prototypes are waiting to be implemented.
-    // work tracked in [ATOM-3459]
     AtomDebugDisplayViewportInterface::AtomDebugDisplayViewportInterface(AZ::RPI::ViewportContextPtr viewportContextPtr)
     {
         ResetRenderState();
@@ -272,9 +269,8 @@ namespace AZ::AtomBridge
         InitInternal(scene, nullptr);
     }
 
-    void AtomDebugDisplayViewportInterface::InitInternal(RPI::Scene* scene, AZ::RPI::ViewportContextPtr viewportContextPtr)
+    void AtomDebugDisplayViewportInterface::UpdateAuxGeom(RPI::Scene* scene, AZ::RPI::View* view)
     {
-        AzFramework::DebugDisplayRequestBus::Handler::BusDisconnect(m_viewportId);
         if (!scene)
         {
             m_auxGeomPtr = nullptr;
@@ -286,20 +282,46 @@ namespace AZ::AtomBridge
             m_auxGeomPtr = nullptr;
             return;
         }
-        if (m_defaultInstance)
+        // default instance draws to all viewports in the default scene
+        if (m_defaultInstance || !view)
         {
             m_auxGeomPtr = auxGeomFP->GetDrawQueue();
         }
         else
         {
-            m_auxGeomPtr = auxGeomFP->GetOrCreateDrawQueueForView(viewportContextPtr->GetDefaultView().get());
+            // cache the aux geom draw interface for the current view (aka camera)
+            m_auxGeomPtr = auxGeomFP->GetOrCreateDrawQueueForView(view);
         }
+    }
+
+    void AtomDebugDisplayViewportInterface::InitInternal(RPI::Scene* scene, AZ::RPI::ViewportContextPtr viewportContextPtr)
+    {
+        AzFramework::DebugDisplayRequestBus::Handler::BusDisconnect(m_viewportId);
+        UpdateAuxGeom(scene, viewportContextPtr ? viewportContextPtr->GetDefaultView().get() : nullptr);
         AzFramework::DebugDisplayRequestBus::Handler::BusConnect(m_viewportId);
+        if (!m_defaultInstance) // only the per viewport instances need to listen for viewport changes
+        {
+            AZ::RPI::ViewportContextIdNotificationBus::Handler::BusConnect(viewportContextPtr->GetId());
+        }
+    }
+
+
+    void AtomDebugDisplayViewportInterface::OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view)
+    {
+        ResetRenderState();
+        if (!m_defaultInstance)
+        {
+            // handle viewport update (view change, scene change, etc
+            auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+            AZ::RPI::ViewportContextPtr viewportContextPtr = viewportContextManager->GetViewportContextById(m_viewportId);
+            UpdateAuxGeom(viewportContextPtr->GetRenderScene().get(), viewportContextPtr->GetDefaultView().get());
+        }
     }
 
     AtomDebugDisplayViewportInterface::~AtomDebugDisplayViewportInterface()
     {
         AzFramework::DebugDisplayRequestBus::Handler::BusDisconnect(m_viewportId);
+        AZ::RPI::ViewportContextIdNotificationBus::Handler::BusDisconnect();
         m_viewportId = AzFramework::InvalidViewportId;
         m_auxGeomPtr = nullptr;
     }
@@ -1234,8 +1256,15 @@ namespace AZ::AtomBridge
         int srcOffsetX [[maybe_unused]], 
         int srcOffsetY [[maybe_unused]])
     {
+        // abort draw if draw is invalid or font query interface is missing.
+        if (!text || size == 0.0f || !AZ::Interface<AzFramework::FontQueryInterface>::Get())
+        {
+            return;
+        }
+
         AzFramework::FontDrawInterface* fontDrawInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get()->GetDefaultFontDrawInterface();
-        if (!fontDrawInterface || !text || size == 0.0f)
+        // abort draw if font draw interface is missing
+        if (!fontDrawInterface)
         {
             return;
         }
@@ -1263,13 +1292,15 @@ namespace AZ::AtomBridge
         const char* text, 
         bool center)
     {
-        auto fontQueryInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get();
-        if (!fontQueryInterface)
+        // abort draw if draw is invalid or font query interface is missing.
+        if (!text || size == 0.0f || !AZ::Interface<AzFramework::FontQueryInterface>::Get())
         {
             return;
         }
-        AzFramework::FontDrawInterface* fontDrawInterface = fontQueryInterface->GetDefaultFontDrawInterface();
-        if (!fontDrawInterface || !text || size == 0.0f)
+
+        AzFramework::FontDrawInterface* fontDrawInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get()->GetDefaultFontDrawInterface();
+        // abort draw if font draw interface is missing
+        if (!fontDrawInterface)
         {
             return;
         }
