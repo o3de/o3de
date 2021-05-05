@@ -149,6 +149,9 @@ namespace AzToolsFramework
         QLabel* GetNameLabel() { return m_nameLabel; }
         void SetIndentSize(int w);
         void SetAsCustom(bool custom) { m_custom = custom; }
+
+        bool CanChildrenBeReordered() const;
+        bool CanBeReordered() const;
     protected:
         int CalculateLabelWidth() const;
 
@@ -231,8 +234,6 @@ namespace AzToolsFramework
         int m_treeDepth = 0;
         int m_treeIndentation = 14;
         int m_leafIndentation = 16;
-
-        bool m_isSectionSeparator = false;
 
         QIcon m_iconOpen;
         QIcon m_iconClosed;

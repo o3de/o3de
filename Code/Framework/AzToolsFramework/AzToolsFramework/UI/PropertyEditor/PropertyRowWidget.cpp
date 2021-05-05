@@ -315,8 +315,6 @@ namespace AzToolsFramework
                 }
             }
 
-            m_isSectionSeparator = false;
-
             RefreshAttributesFromNode(true);
 
             // --------------------- HANDLER discovery:
@@ -962,10 +960,6 @@ namespace AzToolsFramework
         {
             HandleChangeNotifyAttribute(reader, m_sourceNode ? m_sourceNode->GetParent() : nullptr, m_editingCompleteNotifiers);
         }
-        else if (attributeName == AZ::Edit::Attributes::RPESectionSeparator)
-        {
-            m_isSectionSeparator = true;
-        }
     }
 
     void PropertyRowWidget::SetReadOnlyQueryFunction(const ReadOnlyQueryFunction& readOnlyQueryFunction)
@@ -1340,7 +1334,7 @@ namespace AzToolsFramework
 
     bool PropertyRowWidget::IsSectionSeparator() const
     {
-        return m_isSectionSeparator;
+        return CanBeReordered();
     }
 
     bool PropertyRowWidget::GetAppendDefaultLabelToName()
@@ -1686,6 +1680,20 @@ namespace AzToolsFramework
         m_nameLabel->setFilter(m_currentFilterString);
     }
 
+    bool PropertyRowWidget::CanChildrenBeReordered() const
+    {
+        return m_containerEditable;
+    }
+
+    bool PropertyRowWidget::CanBeReordered() const
+    {
+        if (!m_parentRow)
+        {
+            return false;
+        }
+
+        return m_parentRow->CanChildrenBeReordered();
+    }
 }
 
 #include "UI/PropertyEditor/moc_PropertyRowWidget.cpp"

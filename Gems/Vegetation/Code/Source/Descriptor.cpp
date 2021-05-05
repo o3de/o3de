@@ -170,8 +170,6 @@ namespace Vegetation
             {
                 edit->Class<Descriptor>(
                     "Vegetation Descriptor", "Details used to create vegetation instances")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::RPESectionSeparator, true)
                     // For this ComboBox to actually work, there is a PropertyHandler registration in EditorVegetationSystemComponent.cpp
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &Descriptor::m_spawnerType, "Instance Spawner", "The type of instances to spawn")
                         ->Attribute(AZ::Edit::Attributes::GenericValueList, &Descriptor::GetSpawnerTypeList)
