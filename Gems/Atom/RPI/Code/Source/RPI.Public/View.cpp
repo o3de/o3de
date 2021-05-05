@@ -110,6 +110,15 @@ namespace AZ
             InvalidateSrg();
         }
 
+        AZ::Transform View::GetCameraTransform() const
+        {
+            const Quaternion zUpToYUp = Quaternion::CreateRotationX(-AZ::Constants::HalfPi);
+            return AZ::Transform::CreateFromQuaternionAndTranslation(
+                Quaternion::CreateFromMatrix4x4(m_worldToViewMatrix) * zUpToYUp,
+                m_worldToViewMatrix.GetTranslation()
+            ).GetOrthogonalized();
+        }
+
         void View::SetCameraTransform(const AZ::Matrix3x4& cameraTransform)
         {
             m_position = cameraTransform.GetTranslation();
