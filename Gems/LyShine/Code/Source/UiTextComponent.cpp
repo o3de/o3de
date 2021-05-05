@@ -1911,9 +1911,6 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
 
     for (RenderCacheBatch* batch : m_renderCache.m_batches)
     {
-        const char* profileMarker = "UI_TEXT";
-        gEnv->pRenderer->PushProfileMarker(profileMarker);
-
         AZ::FFont* font = static_cast<AZ::FFont*>(batch->m_font); // LYSHINE_ATOM_TODO - find a different solution from downcasting FFont to IFont
         AZ::Data::Instance<AZ::RPI::Image> fontImage = font->GetFontImage();
         if (fontImage)
@@ -1944,8 +1941,6 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
                     isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
             }
         }
-
-        gEnv->pRenderer->PopProfileMarker(profileMarker);
     }
 }
 

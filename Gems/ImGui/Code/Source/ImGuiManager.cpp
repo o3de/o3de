@@ -26,7 +26,6 @@
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <imgui/imgui_internal.h>
 #include <sstream>
 #include <string>
@@ -143,7 +142,7 @@ namespace
 void ImGuiManager::Initialize()
 {
     // Register for Buses
-    ImGuiManagerListenerBus::Handler::BusConnect();
+    ImGuiManagerBus::Handler::BusConnect();
 
     // Register for Input Notifications
     InputChannelEventListener::Connect();
@@ -236,10 +235,14 @@ void ImGuiManager::Initialize()
     //  Future work here could include responding to the mouse being connected and disconnected at run-time, but this is fine for now.
     const AzFramework::InputDevice* mouseDevice = AzFramework::InputDeviceRequests::FindInputDevice(AzFramework::InputDeviceMouse::Id);
     m_hardwardeMouseConnected = mouseDevice && mouseDevice->IsConnected();
+
+    AZ::Interface<ImGui::IImGuiManager>::Register(this);
 }
 
 void ImGuiManager::Shutdown()
 {
+    AZ::Interface<ImGui::IImGuiManager>::Unregister(this);
+
     if (!gEnv)
     {
         AZ_Warning("ImGuiManager", false, "%s %s", __func__, "gEnv Invalid -- Skipping ImGui Shutdown.");
@@ -253,7 +256,7 @@ void ImGuiManager::Shutdown()
 #endif
 
     // Unregister from Buses
-    ImGuiManagerListenerBus::Handler::BusDisconnect();
+    ImGuiManagerBus::Handler::BusDisconnect();
     InputChannelEventListener::Disconnect();
     InputTextEventListener::Disconnect();
     AzFramework::WindowNotificationBus::Handler::BusDisconnect();
@@ -332,7 +335,7 @@ void ImGuiManager::Render()
     }
 
     // If no item and no window is focused, we should artificially add focus to the Main Menu Bar, to save 1 step when navigating with a controller.
-    if (!ImGui::IsAnyItemFocused() && !ImGui::IsAnyWindowFocused())
+    if (!ImGui::IsAnyItemFocused() && !ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow))
     {
         ImGuiWindow* mainMenuWin = ImGui::FindWindowByName("##MainMenuBar");
         if (mainMenuWin)
@@ -376,14 +379,8 @@ void ImGuiManager::Render()
 
     TransformationMatrices backupSceneMatrices;
 
-    AZ::u32 backBufferWidth = 0;
-    AZ::u32 backBufferHeight = 0;
-
-    if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        backBufferWidth = m_windowSize.m_width;
-        backBufferHeight = m_windowSize.m_height;
-    }
+    AZ::u32 backBufferWidth = m_windowSize.m_width;
+    AZ::u32 backBufferHeight = m_windowSize.m_height;
 
     // Find ImGui Render Resolution. 
     int renderRes[2];
@@ -755,10 +752,7 @@ void ImGuiManager::RenderImGuiBuffers(const ImVec2& scaleRects)
     //@rky: Only render the main ImGui if it is visible
     if (m_clientMenuBarState != DisplayState::Hidden)
     {
-        if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-        {
-            OtherActiveImGuiRequestBus::Broadcast(&OtherActiveImGuiRequestBus::Events::RenderImGuiBuffers, *drawData);
-        }
+        OtherActiveImGuiRequestBus::Broadcast(&OtherActiveImGuiRequestBus::Events::RenderImGuiBuffers, *drawData);
     }
 }
 
@@ -829,27 +823,27 @@ void OnEnableCameraMonitorCBFunc(ICVar* pArgs)
 
 void OnShowImGuiCBFunc(ICVar* pArgs)
 {
-    ImGui::ImGuiManagerListenerBus::Broadcast(&ImGui::IImGuiManagerListener::SetClientMenuBarState, pArgs->GetIVal() != 0 ? ImGui::DisplayState::Visible : ImGui::DisplayState::Hidden);
+    ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::SetClientMenuBarState, pArgs->GetIVal() != 0 ? ImGui::DisplayState::Visible : ImGui::DisplayState::Hidden);
 }
 
 void OnDiscreteInputModeCBFunc(ICVar* pArgs)
 {
-    ImGui::ImGuiManagerListenerBus::Broadcast(&ImGui::IImGuiManagerListener::SetEnableDiscreteInputMode, pArgs->GetIVal() != 0 );
+    ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::SetEnableDiscreteInputMode, pArgs->GetIVal() != 0 );
 }
 
 void OnEnableControllerCBFunc(ICVar* pArgs)
 {
-    ImGui::ImGuiManagerListenerBus::Broadcast(&ImGui::IImGuiManagerListener::EnableControllerSupportMode, ImGuiControllerModeFlags::Contextual, (pArgs->GetIVal() != 0));
+    ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::EnableControllerSupportMode, ImGuiControllerModeFlags::Contextual, (pArgs->GetIVal() != 0));
 }
 
 void OnEnableControllerMouseCBFunc(ICVar* pArgs)
 {
-    ImGui::ImGuiManagerListenerBus::Broadcast(&ImGui::IImGuiManagerListener::EnableControllerSupportMode, ImGuiControllerModeFlags::Mouse, (pArgs->GetIVal() != 0));
+    ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::EnableControllerSupportMode, ImGuiControllerModeFlags::Mouse, (pArgs->GetIVal() != 0));
 }
 
 void OnControllerMouseSensitivityCBFunc(ICVar* pArgs)
 {
-    ImGui::ImGuiManagerListenerBus::Broadcast(&ImGui::IImGuiManagerListener::SetControllerMouseSensitivity, pArgs->GetFVal());
+    ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::SetControllerMouseSensitivity, pArgs->GetFVal());
 }
 
 

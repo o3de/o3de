@@ -23,7 +23,7 @@ namespace ScriptCanvasEditor
 
     UnitTestBrowserFilterModel::UnitTestBrowserFilterModel(QObject* parent)
         : AssetBrowserFilterModel(parent)
-        , m_iconRunning("Editor/Icons/AssetBrowser/in_progress.gif")
+        , m_iconRunning("Icons/AssetBrowser/in_progress.gif")
         , m_iconFailedToCompile     (":/ScriptCanvasEditorResources/Resources/warning_symbol.png")
         , m_iconFailedToCompileOld  (":/ScriptCanvasEditorResources/Resources/warning_symbol_grey.png")
         , m_iconPassed              (":/ScriptCanvasEditorResources/Resources/valid_icon.png")

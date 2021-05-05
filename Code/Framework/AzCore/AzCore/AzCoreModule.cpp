@@ -19,7 +19,6 @@
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Memory/MemoryComponent.h>
-#include <AzCore/NativeUI/NativeUISystemComponent.h>
 #include <AzCore/Script/ScriptSystemComponent.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
@@ -43,7 +42,6 @@ namespace AZ
             AssetManagerComponent::CreateDescriptor(),
             UserSettingsComponent::CreateDescriptor(),
             Debug::FrameProfilerComponent::CreateDescriptor(),
-            NativeUI::NativeUISystemComponent::CreateDescriptor(),
             SliceComponent::CreateDescriptor(),
             SliceSystemComponent::CreateDescriptor(),
             SliceMetadataInfoComponent::CreateDescriptor(),

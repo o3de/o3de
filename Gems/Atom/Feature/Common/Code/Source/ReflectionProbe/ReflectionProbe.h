@@ -75,20 +75,22 @@ namespace AZ
             void Init(RPI::Scene* scene, ReflectionRenderData* reflectionRenderData);
             void Simulate(uint32_t probeIndex);
 
-            const Vector3& GetPosition() const { return m_position; }
+            const Vector3& GetPosition() const { return m_transform.GetTranslation(); }
             void SetTransform(const AZ::Transform& transform);
 
-            const AZ::Vector3& GetOuterExtents() const { return m_outerExtents; }
+            AZ::Vector3 GetOuterExtents() const { return m_outerExtents * m_transform.GetScale(); }
             void SetOuterExtents(const AZ::Vector3& outerExtents);
 
-            const AZ::Vector3& GetInnerExtents() const { return m_innerExtents; }
+            AZ::Vector3 GetInnerExtents() const { return m_innerExtents * m_transform.GetScale(); }
             void SetInnerExtents(const AZ::Vector3& innerExtents);
 
             const Aabb& GetOuterAabbWs() const { return m_outerAabbWs; }
             const Aabb& GetInnerAabbWs() const { return m_innerAabbWs; }
 
             const Data::Instance<RPI::Image>& GetCubeMapImage() const { return m_cubeMapImage; }
-            void SetCubeMapImage(const Data::Instance<RPI::Image>& cubeMapImage);
+            void SetCubeMapImage(const Data::Instance<RPI::Image>& cubeMapImage, const AZStd::string& relativePath);
+
+            const AZStd::string& GetCubeMapRelativePath() const { return m_cubeMapRelativePath; }
 
             bool GetUseParallaxCorrection() const { return m_useParallaxCorrection; }
             void SetUseParallaxCorrection(bool useParallaxCorrection) { m_useParallaxCorrection = useParallaxCorrection; }
@@ -122,8 +124,8 @@ namespace AZ
             // scene
             RPI::Scene* m_scene = nullptr;
 
-            // probe capture position
-            AZ::Vector3 m_position = AZ::Vector3(0.0f, 0.0f, 0.0f);
+            // probe volume transform
+            AZ::Transform m_transform = AZ::Transform::CreateIdentity();
 
             // extents of the probe volume
             AZ::Vector3 m_outerExtents = AZ::Vector3(0.0f, 0.0f, 0.0f);
@@ -135,6 +137,7 @@ namespace AZ
 
             // cubemap
             Data::Instance<RPI::Image> m_cubeMapImage;
+            AZStd::string m_cubeMapRelativePath;
             bool m_useParallaxCorrection = false;
 
             // probe visualization

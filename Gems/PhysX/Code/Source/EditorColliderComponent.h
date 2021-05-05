@@ -32,8 +32,6 @@
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
 
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
-
 #include <PhysX/ColliderShapeBus.h>
 #include <PhysX/EditorColliderComponentRequestBus.h>
 #include <PhysX/MeshAsset.h>
@@ -105,7 +103,6 @@ namespace PhysX
         , private PhysX::MeshColliderComponentRequestsBus::Handler
         , private AZ::TransformNotificationBus::Handler
         , private PhysX::ColliderShapeRequestBus::Handler
-        , private LmbrCentral::MeshComponentNotificationBus::Handler
         , private AZ::Render::MeshComponentNotificationBus::Handler
         , private PhysX::EditorColliderComponentRequestBus::Handler
         , private Physics::WorldBodyRequestBus::Handler
@@ -174,9 +171,6 @@ namespace PhysX
         void SetDimensions(const AZ::Vector3& dimensions) override;
         AZ::Transform GetCurrentTransform() override;
         AZ::Vector3 GetBoxScale() override;
-
-        // LmbrCentral::MeshComponentNotificationBus
-        void OnMeshCreated(const AZ::Data::Asset<AZ::Data::AssetData>& asset) override;
 
         // AZ::Render::MeshComponentNotificationBus
         void OnModelReady(const AZ::Data::Asset<AZ::RPI::ModelAsset>& modelAsset,

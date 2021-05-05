@@ -60,8 +60,8 @@ namespace AzToolsFramework
 
             AssetEntryType GetEntryType() const override;
 
-            //! Update root node to new dev location
-            void Update(const char* devPath);
+            //! Update root node to new engine location
+            void Update(const char* enginePath);
 
             void AddScanFolder(const AssetDatabase::ScanFolderDatabaseEntry& scanFolderDatabaseEntry);
             void AddFile(const AssetDatabase::FileDatabaseEntry& fileDatabaseEntry);
@@ -82,15 +82,12 @@ namespace AzToolsFramework
         private:
             AZ_DISABLE_COPY_MOVE(RootAssetBrowserEntry);
 
-            AZStd::string m_devPath;
-            AZStd::unordered_map<AZ::s64, AZStd::string> m_scanFolderOutputPrefixMap;
+            AZStd::string m_enginePath;
 
             //! Create folder entry child
             FolderAssetBrowserEntry* CreateFolder(const char* folderName, AssetBrowserEntry* parent);
             //! Recursively create folder structure leading to relative path from parent
             AssetBrowserEntry* CreateFolders(const char* relativePath, AssetBrowserEntry* parent);
-            //! Get the path for the fileDatabaseEntry, offset by the output prefix for the scan folder ancestor, if it's been specified and if it's appropriate
-            const char* GetScanFolderOutputAdjustedPath(const AssetDatabase::FileDatabaseEntry& fileDatabaseEntry, const AssetBrowserEntry* scanFolder);
 
             bool m_isInitialUpdate = false;
         };

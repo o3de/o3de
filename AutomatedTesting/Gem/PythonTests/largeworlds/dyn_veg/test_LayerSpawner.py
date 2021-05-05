@@ -101,6 +101,7 @@ class TestLayerSpawner(object):
 
     @pytest.mark.test_case_id("C4765973")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.xfail      # LYN-3275
     def test_LayerSpawner_FilterStageToggle(self, request, editor, level, workspace, launcher_platform):
 
         expected_lines = [

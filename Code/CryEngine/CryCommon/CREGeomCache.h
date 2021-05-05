@@ -19,7 +19,7 @@
 
 #if defined(USE_GEOM_CACHES)
 
-#include "../RenderDll/Common/Shaders/Vertex.h"
+#include <Vertex.h>
 #include <CryCommon/StaticInstance.h>
 
 class CREGeomCache

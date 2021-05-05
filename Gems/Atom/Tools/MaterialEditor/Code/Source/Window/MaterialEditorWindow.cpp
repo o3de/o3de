@@ -129,6 +129,12 @@ namespace MaterialEditor
         MaterialEditorWindowRequestBus::Handler::BusDisconnect();
     }
 
+    void MaterialEditorWindow::ActivateWindow()
+    {
+        activateWindow();
+        raise();
+    }
+
     bool MaterialEditorWindow::AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation)
     {
         auto dockWidgetItr = m_dockWidgets.find(name);

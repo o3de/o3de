@@ -96,9 +96,7 @@ namespace AzToolsFramework
                 // target templates of the other instances.
                 for (auto& nestedInstance : instances)
                 {
-                    PrefabUndoHelpers::RemoveLink(
-                        nestedInstance->GetTemplateId(), commonRootEntityOwningInstance->get().GetTemplateId(),
-                        nestedInstance->GetInstanceAlias(), nestedInstance->GetLinkId(), undoBatch.GetUndoBatch());
+                    RemoveLink(nestedInstance, commonRootEntityOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch());
                 }
 
                 PrefabUndoHelpers::UpdatePrefabInstance(
@@ -238,14 +236,9 @@ namespace AzToolsFramework
 
             // Retrieve the owning instance of the common root entity, which will be our new instance's parent instance.
             commonRootEntityOwningInstance = GetOwnerInstanceByEntityId(commonRootEntityId);
-            if (!commonRootEntityOwningInstance)
-            {
-                AZ_Assert(
-                    false,
-                    "Failed to create prefab : Couldn't get a valid owning instance for the common root entity of the enities provided");
-                return AZ::Failure(AZStd::string(
-                    "Failed to create prefab : Couldn't get a valid owning instance for the common root entity of the enities provided"));
-            }
+            AZ_Assert(
+                commonRootEntityOwningInstance.has_value(),
+                "Failed to create prefab : Couldn't get a valid owning instance for the common root entity of the enities provided");
             return AZ::Success();
         }
 
@@ -285,6 +278,34 @@ namespace AzToolsFramework
 
             // Update the cache - this prevents these changes from being stored in the regular undo/redo nodes
             m_prefabUndoCache.Store(containerEntityId, AZStd::move(containerEntityDomAfter));
+        }
+
+        void PrefabPublicHandler::RemoveLink(
+            AZStd::unique_ptr<Instance>& sourceInstance, TemplateId targetTemplateId, UndoSystem::URSequencePoint* undoBatch)
+        {
+            LinkReference nestedInstanceLink = m_prefabSystemComponentInterface->FindLink(sourceInstance->GetLinkId());
+            AZ_Assert(
+                nestedInstanceLink.has_value(),
+                "A valid link was not found for one of the instances provided as input for the CreatePrefab operation.");    
+
+            PrefabDomReference nestedInstanceLinkDom = nestedInstanceLink->get().GetLinkDom();
+            AZ_Assert(
+                nestedInstanceLinkDom.has_value(),
+                "A valid DOM was not found for the link corresponding to one of the instances provided as input for the "
+                "CreatePrefab operation.");
+
+            PrefabDomValueReference nestedInstanceLinkPatches =
+                PrefabDomUtils::FindPrefabDomValue(nestedInstanceLinkDom->get(), PrefabDomUtils::PatchesName);
+            AZ_Assert(
+                nestedInstanceLinkPatches.has_value(),
+                "A valid DOM for patches was not found for the link corresponding to one of the instances provided as input for the "
+                "CreatePrefab operation.");
+
+            PrefabDom patchesCopyForUndoSupport;
+            patchesCopyForUndoSupport.CopyFrom(nestedInstanceLinkPatches->get(), patchesCopyForUndoSupport.GetAllocator());
+            PrefabUndoHelpers::RemoveLink(
+                sourceInstance->GetTemplateId(), targetTemplateId, sourceInstance->GetInstanceAlias(), sourceInstance->GetLinkId(),
+                patchesCopyForUndoSupport, undoBatch);
         }
 
         PrefabOperationResult PrefabPublicHandler::SavePrefab(AZ::IO::Path filePath)
@@ -392,12 +413,27 @@ namespace AzToolsFramework
 
                     if (patch.IsArray() && !patch.Empty() && beforeState.IsObject())
                     {
-                        // Update the state of the entity
-                        PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
-                        state->SetParent(parentUndoBatch);
-                        state->Capture(beforeState, afterState, entityId);
+                        if (IsInstanceContainerEntity(entityId) && !IsLevelInstanceContainerEntity(entityId))
+                        {
+                            m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, entityId);
 
-                        state->Redo();
+                            // Save these changes as patches to the link
+                            PrefabUndoLinkUpdate* linkUpdate =
+                                aznew PrefabUndoLinkUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
+                            linkUpdate->SetParent(parentUndoBatch);
+                            linkUpdate->Capture(patch, owningInstance->get().GetLinkId());
+
+                            linkUpdate->Redo();
+                        }
+                        else
+                        {
+                            // Update the state of the entity
+                            PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
+                            state->SetParent(parentUndoBatch);
+                            state->Capture(beforeState, afterState, entityId);
+
+                            state->Redo();
+                        }
                     }
 
                     // Update the cache

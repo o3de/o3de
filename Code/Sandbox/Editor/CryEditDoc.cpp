@@ -27,7 +27,6 @@
 // AzFramework
 #include <AzFramework/Archive/IArchive.h>
 #include <AzFramework/API/ApplicationAPI.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/Slice/SliceUtilities.h>
@@ -51,8 +50,6 @@
 #include "CryEdit.h"
 #include "ActionManager.h"
 #include "Include/IObjectManager.h"
-#include "Material/MaterialManager.h"
-#include "LensFlareEditor/LensFlareManager.h"
 #include "ErrorReportDialog.h"
 #include "SurfaceTypeValidator.h"
 #include "ShaderCache.h"
@@ -65,6 +62,9 @@
 #include "StatObjBus.h"
 
 // LmbrCentral
+#include <ModernViewportCameraController.h>
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 #include <LmbrCentral/Rendering/EditorLightComponentBus.h>              // for LmbrCentral::EditorLightComponentRequestBus
 
 
@@ -83,7 +83,7 @@ static const char* kHoldFolder = "$tmp_hold"; // conform to the ignored file typ
 static const char* kSaveBackupFolder = "_savebackup";
 static const char* kResizeTempFolder = "$tmp_resize"; // conform to the ignored file types $tmp[0-9]*_ regex
 
-static const char* kBackupOrTempFolders[] = 
+static const char* kBackupOrTempFolders[] =
 {
     kAutoBackupFolder,
     kHoldFolder,
@@ -358,10 +358,6 @@ void CCryEditDoc::Save(TDocMultiArchive& arrXmlAr)
             SerializeFogSettings((*arrXmlAr[DMAS_GENERAL]));
             // Serialize Missions //////////////////////////////////////////////////
             SerializeMissions(arrXmlAr, currentMissionName, false);
-            //! Serialize material manager.
-            GetIEditor()->GetMaterialManager()->Serialize((*arrXmlAr[DMAS_GENERAL]).root, (*arrXmlAr[DMAS_GENERAL]).bLoading);
-            //! Serialize LensFlare manager.
-            GetIEditor()->GetLensFlareManager()->Serialize((*arrXmlAr[DMAS_GENERAL]).root, (*arrXmlAr[DMAS_GENERAL]).bLoading);
 
             SerializeShaderCache((*arrXmlAr[DMAS_GENERAL_NAMED_DATA]));
             SerializeNameSelection((*arrXmlAr[DMAS_GENERAL]));
@@ -517,22 +513,6 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
                 (*arrXmlAr[DMAS_GENERAL]).root->getAttr("WaterColor", m_waterColor);
 
             //////////////////////////////////////////////////////////////////////////
-            // Load materials.
-            //////////////////////////////////////////////////////////////////////////
-            {
-                CAutoLogTime logtime("Load MaterialManager");
-                GetIEditor()->GetMaterialManager()->Serialize((*arrXmlAr[DMAS_GENERAL]).root, (*arrXmlAr[DMAS_GENERAL]).bLoading);
-            }
-
-            //////////////////////////////////////////////////////////////////////////
-            // Load LensFlares.
-            //////////////////////////////////////////////////////////////////////////
-            {
-                CAutoLogTime logtime("Load Flares");
-                GetIEditor()->GetLensFlareManager()->Serialize((*arrXmlAr[DMAS_GENERAL]).root, (*arrXmlAr[DMAS_GENERAL]).bLoading);
-            }
-
-            //////////////////////////////////////////////////////////////////////////
             // Load View Settings
             //////////////////////////////////////////////////////////////////////////
             SerializeViewSettings((*arrXmlAr[DMAS_GENERAL]));
@@ -668,6 +648,7 @@ void CCryEditDoc::SerializeViewSettings(CXmlArchive& xmlAr)
             }
 
             CViewport* pVP = GetIEditor()->GetViewManager()->GetView(i);
+
 
             if (pVP)
             {
@@ -1164,7 +1145,7 @@ bool CCryEditDoc::OnSaveDocument(const QString& lpszPathName)
         {
             DoSaveDocument(lpszPathName, context);
             saveSuccess = AfterSaveDocument(lpszPathName, context);
-        }     
+        }
     }
 
     return saveSuccess;
@@ -1436,7 +1417,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
     // Save AZ entities to the editor level.
 
     bool contentsAllSaved = false; // abort level save if anything within it fails
-    
+
     auto tempFilenameStrData = tempSaveFile.toStdString();
     auto filenameStrData = fullPathName.toStdString();
 
@@ -1458,7 +1439,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
             }
         }
 
-        
+
         AZStd::vector<AZ::Entity*> editorEntities;
         AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
             &AzToolsFramework::EditorEntityContextRequestBus::Events::GetLooseEditorEntities,
@@ -1815,7 +1796,7 @@ bool CCryEditDoc::LoadLevel(TDocMultiArchive& arrXmlAr, const QString& absoluteC
     AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     auto pIPak = GetIEditor()->GetSystem()->GetIPak();
-    
+
     QString folderPath = QFileInfo(absoluteCryFilePath).absolutePath();
 
     OnStartLevelResourceList();
@@ -2391,7 +2372,8 @@ void CCryEditDoc::InitEmptyLevel(int /*resolution*/, int /*unitSize*/, bool /*bU
         GetIEditor()->GetGameEngine()->SetLevelCreated(false);
 
         // Default time of day.
-        XmlNodeRef root = GetISystem()->LoadXmlFromFile("@engroot@/Editor/default_time_of_day.xml");
+        auto defaultTimeOfDayPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "Assets" / "Editor" / "default_time_of_day.xml";
+        XmlNodeRef root = GetISystem()->LoadXmlFromFile(defaultTimeOfDayPath.c_str());
         if (root)
         {
             ITimeOfDay* pTimeOfDay = gEnv->p3DEngine ? gEnv->p3DEngine->GetTimeOfDay() : nullptr;
@@ -2425,44 +2407,9 @@ void CCryEditDoc::InitEmptyLevel(int /*resolution*/, int /*unitSize*/, bool /*bU
     GetIEditor()->SetStatusText("Ready");
 }
 
-void CCryEditDoc::CreateDefaultLevelAssets(int resolution, int unitSize)
+void CCryEditDoc::CreateDefaultLevelAssets([[maybe_unused]] int resolution, [[maybe_unused]] int unitSize)
 {
-    if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        AzToolsFramework::EditorLevelNotificationBus::Broadcast(&AzToolsFramework::EditorLevelNotificationBus::Events::OnNewLevelCreated);
-    }
-    else
-    {
-        bool isPrefabSystemEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-        if (!isPrefabSystemEnabled)
-        {
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                m_envProbeSliceAssetId, &AZ::Data::AssetCatalogRequests::GetAssetIdByPath, m_envProbeSliceRelativePath,
-                azrtti_typeid<AZ::SliceAsset>(), false);
-
-            if (m_envProbeSliceAssetId.IsValid())
-            {
-                AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::AssetManager::Instance().FindOrCreateAsset<AZ::SliceAsset>(
-                    m_envProbeSliceAssetId, AZ::Data::AssetLoadBehavior::Default);
-                if (asset)
-                {
-                    m_terrainSize = resolution * unitSize;
-                    const float halfTerrainSize = m_terrainSize / 2.0f;
-
-                    AZ::Transform worldTransform = AZ::Transform::CreateIdentity();
-                    worldTransform = AZ::Transform::CreateTranslation(AZ::Vector3(halfTerrainSize, halfTerrainSize, m_envProbeHeight / 2));
-                
-                    AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
-                    GetIEditor()->SuspendUndo();
-                    AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
-                        &AzToolsFramework::SliceEditorEntityOwnershipServiceRequests::InstantiateEditorSlice, asset, worldTransform);
-                }
-            }
-        }
-    }
+    AzToolsFramework::EditorLevelNotificationBus::Broadcast(&AzToolsFramework::EditorLevelNotificationBus::Events::OnNewLevelCreated);
 }
 
 void CCryEditDoc::OnEnvironmentPropertyChanged(IVariable* pVar)
@@ -2613,7 +2560,7 @@ void CCryEditDoc::OnSliceInstantiated(const AZ::Data::AssetId& sliceAssetId, AZ:
         sliceAddress.SetReference(nullptr);
         SetModifiedFlag(true);
         SetModifiedModules(eModifiedEntities);
-        
+
         AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
 
         //save after level default slice fully instantiated

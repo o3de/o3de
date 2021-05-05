@@ -43,13 +43,10 @@
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponentBus.h>
 #include <AzToolsFramework/Undo/UndoCacheInterface.h>
 #include <LmbrCentral/Rendering/RenderNodeBus.h>
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
 #include <LmbrCentral/Rendering/MaterialOwnerBus.h>
 
 #include <IDisplayViewport.h>
-#include <Material/MaterialManager.h>
 #include <MathConversion.h>
-#include <Objects/StatObjValidator.h>
 #include <TrackView/TrackViewAnimNode.h>
 #include <ViewManager.h>
 #include <Viewport.h>
@@ -110,10 +107,8 @@ void CComponentEntityObject::AssignEntity(AZ::Entity* entity, bool destroyOld)
 
     if (m_entityId.IsValid())
     {
-        AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         LmbrCentral::RenderBoundsNotificationBus::Handler::BusDisconnect();
-        LmbrCentral::MeshComponentNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::ComponentEntityEditorRequestBus::Handler::BusDisconnect();
         AZ::EntityBus::Handler::BusDisconnect();
         AzToolsFramework::ComponentEntityObjectRequestBus::Handler::BusDisconnect();
@@ -157,10 +152,8 @@ void CComponentEntityObject::AssignEntity(AZ::Entity* entity, bool destroyOld)
 
         EBUS_EVENT(AzToolsFramework::EditorEntityContextRequestBus, AddRequiredComponents, *entity);
 
-        AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusConnect(m_entityId);
         AZ::TransformNotificationBus::Handler::BusConnect(m_entityId);
         LmbrCentral::RenderBoundsNotificationBus::Handler::BusConnect(m_entityId);
-        LmbrCentral::MeshComponentNotificationBus::Handler::BusConnect(m_entityId);
         AzToolsFramework::ComponentEntityEditorRequestBus::Handler::BusConnect(m_entityId);
         AZ::EntityBus::Handler::BusConnect(m_entityId);
         AzToolsFramework::ComponentEntityObjectRequestBus::Handler::BusConnect(this);
@@ -306,39 +299,6 @@ void CComponentEntityObject::OnEntityNameChanged(const AZStd::string& name)
     }
 }
 
-void CComponentEntityObject::OnSelected()
-{
-    if (GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        return;
-    }
-
-    if (m_selectionReentryGuard)
-    {
-        EditorActionScope selectionChange(m_selectionReentryGuard);
-
-        // Invoked when selected via tools application, so we notify sandbox.
-        const bool wasSelected = IsSelected();
-        GetIEditor()->GetObjectManager()->SelectObject(this);
-    }
-}
-
-void CComponentEntityObject::OnDeselected()
-{
-    if (GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        return;
-    }
-
-    if (m_selectionReentryGuard)
-    {
-        EditorActionScope selectionChange(m_selectionReentryGuard);
-
-        // Invoked when selected via tools application, so we notify sandbox.
-        GetIEditor()->GetObjectManager()->UnselectObject(this);
-    }
-}
-
 void CComponentEntityObject::AttachChild(CBaseObject* child, bool /*bKeepPos*/)
 {
     if (child->GetType() == OBJTYPE_AZENTITY)
@@ -432,15 +392,6 @@ void CComponentEntityObject::OnEntityIconChanged(const AZ::Data::AssetId& entity
 
 void CComponentEntityObject::OnParentChanged([[maybe_unused]] AZ::EntityId oldParent, [[maybe_unused]] AZ::EntityId newParent)
 {
-}
-
-void CComponentEntityObject::OnMeshCreated(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
-{
-    (void)asset;
-
-    // Need to recalculate bounds when the mesh changes.
-    OnRenderBoundsReset();
-    ValidateMeshStatObject();
 }
 
 void CComponentEntityObject::OnRenderBoundsReset()
@@ -985,9 +936,7 @@ void CComponentEntityObject::DrawDefault(DisplayContext& dc, const QColor& label
 
 IStatObj* CComponentEntityObject::GetIStatObj()
 {
-    IStatObj* statObj = nullptr;
-    LmbrCentral::LegacyMeshComponentRequestBus::EventResult(statObj, m_entityId, &LmbrCentral::LegacyMeshComponentRequests::GetStatObj);
-    return statObj;
+    return nullptr;
 }
 
 bool CComponentEntityObject::IsIsolated() const
@@ -997,24 +946,12 @@ bool CComponentEntityObject::IsIsolated() const
 
 bool CComponentEntityObject::IsSelected() const
 {
-    if (GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        return AzToolsFramework::IsSelected(m_entityId);
-    }
-
-    // legacy is selected call
-    return CBaseObject::IsSelected();
+    return AzToolsFramework::IsSelected(m_entityId);
 }
 
 bool CComponentEntityObject::IsSelectable() const
 {
-    if (GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        return AzToolsFramework::IsSelectableInViewport(m_entityId);
-    }
-
-    // legacy is selectable call
-    return CBaseObject::IsSelectable();
+    return AzToolsFramework::IsSelectableInViewport(m_entityId);
 }
 
 void CComponentEntityObject::SetWorldPos(const Vec3& pos, int flags)
@@ -1157,56 +1094,3 @@ void CComponentEntityObject::DrawAccent(DisplayContext& dc)
         dc.DrawWireBox(box.min, box.max);
     }
 }
-
-void CComponentEntityObject::SetMaterial(CMaterial* material)
-{
-    AZ::Entity* entity = nullptr;
-    EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, m_entityId);
-    if (entity)
-    {
-        if (material)
-        {
-            EBUS_EVENT_ID(m_entityId, LmbrCentral::MaterialOwnerRequestBus, SetMaterial, material->GetMatInfo());
-        }
-        else
-        {
-            EBUS_EVENT_ID(m_entityId, LmbrCentral::MaterialOwnerRequestBus, SetMaterial, nullptr);
-        }
-    }
-
-    ValidateMeshStatObject();
-}
-
-CMaterial* CComponentEntityObject::GetMaterial() const
-{
-    _smart_ptr<IMaterial> material = nullptr;
-    EBUS_EVENT_ID_RESULT(material, m_entityId, LmbrCentral::MaterialOwnerRequestBus, GetMaterial);
-    return GetIEditor()->GetMaterialManager()->FromIMaterial(material);
-}
-
-CMaterial* CComponentEntityObject::GetRenderMaterial() const
-{
-    AZ::Entity* entity = nullptr;
-    EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, m_entityId);
-    if (entity)
-    {
-        _smart_ptr<IMaterial> material = nullptr;
-        EBUS_EVENT_ID_RESULT(material, m_entityId, LmbrCentral::MaterialOwnerRequestBus, GetMaterial);
-
-        if (material)
-        {
-            return GetIEditor()->GetMaterialManager()->LoadMaterial(material->GetName(), false);
-        }
-    }
-
-    return nullptr;
-}
-
-void CComponentEntityObject::ValidateMeshStatObject()
-{
-    IStatObj* statObj = GetIStatObj();
-    CMaterial* editorMaterial = GetMaterial();
-    CStatObjValidator statValidator;
-    statValidator.Validate(statObj, editorMaterial);
-}
-

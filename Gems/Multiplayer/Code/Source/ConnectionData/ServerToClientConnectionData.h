@@ -34,9 +34,9 @@ namespace Multiplayer
         AzNetworking::IConnection* GetConnection() const override;
         EntityReplicationManager& GetReplicationManager() override;
         void Update(AZ::TimeMs serverGameTimeMs) override;
+        bool CanSendUpdates() const override;
+        void SetCanSendUpdates(bool canSendUpdates) override;
         //! @}
-
-        bool CanSendUpdates();
 
         NetworkEntityHandle GetPrimaryPlayerEntity();
         const NetworkEntityHandle& GetPrimaryPlayerEntity() const;
@@ -51,7 +51,7 @@ namespace Multiplayer
         EntityStopEvent::Handler m_controlledEntityRemovedHandler;
         EntityMigrationEvent::Handler m_controlledEntityMigrationHandler;
         AzNetworking::IConnection* m_connection = nullptr;
-        bool m_canSendUpdates = true;
+        bool m_canSendUpdates = false;
     };
 }
 

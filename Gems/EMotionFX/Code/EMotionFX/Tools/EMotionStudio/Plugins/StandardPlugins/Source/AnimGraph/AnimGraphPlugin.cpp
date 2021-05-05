@@ -461,10 +461,7 @@ namespace EMStudio
     {
         m_actionFilter = actionFilter;
 
-        if (mViewWidget)
-        {
-            mViewWidget->UpdateSelection();
-        }
+        emit ActionFilterChanged();
     }
 
     const AnimGraphActionFilter& AnimGraphPlugin::GetActionFilter() const
@@ -1405,33 +1402,6 @@ namespace EMStudio
     int AnimGraphPlugin::OnSaveDirtyAnimGraphs()
     {
         return GetMainWindow()->GetDirtyFileManager()->SaveDirtyFiles(SaveDirtyAnimGraphFilesCallback::TYPE_ID);
-    }
-
-
-    // register keyboard shortcuts used for the render plugin
-    void AnimGraphPlugin::RegisterKeyboardShortcuts()
-    {
-        MysticQt::KeyboardShortcutManager* shortcutManager = GetMainWindow()->GetShortcutManager();
-
-        shortcutManager->RegisterKeyboardShortcut("Fit Entire Graph", "Anim Graph Window", Qt::Key_A, false, false, true);
-        shortcutManager->RegisterKeyboardShortcut("Zoom On Selected Nodes", "Anim Graph Window", Qt::Key_Z, false, false, true);
-
-        shortcutManager->RegisterKeyboardShortcut("Open Parent Node", "Anim Graph Window", Qt::Key_Up, false, false, true);
-        shortcutManager->RegisterKeyboardShortcut("Open Selected Node", "Anim Graph Window", Qt::Key_Down, false, false, true);
-        shortcutManager->RegisterKeyboardShortcut("History Back", "Anim Graph Window", Qt::Key_Left, false, false, true);
-        shortcutManager->RegisterKeyboardShortcut("History Forward", "Anim Graph Window", Qt::Key_Right, false, false, true);
-
-        shortcutManager->RegisterKeyboardShortcut("Align Left", "Anim Graph Window", Qt::Key_L, true, false, true);
-        shortcutManager->RegisterKeyboardShortcut("Align Right", "Anim Graph Window", Qt::Key_R, true, false, true);
-        shortcutManager->RegisterKeyboardShortcut("Align Top", "Anim Graph Window", Qt::Key_T, true, false, true);
-        shortcutManager->RegisterKeyboardShortcut("Align Bottom", "Anim Graph Window", Qt::Key_B, true, false, true);
-
-        shortcutManager->RegisterKeyboardShortcut("Cut", "Anim Graph Window", Qt::Key_X, true, false, true);
-        shortcutManager->RegisterKeyboardShortcut("Copy", "Anim Graph Window", Qt::Key_C, true, false, true);
-        shortcutManager->RegisterKeyboardShortcut("Paste", "Anim Graph Window", Qt::Key_V, true, false, true);
-        shortcutManager->RegisterKeyboardShortcut("Select All", "Anim Graph Window", Qt::Key_A, true, false, true);
-        shortcutManager->RegisterKeyboardShortcut("Unselect All", "Anim Graph Window", Qt::Key_D, true, false, true);
-        shortcutManager->RegisterKeyboardShortcut("Delete Selected Nodes", "Anim Graph Window", Qt::Key_Delete, false, false, true);
     }
 
 

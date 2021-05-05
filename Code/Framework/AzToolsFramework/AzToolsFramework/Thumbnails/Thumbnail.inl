@@ -18,7 +18,6 @@ namespace AzToolsFramework
     {
         template <class ThumbnailType, class Hasher, class EqualKey>
         ThumbnailCache<ThumbnailType, Hasher, EqualKey>::ThumbnailCache()
-            : m_thumbnailSize(0)
         {
             BusConnect();
         }
@@ -49,17 +48,11 @@ namespace AzToolsFramework
             }
             if (IsSupportedThumbnail(key))
             {
-                thumbnail = QSharedPointer<ThumbnailType>(new ThumbnailType(key, m_thumbnailSize));
+                thumbnail = QSharedPointer<ThumbnailType>(new ThumbnailType(key));
                 m_cache[key] = thumbnail;
                 return true;
             }
             return false;
-        }
-
-        template <class ThumbnailType, class Hasher, class EqualKey>
-        void ThumbnailCache<ThumbnailType, Hasher, EqualKey>::SetThumbnailSize(int thumbnailSize)
-        {
-            m_thumbnailSize = thumbnailSize;
         }
     } // namespace Thumbnailer
 } // namespace AzToolsFramework

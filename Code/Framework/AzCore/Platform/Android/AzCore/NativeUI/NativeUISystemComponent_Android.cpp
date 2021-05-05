@@ -22,7 +22,7 @@ namespace AZ
 {
     namespace NativeUI
     {
-        AZStd::string NativeUISystemComponent::DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const
+        AZStd::string NativeUISystem::DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const
         {
             AZ::Android::JNI::Object object("com/amazon/lumberyard/NativeUI/LumberyardNativeUI");
             object.RegisterStaticMethod("DisplayDialog", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)V");

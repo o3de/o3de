@@ -135,11 +135,13 @@ namespace AtomToolsFramework
             m_editData.m_elementId = AZ::Edit::UIHandlers::Default;
 
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::NameLabelOverride, &DynamicProperty::GetDisplayName);
+            AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::AssetPickerTitle, &DynamicProperty::GetAssetPickerTitle);
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::DescriptionTextOverride, &DynamicProperty::GetDescription);
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::ReadOnly, &DynamicProperty::IsReadOnly);
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::EnumValues, &DynamicProperty::GetEnumValues);
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::ChangeNotify, &DynamicProperty::OnDataChanged);
             AddEditDataAttribute(AZ::Edit::Attributes::ShowProductAssetFileName, false);
+            AddEditDataAttribute(AZ_CRC_CE("Thumbnail"), m_config.m_showThumbnail);
 
             switch (m_config.m_dataType)
             {
@@ -197,12 +199,19 @@ namespace AtomToolsFramework
         return !m_config.m_displayName.empty() ? m_config.m_displayName : m_config.m_nameId;
     }
 
+    AZStd::string DynamicProperty::GetGroupName() const
+    {
+        return m_config.m_groupName;
+    }
+
+    AZStd::string DynamicProperty::GetAssetPickerTitle() const
+    {
+        return GetGroupName().empty() ? GetDisplayName() : GetGroupName() + " " + GetDisplayName();
+    }
+
     AZStd::string DynamicProperty::GetDescription() const
     {
-        return AZStd::string::format("%s%s(Script Name = '%s')",
-            m_config.m_description.c_str(),
-            m_config.m_description.empty() ? "" : "\n",
-            m_config.m_id.GetCStr());
+        return m_config.m_description;
     }
 
     AZ::Crc32 DynamicProperty::GetVisibility() const

@@ -66,8 +66,6 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
         set(game_build_dependencies 
             ${game_gem_dependencies}
             Legacy::CrySystem
-            Legacy::CryFont
-            Legacy::Cry3DEngine
         )
 
         if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
@@ -96,8 +94,6 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             set(server_build_dependencies 
                 ${game_gem_dependencies}
                 Legacy::CrySystem
-                Legacy::CryFont
-                Legacy::Cry3DEngine
             )
         endif()
 
@@ -105,14 +101,7 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
 
         set(game_runtime_dependencies
             Legacy::CrySystem
-            Legacy::CryFont
-            Legacy::Cry3DEngine
         )
-        if(PAL_TRAIT_BUILD_SERVER_SUPPORTED AND NOT LY_MONOLITHIC_GAME)  # Only Atom is supported in monolithic builds
-            set(server_runtime_dependencies
-                Legacy::CryRenderNULL
-            )
-        endif()
 
     endif()
 
@@ -130,9 +119,6 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             PRIVATE
                 # Adds the name of the project/game
                 LY_PROJECT_NAME="${project_name}"
-                # Adds the project path supplied to CMake during configuration
-                # This is used as a fallback to launch the AssetProcessor
-                LY_PROJECT_CMAKE_PATH="${project_path}"
                 # Adds the ${project_name}_GameLauncher target as a define so for the Settings Registry to use
                 # when loading .setreg file specializations
                 # This is needed so that only gems for the project game launcher are loaded
@@ -174,9 +160,6 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
                     PRIVATE
                         # Adds the name of the project/game
                         LY_PROJECT_NAME="${project_name}"
-                        # Adds the project path supplied to CMake during configuration
-                        # This is used as a fallback to launch the AssetProcessor
-                        LY_PROJECT_CMAKE_PATH="${project_path}"
                         # Adds the ${project_name}_ServerLauncher target as a define so for the Settings Registry to use
                         # when loading .setreg file specializations
                         # This is needed so that only gems for the project server launcher are loaded

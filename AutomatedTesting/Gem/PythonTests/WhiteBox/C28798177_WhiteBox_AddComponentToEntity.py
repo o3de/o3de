@@ -22,10 +22,10 @@ class Tests():
 # fmt:on
 
 
-def run():
+def C28798177_WhiteBox_AddComponentToEntity():
     import os
     import sys
-    import WhiteBoxInit as init
+    from Gems.WhiteBox.Editor.Scripts import WhiteBoxInit as init
     import ImportPathHelper as imports
     imports.init()
 
@@ -58,4 +58,8 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    import ImportPathHelper as imports
+    imports.init()
+
+    from editor_python_test_tools.utils import Report
+    Report.start_test(C28798177_WhiteBox_AddComponentToEntity)
