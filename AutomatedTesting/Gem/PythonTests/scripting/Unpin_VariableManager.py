@@ -97,7 +97,7 @@ def Unpin_VariableManager():
     # 6) Unpin Boolean by clicking the "Pin" icon on its left side
     table_view = variable_manager.findChild(QtWidgets.QTableView, "variablePalette")
     model_index = pyside_utils.find_child_by_pattern(table_view, "Boolean")
-    # Make sure Boolean is pinned 
+    # Make sure Boolean is pinned
     result = helper.wait_for_condition(
         lambda: model_index.siblingAtColumn(0).data(Qt.DecorationRole) is not None, GENERAL_WAIT
     )
