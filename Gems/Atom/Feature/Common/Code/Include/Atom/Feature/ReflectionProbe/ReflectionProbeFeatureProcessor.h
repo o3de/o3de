@@ -36,10 +36,11 @@ namespace AZ
             void RemoveProbe(ReflectionProbeHandle& probe) override;
             void SetProbeOuterExtents(const ReflectionProbeHandle& probe, const AZ::Vector3& outerExtents) override;
             void SetProbeInnerExtents(const ReflectionProbeHandle& probe, const AZ::Vector3& innerExtents) override;
-            void SetProbeCubeMap(const ReflectionProbeHandle& probe, Data::Instance<RPI::Image>& cubeMapImage) override;
+            void SetProbeCubeMap(const ReflectionProbeHandle& probe, Data::Instance<RPI::Image>& cubeMapImage, const AZStd::string& relativePath) override;
             void SetProbeTransform(const ReflectionProbeHandle& probe, const AZ::Transform& transform) override;
-            void BakeProbe(const ReflectionProbeHandle& probe, BuildCubeMapCallback callback) override;
-            void NotifyCubeMapAssetReady(const AZStd::string relativePath, NotifyCubeMapAssetReadyCallback callback) override;
+            void BakeProbe(const ReflectionProbeHandle& probe, BuildCubeMapCallback callback, const AZStd::string& relativePath) override;
+            bool CheckCubeMapAssetNotification(const AZStd::string& relativePath, Data::Asset<RPI::StreamingImageAsset>& outCubeMapAsset, CubeMapAssetNotificationType& outNotificationType) override;
+            bool IsCubeMapReferenced(const AZStd::string& relativePath) override;
             bool IsValidProbeHandle(const ReflectionProbeHandle& probe) const override { return (probe.get() != nullptr); }
             void ShowProbeVisualization(const ReflectionProbeHandle& probe, bool showVisualization) override;
 
@@ -72,10 +73,9 @@ namespace AZ
             // AssetBus::MultiHandler overrides...
             void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
             void OnAssetError(Data::Asset<Data::AssetData> asset) override;
-            void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
 
             // notifies and removes the notification entry
-            void HandleAssetNotification(Data::Asset<Data::AssetData> asset, CubeMapAssetNotificationType notificationTyp);
+            void HandleAssetNotification(Data::Asset<Data::AssetData> asset, CubeMapAssetNotificationType notificationType);
 
             // list of reflection probes
             const size_t InitialProbeAllocationSize = 64;
@@ -86,9 +86,8 @@ namespace AZ
             {
                 AZStd::string m_relativePath;
                 AZ::Data::AssetId m_assetId;
-                bool m_existingAsset = false;
-                NotifyCubeMapAssetReadyCallback m_callback;
                 Data::Asset<RPI::StreamingImageAsset> m_asset;
+                CubeMapAssetNotificationType m_notificationType = CubeMapAssetNotificationType::None;
             };
             typedef AZStd::vector<NotifyCubeMapAssetEntry> NotifyCubeMapAssetVector;
             NotifyCubeMapAssetVector m_notifyCubeMapAssets;
