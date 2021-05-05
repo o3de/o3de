@@ -1305,26 +1305,8 @@ namespace AZ::ViewportHelpers
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::OnTitleMenu(QMenu* menu)
 {
-    const int nWireframe = 0;// gEnv->pConsole->GetCVar("r_wireframe")->GetIVal();
-    QAction* action = menu->addAction(tr("Wireframe"));
-    connect(action, &QAction::triggered, action, []()
-    {
-//         ICVar* piVar(gEnv->pConsole->GetCVar("r_wireframe"));
-//         int nRenderMode = piVar->GetIVal();
-//         if (nRenderMode != R_WIREFRAME_MODE)
-//         {
-//             piVar->Set(R_WIREFRAME_MODE);
-//         }
-//         else
-//         {
-//             piVar->Set(R_SOLID_MODE);
-//         }
-    });
-    action->setCheckable(true);
-    action->setChecked(nWireframe == R_WIREFRAME_MODE);
-
     const bool bDisplayLabels = GetIEditor()->GetDisplaySettings()->IsDisplayLabels();
-    action = menu->addAction(tr("Labels"));
+    QAction* action = menu->addAction(tr("Labels"));
     connect(action, &QAction::triggered, this, [bDisplayLabels] {GetIEditor()->GetDisplaySettings()->DisplayLabels(!bDisplayLabels);
         });
     action->setCheckable(true);
