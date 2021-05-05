@@ -31,3 +31,7 @@ class TestAutomation(TestAutomationBase):
     def test_Resizing_Pane(self, request, workspace, editor, launcher_platform):
         from . import Resizing_Pane as test_module
         self._run_test(request, workspace, editor, test_module)
+
+    def test_Unpin_VariableManager(self, request, workspace, editor, launcher_platform):
+        from . import Unpin_VariableManager as test_module
+        self._run_test(request, workspace, editor, test_module)
