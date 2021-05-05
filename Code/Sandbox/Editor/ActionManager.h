@@ -31,6 +31,8 @@
 #include <utility>
 
 #include <AzToolsFramework/Viewport/ActionBus.h>
+#include "ShortcutDispatcher.h"
+
 #endif
 
 class QSignalMapper;
@@ -105,6 +107,7 @@ public:
         ActionWrapper& SetToolTip(const QString& toolTip) { m_action->setToolTip(toolTip); return *this; }
         ActionWrapper& SetStatusTip(const QString& statusTip) { m_action->setStatusTip(statusTip); return *this; }
         ActionWrapper& SetCheckable(bool value) { m_action->setCheckable(value); return *this; }
+        ActionWrapper& SetParent(QObject *parent) { m_action->setParent(parent); return *this; }
         ActionWrapper& SetReserved(); // if reserved, the action should not be allowed to be disabled or overridden
 
         //ActionWrapper &SetMenu(QMenu *menu) { m_action->setMenu(menu); return *this; }
@@ -317,9 +320,20 @@ public:
     template<typename T>
     void RegisterUpdateCallback(int id, T* object, void (T::* method)(QAction*))
     {
+        unsigned size = m_shortcutDispatcher->m_all_actions.size();
+        for (unsigned i = 0; i < size; i++)
+        {
+            if (m_shortcutDispatcher->m_all_actions[i].second->data().toInt() == id)
+            {
+                auto f = std::bind(method, object, m_shortcutDispatcher->m_all_actions[i].second);
+                m_updateCallbacks[id] = f;
+            }
+        }
+
         Q_ASSERT(m_actions.contains(id));
-        auto f = std::bind(method, object, m_actions.value(id));
-        m_updateCallbacks[id] = f;
+
+        return;
+
     }
 
     template<typename T>

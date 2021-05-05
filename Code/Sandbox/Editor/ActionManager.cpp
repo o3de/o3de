@@ -26,6 +26,9 @@
 #include "ShortcutDispatcher.h"
 #include "ToolbarManager.h"
 
+// Viewport
+#include <AzToolsFramework/Viewport/ActionBus.h>
+
 
 static const char* const s_reserved = "Reserved"; ///< "Reserved" property used for actions that cannot be overridden.
                                                   ///< (e.g. KeySequences such as Ctrl+S and Ctrl+Z for Save/Undo etc.)
@@ -208,11 +211,21 @@ void DynamicMenu::AddAction(int id, QAction* action)
 {
     Q_ASSERT(!m_actions.contains(id));
     action->setData(id);
+    action->setParent(m_menu);
+
     m_actions[id] = action;
     m_menu->addAction(action);
 
+
     connect(action, SIGNAL(triggered()), m_actionMapper, SLOT(map()));
     m_actionMapper->setMapping(action, id);
+
+
+    //NEW// 
+    //m_actionManager->m_shortcutDispatcher->AddNewAction(action);
+    //QObject::connect(action, &QAction::triggered, action, action);
+    AzToolsFramework::EditorActionRequestBus::Broadcast(&AzToolsFramework::EditorActionRequests::AddActionViaBus, id, action);
+
 }
 
 void DynamicMenu::AddSeparator()
@@ -408,6 +421,7 @@ void ActionManager::AddAction(QAction* action)
 
     // Add the action if the parent is a widget
     auto widget = qobject_cast<QWidget*>(parent());
+
     if (widget)
     {
         widget->addAction(action);
@@ -435,7 +449,9 @@ ActionManager::ActionWrapper ActionManager::AddAction(int id, const QString& nam
 {
     QAction* action = ActionIsWidget(id) ? new WidgetAction(id, m_mainWindow, name, this)
         : static_cast<QAction*>(new PatchedAction(name, this)); // static cast to base so ternary compiles
-    AddAction(id, action);
+
+    action->setData(id);
+    m_shortcutDispatcher->AddNewAction(action);
     return ActionWrapper(action, this);
 }
 
@@ -452,6 +468,12 @@ bool ActionManager::HasAction(int id) const
 QAction* ActionManager::GetAction(int id) const
 {
     auto it = m_actions.find(id);
+
+    for (unsigned i = 0; i < m_shortcutDispatcher->m_all_actions.size(); i++)
+    {
+        if (m_shortcutDispatcher->m_all_actions[i].second->data().toInt() == id)
+            return m_shortcutDispatcher->m_all_actions[i].second;
+    }
 
     if (it == m_actions.cend())
     {
@@ -603,7 +625,8 @@ void SetDefaultActionsEnabled(
 
 void ActionManager::AddActionViaBus(int id, QAction* action)
 {
-    AddAction(id, action);
+    action->setData(id);
+    m_shortcutDispatcher->AddNewAction(action);
 }
 
 void ActionManager::RemoveActionViaBus(QAction* action)

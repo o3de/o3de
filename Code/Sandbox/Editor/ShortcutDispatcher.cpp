@@ -32,6 +32,8 @@
 #include "ActionManager.h"
 #include "QtViewPaneManager.h"
 
+#include <iostream>
+
 const char* FOCUSED_VIEW_PANE_EVENT_NAME = "FocusedViewPaneEvent";    //Sent when view panes are focused
 const char* FOCUSED_VIEW_PANE_ATTRIBUTE_NAME = "FocusedViewPaneName"; //Name of the current focused view pane
 
@@ -214,6 +216,7 @@ QList<QAction*> ShortcutDispatcher::FindCandidateActions(QObject* scopeRoot, con
     {
         for (QAction* action : scopeRootWidget->actions())
         {
+
 #ifdef SHOW_ACTION_INFO_IN_DEBUGGER
             QString actionName = action->text();
             (void)actionName; // avoid an unused variable warning; want this for debugging
@@ -279,44 +282,73 @@ QList<QAction*> ShortcutDispatcher::FindCandidateActions(QObject* scopeRoot, con
     return actions;
 }
 
-bool ShortcutDispatcher::FindCandidateActionAndFire(QObject* focusWidget, QShortcutEvent* shortcutEvent, QList<QAction*>& candidates, QSet<QObject*>& previouslyVisited)
+bool ShortcutDispatcher::FindCandidateActionAndFire(
+    [[maybe_unused]] QObject* focusWidget, QShortcutEvent* shortcutEvent,
+    [[maybe_unused]] QList<QAction*>& candidates,
+    [[maybe_unused]] QSet<QObject*>& previouslyVisited)
 {
-    candidates = FindCandidateActions(focusWidget, shortcutEvent->key(), previouslyVisited);
-    QSet<QAction*> candidateSet = QSet<QAction*>(candidates.begin(), candidates.end());
-    QAction* chosenAction = nullptr;
-    int numCandidates = candidateSet.size();
-    if (numCandidates == 1)
+    for (unsigned i = 0; i < m_all_actions.size(); i++)
     {
-        chosenAction = candidates.first();
-    }
-    else if (numCandidates > 1)
-    {
-        // If there are multiple candidates, choose the one that is parented to the ActionManager
-        // since there are cases where panes with their own menu shortcuts that are docked
-        // in the main window can be found in the same parent scope
-        for (QAction* action : candidateSet)
+        if (shortcutEvent->key() == m_all_actions[i].second->shortcut())
         {
-            if (qobject_cast<ActionManager*>(action->parent()))
+            if (m_all_actions[i].second->isEnabled())
             {
-                chosenAction = action;
-                break;
+                // has to be send, not post, or the dispatcher will get the event again and won't know that it was the one that queued it
+                bool isAmbiguous = false;
+                QAction* testing = m_all_actions[i].second;
+                int testing_name = 0;
+                testing_name = testing->data().toInt();
+
+                QShortcutEvent newEvent(shortcutEvent->key(), isAmbiguous);
+                if (QApplication::sendEvent(testing, &newEvent))
+                {
+                    shortcutEvent->accept();
+                    return true;
+                }
             }
+            return true;
         }
-    }
-    if (chosenAction)
-    {
-        if (chosenAction->isEnabled())
-        {
-            // has to be send, not post, or the dispatcher will get the event again and won't know that it was the one that queued it
-            bool isAmbiguous = false;
-            QShortcutEvent newEvent(shortcutEvent->key(), isAmbiguous);
-            QApplication::sendEvent(chosenAction, &newEvent);
-        }
-        shortcutEvent->accept();
-        return true;
     }
 
     return false;
+    //
+    //candidates = FindCandidateActions(focusWidget, shortcutEvent->key(), previouslyVisited);
+    //QSet<QAction*> candidateSet = QSet<QAction*>(candidates.begin(), candidates.end());
+    //
+    //QAction* chosenAction = nullptr;
+    //int numCandidates = candidateSet.size();
+    //if (numCandidates == 1)
+    //{
+    //    chosenAction = candidates.first();
+    //}
+    //else if (numCandidates > 1)
+    //{
+    //    // If there are multiple candidates, choose the one that is parented to the ActionManager
+    //    // since there are cases where panes with their own menu shortcuts that are docked
+    //    // in the main window can be found in the same parent scope
+    //    for (QAction* action : candidateSet)
+    //    {
+    //        if (qobject_cast<ActionManager*>(action->parent()))
+    //        {
+    //            chosenAction = action;
+    //            break;
+    //        }
+    //    }
+    //}
+    //if (chosenAction)
+    //{
+    //    if (chosenAction->isEnabled())
+    //    {
+    //        // has to be send, not post, or the dispatcher will get the event again and won't know that it was the one that queued it
+    //        bool isAmbiguous = false;
+    //        QShortcutEvent newEvent(shortcutEvent->key(), isAmbiguous);
+    //        QApplication::sendEvent(chosenAction, &newEvent);
+    //    }
+    //    shortcutEvent->accept();
+    //    return true;
+    //}
+    //
+    //return false;
 }
 
 ShortcutDispatcher::ShortcutDispatcher(QObject* parent)
@@ -442,8 +474,7 @@ bool ShortcutDispatcher::shortcutFilter(QObject* obj, QShortcutEvent* shortcutEv
 
     QWidget* correctedTopLevel = nullptr;
     QWidget* p = currentFocusWidget;
-    correctedTopLevel = FindParentScopeRoot(p);
-    while (correctedTopLevel)
+    while (correctedTopLevel == FindParentScopeRoot(p))
     {
         if (FindCandidateActionAndFire(correctedTopLevel, shortcutEvent, candidates, previouslyVisited))
         {
@@ -451,7 +482,6 @@ bool ShortcutDispatcher::shortcutFilter(QObject* obj, QShortcutEvent* shortcutEv
         }
 
         p = correctedTopLevel;
-        correctedTopLevel = FindParentScopeRoot(p);
     }
 
 
@@ -509,6 +539,25 @@ void ShortcutDispatcher::AttachOverride(QWidget* object)
 void ShortcutDispatcher::DetachOverride()
 {
     m_actionOverrideObject = nullptr;
+}
+
+void ShortcutDispatcher::AddNewAction(QAction* new_action, AZ::Crc32 r_url)
+{
+    const int new_id = new_action->data().toInt();
+
+    unsigned size = m_all_actions.size();
+    for (unsigned i = 0; i < size; i++)
+    {
+        if (m_all_actions[i].second->data().toInt() == new_id || (m_all_actions[i].first == r_url && m_all_actions[i].first != AZ::Crc32(0)))
+        {
+            qWarning() << "ActionManager already contains action with id" << new_id;
+            Q_ASSERT(false);
+        }
+    }
+
+    std::pair<AZ::Crc32, QAction*> new_addition(r_url, new_action);
+    
+    m_all_actions.push_back(new_addition);
 }
 
 #include <moc_ShortcutDispatcher.cpp>
