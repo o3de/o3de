@@ -208,6 +208,7 @@ namespace ScriptCanvas
                 }
             }
 
+
             void Method::InitializeMethod(const MethodConfiguration& config)
             {
                 m_namespaces = config.m_namespaces ? *config.m_namespaces : m_namespaces;
@@ -258,7 +259,7 @@ namespace ScriptCanvas
                 OnInitializeOutputPost(outputConfig);
             }
 
-            void Method::InitializeBehaviorMethod(const NamespacePath& namespaces, AZStd::string_view className, AZStd::string_view methodName)
+            void Method::InitializeBehaviorMethod(const NamespacePath& namespaces, AZStd::string_view className, AZStd::string_view methodName, PropertyStatus propertyStatus)
             {
                 AZ::BehaviorContext* behaviorContext = nullptr;
                 AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
@@ -274,13 +275,13 @@ namespace ScriptCanvas
                     {
                         InitializeFree(namespaces, methodName);
                     }
-                    else if (auto ebusIterator = behaviorContext->m_ebuses.find(className); ebusIterator == behaviorContext->m_ebuses.end())
+                    else if (auto ebusIterator = behaviorContext->m_ebuses.find(className); ebusIterator != behaviorContext->m_ebuses.end())
                     {
-                        InitializeClass(namespaces, className, methodName);
+                        InitializeEvent(namespaces, className, methodName);
                     }
                     else
                     {
-                        InitializeEvent(namespaces, className, methodName);
+                        InitializeClass(namespaces, className, methodName, propertyStatus);
                     }
                 }
 
@@ -310,7 +311,7 @@ namespace ScriptCanvas
                 }
             }
 
-            void Method::InitializeClass(const NamespacePath&, AZStd::string_view className, AZStd::string_view methodName)
+            void Method::InitializeClass(const NamespacePath&, AZStd::string_view className, AZStd::string_view methodName, PropertyStatus propertyStatus)
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
 
@@ -318,9 +319,11 @@ namespace ScriptCanvas
                 const AZ::BehaviorClass* bcClass{};
                 AZStd::string prettyClassName;
 
-                if (BehaviorContextUtils::FindClass(method, bcClass, className, methodName, &prettyClassName))
+                if (BehaviorContextUtils::FindClass(method, bcClass, className, methodName, propertyStatus, &prettyClassName))
                 {
-                    MethodConfiguration config(*method, MethodType::Member);
+                    const auto methodType = propertyStatus == PropertyStatus::None ? MethodType::Member : propertyStatus == PropertyStatus::Getter ? MethodType::Getter : MethodType::Setter;
+
+                    MethodConfiguration config(*method, methodType);
                     config.m_class = bcClass;
                     config.m_namespaces = &m_namespaces;
                     config.m_className = &className;
@@ -666,8 +669,12 @@ namespace ScriptCanvas
                     break;
 
                     case MethodType::Member:
+                    case MethodType::Getter:
+                    case MethodType::Setter:
                     {
-                        if (BehaviorContextUtils::FindClass(method, bcClass, m_className, methodName, nullptr, m_warnOnMissingFunction))
+                        PropertyStatus status = m_methodType == MethodType::Getter ? PropertyStatus::Getter : m_methodType == MethodType::Setter ? PropertyStatus::Setter : PropertyStatus::None;
+
+                        if (BehaviorContextUtils::FindClass(method, bcClass, m_className, methodName, status, nullptr, m_warnOnMissingFunction))
                         {
                             outClass = bcClass;
                             outMethod = method;
