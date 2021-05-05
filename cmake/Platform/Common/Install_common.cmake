@@ -439,6 +439,21 @@ function(ly_setup_others)
         endif()
     endforeach()
 
+    # gem.json files
+    file(GLOB_RECURSE
+        gems_json_path
+        LIST_DIRECTORIES FALSE
+        RELATIVE "${CMAKE_SOURCE_DIR}"
+        "Gems/*/gem.json"
+    )
+    foreach(gem_json_path ${gems_json_path})
+        get_filename_component(gem_relative_path ${gem_json_path} DIRECTORY)
+        install(FILES ${gem_json_path}
+            DESTINATION ${gem_relative_path}
+            COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}    
+        )
+    endforeach()
+
     # Additional files needed by gems
     install(FILES
         ${CMAKE_SOURCE_DIR}/Gems/ImageProcessing/Code/Source/ImageBuilderDefaultPresets.settings
