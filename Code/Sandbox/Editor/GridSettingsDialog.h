@@ -51,8 +51,6 @@ private slots:
     void accept() override;
     void OnBnUserDefined();
     void OnBnGetFromObject();
-    void OnBnGetAngles();
-    void OnBnGetTranslation();
     void OnValueUpdate();
 
 private:
