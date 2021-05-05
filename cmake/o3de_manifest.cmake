@@ -22,32 +22,42 @@ if (NOT home_directory)
     message(FATAL_ERROR "Cannot find user home directory, without the user home directory the o3de manifest cannot be found")
 endif()
 
-################################################################################
-# O3DE_REGISTER_ENGINE_PATH
-#
-# If you set this Cache Variable it will delete <home_directory>/.o3de folder and recreate
-# it by calling o3de register --this-engine --override-home-folder <home_directory> using the supplied engine path.
-# This is useful for when we have no .o3de folder yet, like a clean install, or want to erase .o3de and re-register.
-# This is handy for build server which need to register this engine without having to manually typing it in.
-# Note: If this is run and an o3de object has a restricted set, that restricted
-# must be 'o3de' or registration will fail because only restricted 'o3de' is
-# registered by default. So theoretically anything we ship as part of the engine
-# will succeed, anything relying on something outside the engine will fail UNLESS we register it here:
-################################################################################
-set(O3DE_REGISTER_ENGINE_PATH "" CACHE PATH "This is the engine which o3de script will run for registering.")
-set(O3DE_REGISTER_THIS_ENGINE "" CACHE BOOL "If we set O3DE_REGISTER_ENGINE_PATH, and this is TRUE this will wipe out the .o3de folder and register --this-engine using the provided path.")
-set(O3DE_REGISTER_RESTRICTED_PATHS "" CACHE STRING "If we set O3DE_REGISTER_ENGINE_PATH, then will register --restricted-path using the provided paths.")
-set(O3DE_REGISTER_PROJECT_PATHS "" CACHE STRING "If we set O3DE_REGISTER_ENGINE_PATH, then will register --project-path using the provided paths.")
-set(O3DE_REGISTER_GEM_PATHS "" CACHE STRING "If we set O3DE_REGISTER_ENGINE_PATH, then will register --gem-path using the provided paths.")
-set(O3DE_REGISTER_TEMPLATE_PATHS "" CACHE STRING "If we set O3DE_REGISTER_ENGINE_PATH, then will register --template-path using the provided paths.")
-set(O3DE_REGISTER_REPO_URIS "" CACHE STRING "If we set O3DE_REGISTER_ENGINE_PATH, then will register --repo-uri using the provided uris.")
-if(O3DE_REGISTER_ENGINE_PATH)
-    if(O3DE_REGISTER_THIS_ENGINE)
-        message(STATUS "Delete ${home_directory}/.o3de and try to register ${O3DE_REGISTER_ENGINE_PATH}...")
+# Optionally delete the home directory
+if(O3DE_DELETE_HOME_PATH)
+    message(STATUS "O3DE_DELETE_HOME_PATH=${O3DE_DELETE_HOME_PATH}")
+    if(EXISTS ${home_directory}/.o3de)
+        message(STATUS "Deleting ${home_directory}/.o3de")
+        file(REMOVE_RECURSE ${home_directory}/.o3de)
+    else()
+        message(STATUS "Home path ${home_directory}/.o3de doesnt exist.")
+    endif()
+endif()
 
-        if(EXISTS ${home_directory}/.o3de)
-            file(REMOVE_RECURSE ${home_directory}/.o3de)
-        endif()
+########################################################################################################################
+# If O3DE_REGISTER_ENGINE_PATH variable is set on the commandline this will allow registration of anything using
+# O3DE_REGISTER_ENGINE_PATH o3de script. This is handy for situations like build servers which download the code and
+# are expected to build without the need for someone to register o3de objects like this engine by manually typing it in.
+#   If O3DE_REGISTER_THIS_ENGINE=TRUE is set on the commandline when O3DE_REGISTER_ENGINE_PATH is also set this will call:
+#       O3DE_REGISTER_ENGINE_PATH/scripts>o3de register --this-engine --override-home-folder <home_directory>
+# Note: register --this-engine will automatically register anything it finds in known folders, so if you put your
+# o3de objects like projects/gems/templates/restricted/etc... in known folders for those types they will get registered
+# automatically. Known folders for types are your .o3de/Projects and .o3de/Gems etc. So if I wanted my project to be
+# registered and built by this build server I could simply put them in those known folders on the build server and they
+# would get registered automatically by this call.
+# OR
+# I could put them on the commandline as well. This would be the way if the o3de objects we need to regiater are NOT
+# in known folders or you do not intend to call with O3DE_REGISTER_THIS_ENGINE=TRUE Ex.
+# -DO3DE_REGISTER_ENGINE_PATH=C:\this\engine
+#   -DO3DE_REGISTER_PROJECT_PATHS=C:\ThisGame;C:\ThatGame
+#   -DO3DE_REGISTER_GEM_PATHS=C:\ThisGem;C:\ThatGem;C:\And\Some\Other\Gem
+#   -DO3DE_REGISTER_RESTRICTED_PATHS=C:\this\engine\Restricted;C:\ThisGame\Restricted;C:\ThisGem\Restricted
+########################################################################################################################
+if(O3DE_REGISTER_ENGINE_PATH)
+    message(STATUS "O3DE_REGISTER_ENGINE_PATH=${O3DE_REGISTER_ENGINE_PATH}")
+
+    if(O3DE_REGISTER_THIS_ENGINE)
+        message(STATUS "O3DE_REGISTER_THIS_ENGINE=${O3DE_REGISTER_THIS_ENGINE}")
+        message(STATUS "register --this-engine")
         if(CMAKE_HOST_WIN32)
             execute_process(
                       COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --this-engine --override-home-folder ${home_directory}
@@ -60,13 +70,14 @@ if(O3DE_REGISTER_ENGINE_PATH)
             )
         endif()
         if(o3de_register_this_engine_cmd_result)
-            message(FATAL_ERROR "An error occured trying to ${O3DE_REGISTER_ENGINE_PATH}/scripts>o3de register --this-engine --override-home-folder ${home_directory}: ${o3de_register_this_engine_cmd_result}")
+            message(FATAL_ERROR "An error occured trying to register --this-engine: ${o3de_register_this_engine_cmd_result}")
         else()
-            message(STATUS "Engine ${O3DE_REGISTER_ENGINE_PATH} Registration successfull.")
+            message(STATUS "Engine ${O3DE_REGISTER_ENGINE_PATH} registration successfull.")
         endif()
     endif()
 
     if(O3DE_REGISTER_RESTRICTED_PATHS)
+        message(STATUS "O3DE_REGISTER_RESTRICTED_PATHS=${O3DE_REGISTER_RESTRICTED_PATHS}")
         foreach(restricted_path ${O3DE_REGISTER_RESTRICTED_PATHS})
             if(CMAKE_HOST_WIN32)
                 execute_process(
@@ -82,12 +93,13 @@ if(O3DE_REGISTER_ENGINE_PATH)
             if(o3de_register_restricted_cmd_result)
                 message(FATAL_ERROR "An error occured trying to ${O3DE_REGISTER_ENGINE_PATH}/scripts>o3de register --restricted-path ${restricted_path} --override-home-folder ${home_directory}: ${o3de_register_restricted_cmd_result}")
             else()
-                message(STATUS "Restricted ${restricted_path} Registration successfull.")
+                message(STATUS "Restricted ${restricted_path} registration successfull.")
             endif()
         endforeach()
     endif()
 
     if(O3DE_REGISTER_PROJECT_PATHS)
+        message(STATUS "O3DE_REGISTER_PROJECT_PATHS=${O3DE_REGISTER_PROJECT_PATHS}")
         foreach(project_path ${O3DE_REGISTER_PROJECT_PATHS})
             if(CMAKE_HOST_WIN32)
                 execute_process(
@@ -101,14 +113,15 @@ if(O3DE_REGISTER_ENGINE_PATH)
                 )
             endif()
             if(o3de_register_project_cmd_result)
-                message(FATAL_ERROR "An error occured trying to ${O3DE_REGISTER_ENGINE_PATH}/scripts>o3de register --project-path ${project_path} --override-home-folder ${home_directory}: ${o3de_register_project_cmd_result}")
+                message(FATAL_ERROR "An error occured trying to ${O3DE_REGISTER_ENGINE_PATH}/scripts>o3de register --project-path ${project_path} --override-home-folder ${home_directory}")
             else()
-                message(STATUS "Project ${project_path} Registration successfull.")
+                message(STATUS "Project ${project_path} registration successfull.")
             endif()
         endforeach()
     endif()
 
     if(O3DE_REGISTER_GEM_PATHS)
+        message(STATUS "O3DE_REGISTER_GEM_PATHS=${O3DE_REGISTER_GEM_PATHS}")
         foreach(gem_path ${O3DE_REGISTER_GEM_PATHS})
             if(CMAKE_HOST_WIN32)
                 execute_process(
@@ -122,14 +135,15 @@ if(O3DE_REGISTER_ENGINE_PATH)
                 )
             endif()
             if(o3de_register_gem_cmd_result)
-                message(FATAL_ERROR "An error occured trying to ${O3DE_REGISTER_ENGINE_PATH}/scripts>o3de register --gem-path ${gem_path} --override-home-folder ${home_directory}: ${o3de_register_gem_cmd_result}")
+                message(FATAL_ERROR "An error occured trying to ${O3DE_REGISTER_ENGINE_PATH}/scripts>o3de register --gem-path ${gem_path} --override-home-folder ${home_directory}")
             else()
-                message(STATUS "Gem ${gem_path} Registration successfull.")
+                message(STATUS "Gem ${gem_path} registration successfull.")
             endif()
         endforeach()
     endif()
 
     if(O3DE_REGISTER_TEMPLATE_PATHS)
+        message(STATUS "O3DE_REGISTER_TEMPLATE_PATHS=${O3DE_REGISTER_TEMPLATE_PATHS}")
         foreach(template_path ${O3DE_REGISTER_TEMPLATE_PATHS})
             if(CMAKE_HOST_WIN32)
                 execute_process(
@@ -143,14 +157,15 @@ if(O3DE_REGISTER_ENGINE_PATH)
                 )
             endif()
             if(o3de_register_template_cmd_result)
-                message(FATAL_ERROR "An error occured trying to ${O3DE_REGISTER_ENGINE_PATH}/scripts>o3de register --template-path ${template_path} --override-home-folder ${home_directory}: ${o3de_register_template_cmd_result}")
+                message(FATAL_ERROR "An error occured trying to ${O3DE_REGISTER_ENGINE_PATH}/scripts>o3de register --template-path ${template_path} --override-home-folder ${home_directory}")
             else()
-                message(STATUS "Template ${template_path} Registration successfull.")
+                message(STATUS "Template ${template_path} registration successfull.")
             endif()
         endforeach()
     endif()
 
     if(O3DE_REGISTER_REPO_URIS)
+        message(STATUS "O3DE_REGISTER_REPO_URIS=${O3DE_REGISTER_REPO_URIS}")
         foreach(repo_uri ${O3DE_REGISTER_REPO_URIS})
             if(CMAKE_HOST_WIN32)
                 execute_process(
@@ -164,9 +179,9 @@ if(O3DE_REGISTER_ENGINE_PATH)
                 )
             endif()
             if(o3de_register_repo_cmd_result)
-                message(FATAL_ERROR "An error occured trying to ${O3DE_REGISTER_ENGINE_PATH}/scripts>o3de register --repo-uri ${repo_uri} --override-home-folder ${home_directory}: ${o3de_register_repo_cmd_result}")
+                message(FATAL_ERROR "An error occured trying to ${O3DE_REGISTER_ENGINE_PATH}/scripts>o3de register --repo-uri ${repo_uri} --override-home-folder ${home_directory}")
             else()
-                message(STATUS "Repo ${repo_uri} Registration successfull.")
+                message(STATUS "Repo ${repo_uri} registration successfull.")
             endif()
         endforeach()
     endif()
