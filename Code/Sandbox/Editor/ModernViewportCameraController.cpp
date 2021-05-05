@@ -19,6 +19,7 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
@@ -29,7 +30,7 @@ namespace AzFramework
     extern InputChannelId CameraOrbitLookButton;
     extern InputChannelId CameraOrbitDollyButton;
     extern InputChannelId CameraOrbitPanButton;
-}
+} // namespace AzFramework
 
 namespace SandboxEditor
 {
@@ -65,8 +66,7 @@ namespace SandboxEditor
     {
         // LYN-2315 TODO - move setup out of constructor, pass cameras in
         auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraFreeLookButton);
-        auto firstPersonPanCamera =
-            AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraFreePanButton, AzFramework::LookPan);
+        auto firstPersonPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraFreePanButton, AzFramework::LookPan);
         auto firstPersonTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::LookTranslation);
         auto firstPersonWheelCamera = AZStd::make_shared<AzFramework::ScrollTranslationCameraInput>();
 
@@ -74,10 +74,8 @@ namespace SandboxEditor
         auto orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraOrbitLookButton);
         auto orbitTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::OrbitTranslation);
         auto orbitDollyWheelCamera = AZStd::make_shared<AzFramework::OrbitDollyScrollCameraInput>();
-        auto orbitDollyMoveCamera =
-            AZStd::make_shared<AzFramework::OrbitDollyCursorMoveCameraInput>(AzFramework::CameraOrbitDollyButton);
-        auto orbitPanCamera =
-            AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraOrbitPanButton, AzFramework::OrbitPan);
+        auto orbitDollyMoveCamera = AZStd::make_shared<AzFramework::OrbitDollyCursorMoveCameraInput>(AzFramework::CameraOrbitDollyButton);
+        auto orbitPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraOrbitPanButton, AzFramework::OrbitPan);
 
         orbitCamera->m_orbitCameras.AddCamera(orbitRotateCamera);
         orbitCamera->m_orbitCameras.AddCamera(orbitTranslateCamera);
@@ -93,10 +91,12 @@ namespace SandboxEditor
 
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
-            auto handleCameraChange = [this](const AZ::Matrix4x4& matrix) {
-                UpdateCameraFromTransform(
-                    m_targetCamera,
-                    AZ::Transform::CreateFromMatrix3x3AndTranslation(AZ::Matrix3x3::CreateFromMatrix4x4(matrix), matrix.GetTranslation()));
+            auto handleCameraChange = [this](const AZ::Matrix4x4&) {
+                if (!m_updating)
+                {
+                    const auto viewportContext = RetrieveViewportContext(GetViewportId());
+                    UpdateCameraFromTransform(m_targetCamera, viewportContext->GetCameraTransform());
+                }
             };
 
             m_cameraViewMatrixChangeHandler = AZ::RPI::ViewportContext::MatrixChangedEvent::Handler(handleCameraChange);
@@ -146,6 +146,8 @@ namespace SandboxEditor
     {
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
+            m_updating = true;
+
             if (m_cameraMode == CameraMode::Control)
             {
                 m_targetCamera = m_cameraSystem.StepCamera(m_targetCamera, event.m_deltaTime.count());
@@ -177,6 +179,8 @@ namespace SandboxEditor
 
                 viewportContext->SetCameraTransform(current);
             }
+
+            m_updating = false;
         }
     }
 

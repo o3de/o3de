@@ -150,9 +150,9 @@ namespace AzFramework
     {
         const auto eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromTransform(transform));
 
-        camera.m_lookAt = transform.GetTranslation();
         camera.m_pitch = eulerAngles.GetX();
         camera.m_yaw = eulerAngles.GetZ();
+        camera.m_lookAt = transform.GetTranslation() - (camera.Rotation().GetBasisY() * camera.m_lookDist);
     }
 
     bool CameraSystem::HandleEvents(const InputEvent& event)
