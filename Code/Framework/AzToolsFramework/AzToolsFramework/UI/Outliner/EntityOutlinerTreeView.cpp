@@ -190,14 +190,16 @@ namespace AzToolsFramework
 
         if (model()->hasChildren(index) && !IsExpanderHidden(index))
         {
+            const int indexLeft = visualRect(index).left();
+
             // Paint Expander Arrows
             if (isExpanded(index))
             {
-                painter->drawPixmap(rect.x() + 8, rect.y() + 10, 8, 4, m_expandedIcon.pixmap(QSize(8, 4)));
+                painter->drawPixmap(indexLeft - 13, rect.y() + 10, 8, 4, m_expandedIcon.pixmap(QSize(8, 4)));
             }
             else
             {
-                painter->drawPixmap(rect.x() + 10, rect.y() + 8, 4, 8, m_collapsedIcon.pixmap(QSize(4, 8)));
+                painter->drawPixmap(indexLeft - 11, rect.y() + 8, 4, 8, m_collapsedIcon.pixmap(QSize(4, 8)));
             }
         }
     }
