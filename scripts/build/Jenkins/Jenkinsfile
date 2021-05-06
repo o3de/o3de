@@ -551,8 +551,13 @@ finally {
         }
         if (env.WATCHED_BRANCHES.tokenize(',').contains(branchName)) {
             node('controller') {
-                step([$class: 'Mailer', notifyEveryUnstableBuild: true, recipients: 
-                    emailextrecipients([[$class: 'CulpritsRecipientProvider']])
+                step([
+                    $class: 'Mailer', 
+                    notifyEveryUnstableBuild: true, 
+                    recipients: emailextrecipients([
+                        [$class: 'CulpritsRecipientProvider'],
+                        [$class: 'RequesterRecipientProvider']
+                    ])
                 ])
             }
         }
