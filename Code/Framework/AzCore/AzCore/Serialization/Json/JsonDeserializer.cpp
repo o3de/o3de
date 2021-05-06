@@ -97,7 +97,8 @@ namespace AZ
             return context.Report(Tasks::RetrieveInfo, Outcomes::Unknown,
                 AZStd::string::format("Failed to retrieve rtti information for %s.", classData->m_name));
         }
-        AZ_Assert(classData->m_azRtti->GetTypeId() == typeId, "Type id mismatch during deserialization of a json file. (%s vs %s)");
+        AZ_Assert(classData->m_azRtti->GetTypeId() == typeId, "Type id mismatch during deserialization of a json file. (%s vs %s)",
+            classData->m_azRtti->GetTypeId().ToString<AZStd::string>().c_str(), typeId.ToString<AZStd::string>().c_str());
 
         void** objectPtr = reinterpret_cast<void**>(object);
         bool isNull = *objectPtr == nullptr;
@@ -512,27 +513,24 @@ namespace AZ
             if (*object)
             {
                 const AZ::Uuid& actualClassId = rtti.GetActualUuid(*object);
-                if (actualClassId != objectType)
+                const SerializeContext::ClassData* actualClassData = context.GetSerializeContext()->FindClassData(actualClassId);
+                if (!actualClassData)
                 {
-                    const SerializeContext::ClassData* actualClassData = context.GetSerializeContext()->FindClassData(actualClassId);
-                    if (!actualClassData)
-                    {
-                        status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown,
-                            AZStd::string::format("Unable to find serialization information for type %s.", actualClassId.ToString<AZStd::string>().c_str()));
-                        return ResolvePointerResult::FullyProcessed;
-                    }
+                    status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown,
+                        AZStd::string::format("Unable to find serialization information for type %s.", actualClassId.ToString<AZStd::string>().c_str()));
+                    return ResolvePointerResult::FullyProcessed;
+                }
 
-                    if (actualClassData->m_factory)
-                    {
-                        actualClassData->m_factory->Destroy(*object);
-                        *object = nullptr;
-                    }
-                    else
-                    {
-                        status = context.Report(Tasks::RetrieveInfo, Outcomes::Catastrophic,
-                            "Unable to find the factory needed to clear out the default value.");
-                        return ResolvePointerResult::FullyProcessed;
-                    }
+                if (actualClassData->m_factory)
+                {
+                    actualClassData->m_factory->Destroy(*object);
+                    *object = nullptr;
+                }
+                else
+                {
+                    status = context.Report(Tasks::RetrieveInfo, Outcomes::Catastrophic,
+                        "Unable to find the factory needed to clear out the default value.");
+                    return ResolvePointerResult::FullyProcessed;
                 }
             }
             status = ResultCode(Tasks::ReadField, Outcomes::Success);

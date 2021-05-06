@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C6321601
 # Test Case Title : Check that very high values of direction axes of forces do not throw error
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/6321601
+
 
 
 # fmt: off

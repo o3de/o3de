@@ -16,6 +16,11 @@
 
 namespace AZ
 {
+    namespace Python
+    {
+        class PythonBehaviorInfo;
+    }
+
     namespace SceneAPI
     {
         namespace Containers
@@ -44,6 +49,7 @@ namespace AZ
             private:
                 AZStd::shared_ptr<const DataTypes::IGraphObject> m_graphObject;
                 const AZ::BehaviorClass* m_behaviorClass = nullptr;
+                AZStd::shared_ptr<Python::PythonBehaviorInfo> m_pythonBehaviorInfo;
             };
 
         } // Containers

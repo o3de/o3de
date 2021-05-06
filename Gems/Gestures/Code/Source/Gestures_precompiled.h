@@ -13,5 +13,4 @@
 #pragma once
 
 #include <platform.h>
-#include <I3DEngine.h>
 #include <ISerialize.h>

@@ -16,7 +16,6 @@
 
 // AzCore
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzCore/Interface/Interface.h>
 
 // Qt

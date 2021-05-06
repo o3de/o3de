@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C13895144
 # Test Case Title : Run a level with multiple ragdolls and then switch levels
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/13895144
+
 
 
 # fmt: off

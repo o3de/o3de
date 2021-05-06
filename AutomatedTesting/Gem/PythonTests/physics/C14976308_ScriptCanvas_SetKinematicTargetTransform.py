@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test Case
 # ID    : C14976308
 # Title : Verify that SetKinematicTarget on PhysX rigid body updates transform for kinematic entities and vice versa
-# URL   : https://testrail.agscollab.com/index.php?/cases/view/14976308
+
 
 
 # fmt: off

@@ -16,14 +16,33 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
+#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
-AZ_CVAR(bool, ed_newCameraSystemDebug, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable debug drawing for the new camera system");
+namespace AzFramework
+{
+    extern InputChannelId CameraFreeLookButton;
+    extern InputChannelId CameraFreePanButton;
+    extern InputChannelId CameraOrbitLookButton;
+    extern InputChannelId CameraOrbitDollyButton;
+    extern InputChannelId CameraOrbitPanButton;
+}
 
 namespace SandboxEditor
 {
+    static void DrawPreviewAxis(AzFramework::DebugDisplayRequests& display, const AZ::Transform& transform, const float axisLength)
+    {
+        display.SetColor(AZ::Colors::Red);
+        display.DrawLine(transform.GetTranslation(), transform.GetTranslation() + transform.GetBasisX().GetNormalizedSafe() * axisLength);
+        display.SetColor(AZ::Colors::Green);
+        display.DrawLine(transform.GetTranslation(), transform.GetTranslation() + transform.GetBasisY().GetNormalizedSafe() * axisLength);
+        display.SetColor(AZ::Colors::Blue);
+        display.DrawLine(transform.GetTranslation(), transform.GetTranslation() + transform.GetBasisZ().GetNormalizedSafe() * axisLength);
+    }
+
     static AZ::RPI::ViewportContextPtr RetrieveViewportContext(const AzFramework::ViewportId viewportId)
     {
         auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
@@ -45,17 +64,21 @@ namespace SandboxEditor
         : MultiViewportControllerInstanceInterface(viewportId)
     {
         // LYN-2315 TODO - move setup out of constructor, pass cameras in
-        auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::InputDeviceMouse::Button::Right);
-        auto firstPersonPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::LookPan);
+        auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraFreeLookButton);
+        auto firstPersonPanCamera =
+            AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraFreePanButton, AzFramework::LookPan);
         auto firstPersonTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::LookTranslation);
         auto firstPersonWheelCamera = AZStd::make_shared<AzFramework::ScrollTranslationCameraInput>();
 
         auto orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>();
-        auto orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::InputDeviceMouse::Button::Left);
+        auto orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraOrbitLookButton);
         auto orbitTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::OrbitTranslation);
         auto orbitDollyWheelCamera = AZStd::make_shared<AzFramework::OrbitDollyScrollCameraInput>();
-        auto orbitDollyMoveCamera = AZStd::make_shared<AzFramework::OrbitDollyCursorMoveCameraInput>();
-        auto orbitPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::OrbitPan);
+        auto orbitDollyMoveCamera =
+            AZStd::make_shared<AzFramework::OrbitDollyCursorMoveCameraInput>(AzFramework::CameraOrbitDollyButton);
+        auto orbitPanCamera =
+            AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraOrbitPanButton, AzFramework::OrbitPan);
+
         orbitCamera->m_orbitCameras.AddCamera(orbitRotateCamera);
         orbitCamera->m_orbitCameras.AddCamera(orbitTranslateCamera);
         orbitCamera->m_orbitCameras.AddCamera(orbitDollyWheelCamera);
@@ -68,23 +91,24 @@ namespace SandboxEditor
         m_cameraSystem.m_cameras.AddCamera(firstPersonWheelCamera);
         m_cameraSystem.m_cameras.AddCamera(orbitCamera);
 
-        if (const auto viewportContext = RetrieveViewportContext(viewportId))
+        if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
-            // set position but not orientation
-            m_targetCamera.m_lookAt = viewportContext->GetCameraTransform().GetTranslation();
+            auto handleCameraChange = [this](const AZ::Matrix4x4& matrix) {
+                UpdateCameraFromTransform(
+                    m_targetCamera,
+                    AZ::Transform::CreateFromMatrix3x3AndTranslation(AZ::Matrix3x3::CreateFromMatrix4x4(matrix), matrix.GetTranslation()));
+            };
 
-            // LYN-2315 TODO https://www.geometrictools.com/Documentation/EulerAngles.pdf
+            m_cameraViewMatrixChangeHandler = AZ::RPI::ViewportContext::MatrixChangedEvent::Handler(handleCameraChange);
 
-            m_camera = m_targetCamera;
+            viewportContext->ConnectViewMatrixChangedHandler(m_cameraViewMatrixChangeHandler);
         }
 
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
-        AzFramework::ModernViewportCameraControllerRequestBus::Handler::BusConnect(viewportId);
     }
 
     ModernViewportCameraControllerInstance::~ModernViewportCameraControllerInstance()
     {
-        AzFramework::ModernViewportCameraControllerRequestBus::Handler::BusDisconnect();
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
     }
 
@@ -93,6 +117,28 @@ namespace SandboxEditor
         AzFramework::WindowSize windowSize;
         AzFramework::WindowRequestBus::EventResult(
             windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+
+        if (m_cameraMode == CameraMode::Control)
+        {
+            if (AzFramework::InputDeviceKeyboard::IsKeyboardDevice(event.m_inputChannel.GetInputDevice().GetInputDeviceId()))
+            {
+                if (event.m_inputChannel.GetInputChannelId() == AzFramework::InputDeviceKeyboard::Key::AlphanumericR)
+                {
+                    m_transformEnd = m_camera.Transform();
+
+                    return true;
+                }
+                else if (event.m_inputChannel.GetInputChannelId() == AzFramework::InputDeviceKeyboard::Key::AlphanumericP)
+                {
+                    m_animationT = 0.0f;
+                    m_cameraMode = CameraMode::Animation;
+                    m_transformStart = m_camera.Transform();
+
+                    return true;
+                }
+            }
+        }
+
         return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel, windowSize));
     }
 
@@ -100,26 +146,49 @@ namespace SandboxEditor
     {
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
-            m_targetCamera = m_cameraSystem.StepCamera(m_targetCamera, event.m_deltaTime.count());
-            m_camera =
-                AzFramework::SmoothCamera(m_camera, m_targetCamera, m_smoothProps, event.m_deltaTime.count());
+            if (m_cameraMode == CameraMode::Control)
+            {
+                m_targetCamera = m_cameraSystem.StepCamera(m_targetCamera, event.m_deltaTime.count());
+                m_camera = AzFramework::SmoothCamera(m_camera, m_targetCamera, event.m_deltaTime.count());
 
-            viewportContext->SetCameraTransform(m_camera.Transform());
+                viewportContext->SetCameraTransform(m_camera.Transform());
+            }
+            else if (m_cameraMode == CameraMode::Animation)
+            {
+                const auto smootherStepFn = [](const float t) { return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f); };
+                const float transitionT = smootherStepFn(m_animationT);
+
+                const AZ::Transform current = AZ::Transform::CreateFromQuaternionAndTranslation(
+                    m_transformStart.GetRotation().Slerp(m_transformEnd.GetRotation(), transitionT),
+                    m_transformStart.GetTranslation().Lerp(m_transformEnd.GetTranslation(), transitionT));
+
+                const AZ::Vector3 eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromTransform(current));
+                m_camera.m_pitch = eulerAngles.GetX();
+                m_camera.m_yaw = eulerAngles.GetZ();
+                m_camera.m_lookAt = current.GetTranslation();
+                m_targetCamera = m_camera;
+
+                if (m_animationT >= 1.0f)
+                {
+                    m_cameraMode = CameraMode::Control;
+                }
+
+                m_animationT = AZ::GetClamp(m_animationT + event.m_deltaTime.count(), 0.0f, 1.0f);
+
+                viewportContext->SetCameraTransform(current);
+            }
         }
     }
 
     void ModernViewportCameraControllerInstance::DisplayViewport(
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        if (ed_newCameraSystemDebug)
+        if (const float alpha = AZStd::min(-m_camera.m_lookDist / 5.0f, 1.0f); alpha > AZ::Constants::FloatEpsilon)
         {
-            debugDisplay.SetColor(AZ::Colors::White);
-            debugDisplay.DrawWireSphere(m_targetCamera.m_lookAt, 0.5f);
+            debugDisplay.SetColor(1.0f, 1.0f, 1.0f, alpha);
+            debugDisplay.DrawWireSphere(m_camera.m_lookAt, 0.5f);
         }
-    }
 
-    void ModernViewportCameraControllerInstance::SetTargetCameraTransform(const AZ::Transform& transform)
-    {
-        m_targetCamera.m_lookAt = transform.GetTranslation();
+        DrawPreviewAxis(debugDisplay, m_transformEnd, 2.0f);
     }
 } // namespace SandboxEditor
