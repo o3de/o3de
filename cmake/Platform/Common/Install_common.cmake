@@ -455,11 +455,11 @@ function(ly_setup_others)
     endforeach()
 
     # Additional files needed by gems
-    install(FILES
-        ${CMAKE_SOURCE_DIR}/Gems/ImageProcessing/Code/Source/ImageBuilderDefaultPresets.settings
-        DESTINATION Gems/ImageProcessing/Code/Source
+    install(DIRECTORY
+        ${CMAKE_SOURCE_DIR}/Gems/Atom/Asset/ImageProcessingAtom/Config
+        DESTINATION Gems/Atom/Asset/ImageProcessingAtom
         COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
-    )  
+    )
 
     # Templates
     install(DIRECTORY
