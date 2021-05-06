@@ -21,7 +21,6 @@ import hydra_test_utils as hydra
 import ly_test_tools.environment.file_system as file_system
 from ly_test_tools import LAUNCHERS
 from base import TestAutomationBase
-import ly_test_tools.environment.process_utils as process_utils
 
 TEST_DIRECTORY = os.path.dirname(__file__)
 

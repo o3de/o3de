@@ -27,11 +27,11 @@ class Tests():
 def ScriptEvents_ReturnSetTypeSuccessfully():
     """
     Summary:
-     An entity exists in the level that contains a Script Canvas component. In the graph is both a Send Event
-     and a Receive Event.
+     An entity exists in the level that contains a Script Canvas component. And verify that Script Event's send and
+     receive nodes return the set value succesfully.
 
     Expected Behavior:
-     After entering game mode the graph on the entity should print an expected message to the console
+     After entering game mode, the graph on the entity should print an expected message to the console
 
     Test Steps:
      1) Create test level
