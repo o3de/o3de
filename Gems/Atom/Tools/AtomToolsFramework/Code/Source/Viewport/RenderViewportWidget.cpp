@@ -472,6 +472,11 @@ namespace AtomToolsFramework
                                                 : AZStd::optional<AzFramework::ScreenPoint>{};
     }
 
+    bool RenderViewportWidget::IsMouseOver() const
+    {
+        return m_mouseOver;
+    }
+
     void RenderViewportWidget::BeginCursorCapture()
     {
         if (m_capturingCursor)
