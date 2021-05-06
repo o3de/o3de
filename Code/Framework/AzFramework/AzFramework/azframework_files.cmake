@@ -14,7 +14,6 @@ set(FILES
     AzFrameworkModule.h
     AzFrameworkModule.cpp
     API/ApplicationAPI.h
-    API/AtomActiveInterface.h
     Application/Application.cpp
     Application/Application.h
     Archive/Archive.cpp

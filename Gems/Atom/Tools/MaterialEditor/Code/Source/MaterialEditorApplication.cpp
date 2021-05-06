@@ -45,6 +45,7 @@
 
 #include <Atom/Window/MaterialEditorWindowModule.h>
 #include <Atom/Window/MaterialEditorWindowFactoryRequestBus.h>
+#include <Atom/Window/MaterialEditorWindowRequestBus.h>
 #include <AzCore/Utils/Utils.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
@@ -309,6 +310,13 @@ namespace MaterialEditor
 
     void MaterialEditorApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
     {
+        const AZStd::string activateWindowSwitchName = "activatewindow";
+        if (commandLine.HasSwitch(activateWindowSwitchName))
+        {
+            MaterialEditor::MaterialEditorWindowRequestBus::Broadcast(
+                &MaterialEditor::MaterialEditorWindowRequestBus::Handler::ActivateWindow);
+        }
+
         const AZStd::string timeoputSwitchName = "timeout";
         if (commandLine.HasSwitch(timeoputSwitchName))
         {
@@ -424,10 +432,16 @@ namespace MaterialEditor
             // Forward commandline options to other application instance.
             QByteArray buffer;
             buffer.append("ProcessCommandLine:");
+
+            // Add the command line options from this process to the message, skipping the executable path
             for (int argi = 1; argi < m_argC; ++argi)
             {
                 buffer.append(QString(m_argV[argi]).append("\n").toUtf8());
             }
+
+            // Inject command line option to always bring the main window to the foreground
+            buffer.append("--activatewindow\n");
+
             m_socket.Send(buffer);
             m_socket.Disconnect();
             return false;

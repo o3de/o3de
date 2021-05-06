@@ -12,25 +12,44 @@
 
 #pragma once
 
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Viewport/MultiViewportController.h>
 
 namespace SandboxEditor
 {
-    class ModernViewportCameraControllerInstance final : public AzFramework::MultiViewportControllerInstanceInterface
+    class ModernViewportCameraControllerInstance final : public AzFramework::MultiViewportControllerInstanceInterface,
+                                                         private AzFramework::ViewportDebugDisplayEventBus::Handler
     {
     public:
         explicit ModernViewportCameraControllerInstance(AzFramework::ViewportId viewportId);
+        ~ModernViewportCameraControllerInstance();
 
         // MultiViewportControllerInstanceInterface overrides ...
         bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
         void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
 
+        // AzFramework::ViewportDebugDisplayEventBus overrides ...
+        void DisplayViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
+
     private:
+        enum class CameraMode
+        {
+            Control,
+            Animation
+        };
+
         AzFramework::Camera m_camera;
         AzFramework::Camera m_targetCamera;
-        AzFramework::SmoothProps m_smoothProps;
         AzFramework::CameraSystem m_cameraSystem;
+
+        AZ::Transform m_transformStart = AZ::Transform::CreateIdentity();
+        AZ::Transform m_transformEnd = AZ::Transform::CreateIdentity();
+        float m_animationT = 0.0f;
+        CameraMode m_cameraMode = CameraMode::Control;
+
+        AZ::RPI::ViewportContext::MatrixChangedEvent::Handler m_cameraViewMatrixChangeHandler;
     };
 
     using ModernViewportCameraController = AzFramework::MultiViewportController<ModernViewportCameraControllerInstance>;

@@ -141,16 +141,16 @@ namespace AzToolsFramework
                     const AZ::Vector3& entityPosition = m_entityDataCache->GetVisibleEntityPosition(entityCacheIndex);
 
                     // selecting based on 2d icon - should only do it when visible and not selected
-                    const QPoint screenPosition = GetScreenPosition(viewportId, entityPosition);
+                    const AzFramework::ScreenPoint screenPosition = GetScreenPosition(viewportId, entityPosition);
 
                     const float distSqFromCamera = cameraState.m_position.GetDistanceSq(entityPosition);
                     const auto iconRange = static_cast<float>(GetIconScale(distSqFromCamera) * s_iconSize * 0.5f);
                     const auto screenCoords = mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates;
 
-                    if (    screenCoords.m_x >= screenPosition.x() - iconRange
-                        &&  screenCoords.m_x <= screenPosition.x() + iconRange
-                        &&  screenCoords.m_y >= screenPosition.y() - iconRange
-                        &&  screenCoords.m_y <= screenPosition.y() + iconRange)
+                    if (    screenCoords.m_x >= screenPosition.m_x - iconRange
+                        &&  screenCoords.m_x <= screenPosition.m_x + iconRange
+                        &&  screenCoords.m_y >= screenPosition.m_y - iconRange
+                        &&  screenCoords.m_y <= screenPosition.m_y + iconRange)
                     {
                         entityIdUnderCursor = entityId;
                         break;

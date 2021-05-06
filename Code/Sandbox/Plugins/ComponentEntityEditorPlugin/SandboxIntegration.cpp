@@ -30,7 +30,6 @@
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Physics/Material.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -162,13 +161,6 @@ void SandboxIntegrationManager::Setup()
     AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
-    // turn on the this debug display request bus implementation if no other implementation is active
-    if( !(AZ::Interface<AzFramework::AtomActiveInterface>::Get() && AzFramework::DebugDisplayRequestBus::HasHandlers()))
-    {
-        m_debugDisplayBusImplementationActive = true;
-        AzFramework::DebugDisplayRequestBus::Handler::BusConnect(
-            AzToolsFramework::ViewportInteraction::g_mainViewportEntityDebugDisplayId);
-    }
 
     AzFramework::DisplayContextRequestBus::Handler::BusConnect();
     SetupFileExtensionMap();
@@ -302,12 +294,15 @@ void SandboxIntegrationManager::OnCatalogAssetAdded(const AZ::Data::AssetId& ass
 // operation writing to shared resource is queued on main thread.
 void SandboxIntegrationManager::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo)
 {
+    bool isPrefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
     // Check to see if the removed slice asset has any instance in the level, then check if 
     // those dangling instances are directly under the root slice (not sub-slices). If yes,
     // detach them and save necessary information so they can be restored when their slice asset
     // comes back.
 
-    if (assetInfo.m_assetType == AZ::AzTypeInfo<AZ::SliceAsset>::Uuid())
+    if (!isPrefabSystemEnabled && assetInfo.m_assetType == AZ::AzTypeInfo<AZ::SliceAsset>::Uuid())
     {
         AZ::SliceComponent* rootSlice = nullptr;
         AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(rootSlice,

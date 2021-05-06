@@ -56,11 +56,11 @@ namespace AzToolsFramework
         return AZ::GetMax(projectedCameraDistance, cameraState.m_nearClip) / apparentDistance;
     }
 
-    QPoint GetScreenPosition(const int viewportId, const AZ::Vector3& worldTranslation)
+     AzFramework::ScreenPoint GetScreenPosition(const int viewportId, const AZ::Vector3& worldTranslation)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-        QPoint screenPosition = QPoint();
+        auto screenPosition = AzFramework::ScreenPoint(0, 0);
         ViewportInteraction::ViewportInteractionRequestBus::EventResult(
             screenPosition, viewportId,
             &ViewportInteraction::ViewportInteractionRequestBus::Events::ViewportWorldToScreen,

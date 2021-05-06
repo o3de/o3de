@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C4976200
 # Test Case Title : Verify that with higher angular damping, the object in rotation comes to rest faster
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4976200
+
 
 # fmt: off
 class Tests:

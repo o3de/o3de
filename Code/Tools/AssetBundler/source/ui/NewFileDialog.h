@@ -51,9 +51,16 @@ namespace AssetBundler
         //! A standard OS-specific New File Dialog, but blocks all Qt signals from the dialog and does NOT create a new file.
         //! Use in place of the static QFileDialog functions to avoid unexpected file watcher updates.
         //! Returns the absolute path of the file the user either selected or attempted to create, or an empty string if the user canceled out of the dialog. 
-        static AZStd::string OSNewFileDialog(QWidget* parent, const char* fileExtension, const char* fileTypeDisplayName, const AZStd::string& startingDirectory);
+        static AZStd::string OSNewFileDialog(
+            QWidget* parent,
+            const char* fileExtension,
+            const char* fileTypeDisplayName,
+            const AZStd::string& startingDirectory);
 
-        static int FileGenerationResultMessageBox(QWidget* parent, const AZStd::vector<AZStd::string>& generatedFiles, bool generatedWithErrors);
+        static int FileGenerationResultMessageBox(
+            QWidget* parent,
+            const AZStd::vector<AZStd::string>& generatedFiles,
+            bool generatedWithErrors);
 
     private:
         void OnBrowseButtonPressed();
