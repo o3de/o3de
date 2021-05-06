@@ -17,6 +17,8 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
+#pragma once
+
 namespace TestImpact
 {
     template<typename ExceptionType>
