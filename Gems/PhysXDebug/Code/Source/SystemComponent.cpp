@@ -41,16 +41,16 @@ namespace PhysXDebug
     const float SystemComponent::m_maxCullingBoxSize = 150.0f;
     namespace Internal
     {
-        const AZ::Crc32 VewportId = 0;// was AzFramework::g_defaultSceneEntityDebugDisplayId but it didn't render to the viewport.
+        const AZ::Crc32 VewportId = 0; // was AzFramework::g_defaultSceneEntityDebugDisplayId but it didn't render to the viewport.
     }
 
-    const AZ::Vector4 CreateColorFromU32(AZ::u32 color)
+    const AZ::Color CreateColorFromU32(AZ::u32 color)
     {
         const AZ::u8 a = static_cast<AZ::u8>((color & 0xFF000000) >> 24);
         const AZ::u8 b = static_cast<AZ::u8>((color & 0x00FF0000) >> 16);
         const AZ::u8 g = static_cast<AZ::u8>((color & 0x0000FF00) >> 8);
         const AZ::u8 r = static_cast<AZ::u8>(color & 0x000000FF);
-        return AZ::Vector4(r / 255, g / 255, b / 255, a / 255);
+        return AZ::Color(r, g, b, a);
     }
 
     bool UseEditorPhysicsScene()
@@ -342,18 +342,18 @@ namespace PhysXDebug
         }
     }
 
-    void SystemComponent::BuildColorPickingMenuItem(const AZStd::string& label, AZ::Vector4& color)
+    void SystemComponent::BuildColorPickingMenuItem(const AZStd::string& label, AZ::Color& color)
     {
-        float col[3] = {color.GetX() / 255.0f, color.GetY() / 255.0f, color.GetZ() / 255.0f};
+        float col[3] = {color.GetR() / 255.0f, color.GetG() / 255.0f, color.GetB() / 255.0f};
         if (ImGui::ColorEdit3(label.c_str(), col, ImGuiColorEditFlags_NoAlpha))
         {
             const float r =  AZ::GetClamp(col[0] * 255.0f, 0.0f, 255.0f);
             const float g =  AZ::GetClamp(col[1] * 255.0f, 0.0f, 255.0f);
             const float b =  AZ::GetClamp(col[2] * 255.0f, 0.0f, 255.0f);
 
-            color.SetX(r);
-            color.SetY(g);
-            color.SetZ(b);
+            color.SetR(r);
+            color.SetG(g);
+            color.SetB(b);
         }
     }
 #endif // IMGUI_ENABLED
@@ -523,14 +523,13 @@ namespace PhysXDebug
             AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
             if (debugDisplay)
             {
-                debugDisplay->PushMatrix(AZ::Transform::Identity());
                 if (!m_linePoints.empty())
                 {
                     AZ_Assert(m_linePoints.size() == m_lineColors.size(), "Lines: Expected an equal number of points to colors.");
                     const size_t minLen = AZ::GetMin(m_linePoints.size(), m_lineColors.size());
                     for (size_t i = 0; i < minLen; i += 2)
                     {
-                        debugDisplay->DrawLine(m_linePoints[i], m_linePoints[i + 1], m_lineColors[i], m_lineColors[i + 1]);
+                        debugDisplay->DrawLine(m_linePoints[i], m_linePoints[i + 1], m_lineColors[i].GetAsVector4(), m_lineColors[i + 1].GetAsVector4());
                     }
                 }
                 if (!m_trianglePoints.empty())
@@ -543,7 +542,6 @@ namespace PhysXDebug
                         debugDisplay->DrawTri(m_trianglePoints[i], m_trianglePoints[i + 1], m_trianglePoints[i + 2]);
                     }
                 }
-                debugDisplay->PopMatrix();
             }
         }
     }
@@ -701,8 +699,8 @@ namespace PhysXDebug
 
         if (!cameraTranslation.IsClose(AZ::Vector3::CreateZero()))
         {
-            physx::PxVec3 min = PxMathConvert(cameraTranslation - AZ::Vector3(m_culling.m_boxSize));
-            physx::PxVec3 max = PxMathConvert(cameraTranslation + AZ::Vector3(m_culling.m_boxSize));
+            const physx::PxVec3 min = PxMathConvert(cameraTranslation - AZ::Vector3(m_culling.m_boxSize));
+            const physx::PxVec3 max = PxMathConvert(cameraTranslation + AZ::Vector3(m_culling.m_boxSize));
             m_cullingBox = physx::PxBounds3(min, max);
 
             if (m_culling.m_boxWireframe)
@@ -858,21 +856,16 @@ namespace PhysXDebug
             AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
             AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, Internal::VewportId);
             AZ_Assert(debugDisplayBus, "Invalid DebugDisplayRequestBus.");
-            AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
-            if (debugDisplay)
+            if (AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus))
             {
-                debugDisplay->PushMatrix(AZ::Transform::Identity());
-
-                const AZ::Vector4 wireframeColor = MapOriginalPhysXColorToUserDefinedValues(1);
-                debugDisplay->SetColor(wireframeColor);
+                const AZ::Color wireframeColor = MapOriginalPhysXColorToUserDefinedValues(1);
+                debugDisplay->SetColor(wireframeColor.GetAsVector4());
                 debugDisplay->DrawWireBox(cullingBoxAabb.GetMin(), cullingBoxAabb.GetMax());
-
-                debugDisplay->PopMatrix();
             }
         }
     }
 
-    AZ::Vector4 SystemComponent::MapOriginalPhysXColorToUserDefinedValues(const physx::PxU32& originalColor)
+    AZ::Color SystemComponent::MapOriginalPhysXColorToUserDefinedValues(const physx::PxU32& originalColor)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
 
