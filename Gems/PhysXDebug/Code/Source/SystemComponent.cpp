@@ -41,7 +41,7 @@ namespace PhysXDebug
     const float SystemComponent::m_maxCullingBoxSize = 150.0f;
     namespace Internal
     {
-        const AZ::Crc32 VewportId = 0;// was AZ_CRC_CE("MainViewportEntityDebugDisplayId") but it didn't work.
+        const AZ::Crc32 VewportId = 0;// was AzFramework::g_defaultSceneEntityDebugDisplayId but it didn't render to the viewport.
     }
 
     const AZ::Vector4 CreateColorFromU32(AZ::u32 color)
