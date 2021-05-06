@@ -212,7 +212,7 @@ namespace Multiplayer
             {
                 NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
                 AZ_Assert(netBindComponent != nullptr, "Attempting to send an RPC to an entity with no NetBindComponent");
-                netBindComponent->HandleRpcMessage(NetEntityRole::Server, rpcMessage);
+                netBindComponent->HandleRpcMessage(nullptr, NetEntityRole::Server, rpcMessage);
             }
         }
         m_localDeferredRpcMessages.clear();

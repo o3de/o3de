@@ -12,16 +12,15 @@
 
 #pragma once
 
-#include <Source/NetworkInput/IMultiplayerComponentInput.h>
-#include <Source/NetworkEntity/NetworkEntityHandle.h>
+#include <Include/IMultiplayerComponentInput.h>
+#include <Include/INetworkTime.h>
+#include <Include/NetworkEntityHandle.h>
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 
 namespace Multiplayer
 {
     // Forwards
     class NetBindComponent;
-
-    AZ_TYPE_SAFE_INTEGRAL(ClientInputId, uint16_t);
 
     //! @class NetworkInput
     //! @brief A single networked client input command.
@@ -42,9 +41,13 @@ namespace Multiplayer
         ClientInputId GetClientInputId() const;
         ClientInputId& ModifyClientInputId();
 
-        void SetServerTimeMs(AZ::TimeMs serverTimeMs);
-        AZ::TimeMs GetServerTimeMs() const;
-        AZ::TimeMs& ModifyServerTimeMs();
+        void SetHostFrameId(HostFrameId hostFrameId);
+        HostFrameId GetHostFrameId() const;
+        HostFrameId& ModifyHostFrameId();
+
+        void SetHostTimeMs(AZ::TimeMs hostTimeMs);
+        AZ::TimeMs GetHostTimeMs() const;
+        AZ::TimeMs& ModifyHostTimeMs();
 
         void AttachNetBindComponent(NetBindComponent* netBindComponent);
 
@@ -72,10 +75,9 @@ namespace Multiplayer
 
         MultiplayerComponentInputVector m_componentInputs;
         ClientInputId m_inputId = ClientInputId{ 0 };
-        AZ::TimeMs m_serverTimeMs = AZ::TimeMs{ 0 };
+        HostFrameId m_hostFrameId = InvalidHostFrameId;
+        AZ::TimeMs m_hostTimeMs = AZ::TimeMs{ 0 };
         ConstNetworkEntityHandle m_owner;
         bool m_wasAttached = false;
     };
 }
-
-AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::ClientInputId);

@@ -15,11 +15,11 @@
 #include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
-#include <Source/NetworkEntity/INetworkEntityManager.h>
 #include <Source/NetworkEntity/NetworkEntityAuthorityTracker.h>
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
 #include <Source/NetworkEntity/NetworkEntityRpcMessage.h>
-#include <Source/EntityDomains/IEntityDomain.h>
+#include <Include/IEntityDomain.h>
+#include <Include/INetworkEntityManager.h>
 #include <Source/NetworkEntity/NetworkSpawnableLibrary.h>
 #include <Source/Components/MultiplayerComponentRegistry.h>
 

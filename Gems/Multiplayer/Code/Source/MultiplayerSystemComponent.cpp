@@ -127,7 +127,7 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        AZ::TimeMs serverGameTimeMs = AZ::GetElapsedTimeMs();
+        AZ::TimeMs hostTimeMs = AZ::GetElapsedTimeMs();
 
         // Handle deferred local rpc messages that were generated during the updates
         m_networkEntityManager.DispatchLocalDeferredRpcMessages();
@@ -143,12 +143,12 @@ namespace Multiplayer
 
         // Send out the game state update to all connections
         {
-            auto sendNetworkUpdates = [serverGameTimeMs, &stats](IConnection& connection)
+            auto sendNetworkUpdates = [hostTimeMs, &stats](IConnection& connection)
             {
                 if (connection.GetUserData() != nullptr)
                 {
                     IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection.GetUserData());
-                    connectionData->Update(serverGameTimeMs);
+                    connectionData->Update(hostTimeMs);
                     if (connectionData->GetConnectionDataType() == ConnectionDataType::ServerToClient)
                     {
                         stats.m_clientConnectionCount++;
@@ -481,7 +481,7 @@ namespace Multiplayer
         }
     }
 
-    MultiplayerAgentType MultiplayerSystemComponent::GetAgentType()
+    MultiplayerAgentType MultiplayerSystemComponent::GetAgentType() const
     {
         return m_agentType;
     }
@@ -526,6 +526,18 @@ namespace Multiplayer
         {
             connection.SendReliablePacket(MultiplayerPackets::ReadyForEntityUpdates(readyForEntityUpdates));
         });
+    }
+
+    AZ::TimeMs MultiplayerSystemComponent::GetCurrentHostTimeMs() const
+    {
+        if (GetAgentType() == MultiplayerAgentType::Client)
+        {
+            return m_lastReplicatedHostTimeMs;
+        }
+        else // ClientServer or DedicatedServer
+        {
+            return m_networkTime.GetHostTimeMs();
+        }
     }
 
     const char* MultiplayerSystemComponent::GetComponentGemName(NetComponentId netComponentId) const

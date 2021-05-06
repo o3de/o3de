@@ -50,7 +50,7 @@ namespace Multiplayer
         return m_entityReplicationManager;
     }
 
-    void ClientToServerConnectionData::Update([[maybe_unused]] AZ::TimeMs serverGameTimeMs)
+    void ClientToServerConnectionData::Update([[maybe_unused]] AZ::TimeMs hostTimeMs)
     {
         m_entityReplicationManager.ActivatePendingEntities();
     }

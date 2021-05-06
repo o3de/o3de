@@ -16,11 +16,11 @@
     <Include File="Source/NetworkInput/NetworkInputVector.h"/>
     <Include File="AzNetworking/DataStructures/ByteBuffer.h"/>
 
-    <NetworkProperty Type="Multiplayer::ClientInputId" Name="LastInputId" Init="Multiplayer::ClientInputId{0}" ReplicateFrom="Authority" ReplicateTo="Authority" IsRewindable="false" IsPredictable="false" IsPublic="false" Container="Object" ExposeToEditor="false" GenerateEventBindings="false" />
+    <NetworkProperty Type="Multiplayer::ClientInputId" Name="LastInputId" Init="Multiplayer::ClientInputId{ 0 }" ReplicateFrom="Authority" ReplicateTo="Authority" IsRewindable="false" IsPredictable="false" IsPublic="false" Container="Object" ExposeToEditor="false" GenerateEventBindings="false" />
 
     <RemoteProcedure Name="SendClientInput" InvokeFrom="Autonomous" HandleOn="Authority" IsPublic="true" IsReliable="false" Description="Client to server move / input RPC">
         <Param Type="Multiplayer::NetworkInputVector" Name="inputArray"  />
-        <Param Type="uint32_t" Name="stateHash" />
+        <Param Type="AZ::HashValue64" Name="stateHash" />
         <Param Type="AzNetworking::PacketEncodingBuffer" Name="clientState" Description="This is for debugging desyncs only; release games should not populate this parameter" />
     </RemoteProcedure>
 

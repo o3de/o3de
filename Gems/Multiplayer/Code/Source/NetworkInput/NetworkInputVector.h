@@ -13,7 +13,7 @@
 #pragma once
 
 #include <Source/NetworkInput/NetworkInput.h>
-#include <Source/NetworkEntity/NetworkEntityHandle.h>
+#include <Include/NetworkEntityHandle.h>
 #include <AzCore/std/containers/fixed_vector.h>
 
 namespace Multiplayer
