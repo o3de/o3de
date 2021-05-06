@@ -1017,6 +1017,20 @@ namespace JsonSerializationTests
         }
     }
 
+    TYPED_TEST_P(JsonSerializerConformityTests, GetOperationsFlags_ManualDefaultSetIfNeeded_ManualDefaultOperationSetIfMandatoryFieldsAreDeclared)
+    {
+        if (this->m_features.SupportsJsonType(rapidjson::kObjectType))
+        {
+            if (!this->m_features.m_mandatoryFields.empty())
+            {
+                auto serializer = this->m_description.CreateSerializer();
+                bool manuallyHandlesDefaults = (serializer->GetOperationsFlags() & AZ::BaseJsonSerializer::OperationFlags::ManualDefault) ==
+                    AZ::BaseJsonSerializer::OperationFlags::ManualDefault;
+                EXPECT_TRUE(manuallyHandlesDefaults);
+            }
+        }
+    }
+
     REGISTER_TYPED_TEST_CASE_P(JsonSerializerConformityTests,
         Registration_SerializerIsRegisteredWithContext_SerializerFound,
 
@@ -1027,7 +1041,7 @@ namespace JsonSerializationTests
         Load_InvalidTypeOfArrayType_ReturnsUnsupported,
         Load_InvalidTypeOfStringType_ReturnsUnsupported,
         Load_InvalidTypeOfNumberType_ReturnsUnsupported,
-        
+
         Load_DeserializeUnreflectedType_ReturnsUnsupported,
         Load_DeserializeEmptyObject_SucceedsAndObjectMatchesDefaults,
         Load_DeserializeEmptyObjectThroughMainLoad_SucceedsAndObjectMatchesDefaults,
@@ -1053,10 +1067,12 @@ namespace JsonSerializationTests
         Store_SerializePartialInstance_StoredSuccessfullyAndJsonMatches,
         Store_SerializeEmptyArray_StoredSuccessfullyAndJsonMatches,
         Store_HaltedThroughCallback_StoreFailsAndHaltReported,
-        
+
         StoreLoad_RoundTripWithPartialDefault_IdenticalInstances,
         StoreLoad_RoundTripWithFullSet_IdenticalInstances,
-        StoreLoad_RoundTripWithDefaultsKept_IdenticalInstances);
+        StoreLoad_RoundTripWithDefaultsKept_IdenticalInstances,
+
+        GetOperationsFlags_ManualDefaultSetIfNeeded_ManualDefaultOperationSetIfMandatoryFieldsAreDeclared);
 } // namespace JsonSerializationTests
 
 namespace AZ
