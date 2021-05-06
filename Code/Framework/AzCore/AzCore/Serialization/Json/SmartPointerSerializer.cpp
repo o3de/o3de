@@ -82,7 +82,7 @@ namespace AZ
                 {
                     // If the target type is the same as the type already stored in the smart pointer than no new
                     // instance is created and the existing instance will be updated with the data in the json document.
-                    result = ContinueLoading(instance, elementClassId, inputValue, context, Flags::ResolvePointer);
+                    result = ContinueLoading(instance, elementClassId, inputValue, context, ContinuationFlags::ResolvePointer);
                     return false;
                 }
             }
@@ -93,7 +93,7 @@ namespace AZ
             // the wrong address. In these cases explicitly reset the smart pointer. This will erase the existing
             // data but that's fine as it's not being used.
             void* element = nullptr;
-            result = ContinueLoading(&element, elementClassId, inputValue, context, Flags::ResolvePointer);
+            result = ContinueLoading(&element, elementClassId, inputValue, context, ContinuationFlags::ResolvePointer);
             if (result.GetProcessing() != JSR::Processing::Halted && result.GetProcessing() != JSR::Processing::Altered)
             {
                 void* elementPtr = container->ReserveElement(instance, nullptr);
@@ -155,7 +155,8 @@ namespace AZ
             container->EnumElements(const_cast<void*>(defaultValue), defaultInputCallback);
         }
 
-        JSR::ResultCode result = ContinueStoring(outputValue, inputValue, defaultValue, inputPtrType, context, Flags::ResolvePointer);
+        JSR::ResultCode result =
+            ContinueStoring(outputValue, inputValue, defaultValue, inputPtrType, context, ContinuationFlags::ResolvePointer);
         return context.Report(result, result.GetProcessing() != JSR::Processing::Halted ?
             "Successfully processed smart pointer." : "A problem occurred while processing a smart pointer.");
     }
