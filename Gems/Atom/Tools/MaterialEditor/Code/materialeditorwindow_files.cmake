@@ -11,6 +11,7 @@
 
 set(FILES
     Include/Atom/Window/MaterialEditorWindowModule.h
+    Include/Atom/Window/MaterialEditorWindowSettings.h
     Include/Atom/Window/MaterialEditorWindowNotificationBus.h
     Include/Atom/Window/MaterialEditorWindowRequestBus.h
     Include/Atom/Window/MaterialEditorWindowFactoryRequestBus.h
@@ -19,6 +20,7 @@ set(FILES
     Source/Window/MaterialEditorWindow.h
     Source/Window/MaterialEditorWindow.cpp
     Source/Window/MaterialEditorWindowModule.cpp
+    Source/Window/MaterialEditorWindowSettings.cpp
     Source/Window/MaterialBrowserWidget.h
     Source/Window/MaterialBrowserWidget.cpp
     Source/Window/MaterialBrowserWidget.ui

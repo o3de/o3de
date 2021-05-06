@@ -26,61 +26,12 @@
 
 namespace MaterialEditor
 {
-    void GeneralViewportSettings::Reflect(AZ::ReflectContext* context)
-    {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<GeneralViewportSettings>()
-                ->Version(1)
-                ->Field("enableGrid", &GeneralViewportSettings::m_enableGrid)
-                ->Field("enableShadowCatcher", &GeneralViewportSettings::m_enableShadowCatcher)
-                ->Field("enableAlternateSkybox", &GeneralViewportSettings::m_enableAlternateSkybox)
-                ->Field("fieldOfView", &GeneralViewportSettings::m_fieldOfView)
-                ->Field("displayMapperOperationType", &GeneralViewportSettings::m_displayMapperOperationType)
-                ;
-
-            if (auto editContext = serializeContext->GetEditContext())
-            {
-                editContext->Class<GeneralViewportSettings>(
-                    "GeneralViewportSettings", "")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &GeneralViewportSettings::m_enableGrid, "Enable Grid", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &GeneralViewportSettings::m_enableShadowCatcher, "Enable Shadow Catcher", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &GeneralViewportSettings::m_enableAlternateSkybox, "Enable Alternate Skybox", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &GeneralViewportSettings::m_fieldOfView, "Field Of View", "")
-                        ->Attribute(AZ::Edit::Attributes::Min, 60.0f)
-                        ->Attribute(AZ::Edit::Attributes::Max, 120.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GeneralViewportSettings::m_displayMapperOperationType, "Display Mapper Type", "")
-                    ->EnumAttribute(AZ::Render::DisplayMapperOperationType::Aces, "Aces")
-                    ->EnumAttribute(AZ::Render::DisplayMapperOperationType::AcesLut, "AcesLut")
-                    ->EnumAttribute(AZ::Render::DisplayMapperOperationType::Passthrough, "Passthrough")
-                    ->EnumAttribute(AZ::Render::DisplayMapperOperationType::GammaSRGB, "GammaSRGB")
-                    ->EnumAttribute(AZ::Render::DisplayMapperOperationType::Reinhard, "Reinhard")
-                    ;
-            }
-        }
-
-        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->Class<GeneralViewportSettings>("GeneralViewportSettings")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                ->Attribute(AZ::Script::Attributes::Module, "render")
-                ->Constructor()
-                ->Constructor<const GeneralViewportSettings&>()
-                ->Property("enableGrid", BehaviorValueProperty(&GeneralViewportSettings::m_enableGrid))
-                ->Property("enableShadowCatcher", BehaviorValueProperty(&GeneralViewportSettings::m_enableShadowCatcher))
-                ->Property("enableAlternateSkybox", BehaviorValueProperty(&GeneralViewportSettings::m_enableAlternateSkybox))
-                ->Property("fieldOfView", BehaviorValueProperty(&GeneralViewportSettings::m_fieldOfView))
-                ->Property("displayMapperOperationType", BehaviorValueProperty(&GeneralViewportSettings::m_displayMapperOperationType))
-                ;
-        }
-    }
-
     ViewportSettingsInspector::ViewportSettingsInspector(QWidget* parent)
         : AtomToolsFramework::InspectorWidget(parent)
     {
+        m_viewportSettings =
+            AZ::UserSettings::CreateFind<MaterialViewportSettings>(AZ::Crc32("MaterialViewportSettings"), AZ::UserSettings::CT_GLOBAL);
+
         MaterialViewportNotificationBus::Handler::BusConnect();
     }
 
@@ -109,7 +60,7 @@ namespace MaterialEditor
 
         AddGroup(
             groupNameId, groupDisplayName, groupDescription,
-            new AtomToolsFramework::InspectorPropertyGroupWidget(&m_generalSettings, nullptr, m_generalSettings.TYPEINFO_Uuid(), this));
+            new AtomToolsFramework::InspectorPropertyGroupWidget(m_viewportSettings.get(), nullptr, m_viewportSettings->TYPEINFO_Uuid(), this));
     }
 
     void ViewportSettingsInspector::AddModelGroup()
@@ -300,13 +251,13 @@ namespace MaterialEditor
         m_lightingPreset.reset();
         MaterialViewportRequestBus::BroadcastResult(m_lightingPreset, &MaterialViewportRequestBus::Events::GetLightingPresetSelection);
 
-        MaterialViewportRequestBus::BroadcastResult(m_generalSettings.m_enableGrid, &MaterialViewportRequestBus::Events::GetGridEnabled);
+        MaterialViewportRequestBus::BroadcastResult(m_viewportSettings->m_enableGrid, &MaterialViewportRequestBus::Events::GetGridEnabled);
         MaterialViewportRequestBus::BroadcastResult(
-            m_generalSettings.m_enableShadowCatcher, &MaterialViewportRequestBus::Events::GetShadowCatcherEnabled);
+            m_viewportSettings->m_enableShadowCatcher, &MaterialViewportRequestBus::Events::GetShadowCatcherEnabled);
         MaterialViewportRequestBus::BroadcastResult(
-            m_generalSettings.m_enableAlternateSkybox, &MaterialViewportRequestBus::Events::GetAlternateSkyboxEnabled);
-        MaterialViewportRequestBus::BroadcastResult(m_generalSettings.m_fieldOfView, &MaterialViewportRequestBus::Handler::GetFieldOfView);
-        MaterialViewportRequestBus::BroadcastResult(m_generalSettings.m_displayMapperOperationType, &MaterialViewportRequestBus::Handler::GetDisplayMapperOperationType);
+            m_viewportSettings->m_enableAlternateSkybox, &MaterialViewportRequestBus::Events::GetAlternateSkyboxEnabled);
+        MaterialViewportRequestBus::BroadcastResult(m_viewportSettings->m_fieldOfView, &MaterialViewportRequestBus::Handler::GetFieldOfView);
+        MaterialViewportRequestBus::BroadcastResult(m_viewportSettings->m_displayMapperOperationType, &MaterialViewportRequestBus::Handler::GetDisplayMapperOperationType);
 
         AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
         AtomToolsFramework::InspectorWidget::Reset();
@@ -330,31 +281,31 @@ namespace MaterialEditor
 
     void ViewportSettingsInspector::OnShadowCatcherEnabledChanged(bool enable)
     {
-        m_generalSettings.m_enableShadowCatcher = enable;
+        m_viewportSettings->m_enableShadowCatcher = enable;
         RefreshGroup("general");
     }
 
     void ViewportSettingsInspector::OnGridEnabledChanged(bool enable)
     {
-        m_generalSettings.m_enableGrid = enable;
+        m_viewportSettings->m_enableGrid = enable;
         RefreshGroup("general");
     }
 
     void ViewportSettingsInspector::OnAlternateSkyboxEnabledChanged(bool enable)
     {
-        m_generalSettings.m_enableAlternateSkybox = enable;
+        m_viewportSettings->m_enableAlternateSkybox = enable;
         RefreshGroup("general");
     }
 
     void ViewportSettingsInspector::OnFieldOfViewChanged(float fieldOfView)
     {
-        m_generalSettings.m_fieldOfView = fieldOfView;
+        m_viewportSettings->m_fieldOfView = fieldOfView;
         RefreshGroup("general");
     }
 
     void ViewportSettingsInspector::OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType)
     {
-        m_generalSettings.m_displayMapperOperationType = operationType;
+        m_viewportSettings->m_displayMapperOperationType = operationType;
         RefreshGroup("general");
     }
 
@@ -379,13 +330,13 @@ namespace MaterialEditor
     {
         MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnLightingPresetChanged, m_lightingPreset);
         MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnModelPresetChanged, m_modelPreset);
-        MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SetGridEnabled, m_generalSettings.m_enableGrid);
+        MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SetGridEnabled, m_viewportSettings->m_enableGrid);
         MaterialViewportRequestBus::Broadcast(
-            &MaterialViewportRequestBus::Events::SetShadowCatcherEnabled, m_generalSettings.m_enableShadowCatcher);
+            &MaterialViewportRequestBus::Events::SetShadowCatcherEnabled, m_viewportSettings->m_enableShadowCatcher);
         MaterialViewportRequestBus::Broadcast(
-            &MaterialViewportRequestBus::Events::SetAlternateSkyboxEnabled, m_generalSettings.m_enableAlternateSkybox);
-        MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Handler::SetFieldOfView, m_generalSettings.m_fieldOfView);
-        MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Handler::SetDisplayMapperOperationType, m_generalSettings.m_displayMapperOperationType);
+            &MaterialViewportRequestBus::Events::SetAlternateSkyboxEnabled, m_viewportSettings->m_enableAlternateSkybox);
+        MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Handler::SetFieldOfView, m_viewportSettings->m_fieldOfView);
+        MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Handler::SetDisplayMapperOperationType, m_viewportSettings->m_displayMapperOperationType);
     }
 
     AZStd::string ViewportSettingsInspector::GetDefaultUniqueSaveFilePath(const AZStd::string& baseName) const

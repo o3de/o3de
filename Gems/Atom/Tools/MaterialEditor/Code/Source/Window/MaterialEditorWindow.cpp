@@ -10,14 +10,15 @@
 *
 */
 
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Application/Application.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
+#include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
 
 #include <AtomToolsFramework/Util/Util.h>
 
@@ -121,10 +122,24 @@ namespace MaterialEditor
         MaterialEditorWindowRequestBus::Handler::BusConnect();
         MaterialDocumentNotificationBus::Handler::BusConnect();
         OnDocumentOpened(AZ::Uuid::CreateNull());
+
+        auto windowState = AZ::UserSettings::Find<AzToolsFramework::QWidgetSavedState>(
+            AZ::Crc32("MaterialEditorWindowState"), AZ::UserSettings::CT_GLOBAL);
+        if (windowState)
+        {
+            windowState->RestoreGeometry(this);
+        }
     }
 
     MaterialEditorWindow::~MaterialEditorWindow()
     {
+        auto windowState = AZ::UserSettings::CreateFind<AzToolsFramework::QWidgetSavedState>(
+            AZ::Crc32("MaterialEditorWindowState"), AZ::UserSettings::CT_GLOBAL);
+        if (windowState)
+        {
+            windowState->CaptureGeometry(this);
+        }
+
         MaterialDocumentNotificationBus::Handler::BusDisconnect();
         MaterialEditorWindowRequestBus::Handler::BusDisconnect();
     }
