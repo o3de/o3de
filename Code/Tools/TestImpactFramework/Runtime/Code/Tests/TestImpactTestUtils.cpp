@@ -1142,7 +1142,7 @@ namespace UnitTest
             "C:\\Lumberyard\\Code\\Tools\\TestImpactFramework\\Runtime\\Code\\Tests\\TestTargetA\\Code\\Tests\\TestImpactTestTargetA.cpp";
         sourceCoverage.m_coverage = AZStd::vector<TestImpact::LineCoverage>();
 
-        auto& lines = sourceCoverage.m_coverage.value();
+        auto& lines = sourceCoverage.m_coverage;
         lines.push_back(TestImpact::LineCoverage{22, 1});
         lines.push_back(TestImpact::LineCoverage{23, 1});
         lines.push_back(TestImpact::LineCoverage{24, 1});
@@ -1202,7 +1202,7 @@ namespace UnitTest
             "C:\\Lumberyard\\Code\\Tools\\TestImpactFramework\\Runtime\\Code\\Tests\\TestTargetB\\Code\\Tests\\TestImpactTestTargetB.cpp";
         sourceCoverage.m_coverage = AZStd::vector<TestImpact::LineCoverage>();
 
-        auto& lines = sourceCoverage.m_coverage.value();
+        auto& lines = sourceCoverage.m_coverage;
         lines.push_back(TestImpact::LineCoverage{29, 1});
         lines.push_back(TestImpact::LineCoverage{30, 1});
         lines.push_back(TestImpact::LineCoverage{31, 1});
@@ -1250,7 +1250,7 @@ namespace UnitTest
             "C:\\Lumberyard\\Code\\Tools\\TestImpactFramework\\Runtime\\Code\\Tests\\TestTargetC\\Code\\Tests\\TestImpactTestTargetC.cpp";
         sourceCoverage.m_coverage = AZStd::vector<TestImpact::LineCoverage>();
 
-        auto& lines = sourceCoverage.m_coverage.value();
+        auto& lines = sourceCoverage.m_coverage;
         lines.push_back(TestImpact::LineCoverage{32, 1});
         lines.push_back(TestImpact::LineCoverage{33, 1});
         lines.push_back(TestImpact::LineCoverage{34, 1});
@@ -1294,7 +1294,7 @@ namespace UnitTest
             "C:\\Lumberyard\\Code\\Tools\\TestImpactFramework\\Runtime\\Code\\Tests\\TestTargetD\\Code\\Tests\\TestImpactTestTargetD.cpp";
         sourceCoverage.m_coverage = AZStd::vector<TestImpact::LineCoverage>();
 
-        auto& lines = sourceCoverage.m_coverage.value();
+        auto& lines = sourceCoverage.m_coverage;
         lines.push_back(TestImpact::LineCoverage{56, 1});
         lines.push_back(TestImpact::LineCoverage{57, 1});
         lines.push_back(TestImpact::LineCoverage{58, 1});
@@ -1762,18 +1762,18 @@ namespace UnitTest
             return false;
         }
 
-        if (lhs.m_coverage.has_value() != rhs.m_coverage.has_value())
+        if (lhs.m_coverage.empty() != rhs.m_coverage.empty())
         {
             AZ_Error(
-                "LineCoverage ==", false, "lhs.m_coverage.has_value(): %u, rhs.m_coverage.has_value(): %u", lhs.m_coverage.has_value(),
-                rhs.m_coverage.has_value());
+                "LineCoverage ==", false, "lhs.m_coverage.empty(): %u, rhs.m_coverage.empty(): %u", lhs.m_coverage.empty(),
+                rhs.m_coverage.empty());
             return false;
         }
 
-        if (lhs.m_coverage.has_value())
+        if (!lhs.m_coverage.empty())
         {
             return AZStd::equal(
-                lhs.m_coverage.value().begin(), lhs.m_coverage.value().end(), rhs.m_coverage.value().begin(),
+                lhs.m_coverage.begin(), lhs.m_coverage.end(), rhs.m_coverage.begin(),
                 [](const TestImpact::LineCoverage& left, const TestImpact::LineCoverage& right) {
                     return left == right;
                 });
