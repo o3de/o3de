@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C5296614
 # Test Case Title : Check that unless you assign a shape to a physX collider component,
 # the material assigned to it does not take affect
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5296614
+
 
 
 # fmt: off

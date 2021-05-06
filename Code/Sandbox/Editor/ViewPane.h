@@ -73,7 +73,6 @@ public:
     void ShowTitleMenu();
     void ToggleMaximize();
 
-    void SetFocusToViewportSearch();
     void SetFocusToViewport();
 
     void ResizeViewport(int width, int height);

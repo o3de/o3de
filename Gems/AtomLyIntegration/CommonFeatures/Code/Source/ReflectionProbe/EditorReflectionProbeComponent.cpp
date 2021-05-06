@@ -133,23 +133,14 @@ namespace AZ
             AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(GetEntityId());
             EditorReflectionProbeBus::Handler::BusConnect(GetEntityId());
+            AZ::TickBus::Handler::BusConnect();
 
             ReflectionProbeComponentConfig& configuration = m_controller.m_configuration;
-
-            // special handling is required if this component is being cloned in the editor:
-            // if the entityId in the configuration does not match this component's entityId it is being cloned
-            AZ::u64 entityId = (AZ::u64)GetEntityId();
-            if (configuration.m_entityId != EntityId::InvalidEntityId
-                && configuration.m_entityId != entityId)
-            {
-                // clear the cubeMapRelativePath to prevent the newly cloned reflection probe
-                // from using the same cubemap path as the original reflection probe
-                configuration.m_bakedCubeMapRelativePath = "";
-            }
 
             // update UI cubemap path display
             m_bakedCubeMapRelativePath = configuration.m_bakedCubeMapRelativePath;
 
+            AZ::u64 entityId = (AZ::u64)GetEntityId();
             configuration.m_entityId = entityId;
         }
 
@@ -158,7 +149,53 @@ namespace AZ
             EditorReflectionProbeBus::Handler::BusDisconnect(GetEntityId());
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
             AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
+            AZ::TickBus::Handler::BusDisconnect();
             BaseClass::Deactivate();
+        }
+
+        void EditorReflectionProbeComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+        {
+            if (!m_controller.m_featureProcessor)
+            {
+                return;
+            }
+
+            if (m_controller.m_configuration.m_useBakedCubemap)
+            {
+                AZStd::string cubeMapRelativePath = m_controller.m_configuration.m_bakedCubeMapRelativePath + ".streamingimage";
+                Data::Asset<RPI::StreamingImageAsset> cubeMapAsset;
+                CubeMapAssetNotificationType notificationType = CubeMapAssetNotificationType::None;
+                if (m_controller.m_featureProcessor->CheckCubeMapAssetNotification(cubeMapRelativePath, cubeMapAsset, notificationType))
+                {
+                    // a cubemap bake is in progress for this entity component
+                    if (notificationType == CubeMapAssetNotificationType::Ready)
+                    {
+                        // bake is complete, update configuration with the new baked cubemap asset
+                        m_controller.m_configuration.m_bakedCubeMapAsset = { cubeMapAsset.GetAs<RPI::StreamingImageAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+
+                        // refresh the currently rendered cubemap
+                        m_controller.UpdateCubeMap();
+
+                        // update the UI
+                        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh, AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
+                    }
+                    else if (notificationType == CubeMapAssetNotificationType::Error)
+                    {
+                        // cubemap bake failed
+                        QMessageBox::information(
+                            QApplication::activeWindow(),
+                            "Reflection Probe",
+                            "Reflection Probe cubemap failed to bake, please check the Asset Processor for more information.",
+                            QMessageBox::Ok);
+
+                        // clear relative path, this will allow the user to retry
+                        m_controller.m_configuration.m_bakedCubeMapRelativePath.clear();
+
+                        // update the UI
+                        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh, AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
+                    }
+                }
+            }
         }
 
         void EditorReflectionProbeComponent::DisplayEntityViewport([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
@@ -172,13 +209,19 @@ namespace AZ
             AZ::Vector3 position = AZ::Vector3::CreateZero();
             AZ::TransformBus::EventResult(position, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
 
+            AZ::Vector3 scale = AZ::Vector3::CreateOne();
+            AZ::TransformBus::EventResult(scale, GetEntityId(), &AZ::TransformBus::Events::GetLocalScale);
+
             // draw AABB at probe position using the inner dimensions
             Color color(0.0f, 0.0f, 1.0f, 1.0f);
             debugDisplay.SetColor(color);
 
             ReflectionProbeComponentConfig& configuration = m_controller.m_configuration;
-            AZ::Vector3 innerMin(position.GetX() - configuration.m_innerWidth / 2, position.GetY() - configuration.m_innerLength / 2, position.GetZ() - configuration.m_innerHeight / 2);
-            AZ::Vector3 innerMax(position.GetX() + configuration.m_innerWidth / 2, position.GetY() + configuration.m_innerLength / 2, position.GetZ() + configuration.m_innerHeight / 2);
+            AZ::Vector3 innerExtents(configuration.m_innerWidth, configuration.m_innerLength, configuration.m_innerHeight);
+            innerExtents *= scale;
+
+            AZ::Vector3 innerMin(position.GetX() - innerExtents.GetX() / 2, position.GetY() - innerExtents.GetY() / 2, position.GetZ() - innerExtents.GetZ() / 2);
+            AZ::Vector3 innerMax(position.GetX() + innerExtents.GetX() / 2, position.GetY() + innerExtents.GetY() / 2, position.GetZ() + innerExtents.GetZ() / 2);
             debugDisplay.DrawWireBox(innerMin, innerMax);
         }
 
@@ -270,122 +313,94 @@ namespace AZ
                 return AZ::Edit::PropertyRefreshLevels::None;
             }
 
-            // callback from the EnvironmentCubeMapPass when the cubemap render is complete
-            BuildCubeMapCallback buildCubeMapCallback = [this](uint8_t* const* cubeMapFaceTextureData, const RHI::Format cubeMapTextureFormat)
+            char projectPath[AZ_MAX_PATH_LEN];
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@devassets@", projectPath, AZ_MAX_PATH_LEN);
+
+            // retrieve the source cubemap path from the configuration
+            // we need to make sure to use the same source cubemap for each bake
+            AZStd::string cubeMapRelativePath = m_controller.m_configuration.m_bakedCubeMapRelativePath;
+            AZStd::string cubeMapFullPath;
+
+            if (!cubeMapRelativePath.empty())
             {
-                if (!m_bakeInProgress)
+                // test to see if the cubemap file is actually there, if it was removed we need to
+                // generate a new filename, otherwise it will cause an error in the asset system
+                AzFramework::StringFunc::Path::Join(projectPath, cubeMapRelativePath.c_str(), cubeMapFullPath, true, true);
+
+                if (!AZ::IO::FileIOBase::GetInstance()->Exists(cubeMapFullPath.c_str()))
                 {
-                    // user canceled the bake
-                    return;
+                    // clear it to force the generation of a new filename
+                    cubeMapRelativePath.clear();
                 }
+            }
 
-                char projectPath[AZ_MAX_PATH_LEN];
-                AZ::IO::FileIOBase::GetInstance()->ResolvePath("@devassets@", projectPath, AZ_MAX_PATH_LEN);
+            // build a new cubemap path if necessary
+            if (cubeMapRelativePath.empty())
+            {
+                // the file name is a combination of the entity name, a UUID, and the filemask
+                Entity* entity = GetEntity();
+                AZ_Assert(entity, "ReflectionProbe entity is null");
 
-                // retrieve the source cubemap path from the configuration
-                // we need to make sure to use the same source cubemap for each bake
-                AZStd::string cubeMapRelativePath = m_controller.m_configuration.m_bakedCubeMapRelativePath;
-                AZStd::string cubeMapFullPath;
+                AZ::Uuid uuid = AZ::Uuid::CreateRandom();
+                AZStd::string uuidString;
+                uuid.ToString(uuidString);
 
-                if (!cubeMapRelativePath.empty())
+                cubeMapRelativePath = "ReflectionProbes/" + entity->GetName() + "_" + uuidString + "_iblspecularcm.dds";
+
+                // replace any invalid filename characters
+                auto invalidCharacters = [](char letter)
                 {
-                    // test to see if the cubemap file is actually there, if it was removed we need to
-                    // generate a new filename, otherwise it will cause an error in the asset system
-                    AzFramework::StringFunc::Path::Join(projectPath, cubeMapRelativePath.c_str(), cubeMapFullPath, true, true);
+                    return
+                        letter == ':' || letter == '"' || letter == '\'' ||
+                        letter == '{' || letter == '}' ||
+                        letter == '<' || letter == '>';
+                };
+                AZStd::replace_if(cubeMapRelativePath.begin(), cubeMapRelativePath.end(), invalidCharacters, '_');
 
-                    if (!AZ::IO::FileIOBase::GetInstance()->Exists(cubeMapFullPath.c_str()))
-                    {
-                        // clear it to force the generation of a new filename
-                        cubeMapRelativePath.clear();
-                    }
-                }
+                // build the full source path
+                AzFramework::StringFunc::Path::Join(projectPath, cubeMapRelativePath.c_str(), cubeMapFullPath, true, true);
+            }
 
-                // build a new cubemap path if necessary
-                if (cubeMapRelativePath.empty())
-                {
-                    // the file name is a combination of the entity name, a UUID, and the filemask
-                    Entity* entity = GetEntity();
-                    AZ_Assert(entity, "ReflectionProbe entity is null");
+            // make sure the folder is created
+            AZStd::string reflectionProbeFolder;
+            AzFramework::StringFunc::Path::GetFolderPath(cubeMapFullPath.data(), reflectionProbeFolder);
+            AZ::IO::SystemFile::CreateDir(reflectionProbeFolder.c_str());
 
-                    AZ::Uuid uuid = AZ::Uuid::CreateRandom();
-                    AZStd::string uuidString;
-                    uuid.ToString(uuidString);
+            // check out the file in source control                
+            bool checkedOutSuccessfully = false;
+            using ApplicationBus = AzToolsFramework::ToolsApplicationRequestBus;
+            ApplicationBus::BroadcastResult(
+                checkedOutSuccessfully,
+                &ApplicationBus::Events::RequestEditForFileBlocking,
+                cubeMapFullPath.c_str(),
+                "Checking out for edit...",
+                ApplicationBus::Events::RequestEditProgressCallback());
 
-                    cubeMapRelativePath = "ReflectionProbes/" + entity->GetName() + "_" + uuidString + "_iblspecularcm.dds";
+            if (!checkedOutSuccessfully)
+            {
+                AZ_Error("ReflectionProbe", false, "Failed to write \"%s\", source control checkout failed", cubeMapFullPath.c_str());
+            }
 
-                    // replace any invalid filename characters
-                    auto invalidCharacters = [](char letter)
-                    {
-                        return
-                            letter == ':' || letter == '"' || letter == '\'' ||
-                            letter == '{' || letter == '}' ||
-                            letter == '<' || letter == '>';
-                    };
-                    AZStd::replace_if(cubeMapRelativePath.begin(), cubeMapRelativePath.end(), invalidCharacters, '_');
+            // save the relative source path in the configuration
+            AzToolsFramework::ScopedUndoBatch undoBatch("Cubemap path changed.");
+            m_controller.m_configuration.m_bakedCubeMapRelativePath = cubeMapRelativePath;
+            SetDirty();
 
-                    // build the full source path
-                    AzFramework::StringFunc::Path::Join(projectPath, cubeMapRelativePath.c_str(), cubeMapFullPath, true, true);
-                }
+            // update UI cubemap path display
+            m_bakedCubeMapRelativePath = cubeMapRelativePath;
 
-                // make sure the folder is created
-                AZStd::string reflectionProbeFolder;
-                AzFramework::StringFunc::Path::GetFolderPath(cubeMapFullPath.data(), reflectionProbeFolder);
-                AZ::IO::SystemFile::CreateDir(reflectionProbeFolder.c_str());
-
-                // check out the file in source control                
-                bool checkedOutSuccessfully = false;
-                using ApplicationBus = AzToolsFramework::ToolsApplicationRequestBus;
-                ApplicationBus::BroadcastResult(
-                    checkedOutSuccessfully,
-                    &ApplicationBus::Events::RequestEditForFileBlocking,
-                    cubeMapFullPath.c_str(),
-                    "Checking out for edit...",
-                    ApplicationBus::Events::RequestEditProgressCallback());
-                
-                if (!checkedOutSuccessfully)
-                {
-                    AZ_Error("ReflectionProbe", false, "Failed to write \"%s\", source control checkout failed", cubeMapFullPath.c_str());
-                }
-
+            // callback from the EnvironmentCubeMapPass when the cubemap render is complete
+            BuildCubeMapCallback buildCubeMapCallback = [=](uint8_t* const* cubeMapFaceTextureData, const RHI::Format cubeMapTextureFormat)
+            {
                 // write the cubemap data to the .dds file
                 WriteOutputFile(cubeMapFullPath.c_str(), cubeMapFaceTextureData, cubeMapTextureFormat);
-
-                // save the relative source path in the configuration
-                AzToolsFramework::ScopedUndoBatch undoBatch("Cubemap path changed.");
-                m_controller.m_configuration.m_bakedCubeMapRelativePath = cubeMapRelativePath;
-                SetDirty();
-
-                // update UI cubemap path display
-                m_bakedCubeMapRelativePath = cubeMapRelativePath;
-
-                // call the feature processor to notify when the asset is created and ready
-                NotifyCubeMapAssetReadyCallback notifyCubeMapAssetReadyCallback = [this](const Data::Asset<RPI::StreamingImageAsset>& cubeMapAsset, CubeMapAssetNotificationType notificationType)
-                {
-                    // we only need to store the cubemap asset and update the cubemap image on the first bake of the probe,
-                    // otherwise it is a hot-reload of an existing cubemap asset which is handled by the RPI
-                    if (notificationType == CubeMapAssetNotificationType::Ready)
-                    {
-                        // update configuration with the new baked cubemap asset
-                        m_controller.m_configuration.m_bakedCubeMapAsset = { cubeMapAsset.GetAs<RPI::StreamingImageAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
-
-                        // refresh the currently rendered cubemap
-                        m_controller.UpdateCubeMap();
-
-                        // update the UI
-                        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh, AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
-                    }
-
-                    // signal completion
-                    m_bakeInProgress = false;
-                };
-
-                AZStd::string cubeMapRelativeAssetPath = cubeMapRelativePath + ".streamingimage";
-                m_controller.m_featureProcessor->NotifyCubeMapAssetReady(cubeMapRelativeAssetPath, notifyCubeMapAssetReadyCallback);
+                m_bakeInProgress = false;
             };
 
-            // initiate the cubemap bake
+            // initiate the cubemap bake, this will invoke the buildCubeMapCallback when the cubemap data is ready
             m_bakeInProgress = true;
-            m_controller.BakeReflectionProbe(buildCubeMapCallback);
+            AZStd::string cubeMapRelativeAssetPath = cubeMapRelativePath + ".streamingimage";
+            m_controller.BakeReflectionProbe(buildCubeMapCallback, cubeMapRelativeAssetPath);
 
             // show a dialog box letting the user know the probe is baking
             QProgressDialog bakeDialog;

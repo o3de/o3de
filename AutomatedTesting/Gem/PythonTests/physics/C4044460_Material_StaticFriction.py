@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C4044460
 # Test Case Title : Verify the functionality of static friction
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4044460
+
 
 
 # fmt: off

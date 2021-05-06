@@ -15,7 +15,6 @@
 #include <SceneAPI/SceneCore/Components/GenerationComponent.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 
-#include <RC/ResourceCompilerScene/Common/ExportContextGlobal.h>
 #include <AzCore/RTTI/RTTI.h>
 
 

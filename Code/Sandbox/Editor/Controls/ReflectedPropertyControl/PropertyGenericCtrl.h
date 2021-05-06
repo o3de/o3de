@@ -109,16 +109,6 @@ public:
     void onEditClicked() override;
 };
 
-class MaterialPropertyEditor
-    : public GenericPopupPropertyEditor
-{
-public:
-    MaterialPropertyEditor(QWidget* pParent = nullptr)
-        : GenericPopupPropertyEditor(pParent, true){}
-    void onEditClicked() override;
-    void onButton2Clicked() override;
-};
-
 class ReverbPresetPropertyEditor
     : public GenericPopupPropertyEditor
 {
@@ -179,7 +169,6 @@ public:
 #define CONST_AZ_CRC(name, value) AZ::u32(value)
 
 using ShaderPropertyHandler = GenericPopupWidgetHandler<ShaderPropertyEditor, CONST_AZ_CRC("ePropertyShader", 0xc40932f1)>;
-using MaterialPropertyHandler = GenericPopupWidgetHandler<MaterialPropertyEditor, CONST_AZ_CRC("ePropertyMaterial", 0xf324dffa)>;
 using ReverbPresetPropertyHandler = GenericPopupWidgetHandler<ReverbPresetPropertyEditor, CONST_AZ_CRC("ePropertyReverbPreset", 0x51469f38)>;
 using MissionObjPropertyHandler = GenericPopupWidgetHandler<MissionObjPropertyEditor, CONST_AZ_CRC("ePropertyMissionObj", 0x4a2d0dc8)>;
 using SequencePropertyHandler = GenericPopupWidgetHandler<SequencePropertyEditor, CONST_AZ_CRC("ePropertySequence", 0xdd1c7d44)>;

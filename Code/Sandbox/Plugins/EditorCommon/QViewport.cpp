@@ -17,7 +17,6 @@
 #include <IRenderer.h>
 #include <IRenderAuxGeom.h>
 #include <ITimer.h>
-#include <I3DEngine.h>
 #include <IPhysicsDebugRenderer.h>
 #include <IEditor.h>
 #include <Util/Image.h>
@@ -36,8 +35,6 @@
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Interface/Interface.h>
-
-#include <AzFramework/API/AtomActiveInterface.h>
 
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
 
@@ -109,114 +106,6 @@ struct QViewport::SPreviousContext
     HWND window;
     bool isMainViewport;
 };
-
-static void DrawGridLine(IRenderAuxGeom& aux, ColorB col, const float alpha, const float alphaFalloff, const float slide, const float halfSlide, [[maybe_unused]] const float maxSlide, const Vec3& stepDir, const Vec3& orthoDir, const SViewportState& state, const SViewportGridSettings& gridSettings)
-{
-    ColorB colEnd = col;
-
-    float weight = 1.0f - (slide / halfSlide);
-    if (slide > halfSlide)
-    {
-        weight = (slide - halfSlide) / halfSlide;
-    }
-
-    float orthoWeight = 1.0f;
-
-    if (gridSettings.circular)
-    {
-        float invWeight = 1.0f - weight;
-        orthoWeight = sqrtf((invWeight * 2) - (invWeight * invWeight));
-    }
-    else
-    {
-        orthoWeight = 1.0f;
-    }
-
-    col.a = aznumeric_cast<uint8_t>((1.0f - (weight * (1.0f - alphaFalloff))) * alpha);
-    colEnd.a = aznumeric_cast<uint8_t>(alphaFalloff * alpha);
-
-    Vec3 orthoStep = state.gridOrigin.q * (orthoDir * halfSlide * orthoWeight);
-
-    Vec3 point = state.gridOrigin * (-(stepDir * halfSlide) + (stepDir * slide));
-    Vec3 points[3] = {
-        point,
-        point - orthoStep,
-        point + orthoStep
-    };
-
-    aux.DrawLine(points[0], col, points[1], colEnd);
-    aux.DrawLine(points[0], col, points[2], colEnd);
-}
-
-static void DrawGridLines(IRenderAuxGeom& aux, const uint count, const uint interStepCount, const Vec3& stepDir, const float stepSize, const Vec3& orthoDir, const float offset, const SViewportState& state, const SViewportGridSettings& gridSettings)
-{
-    const uint countHalf = count / 2;
-    Vec3 step = stepDir * stepSize;
-    Vec3 orthoStep = orthoDir * aznumeric_cast<float>(countHalf);
-    Vec3 maxStep = step * aznumeric_cast<float>(countHalf);// + stepDir*fabs(offset);
-    const float maxStepLen = count * stepSize;
-    const float halfStepLen = countHalf * stepSize;
-
-    float interStepSize = interStepCount > 0 ? (stepSize / interStepCount) : stepSize;
-    const float alphaMulMain = (float)gridSettings.mainColor.a;
-    const float alphaMulInter = (float)gridSettings.middleColor.a;
-    const float alphaFalloff = 1.0f - (gridSettings.alphaFalloff / 100.0f);
-
-    for (int i = 0; i < count + 2; i++)
-    {
-        float pointSlide = i * stepSize + offset;
-        if (pointSlide > 0.0f && pointSlide < maxStepLen)
-        {
-            DrawGridLine(aux, gridSettings.mainColor, alphaMulMain, alphaFalloff, pointSlide, halfStepLen, maxStepLen, stepDir, orthoDir, state, gridSettings);
-        }
-
-        for (int d = 1; d < interStepCount; d++)
-        {
-            float interSlide = ((i - 1) * stepSize) + offset + (d * interStepSize);
-            if (interSlide > 0.0f && interSlide < maxStepLen)
-            {
-                DrawGridLine(aux, gridSettings.middleColor, alphaMulInter, alphaFalloff, interSlide, halfStepLen, maxStepLen, stepDir, orthoDir, state, gridSettings);
-            }
-        }
-    }
-}
-
-static void DrawGrid(IRenderAuxGeom& aux, const SViewportState& state, const SViewportGridSettings& gridSettings)
-{
-    const uint count = gridSettings.count * 2;
-    const float gridSize = gridSettings.spacing * gridSettings.count * 2.0f;
-    const float halfGridSize = gridSettings.spacing * gridSettings.count;
-
-    const float stepSize = gridSize / count;
-    DrawGridLines(aux, count, gridSettings.interCount, Vec3(1.0f, 0.0f, 0.0f), stepSize, Vec3(0.0f, 1.0f, 0.0f), state.gridCellOffset.x, state, gridSettings);
-    DrawGridLines(aux, count, gridSettings.interCount, Vec3(0.0f, 1.0f, 0.0f), stepSize, Vec3(1.0f, 0.0f, 0.0f), state.gridCellOffset.y, state, gridSettings);
-}
-
-static void DrawOrigin(IRenderAuxGeom& aux, const ColorB& col)
-{
-    const float scale = 0.3f;
-    const float lineWidth = 4.0f;
-    aux.DrawLine(Vec3(-scale, 0, 0), col, Vec3(scale, 0, 0), col, lineWidth);
-    aux.DrawLine(Vec3(0, -scale, 0), col, Vec3(0, scale, 0), col, lineWidth);
-    aux.DrawLine(Vec3(0, 0, -scale), col, Vec3(0, 0, scale), col, lineWidth);
-}
-
-static void DrawOrigin(IRenderAuxGeom& aux, const int left, const int top, const float scale, const Matrix34 cameraTM)
-{
-    Vec3 originPos = Vec3(aznumeric_cast<float>(left), aznumeric_cast<float>(top), 0);
-    Quat originRot = Quat(0.707107f, 0.707107f, 0, 0) * Quat(cameraTM).GetInverted();
-    Vec3 x = originPos + originRot * Vec3(1, 0, 0) * scale;
-    Vec3 y = originPos + originRot * Vec3(0, 1, 0) * scale;
-    Vec3 z = originPos + originRot * Vec3(0, 0, 1) * scale;
-    ColorF xCol(1, 0, 0);
-    ColorF yCol(0, 1, 0);
-    ColorF zCol(0, 0, 1);
-    const float lineWidth = 2.0f;
-
-    aux.DrawLine(originPos, xCol, x, xCol, lineWidth);
-    aux.DrawLine(originPos, yCol, y, yCol, lineWidth);
-    aux.DrawLine(originPos, zCol, z, zCol, lineWidth);
-}
 
 struct QViewport::SPrivate
 {
@@ -365,7 +254,7 @@ bool QViewport::CreateRenderContext()
 
     HWND windowHandle = reinterpret_cast<HWND>(QWidget::winId());
 
-    if( AZ::Interface<AzFramework::AtomActiveInterface>::Get() && m_renderContextCreated && windowHandle == m_lastHwnd)
+    if( m_renderContextCreated && windowHandle == m_lastHwnd)
     {
         // the hwnd has not changed, no need to destroy and recreate context (and swap chain etc)
         return false;
@@ -377,13 +266,10 @@ bool QViewport::CreateRenderContext()
     {
         m_renderContextCreated = true;
 
-        if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-        {
-            m_viewportRequests.get()->BusConnect(windowHandle);
-            AzFramework::WindowSystemNotificationBus::Broadcast(&AzFramework::WindowSystemNotificationBus::Handler::OnWindowCreated, windowHandle);
+        m_viewportRequests.get()->BusConnect(windowHandle);
+        AzFramework::WindowSystemNotificationBus::Broadcast(&AzFramework::WindowSystemNotificationBus::Handler::OnWindowCreated, windowHandle);
 
-            m_lastHwnd = windowHandle;
-        }
+        m_lastHwnd = windowHandle;
 
         StorePreviousContext();
         GetIEditor()->GetEnv()->pRenderer->CreateContext(windowHandle);
@@ -499,49 +385,6 @@ void QViewport::Update()
     {
         m_averageFrameTime = 0.01f * m_lastFrameTime + 0.99f * m_averageFrameTime;
     }
-
-    if (GetIEditor()->GetEnv()->pRenderer == 0 ||
-        GetIEditor()->GetEnv()->p3DEngine == 0)
-    {
-        return;
-    }
-
-    if (!isVisible())
-    {
-        return;
-    }
-
-    if (!m_renderContextCreated)
-    {
-        return;
-    }
-
-    if (m_updating)
-    {
-        return;
-    }
-
-    AutoBool updating(&m_updating);
-
-    if (m_resizeWindowEvent)
-    {
-        HWND windowHandle = reinterpret_cast<HWND>(QWidget::winId());
-        AzFramework::WindowNotificationBus::Event(windowHandle, &AzFramework::WindowNotificationBus::Handler::OnWindowResized, m_width, m_height);
-        m_resizeWindowEvent = false;
-    }
-
-    if (hasFocus())
-    {
-        ProcessMouse();
-        ProcessKeys();
-    }
-
-    if ((m_width <= 0) || (m_height <= 0))
-    {
-        return;
-    }
-
-    RenderInternal();
 }
 
 void QViewport::CaptureMouse()
@@ -865,210 +708,16 @@ void QViewport::PreRender()
     m_state->lastCameraParentFrame = m_state->cameraParentFrame;
     m_state->lastCameraTarget = currentTM;
 
-    m_camera->SetFrustum(m_width, m_height, fov, m_settings->camera.nearClip, GetIEditor()->GetEnv()->p3DEngine->GetMaxViewDistance());
+    m_camera->SetFrustum(m_width, m_height, fov, m_settings->camera.nearClip);
     m_camera->SetMatrix(Matrix34(m_state->cameraParentFrame * currentTM));
 }
 
 void QViewport::Render()
 {
-    IRenderAuxGeom* aux = GetIEditor()->GetEnv()->pRenderer->GetIRenderAuxGeom();
-    SAuxGeomRenderFlags oldFlags = aux->GetRenderFlags();
-
-    if (m_settings->grid.showGrid)
-    {
-        aux->SetRenderFlags(e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeNone | e_DepthWriteOff | e_DepthTestOn);
-        DrawGrid(*aux, *m_state, m_settings->grid);
-    }
-
-    if (m_settings->grid.origin)
-    {
-        aux->SetRenderFlags(e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeNone | e_DepthWriteOff | e_DepthTestOn);
-        DrawOrigin(*aux, m_settings->grid.originColor);
-    }
-
-    if (m_settings->camera.showViewportOrientation)
-    {
-        aux->SetRenderFlags(e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeNone | e_DepthWriteOn | e_DepthTestOn);
-        TransformationMatrices backupSceneMatrices;
-        GetIEditor()->GetEnv()->pRenderer->Set2DMode(m_width, m_height, backupSceneMatrices);
-        DrawOrigin(*aux, 50, m_height - 50, 20.0f, m_camera->GetMatrix());
-        GetIEditor()->GetEnv()->pRenderer->Unset2DMode(backupSceneMatrices);
-    }
-
-    // Force grid, origin and viewport orientation to render by calling Flush(). This ensures that they are always drawn behind other geometry
-    aux->Flush();
-    aux->SetRenderFlags(oldFlags);
-
-    // wireframe mode
-    CScopedWireFrameMode scopedWireFrame(GetIEditor()->GetEnv()->pRenderer, m_settings->rendering.wireframe ? R_WIREFRAME_MODE : R_SOLID_MODE);
-
-    SRenderingPassInfo passInfo = SRenderingPassInfo::CreateGeneralPassRenderingInfo(*m_camera, SRenderingPassInfo::DEFAULT_FLAGS, true);
-    GetIEditor()->GetEnv()->pRenderer->BeginSpawningGeneratingRendItemJobs(passInfo.ThreadID());
-    GetIEditor()->GetEnv()->pRenderer->BeginSpawningShadowGeneratingRendItemJobs(passInfo.ThreadID());
-    GetIEditor()->GetEnv()->pRenderer->EF_ClearSkinningDataPool();
-    GetIEditor()->GetEnv()->pRenderer->EF_StartEf(passInfo);
-
-    SRendParams rp;
-
-
-    //---------------------------------------------------------------------------------------
-    //---- add light    -------------------------------------------------------------
-    //---------------------------------------------------------------------------------------
-    /////////////////////////////////////////////////////////////////////////////////////
-    // Confetti Start
-    /////////////////////////////////////////////////////////////////////////////////////
-    // If time of day enabled, add sun light to preview - Confetti Vera.
-    if (m_settings->rendering.sunlight)
-    {
-        rp.AmbientColor.r = GetIEditor()->Get3DEngine()->GetSunColor().x / 255.0f * m_settings->lighting.m_brightness;
-        rp.AmbientColor.g = GetIEditor()->Get3DEngine()->GetSunColor().y / 255.0f * m_settings->lighting.m_brightness;
-        rp.AmbientColor.b = GetIEditor()->Get3DEngine()->GetSunColor().z / 255.0f * m_settings->lighting.m_brightness;
-
-        m_private->m_sun.SetPosition(passInfo.GetCamera().GetPosition() + GetIEditor()->Get3DEngine()->GetSunDir());
-        // The radius value respect the sun radius settings in Engine.
-        // Please refer to the function C3DEngine::UpdateSun(const SRenderingPassInfo &passInfo). -- Vera, Confetti
-        m_private->m_sun.m_fRadius = 100000000; //Radius of the sun from Engine.
-        m_private->m_sun.SetLightColor(GetIEditor()->Get3DEngine()->GetSunColor());
-        m_private->m_sun.SetSpecularMult(GetIEditor()->Get3DEngine()->GetGlobalParameter(E3DPARAM_SUN_SPECULAR_MULTIPLIER));
-        m_private->m_sun.m_Flags |= DLF_DIRECTIONAL | DLF_SUN | DLF_THIS_AREA_ONLY | DLF_LM | DLF_SPECULAROCCLUSION |
-            ((GetIEditor()->Get3DEngine()->IsSunShadows() && passInfo.RenderShadows()) ? DLF_CASTSHADOW_MAPS : 0);
-        m_private->m_sun.m_sName = "Sun";
-
-        GetIEditor()->GetEnv()->pRenderer->EF_ADDDlight(&m_private->m_sun, passInfo);
-    }
-    /////////////////////////////////////////////////////////////////////////////////////
-    // Confetti End
-    /////////////////////////////////////////////////////////////////////////////////////
-    else // Add directional light
-    {
-        rp.AmbientColor.r = m_settings->lighting.m_ambientColor.r / 255.0f * m_settings->lighting.m_brightness;
-        rp.AmbientColor.g = m_settings->lighting.m_ambientColor.g / 255.0f * m_settings->lighting.m_brightness;
-        rp.AmbientColor.b = m_settings->lighting.m_ambientColor.b / 255.0f * m_settings->lighting.m_brightness;
-
-        // Directional light
-        if (m_settings->lighting.m_useLightRotation)
-        {
-            m_LightRotationRadian += m_averageFrameTime;
-        }
-        if (m_LightRotationRadian > gf_PI)
-        {
-            m_LightRotationRadian = -gf_PI;
-        }
-
-        Matrix33 LightRot33 =   Matrix33::CreateRotationZ(m_LightRotationRadian);
-
-        f32 lightMultiplier = m_settings->lighting.m_lightMultiplier;
-        f32 lightSpecMultiplier = m_settings->lighting.m_lightSpecMultiplier;
-
-        f32 lightOrbit = 15.0f;
-        Vec3 LPos0 = Vec3(-lightOrbit, lightOrbit, lightOrbit / 2);
-        m_private->m_VPLight0.SetPosition(LightRot33 * LPos0);
-
-        Vec3 d0;
-        d0.x = f32(m_settings->lighting.m_directionalLightColor.r) / 255.0f;
-        d0.y = f32(m_settings->lighting.m_directionalLightColor.g) / 255.0f;
-        d0.z = f32(m_settings->lighting.m_directionalLightColor.b) / 255.0f;
-        m_private->m_VPLight0.SetLightColor(ColorF(d0.x * lightMultiplier, d0.y * lightMultiplier, d0.z * lightMultiplier, 0));
-        m_private->m_VPLight0.SetSpecularMult(lightSpecMultiplier);
-
-        m_private->m_VPLight0.m_Flags = DLF_SUN | DLF_DIRECTIONAL;
-        GetIEditor()->GetEnv()->pRenderer->EF_ADDDlight(&m_private->m_VPLight0, passInfo);
-    }
-
-    //---------------------------------------------------------------------------------------
-
-    Matrix34 tm(IDENTITY);
-    rp.pMatrix = &tm;
-    rp.pPrevMatrix = &tm;
-
-    rp.dwFObjFlags  = 0;
-
-    SRenderContext rc;
-    rc.camera = m_camera.get();
-    rc.viewport = this;
-    rc.passInfo = &passInfo;
-    rc.renderParams = &rp;
-
-
-    for (size_t i = 0; i < m_consumers.size(); ++i)
-    {
-        m_consumers[i]->OnViewportRender(rc);
-    }
-    SignalRender(rc);
-
-    if ((m_settings->rendering.fps == true) && (m_averageFrameTime != 0.0f))
-    {
-        GetIEditor()->GetEnv()->pRenderer->Draw2dLabel(12.0f, 12.0f, 1.25f, ColorF(1, 1, 1, 1), false, "FPS: %.2f", 1.0f / m_averageFrameTime);
-    }
-
-    GetIEditor()->GetEnv()->pRenderer->EF_EndEf3D(SHDF_STREAM_SYNC, -1, -1, passInfo);
-
-    if (m_mouseMovementsSinceLastFrame > 0)
-    {
-        m_mouseMovementsSinceLastFrame = 0;
-
-        // Make sure we deliver at least last mouse movement event
-        OnMouseEvent(m_pendingMouseMoveEvent);
-    }
 }
 
 void QViewport::RenderInternal()
 {
-    {
-        threadID mainThread = 0;
-        threadID renderThread = 0;
-        GetIEditor()->GetEnv()->pRenderer->GetThreadIDs(mainThread, renderThread);
-        const threadID currentThreadId = CryGetCurrentThreadId();
-
-        // I'm not sure if this criteria is right. It might not be restrictive enough, but it's at least strict enough to prevent
-        // the crash we encountered.
-        const uint32 workerThreadId = AZ::JobContext::GetGlobalContext()->GetJobManager().GetWorkerThreadId();
-        const bool isValidThread = (workerThreadId != AZ::JobManager::InvalidWorkerThreadId) || mainThread == currentThreadId || renderThread == currentThreadId;
-
-        if (!isValidThread)
-        {
-            AZ_Assert(false, "Attempting to render QViewport on unsupported thread %" PRI_THREADID, currentThreadId);
-            return;
-        }
-    }
-
-
-    SetCurrentContext();
-    GetIEditor()->GetEnv()->pSystem->RenderBegin();
-
-    ColorF viewportBackgroundColor(m_settings->background.topColor.r / 255.0f, m_settings->background.topColor.g / 255.0f, m_settings->background.topColor.b / 255.0f);
-    GetIEditor()->GetEnv()->pRenderer->ClearTargetsImmediately(FRT_CLEAR, viewportBackgroundColor);
-    GetIEditor()->GetEnv()->pRenderer->ResetToDefault();
-
-    // Call PreRender to interpolate the new camera position
-    PreRender();
-    GetIEditor()->GetEnv()->pRenderer->SetCamera(*m_camera);
-
-    IRenderAuxGeom* aux = GetIEditor()->GetEnv()->pRenderer->GetIRenderAuxGeom();
-    SAuxGeomRenderFlags oldFlags = aux->GetRenderFlags();
-
-    if (m_settings->background.useGradient)
-    {
-        Vec3 frustumVertices[8];
-        m_camera->GetFrustumVertices(frustumVertices);
-        Vec3 lt = Vec3::CreateLerp(frustumVertices[0], frustumVertices[4], 0.10f);
-        Vec3 lb = Vec3::CreateLerp(frustumVertices[1], frustumVertices[5], 0.10f);
-        Vec3 rb = Vec3::CreateLerp(frustumVertices[2], frustumVertices[6], 0.10f);
-        Vec3 rt = Vec3::CreateLerp(frustumVertices[3], frustumVertices[7], 0.10f);
-        aux->SetRenderFlags(e_Mode3D | e_AlphaNone | e_FillModeSolid | e_CullModeNone | e_DepthWriteOff | e_DepthTestOn);
-        ColorB topColor = m_settings->background.topColor;
-        ColorB bottomColor = m_settings->background.bottomColor;
-        aux->DrawTriangle(lt, topColor,     rt, topColor,    rb, bottomColor);
-        aux->DrawTriangle(lb, bottomColor,  rb, bottomColor, lt, topColor);
-        aux->Flush();
-    }
-    aux->SetRenderFlags(oldFlags);
-
-    Render();
-
-    bool renderStats = false;
-    GetIEditor()->GetEnv()->pSystem->RenderEnd(renderStats, false);
-    RestorePreviousContext();
 }
 
 void QViewport::GetImageOffscreen(CImageEx& image, const QSize& customSize)

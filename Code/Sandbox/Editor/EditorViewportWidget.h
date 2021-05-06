@@ -196,15 +196,15 @@ public:
     bool ShowGrid();
     bool AngleSnappingEnabled();
     float AngleStep();
-    QPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition);
+    AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition);
 
     // AzToolsFramework::ViewportFreezeRequestBus
     bool IsViewportInputFrozen() override;
     void FreezeViewportInput(bool freeze) override;
 
     // AzToolsFramework::MainEditorViewportInteractionRequestBus
-    AZ::EntityId PickEntity(const QPoint& point) override;
-    AZ::Vector3 PickTerrain(const QPoint& point) override;
+    AZ::EntityId PickEntity(const AzFramework::ScreenPoint& point) override;
+    AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) override;
     float TerrainHeight(const AZ::Vector2& position) override;
     void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntitiesOut) override;
     bool ShowingWorldSpace() override;
@@ -481,10 +481,6 @@ protected:
     OBB m_GroundOBB;
     Vec3 m_GroundOBBPos;
 
-    //-------------------------------------------
-    // Render options.
-    bool m_bRenderStats = true;
-
     // Index of camera objects.
     mutable GUID m_cameraObjectId;
     mutable AZ::EntityId m_viewEntityId;
@@ -557,8 +553,7 @@ private:
     void PushDisableRendering();
     void PopDisableRendering();
     bool IsRenderingDisabled() const;
-    AzToolsFramework::ViewportInteraction::MousePick BuildMousePickInternal(
-        const QPoint& point) const;
+    AzToolsFramework::ViewportInteraction::MousePick BuildMousePickInternal(const QPoint& point) const;
 
     void RestoreViewportAfterGameMode();
     void UpdateCameraFromViewportContext();

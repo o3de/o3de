@@ -10,6 +10,5 @@
 #
 
 set(FILES
-    Include/Private/Editor/UI/AWSCoreResourceMappingToolAction.h
-    Source/Editor/UI/AWSCoreResourceMappingToolAction.cpp
+    Source/AWSCoreResourceMappingToolModule.cpp
 )
