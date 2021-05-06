@@ -183,6 +183,11 @@ class TestAutomation(TestAutomationBase):
         from . import ScriptEvents_SendReceiveSuccessfully as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.test_case_id("T92568973")
+    def test_VariableManager_UnpinVariableType(self, request, workspace, editor, launcher_platform):
+        from . import VariableManager_UnpinVariableType as test_module
+        self._run_test(request, workspace, editor, test_module)
+
 # NOTE: We had to use hydra_test_utils.py, as TestAutomationBase run_test method
 # fails because of pyside_utils import
 @pytest.mark.SUITE_periodic

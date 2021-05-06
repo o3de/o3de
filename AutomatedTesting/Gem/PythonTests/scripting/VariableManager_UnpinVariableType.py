@@ -8,21 +8,22 @@ or, if provided, by the license below or the license accompanying this file. Do 
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
-https://testrail.agscollab.com/index.php?/tests/view/92568973
+Test case ID: T92568973
+Test Case Title: Unpin Variable types in Variable Manager
+URLs of the test case: https://testrail.agscollab.com/index.php?/tests/view/92568973
 """
 
 
 # fmt: off
 class Tests():
-    open_sc_window                 = ("Script Canvas window is opened",                           "Failed to open Script Canvas window")
-    variable_manager_opened        = ("VariableManager is opened successfully",                   "Failed to open VariableManager")
-    boolean_pinned                 = ("Boolean is pinned",                                        "Boolean is not pinned, But it should be unpinned")
-    boolean_unpinned               = ("Boolean is unpinned",                                      "Boolean is not unpinned, But it should be pinned")
-    boolean_unpinned_after_reopen  = ("Boolean is unpinned after reopening create variable menu", "Boolean is not unpinned after reopening create variable menu")
+    variable_manager_opened         = ("VariableManager is opened successfully",                    "Failed to open VariableManager")
+    variable_pinned                 = ("Variable is pinned",                                        "Variable is not pinned, But it should be unpinned")
+    variable_unpinned               = ("Variable is unpinned",                                      "Variable is not unpinned, But it should be pinned")
+    variable_unpinned_after_reopen  = ("Variable is unpinned after reopening create variable menu", "Variable is not unpinned after reopening create variable menu")
 # fmt: on
 
 
-def Unpin_VariableManager():
+def VariableManager_UnpinVariableType():
     """
     Summary:
      Unpin variable types in create variable menu.
@@ -41,7 +42,7 @@ def Unpin_VariableManager():
      8) Restore default layout and close SC window
 
     Note:
-     - This test file must be called from the Lumberyard Editor command terminal
+     - This test file must be called from the Open 3D Engine Editor command terminal
      - Any passed and failed tests are written to the Editor.log file.
         Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -56,7 +57,7 @@ def Unpin_VariableManager():
     from utils import Report
     from PySide2.QtCore import Qt
 
-    GENERAL_WAIT = 5.0  # seconds
+    GENERAL_WAIT = 1.0  # seconds
 
     def find_pane(window, pane_name):
         return window.findChild(QtWidgets.QDockWidget, pane_name)
@@ -68,8 +69,7 @@ def Unpin_VariableManager():
     # 1) Open Script Canvas window (Tools > Script Canvas)
     general.idle_enable(True)
     general.open_pane("Script Canvas")
-    is_sc_visible = helper.wait_for_condition(lambda: general.is_pane_visible("Script Canvas"), 15.0)
-    Report.result(Tests.open_sc_window, is_sc_visible)
+    helper.wait_for_condition(lambda: general.is_pane_visible("Script Canvas"), 6.0)
 
     # 2) Get the SC window object
     editor_window = pyside_utils.get_editor_main_window()
@@ -101,26 +101,26 @@ def Unpin_VariableManager():
     result = helper.wait_for_condition(
         lambda: model_index.siblingAtColumn(0).data(Qt.DecorationRole) is not None, GENERAL_WAIT
     )
-    Report.result(Tests.boolean_pinned, result)
+    Report.result(Tests.variable_pinned, result)
     # Unpin Boolean and make sure Boolean is unpinned.
     pyside_utils.item_view_index_mouse_click(table_view, model_index.siblingAtColumn(0))
     result = helper.wait_for_condition(
         lambda: model_index.siblingAtColumn(0).data(Qt.DecorationRole) is None, GENERAL_WAIT
     )
-    Report.result(Tests.boolean_unpinned, result)
+    Report.result(Tests.variable_unpinned, result)
 
     # 7) Close and Reopen Create Variable menu and make sure Boolean is unpinned after reopening Create Variable menu
     button.click()
     button.click()
-    general.idle_wait(1.0)
+    model_index = pyside_utils.find_child_by_pattern(table_view, "Boolean")
     result = helper.wait_for_condition(
         lambda: model_index.siblingAtColumn(0).data(Qt.DecorationRole) is None, GENERAL_WAIT
     )
-    Report.result(Tests.boolean_unpinned_after_reopen, result)
+    Report.result(Tests.variable_unpinned_after_reopen, result)
 
     # 8) Restore default layout and close SC window
     click_menu_option(sc, "Restore Default Layout")
-    sc.close()
+    general.close_pane("Script Canvas")
 
 
 if __name__ == "__main__":
@@ -130,4 +130,4 @@ if __name__ == "__main__":
 
     from utils import Report
 
-    Report.start_test(Unpin_VariableManager)
+    Report.start_test(VariableManager_UnpinVariableType)
