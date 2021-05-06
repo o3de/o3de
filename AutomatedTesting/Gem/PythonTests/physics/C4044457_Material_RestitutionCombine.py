@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C4044457
 # Test Case Title : Verify that when two objects with different materials collide, the restitution combine works
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4044457
+
 
 
 # fmt: off

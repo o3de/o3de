@@ -67,7 +67,10 @@ namespace AssetBundler
     {
     }
 
-    AZStd::vector<AZStd::string> RulesFileTableModel::CreateNewFiles(const AZStd::string& absoluteFilePath, const AzFramework::PlatformFlags& /*platforms*/, const QString& /*project*/)
+    AZStd::vector<AZStd::string> RulesFileTableModel::CreateNewFiles(
+        const AZStd::string& absoluteFilePath,
+        const AzFramework::PlatformFlags& /*platforms*/,
+        const QString& /*project*/)
     {
         if (absoluteFilePath.empty())
         {
@@ -116,14 +119,16 @@ namespace AssetBundler
         // Remove file from disk
         if (AZ::IO::FileIOBase::GetInstance()->IsReadOnly(rulesFileInfo->m_absolutePath.c_str()))
         {
-            AZ_Error(AssetBundler::AppWindowName, false, "File (%s) is Read-Only. Please check your version control and try again.", rulesFileInfo->m_absolutePath.c_str());
+            AZ_Error(AssetBundler::AppWindowName, false, ReadOnlyFileErrorMessage, rulesFileInfo->m_absolutePath.c_str());
             return false;
         }
 
         auto deleteResult = AZ::IO::FileIOBase::GetInstance()->Remove(rulesFileInfo->m_absolutePath.c_str());
         if (!deleteResult)
         {
-            AZ_Error(AssetBundler::AppWindowName, false, "Unable to delete: %s", rulesFileInfo->m_absolutePath.c_str());
+            AZ_Error(AssetBundler::AppWindowName, false,
+                "Unable to delete (%s). Result code: %u", rulesFileInfo->m_absolutePath.c_str(),
+                deleteResult.GetResultCode());
             return false;
         }
 
@@ -134,7 +139,10 @@ namespace AssetBundler
         return true;
     }
 
-    void RulesFileTableModel::LoadFile(const AZStd::string& absoluteFilePath, const AZStd::string& /*projectName*/, bool /*isDefaultFile*/)
+    void RulesFileTableModel::LoadFile(
+        const AZStd::string& absoluteFilePath,
+        const AZStd::string& /*projectName*/,
+        bool /*isDefaultFile*/)
     {
         // Get the file name without the extension for display purposes
         AZStd::string fileName(absoluteFilePath);
@@ -145,7 +153,8 @@ namespace AssetBundler
         auto fileInfoIt = m_rulesFileInfoMap.find(key);
         if (fileInfoIt != m_rulesFileInfoMap.end() && fileInfoIt->second->m_hasUnsavedChanges)
         {
-            AZ_Warning(AssetBundler::AppWindowName, false, "Rules File %s has unsaved changes and couldn't be reloaded", absoluteFilePath.c_str());
+            AZ_Warning(AssetBundler::AppWindowName, false,
+                "Rules File %s has unsaved changes and couldn't be reloaded", absoluteFilePath.c_str());
             return;
         }
 
