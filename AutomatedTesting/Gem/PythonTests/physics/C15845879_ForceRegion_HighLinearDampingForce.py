@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C15845879
 # Test Case Title : Check that linear damping with high values do not make the object to quiver
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/15845879
+
 
 # fmt: off
 class Tests:

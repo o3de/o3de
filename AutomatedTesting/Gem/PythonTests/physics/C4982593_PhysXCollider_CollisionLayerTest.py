@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C4982593
 # Test Case Title : Check that two entities with different collision groups and layers do not collide.
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4982593
+
 
 
 # fmt: off

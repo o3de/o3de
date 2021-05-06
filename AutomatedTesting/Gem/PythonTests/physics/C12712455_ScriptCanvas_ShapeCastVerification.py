@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C12712455
 # Test Case Title : Verify shape cast nodes in SC
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/12712455
+
 
 # fmt: off
 class Tests:

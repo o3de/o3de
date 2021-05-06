@@ -51,7 +51,8 @@ namespace AssetBundler
         m_newFileDialog.setNameFilter(fileNameFilter);
         m_newFileDialog.setViewMode(QFileDialog::Detail);
         m_newFileDialog.setDirectory(m_startingPath);
-        // We are not creating a new file when Qt thinks we are, so we need to block signals or else the file watcher will be triggered too soon
+        // We are not creating a new file when Qt thinks we are, so we need to block signals or else the file watcher will be
+        // triggered too soon
         m_newFileDialog.blockSignals(true);
 
         // Set up Platform selection
@@ -61,7 +62,10 @@ namespace AssetBundler
             disabledPatformMessageOverride = tr("This platform is not valid for all input Asset Lists.");
         }
         m_ui->platformSelectionWidget->Init(enabledPlatforms, disabledPatformMessageOverride);
-        connect(m_ui->platformSelectionWidget, &PlatformSelectionWidget::PlatformsSelected, this, &NewFileDialog::OnPlatformSelectionChanged);
+        connect(m_ui->platformSelectionWidget,
+            &PlatformSelectionWidget::PlatformsSelected,
+            this,
+            &NewFileDialog::OnPlatformSelectionChanged);
 
         // Set up Cancel and Create New File buttons
         m_ui->createFileButton->setEnabled(false);
@@ -112,7 +116,8 @@ namespace AssetBundler
     {
         // Check to see if any of the selected platform-specific files already exist on-disk
         QString overwriteExistingFilesList;
-        AZStd::fixed_vector<AZStd::string, AzFramework::NumPlatforms> selectedPlatformNames = AzFramework::PlatformHelper::GetPlatforms(GetPlatformFlags());
+        AZStd::fixed_vector<AZStd::string, AzFramework::NumPlatforms> selectedPlatformNames =
+            AzFramework::PlatformHelper::GetPlatforms(GetPlatformFlags());
         for (const AZStd::string& platformName : selectedPlatformNames)
         {
             FilePath platformSpecificFilePath(GetAbsoluteFilePath(), platformName);
@@ -126,9 +131,11 @@ namespace AssetBundler
         // Ask the user if they are sure they want to overwrite existing files
         if (!overwriteExistingFilesList.isEmpty())
         {
-            QString messageBoxText = QString(tr("The following files already exist on-disk. Generating new files will overwrite the existing ones.\n\n%1\n\nDo you wish to permanently delete the existing files?")).arg(overwriteExistingFilesList);
+            QString messageBoxText = QString(tr(
+                "The following files already exist on-disk. Generating new files will overwrite the existing ones.\n\n%1\n\nDo you wish to permanently delete the existing files?")).arg(overwriteExistingFilesList);
 
-            QMessageBox::StandardButton confirmDeleteFileResult = QMessageBox::question(this, QString(tr("Replace Existing Files")), messageBoxText);
+            QMessageBox::StandardButton confirmDeleteFileResult =
+                QMessageBox::question(this, QString(tr("Replace Existing Files")), messageBoxText);
             if (confirmDeleteFileResult != QMessageBox::StandardButton::Yes)
             {
                 // User canceled out of the operation
@@ -139,7 +146,11 @@ namespace AssetBundler
         emit QDialog::accept();
     }
 
-    AZStd::string NewFileDialog::OSNewFileDialog(QWidget* parent, const char* fileExtension, const char* fileTypeDisplayName, const AZStd::string& startingDirectory)
+    AZStd::string NewFileDialog::OSNewFileDialog(
+        QWidget* parent,
+        const char* fileExtension,
+        const char* fileTypeDisplayName,
+        const AZStd::string& startingDirectory)
     {
         QFileDialog filePathDialog(parent);
         filePathDialog.setFileMode(QFileDialog::AnyFile);
@@ -160,13 +171,17 @@ namespace AssetBundler
         AZStd::string absoluteFilePath(filePathDialog.selectedFiles()[0].toUtf8().data());
         if (!AzFramework::StringFunc::Path::HasExtension(absoluteFilePath.c_str()))
         {
-            absoluteFilePath = AZStd::string::format("%s%c%s", absoluteFilePath.c_str(), AZ_FILESYSTEM_EXTENSION_SEPARATOR, fileExtension);
+            absoluteFilePath =
+                AZStd::string::format("%s%c%s", absoluteFilePath.c_str(), AZ_FILESYSTEM_EXTENSION_SEPARATOR, fileExtension);
         }
 
         return absoluteFilePath;
     }
 
-    int NewFileDialog::FileGenerationResultMessageBox(QWidget* parent, const AZStd::vector<AZStd::string>& generatedFiles, bool generatedWithErrors)
+    int NewFileDialog::FileGenerationResultMessageBox(
+        QWidget* parent,
+        const AZStd::vector<AZStd::string>& generatedFiles,
+        bool generatedWithErrors)
     {
         QMessageBox messageBox(parent);
         messageBox.setStandardButtons(QMessageBox::Ok);

@@ -56,14 +56,22 @@ namespace AssetBundler
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
 
         // File view of all Seed List Files
-        m_fileTableFilterModel.reset(new AssetBundlerFileTableFilterModel(this, m_fileTableModel->GetFileNameColumnIndex(), m_fileTableModel->GetTimeStampColumnIndex()));
+        m_fileTableFilterModel.reset(new AssetBundlerFileTableFilterModel(
+            this,
+            m_fileTableModel->GetFileNameColumnIndex(),
+            m_fileTableModel->GetTimeStampColumnIndex()));
 
         m_fileTableFilterModel->setSourceModel(m_fileTableModel.data());
         m_ui->fileTableView->setModel(m_fileTableFilterModel.data());
-        connect(m_ui->fileFilteredSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
-            m_fileTableFilterModel.data(), static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetBundlerFileTableFilterModel::FilterChanged));
+        connect(m_ui->fileFilteredSearchWidget,
+            &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
+            m_fileTableFilterModel.data(),
+            static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetBundlerFileTableFilterModel::FilterChanged));
 
-        connect(m_ui->fileTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SeedTabWidget::FileSelectionChanged);
+        connect(m_ui->fileTableView->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &SeedTabWidget::FileSelectionChanged);
 
         m_ui->fileTableView->setIndentation(CheckBoxTableIndentationSize); 
 
@@ -82,11 +90,16 @@ namespace AssetBundler
 
         m_seedListContentsFilterModel->setSourceModel(m_seedListContentsModel.data());
         m_ui->seedFileContentsTable->setModel(m_seedListContentsFilterModel.data());
-        connect(m_ui->seedListContentsFilteredSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
-            m_seedListContentsFilterModel.data(), static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetBundlerFileTableFilterModel::FilterChanged));
+        connect(m_ui->seedListContentsFilteredSearchWidget,
+            &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
+            m_seedListContentsFilterModel.data(),
+            static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetBundlerFileTableFilterModel::FilterChanged));
 
         m_ui->seedFileContentsTable->setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(m_ui->seedFileContentsTable, &QTreeView::customContextMenuRequested, this, &SeedTabWidget::OnSeedListContentsTableContextMenuRequested);
+        connect(m_ui->seedFileContentsTable,
+            &QTreeView::customContextMenuRequested,
+            this,
+            &SeedTabWidget::OnSeedListContentsTableContextMenuRequested);
 
         m_ui->seedFileContentsTable->setIndentation(0);
 
@@ -112,7 +125,11 @@ namespace AssetBundler
     void SeedTabWidget::Reload()
     {
         // Reload all the seed list files
-        m_fileTableModel->Reload(AzToolsFramework::AssetSeedManager::GetSeedFileExtension(), m_watchedFolders, m_watchedFiles, m_filePathToGemNameMap);
+        m_fileTableModel->Reload(
+            AzToolsFramework::AssetSeedManager::GetSeedFileExtension(),
+            m_watchedFolders,
+            m_watchedFiles,
+            m_filePathToGemNameMap);
 
         // Update the selected row
         FileSelectionChanged();
@@ -138,12 +155,18 @@ namespace AssetBundler
         m_watchedFolders.insert(m_guiApplicationManager->GetSeedListsFolder().c_str());
 
         // Get the list of default Seed List files
-        m_filePathToGemNameMap = AssetBundler::GetDefaultSeedListFiles(AZStd::string_view{ AZ::Utils::GetEnginePath() }, m_guiApplicationManager->GetCurrentProjectName(),
+        m_filePathToGemNameMap = AssetBundler::GetDefaultSeedListFiles(
+            AZStd::string_view{ AZ::Utils::GetEnginePath() },
+            m_guiApplicationManager->GetCurrentProjectName(),
             m_guiApplicationManager->GetGemInfoList(), m_guiApplicationManager->GetEnabledPlatforms());
 
         // Get the list of default Seeds that are not stored in a Seed List file on-disk
-        AZStd::vector<AZStd::string> defaultSeeds = GetDefaultSeeds(AZ::Utils::GetProjectPath(), m_guiApplicationManager->GetCurrentProjectName());
-        m_fileTableModel->AddDefaultSeedsToInMemoryList(defaultSeeds, m_guiApplicationManager->GetCurrentProjectName().c_str(), m_guiApplicationManager->GetEnabledPlatforms());
+        AZStd::vector<AZStd::string> defaultSeeds =
+            GetDefaultSeeds(AZ::Utils::GetProjectPath(), m_guiApplicationManager->GetCurrentProjectName());
+        m_fileTableModel->AddDefaultSeedsToInMemoryList(
+            defaultSeeds,
+            m_guiApplicationManager->GetCurrentProjectName().c_str(),
+            m_guiApplicationManager->GetEnabledPlatforms());
 
         // Set the new watched filess for the model
         m_watchedFiles.clear();
@@ -185,7 +208,9 @@ namespace AssetBundler
         m_ui->fileTableView->header()->resizeSection(SeedListFileTableModel::Column::ColumnCheckBox, config.checkBoxColumnWidth);
         m_ui->fileTableView->header()->resizeSection(SeedListFileTableModel::Column::ColumnProject, config.projectNameColumnWidth);
 
-        m_ui->seedFileContentsTable->header()->resizeSection(SeedListTableModel::Column::ColumnRelativePath, config.seedListContentsNameColumnWidth);
+        m_ui->seedFileContentsTable->header()->resizeSection(
+            SeedListTableModel::Column::ColumnRelativePath,
+            config.seedListContentsNameColumnWidth);
     }
 
     void SeedTabWidget::UncheckSelectDefaultSeedListsCheckBox()
@@ -198,15 +223,25 @@ namespace AssetBundler
         m_ui->generateAssetListsButton->setEnabled(isEnabled);
     }
 
-    bool SeedTabWidget::OnPreError(const char* /*window*/, const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* /*message*/)
+    bool SeedTabWidget::OnPreError(
+        const char* /*window*/,
+        const char* /*fileName*/,
+        int /*line*/,
+        const char* /*func*/,
+        const char* /*message*/)
     {
-        m_hasWarnings = true;
+        m_hasWarningsOrErrors = true;
         return false;
     }
 
-    bool SeedTabWidget::OnPreWarning(const char* /*window*/, const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* /*message*/)
+    bool SeedTabWidget::OnPreWarning(
+        const char* /*window*/,
+        const char* /*fileName*/,
+        int /*line*/,
+        const char* /*func*/,
+        const char* /*message*/)
     {
-        m_hasWarnings = true;
+        m_hasWarningsOrErrors = true;
         return false;
     }
 
@@ -275,11 +310,13 @@ namespace AssetBundler
             return;
         }
 
-        m_hasWarnings = false;
-        auto createdFiles = m_fileTableModel->GenerateAssetLists(m_generateAssetListsDialog->GetAbsoluteFilePath(), m_generateAssetListsDialog->GetPlatformFlags());
+        m_hasWarningsOrErrors = false;
+        auto createdFiles = m_fileTableModel->GenerateAssetLists(
+            m_generateAssetListsDialog->GetAbsoluteFilePath(),
+            m_generateAssetListsDialog->GetPlatformFlags());
 
         // Warnings will not prevent the generation of Asset List files, we must track them separately
-        NewFileDialog::FileGenerationResultMessageBox(this, createdFiles, m_hasWarnings);
+        NewFileDialog::FileGenerationResultMessageBox(this, createdFiles, m_hasWarningsOrErrors);
 
         if (createdFiles.empty())
         {
@@ -306,7 +343,8 @@ namespace AssetBundler
         }
 
         // Get the current platforms of the selected Seed so we can display them as already checked
-        QModelIndex currentSeedIndex = m_seedListContentsFilterModel->mapToSource(m_ui->seedFileContentsTable->selectionModel()->currentIndex());
+        QModelIndex currentSeedIndex =
+            m_seedListContentsFilterModel->mapToSource(m_ui->seedFileContentsTable->selectionModel()->currentIndex());
         auto getPlatformOutcome = m_seedListContentsModel->GetSeedPlatforms(currentSeedIndex);
         if (!getPlatformOutcome.IsSuccess())
         {
@@ -375,7 +413,8 @@ namespace AssetBundler
             AzFramework::PlatformFlags checkedPlatforms = m_editSeedDialog->GetPlatformFlags();
             AzFramework::PlatformFlags partiallyCheckedPlatforms = m_editSeedDialog->GetPartiallySelectedPlatformFlags();
             // If the platform is partially checked, we want to keep its original status when saving the changes
-            AzFramework::PlatformFlags platformFlags = indexToPlatformFlagsMap[currentSeedIndex] & partiallyCheckedPlatforms | checkedPlatforms;
+            AzFramework::PlatformFlags platformFlags =
+                indexToPlatformFlagsMap[currentSeedIndex] & partiallyCheckedPlatforms | checkedPlatforms;
 
             m_fileTableModel->SetSeedPlatforms(m_selectedFileTableIndex, currentSeedIndex, platformFlags);
         }
@@ -391,8 +430,10 @@ namespace AssetBundler
 
         // Get path to the platform-specific cache folder of one of the enabled platforms
         AzFramework::PlatformFlags enabledPlatforms = m_guiApplicationManager->GetEnabledPlatforms();
-        AZStd::fixed_vector<AzFramework::PlatformId, AzFramework::PlatformId::NumPlatformIds> enabledPlatformIndices = AzFramework::PlatformHelper::GetPlatformIndicesInterpreted(enabledPlatforms);
-        AZStd::string platformSpecificCachePath = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(enabledPlatformIndices[0]);
+        AZStd::fixed_vector<AzFramework::PlatformId, AzFramework::PlatformId::NumPlatformIds> enabledPlatformIndices =
+            AzFramework::PlatformHelper::GetPlatformIndicesInterpreted(enabledPlatforms);
+        AZStd::string platformSpecificCachePath =
+            AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(enabledPlatformIndices[0]);
 
         // Create and display the Add Seed Dialog
         m_addSeedDialog.reset(new AddSeedDialog(this, enabledPlatforms, platformSpecificCachePath));
@@ -416,7 +457,8 @@ namespace AssetBundler
         }
 
         // Set the data in the model
-        QModelIndex currentSeedIndex = m_seedListContentsFilterModel->mapToSource(m_ui->seedFileContentsTable->selectionModel()->currentIndex());
+        QModelIndex currentSeedIndex =
+            m_seedListContentsFilterModel->mapToSource(m_ui->seedFileContentsTable->selectionModel()->currentIndex());
         m_fileTableModel->RemoveSeed(m_selectedFileTableIndex, currentSeedIndex);
     }
 

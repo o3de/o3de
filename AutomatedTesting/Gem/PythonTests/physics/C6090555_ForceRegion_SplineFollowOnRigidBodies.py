@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C6090555
 # Test Case Title : Check that force region exerts spline follow force on rigid bodies(negative test)
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/6090555
+
 
 
 # fmt: off
