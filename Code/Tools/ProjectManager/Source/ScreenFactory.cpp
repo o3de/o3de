@@ -13,7 +13,7 @@
 
 #include <FirstTimeUse.h>
 #include <NewProjectSettings.h>
-#include <GemCatalog.h>
+#include <GemCatalog/GemCatalog.h>
 #include <ProjectsHome.h>
 #include <ProjectSettings.h>
 #include <EngineSettings.h>
