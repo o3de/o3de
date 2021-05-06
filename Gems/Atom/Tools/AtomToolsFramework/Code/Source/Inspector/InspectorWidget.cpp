@@ -10,12 +10,13 @@
 *
 */
 
+#include <QMenu>
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QSizePolicy>
 
-#include <AtomToolsFramework/Inspector/InspectorGroupWidget.h>
 #include <AtomToolsFramework/Inspector/InspectorGroupHeaderWidget.h>
+#include <AtomToolsFramework/Inspector/InspectorGroupWidget.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <Source/Inspector/ui_InspectorWidget.h>
 
@@ -38,6 +39,8 @@ namespace AtomToolsFramework
         m_layout = new QVBoxLayout(m_ui->m_propertyContent);
         m_layout->setContentsMargins(0, 0, 0, 0);
         m_layout->setSpacing(0);
+        m_headers.clear();
+        m_groups.clear();
     }
 
     void InspectorWidget::AddGroupsBegin()
@@ -52,8 +55,7 @@ namespace AtomToolsFramework
         m_layout->addStretch();
 
         // Scroll to top whenever there is new content
-        m_ui->m_propertyScrollArea->verticalScrollBar()->setValue(
-            m_ui->m_propertyScrollArea->verticalScrollBar()->minimum());
+        m_ui->m_propertyScrollArea->verticalScrollBar()->setValue(m_ui->m_propertyScrollArea->verticalScrollBar()->minimum());
 
         setUpdatesEnabled(true);
     }
@@ -68,15 +70,15 @@ namespace AtomToolsFramework
         groupHeader->setText(groupDisplayName.c_str());
         groupHeader->setToolTip(groupDescription.c_str());
         m_layout->addWidget(groupHeader);
+        m_headers.push_back(groupHeader);
 
         groupWidget->setObjectName(groupNameId.c_str());
         groupWidget->setParent(m_ui->m_propertyContent);
         m_layout->addWidget(groupWidget);
+        m_groups.push_back(groupWidget);
 
-        connect(groupHeader, &AzQtComponents::ExtendedLabel::clicked, this, [groupHeader, groupWidget]()
-        {
-            groupHeader->SetExpanded(!groupHeader->IsExpanded());
-            groupWidget->setVisible(groupHeader->IsExpanded());
+        connect(groupHeader, &InspectorGroupHeaderWidget::clicked, this, [this, groupHeader, groupWidget](QMouseEvent* event) {
+            OnHeaderClicked(event, groupHeader, groupWidget);
         });
     }
 
@@ -109,6 +111,57 @@ namespace AtomToolsFramework
         for (auto groupWidget : m_ui->m_propertyContent->findChildren<InspectorGroupWidget*>())
         {
             groupWidget->Rebuild();
+        }
+    }
+
+    void InspectorWidget::ExpandAll()
+    {
+        for (auto headerWidget : m_headers)
+        {
+            headerWidget->SetExpanded(true);
+        }
+        for (auto groupWidget : m_groups)
+        {
+            groupWidget->setVisible(true);
+        }
+    }
+
+    void InspectorWidget::CollapseAll()
+    {
+        for (auto headerWidget : m_headers)
+        {
+            headerWidget->SetExpanded(false);
+        }
+        for (auto groupWidget : m_groups)
+        {
+            groupWidget->setVisible(false);
+        }
+    }
+
+    void InspectorWidget::OnHeaderClicked(QMouseEvent* event, InspectorGroupHeaderWidget* groupHeader, QWidget* groupWidget)
+    {
+        if (event->button() == Qt::MouseButton::LeftButton)
+        {
+            groupHeader->SetExpanded(!groupHeader->IsExpanded());
+            groupWidget->setVisible(groupHeader->IsExpanded());
+            return;
+        }
+
+        if (event->button() == Qt::MouseButton::RightButton)
+        {
+            QMenu menu;
+            menu.addAction("Expand", [groupHeader, groupWidget]() {
+                groupHeader->SetExpanded(true);
+                groupWidget->setVisible(true);
+            })->setEnabled(!groupHeader->IsExpanded());
+            menu.addAction("Collapse", [groupHeader, groupWidget]() {
+                groupHeader->SetExpanded(false);
+                groupWidget->setVisible(false);
+            })->setEnabled(groupHeader->IsExpanded());
+            menu.addAction("Expand All", [this]() { ExpandAll(); });
+            menu.addAction("Collapse All", [this]() { CollapseAll(); });
+            menu.exec(event->globalPos());
+            return;
         }
     }
 } // namespace AtomToolsFramework
