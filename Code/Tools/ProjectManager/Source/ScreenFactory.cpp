@@ -11,12 +11,12 @@
  */
 #include <ScreenFactory.h>
 
-#include <Qt/FirstTimeUse.h>
-#include <Qt/NewProjectSettings.h>
-#include <Qt/GemCatalog.h>
-#include <Qt/ProjectsHome.h>
-#include <Qt/ProjectSettings.h>
-#include <Qt/EngineSettings.h>
+#include <FirstTimeUse.h>
+#include <NewProjectSettings.h>
+#include <GemCatalog.h>
+#include <ProjectsHome.h>
+#include <ProjectSettings.h>
+#include <EngineSettings.h>
 
 namespace O3DE::ProjectManager
 {

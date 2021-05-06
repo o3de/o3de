@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C12905527
 # Test Case Title : Check that deviation occurring in Force Magnitude due to Values in Force direction is not large
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/12905527
+
 
 # fmt: off
 class Tests():

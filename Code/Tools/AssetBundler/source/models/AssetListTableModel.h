@@ -23,7 +23,10 @@ namespace AssetBundler
         : public QAbstractTableModel
     {
     public:
-        explicit AssetListTableModel(QObject* parent = nullptr, const AZStd::string& absolutePath = AZStd::string(), const AZStd::string& platform = "");
+        explicit AssetListTableModel(
+            QObject* parent = nullptr,
+            const AZStd::string& absolutePath = AZStd::string(),
+            const AZStd::string& platform = "");
         virtual ~AssetListTableModel() {}
 
         AZStd::shared_ptr<AzToolsFramework::AssetSeedManager> GetSeedListManager() { return m_seedListManager; }

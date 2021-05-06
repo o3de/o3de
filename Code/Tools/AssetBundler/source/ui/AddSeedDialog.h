@@ -34,7 +34,10 @@ namespace AssetBundler
         Q_OBJECT
 
     public:
-        explicit AddSeedDialog(QWidget* parent, const AzFramework::PlatformFlags& enabledPlatforms, const AZStd::string& platformSpecificCachePath);
+        explicit AddSeedDialog(
+            QWidget* parent,
+            const AzFramework::PlatformFlags& enabledPlatforms,
+            const AZStd::string& platformSpecificCachePath);
         virtual ~AddSeedDialog() {}
 
         AZStd::string GetFileName();

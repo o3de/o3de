@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C5689518
 # Test Case Title : PhysX entities collide with PhysX Terrain
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5689518
+
 # A ball is suspended slightly over PhysX Terrain to check that it collides when dropped
 
 

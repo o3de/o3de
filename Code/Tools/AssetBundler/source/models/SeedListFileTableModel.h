@@ -71,15 +71,28 @@ namespace AssetBundler
         explicit SeedListFileTableModel(SeedTabWidget* parentSeedTabWidget);
         virtual ~SeedListFileTableModel();
 
-        void AddDefaultSeedsToInMemoryList(const AZStd::vector<AZStd::string>& defaultSeeds, const char* projectName, const AzFramework::PlatformFlags& platforms);
+        void AddDefaultSeedsToInMemoryList(
+            const AZStd::vector<AZStd::string>& defaultSeeds,
+            const char* projectName,
+            const AzFramework::PlatformFlags& platforms);
 
-        AZStd::vector<AZStd::string> CreateNewFiles(const AZStd::string& absoluteFilePath, const AzFramework::PlatformFlags& platforms, const QString& project) override;
+        AZStd::vector<AZStd::string> CreateNewFiles(
+            const AZStd::string& absoluteFilePath,
+            const AzFramework::PlatformFlags& platforms,
+            const QString& project) override;
 
         bool DeleteFile(const QModelIndex& index) override;
 
-        void Reload(const char* fileExtension, const QSet<QString>& watchedFolders, const QSet<QString>& watchedFiles = QSet<QString>(), const AZStd::unordered_map<AZStd::string, AZStd::string>& pathToProjectNameMap = AZStd::unordered_map<AZStd::string, AZStd::string>()) override;
+        void Reload(
+            const char* fileExtension,
+            const QSet<QString>& watchedFolders,
+            const QSet<QString>& watchedFiles = QSet<QString>(),
+            const AZStd::unordered_map<AZStd::string, AZStd::string>& pathToProjectNameMap = AZStd::unordered_map<AZStd::string, AZStd::string>()) override;
 
-        void LoadFile(const AZStd::string& absoluteFilePath, const AZStd::string& projectName = "", bool isDefaultFile = false) override;
+        void LoadFile(
+            const AZStd::string& absoluteFilePath,
+            const AZStd::string& projectName = "",
+            bool isDefaultFile = false) override;
 
         void SelectDefaultSeedLists(bool setSelected);
 

@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID : C19578021
 Test Case Title : Verify that a shape collider component may be added to an entity along with one or more PhysX collider components
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/19578021
+
 """
 
 
