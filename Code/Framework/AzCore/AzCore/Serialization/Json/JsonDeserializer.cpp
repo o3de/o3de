@@ -22,6 +22,19 @@
 
 namespace AZ
 {
+    JsonSerializationResult::ResultCode JsonDeserializer::DeserializerDefaultCheck(BaseJsonSerializer* serializer, void* object,
+        const Uuid& typeId, const rapidjson::Value& value, JsonDeserializerContext& context)
+    {
+        using namespace AZ::JsonSerializationResult;
+
+        bool isExplicitDefault = IsExplicitDefault(value);
+        bool manuallyDefaults = (serializer->GetOperationsFlags() & BaseJsonSerializer::OperationFlags::ManualDefault) ==
+            BaseJsonSerializer::OperationFlags::ManualDefault;
+        return !isExplicitDefault || (isExplicitDefault && manuallyDefaults)
+            ? serializer->Load(object, typeId, value, context)
+            : context.Report(Tasks::ReadField, Outcomes::DefaultsUsed, "Value has an explicit default.");
+    }
+
     JsonSerializationResult::ResultCode JsonDeserializer::Load(void* object, const Uuid& typeId, const rapidjson::Value& value,
         JsonDeserializerContext& context)
     {
@@ -36,12 +49,7 @@ namespace AZ
         BaseJsonSerializer* serializer = context.GetRegistrationContext()->GetSerializerForType(typeId);
         if (serializer)
         {
-            bool isExplicitDefault = IsExplicitDefault(value);
-            bool manuallyDefaults = (serializer->GetOperationsFlags() & BaseJsonSerializer::OperationFlags::ManualDefault) ==
-                BaseJsonSerializer::OperationFlags::ManualDefault;
-            return !isExplicitDefault || (isExplicitDefault && manuallyDefaults)
-                ? serializer->Load(object, typeId, value, context)
-                : context.Report(Tasks::ReadField, Outcomes::DefaultsUsed, "Value has an explicit default.");
+            return DeserializerDefaultCheck(serializer, object, typeId, value, context);
         }
 
         const SerializeContext::ClassData* classData = context.GetSerializeContext()->FindClassData(typeId);
@@ -56,12 +64,7 @@ namespace AZ
             serializer = context.GetRegistrationContext()->GetSerializerForType(classData->m_azRtti->GetGenericTypeId());
             if (serializer)
             {
-                bool isExplicitDefault = IsExplicitDefault(value);
-                bool manuallyDefaults = (serializer->GetOperationsFlags() & BaseJsonSerializer::OperationFlags::ManualDefault) ==
-                    BaseJsonSerializer::OperationFlags::ManualDefault;
-                return !isExplicitDefault || (isExplicitDefault && manuallyDefaults)
-                    ? serializer->Load(object, typeId, value, context)
-                    : context.Report(Tasks::ReadField, Outcomes::DefaultsUsed, "Value has an explicit default.");
+                return DeserializerDefaultCheck(serializer, object, typeId, value, context);
             }
         }
 
