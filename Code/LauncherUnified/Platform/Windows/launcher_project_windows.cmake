@@ -9,11 +9,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(LY_BUILD_DEPENDENCIES
-    PRIVATE
-        Legacy::CryRenderD3D11
-)
-
 set(ICON_FILE ${project_real_path}/Gem/Resources/GameSDK.ico)
 if(NOT EXISTS ${ICON_FILE})
     # Try the common LauncherUnified icon instead

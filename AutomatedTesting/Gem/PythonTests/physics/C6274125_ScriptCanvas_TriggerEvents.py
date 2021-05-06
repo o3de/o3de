@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C6274125
 # Test Case Title : Verify ScriptCanvas Trigger Events.
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/6274125
+
 
 
 # fmt: off

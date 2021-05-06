@@ -312,7 +312,7 @@ class Validator(object):
         # Once we split the repos we will have to worry about multiple root points etc. but that is a problem for future us.
         # All the packaging safelist stuff goes away once repo is split for platforms
         this_path = Path(__file__).resolve()
-        root_folder = this_path.parents[5]
+        root_folder = this_path.parents[2]
         relative_folder = os.path.relpath(this_path.parent, root_folder)
         canary_file = os.path.join(root_folder, 'restricted', platform, relative_folder, platform.lower() + '_canary.txt')
         try:

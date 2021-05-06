@@ -16,7 +16,6 @@
 
 // AzCore
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzCore/Interface/Interface.h>
 
 // Qt
@@ -595,7 +594,6 @@ AmazonToolbar ToolbarManager::GetEditModeToolbar() const
     t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_TOOLBAR_WIDGET_SNAP_GRID, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_TOOLBAR_WIDGET_SNAP_ANGLE, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_RULER, ORIGINAL_TOOLBAR_VERSION);
 
     t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_TOOLBAR_WIDGET_ENVIRONMENT_MODE, ORIGINAL_TOOLBAR_VERSION);

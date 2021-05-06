@@ -259,7 +259,7 @@ class BatchProcessing:
         )
         policy_statements.append(input_stream_policy_statement)
 
-        log_policy_statetement = iam.PolicyStatement(
+        log_policy_statement = iam.PolicyStatement(
             actions=[
                 'logs:PutLogEvents',
             ],
@@ -268,7 +268,7 @@ class BatchProcessing:
                 self._firehose_delivery_stream_log_group.log_group_arn
             ]
         )
-        policy_statements.append(log_policy_statetement)
+        policy_statements.append(log_policy_statement)
 
         data_catalog_policy_statement = iam.PolicyStatement(
             actions=[

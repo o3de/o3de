@@ -45,4 +45,6 @@ namespace Multiplayer
     }
 }
 
+#if !defined(MULTIPLAYER_EDITOR)
 AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer, Multiplayer::MultiplayerModule);
+#endif

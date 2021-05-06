@@ -94,9 +94,10 @@ namespace AtomToolsFramework
         bool ShowGrid() override;
         bool AngleSnappingEnabled() override;
         float AngleStep() override;
-        QPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) override;
-        AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const QPoint& screenPosition, float depth) override;
-        AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportScreenToWorldRay(const QPoint& screenPosition) override;
+        AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) override;
+        AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition, float depth) override;
+        AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportScreenToWorldRay(
+            const AzFramework::ScreenPoint& screenPosition) override;
 
         // AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler ...
         void BeginCursorCapture() override;

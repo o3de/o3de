@@ -33,7 +33,6 @@
 #include <IRenderAuxGeom.h>
 
 #include <AzCore/std/sort.h>
-#include <I3DEngine.h>
 
 namespace Vegetation
 {
@@ -179,11 +178,6 @@ void DebugComponent::DrawGlobalDebugInfo()
         m_exportCurrentReport = false;
     }
 
-    if (m_configuration.m_showVisualization)
-    {
-        DrawSectorTimingData();
-    }
-
     if (m_configuration.m_showDebugStats)
     {
         DrawDebugStats();
@@ -249,91 +243,6 @@ void DebugComponent::DrawInstanceDebug()
         renderAuxGeom->DrawAABB(bounds, true, ColorB(areaDebugDisplayData.m_instanceColor.ToU32()), eBBD_Faceted);
     }
 #endif
-}
-
-void DebugComponent::DrawSectorTimingData()
-{
-    static const AZ::Color s_green = AZ::Color(0.3f, 0.9f, 0.3f, .05f);
-    static const AZ::Color s_yellow = AZ::Color(1.0f, 1.0f, 0.0f, .05f);
-    static const AZ::Color s_red = AZ::Color(1.0f, 0.0f, 0.0f, .05f);
-    static const float boxHeightAboveTerrain = 3.0f;
-
-    ISystem* crySystem = GetISystem();
-    if (!crySystem)
-    {
-        return;
-    }
-
-    IRenderer* renderer = crySystem->GetIRenderer();
-    if (!renderer)
-    {
-        return;
-    }
-    
-
-    IRenderAuxGeom* renderAuxGeom = renderer->GetIRenderAuxGeom();
-    if (!renderAuxGeom)
-    {
-        return;
-    }
-
-    renderAuxGeom->SetRenderFlags(e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOff | e_DepthTestOn);
-
-    AreaSystemConfig areaConfig;
-    SystemConfigurationRequestBus::Broadcast(&SystemConfigurationRequestBus::Events::GetSystemConfig, &areaConfig);
-    const auto sectorSizeInMeters = areaConfig.m_sectorSizeInMeters;
-    const AZ::u32 maxTextDisplayDistance = m_configuration.m_maxLabelDisplayDistance;
-    const int maxDisplayCount = m_configuration.m_maxDatapointDisplayCount;
-    AZ::Vector3 cameraPos = LYVec3ToAZVec3(crySystem->GetI3DEngine()->GetRenderingCamera().GetPosition());
-    AZ::Vector2 cameraPos2d(cameraPos.GetX(), cameraPos.GetY());
-    char displayString[512] = { 0 };
-    
-    for (int i = 0; i < maxDisplayCount && i < m_currentSortedTimingList.size(); ++i)
-    {
-        const auto& sectorTiming = m_currentSortedTimingList[i];
-
-        AZ::Vector3 topCorner{ float(sectorTiming.m_id.first), float(sectorTiming.m_id.second), 0.0f };
-        topCorner *= float(sectorSizeInMeters);
-
-        AZ::Vector3 bottomCorner = topCorner + AZ::Vector3(float(sectorSizeInMeters), float(sectorSizeInMeters), sectorTiming.m_worldPosition.GetZ() + boxHeightAboveTerrain);
-
-        auto aabb = AZ::Aabb::CreateFromMinMax(topCorner, bottomCorner);
-        const AZ::Color* color = &s_yellow;
-
-        if (sectorTiming.m_averageTimeUs >= m_configuration.m_maxThresholdUs)
-        {
-            color = &s_red;
-        }
-        else if (sectorTiming.m_averageTimeUs < m_configuration.m_minThresholdUs)
-        {
-            color = &s_green;
-        }
-
-        auto outlineColor = AZColorToLYColorF(*color);
-        outlineColor.a = 1.0f;
-
-        // Box around the entire sector
-        renderAuxGeom->DrawAABB(AZAabbToLyAABB(aabb), true, AZColorToLYColorF(*color), EBoundingBoxDrawStyle::eBBD_Faceted);
-        renderAuxGeom->DrawAABB(AZAabbToLyAABB(aabb), false, outlineColor, EBoundingBoxDrawStyle::eBBD_Faceted);
-
-        // Smaller box inside the sector
-        renderAuxGeom->DrawAABB(AZAabbToLyAABB(AZ::Aabb::CreateCenterRadius(sectorTiming.m_worldPosition, 1)), true, outlineColor, EBoundingBoxDrawStyle::eBBD_Faceted);
-
-        AZ::Vector2 sectorPos2d(sectorTiming.m_worldPosition.GetX(), sectorTiming.m_worldPosition.GetY());
-        float distanceToCamera = cameraPos2d.GetDistance(sectorPos2d);
-
-        if (distanceToCamera <= maxTextDisplayDistance)
-        {
-            azsnprintf(displayString, AZ_ARRAY_SIZE(displayString), "Sector %d, %d\nTime: %dus\nUpdate Count: %d", 
-                sectorTiming.m_id.first, 
-                sectorTiming.m_id.second,
-                static_cast<int>(sectorTiming.m_averageTimeUs),
-                sectorTiming.m_updateCount);
-
-            float textColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-            renderer->DrawLabelEx(AZVec3ToLYVec3(sectorTiming.m_worldPosition), 1.5f, textColor, true, true, displayString);
-        }
-    }
 }
 
 void DebugComponent::CopyReportToSortedList()

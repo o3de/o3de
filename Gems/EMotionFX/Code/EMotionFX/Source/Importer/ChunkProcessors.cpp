@@ -775,7 +775,7 @@ namespace EMotionFX
         } // for all submotions
 
         motion->UpdateDuration();
-
+        AZ_Assert(motion->GetMotionData()->VerifyIntegrity(), "Data integrity issue in animation '%s'.", motion->GetName());
         return true;
     }
 
@@ -1572,7 +1572,7 @@ namespace EMotionFX
         } // for all submotions
 
         motion->UpdateDuration();
-
+        AZ_Assert(motion->GetMotionData()->VerifyIntegrity(), "Data integrity issue in animation '%s'.", motion->GetName());
         return true;
     }
 

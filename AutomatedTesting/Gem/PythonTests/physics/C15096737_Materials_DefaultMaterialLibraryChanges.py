@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test Case Title : Verify that a change in the default material library material information
 # affects all the materials that reference it, even non-defaulted
 # exactly like if the library was selected
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/15096737
+
 
 # fmt: off
 class Tests:

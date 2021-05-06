@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 Test case ID : C15096740
 Test Case Title : Verify that clearing a material library on all systems that use it,
                   assigns the default material library
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/15096740
+
 """
 
 
