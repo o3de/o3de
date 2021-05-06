@@ -19,35 +19,6 @@
 
 namespace TestImpact
 {
-    namespace
-    {
-        // Keys for pertinent JSON node and attribute names
-        constexpr const char* Keys[] =
-        {
-            "target",
-            "name",
-            "output_name",
-            "path",
-            "sources",
-            "static",
-            "input",
-            "output"
-        };
-
-        enum
-        {
-            TargetKey,
-            NameKey,
-            OutputNameKey,
-            PathKey,
-            SourcesKey,
-            StaticKey,
-            InputKey,
-            OutputKey
-        };
-
-    } // namespace
-
     AutogenSources PairAutogenSources(
         const AZStd::vector<AZ::IO::Path>& inputSources,
         const AZStd::vector<AZ::IO::Path>& outputSources,
@@ -98,6 +69,31 @@ namespace TestImpact
         const AZStd::vector<AZStd::string>& autogenInputExtensionExcludes,
         const AZStd::string& autogenMatcher)
     {
+        // Keys for pertinent JSON node and attribute names
+        constexpr const char* Keys[] =
+        {
+            "target",
+            "name",
+            "output_name",
+            "path",
+            "sources",
+            "static",
+            "input",
+            "output"
+        };
+
+        enum
+        {
+            TargetKey,
+            NameKey,
+            OutputNameKey,
+            PathKey,
+            SourcesKey,
+            StaticKey,
+            InputKey,
+            OutputKey
+        };
+
         AZ_TestImpact_Eval(!autogenMatcher.empty(), ArtifactException, "Autogen matcher cannot be empty");
 
         BuildTargetDescriptor buildTargetDescriptor;

@@ -18,46 +18,43 @@
 
 namespace TestImpact
 {
-    namespace
-    {
-        // Keys for pertinent XML node and attribute names
-        constexpr const char* Keys[] =
-        {
-            "packages",
-            "name",
-            "filename",
-            "coverage",
-            "classes",
-            "lines",
-            "line",
-            "number",
-            "hits",
-            "sources",
-            "source"
-        };
-
-        enum
-        {
-            PackagesKey,
-            NameKey,
-            FileNameKey,
-            CoverageKey,
-            ClassesKey,
-            LinesKey,
-            LineKey,
-            NumberKey,
-            HitsKey,
-            SourcesKey,
-            SourceKey
-        };
-    } // namespace
-
     namespace Cobertura
     {
         // Note: OpenCppCoverage appears to have a very liberal interpretation of the Cobertura coverage file format so consider
         // this implementation to be provisional and coupled to the Windows platform and OpenCppCoverage tool
         AZStd::vector<ModuleCoverage> ModuleCoveragesFactory(const AZStd::string& coverageData)
         {
+            // Keys for pertinent XML node and attribute names
+            constexpr const char* Keys[] =
+            {
+                "packages",
+                "name",
+                "filename",
+                "coverage",
+                "classes",
+                "lines",
+                "line",
+                "number",
+                "hits",
+                "sources",
+                "source"
+            };
+
+            enum
+            {
+                PackagesKey,
+                NameKey,
+                FileNameKey,
+                CoverageKey,
+                ClassesKey,
+                LinesKey,
+                LineKey,
+                NumberKey,
+                HitsKey,
+                SourcesKey,
+                SourceKey
+            };
+
             AZ_TestImpact_Eval(!coverageData.empty(), ArtifactException, "Cannot parse coverage, string is empty");
             AZStd::vector<ModuleCoverage> modules;
             AZStd::vector<char> rawData(coverageData.begin(), coverageData.end());

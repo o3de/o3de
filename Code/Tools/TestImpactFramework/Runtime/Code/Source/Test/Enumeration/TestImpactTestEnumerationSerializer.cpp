@@ -20,7 +20,7 @@
 
 namespace TestImpact
 {
-    namespace
+    namespace TestEnumFields
     {
         // Keys for pertinent JSON node and attribute names
         constexpr const char* Keys[] =
@@ -46,23 +46,23 @@ namespace TestImpact
         rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(stringBuffer);
 
         writer.StartObject();
-        writer.Key(Keys[SuitesKey]);
+        writer.Key(TestEnumFields::Keys[TestEnumFields::SuitesKey]);
         writer.StartArray();
         for (const auto& suite : testEnum.GetTestSuites())
         {
             writer.StartObject();
-            writer.Key(Keys[NameKey]);
+            writer.Key(TestEnumFields::Keys[TestEnumFields::NameKey]);
             writer.String(suite.m_name.c_str());
-            writer.Key(Keys[EnabledKey]);
+            writer.Key(TestEnumFields::Keys[TestEnumFields::EnabledKey]);
             writer.Bool(suite.m_enabled);
-            writer.Key(Keys[TestsKey]);
+            writer.Key(TestEnumFields::Keys[TestEnumFields::TestsKey]);
             writer.StartArray();
             for (const auto& test : suite.m_tests)
             {
                 writer.StartObject();
-                writer.Key(Keys[NameKey]);
+                writer.Key(TestEnumFields::Keys[TestEnumFields::NameKey]);
                 writer.String(test.m_name.c_str());
-                writer.Key(Keys[EnabledKey]);
+                writer.Key(TestEnumFields::Keys[TestEnumFields::EnabledKey]);
                 writer.Bool(test.m_enabled);
                 writer.EndObject();
             }
@@ -85,13 +85,13 @@ namespace TestImpact
             throw TestEnumerationException("Could not parse enumeration data");
         }
 
-        for (const auto& suite : doc[Keys[SuitesKey]].GetArray())
+        for (const auto& suite : doc[TestEnumFields::Keys[TestEnumFields::SuitesKey]].GetArray())
         {
-            testSuites.emplace_back(TestEnumerationSuite{suite[Keys[NameKey]].GetString(), suite[Keys[EnabledKey]].GetBool(), {}});
-            for (const auto& test : suite[Keys[TestsKey]].GetArray())
+            testSuites.emplace_back(TestEnumerationSuite{suite[TestEnumFields::Keys[TestEnumFields::NameKey]].GetString(), suite[TestEnumFields::Keys[TestEnumFields::EnabledKey]].GetBool(), {}});
+            for (const auto& test : suite[TestEnumFields::Keys[TestEnumFields::TestsKey]].GetArray())
             {
                 testSuites.back().m_tests.emplace_back(
-                    TestEnumerationCase{test[Keys[NameKey]].GetString(), test[Keys[EnabledKey]].GetBool()});
+                    TestEnumerationCase{test[TestEnumFields::Keys[TestEnumFields::NameKey]].GetString(), test[TestEnumFields::Keys[TestEnumFields::EnabledKey]].GetBool()});
             }
         }
 
