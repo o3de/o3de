@@ -69,6 +69,7 @@ namespace UnitTest
         AZStd::unique_ptr<DataMembers> m_data;
     };
 
+#ifdef LYSHINE_ATOM_TODO // [LYN-3359] - render target support using Atom
     TEST_F(LyShineSpriteTest, Sprite_CanAcquireRenderTarget)
     {
         // initialize to create the static sprite cache
@@ -131,6 +132,7 @@ namespace UnitTest
         CSprite::Shutdown();
         delete mockTexture;
     }
+#endif
 } //namespace UnitTest
 
 AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);

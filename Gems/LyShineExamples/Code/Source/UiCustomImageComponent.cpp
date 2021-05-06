@@ -78,10 +78,8 @@ namespace LyShineExamples
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void UiCustomImageComponent::Render(LyShine::IRenderGraph* renderGraph)
+    void UiCustomImageComponent::Render([[maybe_unused]] LyShine::IRenderGraph* renderGraph)
     {
-        (void)renderGraph;
-
 #ifdef LYSHINE_ATOM_TODO // [LYN-3635] convert to use Atom
         // get fade value (tracked by UiRenderer) and compute the desired alpha for the image
         float fade = renderGraph->GetAlphaFade();
