@@ -686,3 +686,16 @@ void CAtomShimRenderAuxGeom::DrawBone(const Vec3& p, const Vec3& c,  ColorB col)
     DrawLine(VBuffer[5], CBuffer[5], VBuffer[3], CBuffer[3]);
     DrawLine(VBuffer[5], CBuffer[5], VBuffer[4], CBuffer[4]);
 }
+
+void CAtomShimRenderAuxGeom::RenderText([[maybe_unused]] Vec3 pos, [[maybe_unused]] SDrawTextInfo& ti, [[maybe_unused]] const char* format, [[maybe_unused]] va_list args)
+{
+    if (format && !gEnv->IsDedicated())
+    {
+        char str[512];
+
+        vsnprintf_s(str, sizeof(str), sizeof(str) - 1, format, args);
+        str[sizeof(str) - 1] = '\0';
+        gEnv->pRenderer->DrawTextQueued(pos, ti, str);
+    }
+}
+
