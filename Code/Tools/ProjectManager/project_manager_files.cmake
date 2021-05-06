@@ -37,4 +37,6 @@ set(FILES
     Source/EngineSettings.h
     Source/EngineSettings.cpp
     Source/EngineSettings.ui
+    Source/GemCatalog/GemInfo.h
+    Source/GemCatalog/GemInfo.cpp
 )
