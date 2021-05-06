@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C4976204
 # Test Case Title : Verify that when Start Asleep is checked, the object in air does not fall down due to
 # gravity or does not start moving with initial linear velocity assigned to it when switched to game mode
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4976204
+
 
 
 # fmt: off

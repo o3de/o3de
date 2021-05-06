@@ -11,34 +11,14 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
-#include <Qt/ScreenWidget.h>
-#endif
+#include <ScreenDefs.h>
 
-namespace Ui
-{
-    class GemCatalogClass;
-}
+#include <ProjectManagerWindow.h>
+
+#include <QWidget>
+
 
 namespace O3DE::ProjectManager
 {
-    class GemCatalog
-        : public ScreenWidget
-    {
-
-    public:
-        explicit GemCatalog(ProjectManagerWindow* window);
-        ~GemCatalog();
-
-    protected:
-        void ConnectSlotsAndSignals() override;
-
-    protected slots:
-        void HandleBackButton();
-        void HandleConfirmButton();
-
-    private:
-        QScopedPointer<Ui::GemCatalogClass> m_ui;
-    };
-
+    QWidget* BuildScreen(ProjectManagerWindow* window, ProjectManagerScreen screen);
 } // namespace O3DE::ProjectManager

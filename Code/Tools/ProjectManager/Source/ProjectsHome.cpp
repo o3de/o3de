@@ -10,9 +10,9 @@
  *
  */
 
-#include <Qt/ProjectsHome.h>
+#include <ProjectsHome.h>
 
-#include <Qt/ui_ProjectsHome.h>
+#include <Source/ui_ProjectsHome.h>
 
 namespace O3DE::ProjectManager
 {

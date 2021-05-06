@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C5689522
 # Test Case Title : Create an entity with PhysX terrain. Add another PhysX terrain and verify that
 # you are able to add it without any crash or error.
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5689522
+
 
 
 # fmt: off

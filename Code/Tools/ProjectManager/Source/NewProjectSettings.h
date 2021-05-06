@@ -12,34 +12,32 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <Qt/ScreenWidget.h>
+#include <ScreenWidget.h>
 #endif
 
 namespace Ui
 {
-    class ProjectsHomeClass;
+    class NewProjectSettingsClass;
 }
 
 namespace O3DE::ProjectManager
 {
-    class ProjectsHome
+    class NewProjectSettings
         : public ScreenWidget
     {
-
     public:
-        explicit ProjectsHome(ProjectManagerWindow* window);
-        ~ProjectsHome();
+        explicit NewProjectSettings(ProjectManagerWindow* window);
+        ~NewProjectSettings();
 
     protected:
         void ConnectSlotsAndSignals() override;
 
     protected slots:
-        void HandleNewProjectButton();
-        void HandleAddProjectButton();
-        void HandleEditProjectButton();
+        void HandleBackButton();
+        void HandleNextButton();
 
     private:
-        QScopedPointer<Ui::ProjectsHomeClass> m_ui;
+        QScopedPointer<Ui::NewProjectSettingsClass> m_ui;
     };
 
 } // namespace O3DE::ProjectManager

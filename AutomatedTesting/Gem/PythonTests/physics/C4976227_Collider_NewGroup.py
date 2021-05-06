@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C4976227
 # Test Case Title : Validate that a Collision Group can be added
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4976227
+
 # Level has entity with custom collision group added.
 # If level enters game mode, collision group addition is validated.
 

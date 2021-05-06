@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID : C17411467
 Test Case Title : Check that Physx Ragdoll component can be added without errors/warnings
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/17411467
+
 """
 
 
