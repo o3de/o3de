@@ -13,7 +13,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzTest/AzTest.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/FbxImporterUtilities.h>
+#include <SceneAPI/FbxSceneBuilder/Importers/ImporterUtilities.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
 #include <SceneAPI/SceneData/GraphData/MeshData.h>

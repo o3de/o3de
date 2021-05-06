@@ -15,7 +15,6 @@
 #include "System.h"
 #include <time.h>
 
-#include <I3DEngine.h>
 #include <IRenderer.h>
 #include <IMovieSystem.h>
 #include <ILog.h>
@@ -298,23 +297,6 @@ void CSystem::CollectMemStats (ICrySizer* pSizer, MemStatsPurposeEnum nPurpose, 
             {
                 SIZER_COMPONENT_NAME (pSizer, "Log");
                 m_env.pLog->GetMemoryUsage(pSizer);
-            }
-        }
-    }
-
-
-    if (m_env.p3DEngine)
-    {
-        SIZER_COMPONENT_NAME(pSizer, "Cry3DEngine");
-        {
-            m_env.p3DEngine->GetMemoryUsage (pSizer);
-            {
-                SIZER_COMPONENT_NAME (pSizer, "$Allocations waste");
-                const SmallModuleInfo* info = FindModuleInfo(stats, "Cry3DEngine.dll");
-                if (info)
-                {
-                    pSizer->AddObject(info, info->memInfo.allocated - info->memInfo.requested);
-                }
             }
         }
     }

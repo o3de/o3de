@@ -71,7 +71,6 @@ AZ_POP_DISABLE_WARNING
 #include "BackgroundTaskManager.h"
 #include "BackgroundScheduleManager.h"
 #include "EditorFileMonitor.h"
-#include "Mission.h"
 #include "MainStatusBar.h"
 
 #include "SettingsBlock.h"
@@ -115,29 +114,6 @@ static CCryEditDoc * theDocument;
 #endif
 
 #undef GetCommandLine
-
-namespace
-{
-    bool SelectionContainsComponentEntities()
-    {
-        bool result = false;
-        CSelectionGroup* pSelection = GetIEditor()->GetObjectManager()->GetSelection();
-        if (pSelection)
-        {
-            CBaseObject* selectedObj = nullptr;
-            for (int selectionCounter = 0; selectionCounter < pSelection->GetCount(); ++selectionCounter)
-            {
-                selectedObj = pSelection->GetObject(selectionCounter);
-                if (selectedObj->GetType() == OBJTYPE_AZENTITY)
-                {
-                    result = true;
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-}
 
 const char* CEditorImpl::m_crashLogFileName = "SessionStatus/editor_statuses.json";
 
@@ -462,15 +438,6 @@ void CEditorImpl::Update()
 ISystem* CEditorImpl::GetSystem()
 {
     return m_pSystem;
-}
-
-I3DEngine* CEditorImpl::Get3DEngine()
-{
-    if (gEnv)
-    {
-        return gEnv->p3DEngine;
-    }
-    return nullptr;
 }
 
 IRenderer*  CEditorImpl::GetRenderer()
@@ -1739,13 +1706,6 @@ void CEditorImpl::RegisterObjectContextMenuExtension(TContextMenuExtensionFunc f
     m_objectContextMenuExtensions.push_back(func);
 }
 
-void CEditorImpl::SetCurrentMissionTime(float time)
-{
-    if (CMission* pMission = GetIEditor()->GetDocument()->GetCurrentMission())
-    {
-        pMission->SetTime(time);
-    }
-}
 // Vladimir@Conffx
 SSystemGlobalEnvironment* CEditorImpl::GetEnv()
 {

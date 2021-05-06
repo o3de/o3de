@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
     AzQtComponents::StyleManager styleManager(&app);
     styleManager.initialize(&app, engineRootPath);
 
-    ProjectManager::ProjectManagerWindow window(nullptr, engineRootPath);
+    O3DE::ProjectManager::ProjectManagerWindow window(nullptr, engineRootPath);
     window.show();
 
     return app.exec();

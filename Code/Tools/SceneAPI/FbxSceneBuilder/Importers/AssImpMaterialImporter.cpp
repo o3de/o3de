@@ -17,7 +17,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/FbxImporterUtilities.h>
+#include <SceneAPI/FbxSceneBuilder/Importers/ImporterUtilities.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/Utilities/AssImpMeshImporterUtilities.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/Utilities/RenamedNodesMap.h>
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
