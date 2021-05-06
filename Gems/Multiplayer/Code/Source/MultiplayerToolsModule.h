@@ -31,9 +31,8 @@ namespace Multiplayer
         ~MultiplayerToolsSystemComponent() override = default;
 
         /// AZ::Component overrides.
-        void Activate() override {};
-
-        void Deactivate() override {};
+        void Activate() override;
+        void Deactivate() override;
 
         bool DidProcessNetworkPrefabs() override;
 

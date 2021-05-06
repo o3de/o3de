@@ -116,8 +116,8 @@ namespace AzNetworking
 
     int32_t TcpSocket::Receive(uint8_t* outData, uint32_t size) const
     {
-        AZ_Assert(size > 0, "Invalid data size for send");
-        AZ_Assert(outData != nullptr, "NULL data pointer passed to send");
+        AZ_Assert(size > 0, "Invalid data size for receive");
+        AZ_Assert(outData != nullptr, "NULL data pointer passed to receive");
         if (!IsOpen())
         {
             return SocketOpResultErrorNotOpen;

@@ -24,6 +24,16 @@ namespace Multiplayer
         NetworkPrefabProcessor::Reflect(context);
     }
 
+    void MultiplayerToolsSystemComponent::Activate()
+    {
+        AZ::Interface<IMultiplayerTools>::Register(this);
+    }
+
+    void MultiplayerToolsSystemComponent::Deactivate()
+    {
+        AZ::Interface<IMultiplayerTools>::Unregister(this);
+    }
+
     bool MultiplayerToolsSystemComponent::DidProcessNetworkPrefabs()
     {
         return m_didProcessNetPrefabs;

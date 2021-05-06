@@ -57,4 +57,10 @@
         <Member Type="Multiplayer::PrefabEntityId"        Name="prefabEntityId"     Init="" />
         <Member Type="AzNetworking::PacketEncodingBuffer" Name="propertyUpdateData" Init="" SuppressFromInitializerList="true" />
     </Packet>
+
+    <Packet Name="EditorServerInit" Desc="A packet that initializes a local server launched from the editor">
+        <Member Type="bool" Name="lastUpdate" Init="false"/>
+        <Member Type="uint16_t" Name="serializedSize" Init="0"/>
+        <Member Type="AzNetworking::TcpPacketEncodingBuffer" Name="assetData"/>
+    </Packet>
 </PacketGroup>

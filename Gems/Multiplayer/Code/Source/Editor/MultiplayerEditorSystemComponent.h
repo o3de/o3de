@@ -81,5 +81,7 @@ namespace Multiplayer
 
         IEditor* m_editor = nullptr;
         AzFramework::ProcessWatcher* m_serverProcess = nullptr;
+        AzNetworking::ConnectionId m_editorConnId;
+        AzNetworking::INetworkInterface* m_editorNetworkInterface = nullptr;
     };
 }
