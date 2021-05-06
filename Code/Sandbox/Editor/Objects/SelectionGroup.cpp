@@ -22,6 +22,7 @@
 #include "ViewManager.h"
 #include "Include/IObjectManager.h"
 
+#include <IStatObj.h>
 
 //////////////////////////////////////////////////////////////////////////
 CSelectionGroup::CSelectionGroup()

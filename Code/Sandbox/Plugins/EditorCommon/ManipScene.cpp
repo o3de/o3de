@@ -22,7 +22,6 @@
 #include <IPhysics.h>
 #include <IPhysicsDebugRenderer.h>
 #include <IStatObj.h>
-#include <I3DEngine.h>
 
 #include "../EditorCommon/QViewport.h"
 

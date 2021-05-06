@@ -21,8 +21,6 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 
-class QPoint; // LYN-2315 in-progress, remove this
-
 namespace AzFramework
 {
     struct ScreenPoint;
@@ -167,14 +165,14 @@ namespace AzToolsFramework
             /// Return the angle snapping/step size.
             virtual float AngleStep() = 0;
             /// Transform a point in world space to screen space coordinates.
-            virtual QPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) = 0;
+            virtual AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) = 0;
             /// Transform a point in screen space coordinates to a vector in world space based on clip space depth.
             /// Depth specifies a relative camera depth to project in the range of [0.f, 1.f].
             /// Returns the world space position if successful.
-            virtual AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const QPoint& screenPosition, float depth) = 0;
+            virtual AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition, float depth) = 0;
             /// Casts a point in screen space to a ray in world space originating from the viewport camera frustum's near plane.
             /// Returns a ray containing the ray's origin and a direction normal, if successful.
-            virtual AZStd::optional<ProjectedViewportRay> ViewportScreenToWorldRay(const QPoint& screenPosition) = 0;
+            virtual AZStd::optional<ProjectedViewportRay> ViewportScreenToWorldRay(const AzFramework::ScreenPoint& screenPosition) = 0;
 
         protected:
             ~ViewportInteractionRequests() = default;
@@ -207,9 +205,9 @@ namespace AzToolsFramework
         public:
             /// Given a point in screen space, return the picked entity (if any).
             /// Picked EntityId will be returned, InvalidEntityId will be returned on failure.
-            virtual AZ::EntityId PickEntity(const QPoint& point) = 0;
+            virtual AZ::EntityId PickEntity(const AzFramework::ScreenPoint& point) = 0;
             /// Given a point in screen space, return the terrain position in world space.
-            virtual AZ::Vector3 PickTerrain(const QPoint& point) = 0;
+            virtual AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) = 0;
             /// Return the terrain height given a world position in 2d (xy plane).
             virtual float TerrainHeight(const AZ::Vector2& position) = 0;
             /// Given the current view frustum (viewport) return all visible entities.
