@@ -69,16 +69,6 @@ namespace AZ
 
         }
 
-        void SkinnedMeshFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
-        {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("SkinnedMesh", "SkinnedMeshFeatureProcessor: Simulate");
-            AZ_UNUSED(packet);
-
-            SkinnedMeshFeatureProcessorNotificationBus::Broadcast(&SkinnedMeshFeatureProcessorNotificationBus::Events::OnUpdateSkinningMatrices);
-
-        }
-
         void SkinnedMeshFeatureProcessor::Render(const FeatureProcessor::RenderPacket& packet)
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
@@ -266,6 +256,8 @@ namespace AZ
         void SkinnedMeshFeatureProcessor::OnBeginPrepareRender()
         {
             m_renderProxiesChecker.soft_lock();
+
+            SkinnedMeshFeatureProcessorNotificationBus::Broadcast(&SkinnedMeshFeatureProcessorNotificationBus::Events::OnUpdateSkinningMatrices);
         }
 
         void SkinnedMeshFeatureProcessor::OnEndPrepareRender()
