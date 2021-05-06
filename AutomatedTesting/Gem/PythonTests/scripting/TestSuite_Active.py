@@ -21,6 +21,7 @@ import hydra_test_utils as hydra
 import ly_test_tools.environment.file_system as file_system
 from ly_test_tools import LAUNCHERS
 from base import TestAutomationBase
+import ly_test_tools.environment.process_utils as process_utils
 
 TEST_DIRECTORY = os.path.dirname(__file__)
 
@@ -182,6 +183,17 @@ class TestAutomation(TestAutomationBase):
         file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
         from . import ScriptEvents_SendReceiveSuccessfully as test_module
         self._run_test(request, workspace, editor, test_module)
+
+    @pytest.mark.test_case_id("T92569006")
+    @pytest.mark.parametrize("level", ["tmp_level"])
+    def test_ScriptEvents_ReturnSetTypeSuccessfully(self, request, workspace, editor, launcher_platform, project, level):
+        def teardown():
+            file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
+        request.addfinalizer(teardown)
+        file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
+        from . import ScriptEvents_ReturnSetTypeSuccessfully as test_module
+        self._run_test(request, workspace, editor, test_module)
+
 
 # NOTE: We had to use hydra_test_utils.py, as TestAutomationBase run_test method
 # fails because of pyside_utils import
