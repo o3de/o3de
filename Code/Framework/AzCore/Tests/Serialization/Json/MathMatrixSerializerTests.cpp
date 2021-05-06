@@ -26,6 +26,39 @@ namespace JsonSerializationTests
 {
     namespace DataHelper
     {
+        // Build Matrix
+
+        template <typename MatrixType>
+        MatrixType BuildMatrixRotationWithSale(const AZ::Vector3& angles, float scale)
+        {
+            // start a matrix with angle degrees
+            const AZ::Vector3 eulerRadians = AZ::Vector3DegToRad(angles);
+            const auto rotX = MatrixType::CreateRotationX(eulerRadians.GetX());
+            const auto rotY = MatrixType::CreateRotationY(eulerRadians.GetY());
+            const auto rotZ = MatrixType::CreateRotationZ(eulerRadians.GetZ());
+            auto matrix = rotX * rotY * rotZ;
+
+            // apply a scale
+            matrix.MultiplyByScale(AZ::Vector3{ scale });
+            return matrix;
+        }
+
+        template <typename MatrixType>
+        MatrixType BuildMatrix(const AZ::Vector3& angles, float scale, const AZ::Vector3& translation)
+        {
+            auto matrix = BuildMatrixRotationWithSale<MatrixType>(angles, scale);
+            matrix.SetTranslation(translation);
+            return matrix;
+        }
+
+        template <>
+        AZ::Matrix3x3 BuildMatrix(const AZ::Vector3& angles, float scale, const AZ::Vector3&)
+        {
+            return BuildMatrixRotationWithSale<AZ::Matrix3x3>(angles, scale);
+        }
+
+        // Arbitrary Matrix
+
         template <typename MatrixType>
         MatrixType CreateArbitraryMatrixRotationAndSale(AZ::SimpleLcgRandom& random)
         {
@@ -170,7 +203,10 @@ namespace JsonSerializationTests
 
         AZStd::shared_ptr<MatrixType> CreateFullySetInstance() override
         {
-            auto matrix = DataHelper::CreateArbitraryMatrix<MatrixType>(RowCount * RowCount * ColumnCount * ColumnCount);
+            auto angles = AZ::Vector3 { 0.0f, 0.0f, 0.0f };
+            auto scale = 10.0f;
+            auto translation = AZ::Vector3{ 10.0f, 20.0f, 30.0f };
+            auto matrix = DataHelper::BuildMatrix<MatrixType>(angles, scale, translation);
             return AZStd::make_shared<MatrixType>(matrix);
         }
 
@@ -178,15 +214,15 @@ namespace JsonSerializationTests
         {
             if constexpr (RowCount * ColumnCount == 9)
             {
-                return "{\"roll\":2.9116806983947756,\"pitch\":64.10340881347656,\"yaw\":-113.59403991699219,\"scale\":0.30960845947265627}";
+                return "{\"roll\":0.0,\"pitch\":0.0,\"yaw\":0.0,\"scale\":10.0}";
             }
             else if constexpr (RowCount * ColumnCount == 12)
             {
-                return "{\"roll\":129.6565399169922,\"pitch\":3.4360766410827638,\"yaw\":174.74342346191407,\"scale\":0.34746408462524416,\"x\":4694.349609375,\"y\":3518.57177734375,\"z\":8810.7216796875}";
+                return "{\"roll\":0.0,\"pitch\":0.0,\"yaw\":0.0,\"scale\":10.0,\"x\":10.0,\"y\":20.0,\"z\":30.0}";
             }
             else if constexpr (RowCount * ColumnCount == 16)
             {
-                return "{\"roll\":-1.040727138519287,\"pitch\":38.50996780395508,\"yaw\":-132.646240234375,\"scale\":0.37979474663734438,\"x\":3340.976318359375,\"y\":6658.28955078125,\"z\":8145.43115234375}";
+                return "{\"roll\":0.0,\"pitch\":0.0,\"yaw\":0.0,\"scale\":10.0,\"x\":10.0,\"y\":20.0,\"z\":30.0}";
             }
             else
             {
