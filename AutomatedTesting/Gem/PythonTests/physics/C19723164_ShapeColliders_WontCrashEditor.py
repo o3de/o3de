@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID : C19723164
 Test Case Title : Verify that if we had 512 shape colliders in the level, the level does not crash
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/19723164
+
 """
 
 

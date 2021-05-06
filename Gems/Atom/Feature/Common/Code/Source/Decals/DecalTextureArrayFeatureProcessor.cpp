@@ -271,9 +271,15 @@ namespace AZ
 
         void DecalTextureArrayFeatureProcessor::SetDecalTransform(DecalHandle handle, const AZ::Transform& world)
         {
+            SetDecalTransform(handle, world, AZ::Vector3::CreateOne());
+        }
+
+        void DecalTextureArrayFeatureProcessor::SetDecalTransform(DecalHandle handle, const AZ::Transform& world,
+            const AZ::Vector3& nonUniformScale)
+        {
             if (handle.IsValid())
             {
-                SetDecalHalfSize(handle, world.GetScale());
+                SetDecalHalfSize(handle, nonUniformScale * world.GetScale());
                 SetDecalPosition(handle, world.GetTranslation());
                 SetDecalOrientation(handle, world.GetRotation());
 

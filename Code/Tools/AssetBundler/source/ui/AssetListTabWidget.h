@@ -65,7 +65,9 @@ namespace AssetBundler
         AssetBundlerAbstractFileTableModel* GetFileTableModel() override;
         void SetActiveProjectLabel(const QString& labelText) override;
         void ApplyConfig() override;
-        void FileSelectionChanged(const QItemSelection& /*selected*/ = QItemSelection(), const QItemSelection& /*deselected*/ = QItemSelection()) override;
+        void FileSelectionChanged(
+            const QItemSelection& /*selected*/ = QItemSelection(),
+            const QItemSelection& /*deselected*/ = QItemSelection()) override;
         //////////////////////////////////////////////////////////////////////////
 
     private:

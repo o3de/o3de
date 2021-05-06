@@ -32,7 +32,10 @@ namespace AssetBundler
 
         m_ui->platformSelectionWidget->Init(enabledPlatforms);
         m_ui->platformSelectionWidget->SetSelectedPlatforms(selectedPlatforms, partiallySelectedPlatforms);
-        connect(m_ui->platformSelectionWidget, &PlatformSelectionWidget::PlatformsSelected, this, &EditSeedDialog::OnPlatformSelectionChanged);
+        connect(m_ui->platformSelectionWidget,
+            &PlatformSelectionWidget::PlatformsSelected,
+            this,
+            &EditSeedDialog::OnPlatformSelectionChanged);
 
         // Set up confirm and cancel buttons
         connect(m_ui->applyChangesButton, &QPushButton::clicked, this, &QDialog::accept);
@@ -49,7 +52,9 @@ namespace AssetBundler
         return m_ui->platformSelectionWidget->GetPartiallySelectedPlatforms();
     }
     
-    void EditSeedDialog::OnPlatformSelectionChanged(const AzFramework::PlatformFlags& selectedPlatforms, const AzFramework::PlatformFlags& partiallySelectedPlatforms)
+    void EditSeedDialog::OnPlatformSelectionChanged(
+        const AzFramework::PlatformFlags& selectedPlatforms,
+        const AzFramework::PlatformFlags& partiallySelectedPlatforms)
     {
         // Disable the "Apply Changes" button if no platforms are selected
         bool areAnyPlatformsSelected = selectedPlatforms != AzFramework::PlatformFlags::Platform_NONE ||
