@@ -82,8 +82,10 @@ namespace AZ
 
             //! Sets the transform of the decal
             //! Equivalent to calling SetDecalPosition() + SetDecalOrientation() + SetDecalHalfSize()
-            void SetDecalTransform(const DecalHandle handle, const AZ::Transform& world,
-                const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne()) override;
+            //! @{
+            void SetDecalTransform(const DecalHandle handle, const AZ::Transform& world) override;
+            void SetDecalTransform(const DecalHandle handle, const AZ::Transform& world, const AZ::Vector3& nonUniformScale) override;
+            //! @}
 
             //! Sets the material information for this decal
             void SetDecalMaterial(const DecalHandle handle, const AZ::Data::AssetId id) override;

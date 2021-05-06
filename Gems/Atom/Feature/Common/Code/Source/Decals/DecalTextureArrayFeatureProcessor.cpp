@@ -269,6 +269,11 @@ namespace AZ
             }
         }
 
+        void DecalTextureArrayFeatureProcessor::SetDecalTransform(DecalHandle handle, const AZ::Transform& world)
+        {
+            SetDecalTransform(handle, world, AZ::Vector3::CreateOne());
+        }
+
         void DecalTextureArrayFeatureProcessor::SetDecalTransform(DecalHandle handle, const AZ::Transform& world,
             const AZ::Vector3& nonUniformScale)
         {

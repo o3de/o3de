@@ -262,6 +262,11 @@ namespace AZ
             }
         }
 
+        void DecalFeatureProcessor::SetDecalTransform(DecalHandle handle, const AZ::Transform& world)
+        {
+            SetDecalTransform(handle, world, AZ::Vector3::CreateOne());
+        }
+
         void DecalFeatureProcessor::SetDecalTransform(DecalHandle handle, const AZ::Transform& world, const AZ::Vector3& nonUniformScale)
         {
             // ATOM-4330
