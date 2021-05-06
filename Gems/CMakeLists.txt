@@ -9,7 +9,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-add_subdirectory(ImageProcessing)
 add_subdirectory(TextureAtlas)
 add_subdirectory(LmbrCentral)
 add_subdirectory(LyShine)
@@ -23,7 +22,6 @@ add_subdirectory(HttpRequestor)
 add_subdirectory(Gestures)
 add_subdirectory(FastNoise)
 add_subdirectory(GradientSignal)
-add_subdirectory(GameEffectSystem)
 add_subdirectory(AudioSystem)
 add_subdirectory(AudioEngineWwise)
 add_subdirectory(GraphCanvas)
@@ -45,7 +43,6 @@ add_subdirectory(GameState)
 add_subdirectory(Vegetation)
 add_subdirectory(GameStateSamples)
 add_subdirectory(SliceFavorites)
-add_subdirectory(SVOGI)
 add_subdirectory(Metastream)
 add_subdirectory(ScriptCanvas)
 add_subdirectory(ScriptedEntityTweener)

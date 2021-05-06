@@ -47,7 +47,6 @@
 #include <Cinematics/CommentNode.h>
 #include <Cinematics/CVarNode.h>
 #include <Cinematics/ScriptVarNode.h>
-#include <Cinematics/AnimEnvironmentNode.h>
 #include <Cinematics/AnimPostFXNode.h>
 #include <Cinematics/EventNode.h>
 #include <Cinematics/LayerNode.h>
@@ -177,7 +176,6 @@ namespace Maestro
         CCommentNode::Reflect(context);
         CAnimCVarNode::Reflect(context);
         CAnimScriptVarNode::Reflect(context);
-        CAnimEnvironmentNode::Reflect(context);
         CAnimNodeGroup::Reflect(context);
         CAnimPostFXNode::Reflect(context);
         CAnimEventNode::Reflect(context);

@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test Case ID    : C4982595
 # Test Case Title : Verify that when the Trigger Checkbox is ticked, the object no longer collides with another object
 #                   but simply passes through it
-# Test Case URL   : https://testrail.agscollab.com/index.php?/cases/view/4982595
+
 
 
 # fmt: off

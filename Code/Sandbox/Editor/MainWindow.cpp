@@ -90,7 +90,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "TrackView/TrackViewDialog.h"
 #include "ErrorReportDialog.h"
-#include "TimeOfDayDialog.h"
 
 #include "Dialogs/PythonScriptsDialog.h"
 #include "EngineSettingsManager.h"
@@ -884,9 +883,6 @@ void MainWindow::InitActions()
         .SetStatusTip(tr("Restore saved state (Fetch)"));
 
     // Modify actions
-    am->AddAction(ID_EDIT_RENAMEOBJECT, tr("Rename Object(s)..."))
-        .SetStatusTip(tr("Rename Object"));
-
     am->AddAction(ID_EDITMODE_MOVE, tr("Move"))
         .SetIcon(Style::icon("Move"))
         .SetApplyHoverEffect()
@@ -1081,8 +1077,6 @@ void MainWindow::InitActions()
     // Tools actions
     am->AddAction(ID_RELOAD_TEXTURES, tr("Reload Textures/Shaders"))
         .SetStatusTip(tr("Reload all textures."));
-    am->AddAction(ID_RELOAD_GEOMETRY, tr("Reload Geometry"))
-        .SetStatusTip(tr("Reload all geometries."));
     am->AddAction(ID_TOOLS_ENABLEFILECHANGEMONITORING, tr("Enable File Change Monitoring"));
     am->AddAction(ID_CLEAR_REGISTRY, tr("Clear Registry Data"))
         .SetStatusTip(tr("Clear Registry Data"));
@@ -1333,7 +1327,7 @@ QToolButton* MainWindow::CreateDebugModeButton()
 
 QWidget* MainWindow::CreateSpacerRightWidget()
 {
-    QWidget* spacer = new QWidget();
+    QWidget* spacer = new QWidget(this);
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     spacer->setVisible(true);
     return spacer;
@@ -1354,12 +1348,6 @@ void MainWindow::InitEnvironmentModeMenu(CVarMenu* environmentModeMenu)
     environmentModeMenu->AddCVarToggleItem({ "r_TransparentPasses", tr("Hide Transparent Objects"), 0, 1 });
     environmentModeMenu->AddCVarToggleItem({ "r_ssdo", tr("Hide Screen Space Directional Occlusion"), 0, 1 });
     environmentModeMenu->AddCVarToggleItem({ "e_DynamicLights", tr("Hide All Dynamic Lights"), 0, 1 });
-    environmentModeMenu->AddSeparator();
-    environmentModeMenu->AddCVarValuesItem("e_TimeOfDay", tr("Time of Day"),
-        {
-            {tr("Day (1:00 pm)"), 13},
-            {tr("Night (9:00 pm)"), 21}
-        }, 9);
     environmentModeMenu->AddSeparator();
     environmentModeMenu->AddCVarToggleItem({ "e_Entities", tr("Hide Entities"), 0, 1 });
     environmentModeMenu->AddSeparator();

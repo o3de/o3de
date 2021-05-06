@@ -38,7 +38,11 @@ namespace AssetBundler
     //////////////////////////////////////////////////////////////////////////////////////////////////
     // SeedListTableModel
     //////////////////////////////////////////////////////////////////////////////////////////////////
-    SeedListTableModel::SeedListTableModel(QObject* parent, const AZStd::string& absolutePath, const AZStd::vector<AZStd::string>& defaultSeeds, const AzFramework::PlatformFlags& platforms)
+    SeedListTableModel::SeedListTableModel(
+        QObject* parent,
+        const AZStd::string& absolutePath,
+        const AZStd::vector<AZStd::string>& defaultSeeds,
+        const AzFramework::PlatformFlags& platforms)
         : QAbstractTableModel(parent)
     {
         m_seedListManager.reset(new AzToolsFramework::AssetSeedManager());
@@ -66,7 +70,10 @@ namespace AssetBundler
         QString platformList;
         for (const auto& seed : m_seedListManager->GetAssetSeedList())
         {
-            assetInfo = AzToolsFramework::AssetSeedManager::GetAssetInfoById(seed.m_assetId, AzFramework::PlatformHelper::GetPlatformIndicesInterpreted(seed.m_platformFlags)[0], absolutePath);
+            assetInfo = AzToolsFramework::AssetSeedManager::GetAssetInfoById(
+                seed.m_assetId,
+                AzFramework::PlatformHelper::GetPlatformIndicesInterpreted(seed.m_platformFlags)[0],
+                absolutePath);
             platformList = QString(m_seedListManager->GetReadablePlatformList(seed).c_str());
 
             m_additionalSeedInfoMap[seed.m_assetId].reset(new AdditionalSeedInfo(assetInfo.m_relativePath.c_str(), platformList));
@@ -126,7 +133,8 @@ namespace AssetBundler
             AZ_Error(AssetBundler::AppWindowName, false, "Unable to find additional Seed info");
             return false;
         }
-        additionalSeedInfo->second->m_platformList = QString(AzFramework::PlatformHelper::GetCommaSeparatedPlatformList(platforms).c_str());
+        additionalSeedInfo->second->m_platformList =
+            QString(AzFramework::PlatformHelper::GetCommaSeparatedPlatformList(platforms).c_str());
 
         SetHasUnsavedChanges(true);
 
@@ -140,7 +148,8 @@ namespace AssetBundler
 
     bool SeedListTableModel::AddSeed(const AZStd::string& seedRelativePath, const AzFramework::PlatformFlags& platforms)
     {
-        AZStd::pair<AZ::Data::AssetId, AzFramework::PlatformFlags> addSeedsResult = m_seedListManager->AddSeedAssetForValidPlatforms(seedRelativePath, platforms);
+        AZStd::pair<AZ::Data::AssetId, AzFramework::PlatformFlags> addSeedsResult =
+            m_seedListManager->AddSeedAssetForValidPlatforms(seedRelativePath, platforms);
 
         if (!addSeedsResult.first.IsValid() || addSeedsResult.second == AzFramework::PlatformFlags::Platform_NONE)
         {
