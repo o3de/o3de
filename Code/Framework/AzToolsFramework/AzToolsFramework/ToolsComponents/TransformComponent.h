@@ -32,15 +32,6 @@ namespace AzToolsFramework
 {
     namespace Components
     {
-        // this is a workaround for a bug which causes the button to appear with incorrect placement if added directly
-        // to the transform component
-        class AddNonUniformScaleButton
-        {
-        public:
-            AZ_TYPE_INFO(AddNonUniformScaleButton, "{92ECB8B6-DD25-4FC0-A5EE-4CEBAF51A780}")
-            static void Reflect(AZ::ReflectContext* context);
-        };
-
         /// Manages transform data as separate vector fields for editing purposes.
         /// The TransformComponent is referenced by other components in the same entity, it is not an asset.
         class TransformComponent
@@ -239,7 +230,7 @@ namespace AzToolsFramework
             void CheckApplyCachedWorldTransform(const AZ::Transform& parentWorld);
 
             AZ::Component* FindPresentOrPendingComponent(AZ::Uuid componentUuid);
-            AZ::Crc32 AddNonUniformScaleButtonVisibility();
+            bool IsAddNonUniformScaleButtonReadOnly();
             AZ::Crc32 OnAddNonUniformScaleButtonPressed();
 
             // Drives transform behavior when parent activates. See AZ::TransformConfig::ParentActivationTransformMode for details.
@@ -273,7 +264,10 @@ namespace AzToolsFramework
             bool m_localTransformDirty = true;
             bool m_worldTransformDirty = true;
             bool m_isStatic = false;
-            AddNonUniformScaleButton m_addNonUniformScaleButton;
+
+            // This is a workaround for a bug which causes the button to appear with incorrect placement if a UI
+            // element is used rather than a data element.
+            bool m_addNonUniformScaleButton = false;
 
             // Deprecated
             AZ::InterpolationMode m_interpolatePosition;

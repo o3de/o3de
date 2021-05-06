@@ -45,23 +45,6 @@ namespace AzToolsFramework
 {
     namespace Components
     {
-        void AddNonUniformScaleButton::Reflect(AZ::ReflectContext* context)
-        {
-            if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<AddNonUniformScaleButton>()->
-                    Version(1);
-
-                if (AZ::EditContext* ptrEdit = serializeContext->GetEditContext())
-                {
-                    ptrEdit->Class<AddNonUniformScaleButton>("AddNonUniformScaleButton", "")->
-                        UIElement(AZ::Edit::UIHandlers::Button, "", "Add non-uniform scale component")->
-                        Attribute(AZ::Edit::Attributes::ButtonText, "Add non-uniform scale")
-                        ;
-                }
-            }
-        }
-
         namespace Internal
         {
             const AZ::u32 ParentEntityCRC = AZ_CRC("Parent Entity", 0x5b1b276c);
@@ -1242,16 +1225,9 @@ namespace AzToolsFramework
             return nullptr;
         }
 
-        AZ::Crc32 TransformComponent::AddNonUniformScaleButtonVisibility()
+        bool TransformComponent::IsAddNonUniformScaleButtonReadOnly()
         {
-            // if there is a non-uniform scale component already, hide altogether
-            if (FindPresentOrPendingComponent(EditorNonUniformScaleComponent::TYPEINFO_Uuid()))
-            {
-                return AZ::Edit::PropertyVisibility::Hide;
-            }
-
-            // otherwise, just show children
-            return AZ::Edit::PropertyVisibility::ShowChildrenOnly;
+            return FindPresentOrPendingComponent(EditorNonUniformScaleComponent::TYPEINFO_Uuid()) != nullptr;
         }
 
         AZ::Crc32 TransformComponent::OnAddNonUniformScaleButtonPressed()
@@ -1290,8 +1266,6 @@ namespace AzToolsFramework
 
         void TransformComponent::Reflect(AZ::ReflectContext* context)
         {
-            AddNonUniformScaleButton::Reflect(context);
-
             // reflect data for script, serialization, editing..
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
@@ -1329,9 +1303,9 @@ namespace AzToolsFramework
                         DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_editorTransform, "Values", "")->
                             Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::TransformChanged)->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->
-                        DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_addNonUniformScaleButton, "", "")->
-                            Attribute(AZ::Edit::Attributes::AutoExpand, true)->
-                            Attribute(AZ::Edit::Attributes::Visibility, &TransformComponent::AddNonUniformScaleButtonVisibility)->
+                        DataElement(AZ::Edit::UIHandlers::Button, &TransformComponent::m_addNonUniformScaleButton, "", "")->
+                            Attribute(AZ::Edit::Attributes::ButtonText, "Add non-uniform scale")->
+                            Attribute(AZ::Edit::Attributes::ReadOnly, &TransformComponent::IsAddNonUniformScaleButtonReadOnly)->
                             Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::OnAddNonUniformScaleButtonPressed)->
                         DataElement(AZ::Edit::UIHandlers::ComboBox, &TransformComponent::m_parentActivationTransformMode,
                             "Parent activation", "Configures relative transform behavior when parent activates.")->
