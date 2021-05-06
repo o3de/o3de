@@ -13,8 +13,12 @@
   <property name="windowTitle">
    <string>O3DE Project Manager</string>
   </property>
-  <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout"/>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QStackedWidget" name="stackedScreens"/>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -30,7 +34,7 @@
      <pointsize>16</pointsize>
     </font>
    </property>
-   <widget class="QMenu" name="menuIcon">
+   <widget class="QMenu" name="iconMenu">
     <property name="title">
      <string>Icon</string>
     </property>
@@ -39,19 +43,19 @@
       <normaloff>:/Resources/o3de_editor.ico</normaloff>:/Resources/o3de_editor.ico</iconset>
     </property>
    </widget>
-   <widget class="QMenu" name="menuProjects">
+   <widget class="QMenu" name="projectsMenu">
     <property name="title">
      <string>Projects</string>
     </property>
    </widget>
-   <widget class="QMenu" name="menuSettings">
+   <widget class="QMenu" name="engineMenu">
     <property name="title">
      <string>Engine</string>
     </property>
    </widget>
-   <addaction name="menuIcon"/>
-   <addaction name="menuProjects"/>
-   <addaction name="menuSettings"/>
+   <addaction name="iconMenu"/>
+   <addaction name="projectsMenu"/>
+   <addaction name="engineMenu"/>
   </widget>
  </widget>
  <resources>

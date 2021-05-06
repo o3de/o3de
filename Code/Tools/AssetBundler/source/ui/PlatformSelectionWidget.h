@@ -39,7 +39,9 @@ namespace AssetBundler
 
         void Init(const AzFramework::PlatformFlags& enabledPlatforms, const QString& disabledPatformMessageOverride = "");
 
-        void SetSelectedPlatforms(const AzFramework::PlatformFlags& selectedPlatforms, const AzFramework::PlatformFlags& partiallySelectedPlatforms);
+        void SetSelectedPlatforms(
+            const AzFramework::PlatformFlags& selectedPlatforms,
+            const AzFramework::PlatformFlags& partiallySelectedPlatforms);
 
         AzFramework::PlatformFlags GetSelectedPlatforms();
         AzFramework::PlatformFlags GetPartiallySelectedPlatforms();

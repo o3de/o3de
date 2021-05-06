@@ -22,7 +22,10 @@ const char QtRelativePathPrefix[] = "../";
 
 namespace AssetBundler
 {
-    AddSeedDialog::AddSeedDialog(QWidget* parent, const AzFramework::PlatformFlags& enabledPlatforms, const AZStd::string& platformSpecificCachePath)
+    AddSeedDialog::AddSeedDialog(
+        QWidget* parent,
+        const AzFramework::PlatformFlags& enabledPlatforms,
+        const AZStd::string& platformSpecificCachePath)
         : QDialog(parent)
         , m_platformSpecificCachePath(platformSpecificCachePath.c_str())
     {
@@ -35,7 +38,10 @@ namespace AssetBundler
 
         // Set up Platform selection
         m_ui->platformSelectionWidget->Init(enabledPlatforms);
-        connect(m_ui->platformSelectionWidget, &PlatformSelectionWidget::PlatformsSelected, this, &AddSeedDialog::OnPlatformSelectionChanged);
+        connect(m_ui->platformSelectionWidget,
+            &PlatformSelectionWidget::PlatformsSelected,
+            this,
+            &AddSeedDialog::OnPlatformSelectionChanged);
 
         // Set up Cancel and Create New File buttons
         m_ui->addSeedButton->setEnabled(false);

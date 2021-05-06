@@ -9,23 +9,30 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  */
+#pragma once
 
-#include <Qt/FirstTimeUse.h>
+#if !defined(Q_MOC_RUN)
+#include <ProjectManagerWindow.h>
 
-#include <Qt/ui_FirstTimeUse.h>
+#include <QWidget>
+#endif
 
-namespace ProjectManager
+namespace O3DE::ProjectManager
 {
-    FirstTimeUse::FirstTimeUse(QWidget* parent)
-        : QWidget(parent)
-        , m_ui(new Ui::FirstTimeUseClass())
+    class ScreenWidget
+        : public QWidget
     {
-        m_ui->setupUi(this);
-    }
+    public:
+        explicit ScreenWidget(ProjectManagerWindow* window)
+            : QWidget(window->GetScreenStack())
+            , m_projectManagerWindow(window)
+        {
+        }
 
-    FirstTimeUse::~FirstTimeUse()
-    {
-    }
+    protected:
+        virtual void ConnectSlotsAndSignals() = 0;
 
-    //#include <Qt/moc_FirstTimeUse.cpp>
-} // namespace ProjectManager
+        ProjectManagerWindow* m_projectManagerWindow;
+    };
+
+} // namespace O3DE::ProjectManager

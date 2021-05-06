@@ -16,7 +16,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/IO/Path/Path.h>
 
-#include <Qt/ProjectManagerWindow.h>
+#include <ProjectManagerWindow.h>
 
 #include <QApplication>
 #include <QCoreApplication>
@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
     AzQtComponents::StyleManager styleManager(&app);
     styleManager.initialize(&app, engineRootPath);
 
-    ProjectManager::ProjectManagerWindow window(nullptr, engineRootPath);
+    O3DE::ProjectManager::ProjectManagerWindow window(nullptr, engineRootPath);
     window.show();
 
     return app.exec();

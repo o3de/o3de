@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C24308873
 # Test Case Title : Check that cylinder shape collider collides with terrain
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/24308873
+
 # A cylinder is suspended slightly over PhysX Terrain to check that it collides when dropped
 
 
