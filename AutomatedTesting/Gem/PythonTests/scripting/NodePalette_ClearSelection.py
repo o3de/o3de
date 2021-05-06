@@ -7,10 +7,6 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test case ID: T92562993
-Test Case Title: Clicking the X button on the Search Box clears the currently entered string
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92562993
 """
 
 
@@ -24,11 +20,11 @@ class Tests():
 def NodePalette_ClearSelection():
     """
     Summary:
-     We enter some string in the Node Palette Search box, and click on the X button to verify if the
-     search string got cleared.
+     Clicking the X button on the Search Box clears the currently entered string
 
     Expected Behavior:
-     Clicking the X button on the Search Box clears the currently entered string
+     After entering a string value into the Node Palette's search box and click on
+     the X button, the search box should be cleared
 
     Test Steps:
      1) Open Script Canvas window (Tools > Script Canvas)
@@ -45,14 +41,12 @@ def NodePalette_ClearSelection():
 
     :return: None
     """
-
     from PySide2 import QtWidgets
 
+    import pyside_utils
     from utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
-
-    import pyside_utils
 
     TEST_STRING = "Test String"
 

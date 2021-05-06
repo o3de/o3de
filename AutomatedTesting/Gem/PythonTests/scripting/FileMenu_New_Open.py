@@ -7,23 +7,14 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-
-Test case ID: T92569037
-Test Case Title: File > New Script creates a new script
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92569037
-Test case ID: T92569039
-Test Case Title: File > Open opens the Open... dialog
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92569039
 """
-
-import os
-import sys
 from PySide2 import QtWidgets
-import azlmbr.legacy.general as general
 
 import editor_python_test_tools.pyside_utils as pyside_utils
 from editor_python_test_tools.utils import Report
+
+import azlmbr.legacy.general as general
+
 
 # fmt: off
 class Tests():
@@ -38,7 +29,8 @@ GENERAL_WAIT = 0.5  # seconds
 class TestFileMenuNewOpen:
     """
     Summary:
-     When clicked on File->New, new script opens and File->Open should open the FileBrowser
+     When clicked on File->New, new script opens
+     File->Open should open the FileBrowser
 
     Expected Behavior:
      New and Open actions should work as expected.

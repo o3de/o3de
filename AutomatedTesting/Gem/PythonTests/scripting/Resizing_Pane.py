@@ -7,10 +7,6 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test case ID: C1702829
-Test Case Title: Resizing pane
-URLs of the test case: https://testrail.agscollab.com/index.php?/cases/view/1702829
 """
 
 
@@ -24,7 +20,7 @@ class Tests():
 def Resizing_Pane():
     """
     Summary:
-     The Script Canvas window is opened to verify if Script canvas panes can be resized and scaled
+     The Script Canvas window is opened to verify if Script Canvas panes can be resized and scaled
 
     Expected Behavior:
      The pane is resized and scaled appropriately.
@@ -33,7 +29,7 @@ def Resizing_Pane():
      1) Open Script Canvas window (Tools > Script Canvas)
      2) Restore default layout
      3) Make sure pane is opened
-     4) Resize pane
+     4) Resize pane and verify change
      5) Restore default layout
      6) Close Script Canvas window
 
@@ -45,15 +41,14 @@ def Resizing_Pane():
     :return: None
     """
 
+    from PySide2 import QtWidgets
+
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     import editor_python_test_tools.pyside_utils as pyside_utils
 
     # Open 3D Engine imports
     import azlmbr.legacy.general as general
-
-    # Pyside imports
-    from PySide2 import QtWidgets
 
     PANE_WIDGET = "NodePalette"
     SCALE_INT = 10
@@ -87,7 +82,7 @@ def Resizing_Pane():
 
     Report.result(Tests.open_pane, pane.isVisible())
 
-    # 4) Resize pane
+    # 4) Resize pane and verify change
     initial_size = pane.frameSize()
     pane.resize(initial_size.width() + SCALE_INT, initial_size.height() + SCALE_INT)
     new_size = pane.frameSize()

@@ -7,11 +7,6 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test case ID: C1702834 // C1702823
-Test Case Title: Opening pane // Closing pane
-URLs of the test case: https://testrail.agscollab.com/index.php?/cases/view/1702834 and
-    https://testrail.agscollab.com/index.php?/cases/view/1702823
 """
 
 
@@ -26,10 +21,10 @@ class Tests():
 def Opening_Closing_Pane():
     """
     Summary:
-     The Script Canvas window is opened to verify if Script canvas panes can be opened and closed.
+     The Script Canvas window is opened to verify if Script Canvas panes can be opened and closed.
 
     Expected Behavior:
-     The pane opens and closes successfully.
+     The panes open and close successfully.
 
     Test Steps:
      1) Open Script Canvas window (Tools > Script Canvas)
@@ -115,7 +110,6 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
 
     imports.init()
-
     from editor_python_test_tools.utils import Report
 
     Report.start_test(Opening_Closing_Pane)

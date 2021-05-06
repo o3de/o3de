@@ -7,14 +7,6 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-
-Test case ID: T92569079
-Test Case Title: View > Zoom In zooms the graph in
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92569079
-Test case ID: T92569081
-Test Case Title: View > Zoom In zooms the graph out
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92569081
 """
 
 
@@ -93,7 +85,7 @@ def Graph_ZoomInZoomOut():
     zin = pyside_utils.find_child_by_pattern(sc_main, {"objectName": "action_ZoomIn", "type": QtWidgets.QAction})
     zin.trigger()
     result = helper.wait_for_condition(
-        lambda: curr_m11 < graphics_view.transform().m11() and curr_m22 < graphics_view.transform().m22(), GENERAL_WAIT,
+        lambda: curr_m11 < graphics_view.transform().m11() and curr_m22 < graphics_view.transform().m22(), GENERAL_WAIT
     )
     Report.result(Tests.zoom_in, result)
 
@@ -102,7 +94,7 @@ def Graph_ZoomInZoomOut():
     zout = pyside_utils.find_child_by_pattern(sc_main, {"objectName": "action_ZoomOut", "type": QtWidgets.QAction})
     zout.trigger()
     result = helper.wait_for_condition(
-        lambda: curr_m11 > graphics_view.transform().m11() and curr_m22 > graphics_view.transform().m22(), GENERAL_WAIT,
+        lambda: curr_m11 > graphics_view.transform().m11() and curr_m22 > graphics_view.transform().m22(), GENERAL_WAIT
     )
     Report.result(Tests.zoom_out, result)
 
@@ -114,7 +106,6 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
 
     imports.init()
-
     from utils import Report
 
     Report.start_test(Graph_ZoomInZoomOut)

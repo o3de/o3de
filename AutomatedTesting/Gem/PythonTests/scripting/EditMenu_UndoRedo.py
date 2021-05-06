@@ -7,14 +7,6 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-
-Test case ID: T92569049
-Test Case Title: Edit > Undo undoes the last action
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92569049
-Test case ID: T92569051
-Test Case Title: Edit > Redo redoes the last undone action
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92569051
 """
 
 
@@ -35,8 +27,8 @@ def EditMenu_UndoRedo():
      redo it and verify if the variable is created again.
 
     Expected Behavior:
-     The last action is undone.
-     The last undone action is redone.
+     The last action is undone upon selecting Undo.
+     The last undone action is redone upon selecting Redo.
 
     Test Steps:
      1) Open Script Canvas window (Tools > Script Canvas)
@@ -46,7 +38,7 @@ def EditMenu_UndoRedo():
      5) Create new variable
      6) Verify if the variable is created initially
      7) Trigger Undo action and verify if variable is removed in Variable Manager
-     8) Trigger Redo action and verify if variable is readded in Variable Manager
+     8) Trigger Redo action and verify if variable is re-added in Variable Manager
      9) Close SC window
 
     Note:
@@ -56,12 +48,11 @@ def EditMenu_UndoRedo():
 
     :return: None
     """
-
     from PySide2 import QtWidgets, QtCore
 
-    import azlmbr.legacy.general as general
-
     import pyside_utils
+
+    import azlmbr.legacy.general as general
 
     # 1) Open Script Canvas window
     general.idle_enable(True)
@@ -117,7 +108,6 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
 
     imports.init()
-
     from utils import Report
 
     Report.start_test(EditMenu_UndoRedo)

@@ -7,11 +7,6 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test case ID: C1702825 // C1702831
-Test Case Title: Undocking // Closing script canvas with the pane floating
-URLs of the test case: https://testrail.agscollab.com/index.php?/cases/view/1702825 &
-    https://testrail.agscollab.com/index.php?/cases/view/1702831
 """
 
 
@@ -47,6 +42,8 @@ def UnDockedPane_CloseSCWindow():
     :return: None
     """
 
+    from PySide2 import QtWidgets
+
     # Helper imports
     from utils import Report
     from utils import TestHelper as helper
@@ -54,9 +51,6 @@ def UnDockedPane_CloseSCWindow():
 
     # Open 3D Engine imports
     import azlmbr.legacy.general as general
-
-    # Pyside imports
-    from PySide2 import QtWidgets
 
     TEST_PANE = "NodePalette"  # Chosen most commonly used pane
 
@@ -122,7 +116,6 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
 
     imports.init()
-
     from utils import Report
 
     Report.start_test(UnDockedPane_CloseSCWindow)

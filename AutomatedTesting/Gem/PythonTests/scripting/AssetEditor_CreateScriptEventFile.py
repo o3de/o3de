@@ -7,10 +7,6 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test case ID: T92569013
-Test Case Title: Script Event file can be created
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92569013
 """
 
 
@@ -118,7 +114,6 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
 
     imports.init()
-    
     from utils import Report
 
     Report.start_test(CreateScriptEventFile)

@@ -7,10 +7,6 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test case ID: T92562978
-Test Case Title: Script Canvas Component can be added to an entity
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92562978
 """
 
 
@@ -27,10 +23,10 @@ class Tests():
 def Entity_AddScriptCanvasComponent():
     """
     Summary:
-     verify if Script Canvas component can be added to Entity without any issue
+     Script Canvas Component can be added to an entity
 
     Expected Behavior:
-     Script Canvas Component is added to the entity successfully without issue.
+     Script Canvas Component is added to the entity successfully without issue
 
     Test Steps:
      1) Create temp level
@@ -47,7 +43,6 @@ def Entity_AddScriptCanvasComponent():
 
     :return: None
     """
-
     from utils import TestHelper as helper
     from utils import Tracer
     from editor_entity_utils import EditorEntity

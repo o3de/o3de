@@ -7,30 +7,26 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test case ID: T92569253 // T92569254
-Test Case Title: On Entity Activated // On Entity Deactivated
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92569253 // https://testrail.agscollab.com/index.php?/tests/view/92569254
 """
 
 
 # fmt: off
 class Tests():
-    level_created        = ("Successfully created temp level",      "Failed to create temp level")
-    controller_exists    = ("Successfully found controller entity", "Failed to find controller entity")
-    activated_exists     = ("Successfully found activated entity",  "Failed to find activated entity")
-    deactivated_exists   = ("Successfully found deactivated entity","Failed to find deactivated entity")
-    start_states_correct = ("Start states set up successfully",     "Start states set up incorrectly")
-    game_mode_entered    = ("Successfully entered game mode"        "Failed to enter game mode")
-    lines_found          = ("Successfully found expected prints",   "Failed to find expected prints")
-    game_mode_exited     = ("Successfully exited game mode"         "Failed to exit game mode")
+    level_created        = ("Successfully created temp level",       "Failed to create temp level")
+    controller_exists    = ("Successfully found controller entity",  "Failed to find controller entity")
+    activated_exists     = ("Successfully found activated entity",   "Failed to find activated entity")
+    deactivated_exists   = ("Successfully found deactivated entity", "Failed to find deactivated entity")
+    start_states_correct = ("Start states set up successfully",      "Start states set up incorrectly")
+    game_mode_entered    = ("Successfully entered game mode"         "Failed to enter game mode")
+    lines_found          = ("Successfully found expected prints",    "Failed to find expected prints")
+    game_mode_exited     = ("Successfully exited game mode"          "Failed to exit game mode")
 # fmt: on
 
 
 def OnEntityActivatedDeactivated_PrintMessage():
     """
     Summary:
-     Verify that the On Entity Activation node is working as expected
+     Verify that the On Entity Activated/On Entity Deactivated nodes are working as expected
 
     Expected Behavior:
      Upon entering game mode, the Controller entity will wait 1 second and then activate the ActivationTest
@@ -55,9 +51,9 @@ def OnEntityActivatedDeactivated_PrintMessage():
     """
     import os
 
-    from utils import TestHelper as helper
     from editor_entity_utils import EditorEntity as Entity
     from utils import Report
+    from utils import TestHelper as helper
     from utils import Tracer
 
     import azlmbr.legacy.general as general
@@ -69,33 +65,45 @@ def OnEntityActivatedDeactivated_PrintMessage():
     controller_dict = {
         "name": "Controller",
         "status": "active",
-        "path": os.path.join("ScriptCanvas", "OnEntityActivatedScripts", "controller.scriptcanvas")
+        "path": os.path.join("ScriptCanvas", "OnEntityActivatedScripts", "controller.scriptcanvas"),
     }
     activated_dict = {
         "name": "ActivationTest",
         "status": "inactive",
-        "path": os.path.join("ScriptCanvas", "OnEntityActivatedScripts", "activator.scriptcanvas")
+        "path": os.path.join("ScriptCanvas", "OnEntityActivatedScripts", "activator.scriptcanvas"),
     }
     deactivated_dict = {
         "name": "DeactivationTest",
         "status": "active",
-        "path": os.path.join("ScriptCanvas", "OnEntityActivatedScripts", "deactivator.scriptcanvas")
+        "path": os.path.join("ScriptCanvas", "OnEntityActivatedScripts", "deactivator.scriptcanvas"),
     }
 
     def get_asset(asset_path):
-        return azlmbr.asset.AssetCatalogRequestBus(azlmbr.bus.Broadcast, "GetAssetIdByPath", asset_path, azlmbr.math.Uuid(), False)
+        return azlmbr.asset.AssetCatalogRequestBus(
+            azlmbr.bus.Broadcast, "GetAssetIdByPath", asset_path, azlmbr.math.Uuid(), False
+        )
 
     def setup_level():
-        def create_editor_entity(entity_dict:dict, entity_to_activate:EditorEntity=None, entity_to_deactivate:EditorEntity=None) -> EditorEntity:
+        def create_editor_entity(
+            entity_dict: dict, entity_to_activate: EditorEntity = None, entity_to_deactivate: EditorEntity = None
+        ) -> EditorEntity:
             entity = Entity.create_editor_entity(entity_dict["name"])
             entity.set_start_status(entity_dict["status"])
             sc_component = entity.add_component("Script Canvas")
-            sc_component.set_component_property_value("Script Canvas Asset|Script Canvas Asset", get_asset(entity_dict["path"]))
+            sc_component.set_component_property_value(
+                "Script Canvas Asset|Script Canvas Asset", get_asset(entity_dict["path"])
+            )
 
             if entity_dict["name"] == "Controller":
                 sc_component.get_property_tree()
-                sc_component.set_component_property_value("Properties|Variable Fields|Variables|[0]|Name,Value|Datum|Datum|EntityToActivate", entity_to_activate.id)
-                sc_component.set_component_property_value("Properties|Variable Fields|Variables|[1]|Name,Value|Datum|Datum|EntityToDeactivate", entity_to_deactivate.id)
+                sc_component.set_component_property_value(
+                    "Properties|Variable Fields|Variables|[0]|Name,Value|Datum|Datum|EntityToActivate",
+                    entity_to_activate.id,
+                )
+                sc_component.set_component_property_value(
+                    "Properties|Variable Fields|Variables|[1]|Name,Value|Datum|Datum|EntityToDeactivate",
+                    entity_to_deactivate.id,
+                )
             return entity
 
         activated = create_editor_entity(activated_dict)
@@ -111,7 +119,7 @@ def OnEntityActivatedDeactivated_PrintMessage():
         Report.critical_result(test_tuple, entity.id.IsValid())
         return entity
 
-    def validate_start_state(entity:EditorEntity, expected_state:str):
+    def validate_start_state(entity: EditorEntity, expected_state: str):
         """
         Validate that the starting state of the entity is correct, if it isn't then attempt to rectify and recheck.
         :return: bool: Whether state is set as expected
@@ -177,8 +185,8 @@ def OnEntityActivatedDeactivated_PrintMessage():
 
 if __name__ == "__main__":
     import ImportPathHelper as imports
-    imports.init()
 
+    imports.init()
     from utils import Report
-    
+
     Report.start_test(OnEntityActivatedDeactivated_PrintMessage)

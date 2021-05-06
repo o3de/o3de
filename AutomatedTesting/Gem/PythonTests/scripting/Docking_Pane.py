@@ -7,25 +7,21 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test case ID: C1702824
-Test Case Title: Docking
-URLs of the test case: https://testrail.agscollab.com/index.php?/cases/view/1702824
 """
 
 
 # fmt: off
 class Tests():
-    pane_opened     = ("Pane is opened successfully",    "Failed to open pane")
-    dock_pane       = ("Pane is docked successfully",    "Failed to dock Pane into one or more allowed area")
+    pane_opened = ("Pane is opened successfully", "Failed to open pane")
+    dock_pane   = ("Pane is docked successfully", "Failed to dock Pane into one or more allowed area")
 # fmt: on
 
 
 def Docking_Pane():
     """
     Summary:
-     The Script Canvas window is opened to verify if Script canvas panes can be docked into
-     every possible area of Script Canvas main window.
+     The Script Canvas window is opened to verify if Script canvas panes can be docked into every
+     possible area of Script Canvas main window. (top, bottom, right and left sides of the window)
 
     Expected Behavior:
      The pane docks successfully.
@@ -44,12 +40,6 @@ def Docking_Pane():
 
     :return: None
     """
-
-    # Helper imports
-    import ImportPathHelper as imports
-
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     import editor_python_test_tools.pyside_utils as pyside_utils
@@ -111,7 +101,6 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
 
     imports.init()
-
     from editor_python_test_tools.utils import Report
 
     Report.start_test(Docking_Pane)

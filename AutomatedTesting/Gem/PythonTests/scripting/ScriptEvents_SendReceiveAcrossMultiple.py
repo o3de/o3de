@@ -7,10 +7,6 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test case ID: T92567321
-Test Case Title: Script Events: Can send and receive a script event across multiple entities successfully
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92567321
 """
 
 
@@ -28,7 +24,8 @@ class Tests():
 def ScriptEvents_SendReceiveAcrossMultiple():
     """
     Summary:
-     EntityA and EntityB will be created in a level. Attached to both will be a Script Canvas component. The Script Event created for the test will be sent from EntityA to EntityB.
+     EntityA and EntityB will be created in a level. Attached to both will be a Script Canvas component.
+     The Script Event created for the test will be sent from EntityA to EntityB.
 
     Expected Behavior:
      The output of the Script Event should be printed to the console
@@ -50,7 +47,7 @@ def ScriptEvents_SendReceiveAcrossMultiple():
     :return: None
     """
     import os
-    
+
     from editor_entity_utils import EditorEntity as Entity
     from utils import Report
     from utils import TestHelper as helper
@@ -66,20 +63,19 @@ def ScriptEvents_SendReceiveAcrossMultiple():
         "assetA": os.path.join("ScriptCanvas", f"{ASSET_PREFIX}A.scriptcanvas"),
         "assetB": os.path.join("ScriptCanvas", f"{ASSET_PREFIX}B.scriptcanvas"),
     }
-    sc_for_entities = {
-        "EntityA": asset_paths["assetA"],
-        "EntityB": asset_paths["assetB"]
-    }
+    sc_for_entities = {"EntityA": asset_paths["assetA"], "EntityB": asset_paths["assetB"]}
     EXPECTED_LINES = ["Incoming Message Received"]
 
     def get_asset(asset_path):
-        return azlmbr.asset.AssetCatalogRequestBus(azlmbr.bus.Broadcast, "GetAssetIdByPath", asset_path, azlmbr.math.Uuid(), False)
+        return azlmbr.asset.AssetCatalogRequestBus(
+            azlmbr.bus.Broadcast, "GetAssetIdByPath", asset_path, azlmbr.math.Uuid(), False
+        )
 
     def create_editor_entity(name, sc_asset):
         entity = Entity.create_editor_entity(name)
         sc_comp = entity.add_component("Script Canvas")
         sc_comp.set_component_property_value("Script Canvas Asset|Script Canvas Asset", get_asset(sc_asset))
-        Report.critical_result(Tests.__dict__[name.lower()+"_created"], entity.id.isValid())
+        Report.critical_result(Tests.__dict__[name.lower() + "_created"], entity.id.isValid())
 
     def locate_expected_lines(line_list: list):
         found_lines = [printInfo.message.strip() for printInfo in section_tracer.prints]
@@ -113,8 +109,8 @@ def ScriptEvents_SendReceiveAcrossMultiple():
 
 if __name__ == "__main__":
     import ImportPathHelper as imports
-    imports.init()
 
+    imports.init()
     from utils import Report
 
     Report.start_test(ScriptEvents_SendReceiveAcrossMultiple)

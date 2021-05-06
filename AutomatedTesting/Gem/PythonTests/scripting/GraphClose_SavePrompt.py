@@ -7,25 +7,16 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-
-Test case ID: T92563070
-Test Case Title: Graphs can be closed by clicking X on the Graph name tab
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92563070
-Test case ID: T92563068
-Test Case Title: Save Prompt: User is prompted to save a graph on close after
-creating a new graph
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92563068
 """
 
-import os
-import sys
 from PySide2 import QtWidgets
-import azlmbr.legacy.general as general
 
 import editor_python_test_tools.pyside_utils as pyside_utils
 from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report
+
+import azlmbr.legacy.general as general
+
 
 # fmt: off
 class Tests():
@@ -45,7 +36,8 @@ class TestGraphCloseSavePrompt:
      Save Prompt is opened before closing.
 
     Expected Behavior:
-     New and Open actions should work as expected.
+     The Graph is closed.
+     Upon closing the graph, User is prompted whether or not to save changes.
 
     Test Steps:
      1) Open Script Canvas window (Tools > Script Canvas)

@@ -7,10 +7,6 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test case ID: T92563190
-Test Case Title: A single Entity with two Script Canvas components works properly
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92563190
 """
 
 
@@ -58,6 +54,7 @@ def ScriptCanvas_TwoComponents():
     import hydra_editor_utils as hydra
     from utils import Report
     from utils import Tracer
+
     import azlmbr.legacy.general as general
     import azlmbr.math as math
     import azlmbr.asset as asset
@@ -112,7 +109,6 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
 
     imports.init()
-
     from utils import Report
 
     Report.start_test(ScriptCanvas_TwoComponents)

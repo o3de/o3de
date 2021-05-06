@@ -7,24 +7,19 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test case ID: C1702821 // C1702832
-Test Case Title: Retain visibility, size and location upon Script Canvas restart
-URLs of the test case: https://testrail.agscollab.com/index.php?/cases/view/1702821 and
-    https://testrail.agscollab.com/index.php?/cases/view/1702832
 """
 
 
 # fmt: off
 class Tests():
-    relaunch_sc        = ("Script Canvas window is relaunched",             "Failed to relaunch Script Canvas window")
-    test_panes_visible = ("All the test panes are opened",                  "Failed to open one or more test panes")
-    close_pane_1       = ("Test pane 1 is closed",                          "Failed to close test pane 1")
-    visiblity_retained = ("Test pane retained its visiblity on SC restart", "Failed to retain visiblity of test pane on SC restart")
-    resize_pane_3      = ("Test pane 3 resized successfully",               "Failed to resize Test pane 3")
-    size_retained      = ("Test pane retained its size on SC restart",      "Failed to retain size of test pane on SC restart")
-    location_changed   = ("Location of test pane 2 changed successfully",   "Failed to change locatio of test pane 2")
-    location_retained  = ("Test pane retained its location on SC restart",  "Failed to retain location of test pane on SC restart")
+    relaunch_sc         = ("Script Canvas window is relaunched",              "Failed to relaunch Script Canvas window")
+    test_panes_visible  = ("All the test panes are opened",                   "Failed to open one or more test panes")
+    close_pane_1        = ("Test pane 1 is closed",                           "Failed to close test pane 1")
+    visibility_retained = ("Test pane retained its visibility on SC restart", "Failed to retain visibility of test pane on SC restart")
+    resize_pane_3       = ("Test pane 3 resized successfully",                "Failed to resize Test pane 3")
+    size_retained       = ("Test pane retained its size on SC restart",       "Failed to retain size of test pane on SC restart")
+    location_changed    = ("Location of test pane 2 changed successfully",    "Failed to change location of test pane 2")
+    location_retained   = ("Test pane retained its location on SC restart",   "Failed to retain location of test pane on SC restart")
 # fmt: on
 
 
@@ -35,7 +30,7 @@ def Pane_RetainOnSCRestart():
      upon ScriptCanvas restart.
 
     Expected Behavior:
-     The ScriptCanvas pane retain it's visiblity, size and location upon ScriptCanvas restart.
+     The ScriptCanvas pane retain it's visibility, size and location upon ScriptCanvas restart.
 
     Test Steps:
      1) Open Script Canvas window (Tools > Script Canvas)
@@ -44,7 +39,7 @@ def Pane_RetainOnSCRestart():
      4) Change dock location of test pane 2
      5) Resize test pane 3
      6) Relaunch Script Canvas
-     7) Verify if test pane 1 retain its visiblity
+     7) Verify if test pane 1 retain its visibility
      8) Verify if location of test pane 2 is retained
      9) Verify if size of test pane 3 is retained
      10) Restore default layout and close SC window
@@ -57,6 +52,10 @@ def Pane_RetainOnSCRestart():
     :return: None
     """
 
+    # Pyside imports
+    from PySide2 import QtCore, QtWidgets
+    from PySide2.QtCore import Qt
+
     # Helper imports
     from utils import Report
     from utils import TestHelper as helper
@@ -65,11 +64,6 @@ def Pane_RetainOnSCRestart():
     # Open 3D Engine Imports
     import azlmbr.legacy.general as general
 
-    # Pyside imports
-    from PySide2 import QtCore, QtWidgets
-    from PySide2.QtCore import Qt
-
-    # Constants
     TEST_PANE_1 = "NodePalette"  # test visibility
     TEST_PANE_2 = "VariableManager"  # test location
     TEST_PANE_3 = "NodeInspector"  # test size
@@ -130,10 +124,10 @@ def Pane_RetainOnSCRestart():
         sc_visible = helper.wait_for_condition(lambda: general.is_pane_visible("Script Canvas"), 5.0)
         Report.result(Tests.relaunch_sc, sc_visible)
 
-        # 7) Verify if test pane 1 retain its visiblity
+        # 7) Verify if test pane 1 retain its visibility
         editor_window = pyside_utils.get_editor_main_window()
         sc = editor_window.findChild(QtWidgets.QDockWidget, "Script Canvas")
-        Report.result(Tests.visiblity_retained, not find_pane(sc, TEST_PANE_1).isVisible())
+        Report.result(Tests.visibility_retained, not find_pane(sc, TEST_PANE_1).isVisible())
 
         # 8) Verify if location of test pane 2 is retained
         sc_main = sc.findChild(QtWidgets.QMainWindow)
@@ -158,7 +152,6 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
 
     imports.init()
-
     from utils import Report
 
     Report.start_test(Pane_RetainOnSCRestart)
