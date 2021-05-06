@@ -44,7 +44,7 @@ def ScriptEvents_ReturnSetTypeSuccessfully():
     Note:
      - This test file must be called from the Open 3D Engine Editor command terminal
      - Any passed and failed tests are written to the Editor.log file.
-            Parsing the file or running a log_monitor are required to observe the test results.
+        Parsing the file or running a log_monitor are required to observe the test results.
 
     :return: None
     """
@@ -61,7 +61,7 @@ def ScriptEvents_ReturnSetTypeSuccessfully():
 
     LEVEL_NAME = "tmp_level"
     WAIT_TIME = 3.0  # SECONDS
-    EXPECTED_LINES = ["T92569006_ScriptEvent_Sent", "T92569006_ScriptEvent_Sent"]
+    EXPECTED_LINES = ["T92569006_ScriptEvent_Sent", "T92569006_ScriptEvent_Received"]
     SC_ASSET_PATH = os.path.join("ScriptCanvas", "T92569006_ScriptCanvas.scriptcanvas")
 
     def create_editor_entity(name, sc_asset):
