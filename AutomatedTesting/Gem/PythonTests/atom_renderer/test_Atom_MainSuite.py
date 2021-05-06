@@ -26,7 +26,7 @@ HYDRA_SCRIPT_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scr
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("level", ["auto_test"])
-class TestAtomEditorComponentsSandbox(object):
+class TestAtomEditorComponentsMain(object):
 
     @pytest.mark.test_case_id(
         "C32078130",  # Display Mapper

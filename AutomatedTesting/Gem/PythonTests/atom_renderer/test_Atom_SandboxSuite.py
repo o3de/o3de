@@ -16,7 +16,7 @@ import pytest
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("level", ["auto_test"])
-class TestAtomEditorComponentsMain(object):
+class TestAtomEditorComponentsSandbox(object):
     # It requires at least one test
     def test_Dummy(self, request, editor, level, workspace, project, launcher_platform):
         pass
