@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C5689524
 # Test Case Title : Create multiple entities each with one or more terrain components and verify that you are
 # able to successfully add the PhysX Terrain components to them.
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5689524
+
 
 
 # fmt: off

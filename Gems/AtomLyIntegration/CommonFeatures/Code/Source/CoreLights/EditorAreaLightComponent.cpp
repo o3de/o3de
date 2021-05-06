@@ -336,6 +336,7 @@ namespace AZ
             bool needsFullRefresh = HandleLightTypeChange();
 
             LmbrCentral::EditorShapeComponentRequestsBus::Event(GetEntityId(), &LmbrCentral::EditorShapeComponentRequests::SetShapeColor, m_controller.m_configuration.m_color);
+            LmbrCentral::EditorShapeComponentRequestsBus::Event(GetEntityId(), &LmbrCentral::EditorShapeComponentRequests::SetShapeWireframeColor, m_controller.m_configuration.m_color);
 
             // If photometric unit changes, convert the intensities so the actual intensity doesn't change.
             m_controller.ConvertToIntensityMode(m_controller.m_configuration.m_intensityMode);

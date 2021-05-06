@@ -13,8 +13,6 @@ set(FILES
     Source/AtomBridgeEditorModule.cpp
     Source/AtomBridgeModule.cpp
     Source/AtomBridgeModule.h
-    Source/BuilderComponent.cpp
-    Source/BuilderComponent.h
     Source/Editor/AssetCollectionAsyncLoaderTestComponent.cpp
     Source/Editor/AssetCollectionAsyncLoaderTestComponent.h
 )

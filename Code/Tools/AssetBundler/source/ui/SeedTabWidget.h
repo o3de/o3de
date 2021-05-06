@@ -82,7 +82,9 @@ namespace AssetBundler
 
         void ApplyConfig() override;
 
-        void FileSelectionChanged(const QItemSelection& /*selected*/ = QItemSelection(), const QItemSelection& /*deselected*/ = QItemSelection()) override;
+        void FileSelectionChanged(
+            const QItemSelection& /*selected*/ = QItemSelection(),
+            const QItemSelection& /*deselected*/ = QItemSelection()) override;
 
         void UncheckSelectDefaultSeedListsCheckBox();
 
@@ -124,6 +126,6 @@ namespace AssetBundler
         QSharedPointer<EditSeedDialog> m_editSeedDialog;
         QSharedPointer<AddSeedDialog> m_addSeedDialog;
 
-        bool m_hasWarnings = false;
+        bool m_hasWarningsOrErrors = false;
     };
 } // namespace AssetBundler
