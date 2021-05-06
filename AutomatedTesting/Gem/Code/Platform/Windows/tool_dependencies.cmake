@@ -11,4 +11,7 @@
 
 set(GEM_DEPENDENCIES
     Gem::QtForPython.Editor
+    Gem::AWSCore.Editor
+    Gem::AWSClientAuth
+    Gem::AWSMetrics
 )
