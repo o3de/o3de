@@ -488,7 +488,7 @@ namespace AzToolsFramework
 
         ComponentEditor* GetReorderDropTarget(const QRect& globalRect) const;
         bool ResetDrag(QMouseEvent* event);
-        bool EntityPropertyEditor::FindAllowedRowWidgetReorderDropTarget(const QPoint& globalPos);
+        bool FindAllowedRowWidgetReorderDropTarget(const QPoint& globalPos);
         bool UpdateRowWidgetDrag(const QPoint& localPos, Qt::MouseButtons mouseButtons, const QMimeData* mimeData);      
         PropertyRowWidget* FindPropertyRowWidgetAt(QPoint globalPos);
         bool UpdateDrag(const QPoint& localPos, Qt::MouseButtons mouseButtons, const QMimeData* mimeData);
