@@ -493,6 +493,7 @@ namespace AzToolsFramework
         PropertyRowWidget* FindPropertyRowWidgetAt(QPoint globalPos);
         bool UpdateDrag(const QPoint& localPos, Qt::MouseButtons mouseButtons, const QMimeData* mimeData);
         bool StartDrag(QMouseEvent* event);
+        void EndRowWidgetReorder();
         bool HandleDrop(QDropEvent* event);
         bool HandleDropForComponentTypes(QDropEvent* event);
         bool HandleDropForComponentAssets(QDropEvent* event);
@@ -595,6 +596,7 @@ namespace AzToolsFramework
         QIcon m_emptyIcon;
         QIcon m_clearIcon;
 
+        QIcon m_dragIcon;
         QCursor m_dragCursor;
 
         QStandardItem* m_comboItems[StatusItems];
@@ -643,6 +645,7 @@ namespace AzToolsFramework
 
         bool SelectedEntitiesAreFromSameSourceSliceEntity() const;
 
+        void DragStopped();
         AZ::Entity* GetSelectedEntityById(AZ::EntityId& entityId) const;
     };
 

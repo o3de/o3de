@@ -514,8 +514,8 @@ namespace AzToolsFramework
         m_emptyIcon = QIcon();
         m_clearIcon = QIcon(":/AssetBrowser/Resources/close.png");
 
-        QIcon icon = QIcon(QStringLiteral(":/Cursors/Grabbing.svg"));
-        m_dragCursor = QCursor(icon.pixmap(32), 10, 5);
+        m_dragIcon = QIcon(QStringLiteral(":/Cursors/Grabbing.svg"));
+        m_dragCursor = QCursor(m_dragIcon.pixmap(16), 10, 5);
 
         m_serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
@@ -4260,6 +4260,16 @@ namespace AzToolsFramework
         }
     }
 
+    void EntityPropertyEditor::DragStopped()
+    {
+        if (QApplication::overrideCursor())
+        {
+            QApplication::restoreOverrideCursor();
+        }
+
+        EndRowWidgetReorder();
+    }
+
     bool EntityPropertyEditor::HandleSelectionEvents(QObject* object, QEvent* event)
     {
         // if we're in the middle of a tree rebuild, we can't afford to touch the internals
@@ -4864,7 +4874,9 @@ namespace AzToolsFramework
             QSize imageSize;
             drag->setPixmap(m_reorderRowWidget->createDragImage(QColor("#8E863E"), QColor("#EAECAA"), 0.5f, imageSize));
             drag->setHotSpot(m_dragStartPosition - GetWidgetGlobalRect(m_reorderRowWidget).topLeft());
-            drag->setDragCursor(m_dragCursor.pixmap(), Qt::DropAction::MoveAction);
+            drag->setDragCursor(m_dragIcon.pixmap(32), Qt::DropAction::MoveAction);
+            //Ensure we can tidy up if the drop happens elsewhere.
+            connect(drag, &QObject::destroyed, this, &EntityPropertyEditor::DragStopped);
             drag->exec(Qt::MoveAction, Qt::MoveAction);
             
         }
@@ -4965,6 +4977,15 @@ namespace AzToolsFramework
         m_reorderRowImage = rowWidget->createDragImage(QColor("#8E863E"), QColor("#EAECAA"), 0.5f, m_reorderRowImageSize);
     }
 
+    void EntityPropertyEditor::EndRowWidgetReorder()
+    {
+        m_reorderDropTarget = nullptr;
+        m_reorderRowWidget = nullptr;
+        m_reorderDropTarget = nullptr;
+        m_currentReorderState = EntityPropertyEditor::ReorderState::Inactive;
+        m_overlay->setVisible(false);
+    }
+
     bool EntityPropertyEditor::HandleDrop(QDropEvent* event)
     {
         const QPoint globalPos(mapToGlobal(event->pos()));
@@ -4988,11 +5009,7 @@ namespace AzToolsFramework
 
             event->acceptProposedAction();
 
-            m_reorderDropTarget = nullptr;
-            m_reorderRowWidget = nullptr;
-            m_reorderDropTarget = nullptr;
-            m_currentReorderState = EntityPropertyEditor::ReorderState::Inactive;
-            m_overlay->setVisible(false);
+            EndRowWidgetReorder();
         }
         else
         {

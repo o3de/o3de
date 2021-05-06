@@ -360,7 +360,7 @@ namespace AzToolsFramework
             if (!m_elementRemoveButton)
             {
                 QIcon icon = QIcon(QStringLiteral(":/Cursors/Grab_release.svg"));
-                this->setCursor(QCursor(icon.pixmap(32), 10, 5));
+                this->setCursor(QCursor(icon.pixmap(16), 5, 2));
 
                 static QIcon s_iconRemove(QStringLiteral(":/stylesheet/img/UI20/delete-16.svg"));
                 m_elementRemoveButton = new QToolButton(this);
