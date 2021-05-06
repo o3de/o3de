@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 Test case ID : C14654882
 Test Case Title : Loading level with old PhysX Ragdoll component serialization should not produce asset processor errors
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/14654882
+
 """
 
 

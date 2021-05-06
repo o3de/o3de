@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C18243580
 # Test Case Title : Check that fixed joint constrains 2 bodies
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/18243580
+
 
 # fmt: off
 class Tests:
