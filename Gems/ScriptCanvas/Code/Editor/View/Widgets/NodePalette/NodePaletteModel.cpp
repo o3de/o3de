@@ -57,7 +57,7 @@ namespace
     {
         if (excludeAttributeData)
         {
-            AZ::u64 exclusionFlags = AZ::Script::Attributes::ExcludeFlags::List | AZ::Script::Attributes::ExcludeFlags::ListOnly | AZ::ScriptCanvasAttributes::VariableCreationForbidden;
+            AZ::u64 exclusionFlags = AZ::Script::Attributes::ExcludeFlags::List | AZ::Script::Attributes::ExcludeFlags::ListOnly;
 
             if (typeId == AzToolsFramework::Components::EditorComponentBase::TYPEINFO_Uuid())
             {
@@ -65,17 +65,6 @@ namespace
             }
 
             return (static_cast<AZ::u64>(excludeAttributeData->Get(nullptr)) & exclusionFlags) != 0; // warning C4800: 'AZ::u64': forcing value to bool 'true' or 'false' (performance warning)
-        }
-
-        return false;
-    }
-
-    // Used for changing the node's style to identify as a preview node.
-    bool IsPreviewNode(const AZ::Edit::AttributeData<AZ::Script::Attributes::ExcludeFlags>* excludeAttributeData)
-    {
-        if (excludeAttributeData)
-        {
-            return (static_cast<AZ::u64>(excludeAttributeData->Get(nullptr)) & AZ::Script::Attributes::ExcludeFlags::Preview) != 0; // warning C4800: 'AZ::u64': forcing value to bool 'true' or 'false' (performance warning)
         }
 
         return false;
@@ -147,15 +136,10 @@ namespace
             return;
         }
 
-        if (behaviorClass)
+        if (behaviorClass && !isOverloaded)
         {
             auto excludeMethodAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<AZ::Script::Attributes::ExcludeFlags>*>(AZ::FindAttribute(AZ::Script::Attributes::ExcludeFrom, method.m_attributes));
             if (ShouldExcludeFromNodeList(excludeMethodAttributeData, behaviorClass->m_azRtti ? behaviorClass->m_azRtti->GetTypeId() : behaviorClass->m_typeId))
-            {
-                return;
-            }
-
-            if (!ScriptCanvas::Data::IsAllowedBehaviorClassVariableType(behaviorClass->m_typeId))
             {
                 return;
             }
@@ -198,6 +182,11 @@ namespace
             AZ_Warning("ScriptCanvas", false, "Unable to expose method: %s to ScriptCanvas because: %s",
                 behaviorMethod.m_name.c_str(), isExposableOutcome.GetError().data());
             return;
+        }
+
+        if (!AZ::Internal::IsInScope(behaviorMethod.m_attributes, AZ::Script::Attributes::ScopeFlags::Common))
+        {
+            return; // skip this method
         }
 
         // If the reflected method returns an AZ::Event, reflect it to the SerializeContext
@@ -306,7 +295,6 @@ namespace
         {
             ScriptCanvasEditor::CategoryInformation categoryInfo;
 
-            bool isDeprecated = false;
             AZStd::string categoryPath = classData->m_editData ? classData->m_editData->m_name : classData->m_name;
 
             if (classData->m_editData)
@@ -345,8 +333,6 @@ namespace
             // Children
             for (auto& node : ScriptCanvas::Library::LibraryDefinition::GetNodes(classData->m_typeId))
             {
-                GraphCanvas::NodePaletteTreeItem* nodeParent = nullptr;
-
                 if (HasExcludeFromNodeListAttribute(&serializeContext, node.first))
                 {
                     continue;
@@ -391,7 +377,6 @@ namespace
     void PopulateVariablePalette()
     {
         auto dataRegistry = ScriptCanvas::GetDataRegistry();
-        const auto& typeIdTraitMap = dataRegistry->m_typeIdTraitMap;
 
         for (auto& type : dataRegistry->m_creatableTypes)
         {
@@ -454,14 +439,23 @@ namespace
                 continue;
             }
 
-            if (behaviorProperty->m_getter)
+            if (behaviorProperty->m_getter && !behaviorProperty->m_setter)
             {
-                RegisterGlobalMethod(nodePaletteModel, behaviorContext, *behaviorProperty->m_getter);
+                nodePaletteModel.RegisterGlobalConstant(behaviorContext, *behaviorProperty->m_getter);
             }
-            if (behaviorProperty->m_setter)
+            else
             {
-                RegisterGlobalMethod(nodePaletteModel, behaviorContext, *behaviorProperty->m_setter);
+                if (behaviorProperty->m_getter)
+                {
+                    RegisterGlobalMethod(nodePaletteModel, behaviorContext, *behaviorProperty->m_getter);
+                }
+
+                if (behaviorProperty->m_setter)
+                {
+                    RegisterGlobalMethod(nodePaletteModel, behaviorContext, *behaviorProperty->m_setter);
+                }
             }
+
         }
     }
 
@@ -480,38 +474,24 @@ namespace
                 continue;
             }
 
-            // Only bind Behavior Classes marked with the Scope type of Launcher
+            if (auto excludeFromPointer = AZ::FindAttribute(AZ::Script::Attributes::ExcludeFrom, behaviorClass->m_attributes))
+            {
+                AZ::Script::Attributes::ExcludeFlags excludeFlags{};
+                AZ::AttributeReader(nullptr, excludeFromPointer).Read<AZ::Script::Attributes::ExcludeFlags>(excludeFlags);
+
+                if ((excludeFlags & (AZ::Script::Attributes::ExcludeFlags::List | AZ::Script::Attributes::ExcludeFlags::ListOnly)) != 0)
+                {
+                    continue;
+                }
+            }
+
             if (!AZ::Internal::IsInScope(behaviorClass->m_attributes, AZ::Script::Attributes::ScopeFlags::Launcher))
             {
-                continue; // skip this class
+                continue;
             }
 
             // Objects and Object methods
             {
-                bool canCreate = serializeContext->FindClassData(behaviorClass->m_typeId) != nullptr &&
-                    !HasAttribute(behaviorClass, AZ::ScriptCanvasAttributes::VariableCreationForbidden);
-
-                // In order to create variables, the class must have full memory support
-                canCreate = canCreate &&
-                    (behaviorClass->m_allocate
-                        && behaviorClass->m_cloner
-                        && behaviorClass->m_mover
-                        && behaviorClass->m_destructor
-                        && behaviorClass->m_deallocate);
-
-                if (canCreate)
-                {
-                    // Do not allow variable creation for data that derives from AZ::Component
-                    for (auto base : behaviorClass->m_baseClasses)
-                    {
-                        if (AZ::Component::TYPEINFO_Uuid() == base)
-                        {
-                            canCreate = false;
-                            break;
-                        }
-                    }
-                }
-
                 AZStd::string categoryPath;
 
                 AZStd::string translationContext = ScriptCanvasEditor::TranslationHelper::GetContextName(ScriptCanvasEditor::TranslationContextGroup::ClassMethod, behaviorClass->m_name);
@@ -531,17 +511,14 @@ namespace
                     }
                 }
 
-                if (canCreate)
-                {
-                    auto dataRegistry = ScriptCanvas::GetDataRegistry();
-                    ScriptCanvas::Data::Type type = dataRegistry->m_typeIdTraitMap[ScriptCanvas::Data::eType::BehaviorContextObject].m_dataTraits.GetSCType(behaviorClass->m_typeId);
+                auto dataRegistry = ScriptCanvas::GetDataRegistry();
+                ScriptCanvas::Data::Type type = dataRegistry->m_typeIdTraitMap[ScriptCanvas::Data::eType::BehaviorContextObject].m_dataTraits.GetSCType(behaviorClass->m_typeId);
 
-                    if (type.IsValid())
+                if (type.IsValid())
+                {
+                    if (dataRegistry->m_creatableTypes.contains(type))
                     {
-                        if (!AZ::FindAttribute(AZ::ScriptCanvasAttributes::AllowInternalCreation, behaviorClass->m_attributes))
-                        {
-                            ScriptCanvasEditor::VariablePaletteRequestBus::Broadcast(&ScriptCanvasEditor::VariablePaletteRequests::RegisterVariableType, type);
-                        }
+                        ScriptCanvasEditor::VariablePaletteRequestBus::Broadcast(&ScriptCanvasEditor::VariablePaletteRequests::RegisterVariableType, type);
                     }
                 }
 
@@ -587,7 +564,7 @@ namespace
                         auto attributeData = azdynamic_cast<const AZ::Edit::AttributeData<AZ::Script::Attributes::ExcludeFlags>*>(AZ::FindAttribute(AZ::Script::Attributes::ExcludeFrom, methodIter.second->m_attributes));
                         if (ShouldExcludeFromNodeList(attributeData , {}))
                         {
-                            return;
+                            continue;
                         }
 
                         RegisterMethod(nodePaletteModel, behaviorContext, categoryPath, behaviorClass, methodIter.first, *methodIter.second, behaviorClass->IsMethodOverloaded(methodIter.first));
@@ -956,10 +933,6 @@ namespace ScriptCanvasEditor
 
             customNodeInformation->m_displayName = name;
 
-            bool isToolTipSet(false);
-
-            bool isMissingEntry(false);
-            bool isMissingTooltip(false);
             bool isDeprecated(false);
 
             if (classData && classData->m_editData && classData->m_editData->m_name)
@@ -1103,6 +1076,48 @@ namespace ScriptCanvasEditor
 
             m_registeredNodes.emplace(AZStd::make_pair(nodeIdentifier, methodModelInformation));
         }        
+    }
+
+    void NodePaletteModel::RegisterGlobalConstant(const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorMethod& behaviorMethod)
+    {
+        // Construct Node Identifier using the BehaviorMethod name and the ScriptCanvas Method typeid
+        ScriptCanvas::NodeTypeIdentifier nodeIdentifier =
+            ScriptCanvas::NodeUtils::ConstructGlobalMethodNodeIdentifier(behaviorMethod.m_name);
+
+        // Register the methodModelInformation if not already registered
+        if (auto registerIter = m_registeredNodes.find(nodeIdentifier); registerIter == m_registeredNodes.end())
+        {
+            auto  methodModelInformation = AZStd::make_unique<GlobalMethodNodeModelInformation>();
+            methodModelInformation->m_methodName = behaviorMethod.m_name;
+            methodModelInformation->m_nodeIdentifier = nodeIdentifier;
+
+            methodModelInformation->m_titlePaletteOverride = "MethodNodeTitlePalette";
+
+            methodModelInformation->m_displayName = TranslationHelper::GetGlobalMethodKeyTranslation(methodModelInformation->m_methodName,
+                TranslationItemType::Node, TranslationKeyId::Name);
+            methodModelInformation->m_toolTip = TranslationHelper::GetGlobalMethodKeyTranslation(methodModelInformation->m_methodName,
+                TranslationItemType::Node, TranslationKeyId::Tooltip);
+            methodModelInformation->m_categoryPath = TranslationHelper::GetGlobalMethodKeyTranslation(methodModelInformation->m_methodName,
+                TranslationItemType::Node, TranslationKeyId::Category);
+
+            if (methodModelInformation->m_displayName.empty())
+            {
+                methodModelInformation->m_displayName = methodModelInformation->m_methodName;
+            }
+
+            if (methodModelInformation->m_categoryPath.empty())
+            {
+                methodModelInformation->m_categoryPath = GetCategoryPath(behaviorMethod.m_attributes, behaviorContext);
+                // Default to making the Category for Global Methods to be informative that the method
+                // is registered with the Behavior Context
+                if (methodModelInformation->m_categoryPath.empty())
+                {
+                    methodModelInformation->m_categoryPath = "Constants";
+                }
+            }
+
+            m_registeredNodes.emplace(nodeIdentifier, methodModelInformation.release());
+        }
     }
 
     void NodePaletteModel::RegisterMethodNode(const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorMethod& behaviorMethod)

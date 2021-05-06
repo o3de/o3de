@@ -68,13 +68,7 @@ ly_add_target(
 )
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
-
-    find_package(OpenGL QUIET REQUIRED)
-    # Imported targets (like OpenGL::GL) are scoped to a directory. Add an interface library to make a target with
-    # a global scope
-    add_library(OpenGLInterface INTERFACE)
-    target_link_libraries(OpenGLInterface INTERFACE OpenGL::GL)
-
+    
     ly_add_target(
         NAME EMotionFX.Editor.Static STATIC
         NAMESPACE Gem
@@ -112,7 +106,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::SceneUI
                 AZ::AzToolsFramework
                 Legacy::Editor.Headers
-                OpenGLInterface
+                3rdParty::OpenGLInterface
         COMPILE_DEFINITIONS
             PUBLIC
                 EMFX_EMSTUDIOLYEMBEDDED

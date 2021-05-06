@@ -21,7 +21,7 @@
 namespace CrashHandler
 {
     static const char* defaultCrashFolder = "CrashDB/";
-    static const char* lumberyardProductName = "lumberyard";
+    static const char* O3DEProductName = "Open 3D Engine";
 
     using CrashHandlerAnnotations = std::map<std::string, std::string>;
     using CrashHandlerArguments = std::vector<std::string>;
@@ -48,7 +48,7 @@ namespace CrashHandler
 
         virtual std::string DetermineAppPath() const;
 
-        virtual const char* GetProductName() const { return lumberyardProductName; }
+        virtual const char* GetProductName() const { return O3DEProductName; }
 
         virtual bool CreateCrashHandlerDB(const std::string& reportPath) const;
 

@@ -617,9 +617,9 @@ namespace AzFramework
             // won't free the mutex until the load is complete.
             // So instead, queue the notification until the next tick, so that it doesn't occur within the AssetCatalogRequestBus mutex, and also
             // so that the entire AssetCatalog initialization is complete.
-            AZ::TickBus::QueueFunction([catalogRegistryFile]()
+            AZ::TickBus::QueueFunction([catalogRegistryString = AZStd::string(catalogRegistryFile)]()
                 {
-                    AssetCatalogEventBus::Broadcast(&AssetCatalogEventBus::Events::OnCatalogLoaded, catalogRegistryFile);
+                    AssetCatalogEventBus::Broadcast(&AssetCatalogEventBus::Events::OnCatalogLoaded, catalogRegistryString.c_str());
                 });
         }
     }
@@ -809,7 +809,7 @@ namespace AzFramework
     #if defined(AZ_ENABLE_TRACING)
                 if (message.m_assetType == AZ::Data::s_invalidAssetType)
                 {
-                    AZ_TracePrintf("AssetCatalog", "Registering asset \"%s\" via AssetSystem message, but type is not set.", relativePath.c_str());
+                    AZ_TracePrintf("AssetCatalog", "Registering asset \"%s\" via AssetSystem message, but type is not set.\n", relativePath.c_str());
                 }
     #endif
 

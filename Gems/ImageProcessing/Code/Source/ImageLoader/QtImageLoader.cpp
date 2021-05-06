@@ -33,7 +33,6 @@ namespace ImageProcessing
             }
 
             //convert to format which compatiable our pixel format           
-            QImage::Format format = qimage.format();
             if (qimage.format() != QImage::Format_RGBA8888)
             {
                 qimage = qimage.convertToFormat(QImage::Format_RGBA8888);

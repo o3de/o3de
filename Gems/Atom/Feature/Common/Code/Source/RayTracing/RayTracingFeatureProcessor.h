@@ -68,6 +68,9 @@ namespace AZ
                 // mesh transform
                 AZ::Transform m_transform = AZ::Transform::CreateIdentity();
 
+                // mesh non-uniform scale
+                AZ::Vector3 m_nonUniformScale = AZ::Vector3::CreateOne();
+
                 // flag indicating if the Blas objects in the sub-meshes are built
                 bool m_blasBuilt = false;
             };
@@ -85,11 +88,15 @@ namespace AZ
 
             //! Sets the ray tracing mesh transform
             //! This will cause an update to the RayTracing acceleration structure on the next frame
-            void SetMeshTransform(const ObjectId objectId, const AZ::Transform transform);
+            void SetMeshTransform(const ObjectId objectId, const AZ::Transform transform,
+                const AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne());
 
             //! Retrieves ray tracing data for all meshes in the scene
             const MeshMap& GetMeshes() const { return m_meshes; }
             MeshMap& GetMeshes() { return m_meshes; }
+
+            //! Retrieves the RayTracingSceneSrg
+            Data::Instance<RPI::ShaderResourceGroup> GetRayTracingSceneSrg() const { return m_rayTracingSceneSrg; }
 
             //! Retrieves the RayTracingTlas
             const RHI::Ptr<RHI::RayTracingTlas>& GetTlas() const { return m_tlas; }
@@ -108,9 +115,17 @@ namespace AZ
             //! Retrieves the attachmentId of the Tlas for this scene
             RHI::AttachmentId GetTlasAttachmentId() const { return m_tlasAttachmentId; }
 
+            //! Retrieves the GPU buffer containing information for all ray tracing meshes.
+            const Data::Instance<RPI::Buffer> GetMeshInfoBuffer() const { return m_meshInfoBuffer; }
+
+            //! Updates the RayTracingSceneSrg, called after the TLAS is allocated in the RayTracingAccelerationStructurePass
+            void UpdateRayTracingSceneSrg();
+
         private:
 
             AZ_DISABLE_COPY_MOVE(RayTracingFeatureProcessor);
+
+            void UpdateMeshInfoBuffer();
 
             // flag indicating if RayTracing is enabled, currently based on device support
             bool m_rayTracingEnabled = false;
@@ -125,6 +140,9 @@ namespace AZ
             // ray tracing acceleration structure (TLAS)
             RHI::Ptr<RHI::RayTracingTlas> m_tlas;
 
+            // ray tracing scene Srg
+            Data::Instance<RPI::ShaderResourceGroup> m_rayTracingSceneSrg;
+
             // current revision number of ray tracing data
             uint32_t m_revision = 0;
 
@@ -136,6 +154,22 @@ namespace AZ
 
             // cached TransformServiceFeatureProcessor
             TransformServiceFeatureProcessor* m_transformServiceFeatureProcessor = nullptr;
+
+            // structure for data in the m_meshInfoBuffer, shaders that use the buffer must match this type
+            struct MeshInfo
+            {
+                uint32_t  m_indexOffset;
+                uint32_t  m_positionOffset;
+                uint32_t  m_normalOffset;
+                AZStd::array<float, 4> m_irradianceColor;   // float4
+                AZStd::array<float, 9> m_worldInvTranspose; // float3x3
+            };
+
+            // buffer containing a MeshInfo for each sub-mesh
+            Data::Instance<RPI::Buffer> m_meshInfoBuffer;
+
+            // flag indicating we need to update the mesh info GPU buffer
+            bool m_meshInfoBufferNeedsUpdate = false;
         };
     }
 }

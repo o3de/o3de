@@ -29,7 +29,10 @@ import collections
 from collections import abc
 # import subprocess
 import logging as _logging
-import pathlib
+try:
+    import pathlib
+except:
+    import pathlib2 as pathlib
 from pathlib import *
 import shelve
 # import socket
@@ -103,6 +106,7 @@ _LOGGER.debug('Initializing: {0}.'.format({module_name}))
 
 
 class LegacyFilesConverter(QtWidgets.QDialog):
+
     def __init__(self, parent=None):
         super(LegacyFilesConverter, self).__init__(parent)
 

@@ -26,10 +26,10 @@ class Tests():
 
 critical_shape_check = ("Default shape has more than 0 sides", "default shape has 0 sides")
 
-def run():
+def C29279329_WhiteBox_SetDefaultShape():
     import os
     import sys
-    import WhiteBoxInit as init
+    from Gems.WhiteBox.Editor.Scripts import WhiteBoxInit as init
     import ImportPathHelper as imports
     imports.init()
 
@@ -37,8 +37,9 @@ def run():
     import azlmbr.bus as bus
     import azlmbr.legacy.general as general
     
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    
+    from editor_python_test_tools.utils import TestHelper as helper
 
     def check_shape_result(success_fail_tuple, condition):
         result = Report.result(success_fail_tuple, condition)
@@ -106,4 +107,8 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    import ImportPathHelper as imports
+    imports.init()
+    
+    from editor_python_test_tools.utils import Report
+    Report.start_test(C29279329_WhiteBox_SetDefaultShape)

@@ -1,0 +1,128 @@
+{
+    "configurations": [
+        {
+            "displayName": "Greenwich Park 02",
+            "skyboxImageAsset": {
+                "assetId": {
+                    "guid": "{3B78EA69-7CF0-56A7-A49A-110B88412666}",
+                    "subId": 1000
+                },
+                "assetHint": "lightingpresets/greenwich_park_02_4k_iblskyboxcm.exr.streamingimage"
+            },
+            "iblSpecularImageAsset": {
+                "assetId": {
+                    "guid": "{3B78EA69-7CF0-56A7-A49A-110B88412666}",
+                    "subId": 2000
+                },
+                "assetHint": "lightingpresets/greenwich_park_02_4k_iblskyboxcm_iblspecular.exr.streamingimage"
+            },
+            "iblDiffuseImageAsset": {
+                "assetId": {
+                    "guid": "{3B78EA69-7CF0-56A7-A49A-110B88412666}",
+                    "subId": 3000
+                },
+                "assetHint": "lightingpresets/greenwich_park_02_4k_iblskyboxcm_ibldiffuse.exr.streamingimage"
+            },
+            "iblExposure": 0.0,
+            "skyboxExposure": 0.0,
+            "exposure": {
+                "compensateValue": 0.0,
+                "exposureControlType": 0,
+                "lightAdaptationSensitivity": 0.949999988079071,
+                "lightAdaptationScale": 0.8500000238418579,
+                "lightAdaptationSpeedLimit": 8.0,
+                "darkAdaptationSensitivity": 0.949999988079071,
+                "darkAdaptationScale": 0.8500000238418579,
+                "darkAdaptationSpeedLimit": 8.0,
+                "lightDarkExposureBorder": 0.0,
+                "autoExposureMin": -10.0,
+                "autoExposureMax": 10.0,
+                "eyeAdaptationDelayTime": 0.5
+            },
+            "lights": [
+                {
+                    "direction": [
+                        -1.0,
+                        -0.75,
+                        -0.5
+                    ],
+                    "color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "intensity": 1.0,
+                    "shadowCascadeCount": 4,
+                    "shadowRatioLogarithmUniform": 1.0,
+                    "shadowFarClipDistance": 20.0,
+                    "shadowmapSize": "Size2048",
+                    "enableShadowDebugColoring": false
+                }
+            ],
+            "shadowCatcherOpacity": 0.20000000298023225
+        },
+        {
+            "displayName": "Greenwich Park 02 (Alt)",
+            "skyboxImageAsset": {
+                "assetId": {
+                    "guid": "{3B78EA69-7CF0-56A7-A49A-110B88412666}",
+                    "subId": 3000
+                },
+                "assetHint": "lightingpresets/greenwich_park_02_4k_iblskyboxcm_ibldiffuse.exr.streamingimage"
+            },
+            "iblSpecularImageAsset": {
+                "assetId": {
+                    "guid": "{3B78EA69-7CF0-56A7-A49A-110B88412666}",
+                    "subId": 2000
+                },
+                "assetHint": "lightingpresets/greenwich_park_02_4k_iblskyboxcm_iblspecular.exr.streamingimage"
+            },
+            "iblDiffuseImageAsset": {
+                "assetId": {
+                    "guid": "{3B78EA69-7CF0-56A7-A49A-110B88412666}",
+                    "subId": 3000
+                },
+                "assetHint": "lightingpresets/greenwich_park_02_4k_iblskyboxcm_ibldiffuse.exr.streamingimage"
+            },
+            "iblExposure": 0.0,
+            "skyboxExposure": 0.0,
+            "exposure": {
+                "compensateValue": 0.0,
+                "exposureControlType": 0,
+                "lightAdaptationSensitivity": 0.949999988079071,
+                "lightAdaptationScale": 0.8500000238418579,
+                "lightAdaptationSpeedLimit": 8.0,
+                "darkAdaptationSensitivity": 0.949999988079071,
+                "darkAdaptationScale": 0.8500000238418579,
+                "darkAdaptationSpeedLimit": 8.0,
+                "lightDarkExposureBorder": 0.0,
+                "autoExposureMin": -10.0,
+                "autoExposureMax": 10.0,
+                "eyeAdaptationDelayTime": 0.5
+            },
+            "lights": [
+                {
+                    "direction": [
+                        -1.0,
+                        -0.75,
+                        -0.5
+                    ],
+                    "color": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "intensity": 1.0,
+                    "shadowCascadeCount": 4,
+                    "shadowRatioLogarithmUniform": 1.0,
+                    "shadowFarClipDistance": 20.0,
+                    "shadowmapSize": "Size2048",
+                    "enableShadowDebugColoring": false
+                }
+            ],
+            "shadowCatcherOpacity": 0.10000000149011612
+        }
+    ]
+}

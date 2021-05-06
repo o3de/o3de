@@ -217,7 +217,6 @@ namespace AssetProcessor
                 scanFolderInfo.ScanPath().toStdString().c_str(),
                 scanFolderInfo.GetDisplayName().toStdString().c_str(),
                 scanFolderInfo.GetPortableKey().toStdString().c_str(),
-                scanFolderInfo.GetOutputPrefix().toStdString().c_str(),
                 scanFolderInfo.IsRoot());
             dbConn->SetScanFolder(newScanFolder);
         }
@@ -230,12 +229,12 @@ namespace AssetProcessor
             config.EnablePlatform({ "fandango" ,{ "console", "renderer" } }, false);
             AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
             config.PopulatePlatformsForScanFolder(platforms);
-            //                                               PATH         DisplayName    PortKey      outputfolder root    recurse  platforms     order
-            AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder4"), "subfolder4", "subfolder4", "", false, false, platforms, -6), config, dbConn); // subfolder 4 overrides subfolder3
-            AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder3"), "subfolder3", "subfolder3", "", false, false, platforms, -5), config, dbConn); // subfolder 3 overrides subfolder2
-            AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder2"), "subfolder2", "subfolder2", "", false, true, platforms, -2), config, dbConn); // subfolder 2 overrides subfolder1
-            AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", "", false, true, platforms, -1), config, dbConn); // subfolder1 overrides root
-            AddScanFolder(ScanFolderInfo(tempPath.absolutePath(), "temp", "tempfolder", "", true, false, platforms, 0), config, dbConn); // add the root
+            //                                               PATH         DisplayName    PortKey      root    recurse  platforms     order
+            AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder4"), "subfolder4", "subfolder4", false, false, platforms, -6), config, dbConn); // subfolder 4 overrides subfolder3
+            AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder3"), "subfolder3", "subfolder3", false, false, platforms, -5), config, dbConn); // subfolder 3 overrides subfolder2
+            AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder2"), "subfolder2", "subfolder2", false, true, platforms, -2), config, dbConn); // subfolder 2 overrides subfolder1
+            AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", false, true, platforms, -1), config, dbConn); // subfolder1 overrides root
+            AddScanFolder(ScanFolderInfo(tempPath.absolutePath(), "temp", "tempfolder", true, false, platforms, 0), config, dbConn); // add the root
 
             config.AddMetaDataType("exportsettings", QString());
 

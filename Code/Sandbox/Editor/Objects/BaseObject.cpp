@@ -30,8 +30,6 @@
 #include "DisplaySettings.h"
 #include "Undo/Undo.h"
 #include "UsedResources.h"
-#include "Material/Material.h"
-#include "Material/MaterialManager.h"
 #include "GizmoManager.h"
 #include "Include/IIconManager.h"
 #include "Objects/SelectionGroup.h"
@@ -39,7 +37,8 @@
 #include "ViewManager.h"
 #include "IEditorImpl.h"
 #include "GameEngine.h"
-#include "EditTool.h"
+#include <IEntityRenderState.h>
+#include <IStatObj.h>
 // To use the Andrew's algorithm in order to make convex hull from the points, this header is needed.
 #include "Util/GeometryUtil.h"
 
@@ -165,7 +164,6 @@ private:
     {
         CObjectManager* pObjectManager = static_cast<CObjectManager*>(GetIEditor()->GetObjectManager());
         CBaseObject* pObject = pObjectManager->FindObject(m_attachedObjectGUID);
-        CBaseObject* pParentObject = pObjectManager->FindObject(m_parentObjectGUID);
 
         if (pObject)
         {
@@ -400,7 +398,6 @@ CBaseObject::CBaseObject()
     , m_classDesc(nullptr)
     , m_numRefs(0)
     , m_parent(nullptr)
-    , m_pMaterial(nullptr)
     , m_bInSelectionBox(false)
     , m_pTransformDelegate(nullptr)
     , m_bMatrixInWorldSpace(false)
@@ -440,7 +437,6 @@ bool CBaseObject::Init([[maybe_unused]] IEditor* ie, CBaseObject* prev, [[maybe_
         SetArea(prev->GetArea());
         SetColor(prev->GetColor());
         m_nMaterialLayersMask = prev->m_nMaterialLayersMask;
-        SetMaterial(prev->GetMaterial());
         SetMinSpec(prev->GetMinSpec(), false);
 
         // Copy all basic variables.
@@ -487,12 +483,6 @@ void CBaseObject::Done()
 
     NotifyListeners(CBaseObject::ON_DELETE);
     m_eventListeners.clear();
-
-    if (m_pMaterial)
-    {
-        m_pMaterial->Release();
-        m_pMaterial = NULL;
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -833,9 +823,8 @@ void CBaseObject::GetLocalBounds(AABB& box)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CBaseObject::SetModified(bool boModifiedTransformOnly)
+void CBaseObject::SetModified(bool)
 {
-    ((CObjectManager*)GetObjectManager())->OnObjectModified(this, false, boModifiedTransformOnly);
 }
 
 void CBaseObject::DrawDefault(DisplayContext& dc, const QColor& labelColor)
@@ -1840,11 +1829,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
         SetFrozen(bFrozen);
         SetHidden(bHidden);
 
-        //////////////////////////////////////////////////////////////////////////
-        // Load material.
-        //////////////////////////////////////////////////////////////////////////
-        SetMaterial(mtlName);
-
         ar.SetResolveCallback(this, parentId, AZStd::bind(&CBaseObject::ResolveParent, this, AZStd::placeholders::_1 ));
         ar.SetResolveCallback(this, lookatId, AZStd::bind(&CBaseObject::SetLookAt, this, AZStd::placeholders::_1));
 
@@ -1914,11 +1898,6 @@ void CBaseObject::Serialize(CObjectArchive& ar)
             xmlNode->setAttr("Flags", flags);
         }
 
-        if (m_pMaterial)
-        {
-            xmlNode->setAttr("Material", GetMaterialName().toUtf8().data());
-        }
-
         if (m_nMinSpec != 0)
         {
             xmlNode->setAttr("MinSpec", (uint32)m_nMinSpec);
@@ -1938,11 +1917,6 @@ XmlNodeRef CBaseObject::Export([[maybe_unused]] const QString& levelPath, XmlNod
 
     objNode->setAttr("Type", GetTypeName().toUtf8().data());
     objNode->setAttr("Name", GetName().toUtf8().data());
-
-    if (m_pMaterial)
-    {
-        objNode->setAttr("Material", m_pMaterial->GetName().toUtf8().data());
-    }
 
     Vec3 pos, scale;
     Quat rotate;
@@ -2818,7 +2792,6 @@ void CBaseObject::SetWorldTM(const Matrix34& tm, int flags)
 //////////////////////////////////////////////////////////////////////////
 void CBaseObject::UpdateVisibility(bool bVisible)
 {
-    bool bVisibleWithSpec = bVisible && !IsHiddenBySpec();
     if (bVisible == CheckFlags(OBJFLAG_INVISIBLE))
     {
         if (IObjectManager* objectManager = GetObjectManager())
@@ -2929,7 +2902,6 @@ bool CBaseObject::ConvertFromObject(CBaseObject* object)
     {
         object->GetParent()->AttachChild(this);
     }
-    SetMaterial(object->GetMaterial());
     return true;
 }
 
@@ -2984,14 +2956,6 @@ void CBaseObject::Validate(IErrorReport* report)
         report->ReportError(err);
     }
     //////////////////////////////////////////////////////////////////////////
-
-    if (GetMaterial() != NULL && GetMaterial()->IsDummy())
-    {
-        CErrorRecord err;
-        err.error = QStringLiteral("Material: %1 for object: %2 not found,").arg(GetMaterial()->GetName(), GetName());
-        err.pObject = this;
-        report->ReportError(err);
-    }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -3058,10 +3022,6 @@ void CBaseObject::GatherUsedResources(CUsedResources& resources)
     {
         GetVarBlock()->GatherUsedResources(resources);
     }
-    if (m_pMaterial)
-    {
-        m_pMaterial->GatherUsedResources(resources);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3072,50 +3032,6 @@ bool CBaseObject::IsSimilarObject(CBaseObject* pObject)
         return true;
     }
     return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::SetMaterial(CMaterial* mtl)
-{
-    if (m_pMaterial == mtl)
-    {
-        return;
-    }
-
-    StoreUndo("Assign Material");
-    if (m_pMaterial)
-    {
-        m_pMaterial->Release();
-    }
-    m_pMaterial = mtl;
-    if (m_pMaterial)
-    {
-        m_pMaterial->AddRef();
-    }
-
-    OnMaterialChanged(MATERIALCHANGE_ALL);
-}
-
-//////////////////////////////////////////////////////////////////////////
-QString CBaseObject::GetMaterialName() const
-{
-    if (m_pMaterial)
-    {
-        return m_pMaterial->GetName();
-    }
-    return "";
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::SetMaterial(const QString& materialName)
-{
-    CMaterial* pMaterial = NULL;
-    CMaterialManager* pManager = GetIEditor()->GetMaterialManager();
-    if (!materialName.isEmpty() && pManager != NULL)
-    {
-        pMaterial = pManager->LoadMaterial(materialName);
-    }
-    SetMaterial(pMaterial);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3179,8 +3095,6 @@ bool CBaseObject::IntersectRayMesh(const Vec3& raySrc, const Vec3& rayDir, SRayH
     {
         return false;
     }
-
-    int cntSlots = pRenderNode->GetSlotCount();
 
     Matrix34A worldTM;
     IStatObj* pStatObj = pRenderNode->GetEntityStatObj(0, 0, &worldTM);
@@ -3268,11 +3182,6 @@ ERotationWarningLevel CBaseObject::GetRotationWarningLevel() const
 
 bool CBaseObject::IsSkipSelectionHelper() const
 {
-    CEditTool* pEditTool(GetIEditor()->GetEditTool());
-    if (pEditTool && pEditTool->IsNeedToSkipPivotBoxForObjects())
-    {
-        return true;
-    }
     return false;
 }
 

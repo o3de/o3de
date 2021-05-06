@@ -12,10 +12,14 @@
 #pragma once
 
 #include <IRenderer.h>
-#include <I3DEngine.h> // needed for SRenderingPassInfo definition
 #include <IVideoRenderer.h>
 #include <IImage.h>
 #include <gmock/gmock.h>
+
+struct SRendItemSorter {};
+struct SRenderingPassInfo {};
+struct SClipVolumeBlendInfo {};
+struct SFogVolumeData {};
 
 // the following was generated using google's python script to autogenerate mocks.
 // however, it needed some hand-editing to make it work, so if you add functions to IRenderer,

@@ -17,11 +17,11 @@
                     "SlotType": "Input"
                 },
                 {
-                    "Name": "SpotLightShadowmap",
+                    "Name": "ProjectedShadowmap",
                     "SlotType": "Input"
                 },
                 {
-                    "Name": "SpotLightESM",
+                    "Name": "ProjectedESM",
                     "SlotType": "Input"
                 },
                 {
@@ -82,17 +82,17 @@
                             }
                         },
                         {
-                            "LocalSlot": "SpotLightShadowmap",
+                            "LocalSlot": "ProjectedShadowmap",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SpotLightShadowmap"
+                                "Attachment": "ProjectedShadowmap"
                             }
                         },
                         {
-                            "LocalSlot": "ExponentialShadowmapSpot",
+                            "LocalSlot": "ExponentialShadowmapProjected",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SpotLightESM"
+                                "Attachment": "ProjectedESM"
                             }
                         },
                         {
@@ -121,6 +121,106 @@
                     "PassData": {
                         "$type": "RasterPassData",
                         "DrawListTag": "forward",
+                        "PipelineViewTag": "MainCamera",
+                        "PassSrgAsset": {
+                            "FilePath": "shaderlib/atom/features/pbr/forwardpasssrg.azsli:PassSrg"
+                        }
+                    }
+                },
+                {
+                    "Name": "ForwardSubsurfaceMSAAPass",
+                    "TemplateName": "ForwardSubsurfaceMSAAPassTemplate",
+                    "Connections": [
+                        // Inputs...
+                        {
+                            "LocalSlot": "DirectionalLightShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ExponentialShadowmapDirectional",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalESM"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ProjectedShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "ProjectedShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ExponentialShadowmapProjected",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "ProjectedESM"
+                            }
+                        },
+                        {
+                            "LocalSlot": "TileLightData",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "TileLightData"
+                            }
+                        },
+                        {
+                            "LocalSlot": "LightListRemapped",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LightListRemapped"
+                            }
+                        },
+                        // Input/Outputs...
+                        {
+                            "LocalSlot": "DepthStencilInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencil"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DiffuseOutput",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "DiffuseOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SpecularOutput",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "SpecularOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "AlbedoOutput",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "AlbedoOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SpecularF0Output",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "SpecularF0Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "NormalOutput",
+                            "AttachmentRef": {
+                                "Pass": "ForwardMSAAPass",
+                                "Attachment": "NormalOutput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "forwardWithSubsurfaceOutput",
                         "PipelineViewTag": "MainCamera",
                         "PassSrgAsset": {
                             "FilePath": "shaderlib/atom/features/pbr/forwardpasssrg.azsli:PassSrg"
@@ -181,10 +281,10 @@
                             }
                         },
                         {
-                            "LocalSlot": "ClearCoatNormalInput",
+                            "LocalSlot": "AlbedoInput",
                             "AttachmentRef": {
                                 "Pass": "ForwardMSAAPass",
-                                "Attachment": "ClearCoatNormalOutput"
+                                "Attachment": "AlbedoOutput"
                             }
                         },
                         {
@@ -262,7 +362,7 @@
                         "ShaderAsset": {
                             "FilePath": "Shaders/Reflections/ReflectionComposite.shader"
                         },
-                        "StencilRef": 1,
+                        "StencilRef": 1, // See RenderCommon.h and ReflectionComposite.shader
                         "PipelineViewTag": "MainCamera"
                     }
                 },
@@ -320,7 +420,7 @@
                         {
                             "LocalSlot": "Input",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "ForwardSubsurfaceMSAAPass",
                                 "Attachment": "ScatterDistanceOutput"
                             }
                         }

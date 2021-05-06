@@ -15,7 +15,7 @@
 
 #include <Uploader/CrashUploader.h>
 
-namespace Lumberyard
+namespace O3de
 {
     class GameCrashUploader : public CrashUploader
     {

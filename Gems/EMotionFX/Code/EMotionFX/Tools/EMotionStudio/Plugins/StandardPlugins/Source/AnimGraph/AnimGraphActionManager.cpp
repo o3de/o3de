@@ -99,7 +99,7 @@ namespace EMStudio
         }
         if (!m_pasteItems.empty())
         {
-            m_pasteOperation = PasteOperation::Copy;
+            SetPasteOperation(PasteOperation::Copy);
         }
     }
 
@@ -126,7 +126,7 @@ namespace EMStudio
         }
         if (!m_pasteItems.empty())
         {
-            m_pasteOperation = PasteOperation::Cut;
+            SetPasteOperation(PasteOperation::Cut);
         }
     }
 
@@ -168,8 +168,8 @@ namespace EMStudio
             }
         }
 
-        m_pasteOperation = PasteOperation::None;
         m_pasteItems.clear();
+        SetPasteOperation(PasteOperation::None);
     }
     
     void AnimGraphActionManager::SetEntryState()
@@ -443,6 +443,18 @@ namespace EMStudio
         }
     }
 
+    void AnimGraphActionManager::NavigateToParent()
+    {
+        const QModelIndex parentFocus = m_plugin->GetAnimGraphModel().GetParentFocus();
+        if (parentFocus.isValid())
+        {
+            QModelIndex newParentFocus = parentFocus.model()->parent(parentFocus);
+            if (newParentFocus.isValid())
+            {
+                m_plugin->GetAnimGraphModel().Focus(newParentFocus);
+            }
+        }
+    }
 
     void AnimGraphActionManager::OpenReferencedAnimGraph(EMotionFX::AnimGraphReferenceNode* referenceNode)
     {
@@ -677,5 +689,11 @@ namespace EMStudio
 
             GetCommandManager()->ExecuteCommandGroup(commandGroup, outResult);
         }
+    }
+
+    void AnimGraphActionManager::SetPasteOperation(PasteOperation newOperation)
+    {
+        m_pasteOperation = newOperation;
+        emit PasteStateChanged();
     }
 } // namespace EMStudio

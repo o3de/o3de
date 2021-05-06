@@ -107,7 +107,7 @@ namespace UnitTest
             // create the handle entity
             AZ::Entity* handleEntity = uiScrollBarEntity->FindComponent<UiElementComponent>()->CreateChildElement("Handle");
             handleEntity->Deactivate(); // deactivate to add component
-            auto handleTransform = handleEntity->CreateComponent<UiTransform2dComponent>();
+            handleEntity->CreateComponent<UiTransform2dComponent>();
             handleEntity->CreateComponent<UiImageComponent>();
             handleEntity->Activate();
 

@@ -25,7 +25,7 @@ import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.file_system as fs
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.launchers.launcher_helper as launcher_helper
-from ly_test_tools.lumberyard.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP, ASSET_PROCESSOR_SETTINGS_ROOT_KEY
+from ly_test_tools.o3de.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP, ASSET_PROCESSOR_SETTINGS_ROOT_KEY
 
 # Import fixtures
 from ..ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
@@ -37,7 +37,7 @@ from ..ap_fixtures.ap_fast_scan_setting_backup_fixture import (
 
 
 # Import LyShared
-import ly_test_tools.lumberyard.pipeline_utils as utils
+import ly_test_tools.o3de.pipeline_utils as utils
 
 # Use the following logging pattern to hook all test logging together:
 logger = logging.getLogger(__name__)
@@ -205,10 +205,13 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         env = ap_setup_fixture
         # Copy test assets to new folder in dev folder
         # This new folder will be created outside the default project folder and will not be added as a scan folder
-        # by default, instead we'll modify the temporary AssetProcessorPlatformConfig.ini to add it
         test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], "C4874115",
                                                                                     relative_asset_root='',
                                                                                     add_scan_folder=False)
+        # The AssetProcessor internal _cache_folder path is updated to point at the cache root in order
+        # to allow the comparison between the source asset path of "<source asset path>/C4874115" to match the cache assets
+        # in <cache-folder>
+        asset_processor._cache_folder = os.path.dirname(cache_folder)
         assert os.path.exists(test_assets_folder), f"Test assets folder was not found {test_assets_folder}"
 
         # Run AP Batch
@@ -226,7 +229,6 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
 
         test_scan_folder_root_key = f"{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/ScanFolder C4874115"
         test_scan_folder_params.append(f'--regset="{test_scan_folder_root_key}/watch=@ROOT@/C4874115"')
-        test_scan_folder_params.append(f'--regset="{test_scan_folder_root_key}/output=C4874115"')
         test_scan_folder_params.append(f'--regset="{test_scan_folder_root_key}/recursive=1"')
         test_scan_folder_params.append(f'--regset="{test_scan_folder_root_key}/order=5000"')
 

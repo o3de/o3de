@@ -59,7 +59,7 @@ namespace AZ
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute("AutoExpand", true)
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                        ->DataElement(Edit::UIHandlers::Default, &MaterialRule::m_updateMaterials, "Update materials", "Checking this box will accept changes made in the source file into the Lumberyard asset.")
+                        ->DataElement(Edit::UIHandlers::Default, &MaterialRule::m_updateMaterials, "Update materials", "Checking this box will accept changes made in the source file into the Open 3D Engine asset.")
                         ->DataElement(Edit::UIHandlers::Default, &MaterialRule::m_removeMaterials, "Remove unused materials","Detects and removes material files from the game project that are not present in the source file.");
                 }
             }

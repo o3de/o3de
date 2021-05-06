@@ -83,8 +83,8 @@ namespace PhysX
                     "PhysX Shape Collider", "Creates geometry in the PhysX simulation based on an attached shape component")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/PhysXCollider.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/PhysXCollider.svg")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/PhysXCollider.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorShapeColliderComponent::m_colliderConfig,
@@ -645,7 +645,8 @@ namespace PhysX
         m_currentNonUniformScale = AZ::Vector3::CreateOne();
         AZ::NonUniformScaleRequestBus::EventResult(m_currentNonUniformScale, GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
 
-        if (m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        m_sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        if (m_sceneInterface)
         {
             m_editorSceneHandle = m_sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
         }
@@ -665,6 +666,7 @@ namespace PhysX
         Physics::WorldBodyRequestBus::Handler::BusDisconnect();
         m_colliderDebugDraw.Disconnect();
 
+        m_nonUniformScaleChangedHandler.Disconnect();
         PhysX::ColliderShapeRequestBus::Handler::BusDisconnect();
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
@@ -685,8 +687,14 @@ namespace PhysX
     {
         if (auto* physXSystem = GetPhysXSystem())
         {
-            physXSystem->RegisterSystemConfigurationChangedEvent(m_physXConfigChangedHandler);
-            physXSystem->RegisterOnDefaultMaterialLibraryChangedEventHandler(m_onDefaultMaterialLibraryChangedEventHandler);
+            if (!m_physXConfigChangedHandler.IsConnected())
+            {
+                physXSystem->RegisterSystemConfigurationChangedEvent(m_physXConfigChangedHandler);
+            }
+            if (!m_onDefaultMaterialLibraryChangedEventHandler.IsConnected())
+            {
+                physXSystem->RegisterOnDefaultMaterialLibraryChangedEventHandler(m_onDefaultMaterialLibraryChangedEventHandler);
+            }
         }
     }
 

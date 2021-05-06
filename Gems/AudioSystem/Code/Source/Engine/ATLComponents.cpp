@@ -33,8 +33,8 @@
 #include <IAudioSystemImplementation.h>
 
 #include <MathConversion.h>
-#include <I3DEngine.h>
 #include <IRenderAuxGeom.h>
+#include <IConsole.h>
 
 namespace Audio
 {
@@ -616,7 +616,7 @@ namespace Audio
                 AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::UnregisterAudioObject, implObject);
                 AZ_Error("CAudioObjectManager", eResult == eARS_SUCCESS, "Failed to Unregister Audio Object!");
                 AudioSystemImplementationRequestBus::BroadcastResult(eResult, &AudioSystemImplementationRequestBus::Events::ResetAudioObject, implObject);
-                AZ_Error("CAudioObjectManager", eResult = eARS_SUCCESS, "Failed to Reset Audio Object!");
+                AZ_Error("CAudioObjectManager", eResult == eARS_SUCCESS, "Failed to Reset Audio Object!");
                 AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::DeleteAudioObjectData, implObject);
                 pAudioObject->SetImplDataPtr(nullptr);
             }

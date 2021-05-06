@@ -24,7 +24,8 @@
                 "_mt",
                 "_metalness",
                 "_metallic",
-                "_roughness"
+                "_roughness",
+                "_rough"
             ],
             "PixelFormat": "BC1",
             "IsPowerOf2": true,
@@ -53,7 +54,8 @@
                     "_mt",
                     "_metalness",
                     "_metallic",
-                    "_roughness"
+                    "_roughness",
+                    "_rough"
                 ],
                 "PixelFormat": "ETC2",
                 "IsPowerOf2": true,
@@ -81,7 +83,8 @@
                     "_mt",
                     "_metalness",
                     "_metallic",
-                    "_roughness"
+                    "_roughness",
+                    "_rough"
                 ],
                 "PixelFormat": "ASTC_6x6",
                 "IsPowerOf2": true,
@@ -109,7 +112,8 @@
                     "_mt",
                     "_metalness",
                     "_metallic",
-                    "_roughness"
+                    "_roughness",
+                    "_rough"
                 ],
                 "PixelFormat": "BC1",
                 "IsPowerOf2": true,
@@ -137,7 +141,8 @@
                     "_mt",
                     "_metalness",
                     "_metallic",
-                    "_roughness"
+                    "_roughness",
+                    "_rough"
                 ],
                 "PixelFormat": "BC1",
                 "IsPowerOf2": true,

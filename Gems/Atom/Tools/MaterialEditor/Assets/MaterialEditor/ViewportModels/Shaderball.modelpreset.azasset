@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::ModelPreset",
     "ClassData": {
-        "autoSelect": true,
         "displayName": "Shader Ball",
         "modelAsset": {
             "assetId": {

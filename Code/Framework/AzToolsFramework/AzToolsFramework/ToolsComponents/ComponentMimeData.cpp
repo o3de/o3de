@@ -24,7 +24,7 @@ namespace AzToolsFramework
 {
     QString ComponentTypeMimeData::GetMimeType()
     {
-        return "application/x-amazon-lumberyard-editorcomponenttypes";
+        return "application/x-amazon-o3de-editorcomponenttypes";
     }
 
     AZStd::unique_ptr<QMimeData> ComponentTypeMimeData::Create(const ClassDataContainer& container)
@@ -99,7 +99,7 @@ namespace AzToolsFramework
 
     QString ComponentMimeData::GetMimeType()
     {
-        return "application/x-amazon-lumberyard-editorcomponentdata";
+        return "application/x-amazon-o3de-editorcomponentdata";
     }
 
     AZStd::unique_ptr<QMimeData> ComponentMimeData::Create(const ComponentDataContainer& components)

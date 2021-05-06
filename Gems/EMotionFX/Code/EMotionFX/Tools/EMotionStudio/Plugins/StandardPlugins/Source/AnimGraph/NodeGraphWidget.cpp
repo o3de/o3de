@@ -28,7 +28,6 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewPlugin.h>
-#include <MysticQt/Source/KeyboardShortcutManager.h>
 #include <QMouseEvent>
 #include <QPainter>
 
@@ -155,6 +154,11 @@ namespace EMStudio
     // set the active graph
     void NodeGraphWidget::SetActiveGraph(NodeGraph* graph)
     {
+        if (mActiveGraph == graph)
+        {
+            return;
+        }
+
         if (mActiveGraph)
         {
             mActiveGraph->StopCreateConnection();
@@ -165,6 +169,8 @@ namespace EMStudio
 
         mActiveGraph = graph;
         mMoveNode = nullptr;
+
+        emit ActiveGraphChanged();
     }
 
 
@@ -322,7 +328,7 @@ namespace EMStudio
 
 
     // convert to a global position
-    QPoint NodeGraphWidget::LocalToGlobal(const QPoint& inPoint)
+    QPoint NodeGraphWidget::LocalToGlobal(const QPoint& inPoint) const
     {
         if (mActiveGraph)
         {
@@ -334,7 +340,7 @@ namespace EMStudio
 
 
     // convert to a local position
-    QPoint NodeGraphWidget::GlobalToLocal(const QPoint& inPoint)
+    QPoint NodeGraphWidget::GlobalToLocal(const QPoint& inPoint) const
     {
         if (mActiveGraph)
         {
@@ -345,7 +351,7 @@ namespace EMStudio
     }
 
 
-    QPoint NodeGraphWidget::SnapLocalToGrid(const QPoint& inPoint, uint32 cellSize)
+    QPoint NodeGraphWidget::SnapLocalToGrid(const QPoint& inPoint, uint32 cellSize) const
     {
         MCORE_UNUSED(cellSize);
 
@@ -1187,8 +1193,6 @@ namespace EMStudio
                 mActiveGraph->GetReplaceTransitionInfo(&connection, &oldStartOffset, &oldEndOffset, &oldSourceNode, &oldTargetNode);
                 GraphNode* newDropNode = mActiveGraph->FindNode(event->pos());
 
-                StateConnection* stateConnection = static_cast<StateConnection*>(connection);
-
                 if (newDropNode && newDropNode != oldSourceNode)
                 {
                     if (mActiveGraph->GetIsRepositioningTransitionHead())
@@ -1493,44 +1497,8 @@ namespace EMStudio
         }
         }
 
-        MysticQt::KeyboardShortcutManager* shortcutManager = GetMainWindow()->GetShortcutManager();
-
-        if (shortcutManager->Check(event, "Fit Entire Graph", "Anim Graph Window"))
-        {
-            // zoom to fit the entire graph in view
-            if (mActiveGraph)
-            {
-                mActiveGraph->FitGraphOnScreen(geometry().width(), geometry().height(), GetMousePos());
-            }
-
-            event->accept();
-            return;
-        }
-
-        if (shortcutManager->Check(event, "Zoom On Selected Nodes", "Anim Graph Window"))
-        {
-            if (mActiveGraph)
-            {
-                // try zooming on the selection rect
-                QRect selectionRect = mActiveGraph->CalcRectFromSelection(true);
-                if (selectionRect.isEmpty() == false)
-                {
-                    mActiveGraph->ZoomOnRect(selectionRect, geometry().width(), geometry().height());
-                    //update();
-                }
-                else // zoom on the full scene
-                {
-                    mActiveGraph->FitGraphOnScreen(geometry().width(), geometry().height(), GetMousePos());
-                }
-            }
-
-            event->accept();
-            return;
-        }
-
         event->ignore();
     }
-
 
     // on key release
     void NodeGraphWidget::keyReleaseEvent(QKeyEvent* event)
@@ -1552,20 +1520,6 @@ namespace EMStudio
             mAltPressed       = false;
             break;
         }
-        }
-
-        MysticQt::KeyboardShortcutManager* shortcutManager = GetMainWindow()->GetShortcutManager();
-
-        if (shortcutManager->Check(event, "Fit Entire Graph", "Anim Graph Window"))
-        {
-            event->accept();
-            return;
-        }
-
-        if (shortcutManager->Check(event, "Zoom On Selected Nodes", "Anim Graph Window"))
-        {
-            event->accept();
-            return;
         }
 
         event->ignore();

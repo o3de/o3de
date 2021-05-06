@@ -181,13 +181,29 @@ namespace AssetUtilsInternal
         if (AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(settingsRegistry, AssetProcessorUserSettingsRootKey,
             apSettingsStream, apDumperSettings))
         {
+            constexpr const char* AssetProcessorTmpSetreg = "asset_processor.setreg.tmp";
+            // Write to a temporary file first before renaming it to the final file location
+            // This is needed to reduce the potential of a race condition which occurs when other applications attempt to load settings registry
+            // files from the project's user Registry folder while the AssetProcessor is writing the file out the asset_processor.setreg
+            // at the same time
+            QString tempDirValue;
+            AssetUtilities::CreateTempWorkspace(tempDirValue);
+            QDir tempDir(tempDirValue);
+            AZ::IO::FixedMaxPath tmpSetregPath = tempDir.absoluteFilePath(QString(AssetProcessorTmpSetreg)).toUtf8().data();
 
             constexpr auto modeFlags = AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY | AZ::IO::SystemFile::SF_OPEN_CREATE
                 | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH;
-            if (AZ::IO::SystemFile apSetregFile; apSetregFile.Open(setregPath.c_str(), modeFlags))
+            if (AZ::IO::SystemFile apSetregFile; apSetregFile.Open(tmpSetregPath.c_str(), modeFlags))
             {
                 size_t bytesWritten = apSetregFile.Write(apSettingsJson.data(), apSettingsJson.size());
-                return bytesWritten == apSettingsJson.size();
+                // Close the file so that it can be renamed.
+                apSetregFile.Close();
+                if (bytesWritten == apSettingsJson.size())
+                {
+                    // Create the directory to contain the moved setreg file
+                    AZ::IO::SystemFile::CreateDir(AZ::IO::FixedMaxPath(setregPath.ParentPath()).c_str());
+                    return AZ::IO::SystemFile::Rename(tmpSetregPath.c_str(), setregPath.c_str(), true);
+                }
             }
             else
             {
@@ -546,8 +562,8 @@ namespace AssetUtilities
                 }
                 else
                 {
-                    AZ_Warning(AssetProcessor::ConsoleChannel, false, "Invalid server address, please check the AssetProcessorPlatformConfig.setreg file \
-to ensure that the address is correct. Asset Processor won't be running in server mode.");
+                    AZ_Warning(AssetProcessor::ConsoleChannel, false, "Invalid server address, please check the AssetProcessorPlatformConfig.setreg file"
+                        " to ensure that the address is correct. Asset Processor won't be running in server mode.");
                 }
 
                 break;
@@ -697,7 +713,7 @@ to ensure that the address is correct. Asset Processor won't be running in serve
         }
 
         // Update Settings Registry with new token
-        AZStd::string azNewAllowedList{ newAllowedList.join(', ').toUtf8().constData() };
+        AZStd::string azNewAllowedList{ newAllowedList.join(',').toUtf8().constData() };
         settingsRegistry->Set(allowedListKey, azNewAllowedList);
 
         return AssetUtilsInternal::DumpAssetProcessorUserSettingsToFile(*settingsRegistry, assetProcessorUserSetregPath);
@@ -788,7 +804,7 @@ to ensure that the address is correct. Asset Processor won't be running in serve
             {
                 QThread::msleep(AssetUtilsInternal::g_RetryWaitInterval);
             }
-            
+
         } while (!timer.hasExpired(waitTimeinSeconds * 1000));
 
         AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Failed to create output directory: %s after %d retries.\n", dir.absolutePath().toUtf8().data(), retries);
@@ -1059,7 +1075,7 @@ to ensure that the address is correct. Asset Processor won't be running in serve
     {
         // it is assumed that m_fingerprintFilesList contains the original file and all dependencies, and is in a stable order without duplicates
         // CRC32 is not an effective hash for this purpose, so we will build a string and then use SHA1 on it.
-        
+
         // to avoid resizing and copying repeatedly we will keep track of the largest reserved capacity ever needed for this function, and reserve that much data
         static size_t s_largestFingerprintCapacitySoFar = 1;
         AZStd::string fingerprintString;
@@ -1191,7 +1207,7 @@ to ensure that the address is correct. Asset Processor won't be running in serve
                 // the navigation system can still be writing to this file when hashing begins, causing the EoF marker to change.
                 AZ::IO::SizeType remainingToRead = AZStd::min(readStream.GetLength() - readStream.GetCurPos(), aznumeric_cast<AZ::IO::SizeType>(AZ_ARRAY_SIZE(buffer)));
                 bytesRead = readStream.Read(remainingToRead, buffer);
-                
+
                 if(bytesReadOut)
                 {
                     *bytesReadOut += bytesRead;
@@ -1218,7 +1234,7 @@ to ensure that the address is correct. Asset Processor won't be running in serve
     }
 
     std::uint64_t AdjustTimestamp(QDateTime timestamp)
-    {       
+    {
         timestamp = timestamp.toUTC();
 
         auto timeMilliseconds = timestamp.toMSecsSinceEpoch();
@@ -1234,7 +1250,7 @@ to ensure that the address is correct. Asset Processor won't be running in serve
     {
         bool fileFound = false;
         AssetProcessor::FileStateInfo fileStateInfo;
-        
+
         auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
         if (fileStateInterface)
         {
@@ -1261,7 +1277,7 @@ to ensure that the address is correct. Asset Processor won't be running in serve
             {
                 fileIdentifier = AdjustTimestamp(lastModifiedTime);
             }
-            
+
             // its possible that the dependency has moved to a different file with the same modtime/hash
             // so we add the size of it too.
             // its also possible that it moved to a different file with the same modtime/hash AND size,
@@ -1308,7 +1324,7 @@ to ensure that the address is correct. Asset Processor won't be running in serve
         }
 
         QDir tempRoot;
-        
+
         if (!CreateTempRootFolder(startFolder, tempRoot))
         {
             result.clear();
@@ -1478,7 +1494,14 @@ to ensure that the address is correct. Asset Processor won't be running in serve
             return false;
         }
 #endif
-        return AzToolsFramework::AssetUtils::UpdateFilePathToCorrectCase(rootPath, relativePathFromRoot);
+
+        AZStd::string relPathFromRoot = relativePathFromRoot.toUtf8().constData();
+        if(AzToolsFramework::AssetUtils::UpdateFilePathToCorrectCase(rootPath.toUtf8().constData(), relPathFromRoot))
+        {
+            relativePathFromRoot = QString::fromUtf8(relPathFromRoot.c_str(), aznumeric_cast<int>(relPathFromRoot.size()));
+            return true;
+        }
+        return false;
     }
 
     BuilderFilePatternMatcher::BuilderFilePatternMatcher(const AssetBuilderSDK::AssetBuilderPattern& pattern, const AZ::Uuid& builderDescID)

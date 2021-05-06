@@ -1,0 +1,89 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "Platform pc": {
+                    "tags": "tools,renderer"
+                },
+                "Platform es3": {
+                    "tags": "android,mobile,renderer"
+                },
+                "Platform osx_gl": {
+                    "tags": "tools,renderer"
+                },
+                "Platform server": {
+                    "tags": "server"
+                },
+                "Platforms": {
+                    "es3": "enabled",
+                    "server": "enabled"
+                },
+                "Jobs": {
+                    "minJobs": 1,
+                    "maxJobs": 0
+                },
+                "MetaDataTypes": {
+                    "animsettings": "i_caf",
+                    "Animations/SkeletonList.xml": "i_caf",
+                    "cbc": "abc",
+                    "fbx.assetinfo": "fbx"
+                },
+                "ScanFolder Game": {
+                    "watch": "@PROJECTROOT@",
+                    "display": "@PROJECTROOT@ Scan Folder",
+                    "recursive": 1,
+                    "order": 0
+                },
+                "ScanFolder FeatureTests": {
+                    "watch": "@PROJECTROOT@FeatureTests",
+                    "output": "featuretestsoutputfolder",
+                    "recursive": 0,
+                    "order": 5000
+                },
+                "ScanFolder FeatureTests2": {
+                    "watch": "@PROJECTROOT@FeatureTests",
+                    "output": "featuretestsoutputfolder",
+                    "recursive": 0,
+                    "order": 6000
+                },
+                "Exclude HoldFiles": {
+                    "pattern": ".*\\\\/Levels\\\\/.*_hold\\\\/.*"
+                },
+                "Exclude TempFiles": {
+                    "pattern": ".*\\\\/\\\\$tmp[0-9]*_.*"
+                },
+                "RC i_caf": {
+                    "glob": "*.i_caf",
+                    "params": "defaultparams",
+                    "server": "skip",
+                    "es3": "mobile",
+                    "priority": 5,
+                    "checkServer": true
+                },
+                "RC caf": {
+                    "glob": "*.caf",
+                    "params": "copy",
+                    "renderer": "rendererparams"
+                },
+                "RC mov": {
+                    "glob": "*.mov",
+                    "params": "copy",
+                    "es3": "platformspecificoverride",
+                    "renderer": "rendererparams"
+                },
+                "RC rend": {
+                    "glob": "*.rend",
+                    "renderer": "rendererparams"
+                },
+                "RC alldefault": {
+                    "glob": "*.alldefault"
+                },
+                "RC skipallbutone": {
+                    "glob": "*.files",
+                    "params": "skip",
+                    "server": "copy"
+                }
+            }
+        }
+    }
+}

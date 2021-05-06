@@ -32,11 +32,6 @@ namespace JsonSerializationTests
             return AZStd::make_shared<AZ::JsonSmartPointerSerializer>();
         }
 
-        AZStd::shared_ptr<SmartPointer> CreateDefaultInstance() override
-        {
-            return AZStd::make_shared<SmartPointer>();
-        }
-
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->RegisterGenericType<SmartPointer>();
@@ -50,6 +45,13 @@ namespace JsonSerializationTests
     public:
         using SmartPointer = T<SimpleClass>;
         using Base = SmartPointerBaseTestDescription<SmartPointer>;
+
+        AZStd::shared_ptr<SmartPointer> CreateDefaultInstance() override
+        {
+            auto result = AZStd::make_shared<SmartPointer>();
+            *result = SmartPointer(aznew SimpleClass());
+            return result;
+        }
 
         AZStd::shared_ptr<SmartPointer> CreateFullySetInstance() override
         {
@@ -107,27 +109,19 @@ namespace JsonSerializationTests
     };
 
     template<template<typename...> class T>
-    class SmartPointerSimpleClassWithInstanceTestDescription :
-        public SmartPointerSimpleClassTestDescription<T>
-    {
-    public:
-        using SmartPointer = typename SmartPointerSimpleClassTestDescription<T>::SmartPointer;
-
-        AZStd::shared_ptr<SmartPointer> CreateDefaultInstance() override
-        {
-            auto result = AZStd::make_shared<SmartPointer>();
-            *result = SmartPointer(aznew SimpleClass());
-            return result;
-        }
-    };
-
-    template<template<typename...> class T>
     class SmartPointerSimpleDerivedClassTestDescription :
         public SmartPointerBaseTestDescription<T<BaseClass>>
     {
     public:
         using SmartPointer = T<BaseClass>;
         using Base = SmartPointerBaseTestDescription<SmartPointer>;
+
+        AZStd::shared_ptr<SmartPointer> CreateDefaultInstance() override
+        {
+            auto result = AZStd::make_shared<SmartPointer>();
+            *result = SmartPointer(aznew BaseClass());
+            return result;
+        }
 
         AZStd::shared_ptr<SmartPointer> CreateFullySetInstance() override
         {
@@ -271,6 +265,13 @@ namespace JsonSerializationTests
     public:
         using SmartPointer = T<BaseClass2>;
         using Base = SmartPointerBaseTestDescription<SmartPointer>;
+
+        AZStd::shared_ptr<SmartPointer> CreateDefaultInstance() override
+        {
+            auto result = AZStd::make_shared<SmartPointer>();
+            *result = SmartPointer(aznew BaseClass2());
+            return result;
+        }
 
         AZStd::shared_ptr<SmartPointer> CreateFullySetInstance() override
         {
@@ -424,9 +425,6 @@ namespace JsonSerializationTests
         SmartPointerSimpleClassTestDescription<AZStd::unique_ptr>,
         SmartPointerSimpleClassTestDescription<AZStd::shared_ptr>,
         SmartPointerSimpleClassTestDescription<AZStd::intrusive_ptr>,
-        SmartPointerSimpleClassWithInstanceTestDescription<AZStd::unique_ptr>,
-        SmartPointerSimpleClassWithInstanceTestDescription<AZStd::shared_ptr>,
-        SmartPointerSimpleClassWithInstanceTestDescription<AZStd::intrusive_ptr>,
         // Simple derived class, include single inheritance.
         SmartPointerSimpleDerivedClassTestDescription<AZStd::unique_ptr>,
         SmartPointerSimpleDerivedClassTestDescription<AZStd::shared_ptr>,
@@ -549,6 +547,37 @@ namespace JsonSerializationTests
 
         EXPECT_EQ(JSR::Processing::Completed, result.GetProcessing());
         EXPECT_EQ(nullptr, *instance);
+    }
+
+    TEST_F(JsonSmartPointerSerializerTests, Load_DefaultInstanceToNullptr_ReturnsSuccess)
+    {
+        namespace JSR = AZ::JsonSerializationResult;
+
+        SmartPointer instance;
+        AZStd::shared_ptr<SmartPointer> compare = m_description.CreateDefaultInstance();
+        m_jsonDocument->SetObject();
+
+        JSR::ResultCode result =
+            m_serializer.Load(&instance, azrtti_typeid<SmartPointer>(), *m_jsonDocument, *m_jsonDeserializationContext);
+
+        EXPECT_EQ(JSR::Processing::Completed, result.GetProcessing());
+        EXPECT_NE(nullptr, instance);
+        EXPECT_TRUE(m_description.AreEqual(instance, *compare));
+    }
+
+    TEST_F(JsonSmartPointerSerializerTests, Load_DefaultObjectDoesNotUpdateInstance_ReturnsSuccess)
+    {
+        namespace JSR = AZ::JsonSerializationResult;
+
+        AZStd::shared_ptr<SmartPointer> instance = m_description.CreateFullySetInstance();
+        AZStd::shared_ptr<SmartPointer> compare = m_description.CreateFullySetInstance();
+        m_jsonDocument->SetObject();
+
+        JSR::ResultCode result =
+            m_serializer.Load(instance.get(), azrtti_typeid<SmartPointer>(), *m_jsonDocument, *m_jsonDeserializationContext);
+
+        EXPECT_EQ(JSR::Processing::Completed, result.GetProcessing());
+        EXPECT_TRUE(m_description.AreEqual(*instance, *compare));
     }
 
     TEST_F(JsonSmartPointerSerializerTests, Load_InstanceBeingReplacedWithDifferentType_ReturnsSuccess)
@@ -720,11 +749,64 @@ namespace JsonSerializationTests
         namespace JSR = AZ::JsonSerializationResult;
 
         AZStd::shared_ptr<SmartPointer> instance = m_description.CreateFullySetInstance();
-        SmartPointer nullPtr;
-        JSR::ResultCode result = m_serializer.Store(*m_jsonDocument, instance.get(), &nullPtr,
+        SmartPointer defaultInstance;
+        JSR::ResultCode result = m_serializer.Store(
+            *m_jsonDocument, instance.get(), &defaultInstance,
             azrtti_typeid<SmartPointer>(), *m_jsonSerializationContext);
 
         EXPECT_EQ(JSR::Outcomes::Success, result.GetOutcome());
+    }
+
+    TEST_F(JsonSmartPointerSerializerTests, Store_ValuePointerIsNullPtr_ReturnsSuccessAndStoresNull)
+    {
+        namespace JSR = AZ::JsonSerializationResult;
+
+        SmartPointer instance;
+        AZStd::shared_ptr<SmartPointer> defaultInstance = m_description.CreateFullySetInstance();
+        JSR::ResultCode result = m_serializer.Store(
+            *m_jsonDocument, &instance, defaultInstance.get(), azrtti_typeid<SmartPointer>(), *m_jsonSerializationContext);
+
+        EXPECT_EQ(JSR::Outcomes::Success, result.GetOutcome());
+        EXPECT_TRUE(m_jsonDocument->IsNull());
+    }
+
+    TEST_F(JsonSmartPointerSerializerTests, Store_ValueAndDefaultPointersAreNullPtr_ReturnsSuccessAndStoresNull)
+    {
+        namespace JSR = AZ::JsonSerializationResult;
+
+        SmartPointer instance;
+        SmartPointer defaultInstance;
+        JSR::ResultCode result =
+            m_serializer.Store(*m_jsonDocument, &instance, &defaultInstance, azrtti_typeid<SmartPointer>(), *m_jsonSerializationContext);
+
+        EXPECT_EQ(JSR::Outcomes::DefaultsUsed, result.GetOutcome());
+        EXPECT_TRUE(m_jsonDocument->IsNull());
+    }
+
+    TEST_F(JsonSmartPointerSerializerTests, Store_ValueAndDefaultPointersAreBothDefault_ReturnsSuccess)
+    {
+        namespace JSR = AZ::JsonSerializationResult;
+
+        AZStd::shared_ptr<SmartPointer> instance = m_description.CreateDefaultInstance();
+        AZStd::shared_ptr<SmartPointer> defaultInstance = m_description.CreateDefaultInstance();
+        JSR::ResultCode result =
+            m_serializer.Store(*m_jsonDocument, instance.get(), defaultInstance.get(), azrtti_typeid<SmartPointer>(), *m_jsonSerializationContext);
+
+        EXPECT_EQ(JSR::Outcomes::DefaultsUsed, result.GetOutcome());
+        Expect_ExplicitDefault(*m_jsonDocument);
+    }
+
+    TEST_F(JsonSmartPointerSerializerTests, Store_ValueHasDefaultValuesAndDefaultHasNullPointer_ReturnsSuccess)
+    {
+        namespace JSR = AZ::JsonSerializationResult;
+
+        AZStd::shared_ptr<SmartPointer> instance = m_description.CreateDefaultInstance();
+        SmartPointer defaultInstance;
+        JSR::ResultCode result = m_serializer.Store(
+            *m_jsonDocument, instance.get(), &defaultInstance, azrtti_typeid<SmartPointer>(), *m_jsonSerializationContext);
+
+        EXPECT_EQ(JSR::Outcomes::DefaultsUsed, result.GetOutcome());
+        Expect_ExplicitDefault(*m_jsonDocument);
     }
 
     TEST_F(JsonSmartPointerSerializerTests, Store_DefaultPointerIsOtherClass_CompletesButDoesNotReturnDefaults)
@@ -749,7 +831,7 @@ namespace JsonSerializationTests
         EXPECT_EQ(JSR::Processing::Completed, result.GetProcessing());
     }
 
-    TEST_F(JsonSmartPointerSerializerTests, Store_SaveAnClassThatIsNotReflected_ReturnsUnknown)
+    TEST_F(JsonSmartPointerSerializerTests, Store_ClassThatIsNotReflected_ReturnsUnknown)
     {
         namespace JSR = AZ::JsonSerializationResult;
 

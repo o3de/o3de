@@ -37,7 +37,7 @@ namespace PhysX
                 <Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
                     <Class name="AZ::u64" field="Id" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
                 </Class>
-                <Class name="AZStd::shared_ptr" field="PhysXRagdoll" type="{A3E470C6-D6E0-5A32-9E83-96C379D9E7FA}"/>
+                <Class name="PhysX::Ragdoll" field="PhysXRagdoll" type="{55D477B5-B922-4D3E-89FE-7FB7B9FDD635}"/>
             </Class>
             </ObjectStream>)DELIMITER";
 
@@ -63,19 +63,24 @@ namespace PhysX
         return ragdollState;
     }
 
-    AZStd::unique_ptr<Ragdoll> CreateRagdoll(AzPhysics::SceneHandle sceneHandle)
+    Ragdoll* CreateRagdoll(AzPhysics::SceneHandle sceneHandle)
     {
         Physics::RagdollConfiguration* configuration =
             AZ::Utils::LoadObjectFromFile<Physics::RagdollConfiguration>(AZ::Test::GetCurrentExecutablePath() + "/Test.Assets/Gems/PhysX/Code/Tests/RagdollConfiguration.xml");
 
-        Physics::RagdollState initialState = GetTPose();
-        ParentIndices parentIndices;
+        configuration->m_initialState = GetTPose();
+        configuration->m_parentIndices.reserve(configuration->m_nodes.size());
         for (int i = 0; i < configuration->m_nodes.size(); i++)
         {
-            parentIndices.push_back(RagdollTestData::ParentIndices[i]);
+            configuration->m_parentIndices.push_back(RagdollTestData::ParentIndices[i]);
         }
 
-        return Utils::Characters::CreateRagdoll(*configuration, initialState, parentIndices, sceneHandle);
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            AzPhysics::SimulatedBodyHandle bodyHandle = sceneInterface->AddSimulatedBody(sceneHandle, configuration);
+            return azdynamic_cast<Ragdoll*>(sceneInterface->GetSimulatedBodyFromHandle(sceneHandle, bodyHandle));
+        }
+        return nullptr;
     }
 
 #if AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
@@ -357,7 +362,7 @@ namespace PhysX
 #endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
         AZ::Transform floorTransform = AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisZ(-0.5f));
-        auto floor = PhysX::TestUtils::AddStaticFloorToScene(m_testSceneHandle, floorTransform);
+        PhysX::TestUtils::AddStaticFloorToScene(m_testSceneHandle, floorTransform);
         auto ragdoll = CreateRagdoll(m_testSceneHandle);
         ragdoll->EnableSimulation(GetTPose());
 

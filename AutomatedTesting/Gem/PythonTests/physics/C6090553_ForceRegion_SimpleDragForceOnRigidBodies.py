@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C6090553
 # Test Case Title : Check that force region exerts simple drag force on rigid bodies (negative test)
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/6090553
+
 
 
 # fmt: off
@@ -58,7 +58,7 @@ def C6090553_ForceRegion_SimpleDragForceOnRigidBodies():
       11) Exits game mode and editor
 
     Note:
-    - This test file must be called from the Lumberyard Editor command terminal
+    - This test file must be called from the Open 3D Engine Editor command terminal
     - Any passed and failed tests are written to the Editor.log file.
             Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -72,12 +72,11 @@ def C6090553_ForceRegion_SimpleDragForceOnRigidBodies():
 
     imports.init()
 
-
     import azlmbr.legacy.general as general
     import azlmbr.bus
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     # Holds details about the ball
     class Ball:
@@ -182,5 +181,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C6090553_ForceRegion_SimpleDragForceOnRigidBodies)

@@ -13,13 +13,6 @@
 #include <Utils/AssetHelper.h>
 
 #include <Utils/MeshAssetHelper.h>
-#include <Utils/ActorAssetHelper.h>
-
-#include <platform.h> // Needed for MeshAsset.h
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
-#include <LmbrCentral/Rendering/MeshAsset.h>
-
-#include <Integration/ActorComponentBus.h>
 
 namespace NvCloth
 {
@@ -32,31 +25,9 @@ namespace NvCloth
 
     AZStd::unique_ptr<AssetHelper> AssetHelper::CreateAssetHelper(AZ::EntityId entityId)
     {
-        // Does the entity have an Actor Asset?
-        EMotionFX::ActorInstance* actorInstance = nullptr;
-        EMotionFX::Integration::ActorComponentRequestBus::EventResult(
-            actorInstance, entityId, &EMotionFX::Integration::ActorComponentRequestBus::Events::GetActorInstance);
-        if (actorInstance)
-        {
-            return AZStd::make_unique<ActorAssetHelper>(entityId);
-        }
-
-        AZ::Data::Asset<AZ::Data::AssetData> meshAsset;
-        LmbrCentral::MeshComponentRequestBus::EventResult(
-            meshAsset, entityId, &LmbrCentral::MeshComponentRequestBus::Events::GetMeshAsset);
-        if (!meshAsset)
-        {
-            return nullptr;
-        }
-
-        // Does the entity have a Mesh Asset?
-        if (meshAsset.GetType() == AZ::AzTypeInfo<LmbrCentral::MeshAsset>::Uuid())
-        {
-            return AZStd::make_unique<MeshAssetHelper>(entityId);
-        }
-
-        AZ_Warning("AssetHelper", false, "Unexpected asset type");
-        return nullptr;
+        return entityId.IsValid()
+            ? AZStd::make_unique<MeshAssetHelper>(entityId)
+            : nullptr;
     }
 
     float AssetHelper::ConvertBackstopOffset(float backstopOffset)

@@ -227,7 +227,6 @@ PropertyRow* PropertyOArchive::updateRowPrimitive(const char* name, const char* 
 bool PropertyOArchive::operator()(const Serialization::SStruct& ser, const char* name, const char* label)
 {
     const char* typeName = ser.type().name();
-    size_t size = ser.size();
 
     lastNode_ = currentNode_;
     bool hideChildren = outlineMode_ && currentNode_ && currentNode_->isContainer();
@@ -352,8 +351,6 @@ bool PropertyOArchive::operator()(double& value, const char* name, const char* l
 bool PropertyOArchive::operator()(Serialization::IContainer& ser, const char *name, const char *label)
 {
     const char* elementTypeName = ser.elementType().name();
-    bool fixedSizeContainer = ser.isFixedSize();
-    lastNode_ = currentNode_;
     enterNode(updateRow<PropertyRowContainer>(name, label, ser.containerType().name(), ser));
 
     if (!model_->defaultTypeRegistered(elementTypeName)) {
@@ -442,13 +439,9 @@ bool PropertyOArchive::operator()(Serialization::ICallback& callback, const char
 
 bool PropertyOArchive::operator()(Serialization::Object& obj, const char *name, const char *label)
 {
-    const char* typeName = obj.type().name();
-
     PropertyRowObject* row = 0;
-    if (typeName_.empty())
-         row = updateRow<PropertyRowObject>(name, label, obj.type().name(), obj);
-    else
-         row = updateRow<PropertyRowObject>(name, label, obj.type().name(), obj);
+    row = updateRow<PropertyRowObject>(name, label, obj.type().name(), obj);
+
     lastNode_ = row;
     return true;
 }

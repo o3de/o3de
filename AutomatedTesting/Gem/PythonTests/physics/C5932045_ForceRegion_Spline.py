@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C5932045
 # Test Case Title : Check that force region exerts spline follow force on rigid bodies
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5932045
+
 
 
 # fmt: off
@@ -66,7 +66,7 @@ def C5932045_ForceRegion_Spline():
     8) Close the editor
 
     Note:
-    - This test file must be called from the Lumberyard Editor command terminal
+    - This test file must be called from the Open 3D Engine Editor command terminal
     - Any passed and failed tests are written to the Editor.log file.
             Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -79,9 +79,8 @@ def C5932045_ForceRegion_Spline():
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import itertools
     import azlmbr
@@ -170,5 +169,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C5932045_ForceRegion_Spline)

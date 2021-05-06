@@ -19,8 +19,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     // [GFX TODO][ATOM-2012] adapt to multiple shadowmaps
     Texture2DArray<float> m_directionalLightShadowmap;
     Texture2DArray<float> m_directionalLightExponentialShadowmap;
-    Texture2DArray<float> m_spotLightShadowmaps;
-    Texture2DArray<float> m_spotLightExponentialShadowmap;
+    Texture2DArray<float> m_projectedShadowmaps;
+    Texture2DArray<float> m_projectedExponentialShadowmap;
     Texture2D m_brdfMap;
 
     Sampler LinearSampler

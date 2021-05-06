@@ -28,7 +28,7 @@
 #include <base/logging.h>
 #include <string>
 
-namespace Lumberyard
+namespace O3de
 {
     bool CheckConfirmation(const crashpad::CrashReportDatabase::Report& report);
     void InstallCrashUploader(int& argc, char* argv[]);

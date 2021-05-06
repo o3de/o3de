@@ -27,7 +27,6 @@ namespace AZ
         RHI::ResultCode Query::BeginInternal(RHI::CommandList& commandListBase, RHI::QueryControlFlags flags)
         {
             auto* queryPool = static_cast<const QueryPool*>(GetQueryPool());
-            auto& queryPoolDescriptor = queryPool->GetDescriptor();
             auto& commandList = static_cast<CommandList&>(commandListBase);
             
             vkCmdBeginQuery(

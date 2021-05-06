@@ -19,4 +19,5 @@ set(FILES
     AssetBuilderInfo.cpp
     TraceMessageHook.h
     TraceMessageHook.cpp
+    AssetBuilder.rc
 )

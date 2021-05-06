@@ -30,8 +30,6 @@ ly_add_target(
         PUBLIC
             Include
             Source
-            3rdParty/ACES
-            ../External/ImGui
     COMPILE_DEFINITIONS
         PRIVATE
             IMGUI_DISABLE_OBSOLETE_FUNCTIONS
@@ -59,6 +57,7 @@ ly_add_target(
             ${pal_source_dir}
         PUBLIC
             Include
+            3rdParty/ACES
     COMPILE_DEFINITIONS
         PRIVATE
             IMGUI_DISABLE_OBSOLETE_FUNCTIONS

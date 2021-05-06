@@ -22,19 +22,19 @@ namespace UnitTest
 {
     using ViewportUiDisplay = AzToolsFramework::ViewportUi::Internal::ViewportUiDisplay;
     using ViewportUiElementId = AzToolsFramework::ViewportUi::ViewportUiElementId;
-    using Cluster = AzToolsFramework::ViewportUi::Internal::Cluster;
+    using ButtonGroup = AzToolsFramework::ViewportUi::Internal::ButtonGroup;
     using ButtonId = AzToolsFramework::ViewportUi::ButtonId;
 
-    // child class of ViewportUiManager which exposes the protected cluster and viewport display
+    // child class of ViewportUiManager which exposes the protected button group and viewport display
     class ViewportUiManagerTestable : public AzToolsFramework::ViewportUi::ViewportUiManager
     {
     public:
         ViewportUiManagerTestable() = default;
         ~ViewportUiManagerTestable() = default;
 
-        const AZStd::unordered_map<AzToolsFramework::ViewportUi::ClusterId, AZStd::shared_ptr<Cluster>>& GetClusterMap()
+        const AZStd::unordered_map<AzToolsFramework::ViewportUi::ClusterId, AZStd::shared_ptr<ButtonGroup>>& GetClusterMap()
         {
-            return m_clusters;
+            return m_clusterButtonGroups;
         }
 
         ViewportUiDisplay* GetViewportUiDisplay()
@@ -149,7 +149,6 @@ namespace UnitTest
             });
 
         auto clusterEntry = m_viewportManagerWrapper.GetViewportManager()->GetClusterMap().find(clusterId);
-        auto button = clusterEntry->second->GetButton(buttonId);
 
         // trigger the cluster
         m_viewportManagerWrapper.GetViewportManager()->RegisterClusterEventHandler(clusterId, handler);

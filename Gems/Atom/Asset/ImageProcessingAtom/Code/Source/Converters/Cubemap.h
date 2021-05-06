@@ -14,7 +14,7 @@
 
 namespace ImageProcessingAtom
 {
-    // note: lumberyard is right hand Z up coordinate
+    // note: O3DE is right hand Z up coordinate
     // please don't change the order of the enum since we are using it to match the face id defined in AMD's CubemapGen
     // and they are using left hand Y up coordinate
     enum CubemapFace

@@ -76,11 +76,35 @@ namespace MaterialEditor
     void Behavior::TickInternal([[maybe_unused]] float x, [[maybe_unused]] float y, float z)
     {
         m_distanceToTarget = m_distanceToTarget - z;
+
+        bool isCameraCentered = false;
+        MaterialEditorViewportInputControllerRequestBus::BroadcastResult(
+            isCameraCentered,
+            &MaterialEditorViewportInputControllerRequestBus::Handler::IsCameraCentered);
+
+        // if camera is looking at the model (locked to the model) we don't want to zoom past the model's center
+        if (isCameraCentered)
+        {
+            m_distanceToTarget = AZ::GetMax(m_distanceToTarget, 0.0f);
+        }
+
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, m_cameraEntityId, &AZ::TransformBus::Events::GetLocalTM);
         AZ::Vector3 position = m_targetPosition -
             transform.GetRotation().TransformVector(AZ::Vector3::CreateAxisY(m_distanceToTarget));
         AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetLocalTranslation, position);
+
+        // if camera is not locked to the model, move its focal point so we can free look
+        if (!isCameraCentered)
+        {
+            m_targetPosition += transform.GetRotation().TransformVector(AZ::Vector3::CreateAxisY(z));
+            MaterialEditorViewportInputControllerRequestBus::Broadcast(
+                &MaterialEditorViewportInputControllerRequestBus::Handler::SetTargetPosition,
+                m_targetPosition);
+            MaterialEditorViewportInputControllerRequestBus::BroadcastResult(
+                m_distanceToTarget,
+                &MaterialEditorViewportInputControllerRequestBus::Handler::GetDistanceToTarget);
+        }
     }
 
     float Behavior::GetSensitivityX()

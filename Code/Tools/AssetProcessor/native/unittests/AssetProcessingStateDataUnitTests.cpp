@@ -148,7 +148,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     scanFolders.clear();
 
     //add a scanfolder
-    scanFolder = ScanFolderDatabaseEntry("c:/lumberyard/dev", "dev", "rootportkey", "");
+    scanFolder = ScanFolderDatabaseEntry("c:/O3DE/dev", "dev", "rootportkey");
     UNIT_TEST_EXPECT_TRUE(stateData->SetScanFolder(scanFolder));
     if (scanFolder.m_scanFolderID == AzToolsFramework::AssetDatabase::InvalidEntryId)
     {
@@ -158,7 +158,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
 
     //add the same folder again, should not add another because it already exists, so we should get the same id
     // not only that, but the path should update.
-    ScanFolderDatabaseEntry dupeScanFolder = ScanFolderDatabaseEntry("c:/lumberyard/dev2", "dev", "rootportkey", "");
+    ScanFolderDatabaseEntry dupeScanFolder("c:/O3DE/dev2", "dev", "rootportkey");
     dupeScanFolder.m_scanFolderID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     UNIT_TEST_EXPECT_TRUE(stateData->SetScanFolder(dupeScanFolder));
     if (!(dupeScanFolder == scanFolder))
@@ -174,7 +174,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     scanFolders.clear();
     UNIT_TEST_EXPECT_TRUE(stateData->GetScanFolders(scanFolders));
     UNIT_TEST_EXPECT_TRUE(scanFolders.size() == 1);
-    UNIT_TEST_EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/lumberyard/dev2"));
+    UNIT_TEST_EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/O3DE/dev2"));
     UNIT_TEST_EXPECT_TRUE(ScanFoldersContainScanFolderID(scanFolders, scanFolder.m_scanFolderID));
     UNIT_TEST_EXPECT_TRUE(ScanFoldersContainPortableKey(scanFolders, scanFolder.m_portableKey.c_str()));
     UNIT_TEST_EXPECT_TRUE(ScanFoldersContainPortableKey(scanFolders, "rootportkey"));
@@ -200,7 +200,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     }
 
     //add another folder
-    ScanFolderDatabaseEntry gameScanFolderEntry("c:/lumberyard/game", "game", "gameportkey", "");
+    ScanFolderDatabaseEntry gameScanFolderEntry("c:/O3DE/game", "game", "gameportkey");
     UNIT_TEST_EXPECT_TRUE(stateData->SetScanFolder(gameScanFolderEntry));
     if (gameScanFolderEntry.m_scanFolderID == AzToolsFramework::AssetDatabase::InvalidEntryId ||
         gameScanFolderEntry.m_scanFolderID == scanFolder.m_scanFolderID)
@@ -213,8 +213,8 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     scanFolders.clear();
     UNIT_TEST_EXPECT_TRUE(stateData->GetScanFolders(scanFolders));
     UNIT_TEST_EXPECT_TRUE(scanFolders.size() == 2);
-    UNIT_TEST_EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/lumberyard/dev2"));
-    UNIT_TEST_EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/lumberyard/game"));
+    UNIT_TEST_EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/O3DE/dev2"));
+    UNIT_TEST_EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/O3DE/game"));
     UNIT_TEST_EXPECT_TRUE(ScanFoldersContainScanFolderID(scanFolders, scanFolder.m_scanFolderID));
     UNIT_TEST_EXPECT_TRUE(ScanFoldersContainScanFolderID(scanFolders, gameScanFolderEntry.m_scanFolderID));
 
@@ -226,11 +226,11 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     scanFolders.clear();
     UNIT_TEST_EXPECT_TRUE(stateData->GetScanFolders(scanFolders));
     UNIT_TEST_EXPECT_TRUE(scanFolders.size() == 1);
-    UNIT_TEST_EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/lumberyard/dev2"));
+    UNIT_TEST_EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/O3DE/dev2"));
     UNIT_TEST_EXPECT_TRUE(ScanFoldersContainScanFolderID(scanFolders, scanFolder.m_scanFolderID));
 
     //add another folder again
-    gameScanFolderEntry = ScanFolderDatabaseEntry("c:/lumberyard/game", "game", "gameportkey2", "");
+    gameScanFolderEntry = ScanFolderDatabaseEntry("c:/O3DE/game", "game", "gameportkey2");
     UNIT_TEST_EXPECT_TRUE(stateData->SetScanFolder(gameScanFolderEntry));
     if (gameScanFolderEntry.m_scanFolderID == AzToolsFramework::AssetDatabase::InvalidEntryId ||
         gameScanFolderEntry.m_scanFolderID == scanFolder.m_scanFolderID)
@@ -243,8 +243,8 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     scanFolders.clear();
     UNIT_TEST_EXPECT_TRUE(stateData->GetScanFolders(scanFolders));
     UNIT_TEST_EXPECT_TRUE(scanFolders.size() == 2);
-    UNIT_TEST_EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/lumberyard/dev2"));
-    UNIT_TEST_EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/lumberyard/game"));
+    UNIT_TEST_EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/O3DE/dev2"));
+    UNIT_TEST_EXPECT_TRUE(ScanFoldersContainScanPath(scanFolders, "c:/O3DE/game"));
     UNIT_TEST_EXPECT_TRUE(ScanFoldersContainScanFolderID(scanFolders, scanFolder.m_scanFolderID));
     UNIT_TEST_EXPECT_TRUE(ScanFoldersContainScanFolderID(scanFolders, gameScanFolderEntry.m_scanFolderID));
 
@@ -258,7 +258,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     ///////////////////////////////////////////////////////////
     //setup for sources tests
     //for the rest of the test lets add the original scan folder
-    scanFolder = ScanFolderDatabaseEntry("c:/lumberyard/dev", "dev", "devkey2", "");
+    scanFolder = ScanFolderDatabaseEntry("c:/O3DE/dev", "dev", "devkey2");
     UNIT_TEST_EXPECT_TRUE(stateData->SetScanFolder(scanFolder));
     ///////////////////////////////////////////////////////////
 
@@ -370,7 +370,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     UNIT_TEST_EXPECT_TRUE(SourcesContainSourceGuid(sources, source.m_sourceGuid));
 
     //add the same source again, but change the scan folder.  This should NOT add a new source - even if we don't know what the sourceID is:
-    ScanFolderDatabaseEntry scanfolder2 = ScanFolderDatabaseEntry("c:/lumberyard/dev2", "dev2", "devkey3", "");
+    ScanFolderDatabaseEntry scanfolder2 = ScanFolderDatabaseEntry("c:/O3DE/dev2", "dev2", "devkey3");
     UNIT_TEST_EXPECT_TRUE(stateData->SetScanFolder(scanfolder2));
 
     SourceDatabaseEntry dupeSource2(source);
@@ -554,7 +554,7 @@ void AssetProcessingStateDataUnitTest::DataTest(AssetProcessor::AssetDatabaseCon
     ////////////////////////////////////////////////////////////////
     //Setup for jobs tests by having a scan folder and some sources
     //Add a scan folder
-    scanFolder = ScanFolderDatabaseEntry("c:/lumberyard/dev", "dev", "devkey3", "");
+    scanFolder = ScanFolderDatabaseEntry("c:/O3DE/dev", "dev", "devkey3");
     UNIT_TEST_EXPECT_TRUE(stateData->SetScanFolder(scanFolder));
 
     //Add some sources

@@ -38,7 +38,7 @@ AZ_POP_DISABLE_WARNING
 
 #define NO_BUFFER_OVERRUN PREFAST_SUPPRESS_WARNING(6385 6386)
 #include <ISplines.h>
-#include "../Cry3DEngine/Cry_LegacyPhysUtils.h"
+#include "Cry_LegacyPhysUtils.h"
 
 namespace CurveEditorHelpers
 {
@@ -2133,12 +2133,6 @@ void CCurveEditor::UpdateTangents()
                     SCurveEditorKey& prevKey = curve.m_keys[keyIx - 1];
                     key.m_inTangent = Vec2(prevKey.m_time - key.m_time, prevKey.m_value - key.m_value) / 3.0f;
                     key.m_outTangent = -key.m_outTangent;
-                }
-                else
-                {
-                    SCurveEditorKey& prevKey = curve.m_keys[keyIx - 1];
-                    SCurveEditorKey& nextKey = curve.m_keys[keyIx + 1];
-
                 }
                 key.m_bAdded = false;
             }

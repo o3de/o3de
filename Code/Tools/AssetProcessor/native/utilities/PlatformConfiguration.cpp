@@ -216,10 +216,6 @@ namespace AssetProcessor
         {
             scanFolderEntry.m_watchPath = value;
         }
-        else if (valueName == "output")
-        {
-            scanFolderEntry.m_outputPrefix = value;
-        }
         else if (valueName == "display" && !value.empty())
         {
             scanFolderEntry.m_scanFolderDisplayName = value;
@@ -784,7 +780,6 @@ namespace AssetProcessor
                     scanFolder,
                     AZStd::string::format("ScanFolderParam %zu", idx).c_str(),
                     AZStd::string::format("SF%zu", idx).c_str(),
-                    "",
                     false,
                     true,
                     platforms,
@@ -1079,10 +1074,6 @@ namespace AssetProcessor
                 AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
                 PopulatePlatformsForScanFolder(platforms, includeIdentifiers, excludeIdentifiers);
 
-
-                // Normalize the OutputPrefix to use PosixPathSeparators
-                scanFolderEntry.m_outputPrefix = AZ::IO::PathView(scanFolderEntry.m_outputPrefix, AZ::IO::PosixPathSeparator).LexicallyNormal().String();
-
                 const bool isEngineRoot = scanFolderEntry.m_watchPath == engineRoot;
                 // If the scan folder happens to be the engine root, it is not recursive
                 scanFolderEntry.m_isRecursive = scanFolderEntry.m_isRecursive && !isEngineRoot;
@@ -1093,7 +1084,6 @@ namespace AssetProcessor
                     QString::fromUtf8(scanFolderEntry.m_watchPath.c_str(), aznumeric_cast<int>(scanFolderEntry.m_watchPath.Native().size())),
                     QString::fromUtf8(scanFolderEntry.m_scanFolderDisplayName.c_str(), aznumeric_cast<int>(scanFolderEntry.m_scanFolderDisplayName.size())),
                     QString::fromUtf8(scanFolderEntry.m_scanFolderIdentifier.c_str(), aznumeric_cast<int>(scanFolderEntry.m_scanFolderIdentifier.size())),
-                    QString::fromUtf8(scanFolderEntry.m_outputPrefix.c_str(), aznumeric_cast<int>(scanFolderEntry.m_outputPrefix.size())),
                     isEngineRoot,
                     scanFolderEntry.m_isRecursive,
                     platforms,
@@ -1318,7 +1308,7 @@ namespace AssetProcessor
         }
     }
 
-    bool PlatformConfiguration::ConvertToRelativePath(QString fullFileName, QString& databaseSourceName, QString& scanFolderName, bool includeOutputPrefix) const
+    bool PlatformConfiguration::ConvertToRelativePath(QString fullFileName, QString& databaseSourceName, QString& scanFolderName) const
     {
         const ScanFolderInfo* info = GetScanFolderForFile(fullFileName);
 
@@ -1327,13 +1317,13 @@ namespace AssetProcessor
             scanFolderName = info->ScanPath();
             scanFolderName.replace(AZ_WRONG_DATABASE_SEPARATOR, AZ_CORRECT_DATABASE_SEPARATOR);
 
-            return ConvertToRelativePath(fullFileName, info, databaseSourceName, includeOutputPrefix);
+            return ConvertToRelativePath(fullFileName, info, databaseSourceName);
         }
         // did not find it.
         return false;
     }
 
-    bool PlatformConfiguration::ConvertToRelativePath(const QString& fullFileName, const ScanFolderInfo* scanFolderInfo, QString& databaseSourceName, bool includeOutputPrefix)
+    bool PlatformConfiguration::ConvertToRelativePath(const QString& fullFileName, const ScanFolderInfo* scanFolderInfo, QString& databaseSourceName)
     {
         if(!scanFolderInfo)
         {
@@ -1346,20 +1336,7 @@ namespace AssetProcessor
             relPath = fullFileName.right(fullFileName.length() - scanFolderInfo->ScanPath().length() - 1); // also eat the slash, hence -1
         }
 
-        if ((scanFolderInfo->GetOutputPrefix().isEmpty()) || (!includeOutputPrefix))
-        {
-            databaseSourceName = relPath;
-        }
-        else
-        {
-            databaseSourceName = scanFolderInfo->GetOutputPrefix();
-
-            if (!relPath.isEmpty())
-            {
-                databaseSourceName += '/';
-                databaseSourceName += relPath;
-            }
-        }
+        databaseSourceName = relPath;
 
         databaseSourceName.replace(AZ_WRONG_DATABASE_SEPARATOR, AZ_CORRECT_DATABASE_SEPARATOR);
 
@@ -1380,11 +1357,6 @@ namespace AssetProcessor
                 return QString();
             }
             QString tempRelativeName(relativeName);
-            //if relative path starts with the output prefix than remove it first
-            if (!scanFolderInfo.GetOutputPrefix().isEmpty() && tempRelativeName.startsWith(scanFolderInfo.GetOutputPrefix(), Qt::CaseInsensitive))
-            {
-                tempRelativeName = tempRelativeName.right(tempRelativeName.length() - scanFolderInfo.GetOutputPrefix().length() - 1); // also eat the slash, hence -1
-            }
 
             if ((!scanFolderInfo.RecurseSubFolders()) && (tempRelativeName.contains('/')))
             {
@@ -1418,11 +1390,6 @@ namespace AssetProcessor
 
             QString tempRelativeName(relativeName);
 
-            //if relative path starts with the output prefix than remove it first
-            if (!scanFolderInfo.GetOutputPrefix().isEmpty() && tempRelativeName.startsWith(scanFolderInfo.GetOutputPrefix(), Qt::CaseInsensitive))
-            {
-                tempRelativeName = tempRelativeName.right(tempRelativeName.length() - scanFolderInfo.GetOutputPrefix().length() - 1); // also eat the slash, hence -1
-            }
             if ((!scanFolderInfo.RecurseSubFolders()) && (tempRelativeName.contains('/')))
             {
                 // the name is a deeper relative path, but we don't recurse this scan folder, so it can't win
@@ -1521,10 +1488,10 @@ namespace AssetProcessor
     //! Given a scan folder path, get its complete info
     const AssetProcessor::ScanFolderInfo* PlatformConfiguration::GetScanFolderByPath(const QString& scanFolderPath) const
     {
-        QString normalized = AssetUtilities::NormalizeFilePath(scanFolderPath);
+        AZ::IO::Path scanFolderPathView(scanFolderPath.toUtf8().constData());
         for (int pathIdx = 0; pathIdx < m_scanFolders.size(); ++pathIdx)
         {
-            if (QString::compare(m_scanFolders[pathIdx].ScanPath(), normalized, Qt::CaseSensitive) == 0)
+            if (AZ::IO::PathView(m_scanFolders[pathIdx].ScanPath().toUtf8().constData()) == scanFolderPathView)
             {
                 return &m_scanFolders[pathIdx];
             }
@@ -1566,7 +1533,6 @@ namespace AssetProcessor
                 //      Watched folder: (absolute path to the gem /Assets/ folder) MUST BE CORRECT CASE
                 //      Display name:   "Gems/GemName/Assets" // uppercase, for human eyes
                 //      portable Key:   "gemassets-(UUID Of Gem)"
-                //      Output Prefix:  "" // empty string - this means put it in @assets@ as per default
                 //      Is Root:        False
                 //      Recursive:      True
                 QString gemFolder = gemDir.absoluteFilePath(AzFramework::GemInfo::GetGemAssetFolder());
@@ -1576,7 +1542,6 @@ namespace AssetProcessor
 
                 QString assetBrowserDisplayName = AzFramework::GemInfo::GetGemAssetFolder(); // Gems always use assets folder as their displayname...
                 QString portableKey = QString("gemassets-%1").arg(gemNameAsUuid);
-                QString outputPrefix; // empty intentionally here
                 bool isRoot = false;
                 bool isRecursive = true;
                 gemOrder++;
@@ -1586,7 +1551,6 @@ namespace AssetProcessor
                     gemFolder,
                     assetBrowserDisplayName,
                     portableKey,
-                    outputPrefix,
                     isRoot,
                     isRecursive,
                     platforms,

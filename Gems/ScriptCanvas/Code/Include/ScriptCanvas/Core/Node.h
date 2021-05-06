@@ -700,6 +700,8 @@ namespace ScriptCanvas
         // override if necessary, usually only when the node's execution topology dramatically alters at edit-time in a way that is not generally parseable 
         ConstSlotsOutcome GetSlotsInExecutionThreadByType(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot = nullptr) const;
 
+        size_t GetOutIndex(const Slot& slot) const;
+
         // override if necessary, only used by NodeableNodes which can hide branched outs and rename them later
         virtual AZ::Outcome<AZStd::string> GetInternalOutKey(const Slot& slot) const;
 
@@ -750,6 +752,8 @@ namespace ScriptCanvas
         virtual const Slot* GetEBusDisconnectSlot() const;
 
         virtual AZStd::string GetEBusName() const;
+
+        virtual AZStd::optional<size_t> GetEventIndex(AZStd::string eventName) const;
 
         virtual AZStd::vector<SlotId> GetEventSlotIds() const;
 
@@ -975,7 +979,7 @@ protected:
         virtual void OnInputSignal(const SlotId& /*slot*/) {}
 
         //! Signal sent once the OwningScriptCanvasId is set.
-        virtual void OnGraphSet() {};
+        virtual void OnGraphSet() {}
 
         //! Signal sent when a Dynamic Group Display type is changed
         void SignalSlotDisplayTypeChanged(const SlotId& slotId, const Data::Type& dataType);

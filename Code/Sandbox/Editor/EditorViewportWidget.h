@@ -28,7 +28,7 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/optional.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
@@ -196,15 +196,15 @@ public:
     bool ShowGrid();
     bool AngleSnappingEnabled();
     float AngleStep();
-    QPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition);
+    AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition);
 
     // AzToolsFramework::ViewportFreezeRequestBus
     bool IsViewportInputFrozen() override;
     void FreezeViewportInput(bool freeze) override;
 
     // AzToolsFramework::MainEditorViewportInteractionRequestBus
-    AZ::EntityId PickEntity(const QPoint& point) override;
-    AZ::Vector3 PickTerrain(const QPoint& point) override;
+    AZ::EntityId PickEntity(const AzFramework::ScreenPoint& point) override;
+    AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) override;
     float TerrainHeight(const AZ::Vector2& position) override;
     void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntitiesOut) override;
     bool ShowingWorldSpace() override;
@@ -234,11 +234,8 @@ public:
     QPoint ViewportToWidget(const QPoint& point) const;
     QSize WidgetToViewport(const QSize& size) const;
 
-    /// Take raw input and create a final mouse interaction.
-    /// @attention Do not map **point** from widget to viewport explicitly,
-    /// this is handled internally by BuildMouseInteraction - just pass directly.
     AzToolsFramework::ViewportInteraction::MouseInteraction BuildMouseInteraction(
-        Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, const QPoint& point);
+        Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, const QPoint& point) override;
 
     void SetPlayerPos()
     {
@@ -354,26 +351,6 @@ protected:
 
     void RenderAll();
 
-    struct SPreviousContext
-    {
-        CCamera rendererCamera;
-        HWND window;
-        int width;
-        int height;
-        bool mainViewport;
-    };
-
-    SPreviousContext m_preWidgetContext;
-
-    // Create an auto-sized render context that is sized based on the Editor's current
-    // viewport.
-    SPreviousContext SetCurrentContext() const;
-
-    SPreviousContext SetCurrentContext(int newWidth, int newHeight) const;
-    void RestorePreviousContext(const SPreviousContext& x) const;
-
-    void PreWidgetRendering() override;
-    void PostWidgetRendering() override;
     void OnBeginPrepareRender() override;
 
     // Update the safe frame, safe action, safe title, and borders rectangles based on
@@ -418,9 +395,6 @@ protected:
     };
     void ResetToViewSourceType(const ViewSourceType& viewSourType);
 
-    //! Assigned renderer.
-    IRenderer*  m_renderer = nullptr;
-    I3DEngine*  m_engine = nullptr;
     bool m_bRenderContextCreated = false;
     bool m_bInRotateMode = false;
     bool m_bInMoveMode = false;
@@ -507,10 +481,6 @@ protected:
     OBB m_GroundOBB;
     Vec3 m_GroundOBBPos;
 
-    //-------------------------------------------
-    // Render options.
-    bool m_bRenderStats = true;
-
     // Index of camera objects.
     mutable GUID m_cameraObjectId;
     mutable AZ::EntityId m_viewEntityId;
@@ -574,16 +544,16 @@ protected:
     bool CheckRespondToInput() const;
 
     // AzFramework::InputSystemCursorConstraintRequestBus
-    void* GetSystemCursorConstraintWindow() const override { return renderOverlayHWND(); }
+    void* GetSystemCursorConstraintWindow() const override;
 
     void BuildDragDropContext(AzQtComponents::ViewportDragContext& context, const QPoint& pt) override;
 
 private:
+    void SetAsActiveViewport();
     void PushDisableRendering();
     void PopDisableRendering();
     bool IsRenderingDisabled() const;
-    AzToolsFramework::ViewportInteraction::MousePick BuildMousePickInternal(
-        const QPoint& point) const;
+    AzToolsFramework::ViewportInteraction::MousePick BuildMousePickInternal(const QPoint& point) const;
 
     void RestoreViewportAfterGameMode();
     void UpdateCameraFromViewportContext();
@@ -606,13 +576,10 @@ private:
 
     AzFramework::EntityVisibilityQuery m_entityVisibilityQuery;
 
-    SPreviousContext m_previousContext;
     QSet<int> m_keyDown;
 
     bool m_freezeViewportInput = false;
 
-    size_t m_cameraSetForWidgetRenderingCount = 0; ///< How many calls to PreWidgetRendering happened before
-                                                   ///< subsequent calls to PostWidetRendering.
     AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager;
 
     // Used to prevent circular set camera events
@@ -626,6 +593,8 @@ private:
     AZ::RPI::ViewportContext::MatrixChangedEvent::Handler m_cameraViewMatrixChangeHandler;
     AZ::RPI::ViewportContext::MatrixChangedEvent::Handler m_cameraProjectionMatrixChangeHandler;
     AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;
+
+    AZ::Name m_defaultViewportContextName;
 
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };

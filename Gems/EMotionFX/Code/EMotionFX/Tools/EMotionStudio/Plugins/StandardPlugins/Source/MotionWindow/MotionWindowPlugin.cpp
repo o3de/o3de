@@ -206,8 +206,8 @@ namespace EMStudio
         // reinitialize the motion table entries
         ReInit();
 
-        mAddMotionsAction    = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("/Images/Icons/Plus.svg"), tr("Load motions"), this, &MotionWindowPlugin::OnAddMotions);
-        mSaveAction          = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("/Images/Menu/FileSave.svg"), tr("Save selected motions"), this, &MotionWindowPlugin::OnSave);
+        mAddMotionsAction    = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Plus.svg"), tr("Load motions"), this, &MotionWindowPlugin::OnAddMotions);
+        mSaveAction          = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Menu/FileSave.svg"), tr("Save selected motions"), this, &MotionWindowPlugin::OnSave);
 
         toolBar->addSeparator();
         AzQtComponents::FilteredSearchWidget* searchWidget = new AzQtComponents::FilteredSearchWidget(toolBar);
@@ -641,7 +641,6 @@ namespace EMStudio
         for (size_t i = 0; i < numMotions; ++i)
         {
             EMotionFX::Motion*                      motion              = motions[i];
-            MotionWindowPlugin::MotionTableEntry*   entry               = FindMotionEntryByID(motion->GetID());
             EMotionFX::PlayBackInfo*                defaultPlayBackInfo = motion->GetDefaultPlayBackInfo();
 
             // Don't blend in and out of the for previewing animations. We might only see a short bit of it for animations smaller than the blend in/out time.

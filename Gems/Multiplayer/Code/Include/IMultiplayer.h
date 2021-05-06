@@ -15,6 +15,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
+#include <Include/MultiplayerStats.h>
 
 namespace AzNetworking
 {
@@ -26,7 +27,7 @@ namespace Multiplayer
     //! Collection of types of Multiplayer Connections
     enum class MultiplayerAgentType
     {
-        Uninitialized,   ///< Agent is ununitialized.
+        Uninitialized,   ///< Agent is uninitialized.
         Client,          ///< A Client connected to either a server or host.
         ClientServer,    ///< A Client that also hosts and is the authority of the session
         DedicatedServer  ///< A Dedicated Server which does not locally host any clients
@@ -72,5 +73,54 @@ namespace Multiplayer
         //! Adds a SessionShutdownEvent Handler which is invoked when the current network session ends
         //! @param handler The SessionShutdownEvent handler to add
         virtual void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) = 0;
+
+        //! Sends a packet telling if entity update messages can be sent
+        //! @param readyForEntityUpdates Ready for entity updates or not
+        virtual void SendReadyForEntityUpdates(bool readyForEntityUpdates) = 0;
+
+        //! Returns the gem name associated with the provided component index.
+        //! @param  netComponentId the componentId to return the gem name of
+        //! @return the name of the gem that contains the requested component
+        virtual const char* GetComponentGemName(NetComponentId netComponentId) const = 0;
+
+        //! Returns the component name associated with the provided component index.
+        //! @param  netComponentId the componentId to return the component name of
+        //! @return the name of the component
+        virtual const char* GetComponentName(NetComponentId netComponentId) const = 0;
+
+        //! Returns the property name associated with the provided component index and property index.
+        //! @param  netComponentId the component index to return the property name of
+        //! @param  propertyIndex  the index of the network property to return the property name of
+        //! @return the name of the network property
+        virtual const char* GetComponentPropertyName(NetComponentId netComponentId, PropertyIndex propertyIndex) const = 0;
+
+        //! Returns the Rpc name associated with the provided component index and rpc index.
+        //! @param  netComponentId the componentId to return the property name of
+        //! @param  rpcIndex       the index of the rpc to return the rpc name of
+        //! @return the name of the requested rpc
+        virtual const char* GetComponentRpcName(NetComponentId netComponentId, RpcIndex rpcIndex) const = 0;
+
+        //! Retrieve the stats object bound to this multiplayer instance.
+        //! @return the stats object bound to this multiplayer instance
+        MultiplayerStats& GetStats() { return m_stats; }
+
+    private:
+        MultiplayerStats m_stats;
     };
+
+    inline const char* GetEnumString(MultiplayerAgentType value)
+    {
+        switch (value)
+        {
+        case MultiplayerAgentType::Uninitialized:
+            return "Uninitialized";
+        case MultiplayerAgentType::Client:
+            return "Client";
+        case MultiplayerAgentType::ClientServer:
+            return "ClientServer";
+        case MultiplayerAgentType::DedicatedServer:
+            return "DedicatedServer";
+        }
+        return "INVALID";
+    }
 }

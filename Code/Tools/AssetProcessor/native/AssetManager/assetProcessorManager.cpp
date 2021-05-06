@@ -142,11 +142,6 @@ namespace AssetProcessor
                 QString databaseSourceName = QString::fromUtf8(entry.m_sourceName.c_str());
                 QString scanFolderPath = QString::fromUtf8(entry.m_scanFolder.c_str());
                 QString relativeToScanFolderPath = databaseSourceName;
-                if (!entry.m_outputPrefix.empty())
-                {
-                    relativeToScanFolderPath = relativeToScanFolderPath.remove(0, static_cast<int>(entry.m_outputPrefix.size()) + 1);
-                }
-
                 QString finalAbsolute = (QString("%1/%2").arg(scanFolderPath).arg(relativeToScanFolderPath));
                 m_sourceFilesInDatabase[finalAbsolute] = { scanFolderPath, relativeToScanFolderPath, databaseSourceName, entry.m_analysisFingerprint.c_str() };
 
@@ -173,12 +168,6 @@ namespace AssetProcessor
                     if (scanFolderInfo.ScanFolderID() == entry.m_scanFolderPK)
                     {
                         scanFolderPath = scanFolderInfo.ScanPath();
-
-                        if (!scanFolderInfo.GetOutputPrefix().isEmpty())
-                        {
-                            relativeToScanFolderPath = relativeToScanFolderPath.remove(0, static_cast<int>(scanFolderInfo.GetOutputPrefix().size()) + 1);
-                        }
-
                         break;
                     }
                 }
@@ -470,13 +459,15 @@ namespace AssetProcessor
             return;
         }
 
-        // note that m_SourceFilesInDatabase is a map from (full absolute path) --> (database name for file, which includes outputprefix)
+        // note that m_SourceFilesInDatabase is a map from (full absolute path) --> (database name for file)
         for (auto iter = m_sourceFilesInDatabase.begin(); iter != m_sourceFilesInDatabase.end(); iter++)
         {
             // CheckDeletedSourceFile actually expects the database name as the second value
             // iter.key is the full path normalized.  iter.value is the database path.
-            // we need the relative path too, which involves removing the scan folder outputprefix it present:
-            CheckDeletedSourceFile(iter.key(), iter.value().m_sourceRelativeToWatchFolder, iter.value().m_sourceDatabaseName);
+            // we need the relative path too:
+            CheckDeletedSourceFile(
+                iter.key(), iter.value().m_sourceRelativeToWatchFolder, iter.value().m_sourceDatabaseName,
+                AZStd::chrono::system_clock::now());
         }
 
         // we want to remove any left over scan folders from the database only after
@@ -1524,7 +1515,7 @@ namespace AssetProcessor
         // even if the entry already exists,
         // overwrite the entry here, so if you modify, then delete it, its the latest action thats always on the list.
 
-        m_filesToExamine[normalizedFilePath] = FileEntry(normalizedFilePath, source.m_isDelete, source.m_isFromScanner);
+        m_filesToExamine[normalizedFilePath] = FileEntry(normalizedFilePath, source.m_isDelete, source.m_isFromScanner, source.m_initialProcessTime);
 
         // this block of code adds anything which DEPENDS ON the file that was changed, back into the queue so that files
         // that depend on it also re-analyze in case they need rebuilding.  However, files that are deleted will be added
@@ -1631,27 +1622,7 @@ namespace AssetProcessor
             AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanfolder;
             if (m_stateData->GetScanFolderByScanFolderID(source.m_scanFolderPK, scanfolder))
             {
-                // there's one more thing to account for here, and thats the fact that the sourceName may have an outputPrefix appended on to it
-                // so for example, the scan folder might be c:/ly/dev/Gems/Clouds/Assets
-                // but the outputPrefix might be Clouds/Assets, meaning "put it in that folder in the cache instead of just at the root"
-                // When we have an outputprefix, we prepend it to SourceName so that its a unique source
-                // so for example, the sourceName might be Clouds/Assets/blah.tif
-                // if you were to blindly concatenate them you'd end up with c:/ly/dev/Gems/Clouds/Assets/Clouds/Assets/blah.tif
-                //                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                //                                                              The watch folder is here
-                //                                                                                       ^^^^^^^^^^^^^^
-                //                                                                                        Prefix prepended
-                //                                                                                                      ^^^^^^^^
-                //                                                                                                      actual name
-                // so remove the output prefix from sourcename if present before doing any source ops on it.
-
-                AZStd::string sourceName(source.m_sourceName);
-
-                if (!scanfolder.m_outputPrefix.empty())
-                {
-                    sourceName = sourceName.substr(scanfolder.m_outputPrefix.size() + 1);
-                }
-                AZStd::string fullSourcePath = AZStd::string::format("%s/%s", scanfolder.m_scanFolder.c_str(), sourceName.c_str());
+                AZStd::string fullSourcePath = AZStd::string::format("%s/%s", scanfolder.m_scanFolder.c_str(), source.m_sourceName.c_str());
 
                 AssessFileInternal(fullSourcePath.c_str(), false);
             }
@@ -1773,40 +1744,31 @@ namespace AssetProcessor
         return successfullyRemoved;
     }
 
-    void AssetProcessorManager::CheckDeletedSourceFile(QString normalizedPath, QString relativePath, QString databaseSourceFile)
+    void AssetProcessorManager::CheckDeletedSourceFile(QString normalizedPath, QString relativePath, QString databaseSourceFile,
+        AZStd::chrono::system_clock::time_point initialProcessTime)
     {
         // getting here means an input asset has been deleted
         // and no overrides exist for it.
         // we must delete its products.
         using namespace AzToolsFramework::AssetDatabase;
+        
+        // If we fail to delete a product, the deletion event gets requeued
+        // To avoid retrying forever, we keep track of the time of the first deletion failure and only retry
+        // if less than this amount of time has passed.
+        constexpr int MaxRetryPeriodMS = 500;
+        AZStd::chrono::duration<double, AZStd::milli> duration = AZStd::chrono::system_clock::now() - initialProcessTime;
 
-        // Check if this file causes any file types to be re-evaluated
-        CheckMetaDataRealFiles(normalizedPath);
-
-        // when a source is deleted, we also have to queue anything that depended on it, for re-processing:        
-        SourceFileDependencyEntryContainer results;
-        m_stateData->GetSourceFileDependenciesByDependsOnSource(databaseSourceFile, SourceFileDependencyEntry::DEP_Any, results);
-        // the jobIdentifiers that have identified it as a job dependency
-        for (SourceFileDependencyEntry& existingEntry : results)
+        if (initialProcessTime > AZStd::chrono::system_clock::time_point{}
+            && duration >= AZStd::chrono::milliseconds(MaxRetryPeriodMS))
         {
-            // this row is [Source] --> [Depends on Source].
-            QString absolutePath = m_platformConfig->FindFirstMatchingFile(QString::fromUtf8(existingEntry.m_source.c_str()));
-            if (!absolutePath.isEmpty())
-            {
-                AssessFileInternal(absolutePath, false);
-            }
-            // also, update it in the database to be missing, ie, add the "missing file" prefix:
-            existingEntry.m_dependsOnSource = QString(PlaceHolderFileName + relativePath).toUtf8().constData();
-            m_stateData->RemoveSourceFileDependency(existingEntry.m_sourceDependencyID);
-            m_stateData->SetSourceFileDependency(existingEntry);
+            AZ_Warning(AssetProcessor::ConsoleChannel, false, "Failed to delete product(s) from source file `%s` after retrying for %fms.  Giving up.",
+                normalizedPath.toUtf8().constData(), duration.count());
+            return;
         }
 
-        // now that the right hand column (in terms of [thing] -> [depends on thing]) has been updated, eliminate anywhere its on the left hand side:
-        results.clear();
-        m_stateData->GetDependsOnSourceBySource(databaseSourceFile.toUtf8().constData(), SourceFileDependencyEntry::DEP_Any, results);
-        m_stateData->RemoveSourceFileDependencies(results);
-
+        bool deleteFailure = false;
         AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
+
         if (m_stateData->GetSourcesBySourceName(databaseSourceFile, sources))
         {
             for (const auto& source : sources)
@@ -1827,7 +1789,13 @@ namespace AssetProcessor
                             {
                                 // DeleteProducts will make an attempt to retry deleting each product
                                 // We can't just re-queue the whole file with CheckSource because we're deleting bits from the database as we go
-                                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Delete failed on %s.\n", normalizedPath.toUtf8().constData());
+                                deleteFailure = true;
+                                CheckSource(FileEntry(
+                                    normalizedPath, true, false,
+                                    initialProcessTime > AZStd::chrono::system_clock::time_point{} ? initialProcessTime
+                                                                                                   : AZStd::chrono::system_clock::now()));
+                                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Delete failed on %s. Will retry!\n", normalizedPath.toUtf8().constData());
+                                continue;
                             }
                         }
                         else
@@ -1843,13 +1811,48 @@ namespace AssetProcessor
                         Q_EMIT JobRemoved(jobInfo);
                     }
                 }
-                // delete the source from the database too since otherwise it believes we have no products.
-                m_stateData->RemoveSource(source.m_sourceID);
+
+                if (!deleteFailure)
+                {
+                    // delete the source from the database too since otherwise it believes we have no products.
+                    m_stateData->RemoveSource(source.m_sourceID);
+                }
             }
         }
 
+        if(deleteFailure)
+        {
+            return;
+        }
+        
+        // Check if this file causes any file types to be re-evaluated
+        CheckMetaDataRealFiles(normalizedPath);
 
-        Q_EMIT SourceDeleted(databaseSourceFile);  // note that this removes it from the RC Queue Model, also
+        // when a source is deleted, we also have to queue anything that depended on it, for re-processing:
+        SourceFileDependencyEntryContainer results;
+        m_stateData->GetSourceFileDependenciesByDependsOnSource(databaseSourceFile, SourceFileDependencyEntry::DEP_Any, results);
+        // the jobIdentifiers that have identified it as a job dependency
+        for (SourceFileDependencyEntry& existingEntry : results)
+        {
+            // this row is [Source] --> [Depends on Source].
+            QString absolutePath = m_platformConfig->FindFirstMatchingFile(QString::fromUtf8(existingEntry.m_source.c_str()));
+            if (!absolutePath.isEmpty())
+            {
+                AssessFileInternal(absolutePath, false);
+            }
+            // also, update it in the database to be missing, ie, add the "missing file" prefix:
+            existingEntry.m_dependsOnSource = QString(PlaceHolderFileName + relativePath).toUtf8().constData();
+            m_stateData->RemoveSourceFileDependency(existingEntry.m_sourceDependencyID);
+            m_stateData->SetSourceFileDependency(existingEntry);
+        }
+
+        // now that the right hand column (in terms of [thing] -> [depends on thing]) has been updated, eliminate anywhere its on the left
+        // hand side:
+        results.clear();
+        m_stateData->GetDependsOnSourceBySource(databaseSourceFile.toUtf8().constData(), SourceFileDependencyEntry::DEP_Any, results);
+        m_stateData->RemoveSourceFileDependencies(results);
+
+        Q_EMIT SourceDeleted(databaseSourceFile); // note that this removes it from the RC Queue Model, also
     }
 
     void AssetProcessorManager::AddKnownFoldersRecursivelyForFile(QString fullFile, QString root)
@@ -1967,18 +1970,7 @@ namespace AssetProcessor
             //remove the jobs associated with these products
             m_stateData->RemoveJob(oldJobInfo.m_jobID);
 
-            // note that JobRemoved is supposed to emit a jobinfo that is not output-prefixed
-            if (!scanFolder->GetOutputPrefix().isEmpty())
-            {
-                JobInfo newJobInfo(oldJobInfo);
-                QString sourcePathWithPrefix = QString::fromUtf8(oldJobInfo.m_sourceFile.c_str());
-                newJobInfo.m_sourceFile = (sourcePathWithPrefix.right(sourcePathWithPrefix.length() - (scanFolder->GetOutputPrefix().length() + 1))).toUtf8().constData();
-                Q_EMIT JobRemoved(newJobInfo);
-            }
-            else
-            {
-                Q_EMIT JobRemoved(oldJobInfo);
-            }
+            Q_EMIT JobRemoved(oldJobInfo);
         }
     }
 
@@ -2205,7 +2197,7 @@ namespace AssetProcessor
         }
 
         AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
-        QString sourceName = scanFolderInfo->GetOutputPrefix().isEmpty() ? relativePath : QDir::cleanPath(scanFolderInfo->GetOutputPrefix() + QDir::separator() + relativePath);
+        QString sourceName = relativePath;
         m_stateData->GetSourcesLikeSourceName(sourceName, AzToolsFramework::AssetDatabase::AssetDatabaseConnection::StartsWith, sources);
 
         AZ_TracePrintf(AssetProcessor::DebugChannel, "CheckDeletedSourceFolder: %i matching files.\n", sources.size());
@@ -2215,11 +2207,6 @@ namespace AssetProcessor
         {
             // reconstruct full path:
             QString actualRelativePath = source.m_sourceName.c_str();
-
-            if (!scanFolderInfo->GetOutputPrefix().isEmpty())
-            {
-                actualRelativePath = actualRelativePath.right(actualRelativePath.length() - (scanFolderInfo->GetOutputPrefix().length() + 1)); // adding one for separator
-            }
 
             QString finalPath = scanFolder.absoluteFilePath(actualRelativePath);
 
@@ -2479,11 +2466,6 @@ namespace AssetProcessor
                 const ScanFolderInfo* scanFolderInfo = m_platformConfig->GetScanFolderForFile(normalizedPath);
 
                 relativePathToFile = databasePathToFile;
-                // remove output prefix if present to generate relative path
-                if ((scanFolderInfo)&&(!scanFolderInfo->GetOutputPrefix().isEmpty()))
-                {
-                    relativePathToFile = relativePathToFile.remove(0, static_cast<int>(scanFolderInfo->GetOutputPrefix().length()) + 1);
-                }
 
                 if (normalizedPath.length() >= AP_MAX_PATH_LEN)
                 {
@@ -2503,7 +2485,7 @@ namespace AssetProcessor
                             job.m_jobEntry = JobEntry(
                                 QString::fromUtf8(jobInfo.m_watchFolder.c_str()),
                                 relativePathToFile,
-                                databasePathToFile, // with outputprefix 
+                                databasePathToFile,
                                 jobInfo.m_builderGuid, 
                                 *platformFromInfo, 
                                 jobInfo.m_jobKey.c_str(), 0, GenerateNewJobRunKey(), 
@@ -2568,7 +2550,7 @@ namespace AssetProcessor
 
                             jobdetail.m_jobParam[AZ_CRC(AutoFailReasonKey)] = AZStd::string::format(
                                 "Source file ( %s ) contains non ASCII characters.\n"
-                                "Lumberyard currently only supports file paths having ASCII characters and therefore asset processor will not be able to process this file.\n"
+                                "Open 3D Engine currently only supports file paths having ASCII characters and therefore asset processor will not be able to process this file.\n"
                                 "Please rename the source file to fix this error.\n",
                                 normalizedPath.toUtf8().data());
 
@@ -2612,7 +2594,7 @@ namespace AssetProcessor
                             // to call the expensive function to discover correct case.
                             QString pathRelativeToScanFolder;
                             QString scanFolderPath;
-                            m_platformConfig->ConvertToRelativePath(overrider, pathRelativeToScanFolder, scanFolderPath, false /*include output prefix*/);
+                            m_platformConfig->ConvertToRelativePath(overrider, pathRelativeToScanFolder, scanFolderPath);
                             AssetUtilities::UpdateToCorrectCase(scanFolderPath, pathRelativeToScanFolder);
                             overrider = QDir(scanFolderPath).absoluteFilePath(pathRelativeToScanFolder);
                         }
@@ -2641,7 +2623,7 @@ namespace AssetProcessor
                     AZ::Uuid sourceUUID = AssetUtilities::CreateSafeSourceUUIDFromName(databasePathToFile.toUtf8().data());
                     AzToolsFramework::AssetSystem::SourceFileNotificationMessage message(AZ::OSString(sourceFile.toUtf8().constData()), AZ::OSString(scanFolderInfo->ScanPath().toUtf8().constData()), AzToolsFramework::AssetSystem::SourceFileNotificationMessage::FileRemoved, sourceUUID);
                     EBUS_EVENT(AssetProcessor::ConnectionBus, Send, 0, message);
-                    CheckDeletedSourceFile(normalizedPath, relativePathToFile, databasePathToFile);
+                    CheckDeletedSourceFile(normalizedPath, relativePathToFile, databasePathToFile, examineFile.m_initialProcessTime);
                 }
                 else
                 {
@@ -3333,10 +3315,6 @@ namespace AssetProcessor
         newSourceInfo.m_watchFolder = scanFolder->ScanPath();
         newSourceInfo.m_sourceDatabaseName = databasePathToFile;
         newSourceInfo.m_sourceRelativeToWatchFolder = databasePathToFile;
-        if (!scanFolder->GetOutputPrefix().isEmpty())
-        {
-            newSourceInfo.m_sourceRelativeToWatchFolder = newSourceInfo.m_sourceRelativeToWatchFolder.remove(0, static_cast<int>(scanFolder->GetOutputPrefix().length()) + 1);
-        }
 
         {
             // this scope exists only to narrow the range of m_sourceUUIDToSourceNameMapMutex
@@ -3608,12 +3586,6 @@ namespace AssetProcessor
                         if (!scanFolderInfo->RecurseSubFolders() && encodedFileData.contains("/"))
                         {
                             continue;
-                        }
-
-                        //if relative path starts with the output prefix then remove it first
-                        if (!scanFolderInfo->GetOutputPrefix().isEmpty() && knownPathBeforeWildcard.startsWith(scanFolderInfo->GetOutputPrefix(), Qt::CaseInsensitive))
-                        {
-                            knownPathBeforeWildcard = knownPathBeforeWildcard.right(knownPathBeforeWildcard.length() - (scanFolderInfo->GetOutputPrefix().length() + 1)); // adding 1 for slash
                         }
 
                         QDir rooted(scanFolderInfo->ScanPath());
@@ -3916,7 +3888,6 @@ namespace AssetProcessor
                         scanFolderFromConfigFile.ScanPath().toUtf8().constData(),
                         scanFolderFromConfigFile.GetDisplayName().toUtf8().constData(),
                         scanFolderFromConfigFile.GetPortableKey().toUtf8().constData(),
-                        scanFolderFromConfigFile.GetOutputPrefix().toUtf8().constData(),
                         scanFolderFromConfigFile.IsRoot());
                 //remove this scan path from the scan folders so what is left can deleted
                 m_scanFoldersInDatabase.erase(found);
@@ -3928,7 +3899,6 @@ namespace AssetProcessor
                         scanFolderFromConfigFile.ScanPath().toUtf8().constData(),
                         scanFolderFromConfigFile.GetDisplayName().toUtf8().constData(),
                         scanFolderFromConfigFile.GetPortableKey().toUtf8().constData(),
-                        scanFolderFromConfigFile.GetOutputPrefix().toUtf8().constData(),
                         scanFolderFromConfigFile.IsRoot());
             }
 
@@ -3972,11 +3942,7 @@ namespace AssetProcessor
                 result.m_sourceDatabaseName = QString::fromUtf8(sourceDatabaseEntry.m_sourceName.c_str());
                 result.m_watchFolder = QString::fromUtf8(scanFolder.m_scanFolder.c_str());
                 result.m_sourceRelativeToWatchFolder = result.m_sourceDatabaseName;
-                if (!scanFolder.m_outputPrefix.empty())
-                {
-                    result.m_sourceRelativeToWatchFolder = result.m_sourceRelativeToWatchFolder.remove(0, static_cast<int>(scanFolder.m_outputPrefix.size()) + 1);
-                }
-                
+
                 {   
                     // this scope exists to restrict the duration of the below lock.
                     AZStd::lock_guard<AZStd::mutex> lock(m_sourceUUIDToSourceInfoMapMutex);
@@ -4054,16 +4020,7 @@ namespace AssetProcessor
     {
         sourceDatabaseEntry.m_scanFolderPK = scanFolder->ScanFolderID();
 
-        if (!scanFolder->GetOutputPrefix().isEmpty())
-        {
-            // replace the "output prefix" part of the file name with the one from the ini file to sort out case sensitivity problems.
-            QString withoutOutputPrefix = relativeSourceFilePath.remove(0, scanFolder->GetOutputPrefix().length() + 1);
-            sourceDatabaseEntry.m_sourceName = AZStd::string::format("%s/%s", scanFolder->GetOutputPrefix().toUtf8().constData(), withoutOutputPrefix.toUtf8().data());
-        }
-        else
-        {
-            sourceDatabaseEntry.m_sourceName = relativeSourceFilePath.toUtf8().constData();
-        }
+        sourceDatabaseEntry.m_sourceName = relativeSourceFilePath.toUtf8().constData();
 
         sourceDatabaseEntry.m_sourceGuid = AssetUtilities::CreateSafeSourceUUIDFromName(sourceDatabaseEntry.m_sourceName.c_str());
         
@@ -4675,7 +4632,7 @@ namespace AssetProcessor
 
             QString databasePath;
             QString scanFolderPath;
-            m_platformConfig->ConvertToRelativePath(metaDataFileName, databasePath, scanFolderPath, true);
+            m_platformConfig->ConvertToRelativePath(metaDataFileName, databasePath, scanFolderPath);
             outFilesToFingerprint.insert(AZStd::make_pair(metaDataFileName.toUtf8().constData(), databasePath.toUtf8().constData()));
         }
     }

@@ -41,9 +41,16 @@ namespace AzFramework::ProjectManager
             // at the end of the function
             AZ::CommandLine commandLine;
             commandLine.Parse(argc, argv);
+            AZ::SettingsRegistryMergeUtils::ParseCommandLine(commandLine);
+
+            // Store the Command line to the Setting Registry
             AZ::SettingsRegistryImpl settingsRegistry;
+            AZ::SettingsRegistryMergeUtils::StoreCommandLineToRegistry(settingsRegistry, commandLine);
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(settingsRegistry);
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
+            // Retrieve Command Line from Settings Registry, it may have been updated by the call to FindEngineRoot()
+            // in MergeSettingstoRegistry_ConfigFile
+            AZ::SettingsRegistryMergeUtils::GetCommandLineFromRegistry(settingsRegistry, commandLine);
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(settingsRegistry, commandLine, false);
             engineRootPath = AZ::SettingsRegistryMergeUtils::FindEngineRoot(settingsRegistry);
             projectRootPath = AZ::SettingsRegistryMergeUtils::FindProjectRoot(settingsRegistry);
@@ -62,7 +69,14 @@ namespace AzFramework::ProjectManager
         // If we were able to locate a path to a project, we're done
         if (!projectRootPath.empty())
         {
-            return ProjectPathCheckResult::ProjectPathFound;
+            AZ::IO::FixedMaxPath projectJsonPath = engineRootPath / projectRootPath / "project.json";
+            if (AZ::IO::SystemFile::Exists(projectJsonPath.c_str()))
+            {
+                return ProjectPathCheckResult::ProjectPathFound;
+            }
+            AZ_TracePrintf(
+                "ProjectManager", "Did not find a project file at location '%s', launching the Project Manager...",
+                projectJsonPath.c_str());
         }
 
         if (LaunchProjectManager(engineRootPath))
@@ -123,7 +137,7 @@ namespace AzFramework::ProjectManager
             }
             AZ::IO::FixedMaxPath pythonPath = engineRootPath / "python";
             pythonPath /= AZ_TRAIT_AZFRAMEWORK_PYTHON_SHELL;
-            auto cmdPath = AZ::IO::FixedMaxPathString::format("%s %s%s --executable_path=%s --parent_pid=%" PRId64, pythonPath.Native().c_str(),
+            auto cmdPath = AZ::IO::FixedMaxPathString::format("%s %s%s --executable_path=%s --parent_pid=%" PRIu32, pythonPath.Native().c_str(),
                 debugOption.c_str(), (projectManagerPath / projectsScript).c_str(), executablePath.c_str(), AZ::Platform::GetCurrentProcessId());
 
             AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;

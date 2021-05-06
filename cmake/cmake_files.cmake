@@ -19,15 +19,18 @@ set(FILES
     EngineFinder.cmake
     FileUtil.cmake
     Findo3de.cmake
+    Install.cmake
     LyAutoGen.cmake
     LySet.cmake
     LYTestWrappers.cmake
     LYPython.cmake
     LYWrappers.cmake
     Monolithic.cmake
+    Packaging.cmake
     PAL.cmake
     PALTools.cmake
     Projects.cmake
+    run_epbtest.cmake
     RuntimeDependencies.cmake
     SettingsRegistry.cmake
     UnitTest.cmake

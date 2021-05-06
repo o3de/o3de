@@ -131,7 +131,7 @@ namespace ProjectSettingsTool
             : m_bundleName("")
             , m_bundleDisplayName("")
             , m_executableName("")
-            , m_bundleIdentifier("com.amazon.lumberyard.UnknownProject")
+            , m_bundleIdentifier("com.amazon.o3de.UnknownProject")
             , m_versionName("1.0.0")
             , m_versionNumber("1.0.0")
             , m_developmentRegion("en_US")

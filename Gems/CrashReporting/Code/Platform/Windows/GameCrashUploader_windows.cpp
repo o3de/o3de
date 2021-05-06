@@ -21,7 +21,7 @@
 
 #pragma warning(disable : 4996)
 
-namespace Lumberyard
+namespace O3de
 {
 
     bool GameCrashUploader::CheckConfirmation(const crashpad::CrashReportDatabase::Report& report)

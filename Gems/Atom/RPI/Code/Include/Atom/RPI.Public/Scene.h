@@ -14,6 +14,7 @@
 
 #include <Atom/RHI/DrawList.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
+#include <Atom/RHI/DrawFilterTagRegistry.h>
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RPI.Reflect/System/SceneDescriptor.h>
@@ -34,7 +35,7 @@
 #include <AzCore/Script/ScriptTimePoint.h>
 
 #include <AzFramework/Scene/Scene.h>
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 
 namespace AZ
 {
@@ -44,7 +45,7 @@ namespace AZ
         class FeatureProcessor;
         class ShaderResourceGroup;
         class ShaderResourceGroupAsset;
-        class CullingSystem;
+        class CullingScene;
         class DynamicDrawSystem;
 
         // Callback function to modify values of a ShaderResourceGroup
@@ -162,9 +163,9 @@ namespace AZ
 
             bool HasOutputForPipelineState(RHI::DrawListTag drawListTag) const;
 
-            AZ::RPI::CullingSystem* GetCullingSystem()
+            AZ::RPI::CullingScene* GetCullingScene()
             {
-                return m_cullingSystem;
+                return m_cullingScene;
             }
 
             RenderPipelinePtr FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle);
@@ -212,7 +213,7 @@ namespace AZ
             // CPU simulation job completion for track all feature processors' simulation jobs
             AZ::JobCompletion* m_simulationCompletion = nullptr;
 
-            AZ::RPI::CullingSystem* m_cullingSystem;
+            AZ::RPI::CullingScene* m_cullingScene;
 
             // Cached views for current rendering frame. It gets re-built every frame.
             AZ::RPI::FeatureProcessor::SimulatePacket m_simulatePacket;
@@ -234,6 +235,9 @@ namespace AZ
 
             // reference of dynamic draw system (from RPISystem)
             DynamicDrawSystem* m_dynamicDrawSystem = nullptr;
+
+            // Registry which allocates draw filter tag for RenderPipeline
+            RHI::Ptr<RHI::DrawFilterTagRegistry> m_drawFilterTagRegistry;
         };
 
         // --- Template functions ---

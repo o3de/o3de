@@ -363,8 +363,6 @@ void CAnimSceneNode::Animate(SAnimContext& ec)
         bTimeJump = true;
     */
 
-    int nCurrentSoundTrackIndex = 0;
-
     if (gEnv->IsEditor() && m_time > ec.time)
     {
         m_lastPrecachePoint = -1.f;
@@ -1028,10 +1026,13 @@ void CAnimSceneNode::Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmp
     SetFlags(GetFlags() | eAnimNodeFlags_CanChangeName);
 }
 
-void CAnimSceneNode::Reflect(AZ::SerializeContext* serializeContext)
+void CAnimSceneNode::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CAnimSceneNode, CAnimNode>()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CAnimSceneNode, CAnimNode>()
+            ->Version(1);
+    }
 }
 
 void CAnimSceneNode::PrecacheStatic(float startTime)
@@ -1095,7 +1096,7 @@ void CAnimSceneNode::PrecacheDynamic(float time)
                 CSelectTrack* pCameraTrack = static_cast<CSelectTrack*>(pAnimTrack);
 
                 ISelectKey key;
-                int keyID = pCameraTrack->GetActiveKey(time + fPrecacheCameraTime, &key);
+                pCameraTrack->GetActiveKey(time + fPrecacheCameraTime, &key);
 
                 if (time < key.time && (time + fPrecacheCameraTime) > key.time && key.time > m_lastPrecachePoint)
                 {

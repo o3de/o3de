@@ -44,8 +44,8 @@ namespace AZ
                         "Directional Light", "A directional light to cast a shadow of meshes onto meshes.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Atom")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Component_Placeholder.svg") // [GFX TODO][ATOM-1998] create icons.
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "editor/icons/components/viewport/component_placeholder.png") // [GFX TODO][ATOM-1998] create icons.
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO][ATOM-1998] create icons.
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.png") // [GFX TODO][ATOM-1998] create icons.
                         ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                         ->Attribute(Edit::Attributes::HelpPageURL, "https://") // [GFX TODO][ATOM-1998] create page
@@ -145,14 +145,14 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Max, 0.1f)
                             ->Attribute(Edit::Attributes::Suffix, " m")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                            ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowFilteringDisabled)
+                        ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsPcfBoundarySearchDisabled)
                         ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_predictionSampleCount, "Prediction Sample Count",
                             "Sample Count for prediction of whether the pixel is on the boundary. "
                             "Specific to PCF and ESM+PCF.")
                             ->Attribute(Edit::Attributes::Min, 4)
                             ->Attribute(Edit::Attributes::Max, 16)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                            ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled)
+                        ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsPcfBoundarySearchDisabled)
                         ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_filteringSampleCount, "Filtering Sample Count",
                             "It is used only when the pixel is predicted as on the boundary. "
                             "Specific to PCF and ESM+PCF.")
@@ -160,7 +160,17 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Max, 64)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled)
-                        ;
+                        ->DataElement(
+                            Edit::UIHandlers::ComboBox, &DirectionalLightComponentConfig::m_pcfMethod, "Pcf Method",
+                            "Type of Pcf to use.\n"
+                            "  Boundary search: do several taps to first determine if we are on a shadow boundary\n"
+                            "  Bicubic: a smooth, fixed-size kernel \n")
+                        ->EnumAttribute(PcfMethod::BoundarySearch, "Boundary Search")
+                        ->EnumAttribute(PcfMethod::Bicubic, "Bicubic")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled);
+                            ;
+
                 }
             }
 

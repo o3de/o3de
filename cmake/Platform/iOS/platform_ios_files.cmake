@@ -13,6 +13,7 @@ set(FILES
     ../Common/Configurations_common.cmake
     ../Common/Clang/Configurations_clang.cmake
     Configurations_ios.cmake
+    Install_ios.cmake
     LYTestWrappers_ios.cmake
     LYWrappers_ios.cmake
     PAL_ios.cmake

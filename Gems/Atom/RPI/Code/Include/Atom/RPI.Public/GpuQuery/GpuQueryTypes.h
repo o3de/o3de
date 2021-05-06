@@ -11,6 +11,7 @@
 */
 #pragma once
 
+#include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/QueryPoolDescriptor.h>
 
 #include <AtomCore/std/containers/array_view.h>
@@ -43,15 +44,19 @@ namespace AZ
         {
         public:
             TimestampResult() = default;
-            TimestampResult(uint64_t timestampInTicks);
-            TimestampResult(uint64_t timestampQueryResultLow, uint64_t timestampQueryResultHigh);
-            TimestampResult(AZStd::array_view<TimestampResult>&& timestampResultArray);
+            TimestampResult(uint64_t beginTick, uint64_t endTick, RHI::HardwareQueueClass hardwareQueueClass);
 
-            uint64_t GetTimestampInNanoseconds() const;
-            uint64_t GetTimestampInTicks() const;
+            uint64_t GetDurationInNanoseconds() const;
+            uint64_t GetDurationInTicks() const;
+            uint64_t GetTimestampBeginInTicks() const;
+
+            void Add(const TimestampResult& extent);
 
         private:
-            uint64_t m_timestampInTicks = 0u;
+            // the timestamp of begin and duration in ticks.
+            uint64_t m_begin = 0;
+            uint64_t m_duration = 0;
+            RHI::HardwareQueueClass m_hardwareQueueClass = RHI::HardwareQueueClass::Graphics;
         };
 
         //! The structure that is used to read back the results form the PipelineStatistics queries 

@@ -98,7 +98,7 @@ namespace SceneBuilder
             descriptor.m_jobKey = "Scene compilation";
             descriptor.SetPlatformIdentifier(enabledPlatform.m_identifier.c_str());
             descriptor.m_failOnError = true;
-            descriptor.m_priority = 11; // more important than static mesh files, since these may control logic (actors and motions specifically)
+            descriptor.m_priority = 11; // these may control logic (actors and motions specifically)
             descriptor.m_additionalFingerprintInfo = GetFingerprint();
 
             AZ::SceneAPI::SceneBuilderDependencyBus::Broadcast(&AZ::SceneAPI::SceneBuilderDependencyRequests::ReportJobDependencies,
@@ -107,11 +107,17 @@ namespace SceneBuilder
             response.m_createJobOutputs.push_back(descriptor);
         }
 
-        // Adding corresponding material file as a source file dependency
+        // Adding corresponding _wrinklemask folder as a source file dependency
+        // This enables morph target assets to get references to the wrinkle masks
+        // in the MorphTargetExporter, so they can be automatically applied at runtime
         AssetBuilderSDK::SourceFileDependency sourceFileDependencyInfo;
         AZStd::string relPath = request.m_sourceFile.c_str();
-        AzFramework::StringFunc::Path::ReplaceExtension(relPath, "mtl");
+        AzFramework::StringFunc::Path::StripExtension(relPath);
+        relPath += "_wrinklemasks";
+        AzFramework::StringFunc::Path::AppendSeparator(relPath);
+        relPath += "*_wrinklemask.*";
         sourceFileDependencyInfo.m_sourceFileDependencyPath = relPath;
+        sourceFileDependencyInfo.m_sourceDependencyType = AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards;
         response.m_sourceFileDependencyList.push_back(sourceFileDependencyInfo);
 
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
@@ -394,7 +400,6 @@ namespace SceneBuilder
             WriteAndLog(dbgFile, scene->GetName().c_str());
 
             const AZ::SceneAPI::Containers::SceneGraph& sceneGraph = scene->GetGraph();
-            const AZ::SceneAPI::Containers::SceneGraph::NodeHeader* nodeIterator = sceneGraph.ConvertToHierarchyIterator(sceneGraph.GetRoot());
             auto names = sceneGraph.GetNameStorage();
             auto content = sceneGraph.GetContentStorage();
             auto pairView = AZ::SceneAPI::Containers::Views::MakePairView(names, content);

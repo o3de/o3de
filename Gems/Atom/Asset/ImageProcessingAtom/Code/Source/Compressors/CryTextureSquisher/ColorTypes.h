@@ -105,7 +105,7 @@ namespace ImageProcessingAtom
         {
         }
 
-        explicit ColorRGBA16(uint64 a_u)
+        explicit ColorRGBA16(AZ::u64 a_u)
             : u(a_u)
         {
         }
@@ -152,7 +152,7 @@ namespace ImageProcessingAtom
                 uint16 b;
                 uint16 a;
             };
-            uint64 u;
+            AZ::u64 u;
         };
     };
 

@@ -46,7 +46,6 @@ namespace GradientSignal
         {
             behaviorContext->Class<InvertGradientConfig>()
                 ->Constructor()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Property("gradientSampler", BehaviorValueProperty(&InvertGradientConfig::m_gradientSampler))
                 ;
@@ -87,7 +86,6 @@ namespace GradientSignal
             behaviorContext->Class<InvertGradientComponent>()->RequestBus("InvertGradientRequestBus");
 
             behaviorContext->EBus<InvertGradientRequestBus>("InvertGradientRequestBus")
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Event("GetGradientSampler", &InvertGradientRequestBus::Events::GetGradientSampler)
                 ;

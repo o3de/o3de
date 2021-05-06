@@ -1075,8 +1075,6 @@ void CUiAnimViewDialog::OnDelSequence()
             AZ_Error("UiAnimViewDialog", false, "Could not find sequence");
             return;
         }
-
-        UpdateActions();
     }
 }
 
@@ -1334,12 +1332,6 @@ void CUiAnimViewDialog::OnEditorNotifyEvent(EEditorNotifyEvent event)
     case eNotify_OnEndGameMode:
         m_bIgnoreUpdates = false;
         break;
-    case eNotify_OnMissionChange:
-        if (!m_bIgnoreUpdates)
-        {
-            ReloadSequences();
-        }
-        break;
     case eNotify_OnIdleUpdate:
         if (!m_bIgnoreUpdates)
         {
@@ -1568,7 +1560,7 @@ void CUiAnimViewDialog::ReadMiscSettings()
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewDialog::SaveLayouts()
 {
-    QSettings settings("Amazon", "Lumberyard");
+    QSettings settings("Amazon", "O3DE");
     settings.beginGroup("UiAnimView");
     QByteArray stateData = this->saveState();
     settings.setValue("layout", stateData);
@@ -1583,7 +1575,7 @@ void CUiAnimViewDialog::SaveLayouts()
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewDialog::ReadLayouts()
 {
-    QSettings settings("Amazon", "Lumberyard");
+    QSettings settings("Amazon", "O3DE");
     settings.beginGroup("UiAnimView");
     if (settings.contains("layout"))
     {

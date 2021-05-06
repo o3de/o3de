@@ -33,22 +33,20 @@ const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}() const;
 #}
 {% macro DeclareNetworkPropertySetter(Property) %}
 {% set PropertyName = UpperFirst(Property.attrib['Name']) %}
-{%     if Property.attrib['IsPredictable'] | booleanTrue %}
-{%         if Property.attrib['Container'] == 'Array' %}
-void Set{{ PropertyName }}(const Multiplayer::NetworkInput&, int32_t index, const {{ Property.attrib['Type'] }}& value);
-{{ Property.attrib['Type'] }}& Modify{{ PropertyName }}(const Multiplayer::NetworkInput&, int32_t index);
-{%         elif Property.attrib['Container'] == 'Vector' %}
-void Set{{ PropertyName }}(const Multiplayer::NetworkInput&, int32_t index, const {{ Property.attrib['Type'] }}& value);
-{{ Property.attrib['Type'] }}& Modify{{ PropertyName }}(const Multiplayer::NetworkInput&, int32_t index);
-bool {{ PropertyName }}PushBack(const Multiplayer::NetworkInput&, const {{ Property.attrib['Type'] }}& value);
-bool {{ PropertyName }}PopBack(const Multiplayer::NetworkInput&);
-void {{ PropertyName }}Clear(const Multiplayer::NetworkInput&);
-{%         elif Property.attrib['Container'] == 'Object' %}
-void Set{{ PropertyName }}(const Multiplayer::NetworkInput&, const {{ Property.attrib['Type'] }}& value);
-{{ Property.attrib['Type'] }}& Modify{{ PropertyName }}(const Multiplayer::NetworkInput&);
-{%         else %}
-void Set{{ PropertyName }}(const Multiplayer::NetworkInput&, const {{ Property.attrib['Type'] }}& value);
-{%         endif %}
+{%     if Property.attrib['Container'] == 'Array' %}
+void Set{{ PropertyName }}(int32_t index, const {{ Property.attrib['Type'] }}& value);
+{{ Property.attrib['Type'] }}& Modify{{ PropertyName }}(int32_t index);
+{%     elif Property.attrib['Container'] == 'Vector' %}
+void Set{{ PropertyName }}(int32_t index, const {{ Property.attrib['Type'] }}& value);
+{{ Property.attrib['Type'] }}& Modify{{ PropertyName }}(int32_t index);
+bool {{ PropertyName }}PushBack(const {{ Property.attrib['Type'] }}& value);
+bool {{ PropertyName }}PopBack();
+void {{ PropertyName }}Clear();
+{%     elif Property.attrib['Container'] == 'Object' %}
+void Set{{ PropertyName }}(const {{ Property.attrib['Type'] }}& value);
+{{ Property.attrib['Type'] }}& Modify{{ PropertyName }}();
+{%     else %}
+void Set{{ PropertyName }}(const {{ Property.attrib['Type'] }}& value);
 {%     endif %}
 {% endmacro %}
 {#
@@ -158,7 +156,7 @@ AZ::Event<{{ Property.attrib['Type'] }}> m_{{ LowerFirst(Property.attrib['Name']
 {% macro DeclareNetworkPropertyVars(Component, ReplicateFrom, ReplicateTo) %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {%     if Property.attrib['Container'] == 'Array' %}
-AZStd::array<{% if Property.attrib['IsRewindable']|booleanTrue %}Multiplayer::RewindableObject<{% endif %}{{ Property.attrib['Type'] }}{% if Property.attrib['IsRewindable']|booleanTrue %}, Multiplayer::RewindHistorySize>{% endif %}, {{ Property.attrib['Count'] }}> m_{{ Property.attrib['Name'] }};
+AZStd::array<{% if Property.attrib['IsRewindable']|booleanTrue %}Multiplayer::RewindableObject<{% endif %}{{ Property.attrib['Type'] }}{% if Property.attrib['IsRewindable']|booleanTrue %}, Multiplayer::RewindHistorySize>{% endif %}, {{ Property.attrib['Count'] }}> m_{{ LowerFirst(Property.attrib['Name']) }};
 {%     elif Property.attrib['Container'] == 'Vector' %}
 AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> m_{{ LowerFirst(Property.attrib['Name']) }};
 {%     elif Property.attrib['IsRewindable']|booleanTrue %}
@@ -166,6 +164,22 @@ Multiplayer::RewindableObject<{{ Property.attrib['Type'] }}, Multiplayer::Rewind
 {%     else %}
 {{ Property.attrib['Type'] }} m_{{ LowerFirst(Property.attrib['Name']) }} = {{ Property.attrib['Init'] }};
 {%     endif %}
+{% endcall %}
+{% endmacro %}
+{#
+
+#}
+{% macro DeclareNetworkPropertyReflectVars(Component, ReplicateFrom, ReplicateTo) %}
+{% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
+{% if Property.attrib['IsRewindable']|booleanTrue %}
+{%     if Property.attrib['Container'] == 'Array' %}
+AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> m_{{ LowerFirst(Property.attrib['Name']) }}Reflect;
+{%     elif Property.attrib['Container'] == 'Vector' %}
+AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> m_{{ LowerFirst(Property.attrib['Name']) }}Reflect;
+{%     else %}
+{{ Property.attrib['Type'] }} m_{{ LowerFirst(Property.attrib['Name']) }}Reflect = {{ Property.attrib['Init'] }};
+{%     endif %}
+{% endif %}
 {% endcall %}
 {% endmacro %}
 {#
@@ -213,7 +227,7 @@ AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }
 #include <Source/Components/MultiplayerController.h>
 #include <Source/NetworkInput/IMultiplayerComponentInput.h>
 #include <Source/NetworkTime/RewindableObject.h>
-#include <Source/MultiplayerTypes.h>
+#include <Include/MultiplayerTypes.h>
 {% call(Include) AutoComponentMacros.ParseIncludes(Component) %}
 #include <{{ Include.attrib['File'] }}>
 {% endcall %}
@@ -237,9 +251,6 @@ namespace {{ Component.attrib['Namespace'] }}
     class {{ ComponentName }};
     class {{ ControllerName }};
 
-    //! Returns a human readable name for the provided remoteProcedureId.
-    const char* GetRemoteProcedureName(uint16_t remoteProcedureId);
-
 {% set RecordName = ComponentName + "Record" %}
     //! @class {{RecordName }}
     //! @brief A record of the changed bits in the NetworkProperties for component {{ ComponentName }}.
@@ -262,6 +273,13 @@ namespace {{ Component.attrib['Namespace'] }}
         //! Sets the bits in the attached record that correspond to predictable network properties.
         void SetPredictableBits();
 
+{% set networkPropertyCount = {'value' : 0} %}
+{% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, 'Authority', 'Authority') %}
+{%-      if networkPropertyCount.update({'value': networkPropertyCount.value + 1}) %}{% endif -%} 
+{% endcall %}
+{% if networkPropertyCount.value > 0 %}
+        AzNetworking::FixedSizeBitsetView m_authorityToAuthority;
+{% endif %}
 {% set networkPropertyCount = {'value' : 0} %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, 'Authority', 'Client') %}
 {%-      if networkPropertyCount.update({'value': networkPropertyCount.value + 1}) %}{% endif -%} 
@@ -295,6 +313,7 @@ namespace {{ Component.attrib['Namespace'] }}
         {{ RecordName }}
         (
             Multiplayer::ReplicationRecord& replicationRecord,
+            uint32_t authorityToAuthoritySimluationStartOffset,
             uint32_t authorityToClientSimluationStartOffset,
             uint32_t authorityToServerSimluationStartOffset,
             uint32_t authorityToAutonomousStartOffset,
@@ -307,7 +326,6 @@ namespace {{ Component.attrib['Namespace'] }}
         : public Multiplayer::IMultiplayerComponentInput
     {
     public:
-        static const Multiplayer::NetComponentId s_componentId = static_cast<Multiplayer::NetComponentId>({{ Component.attrib['Namespace'] }}::ComponentTypes::{{ Component.attrib['Name'] }});
         Multiplayer::NetComponentId GetComponentId() const override;
         INetworkInput& operator=(const INetworkInput& rhs) override;
         bool Serialize(AzNetworking::ISerializer& serializer);
@@ -346,9 +364,14 @@ namespace {{ Component.attrib['Namespace'] }}
         void ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override {}
         //! @}
 
+        {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Authority', false)|indent(8) -}}
+        {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Authority', true)|indent(8) -}}
         {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Server', false)|indent(8) -}}
+        {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Server', true)|indent(8) -}}
         {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Client', false)|indent(8) -}}
+        {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Client', true)|indent(8) -}}
         {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Autonomous', false)|indent(8) }}
+        {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Autonomous', true)|indent(8) }}
         {{ DeclareArchetypePropertyGetters(Component)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Server', 'Authority', false)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Server', 'Authority', true)|indent(8) -}}
@@ -380,14 +403,13 @@ namespace {{ Component.attrib['Namespace'] }}
     public:
 {% if ComponentDerived %}
         AZ_CLASS_ALLOCATOR({{ ComponentBaseName }}, AZ::SystemAllocator, 0);
-        AZ_RTTI({{ ComponentBaseName }}, s_{{ LowerFirst(ComponentName) }}ConcreteUuid, AZ::Component);
+        AZ_RTTI({{ ComponentBaseName }}, "{{ (ComponentBaseName) | createHashGuid }}", Multiplayer::MultiplayerComponent);
 {% else %}
         AZ_MULTIPLAYER_COMPONENT({{ Component.attrib['Namespace'] }}::{{ ComponentBaseName }}, s_{{ LowerFirst(ComponentName) }}ConcreteUuid, Multiplayer::MultiplayerComponent);
 {% endif %}
 
-        static const Multiplayer::NetComponentId s_componentId = static_cast<Multiplayer::NetComponentId>({{ Component.attrib['Namespace'] }}::ComponentTypes::{{ Component.attrib['Name'] }});
-
         static void Reflect(AZ::ReflectContext* context);
+        static void ReflectToEditContext(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
@@ -416,10 +438,10 @@ namespace {{ Component.attrib['Namespace'] }}
         bool HandleRpcMessage(Multiplayer::NetEntityRole remoteRole, Multiplayer::NetworkEntityRpcMessage& rpcMessage) override;
         bool SerializeStateDeltaMessage(Multiplayer::ReplicationRecord& replicationRecord, AzNetworking::ISerializer& serializer) override;
         void NotifyStateDeltaChanges(Multiplayer::ReplicationRecord& replicationRecord) override;
-
-    protected:
         bool HasController() const override;
         MultiplayerController* GetController() override;
+
+    protected:
         void ConstructController() override;
         void DestructController() override;
         void ActivateController(Multiplayer::EntityIsMigrating entityIsMigrating) override;
@@ -427,6 +449,7 @@ namespace {{ Component.attrib['Namespace'] }}
         void NetworkAttach(Multiplayer::NetBindComponent* netBindComponent, Multiplayer::ReplicationRecord& currentEntityRecord, Multiplayer::ReplicationRecord& predictableEntityRecord) override;
         //! @}
 
+        {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Authority', true)|indent(8) -}}
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Server', true)|indent(8) -}}
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Autonomous', true)|indent(8) -}}
         {{ DeclareNetworkPropertyGetters(Component, 'Autonomous', 'Authority', true)|indent(8) -}}
@@ -440,6 +463,10 @@ namespace {{ Component.attrib['Namespace'] }}
 {%      endif %}
 {% endfor %}
     private:
+        //! Authority To Authority serializers (hot backup in case of server failure)
+        bool SerializeAuthorityToAuthorityProperties({{ RecordName }}& replicationRecord, AzNetworking::ISerializer& serializer);
+        void NotifyChangesAuthorityToAuthorityProperties(const {{ RecordName }}& replicationRecord) const;
+
         //! Authority to Client serializers
         bool SerializeAuthorityToClientProperties({{ RecordName }}& replicationRecord, AzNetworking::ISerializer& serializer);
         void NotifyChangesAuthorityToClientProperties(const {{ RecordName }}& replicationRecord) const;
@@ -456,24 +483,42 @@ namespace {{ Component.attrib['Namespace'] }}
         bool SerializeAutonomousToAuthorityProperties({{ RecordName }}& replicationRecord, AzNetworking::ISerializer& serializer);
         void NotifyChangesAutonomousToAuthorityProperties(const {{ RecordName }}& replicationRecord) const;
 
+        //! Debug name helpers
+        static const char* GetNetworkPropertyName(PropertyIndex propertyIndex);
+        static const char* GetRpcName(RpcIndex rpcIndex);
+
         AZStd::unique_ptr<{{ RecordName }}> m_currentRecord;
         AZStd::unique_ptr<{{ ControllerName }}> m_controller;
 
         //! Network Properties
+        {{ DeclareNetworkPropertyVars(Component, 'Authority', 'Authority')|indent(8) -}}
         {{ DeclareNetworkPropertyVars(Component, 'Authority', 'Server')|indent(8) -}}
         {{ DeclareNetworkPropertyVars(Component, 'Authority', 'Client')|indent(8) -}}
         {{ DeclareNetworkPropertyVars(Component, 'Authority', 'Autonomous')|indent(8) -}}
         {{ DeclareNetworkPropertyVars(Component, 'Autonomous', 'Authority')|indent(8) }}
+
+        //! Network Properties for reflection and editor support
+        {{ DeclareNetworkPropertyReflectVars(Component, 'Authority', 'Authority')|indent(8) -}}
+        {{ DeclareNetworkPropertyReflectVars(Component, 'Authority', 'Server')|indent(8) -}}
+        {{ DeclareNetworkPropertyReflectVars(Component, 'Authority', 'Client')|indent(8) -}}
+        {{ DeclareNetworkPropertyReflectVars(Component, 'Authority', 'Autonomous')|indent(8) -}}
+        {{ DeclareNetworkPropertyReflectVars(Component, 'Autonomous', 'Authority')|indent(8) }}
+
         //! NetworkProperty Events
+        {{ DeclareNetworkPropertyEvents(Component, 'Authority', 'Authority')|indent(8) -}}
         {{ DeclareNetworkPropertyEvents(Component, 'Authority', 'Server')|indent(8) -}}
         {{ DeclareNetworkPropertyEvents(Component, 'Authority', 'Client')|indent(8) -}}
         {{ DeclareNetworkPropertyEvents(Component, 'Authority', 'Autonomous')|indent(8) -}}
         {{ DeclareNetworkPropertyEvents(Component, 'Autonomous', 'Authority')|indent(8) }}
+
         //! Archetype Properties
         {{ DeclareArchetypePropertyVars(Component)|indent(8) }}
 {% call(Type, Name) AutoComponentMacros.ParseComponentServiceTypeAndName(Component) %}
 	    {{ Type }}* {{ Name }} = nullptr;
 {% endcall %}
+
+        static NetComponentId s_netComponentId;
+        friend void RegisterMultiplayerComponents();
     };
 }
 {% endfor %}

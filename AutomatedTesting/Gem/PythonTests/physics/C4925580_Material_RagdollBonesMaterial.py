@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test Case ID    : C4925580
 # Test Case Title : Verify that Material can be assigned to Ragdoll Bones and they behave as per their material
-# Test Case URL   : https://testrail.agscollab.com/index.php?/cases/view/4925580
+
 
 
 # fmt: off
@@ -61,7 +61,7 @@ def C4925580_Material_RagdollBonesMaterial():
     8) Exit game mode and close editor
 
     Note:
-    - This test file must be called from the Lumberyard Editor command terminal
+    - This test file must be called from the Open 3D Engine Editor command terminal
     - Any passed and failed tests are written to the Editor.log file.
             Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -75,13 +75,12 @@ def C4925580_Material_RagdollBonesMaterial():
 
     imports.init()
 
-
     import azlmbr.legacy.general as general
     import azlmbr.bus
     import azlmbr.components
     import azlmbr.physics
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     # Constants
     TIME_OUT_SECONDS = 3.0
@@ -202,5 +201,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C4925580_Material_RagdollBonesMaterial)

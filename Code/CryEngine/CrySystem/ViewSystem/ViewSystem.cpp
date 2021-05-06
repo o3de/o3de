@@ -533,13 +533,6 @@ void CViewSystem::BeginCutScene(IAnimSequence* pSeq, [[maybe_unused]] unsigned l
 {
     m_cutsceneCount++;
 
-    IConsole* pCon = gEnv->pConsole;
-
-    if (m_cutsceneCount == 1)
-    {
-        gEnv->p3DEngine->ResetPostEffects();
-    }
-
     VS_CALL_LISTENERS(OnBeginCutScene(pSeq, bResetFX));
 }
 
@@ -547,13 +540,6 @@ void CViewSystem::BeginCutScene(IAnimSequence* pSeq, [[maybe_unused]] unsigned l
 void CViewSystem::EndCutScene(IAnimSequence* pSeq, [[maybe_unused]] unsigned long dwFlags)
 {
     m_cutsceneCount -= (m_cutsceneCount > 0);
-
-    IConsole* pCon = gEnv->pConsole;
-
-    if (m_cutsceneCount == 0)
-    {
-        gEnv->p3DEngine->ResetPostEffects();
-    }
 
     ClearCutsceneViews();
 

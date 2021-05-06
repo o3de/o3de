@@ -98,10 +98,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::DefaultAsset, &EditorMaterialComponentSlot::GetDefaultAssetId)
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &EditorMaterialComponentSlot::GetLabel)
                             ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, true)
-                            ->Attribute("ShowThumbnail", true)
-                            ->Attribute("EditButton", ":/Cards/img/UI20/Cards/menu_ico.svg")
-                            ->Attribute("EditDescription", "")
-                            ->Attribute("EditCallback", &EditorMaterialComponentSlot::OpenPopupMenu)
+                            ->Attribute("ThumbnailCallback", &EditorMaterialComponentSlot::OpenPopupMenu)
                         ;
                 }
             }
@@ -109,7 +106,6 @@ namespace AZ
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->Class<EditorMaterialComponentSlot>("EditorMaterialComponentSlot")
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                     ->Attribute(AZ::Script::Attributes::Category, "Editor")
                     ->Attribute(AZ::Script::Attributes::Module, "editor")
@@ -272,6 +268,8 @@ namespace AZ
             QMenu menu;
 
             QAction* action = nullptr;
+
+            menu.addAction("Open Material Editor", [this]() { EditorMaterialSystemComponentRequestBus::Broadcast(&EditorMaterialSystemComponentRequestBus::Events::OpenInMaterialEditor, ""); });
 
             action = menu.addAction("Clear", [this]() { Clear(); });
             action->setEnabled(m_materialAsset.GetId().IsValid() || !m_propertyOverrides.empty() || !m_matModUvOverrides.empty());

@@ -22,7 +22,7 @@
 #include <Integration/Components/AnimAudioComponent.h>
 
 #include <LmbrCentral/Audio/AudioProxyComponentBus.h>
-#include <LmbrCentral/Rendering/MeshComponentBus.h>     // for SkeletalHierarchyRequestBus
+#include <LmbrCentral/Animation/SkeletalHierarchyRequestBus.h>
 
 #include <MathConversion.h>
 
@@ -509,7 +509,6 @@ namespace EMotionFX
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->EBus<EMotionFX::Integration::AnimAudioComponentRequestBus>("AnimAudioComponentRequestBus")
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::Preview)
                     ->Attribute(AZ::Script::Attributes::Category, "Animation")
                     ->Event("AddTriggerEvent", &AnimAudioComponentRequestBus::Events::AddTriggerEvent)
                     ->Event("ClearTriggerEvents", &AnimAudioComponentRequestBus::Events::ClearTriggerEvents)

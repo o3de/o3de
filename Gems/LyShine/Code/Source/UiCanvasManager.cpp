@@ -11,6 +11,7 @@
 */
 #include "LyShine_precompiled.h"
 #include "UiCanvasManager.h"
+#include <LyShine/Draw2d.h>
 
 #include "UiCanvasFileObject.h"
 #include "UiCanvasComponent.h"
@@ -32,6 +33,8 @@
 #include <LyShine/Bus/UiCursorBus.h>
 #include <LyShine/Bus/World/UiCanvasOnMeshBus.h>
 #include <LyShine/Bus/World/UiCanvasRefBus.h>
+
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 
 #ifndef _RELEASE
 #include <AzFramework/IO/LocalFileIO.h>
@@ -609,10 +612,12 @@ void UiCanvasManager::RenderLoadedCanvases()
         m_fontTextureHasChanged = false;
     }
 
+#ifdef LYSHINE_ATOM_TODO // render target conversion to Atom
     // clear the stencil buffer before rendering the loaded canvases - required for masking
     // NOTE: We want to use ClearTargetsImmediately instead of ClearTargetsLater since we will not be setting the render target
     ColorF viewportBackgroundColor(0, 0, 0, 0); // if clearing color we want to set alpha to zero also
     gEnv->pRenderer->ClearTargetsImmediately(FRT_CLEAR_STENCIL, viewportBackgroundColor);
+#endif
 
     for (auto canvas : m_loadedCanvases)
     {
@@ -633,7 +638,6 @@ void UiCanvasManager::DestroyLoadedCanvases(bool keepCrossLevelCanvases)
     for (auto iter = m_loadedCanvases.begin(); iter != m_loadedCanvases.end(); ++iter)
     {
         auto canvas = *iter;
-        bool removed = false;
 
         if (!(keepCrossLevelCanvases && canvas->GetKeepLoadedOnLevelUnload()))
         {
@@ -779,7 +783,6 @@ void UiCanvasManager::SortCanvasesByDrawOrder()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 UiCanvasComponent* UiCanvasManager::FindCanvasComponentByPathname(const AZStd::string& name)
 {
-    UiCanvasComponent* match = nullptr;
     AZStd::string adjustedSearchName = GetAssePathFromUserDefinedPath(name);
     for (auto canvas : (m_loadedCanvases))
     {
@@ -795,7 +798,6 @@ UiCanvasComponent* UiCanvasManager::FindCanvasComponentByPathname(const AZStd::s
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 UiCanvasComponent* UiCanvasManager::FindEditorCanvasComponentByPathname(const AZStd::string& name)
 {
-    UiCanvasComponent* match = nullptr;
     for (auto canvas : (m_loadedCanvasesInEditor))
     {
         if (name == canvas->GetPathname())
@@ -1001,19 +1003,15 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
 {
     bool onlyShowEnabledCanvases = (setting == 2) ? true : false;
 
-    IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
-
-    draw2d->BeginDraw2d(false);
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     float xOffset = 20.0f;
     float yOffset = 20.0f;
-    float xSpacing = 20.0f;
 
     const int elementNameFieldLength = 20;
 
-    float opacity = 1.0f;
+    auto blackTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Black);
 
-    int blackTexture = gEnv->pRenderer->GetBlackTextureId();
     float textOpacity = 1.0f;
     float backgroundRectOpacity = 0.75f;
 
@@ -1158,24 +1156,17 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
         totalEnabledIntrs, totalEnabledUpdates);
 
     WriteLine(buffer, red);
-
-    draw2d->EndDraw2d();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasManager::DebugDisplayDrawCallData() const
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
-
-    draw2d->BeginDraw2d(false);
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     float xOffset = 20.0f;
     float yOffset = 20.0f;
-    float xSpacing = 20.0f;
 
-    float opacity = 1.0f;
-
-    int blackTexture = gEnv->pRenderer->GetBlackTextureId();
+    auto blackTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Black);
     float textOpacity = 1.0f;
     float backgroundRectOpacity = 0.75f;
     const float lineSpacing = 20.0f;
@@ -1302,8 +1293,6 @@ void UiCanvasManager::DebugDisplayDrawCallData() const
         totalDueToMaxVerts, totalDueToTextures);
 
     WriteLine(buffer, red);
-
-    draw2d->EndDraw2d();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1501,9 +1490,7 @@ void UiCanvasManager::DebugReportDrawCalls(const AZStd::string& name) const
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasManager::DebugDisplayElemBounds(int canvasIndexFilter) const
 {
-    IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
-
-    draw2d->BeginDraw2d(false);
+    CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     int canvasIndex = 0;
     for (auto canvas : m_loadedCanvases)
@@ -1524,8 +1511,6 @@ void UiCanvasManager::DebugDisplayElemBounds(int canvasIndexFilter) const
 
         ++canvasIndex;  // only increments for enabled canvases so index matches "ui_DisplayCanvasData 2"
     }
-
-    draw2d->EndDraw2d();
 }
 
 #endif

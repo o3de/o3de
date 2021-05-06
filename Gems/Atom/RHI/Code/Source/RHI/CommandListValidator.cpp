@@ -151,7 +151,7 @@ namespace AZ
             const FrameAttachment* frameAttachment) const
         {
             AZ_Assert(frameAttachment, "Frame attachment is null.");
-            const char* attachmentName = frameAttachment->GetId().GetCStr();
+            [[maybe_unused]] const char* attachmentName = frameAttachment->GetId().GetCStr();
 
             const AZStd::vector<const ScopeAttachment*>* scopeAttachments = nullptr;
             auto findIt = m_attachments.find(frameAttachment->GetResource());
@@ -239,8 +239,8 @@ namespace AZ
         {
             const ResourceView& resourceView = *context.m_resourceView;
             const Resource& resource = resourceView.GetResource();
-            const char* resourceViewName = resourceView.GetName().GetCStr();
-            const char* resourceName = resource.GetName().GetCStr();
+            [[maybe_unused]] const char* resourceViewName = resourceView.GetName().GetCStr();
+            [[maybe_unused]] const char* resourceName = resource.GetName().GetCStr();
 
             if (resourceView.IsStale())
             {

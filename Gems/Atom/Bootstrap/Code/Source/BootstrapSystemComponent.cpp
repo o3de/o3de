@@ -115,7 +115,7 @@ namespace AZ
                 {
                     // GFX TODO - investigate window creation being part of the GameApplication.
 
-                    m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>("LumberyardLauncher", AzFramework::WindowGeometry(0, 0, 1920, 1080));
+                    m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>("O3DELauncher", AzFramework::WindowGeometry(0, 0, 1920, 1080));
                     AZ_Assert(m_nativeWindow, "Failed to create the game window\n");
 
                     m_nativeWindow->Activate();
@@ -269,7 +269,7 @@ namespace AZ
 
                 // Register scene to RPI system so it will be processed/rendered per tick
                 RPI::RPISystemInterface::Get()->RegisterScene(atomScene);
-                scene->SetSubsystem(atomScene.get());
+                scene->SetSubsystem(atomScene);
 
                 atomSceneHandle = atomScene;
 
@@ -279,11 +279,19 @@ namespace AZ
             void BootstrapSystemComponent::CreateDefaultScene()
             {
                 // Bind atomScene to the GameEntityContext's AzFramework::Scene
-                AZStd::vector<AzFramework::Scene*> scenes;
-                AzFramework::SceneSystemRequestBus::BroadcastResult(scenes, &AzFramework::SceneSystemRequests::GetAllScenes);
-                AZ_Assert(scenes.size() > 0, "Error: Scenes missing during system component initialization"); // This should never happen unless scene creation has changed.
-                m_defaultFrameworkScene = scenes[0];
-                m_defaultScene = GetOrCreateAtomSceneFromAzScene(m_defaultFrameworkScene);
+                m_defaultFrameworkScene = AzFramework::SceneSystemInterface::Get()->GetScene(AzFramework::Scene::MainSceneName);
+                // This should never happen unless scene creation has changed.
+                AZ_Assert(m_defaultFrameworkScene, "Error: Scenes missing during system component initialization");
+                m_sceneRemovalHandler = AzFramework::Scene::RemovalEvent::Handler(
+                    [this](AzFramework::Scene&, AzFramework::Scene::RemovalEventType eventType)
+                    {
+                        if (eventType == AzFramework::Scene::RemovalEventType::Zombified)
+                        {
+                            m_defaultFrameworkScene.reset();
+                        }
+                    });
+                m_defaultFrameworkScene->ConnectToEvents(m_sceneRemovalHandler);
+                m_defaultScene = GetOrCreateAtomSceneFromAzScene(m_defaultFrameworkScene.get());
             }
 
             bool BootstrapSystemComponent::EnsureDefaultRenderPipelineInstalledForScene(AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext)
@@ -378,6 +386,23 @@ namespace AZ
             {
                 m_simulateTime += deltaTime;
                 m_deltaTime = deltaTime;
+
+                // Temp: When running in the launcher without the legacy renderer
+                // we need to call RenderTick on the viewport context each frame.
+                if (m_viewportContext)
+                {
+                    AZ::ApplicationTypeQuery appType;
+                    ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+                    if (appType.IsGame())
+                    {
+                        m_viewportContext->RenderTick();
+                    }
+                }
+            }
+
+            int BootstrapSystemComponent::GetTickOrder()
+            {
+                return TICK_LAST;
             }
 
             void BootstrapSystemComponent::OnWindowClosed()
@@ -386,15 +411,6 @@ namespace AZ
                 m_viewportContext.reset();
                 AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
                 AzFramework::WindowNotificationBus::Handler::BusDisconnect();
-            }
-
-            void BootstrapSystemComponent::SceneAboutToBeRemoved(AzFramework::Scene& scene)
-            {
-                if (&scene == m_defaultFrameworkScene)
-                {
-                    // Set to nullptr so we don't try to unbind the RPI::Scene from it later.
-                    m_defaultFrameworkScene = nullptr;
-                }
             }
 
             AzFramework::NativeWindowHandle BootstrapSystemComponent::GetDefaultWindowHandle()

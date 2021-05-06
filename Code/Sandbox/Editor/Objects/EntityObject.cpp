@@ -25,21 +25,15 @@
 #include "Settings.h"
 #include "Viewport.h"
 #include "LineGizmo.h"
-#include "Material/MaterialManager.h"
 #include "Include/IObjectManager.h"
 #include "Objects/ObjectManager.h"
 #include "ViewManager.h"
-#include "LensFlareEditor/LensFlareManager.h"
-#include "LensFlareEditor/LensFlareUtil.h"
-#include "LensFlareEditor/LensFlareLibrary.h"
 #include "AnimationContext.h"
 #include "HitContext.h"
 #include "Objects/SelectionGroup.h"
 
-
-const char* CEntityObject::s_LensFlarePropertyName("flare_Flare");
-const char* CEntityObject::s_LensFlareMaterialName("EngineAssets/Materials/lens_optics");
-
+#include <IEntityRenderState.h>
+#include <IStatObj.h>
 
 //////////////////////////////////////////////////////////////////////////
 //! Undo Entity Link
@@ -1084,11 +1078,6 @@ XmlNodeRef CEntityObject::Export([[maybe_unused]] const QString& levelPath, XmlN
 
     objNode->setAttr("Name", GetName().toUtf8().data());
 
-    if (GetMaterial())
-    {
-        objNode->setAttr("Material", GetMaterial()->GetName().toUtf8().data());
-    }
-
     Vec3 pos = GetPos(), scale = GetScale();
     Quat rotate = GetRotation();
 
@@ -1868,20 +1857,8 @@ void CEntityObject::OnLoadFailed()
 }
 
 //////////////////////////////////////////////////////////////////////////
-CMaterial* CEntityObject::GetRenderMaterial() const
-{
-    if (GetMaterial())
-    {
-        return GetMaterial();
-    }
-
-    return NULL;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CEntityObject::SetHelperScale(float scale)
 {
-    bool bChanged = m_helperScale != scale;
     m_helperScale = scale;
 }
 
@@ -1952,200 +1929,11 @@ void CEntityObject::OnContextMenu(QMenu* pMenu)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CEntityObject::OnMaterialChanged(MaterialChangeFlags change)
-{
-    if (change & MATERIALCHANGE_SURFACETYPE)
-    {
-        m_statObjValidator.Validate(0, GetRenderMaterial());
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-QString CEntityObject::GetTooltip() const
-{
-    return m_statObjValidator.GetDescription();
-}
-
-//////////////////////////////////////////////////////////////////////////
-IOpticsElementBasePtr CEntityObject::GetOpticsElement()
-{
-    CDLight* pLight = GetLightProperty();
-    if (pLight == NULL)
-    {
-        return NULL;
-    }
-    return pLight->GetLensOpticsElement();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CEntityObject::SetOpticsElement(IOpticsElementBase* pOptics)
-{
-    CDLight* pLight = GetLightProperty();
-    if (pLight == NULL)
-    {
-        return;
-    }
-    pLight->SetLensOpticsElement(pOptics);
-    if (GetEntityPropertyBool("bFlareEnable") && pOptics)
-    {
-        CBaseObject::SetMaterial(s_LensFlareMaterialName);
-    }
-    else
-    {
-        SetMaterial(NULL);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CEntityObject::ApplyOptics(const QString& opticsFullName, IOpticsElementBasePtr pOptics)
-{
-    if (pOptics == NULL)
-    {
-        CDLight* pLight = GetLightProperty();
-        if (pLight)
-        {
-            pLight->SetLensOpticsElement(NULL);
-        }
-        SetFlareName("");
-        SetMaterial(NULL);
-    }
-    else
-    {
-        int nOpticsIndex(0);
-        if (!gEnv->pOpticsManager->Load(opticsFullName.toUtf8().data(), nOpticsIndex))
-        {
-            IOpticsElementBasePtr pNewOptics = gEnv->pOpticsManager->Create(eFT_Root);
-            if (!gEnv->pOpticsManager->AddOptics(pNewOptics, opticsFullName.toUtf8().data(), nOpticsIndex))
-            {
-                CDLight* pLight = GetLightProperty();
-                if (pLight)
-                {
-                    pLight->SetLensOpticsElement(NULL);
-                    SetMaterial(NULL);
-                }
-                return;
-            }
-            LensFlareUtil::CopyOptics(pOptics, pNewOptics);
-        }
-        SetFlareName(opticsFullName);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CEntityObject::SetOpticsName(const QString& opticsFullName)
-{
-    bool bUpdateOpticsProperty = true;
-
-    if (opticsFullName.isEmpty())
-    {
-        CDLight* pLight = GetLightProperty();
-        if (pLight)
-        {
-            pLight->SetLensOpticsElement(NULL);
-        }
-        SetFlareName("");
-        SetMaterial(NULL);
-    }
-    else
-    {
-        if (GetOpticsElement())
-        {
-            if (gEnv->pOpticsManager->Rename(GetOpticsElement()->GetName(), opticsFullName.toUtf8().data()))
-            {
-                SetFlareName(opticsFullName);
-            }
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-CDLight* CEntityObject::GetLightProperty() const
-{
-    const PodArray<ILightSource*>* pLightEntities = GetIEditor()->Get3DEngine()->GetLightEntities();
-    if (pLightEntities == NULL)
-    {
-        return NULL;
-    }
-    for (int i = 0, iLightSize(pLightEntities->Count()); i < iLightSize; ++i)
-    {
-        ILightSource* pLightSource = pLightEntities->GetAt(i);
-        if (pLightSource == NULL)
-        {
-            continue;
-        }
-        CDLight& lightProperty = pLightSource->GetLightProperties();
-        if (GetName() != lightProperty.m_sName)
-        {
-            continue;
-        }
-        return &lightProperty;
-    }
-    return NULL;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CEntityObject::GetValidFlareName(QString& outFlareName) const
-{
-    IVariable* pFlareVar(m_pProperties->FindVariable(s_LensFlarePropertyName));
-    if (!pFlareVar)
-    {
-        return false;
-    }
-
-    QString flareName;
-    pFlareVar->Get(flareName);
-    if (flareName.isEmpty() || flareName == "@root")
-    {
-        return false;
-    }
-
-    outFlareName = flareName;
-
-    return true;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CEntityObject::PreInitLightProperty()
 {
     if (!IsLight() || !m_pProperties)
     {
         return;
-    }
-
-    QString flareFullName;
-    if (GetValidFlareName(flareFullName))
-    {
-        bool bEnableOptics = GetEntityPropertyBool("bFlareEnable");
-        if (bEnableOptics)
-        {
-            CLensFlareManager* pLensManager = GetIEditor()->GetLensFlareManager();
-            CLensFlareLibrary* pLevelLib = (CLensFlareLibrary*)pLensManager->GetLevelLibrary();
-            IOpticsElementBasePtr pLevelOptics = pLevelLib->GetOpticsOfItem(flareFullName.toUtf8().data());
-            if (pLevelLib && pLevelOptics)
-            {
-                int nOpticsIndex(0);
-                IOpticsElementBasePtr pNewOptics = GetOpticsElement();
-                if (pNewOptics == NULL)
-                {
-                    pNewOptics = gEnv->pOpticsManager->Create(eFT_Root);
-                }
-
-                if (gEnv->pOpticsManager->AddOptics(pNewOptics, flareFullName.toUtf8().data(), nOpticsIndex))
-                {
-                    LensFlareUtil::CopyOptics(pLevelOptics, pNewOptics);
-                    SetOpticsElement(pNewOptics);
-                }
-                else
-                {
-                    CDLight* pLight = GetLightProperty();
-                    if (pLight)
-                    {
-                        pLight->SetLensOpticsElement(NULL);
-                        SetMaterial(NULL);
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -2155,26 +1943,6 @@ void CEntityObject::UpdateLightProperty()
     if (!IsLight() || !m_pProperties)
     {
         return;
-    }
-
-    QString flareName;
-    if (GetValidFlareName(flareName))
-    {
-        IOpticsElementBasePtr pOptics = GetOpticsElement();
-        if (pOptics == NULL)
-        {
-            pOptics = gEnv->pOpticsManager->Create(eFT_Root);
-        }
-        bool bEnableOptics = GetEntityPropertyBool("bFlareEnable");
-        if (bEnableOptics && GetIEditor()->GetLensFlareManager()->LoadFlareItemByName(flareName, pOptics))
-        {
-            pOptics->SetName(flareName.toUtf8().data());
-            SetOpticsElement(pOptics);
-        }
-        else
-        {
-            SetOpticsElement(NULL);
-        }
     }
 }
 

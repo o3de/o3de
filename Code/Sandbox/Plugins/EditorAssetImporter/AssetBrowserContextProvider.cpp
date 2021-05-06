@@ -75,7 +75,7 @@ namespace AZ
             return;
         }
 
-        openers.push_back({ "Lumberyard_FBX_Settings_Edit", "Edit Settings...", QIcon(), [](const char* fullSourceFileNameInCallback, const AZ::Uuid& /*sourceUUID*/)
+        openers.push_back({ "O3DE_FBX_Settings_Edit", "Edit Settings...", QIcon(), [](const char* fullSourceFileNameInCallback, const AZ::Uuid& /*sourceUUID*/)
         {
             AZStd::string sourceName(fullSourceFileNameInCallback); // because the below call absolutely requires a AZStd::string.
             AssetImporterPlugin::GetInstance()->EditImportSettings(sourceName);
@@ -94,7 +94,7 @@ namespace AZ
             {
                 if (AzFramework::StringFunc::Equal(extensionString.c_str(), potentialExtension.c_str()))
                 {
-                    return AzToolsFramework::AssetBrowser::SourceFileDetails("Editor/Icons/AssetBrowser/FBX_16.png");
+                    return AzToolsFramework::AssetBrowser::SourceFileDetails("Icons/AssetBrowser/FBX_16.png");
                 }
             }
         }

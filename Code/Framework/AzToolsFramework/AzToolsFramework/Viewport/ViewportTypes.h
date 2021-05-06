@@ -202,13 +202,19 @@ namespace AzToolsFramework
             return mouseInteractionEvent.m_wheelDelta;
         }
 
-        /// Return Qt QPoint from an Viewport ScreenPoint.
+        /// Return QPoint from AzFramework::ScreenPoint.
         inline QPoint QPointFromScreenPoint(const AzFramework::ScreenPoint& screenPoint)
         {
             return {screenPoint.m_x, screenPoint.m_y};
         }
 
-        /// Map from Qt -> Lumberyard buttons.
+        /// Return AzFramework::ScreenPoint from QPoint.
+        inline AzFramework::ScreenPoint ScreenPointFromQPoint(const QPoint& qpoint)
+        {
+            return AzFramework::ScreenPoint{qpoint.x(), qpoint.y()};
+        }
+
+        /// Map from Qt -> Open 3D Engine buttons.>>>>>>> main
         inline AZ::u32 TranslateMouseButtons(const Qt::MouseButtons buttons)
         {
             AZ::u32 result = 0;
@@ -218,7 +224,7 @@ namespace AzToolsFramework
             return result;
         }
 
-        /// Map from Qt -> Lumberyard modifiers.
+        /// Map from Qt -> Open 3D Engine modifiers.
         inline AZ::u32 TranslateKeyboardModifiers(const Qt::KeyboardModifiers modifiers)
         {
             AZ::u32 result = 0;
@@ -228,13 +234,13 @@ namespace AzToolsFramework
             return result;
         }
 
-        /// Interface to translate Qt modifiers to Lumberyard modifiers.
+        /// Interface to translate Qt modifiers to Open 3D Engine modifiers.
         inline KeyboardModifiers BuildKeyboardModifiers(const Qt::KeyboardModifiers modifiers)
         {
             return KeyboardModifiers(TranslateKeyboardModifiers(modifiers));
         }
 
-        /// Interface to translate Qt buttons to Lumberyard buttons.
+        /// Interface to translate Qt buttons to Open 3D Engine buttons.
         inline MouseButtons BuildMouseButtons(const Qt::MouseButtons buttons)
         {
             return MouseButtons(TranslateMouseButtons(buttons));
@@ -250,9 +256,5 @@ namespace AzToolsFramework
 
         /// Reflect all viewport related types.
         void ViewportInteractionReflect(AZ::ReflectContext* context);
-
-        /// The Id the main DebugDisplayRequestBus will be connected on.
-        extern const AZ::s32 g_mainViewportEntityDebugDisplayId;
-
     } // namespace ViewportInteraction
 } // namespace AzToolsFramework

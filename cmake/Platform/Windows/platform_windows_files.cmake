@@ -14,6 +14,7 @@ set(FILES
     ../Common/VisualStudio_common.cmake
     ../Common/Configurations_common.cmake
     ../Common/MSVC/Configurations_msvc.cmake
+    ../Common/Install_common.cmake
     ../Common/LYWrappers_default.cmake
     ../Common/TargetIncludeSystemDirectories_unsupported.cmake
     Configurations_windows.cmake
@@ -21,4 +22,5 @@ set(FILES
     LYWrappers_windows.cmake
     PAL_windows.cmake
     PALDetection_windows.cmake
+    Install_windows.cmake
 )

@@ -32,8 +32,8 @@
                     }
                 },
                 {
-                    "Name": "SpotLightShadowmap",
-                    "ShaderInputName": "m_spotLightShadowmaps",
+                    "Name": "ProjectedShadowmap",
+                    "ShaderInputName": "m_projectedShadowmaps",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
                     "ImageViewDesc": {
@@ -41,8 +41,8 @@
                     }
                 },
                 {
-                    "Name": "ExponentialShadowmapSpot",
-                    "ShaderInputName": "m_spotLightExponentialShadowmap",
+                    "Name": "ExponentialShadowmapProjected",
+                    "ShaderInputName": "m_projectedExponentialShadowmap",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
                     "ImageViewDesc": {
@@ -100,14 +100,6 @@
                 },
                 {
                     "Name": "NormalOutput",
-                    "SlotType": "Output",
-                    "ScopeAttachmentUsage": "RenderTarget",
-                    "LoadStoreAction": {
-                        "LoadAction": "Clear"
-                    }
-                },
-                {
-                    "Name": "ClearCoatNormalOutput",
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "RenderTarget",
                     "LoadStoreAction": {
@@ -226,22 +218,6 @@
                     "AssetRef": {
                         "FilePath": "Textures/BRDFTexture.attimage"
                     }
-                },
-                {
-                    "Name": "ClearCoatNormalImage",
-                    "SizeSource": {
-                        "Source": {
-                            "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
-                        }
-                    },
-                    "ImageDescriptor": {
-                        "Format": "R16G16B16A16_FLOAT",
-                        "MultisampleState": {
-                            "samples": 2
-                        },
-                        "SharedQueueMask": "Graphics"
-                    }
                 }
             ],
             "Connections": [
@@ -292,13 +268,6 @@
                     "AttachmentRef": {
                         "Pass": "This",
                         "Attachment": "BRDFTexture"
-                    }
-                },
-                {
-                    "LocalSlot": "ClearCoatNormalOutput",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "ClearCoatNormalImage"
                     }
                 }
             ]

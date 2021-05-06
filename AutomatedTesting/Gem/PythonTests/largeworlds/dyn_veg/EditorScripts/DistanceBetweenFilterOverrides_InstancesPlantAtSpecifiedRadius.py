@@ -20,8 +20,8 @@ import azlmbr.math as math
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-import automatedtesting_shared.hydra_editor_utils as hydra
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
 
 
@@ -44,7 +44,7 @@ class TestDistanceBetweenFilterComponentOverrides(EditorTestHelper):
         expected instance counts with a few different Radius values
 
         Note:
-        - This test file must be called from the Lumberyard Editor command terminal
+        - This test file must be called from the Open 3D Engine Editor command terminal
         - Any passed and failed tests are written to the Editor.log file.
                 Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -62,6 +62,8 @@ class TestDistanceBetweenFilterComponentOverrides(EditorTestHelper):
             terrain_texture_resolution=4096,
             use_terrain=False,
         )
+
+        general.set_current_view_position(512.0, 480.0, 38.0)
 
         # 2) Create a new entity with required vegetation area components
         spawner_center_point = math.Vector3(520.0, 520.0, 32.0)

@@ -158,7 +158,7 @@ return {{returnNames[0]}};
 {% endfor %}
 {# ExecutionOuts #}
 // ExecutionOuts begin
-{{ nodemacro.ExecutionOutDefinitions(Class, attribute_QualifiedName )}}
+{{ nodemacro.ExecutionOutDefinitions(Class, attribute_QualifiedName)}}
 // ExecutionOuts end
 {# Reflect #}
 void {{attribute_QualifiedName}}::Reflect(AZ::ReflectContext* context)
@@ -186,21 +186,16 @@ void {{attribute_QualifiedName}}::Reflect(AZ::ReflectContext* context)
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
 
 {% if attribute_Category is defined %}
-            ->Attribute(AZ::Edit::Attributes::Category, "{{ attribute_Category }}")
+                            ->Attribute(AZ::Edit::Attributes::Category, "{{ attribute_Category }}")
 {%- endif %}
-
 {% if attribute_Icon is defined %}
-            ->Attribute(AZ::Edit::Attributes::Icon, "{{ attribute_Icon }}")
+                            ->Attribute(AZ::Edit::Attributes::Icon, "{{ attribute_Icon }}")
 {%- endif %}
-
 {% if attribute_Deprecated is defined %}
-            ->Attribute(AZ::Edit::Attributes::Deprecated, "{{ attribute_Deprecated }}")
+                            ->Attribute(AZ::Edit::Attributes::Deprecated, "{{ attribute_Deprecated }}")
 {%- endif %}
-
 {% set uihandler = 'AZ::Edit::UIHandlers::Default' %}
-
-{% for Property in Class.iter('Property') %}
-{% for item in Property.iter('PropertyData') %}
+{% for item in Class.iter('Property') %}
 {% if item.attrib['UIHandler'] is defined %}
     {% set uihandler = item.attrib['UIHandler'] %}
 {% endif %}
@@ -208,12 +203,11 @@ void {{attribute_QualifiedName}}::Reflect(AZ::ReflectContext* context)
 {% if item.attrib['Description'] is defined %}
     {% set description = item.attrib['Description'] %}
 {% endif %}
-        // {{ item.attrib['Name'] }}
-                ->DataElement({{ uihandler }}, &{{ attribute_Name }}::{{ Property.attrib['Name'] }}, "{{ item.attrib['Name'] }}", "{{ description }}")
-{% for EditAttribute in Property.iter('EditAttribute') %}
-                            ->Attribute({{ EditAttribute.attrib['Key'] }}, {{ EditAttribute.attrib['Value'] }})
-{% endfor %}
-{% endfor %}
+                            // {{ item.attrib['Name'] }}
+                            ->DataElement({{ uihandler }}, &{{ attribute_Name }}::{{ item.attrib['Name'] }}, "{{ item.attrib['Name'] }}", "{{ description }}")
+{%          for EditAttribute in item.iter('EditAttribute') %}
+                                ->Attribute({{ EditAttribute.attrib['Key'] }}, {{ EditAttribute.attrib['Value'] }})
+{%          endfor %}
 {% endfor %}
                             ;
             }
@@ -224,6 +218,7 @@ void {{attribute_QualifiedName}}::Reflect(AZ::ReflectContext* context)
     {
         behaviorContext->Class<{{ attribute_Name }}>("{{ attribute_Name }}")
             ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
+            ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
 {% for inputMethod in Class.iter('Input') %}
 {% set methodName = inputMethod.attrib['Name'] %}
             // {{ inputMethod.attrib['Name'] }}

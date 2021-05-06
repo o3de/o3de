@@ -42,6 +42,7 @@ namespace UnitTest
 
         MOCK_METHOD3(InstantiateDynamicSlice, AzFramework::SliceInstantiationTicket(const AZ::Data::Asset<AZ::Data::AssetData>&, const AZ::Transform&, const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper&));
         MOCK_METHOD0(GetGameEntityContextId, AzFramework::EntityContextId());
+        MOCK_METHOD0(GetGameEntityContextInstance, AzFramework::EntityContext*());
         MOCK_METHOD1(CreateGameEntity, AZ::Entity*(const char*));
         MOCK_METHOD1(AddGameEntity, void (AZ::Entity*));
         MOCK_METHOD1(DestroyGameEntity, void (const AZ::EntityId&));
@@ -237,9 +238,11 @@ namespace UnitTest
         MockComponentApplication()
         {
             AZ::ComponentApplicationBus::Handler::BusConnect();
+            AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
         }
         ~MockComponentApplication()
         {
+            AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
             AZ::ComponentApplicationBus::Handler::BusDisconnect();
         }
 
@@ -274,6 +277,8 @@ namespace UnitTest
         MOCK_METHOD0(Destroy, void ());
         MOCK_METHOD1(RegisterComponentDescriptor, void (const AZ::ComponentDescriptor*));
         MOCK_METHOD1(UnregisterComponentDescriptor, void (const AZ::ComponentDescriptor*));
+        MOCK_METHOD1(RegisterEntityAddedEventHandler, void(AZ::EntityAddedEvent::Handler&));
+        MOCK_METHOD1(RegisterEntityRemovedEventHandler, void(AZ::EntityRemovedEvent::Handler&));
         MOCK_METHOD1(RemoveEntity, bool (AZ::Entity*));
         MOCK_METHOD1(DeleteEntity, bool (const AZ::EntityId&));
         MOCK_METHOD1(GetEntityName, AZStd::string (const AZ::EntityId&));

@@ -216,14 +216,9 @@ namespace AzToolsFramework::AssetUtils
         constexpr const char* AssetProcessorGamePlatformConfigFileName = "AssetProcessorGamePlatformConfig.ini";
         constexpr const char* AssetProcessorGamePlatformConfigSetreg = "AssetProcessorGamePlatformConfig.setreg";
         AZStd::vector<AZ::IO::Path> configFiles;
-        AZ::IO::Path configRoot(engineRoot);
 
-        AZ::IO::Path rootConfigFile = configRoot / AssetProcessorPlatformConfigFileName;
-        configFiles.push_back(rootConfigFile);
-
-        // Add a file entry for the Engine Root AssetProcessor setreg file
-        rootConfigFile = configRoot / AssetProcessorPlatformConfigSetreg;
-        configFiles.push_back(rootConfigFile);
+        // Add the AssetProcessorPlatformConfig setreg file at the engine root
+        configFiles.push_back(AZ::IO::Path(engineRoot) / AssetProcessorPlatformConfigSetreg);
 
         if (addPlatformConfigs)
         {
@@ -255,10 +250,8 @@ namespace AzToolsFramework::AssetUtils
         return configFiles;
     }
 
-    bool UpdateFilePathToCorrectCase(const QString& root, QString& relativePathFromRoot)
+    bool UpdateFilePathToCorrectCase(AZStd::string_view rootPath, AZStd::string& relPathFromRoot)
     {
-        AZStd::string rootPath(root.toUtf8().data());
-        AZStd::string relPathFromRoot(relativePathFromRoot.toUtf8().data());
         AZ::StringFunc::Path::Normalize(relPathFromRoot);
         AZStd::vector<AZStd::string> tokens;
         AZ::StringFunc::Tokenize(relPathFromRoot.c_str(), tokens, AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
@@ -321,7 +314,6 @@ namespace AzToolsFramework::AssetUtils
         {
             relPathFromRoot.clear();
             AZ::StringFunc::Join(relPathFromRoot, tokens.begin(), tokens.end(), AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
-            relativePathFromRoot = relPathFromRoot.c_str();
         }
 
         return success;

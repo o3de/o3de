@@ -24,6 +24,7 @@ namespace AZ
 
         ExecuteWorkRequest&& FrameGraphExecuteGroupBase::MakeWorkRequest()
         {
+#if defined(AZ_ENABLE_TRACING)
             if (AZ::RHI::Validation::IsEnabled())
             {
                 for (CommandList* commandList : m_workRequest.m_commandLists)
@@ -31,6 +32,7 @@ namespace AZ
                     AZ_Assert(commandList && commandList->IsRecording() == false, "Command list not valid.");
                 }
             }
+#endif
 
             return AZStd::move(m_workRequest);
         }

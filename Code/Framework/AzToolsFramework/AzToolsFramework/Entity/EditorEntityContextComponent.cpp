@@ -453,6 +453,7 @@ namespace AzToolsFramework
         {
             loadedSuccessfully = static_cast<PrefabEditorEntityOwnershipService*>(m_entityOwnershipService.get())->LoadFromStream(
                 stream, AZStd::string_view(levelPakFile.toUtf8(), levelPakFile.size()) );
+
         }
         
         LoadFromStreamComplete(loadedSuccessfully);
@@ -490,6 +491,14 @@ namespace AzToolsFramework
 
         EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnStartPlayInEditorBegin);
 
+        //cache the current selected entities.
+        ToolsApplicationRequests::Bus::BroadcastResult(m_selectedBeforeStartingGame, &ToolsApplicationRequests::GetSelectedEntities);
+        //deselect entities if selected when entering game mode before deactivating the entities in StartPlayInEditor(...)
+        if (!m_selectedBeforeStartingGame.empty())
+        {
+            ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::MarkEntitiesDeselected, m_selectedBeforeStartingGame);
+        }
+
         if (m_isLegacySliceService)
         {
             SliceEditorEntityOwnershipService* editorEntityOwnershipService =
@@ -505,8 +514,6 @@ namespace AzToolsFramework
         }
 
         m_isRunningGame = true;
-
-        ToolsApplicationRequests::Bus::BroadcastResult(m_selectedBeforeStartingGame, &ToolsApplicationRequests::GetSelectedEntities);
 
         EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnStartPlayInEditor);
     }

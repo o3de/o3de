@@ -1,0 +1,93 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <viewsrg.srgi>
+#include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
+#include <Atom/Features/PBR/LightingUtils.azsli>
+
+class LightingData
+{
+    LightCullingTileIterator tileIterator;
+    
+    // Lighting outputs
+    float3 diffuseLighting;
+    float3 specularLighting;
+    float3 translucentBackLighting;
+
+    // Factors for the amount of diffuse and specular lighting applied
+    float3 diffuseResponse;
+    float3 specularResponse;
+
+    // Direction light shadow coordinates
+    float3 shadowCoords[ViewSrg::MaxCascadeCount];
+
+    // Normalized direction from surface to camera
+    float3 dirToCamera;
+    
+    // Scaling term to approximate multiscattering contribution in specular BRDF
+    float3 multiScatterCompensation;
+
+    // Lighting emitted from the surface
+    float3 emissiveLighting;
+
+    // BRDF texture values
+    float2 brdf;
+
+    // Normal . View
+    float NdotV;
+
+    // Occlusion factors
+    // 0 = dark, 1 = light
+    float diffuseAmbientOcclusion;
+    float specularOcclusion;
+
+    void Init(float3 positionWS, float3 normal, float roughnessLinear);
+    void CalculateMultiscatterCompensation(float3 specularF0, bool enabled);
+    void FinalizeLighting(float3 transmissionTint);
+};
+
+void LightingData::Init(float3 positionWS, float3 normal, float roughnessLinear)
+{
+    diffuseLighting = 0;
+    specularLighting = 0;
+    translucentBackLighting = 0;
+    multiScatterCompensation = 1.0f;
+    emissiveLighting = float3(0.0f, 0.0f, 0.0f);
+    diffuseAmbientOcclusion = 1.0f;
+    specularOcclusion = 1.0f;
+
+    dirToCamera = normalize(ViewSrg::m_worldPosition.xyz - positionWS);
+
+    // sample BRDF map (indexed by smoothness values rather than roughness)
+    NdotV = saturate(dot(normal, dirToCamera));
+    float2 brdfUV = float2(NdotV, (1.0f - roughnessLinear));
+    brdf = PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg;
+}
+
+void LightingData::CalculateMultiscatterCompensation(float3 specularF0, bool enabled)
+{
+    multiScatterCompensation = GetMultiScatterCompensation(specularF0, brdf, enabled);
+}
+
+void LightingData::FinalizeLighting(float3 transmissionTint)
+{
+    specularLighting *= specularOcclusion;
+    specularLighting += emissiveLighting;
+
+    // Transmitted light
+    if(o_transmission_mode != TransmissionMode::None)
+    {
+        diffuseLighting += translucentBackLighting * transmissionTint;
+    }
+}

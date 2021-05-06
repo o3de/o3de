@@ -22,7 +22,7 @@
 #include <CrySizer.h>
 #include <Cry_Geo.h>    // for AABB
 #include <VertexFormats.h>
-#include <../RenderDll/Common/Shaders/Vertex.h>
+#include <Vertex.h>
 #include <AzCore/Casting/numeric_cast.h>
 
 // Description:
@@ -1983,7 +1983,6 @@ public:
 
         for (size_t i = 0, count = m_subsets.size(); i < count; ++i)
         {
-            const SMeshSubset& subset = m_subsets[i];
 
             float posArea;
             float texArea;

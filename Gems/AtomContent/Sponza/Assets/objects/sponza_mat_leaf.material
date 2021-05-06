@@ -13,6 +13,23 @@
             ],
             "textureMap": "Textures/thorn_basecolor.png"
         },
+        "clearCoat": {
+            "enable": true,
+            "factor": 0.05000000074505806,
+            "normalMap": "Textures/thorn_normal.jpg",
+            "roughness": 0.10000000149011612
+        },
+        "general": {
+            "applySpecularAA": true
+        },
+        "irradiance": {
+            "color": [
+                0.46506446599960329,
+                1.0,
+                0.3944609761238098,
+                1.0
+            ]
+        },
         "metallic": {
             "textureMap": "Textures/thorn_metallic.png"
         },
@@ -20,7 +37,8 @@
             "textureMap": "Textures/thorn_normal.jpg"
         },
         "opacity": {
-            "factor": 0.5699999928474426,
+            "doubleSided": true,
+            "factor": 0.20000000298023225,
             "mode": "Cutout"
         },
         "parallax": {
@@ -28,6 +46,25 @@
         },
         "roughness": {
             "textureMap": "Textures/thorn_roughness.png"
+        },
+        "subsurfaceScattering": {
+            "enableSubsurfaceScattering": true,
+            "quality": 1.0,
+            "scatterColor": [
+                0.28143739700317385,
+                1.0,
+                0.13000686466693879,
+                1.0
+            ],
+            "scatterDistance": 1.0,
+            "thickness": 0.10000000149011612,
+            "transmissionMode": "ThinObject",
+            "transmissionTint": [
+                0.07225146889686585,
+                0.16981765627861024,
+                0.04444953054189682,
+                1.0
+            ]
         }
     }
 }

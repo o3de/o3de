@@ -28,6 +28,8 @@
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobEmpty.h>
 
+#include <AzFramework/Entity/EntityContext.h>
+
 namespace AZ
 {
     namespace RPI
@@ -71,12 +73,15 @@ namespace AZ
         Scene* Scene::GetSceneForEntityContextId(AzFramework::EntityContextId entityContextId)
         {
             // Find the scene for this entity context.
-            AzFramework::Scene* scene = nullptr;
-            AzFramework::SceneSystemRequestBus::BroadcastResult(scene, &AzFramework::SceneSystemRequestBus::Events::GetSceneFromEntityContextId, entityContextId);
+            AZStd::shared_ptr<AzFramework::Scene> scene = AzFramework::EntityContext::FindContainingScene(entityContextId);
             if (scene)
             {
                 // Get the RPI::Scene subsystem from the AZFramework Scene.
-                return scene->GetSubsystem<RPI::Scene>();
+                RPI::ScenePtr* scenePtr = scene->FindSubsystem<RPI::ScenePtr>();
+                if (scenePtr)
+                {
+                    return scenePtr->get();
+                }
             }
             return nullptr;
         }
@@ -85,8 +90,9 @@ namespace AZ
         Scene::Scene()
         {
             m_id = Uuid::CreateRandom();
-            m_cullingSystem = aznew CullingSystem();
+            m_cullingScene = aznew CullingScene();
             SceneRequestBus::Handler::BusConnect(m_id);
+            m_drawFilterTagRegistry = RHI::DrawFilterTagRegistry::Create();
         }
 
         Scene::~Scene()
@@ -105,7 +111,7 @@ namespace AZ
             m_pipelines.clear();
             AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
 
-            delete m_cullingSystem;
+            delete m_cullingScene;
         }
 
         void Scene::Activate()
@@ -114,7 +120,7 @@ namespace AZ
 
             m_activated = true;
 
-            m_cullingSystem->Activate(this);
+            m_cullingScene->Activate(this);
 
             // We have to tick the PassSystem in order for all the pass attachments to get created. 
             // This has to be done before FeatureProcessors are activated, because they may try to
@@ -139,7 +145,7 @@ namespace AZ
                 fp->Deactivate();
             }
 
-            m_cullingSystem->Deactivate();
+            m_cullingScene->Deactivate();
 
             m_activated = false;
             m_pipelineStatesLookup.clear();
@@ -269,6 +275,8 @@ namespace AZ
                 return;
             }
 
+            pipeline->SetDrawFilterTag(m_drawFilterTagRegistry->AcquireTag(pipelineId));
+
             m_pipelines.push_back(pipeline);
 
             // Set this pipeline as default if the default pipeline was empty. This pipeline should be the first pipeline be added to the scene
@@ -302,6 +310,8 @@ namespace AZ
                     {
                         m_defaultPipeline = nullptr;
                     }
+
+                    m_drawFilterTagRegistry->ReleaseTag(pipelineToRemove->GetDrawFilterTag());
 
                     pipelineToRemove->OnRemovedFromScene(this);
                     m_pipelines.erase(it);
@@ -424,8 +434,8 @@ namespace AZ
 
             // Init render packet
             m_renderPacket.m_views.clear();
-            AZ_Assert(m_cullingSystem, "Culling System is not initialized");
-            m_renderPacket.m_cullingSystem = m_cullingSystem;
+            AZ_Assert(m_cullingScene, "m_cullingScene is not initialized");
+            m_renderPacket.m_cullingScene = m_cullingScene;
             m_renderPacket.m_jobPolicy = jobPolicy;
             
 
@@ -486,15 +496,15 @@ namespace AZ
                 }
 
                 // Launch CullingSystem::ProcessCullables() jobs (will run concurrently with FeatureProcessor::Render() jobs)
-                m_cullingSystem->BeginCulling(m_renderPacket.m_views);
+                m_cullingScene->BeginCulling(m_renderPacket.m_views);
                 for (ViewPtr& viewPtr : m_renderPacket.m_views)
                 {
                     AZ::Job* processCullablesJob = AZ::CreateJobFunction([this, &viewPtr](AZ::Job& thisJob)
                         {
-                            m_cullingSystem->ProcessCullables(*this, *viewPtr, thisJob);
+                            m_cullingScene->ProcessCullables(*this, *viewPtr, thisJob);
                         },
                         true, nullptr); //auto-deletes
-                    if (m_cullingSystem->GetDebugContext().m_parallelOctreeTraversal)
+                    if (m_cullingScene->GetDebugContext().m_parallelOctreeTraversal)
                     {
                         processCullablesJob->SetDependent(collectDrawPacketsCompletion);
                         processCullablesJob->Start();
@@ -507,7 +517,7 @@ namespace AZ
 
                 WaitAndCleanCompletionJob(collectDrawPacketsCompletion);
 
-                m_cullingSystem->EndCulling();
+                m_cullingScene->EndCulling();
 
                 // Add dynamic draw data for all the views
                 if (m_dynamicDrawSystem)

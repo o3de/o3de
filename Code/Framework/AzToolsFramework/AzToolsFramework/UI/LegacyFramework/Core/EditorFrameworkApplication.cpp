@@ -112,7 +112,6 @@ namespace LegacyFramework
         m_applicationEntity = NULL;
         m_ptrSystemEntity = NULL;
         m_applicationModule[0] = 0;
-        m_appRoot[0] = 0;
     }
 
     HMODULE Application::GetMainModule()
@@ -193,6 +192,10 @@ namespace LegacyFramework
         // if we're in console mode, listen for CTRL+C
         ::SetConsoleCtrlHandler(CTRL_BREAK_HandlerRoutine, true);
 #endif
+
+        m_ptrCommandLineParser = aznew AzFramework::CommandLine();
+        m_ptrCommandLineParser->Parse(m_desc.m_argc, m_desc.m_argv);
+
         // If we don't have one create a serialize context
         if (GetSerializeContext() == nullptr)
         {
@@ -490,15 +493,7 @@ namespace LegacyFramework
 
         AZ_Assert(!m_desc.m_enableProjectManager || m_desc.m_enableGUI, "Enabling the project manager in the application settings requires enabling the GUI as well.");
 
-        // if we're a GUI APP we need the UI Framework component:
-        if (m_desc.m_enableGUI)
-        {
-            EnsureComponentCreated(AzToolsFramework::Framework::RTTI_Type());
-        }
-        else
-        {
-            EnsureComponentCreated(AzToolsFramework::Framework::RTTI_Type());
-        }
+        EnsureComponentCreated(AzToolsFramework::Framework::RTTI_Type());
     }
 
     //=========================================================================

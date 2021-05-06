@@ -28,7 +28,6 @@ struct SRenderingPassInfo;
 struct SRendParams;
 struct Ray;
 struct IRenderer;
-struct I3DEngine;
 struct SSystemGlobalEnvironment;
 namespace Serialization {
     class IArchive;
@@ -41,6 +40,7 @@ struct SMouseEvent;
 struct SViewportSettings;
 struct SViewportState;
 class QElapsedTimer;
+class QViewportRequests;
 
 class EDITOR_COMMON_API QViewport;
 struct SRenderContext
@@ -66,7 +66,6 @@ AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 class EDITOR_COMMON_API QViewport
     : public QWidget
-    , public AzFramework::WindowRequestBus::Handler
 {
     Q_OBJECT
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
@@ -107,14 +106,14 @@ public:
     void SetSize(const QSize& size);
     void GetImageOffscreen(CImageEx& image, const QSize& customSize);
 
-    // WindowRequestBus::Handler...
-    void SetWindowTitle(const AZStd::string& title) override;
-    AzFramework::WindowSize GetClientAreaSize() const override;
-    void ResizeClientArea(AzFramework::WindowSize clientAreaSize) override;
-    bool GetFullScreenState() const override;
-    void SetFullScreenState(bool fullScreenState) override;
-    bool CanToggleFullScreenState() const override;
-    void ToggleFullScreenState() override;
+    // WindowRequestBus::Handler... (handler moved to cpp to resolve link issues in unity builds)
+    void SetWindowTitle(const AZStd::string& title);
+    AzFramework::WindowSize GetClientAreaSize() const;
+    void ResizeClientArea(AzFramework::WindowSize clientAreaSize);
+    bool GetFullScreenState() const;
+    void SetFullScreenState(bool fullScreenState);
+    bool CanToggleFullScreenState() const;
+    void ToggleFullScreenState();
 
 public slots:
     void Update();
@@ -197,6 +196,7 @@ private:
     std::unique_ptr<SViewportSettings> m_settings;
     std::unique_ptr<SViewportState> m_state;
     std::vector<QViewportConsumer*> m_consumers;
+    AZStd::unique_ptr<QViewportRequests> m_viewportRequests;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     HWND m_lastHwnd = 0;
     bool m_resizeWindowEvent = false;

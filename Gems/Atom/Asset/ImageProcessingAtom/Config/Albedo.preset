@@ -11,6 +11,7 @@
                 "_basecolor",
                 "_diff",
                 "_color",
+                "_col",
                 "_albedo",
                 "_alb",
                 "_bc",
@@ -31,6 +32,7 @@
                 "FileMasks": [
                     "_diff",
                     "_color",
+                    "_col",
                     "_albedo",
                     "_alb",
                     "_basecolor",
@@ -51,6 +53,7 @@
                 "FileMasks": [
                     "_diff",
                     "_color",
+                    "_col",
                     "_albedo",
                     "_alb",
                     "_basecolor",
@@ -71,6 +74,7 @@
                 "FileMasks": [
                     "_diff",
                     "_color",
+                    "_col",
                     "_albedo",
                     "_alb",
                     "_basecolor",
@@ -91,6 +95,7 @@
                 "FileMasks": [
                     "_diff",
                     "_color",
+                    "_col",
                     "_albedo",
                     "_alb",
                     "_basecolor",

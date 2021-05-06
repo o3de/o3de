@@ -116,13 +116,15 @@ namespace AssetProcessor
             QString m_fileName;
             bool m_isDelete = false;
             bool m_isFromScanner = false;
+            AZStd::chrono::system_clock::time_point m_initialProcessTime{};
 
             FileEntry() = default;
 
-            FileEntry(const QString& fileName, bool isDelete, bool isFromScanner=false)
+            FileEntry(const QString& fileName, bool isDelete, bool isFromScanner = false, AZStd::chrono::system_clock::time_point initialProcessTime = {})
                 : m_fileName(fileName)
                 , m_isDelete(isDelete)
                 , m_isFromScanner(isFromScanner)
+                , m_initialProcessTime(initialProcessTime)
             {
             }
 
@@ -161,7 +163,7 @@ namespace AssetProcessor
         //! Internal structure that will hold all the necessary source info
         struct SourceFileInfo
         {
-            QString m_databasePath; // clarification: this is the database path (ie, includes outputprefix)
+            QString m_databasePath; // clarification: this is the database path
             QString m_pathRelativeToScanFolder;
             AZ::Uuid m_uuid;
             const ScanFolderInfo* m_scanFolder{ nullptr };
@@ -220,7 +222,7 @@ namespace AssetProcessor
         //! Emit whenever a new asset is found or an existing asset is updated
         void AssetMessage(AzFramework::AssetSystem::AssetNotificationMessage message);
         
-        // InputAssetProcessed - uses absolute asset path of input file - no outputprefix
+        // InputAssetProcessed - uses absolute asset path of input file
         void InputAssetProcessed(QString fullAssetPath, QString platform);
 
         void RequestInputAssetStatus(QString inputAssetPath, QString platform, QString jobDescription);
@@ -305,7 +307,9 @@ namespace AssetProcessor
         void CheckSource(const FileEntry& source);
         void CheckMissingJobs(QString relativeSourceFile, const ScanFolderInfo* scanFolder, const AZStd::vector<JobDetails>& jobsThisTime);
         void CheckDeletedProductFile(QString normalizedPath);
-        void CheckDeletedSourceFile(QString normalizedPath, QString relativePath, QString databaseSourceFile);
+        void CheckDeletedSourceFile(
+            QString normalizedPath, QString relativePath, QString databaseSourceFile,
+            AZStd::chrono::system_clock::time_point initialProcessTime);
         void CheckModifiedSourceFile(QString normalizedPath, QString databaseSourceFile, const ScanFolderInfo* scanFolderInfo);
         bool AnalyzeJob(JobDetails& details);
         void CheckDeletedCacheFolder(QString normalizedPath);

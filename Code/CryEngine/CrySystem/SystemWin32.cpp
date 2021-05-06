@@ -15,7 +15,6 @@
 #include "System.h"
 #include <time.h>
 
-#include <I3DEngine.h>
 #include <IRenderer.h>
 #include <IMovieSystem.h>
 #include <ILog.h>
@@ -302,23 +301,6 @@ void CSystem::CollectMemStats (ICrySizer* pSizer, MemStatsPurposeEnum nPurpose, 
         }
     }
 
-
-    if (m_env.p3DEngine)
-    {
-        SIZER_COMPONENT_NAME(pSizer, "Cry3DEngine");
-        {
-            m_env.p3DEngine->GetMemoryUsage (pSizer);
-            {
-                SIZER_COMPONENT_NAME (pSizer, "$Allocations waste");
-                const SmallModuleInfo* info = FindModuleInfo(stats, "Cry3DEngine.dll");
-                if (info)
-                {
-                    pSizer->AddObject(info, info->memInfo.allocated - info->memInfo.requested);
-                }
-            }
-        }
-    }
-
     if (m_env.pRenderer)
     {
         SIZER_COMPONENT_NAME(pSizer, "CryRenderer");
@@ -441,7 +423,7 @@ int CSystem::GetApplicationInstance()
         {
             suffix.Format("(%d)", instance);
 
-            HANDLE instanceMutex = CreateMutex(NULL, TRUE, "LumberyardApplication" + suffix);
+            CreateMutex(NULL, TRUE, "LumberyardApplication" + suffix);
             // search for duplicates
             if (GetLastError() != ERROR_ALREADY_EXISTS)
             {
@@ -466,7 +448,7 @@ int CSystem::GetApplicationLogInstance([[maybe_unused]] const char* logFilePath)
     {
         suffix.Format("(%d)", instance);
 
-        HANDLE instanceMutex = CreateMutex(NULL, TRUE, logFilePath + suffix);
+        CreateMutex(NULL, TRUE, logFilePath + suffix);
         if (GetLastError() != ERROR_ALREADY_EXISTS)
         {
             break;
@@ -589,12 +571,13 @@ void CSystem::DebugStats([[maybe_unused]] bool checkpoint, [[maybe_unused]] bool
         CloseHandle (hSnapshot);
     }
     //////////////////////////////////////////////////////////////////////////
-
-
-    ILog* log = GetILog();
-    int totalal = 0, totalbl = 0, nolib = 0;
+   
+    int nolib = 0;
 
 #ifdef _DEBUG
+    ILog* log = GetILog();
+    int totalal = 0;
+    int totalbl = 0;
     int extrastats[10];
 #endif
 
@@ -604,7 +587,7 @@ void CSystem::DebugStats([[maybe_unused]] bool checkpoint, [[maybe_unused]] bool
     {
         if (!dbgmodules[i].handle)
         {
-            CryLogAlways("WARNING: <CrySystem> CSystem::DebugStats: NULL handle for %s", dbgmodules[i].name.c_str());
+            CryLogAlways("WARNING: CSystem::DebugStats: NULL handle for %s", dbgmodules[i].name.c_str());
             nolib++;
             continue;
         }
@@ -641,7 +624,7 @@ void CSystem::DebugStats([[maybe_unused]] bool checkpoint, [[maybe_unused]] bool
         }
         else
         {
-            CryLogAlways("WARNING: <CrySystem> CSystem::DebugStats: could not retrieve function from DLL %s", dbgmodules[i].name.c_str());
+            CryLogAlways("WARNING: CSystem::DebugStats: could not retrieve function from DLL %s", dbgmodules[i].name.c_str());
             nolib++;
         };
 #endif
@@ -704,7 +687,9 @@ void CSystem::DebugStats([[maybe_unused]] bool checkpoint, [[maybe_unused]] bool
         phe.lpData = NULL;
         int nCommitted = 0, nUncommitted = 0, nOverhead = 0;
         int nCommittedPieces = 0, nUncommittedPieces = 0;
+#if !defined(NDEBUG)
         int nPrevRegionIndex = -1;
+#endif
         while (HeapWalk(hHeap, &phe))
         {
             if (phe.wFlags & PROCESS_HEAP_REGION)
@@ -743,9 +728,7 @@ void CSystem::DebugStats([[maybe_unused]] bool checkpoint, [[maybe_unused]] bool
 
             nOverhead += phe.cbOverhead;
         }
-        ;
-        int nCommittedMin = min(nCommitted, nCommittedPieces);
-        int nCommittedMax = max(nCommitted, nCommittedPieces);
+
         CryLogAlways("* heap %8x: %6d (or ~%6d) K in use, %6d..%6d K uncommitted, %6d K overhead (%s)\n",
             handles[i], nCommittedPieces / 1024, nCommitted / 1024, nUncommittedPieces / 1024, nUncommitted / 1024, nOverhead / 1024, hinfo);
 
@@ -877,7 +860,6 @@ void CSystem::GetExeSizes (ICrySizer* pSizer, MemStatsPurposeEnum nPurpose)
     {
         // the sizes of each module group
         StringToSizeMap mapGroupSize;
-        DWORD dwTotalModuleSize = 0;
         do
         {
             dwProcessID = me.th32ProcessID;
@@ -1066,7 +1048,7 @@ void CSystem::FatalError(const char* format, ...)
 
     if (szSysErrorMessage)
     {
-        CryLogAlways("<CrySystem> Last System Error: %s", szSysErrorMessage);
+        CryLogAlways("Last System Error: %s", szSysErrorMessage);
     }
 
     if (GetUserCallback())
@@ -1091,7 +1073,7 @@ void CSystem::FatalError(const char* format, ...)
         {
             ::ShowWindow((HWND)gEnv->pRenderer->GetHWND(), SW_MINIMIZE);
         }
-        ::MessageBox(NULL, szBuffer, "Lumberyard Error", MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
+        ::MessageBox(NULL, szBuffer, "Open 3D Engine Error", MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
     }
 
     // Dump callstack.
@@ -1251,7 +1233,6 @@ void CSystem::LogSystemInfo()
     char szProfileBuffer[128];
     char szLanguageBuffer[64];
     //char szCPUModel[64];
-    char* pChar = 0;
 
     MEMORYSTATUSEX MemoryStatus;
     MemoryStatus.dwLength = sizeof(MemoryStatus);

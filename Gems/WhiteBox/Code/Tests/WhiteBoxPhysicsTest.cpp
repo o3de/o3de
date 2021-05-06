@@ -53,7 +53,7 @@ namespace UnitTest
 
     void EditorWhiteBoxPhysicsTestEnvironment::AddGemsAndComponents()
     {
-        AddDynamicModulePaths({"PhysX.Editor"});
+        AddDynamicModulePaths({"PhysX.Editor.Gem"});
         AddComponentDescriptors(
             {AzToolsFramework::EditorEntityContextComponent::CreateDescriptor(),
              WhiteBox::EditorWhiteBoxComponent::CreateDescriptor(), WhiteBox::WhiteBoxComponent::CreateDescriptor(),
@@ -96,7 +96,7 @@ namespace UnitTest
         // when
         // add an editor white box collider component
         entity.Deactivate();
-        auto editorWhiteBoxColliderComponent = entity.CreateComponent<WhiteBox::EditorWhiteBoxColliderComponent>();
+        entity.CreateComponent<WhiteBox::EditorWhiteBoxColliderComponent>();
         entity.Activate();
 
         // then

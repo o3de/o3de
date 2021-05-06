@@ -98,13 +98,11 @@ void CView::Update(float frameTime, bool isActive)
 
         //see if the view have to use a custom near clipping plane
         const float nearPlane = (m_viewParams.nearplane >= CAMERA_MIN_NEAR) ? (m_viewParams.nearplane) : fNearZ;
-        const float farPlane = (m_viewParams.farplane > 0.f) ? m_viewParams.farplane : gEnv->p3DEngine->GetMaxViewDistance();
+        const float farPlane = (m_viewParams.farplane > 0.f) ? m_viewParams.farplane : DEFAULT_FAR;
         float fov = (m_viewParams.fov < 0.001f) ? DEFAULT_FOV : m_viewParams.fov;
 
         // [VR] specific
         // Modify FOV based on the HMD device configuration
-        bool hmdActive = false;
-
         bool isRenderingToHMD = gEnv->pRenderer ? gEnv->pRenderer->GetIStereoRenderer()->IsRenderingToHMD() : false;
         if (isRenderingToHMD)
         {

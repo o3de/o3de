@@ -53,8 +53,6 @@ int CShaderEnum::EnumShaders()
 
     m_bEnumerated = true;
 
-    int numShaders = 0;
-
     m_shaders.clear();
     m_shaders.reserve(100);
     //! Enumerate Shaders.
@@ -73,7 +71,7 @@ int CShaderEnum::EnumShaders()
         m_shaders.push_back(sd);
     }
 
-    XmlNodeRef root = GetISystem()->GetXmlUtils()->LoadXmlFromFile("Editor/Materials/ShaderList.xml");
+    XmlNodeRef root = GetISystem()->GetXmlUtils()->LoadXmlFromFile("Materials/ShaderList.xml");
     if (root)
     {
         for (int i = 0; i < root->getChildCount(); ++i)

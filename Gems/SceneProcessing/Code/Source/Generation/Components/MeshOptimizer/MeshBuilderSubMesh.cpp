@@ -26,14 +26,6 @@ namespace AZ::MeshBuilder
     {
     }
 
-    void MeshBuilderSubMesh::Optimize()
-    {
-        if (m_vertexOrder.size() != m_numVertices)
-        {
-            GenerateVertexOrder();
-        }
-    }
-
     // map the vertices to their original vertex and dupe numbers
     void MeshBuilderSubMesh::GenerateVertexOrder()
     {
@@ -76,16 +68,28 @@ namespace AZ::MeshBuilder
             if (CheckIfHasVertex(index) == false)
             {
                 const size_t numDupes = m_mesh->CalcNumVertexDuplicates(this, index.mOrgVtx);
-                const ptrdiff_t numToAdd = (index.mDuplicateNr - numDupes) + 1;
-                for (ptrdiff_t j = 0; j < numToAdd; ++j)
+                const ptrdiff_t numToAdd = (aznumeric_cast<ptrdiff_t>(index.mDuplicateNr) - aznumeric_cast<ptrdiff_t>(numDupes)) + 1;
+                // Create entries in the whole Mesh's vertices array to fill in any missing entries, up to the current
+                // vertex duplicate number. It is possible that this is duplicate 2 of original vertex 0, and duplicate
+                // 1 has not been encountered yet. In this case, fill in an invalid index for duplicate 1, since we do
+                // not yet know which submesh that duplicate belongs to.
+                for (ptrdiff_t i = 0; i < numToAdd; ++i)
                 {
+                    const size_t realVertexNr = ((numDupes + i) == index.mDuplicateNr) ? m_numVertices : InvalidIndex;
                     m_mesh->AddSubMeshVertex(index.mOrgVtx, {
-                        /* .m_realVertexNr = */ m_numVertices,
-                        /* .m_dupeNr       = */ numDupes + j,
-                        /* .m_subMesh      = */ this,
+                        /* .m_realVertexNr = */ realVertexNr,
+                        /* .m_dupeNr       = */ numDupes + i,
+                        /* .m_subMesh      = */ this
                     });
-                    ++m_numVertices;
                 }
+                if (numToAdd <= 0)
+                {
+                    // If none were added, the submesh vertex was added as a placeholder with an invalid index in a
+                    // previous iteration by a different submesh. We now know which submesh this duplicate belongs to,
+                    // so reset the real vertex index to this mesh's current vertex count.
+                    m_mesh->SetRealVertexNrForSubMeshVertex(this, index.mOrgVtx, index.mDuplicateNr, m_numVertices);
+                }
+                m_numVertices++;
             }
 
             // an index in the local vertices array

@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test Case Title : Create an entity with PhysX Terrain component and add
 #                   PhysX Rigid Body PhysX, PhysX Collider and Rendering Mesh to it and
 #                   verify that it works in game mode
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5689529
+
 
 
 # fmt: off
@@ -53,7 +53,7 @@ def C5689529_Verify_Terrain_RigidBody_Collider_Mesh():
 
 
     Note:
-    - This test file must be called from the Lumberyard Editor command terminal
+    - This test file must be called from the Open 3D Engine Editor command terminal
     - Any passed and failed tests are written to the Editor.log file.
             Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -67,9 +67,8 @@ def C5689529_Verify_Terrain_RigidBody_Collider_Mesh():
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -114,5 +113,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C5689529_Verify_Terrain_RigidBody_Collider_Mesh)

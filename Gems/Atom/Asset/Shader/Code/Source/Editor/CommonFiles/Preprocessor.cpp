@@ -25,6 +25,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
@@ -255,7 +256,7 @@ namespace AZ
                 auto secondQuote = sourceCode.find('"', firstQuote + 1);
                 auto originalFile = sourceCode.substr(firstQuote + 1, secondQuote - firstQuote - 1);  // start +1, count -1 because we don't want the quotes included.
                 VerifySameFolder(originalFile, newFileOrigin);
-                bool didReplace = AzFramework::StringFunc::Replace(sourceCode, originalFile.c_str(), newFileOrigin.c_str(), true /*case sensitive*/);
+                [[maybe_unused]] bool didReplace = AzFramework::StringFunc::Replace(sourceCode, originalFile.c_str(), newFileOrigin.c_str(), true /*case sensitive*/);
                 AZ_Assert(didReplace, "Failed to replace %s for %s in preprocessed source.", originalFile.c_str(), newFileOrigin.c_str());
             }
             else
@@ -299,6 +300,9 @@ namespace AZ
 
             // we transfer to a set, to order the folders, uniquify them, and ensure deterministic build behavior
             AZStd::set<AZStd::string> scanFoldersSet;
+            // Add the project path to list of include paths
+            AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+            scanFoldersSet.emplace(projectPath.c_str(), projectPath.size());
             // but while we transfer to the set, we're going to keep only folders where +/ShaderLib exists
             for (AZStd::string folder : scanFoldersVector)
             {
@@ -310,14 +314,12 @@ namespace AZ
             } // the folders constructed this fashion constitute the base of automatic include search paths
 
             // get the engine root:
-            AZStd::string engineRoot;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-            AzFramework::StringFunc::Path::Normalize(engineRoot);
+            AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
 
             // add optional additional options
             for (AZStd::string& path : options.m_projectIncludePaths)
             {
-                AzFramework::StringFunc::Path::Join(engineRoot.c_str(), path.c_str(), path);
+                path = (engineRoot / path).String();
                 DeleteFromSet(path, scanFoldersSet);  // no need to add a path two times.
             }
             // back-insert the default paths (after the config-read paths we just read)

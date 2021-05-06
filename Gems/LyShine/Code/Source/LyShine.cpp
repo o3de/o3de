@@ -13,8 +13,6 @@
 
 #include "LyShine.h"
 
-#include "Draw2d.h"
-
 #include "UiCanvasComponent.h"
 #include "UiCanvasManager.h"
 #include "LyShineDebug.h"
@@ -55,6 +53,7 @@
 #include <LyShine/Bus/UiCursorBus.h>
 #include <LyShine/Bus/UiDraggableBus.h>
 #include <LyShine/Bus/UiDropTargetBus.h>
+#include <LyShine/Draw2d.h>
 
 #if defined(LYSHINE_INTERNAL_UNIT_TEST)
 #include "TextMarkup.h"
@@ -72,6 +71,8 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
+
+#include <Atom/RHI/RHIUtils.h>
 
 #include "Animation/UiAnimationSystem.h"
 #include "World/UiCanvasAssetRefComponent.h"
@@ -289,6 +290,18 @@ UiRenderer* CLyShine::GetUiRenderer()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+UiRenderer* CLyShine::GetUiRendererForEditor()
+{
+    return m_uiRendererForEditor.get();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void CLyShine::SetUiRendererForEditor(AZStd::shared_ptr<UiRenderer> uiRenderer)
+{
+    m_uiRendererForEditor = uiRenderer;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::EntityId CLyShine::CreateCanvas()
 {
     return m_uiCanvasManager->CreateCanvas();
@@ -414,11 +427,8 @@ void CLyShine::Render()
 {
     FRAME_PROFILER(__FUNCTION__, gEnv->pSystem, PROFILE_UI);
 
-    // LYSHINE_ATOM_TODO - verify that this is no longer needed and remove
-    if (!gEnv || !gEnv->pRenderer || gEnv->pRenderer->GetRenderType() == ERenderType::eRT_Null)
+    if (AZ::RHI::IsNullRenderer())
     {
-        // if the renderer is not initialized or it is the null renderer (e.g. running as a server)
-        // then do nothing
         return;
     }
 
@@ -443,7 +453,6 @@ void CLyShine::Render()
     // Render all the canvases loaded in game
     m_uiCanvasManager->RenderLoadedCanvases();
 
-#ifdef LYSHINE_ATOM_TODO // convert cursor support to use Atom
     m_draw2d->RenderDeferredPrimitives();
 
     // Don't render the UI cursor when in edit mode. For example during UI Preview mode a script could turn on the
@@ -454,7 +463,6 @@ void CLyShine::Render()
     {
         RenderUiCursor();
     }
-#endif
 
     GetUiRenderer()->EndUiFrameRender();
 
@@ -675,9 +683,11 @@ void CLyShine::RenderUiCursor()
     const AZ::Vector2 position = GetUiCursorPosition();
     const AZ::Vector2 dimensions(static_cast<float>(m_uiCursorTexture->GetWidth()), static_cast<float>(m_uiCursorTexture->GetHeight()));
 
+#ifdef LYSHINE_ATOM_TODO // Convert cursor to Atom image
     m_draw2d->BeginDraw2d();
     m_draw2d->DrawImage(m_uiCursorTexture->GetTextureID(), position, dimensions);
     m_draw2d->EndDraw2d();
+#endif
 }
 
 #ifndef _RELEASE

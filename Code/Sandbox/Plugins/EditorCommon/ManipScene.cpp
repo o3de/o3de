@@ -22,7 +22,6 @@
 #include <IPhysics.h>
 #include <IPhysicsDebugRenderer.h>
 #include <IStatObj.h>
-#include <I3DEngine.h>
 
 #include "../EditorCommon/QViewport.h"
 
@@ -124,8 +123,6 @@ namespace Manip
         QuatT transform = spaceProvider->ElementToWorldSpace(element);
         Matrix34 transformM(transform);
 
-        bool isHighlighted = element.id == highlightedItem;
-
         if (element.shape == SHAPE_BOX)
         {
             OBB obb;
@@ -217,10 +214,6 @@ namespace Manip
 
     void CScene::OnViewportRender(const SRenderContext& rc)
     {
-        IRenderer* renderer = GetIEditor()->GetRenderer();
-        IRenderAuxGeom* aux = renderer->GetIRenderAuxGeom();
-
-
         SignalRenderElements(m_elements, rc);
 
         for (int xRayPass = 0; xRayPass < 2; ++xRayPass)

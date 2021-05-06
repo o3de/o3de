@@ -43,7 +43,6 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Application/Application.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 
 
@@ -337,7 +336,6 @@ namespace EMotionFX
             AZStd::vector<SceneContainers::SceneGraph::NodeIndex>& outNodeIndices, AZStd::vector<SceneContainers::SceneGraph::NodeIndex>& outMeshIndices, BoneNameEmfxIndexMap& outBoneNameEmfxIndexMap)
         {
             const SceneContainers::SceneGraph& graph = context.m_scene.GetGraph();
-            const Group::IActorGroup& group = context.m_group;
 
             auto nameStorage = graph.GetNameStorage();
             auto contentStorage = graph.GetContentStorage();

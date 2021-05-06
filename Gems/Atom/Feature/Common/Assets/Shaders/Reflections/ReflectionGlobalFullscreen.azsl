@@ -43,9 +43,9 @@
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
     Texture2DMS<float>  m_depth;
-    Texture2DMS<float4> m_normal;       // RGB10 = Normal (Encoded), A2 = Flags
+    Texture2DMS<float4> m_normal;       // RGB10 = EncodeNormalSignedOctahedron(worldNormal), A2 = multiScatterCompensationEnabled
     Texture2DMS<float4> m_specularF0;   // RGB8 = SpecularF0, A8 = Roughness
-    Texture2DMS<float4> m_clearCoatNormal; // R16G16 = Normal (Packed), B16A16 = (factor, perceptual roughness)
+    Texture2DMS<float4> m_albedo;       // RGB8 = Albedo, A = specularOcclusion
     Texture2DMS<float>  m_blendWeight;
     Texture2D<float2>   m_brdfMap;
 
@@ -80,6 +80,9 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     float4 encodedNormal = PassSrg::m_normal.Load(IN.m_position.xy, sampleIndex);
     float3 normal = DecodeNormalSignedOctahedron(encodedNormal.rgb);
     bool multiScatterCompensationEnabled = (encodedNormal.a > 0.0f);
+    
+    float4 albedo = PassSrg::m_albedo.Load(IN.m_position.xy, sampleIndex);
+    float specularOcclusion = albedo.a;
 
     // reconstruct world space position from the depth at this location in screenspace
     float3 positionWS = ReconstructWorldPositionFromDepth(IN.m_position.xy, sampleIndex).xyz;
@@ -102,39 +105,14 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     float NdotV = saturate(dot(normal, dirToCamera));
     NdotV = max(NdotV, 0.01f);    // [GFX TODO][ATOM-4466] This is a current band-aid for specular noise at grazing angles.
     float2 brdf = PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, GetBRDFTexCoords(roughness, NdotV)).rg;
-    float3 multiScatterCompensation = GetMultiScatterCompensation(NdotV, specularF0, brdf, multiScatterCompensationEnabled);
+    float3 multiScatterCompensation = GetMultiScatterCompensation(specularF0, brdf, multiScatterCompensationEnabled);
     float3 specular = blendWeight * globalSpecular * multiScatterCompensation * (specularF0 * brdf.x + brdf.y);
-
-    float4 encodedClearCoatNormal = PassSrg::m_clearCoatNormal.Load(IN.m_position.xy, sampleIndex);
-    if(encodedClearCoatNormal.z > 0.0)
-    {
-        float3 clearCoatNormal = DecodedNormalSphereMap(encodedClearCoatNormal.xy);
-        
-        float factor = encodedClearCoatNormal.z;
-        float roughness = encodedClearCoatNormal.w;
-
-        // recompute reflection direction based on coat's normal
-        float3 reflectDir = reflect(-dirToCamera, clearCoatNormal);
-        reflectDir = MultiplyVectorQuaternion(reflectDir, SceneSrg::m_iblOrientation);
-        
-        float NdotV = saturate(dot(clearCoatNormal, dirToCamera));
-        NdotV = max(NdotV, 0.01f);  // [GFX TODO][ATOM-4466] This is a current band-aid for specular noise at grazing angles.
-        
-        float3 coatGlobalSpecular = SceneSrg::m_specularEnvMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(reflectDir), GetRoughnessMip(roughness)).rgb;
-        float2 coatBrdf = PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, GetBRDFTexCoords(roughness, NdotV)).rg;
-        
-        // clear coat uses fixed IOR = 1.5 represents polyurethane which is the most common material for gloss clear coat
-        // coat layer assumed to be dielectric thus don't need multiple scattering compensation
-        float3 clearCoat = blendWeight * coatGlobalSpecular * (float3(0.04, 0.04, 0.04) * coatBrdf.x + coatBrdf.y) * factor;
-        
-        // attenuate base layer energy
-        float3 coatResponse = FresnelSchlickWithRoughness(NdotV, float3(0.04, 0.04, 0.04), roughness) * factor;
-
-        specular = specular * (1.0 - coatResponse) * (1.0 - coatResponse) + clearCoat;
-    }
 
     // apply exposure setting
     specular *= pow(2.0, SceneSrg::m_iblExposure);
+
+    // maybe attenuate the specular 
+    specular *= specularOcclusion;
 
     PSOutput OUT;
     OUT.m_color = float4(specular, 1.0f);

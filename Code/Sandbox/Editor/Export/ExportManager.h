@@ -43,8 +43,6 @@ namespace Export
         virtual int GetFaceCount() const { return m_faces.size(); }
         virtual const Face* GetFaceBuffer() const { return m_faces.size() ? &m_faces[0] : 0; }
 
-        void SetMaterial(CMaterial* pMtl, CBaseObject* pBaseObj);
-
     private:
         std::vector<Face> m_faces;
 
@@ -130,10 +128,6 @@ public:
     bool Export(const char* defaultName, const char* defaultExt = "", const char* defaultPath = "", bool isSelectedObjects = true,
         bool isSelectedRegionObjects = false, bool isOccluder = false, bool bAnimationExport = false);
 
-    //! Add to Export Data geometry from selected objects
-    //! return true if succeed, otherwise false
-    bool AddSelectedObjects();
-
     bool AddSelectedEntityObjects();
 
     //! Add to Export Data geometry from objects inside selected region volume
@@ -171,7 +165,7 @@ private:
 
     bool AddObjectsFromSequence(CTrackViewSequence* pSequence, XmlNodeRef seqNode = 0);
     bool IsDuplicateObjectBeingAdded(const QString& newObject);
-    void SetFBXExportSettings(bool bLocalCoordsToSelectedObject, bool bExportOnlyMasterCamera, const float fps);
+    void SetFBXExportSettings(bool bLocalCoordsToSelectedObject, bool bExportOnlyPrimaryCamera, const float fps);
     bool ProcessObjectsForExport();
 
     bool ShowFBXExportDialog();
@@ -193,13 +187,13 @@ private:
 
     float m_FBXBakedExportFPS;
     bool m_bExportLocalCoords;
-    bool m_bExportOnlyMasterCamera;
+    bool m_bExportOnlyPrimaryCamera;
     int m_numberOfExportFrames;
     CEntityObject* m_pivotEntityObject;
     bool m_bBakedKeysSequenceExport;
 
-    QString m_animTimeExportMasterSequenceName;
-    float m_animTimeExportMasterSequenceCurrentTime;
+    QString m_animTimeExportPrimarySequenceName;
+    float m_animTimeExportPrimarySequenceCurrentTime;
     XmlNodeRef m_animTimeNode;
 
     bool m_animKeyTimeExport;

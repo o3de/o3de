@@ -25,10 +25,6 @@
 #include <Cry_XOptimise.h>
 //DOC-IGNORE-END
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-#include <AzCore/Component/EntityId.h>
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
 //////////////////////////////////////////////////////////////////////
 #define CAMERA_MIN_NEAR         0.001f
 #define DEFAULT_NEAR            0.2f
@@ -416,8 +412,6 @@ inline void CameraViewParameters::CalcTiledRegionVerts(Vec3* V, Vec2& vMin, Vec2
     vTileMax.x = abs(fWR - fWL) * vMax.x;
     vTileMax.y = abs(fWT - fWB) * vMax.y;
 
-    float TileWidth = abs(fWR - fWL) / nGridSizeX;
-    float TileHeight = abs(fWT - fWB) / nGridSizeY;
 
     float TileL = fWL + vTileMin.x;
     float TileR = fWL + vTileMax.x;
@@ -439,8 +433,6 @@ inline void CameraViewParameters::CalcTiledRegionVerts(Vec3* V, Vec2& vMin, Vec2
     vTileFarMax.x = abs(fwR - fwL) * vMax.x;
     vTileFarMax.y = abs(fwT - fwB) * vMax.y;
 
-    float TileFarWidth = abs(fwR - fwL) / nGridSizeX;
-    float TileFarHeight = abs(fwT - fwB) / nGridSizeY;
 
     float TileFarL = fwL + vTileFarMin.x;
     float TileFarR = fwL + vTileFarMax.x;
@@ -602,12 +594,7 @@ public:
     ILINE const Vec3& GetFPVertex(int nId) const; //get far-plane vertices
     ILINE const Vec3& GetPPVertex(int nId) const; //get projection-plane vertices
 
-    ILINE const Plane* GetFrustumPlane(int numplane)    const       { return &m_fp[numplane]; }
-
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    ILINE const AZ::EntityId GetEntityId() const { return m_entityId;  }
-    ILINE void SetEntityId( AZ::EntityId entityId ) { m_entityId = entityId;  }
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
+    ILINE const Plane_tpl<f32>* GetFrustumPlane(int numplane)    const       { return &m_fp[numplane]; }
 
     //////////////////////////////////////////////////////////////////////////
     // Z-Buffer ranges.
@@ -675,10 +662,6 @@ public:
         m_nPosX = m_nPosY = m_nSizeX = m_nSizeY = 0;
         m_entityPos = Vec3(0, 0, 0);
         m_entityRot = Quat(0, 0, 0, 1);
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-        m_frameUpdateId = 0;
-        m_entityId = AZ::EntityId();
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
     }
     ~CCamera() {}
 
@@ -709,15 +692,6 @@ public:
 
     CameraViewParameters m_viewParameters;
 
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    // Get this camera's sequential frame update ID.
-    uint32_t GetFrameUpdateId() const { return m_frameUpdateId;  }
-
-    // Increment this camera's sequential frame update ID.  This should be 
-    // called every time the camera is used to render the scene.
-    void IncrementFrameUpdateId() { m_frameUpdateId++;  }
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-
 private:
     bool AdditionalCheck(const AABB& aabb) const;
     bool AdditionalCheck(const Vec3& wpos, const OBB& obb, f32 uscale) const;
@@ -746,7 +720,7 @@ private:
     Vec3    m_cltn, m_crtn, m_clbn, m_crbn;        //this are the 4 vertices of the near-plane in cam-space
     Vec3    m_cltf, m_crtf, m_clbf, m_crbf;        //this are the 4 vertices of the farclip-plane in cam-space
 
-    Plane   m_fp [FRUSTUM_PLANES]; //
+    Plane_tpl<f32>   m_fp [FRUSTUM_PLANES]; //
     uint32  m_idx1[FRUSTUM_PLANES], m_idy1[FRUSTUM_PLANES], m_idz1[FRUSTUM_PLANES]; //
     uint32  m_idx2[FRUSTUM_PLANES], m_idy2[FRUSTUM_PLANES], m_idz2[FRUSTUM_PLANES]; //
 
@@ -755,17 +729,6 @@ private:
     float m_zrangeMax;
 
     int m_nPosX, m_nPosY, m_nSizeX, m_nSizeY;
-
-#if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
-    // A sequential counter that is incremented every time this camera is used 
-    // to render a frame. This id is not the same as the frame update ID used 
-    // by the renderer which handles multiple cameras. Systems that rely on 
-    // per-camera temporal buffers can use this to index temporal data.
-    uint32_t m_frameUpdateId;
-
-    // This camera's Entity ID, useful when multiple cameras are active.
-    AZ::EntityId m_entityId;
-#endif // if AZ_RENDER_TO_TEXTURE_GEM_ENABLED
 
     //------------------------------------------------------------------------
     //---   OLD STUFF
@@ -779,7 +742,7 @@ public:
         m_crtp = arrvVerts[2];
         m_crbp = arrvVerts[3];
     }
-    inline void SetFrustumPlane(int i, const Plane& plane)
+    inline void SetFrustumPlane(int i, const Plane_tpl<f32>& plane)
     {
         m_fp[i] = plane;
         //do not break strict aliasing rules, use union instead of reinterpret_casts
@@ -1217,12 +1180,12 @@ inline void CCamera::UpdateFrustum()
     //-------------------------------------------------------------------------------
     //---  calculate the six frustum-planes using the frustum edges in world-space ---
     //-------------------------------------------------------------------------------
-    m_fp[FR_PLANE_NEAR  ]   =   Plane::CreatePlane(m_crtn + GetPosition(), m_cltn + GetPosition(), m_crbn + GetPosition());
-    m_fp[FR_PLANE_RIGHT ]   =   Plane::CreatePlane(m_crbf + GetPosition(), m_crtf + GetPosition(), GetPosition());
-    m_fp[FR_PLANE_LEFT  ]   =   Plane::CreatePlane(m_cltf + GetPosition(), m_clbf + GetPosition(), GetPosition());
-    m_fp[FR_PLANE_TOP   ]   =   Plane::CreatePlane(m_crtf + GetPosition(), m_cltf + GetPosition(), GetPosition());
-    m_fp[FR_PLANE_BOTTOM]   =   Plane::CreatePlane(m_clbf + GetPosition(), m_crbf + GetPosition(), GetPosition());
-    m_fp[FR_PLANE_FAR   ]   =   Plane::CreatePlane(m_crtf + GetPosition(), m_crbf + GetPosition(), m_cltf + GetPosition());  //clip-plane
+    m_fp[FR_PLANE_NEAR  ]   = Plane_tpl<f32>::CreatePlane(m_crtn + GetPosition(), m_cltn + GetPosition(), m_crbn + GetPosition());
+    m_fp[FR_PLANE_RIGHT ]   = Plane_tpl<f32>::CreatePlane(m_crbf + GetPosition(), m_crtf + GetPosition(), GetPosition());
+    m_fp[FR_PLANE_LEFT  ]   = Plane_tpl<f32>::CreatePlane(m_cltf + GetPosition(), m_clbf + GetPosition(), GetPosition());
+    m_fp[FR_PLANE_TOP   ]   = Plane_tpl<f32>::CreatePlane(m_crtf + GetPosition(), m_cltf + GetPosition(), GetPosition());
+    m_fp[FR_PLANE_BOTTOM]   = Plane_tpl<f32>::CreatePlane(m_clbf + GetPosition(), m_crbf + GetPosition(), GetPosition());
+    m_fp[FR_PLANE_FAR   ]   = Plane_tpl<f32>::CreatePlane(m_crtf + GetPosition(), m_crbf + GetPosition(), m_cltf + GetPosition());  //clip-plane
 
     uint32 rh = m_Matrix.IsOrthonormalRH();
     if (rh == 0)
@@ -2017,42 +1980,48 @@ inline bool CCamera::IsOBBVisible_E(const Vec3& wpos, const OBB& obb, f32 uscale
     //is larger then the "radius" of the OBB, then the OBB is outside the frustum.
     f32 t0, t1, t2, t3, t4, t5;
     bool mt0, mt1, mt2, mt3, mt4, mt5;
-    if (mt0 = (t0 = m_fp[0] | p) > 0.0f)
+    mt0 = (t0 = m_fp[0] | p) > 0.0f;
+    if (mt0)
     {
         if (t0 > (fabsf(m_fp[0].n | ax) + fabsf(m_fp[0].n | ay) + fabsf(m_fp[0].n | az)))
         {
             return CULL_EXCLUSION;
         }
     }
-    if (mt1 = (t1 = m_fp[1] | p) > 0.0f)
+    mt1 = (t1 = m_fp[1] | p) > 0.0f;
+    if (mt1)
     {
         if (t1 > (fabsf(m_fp[1].n | ax) + fabsf(m_fp[1].n | ay) + fabsf(m_fp[1].n | az)))
         {
             return CULL_EXCLUSION;
         }
     }
-    if (mt2 = (t2 = m_fp[2] | p) > 0.0f)
+    mt2 = (t2 = m_fp[2] | p) > 0.0f;
+    if (mt2)
     {
         if (t2 > (fabsf(m_fp[2].n | ax) + fabsf(m_fp[2].n | ay) + fabsf(m_fp[2].n | az)))
         {
             return CULL_EXCLUSION;
         }
     }
-    if (mt3 = (t3 = m_fp[3] | p) > 0.0f)
+    mt3 = (t3 = m_fp[3] | p) > 0.0f;
+    if (mt3)
     {
         if (t3 > (fabsf(m_fp[3].n | ax) + fabsf(m_fp[3].n | ay) + fabsf(m_fp[3].n | az)))
         {
             return CULL_EXCLUSION;
         }
     }
-    if (mt4 = (t4 = m_fp[4] | p) > 0.0f)
+    mt4 = (t4 = m_fp[4] | p) > 0.0f;
+    if (mt4)
     {
         if (t4 > (fabsf(m_fp[4].n | ax) + fabsf(m_fp[4].n | ay) + fabsf(m_fp[4].n | az)))
         {
             return CULL_EXCLUSION;
         }
     }
-    if (mt5 = (t5 = m_fp[5] | p) > 0.0f)
+    mt5 = (t5 = m_fp[5] | p) > 0.0f;
+    if (mt5)
     {
         if (t5 > (fabsf(m_fp[5].n | ax) + fabsf(m_fp[5].n | ay) + fabsf(m_fp[5].n | az)))
         {

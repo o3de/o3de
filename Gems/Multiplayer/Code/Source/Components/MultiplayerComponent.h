@@ -16,11 +16,12 @@
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/DataStructures/FixedSizeBitsetView.h>
 #include <Source/NetworkEntity/NetworkEntityHandle.h>
-#include <Source/MultiplayerTypes.h>
+#include <Include/MultiplayerTypes.h>
+#include <Include/IMultiplayer.h>
 
 //! Macro to declare bindings for a multiplayer component inheriting from MultiplayerComponent
 #define AZ_MULTIPLAYER_COMPONENT(ComponentClass, Guid, Base) \
-    AZ_RTTI(ComponentClass, Guid, AZ::Component)             \
+    AZ_RTTI(ComponentClass, Guid, Base)                      \
     AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(ComponentClass)   \
     AZ_COMPONENT_BASE(ComponentClass, Guid, Base)
 
@@ -38,7 +39,7 @@ namespace Multiplayer
         AZ_CLASS_ALLOCATOR(MultiplayerComponent, AZ::SystemAllocator, 0);
         AZ_RTTI(MultiplayerComponent, "{B7F5B743-CCD3-4981-8F1A-FC2B95CE22D7}", AZ::Component);
 
-        static void Reflect(AZ::ReflectContext* reflection);
+        static void Reflect(AZ::ReflectContext* context);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
 
         MultiplayerComponent() = default;
@@ -61,6 +62,7 @@ namespace Multiplayer
         //! @}
 
         NetEntityId GetNetEntityId() const;
+        NetEntityRole GetNetEntityRole() const;
         ConstNetworkEntityHandle GetEntityHandle() const;
         NetworkEntityHandle GetEntityHandle();
         void MarkDirty();
@@ -70,10 +72,10 @@ namespace Multiplayer
         virtual bool HandleRpcMessage(NetEntityRole netEntityRole, NetworkEntityRpcMessage& rpcMessage) = 0;
         virtual bool SerializeStateDeltaMessage(ReplicationRecord& replicationRecord, AzNetworking::ISerializer& serializer) = 0;
         virtual void NotifyStateDeltaChanges(ReplicationRecord& replicationRecord) = 0;
-
-    protected:
         virtual bool HasController() const = 0;
         virtual MultiplayerController* GetController() = 0;
+
+    protected:
         virtual void ConstructController() = 0;
         virtual void DestructController() = 0;
         virtual void ActivateController(EntityIsMigrating entityIsMigrating) = 0;
@@ -102,38 +104,41 @@ namespace Multiplayer
     template <typename TYPE>
     inline void SerializeNetworkPropertyHelper
     (
-        AzNetworking::ISerializer& serializer,
-        bool modifyRecord,
-        AzNetworking::FixedSizeBitsetView& bitset,
-        int32_t bitIndex,
-        TYPE& value,
-        const char* name,
-        [[maybe_unused]] NetComponentId componentId
+        AzNetworking::ISerializer& serializer, 
+        bool modifyRecord, 
+        AzNetworking::FixedSizeBitsetView& bitset, 
+        int32_t bitIndex, 
+        TYPE& value, 
+        const char* name, 
+        NetComponentId componentId, 
+        PropertyIndex propertyIndex, 
+        MultiplayerStats& stats
     )
     {
         if (bitset.GetBit(bitIndex))
         {
-            //uint32_t prevUpdateSize = serializer.GetSize();
+            const uint32_t prevUpdateSize = serializer.GetSize();
             serializer.ClearTrackedChangesFlag();
             serializer.Serialize(value, name);
             if (modifyRecord && !serializer.GetTrackedChangesFlag())
             {
+                // If the serializer didn't change any values, then lower the flag so we don't unnecessarily notify
                 bitset.SetBit(bitIndex, false);
             }
-            //uint32_t postUpdateSize = serializer.GetSize();
+            const uint32_t postUpdateSize = serializer.GetSize();
             // Network Property metrics
-            // uint32_t updateSize = (postUpdateSize - prevUpdateSize);
-            // if (updateSize > 0)
-            // {
-            //     if (serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject)
-            //     {
-            //         GetPacketHandlerMetricsInstance().LogRecvNetworkPropertyUpdates(componentType, name, updateSize);
-            //     }
-            //     else
-            //     {
-            //         GetPacketHandlerMetricsInstance().LogSentNetworkPropertyUpdates(componentType, name, updateSize);
-            //     }
-            // }
+            const uint32_t updateSize = (postUpdateSize - prevUpdateSize);
+            if (updateSize > 0)
+            {
+                if (modifyRecord)
+                {
+                    stats.RecordPropertyReceived(componentId, propertyIndex, updateSize);
+                }
+                else
+                {
+                    stats.RecordPropertySent(componentId, propertyIndex, updateSize);
+                }
+            }
         }
     }
 }

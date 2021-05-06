@@ -22,6 +22,7 @@
 #include <EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderPlugin.h>
 #include <MCore/Source/AzCoreConversions.h>
 #include <MysticQt/Source/KeyboardShortcutManager.h>
+#include <QDir>
 #include <QMessageBox>
 
 
@@ -695,8 +696,9 @@ namespace EMStudio
     bool RenderPlugin::Init()
     {
         // load the cursors
-        mZoomInCursor       = new QCursor(QPixmap(AZStd::string(MysticQt::GetDataDir() + "Images/Rendering/ZoomInCursor.png").c_str()).scaled(32, 32));
-        mZoomOutCursor      = new QCursor(QPixmap(AZStd::string(MysticQt::GetDataDir() + "Images/Rendering/ZoomOutCursor.png").c_str()).scaled(32, 32));
+        QDir dataDir{ QString(MysticQt::GetDataDir().c_str()) };
+        mZoomInCursor       = new QCursor(QPixmap(dataDir.filePath("Images/Rendering/ZoomInCursor.png")).scaled(32, 32));
+        mZoomOutCursor      = new QCursor(QPixmap(dataDir.filePath("Images/Rendering/ZoomOutCursor.png")).scaled(32, 32));
 
         mCurrentSelection   = &GetCommandManager()->GetCurrentSelection();
 
@@ -1018,17 +1020,6 @@ namespace EMStudio
     }
 
 
-    // register keyboard shortcuts used for the render plugin
-    void RenderPlugin::RegisterKeyboardShortcuts()
-    {
-        MysticQt::KeyboardShortcutManager* shortcutManger = GetMainWindow()->GetShortcutManager();
-
-        shortcutManger->RegisterKeyboardShortcut("Show Selected", "Render Window", Qt::Key_S, false, false, true);
-        shortcutManger->RegisterKeyboardShortcut("Show Entire Scene", "Render Window", Qt::Key_A, false, false, true);
-        shortcutManger->RegisterKeyboardShortcut("Toggle Selection Box Rendering", "Render Window", Qt::Key_J, false, false, true);
-    }
-
-
     // find the trajectory path for a given actor instance
     MCommon::RenderUtil::TrajectoryTracePath* RenderPlugin::FindTracePath(EMotionFX::ActorInstance* actorInstance)
     {
@@ -1229,8 +1220,6 @@ namespace EMStudio
         const bool renderTangents       = widget->GetRenderFlag(RenderViewWidget::RENDER_TANGENTS);
         const bool renderWireframe      = widget->GetRenderFlag(RenderViewWidget::RENDER_WIREFRAME);
         const bool renderCollisionMeshes= widget->GetRenderFlag(RenderViewWidget::RENDER_COLLISIONMESHES);
-
-        const EMotionFX::Actor* actor = actorInstance->GetActor();
 
         if (renderVertexNormals || renderFaceNormals || renderTangents || renderWireframe || renderCollisionMeshes)
         {

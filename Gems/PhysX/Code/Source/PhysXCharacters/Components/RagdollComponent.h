@@ -32,7 +32,7 @@ namespace PhysX
         , public AzFramework::CharacterPhysicsDataNotificationBus::Handler
     {
     public:
-        AZ_COMPONENT(RagdollComponent, "{B89498F8-4718-42FE-A457-A377DD0D61A0}");
+        AZ_COMPONENT(PhysX::RagdollComponent, "{B89498F8-4718-42FE-A457-A377DD0D61A0}");
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -100,9 +100,12 @@ namespace PhysX
         static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
 
     private:
+        void CreateRagdoll(const Physics::RagdollConfiguration& ragdollConfiguration);
+        void DestroyRagdoll();
+
         bool IsJointProjectionVisible();
 
-        AZStd::unique_ptr<Ragdoll> m_ragdoll;
+        Ragdoll* m_ragdoll;
         /// Minimum number of position iterations to perform in the PhysX solver.
         /// Lower iteration counts are less expensive but may behave less realistically.
         AZ::u32 m_positionIterations = 16; 

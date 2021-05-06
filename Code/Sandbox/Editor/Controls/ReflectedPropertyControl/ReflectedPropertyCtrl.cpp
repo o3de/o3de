@@ -361,16 +361,6 @@ void ReflectedPropertyControl::CreateItems(XmlNodeRef node, CVarBlockPtr& outBlo
                     textureVar->Set(textureName);
                 }
             }
-            else if (!azstricmp(type, "material"))
-            {
-                CSmartVariable<QString> materialVar;
-                AddVariable(group, materialVar, child->getTag(), humanReadableName.toUtf8().data(), strDescription.toUtf8().data(), func, pUserData, IVariable::DT_MATERIAL);
-                const char* materialName;
-                if (child->getAttr("value", &materialName))
-                {
-                    materialVar->Set(materialName);
-                }
-            }
             else if (!azstricmp(type, "color"))
             {
                 CSmartVariable<Vec3> colorVar;
@@ -672,7 +662,6 @@ CReflectedVar * ReflectedPropertyControl::GetReflectedVarFromCallbackInstance(Az
         return reinterpret_cast<CReflectedVar *>(pNode->GetInstance(0));
     else
         return GetReflectedVarFromCallbackInstance(pNode->GetParent());
-    return nullptr;
 }
 
 

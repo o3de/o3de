@@ -22,7 +22,6 @@
 #include "MiniGUI/MiniMenu.h"
 #include "MiniGUI/MiniTable.h"
 #include <IConsole.h>
-#include <I3DEngine.h>
 #include <ITimer.h>
 #include "System.h"
 
@@ -660,8 +659,6 @@ bool CPerfHUD::OnInputChannelEventFiltered(const AzFramework::InputChannel& inpu
 
     if (deviceId == AzFramework::InputDeviceGamepad::IdForIndex0)
     {
-        int frameNum = gEnv->pRenderer->GetFrameID(false);
-
         if (inputChannel.IsStateBegan())
         {
             bool checkState = false;
@@ -854,21 +851,6 @@ void CPerfHUD::SaveStatsCallback([[maybe_unused]] void* data, [[maybe_unused]] b
 //////////////////////////////////////////////////////////////////////////
 // RENDER CALLBACKS
 //////////////////////////////////////////////////////////////////////////
-
-/*
-void CPerfHUD::DisplayRenderInfoCallback(const Rect& rect)
-{
-    IMiniGUIPtr pGUI;
-    if (CryCreateClassInstanceForInterface( cryiidof<IMiniGUI>(),pGUI ))
-    {
-        //right aligned display
-        float x = rect.right;
-        float y = rect.top;
-        float step = 13.f;
-
-    gEnv->p3DEngine->DisplayInfo(x, y, step, true);
-    }
-}*/
 
 void CPerfHUD::EnableWidget(ICryPerfHUDWidget::EWidgetID id, int mode)
 {
@@ -1533,26 +1515,6 @@ void CRenderStatsWidget::Update()
     m_runtimeData.nFwdShadowLights = 0;
 
     //////////////////////////////////////////////////////////////////////////
-    if (gEnv->p3DEngine)
-    {
-        I3DEngine::SObjectsStreamingStatus objStats;
-        gEnv->p3DEngine->GetObjectsStreamingStatus(objStats);
-
-        float fMeshRequiredMB = (float)(objStats.nMemRequired) / (1024 * 1024);
-        sprintf_s(entryBuffer, "Mesh Required: %.2f (%dMB)", fMeshRequiredMB, azlossy_cast<int>(objStats.nMeshPoolSize));
-        if (fMeshRequiredMB < objStats.nMeshPoolSize)
-        {
-            m_pInfoBox->AddEntry(entryBuffer, CPerfHUD::COL_NORM, CPerfHUD::TEXT_SIZE_NORM);
-        }
-        else
-        {
-            m_pInfoBox->AddEntry(entryBuffer, CPerfHUD::COL_ERROR, CPerfHUD::TEXT_SIZE_NORM);
-            CryPerfHUDWarning(1.f, "Too Many Geometry: %.2fMB", fMeshRequiredMB);
-        }
-    }
-
-
-    //////////////////////////////////////////////////////////////////////////
     if (gEnv->pRenderer)
     {
         STextureStreamingStats textureStats(true);
@@ -1729,27 +1691,6 @@ CStreamingStatsWidget::CStreamingStatsWidget(IMiniCtrl* pParentMenu, ICryPerfHUD
 //////////////////////////////////////////////////////////////////////////
 void CStreamingStatsWidget::Update()
 {
-    IRenderer* pRenderer = gEnv->pRenderer;
-
-    char entryBuffer[CMiniInfoBox::MAX_TEXT_LENGTH] = {0};
-
-    //Clear old entries
-    m_pInfoBox->ClearEntries();
-
-    I3DEngine::SObjectsStreamingStatus objStats;
-    gEnv->p3DEngine->GetObjectsStreamingStatus(objStats);
-
-    float fMeshRequiredMB = (float)(objStats.nMemRequired) / (1024 * 1024);
-    sprintf_s(entryBuffer, "Mesh Required: %.2f (%dMB)", fMeshRequiredMB, objStats.nMeshPoolSize);
-    if (fMeshRequiredMB < objStats.nMeshPoolSize)
-    {
-        m_pInfoBox->AddEntry(entryBuffer, CPerfHUD::COL_NORM, CPerfHUD::TEXT_SIZE_NORM);
-    }
-    else
-    {
-        m_pInfoBox->AddEntry(entryBuffer, CPerfHUD::COL_ERROR, CPerfHUD::TEXT_SIZE_NORM);
-        CryPerfHUDWarning(1.f, "Too Many Geometry: %.2fMB", fMeshRequiredMB);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1970,8 +1911,6 @@ void CRenderBatchWidget::Enable(int mode)
 {
     mode = min(mode, DISPLAY_MODE_NUM - 1);
     EDisplayMode newMode = (EDisplayMode)mode;
-
-    bool bValidMode = false;
 
     if (m_displayMode != newMode)
     {

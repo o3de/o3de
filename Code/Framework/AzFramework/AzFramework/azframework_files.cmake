@@ -14,7 +14,6 @@ set(FILES
     AzFrameworkModule.h
     AzFrameworkModule.cpp
     API/ApplicationAPI.h
-    API/AtomActiveInterface.h
     Application/Application.cpp
     Application/Application.h
     Archive/Archive.cpp
@@ -102,6 +101,8 @@ set(FILES
     Viewport/ScreenGeometry.cpp
     Viewport/CameraState.h
     Viewport/CameraState.cpp
+    Viewport/CameraInput.h
+    Viewport/CameraInput.cpp
     Viewport/DisplayContextRequestBus.h
     Entity/BehaviorEntity.cpp
     Entity/BehaviorEntity.h
@@ -143,6 +144,7 @@ set(FILES
     Components/NonUniformScaleComponent.cpp
     FileFunc/FileFunc.h
     FileFunc/FileFunc.cpp
+    Font/FontInterface.h
     Gem/GemInfo.cpp
     Gem/GemInfo.h
     StringFunc/StringFunc.h
@@ -191,10 +193,11 @@ set(FILES
     Logging/MissingAssetLogger.h
     Logging/MissingAssetNotificationBus.h
     Scene/Scene.h
+    Scene/Scene.inl
     Scene/Scene.cpp
-    Scene/SceneSystemBus.h
     Scene/SceneSystemComponent.h
     Scene/SceneSystemComponent.cpp
+    Scene/SceneSystemInterface.h
     Script/ScriptComponent.h
     Script/ScriptComponent.cpp
     Script/ScriptDebugAgentBus.h
@@ -314,7 +317,6 @@ set(FILES
     Terrain/TerrainDataRequestBus.h
     Terrain/TerrainDataRequestBus.cpp
     Platform/PlatformDefaults.h
-    Platform/PlatformDefaults.cpp
     Windowing/WindowBus.h
     Windowing/NativeWindow.cpp
     Windowing/NativeWindow.h
@@ -426,4 +428,7 @@ set(FILES
     Visibility/EntityVisibilityBoundsUnionSystem.cpp
     Visibility/EntityVisibilityQuery.h
     Visibility/EntityVisibilityQuery.cpp
+    Dependency/Dependency.h
+    Dependency/Dependency.inl
+    Dependency/Version.h
 )

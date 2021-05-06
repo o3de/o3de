@@ -874,7 +874,6 @@ namespace UnitTest
 
         uint32_t indexCount = 36;
         uint32_t vertexCount = 36;
-        uint32_t materialId = 1;
 
         RHI::BufferViewDescriptor indexBufferViewDescriptor =
             RHI::BufferViewDescriptor::CreateStructured(0, indexCount, sizeof(uint32_t));
@@ -935,6 +934,7 @@ namespace UnitTest
     //          *---*---*---*
     //           \ / \ / \ / \
     //            *---*---*---*
+    template<class x> class TD;
     class TwoSeparatedPlanesMesh
     {
     public:
@@ -1050,7 +1050,9 @@ namespace UnitTest
         ASSERT_TRUE(kdTree.Build(mesh.GetModel().Get()));
 
         float distance = AZStd::numeric_limits<float>::max();
-        EXPECT_THAT(kdTree.RayIntersection(AZ::Vector3(GetParam().xpos, GetParam().ypos, GetParam().zpos), AZ::Vector3::CreateAxisZ(-1.0f), distance), testing::Eq(GetParam().expectedShouldIntersect));
+        AZ::Vector3 normal;
+
+        EXPECT_THAT(kdTree.RayIntersection(AZ::Vector3(GetParam().xpos, GetParam().ypos, GetParam().zpos), AZ::Vector3::CreateAxisZ(-1.0f), distance, normal), testing::Eq(GetParam().expectedShouldIntersect));
         EXPECT_THAT(distance, testing::FloatEq(GetParam().expectedDistance));
     }
 

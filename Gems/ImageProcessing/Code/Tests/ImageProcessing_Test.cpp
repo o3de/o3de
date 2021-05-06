@@ -47,11 +47,11 @@
 #include <array>
 #include <utility>
 
-//Enable generate image files for result of some tests. 
+//Enable generate image files for result of some tests.
 //This is slow and only useful for debugging. This should be disabled for unit test
 //#define DEBUG_OUTPUT_IMAGES
 
-//There are some test functions in this test which are DISABLED. They were mainly for programming tests. 
+//There are some test functions in this test which are DISABLED. They were mainly for programming tests.
 //It's only recommended to enable them for programming test purpose.
 
 #include <AzCore/UnitTest/UnitTest.h>
@@ -72,7 +72,7 @@ protected:
     AZStd::unique_ptr<QCoreApplication> m_coreApplication; // required by engine root and IsExtensionSupported
     AZStd::unique_ptr<AZ::SerializeContext> m_context;
     AZStd::string m_engineRoot;
-    
+
     void SetUp() override
     {
         BuilderSettingManager::CreateInstance();
@@ -81,15 +81,16 @@ protected:
         m_context = AZStd::make_unique<AZ::SerializeContext>();
         BuilderPluginComponent::Reflect(m_context.get());
         AZ::DataPatch::Reflect(m_context.get());
-        
+
         // Startup default local FileIO (hits OSAllocator) if not already setup.
         if (AZ::IO::FileIOBase::GetInstance() == nullptr)
         {
             AZ::IO::FileIOBase::SetInstance(aznew AZ::IO::LocalFileIO());
         }
-        
+
         // Adding this handler to allow utility functions access the serialize context
         AZ::ComponentApplicationBus::Handler::BusConnect();
+        AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
 
         //load qt plugins for some image file formats support
         int argc = 0;
@@ -112,6 +113,7 @@ protected:
         BuilderSettingManager::DestroyInstance();
         CPixelFormats::DestroyInstance();
 
+        AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
         AZ::ComponentApplicationBus::Handler::BusDisconnect();
 
         m_coreApplication.reset();
@@ -121,6 +123,8 @@ protected:
     AZ::ComponentApplication* GetApplication() override { return nullptr; }
     void RegisterComponentDescriptor(const AZ::ComponentDescriptor*) override { }
     void UnregisterComponentDescriptor(const AZ::ComponentDescriptor*) override { }
+    void RegisterEntityAddedEventHandler(AZ::EntityAddedEvent::Handler&) override { }
+    void RegisterEntityRemovedEventHandler(AZ::EntityRemovedEvent::Handler&) override { }
     bool AddEntity(AZ::Entity*) override { return false; }
     bool RemoveEntity(AZ::Entity*) override { return false; }
     bool DeleteEntity(const AZ::EntityId&) override { return false; }
@@ -138,7 +142,7 @@ protected:
     {
         return m_context.get();
     }
-    
+
     //enum names for Images with specific identification
     enum ImageFeature
     {
@@ -195,7 +199,7 @@ public:
         //create the directory if it's not exist
         const AZStd::string outputDir = AZ::Test::GetEngineRootPath() + "/Gems/ImageProcessing/Code/Tests/TestAssets/Output/";
         QDir dir(outputDir.c_str());
-        if (!dir.exists()) 
+        if (!dir.exists())
         {
             dir.mkpath(".");
         }
@@ -209,7 +213,7 @@ public:
 
         IImageObjectPtr finalImage = imageToProcess.Get();
 
-        //for each mipmap 
+        //for each mipmap
         for (uint32 mip = 0; mip < finalImage->GetMipCount() && mip < maxMipCnt; mip++)
         {
             uint8* imageBuf;
@@ -233,7 +237,7 @@ public:
     {
         bool isImageLoaded = true;
         bool isDifferent = false;
-        
+
         if (image1 == nullptr)
         {
             isImageLoaded = false;
@@ -250,7 +254,7 @@ public:
         {
             return (!image1 && !image2) ? false: true;
         }
-        
+
         // Mip
         int mip1 = image1->GetMipCount();
         int mip2 = image2->GetMipCount();
@@ -267,7 +271,7 @@ public:
         // Flag
         AZ::u32 flag1 = image1->GetImageFlags();
         AZ::u32 flag2 = image2->GetImageFlags();
-        
+
         isDifferent |= (flag1 != flag2);
 
         // Size
@@ -280,9 +284,9 @@ public:
         // Error
         float error = GetErrorBetweenImages(image1, image2);
 
-        static float EPSILON = 0.000001f; 
+        static float EPSILON = 0.000001f;
         isDifferent |= abs(error) >= EPSILON;
-        
+
         output += QString(",%1/%2,%3,%4/%5,%6/%7,").arg(QString::number(mip1,'f',1), QString::number(mip2,'f',1), QString::number(mipDiff),
             QString(ImageProcessingEditor::EditorHelper::s_PixelFormatString[format1]),
             QString(ImageProcessingEditor::EditorHelper::s_PixelFormatString[format2]),
@@ -301,8 +305,8 @@ public:
     static bool CompareDDSImage(const QString& imagePath1, const QString& imagePath2, QString& output)
     {
         IImageObjectPtr image1, alphaImage1, image2, alphaImage2;
-        
-        
+
+
         image1 = IImageObjectPtr(LoadImageFromDdsFile(imagePath1.toUtf8().constData()));
         if (image1 && image1->HasImageFlags(EIF_AttachedAlpha))
         {
@@ -335,7 +339,7 @@ public:
             return false;
         }
         bool isDifferent = false;
-       
+
         isDifferent = GetComparisonResult(image1, image2, output);
 
 
@@ -380,7 +384,7 @@ TEST_F(ImageProcessingTest, TestPixelFormats)
     ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("G16R16") == ePixelFormat_R16G16);
     ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("G16R16F") == ePixelFormat_R16G16F);
 
-    //some legacy format need to be mapping to new format. 
+    //some legacy format need to be mapping to new format.
     ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("DXT1") == ePixelFormat_BC1);
     ASSERT_TRUE(pixelFormats.FindPixelFormatByLegacyName("DXT5") == ePixelFormat_BC3);
 
@@ -555,7 +559,7 @@ TEST_F(ImageProcessingTest, PresetSettingEqualityOperatorOverload_WithDifferingD
 
 //this test is to test image data won't be lost between uncompressed formats (for low to high precision or same precision)
 TEST_F(ImageProcessingTest, TestConvertFormatUncompressed)
-{    
+{
     //source image
     IImageObjectPtr srcImage(LoadImageFromFile(m_imagFileNameMap[Image_200X200_RGB8_Jpg]));
     ImageToProcess imageToProcess(srcImage);
@@ -567,7 +571,7 @@ TEST_F(ImageProcessingTest, TestConvertFormatUncompressed)
     //we will convert to target format then convert back to RGBX8 so they can compare to easy other
     imageToProcess.ConvertFormatUncompressed(ePixelFormat_R8G8B8A8);
     dstImage1 = imageToProcess.Get();
-    
+
     imageToProcess.Set(srcImage);
     imageToProcess.ConvertFormatUncompressed(ePixelFormat_R16G16B16A16);
     ASSERT_FALSE(srcImage->CompareImage(imageToProcess.Get())); //this is different than source image
@@ -650,9 +654,9 @@ TEST_F(ImageProcessingTest, DISABLED_TestConvertPVRTC)
     //load builder presets
     AZStd::string buiderSetting = m_engineRoot + "/Gems/ImageProcessing/Code/Source/ImageBuilderDefaultPresets.settings";
     auto outcome = BuilderSettingManager::Instance()->LoadBuilderSettings(buiderSetting, m_context.get());
-    
+
     AZStd::vector<AZStd::string> outPaths;
-    AZStd::string inputFile = m_engineRoot + "/Gems/ImageProcessing/Code/Tests/TestAssets/normalSmoothness_ddna.tif";     
+    AZStd::string inputFile = m_engineRoot + "/Gems/ImageProcessing/Code/Tests/TestAssets/normalSmoothness_ddna.tif";
     const AZStd::string outputFolder = m_engineRoot + "/Gems/ImageProcessing/Code/Tests/TestAssets/temp/";
     ImageConvertProcess* process = CreateImageConvertProcess(inputFile, outputFolder, "ios", m_context.get());
     if (process != nullptr)
@@ -676,7 +680,7 @@ TEST_F(ImageProcessingTest, DISABLED_TestConvertPVRTC)
     }
 
     //ASSERT_TRUE(ConvertImageFile(inputFile, outputFolder, outPaths, "ios", m_context.get()));
-    
+
 }
 
 TEST_F(ImageProcessingTest, DISABLED_TestConvertFormat)
@@ -687,10 +691,10 @@ TEST_F(ImageProcessingTest, DISABLED_TestConvertFormat)
     //images to be tested
     static const int imageCount = 5;
     ImageFeature images[imageCount] = {
-        Image_20X16_RGBA8_Png, 
-        Image_32X32_16bit_F_Tif, 
-        Image_32X32_32bit_F_Tif , 
-        Image_512x512_Normal_Tga , 
+        Image_20X16_RGBA8_Png,
+        Image_32X32_16bit_F_Tif,
+        Image_32X32_32bit_F_Tif ,
+        Image_512x512_Normal_Tga ,
         Image_128x128_Transparent_Tga };
 
     for (int imageIdx = 0; imageIdx < imageCount; imageIdx++)
@@ -760,12 +764,12 @@ TEST_F(ImageProcessingTest, DISABLED_TestImageFilter)
 
     //create dst image with same size and mipmaps
     dstImage = IImageObjectPtr(
-        IImageObject::CreateImage(srcImage->GetWidth(0), srcImage->GetHeight(0), 3, 
+        IImageObject::CreateImage(srcImage->GetWidth(0), srcImage->GetHeight(0), 3,
             ePixelFormat_R32G32B32A32F));
 
     //for each filters
     const std::array<std::pair<MipGenType, AZStd::string>, 7> allFilters =
-    { 
+    {
         {
             {MipGenType::point, "point"},
             {MipGenType::box, "box" },
@@ -773,7 +777,7 @@ TEST_F(ImageProcessingTest, DISABLED_TestImageFilter)
             { MipGenType::quadratic, "Quadratic" },
             { MipGenType::blackmanHarris, "blackmanHarris" },
             { MipGenType::kaiserSinc, "kaiserSinc" }
-        } 
+        }
     };
 
     for (std::pair<MipGenType, AZStd::string> filter : allFilters)
@@ -795,7 +799,7 @@ TEST_F(ImageProcessingTest, TestColorSpaceConversion)
     imageToProcess.GammaToLinearRGBA32F(true);
     SaveImageToFile(imageToProcess.Get(), "GammaTolinear_DeGamma", 1);
     imageToProcess.LinearToGamma();
-    SaveImageToFile(imageToProcess.Get(), "LinearToGamma_DeGamma", 1);     
+    SaveImageToFile(imageToProcess.Get(), "LinearToGamma_DeGamma", 1);
 }
 
 //This function can be used to modify some value in the builder setting and keep all presets uuid then save back to setting file
@@ -823,7 +827,7 @@ TEST_F(ImageProcessingTest, VerifyRestrictedPlatform)
 }
 
 TEST_F(ImageProcessingTest, DISABLED_TestCubemap)
-{    
+{
     //load builder presets
     AZStd::string buiderSetting = m_engineRoot + "/Gems/ImageProcessing/Code/Source/ImageBuilderDefaultPresets.settings";
     auto outcome = BuilderSettingManager::Instance()->LoadBuilderSettings(buiderSetting, m_context.get());
@@ -832,7 +836,7 @@ TEST_F(ImageProcessingTest, DISABLED_TestCubemap)
     AZStd::string inputFile;
     AZStd::vector<AZStd::string> outPaths;
 
-    inputFile = m_engineRoot + "/Engine/EngineAssets/Shading/defaultProbe_cm.tif";
+    inputFile = m_engineRoot + "/Assets/Engine/EngineAssets/Shading/defaultProbe_cm.tif";
 
     IImageObjectPtr srcImage(LoadImageFromFile(inputFile));
     ImageToProcess imageToProcess(srcImage);
@@ -873,7 +877,7 @@ TEST_F(ImageProcessingTest, DISABLED_TestCubemap)
 
 //test image conversion for builder
 TEST_F(ImageProcessingTest, DISABLED_TestBuilderImageConvertor)
-{  
+{
     AZStd::string oldCacheFolder = "E:/Javelin_old_tex_cache/textures";
     AZStd::string srcFolder = "E:/Javelin_NWLYDev/dev/Assets/Textures";
 
@@ -884,12 +888,12 @@ TEST_F(ImageProcessingTest, DISABLED_TestBuilderImageConvertor)
     const AZStd::string outputFolder = m_engineRoot + "/Gems/ImageProcessing/Code/Tests/TestAssets/temp/";
     AZStd::string inputFile;
     AZStd::vector<AZStd::string> outPaths;
-    
+
     inputFile = srcFolder + "/terrain/cry/detail/grass_with_stones_displ.tif";
     inputFile = m_imagFileNameMap[Image_128x128_Transparent_Tga];
     AZStd::string oldFile = oldCacheFolder + "/terrain/cry/detail/grass_with_stones_displ.dds";
     ImageConvertProcess* process = CreateImageConvertProcess(inputFile, outputFolder, "pc", m_context.get());
-    
+
     if (process != nullptr)
     {
         //the process can be stopped if the job is cancelled or the worker is shutting down
@@ -907,7 +911,7 @@ TEST_F(ImageProcessingTest, DISABLED_TestBuilderImageConvertor)
         SaveImageToFile(process->GetOutputAlphaImage(), "alpha", 10);
 
         process->GetAppendOutputFilePaths(outPaths);
-                
+
         QString output;
         //CompareDDSImage(outPaths[0].c_str(), oldFile.c_str(), output);
         delete process;
@@ -948,9 +952,9 @@ TEST_F(ImageProcessingTest, DISABLED_TestLoadDdsImage)
     IImageObjectPtr originImage, alphaImage;
     AZStd::string inputFolder = m_engineRoot + "/Cache/AutomatedTesting/pc/automatedtesting/engineassets/texturemsg/";
     AZStd::string inputFile;
-    
+
     inputFile = "E:/Javelin_NWLYDev/dev/Cache/Assets/pc/assets/textures/blend_maps/moss/jav_moss_ddn.dds";
- 
+
     IImageObjectPtr newImage = IImageObjectPtr(LoadImageFromDdsFile(inputFile));
     if (newImage->HasImageFlags(EIF_AttachedAlpha))
     {
@@ -1022,7 +1026,7 @@ TEST_F(ImageProcessingTest, EditorTextureSettingTest)
 {
     AZStd::string buiderSetting = m_engineRoot + "/Gems/ImageProcessing/Code/Source/ImageBuilderDefaultPresets.settings";
     auto outcome = BuilderSettingManager::Instance()->LoadBuilderSettings(buiderSetting, m_context.get());
-    
+
     auto TestFunc = [](const AZStd::string& textureFilepath, bool isCubemap) {
 
         ImageProcessingEditor::EditorTextureSetting setting(textureFilepath);
@@ -1105,7 +1109,7 @@ TEST_F(ImageProcessingTest, EditorTextureSettingTest)
             ASSERT_TRUE(resolutions.size() >= reducedResolutions.size());
         }
     };
-    
+
     // For cubemap texture
     AZStd::string textureFilePath = m_engineRoot + "/Gems/ImageProcessing/Code/Tests/TestAssets/noon_cm.tif";
     TestFunc(textureFilePath, true);
@@ -1227,7 +1231,7 @@ TEST_F(ImageProcessingSerializationTest, TextureSettingReflect_SerializingLegacy
     // Load legacy texture settings
     TextureSettings legacyTextureSetting;
     AZStd::string textureFilepath = m_engineRoot + "/Gems/ImageProcessing/Code/Tests/TestAssets/1024x1024_24bit.tif";
-    auto legacyLoadOutcome = TextureSettings::LoadLegacyTextureSettingFromFile(textureFilepath, 
+    auto legacyLoadOutcome = TextureSettings::LoadLegacyTextureSettingFromFile(textureFilepath,
         textureFilepath + TextureSettings::legacyExtensionName, legacyTextureSetting, m_context.get());
 
     // Ensure we loaded and parsed the texture settings correctly.
@@ -1254,7 +1258,7 @@ TEST_F(ImageProcessingSerializationTest, TextureSettingReflect_SerializingModern
     // Load legacy texture settings
     TextureSettings legacyTextureSetting;
     AZStd::string textureFilepath = m_engineRoot + "/Gems/ImageProcessing/Code/Tests/TestAssets/1024x1024_24bit.tif";
-    auto legacyLoadOutcome = TextureSettings::LoadLegacyTextureSettingFromFile(textureFilepath, 
+    auto legacyLoadOutcome = TextureSettings::LoadLegacyTextureSettingFromFile(textureFilepath,
         textureFilepath+TextureSettings::legacyExtensionName, legacyTextureSetting, m_context.get());
 
     // Let's make modifications to the loaded texture setting
@@ -1273,7 +1277,7 @@ TEST_F(ImageProcessingSerializationTest, TextureSettingReflect_SerializingModern
     // Load the modified settings back to memory, using AZ::Serialization
     TextureSettings modernTextureSetting;
     auto modernLoadOutcome = TextureSettings::LoadTextureSetting(modernMetafilePath, modernTextureSetting, m_context.get());
-    
+
     // Ensure what we just serialized-in is identical to what we serialized-out.
     // The comparison operator also compares overrides.
     EXPECT_TRUE(modernLoadOutcome.IsSuccess());
@@ -1287,7 +1291,7 @@ TEST_F(ImageProcessingSerializationTest, TextureSettingReflect_SerializingModern
 {
     AZStd::string filepath = "test.xml";
 
-    // Fill-in structure with test data  
+    // Fill-in structure with test data
     TextureSettings fakeTextureSettings;
     fakeTextureSettings.m_preset = AZ::Uuid::CreateRandom();
     fakeTextureSettings.m_sizeReduceLevel = 0;
@@ -1313,10 +1317,10 @@ TEST_F(ImageProcessingSerializationTest, TextureSettingReflect_SerializingModern
 }
 
 TEST_F(ImageProcessingSerializationTest, DISABLED_BuilderSettingsReflect_SerializingDataInAndOut_WritesAndParsesFileAccurately)
-{    
+{
     AZStd::string buildSettingsFilepath = m_engineRoot + "/Gems/ImageProcessing/Code/Tests/TestAssets/tempPresets.settings";
     AZStd::string rcFilePath = m_engineRoot + "/Code/Tools/RC/Config/rc/rc.ini";
-    
+
     auto loadOutcome = BuilderSettingManager::Instance()->LoadBuilderSettingsFromRC(rcFilePath);
     ASSERT_TRUE(loadOutcome.IsSuccess());
 
@@ -1328,7 +1332,7 @@ TEST_F(ImageProcessingSerializationTest, DISABLED_BuilderSettingsReflect_Seriali
     auto writeOutcome = BuilderSettingManager::Instance()->WriteBuilderSettings(buildSettingsFilepath, m_context.get());
     ASSERT_TRUE(writeOutcome.IsSuccess());
 
-    //Re-load Builder Settings    
+    //Re-load Builder Settings
     auto reloadOutcome = BuilderSettingManager::Instance()->LoadBuilderSettings(buildSettingsFilepath, m_context.get());
     ASSERT_TRUE(reloadOutcome.IsSuccess());
 

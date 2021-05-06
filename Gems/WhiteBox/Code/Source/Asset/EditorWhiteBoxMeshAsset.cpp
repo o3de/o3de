@@ -86,7 +86,7 @@ namespace WhiteBox
             {
                 success = assetHandler->SaveAssetData(meshAsset, &fileStream);
                 AZ_Printf(
-                    "EditorWhiteBoxComponent", "Save %s. Location: %s", success ? "succeeded" : "failed",
+                    "EditorWhiteBoxMeshAsset", "Save %s. Location: %s", success ? "succeeded" : "failed",
                     absoluteFilePath.c_str());
             }
         }
@@ -181,6 +181,9 @@ namespace WhiteBox
         // disconnect from any previously connected asset id
         AZ::Data::AssetBus::Handler::BusDisconnect();
         WhiteBoxMeshAssetNotificationBus::Handler::BusDisconnect();
+
+        // ensure we're disconnected from the tick bus
+        AZ::TickBus::Handler::BusDisconnect();
     }
 
     void EditorWhiteBoxMeshAsset::Release()
@@ -215,9 +218,18 @@ namespace WhiteBox
         if (asset == m_meshAsset)
         {
             m_meshAsset = asset;
-            EditorWhiteBoxComponentRequestBus::Event(
-                m_entityComponentIdPair, &EditorWhiteBoxComponentRequestBus::Events::RebuildWhiteBox);
+
+            // defer rebuilding the mesh by a frame by connecting to the tick bus - this prevents issues
+            // with reentrancy when rebuilding the white box mesh
+            AZ::TickBus::Handler::BusConnect();
         }
+    }
+
+    void EditorWhiteBoxMeshAsset::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    {
+        // after rebuilding the white box mesh, immediately disconnect from the tick bus (we only use it for deferred rebuilding)
+        EditorWhiteBoxComponentRequestBus::Event(m_entityComponentIdPair, &EditorWhiteBoxComponentRequestBus::Events::RebuildWhiteBox);
+        AZ::TickBus::Handler::BusDisconnect();
     }
 
     void EditorWhiteBoxMeshAsset::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -229,7 +241,15 @@ namespace WhiteBox
     {
         if (asset == m_meshAsset)
         {
-            AZ_Warning("EditorWhiteBoxComponent", false, "OnAssetError: %s", asset.GetHint().c_str());
+            AZ_Warning("EditorWhiteBoxMeshAsset", false, "OnAssetError: %s", asset.GetHint().c_str());
+        }
+    }
+
+    void EditorWhiteBoxMeshAsset::OnAssetReloadError(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        if (asset == m_meshAsset)
+        {
+            AZ_Warning("EditorWhiteBoxMeshAsset", false, "OnAssetReloadError: %s", asset.GetHint().c_str());
         }
     }
 

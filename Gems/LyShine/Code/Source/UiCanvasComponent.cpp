@@ -33,6 +33,7 @@
 #include <LyShine/Bus/UiEntityContextBus.h>
 #include <LyShine/Bus/UiCanvasUpdateNotificationBus.h>
 #include <LyShine/UiSerializeHelpers.h>
+#include <LyShine/Draw2d.h>
 
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/Memory.h>
@@ -202,7 +203,7 @@ namespace
 
         // read in the length of the expected start string
         char* buffer = new char[expectedStartLen];
-        size_t bytesRead = file.ReadRaw(buffer, expectedStartLen);
+        file.ReadRaw(buffer, expectedStartLen);
 
         // match is true if the string read from the file matches the expected start string
         bool match = strncmp(expectedStart, buffer, expectedStartLen) == 0;
@@ -253,10 +254,16 @@ namespace
             }, context);
     }
 
-    UiRenderer* GetUiRenderer()
+    UiRenderer* GetUiRendererForGame()
     {
         CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
-        return lyShine->GetUiRenderer();
+        return lyShine ? lyShine->GetUiRenderer() : nullptr;
+    }
+
+    UiRenderer* GetUiRendererForEditor()
+    {
+        CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+        return lyShine ? lyShine->GetUiRendererForEditor() : nullptr;
     }
 
     bool IsValidInteractable(const AZ::EntityId& entityId)
@@ -838,7 +845,7 @@ AZStd::string UiCanvasComponent::SaveToXmlString()
 
     AZStd::string charBuffer;
     AZ::IO::ByteContainerStream<AZStd::string > charStream(&charBuffer);
-    bool success = SaveCanvasToStream(charStream, AZ::ObjectStream::ST_XML);
+    [[maybe_unused]] bool success = SaveCanvasToStream(charStream, AZ::ObjectStream::ST_XML);
 
     AZ_Assert(success, "Failed to serialize canvas entity to XML");
     return charBuffer;
@@ -1974,9 +1981,12 @@ void UiCanvasComponent::UpdateCanvasInEditorViewport(float deltaTime, bool isInG
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::RenderCanvasInEditorViewport(bool isInGame, AZ::Vector2 viewportSize)
 {
-    GetUiRenderer()->BeginUiFrameRender();
-    RenderCanvas(isInGame, viewportSize);
-    GetUiRenderer()->EndUiFrameRender();
+    // When isInGame is true we're rendering the canvas in UI Editor's Preview Mode
+    UiRenderer* uiRenderer = GetUiRendererForEditor();
+    AZ_Assert(uiRenderer, "Trying to render a canvas in the UI Editor before its UIRenderer has been initialized");
+    uiRenderer->BeginUiFrameRender();
+    RenderCanvas(isInGame, viewportSize, uiRenderer);
+    uiRenderer->EndUiFrameRender();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2019,12 +2029,17 @@ void UiCanvasComponent::UpdateCanvas(float deltaTime, bool isInGame)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiCanvasComponent::RenderCanvas(bool isInGame, AZ::Vector2 viewportSize)
+void UiCanvasComponent::RenderCanvas(bool isInGame, AZ::Vector2 viewportSize, UiRenderer* uiRenderer)
 {
     // Ignore render ops if we're not enabled
     if (!m_enabled)
     {
         return;
+    }
+
+    if (!uiRenderer)
+    {
+        uiRenderer = GetUiRendererForGame();
     }
 
     // It is possible, due to the LoadScreenComponent, for this canvas to have Render called while it is rendering.
@@ -2051,9 +2066,9 @@ void UiCanvasComponent::RenderCanvas(bool isInGame, AZ::Vector2 viewportSize)
 
     if (!m_renderGraph.IsEmpty())
     {
-        GetUiRenderer()->BeginCanvasRender();
-        m_renderGraph.Render(GetUiRenderer(), viewportSize);
-        GetUiRenderer()->EndCanvasRender();
+        uiRenderer->BeginCanvasRender();
+        m_renderGraph.Render(uiRenderer, viewportSize);
+        uiRenderer->EndCanvasRender();
     }
 
     m_isRendering = false;
@@ -2210,13 +2225,13 @@ void UiCanvasComponent::DebugReportDrawCalls(AZ::IO::HandleType fileHandle, LySh
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiCanvasComponent::DebugDisplayElemBounds(IDraw2d* draw2d) const
+void UiCanvasComponent::DebugDisplayElemBounds(CDraw2d* draw2d) const
 {
     DebugDisplayChildElemBounds(draw2d, m_rootElement);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiCanvasComponent::DebugDisplayChildElemBounds(IDraw2d* draw2d, const AZ::EntityId entity) const
+void UiCanvasComponent::DebugDisplayChildElemBounds(CDraw2d* draw2d, const AZ::EntityId entity) const
 {
     AZ::u64 time = AZStd::GetTimeUTCMilliSecond();
     uint32 fractionsOfOneSecond = time % 1000;
@@ -3724,6 +3739,7 @@ void UiCanvasComponent::DestroyRenderTarget()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::RenderCanvasToTexture()
 {
+#ifdef LYSHINE_ATOM_TODO
     if (m_renderTargetHandle <= 0)
     {
         return;
@@ -3752,6 +3768,7 @@ void UiCanvasComponent::RenderCanvasToTexture()
 
         GetUiRenderer()->EndUiFrameRender();
     }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3947,7 +3964,7 @@ void UiCanvasComponent::GetOrphanedElements(AZ::SliceComponent::EntityList& orph
     AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(rootSlice, m_entityContext->GetContextId(),
         &AzFramework::SliceEntityOwnershipServiceRequests::GetRootSlice);
 
-    bool result = rootSlice->GetEntities(entities);
+    rootSlice->GetEntities(entities);
 
     // We want to quickly check that every UiElement entity is referenced from the canvas.
     // We know that at this point all referenced elements have had FixupPostLoad called but
@@ -4023,7 +4040,7 @@ UiCanvasComponent* UiCanvasComponent::CreateCanvasInternal(UiEntityContext* enti
     UiElementComponent* elementComponent = rootEntity->CreateComponent<UiElementComponent>();
     AZ_Assert(elementComponent, "Failed to add UiElementComponent to entity");
     elementComponent->SetCanvas(canvasComponent, canvasComponent->GenerateId());
-    AZ::Component* transformComponent = rootEntity->CreateComponent<UiTransform2dComponent>();
+    [[maybe_unused]] AZ::Component* transformComponent = rootEntity->CreateComponent<UiTransform2dComponent>();
     AZ_Assert(transformComponent, "Failed to add transform2d component to entity");
 
     rootEntity->Activate();  // re-activate
@@ -4238,8 +4255,8 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
     // Initialize the target canvas size and uniform scale
     // This should be done before calling InGamePostActivate so that the
     // canvas space rects of the elements are accurate
-    AZ_Assert(gEnv->pRenderer, "Attempting to access IRenderer before it has been initialized");
-    if (gEnv->pRenderer)
+    UiRenderer* uiRenderer = forEditor ? GetUiRendererForEditor() : GetUiRendererForGame();
+    if (uiRenderer) // can be null in automated testing
     {
         AZ::Vector2 targetCanvasSize;
         if (canvasSize)
@@ -4248,8 +4265,7 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
         }
         else
         {
-            targetCanvasSize.SetX(static_cast<float>(gEnv->pRenderer->GetOverlayWidth()));
-            targetCanvasSize.SetY(static_cast<float>(gEnv->pRenderer->GetOverlayHeight()));
+            targetCanvasSize = uiRenderer->GetViewportSize();
         }
         canvasComponent->SetTargetCanvasSizeAndUniformScale(!forEditor, targetCanvasSize);
     }

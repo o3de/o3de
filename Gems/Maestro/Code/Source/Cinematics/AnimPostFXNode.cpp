@@ -22,8 +22,6 @@
 #include "Maestro/Types/AnimParamType.h"
 #include "Maestro/Types/AnimValueType.h"
 
-#include <I3DEngine.h>
-
 //////////////////////////////////////////////////////////////////////////
 //!
 class CFXNodeDescription
@@ -385,26 +383,22 @@ void CAnimPostFXNode::Animate(SAnimContext& ac)
         {
             bool val(false);
             pTrack->GetValue(ac.time, val);
-            gEnv->p3DEngine->SetShadowsGSMCache(val);
         }
         else
         if (valueType == AnimValueType::Float)
         {
             float val(0);
             pTrack->GetValue(ac.time, val);
-            gEnv->p3DEngine->GetPostEffectBaseGroup()->SetParam(m_pDescription->m_controlParams[paramIndex]->m_name.c_str(), val);
         }
         else if (valueType == AnimValueType::Bool)
         {
             bool val(false);
             pTrack->GetValue(ac.time, val);
-            gEnv->p3DEngine->GetPostEffectBaseGroup()->SetParam(m_pDescription->m_controlParams[paramIndex]->m_name.c_str(), (val ? 1.f : 0.f));
         }
         else if (valueType == AnimValueType::Vector4)
         {
             Vec4 val(0.0f, 0.0f, 0.0f, 0.0f);
             static_cast<CCompoundSplineTrack*>(pTrack)->GetValue(ac.time, val);
-            gEnv->p3DEngine->GetPostEffectBaseGroup()->SetParam(m_pDescription->m_controlParams[paramIndex]->m_name.c_str(), val);
         }
     }
 }
@@ -417,8 +411,7 @@ void CAnimPostFXNode::OnReset()
     // Reset each postFX param to its default.
     for (size_t i = 0; i < m_tracks.size(); ++i)
     {
-        IAnimTrack* pTrack = m_tracks[i].get();
-        assert(pTrack);
+        assert(m_tracks[i].get());
         size_t paramIndex = (size_t)static_cast<int>(m_tracks[i]->GetParameterType().GetType()) - static_cast<int>(AnimParamType::User);
         assert(paramIndex < m_pDescription->m_nodeParams.size());
 
@@ -429,33 +422,32 @@ void CAnimPostFXNode::OnReset()
         {
             bool val(false);
             m_pDescription->m_controlParams[paramIndex]->GetDefault(val);
-            gEnv->p3DEngine->SetShadowsGSMCache(val);
         }
         else
         if (valueType == AnimValueType::Float)
         {
             float val(0);
             m_pDescription->m_controlParams[paramIndex]->GetDefault(val);
-            gEnv->p3DEngine->GetPostEffectBaseGroup()->SetParam(m_pDescription->m_controlParams[paramIndex]->m_name.c_str(), val);
         }
         else if (valueType == AnimValueType::Bool)
         {
             bool val(false);
             m_pDescription->m_controlParams[paramIndex]->GetDefault(val);
-            gEnv->p3DEngine->GetPostEffectBaseGroup()->SetParam(m_pDescription->m_controlParams[paramIndex]->m_name.c_str(), (val ? 1.f : 0.f));
         }
         else if (valueType == AnimValueType::Vector4)
         {
             Vec4 val(0.0f, 0.0f, 0.0f, 0.0f);
             m_pDescription->m_controlParams[paramIndex]->GetDefault(val);
-            gEnv->p3DEngine->GetPostEffectBaseGroup()->SetParam(m_pDescription->m_controlParams[paramIndex]->m_name.c_str(), val);
         }
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimPostFXNode::Reflect(AZ::SerializeContext* serializeContext)
+void CAnimPostFXNode::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CAnimPostFXNode, CAnimNode>()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CAnimPostFXNode, CAnimNode>()
+            ->Version(1);
+    }
 }

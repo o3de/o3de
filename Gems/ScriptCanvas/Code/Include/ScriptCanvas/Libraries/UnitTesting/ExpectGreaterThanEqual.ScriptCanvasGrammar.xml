@@ -6,10 +6,13 @@
 	       PreferredClassName="Expect Greater Than Equal"
            Uuid="{8EB4E313-1479-4428-AE0C-75F233C5F5EB}"
            Base="ScriptCanvas::Node"
-           Icon="Editor/Icons/ScriptCanvas/ExpectGreaterThanEqual.png"
+           Icon="Icons/ScriptCanvas/ExpectGreaterThanEqual.png"
            Version="1"
            VersionConverter="ScriptCanvas::UnitTesting::ExpectComparisonVersioner"
            GeneratePropertyFriend="True"
+           DeprecationUUID="{C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8}"
+           ReplacementClassName="Unit Testing"
+           ReplacementMethodName="Expect Greater Than Equal"
            Description="Expects lhs to be greater than rhs">
         <In Name="In" Description="Input signal"/>
         <Out Name="Out" Description=""/>

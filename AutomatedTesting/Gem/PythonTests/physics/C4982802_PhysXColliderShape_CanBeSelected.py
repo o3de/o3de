@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID : C4982802
 Test Case Title : Verify that the shape capsule can be selected from drop downlist and the value for its height and radius can be set after that
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4982802
+
 """
 
 
@@ -40,7 +40,7 @@ def C4982802_PhysXColliderShape_CanBeSelected():
      6) Verify they have been changed
 
     Note:
-     - This test file must be called from the Lumberyard Editor command terminal
+     - This test file must be called from the Open 3D Engine Editor command terminal
      - Any passed and failed tests are written to the Editor.log file.
             Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -50,11 +50,11 @@ def C4982802_PhysXColliderShape_CanBeSelected():
     import ImportPathHelper as imports
 
     imports.init()
-    from utils import Report
-    from utils import TestHelper as helper
-    from editor_entity_utils import EditorEntity as Entity
+    from editor_python_test_tools.editor_entity_utils import EditorEntity as Entity
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
-    # Lumberyard Imports
+    # Open 3D Engine Imports
     import azlmbr.math as math
 
     CAPSULE_SHAPETYPE_ENUM = 2
@@ -110,5 +110,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C4982802_PhysXColliderShape_CanBeSelected)

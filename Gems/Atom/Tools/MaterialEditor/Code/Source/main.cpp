@@ -1,30 +1,31 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
+
+#if !defined(Q_MOC_RUN)
+#include <MaterialEditorApplication.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzQtComponents/Components/StyleManager.h>
-#include <AzQtComponents/Utilities/QtPluginPaths.h>
 #include <AzQtComponents/Components/GlobalEventFilter.h>
+#include <AzQtComponents/Components/O3DEStylesheet.h>
+#include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
-#include <AzQtComponents/Components/LumberyardStylesheet.h>
-#include <AzQtComponents/Utilities/QtPluginPaths.h>
-#include <AzQtComponents/Utilities/HandleDpiAwareness.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <AzQtComponents/Utilities/HandleDpiAwareness.h>
+#include <AzQtComponents/Utilities/QtPluginPaths.h>
 
-#include <QtWidgets/QApplication>
 #include <QtGui/private/qhighdpiscaling_p.h>
-
-#include <Source/MaterialEditorApplication.h>
+#include <QtWidgets/QApplication>
+#endif
 
 int main(int argc, char** argv)
 {
@@ -45,14 +46,15 @@ int main(int argc, char** argv)
     AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::SystemDpiAware);
 
     MaterialEditor::MaterialEditorApplication app(&argc, &argv);
+
+    auto globalEventFilter = new AzQtComponents::GlobalEventFilter(&app);
+    app.installEventFilter(globalEventFilter);
+
     AZ::IO::FixedMaxPath engineRootPath;
     if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
     {
         settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
     }
-
-    auto globalEventFilter = new AzQtComponents::GlobalEventFilter(&app);
-    app.installEventFilter(globalEventFilter);
 
     AzQtComponents::StyleManager styleManager(&app);
     styleManager.initialize(&app, engineRootPath);

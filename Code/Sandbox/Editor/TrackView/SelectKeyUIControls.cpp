@@ -102,8 +102,6 @@ bool CSelectKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKey
             ResetCameraEntries();
 
             // Get All cameras.
-            CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
-
             mv_camera.SetEnumList(NULL);
 
             mv_camera->AddEnumItem(QObject::tr("<None>"), QString::number(static_cast<AZ::u64>(AZ::EntityId::InvalidEntityId)));
@@ -223,7 +221,6 @@ void CSelectKeyUIControls::OnCameraRemoved(const AZ::EntityId & cameraId)
     // We can't iterate or remove an item from the enum list, and Camera::CameraRequests::GetCameras
     // still includes the deleted camera at this point. Reset the list anyway and filter out the
     // deleted camera.
-    IVarEnumList* oldList = mv_camera->GetEnumList();
     mv_camera->SetEnumList(NULL);
     mv_camera->AddEnumItem(QObject::tr("<None>"), QString::number(static_cast<AZ::u64>(AZ::EntityId::InvalidEntityId)));
 

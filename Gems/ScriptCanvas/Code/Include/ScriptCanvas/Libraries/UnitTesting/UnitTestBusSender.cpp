@@ -376,7 +376,7 @@ namespace ScriptCanvas
                 {
                     editContext->Class<EventSender>("Unit Testing", "")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "")->
-                            Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Libraries/UnitTesting.png")->
+                            Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Libraries/UnitTesting.png")->
                             Attribute(AZ::Edit::Attributes::CategoryStyle, ".method")->
                             Attribute(AZ::Edit::Attributes::Category, "Utilities/Unit Testing")->
                             Attribute(ScriptCanvas::Attributes::Node::TitlePaletteOverride, "TestingNodeTitlePalette")
@@ -389,6 +389,8 @@ namespace ScriptCanvas
                 AZ::ScriptCanvasAttributes::HiddenIndices uniqueIdIndex = { 0 };
 
                 auto builder = behaviorContext->Class<EventSender>("Unit Testing");
+                builder->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common);
+
                 builder->Method("Add Failure", &EventSender::AddFailure, { { {"", "", behaviorContext->MakeDefaultValue(UniqueId)}, {"Report", "additional notes for the test report"} } })
                         ->Attribute(AZ::ScriptCanvasAttributes::HiddenParameterIndex, uniqueIdIndex)
                     ->Method("Add Success", &EventSender::AddSuccess, { { {"", "", behaviorContext->MakeDefaultValue(UniqueId)}, {"Report", "additional notes for the test report"}  } })

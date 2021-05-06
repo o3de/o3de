@@ -15,7 +15,7 @@ import pytest
 # Bail on the test if ly_test_tools doesn't exist.
 pytest.importorskip("ly_test_tools")
 
-import automatedtesting_shared.hydra_test_utils as hydra
+import editor_python_test_tools.hydra_test_utils as hydra
 import ly_test_tools.environment.file_system as file_system
 
 test_directory = os.path.join(os.path.dirname(__file__), "EditorScripts")
@@ -30,16 +30,17 @@ class TestSurfaceMaskFilter(object):
     def setup_teardown(self, request, workspace, project, level):
         def teardown():
             # delete temp level
-            file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+            file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
         # Setup - add the teardown finalizer
         request.addfinalizer(teardown)
 
         # Make sure the temp level doesn't already exist
-        file_system.delete([os.path.join(workspace.paths.dev(), project, "Levels", level)], True, True)
+        file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
     # Simple validation test to ensure that SurfaceTag can be created, set to a value, and compared to another SurfaceTag.
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_filter
     def test_SurfaceMaskFilter_BasicSurfaceTagCreation(self, request, level, editor, launcher_platform):
 
         expected_lines = [
@@ -60,7 +61,8 @@ class TestSurfaceMaskFilter(object):
         )
 
     @pytest.mark.test_case_id("C2561342")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_filter
     def test_SurfaceMaskFilter_ExclusiveSurfaceTags_Function(self, request, editor, level, launcher_platform):
 
         expected_lines = [
@@ -92,7 +94,8 @@ class TestSurfaceMaskFilter(object):
         )
 
     @pytest.mark.test_case_id("C2561341")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_filter
     def test_SurfaceMaskFilter_InclusiveSurfaceTags_Function(self, request, editor, level, launcher_platform):
 
         expected_lines = [
@@ -124,7 +127,8 @@ class TestSurfaceMaskFilter(object):
         )
 
     @pytest.mark.test_case_id("C3711666")
-    @pytest.mark.SUITE_main
+    @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_filter
     def test_SurfaceMaskFilterOverrides_MultipleDescriptorOverridesPlantAsExpected(self, request, editor, level,
                                                                                    launcher_platform):
 

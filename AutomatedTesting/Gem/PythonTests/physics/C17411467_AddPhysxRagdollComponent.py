@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID : C17411467
 Test Case Title : Check that Physx Ragdoll component can be added without errors/warnings
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/17411467
+
 """
 
 
@@ -42,7 +42,7 @@ def run():
      6) Verify there are no errors/warnings in the entity outliner
 
     Note:
-    - This test file must be called from the Lumberyard Editor command terminal
+    - This test file must be called from the Open 3D Engine Editor command terminal
     - Any passed and failed tests are written to the Editor.log file.
             Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -53,10 +53,10 @@ def run():
     import ImportPathHelper as imports
 
     imports.init()
-    from utils import Report
-    from utils import TestHelper as helper
-    from utils import Tracer
-    from editor_entity_utils import EditorEntity
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
+    from editor_python_test_tools.utils import TestHelper as helper
+    from editor_python_test_tools.utils import Tracer
 
     helper.init_idle()
     # 1) Load the level

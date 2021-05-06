@@ -16,6 +16,8 @@
 
 #include "EditorPanelUtils.h"
 
+#include <AzCore/Utils/Utils.h>
+
 // Qt
 #include <QInputDialog>
 #include <QFileDialog>
@@ -147,7 +149,8 @@ public:
 
     virtual void HotKey_Export() override
     {
-        QString filepath = QFileDialog::getSaveFileName(nullptr, "Select shortcut configuration to load", "Editor/Plugins/ParticleEditorPlugin/settings", "HotKey Config Files (*.hkxml)");
+        auto settingDir = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "Editor" / "Plugins" / "ParticleEditorPlugin" / "settings";
+        QString filepath = QFileDialog::getSaveFileName(nullptr, "Select shortcut configuration to load", settingDir.c_str(), "HotKey Config Files (*.hkxml)");
         QFile file(filepath);
         if (!file.open(QIODevice::WriteOnly))
         {
@@ -242,7 +245,7 @@ public:
 
     virtual bool HotKey_LoadExisting() override
     {
-        QSettings settings("Amazon", "Lumberyard");
+        QSettings settings("Amazon", "O3DE");
         QString group = "Hotkeys/";
 
         HotKey_BuildDefaults();
@@ -278,12 +281,11 @@ public:
 
     virtual void HotKey_SaveCurrent() override
     {
-        QSettings settings("Amazon", "Lumberyard");
+        QSettings settings("Amazon", "O3DE");
         QString group = "Hotkeys/";
         settings.remove("Hotkeys/");
         settings.sync();
         settings.beginWriteArray(group);
-        int hotkeyCount = hotkeys.count();
         int saveIndex = 0;
         for (HotKey key : hotkeys)
         {

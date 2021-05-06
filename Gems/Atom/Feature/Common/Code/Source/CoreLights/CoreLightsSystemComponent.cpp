@@ -24,6 +24,8 @@
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 
 #include <CoreLights/CascadedShadowmapsPass.h>
+#include <CoreLights/SimplePointLightFeatureProcessor.h>
+#include <CoreLights/SimpleSpotLightFeatureProcessor.h>
 #include <CoreLights/CapsuleLightFeatureProcessor.h>
 #include <CoreLights/DepthExponentiationPass.h>
 #include <CoreLights/DirectionalLightFeatureProcessor.h>
@@ -33,8 +35,7 @@
 #include <CoreLights/PolygonLightFeatureProcessor.h>
 #include <CoreLights/QuadLightFeatureProcessor.h>
 #include <CoreLights/ShadowmapPass.h>
-#include <CoreLights/SpotLightFeatureProcessor.h>
-#include <CoreLights/SpotLightShadowmapsPass.h>
+#include <CoreLights/ProjectedShadowmapsPass.h>
 
 #include <RenderCommon.h>
 
@@ -69,9 +70,10 @@ namespace AZ
             }
 
             PhotometricValue::Reflect(context);
+            SimplePointLightFeatureProcessor::Reflect(context);
+            SimpleSpotLightFeatureProcessor::Reflect(context);
             PointLightFeatureProcessor::Reflect(context);
             DirectionalLightFeatureProcessor::Reflect(context);
-            SpotLightFeatureProcessor::Reflect(context);
             DiskLightFeatureProcessor::Reflect(context);
             CapsuleLightFeatureProcessor::Reflect(context);
             QuadLightFeatureProcessor::Reflect(context);
@@ -112,9 +114,10 @@ namespace AZ
 
         void CoreLightsSystemComponent::Activate()
         {
+            AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<SimplePointLightFeatureProcessor, SimplePointLightFeatureProcessorInterface>();
+            AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<SimpleSpotLightFeatureProcessor, SimpleSpotLightFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<PointLightFeatureProcessor, PointLightFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<DirectionalLightFeatureProcessor, DirectionalLightFeatureProcessorInterface>();
-            AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<SpotLightFeatureProcessor, SpotLightFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<DiskLightFeatureProcessor, DiskLightFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<CapsuleLightFeatureProcessor, CapsuleLightFeatureProcessorInterface>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<QuadLightFeatureProcessor, QuadLightFeatureProcessorInterface>();
@@ -126,7 +129,7 @@ namespace AZ
             passSystem->AddPassCreator(Name("DepthExponentiationPass"), &DepthExponentiationPass::Create);
             passSystem->AddPassCreator(Name("EsmShadowmapsPass"), &EsmShadowmapsPass::Create);
             passSystem->AddPassCreator(Name("ShadowmapPass"), &ShadowmapPass::Create);
-            passSystem->AddPassCreator(Name("SpotLightShadowmapsPass"), &SpotLightShadowmapsPass::Create);
+            passSystem->AddPassCreator(Name("ProjectedShadowmapsPass"), &ProjectedShadowmapsPass::Create);
 
             // Add the ShadowmapPassTemplate to the pass system. It will be cleaned up automatically when the pass system shuts down
             ShadowmapPass::CreatePassTemplate();

@@ -15,7 +15,6 @@
 
 #include "IconManager.h"
 
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzCore/Interface/Interface.h>
 
 // AzToolsFramework
@@ -26,28 +25,29 @@
 #include "Util/Image.h"
 #include "Util/ImageUtil.h"
 
+#include <IStatObj.h>
 
-#define HELPER_MATERIAL "Editor/Objects/Helper"
+#define HELPER_MATERIAL "Objects/Helper"
 
 namespace
 {
     // Object names in this array must correspond to EObject enumeration.
     const char* g_ObjectNames[eStatObject_COUNT] =
     {
-        "Editor/Objects/Arrow.cgf",
-        "Editor/Objects/Axis.cgf",
-        "Editor/Objects/Sphere.cgf",
-        "Editor/Objects/Anchor.cgf",
-        "Editor/Objects/entrypoint.cgf",
-        "Editor/Objects/hidepoint.cgf",
-        "Editor/Objects/hidepoint_sec.cgf",
-        "Editor/Objects/reinforcement_point.cgf",
+        "Objects/Arrow.cgf",
+        "Objects/Axis.cgf",
+        "Objects/Sphere.cgf",
+        "Objects/Anchor.cgf",
+        "Objects/entrypoint.cgf",
+        "Objects/hidepoint.cgf",
+        "Objects/hidepoint_sec.cgf",
+        "Objects/reinforcement_point.cgf",
     };
 
     const char* g_IconNames[eIcon_COUNT] =
     {
-        "Editor/Icons/ScaleWarning.png",
-        "Editor/Icons/RotationWarning.png",
+        "Icons/ScaleWarning.png",
+        "Icons/RotationWarning.png",
     };
 };
 
@@ -77,12 +77,11 @@ void CIconManager::Done()
 //////////////////////////////////////////////////////////////////////////
 void CIconManager::Reset()
 {
-    I3DEngine* pEngine = GetIEditor()->Get3DEngine();
     // Do not unload objects. but clears them.
     int i;
     for (i = 0; i < sizeof(m_objects) / sizeof(m_objects[0]); i++)
     {
-        if (m_objects[i] && pEngine)
+        if (m_objects[i])
         {
             m_objects[i]->Release();
         }
@@ -115,72 +114,6 @@ int CIconManager::GetIconTexture(const char* iconName)
         return 0;
     }
 
-    if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        ITexture* texture = GetIEditor()->GetRenderer() ? GetIEditor()->GetRenderer()->EF_LoadTexture(iconName) : nullptr;
-        if (texture)
-        {
-            id = texture->GetTextureID();
-            m_textures[iconName] = id;
-        }
-    }
-    else
-    {
-        QString ext = Path::GetExt(iconName);
-        QString actualName = iconName;
-
-        char iconPath[AZ_MAX_PATH_LEN] = { 0 };
-        gEnv->pFileIO->ResolvePath(actualName.toUtf8().data(), iconPath, AZ_MAX_PATH_LEN);
-
-        // if we can't find it at the resolved path, try the devroot if necessary:
-        if (!gEnv->pFileIO->Exists(iconPath))
-        {
-            if (iconName[0] != '@') // it has no specified alias
-            {
-                if (QString::compare(ext, "dds", Qt::CaseInsensitive) != 0) // if its a DDS, it comes out of processed files in @assets@, and assets is assumed by default (legacy renderer)
-                {
-                    // check for a source file
-                    AZStd::string iconFullPath;
-                    bool pathFound = false;
-                    using AssetSysReqBus = AzToolsFramework::AssetSystemRequestBus;
-                    AssetSysReqBus::BroadcastResult(pathFound, &AssetSysReqBus::Events::GetFullSourcePathFromRelativeProductPath, iconName, iconFullPath);
-
-                    if (pathFound)
-                    {
-                        azstrncpy(iconPath, AZ_MAX_PATH_LEN, iconFullPath.c_str(), iconFullPath.length() + 1);
-                    }
-                }
-            }
-        }
-
-        CImageEx image;
-        // Load icon.
-        if (CImageUtil::LoadImage(iconPath, image))
-        {
-            IRenderer* pRenderer(GetIEditor()->GetRenderer());
-            if (pRenderer->GetRenderType() != eRT_DX11)
-            {
-                image.SwapRedAndBlue();
-            }
-
-            if (QString::compare(ext, "bmp", Qt::CaseInsensitive) == 0 || QString::compare(ext, "jpg", Qt::CaseInsensitive) == 0)
-            {
-                int sz = image.GetWidth() * image.GetHeight();
-                int h = image.GetHeight();
-                uint8* buf = (uint8*)image.GetData();
-                for (int i = 0; i < sz; i++)
-                {
-                    uint32 alpha = max(max(buf[i * 4], buf[i * 4 + 1]), buf[i * 4 + 2]);
-                    alpha *= 2;
-                    buf[i * 4 + 3] = (alpha > 255) ? 255 : alpha;
-                }
-            }
-
-            id = pRenderer->DownLoadToVideoMemory((unsigned char*)image.GetData(), image.GetWidth(), image.GetHeight(), eTF_R8G8B8A8, eTF_R8G8B8A8, 0, 0, 0);
-            m_textures[iconName] = id;
-        }
-    }
-
     return id;
 }
 
@@ -197,39 +130,10 @@ int CIconManager::GetIconTexture(EIcon icon)
     return m_icons[icon];
 }
 
-
 //////////////////////////////////////////////////////////////////////////
-_smart_ptr<IMaterial>  CIconManager::GetHelperMaterial()
+IStatObj*   CIconManager::GetObject(EStatObject)
 {
-    if (!m_pHelperMtl)
-    {
-        m_pHelperMtl = GetIEditor()->Get3DEngine()->GetMaterialManager()->LoadMaterial(HELPER_MATERIAL);
-    }
-    return m_pHelperMtl;
-};
-
-//////////////////////////////////////////////////////////////////////////
-IStatObj*   CIconManager::GetObject(EStatObject object)
-{
-    assert(object >= 0 && object < eStatObject_COUNT);
-
-    if (m_objects[object])
-    {
-        return m_objects[object];
-    }
-
-    // Try to load this object.
-    m_objects[object] = GetIEditor()->Get3DEngine()->LoadStatObjUnsafeManualRef(g_ObjectNames[object], NULL, NULL, false);
-    if (!m_objects[object])
-    {
-        CLogFile::FormatLine("Error: Load Failed: %s", g_ObjectNames[object]);
-    }
-    m_objects[object]->AddRef();
-    if (GetHelperMaterial())
-    {
-        m_objects[object]->SetMaterial(GetHelperMaterial());
-    }
-    return m_objects[object];
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////

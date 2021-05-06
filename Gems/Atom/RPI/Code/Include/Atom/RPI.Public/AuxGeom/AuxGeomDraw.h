@@ -138,7 +138,7 @@ namespace AZ
             //! @param depthWrite    If depth writing should be enabled
             //! @param faceCull      Which (if any) facing triangles should be culled
             //! @param viewProjOverrideIndex Which view projection override entry to use, -1 if unused
-            virtual void DrawQuad(float width, float height, const AZ::Transform& transform, const AZ::Color& color, DrawStyle style = DrawStyle::Shaded, DepthTest depthTest = DepthTest::On, DepthWrite depthWrite = DepthWrite::On, FaceCullMode faceCull = FaceCullMode::Back, int32_t viewProjOverrideIndex = -1) = 0;
+            virtual void DrawQuad(float width, float height, const AZ::Matrix3x4& transform, const AZ::Color& color, DrawStyle style = DrawStyle::Shaded, DepthTest depthTest = DepthTest::On, DepthWrite depthWrite = DepthWrite::On, FaceCullMode faceCull = FaceCullMode::Back, int32_t viewProjOverrideIndex = -1) = 0;
 
             //! Draw a sphere.
             //! @param center        The center of the sphere.

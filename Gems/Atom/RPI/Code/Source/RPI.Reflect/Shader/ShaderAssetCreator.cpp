@@ -264,7 +264,7 @@ namespace AZ
 
                 if (!foundVariantAsset)
                 {
-                    ReportError("Failed to find variant asset for API [%d]", perAPIShaderData.m_APIType);
+                    ReportWarning("Failed to find variant asset for API [%d]", perAPIShaderData.m_APIType);
                 }
 
                 m_asset->m_perAPIShaderData.push_back(perAPIShaderData);

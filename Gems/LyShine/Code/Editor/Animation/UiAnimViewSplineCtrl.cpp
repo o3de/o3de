@@ -195,7 +195,6 @@ private:
 
     void SerializeSplines(_smart_ptr<ISplineBackup> CSplineEntry::* backup, bool bLoading)
     {
-        CUiAnimViewSplineCtrl* pCtrl = FindControl(m_pCtrl);
         for (auto it = m_splineEntries.begin(); it != m_splineEntries.end(); ++it)
         {
             CSplineEntry& entry = *it;

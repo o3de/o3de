@@ -16,7 +16,9 @@
 #include "../PreferencesWindow.h"
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <EMotionFX/CommandSystem/Source/SelectionList.h>
+#include <EMotionFX/CommandSystem/Source/ActorInstanceCommands.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
+#include <MysticQt/Source/KeyboardShortcutManager.h>
 
 #include <QToolBar>
 
@@ -52,7 +54,7 @@ namespace EMStudio
         mPlugin->CreateRenderWidget(this, &mRenderWidget, &renderWidget);
         verticalLayout->addWidget(renderWidget);
 
-        auto sliderGroup = new QActionGroup(this);
+        new QActionGroup(this);
 
         QActionGroup* group = new QActionGroup(this);
         group->setExclusive(true);
@@ -156,8 +158,17 @@ namespace EMStudio
             cameraMenu->addSeparator();
 
             cameraMenu->addAction("Reset Camera",      [this]() { this->OnResetCamera(); });
-            cameraMenu->addAction("Show Selected",     this, &RenderViewWidget::OnShowSelected);
-            cameraMenu->addAction("Show Entire Scene", this, &RenderViewWidget::OnShowEntireScene);
+
+            QAction* showSelectedAction = cameraMenu->addAction("Show Selected", this, &RenderViewWidget::OnShowSelected);
+            showSelectedAction->setShortcut(Qt::Key_S);
+            GetMainWindow()->GetShortcutManager()->RegisterKeyboardShortcut(showSelectedAction, RenderPlugin::s_renderWindowShortcutGroupName, true);
+            addAction(showSelectedAction);
+
+            QAction* showEntireSceneAction = cameraMenu->addAction("Show Entire Scene", this, &RenderViewWidget::OnShowEntireScene);
+            showEntireSceneAction->setShortcut(Qt::Key_A);
+            GetMainWindow()->GetShortcutManager()->RegisterKeyboardShortcut(showEntireSceneAction, RenderPlugin::s_renderWindowShortcutGroupName, true);
+            addAction(showEntireSceneAction);
+
             cameraMenu->addSeparator();
 
             mFollowCharacterAction = cameraMenu->addAction(tr("Follow Character"));
@@ -181,8 +192,30 @@ namespace EMStudio
         connect(m_manipulatorModes[RenderOptions::ROTATE], &QAction::triggered, mPlugin, &RenderPlugin::SetRotationMode);
         connect(m_manipulatorModes[RenderOptions::SCALE], &QAction::triggered, mPlugin, &RenderPlugin::SetScaleMode);
 
+        QAction* toggleSelectionBoxRendering = new QAction(
+            "Toggle Selection Box Rendering",
+            this
+        );
+        toggleSelectionBoxRendering->setShortcut(Qt::Key_J);
+        GetMainWindow()->GetShortcutManager()->RegisterKeyboardShortcut(toggleSelectionBoxRendering, RenderPlugin::s_renderWindowShortcutGroupName, true);
+        connect(toggleSelectionBoxRendering, &QAction::triggered, this, [this]
+        {
+            mPlugin->GetRenderOptions()->SetRenderSelectionBox(mPlugin->GetRenderOptions()->GetRenderSelectionBox() ^ true);
+        });
+        addAction(toggleSelectionBoxRendering);
+
+        QAction* deleteSelectedActorInstance = new QAction(
+            "Delete Selected Actor Instance",
+            this
+        );
+        deleteSelectedActorInstance->setShortcut(Qt::Key_Delete);
+        connect(deleteSelectedActorInstance, &QAction::triggered, []{ CommandSystem::RemoveSelectedActorInstances(); });
+        addAction(deleteSelectedActorInstance);
+
         Reset();
         UpdateInterface();
+
+        GetMainWindow()->LoadKeyboardShortcuts();
     }
 
     void RenderViewWidget::SetManipulatorMode(RenderOptions::ManipulatorMode mode)

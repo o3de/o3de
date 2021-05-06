@@ -17,7 +17,6 @@
 #include "Include/IDisplayViewport.h"
 #include "Include/HitContext.h"
 #include "Util/Math.h"
-#include "EditTool.h"
 #include "IObjectManager.h"
 #include <Cry_Geo.h>
 

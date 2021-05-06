@@ -32,7 +32,6 @@ namespace LmbrCentral
         provided.push_back(AZ_CRC("PolygonPrismShapeService", 0x1cbc4ed4));
         provided.push_back(AZ_CRC("VariableVertexContainerService", 0x70c58740));
         provided.push_back(AZ_CRC("FixedVertexContainerService", 0x83f1bbf2));
-        provided.push_back(AZ_CRC("AreaLightShapeService", 0x68ea78dc));
     }
 
     void EditorPolygonPrismShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -40,7 +39,6 @@ namespace LmbrCentral
         EditorBaseShapeComponent::GetIncompatibleServices(incompatible);
         incompatible.push_back(AZ_CRC("VariableVertexContainerService", 0x70c58740));
         incompatible.push_back(AZ_CRC("FixedVertexContainerService", 0x83f1bbf2));
-        incompatible.push_back(AZ_CRC("AreaLightShapeService", 0x68ea78dc));
     }
 
     void EditorPolygonPrismShapeComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -167,8 +165,8 @@ namespace LmbrCentral
                     "Polygon Prism Shape", "Provides polygon prism shape")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Shape")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/PolygonPrism.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/PolygonPrism.png")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PolygonPrism.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PolygonPrism.png")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "http://docs.aws.amazon.com/console/lumberyard/userguide/polygon-prism-component")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

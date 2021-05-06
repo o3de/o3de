@@ -26,6 +26,7 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NavigateWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NavigationHistory.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NavigationLinkWidget.h>
+#include <MysticQt/Source/KeyboardShortcutManager.h>
 #include <Editor/AnimGraphEditorBus.h>
 #include <QKeyEvent>
 #include <QPushButton>
@@ -40,74 +41,298 @@ namespace EMStudio
         : QWidget(parentWidget)
         , m_parentPlugin(plugin)
     {
-        for (uint32 i = 0; i < NUM_OPTIONS; ++i)
+        EMotionFX::ActorEditorRequestBus::Handler::BusConnect();
+    }
+
+    void BlendGraphViewWidget::CreateActions()
+    {
+        MysticQt::KeyboardShortcutManager* shortcutManager = GetMainWindow()->GetShortcutManager();
+
+        m_actions[SELECTION_ALIGNLEFT] = new QAction(
+            QIcon(":/EMotionFX/AlignLeft.svg"),
+            FromStdString(AnimGraphPlugin::s_alignLeftShortcutName),
+            this);
+        m_actions[SELECTION_ALIGNLEFT]->setShortcut(Qt::Key_L | Qt::ControlModifier);
+        shortcutManager->RegisterKeyboardShortcut(m_actions[SELECTION_ALIGNLEFT], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
+        connect(m_actions[SELECTION_ALIGNLEFT], &QAction::triggered, &m_parentPlugin->GetActionManager(), &AnimGraphActionManager::AlignLeft);
+
+        m_actions[SELECTION_ALIGNRIGHT] = new QAction(
+            QIcon(":/EMotionFX/AlignRight.svg"),
+            FromStdString(AnimGraphPlugin::s_alignRightShortcutName),
+            this);
+        m_actions[SELECTION_ALIGNRIGHT]->setShortcut(Qt::Key_R | Qt::ControlModifier);
+        shortcutManager->RegisterKeyboardShortcut(m_actions[SELECTION_ALIGNRIGHT], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
+        connect(m_actions[SELECTION_ALIGNRIGHT], &QAction::triggered, &m_parentPlugin->GetActionManager(), &AnimGraphActionManager::AlignRight);
+
+        m_actions[SELECTION_ALIGNTOP] = new QAction(
+            QIcon(":/EMotionFX/AlignTop.svg"),
+            FromStdString(AnimGraphPlugin::s_alignTopShortcutName),
+            this);
+        m_actions[SELECTION_ALIGNTOP]->setShortcut(Qt::Key_T | Qt::ControlModifier);
+        shortcutManager->RegisterKeyboardShortcut(m_actions[SELECTION_ALIGNTOP], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
+        connect(m_actions[SELECTION_ALIGNTOP], &QAction::triggered, &m_parentPlugin->GetActionManager(), &AnimGraphActionManager::AlignTop);
+
+        m_actions[SELECTION_ALIGNBOTTOM] = new QAction(
+            QIcon(":/EMotionFX/AlignBottom.svg"),
+            FromStdString(AnimGraphPlugin::s_alignBottomShortcutName),
+            this);
+        m_actions[SELECTION_ALIGNBOTTOM]->setShortcut(Qt::Key_B | Qt::ControlModifier);
+        shortcutManager->RegisterKeyboardShortcut(m_actions[SELECTION_ALIGNBOTTOM], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
+        connect(m_actions[SELECTION_ALIGNBOTTOM], &QAction::triggered, &m_parentPlugin->GetActionManager(), &AnimGraphActionManager::AlignBottom);
+
+        m_actions[SELECTION_SELECTALL] = new QAction(
+            FromStdString(AnimGraphPlugin::s_selectAllShortcutName),
+            this
+        );
+        m_actions[SELECTION_SELECTALL]->setShortcut(Qt::Key_A | Qt::ControlModifier);
+        shortcutManager->RegisterKeyboardShortcut(m_actions[SELECTION_SELECTALL], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
+        connect(m_actions[SELECTION_SELECTALL], &QAction::triggered, [this]
         {
-            m_actions[i] = nullptr;
+            NodeGraph* activeGraph = m_parentPlugin->GetGraphWidget()->GetActiveGraph();
+            if (activeGraph)
+            {
+                activeGraph->SelectAllNodes();
+            }
+        });
+
+        m_actions[SELECTION_UNSELECTALL] = new QAction(
+            FromStdString(AnimGraphPlugin::s_unselectAllShortcutName),
+            this
+        );
+        m_actions[SELECTION_UNSELECTALL]->setShortcut(Qt::Key_D | Qt::ControlModifier);
+        shortcutManager->RegisterKeyboardShortcut(m_actions[SELECTION_UNSELECTALL], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
+        connect(m_actions[SELECTION_UNSELECTALL], &QAction::triggered, [this]
+        {
+            NodeGraph* activeGraph = m_parentPlugin->GetGraphWidget()->GetActiveGraph();
+            if (activeGraph)
+            {
+                activeGraph->UnselectAllNodes();
+            }
+        });
+
+        m_actions[FILE_NEW] = new QAction(
+            QIcon(":/EMotionFX/Plus.svg"),
+            tr("Create a new anim graph"),
+            this);
+        m_actions[FILE_NEW]->setObjectName("EMFX.BlendGraphViewWidget.NewButton");
+        connect(m_actions[FILE_NEW], &QAction::triggered, this, &BlendGraphViewWidget::OnCreateAnimGraph);
+
+        m_actions[FILE_OPEN] = new QAction(
+            tr("Open..."),
+            this);
+        connect(m_actions[FILE_OPEN], &QAction::triggered, m_parentPlugin, &AnimGraphPlugin::OnFileOpen);
+
+        m_actions[FILE_SAVE] = new QAction(
+            tr("Save"),
+            this);
+        connect(m_actions[FILE_SAVE], &QAction::triggered, m_parentPlugin, &AnimGraphPlugin::OnFileSave);
+
+        m_actions[FILE_SAVEAS] = new QAction(
+            tr("Save as..."),
+            this);
+        connect(m_actions[FILE_SAVEAS], &QAction::triggered, m_parentPlugin, &AnimGraphPlugin::OnFileSaveAs);
+
+        m_actions[NAVIGATION_FORWARD] = new QAction(
+            QIcon(":/EMotionFX/Forward.svg"),
+            FromStdString(AnimGraphPlugin::s_historyForwardShortcutName),
+            this);
+        m_actions[NAVIGATION_FORWARD]->setShortcut(Qt::Key_Right);
+        shortcutManager->RegisterKeyboardShortcut(m_actions[NAVIGATION_FORWARD], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
+        connect(m_actions[NAVIGATION_FORWARD], &QAction::triggered, [this]
+        {
+            m_parentPlugin->GetNavigationHistory()->StepForward();
+            UpdateNavigation();
+        });
+
+        m_actions[NAVIGATION_BACK] = new QAction(
+            QIcon(":/EMotionFX/Backward.svg"),
+            FromStdString(AnimGraphPlugin::s_historyBackShortcutName),
+            this);
+        m_actions[NAVIGATION_BACK]->setShortcut(Qt::Key_Left);
+        shortcutManager->RegisterKeyboardShortcut(m_actions[NAVIGATION_BACK], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
+        connect(m_actions[NAVIGATION_BACK], &QAction::triggered, [this]
+        {
+            m_parentPlugin->GetNavigationHistory()->StepBackward();
+            UpdateNavigation();
+        });
+
+        m_actions[NAVIGATION_NAVPANETOGGLE] = new QAction(
+            QIcon(":/EMotionFX/List.svg"),
+            tr("Show/hide navigation pane"),
+            this);
+        connect(m_actions[NAVIGATION_NAVPANETOGGLE], &QAction::triggered, this, &BlendGraphViewWidget::ToggleNavigationPane);
+
+        m_actions[NAVIGATION_OPEN_SELECTED] = new QAction(
+            FromStdString(AnimGraphPlugin::s_openSelectedNodeShortcutName),
+            this);
+        m_actions[NAVIGATION_OPEN_SELECTED]->setShortcut(Qt::Key_Down);
+        shortcutManager->RegisterKeyboardShortcut(m_actions[NAVIGATION_OPEN_SELECTED], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
+        connect(m_actions[NAVIGATION_OPEN_SELECTED], &QAction::triggered, &m_parentPlugin->GetActionManager(), &AnimGraphActionManager::NavigateToNode);
+
+        m_actions[NAVIGATION_TO_PARENT] = new QAction(
+            FromStdString(AnimGraphPlugin::s_openParentNodeShortcutName),
+            this);
+        m_actions[NAVIGATION_TO_PARENT]->setShortcut(Qt::Key_Up);
+        shortcutManager->RegisterKeyboardShortcut(m_actions[NAVIGATION_TO_PARENT], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
+        connect(m_actions[NAVIGATION_TO_PARENT], &QAction::triggered, &m_parentPlugin->GetActionManager(), &AnimGraphActionManager::NavigateToParent);
+
+        m_actions[NAVIGATION_FRAME_ALL] = new QAction(
+            QIcon(":/EMotionFX/ZoomSelected.svg"),
+            FromStdString(AnimGraphPlugin::s_fitEntireGraphShortcutName),
+            this);
+        m_actions[NAVIGATION_FRAME_ALL]->setShortcut(Qt::Key_A);
+        shortcutManager->RegisterKeyboardShortcut(m_actions[NAVIGATION_FRAME_ALL], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
+        connect(m_actions[NAVIGATION_FRAME_ALL], &QAction::triggered, this, &BlendGraphViewWidget::ZoomToAll);
+
+        m_actions[NAVIGATION_ZOOMSELECTION] = new QAction(
+            QIcon(":/EMotionFX/ZoomSelected.svg"),
+            FromStdString(AnimGraphPlugin::s_zoomOnSelectedNodesShortcutName),
+            this);
+        m_actions[NAVIGATION_ZOOMSELECTION]->setShortcut(Qt::Key_Z);
+        shortcutManager->RegisterKeyboardShortcut(m_actions[NAVIGATION_ZOOMSELECTION], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
+        connect(m_actions[NAVIGATION_ZOOMSELECTION], &QAction::triggered, this, &BlendGraphViewWidget::ZoomSelected);
+
+        m_actions[ACTIVATE_ANIMGRAPH] = new QAction(
+            QIcon(":/EMotionFX/PlayForward.svg"),
+            tr("Activate Animgraph/State"),
+            this);
+        connect(m_actions[ACTIVATE_ANIMGRAPH], &QAction::triggered, &m_parentPlugin->GetActionManager(), &AnimGraphActionManager::ActivateAnimGraph);
+
+        m_actions[VISUALIZATION_PLAYSPEEDS] = new QAction(
+            tr("Display Play Speeds"),
+            this);
+        m_actions[VISUALIZATION_PLAYSPEEDS]->setCheckable(true);
+        connect(m_actions[VISUALIZATION_PLAYSPEEDS], &QAction::triggered, this, &BlendGraphViewWidget::OnDisplayPlaySpeeds);
+
+        m_actions[VISUALIZATION_GLOBALWEIGHTS] = new QAction(
+            tr("Display Global Weights"),
+            this);
+        m_actions[VISUALIZATION_GLOBALWEIGHTS]->setCheckable(true);
+        connect(m_actions[VISUALIZATION_GLOBALWEIGHTS], &QAction::triggered, this, &BlendGraphViewWidget::OnDisplayGlobalWeights);
+
+        m_actions[VISUALIZATION_SYNCSTATUS] = new QAction(
+            tr("Display Sync Status"),
+            this);
+        m_actions[VISUALIZATION_SYNCSTATUS]->setCheckable(true);
+        connect(m_actions[VISUALIZATION_SYNCSTATUS], &QAction::triggered, this, &BlendGraphViewWidget::OnDisplaySyncStatus);
+
+        m_actions[VISUALIZATION_PLAYPOSITIONS] = new QAction(
+            tr("Display Play Positions"),
+            this);
+        m_actions[VISUALIZATION_PLAYPOSITIONS]->setCheckable(true);
+        connect(m_actions[VISUALIZATION_PLAYPOSITIONS], &QAction::triggered, this, &BlendGraphViewWidget::OnDisplayPlayPositions);
+
+        m_actions[EDIT_CUT] = new QAction(
+            FromStdString(AnimGraphPlugin::s_cutShortcutName),
+            this
+        );
+        m_actions[EDIT_CUT]->setShortcut(Qt::Key_X | Qt::ControlModifier);
+        shortcutManager->RegisterKeyboardShortcut(m_actions[EDIT_CUT], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
+        connect(m_actions[EDIT_CUT], &QAction::triggered, this, [this]
+        {
+            m_parentPlugin->GetActionManager().Cut();
+        });
+
+        m_actions[EDIT_COPY] = new QAction(
+            FromStdString(AnimGraphPlugin::s_copyShortcutName),
+            this
+        );
+        m_actions[EDIT_COPY]->setShortcut(Qt::Key_C | Qt::ControlModifier);
+        shortcutManager->RegisterKeyboardShortcut(m_actions[EDIT_COPY], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
+        connect(m_actions[EDIT_COPY], &QAction::triggered, this, [this]
+        {
+            m_parentPlugin->GetActionManager().Copy();
+        });
+
+        m_actions[EDIT_PASTE] = new QAction(
+            FromStdString(AnimGraphPlugin::s_pasteShortcutName),
+            this
+        );
+        m_actions[EDIT_PASTE]->setShortcut(Qt::Key_V | Qt::ControlModifier);
+        shortcutManager->RegisterKeyboardShortcut(m_actions[EDIT_PASTE], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
+        connect(m_actions[EDIT_PASTE], &QAction::triggered, this, [this]
+        {
+            const BlendGraphWidget* graphWidget = m_parentPlugin->GetGraphWidget();
+            const NodeGraph* activeGraph = graphWidget->GetActiveGraph();
+            if (!activeGraph)
+            {
+                return;
+            }
+            const QPoint pastePosition = graphWidget->underMouse()
+                ? graphWidget->SnapLocalToGrid(graphWidget->LocalToGlobal(graphWidget->mapFromGlobal(QCursor::pos())))
+                : graphWidget->SnapLocalToGrid(graphWidget->LocalToGlobal(graphWidget->rect().center()));
+            m_parentPlugin->GetActionManager().Paste(activeGraph->GetModelIndex(), pastePosition);
+        });
+
+        m_actions[EDIT_DELETE] = new QAction(
+            FromStdString(AnimGraphPlugin::s_deleteSelectedNodesShortcutName),
+            this
+        );
+        m_actions[EDIT_DELETE]->setShortcut(Qt::Key_Delete);
+        shortcutManager->RegisterKeyboardShortcut(m_actions[EDIT_DELETE], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
+        connect(m_actions[EDIT_DELETE], &QAction::triggered, this, [this]
+        {
+            m_parentPlugin->GetGraphWidget()->DeleteSelectedItems();
+        });
+
+        for (QAction* action : m_actions)
+        {
+            addAction(action);
         }
 
-        EMotionFX::ActorEditorRequestBus::Handler::BusConnect();
+        GetMainWindow()->LoadKeyboardShortcuts();
     }
 
     QToolBar* BlendGraphViewWidget::CreateTopToolBar()
     {
         QToolBar* toolBar = new QToolBar(this);
         toolBar->setObjectName("EMFX.BlendGraphViewWidget.TopToolBar");
-        // Create new anim graph
-        {
-            QAction* action = toolBar->addAction(QIcon(":/EMotionFX/Plus.svg"),
-                tr("Create a new anim graph"),
-                this, &BlendGraphViewWidget::OnCreateAnimGraph);
-            action->setObjectName("EMFX.BlendGraphViewWidget.NewButton");
-            
-            //action->setShortcut(QKeySequence::New);
-            m_actions[FILE_NEW] = action;
-        }
+
+        toolBar->addAction(m_actions[FILE_NEW]);
 
         // Open anim graph
         {
-            QAction* action = toolBar->addAction(
-                QIcon(":/EMotionFX/Open.svg"),
-                tr("Open anim graph asset"));
-            m_actions[FILE_OPEN] = action;
-
-            QToolButton* toolButton = qobject_cast<QToolButton*>(toolBar->widgetForAction(action));
-            AZ_Assert(toolButton, "The action widget must be a tool button.");
-            toolButton->setPopupMode(QToolButton::InstantPopup);
-
-            m_openMenu = new QMenu(toolBar);
-            action->setMenu(m_openMenu);
-            BuildOpenMenu();
+            m_openMenu = new QMenu(this);
             connect(m_openMenu, &QMenu::aboutToShow, this, &BlendGraphViewWidget::BuildOpenMenu);
+
+            QAction* action = new QAction(
+                QIcon(":/EMotionFX/Open.svg"),
+                tr("Open"));
+            action->setMenu(m_openMenu);
+
+            QToolButton* button = new QToolButton();
+            button->setDefaultAction(action);
+            button->setPopupMode(QToolButton::InstantPopup);
+
+            toolBar->addWidget(button);
         }
+
 
         // Save anim graph
         {
-            QAction* saveMenuAction = toolBar->addAction(
+            QMenu* contextMenu = new QMenu(toolBar);
+            contextMenu->addAction(m_actions[FILE_SAVE]);
+            contextMenu->addAction(m_actions[FILE_SAVEAS]);
+
+            QAction* saveMenuAction = new QAction(
                 QIcon(":/EMotionFX/Save.svg"),
                 tr("Save anim graph"));
-
-            QToolButton* toolButton = qobject_cast<QToolButton*>(toolBar->widgetForAction(saveMenuAction));
-            AZ_Assert(toolButton, "The action widget must be a tool button.");
-            toolButton->setPopupMode(QToolButton::InstantPopup);
-
-            QMenu* contextMenu = new QMenu(toolBar);
-
-            m_actions[FILE_SAVE] = contextMenu->addAction(tr("Save"), m_parentPlugin, &AnimGraphPlugin::OnFileSave);
-            m_actions[FILE_SAVEAS] = contextMenu->addAction(tr("Save as..."), m_parentPlugin, &AnimGraphPlugin::OnFileSaveAs);
-
             saveMenuAction->setMenu(contextMenu);
+
+            QToolButton* button = new QToolButton();
+            button->setDefaultAction(saveMenuAction);
+            button->setPopupMode(QToolButton::InstantPopup);
+
+            toolBar->addWidget(button);
         }
 
         toolBar->addSeparator();
 
-        m_actions[ACTIVATE_ANIMGRAPH] = toolBar->addAction(QIcon(":/EMotionFX/PlayForward.svg"),
-            tr("Activate Animgraph/State"),
-            &m_parentPlugin->GetActionManager(), &AnimGraphActionManager::ActivateAnimGraph);
+        toolBar->addAction(m_actions[ACTIVATE_ANIMGRAPH]);
+
         toolBar->addSeparator();
 
-        m_actions[SELECTION_ZOOMSELECTION] = toolBar->addAction(QIcon(":/EMotionFX/ZoomSelected.svg"),
-            tr("Zoom Selection"),
-            this, &BlendGraphViewWidget::ZoomSelected);
+        toolBar->addAction(m_actions[NAVIGATION_ZOOMSELECTION]);
 
         // Visualization options
         {
@@ -121,15 +346,10 @@ namespace EMStudio
 
             QMenu* contextMenu = new QMenu(toolBar);
 
-            m_actions[VISUALIZATION_PLAYSPEEDS] = contextMenu->addAction(tr("Display Play Speeds"), this, &BlendGraphViewWidget::OnDisplayPlaySpeeds);
-            m_actions[VISUALIZATION_GLOBALWEIGHTS] = contextMenu->addAction(tr("Display Global Weights"), this, &BlendGraphViewWidget::OnDisplayGlobalWeights);
-            m_actions[VISUALIZATION_SYNCSTATUS] = contextMenu->addAction(tr("Display Sync Status"), this, &BlendGraphViewWidget::OnDisplaySyncStatus);
-            m_actions[VISUALIZATION_PLAYPOSITIONS] = contextMenu->addAction(tr("Display Play Positions"), this, &BlendGraphViewWidget::OnDisplayPlayPositions);
-
-            m_actions[VISUALIZATION_PLAYSPEEDS]->setCheckable(true);
-            m_actions[VISUALIZATION_GLOBALWEIGHTS]->setCheckable(true);
-            m_actions[VISUALIZATION_SYNCSTATUS]->setCheckable(true);
-            m_actions[VISUALIZATION_PLAYPOSITIONS]->setCheckable(true);
+            contextMenu->addAction(m_actions[VISUALIZATION_PLAYSPEEDS]);
+            contextMenu->addAction(m_actions[VISUALIZATION_GLOBALWEIGHTS]);
+            contextMenu->addAction(m_actions[VISUALIZATION_SYNCSTATUS]);
+            contextMenu->addAction(m_actions[VISUALIZATION_PLAYPOSITIONS]);
 
             menuAction->setMenu(contextMenu);
         }
@@ -137,21 +357,10 @@ namespace EMStudio
         toolBar->addSeparator();
 
         // Alignment Options
-        m_actions[SELECTION_ALIGNLEFT] = toolBar->addAction(QIcon(":/EMotionFX/AlignLeft.svg"),
-            tr("Align left"),
-            &m_parentPlugin->GetActionManager(), &AnimGraphActionManager::AlignLeft);
-
-        m_actions[SELECTION_ALIGNRIGHT] = toolBar->addAction(QIcon(":/EMotionFX/AlignRight.svg"),
-            tr("Align right"),
-            &m_parentPlugin->GetActionManager(), &AnimGraphActionManager::AlignRight);
-
-        m_actions[SELECTION_ALIGNTOP] = toolBar->addAction(QIcon(":/EMotionFX/AlignTop.svg"),
-            tr("Align top"),
-            &m_parentPlugin->GetActionManager(), &AnimGraphActionManager::AlignTop);
-
-        m_actions[SELECTION_ALIGNBOTTOM] = toolBar->addAction(QIcon(":/EMotionFX/AlignBottom.svg"),
-            tr("Align bottom"),
-            &m_parentPlugin->GetActionManager(), &AnimGraphActionManager::AlignBottom);
+        toolBar->addAction(m_actions[SELECTION_ALIGNLEFT]);
+        toolBar->addAction(m_actions[SELECTION_ALIGNRIGHT]);
+        toolBar->addAction(m_actions[SELECTION_ALIGNTOP]);
+        toolBar->addAction(m_actions[SELECTION_ALIGNBOTTOM]);
 
         return toolBar;
     }
@@ -160,27 +369,15 @@ namespace EMStudio
     {
         QToolBar* toolBar = new QToolBar(this);
 
-        m_actions[NAVIGATION_BACK] = toolBar->addAction(QIcon(":/EMotionFX/Backward.svg"),
-            tr("Back"),
-            this, [=] {
-                m_parentPlugin->GetNavigationHistory()->StepBackward();
-                UpdateNavigation();
-            });
+        toolBar->addAction(m_actions[NAVIGATION_BACK]);
 
-        m_actions[NAVIGATION_FORWARD] = toolBar->addAction(QIcon(":/EMotionFX/Forward.svg"),
-            tr("Forward"),
-            this, [=] {
-                m_parentPlugin->GetNavigationHistory()->StepForward();
-                UpdateNavigation();
-            });
+        toolBar->addAction(m_actions[NAVIGATION_FORWARD]);
 
         mNavigationLink = new NavigationLinkWidget(m_parentPlugin, this);
         mNavigationLink->setMinimumHeight(28);
         toolBar->addWidget(mNavigationLink);
 
-        m_actions[NAVIGATION_NAVPANETOGGLE] = toolBar->addAction(QIcon(":/EMotionFX/List.svg"),
-            tr("Show/hide navigation pane"),
-            this, &BlendGraphViewWidget::ToggleNavigationPane);
+        toolBar->addAction(m_actions[NAVIGATION_NAVPANETOGGLE]);
 
         return toolBar;
     }
@@ -188,8 +385,11 @@ namespace EMStudio
     void BlendGraphViewWidget::Init(BlendGraphWidget* blendGraphWidget)
     {
         connect(&m_parentPlugin->GetAnimGraphModel(), &AnimGraphModel::FocusChanged, this, &BlendGraphViewWidget::OnFocusChanged);
-        connect(&m_parentPlugin->GetAnimGraphModel().GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, &BlendGraphViewWidget::UpdateSelection);
+        connect(&m_parentPlugin->GetAnimGraphModel().GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, &BlendGraphViewWidget::UpdateEnabledActions);
         connect(m_parentPlugin->GetNavigationHistory(), &NavigationHistory::ChangedSteppingLimits, this, &BlendGraphViewWidget::UpdateNavigation);
+        connect(m_parentPlugin->GetGraphWidget(), &NodeGraphWidget::ActiveGraphChanged, this, &BlendGraphViewWidget::UpdateEnabledActions);
+        connect(m_parentPlugin, &AnimGraphPlugin::ActionFilterChanged, this, &BlendGraphViewWidget::UpdateEnabledActions);
+        connect(&m_parentPlugin->GetActionManager(), &AnimGraphActionManager::PasteStateChanged, this, &BlendGraphViewWidget::UpdateEnabledActions);
 
         // create the vertical layout with the menu and the graph widget as entries
         QVBoxLayout* verticalLayout = new QVBoxLayout(this);
@@ -198,6 +398,7 @@ namespace EMStudio
         verticalLayout->setMargin(2);
 
         // Create toolbars
+        CreateActions();
         verticalLayout->addWidget(CreateTopToolBar());
         verticalLayout->addWidget(CreateNavigationToolBar());
 
@@ -217,7 +418,7 @@ namespace EMStudio
 
         UpdateNavigation();
         UpdateAnimGraphOptions();
-        UpdateSelection();
+        UpdateEnabledActions();
     }
 
     BlendGraphViewWidget::~BlendGraphViewWidget()
@@ -252,47 +453,35 @@ namespace EMStudio
         }
     }
 
-    void BlendGraphViewWidget::UpdateSelection()
+    void BlendGraphViewWidget::UpdateEnabledActions()
     {
         // do we have any selection?
         const bool anySelection = m_parentPlugin->GetAnimGraphModel().GetSelectionModel().hasSelection();
-        SetOptionEnabled(SELECTION_ZOOMSELECTION, anySelection);
+        SetOptionEnabled(NAVIGATION_ZOOMSELECTION, anySelection);
 
-        QModelIndex firstSelectedNode;
-        bool atLeastTwoNodes = false;
+        const auto isNodeSelected = [](const QModelIndex& index)
+        {
+            return index.isValid()
+                && index.data(AnimGraphModel::ROLE_MODEL_ITEM_TYPE).value<AnimGraphModel::ModelItemType>() == AnimGraphModel::ModelItemType::NODE;
+        };
         const QModelIndexList selectedIndexes = m_parentPlugin->GetAnimGraphModel().GetSelectionModel().selectedRows();
-        for (const QModelIndex& selected : selectedIndexes)
-        {
-            const AnimGraphModel::ModelItemType itemType = selected.data(AnimGraphModel::ROLE_MODEL_ITEM_TYPE).value<AnimGraphModel::ModelItemType>();
-            if (itemType == AnimGraphModel::ModelItemType::NODE)
-            {
-                if (firstSelectedNode.isValid())
-                {
-                    atLeastTwoNodes = true;
-                    break;
-                }
-                else
-                {
-                    firstSelectedNode = selected;
-                }
-            }
-        }
+        const auto firstSelectedNode = AZStd::find_if(selectedIndexes.begin(), selectedIndexes.end(), isNodeSelected);
+        const auto secondSelectedNode = AZStd::find_if(firstSelectedNode, selectedIndexes.end(), isNodeSelected);
+        const bool atLeastTwoNodes = secondSelectedNode != selectedIndexes.end();
 
-        if (m_parentPlugin->GetActionFilter().m_editNodes &&
-            atLeastTwoNodes)
-        {
-            SetOptionEnabled(SELECTION_ALIGNLEFT, true);
-            SetOptionEnabled(SELECTION_ALIGNRIGHT, true);
-            SetOptionEnabled(SELECTION_ALIGNTOP, true);
-            SetOptionEnabled(SELECTION_ALIGNBOTTOM, true);
-        }
-        else
-        {
-            SetOptionEnabled(SELECTION_ALIGNLEFT, false);
-            SetOptionEnabled(SELECTION_ALIGNRIGHT, false);
-            SetOptionEnabled(SELECTION_ALIGNTOP, false);
-            SetOptionEnabled(SELECTION_ALIGNBOTTOM, false);
-        }
+        const bool enableAlignActions = m_parentPlugin->GetActionFilter().m_editNodes && atLeastTwoNodes;
+        SetOptionEnabled(SELECTION_ALIGNLEFT, enableAlignActions);
+        SetOptionEnabled(SELECTION_ALIGNRIGHT, enableAlignActions);
+        SetOptionEnabled(SELECTION_ALIGNTOP, enableAlignActions);
+        SetOptionEnabled(SELECTION_ALIGNBOTTOM, enableAlignActions);
+
+        const bool isEditable = m_parentPlugin->GetGraphWidget()->GetActiveGraph() && !m_parentPlugin->GetGraphWidget()->GetActiveGraph()->IsInReferencedGraph();
+        const AnimGraphActionFilter& actionFilter = m_parentPlugin->GetActionFilter();
+
+        SetOptionEnabled(EDIT_CUT, actionFilter.m_copyAndPaste && anySelection && isEditable);
+        SetOptionEnabled(EDIT_COPY, actionFilter.m_copyAndPaste && anySelection);
+        SetOptionEnabled(EDIT_PASTE, actionFilter.m_copyAndPaste && isEditable && m_parentPlugin->GetActionManager().GetIsReadyForPaste());
+        SetOptionEnabled(EDIT_DELETE, actionFilter.m_copyAndPaste && anySelection && isEditable);
     }
 
     AnimGraphNodeWidget* BlendGraphViewWidget::GetWidgetForNode(const EMotionFX::AnimGraphNode* node)
@@ -375,19 +564,17 @@ namespace EMStudio
 
     void BlendGraphViewWidget::SetOptionFlag(EOptionFlag option, bool isEnabled)
     {
-        const uint32 optionIndex = (uint32)option;
-        if (m_actions[optionIndex])
+        if (m_actions[option])
         {
-            m_actions[optionIndex]->setChecked(isEnabled);
+            m_actions[option]->setChecked(isEnabled);
         }
     }
 
     void BlendGraphViewWidget::SetOptionEnabled(EOptionFlag option, bool isEnabled)
     {
-        const uint32 optionIndex = (uint32)option;
-        if (m_actions[optionIndex])
+        if (m_actions[option])
         {
-            m_actions[optionIndex]->setEnabled(isEnabled);
+            m_actions[option]->setEnabled(isEnabled);
         }
     }
 
@@ -395,8 +582,7 @@ namespace EMStudio
     {
         m_openMenu->clear();
 
-        m_actions[FILE_OPEN] = m_openMenu->addAction(tr("Open..."));
-        connect(m_actions[FILE_OPEN], &QAction::triggered, m_parentPlugin, &AnimGraphPlugin::OnFileOpen);
+        m_openMenu->addAction(m_actions[FILE_OPEN]);
 
         const uint32 numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
         if (numAnimGraphs > 0)
@@ -521,6 +707,19 @@ namespace EMStudio
         }
     }
 
+    void BlendGraphViewWidget::ZoomToAll()
+    {
+        BlendGraphWidget* blendGraphWidget = m_parentPlugin->GetGraphWidget();
+        if (blendGraphWidget)
+        {
+            NodeGraph* nodeGraph = blendGraphWidget->GetActiveGraph();
+            if (nodeGraph)
+            {
+                nodeGraph->FitGraphOnScreen(geometry().width(), geometry().height(), blendGraphWidget->GetMousePos());
+            }
+        }
+    }
+
     void BlendGraphViewWidget::OnActivateState()
     {
         // Transition to the selected state.
@@ -546,27 +745,12 @@ namespace EMStudio
         }
     }
 
-
     void BlendGraphViewWidget::NavigateToRoot()
     {
         const QModelIndex nodeModelIndex = m_parentPlugin->GetGraphWidget()->GetActiveGraph()->GetModelIndex();
         if (nodeModelIndex.isValid())
         {
             m_parentPlugin->GetAnimGraphModel().Focus(nodeModelIndex);
-        }
-    }
-
-
-    void BlendGraphViewWidget::NavigateToParent()
-    {
-        const QModelIndex parentFocus = m_parentPlugin->GetAnimGraphModel().GetParentFocus();
-        if (parentFocus.isValid())
-        {
-            QModelIndex newParentFocus = parentFocus.model()->parent(parentFocus);
-            if (newParentFocus.isValid())
-            {
-                m_parentPlugin->GetAnimGraphModel().Focus(newParentFocus);
-            }
         }
     }
 
@@ -586,16 +770,6 @@ namespace EMStudio
             sizes[1] = 0;
         }
         m_viewportSplitter->setSizes(sizes);
-    }
-
-    void BlendGraphViewWidget::NavigateToNode()
-    {
-        const QModelIndexList currentModelIndexes = m_parentPlugin->GetAnimGraphModel().GetSelectionModel().selectedRows();
-        if (!currentModelIndexes.empty())
-        {
-            const QModelIndex currentModelIndex = currentModelIndexes.front();
-            m_parentPlugin->GetAnimGraphModel().Focus(currentModelIndex);
-        }
     }
 
     // toggle playspeed viz
@@ -638,36 +812,4 @@ namespace EMStudio
         EMotionFX::AnimGraphEditorNotificationBus::Broadcast(&EMotionFX::AnimGraphEditorNotificationBus::Events::OnShow);
     }
 
-    void BlendGraphViewWidget::keyPressEvent(QKeyEvent* event)
-    {
-        switch (event->key())
-        {
-        case Qt::Key_Backspace:
-        {
-            m_parentPlugin->GetNavigationHistory()->StepBackward();
-            event->accept();
-            break;
-        }
-
-        default:
-            event->ignore();
-        }
-    }
-
-
-    // on key release
-    void BlendGraphViewWidget::keyReleaseEvent(QKeyEvent* event)
-    {
-        switch (event->key())
-        {
-        case Qt::Key_Backspace:
-        {
-            event->accept();
-            break;
-        }
-
-        default:
-            event->ignore();
-        }
-    }
 } // namespace EMStudio

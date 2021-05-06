@@ -21,6 +21,7 @@
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 #include <Include/IMultiplayer.h>
 #include <Source/NetworkTime/NetworkTime.h>
+#include <Source/NetworkEntity/NetworkEntityManager.h>
 #include <Source/AutoGen/Multiplayer.AutoPacketDispatcher.h>
 
 namespace AzNetworking
@@ -60,16 +61,17 @@ namespace Multiplayer
         int GetTickOrder() override;
         //! @}
 
-        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, const MultiplayerPackets::Connect& packet);
-        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, const MultiplayerPackets::Accept& packet);
-        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, const MultiplayerPackets::SyncConsole& packet);
-        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, const MultiplayerPackets::ConsoleCommand& packet);
-        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, const MultiplayerPackets::SyncConnectionCvars& packet);
-        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, const MultiplayerPackets::EntityUpdates& packet);
-        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, const MultiplayerPackets::EntityRpcs& packet);
-        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, const MultiplayerPackets::ClientMigration& packet);
-        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, const MultiplayerPackets::NotifyClientMigration& packet);
-        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, const MultiplayerPackets::EntityMigration& packet);
+        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::Connect& packet);
+        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::Accept& packet);
+        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::SyncConsole& packet);
+        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::ConsoleCommand& packet);
+        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::SyncConnectionCvars& packet);
+        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::EntityUpdates& packet);
+        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::EntityRpcs& packet);
+        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::ClientMigration& packet);
+        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::NotifyClientMigration& packet);
+        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::EntityMigration& packet);
+        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::ReadyForEntityUpdates& packet);
 
         //! IConnectionListener interface
         //! @{
@@ -87,16 +89,30 @@ namespace Multiplayer
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
         void AddSessionInitHandler(SessionInitEvent::Handler& handler) override;
         void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
+        void SendReadyForEntityUpdates(bool readyForEntityUpdates) override;
+        const char* GetComponentGemName(NetComponentId netComponentId) const override;
+        const char* GetComponentName(NetComponentId netComponentId) const override;
+        const char* GetComponentPropertyName(NetComponentId netComponentId, PropertyIndex propertyIndex) const override;
+        const char* GetComponentRpcName(NetComponentId netComponentId, RpcIndex rpcIndex) const override;
         //! @}
+
+        //! Console commands.
+        //! @{
+        void DumpStats(const AZ::ConsoleCommandContainer& arguments);
+        //! @}
+
     private:
 
         void OnConsoleCommandInvoked(AZStd::string_view command, const AZ::ConsoleCommandContainer& args, AZ::ConsoleFunctorFlags flags, AZ::ConsoleInvokedFrom invokedFrom);
         void ExecuteConsoleCommandList(AzNetworking::IConnection* connection, const AZStd::fixed_vector<Multiplayer::LongNetworkString, 32>& commands);
 
+        AZ_CONSOLEFUNC(MultiplayerSystemComponent, DumpStats, AZ::ConsoleFunctorFlags::Null, "Dumps stats for the current multiplayer session");
+
         AzNetworking::INetworkInterface* m_networkInterface = nullptr;
         AZ::ConsoleCommandInvokedEvent::Handler m_consoleCommandHandler;
         AZ::ThreadSafeDeque<AZStd::string> m_cvarCommands;
 
+        NetworkEntityManager m_networkEntityManager;
         NetworkTime m_networkTime;
         MultiplayerAgentType m_agentType = MultiplayerAgentType::Uninitialized;
 

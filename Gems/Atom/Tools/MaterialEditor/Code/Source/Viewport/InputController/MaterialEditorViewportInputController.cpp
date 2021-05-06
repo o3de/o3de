@@ -96,6 +96,7 @@ namespace MaterialEditor
     void MaterialEditorViewportInputController::SetTargetPosition(const AZ::Vector3& targetPosition)
     {
         m_targetPosition = targetPosition;
+        m_isCameraCentered = false;
     }
 
     float MaterialEditorViewportInputController::GetDistanceToTarget() const
@@ -246,6 +247,7 @@ namespace MaterialEditor
         cameraPosition = cameraRotation.TransformVector(cameraPosition);
         AZ::Transform cameraTransform = AZ::Transform::CreateFromQuaternionAndTranslation(cameraRotation, cameraPosition);
         AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetLocalTM, cameraTransform);
+        m_isCameraCentered = true;
 
         // reset model
         AZ::Transform modelTransform = AZ::Transform::CreateIdentity();
@@ -258,11 +260,22 @@ namespace MaterialEditor
         AZ::RPI::ScenePtr scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene();
         auto skyBoxFeatureProcessorInterface = scene->GetFeatureProcessor<AZ::Render::SkyBoxFeatureProcessorInterface>();
         skyBoxFeatureProcessorInterface->SetCubemapRotationMatrix(rotationMatrix);
+
+        if (m_behavior)
+        {
+            m_behavior->End();
+            m_behavior->Start();
+        }
     }
 
     void MaterialEditorViewportInputController::SetFieldOfView(float value)
     {
         Camera::CameraRequestBus::Event(m_cameraEntityId, &Camera::CameraRequestBus::Events::SetFovDegrees, value);
+    }
+
+    bool MaterialEditorViewportInputController::IsCameraCentered() const
+    {
+        return m_isCameraCentered;
     }
 
     void MaterialEditorViewportInputController::CalculateExtents()

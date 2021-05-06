@@ -88,6 +88,8 @@ namespace AZ
 
                 virtual ~IMeshVertexColorData() override = default;
 
+                void CloneAttributesFrom([[maybe_unused]] const IGraphObject* sourceObject) override {}
+
                 virtual const AZ::Name& GetCustomName() const = 0;
 
                 virtual size_t GetCount() const = 0;
@@ -95,6 +97,9 @@ namespace AZ
             };
         }  // DataTypes
     }  // SceneAPI
+
+    AZ_TYPE_INFO_SPECIALIZE(SceneAPI::DataTypes::Color, "{937E3BF8-5204-4D40-A8DA-C8F083C89F9F}");
+
 }  // AZ
 
 namespace AZStd

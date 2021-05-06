@@ -131,8 +131,13 @@ namespace AZ
             AZ_Assert(m_blendedLut.m_lutImage != nullptr, "BlendColorGradingLutsPass unable to acquire LUT image");
 
             AZ::RHI::AttachmentId imageAttachmentId = AZ::RHI::AttachmentId("BlendColorGradingLutImageAttachmentId");
-            RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(imageAttachmentId, m_blendedLut.m_lutImage);
-            AZ_Error("BlendColorGradingLutsPass", result == RHI::ResultCode::Success, "Failed to import compute buffer with error %d", result);
+
+            // import this attachment if it wasn't imported
+            if (!frameGraph.GetAttachmentDatabase().IsAttachmentValid(imageAttachmentId))
+            {
+                [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(imageAttachmentId, m_blendedLut.m_lutImage);
+                AZ_Error("BlendColorGradingLutsPass", result == RHI::ResultCode::Success, "Failed to import BlendColorGradingLutImageAttachmentId with error %d", result);
+            }
 
             RHI::ImageScopeAttachmentDescriptor desc;
             desc.m_attachmentId = imageAttachmentId;

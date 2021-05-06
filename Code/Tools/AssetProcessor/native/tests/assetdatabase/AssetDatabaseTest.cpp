@@ -81,7 +81,7 @@ namespace UnitTests
         //                 Product:         "someproduct4.dds"  subid: 4
         void CreateCoverageTestData()
         {
-            m_data->m_scanFolder = { "c:/lumberyard/dev", "dev", "rootportkey", "" };
+            m_data->m_scanFolder = { "c:/O3DE/dev", "dev", "rootportkey" };
             ASSERT_TRUE(m_data->m_connection.SetScanFolder(m_data->m_scanFolder));
             
             m_data->m_sourceFile1 = { m_data->m_scanFolder.m_scanFolderID, "somefile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint1"};
@@ -239,7 +239,7 @@ namespace UnitTests
         // we'll create all of those first (except product) before starting the product test.
 
         //add a scanfolder.  None of this has to exist in real disk, this is a db test only.
-        ScanFolderDatabaseEntry scanFolder {"c:/lumberyard/dev", "dev", "rootportkey", ""};
+        ScanFolderDatabaseEntry scanFolder{ "c:/O3DE/dev", "dev", "rootportkey" };
         EXPECT_TRUE(m_data->m_connection.SetScanFolder(scanFolder));
         ASSERT_NE(scanFolder.m_scanFolderID, AzToolsFramework::AssetDatabase::InvalidEntryId); 
 
@@ -278,7 +278,7 @@ namespace UnitTests
         // to add a product legitimately you have to have a full chain of primary keys, chain is:
         // ScanFolder --> Source --> job --> product.
         // we'll create all of those first (except product) before starting the product test.
-        ScanFolderDatabaseEntry scanFolder{ "c:/lumberyard/dev", "dev", "rootportkey", "" };
+        ScanFolderDatabaseEntry scanFolder{ "c:/O3DE/dev", "dev", "rootportkey" };
         ASSERT_TRUE(m_data->m_connection.SetScanFolder(scanFolder));
         
         SourceDatabaseEntry sourceEntry{ scanFolder.m_scanFolderID, "somefile.tif", AZ::Uuid::CreateRandom(), "fingerprint1" };
@@ -323,7 +323,7 @@ namespace UnitTests
     // this is actually a very common case (same job id, same subID)
     TEST_F(AssetDatabaseTest, SetProduct_SpecificPK_Succeeds_SameSubID_SameJobID)
     {
-        ScanFolderDatabaseEntry scanFolder{ "c:/lumberyard/dev", "dev", "rootportkey", "" };
+        ScanFolderDatabaseEntry scanFolder{ "c:/O3DE/dev", "dev", "rootportkey"};
         ASSERT_TRUE(m_data->m_connection.SetScanFolder(scanFolder));
         SourceDatabaseEntry sourceEntry{ scanFolder.m_scanFolderID, "somefile.tif", AZ::Uuid::CreateRandom(), "fingerprint1" };
         ASSERT_TRUE(m_data->m_connection.SetSource(sourceEntry));

@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C4976206
 # Test Case Title : VErify that when Gravity enables is checked, the object falls down due to gravity [sic]
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4976206
+
 
 # fmt: off
 class Tests:
@@ -59,7 +59,7 @@ def C4976206_RigidBodies_GravityEnabledActive():
      8) Exit game mode and close the editor
 
     Note:
-    - This test file must be called from the Lumberyard Editor command terminal
+    - This test file must be called from the Open 3D Engine Editor command terminal
     - Any passed and failed tests are written to the Editor.log file.
         Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -73,8 +73,8 @@ def C4976206_RigidBodies_GravityEnabledActive():
 
     imports.init()
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -152,5 +152,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C4976206_RigidBodies_GravityEnabledActive)

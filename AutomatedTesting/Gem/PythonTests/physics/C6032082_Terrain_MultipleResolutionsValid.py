@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C6032082
 # Test Case Title : Verify multiple terrain resolutions are supported
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/6032082
+
 
 
 # fmt: off
@@ -75,7 +75,7 @@ def C6032082_Terrain_MultipleResolutionsValid():
     2) Close the editor
 
     Note:
-    - This test file must be called from the Lumberyard Editor command terminal
+    - This test file must be called from the Open 3D Engine Editor command terminal
     - Any passed and failed tests are written to the Editor.log file.
             Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -89,9 +89,8 @@ def C6032082_Terrain_MultipleResolutionsValid():
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -217,5 +216,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C6032082_Terrain_MultipleResolutionsValid)

@@ -25,7 +25,7 @@ It is highly recommended you check that you have a [credential manager installed
 ### Clone the repository 
 
 ```shell
-> git clone https://github.com/aws/o3de.git
+> git clone https://github.com/aws-lumberyard/o3de.git
 Cloning into 'o3de'...
 
 # initial prompt for credentials to download the repository code
@@ -59,7 +59,7 @@ If you have the Git credential manager core installed, you should not be prompte
 
 ### Build Steps
 
-1.  Download the 3rdParty zip file from here: **[https://d2c171ws20a1rv.cloudfront.net/3rdParty-windows-no-symbols-rev10.zip](https://d2c171ws20a1rv.cloudfront.net/3rdParty-windows-no-symbols-rev10.zip)**
+1.  Download the 3rdParty zip file from here: **[https://d2c171ws20a1rv.cloudfront.net/3rdParty-windows-no-symbols-rev13.zip](https://d2c171ws20a1rv.cloudfront.net/3rdParty-windows-no-symbols-rev13.zip)**
 2.  Unzip this file into a writable folder. This will also act as a cache location for the 3rdParty downloader by default (configurable with the `LY_PACKAGE_DOWNLOAD_CACHE_LOCATION` environment variable)
 3.  Install the following redistributables to the following:
     - Visual Studio and VC++ redistributable can be installed to any location

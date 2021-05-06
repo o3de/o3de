@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C100000
 # Test Case Title : Check that Gravity works
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/100000
+
 
 
 # fmt:off
@@ -34,8 +34,8 @@ def C100000_RigidBody_EnablingGravityWorksPoC():
 
     imports.init()
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -84,5 +84,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C100000_RigidBody_EnablingGravityWorksPoC)

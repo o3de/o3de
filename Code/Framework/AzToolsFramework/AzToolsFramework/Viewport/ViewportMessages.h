@@ -21,7 +21,10 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 
-class QPoint;
+namespace AzFramework
+{
+    struct ScreenPoint;
+}
 
 namespace AzToolsFramework
 {
@@ -162,14 +165,14 @@ namespace AzToolsFramework
             /// Return the angle snapping/step size.
             virtual float AngleStep() = 0;
             /// Transform a point in world space to screen space coordinates.
-            virtual QPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) = 0;
+            virtual AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) = 0;
             /// Transform a point in screen space coordinates to a vector in world space based on clip space depth.
             /// Depth specifies a relative camera depth to project in the range of [0.f, 1.f].
             /// Returns the world space position if successful.
-            virtual AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const QPoint& screenPosition, float depth) = 0;
+            virtual AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition, float depth) = 0;
             /// Casts a point in screen space to a ray in world space originating from the viewport camera frustum's near plane.
             /// Returns a ray containing the ray's origin and a direction normal, if successful.
-            virtual AZStd::optional<ProjectedViewportRay> ViewportScreenToWorldRay(const QPoint& screenPosition) = 0;
+            virtual AZStd::optional<ProjectedViewportRay> ViewportScreenToWorldRay(const AzFramework::ScreenPoint& screenPosition) = 0;
 
         protected:
             ~ViewportInteractionRequests() = default;
@@ -202,9 +205,9 @@ namespace AzToolsFramework
         public:
             /// Given a point in screen space, return the picked entity (if any).
             /// Picked EntityId will be returned, InvalidEntityId will be returned on failure.
-            virtual AZ::EntityId PickEntity(const QPoint& point) = 0;
+            virtual AZ::EntityId PickEntity(const AzFramework::ScreenPoint& point) = 0;
             /// Given a point in screen space, return the terrain position in world space.
-            virtual AZ::Vector3 PickTerrain(const QPoint& point) = 0;
+            virtual AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) = 0;
             /// Return the terrain height given a world position in 2d (xy plane).
             virtual float TerrainHeight(const AZ::Vector2& position) = 0;
             /// Given the current view frustum (viewport) return all visible entities.
@@ -235,12 +238,12 @@ namespace AzToolsFramework
             /// Restores the cursor and ends locking it in place, allowing it to be moved freely.
             virtual void EndCursorCapture() = 0;
             /// Gets the most recent recorded cursor position in the viewport in screen space coordinates.
-            virtual QPoint ViewportCursorScreenPosition() = 0;
+            virtual AzFramework::ScreenPoint ViewportCursorScreenPosition() = 0;
             /// Gets the cursor position recorded prior to the most recent cursor position.
             /// Note: The cursor may be captured by the viewport, in which case this may not correspond to the last result
             /// from ViewportCursorScreenPosition. This method will always return the correct position to generate a mouse
             /// position delta.
-            virtual AZStd::optional<QPoint> PreviousViewportCursorScreenPosition() = 0;
+            virtual AZStd::optional<AzFramework::ScreenPoint> PreviousViewportCursorScreenPosition() = 0;
 
         protected:
             ~ViewportMouseCursorRequests() = default;
@@ -272,20 +275,6 @@ namespace AzToolsFramework
 
     } // namespace ViewportInteraction
 
-    /// Temporary bus to query if the new Viewport Interaction Model mode is enabled or not.
-    class NewViewportInteractionModelEnabledRequests
-        : public AZ::EBusTraits
-    {
-    public:
-        virtual bool IsNewViewportInteractionModelEnabled() = 0;
-
-    protected:
-        ~NewViewportInteractionModelEnabledRequests() = default;
-    };
-
-    /// Type to inherit to implement NewViewportInteractionModelEnabledRequests
-    using NewViewportInteractionModelEnabledRequestBus = AZ::EBus<NewViewportInteractionModelEnabledRequests>;
-
     /// Utility function to return EntityContextId.
     inline AzFramework::EntityContextId GetEntityContextId()
     {
@@ -294,17 +283,5 @@ namespace AzToolsFramework
             entityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
         return entityContextId;
-    }
-
-    /// Utility function to return if the new Viewport Interaction Model
-    /// is enabled (wraps NewViewportInteractionModelEnabledRequests).
-    inline bool IsNewViewportInteractionModelEnabled()
-    {
-        bool newViewportInteractionModelEnabled = false;
-        NewViewportInteractionModelEnabledRequestBus::BroadcastResult(
-            newViewportInteractionModelEnabled,
-            &NewViewportInteractionModelEnabledRequests::IsNewViewportInteractionModelEnabled);
-
-        return newViewportInteractionModelEnabled;
     }
 } // namespace AzToolsFramework

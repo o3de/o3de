@@ -23,8 +23,8 @@ import azlmbr.math as math
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-import automatedtesting_shared.hydra_editor_utils as hydra
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
 
 
@@ -66,11 +66,11 @@ class TestSlopeAlignmentModifier(EditorTestHelper):
         spawner_entity = dynveg.create_vegetation_area("Instance Spawner", center_point, 16.0, 16.0, 32.0, asset_path)
 
         # Create a sloped mesh surface for the instances to plant on
-        mesh_asset_path = os.path.join("Objects", "default", "primitive_plane.cgf")
+        mesh_asset_path = os.path.join("objects", "_primitives", "_box_1x1.azmodel")
         mesh_asset = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", mesh_asset_path, math.Uuid(),
                                                   False)
         rotation = math.Vector3(0.0, radians(45.0), 0.0)
-        scale = math.Vector3(30.0, 30.0, 30.0)
+        scale = math.Vector3(10.0, 10.0, 10.0)
         surface_entity = hydra.Entity("Surface Entity")
         surface_entity.create_entity(
             center_point,
@@ -78,7 +78,7 @@ class TestSlopeAlignmentModifier(EditorTestHelper):
         )
         if surface_entity.id.IsValid():
             print(f"'{surface_entity.name}' created")
-        hydra.get_set_test(surface_entity, 0, "MeshComponentRenderNode|Mesh asset", mesh_asset)
+        hydra.get_set_test(surface_entity, 0, "Controller|Configuration|Mesh Asset", mesh_asset)
         components.TransformBus(bus.Event, "SetLocalRotation", surface_entity.id, rotation)
         components.TransformBus(bus.Event, "SetLocalScale", surface_entity.id, scale)
 

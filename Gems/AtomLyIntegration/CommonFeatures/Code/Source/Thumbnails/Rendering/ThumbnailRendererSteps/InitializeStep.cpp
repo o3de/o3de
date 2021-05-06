@@ -54,8 +54,9 @@ namespace AZ
                 RPI::SceneDescriptor sceneDesc;
                 sceneDesc.m_featureProcessorNames.push_back("AZ::Render::TransformServiceFeatureProcessor");
                 sceneDesc.m_featureProcessorNames.push_back("AZ::Render::MeshFeatureProcessor");
+                sceneDesc.m_featureProcessorNames.push_back("AZ::Render::SimplePointLightFeatureProcessor");
+                sceneDesc.m_featureProcessorNames.push_back("AZ::Render::SimpleSpotLightFeatureProcessor");
                 sceneDesc.m_featureProcessorNames.push_back("AZ::Render::PointLightFeatureProcessor");
-                sceneDesc.m_featureProcessorNames.push_back("AZ::Render::SpotLightFeatureProcessor");
                 // There is currently a bug where having multiple DirectionalLightFeatureProcessors active can result in shadow flickering [ATOM-13568]
                 // as well as continually rebuilding MeshDrawPackets [ATOM-13633]. Lets just disable the directional light FP for now.
                 // Possibly re-enable with [GFX TODO][ATOM-13639] 
@@ -99,24 +100,15 @@ namespace AZ
                 data->m_scene->SetShaderResourceGroupCallback(callback);
 
                 // Bind m_defaultScene to the GameEntityContext's AzFramework::Scene
-                Outcome<AzFramework::Scene*, AZStd::string> createSceneOutcome;
-                AzFramework::SceneSystemRequestBus::BroadcastResult(
-                    createSceneOutcome,
-                    &AzFramework::SceneSystemRequests::CreateScene,
-                    data->m_sceneName);
+                auto* sceneSystem = AzFramework::SceneSystemInterface::Get();
+                AZ_Assert(sceneSystem, "Thumbnail system failed to get scene system implementation.");
+                Outcome<AZStd::shared_ptr<AzFramework::Scene>, AZStd::string> createSceneOutcome =
+                    sceneSystem->CreateScene(data->m_sceneName);
                 AZ_Assert(createSceneOutcome, createSceneOutcome.GetError().c_str()); // This should never happen unless scene creation has changed.
-                createSceneOutcome.GetValue()->SetSubsystem(data->m_scene.get());
-                data->m_frameworkScene = createSceneOutcome.GetValue();
-                data->m_frameworkScene->SetSubsystem(data->m_scene.get());
+                data->m_frameworkScene = createSceneOutcome.TakeValue();
+                data->m_frameworkScene->SetSubsystem(data->m_scene);
 
-                bool success = false;
-                AzFramework::SceneSystemRequestBus::BroadcastResult(
-                    success,
-                    &AzFramework::SceneSystemRequests::SetSceneForEntityContextId,
-                    data->m_entityContext->GetContextId(),
-                    data->m_frameworkScene);
-                AZ_Assert(success, "Unable to set entity context on AzFramework::Scene: %s", data->m_sceneName.c_str());
-
+                data->m_frameworkScene->SetSubsystem(data->m_entityContext.get());
                 // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
                 RPI::RenderPipelineDescriptor pipelineDesc;
                 pipelineDesc.m_mainViewTagName = "MainCamera";
@@ -147,7 +139,7 @@ namespace AZ
                 data->m_renderPipeline->SetDefaultView(data->m_view);
 
                 // Create lighting preset
-                data->m_lightingPresetAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(LightingPresetPath);
+                data->m_lightingPresetAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(ThumbnailRendererData::LightingPresetPath);
                 if (data->m_lightingPresetAsset.IsReady())
                 {
                     auto preset = data->m_lightingPresetAsset->GetDataAs<Render::LightingPreset>();
@@ -197,6 +189,7 @@ namespace AZ
                     m_context->GetData()->DefaultModelPath,
                     RPI::ModelAsset::RTTI_Type(),
                     false);
+                AZ_Error("ThumbnailRenderer", defaultModelAssetId.IsValid(), "Default model asset is invalid. Verify the asset %s exists.", m_context->GetData()->DefaultModelPath);
                 if (m_context->GetData()->m_assetsToLoad.emplace(defaultModelAssetId).second)
                 {
                     data->m_defaultModelAsset.Create(defaultModelAssetId);
@@ -211,6 +204,7 @@ namespace AZ
                     m_context->GetData()->DefaultMaterialPath,
                     RPI::MaterialAsset::RTTI_Type(),
                     false);
+                AZ_Error("ThumbnailRenderer", defaultMaterialAssetId.IsValid(), "Default material asset is invalid. Verify the asset %s exists.", m_context->GetData()->DefaultMaterialPath);
                 if (m_context->GetData()->m_assetsToLoad.emplace(defaultMaterialAssetId).second)
                 {
                     data->m_defaultMaterialAsset.Create(defaultMaterialAssetId);

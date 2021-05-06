@@ -24,6 +24,8 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <PhysX/ComponentTypeIds.h>
 #include <PhysX/SystemComponentBus.h>
+#include <Source/SphereColliderComponent.h>
+#include <Source/CapsuleColliderComponent.h>
 #include <System/PhysXSystem.h>
 #include <Tests/PhysXTestFixtures.h>
 #include <Tests/PhysXTestUtil.h>
@@ -31,6 +33,51 @@
 
 namespace PhysX
 {
+    namespace Internal
+    {
+        void AddColliderComponentToEntity(AZ::Entity* entity, const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& shapeConfiguration)
+        {
+            Physics::ShapeType shapeType = shapeConfiguration.GetShapeType();
+
+            switch (shapeType)
+            {
+            case Physics::ShapeType::Sphere:
+            {
+                const Physics::SphereShapeConfiguration& sphereConfiguration = static_cast<const Physics::SphereShapeConfiguration&>(shapeConfiguration);
+                auto sphereColliderComponent = entity->CreateComponent<SphereColliderComponent>();
+                sphereColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(
+                    AZStd::make_shared<Physics::ColliderConfiguration>(colliderConfiguration),
+                    AZStd::make_shared<Physics::SphereShapeConfiguration>(sphereConfiguration)) });
+            }
+            break;
+            case Physics::ShapeType::Box:
+            {
+                const Physics::BoxShapeConfiguration& boxConfiguration = static_cast<const Physics::BoxShapeConfiguration&>(shapeConfiguration);
+                auto boxColliderComponent = entity->CreateComponent<BoxColliderComponent>();
+                boxColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(
+                    AZStd::make_shared<Physics::ColliderConfiguration>(colliderConfiguration),
+                    AZStd::make_shared<Physics::BoxShapeConfiguration>(boxConfiguration)) });
+            }
+            break;
+            case Physics::ShapeType::Capsule:
+            {
+                const Physics::CapsuleShapeConfiguration& capsuleConfiguration = static_cast<const Physics::CapsuleShapeConfiguration&>(shapeConfiguration);
+                auto capsuleColliderComponent = entity->CreateComponent<CapsuleColliderComponent>();
+                capsuleColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(
+                    AZStd::make_shared<Physics::ColliderConfiguration>(colliderConfiguration),
+                    AZStd::make_shared<Physics::CapsuleShapeConfiguration>(capsuleConfiguration)) });
+            }
+            break;
+            default:
+            {
+                AZ_Error("PhysX", false,
+                    "AddColliderComponentToEntity(): Using Shape of type %d is not implemented.", static_cast<AZ::u8>(shapeType));
+            }
+            break;
+            }
+        }
+    }
+
     // transform for a floor centred at x = 0, y = 0, with top at level z = 0
     static const AZ::Transform DefaultFloorTransform = AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisZ(-0.5f));
 
@@ -123,7 +170,7 @@ namespace PhysX
         ControllerTestBasis basis(m_testSceneHandle);
         AZ::Vector3 velocity = AZ::Vector3::CreateAxisX();
 
-        auto box = PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(1.5f, 0.0f, 0.5f));
+        PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(1.5f, 0.0f, 0.5f));
 
         // run the simulation for a while so the controller should get to the box and stop
         basis.Update(velocity, 50);
@@ -149,7 +196,7 @@ namespace PhysX
         ControllerTestBasis basis(m_testSceneHandle);
         AZ::Vector3 velocity = AZ::Vector3(1.0f, 1.0f, 0.0f);
 
-        auto box = PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(1.0f, 0.5f, 0.5f));
+        PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(1.0f, 0.5f, 0.5f));
 
         // run the simulation for a while so the controller should get to the box and start sliding
         basis.Update(velocity, 20);
@@ -228,8 +275,8 @@ namespace PhysX
     {
         ControllerTestBasis basis(m_testSceneHandle);
 
-        auto shortStep = PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(1.0f, 0.0f, -0.3f));
-        auto tallStep = PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(2.0f, 0.0f, 0.5f));
+        PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(1.0f, 0.0f, -0.3f));
+        PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(2.0f, 0.0f, 0.5f));
 
         AZ::Vector3 desiredVelocity = AZ::Vector3::CreateAxisX();
 
@@ -263,7 +310,7 @@ namespace PhysX
         ControllerTestBasis basis(m_testSceneHandle, shapeType);
 
         // the bottom of the box will be at height 1.0
-        auto box = PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(1.0f, 0.0f, 1.5f));
+        PhysX::TestUtils::AddStaticUnitBoxToScene(basis.m_sceneHandle, AZ::Vector3(1.0f, 0.0f, 1.5f));
 
         // resize the controller so that it is too tall to fit under the box
         auto controller = static_cast<CharacterController*>(basis.m_controller);
@@ -367,8 +414,7 @@ namespace PhysX
         auto triggerEntity = AZStd::make_unique<AZ::Entity>("TriggerEntity");
         triggerEntity->CreateComponent<AzFramework::TransformComponent>()->SetWorldTM(AZ::Transform::Identity());
         triggerEntity->CreateComponent(PhysX::StaticRigidBodyComponentTypeId);
-        Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::AddColliderComponentToEntity,
-            triggerEntity.get(), triggerConfig, boxConfig, false);
+        Internal::AddColliderComponentToEntity(triggerEntity.get(), triggerConfig, boxConfig);
         triggerEntity->Init();
         triggerEntity->Activate();
 
@@ -488,7 +534,7 @@ namespace PhysX
         }
 
         // Create unit box located near character, collides with character by default
-        auto box = PhysX::TestUtils::AddStaticUnitBoxToScene(m_testSceneHandle, AZ::Vector3(1.0f, 0.0f, 0.0f));
+        PhysX::TestUtils::AddStaticUnitBoxToScene(m_testSceneHandle, AZ::Vector3(1.0f, 0.0f, 0.0f));
 
         // Assign 'None' collision group to character controller - it should not collide with the box
         AZStd::string collisionGroupName;

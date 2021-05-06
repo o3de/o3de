@@ -1,6 +1,23 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
 #pragma once
 
-#include <Atom/Features/PBR/Surface.azsli>
+// ------------------------------------------------------------------------------
+// NOTE: The following must be included or defined before including this file:
+//       - Surface          - LightingData
+// ---------------------------------------------------------------------------------
+
+#include <Atom/Features/PBR/LightingOptions.azsli>
 
 // Analytical integation (approximation) of diffusion profile over radius, could be replaced by other pre integrated kernels
 // such as sum of Gaussian
@@ -10,29 +27,36 @@ float3 TransmissionKernel(float t, float3 s)
     return 0.25 * (1.0 / exp(exponent) + 3.0 / exp(exponent / 3.0));
 }
 
-float3 GetBackLighting(Surface surface, float3 lightIntensity, float3 dirToCamera, float3 dirToLight, float shadowRatio)
+float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight, float shadowRatio)
 {
     float3 result = float3(0.0, 0.0, 0.0);
     float thickness = 0.0; 
+    float4 transmissionParams = surface.transmission.transmissionParams;
 
     switch(o_transmission_mode)
     {
         case TransmissionMode::None:
             break;
-        // Thick object mode, using back lighting approximation proposed by Brisebois B. C. and Bouchard M. 2011
-        // https://colinbarrebrisebois.com/2011/03/07/gdc-2011-approximating-translucency-for-a-fast-cheap-and-convincing-subsurface-scattering-look/
+
         case TransmissionMode::ThickObject: 
-            thickness = max(shadowRatio, surface.thickness);
-            // (transmittance) * (Lambert's attenuation) * light intensity
-            result = (pow(saturate(dot(dirToCamera, -normalize(dirToLight + surface.normal * surface.transmissionParams.z))), surface.transmissionParams.y) * surface.transmissionParams.w) * 
-                          (exp(-thickness * surface.transmissionParams.x) * saturate(1.0 - thickness)) * 
-                           lightIntensity;
+            // Thick object mode, using back lighting approximation proposed by Brisebois B. C. and Bouchard M. 2011
+            // https://colinbarrebrisebois.com/2011/03/07/gdc-2011-approximating-translucency-for-a-fast-cheap-and-convincing-subsurface-scattering-look/
+
+            {
+                thickness = max(shadowRatio, surface.transmission.thickness);
+                float transmittance = pow( saturate( dot( lightingData.dirToCamera, -normalize( dirToLight + surface.normal * transmissionParams.z ) ) ), transmissionParams.y ) * transmissionParams.w;
+                float lamberAttenuation = exp(-thickness * transmissionParams.x) * saturate(1.0 - thickness);
+                result = transmittance * lamberAttenuation * lightIntensity;
+            }
             break;
-        // Thin object mode, using thin-film assumption proposed by Jimenez J. et al, 2010, "Real-Time Realistic Skin Translucency"
-        // http://www.iryoku.com/translucency/downloads/Real-Time-Realistic-Skin-Translucency.pdf
+
         case TransmissionMode::ThinObject:
-            result = shadowRatio ? float3(0.0, 0.0, 0.0) : TransmissionKernel(surface.thickness * surface.transmissionParams.w, rcp(surface.transmissionParams.xyz)) * 
+            // Thin object mode, using thin-film assumption proposed by Jimenez J. et al, 2010, "Real-Time Realistic Skin Translucency"
+            // http://www.iryoku.com/translucency/downloads/Real-Time-Realistic-Skin-Translucency.pdf
+
+            result = shadowRatio ? float3(0.0, 0.0, 0.0) : TransmissionKernel(surface.transmission.thickness * transmissionParams.w, rcp(transmissionParams.xyz)) * 
                            saturate(dot(-surface.normal, dirToLight)) * lightIntensity * shadowRatio;
+            break;
     }
     
     return result;

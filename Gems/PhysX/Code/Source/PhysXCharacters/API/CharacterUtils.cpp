@@ -96,23 +96,17 @@ namespace PhysX
                 }
             }
 
-            AZStd::unique_ptr<CharacterController> CreateCharacterController(const Physics::CharacterConfiguration& characterConfig,
-                const Physics::ShapeConfiguration& shapeConfig, AzPhysics::SceneHandle sceneHandle)
+            CharacterController* CreateCharacterController(PhysXScene* scene,
+                const Physics::CharacterConfiguration& characterConfig)
             {
-                physx::PxControllerManager* manager = nullptr;
-                AzPhysics::Scene* scene = nullptr;
-                PhysX::PhysXScene* physxScene = nullptr;
-                if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+                if (scene == nullptr)
                 {
-                    if (scene = physicsSystem->GetScene(sceneHandle))
-                    {
-                        if (physxScene = azrtti_cast<PhysX::PhysXScene*>(scene))
-                        {
-                            manager = physxScene->GetOrCreateControllerManager();
-                        }
-                    }
+                    AZ_Error("PhysX Character Controller", false, "Failed to create character controller as the scene is null");
+                    return nullptr;
                 }
-                if (!manager || !scene)
+
+                physx::PxControllerManager* manager = scene->GetOrCreateControllerManager();
+                if (manager == nullptr)
                 {
                     AZ_Error("PhysX Character Controller", false, "Could not retrieve character controller manager.");
                     return nullptr;
@@ -121,41 +115,47 @@ namespace PhysX
                 auto callbackManager = AZStd::make_unique<CharacterControllerCallbackManager>();
 
                 physx::PxController* pxController = nullptr;
-                auto* pxScene = static_cast<physx::PxScene*>(physxScene->GetNativePointer());
+                auto* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
 
-                if (shapeConfig.GetShapeType() == Physics::ShapeType::Capsule)
+                switch (characterConfig.m_shapeConfig->GetShapeType())
                 {
-                    physx::PxCapsuleControllerDesc capsuleDesc;
+                case Physics::ShapeType::Capsule:
+                    {
+                        physx::PxCapsuleControllerDesc capsuleDesc;
 
-                    const Physics::CapsuleShapeConfiguration& capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(shapeConfig);
-                    // LY height means total height, PhysX means height of straight section
-                    capsuleDesc.height = AZ::GetMax(epsilon, capsuleConfig.m_height - 2.0f * capsuleConfig.m_radius);
-                    capsuleDesc.radius = capsuleConfig.m_radius;
-                    capsuleDesc.climbingMode = physx::PxCapsuleClimbingMode::eCONSTRAINED;
+                        const Physics::CapsuleShapeConfiguration& capsuleConfig = static_cast<const Physics::CapsuleShapeConfiguration&>(*characterConfig.m_shapeConfig);
+                        // LY height means total height, PhysX means height of straight section
+                        capsuleDesc.height = AZ::GetMax(epsilon, capsuleConfig.m_height - 2.0f * capsuleConfig.m_radius);
+                        capsuleDesc.radius = capsuleConfig.m_radius;
+                        capsuleDesc.climbingMode = physx::PxCapsuleClimbingMode::eCONSTRAINED;
 
-                    AppendShapeIndependentProperties(capsuleDesc, characterConfig, callbackManager.get());
-                    AppendPhysXSpecificProperties(capsuleDesc, characterConfig);
-                    PHYSX_SCENE_WRITE_LOCK(pxScene);
-                    pxController = manager->createController(capsuleDesc); // This internally adds the controller's actor to the scene
-                }
-                else if (shapeConfig.GetShapeType() == Physics::ShapeType::Box)
-                {
-                    physx::PxBoxControllerDesc boxDesc;
+                        AppendShapeIndependentProperties(capsuleDesc, characterConfig, callbackManager.get());
+                        AppendPhysXSpecificProperties(capsuleDesc, characterConfig);
+                        PHYSX_SCENE_WRITE_LOCK(pxScene);
+                        pxController = manager->createController(capsuleDesc); // This internally adds the controller's actor to the scene
+                    }
+                    break;
+                case Physics::ShapeType::Box:
+                    {
+                        physx::PxBoxControllerDesc boxDesc;
 
-                    const Physics::BoxShapeConfiguration& boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(shapeConfig);
-                    boxDesc.halfHeight = 0.5f * boxConfig.m_dimensions.GetZ();
-                    boxDesc.halfSideExtent = 0.5f * boxConfig.m_dimensions.GetY();
-                    boxDesc.halfForwardExtent = 0.5f * boxConfig.m_dimensions.GetX();
+                        const Physics::BoxShapeConfiguration& boxConfig = static_cast<const Physics::BoxShapeConfiguration&>(*characterConfig.m_shapeConfig);
+                        boxDesc.halfHeight = 0.5f * boxConfig.m_dimensions.GetZ();
+                        boxDesc.halfSideExtent = 0.5f * boxConfig.m_dimensions.GetY();
+                        boxDesc.halfForwardExtent = 0.5f * boxConfig.m_dimensions.GetX();
 
-                    AppendShapeIndependentProperties(boxDesc, characterConfig, callbackManager.get());
-                    AppendPhysXSpecificProperties(boxDesc, characterConfig);
-                    PHYSX_SCENE_WRITE_LOCK(pxScene);
-                    pxController = manager->createController(boxDesc); // This internally adds the controller's actor to the scene
-                }
-                else
-                {
-                    AZ_Error("PhysX Character Controller", false, "PhysX only supports box and capsule shapes for character controllers.");
-                    return nullptr;
+                        AppendShapeIndependentProperties(boxDesc, characterConfig, callbackManager.get());
+                        AppendPhysXSpecificProperties(boxDesc, characterConfig);
+                        PHYSX_SCENE_WRITE_LOCK(pxScene);
+                        pxController = manager->createController(boxDesc); // This internally adds the controller's actor to the scene
+                    }
+                    break;
+                default:
+                    {
+                        AZ_Error("PhysX Character Controller", false, "PhysX only supports box and capsule shapes for character controllers.");
+                        return nullptr;
+                    }
+                    break;
                 }
 
                 if (!pxController)
@@ -164,23 +164,21 @@ namespace PhysX
                     return nullptr;
                 }
 
-                auto controller = AZStd::make_unique<CharacterController>(pxController, AZStd::move(callbackManager), sceneHandle);
-                return controller;
+                return aznew CharacterController(pxController, AZStd::move(callbackManager), scene->GetSceneHandle());
             }
 
-            AZStd::unique_ptr<Ragdoll> CreateRagdoll(Physics::RagdollConfiguration& configuration,
-                const Physics::RagdollState& initialState, const ParentIndices& parentIndices, AzPhysics::SceneHandle sceneHandle)
+            Ragdoll* CreateRagdoll(Physics::RagdollConfiguration& configuration, AzPhysics::SceneHandle sceneHandle)
             {
                 const size_t numNodes = configuration.m_nodes.size();
-                if (numNodes != initialState.size())
+                if (numNodes != configuration.m_initialState.size())
                 {
                     AZ_Error("PhysX Ragdoll", false, "Mismatch between number of nodes in ragdoll configuration (%i) "
-                        "and number of nodes in the initial ragdoll state (%i)", numNodes, initialState.size());
+                        "and number of nodes in the initial ragdoll state (%i)", numNodes, configuration.m_initialState.size());
                     return nullptr;
                 }
 
                 AZStd::unique_ptr<Ragdoll> ragdoll = AZStd::make_unique<Ragdoll>(sceneHandle);
-                ragdoll->SetParentIndices(parentIndices);
+                ragdoll->SetParentIndices(configuration.m_parentIndices);
 
                 auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
                 if (sceneInterface == nullptr)
@@ -193,15 +191,21 @@ namespace PhysX
                 for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
                 {
                     Physics::RagdollNodeConfiguration& nodeConfig = configuration.m_nodes[nodeIndex];
-                    const Physics::RagdollNodeState& nodeState = initialState[nodeIndex];
+                    const Physics::RagdollNodeState& nodeState = configuration.m_initialState[nodeIndex];
 
                     Physics::CharacterColliderNodeConfiguration* colliderNodeConfig = configuration.m_colliders.FindNodeConfigByName(nodeConfig.m_debugName);
                     if (colliderNodeConfig)
                     {
                         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
-                        for (const auto& shapeConfig : colliderNodeConfig->m_shapes)
+                        for (const auto& [colliderConfig, shapeConfig] : colliderNodeConfig->m_shapes)
                         {
-                            if (auto shape = AZStd::make_shared<Shape>(*shapeConfig.first, *shapeConfig.second))
+                            if (colliderConfig == nullptr || shapeConfig == nullptr)
+                            {
+                                AZ_Error("PhysX Ragdoll", false, "Failed to create collider shape for ragdoll node %s", nodeConfig.m_debugName.c_str());
+                                return nullptr;
+                            }
+
+                            if (auto shape = AZStd::make_shared<Shape>(*colliderConfig, *shapeConfig))
                             {
                                 shapes.emplace_back(shape);
                             }
@@ -213,22 +217,20 @@ namespace PhysX
                         }
                         nodeConfig.m_colliderAndShapeData = shapes;
                     }
+                    nodeConfig.m_startSimulationEnabled = false;
+                    nodeConfig.m_position = nodeState.m_position;
+                    nodeConfig.m_orientation = nodeState.m_orientation;
 
-                    AzPhysics::SimulatedBodyHandle newBodyHandle = sceneInterface->AddSimulatedBody(sceneHandle, &nodeConfig);
-                    if (newBodyHandle == AzPhysics::InvalidSimulatedBodyHandle)
+                    AZStd::unique_ptr<RagdollNode> node = AZStd::make_unique<RagdollNode>(sceneHandle, nodeConfig);
+                    if (node->GetRigidBodyHandle() != AzPhysics::InvalidSimulatedBodyHandle)
+                    {
+                        ragdoll->AddNode(AZStd::move(node));
+                    }
+                    else
                     {
                         AZ_Error("PhysX Ragdoll", false, "Failed to create rigid body for ragdoll node %s", nodeConfig.m_debugName.c_str());
-                        return nullptr;
+                        node.reset();
                     }
-                    sceneInterface->DisableSimulationOfBody(sceneHandle, newBodyHandle);
-                    auto* rigidBody = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(sceneHandle, newBodyHandle));
-
-                    physx::PxRigidDynamic* pxRigidDynamic = static_cast<physx::PxRigidDynamic*>(rigidBody->GetNativePointer());
-                    physx::PxTransform transform(PxMathConvert(nodeState.m_position), PxMathConvert(nodeState.m_orientation));
-                    pxRigidDynamic->setGlobalPose(transform);
-
-                    AZStd::unique_ptr<RagdollNode> node = AZStd::make_unique<RagdollNode>(rigidBody, newBodyHandle);
-                    ragdoll->AddNode(AZStd::move(node));
                 }
 
                 // Set up joints.  Needs a second pass because child nodes in the ragdoll config aren't guaranteed to have
@@ -236,7 +238,7 @@ namespace PhysX
                 size_t rootIndex = SIZE_MAX;
                 for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
                 {
-                    size_t parentIndex = parentIndices[nodeIndex];
+                    size_t parentIndex = configuration.m_parentIndices[nodeIndex];
                     if (parentIndex < numNodes)
                     {
                         physx::PxRigidDynamic* parentActor = ragdoll->GetPxRigidDynamic(parentIndex);
@@ -302,8 +304,8 @@ namespace PhysX
                 }
 
                 ragdoll->SetRootIndex(rootIndex);
-
-                return ragdoll;
+                
+                return ragdoll.release();
             }
 
             physx::PxD6JointDrive CreateD6JointDrive(float stiffness, float dampingRatio, float forceLimit)

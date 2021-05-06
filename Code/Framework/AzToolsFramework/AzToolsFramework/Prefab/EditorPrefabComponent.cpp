@@ -16,7 +16,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
-#include <AzToolsFramework/UI/Outliner/EntityOutlinerWidgetInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationBus.h>
 
 namespace AzToolsFramework
@@ -56,16 +55,6 @@ namespace AzToolsFramework
 
         void EditorPrefabComponent::Activate()
         {
-            PrefabPublicInterface* prefabPublicInterface = AZ::Interface<PrefabPublicInterface>::Get();
-            if (prefabPublicInterface && prefabPublicInterface->IsLevelInstanceContainerEntity(GetEntityId()))
-            {
-                EntityOutlinerWidgetInterface* entityOutlinerWidgetInterface = AZ::Interface<EntityOutlinerWidgetInterface>::Get();
-                if (entityOutlinerWidgetInterface)
-                {
-                    entityOutlinerWidgetInterface->SetRootEntity(GetEntityId());
-                }
-            }
-
             PrefabInstanceContainerNotificationBus::Broadcast(
                 &PrefabInstanceContainerNotifications::OnPrefabComponentActivate, GetEntityId());
         }

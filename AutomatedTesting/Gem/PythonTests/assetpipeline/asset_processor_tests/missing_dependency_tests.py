@@ -20,8 +20,8 @@ from typing import List, Tuple
 
 from ..ap_fixtures.asset_processor_fixture import asset_processor
 from ..ap_fixtures.ap_setup_fixture import ap_setup_fixture
-from ly_test_tools.lumberyard.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
-from ly_test_tools.lumberyard import asset_processor as asset_processor_utils
+from ly_test_tools.o3de.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
+from ly_test_tools.o3de import asset_processor as asset_processor_utils
 
 # fmt:off
 from ..ap_fixtures.ap_missing_dependency_fixture \
@@ -32,7 +32,7 @@ from ..ap_fixtures.ap_missing_dependency_fixture \
 import ly_test_tools.builtin.helpers as helpers
 
 # Import LyShared
-import ly_test_tools.lumberyard.pipeline_utils as utils
+import ly_test_tools.o3de.pipeline_utils as utils
 from automatedtesting_shared import asset_database_utils as db_utils
 
 # Use the following logging pattern to hook all test logging together:
@@ -71,8 +71,6 @@ class TestsMissingDependencies_WindowsAndMac(object):
         self._asset_processor.add_source_folder_assets(f"{self._workspace.project}\\textures")
         self._asset_processor.add_source_folder_assets(f"{self._workspace.project}\\UI")
         self._asset_processor.add_source_folder_assets(f"{self._workspace.project}\\libs\\particles")
-        asset_processor.copy_assets_to_project(['Game.xml'], os.path.join(self._workspace.paths.dev(), self._workspace.project, 'Config'),
-                                               os.path.join(self._asset_processor.temp_asset_root(), self._workspace.project, 'Config'))
 
     def do_missing_dependency_test(self, source_product, expected_dependencies,
                                    dsp_param,

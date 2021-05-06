@@ -412,7 +412,7 @@ namespace ScriptCanvas
             AZ_Assert(lua_isuserdata(lua, -2) && !lua_islightuserdata(lua, -2), "Error in compiled lua file, 1st argument to OverrideNodeableMetatable is not userdata (Nodeable)");
             AZ_Assert(lua_istable(lua, -1), "Error in compiled lua file, 2nd argument to OverrideNodeableMetatable is not a Lua table");
 
-            auto userData = reinterpret_cast<AZ::LuaUserData*>(lua_touserdata(lua, -2));
+            [[maybe_unused]] auto userData = reinterpret_cast<AZ::LuaUserData*>(lua_touserdata(lua, -2));
             AZ_Assert(userData && userData->magicData == AZ_CRC_CE("AZLuaUserData"), "this isn't user data");
             // Lua: LuaUserData::nodeable, class_mt
             lua_newtable(lua);
@@ -508,11 +508,10 @@ namespace ScriptCanvas
             const int argsCount = lua_gettop(lua);
             AZ_Assert(argsCount >= 2, "CallExecutionOut: Error in compiled Lua file, not enough arguments");
             AZ_Assert(lua_isuserdata(lua, 1), "CallExecutionOut: Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
-            AZ_Assert(lua_isstring(lua, 2), "CallExecutionOut: Error in compiled lua file, 2nd argument to SetExecutionOut is not a string (Crc key)");
+            AZ_Assert(lua_isnumber(lua, 2), "CallExecutionOut: Error in compiled lua file, 2nd argument to SetExecutionOut is not a number");
             Nodeable* nodeable = AZ::ScriptValue<Nodeable*>::StackRead(lua, 1); 
-            const char* keyStr = AZ::ScriptValue<const char*>::StackRead(lua, 2);
-            AZ_Assert(keyStr, "CallExecutionOut: Failed to read key string");
-            nodeable->CallOut(AZ::Crc32(keyStr), nullptr, nullptr, argsCount - 2);
+            size_t index = aznumeric_caster(lua_tointeger(lua, 2));
+            nodeable->CallOut(index, nullptr, nullptr, argsCount - 2);
             // Lua: results...
             return lua_gettop(lua);
         }
@@ -559,23 +558,14 @@ namespace ScriptCanvas
         int InitializeNodeableOutKeys(lua_State* lua)
         {
             using namespace ExecutionInterpretedAPICpp;
-            // Lua: usernodeable, outKeys...
+            // Lua: usernodeable, keyCount
             const int argsCount = lua_gettop(lua);
-            AZ_Assert(argsCount >= 2, "InitializeNodeableOutKeys: Error in compiled Lua file, not enough arguments");
-            AZ_Assert((argsCount - 1) < k_MaxNodeableOuts, "InitializeNodeableOutKeys: Error in compiled Lua file, too many outs for nodeable out)");
+            AZ_Assert(argsCount == 2, "InitializeNodeableOutKeys: Error in compiled Lua file, not enough arguments");
             AZ_Assert(lua_isuserdata(lua, 1), "InitializeNodeableOutKeys: Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
             Nodeable* nodeable = AZ::ScriptValue<Nodeable*>::StackRead(lua, 1);
-            const int keyCount = argsCount - 1;
-    
-            AZStd::array<AZ::Crc32, k_MaxNodeableOuts> keys;
-            
-            for (int argumentIndex = 2, sentinel = argsCount + 1; argumentIndex != sentinel; ++argumentIndex)
-            {
-                AZ_Assert(lua_isnumber(lua, argumentIndex), "InitializeNodeableOutKeys: Error in compiled lua file, argument at Lua index #%d was not an integer", argumentIndex);
-                keys[argumentIndex - 2] = static_cast<AZ::u32>(lua_tointeger(lua, argumentIndex));
-            }
-
-            nodeable->InitializeExecutionOuts(keys.begin(), keys.begin() + keyCount);
+            AZ_Assert(lua_isnumber(lua, 2), "InitializeNodeableOutKeys: Error in compiled lua file, 2nd argument was not an integer");
+            const size_t keyCount = aznumeric_caster(lua_tointeger(lua, 2));
+            nodeable->InitializeExecutionOuts(keyCount);
             return 0;
         }
 
@@ -595,19 +585,18 @@ namespace ScriptCanvas
             // \see https://jira.agscollab.com/browse/LY-99750
 
             AZ_Assert(lua_isuserdata(lua, -3), "Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
-            AZ_Assert(lua_isstring(lua, -2), "Error in compiled lua file, 2nd argument to SetExecutionOut is not a string (Crc key)");
+            AZ_Assert(lua_isnumber(lua, -2), "Error in compiled lua file, 2nd argument to SetExecutionOut is not a number");
             AZ_Assert(lua_isfunction(lua, -1), "Error in compiled lua file, 3rd argument to SetExecutionOut is not a function (lambda need to get around atypically routed arguments)"); 
             Nodeable* nodeable = AZ::ScriptValue<Nodeable*>::StackRead(lua, -3);
             AZ_Assert(nodeable, "Failed to read nodeable");
-            const char* keyStr = AZ::ScriptValue<const char*>::StackRead(lua, -2);
-            AZ_Assert(keyStr, "Failed to read key string");
-            // Lua: nodeable, string, lambda
+            size_t index = aznumeric_caster(lua_tointeger(lua, -2));
+            // Lua: nodeable, index, lambda
 
             lua_pushvalue(lua, -1);
-            // Lua: nodeable, string, lambda, lambda
+            // Lua: nodeable, index, lambda, lambda
 
-            nodeable->SetExecutionOut(AZ::Crc32(keyStr), OutInterpreted(lua));
-            // Lua: nodeable, string, lambda
+            nodeable->SetExecutionOut(index, OutInterpreted(lua));
+            // Lua: nodeable, index, lambda
 
             // \todo clear these immediately after they are not needed with an explicit call written by the translator
             return 0;
@@ -618,20 +607,19 @@ namespace ScriptCanvas
             // \note Return values could become necessary.
             // \see https://jira.agscollab.com/browse/LY-99750
 
-            AZ_Assert(lua_isuserdata(lua, -3), "Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
-            AZ_Assert(lua_isstring(lua, -2), "Error in compiled lua file, 2nd argument to SetExecutionOut is not a string (Crc key)");
-            AZ_Assert(lua_isfunction(lua, -1), "Error in compiled lua file, 3rd argument to SetExecutionOut is not a function (lambda need to get around atypically routed arguments)");
+            AZ_Assert(lua_isuserdata(lua, -3), "Error in compiled lua file, 1st argument to SetExecutionOutResult is not userdata (Nodeable)");
+            AZ_Assert(lua_isnumber(lua, -2), "Error in compiled lua file, 2nd argument to SetExecutionOutResult is not a number");
+            AZ_Assert(lua_isfunction(lua, -1), "Error in compiled lua file, 3rd argument to SetExecutionOutResult is not a function (lambda need to get around atypically routed arguments)");
             Nodeable* nodeable = AZ::ScriptValue<Nodeable*>::StackRead(lua, -3); // this won't be a BCO, because BCOs won't be necessary in the interpreted mode...most likely
             AZ_Assert(nodeable, "Failed to read nodeable");
-            const char* keyStr = AZ::ScriptValue<const char*>::StackRead(lua, -2);
-            AZ_Assert(keyStr, "Failed to read key string");
-            // Lua: nodeable, string, lambda
+            size_t index = aznumeric_caster(lua_tointeger(lua, -2));
+            // Lua: nodeable, index, lambda
 
             lua_pushvalue(lua, -1);
-            // Lua: nodeable, string, lambda, lambda
+            // Lua: nodeable, index, lambda, lambda
 
-            nodeable->SetExecutionOut(AZ::Crc32(keyStr), OutInterpretedResult(lua));
-            // Lua: nodeable, string, lambda
+            nodeable->SetExecutionOut(index, OutInterpretedResult(lua));
+            // Lua: nodeable, index, lambda
 
             // \todo clear these immediately after they are not needed with an explicit call written by the translator
             return 0;
@@ -639,20 +627,19 @@ namespace ScriptCanvas
 
         int SetExecutionOutUserSubgraph(lua_State* lua)
         {
-            AZ_Assert(lua_isuserdata(lua, -3), "Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
-            AZ_Assert(lua_isstring(lua, -2), "Error in compiled lua file, 2nd argument to SetExecutionOut is not a string (Crc key)");
-            AZ_Assert(lua_isfunction(lua, -1), "Error in compiled lua file, 3rd argument to SetExecutionOut is not a function (lambda need to get around atypically routed arguments)");
+            AZ_Assert(lua_isuserdata(lua, -3), "Error in compiled lua file, 1st argument to SetExecutionOutUserSubgraph is not userdata (Nodeable)");
+            AZ_Assert(lua_isnumber(lua, -2), "Error in compiled lua file, 2nd argument to SetExecutionOutUserSubgraph is not a number");
+            AZ_Assert(lua_isfunction(lua, -1), "Error in compiled lua file, 3rd argument to SetExecutionOutUserSubgraph is not a function (lambda need to get around atypically routed arguments)");
             Nodeable* nodeable = AZ::ScriptValue<Nodeable*>::StackRead(lua, -3);
             AZ_Assert(nodeable, "Failed to read nodeable");
-            const char* keyStr = AZ::ScriptValue<const char*>::StackRead(lua, -2);
-            AZ_Assert(keyStr, "Failed to read key string");
-            // Lua: nodeable, string, lambda
+            size_t index = aznumeric_caster(lua_tointeger(lua, -2));
+            // Lua: nodeable, index, lambda
 
             lua_pushvalue(lua, -1);
-            // Lua: nodeable, string, lambda, lambda
+            // Lua: nodeable, index, lambda, lambda
 
-            nodeable->SetExecutionOut(AZ::Crc32(keyStr), OutInterpretedUserSubgraph(lua));
-            // Lua: nodeable, string, lambda
+            nodeable->SetExecutionOut(index, OutInterpretedUserSubgraph(lua));
+            // Lua: nodeable, index, lambda
 
             // \todo clear these immediately after they are not needed with an explicit call written by the translator
             return 0;
@@ -710,7 +697,7 @@ namespace ScriptCanvas
             AZ_Assert(lua_islightuserdata(lua, 2), "Error in compiled lua file, 2nd argument to UnpackDependencyArgs is not userdata (AZStd::vector<AZ::Data::Asset<RuntimeAsset>>*), but a :%s", lua_typename(lua, 2));
             auto dependentAssets = reinterpret_cast<AZStd::vector<AZ::Data::Asset<RuntimeAsset>>*>(lua_touserdata(lua, 2));
             AZ_Assert(lua_isinteger(lua, 3), "Error in compiled Lua file, 3rd argument to UnpackDependencyArgs is not a number");
-            const size_t dependentAssetsIndex = lua_tointeger(lua, 3);
+            const size_t dependentAssetsIndex = aznumeric_caster(lua_tointeger(lua, 3));
 
             return DependencyConstructionPack{ executionState, dependentAssets, dependentAssetsIndex, (*dependentAssets)[dependentAssetsIndex].Get()->m_runtimeData };
         }

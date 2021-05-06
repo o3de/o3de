@@ -18,8 +18,6 @@ endif()
 add_subdirectory(AssetBuilderSDK)
 add_subdirectory(AssetBuilder)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/Platform/${PAL_PLATFORM_NAME}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-
 ly_add_target(
     NAME AssetProcessor.Static STATIC
     NAMESPACE AZ
@@ -50,7 +48,6 @@ ly_add_target(
             ${additional_dependencies}
     RUNTIME_DEPENDENCIES
         AZ::AssetBuilder
-        Legacy::RC
 )
 
 # Aggregates all combined AssetBuilders into a single LY_ASSET_BUILDERS #define
@@ -63,7 +60,7 @@ ly_add_source_properties(
 )
 
 ly_add_target(
-    NAME AssetProcessor ${PAL_TRAIT_BUILD_ASSETPROCESSOR_APPLICATION_TYPE}
+    NAME AssetProcessor APPLICATION
     NAMESPACE AZ
     AUTOMOC
     AUTOUIC
@@ -180,7 +177,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         TARGETS
             AssetProcessor.Tests
         FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_broken_badplatform/AssetProcessorPlatformConfig.ini
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_broken_badplatform/AssetProcessorPlatformConfig.setreg
         OUTPUT_SUBDIRECTORY
             testdata/config_broken_badplatform
         )
@@ -188,7 +185,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         TARGETS
             AssetProcessor.Tests
         FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_broken_noscans/AssetProcessorPlatformConfig.ini
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_broken_noscans/AssetProcessorPlatformConfig.setreg
         OUTPUT_SUBDIRECTORY
             testdata/config_broken_noscans
     )
@@ -196,7 +193,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         TARGETS
             AssetProcessor.Tests
         FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_broken_recognizers/AssetProcessorPlatformConfig.ini
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_broken_recognizers/AssetProcessorPlatformConfig.setreg
         OUTPUT_SUBDIRECTORY
             testdata/config_broken_recognizers
     )
@@ -204,7 +201,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         TARGETS
             AssetProcessor.Tests
         FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_broken_noplatform/AssetProcessorPlatformConfig.ini
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_broken_noplatform/AssetProcessorPlatformConfig.setreg
         OUTPUT_SUBDIRECTORY
             testdata/config_broken_noplatform
     )
@@ -212,7 +209,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         TARGETS
             AssetProcessor.Tests
         FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_regular/AssetProcessorPlatformConfig.ini
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_regular/AssetProcessorPlatformConfig.setreg
         OUTPUT_SUBDIRECTORY
             testdata/config_regular
     )
@@ -220,7 +217,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         TARGETS
             AssetProcessor.Tests
         FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_regular_platform_scanfolder/AssetProcessorPlatformConfig.ini
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/config_regular_platform_scanfolder/AssetProcessorPlatformConfig.setreg
         OUTPUT_SUBDIRECTORY
             testdata/config_regular_platform_scanfolder
     )
@@ -228,7 +225,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         TARGETS
             AssetProcessor.Tests
         FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/EmptyDummyProject/AssetProcessorGamePlatformConfig.ini
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/EmptyDummyProject/AssetProcessorGamePlatformConfig.setreg
         OUTPUT_SUBDIRECTORY
             testdata/EmptyDummyProject
     )
@@ -236,7 +233,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         TARGETS
             AssetProcessor.Tests
         FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/DummyProject/AssetProcessorGamePlatformConfig.ini
+            ${CMAKE_CURRENT_SOURCE_DIR}/testdata/DummyProject/AssetProcessorGamePlatformConfig.setreg
         OUTPUT_SUBDIRECTORY
             testdata/DummyProject
     )

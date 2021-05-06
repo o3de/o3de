@@ -16,9 +16,9 @@
 
 namespace Multiplayer
 {
-    void MultiplayerComponent::Reflect(AZ::ReflectContext* reflection)
+    void MultiplayerComponent::Reflect(AZ::ReflectContext* context)
     {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
             serializeContext->Class<MultiplayerComponent, AZ::Component>()
@@ -43,8 +43,12 @@ namespace Multiplayer
 
     NetEntityId MultiplayerComponent::GetNetEntityId() const
     {
-        const NetBindComponent* netBindComponent = GetNetBindComponent();
-        return netBindComponent ? netBindComponent->GetNetEntityId() : InvalidNetEntityId;
+        return m_netBindComponent ? m_netBindComponent->GetNetEntityId() : InvalidNetEntityId;
+    }
+
+    NetEntityRole MultiplayerComponent::GetNetEntityRole() const
+    {
+        return m_netBindComponent ? m_netBindComponent->GetNetEntityRole() : NetEntityRole::InvalidRole;
     }
 
     ConstNetworkEntityHandle MultiplayerComponent::GetEntityHandle() const

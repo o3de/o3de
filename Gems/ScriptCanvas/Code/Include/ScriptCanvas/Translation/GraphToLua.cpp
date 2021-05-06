@@ -237,6 +237,13 @@ namespace ScriptCanvas
             writer.Indent();
         }
 
+        AZStd::string GraphToLua::SanitizeFunctionCallName(AZStd::string_view name)
+        {
+            AZStd::string sanitized(name);
+            AZ::RemovePropertyNameArtifacts(sanitized);
+            return Grammar::ToIdentifier(sanitized);
+        }
+
         AZ::Outcome<TargetResult, ErrorList> GraphToLua::Translate(const Grammar::AbstractCodeModel& model)
         {
             GraphToLua translation(model);
@@ -575,7 +582,7 @@ namespace ScriptCanvas
 
         void GraphToLua::TranslateExecutionTreeFunctionCall(Grammar::ExecutionTreeConstPtr execution)
         {
-            TranslateNodeableOuts(execution);
+            TranslateNodeableOuts(execution->GetNodeable(), execution);
             WriteDebugInfoIn(execution, "TranslateExecutionTreeFunctionCall begin");
             m_dotLua.WriteIndent();
             WriteLocalOutputInitialization(execution);
@@ -625,6 +632,10 @@ namespace ScriptCanvas
             else if (IsEventDisconnectCall(execution))
             {
                 WriteEventDisconnectCall(execution, PostDisconnectAction::SetToNil);
+            }
+            else if (Grammar::IsGlobalPropertyRead(execution))
+            {
+                WriteGlobalPropertyRead(execution);
             }
             else
             {
@@ -678,8 +689,16 @@ namespace ScriptCanvas
 
         void GraphToLua::TranslateExecutionTreeUserOutCall(Grammar::ExecutionTreeConstPtr execution)
         {
-            // \todo revisit with per-entity run time storage that keeps execution out calls
-            m_dotLua.WriteIndented("%s(self, \"%s\"", Grammar::k_NodeableCallInterpretedOut, execution->GetName().data());
+            auto outCallIndexOptional = execution->GetOutCallIndex();
+            if (!outCallIndexOptional)
+            {
+                AddError(nullptr, aznew Internal::ParseError(execution->GetNodeId(), "Execution did not return required out call index"));
+                return;
+            }
+
+            const size_t outIndex = *outCallIndexOptional;
+
+            m_dotLua.WriteIndented("%s(self, %zu", Grammar::k_NodeableCallInterpretedOut, outIndex);
 
             if (execution->GetInputCount() > 0)
             {
@@ -687,7 +706,7 @@ namespace ScriptCanvas
                 WriteFunctionCallInput(execution);
             }
 
-            m_dotLua.WriteLine(")");
+            m_dotLua.WriteLine(") -- %s", execution->GetName().data());
         }
 
         void GraphToLua::TranslateFunction(Grammar::ExecutionTreeConstPtr execution, IsNamed lex)
@@ -846,19 +865,27 @@ namespace ScriptCanvas
         {
             for (const auto& nameAndEventThread : ebusHandling->m_events)
             {
-                const AZStd::string& eventName = nameAndEventThread.first;
                 const Grammar::ExecutionTreeConstPtr& eventThread = nameAndEventThread.second;
 
                 const bool hasResults = eventThread->HasReturnValues();
 
+                AZStd::optional<size_t> eventIndex = ebusHandling->m_node->GetEventIndex(nameAndEventThread.first);
+                if (!eventIndex)
+                {
+                    AddError(nullptr, aznew Internal::ParseError(ebusHandling->m_node->GetEntityId(), AZStd::string::format("EBus handler did not return a valid index for event %s", nameAndEventThread.first.c_str())));
+                    return;
+                }
+
                 m_dotLua.WriteNewLine();
-                m_dotLua.WriteLineIndented("%s(%s%s, '%s',"
+                m_dotLua.WriteLineIndented("%s(%s%s, %zu, -- %s"
                     , hasResults ? Grammar::k_EBusHandlerHandleEventResultName : Grammar::k_EBusHandlerHandleEventName
                     , leftValue.data()
                     , ebusHandling->m_handlerName.data()
+                    , *eventIndex
                     , eventThread->GetName().data());
 
                 m_dotLua.Indent();
+
                 TranslateFunction(eventThread, IsNamed::No);
                 m_dotLua.WriteLine(")");
 
@@ -928,7 +955,7 @@ namespace ScriptCanvas
                 for (auto& out : nodeAndParse->m_latents)
                 {
                     m_dotLua.WriteNewLine();
-                    TranslateNodeableOut(out.second);
+                    TranslateNodeableOut(nodeAndParse->m_nodeable, out.second);
                 }
 
                 if (!nodeAndParse->m_latents.empty())
@@ -973,14 +1000,7 @@ namespace ScriptCanvas
                     const auto& outKeys = m_model.GetInterface().GetOutKeys();
                     if (!outKeys.empty())
                     {
-                        m_dotLua.WriteIndented("%s(self", Grammar::k_InitializeNodeableOutKeys);
-
-                        for (auto& key : outKeys)
-                        {
-                            m_dotLua.Write(", %u", AZ::u32(key));
-                        }
-
-                        m_dotLua.WriteLine(")");
+                        m_dotLua.WriteLineIndented("%s(self, %zu)", Grammar::k_InitializeNodeableOutKeys, outKeys.size());
                     }
                 }
                 else
@@ -997,17 +1017,28 @@ namespace ScriptCanvas
             m_dotLua.WriteNewLine();
         }
 
-        void GraphToLua::TranslateNodeableOut(Grammar::ExecutionTreeConstPtr execution)
+        void GraphToLua::TranslateNodeableOut(Grammar::VariableConstPtr host, Grammar::ExecutionTreeConstPtr execution)
         {
+            auto outCallIndexOptional = execution->GetOutCallIndex();
+            if (!outCallIndexOptional)
+            {
+                AddError(nullptr, aznew Internal::ParseError(execution->GetNodeId(), "Execution did not return required out call index"));
+                return;
+            }
+
+            const size_t outIndex = *outCallIndexOptional;
+
+            // #functions2 remove-execution-out-hash
             const auto setExecutionOutName = Grammar::IsUserFunctionDefinition(execution)
                 ? Grammar::k_NodeableSetExecutionOutUserSubgraphName
                 : execution->HasReturnValues()
                     ? Grammar::k_NodeableSetExecutionOutResultName
                     : Grammar::k_NodeableSetExecutionOutName;
 
-            m_dotLua.WriteLineIndented("%s(self.%s, '%s',"
+            m_dotLua.WriteLineIndented("%s(self.%s, %zu, -- %s"
                 , setExecutionOutName
-                , execution->GetNodeable()->m_name.data() 
+                , host->m_name.data()
+                , outIndex
                 , execution->GetName().data());
 
             m_dotLua.Indent();
@@ -1017,14 +1048,14 @@ namespace ScriptCanvas
             m_dotLua.Outdent();
         }
 
-        void GraphToLua::TranslateNodeableOuts(Grammar::ExecutionTreeConstPtr execution)
+        void GraphToLua::TranslateNodeableOuts(Grammar::VariableConstPtr host, Grammar::ExecutionTreeConstPtr execution)
         {
             const auto outs = execution->GetInternalOuts();
             
             for (const auto& out : outs)
             {
                 m_dotLua.WriteNewLine();
-                TranslateNodeableOut(out);
+                TranslateNodeableOut(host, out);
             }
 
             if (!outs.empty())
@@ -1040,7 +1071,6 @@ namespace ScriptCanvas
                 return;
             }
 
-            
             m_dotLua.WriteIndented("function %s.%s(self, ", m_tableName.c_str(), Grammar::k_InitializeStaticsName);
             WriteStaticInitializerInput(IsLeadingCommaRequired::No);
             m_dotLua.WriteLine(")");
@@ -1068,7 +1098,7 @@ namespace ScriptCanvas
                     continue;
                 }
 
-                if (variable->m_datum.GetType().GetAZType() == azrtti_typeid<Nodeable>())
+                if (m_model.IsUserNodeable(variable))
                 {
                     auto nodeableName = variable->m_name;
                     if (nodeableName.starts_with(Grammar::k_memberNamePrefix))
@@ -1094,7 +1124,7 @@ namespace ScriptCanvas
                             // indexInfo->second.requiresCtorParamsForDependencies
                             // self.nonLeafDependency = NonLeafDependency.new(executionState, UnpackDependencyArgs(executionState, dependentAssets, 7))
                             // -- has more dependencies, index, known from compile time, pushes the correct asset further down construction
-                            m_dotLua.WriteLineIndented("%s%s = %s.new(%s, %s(%s, %s, %s))"
+                            m_dotLua.WriteLineIndented("%s%s = %s.new(%s, %s(%s, %s, %zu))"
                                 , leftValue.data()
                                 , variable->m_name.data()
                                 , nodeableName.data()
@@ -1102,7 +1132,7 @@ namespace ScriptCanvas
                                 , Grammar::k_UnpackDependencyConstructionArgsFunctionName
                                 , Grammar::k_executionStateVariableName
                                 , Grammar::k_DependentAssetsArgName
-                                , AZStd::to_string(indexInfo->first).data());
+                                , indexInfo->first);
 
                         }
                         else // vs.
@@ -1110,7 +1140,7 @@ namespace ScriptCanvas
                             // !indexInfo->second.hasMoreDependencies
                             // self.leafDependency = LeafDependency.new(executionState, UnpackDependencyArgsLeaf(executionState, dependentAssets, 10))
                             // -- has NO more dependencies, index, known from compile time 
-                            m_dotLua.WriteLineIndented("%s%s = %s.new(%s, %s(%s, %s, %s))"
+                            m_dotLua.WriteLineIndented("%s%s = %s.new(%s, %s(%s, %s, %zu))"
                                 , leftValue.data()
                                 , variable->m_name.data()
                                 , nodeableName.data()
@@ -1118,7 +1148,7 @@ namespace ScriptCanvas
                                 , Grammar::k_UnpackDependencyConstructionArgsLeafFunctionName
                                 , Grammar::k_executionStateVariableName
                                 , Grammar::k_DependentAssetsArgName
-                                , AZStd::to_string(indexInfo->first).data());
+                                , indexInfo->first);
                         }
                     }
                     else
@@ -1148,6 +1178,7 @@ namespace ScriptCanvas
 
                     case Grammar::VariableConstructionRequirement::InputNodeable:
                         m_dotLua.WriteLineIndented("%s:InitializeExecutionState(%s)", variable->m_name.data(), Grammar::k_executionStateVariableName);
+                        m_dotLua.WriteLineIndented("%s:%s()", variable->m_name.c_str(), Grammar::k_InitializeExecutionOutByRequiredCountName);
                         m_dotLua.WriteLineIndented("%s%s = %s", leftValue.data(), variable->m_name.data(), variable->m_name.data());
                         break;
 
@@ -1217,9 +1248,7 @@ namespace ScriptCanvas
 
         void GraphToLua::WriteConstructionDependencyArgs()
         {
-            auto& dependencyArgs = m_model.GetOrderedDependencies().orderedAssetIds;
-
-            if (!dependencyArgs.empty())
+            if (m_model.GetInterface().RequiresConstructionParametersForDependencies())
             {
                 m_dotLua.Write(", %s", Grammar::k_DependentAssetsArgName);
             }
@@ -1730,7 +1759,7 @@ namespace ScriptCanvas
 
         size_t GraphToLua::WriteFunctionCallInputThisPointer(Grammar::ExecutionTreeConstPtr execution)
         {
-            if (IsUserFunctionCall(execution) && execution->GetRoot()->IsPure())
+            if (IsUserFunctionCallPure(execution))
             {
                 m_dotLua.Write("%s", Grammar::k_executionStateVariableName);
 
@@ -1766,7 +1795,12 @@ namespace ScriptCanvas
 
             return 0;
         }
-        
+
+        void GraphToLua::WriteGlobalPropertyRead(Grammar::ExecutionTreeConstPtr execution)
+        {
+            m_dotLua.WriteLine(SanitizeFunctionCallName(execution->GetName()));
+        }
+
         void GraphToLua::WriteHeader()
         {
             // no one will ever the see header or the do not modify, so these will not be necessary

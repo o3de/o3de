@@ -50,6 +50,7 @@ namespace MaterialEditor
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "materialeditor")
+                ->Event("ActivateWindow", &MaterialEditorWindowRequestBus::Events::ActivateWindow)
                 ->Event("SetDockWidgetVisible", &MaterialEditorWindowRequestBus::Events::SetDockWidgetVisible)
                 ->Event("IsDockWidgetVisible", &MaterialEditorWindowRequestBus::Events::IsDockWidgetVisible)
                 ->Event("GetDockWidgetNames", &MaterialEditorWindowRequestBus::Events::GetDockWidgetNames)
@@ -98,7 +99,7 @@ namespace MaterialEditor
 
     void MaterialEditorWindowComponent::CreateMaterialEditorWindow()
     {
-        m_materialBrowserInteractions.reset(aznew MaterialBrowserInteractions);
+        m_materialEditorBrowserInteractions.reset(aznew MaterialEditorBrowserInteractions);
 
         m_window.reset(aznew MaterialEditorWindow);
         m_window->show();

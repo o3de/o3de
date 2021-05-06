@@ -16,6 +16,7 @@
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
+#include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzCore/Script/ScriptTimePoint.h>
 
 #include <QApplication>
@@ -94,23 +95,25 @@ bool ViewportManipulatorControllerInstance::HandleInputChannelEvent(const AzFram
     AZStd::optional<MouseButton> overrideButton;
     AZStd::optional<MouseEvent> eventType;
 
+    // Because we receive events multiple times at separate priorities for manipulator events and
+    // viewport interaction events, we want to avoid updating our "last tick state" until we're on our last event,
+    // which currently is the low priority Interaction processor.
+    const bool finishedProcessingEvents = event.m_priority == InteractionPriority;
+
     if (IsMouseMove(event.m_inputChannel))
     {
         // Cache the ray trace results when doing manipulator interaction checks, no need to recalculate after
         if (event.m_priority == ManipulatorPriority)
         {
-            QPoint screenPosition = QPoint();
+            AzFramework::ScreenPoint screenPosition = AzFramework::ScreenPoint(0, 0);
             ViewportMouseCursorRequestBus::EventResult(
-                screenPosition, GetViewportId(),
-                &ViewportMouseCursorRequestBus::Events::ViewportCursorScreenPosition
-            );
-            m_state.m_mousePick.m_screenCoordinates = AzFramework::ScreenPoint{screenPosition.x(), screenPosition.y()};
+                screenPosition, GetViewportId(), &ViewportMouseCursorRequestBus::Events::ViewportCursorScreenPosition);
+
+            m_state.m_mousePick.m_screenCoordinates = screenPosition;
             AZStd::optional<ProjectedViewportRay> ray;
             ViewportInteractionRequestBus::EventResult(
-                ray, GetViewportId(),
-                &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay,
-                screenPosition
-            );
+                ray, GetViewportId(), &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay, screenPosition);
+
             if (ray.has_value())
             {
                 m_state.m_mousePick.m_rayOrigin = ray.value().origin;
@@ -121,25 +124,44 @@ bool ViewportManipulatorControllerInstance::HandleInputChannelEvent(const AzFram
     }
     else if (auto mouseButton = GetMouseButton(event.m_inputChannel); mouseButton != MouseButton::None)
     {
+        const AZ::u32 mouseButtonValue = static_cast<AZ::u32>(mouseButton);
         overrideButton = mouseButton;
         if (event.m_inputChannel.GetState() == InputChannel::State::Began)
         {
-            m_state.m_mouseButtons.m_mouseButtons |= static_cast<AZ::u32>(mouseButton);
+            m_state.m_mouseButtons.m_mouseButtons |= mouseButtonValue;
             if (IsDoubleClick(mouseButton))
             {
-                m_pendingDoubleClicks.erase(mouseButton);
+                // Only remove the double click flag once we're done processing both Manipulator and Interaction events
+                if (event.m_priority == InteractionPriority)
+                {
+                    m_pendingDoubleClicks.erase(mouseButton);
+                }
                 eventType = MouseEvent::DoubleClick;
             }
             else
             {
-                m_pendingDoubleClicks[mouseButton] = m_curTime;
+                // Only insert the double click timing once we're done processing events, to avoid a false IsDoubleClick positive
+                if (finishedProcessingEvents)
+                {
+                    m_pendingDoubleClicks[mouseButton] = m_curTime;
+                }
                 eventType = MouseEvent::Down;
             }
         }
         else if (event.m_inputChannel.GetState() == InputChannel::State::Ended)
         {
-            m_state.m_mouseButtons.m_mouseButtons &= ~static_cast<AZ::u32>(mouseButton);
-            eventType = MouseEvent::Up;
+            // If we've actually logged a mouse down event, forward a mouse up event.
+            // This prevents corner cases like the context menu thinking it should be opened even though no one clicked in this viewport,
+            // due to RenderViewportWidget ensuring all controllers get InputChannel::State::Ended events.
+            if (m_state.m_mouseButtons.m_mouseButtons & mouseButtonValue)
+            {
+                // Erase the button from our state if we're done processing events.
+                if (event.m_priority == InteractionPriority)
+                {
+                    m_state.m_mouseButtons.m_mouseButtons &= ~mouseButtonValue;
+                }
+                eventType = MouseEvent::Up;
+            }
         }
     }
     else if (auto keyboardModifier = GetKeyboardModifier(event.m_inputChannel); keyboardModifier != KeyboardModifier::None)
@@ -161,7 +183,7 @@ bool ViewportManipulatorControllerInstance::HandleInputChannelEvent(const AzFram
         {
             mouseInteraction.m_mouseButtons.m_mouseButtons = static_cast<AZ::u32>(overrideButton.value());
         }
-        MouseInteractionEvent mouseEvent = MouseInteractionEvent(mouseInteraction, eventType.value());
+        mouseInteraction.m_interactionId.m_viewportId = GetViewportId();
 
         // Depending on priority, we dispatch to either the manipulator or viewport interaction event
         const auto& targetInteractionEvent =
@@ -177,6 +199,12 @@ bool ViewportManipulatorControllerInstance::HandleInputChannelEvent(const AzFram
     }
 
     return interactionHandled;
+}
+
+void ViewportManipulatorControllerInstance::ResetInputChannels()
+{
+    m_pendingDoubleClicks.clear();
+    m_state = AzToolsFramework::ViewportInteraction::MouseInteraction();
 }
 
 void ViewportManipulatorControllerInstance::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)

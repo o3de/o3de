@@ -40,6 +40,7 @@
 #include <SceneAPI/SceneCore/DataTypes/Rules/ICoordinateSystemRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/ILodRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/ISkinRule.h>
+#include <SceneAPI/SceneCore/DataTypes/Rules/IClothRule.h>
 #include <SceneAPI/SceneCore/Events/ExportEventContext.h>
 #include <SceneAPI/SceneCore/Utilities/SceneGraphSelector.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
@@ -93,6 +94,11 @@ namespace
     const AZ::RHI::Format MorphTargetPositionDeltaFormat = AZ::RHI::Format::R16_UINT; // 16-bit integer per compressed position delta component
     const char* ShaderSemanticName_MorphTargetNormalDeltas = "MORPHTARGET_NORMALDELTAS";
     const AZ::RHI::Format MorphTargetNormalDeltaFormat = AZ::RHI::Format::R8_UINT; // 8-bit integer per compressed normal delta component
+
+    // Cloth data
+    const char* const ShaderSemanticName_ClothData = "CLOTH_DATA";
+    const uint32_t ClothDataFloatsPerVert = 4;
+    const AZ::RHI::Format ClothDataFormat = AZ::RHI::Format::R32G32B32A32_FLOAT;
 }
 
 namespace AZ
@@ -108,11 +114,12 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(25);  // [ATOM-14876]
+                    ->Version(26);  // [ATOM-14992]
             }
         }
 
         ModelAssetBuilderComponent::ModelAssetBuilderComponent()
+            : m_numSkinJointInfluencesPerVertex(DefaultSkinInfluencesPerVert)
         {
             BindToCall(&ModelAssetBuilderComponent::BuildModel);
         }
@@ -198,7 +205,7 @@ namespace AZ
             const auto isNonOptimizedMesh = [](const SceneAPI::Containers::SceneGraph& graph, SceneAPI::Containers::SceneGraph::NodeIndex& index)
             {
                 return SceneAPI::Utilities::SceneGraphSelector::IsMesh(graph, index) &&
-                    !AZStd::string_view{graph.GetNodeName(index).GetName(), graph.GetNodeName(index).GetNameLength()}.ends_with("_optimized");
+                    !AZStd::string_view{graph.GetNodeName(index).GetName(), graph.GetNodeName(index).GetNameLength()}.ends_with(SceneAPI::Utilities::OptimizedMeshSuffix);
             };
 
             if (lodRule)
@@ -303,7 +310,16 @@ namespace AZ
 
                     // Gather mesh content
                     SourceMeshContent sourceMesh;
-                    sourceMesh.m_name = meshName;
+
+                    // Although the nodes used to gather mesh content are the optimized ones (when found), to make
+                    // this process transparent for the end-asset generated, the name assigned to the source mesh
+                    // content will not include the "_optimized" prefix.
+                    AZStd::string_view sourceMeshName = meshName;
+                    if (sourceMeshName.ends_with(SceneAPI::Utilities::OptimizedMeshSuffix))
+                    {
+                        sourceMeshName.remove_suffix(SceneAPI::Utilities::OptimizedMeshSuffix.size());
+                    }
+                    sourceMesh.m_name = sourceMeshName;
 
                     const auto node = sceneGraph.Find(meshPath);
                     sourceMesh.m_worldTransform = AZ::SceneAPI::Utilities::DetermineWorldTransform(scene, node, context.m_group.GetRuleContainerConst());
@@ -330,6 +346,12 @@ namespace AZ
                     }
 
                     sourceMesh.m_isMorphed = GetIsMorphed(sceneGraph, node);
+
+                    // Get the cloth data (only for full mesh LOD 0).
+                    sourceMesh.m_meshClothData = (lodIndex == 0)
+                        ? SceneAPI::DataTypes::IClothRule::FindClothData(
+                            sceneGraph, node, sourceMesh.m_meshData->GetVertexCount(), context.m_group.GetRuleContainerConst())
+                        : AZStd::vector<AZ::Color>{};
 
                     // We've traversed this node and all its children that hold
                     // relevant data  We can move it into the list of content for this lod
@@ -362,6 +384,8 @@ namespace AZ
                 {
                     ProductMeshContentList lodMeshes = SourceMeshListToProductMeshList(context, sourceMeshContentList, jointNameToIndexMap, morphTargetMetaCreator);
 
+                    PadVerticesForSkinning(lodMeshes);
+
                     // By default, we merge meshes that share the same material
                     bool canMergeMeshes = true;
 
@@ -371,17 +395,19 @@ namespace AZ
                         // If the merge meshes option is disabled in the advanced mesh rule, don't merge meshes
                         canMergeMeshes = false;
                     }
-
-                    for (const SourceMeshContent& sourceMesh : sourceMeshContentList)
+                    else
                     {
-                        if (sourceMesh.m_isMorphed)
+                        for (const SourceMeshContent& sourceMesh : sourceMeshContentList)
                         {
-                            // Merging meshes shuffles around the order of the vertices, but morph targets rely on having an index that tell them which vertices to morph
-                            // We do not merge morphed meshes so that this index is preserved and correct.
-                            // If we keep track of the ordering changes in MergeMeshesByMaterialUid and then re-mapped the MORPHTARGET_VERTEXINDICES buffer
-                            // we could potentially enable merging meshes that are morphed. But for now, disable merging.
-                            canMergeMeshes = false;
-                            break;
+                            if (sourceMesh.m_isMorphed)
+                            {
+                                // Merging meshes shuffles around the order of the vertices, but morph targets rely on having an index that tell them which vertices to morph
+                                // We do not merge morphed meshes so that this index is preserved and correct.
+                                // If we keep track of the ordering changes in MergeMeshesByMaterialUid and then re-mapped the MORPHTARGET_VERTEXINDICES buffer
+                                // we could potentially enable merging meshes that are morphed. But for now, disable merging.
+                                canMergeMeshes = false;
+                                break;
+                            }
                         }
                     }
 
@@ -396,12 +422,12 @@ namespace AZ
                     ProductMeshViewList lodMeshViews;
 
                     ProductMeshContent mergedMesh;
-                    MergeMeshesToCommonBuffers(context, lodMeshes, mergedMesh, lodMeshViews);
+                    MergeMeshesToCommonBuffers(lodMeshes, mergedMesh, lodMeshViews);
 
                     BufferAssetView indexBuffer;
                     AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo> streamBuffers;
 
-                    if (!CreateModelLodBuffers(context, mergedMesh, indexBuffer, streamBuffers, lodAssetCreator))
+                    if (!CreateModelLodBuffers(mergedMesh, indexBuffer, streamBuffers, lodAssetCreator))
                     {
                         return AZ::SceneAPI::Events::ProcessingResult::Failure;
                     }
@@ -417,7 +443,7 @@ namespace AZ
                     uint32_t meshIndex = 0;
                     for (const ProductMeshContent& mesh : lodMeshes)
                     {
-                        const ProductMeshView meshView = CreateViewToEntireMesh(context, mesh);
+                        const ProductMeshView meshView = CreateViewToEntireMesh(mesh);
 
                         BufferAssetView indexBuffer;
                         AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo> streamBuffers;
@@ -425,7 +451,7 @@ namespace AZ
                         // Mesh name in ProductMeshContent could be duplicated so generate unique mesh name using index 
                         m_meshName = AZStd::string::format("mesh%d", meshIndex++);
 
-                        if (!CreateModelLodBuffers(context, mesh, indexBuffer, streamBuffers, lodAssetCreator))
+                        if (!CreateModelLodBuffers(mesh, indexBuffer, streamBuffers, lodAssetCreator))
                         {
                             return AZ::SceneAPI::Events::ProcessingResult::Failure;
                         }
@@ -614,7 +640,11 @@ namespace AZ
             productMeshList.reserve(productMeshCount);
 
             // Get the skin rule
-            AZStd::shared_ptr<const SceneAPI::DataTypes::ISkinRule> skinRule = context.m_group.GetRuleContainerConst().FindFirstByType<SceneAPI::DataTypes::ISkinRule>();
+            if (const auto* skinRule = context.m_group.GetRuleContainerConst().FindFirstByType<SceneAPI::DataTypes::ISkinRule>().get())
+            {
+                m_numSkinJointInfluencesPerVertex = skinRule->GetMaxWeightsPerVertex();
+                m_skinWeightThreshold = skinRule->GetWeightThreshold();
+            }
 
             uint32_t totalVertexCount = 0;
             for (size_t i = 0; i < productList.size(); ++i)
@@ -632,6 +662,7 @@ namespace AZ
                 const auto& colorContentCollection = sourceMesh.m_meshColorData;
                 const size_t colorSetCount = colorContentCollection.size();
                 bool processedMorphTargets = false;
+                bool warnedExcessOfSkinInfluences = false;
 
                 for (const auto& it : productsByMaterialUid)
                 {
@@ -677,6 +708,7 @@ namespace AZ
                     AZStd::vector<AZ::Name>& uvNames = productMesh.m_uvCustomNames;
                     AZStd::vector<AZStd::vector<float>>& colorSets = productMesh.m_colorSets;
                     AZStd::vector<AZ::Name>& colorNames = productMesh.m_colorCustomNames;
+                    AZStd::vector<float>& clothData = productMesh.m_clothData;
 
                     const size_t vertexCount = oldToNewIndices.size();
                     positions.reserve(vertexCount * PositionFloatsPerVert);
@@ -716,7 +748,16 @@ namespace AZ
                         colorSet.reserve(vertexCount * ColorFloatsPerVert);
                     }
 
-                    if (!sourceMesh.m_skinData.empty())
+                    const bool hasClothData = !sourceMesh.m_meshClothData.empty();
+                    if (hasClothData)
+                    {
+                        AZ_Assert(sourceMesh.m_meshClothData.size() == vertexCount,
+                            "Vertex Count %d does not match mesh cloth data size %d", vertexCount, sourceMesh.m_meshClothData.size());
+                        clothData.reserve(vertexCount * ClothDataFloatsPerVert);
+                    }
+
+                    const bool hasSkinData = !sourceMesh.m_skinData.empty();
+                    if (hasSkinData)
                     {
                         // Skinned meshes require that positions, normals, tangents, bitangents, all exist and have the same number
                         // of total elements. Pad buffers with missing data to make them align with positions and normals
@@ -817,8 +858,23 @@ namespace AZ
                             colors.push_back(color.alpha);
                         }
 
+                        // Gather Cloth Data
+                        if (hasClothData)
+                        {
+                            const AZ::Color& vertexClothData = sourceMesh.m_meshClothData[oldIndex];
+
+                            clothData.push_back(vertexClothData.GetR());
+                            clothData.push_back(vertexClothData.GetG());
+                            clothData.push_back(vertexClothData.GetB());
+                            clothData.push_back(vertexClothData.GetA());
+                        }
+
                         // Gather skinning influences
-                        GatherSkinningInfluences(context, sourceMesh, productMesh, jointNameToIndexMap, oldIndex);
+                        if (hasSkinData)
+                        {
+                            // Warn about excess of skin influences once per-source mesh.
+                            GatherVertexSkinningInfluences(sourceMesh, productMesh, jointNameToIndexMap, oldIndex, warnedExcessOfSkinInfluences);
+                        }
                     }
 
                     if(!processedMorphTargets)
@@ -836,19 +892,71 @@ namespace AZ
             return productMeshList;
         }
 
-        void ModelAssetBuilderComponent::GatherSkinningInfluences(
-            const ModelAssetBuilderContext& context,
+        void ModelAssetBuilderComponent::PadVerticesForSkinning(ProductMeshContentList& productMeshList)
+        {
+            // Check if this is a skinned mesh
+            if (!productMeshList.empty() && !productMeshList[0].m_skinWeights.empty())
+            {
+                // First, do a pass to see if any mesh has morphed colors
+                bool hasMorphedColors = false;
+                for (ProductMeshContent& productMesh : productMeshList)
+                {
+                    if (productMesh.m_hasMorphedColors)
+                    {
+                        hasMorphedColors = true;
+                        break;
+                    }
+                }
+
+                for (ProductMeshContent& productMesh : productMeshList)
+                {
+                    size_t vertexCount = productMesh.m_positions.size() / PositionFloatsPerVert;
+
+                    // Skinned meshes require that positions, normals, tangents, bitangents, all exist and have the same number
+                    // of total elements. Pad buffers with missing data to make them align with positions and normals
+                    if (productMesh.m_tangents.empty())
+                    {
+                        productMesh.m_tangents.resize(vertexCount * TangentFloatsPerVert, 1.0f);
+                        AZ_Warning(s_builderName, false, "Mesh '%s' is missing tangents and no defaults were generated. Skinned meshes require tangents. Dummy tangents will be inserted, which may result in rendering artifacts.", productMesh.m_name.GetCStr());
+                    }
+                    if (productMesh.m_bitangents.empty())
+                    {
+                        productMesh.m_bitangents.resize(vertexCount * BitangentFloatsPerVert, 1.0f);
+                        AZ_Warning(s_builderName, false, "Mesh '%s' is missing bitangents and no defaults were generated. Skinned meshes require bitangents. Dummy bitangents will be inserted, which may result in rendering artifacts.", productMesh.m_name.GetCStr());
+                    }
+
+                    // If any of the meshes have morphed colors, padd all the meshes so that the color stream is aligned with the other skinned streams
+                    if (hasMorphedColors)
+                    {
+                        if (productMesh.m_colorCustomNames.empty())
+                        {
+                            productMesh.m_colorCustomNames.push_back(Name{ "COLOR" });
+                        }
+
+                        if (productMesh.m_colorSets.empty())
+                        {
+                            productMesh.m_colorSets.resize(1);
+                        }
+
+                        if (productMesh.m_colorSets[0].empty())
+                        {
+                            productMesh.m_colorSets[0].resize(vertexCount * ColorFloatsPerVert, 0.0f);
+                        }
+                    }
+                }
+            }
+        }
+
+        void ModelAssetBuilderComponent::GatherVertexSkinningInfluences(
             const SourceMeshContent& sourceMesh,
             ProductMeshContent& productMesh,
             AZStd::unordered_map<AZStd::string, uint16_t>& jointNameToIndexMap,
-            size_t vertexIndex) const
+            size_t vertexIndex,
+            bool& warnedExcessOfSkinInfluences) const
         {
             AZStd::vector<uint16_t>& skinJointIndices = productMesh.m_skinJointIndices;
             AZStd::vector<float>& skinWeights = productMesh.m_skinWeights;
             const auto& sourceMeshData = sourceMesh.m_meshData;
-            const SceneAPI::DataTypes::ISkinRule* skinRule = context.m_group.GetRuleContainerConst().FindFirstByType<SceneAPI::DataTypes::ISkinRule>().get();
-            const size_t maxNumInfluences = ExtractMaxNumInfluencesPerVertex(skinRule);
-            const float weightThreshold = skinRule ? skinRule->GetWeightThreshold() : 0.0f;
 
             size_t numInfluencesAdded = 0;
             for (const auto& skinData : sourceMesh.m_skinData)
@@ -857,8 +965,9 @@ namespace AZ
                 const AZ::u32 controlPointIndex = sourceMeshData->GetControlPointIndex(vertexIndex);
                 const size_t numSkinInfluences = skinData->GetLinkCount(controlPointIndex);
 
-                const size_t numInfluencesToAdd = AZStd::min<size_t>(numSkinInfluences, maxNumInfluences - numInfluencesAdded);
-                for (size_t influenceIndex = 0; influenceIndex < numInfluencesToAdd; ++influenceIndex)
+                size_t numInfluencesExcess = 0;
+
+                for (size_t influenceIndex = 0; influenceIndex < numSkinInfluences; ++influenceIndex)
                 {
                     const AZ::SceneAPI::DataTypes::ISkinWeightData::Link& link = skinData->GetLink(controlPointIndex, influenceIndex);
 
@@ -874,30 +983,37 @@ namespace AZ
                     const AZ::u16 jointIndex = jointNameToIndexMap[boneName];
 
                     // Add skin influence
-                    if (weight > weightThreshold)
+                    if (weight > m_skinWeightThreshold)
                     {
-                        skinJointIndices.push_back(jointIndex);
-                        skinWeights.push_back(weight);
-                        numInfluencesAdded++;
+                        if (numInfluencesAdded < m_numSkinJointInfluencesPerVertex)
+                        {
+                            skinJointIndices.push_back(jointIndex);
+                            skinWeights.push_back(weight);
+                            numInfluencesAdded++;
+                        }
+                        else
+                        {
+                            numInfluencesExcess++;
+                        }
                     }
                 }
 
-                if (numInfluencesAdded > maxNumInfluences)
+                if (numInfluencesExcess > 0)
                 {
-                    AZ_WarningOnce(s_builderName, false, "More skin influences (%d) on data than supported (%d). Skinning influences won't be normalized.",
-                        numSkinInfluences, maxNumInfluences);
+                    AZ_Warning(s_builderName, warnedExcessOfSkinInfluences,
+                        "Mesh %s has more skin influences (%d) than the maximum (%d). Skinning influences won't be normalized. Maximum number of skin influences can be increased with a Skin Modifier in FBX Settings.",
+                        sourceMesh.m_name.GetCStr(),
+                        m_numSkinJointInfluencesPerVertex + numInfluencesExcess,
+                        m_numSkinJointInfluencesPerVertex);
+                    warnedExcessOfSkinInfluences = true;
                     break;
                 }
             }
 
-            if (!sourceMesh.m_skinData.empty() &&
-                numInfluencesAdded < maxNumInfluences)
+            for (size_t influenceIndex = numInfluencesAdded; influenceIndex < m_numSkinJointInfluencesPerVertex; ++influenceIndex)
             {
-                for (size_t influenceIndex = numInfluencesAdded; influenceIndex < maxNumInfluences; ++influenceIndex)
-                {
-                    skinJointIndices.push_back(0);
-                    skinWeights.push_back(0.0f);
-                }
+                skinJointIndices.push_back(0);
+                skinWeights.push_back(0.0f);
             }
         }
 
@@ -914,7 +1030,6 @@ namespace AZ
 
                     for (const ProductMeshContent& mesh : productMeshList)
                     {
-                        // Disable mesh merging whenever a mesh is morphed.
                         if (mesh.CanBeMerged())
                         {
                             meshCountByMatUid[mesh.m_materialUid]++;
@@ -970,9 +1085,11 @@ namespace AZ
         }
 
         template<typename T>
-        void ModelAssetBuilderComponent::ValidateStreamSize([[maybe_unused]] size_t expectedVertexCount, const AZStd::vector<T>& bufferData, AZ::RHI::Format format, [[maybe_unused]] const char* streamName) const
+        void ModelAssetBuilderComponent::ValidateStreamSize([[maybe_unused]] size_t expectedVertexCount, [[maybe_unused]] const AZStd::vector<T>& bufferData, [[maybe_unused]] AZ::RHI::Format format, [[maybe_unused]] const char* streamName) const
         {
+#if defined(AZ_ENABLE_TRACING)
             size_t actualVertexCount = (bufferData.size() * sizeof(T)) / RHI::GetFormatSize(format);
+#endif
             AZ_Error(s_builderName, expectedVertexCount == actualVertexCount, "VertexStream '%s' does not match the expected vertex count. This typically means multiple sub-meshes have mis-matched vertex stream layouts (such as one having more uv sets than the other) but are assigned the same material in the dcc tool so they were merged.", streamName);
         }
 
@@ -999,9 +1116,21 @@ namespace AZ
             {
                 ValidateStreamSize(expectedVertexCount, mesh.m_colorSets[i], ColorFormat, mesh.m_colorCustomNames[i].GetCStr());
             }
+            if (!mesh.m_clothData.empty())
+            {
+                ValidateStreamSize(expectedVertexCount, mesh.m_clothData, ClothDataFormat, ShaderSemanticName_ClothData);
+            }
+            if (!mesh.m_skinJointIndices.empty())
+            {
+                ValidateStreamSize(expectedVertexCount * m_numSkinJointInfluencesPerVertex, mesh.m_skinJointIndices, AZ::RHI::Format::R16_UINT, ShaderSemanticName_SkinJointIndices);
+            }
+            if (!mesh.m_skinWeights.empty())
+            {
+                ValidateStreamSize(expectedVertexCount * m_numSkinJointInfluencesPerVertex, mesh.m_skinWeights, SkinWeightFormat, ShaderSemanticName_SkinWeights);
+            }
         }
 
-        ModelAssetBuilderComponent::ProductMeshView ModelAssetBuilderComponent::CreateViewToEntireMesh(const ModelAssetBuilderContext& context, const ProductMeshContent& mesh)
+        ModelAssetBuilderComponent::ProductMeshView ModelAssetBuilderComponent::CreateViewToEntireMesh(const ProductMeshContent& mesh)
         {
             ProductMeshView meshView;
             meshView.m_name = mesh.m_name.GetStringView();
@@ -1059,16 +1188,13 @@ namespace AZ
 
             if (!mesh.m_skinJointIndices.empty() && !mesh.m_skinWeights.empty())
             {
-                const SceneAPI::DataTypes::ISkinRule* skinRule = context.m_group.GetRuleContainerConst().FindFirstByType<SceneAPI::DataTypes::ISkinRule>().get();
-                const AZ::u32 maxNumSkinInfluencesPerVertex = ExtractMaxNumInfluencesPerVertex(skinRule);
-
                 AZ_Assert(mesh.m_skinJointIndices.size() == mesh.m_skinWeights.size(),
                     "Number of skin influence joint indices (%d) should match the number of weights (%d).",
                     mesh.m_skinJointIndices.size(), mesh.m_skinWeights.size());
 
-                AZ_Assert(mesh.m_skinWeights.size() % maxNumSkinInfluencesPerVertex == 0,
+                AZ_Assert(mesh.m_skinWeights.size() % m_numSkinJointInfluencesPerVertex == 0,
                     "The number of skin influences per vertex (%d) is not a multiple of the total number of skinning weights (%d). This means that not every vertex has exactly (%d) skinning weights and invalidates the data.",
-                    mesh.m_skinWeights.size(), maxNumSkinInfluencesPerVertex, maxNumSkinInfluencesPerVertex);
+                    mesh.m_skinWeights.size(), m_numSkinJointInfluencesPerVertex, m_numSkinJointInfluencesPerVertex);
                 const size_t numSkinInfluences = mesh.m_skinWeights.size();
 
                 uint32_t jointIndicesSizeInBytes = numSkinInfluences * sizeof(uint16_t);
@@ -1082,13 +1208,25 @@ namespace AZ
                 meshView.m_morphTargetVertexDataView = RHI::BufferViewDescriptor::CreateStructured(0, numTotalVertices, sizeof(PackedCompressedMorphTargetDelta));
             }
 
+            if (!mesh.m_clothData.empty())
+            {
+                auto meshClothDataFloatCount = static_cast<uint32_t>(mesh.m_clothData.size());
+                AZ_Assert((meshClothDataFloatCount % ClothDataFloatsPerVert) == 0,
+                    "Unexpected number of cloth data elements (%d), it should contain a multiple of %d elements.", meshClothDataFloatCount, ClothDataFloatsPerVert);
+
+                auto meshClothDataCount = meshClothDataFloatCount / ClothDataFloatsPerVert;
+                AZ_Assert(meshClothDataCount == meshPositionCount,
+                    "Number of cloth data elements (%d) does not match the number of positions (%d) in the mesh", meshClothDataCount, meshPositionCount);
+
+                meshView.m_clothDataView = RHI::BufferViewDescriptor::CreateTyped(0, meshClothDataCount, ClothDataFormat);
+            }
+
             meshView.m_materialUid = mesh.m_materialUid;
 
             return meshView;
         }
 
         void ModelAssetBuilderComponent::MergeMeshesToCommonBuffers(
-            const ModelAssetBuilderContext& context,
             const ProductMeshContentList& lodMeshList,
             ProductMeshContent& lodMeshContent,
             ProductMeshViewList& meshViews)
@@ -1120,6 +1258,7 @@ namespace AZ
                 auto meshNormalsFloatCount = static_cast<uint32_t>(mesh.m_normals.size());
                 auto meshTangentsFloatCount = static_cast<uint32_t>(mesh.m_tangents.size());
                 auto meshBitangentsFloatCount = static_cast<uint32_t>(mesh.m_bitangents.size());
+                auto meshClothDataFloatCount = static_cast<uint32_t>(mesh.m_clothData.size());
 
                 // For each element we need to:
                 // record the offset for the view
@@ -1199,20 +1338,24 @@ namespace AZ
                     }
                 }
 
+                if (!mesh.m_clothData.empty())
+                {
+                    const uint32_t elementOffset = static_cast<uint32_t>(lodBufferInfo.m_clothDataFloatCount) / ClothDataFloatsPerVert;
+                    meshView.m_clothDataView = RHI::BufferViewDescriptor::CreateTyped(elementOffset, meshVertexCount, ClothDataFormat);
+                    lodBufferInfo.m_clothDataFloatCount += meshClothDataFloatCount;
+                }
+
                 meshView.m_materialUid = mesh.m_materialUid;
 
                 if (!mesh.m_skinJointIndices.empty() && !mesh.m_skinWeights.empty())
                 {
-                    const SceneAPI::DataTypes::ISkinRule* skinRule = context.m_group.GetRuleContainerConst().FindFirstByType<SceneAPI::DataTypes::ISkinRule>().get();
-                    const AZ::u32 maxNumSkinInfluencesPerVertex = ExtractMaxNumInfluencesPerVertex(skinRule);
-
                     AZ_Assert(mesh.m_skinJointIndices.size() == mesh.m_skinWeights.size(),
                         "Number of skin influence joint indices (%d) should match the number of weights (%d).",
                         mesh.m_skinJointIndices.size(), mesh.m_skinWeights.size());
 
-                    AZ_Assert(mesh.m_skinWeights.size() % maxNumSkinInfluencesPerVertex == 0,
+                    AZ_Assert(mesh.m_skinWeights.size() % m_numSkinJointInfluencesPerVertex == 0,
                         "The number of skin influences per vertex (%d) is not a multiple of the total number of skinning weights (%d). This means that not every vertex has exactly (%d) skinning weights and invalidates the data.",
-                        mesh.m_skinWeights.size(), maxNumSkinInfluencesPerVertex, maxNumSkinInfluencesPerVertex);
+                        mesh.m_skinWeights.size(), m_numSkinJointInfluencesPerVertex, m_numSkinJointInfluencesPerVertex);
 
                     const size_t numPrevSkinInfluences = lodBufferInfo.m_skinInfluencesCount;
                     const size_t numNewSkinInfluences = mesh.m_skinWeights.size();
@@ -1253,6 +1396,7 @@ namespace AZ
                 size_t normalCount = 0;
                 size_t tangentCount = 0;
                 size_t bitangentCount = 0;
+                size_t clothDataCount = 0;
                 AZStd::vector<size_t> uvSetCounts;
                 AZStd::vector<size_t> colorSetCounts;
 
@@ -1263,6 +1407,7 @@ namespace AZ
                     normalCount += mesh.m_normals.size();
                     tangentCount += mesh.m_tangents.size();
                     bitangentCount += mesh.m_bitangents.size();
+                    clothDataCount += mesh.m_clothData.size();
 
                     if (mesh.m_uvSets.size() > uvSetCounts.size())
                     {
@@ -1290,6 +1435,7 @@ namespace AZ
                 mergedMesh.m_normals.reserve(normalCount);
                 mergedMesh.m_tangents.reserve(tangentCount);
                 mergedMesh.m_bitangents.reserve(bitangentCount);
+                mergedMesh.m_clothData.reserve(clothDataCount);
 
                 mergedMesh.m_uvCustomNames.resize(uvSetCounts.size());
                 for (auto& mesh : productMeshList)
@@ -1424,6 +1570,12 @@ namespace AZ
                     auto& mergedMorphTargetData = mergedMesh.m_morphTargetVertexData;
                     mergedMorphTargetData.insert(mergedMorphTargetData.end(), sourceMorphTargetData.begin(), sourceMorphTargetData.end());
                 }
+
+                if (!mesh.m_clothData.empty())
+                {
+                    mergedMesh.m_clothData.insert(
+                        mergedMesh.m_clothData.end(), mesh.m_clothData.begin(), mesh.m_clothData.end());
+                }
             }
 
             return mergedMesh;
@@ -1522,7 +1674,6 @@ namespace AZ
         };
 
         bool ModelAssetBuilderComponent::CreateModelLodBuffers(
-            const ModelAssetBuilderContext& context,
             const ProductMeshContent& lodBufferContent,
             BufferAssetView& outIndexBuffer,
             AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo>& outStreamBuffers,
@@ -1537,6 +1688,7 @@ namespace AZ
             const AZStd::vector<AZ::Name>& uvCustomNames = lodBufferContent.m_uvCustomNames;
             const AZStd::vector<AZStd::vector<float>>& colorSets = lodBufferContent.m_colorSets;
             const AZStd::vector<AZ::Name>& colorCustomNames = lodBufferContent.m_colorCustomNames;
+            const AZStd::vector<float>& clothData = lodBufferContent.m_clothData;
 
             // Build Index Buffer ...
             {
@@ -1598,10 +1750,8 @@ namespace AZ
             const AZStd::vector<float>& skinWeights = lodBufferContent.m_skinWeights;
             if (!skinJointIndices.empty() && !skinWeights.empty())
             {
-                const SceneAPI::DataTypes::ISkinRule* skinRule = context.m_group.GetRuleContainerConst().FindFirstByType<SceneAPI::DataTypes::ISkinRule>().get();
-                const AZ::u32 maxNumSkinInfluencesPerVertex = ExtractMaxNumInfluencesPerVertex(skinRule);
                 const size_t vertexCount = positions.size() / PositionFloatsPerVert;
-                const size_t numSkinInfluences = vertexCount * maxNumSkinInfluencesPerVertex;
+                const size_t numSkinInfluences = vertexCount * m_numSkinJointInfluencesPerVertex;
 
                 if (!BuildRawStreamBuffer<uint16_t>(outStreamBuffers, skinJointIndices, RHI::ShaderSemantic{ShaderSemanticName_SkinJointIndices}))
                 {
@@ -1620,6 +1770,14 @@ namespace AZ
             {
                 if (!BuildStructuredStreamBuffer<PackedCompressedMorphTargetDelta>(outStreamBuffers, morphTargetVertexDeltas,
                     RHI::ShaderSemantic{ ShaderSemanticName_MorphTargetDeltas }))
+                {
+                    return false;
+                }
+            }
+            
+            if (!clothData.empty())
+            {
+                if (!BuildTypedStreamBuffer<float>(outStreamBuffers, clothData, ClothDataFormat, RHI::ShaderSemantic{ ShaderSemanticName_ClothData }))
                 {
                     return false;
                 }
@@ -1753,6 +1911,15 @@ namespace AZ
             {
                 if (!SetMeshStreamBufferById(RHI::ShaderSemantic{ShaderSemanticName_MorphTargetDeltas}, AZ::Name(),
                     meshView.m_morphTargetVertexDataView, lodStreamBuffers, lodAssetCreator))
+                {
+                    return false;
+                }
+            }
+
+            // Set cloth data buffer
+            if (meshView.m_clothDataView.m_elementCount > 0)
+            {
+                if (!SetMeshStreamBufferById(RHI::ShaderSemantic{ ShaderSemanticName_ClothData }, AZ::Name(), meshView.m_clothDataView, lodStreamBuffers, lodAssetCreator))
                 {
                     return false;
                 }
@@ -2013,16 +2180,6 @@ namespace AZ
             }
 
             return transform;
-        }
-
-        AZ::u32 ModelAssetBuilderComponent::ExtractMaxNumInfluencesPerVertex(const SceneAPI::DataTypes::ISkinRule* skinRule) const
-        {
-            if (skinRule)
-            {
-                return skinRule->GetMaxWeightsPerVertex();
-            }
-
-            return DefaultSkinInfluencesPerVert;
         }
     } // namespace RPI
 } // namespace AZ

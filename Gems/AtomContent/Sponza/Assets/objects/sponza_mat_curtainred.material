@@ -4,6 +4,9 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
+        "occlusion": {
+            "diffuseTextureMap": "Textures/curtain_ao.png"
+        },
         "baseColor": {
             "color": [
                 0.800000011920929,
@@ -12,6 +15,17 @@
                 1.0
             ],
             "textureMap": "Textures/curtainRed_1k_basecolor.png"
+        },
+        "general": {
+            "applySpecularAA": true
+        },
+        "irradiance": {
+            "color": [
+                1.0,
+                0.023315785452723504,
+                0.048538949340581897,
+                1.0
+            ]
         },
         "metallic": {
             "textureMap": "Textures/curtain_metallic.png"
@@ -24,6 +38,12 @@
         },
         "roughness": {
             "textureMap": "Textures/curtain_roughness.png"
+        },
+        "uv": {
+            "center": [
+                16.0,
+                0.0
+            ]
         }
     }
 }

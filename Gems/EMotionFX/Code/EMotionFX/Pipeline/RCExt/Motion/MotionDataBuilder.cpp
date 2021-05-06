@@ -211,7 +211,6 @@ namespace EMotionFX
             AZStd::vector<size_t> rootJoints; // The list of root nodes.
 
             size_t maxNumFrames = 0;
-            size_t lastNumFrames = InvalidIndex;
             double lowestTimeStep = 999999999.0;
 
             auto nameStorage = graph.GetNameStorage();
@@ -415,9 +414,17 @@ namespace EMotionFX
                 }
             }
 
+            // Add missing keyframes at the end of the animation to match all keytracks' duration.
+            motionData->FixMissingEndKeyframes();
+
             // Let's prepare the motion data in the type we want.
             // This can later be extended with other types of motion data like least square fit curves etc.
             motionData->UpdateDuration();
+            if (!motionData->VerifyIntegrity())
+            {
+                AZ_Error(SceneUtil::ErrorWindow, false, "Data integrity issue in '%s'.", motionGroup.GetName().c_str());
+                return SceneEvents::ProcessingResult::Failure;
+            }
 
             // Get the sample rate we have setup or that we have used.
             // Also make sure we don't sample at higher rate than we want.
@@ -436,6 +443,11 @@ namespace EMotionFX
             }
             AZ_TracePrintf("EMotionFX", "Motion sample rate = %f", sampleRate);
             motionData->RemoveRedundantKeyframes(samplingRule ? !samplingRule->GetKeepDuration() : false); // Clear any tracks of non-animated parts.
+            if (!motionData->VerifyIntegrity())
+            {
+                AZ_Error(SceneUtil::ErrorWindow, false, "Data integrity issue after removing redundant keyframes for '%s'.", motionGroup.GetName().c_str());
+                return SceneEvents::ProcessingResult::Failure;
+            }
 
             // Create the desired type of motion data, based on what is selected in the motion sampling rule.
             MotionData* finalMotionData = nullptr;
@@ -474,11 +486,16 @@ namespace EMotionFX
                 InitAndOptimizeMotionData(finalMotionData, motionData, sampleRate, samplingRule.get(), rootJoints);
             }
 
+            if (!finalMotionData->VerifyIntegrity())
+            {
+                AZ_Error(SceneUtil::ErrorWindow, false, "Data integrity issue in the final animation for '%s'.", motionGroup.GetName().c_str());
+                return SceneEvents::ProcessingResult::Failure;
+            }
+
             // Delete the data that we created out of the Scene API as it is no longer needed as we already extracted all the data from it
             // into our finalMotionData.
             delete motionData;
             context.m_motion.SetMotionData(finalMotionData);
-
             return SceneEvents::ProcessingResult::Success;
         }
     } // namespace Pipeline

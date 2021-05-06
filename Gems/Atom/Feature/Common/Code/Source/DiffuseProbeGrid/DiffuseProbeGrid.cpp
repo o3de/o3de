@@ -16,14 +16,7 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h>
 #include <AzCore/Math/MathUtils.h>
-#include <CoreLights/DirectionalLightFeatureProcessor.h>
-#include <CoreLights/SpotLightFeatureProcessor.h>
-#include <CoreLights/PointLightFeatureProcessor.h>
-#include <CoreLights/DiskLightFeatureProcessor.h>
-#include <CoreLights/CapsuleLightFeatureProcessor.h>
-#include <CoreLights/QuadLightFeatureProcessor.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
@@ -32,7 +25,7 @@ namespace AZ
     {
         DiffuseProbeGrid::~DiffuseProbeGrid()
         {
-            m_scene->GetCullingSystem()->UnregisterCullable(m_cullable);
+            m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
         }
 
         void DiffuseProbeGrid::Init(RPI::Scene* scene, DiffuseProbeGridRenderData* renderData)
@@ -48,6 +41,7 @@ namespace AZ
             m_irradianceImageAttachmentId = AZStd::string::format("ProbeIrradianceImageAttachmentId_%s", uuidString.c_str());
             m_distanceImageAttachmentId = AZStd::string::format("ProbeDistanceImageAttachmentId_%s", uuidString.c_str());
             m_relocationImageAttachmentId = AZStd::string::format("ProbeRelocationImageAttachmentId_%s", uuidString.c_str());
+            m_classificationImageAttachmentId = AZStd::string::format("ProbeClassificationImageAttachmentId_%s", uuidString.c_str());
 
             // setup culling
             m_cullable.m_cullData.m_scene = m_scene;
@@ -207,7 +201,7 @@ namespace AZ
                 RHI::ImageInitRequest request;
                 request.m_image = m_rayTraceImage[m_currentImageIndex].get();
                 request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, DiffuseProbeGridRenderData::RayTraceImageFormat);
-                RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
+                [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeRayTraceImage image");
             }
 
@@ -227,7 +221,7 @@ namespace AZ
                 request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, DiffuseProbeGridRenderData::IrradianceImageFormat);
                 RHI::ClearValue clearValue = RHI::ClearValue::CreateVector4Float(0.0f, 0.0f, 0.0f, 0.0f);
                 request.m_optimizedClearValue = &clearValue;
-                RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
+                [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeIrradianceImage image");
             }
 
@@ -241,7 +235,7 @@ namespace AZ
                 RHI::ImageInitRequest request;
                 request.m_image = m_distanceImage[m_currentImageIndex].get();
                 request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, DiffuseProbeGridRenderData::DistanceImageFormat);
-                RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
+                [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeDistanceImage image");
             }
 
@@ -255,8 +249,22 @@ namespace AZ
                 RHI::ImageInitRequest request;
                 request.m_image = m_relocationImage[m_currentImageIndex].get();
                 request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, DiffuseProbeGridRenderData::RelocationImageFormat);
-                RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
+                [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeRelocationImage image");
+            }
+
+            // probe classification
+            {
+                uint32_t width = probeCountX;
+                uint32_t height = probeCountY;
+
+                m_classificationImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
+
+                RHI::ImageInitRequest request;
+                request.m_image = m_classificationImage[m_currentImageIndex].get();
+                request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, DiffuseProbeGridRenderData::ClassificationImageFormat);
+                [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
+                AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeClassificationImage image");
             }
 
             m_updateTextures = false;
@@ -389,17 +397,8 @@ namespace AZ
             }
 
             const RHI::ShaderResourceGroupLayout* srgLayout = m_rayTraceSrg->GetLayout();
-            RHI::ShaderInputImageIndex imageIndex;
-            RHI::ShaderInputBufferIndex bufferIndex;
             RHI::ShaderInputConstantIndex constantIndex;
-
-            // TLAS
-            RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-            uint32_t tlasBufferByteCount = aznumeric_cast<uint32_t>(rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer()->GetDescriptor().m_byteCount);
-            RHI::BufferViewDescriptor bufferViewDescriptor = RHI::BufferViewDescriptor::CreateRayTracingTLAS(tlasBufferByteCount);
-
-            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_scene"));
-            m_rayTraceSrg->SetBufferView(bufferIndex, rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer()->GetBufferView(bufferViewDescriptor).get());
+            RHI::ShaderInputImageIndex imageIndex;
 
             // probe raytrace
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeRayTrace"));
@@ -417,67 +416,9 @@ namespace AZ
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeOffsets"));
             m_rayTraceSrg->SetImageView(imageIndex, m_relocationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRelocationImageViewDescriptor).get());
 
-            // directional lights
-            const auto directionalLightFP = m_scene->GetFeatureProcessor<DirectionalLightFeatureProcessor>();
-            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_directionalLights"));
-            m_rayTraceSrg->SetBufferView(bufferIndex, directionalLightFP->GetLightBuffer()->GetBufferView());
-
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_directionalLightCount"));
-            m_rayTraceSrg->SetConstant(constantIndex, directionalLightFP->GetLightCount());
-
-            // spot lights
-            const auto spotLightFP = m_scene->GetFeatureProcessor<SpotLightFeatureProcessor>();
-            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_spotLights"));
-            m_rayTraceSrg->SetBufferView(bufferIndex, spotLightFP->GetLightBuffer()->GetBufferView());
-
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_spotLightCount"));
-            m_rayTraceSrg->SetConstant(constantIndex, spotLightFP->GetLightCount());
-
-            // point lights
-            const auto pointLightFP = m_scene->GetFeatureProcessor<PointLightFeatureProcessor>();
-            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_pointLights"));
-            m_rayTraceSrg->SetBufferView(bufferIndex, pointLightFP->GetLightBuffer()->GetBufferView());
-
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_pointLightCount"));
-            m_rayTraceSrg->SetConstant(constantIndex, pointLightFP->GetLightCount());
-
-            // disk lights
-            const auto diskLightFP = m_scene->GetFeatureProcessor<DiskLightFeatureProcessor>();
-            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_diskLights"));
-            m_rayTraceSrg->SetBufferView(bufferIndex, diskLightFP->GetLightBuffer()->GetBufferView());
-
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_diskLightCount"));
-            m_rayTraceSrg->SetConstant(constantIndex, diskLightFP->GetLightCount());
-
-            // capsule lights
-            const auto capsuleLightFP = m_scene->GetFeatureProcessor<CapsuleLightFeatureProcessor>();
-            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_capsuleLights"));
-            m_rayTraceSrg->SetBufferView(bufferIndex, capsuleLightFP->GetLightBuffer()->GetBufferView());
-
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_capsuleLightCount"));
-            m_rayTraceSrg->SetConstant(constantIndex, capsuleLightFP->GetLightCount());
-
-            // quad lights
-            const auto quadLightFP = m_scene->GetFeatureProcessor<QuadLightFeatureProcessor>();
-            bufferIndex = srgLayout->FindShaderInputBufferIndex(AZ::Name("m_quadLights"));
-            m_rayTraceSrg->SetBufferView(bufferIndex, quadLightFP->GetLightBuffer()->GetBufferView());
-
-            constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_quadLightCount"));
-            m_rayTraceSrg->SetConstant(constantIndex, quadLightFP->GetLightCount());
-
-            // diffuse environment map for sky hits
-            ImageBasedLightFeatureProcessor* imageBasedLightFeatureProcessor = m_scene->GetFeatureProcessor<ImageBasedLightFeatureProcessor>();
-            if (imageBasedLightFeatureProcessor)
-            {
-                imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_diffuseEnvMap"));
-                m_rayTraceSrg->SetImage(imageIndex, imageBasedLightFeatureProcessor->GetDiffuseImage());
-
-                constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_iblOrientation"));
-                m_rayTraceSrg->SetConstant(constantIndex, imageBasedLightFeatureProcessor->GetOrientation());
-
-                constantIndex = srgLayout->FindShaderInputConstantIndex(AZ::Name("m_iblExposure"));
-                m_rayTraceSrg->SetConstant(constantIndex, imageBasedLightFeatureProcessor->GetExposure());
-            }
+            // probe classification
+            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeStates"));
+            m_rayTraceSrg->SetImageView(imageIndex, m_classificationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeClassificationImageViewDescriptor).get());
 
             // grid settings
             constantIndex = srgLayout->FindShaderInputConstantIndex(Name("m_ambientMultiplier"));
@@ -509,6 +450,9 @@ namespace AZ
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeIrradiance"));
             m_blendIrradianceSrg->SetImageView(imageIndex, m_irradianceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
 
+            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeStates"));
+            m_blendIrradianceSrg->SetImageView(imageIndex, m_classificationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeClassificationImageViewDescriptor).get());
+
             SetGridConstants(m_blendIrradianceSrg);
         }
 
@@ -528,6 +472,9 @@ namespace AZ
 
             imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeDistance"));
             m_blendDistanceSrg->SetImageView(imageIndex, m_distanceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
+
+            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeStates"));
+            m_blendDistanceSrg->SetImageView(imageIndex, m_classificationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeClassificationImageViewDescriptor).get());
 
             SetGridConstants(m_blendDistanceSrg);
         }
@@ -637,6 +584,27 @@ namespace AZ
             SetGridConstants(m_relocationSrg);
         }
 
+        void DiffuseProbeGrid::UpdateClassificationSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset)
+        {
+            if (!m_classificationSrg)
+            {
+                m_classificationSrg = RPI::ShaderResourceGroup::Create(srgAsset);
+                AZ_Error("DiffuseProbeGrid", m_classificationSrg.get(), "Failed to create Classification shader resource group");
+            }
+
+            const RHI::ShaderResourceGroupLayout* srgLayout = m_classificationSrg->GetLayout();
+            RHI::ShaderInputConstantIndex constantIndex;
+            RHI::ShaderInputImageIndex imageIndex;
+
+            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeRayTrace"));
+            m_classificationSrg->SetImageView(imageIndex, m_rayTraceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRayTraceImageViewDescriptor).get());
+
+            imageIndex = srgLayout->FindShaderInputImageIndex(AZ::Name("m_probeStates"));
+            m_classificationSrg->SetImageView(imageIndex, m_classificationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeClassificationImageViewDescriptor).get());
+
+            SetGridConstants(m_classificationSrg);
+        }
+
         void DiffuseProbeGrid::UpdateRenderObjectSrg()
         {
             if (!m_updateRenderObjectSrg)
@@ -678,6 +646,9 @@ namespace AZ
 
             imageIndex = srgLayout->FindShaderInputImageIndex(Name("m_probeOffsets"));
             m_renderObjectSrg->SetImageView(imageIndex, m_relocationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRelocationImageViewDescriptor).get());
+
+            imageIndex = srgLayout->FindShaderInputImageIndex(Name("m_probeStates"));
+            m_renderObjectSrg->SetImageView(imageIndex, m_classificationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeClassificationImageViewDescriptor).get());
 
             SetGridConstants(m_renderObjectSrg);
 
@@ -724,7 +695,7 @@ namespace AZ
             m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Cullable;
 
             // register with culling system
-            m_scene->GetCullingSystem()->RegisterOrUpdateCullable(m_cullable);
+            m_scene->GetCullingScene()->RegisterOrUpdateCullable(m_cullable);
         }
     }   // namespace Render
 }   // namespace AZ

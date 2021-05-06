@@ -9,18 +9,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-if (LY_MONOLITHIC_GAME) # only Atom is supported in monolithic
-    set(LY_BUILD_DEPENDENCIES
-        PUBLIC
-            Legacy::CryRenderOther
-    )
-else()
-    set(LY_BUILD_DEPENDENCIES
-        PRIVATE
-            Legacy::CryRenderD3D11
-    )
-endif()
-
 set(ICON_FILE ${project_real_path}/Gem/Resources/GameSDK.ico)
 if(NOT EXISTS ${ICON_FILE})
     # Try the common LauncherUnified icon instead
@@ -29,7 +17,7 @@ endif()
 
 if(EXISTS ${ICON_FILE})
     set(target_file ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.GameLauncher.rc)
-    configure_file(Platform/Windows/Launcher.rc.in
+    configure_file(${CMAKE_CURRENT_LIST_DIR}/Launcher.rc.in
         ${target_file}
         @ONLY
     )

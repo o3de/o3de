@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test Case
 # ID    : C14976308
 # Title : Verify that SetKinematicTarget on PhysX rigid body updates transform for kinematic entities and vice versa
-# URL   : https://testrail.agscollab.com/index.php?/cases/view/14976308
+
 
 
 # fmt: off
@@ -86,7 +86,7 @@ def C14976308_ScriptCanvas_SetKinematicTargetTransform():
     13) Exit game mode and close editor
 
     Note:
-    - This test file must be called from the Lumberyard Editor command terminal
+    - This test file must be called from the Open 3D Engine Editor command terminal
     - Any passed and failed tests are written to the Editor.log file.
             Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -100,14 +100,13 @@ def C14976308_ScriptCanvas_SetKinematicTargetTransform():
 
     imports.init()
 
-
     import azlmbr.legacy.general as general
     import azlmbr.bus
     import azlmbr.components
     import azlmbr.math
     import azlmbr.physics
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
     import itertools
 
     class Entity:
@@ -228,5 +227,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C14976308_ScriptCanvas_SetKinematicTargetTransform)

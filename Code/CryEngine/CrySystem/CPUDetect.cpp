@@ -52,11 +52,7 @@
 # define cpuid(op, eax, ebx, ecx, edx) __asm__("cpuid" : "=a" (eax), "=b" (ebx), "=c" (ecx), "=d" (edx) : "a" (op) : "cc");
 #endif
 
-#if defined(AZ_MONOLITHIC_BUILD)
-extern int g_CpuFlags;
-#else
 int g_CpuFlags;
-#endif
 
 struct SAutoMaxPriority
 {
@@ -1357,9 +1353,7 @@ void CCpuFeatures::Detect(void)
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_HASAFFINITYMASK
     CryLogAlways("");
 
-    DWORD_PTR process_affinity_mask;
-    uint32  thread_processor_mask = 1;
-    process_affinity_mask = 1;
+    DWORD_PTR process_affinity_mask = 1;
 
     /* get the system info to derive the number of processors within the system. */
 

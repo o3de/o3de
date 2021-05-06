@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C18243583
 # Test Case Title : Check that hinge joint constrains 2 bodies about X-axis
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/18243583
+
 
 # fmt: off
 class Tests:
@@ -48,7 +48,7 @@ def C18243583_Joints_Hinge2BodiesConstrained():
     7) Close Editor
 
     Note:
-    - This test file must be called from the Lumberyard Editor command terminal
+    - This test file must be called from the Open 3D Engine Editor command terminal
     - Any passed and failed tests are written to the Editor.log file.
             Parsing the file or running a log_monitor are required to observe the test results.
 
@@ -61,9 +61,8 @@ def C18243583_Joints_Hinge2BodiesConstrained():
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -124,5 +123,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C18243583_Joints_Hinge2BodiesConstrained)

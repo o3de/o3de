@@ -300,6 +300,9 @@ namespace AZ
             m_scene = nullptr;
             m_rootPass->SetEnabled(false);
             m_rootPass->QueueForRemoval();
+
+            m_drawFilterTag.Reset();
+            m_drawFilterMask = 0;
         }
 
         void RenderPipeline::OnPassModified()
@@ -496,10 +499,38 @@ namespace AZ
             m_renderMode = RenderMode::NoRender;
             m_rootPass->SetEnabled(false);
         }
+
+        RenderPipeline::RenderMode RenderPipeline::GetRenderMode() const
+        {
+            return m_renderMode;
+        }
         
         bool RenderPipeline::NeedsRender() const
         {
             return m_renderMode != RenderMode::NoRender;
+        }
+
+        RHI::DrawFilterTag RenderPipeline::GetDrawFilterTag() const
+        {
+            return m_drawFilterTag;
+        }
+
+        RHI::DrawFilterMask RenderPipeline::GetDrawFilterMask() const
+        {
+            return m_drawFilterMask;
+        }
+
+        void RenderPipeline::SetDrawFilterTag(RHI::DrawFilterTag tag)
+        {
+            m_drawFilterTag = tag;
+            if (m_drawFilterTag.IsValid())
+            {
+                m_drawFilterMask = 1 << tag.GetIndex();
+            }
+            else
+            {
+                m_drawFilterMask = 0;
+            }
         }
     }
 }

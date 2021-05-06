@@ -108,11 +108,13 @@ void FileWatcherUnitTestRunner::StartTest()
 
         if (outstandingFiles.count() > 0)
         {
+#if defined(AZ_ENABLE_TRACING)
             AZ_TracePrintf(AssetProcessor::DebugChannel, "Timed out waiting for file changes: %d / %d  missed\n", outstandingFiles.count(), maxFiles);
             for (const QString& pending : outstandingFiles)
             {
                 AZ_TracePrintf(AssetProcessor::DebugChannel, "Missed file: %s", pending.toUtf8().data());
             }
+#endif
             Q_EMIT UnitTestFailed("Missed files waiting for file changes");
             return;
         }

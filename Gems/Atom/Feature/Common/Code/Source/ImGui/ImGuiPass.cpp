@@ -158,7 +158,7 @@ namespace AZ
             auto imguiContextScope = ImguiContextScope(m_imguiContext);
             auto& io = ImGui::GetIO();
             io.AddInputCharactersUTF8(textUTF8.c_str());
-            return io.WantCaptureKeyboard;
+            return io.WantTextInput;
         }
 
         AZ::s32 ImGuiPass::GetPriority() const
@@ -197,6 +197,7 @@ namespace AZ
                 AzFramework::InputDeviceKeyboard::Key::EditSpace, // ImGuiKey_Space
                 AzFramework::InputDeviceKeyboard::Key::EditEnter, // ImGuiKey_Enter
                 AzFramework::InputDeviceKeyboard::Key::Escape, // ImGuiKey_Escape
+                AzFramework::InputDeviceKeyboard::Key::NumPadEnter, // ImGuiKey_KeyPadEnter
                 AzFramework::InputDeviceKeyboard::Key::AlphanumericA, // ImGuiKey_A
                 AzFramework::InputDeviceKeyboard::Key::AlphanumericC, // ImGuiKey_C
                 AzFramework::InputDeviceKeyboard::Key::AlphanumericV, // ImGuiKey_V
@@ -646,8 +647,8 @@ namespace AZ
                 return 0; // Nothing to draw.
             }
 
-            auto vertexBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(totalVtxBufferSize);
-            auto indexBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(totalIdxBufferSize);
+            auto vertexBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(totalVtxBufferSize, RHI::Alignment::InputAssembly);
+            auto indexBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(totalIdxBufferSize, RHI::Alignment::InputAssembly);
 
             if (!vertexBuffer || !indexBuffer)
             {

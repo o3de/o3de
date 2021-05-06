@@ -45,6 +45,7 @@ namespace AzToolsFramework
 {
     class AssetCompleterModel;
     class AssetCompleterListView;
+    class ThumbnailPropertyCtrl;
 
     namespace Thumbnailer
     {
@@ -88,13 +89,14 @@ namespace AzToolsFramework
         void dragLeaveEvent(QDragLeaveEvent* event) override;
         void dropEvent(QDropEvent* event) override;
 
-        virtual AssetSelectionModel GetAssetSelectionModel() { return AssetSelectionModel::AssetTypeSelection(GetCurrentAssetType()); }
+        virtual AssetSelectionModel GetAssetSelectionModel();
 
     signals:
         void OnAssetIDChanged(AZ::Data::AssetId newAssetID);
 
     protected:
-        Thumbnailer::ThumbnailWidget* m_thumbnail = nullptr;
+        QString m_title;
+        ThumbnailPropertyCtrl* m_thumbnail = nullptr;
         QPushButton* m_errorButton = nullptr;
         QToolButton* m_editButton = nullptr;
 
@@ -155,6 +157,8 @@ namespace AzToolsFramework
         bool m_showProductAssetName = true;
 
         bool m_showThumbnail = false;
+        bool m_showThumbnailDropDownButton = false;
+        EditCallbackType* m_thumbnailCallback = nullptr;
 
         // ! Default suffix used in the field's placeholder text when a default value is set.
         const char* m_DefaultSuffix = " (default)";
@@ -188,6 +192,7 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
     public slots:
+        void SetTitle(const QString& title);
         void SetEditNotifyTarget(void* editNotifyTarget);
         void SetEditNotifyCallback(EditCallbackType* editNotifyCallback); // This is meant to be used with the "EditCallback" Attribute
         void SetClearNotifyCallback(ClearCallbackType* clearNotifyCallback); // This is meant to be used with the "ClearNotify" Attribute
@@ -205,6 +210,9 @@ namespace AzToolsFramework
 
         void SetShowThumbnail(bool enable);
         bool GetShowThumbnail() const;
+        void SetShowThumbnailDropDownButton(bool enable);
+        bool GetShowThumbnailDropDownButton() const;
+        void SetThumbnailCallback(EditCallbackType* editNotifyCallback);
 
         void SetSelectedAssetID(const AZ::Data::AssetId& newID);
         void SetCurrentAssetType(const AZ::Data::AssetType& newType);
@@ -216,6 +224,7 @@ namespace AzToolsFramework
         void UpdateAssetDisplay();
         void OnLineEditFocus(bool focus);
         virtual void OnEditButtonClicked();
+        void OnThumbnailClicked();
         void OnCompletionModelReset();
         void OnAutocomplete(const QModelIndex& index);
         void OnTextChange(const QString& text);

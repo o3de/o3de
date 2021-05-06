@@ -55,10 +55,6 @@ namespace LegacyLevelSystem
         if (gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
         {
             gEnv->pSystem->GetILevelSystem()->UnloadLevel();
-            if (gEnv->p3DEngine)
-            {
-                gEnv->p3DEngine->LoadEmptyLevel();
-            }
         }
     }
 
@@ -84,7 +80,6 @@ namespace LegacyLevelSystem
         {
             return;
         }
-        auto pPak = gEnv->pCryPak;
 
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
     }
@@ -240,6 +235,9 @@ namespace LegacyLevelSystem
                 }
             }
 
+            // This is a workaround until the replacement for GameEntityContext is done
+            AzFramework::GameEntityContextEventBus::Broadcast(&AzFramework::GameEntityContextEventBus::Events::OnPreGameEntitiesStarted);
+
             // Reset the camera to (1,1,1) (not (0,0,0) which is the invalid/uninitialised state,
             // to avoid the hack in the renderer to not show anything if the camera is at the origin).
             CCamera defaultCam;
@@ -258,22 +256,6 @@ namespace LegacyLevelSystem
             {
                 spamDelay = pSpamDelay->GetFVal();
                 pSpamDelay->Set(0.0f);
-            }
-
-            if (gEnv->p3DEngine)
-            {
-                AZ::IO::PathView levelPath(levelName);
-                AZStd::string parentPath(levelPath.ParentPath().Native());
-
-                static constexpr const char* defaultGameTypeName = "Mission0";
-                bool is3DEngineLoaded = gEnv->IsEditor() ? gEnv->p3DEngine->InitLevelForEditor(parentPath.c_str(), defaultGameTypeName)
-                                                         : gEnv->p3DEngine->LoadLevel(parentPath.c_str(), defaultGameTypeName);
-                if (!is3DEngineLoaded)
-                {
-                    OnLoadingError(levelName, "3DEngine failed to handle loading the level");
-
-                    return 0;
-                }
             }
 
             // Parse level specific config data.
@@ -323,6 +305,9 @@ namespace LegacyLevelSystem
             m_rootSpawnableId = rootSpawnableAssetId;
             m_rootSpawnableGeneration = AzFramework::RootSpawnableInterface::Get()->AssignRootSpawnable(rootSpawnable);
 
+            // This is a workaround until the replacement for GameEntityContext is done
+            AzFramework::GameEntityContextEventBus::Broadcast(&AzFramework::GameEntityContextEventBus::Events::OnGameEntitiesStarted);
+
             //////////////////////////////////////////////////////////////////////////
             // Movie system must be reset after entities.
             //////////////////////////////////////////////////////////////////////////
@@ -334,14 +319,6 @@ namespace LegacyLevelSystem
             }
 
             gEnv->pSystem->SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_START_PRECACHE);
-
-            //////////////////////////////////////////////////////////////////////////
-            // Notify 3D engine that loading finished
-            //////////////////////////////////////////////////////////////////////////
-            if (gEnv->p3DEngine)
-            {
-                gEnv->p3DEngine->PostLoadLevel();
-            }
 
             //////////////////////////////////////////////////////////////////////////
             //////////////////////////////////////////////////////////////////////////
@@ -564,18 +541,6 @@ namespace LegacyLevelSystem
 
         CTimeValue tBegin = gEnv->pTimer->GetAsyncTime();
 
-        I3DEngine* p3DEngine = gEnv->p3DEngine;
-        if (p3DEngine)
-        {
-            IDeferredPhysicsEventManager* pPhysEventManager = p3DEngine->GetDeferredPhysicsEventManager();
-            if (pPhysEventManager)
-            {
-                // clear deferred physics queues before renderer, since we could have jobs running
-                // which access a rendermesh
-                pPhysEventManager->ClearDeferredEvents();
-            }
-        }
-
         // AM: Flush render thread (Flush is not exposed - using EndFrame())
         // We are about to delete resources that could be in use
         if (gEnv->pRenderer)
@@ -639,25 +604,10 @@ namespace LegacyLevelSystem
 
         GetISystem()->GetIResourceManager()->UnloadLevel();
 
-        /*
-            Force Lua garbage collection before p3DEngine->UnloadLevel() and pRenderer->FreeResources(flags) are called.
-            p3DEngine->UnloadLevel() will destroy particle emitters even if they're still referenced by Lua objects that are yet to be
-           collected. (as per comment in 3dEngineLoad.cpp (line 501) - "Force to clean all particles that are left, even if still referenced.").
-            Then, during the next GC cycle, Lua finally cleans up, the particle emitter smart pointers will be pointing to invalid memory).
-            Normally the GC step is triggered at the end of this method (by the ESYSTEM_EVENT_LEVEL_POST_UNLOAD event), which is too late
-            (after the render resources have been purged).
-            This extra GC step takes a few ms more level unload time, which is a small price for fixing nasty crashes.
-            If, however, we wanted to claim it back, we could potentially get rid of the GC step that is triggered by
-           ESYSTEM_EVENT_LEVEL_POST_UNLOAD to break even.
-        */
-
+        // Force Lua garbage collection (may no longer be needed now the legacy renderer has been removed).
+        // Normally the GC step is triggered at the end of this method (by the ESYSTEM_EVENT_LEVEL_POST_UNLOAD event).
         EBUS_EVENT(AZ::ScriptSystemRequestBus, GarbageCollect);
 
-        // Delete engine resources
-        if (p3DEngine)
-        {
-            p3DEngine->UnloadLevel();
-        }
         // Force to clean render resources left after deleting all objects and materials.
         IRenderer* pRenderer = gEnv->pRenderer;
         if (pRenderer)
@@ -695,6 +645,8 @@ namespace LegacyLevelSystem
         // Cleanup all containers
         GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_POST_UNLOAD, 0, 0);
         AzFramework::InputChannelRequestBus::Broadcast(&AzFramework::InputChannelRequests::ResetState);
+
+        AzFramework::GameEntityContextEventBus::Broadcast(&AzFramework::GameEntityContextEventBus::Events::OnGameEntitiesReset);
     }
 
     void SpawnableLevelSystem::OnRootSpawnableAssigned(

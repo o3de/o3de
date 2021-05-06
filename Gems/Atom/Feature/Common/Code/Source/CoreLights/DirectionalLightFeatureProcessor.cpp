@@ -146,7 +146,6 @@ namespace AZ
         void DirectionalLightFeatureProcessor::Activate()
         {
             const RHI::ShaderResourceGroupLayout* sceneSrgLayout = RPI::RPISystemInterface::Get()->GetSceneSrgAsset()->GetLayout();
-            const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
 
             GpuBufferHandler::Descriptor desc;
 
@@ -610,6 +609,16 @@ namespace AZ
             m_shadowBufferNeedsUpdate = true;
         }
 
+        void DirectionalLightFeatureProcessor::SetPcfMethod(LightHandle handle, PcfMethod method)
+        {
+            for (auto& it : m_shadowData)
+            {
+                it.second.GetData(handle.GetIndex()).m_pcfMethod = method;
+            }
+            m_shadowBufferNeedsUpdate = true;
+        }
+
+
         void DirectionalLightFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
             PrepareForChangingRenderPipelineAndCameraView();
@@ -722,11 +731,12 @@ namespace AZ
                     }
                 }
             }
-
+            
             // Remove unnecessary camera views in shadow properties
-            for (uint16_t lightIndex = 0; lightIndex < aznumeric_cast<uint16_t>(m_shadowProperties.GetDataCount()); ++lightIndex)
+            auto& shadowPropertiesVector = m_shadowProperties.GetDataVector();
+            for (ShadowProperty& shadowProperty : shadowPropertiesVector)
             {
-                AZStd::unordered_map<const RPI::View*, AZStd::fixed_vector<CascadeSegment, Shadow::MaxNumberOfCascades>>& cascades = m_shadowProperties.GetData(lightIndex).m_segments;
+                auto& cascades = shadowProperty.m_segments;
                 for (auto it = cascades.begin(); it != cascades.end();)
                 {
                     if (AZStd::find(cameraViews.begin(), cameraViews.end(), it->first) != cameraViews.end())
@@ -1111,7 +1121,6 @@ namespace AZ
                 return;
             }
 
-            ShadowProperty& property = m_shadowProperties.GetData(handle.GetIndex());
             for (const auto& passIt : m_esmShadowmapsPasses)
             {
                 const RPI::View* cameraView = passIt.second.front()->GetRenderPipeline()->GetDefaultView().get();
@@ -1230,6 +1239,8 @@ namespace AZ
 
         void DirectionalLightFeatureProcessor::SetFilterParameterToPass(LightHandle handle, const RPI::View* cameraView)
         {
+            AZ_ATOM_PROFILE_FUNCTION("DirectionalLightFeatureProcessor", "DirectionalLightFeatureProcessor::SetFilterParameterToPass");
+
             if (handle != m_shadowingLightHandle)
             {
                 return;

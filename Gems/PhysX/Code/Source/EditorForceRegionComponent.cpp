@@ -173,8 +173,8 @@ namespace PhysX
                     "PhysX Force Region", "The force region component is used to apply a physical force on objects within the region")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/ForceRegion.png")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/ForceRegion.png")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/ForceRegion.png")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/ForceRegion.png")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/console/lumberyard/physx/force-region")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -277,6 +277,7 @@ namespace PhysX
             force.Deactivate();
         }
 
+        m_nonUniformScaleChangedHandler.Disconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
         EditorComponentBase::Deactivate();
     }
@@ -422,12 +423,11 @@ namespace PhysX
             AZ::ConstSplinePtr splinePtr = nullptr;
             LmbrCentral::SplineComponentRequestBus::EventResult(splinePtr, GetEntityId()
                 , &LmbrCentral::SplineComponentRequestBus::Events::GetSpline);
-            AZ::Entity* entity = GetEntity();
             AZ_Warning("PhysX EditorForceRegionComponent"
                 , splinePtr!=nullptr
                 , "Please add spline shape for force region in entity <%s: %s>."
-                , entity->GetName().c_str()
-                , entity->GetId().ToString().c_str());
+                , GetEntity()->GetName().c_str()
+                , GetEntity()->GetId().ToString().c_str());
         }
 
         ForceRegionNotificationBus::Broadcast(

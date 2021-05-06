@@ -670,7 +670,13 @@ namespace AZ
                 }
                 else
                 {
-                    result &= AddExistingResourceEntry("texture", resourceStartPos, regId, argBufferStr);
+                    bool isAdditionSuccessfull = AddExistingResourceEntry("texture", resourceStartPos, regId, argBufferStr);
+                    if(!isAdditionSuccessfull)
+                    {
+                        //In metal depth textures use keyword depth2d/depth2d_array/depthcube/depthcube_array/depth2d_ms/depth2d_ms_array
+                        isAdditionSuccessfull |= AddExistingResourceEntry("depth", resourceStartPos, regId, argBufferStr);
+                    }
+                    result &= isAdditionSuccessfull;
                 }
             }
             return result;
@@ -827,10 +833,13 @@ namespace AZ
                                                                AZStd::string& argBufferStr) const
         {
             size_t prevEndOfLine = argBufferStr.rfind("\n", resourceStartPos);
+            size_t nextEndOfLine = argBufferStr.find("\n", resourceStartPos);
             size_t startOfEntryPos = argBufferStr.find(resourceStr, prevEndOfLine);
-            if(startOfEntryPos == AZStd::string::npos)
+            
+            //Check to see if a valid entry is found. 
+            if(startOfEntryPos == AZStd::string::npos || startOfEntryPos > nextEndOfLine)
             {
-                AZ_Error(MetalShaderPlatformName, false, "Entry-> %s not found within Descriptor set %s", resourceStr, argBufferStr.c_str());
+                AZ_Error(MetalShaderPlatformName, startOfEntryPos != AZStd::string::npos, "Entry-> %s not found within Descriptor set %s", resourceStr, argBufferStr.c_str());
                 return false;
             }
             else

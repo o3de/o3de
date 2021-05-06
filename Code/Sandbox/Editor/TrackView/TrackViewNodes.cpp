@@ -631,8 +631,6 @@ CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::AddAnimNodeRecord(CRecord* pP
 //////////////////////////////////////////////////////////////////////////
 CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::AddTrackRecord(CRecord* pParentRecord, CTrackViewTrack* pTrack)
 {
-    const CTrackViewAnimNode* animNode = pTrack->GetAnimNode();
-
     CRecord* pNewTrackRecord = new CRecord(pTrack);
     pNewTrackRecord->setSizeHint(0, QSize(30, 18));
     pNewTrackRecord->setText(0, pTrack->GetName());
@@ -785,7 +783,6 @@ void CTrackViewNodesCtrl::UpdateAnimNodeRecord(CRecord* record, CTrackViewAnimNo
     if (nodeType == AnimNodeType::Component)
     {
         // get the component icon from cached component icons
-        bool searchCompleted = false;
         
         AZ::Entity* azEntity = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(azEntity, &AZ::ComponentApplicationBus::Events::FindEntity, 
@@ -835,32 +832,7 @@ void CTrackViewNodesCtrl::UpdateAnimNodeRecord(CRecord* record, CTrackViewAnimNo
     }
     else if (nodeType == AnimNodeType::Material)
     {
-        // Check if a valid material can be found by the node name.
-        _smart_ptr<IMaterial> pMaterial = nullptr;
-        QString matName;
-        int subMtlIndex = GetMatNameAndSubMtlIndexFromName(matName, animNode->GetName());
-        pMaterial = gEnv->p3DEngine->GetMaterialManager()->FindMaterial(matName.toUtf8().data());
-        if (pMaterial)
-        {
-            bool bMultiMat = pMaterial->GetSubMtlCount() > 0;
-            bool bMultiMatWithoutValidIndex = bMultiMat && (subMtlIndex < 0 || subMtlIndex >= pMaterial->GetSubMtlCount());
-            bool bLeafMatWithIndex = !bMultiMat && subMtlIndex != -1;
-            if (bMultiMatWithoutValidIndex || bLeafMatWithIndex)
-            {
-                pMaterial = nullptr;
-            }
-        }
-
-        if (!pMaterial)
-        {
-            record->setForeground(0, TextColorForInvalidMaterial);
-        }
-        else
-        {
-            // set to default color from palette
-            // materials that originally pointed to material groups and are changed to sub-materials need this to reset their color
-            record->setForeground(0, palette().color(foregroundRole()));
-        }
+        record->setForeground(0, TextColorForInvalidMaterial);
     }
 
     // Mark the active director and other directors properly.
@@ -1140,12 +1112,12 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                 CTrackViewAnimNodeBundle addedNodes = groupNode->AddSelectedEntities(m_pTrackViewDialog->GetDefaultTracksForEntityNode());
                 undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
 
-                AzToolsFramework::EntityIdList entityIds;
-                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                    entityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+                int selectedEntitiesCount = 0;
+                AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+                    selectedEntitiesCount, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntitiesCount);
 
                 // check to make sure all nodes were added and notify user if they weren't
-                if (addedNodes.GetCount() != entityIds.size())
+                if (addedNodes.GetCount() != selectedEntitiesCount)
                 {
                     IMovieSystem* movieSystem = GetIEditor()->GetMovieSystem();
 
@@ -1526,7 +1498,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
         if (animNode)
         {
             QString matName;
-            int subMtlIndex = GetMatNameAndSubMtlIndexFromName(matName, animNode->GetName());
+            GetMatNameAndSubMtlIndexFromName(matName, animNode->GetName());
             QString newMatName;
             newMatName = tr("%1.[%2]").arg(matName).arg(cmd - eMI_SelectSubmaterialBase + 1);
             CUndo undo("Rename TrackView node");
@@ -1671,7 +1643,6 @@ void CTrackViewNodesCtrl::ImportFromFBX()
 
         for (unsigned int trackID = 0; trackID < numTracks; ++trackID)
         {
-            CTrackViewTrack* pTrack = tracks.GetTrack(trackID);
             undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
         }
 
@@ -2167,43 +2138,6 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
         bAppended = true;
     }
 
-    // Sub material menu
-    if (bOnNode && animNode->GetType() == AnimNodeType::Material)
-    {
-        QString matName;
-        int subMtlIndex = GetMatNameAndSubMtlIndexFromName(matName, animNode->GetName());
-        _smart_ptr<IMaterial> pMtl = gEnv->p3DEngine->GetMaterialManager()->FindMaterial(matName.toUtf8().data());
-        bool bMultMatNode = pMtl ? pMtl->GetSubMtlCount() > 0 : false;
-
-        bool bMatAppended = false;
-
-        if (bMultMatNode)
-        {
-            for (int k = 0; k < pMtl->GetSubMtlCount(); ++k)
-            {
-                _smart_ptr<IMaterial> pSubMaterial = pMtl->GetSubMtl(k);
-
-                if (pSubMaterial)
-                {
-                    QString subMaterialName = pSubMaterial->GetName();
-
-                    if (!subMaterialName.isEmpty())
-                    {
-                        AddMenuSeperatorConditional(contextMenu.main, bAppended);
-                        QString subMatName = QString("[%1] %2").arg(k + 1).arg(subMaterialName);
-                        QAction* a = contextMenu.main.addAction(subMatName);
-                        a->setData(eMI_SelectSubmaterialBase + k);
-                        a->setCheckable(true);
-                        a->setChecked(k == subMtlIndex);
-                        bMatAppended = true;
-                    }
-                }
-            }
-        }
-
-        bAppended = bAppended || bMatAppended;
-    }
-
     // Delete track menu
     if (bOnTrackNotSub)
     {
@@ -2275,7 +2209,6 @@ int CTrackViewNodesCtrl::ShowPopupMenuMultiSelection(SContextMenu& contextMenu)
     for (int currentNode = 0; currentNode < records.size(); ++currentNode)
     {
         CRecord* pItemInfo = (CRecord*)records[currentNode];
-        ETrackViewNodeType type = pItemInfo->GetNode()->GetNodeType();
 
         if (pItemInfo->GetNode()->GetNodeType() == eTVNT_AnimNode)
         {
@@ -2622,7 +2555,8 @@ void CTrackViewNodesCtrl::ShowNextResult()
 
             if (!items.empty())
             {
-                m_currentMatchIndex = ++m_currentMatchIndex % m_matchCount;
+                ++m_currentMatchIndex;
+                m_currentMatchIndex = m_currentMatchIndex % m_matchCount;
                 ui->treeWidget->selectionModel()->clear();
                 items[m_currentMatchIndex]->setSelected(true);
             }
@@ -2812,8 +2746,7 @@ CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::GetNodeRecord(const CTrackVie
         return nullptr;
     }
 
-    CRecord* record = findIter->second;
-    assert (record->GetNode() == pNode);
+    assert (findIter->second->GetNode() == pNode);
     return findIter->second;
 }
 

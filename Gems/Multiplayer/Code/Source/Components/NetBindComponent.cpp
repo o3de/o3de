@@ -37,13 +37,13 @@ namespace Multiplayer
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<NetBindComponent>("NetBindComponent", "Required Component for binding an entity to the network")
+                editContext->Class<NetBindComponent>(
+                    "Network Binding", "The Network Binding component marks an entity as able to be replicated across the network")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Multiplayer")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/NetBind.png")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/NetBind.png")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    ;
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/NetBind.png")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/NetBind.png")
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
             }
         }
     }
@@ -69,7 +69,7 @@ namespace Multiplayer
 
     void NetBindComponent::Init()
     {
-        m_netEntityHandle = GetNetworkEntityManager()->AddEntityToEntityMap(m_netEntityId, GetEntity());
+        ;
     }
 
     void NetBindComponent::Activate()
@@ -92,7 +92,7 @@ namespace Multiplayer
 
     void NetBindComponent::Deactivate()
     {
-        AZ_Assert(m_needsToBeStopped == false, "Entity appears to have been deleted with using the EntityManagerBase.  Use MarkForRemoval to correctly clean up an entity");
+        AZ_Assert(m_needsToBeStopped == false, "Entity appears to have been improperly deleted. Use MarkForRemoval to correctly clean up a networked entity.");
         m_handleLocalServerRpcMessageEventHandle.Disconnect();
         if (NetworkRoleHasController(m_netEntityRole))
         {
@@ -139,7 +139,8 @@ namespace Multiplayer
     MultiplayerComponentInputVector NetBindComponent::AllocateComponentInputs()
     {
         MultiplayerComponentInputVector componentInputs;
-        for (MultiplayerComponent* multiplayerComponent : m_multiplayerInputComponentVector)
+        const size_t multiplayerComponentSize = m_multiplayerInputComponentVector.size();
+        for (size_t i = 0; i < multiplayerComponentSize; ++i)
         {
             // TODO: ComponentInput factory, needs multiplayer component architecture and autogen
             AZStd::unique_ptr<IMultiplayerComponentInput> componentInput = nullptr; // ComponentInputFactory(multiplayerComponent->GetComponentId());
@@ -350,9 +351,10 @@ namespace Multiplayer
     {
         AZ_Assert(entity != nullptr, "AZ::Entity is null");
 
-        m_prefabEntityId = prefabEntityId;
         m_netEntityId = netEntityId;
         m_netEntityRole = netEntityRole;
+        m_prefabEntityId = prefabEntityId;
+        m_netEntityHandle = GetNetworkEntityManager()->AddEntityToEntityMap(m_netEntityId, entity);
 
         for (AZ::Component* component : entity->GetComponents())
         {

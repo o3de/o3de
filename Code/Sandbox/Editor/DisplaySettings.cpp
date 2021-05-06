@@ -22,7 +22,6 @@
 
 // Editor
 #include "Settings.h"
-#include "Material/MaterialManager.h"
 
 
 
@@ -70,7 +69,6 @@ void CDisplaySettings::LoadRegistry()
 
 void CDisplaySettings::SetObjectHideMask(int hideMask)
 {
-    int prevMask = m_objectHideMask;
     m_objectHideMask = hideMask;
 
     gSettings.objectHideMask = m_objectHideMask;
@@ -87,13 +85,7 @@ void CDisplaySettings::PostInitApply()
 //////////////////////////////////////////////////////////////////////////
 void CDisplaySettings::SetRenderFlags(int flags)
 {
-    int prev = m_renderFlags;
     m_renderFlags = flags;
-
-    if (!GetIEditor()->Get3DEngine())
-    {
-        return;
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -114,30 +106,6 @@ void CDisplaySettings::SetDebugFlags(int flags)
     //SetCVarInt( "sys_enable_budgetmonitoring",(m_debugFlags&DBG_BUDGET_MONITORING) ? 4:0 );
 
     //SetCVarInt( "Profile",(m_debugFlags&DBG_FRAMEPROFILE) ? 1:0 );
-
-    if (CMaterialManager* pMaterialManager = GetIEditor()->GetMaterialManager())
-    {
-        int mask = pMaterialManager->GetHighlightMask();
-        if (m_debugFlags & DBG_HIGHLIGHT_BREAKABLE)
-        {
-            mask |= eHighlight_Breakable;
-        }
-        else
-        {
-            mask &= ~eHighlight_Breakable;
-        }
-
-        if (m_debugFlags & DBG_HIGHLIGHT_MISSING_SURFACE_TYPE)
-        {
-            mask |= eHighlight_NoSurfaceType;
-        }
-        else
-        {
-            mask &= ~eHighlight_NoSurfaceType;
-        }
-
-        pMaterialManager->SetHighlightMask(mask);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -35,7 +35,7 @@
 
 // AzQtComponents
 #include <AzQtComponents/Components/GlobalEventFilter.h>
-#include <AzQtComponents/Components/LumberyardStylesheet.h>
+#include <AzQtComponents/Components/O3DEStylesheet.h>
 #include <AzQtComponents/Components/Titlebar.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 
@@ -53,7 +53,7 @@ enum
     UninitializedFrequency = 9999,
 };
 
-Q_LOGGING_CATEGORY(InputDebugging, "lumberyard.editor.input")
+Q_LOGGING_CATEGORY(InputDebugging, "o3de.editor.input")
 
 // internal, private namespace:
 namespace
@@ -249,17 +249,17 @@ namespace Editor
     EditorQtApplication::EditorQtApplication(int& argc, char** argv)
         : QApplication(argc, argv)
         , m_inWinEventFilter(false)
-        , m_stylesheet(new AzQtComponents::LumberyardStylesheet(this))
+        , m_stylesheet(new AzQtComponents::O3DEStylesheet(this))
         , m_idleTimer(new QTimer(this))
     {
         m_idleTimer->setInterval(UninitializedFrequency);
 
-        setWindowIcon(QIcon(":/Application/res/lyeditor.ico"));
+        setWindowIcon(QIcon(":/Application/res/o3de_editor.ico"));
 
         // set the default key store for our preferences:
         setOrganizationName("Amazon");
         setOrganizationDomain("amazon.com");
-        setApplicationName("Lumberyard");
+        setApplicationName("Open 3D Engine");
 
         connect(m_idleTimer, &QTimer::timeout, this, &EditorQtApplication::maybeProcessIdle);
 
@@ -267,7 +267,7 @@ namespace Editor
         installEventFilter(this);
 
         // Disable our debugging input helpers by default
-        QLoggingCategory::setFilterRules(QStringLiteral("lumberyard.editor.input.*=false"));
+        QLoggingCategory::setFilterRules(QStringLiteral("o3de.editor.input.*=false"));
 
         // Initialize our stylesheet here to allow Gems to register stylesheets when their system components activate.
         AZ::IO::FixedMaxPath engineRootPath;

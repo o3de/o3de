@@ -185,7 +185,7 @@ namespace AZ::Debug
 
         realLogger.Start(logFilePath.c_str());
 
-        LargeBlock& block = logger->RecordEventBegin<LargeBlock>(largeBlockId);
+        logger->RecordEventBegin<LargeBlock>(largeBlockId);
         logger->RecordEventEnd();
 
         logger->RecordStringEvent(MessageId, message);

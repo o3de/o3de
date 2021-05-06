@@ -136,15 +136,16 @@ namespace AZ
             // -- View & DrawList --
             const AZStd::vector<ViewPtr>& views = m_pipeline->GetViews(GetPipelineViewTag());
             m_drawListView = {};
-            for (const ViewPtr& view : views)
+
+            if (!views.empty())
             {
+                const ViewPtr& view = views.front();
+
                 // Assert the view has our draw list (the view's DrawlistTags are collected from passes using its viewTag)
                 AZ_Assert(view->HasDrawListTag(m_drawListTag), "View's DrawListTags out of sync with pass'. ");
 
                 // Draw List 
                 m_drawListView = view->GetDrawList(m_drawListTag);
-
-                break;
             }
 
             RenderPass::FrameBeginInternal(params);
@@ -194,9 +195,12 @@ namespace AZ
                 SetSrgsForDraw(commandList);
             }
 
-            for (const RHI::DrawItemKeyPair& drawItemKeyPair : drawListViewPartition)
+            for (const RHI::DrawItemProperties& drawItemProperties : drawListViewPartition)
             {
-                commandList->Submit(*drawItemKeyPair.m_item);
+                if (drawItemProperties.m_drawFilterMask & m_pipeline->GetDrawFilterMask())
+                {
+                    commandList->Submit(*drawItemProperties.m_item);
+                }
             }
         }
 

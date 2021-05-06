@@ -18,10 +18,10 @@
 #include <AzToolsFramework/ViewportUi/ViewportUiWidgetCallbacks.h>
 #include <QToolBar>
 
-class Cluster;
-
 namespace AzToolsFramework::ViewportUi::Internal
 {
+    class ButtonGroup;
+
     //! Helper class to make clusters (toolbars) for display in Viewport UI.
     class ViewportUiCluster
         : public QToolBar
@@ -29,7 +29,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         Q_OBJECT
 
     public:
-        ViewportUiCluster(AZStd::shared_ptr<Cluster> cluster);
+        ViewportUiCluster(AZStd::shared_ptr<ButtonGroup> buttonGroup);
         ~ViewportUiCluster() = default;
 
         //! Adds a new button to the cluster.
@@ -49,7 +49,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         //! Removes an action from the Viewport UI Cluster.
         void RemoveClusterAction(QAction* action);
 
-        AZStd::shared_ptr<Cluster> m_cluster; //!< Data structure which the cluster will be displaying to the Viewport UI.
+        AZStd::shared_ptr<ButtonGroup> m_buttonGroup; //!< Data structure which the cluster will be displaying to the Viewport UI.
         AZStd::unordered_map<ButtonId, QPointer<QAction>> m_buttonActionMap; //!< Map for buttons to their corresponding actions.
         ViewportUiWidgetCallbacks m_widgetCallbacks; //!< Registers actions and manages updates.
     };

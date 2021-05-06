@@ -147,7 +147,7 @@ namespace AudioControls
 
         QWidgetAction* pWidgetAction = new QWidgetAction(this);
 
-        m_unassignedFilterButton = new QFilterButton(QIcon(":/Editor/Icons/Unassigned.svg"), "", this);
+        m_unassignedFilterButton = new QFilterButton(QIcon(":/Icons/Unassigned.svg"), "", this);
         m_unassignedFilterButton->SetText("Unassigned");
         m_unassignedFilterButton->SetChecked(m_showUnassignedControls);
         pWidgetAction->setDefaultWidget(m_unassignedFilterButton);
@@ -571,7 +571,6 @@ namespace AudioControls
         CATLControl* pControl = GetControlFromIndex(m_pATLControlsTree->currentIndex());
         if (pControl)
         {
-            EACEControlType eControlType = pControl->GetType();
             switch (pControl->GetType())
             {
             case eACET_TRIGGER:

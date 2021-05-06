@@ -1,0 +1,88 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#include <source/models/AssetBundlerAbstractFileTableModel.h>
+
+#include <AzToolsFramework/Asset/AssetSeedManager.h>
+#include <AzFramework/Platform/PlatformDefaults.h>
+
+#include <QSharedPointer>
+
+namespace AssetBundler
+{
+    struct AdditionalSeedInfo
+    {
+        AdditionalSeedInfo(const QString& relativePath, const QString& platformList);
+
+        QString m_relativePath;
+        QString m_platformList;
+    };
+
+    using AdditionalSeedInfoPtr = AZStd::shared_ptr<AdditionalSeedInfo>;
+    using AdditionalSeedInfoMap = AZStd::unordered_map<AZ::Data::AssetId, AdditionalSeedInfoPtr>;
+
+    class SeedListTableModel
+        : public QAbstractTableModel
+    {
+    public:
+        explicit SeedListTableModel(
+            QObject* parent = nullptr,
+            const AZStd::string& absolutePath = AZStd::string(),
+            const AZStd::vector<AZStd::string>& defaultSeeds = AZStd::vector<AZStd::string>(),
+            const AzFramework::PlatformFlags& platforms = AzFramework::PlatformFlags::Platform_NONE);
+        virtual ~SeedListTableModel() {}
+
+        AZStd::shared_ptr<AzToolsFramework::AssetSeedManager> GetSeedListManager() { return m_seedListManager; }
+
+        bool HasUnsavedChanges() { return m_hasUnsavedChanges && m_isFileOnDisk; }
+
+        void SetHasUnsavedChanges(bool hasUnsavedChanges) { m_hasUnsavedChanges = hasUnsavedChanges; }
+
+        bool Save(const AZStd::string& absolutePath);
+
+        AZ::Outcome<AzFramework::PlatformFlags, void> GetSeedPlatforms(const QModelIndex& index) const;
+
+        bool SetSeedPlatforms(const QModelIndex& index, const AzFramework::PlatformFlags& platforms);
+
+        bool AddSeed(const AZStd::string& seedRelativePath, const AzFramework::PlatformFlags& platforms);
+
+        bool RemoveSeed(const QModelIndex& seedIndex);
+
+        //////////////////////////////////////////////////////////////////////////
+        // QAbstractListModel overrides
+        int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+        int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+        QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+        QVariant data(const QModelIndex& index, int role) const override;
+        //////////////////////////////////////////////////////////////////////////
+
+        enum Column
+        {
+            ColumnRelativePath,
+            ColumnPlatformList,
+            Max
+        };
+
+    private:
+        AZ::Outcome<AzFramework::SeedInfo&, void> GetSeedInfo(const QModelIndex& index) const;
+
+        AZ::Outcome<AdditionalSeedInfoPtr, void> GetAdditionalSeedInfo(const QModelIndex& index) const;
+
+        AZStd::shared_ptr<AzToolsFramework::AssetSeedManager> m_seedListManager;
+        AdditionalSeedInfoMap m_additionalSeedInfoMap;
+
+        bool m_hasUnsavedChanges = false;
+        bool m_isFileOnDisk = true;
+    };
+} // namespace AssetBundler

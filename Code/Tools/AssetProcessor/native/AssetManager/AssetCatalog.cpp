@@ -36,7 +36,7 @@ namespace AssetProcessor
             m_platforms.push_back(QString::fromUtf8(info.m_identifier.c_str()));
         }
 
-        bool computedCacheRoot = AssetUtilities::ComputeProjectCacheRoot(m_cacheRoot);
+        [[maybe_unused]] bool computedCacheRoot = AssetUtilities::ComputeProjectCacheRoot(m_cacheRoot);
         AZ_Assert(computedCacheRoot, "Could not compute cache root for AssetCatalog");
 
         // save 30mb for this.  Really large projects do get this big (and bigger)
@@ -341,10 +341,10 @@ namespace AssetProcessor
                 {
                     auto settingsRegistry = AZ::SettingsRegistry::Get();
                     AZ::SettingsRegistryInterface::FixedValueString cacheRootFolder;
-                    settingsRegistry->Get(cacheRootFolder, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+                    settingsRegistry->Get(cacheRootFolder, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder);
 
                     QString tempRegistryFile = QString("%1/%2").arg(workSpace).arg("assetcatalog.xml.tmp");
-                    QString platformCacheDir = QString::fromUtf8(cacheRootFolder.c_str(), aznumeric_cast<int>(cacheRootFolder.size()));
+                    QString platformCacheDir = QString("%1/%2").arg(cacheRootFolder.c_str()).arg(platform);
                     QString actualRegistryFile = QString("%1/%2").arg(platformCacheDir).arg("assetcatalog.xml");
 
                     AZ_TracePrintf(AssetProcessor::DebugChannel, "Creating asset catalog: %s --> %s\n", tempRegistryFile.toUtf8().constData(), actualRegistryFile.toUtf8().constData());
@@ -359,7 +359,7 @@ namespace AssetProcessor
                         if (!registryDir.exists())
                         {
                             QString absPath = registryDir.absolutePath();
-                            bool makeDirResult = AZ::IO::SystemFile::CreateDir(absPath.toUtf8().constData());
+                            [[maybe_unused]] bool makeDirResult = AZ::IO::SystemFile::CreateDir(absPath.toUtf8().constData());
                             AZ_Warning(AssetProcessor::ConsoleChannel, makeDirResult, "Failed create folder %s", platformCacheDir.toUtf8().constData());
                         }
                         
@@ -739,8 +739,6 @@ namespace AssetProcessor
 
         QMutexLocker locker(&m_registriesMutex);
 
-        const auto& productDependencies = m_registries[platform].GetAssetDependencies(id);
-
         auto itr = m_registries[platform].m_assetDependencies.find(id);
 
         if (itr == m_registries[platform].m_assetDependencies.end())
@@ -953,17 +951,7 @@ namespace AssetProcessor
                         // the subId part of the assetId will always be set to zero.
                         assetInfo.m_assetId = AZ::Data::AssetId(entry.m_sourceGuid, 0);
 
-                        // the Scan Folder may have an output prefix, so we must remove it from the relpath.
-                        // this involves deleting the output prefix and the first slash ('editor/') which is why
-                        // we remove the length of outputPrefix and one extra character.
-                        if (!scanEntry.m_outputPrefix.empty())
-                        {
-                            assetInfo.m_relativePath = entry.m_sourceName.substr(static_cast<int>(scanEntry.m_outputPrefix.size()) + 1);
-                        }
-                        else
-                        {
-                            assetInfo.m_relativePath = entry.m_sourceName;
-                        }
+                        assetInfo.m_relativePath = entry.m_sourceName;
                         AZStd::string absolutePath;
                         AzFramework::StringFunc::Path::Join(scanEntry.m_scanFolder.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
                         assetInfo.m_sizeBytes = AZ::IO::SystemFile::Length(absolutePath.c_str());
@@ -1377,17 +1365,7 @@ namespace AssetProcessor
                 AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanEntry;
                 if (m_db->GetScanFolderByScanFolderID(entry.m_scanFolderPK, scanEntry))
                 {
-                    // the Scan Folder may have an output prefix, so we must remove it from the relpath.
-                    // this involves deleting the output prefix and the first slash ('editor/') which is why
-                    // we remove the length of outputPrefix and one extra character.
-                    if (!scanEntry.m_outputPrefix.empty())
-                    {
-                        relativePath = entry.m_sourceName.substr(static_cast<int>(scanEntry.m_outputPrefix.size()) + 1);
-                    }
-                    else
-                    {
-                        relativePath = entry.m_sourceName;
-                    }
+                    relativePath = entry.m_sourceName;
 
                     watchFolder = scanEntry.m_scanFolder;
                     
@@ -1532,28 +1510,7 @@ namespace AssetProcessor
                     watchFolder = sourceInfo.m_watchFolder.toStdString().c_str();
 
                     AZStd::string sourceNameStr(sourceInfo.m_sourceName.toStdString().c_str());
-                    
-                    // the Scan Folder may have an output prefix, so we must remove it from the relpath.
-                    // this involves deleting the output prefix and the first slash ('editor/') which is why
-                    // we remove the length of outputPrefix and one extra character.
-                    const AssetProcessor::ScanFolderInfo* info = m_platformConfig->GetScanFolderByPath(watchFolder.c_str());
-                    if ((info)&&(!info->GetOutputPrefix().isEmpty()))
-                    {
-                        const int prefixLength = static_cast<int>(info->GetOutputPrefix().length()) + 1;
-                        AZ_Assert(sourceNameStr.length() > prefixLength, "Source name [%s] was invalid compared to the output prefix.", sourceNameStr.c_str() != nullptr ? sourceNameStr.c_str() : "");
-                        if (sourceNameStr.length() > prefixLength)
-                        {
-                            assetInfo.m_relativePath = sourceNameStr.substr(prefixLength);
-                        }
-                        else
-                        {
-                            assetInfo.m_relativePath.swap(sourceNameStr);
-                        }
-                    }
-                    else
-                    {
-                        assetInfo.m_relativePath.swap(sourceNameStr);
-                    }
+                    assetInfo.m_relativePath.swap(sourceNameStr);
 
                     assetInfo.m_assetId = foundSource->first;
 
@@ -1600,15 +1557,7 @@ namespace AssetProcessor
             return false;
         }
         QString databasePath = QString::fromUtf8(sourceDatabaseName);
-        if (!scanFolderInfo->GetOutputPrefix().isEmpty() && databasePath.startsWith(scanFolderInfo->GetOutputPrefix(), Qt::CaseInsensitive))
-        {
-            QString relativePath = databasePath.right(databasePath.length() - scanFolderInfo->GetOutputPrefix().length() - 1); // also eat the slash, hence -1
-            assetInfo.m_relativePath = relativePath.toUtf8().data();
-        }
-        else
-        {
-            assetInfo.m_relativePath = sourceDatabaseName;
-        }
+        assetInfo.m_relativePath = sourceDatabaseName;
 
         AZStd::string absolutePath;
         AzFramework::StringFunc::Path::Join(watchFolder, assetInfo.m_relativePath.c_str(), absolutePath);

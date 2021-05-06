@@ -30,6 +30,7 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
+#include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerDisplayOptionsMenu.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSortFilterProxyModel.hxx>
@@ -49,7 +50,7 @@
 #include <QTimer>
 #include <QToolButton>
 
-#include <UI/Outliner/ui_EntityOutlinerWidget.h>
+#include <AzToolsFramework/UI/Outliner/ui_EntityOutlinerWidget.h>
 
 namespace
 {
@@ -184,6 +185,7 @@ namespace AzToolsFramework
         m_gui->m_objectTree->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         m_gui->m_objectTree->setAutoScrollMargin(20);
         m_gui->m_objectTree->setIndentation(24);
+        m_gui->m_objectTree->setRootIsDecorated(false);
         connect(m_gui->m_objectTree, &QTreeView::customContextMenuRequested, this, &EntityOutlinerWidget::OnOpenTreeContextMenu);
 
         // custom item delegate
@@ -270,6 +272,12 @@ namespace AzToolsFramework
 
         m_listModel->Initialize();
 
+        m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
+
+        AZ_Assert(
+            m_editorEntityUiInterface != nullptr,
+            "EntityOutlinerWidget requires a EditorEntityUiInterface instance on Initialize.");
+
         EditorPickModeNotificationBus::Handler::BusConnect(GetEntityContextId());
         EntityHighlightMessages::Bus::Handler::BusConnect();
         EntityOutlinerModelNotificationBus::Handler::BusConnect();
@@ -278,12 +286,12 @@ namespace AzToolsFramework
         ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
             GetEntityContextId());
         EditorEntityInfoNotificationBus::Handler::BusConnect();
-        AZ::Interface<EntityOutlinerWidgetInterface>::Register(this);
+        Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
     }
 
     EntityOutlinerWidget::~EntityOutlinerWidget()
     {
-        AZ::Interface<EntityOutlinerWidgetInterface>::Unregister(this);
+        Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
         ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         EditorPickModeNotificationBus::Handler::BusDisconnect();
@@ -561,7 +569,13 @@ namespace AzToolsFramework
 
             if (m_selectedEntityIds.size() == 1)
             {
-                contextMenu->addAction(m_actionToRenameSelection);
+                auto entityId = m_selectedEntityIds.front();
+                auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
+
+                if (!entityUiHandler || entityUiHandler->CanRename(entityId))
+                {
+                    contextMenu->addAction(m_actionToRenameSelection);
+                }
             }
 
             if (m_selectedEntityIds.size() == 1)
@@ -687,11 +701,17 @@ namespace AzToolsFramework
 
         if (m_selectedEntityIds.size() == 1)
         {
-            const QModelIndex proxyIndex = GetIndexFromEntityId(m_selectedEntityIds.front());
-            if (proxyIndex.isValid())
+            auto entityId = m_selectedEntityIds.front();
+            auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
+
+            if (!entityUiHandler || entityUiHandler->CanRename(entityId))
             {
-                m_gui->m_objectTree->setCurrentIndex(proxyIndex);
-                m_gui->m_objectTree->QTreeView::edit(proxyIndex);
+                const QModelIndex proxyIndex = GetIndexFromEntityId(entityId);
+                if (proxyIndex.isValid())
+                {
+                    m_gui->m_objectTree->setCurrentIndex(proxyIndex);
+                    m_gui->m_objectTree->QTreeView::edit(proxyIndex);
+                }
             }
         }
     }
@@ -804,10 +824,10 @@ namespace AzToolsFramework
         addAction(m_actionToDeleteSelectionAndDescendants);
 
         m_actionToRenameSelection = new QAction(tr("Rename"), this);
-    #ifdef Q_OS_MAC
+    #if defined(Q_OS_MAC)
         // "Alt+Return" translates to Option+Return on macOS
         m_actionToRenameSelection->setShortcut(tr("Alt+Return"));
-#elseif Q_OS_WIN
+    #elif defined(Q_OS_WIN)
         m_actionToRenameSelection->setShortcut(tr("F2"));
     #endif
         m_actionToRenameSelection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
@@ -1090,28 +1110,17 @@ namespace AzToolsFramework
         SetEntityOutlinerState(m_gui, true);
     }
 
-    void EntityOutlinerWidget::SetRootEntity(AZ::EntityId rootEntityId)
+    void EntityOutlinerWidget::OnPrefabInstancePropagationBegin()
     {
-        // The proxy model needs a tick to initialize, else it will return an invalid index in mapFromSource.
-        QTimer::singleShot(0, this, [rootEntityId, this]() {
-            QModelIndex rootIndex = m_listModel->GetIndexFromEntity(rootEntityId);
-            QModelIndex proxyIndex = m_proxyModel->mapFromSource(rootIndex);
-            m_gui->m_objectTree->setRootIndex(proxyIndex);
-        });
+        m_gui->m_objectTree->setUpdatesEnabled(false);
     }
-    
-    void EntityOutlinerWidget::SetUpdatesEnabled(bool enable)
+
+    void EntityOutlinerWidget::OnPrefabInstancePropagationEnd()
     {
-        if (enable)
-        {
-            QTimer::singleShot(1, this, [this]() {
-                m_gui->m_objectTree->setUpdatesEnabled(true);
-            });
-        }
-        else
-        {
-            m_gui->m_objectTree->setUpdatesEnabled(false);
-        }
+        QTimer::singleShot(1, this, [this]() {
+            m_gui->m_objectTree->setUpdatesEnabled(true);
+            m_gui->m_objectTree->expand(m_proxyModel->index(0,0));
+        });
     }
 
     void EntityOutlinerWidget::OnEntityInfoUpdatedAddChildEnd(AZ::EntityId /*parentId*/, AZ::EntityId childId)

@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C4976199
 # Test Case Title : Verify that with higher linear damping, the object in motion comes to rest faster
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4976199
+
 
 # fmt: off
 class Tests:
@@ -65,8 +65,8 @@ def C4976199_RigidBodies_LinearDampingObjectMotion():
 
     imports.init()
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -277,5 +277,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C4976199_RigidBodies_LinearDampingObjectMotion)

@@ -12,38 +12,49 @@ Utility class to resolve Lumberyard directory paths & file mappings.
 """
 
 import os
+import pathlib
 import warnings
 from abc import ABCMeta, abstractmethod
 
-from ly_test_tools.lumberyard.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP
+from ly_test_tools.environment.file_system import find_ancestor_file
 
 def _find_engine_root(initial_path):
-    # type: (str) -> tuple
+    # type: (str) -> str
     """
-    Attempts to find the root engine directory to set the values for engine_root and dev_path.
+    Attempts to find the root engine directory to set the values for engine_root
     Assumes it exists at or above the provided "initial_path", and not in a separate directory tree
-    ex. for the directory "C:\\root_dir\\dev\\":
-        "C:\\root_dir\\" is the engine_root
-        "C:\\root_dir\\dev\\" is the dev_path
+    ex. for the directory "C:\\root_dir\\":
+        If it contains an "engine.json" file then it is the engine root "C:\\root_dir\\"
     :param initial_path: The initial directory to search for root from
-    :return: a tuple of 2 strings representing the engine_root and dev_path
+    :return: a string representing the engine_root
     """
-    root_file = "engineroot.txt"
+    root_file = "engine.json"
     current_dir = initial_path
-
     # Look upward a handful of levels, before assuming a missing root directory
     # Assumes folder structure similar to: engine_root/dev/Tools/.../ly_test_tools/builtin
     for _ in range(15):
         if os.path.exists(os.path.join(current_dir, root_file)):
             # The parent of the directory containing the engineroot.txt is the root directory
-            engine_root = os.path.abspath(os.path.join(current_dir, os.path.pardir))
-            dev_path = current_dir
-            return engine_root, dev_path
+            engine_root = current_dir
+            return engine_root
         # Using an explicit else to avoid aberrant behavior from following filesystem links
         else:
             current_dir = os.path.abspath(os.path.join(current_dir, os.path.pardir))
 
     raise OSError(f"Unable to find engine root directory. Verify root file '{root_file}' exists")
+
+
+def _find_project_json(engine_root, project):
+    # type (None) -> str
+    """
+    Find the project.json file for this project.
+    :return: Full path to the project.json file
+    """
+    project_json = find_ancestor_file('project.json')
+    if not project_json:
+        project_json = os.path.join(engine_root, project, 'project.json')
+
+    return project_json
 
 
 class AbstractResourceLocator(object):
@@ -53,13 +64,14 @@ class AbstractResourceLocator(object):
         # type: (str, str) -> AbstractResourceLocator
         """
         :param build_directory: The path to the build directory (i.e. <engine_root>/dev/windows_vs2017/bin/profile)
-        :param project: The game project (i.e. AutomatedTesting or StarterGame)
+        :param project: The game project (i.e. AutomatedTesting)
         """
-        engine_root, dev_path = _find_engine_root(os.path.abspath(__file__))
+        initial_search_path = str(pathlib.Path(__file__).resolve())  # __file__ is lowercase, this restores casing
+        engine_root = _find_engine_root(initial_search_path)
         self._build_directory = build_directory
 
         self._engine_root = engine_root
-        self._dev_path = dev_path
+        self._project_json = _find_project_json(engine_root, project)
         self._project = project
         self._cache_override = None
         self._db_override = None
@@ -73,14 +85,6 @@ class AbstractResourceLocator(object):
         :return: engine_root
         """
         return self._engine_root
-
-    def dev(self):
-        """
-        Returns the path to the dev directory
-        ex. <engine_root>\\dev
-        :return: dev_path
-        """
-        return self._dev_path
 
     def third_party(self):
         """
@@ -118,11 +122,18 @@ class AbstractResourceLocator(object):
     def project(self):
         """
         Return path to the project directory
-        ex. engine_root/dev/AutomatedTesting
-        :return: path to <engine_root>/dev/Project
+        ex. engine_root/dev/AutomatedTesting for included projects or some_dir/project for external projects.
+        :return: path to the project directory
         """
-        return os.path.join(self.dev(), self._project)
+        return os.path.dirname(self._project_json)
 
+    def project_settings(self):
+        """
+        Return full path to the project.json file for this project.
+        :return: Full path to the project.json file for this project.
+        """
+        return self._project_json
+    
     def asset_processor(self):
         """
         Return path for the AssetProcessor executable.
@@ -210,7 +221,6 @@ class AbstractResourceLocator(object):
         """
         return os.path.join(self.ap_log_dir(), 'JobLogs')
 
-
     def ap_batch_log(self):
         """
         Return path to AssetProcessorBatch's log file using the project bin dir
@@ -241,10 +251,10 @@ class AbstractResourceLocator(object):
         return os.path.join(self.build_directory(), 'CrySCompileServer')
 
     def bootstrap_config_file(self):
-        return os.path.join(self.dev(), 'bootstrap.cfg')
+        return os.path.join(self.engine_root(), 'bootstrap.cfg')
 
     def asset_processor_config_file(self):
-        return os.path.join(self.dev(), 'AssetProcessorPlatformConfig.setreg')
+        return os.path.join(self.engine_root(), 'Registry', 'AssetProcessorPlatformConfig.setreg')
 
     def autoexec_file(self):
         return os.path.join(
@@ -257,7 +267,7 @@ class AbstractResourceLocator(object):
         Return the path to the TestResults directory containing test artifacts.
         :return: path to TestResults dir
         """
-        return os.path.join(self.dev(), "TestResults")
+        return os.path.join(self.engine_root(), "TestResults")
 
     def devices_file(self):
         """

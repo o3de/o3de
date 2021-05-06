@@ -68,13 +68,12 @@ namespace ImGui
     typedef AZ::EBus<IImGuiUpdateListener> ImGuiUpdateListenerBus;
 
     // Bus for sending events and getting state from the ImGui manager
-    class IImGuiManagerListener : public AZ::EBusTraits
+    class IImGuiManager
     {
     public:
-        static const char* GetUniqueName() { return "IImGuiManagerListener"; }
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-        using Bus = AZ::EBus<IImGuiManagerListener>;
+        AZ_RTTI(IImGuiManager, "{F5A0F08B-F2DA-43B7-8CD2-C6FC71E1A712}");
+
+        static const char* GetUniqueName() { return "IImGuiManager"; }
 
         virtual DisplayState GetEditorWindowState() const = 0;
         virtual void SetEditorWindowState(DisplayState state) = 0;
@@ -90,8 +89,20 @@ namespace ImGui
         virtual void SetResolutionMode(ImGuiResolutionMode state) = 0;
         virtual const ImVec2& GetImGuiRenderResolution() const = 0;
         virtual void SetImGuiRenderResolution(const ImVec2& res) = 0;
+        virtual void OverrideRenderWindowSize(uint32_t width, uint32_t height) = 0;
+        virtual void RestoreRenderWindowSizeToDefault() = 0;
+        virtual void Render() = 0;
     };
-    typedef AZ::EBus<IImGuiManagerListener> ImGuiManagerListenerBus;
+
+    class IImGuiManagerRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        using Bus = AZ::EBus<IImGuiManager>;
+    };
+    using ImGuiManagerBus = AZ::EBus<IImGuiManager, IImGuiManagerRequests>;
 
     // Bus for getting notifications from the IMGUI Entity Outliner
     class IImGuiEntityOutlinerNotifcations : public AZ::EBusTraits

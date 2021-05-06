@@ -50,6 +50,7 @@
 // include MCore related
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
@@ -65,6 +66,7 @@
 #include <EMotionFX/Source/Importer/Importer.h>
 #include <EMotionFX/Source/MotionManager.h>
 #include <EMotionFX/Source/MotionSet.h>
+#include <qnamespace.h>
 AZ_PUSH_DISABLE_WARNING(4267, "-Wconversion")
 #include <ISystem.h>
 AZ_POP_DISABLE_WARNING
@@ -507,14 +509,33 @@ namespace EMStudio
         mShortcutManager = new MysticQt::KeyboardShortcutManager();
 
         // load the old shortcuts
-        QSettings shortcutSettings(AZStd::string(GetManager()->GetAppDataFolder() + "EMStudioKeyboardShortcuts.cfg").c_str(), QSettings::IniFormat, this);
-        mShortcutManager->Load(&shortcutSettings);
+        LoadKeyboardShortcuts();
 
         // add the application mode group
-        const char* layoutGroupName = "Layouts";
-        mShortcutManager->RegisterKeyboardShortcut("AnimGraph", layoutGroupName, Qt::Key_1, false, true, false);
-        mShortcutManager->RegisterKeyboardShortcut("Animation", layoutGroupName, Qt::Key_2, false, true, false);
-        mShortcutManager->RegisterKeyboardShortcut("Character", layoutGroupName, Qt::Key_3, false, true, false);
+        constexpr AZStd::string_view layoutGroupName = "Layouts";
+        QAction* animGraphLayoutAction = new QAction(
+            "AnimGraph",
+            this);
+        animGraphLayoutAction->setShortcut(Qt::Key_1 | Qt::AltModifier);
+        mShortcutManager->RegisterKeyboardShortcut(animGraphLayoutAction, layoutGroupName, false);
+        connect(animGraphLayoutAction, &QAction::triggered, [this]{ mApplicationMode->setCurrentIndex(0); });
+        addAction(animGraphLayoutAction);
+
+        QAction* animationLayoutAction = new QAction(
+            "Animation",
+            this);
+        animationLayoutAction->setShortcut(Qt::Key_2 | Qt::AltModifier);
+        mShortcutManager->RegisterKeyboardShortcut(animationLayoutAction, layoutGroupName, false);
+        connect(animationLayoutAction, &QAction::triggered, [this]{ mApplicationMode->setCurrentIndex(1); });
+        addAction(animationLayoutAction);
+
+        QAction* characterLayoutAction = new QAction(
+            "Character",
+            this);
+        characterLayoutAction->setShortcut(Qt::Key_1 | Qt::AltModifier);
+        mShortcutManager->RegisterKeyboardShortcut(characterLayoutAction, layoutGroupName, false);
+        connect(characterLayoutAction, &QAction::triggered, [this]{ mApplicationMode->setCurrentIndex(2); });
+        addAction(characterLayoutAction);
 
         EMotionFX::ActorEditorRequestBus::Handler::BusConnect();
 
@@ -1266,6 +1287,12 @@ namespace EMStudio
         mRecentActors.AddRecentFile(fileName.toUtf8().data());
     }
 
+    void MainWindow::LoadKeyboardShortcuts()
+    {
+        QSettings shortcutSettings(AZStd::string(GetManager()->GetAppDataFolder() + "EMStudioKeyboardShortcuts.cfg").c_str(), QSettings::IniFormat, this);
+        mShortcutManager->Load(&shortcutSettings);
+    }
+
     void MainWindow::LoadActor(const char* fileName, bool replaceCurrentScene)
     {
         // create the final command
@@ -1808,8 +1835,7 @@ namespace EMStudio
         mLayoutsMenu->clear();
 
         // generate the layouts path
-        QString layoutsPath = MysticQt::GetDataDir().c_str();
-        layoutsPath += "Layouts/";
+        QDir layoutsPath = QDir{ QString(MysticQt::GetDataDir().c_str()) }.filePath("Layouts");
 
         // open the dir
         QDir dir(layoutsPath);
@@ -1866,6 +1892,12 @@ namespace EMStudio
             // add each layout in the remove menu
             for (uint32 i = 0; i < numLayoutNames; ++i)
             {
+                // User cannot remove the default layout. This layout is referenced in the qrc file, removing it will
+                // cause compiling issue too.
+                if (mLayoutNames[i] == "AnimGraph")
+                {
+                    continue;
+                }
                 QAction* action = removeMenu->addAction(mLayoutNames[i].c_str());
                 connect(action, &QAction::triggered, this, &MainWindow::OnRemoveLayout);
             }
@@ -1911,8 +1943,7 @@ namespace EMStudio
         SavePreferences();
 
         // generate the filename
-        AZStd::string filename;
-        filename = AZStd::string::format("%sLayouts/%s.layout", MysticQt::GetDataDir().c_str(), FromQtString(text).c_str());
+        const auto filename = AZ::IO::Path(MysticQt::GetDataDir()) / AZStd::string::format("Layouts/%s.layout", FromQtString(text).c_str());
 
         // try to load it
         if (GetLayoutManager()->LoadLayout(filename.c_str()) == false)
@@ -1970,7 +2001,7 @@ namespace EMStudio
     {
         // generate the filename
         QAction* action = qobject_cast<QAction*>(sender());
-        m_layoutFileBeingRemoved = QString(MysticQt::GetDataDir().c_str()) + "Layouts/" + action->text() + ".layout";
+        m_layoutFileBeingRemoved = QDir(MysticQt::GetDataDir().c_str()).filePath(QString("Layouts/") + action->text() + ".layout");
         m_removeLayoutNameText = action->text();
 
         // make sure we really want to remove it
@@ -1998,8 +2029,7 @@ namespace EMStudio
         SavePreferences();
 
         // generate the filename
-        AZStd::string filename;
-        filename = AZStd::string::format("%sLayouts/%s.layout", MysticQt::GetDataDir().c_str(), FromQtString(action->text()).c_str());
+        const auto filename = AZ::IO::Path(MysticQt::GetDataDir()) / AZStd::string::format("Layouts/%s.layout", FromQtString(action->text()).c_str());
 
         // try to load it
         if (GetLayoutManager()->LoadLayout(filename.c_str()))
@@ -2572,41 +2602,6 @@ namespace EMStudio
         // widgets (this needs to happen after the raise from OpenPane).
         QTimer::singleShot(0, this, &MainWindow::RaiseFloatingWidgets);
     }
-
-    void MainWindow::keyPressEvent(QKeyEvent* event)
-    {
-        const char* layoutGroupName = "Layouts";
-        const uint32 numLayouts = GetMainWindow()->GetNumLayouts();
-        for (uint32 i = 0; i < numLayouts; ++i)
-        {
-            if (mShortcutManager->Check(event, GetLayoutName(i), layoutGroupName))
-            {
-                mApplicationMode->setCurrentIndex(i);
-                event->accept();
-                return;
-            }
-        }
-
-        event->ignore();
-    }
-
-
-    void MainWindow::keyReleaseEvent(QKeyEvent* event)
-    {
-        const char* layoutGroupName = "Layouts";
-        const uint32 numLayouts = GetNumLayouts();
-        for (uint32 i = 0; i < numLayouts; ++i)
-        {
-            if (mShortcutManager->Check(event, layoutGroupName, GetLayoutName(i)))
-            {
-                event->accept();
-                return;
-            }
-        }
-
-        event->ignore();
-    }
-
 
     // get the name of the currently active layout
     const char* MainWindow::GetCurrentLayoutName() const

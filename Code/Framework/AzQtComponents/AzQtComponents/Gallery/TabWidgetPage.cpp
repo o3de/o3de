@@ -11,7 +11,7 @@
 */
 
 #include "TabWidgetPage.h"
-#include <Gallery/ui_TabWidgetPage.h>
+#include <AzQtComponents/Gallery/ui_TabWidgetPage.h>
 
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 #include <QAction>

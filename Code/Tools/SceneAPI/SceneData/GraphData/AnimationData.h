@@ -30,6 +30,8 @@ namespace AZ
             public:
                 AZ_RTTI(AnimationData, "{D350732E-4727-41C8-95E0-FBAF5F2AC074}", SceneAPI::DataTypes::IAnimationData);
 
+                static void Reflect(ReflectContext* context);
+
                 SCENE_DATA_API AnimationData();
                 SCENE_DATA_API ~AnimationData() override = default;
                 SCENE_DATA_API virtual void AddKeyFrame(const SceneAPI::DataTypes::MatrixType& keyFrameTransform);
@@ -53,8 +55,11 @@ namespace AZ
             public:
                 AZ_RTTI(BlendShapeAnimationData, "{02766CCF-BDA7-46B6-9BB1-58A90C1AD6AA}", SceneAPI::DataTypes::IBlendShapeAnimationData);
 
+                static void Reflect(ReflectContext* context);
+
                 SCENE_DATA_API BlendShapeAnimationData();
                 SCENE_DATA_API ~BlendShapeAnimationData() override = default;
+                SCENE_DATA_API void CloneAttributesFrom(const IGraphObject* sourceObject) override;
                 SCENE_DATA_API virtual void SetBlendShapeName(const char* name);
                 SCENE_DATA_API virtual void AddKeyFrame(double keyFrameValue);
                 SCENE_DATA_API virtual void ReserveKeyFrames(size_t count);

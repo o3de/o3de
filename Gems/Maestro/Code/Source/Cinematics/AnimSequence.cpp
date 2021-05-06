@@ -31,9 +31,7 @@
 #include "CommentNode.h"
 #include "AnimPostFXNode.h"
 #include "AnimScreenFaderNode.h"
-#include "I3DEngine.h"
 #include "ShadowsSetupNode.h"
-#include "AnimEnvironmentNode.h"
 #include "SequenceTrack.h"
 #include "AnimNodeGroup.h"
 #include <Maestro/Types/AnimNodeType.h>
@@ -327,9 +325,6 @@ IAnimNode* CAnimSequence::CreateNodeInternal(AnimNodeType nodeType, uint32 nNode
             break;
         case AnimNodeType::ScreenFader:
             animNode = aznew CAnimScreenFaderNode(nNodeId);
-            break;
-        case AnimNodeType::Environment:
-            animNode = aznew CAnimEnvironmentNode(nNodeId);
             break;
         default:     
             m_pMovieSystem->LogUserNotificationMsg("AnimNode cannot be added because it is an unsupported object type.");
@@ -823,20 +818,35 @@ void CAnimSequence::SetId(uint32 newId)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimSequence::Reflect(AZ::SerializeContext* serializeContext)
+static bool AnimSequenceVersionConverter(
+    AZ::SerializeContext& serializeContext,
+    AZ::SerializeContext::DataElementNode& rootElement)
 {
-    serializeContext->Class<CAnimSequence>()
-        ->Version(4)
-        ->Field("Name", &CAnimSequence::m_name)
-        ->Field("SequenceEntityId", &CAnimSequence::m_sequenceEntityId)
-        ->Field("Flags", &CAnimSequence::m_flags)
-        ->Field("TimeRange", &CAnimSequence::m_timeRange)
-        ->Field("ID", &CAnimSequence::m_id)
-        ->Field("Nodes", &CAnimSequence::m_nodes)
-        ->Field("SequenceType", &CAnimSequence::m_sequenceType)
-        ->Field("Events", &CAnimSequence::m_events)
-        ->Field("Expanded", &CAnimSequence::m_expanded)
-        ->Field("ActiveDirectorNodeId", &CAnimSequence::m_activeDirectorNodeId);
+    if (rootElement.GetVersion() < 5)
+    {
+        rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimSequence>());
+    }
+
+    return true;
+}
+
+void CAnimSequence::Reflect(AZ::ReflectContext* context)
+{
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CAnimSequence, IAnimSequence>()
+            ->Version(IAnimSequence::kSequenceVersion, &AnimSequenceVersionConverter)
+            ->Field("Name", &CAnimSequence::m_name)
+            ->Field("SequenceEntityId", &CAnimSequence::m_sequenceEntityId)
+            ->Field("Flags", &CAnimSequence::m_flags)
+            ->Field("TimeRange", &CAnimSequence::m_timeRange)
+            ->Field("ID", &CAnimSequence::m_id)
+            ->Field("Nodes", &CAnimSequence::m_nodes)
+            ->Field("SequenceType", &CAnimSequence::m_sequenceType)
+            ->Field("Events", &CAnimSequence::m_events)
+            ->Field("Expanded", &CAnimSequence::m_expanded)
+            ->Field("ActiveDirectorNodeId", &CAnimSequence::m_activeDirectorNodeId);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

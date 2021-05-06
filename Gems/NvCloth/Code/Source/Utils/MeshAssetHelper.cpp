@@ -10,14 +10,9 @@
  *
  */
 
-#include <platform.h> // Needed for MeshAsset.h
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
-#include <LmbrCentral/Rendering/MeshAsset.h>
-#include <IRenderer.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 
-#include <IIndexedMesh.h> // Needed for SMeshColor
-
-#include <AzCore/Math/Color.h>
+#include <NvCloth/ITangentSpaceHelper.h>
 
 #include <Utils/MeshAssetHelper.h>
 
@@ -30,36 +25,44 @@ namespace NvCloth
 
     void MeshAssetHelper::GatherClothMeshNodes(MeshNodeList& meshNodes)
     {
-        AZ::Data::Asset<LmbrCentral::MeshAsset> meshAsset;
-        LmbrCentral::MeshComponentRequestBus::EventResult(
-            meshAsset, m_entityId, &LmbrCentral::MeshComponentRequestBus::Events::GetMeshAsset);
-        if (!meshAsset.IsReady())
+        AZ::Data::Asset<AZ::RPI::ModelAsset> modelDataAsset;
+        AZ::Render::MeshComponentRequestBus::EventResult(
+            modelDataAsset, m_entityId, &AZ::Render::MeshComponentRequestBus::Events::GetModelAsset);
+        if (!modelDataAsset.IsReady())
         {
             return;
         }
 
-        IStatObj* statObj = meshAsset.Get()->m_statObj.get();
-        if (!statObj)
+        const AZ::RPI::ModelAsset* modelAsset = modelDataAsset.Get();
+        if (!modelAsset)
         {
             return;
         }
 
-        if (!statObj->GetClothData().empty())
-        {
-            meshNodes.push_back(statObj->GetCGFNodeName().c_str());
-        }
+        const auto lodAssets = modelAsset->GetLodAssets();
 
-        const int subObjectCount = statObj->GetSubObjectCount();
-        for (int i = 0; i < subObjectCount; ++i)
+        AZStd::set<AZStd::string> meshNodeNames;
+
+        if (!lodAssets.empty())
         {
-            IStatObj::SSubObject* subObject = statObj->GetSubObject(i);
-            if (subObject &&
-                subObject->pStatObj &&
-                !subObject->pStatObj->GetClothData().empty())
+            const int lodLevel = 0;
+
+            if (const AZ::RPI::ModelLodAsset* lodAsset = lodAssets[lodLevel].Get())
             {
-                meshNodes.push_back(subObject->pStatObj->GetCGFNodeName().c_str());
+                const auto meshes = lodAsset->GetMeshes();
+
+                for (const auto& mesh : meshes)
+                {
+                    const bool hasClothData = (mesh.GetSemanticBufferAssetView(AZ::Name("CLOTH_DATA")) != nullptr);
+                    if (hasClothData)
+                    {
+                        meshNodeNames.insert(mesh.GetName().GetStringView());
+                    }
+                }
             }
         }
+
+        meshNodes.assign(meshNodeNames.begin(), meshNodeNames.end());
     }
 
     bool MeshAssetHelper::ObtainClothMeshNodeInfo(
@@ -69,165 +72,166 @@ namespace NvCloth
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
 
-        AZ::Data::Asset<LmbrCentral::MeshAsset> meshAsset;
-        LmbrCentral::MeshComponentRequestBus::EventResult(
-            meshAsset, m_entityId, &LmbrCentral::MeshComponentRequestBus::Events::GetMeshAsset);
-        if (!meshAsset.IsReady())
+        AZ::Data::Asset<AZ::RPI::ModelAsset> modelDataAsset;
+        AZ::Render::MeshComponentRequestBus::EventResult(
+            modelDataAsset, m_entityId, &AZ::Render::MeshComponentRequestBus::Events::GetModelAsset);
+        if (!modelDataAsset.IsReady())
         {
             return false;
         }
 
-        IStatObj* statObj = meshAsset.Get()->m_statObj.get();
-        if (!statObj)
+        const AZ::RPI::ModelAsset* modelAsset = modelDataAsset.Get();
+        if (!modelAsset)
         {
             return false;
         }
 
-        IStatObj* selectedStatObj = nullptr;
-        int primitiveIndex = 0;
+        const auto lodAssets = modelAsset->GetLodAssets();
 
-        // Find the render data of the mesh node
-        if (meshNode == statObj->GetCGFNodeName().c_str())
+        AZStd::vector<const AZ::RPI::ModelLodAsset::Mesh*> meshNodes;
+        AZStd::vector<size_t> meshPrimitiveIndices;
+
+        if(!lodAssets.empty())
         {
-            selectedStatObj = statObj;
-        }
-        else
-        {
-            const int subObjectCount = statObj->GetSubObjectCount();
-            for (int i = 0; i < subObjectCount; ++i)
+            const int lodLevel = 0;
+
+            if (const AZ::RPI::ModelLodAsset* lodAsset = lodAssets[lodLevel].Get())
             {
-                IStatObj::SSubObject* subObject = statObj->GetSubObject(i);
-                if (subObject &&
-                    subObject->pStatObj &&
-                    subObject->pStatObj->GetRenderMesh() &&
-                    meshNode == subObject->pStatObj->GetCGFNodeName().c_str())
+                const auto meshes = lodAsset->GetMeshes();
+
+                for (size_t meshIndex = 0; meshIndex < meshes.size(); ++meshIndex)
                 {
-                    selectedStatObj = subObject->pStatObj;
-                    primitiveIndex = i;
-                    break;
+                    if (meshNode == meshes[meshIndex].GetName().GetStringView())
+                    {
+                        meshNodes.push_back(&meshes[meshIndex]);
+                        meshPrimitiveIndices.push_back(meshIndex);
+                        meshNodeInfo.m_lodLevel = lodLevel;
+                    }
                 }
             }
         }
 
         bool infoObtained = false;
 
-        if (selectedStatObj)
+        if (!meshNodes.empty())
         {
-            bool dataCopied = false;
-
-            if (IRenderMesh* renderMesh = selectedStatObj->GetRenderMesh())
-            {
-                dataCopied = CopyDataFromRenderMesh(
-                    *renderMesh, selectedStatObj->GetClothData(),
-                    meshClothInfo);
-            }
+            bool dataCopied = CopyDataFromMeshes(meshNodes, meshClothInfo);
 
             if (dataCopied)
             {
-                // subStatObj contains the buffers for all its submeshes
-                // so only 1 submesh is necessary.
-                MeshNodeInfo::SubMesh subMesh;
-                subMesh.m_primitiveIndex = primitiveIndex;
-                subMesh.m_verticesFirstIndex = 0;
-                subMesh.m_numVertices = meshClothInfo.m_particles.size();
-                subMesh.m_indicesFirstIndex = 0;
-                subMesh.m_numIndices = meshClothInfo.m_indices.size();
+                const size_t numSubMeshes = meshNodes.size();
 
-                meshNodeInfo.m_lodLevel = 0; // Cloth is alway in LOD 0
-                meshNodeInfo.m_subMeshes.push_back(subMesh);
+                meshNodeInfo.m_subMeshes.reserve(meshNodes.size());
+
+                int firstVertex = 0;
+                int firstIndex = 0;
+                for (size_t subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
+                {
+                    MeshNodeInfo::SubMesh subMesh;
+                    subMesh.m_primitiveIndex = static_cast<int>(meshPrimitiveIndices[subMeshIndex]);
+                    subMesh.m_verticesFirstIndex = firstVertex;
+                    subMesh.m_numVertices = static_cast<int>(meshNodes[subMeshIndex]->GetVertexCount());
+                    subMesh.m_indicesFirstIndex = firstIndex;
+                    subMesh.m_numIndices = static_cast<int>(meshNodes[subMeshIndex]->GetIndexCount());
+
+                    firstVertex += subMesh.m_numVertices;
+                    firstIndex += subMesh.m_numIndices;
+
+                    meshNodeInfo.m_subMeshes.push_back(AZStd::move(subMesh));
+                }
 
                 infoObtained = true;
             }
             else
             {
-                AZ_Error("MeshAssetHelper", false, "Failed to extract data from node %s in mesh %s",
-                    meshNode.c_str(), statObj->GetFileName().c_str());
+                AZ_Error("MeshAssetHelper", false, "Failed to extract data from node %s in model %s",
+                    meshNode.c_str(), modelDataAsset.GetHint().c_str());
             }
         }
 
         return infoObtained;
     }
 
-    bool MeshAssetHelper::CopyDataFromRenderMesh(
-        IRenderMesh& renderMesh,
-        const AZStd::vector<SMeshColor>& renderMeshClothData,
+    bool MeshAssetHelper::CopyDataFromMeshes(
+        const AZStd::vector<const AZ::RPI::ModelLodAsset::Mesh*>& meshes,
         MeshClothInfo& meshClothInfo)
     {
-        const int numVertices = renderMesh.GetNumVerts();
-        const int numIndices = renderMesh.GetNumInds();
-        if (numVertices == 0 || numIndices == 0)
+        uint32_t numTotalVertices = 0;
+        uint32_t numTotalIndices = 0;
+        for (const auto* mesh : meshes)
+        {
+            numTotalVertices += mesh->GetVertexCount();
+            numTotalIndices += mesh->GetIndexCount();
+        }
+        if (numTotalVertices == 0 || numTotalIndices == 0)
         {
             return false;
         }
-        else if (numVertices != renderMeshClothData.size())
+
+        meshClothInfo.m_particles.reserve(numTotalVertices);
+        meshClothInfo.m_uvs.reserve(numTotalVertices);
+        meshClothInfo.m_motionConstraints.reserve(numTotalVertices);
+        meshClothInfo.m_backstopData.reserve(numTotalVertices);
+        meshClothInfo.m_indices.reserve(numTotalIndices);
+
+        struct Vec2
         {
-            AZ_Error("MeshAssetHelper", false,
-                "Number of vertices (%d) doesn't match the number of cloth data (%zu)",
-                numVertices,
-                renderMeshClothData.size());
-            return false;
-        }
-
+            float x, y;
+        };
+        struct Vec3
         {
-            IRenderMesh::ThreadAccessLock lockRenderMesh(&renderMesh);
+            float x, y, z;
+        };
+        struct Vec4
+        {
+            float x, y, z, w;
+        };
+        const SimUVType uvZero(0.0f, 0.0f);
 
-            vtx_idx* renderMeshIndices = nullptr;
-            strided_pointer<Vec3> renderMeshVertices;
-            strided_pointer<Vec2> renderMeshUVs;
+        for (const auto* mesh : meshes)
+        {
+            const auto sourceIndices = mesh->GetIndexBufferTyped<uint32_t>();
+            const auto sourcePositions = mesh->GetSemanticBufferTyped<Vec3>(AZ::Name("POSITION"));
+            const auto sourceClothData = mesh->GetSemanticBufferTyped<Vec4>(AZ::Name("CLOTH_DATA"));
+            const auto sourceUVs = mesh->GetSemanticBufferTyped<Vec2>(AZ::Name("UV"));
 
-            renderMeshIndices = renderMesh.GetIndexPtr(FSL_READ);
-            renderMeshVertices.data = reinterpret_cast<Vec3*>(renderMesh.GetPosPtr(renderMeshVertices.iStride, FSL_READ));
-            renderMeshUVs.data = reinterpret_cast<Vec2*>(renderMesh.GetUVPtr(renderMeshUVs.iStride, FSL_READ, 0)); // first UV set
-
-            const SimUVType uvZero(0.0f, 0.0f);
-
-            meshClothInfo.m_particles.resize_no_construct(numVertices);
-            meshClothInfo.m_uvs.resize_no_construct(numVertices);
-            meshClothInfo.m_motionConstraints.resize_no_construct(numVertices);
-            meshClothInfo.m_backstopData.resize_no_construct(numVertices);
-            for (int index = 0; index < numVertices; ++index)
+            if (sourceIndices.empty() || sourcePositions.empty() || sourceClothData.empty())
             {
-                const ColorB clothVertexDataColorB = renderMeshClothData[index].GetRGBA();
-                const AZ::Color clothVertexData(
-                    clothVertexDataColorB.r,
-                    clothVertexDataColorB.g,
-                    clothVertexDataColorB.b,
-                    clothVertexDataColorB.a);
+                return false;
+            }
 
-                const float inverseMass = clothVertexData.GetR();
-                const float motionConstraint = clothVertexData.GetG();
-                const float backstopRadius = clothVertexData.GetA();
-                const float backstopOffset = ConvertBackstopOffset(clothVertexData.GetB());
+            const uint32_t numVertices = mesh->GetVertexCount();
+            for (uint32_t index = 0; index < numVertices; ++index)
+            {
+                const float inverseMass = sourceClothData[index].x;
+                const float motionConstraint = sourceClothData[index].y;
+                const float backstopOffset = ConvertBackstopOffset(sourceClothData[index].z);
+                const float backstopRadius = sourceClothData[index].w;
 
-                meshClothInfo.m_particles[index].Set(
-                    renderMeshVertices[index].x,
-                    renderMeshVertices[index].y,
-                    renderMeshVertices[index].z,
+                meshClothInfo.m_particles.emplace_back(
+                    sourcePositions[index].x,
+                    sourcePositions[index].y,
+                    sourcePositions[index].z,
                     inverseMass);
 
-                meshClothInfo.m_motionConstraints[index] = motionConstraint;
-                meshClothInfo.m_backstopData[index].Set(backstopOffset, backstopRadius);
+                meshClothInfo.m_motionConstraints.emplace_back(motionConstraint);
+                meshClothInfo.m_backstopData.emplace_back(backstopOffset, backstopRadius);
 
-                meshClothInfo.m_uvs[index] = (renderMeshUVs.data) ? SimUVType(renderMeshUVs[index].x, renderMeshUVs[index].y) : uvZero;
+                meshClothInfo.m_uvs.emplace_back(
+                    sourceUVs.empty()
+                    ? uvZero
+                    : SimUVType(sourceUVs[index].x, sourceUVs[index].y));
             }
 
-            meshClothInfo.m_indices.resize_no_construct(numIndices);
-            // Fast copy when SimIndexType is the same size as the vtx_idx.
-            if constexpr (sizeof(SimIndexType) == sizeof(vtx_idx))
-            {
-                memcpy(meshClothInfo.m_indices.data(), renderMeshIndices, numIndices * sizeof(SimIndexType));
-            }
-            else
-            {
-                for (int index = 0; index < numIndices; ++index)
-                {
-                    meshClothInfo.m_indices[index] = static_cast<SimIndexType>(renderMeshIndices[index]);
-                }
-            }
-
-            renderMesh.UnlockStream(VSF_GENERAL);
-            renderMesh.UnlockIndexStream();
+            meshClothInfo.m_indices.insert(meshClothInfo.m_indices.end(), sourceIndices.begin(), sourceIndices.end());
         }
+
+        // Calculate tangent space for the mesh.
+        [[maybe_unused]] bool tangentSpaceCalculated =
+            AZ::Interface<ITangentSpaceHelper>::Get()->CalculateTangentSpace(
+                meshClothInfo.m_particles, meshClothInfo.m_indices, meshClothInfo.m_uvs,
+                meshClothInfo.m_tangents, meshClothInfo.m_bitangents, meshClothInfo.m_normals);
+        AZ_Assert(tangentSpaceCalculated, "Failed to calculate tangent space.");
 
         return true;
     }

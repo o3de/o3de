@@ -104,7 +104,6 @@ class SandboxIntegrationManager
     , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
     , private AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
     , private IUndoManagerListener
-    , private AzToolsFramework::NewViewportInteractionModelEnabledRequestBus::Handler
     , private AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler
 {
 public:
@@ -162,7 +161,6 @@ private:
     bool GetUndoSliceOverrideSaveValue() override;
     bool GetShowCircularDependencyError() override;
     void SetShowCircularDependencyError(const bool& showCircularDependencyError) override;
-    void SetEditTool(const char* tool) override;
     void LaunchLuaEditor(const char* files) override;
     bool IsLevelDocumentOpen() override;
     AZStd::string GetLevelName() override;
@@ -268,8 +266,6 @@ private:
     bool SetDrawInFrontMode(bool bOn) override;
     AZ::u32 GetState() override;
     AZ::u32 SetState(AZ::u32 state) override;
-    AZ::u32 SetStateFlag(AZ::u32 state) override;
-    AZ::u32 ClearStateFlag(AZ::u32 state) override;
     void PushMatrix(const AZ::Transform& tm) override;
     void PopMatrix() override;
 
@@ -277,9 +273,6 @@ private:
     // AzFramework::DisplayContextRequestBus
     void SetDC(DisplayContext* dc) override;
     DisplayContext* GetDC() override;
-
-    // NewViewportInteractionModelEnabledRequestBus
-    bool IsNewViewportInteractionModelEnabled() override;
 
     // Context menu handlers.
     void ContextMenu_NewEntity();
@@ -379,9 +372,9 @@ private:
     // Tracks new entities that have not yet been saved.
     AZStd::unordered_set<AZ::EntityId> m_unsavedEntities;
 
-    const AZStd::string m_defaultComponentIconLocation = "Editor/Icons/Components/Component_Placeholder.svg";
-    const AZStd::string m_defaultComponentViewportIconLocation = "Editor/Icons/Components/Viewport/Component_Placeholder.png";
-    const AZStd::string m_defaultEntityIconLocation = "Editor/Icons/Components/Viewport/Transform.png";
+    const AZStd::string m_defaultComponentIconLocation = "Icons/Components/Component_Placeholder.svg";
+    const AZStd::string m_defaultComponentViewportIconLocation = "Icons/Components/Viewport/Component_Placeholder.png";
+    const AZStd::string m_defaultEntityIconLocation = "Icons/Components/Viewport/Transform.png";
 
     bool m_debugDisplayBusImplementationActive = false;
 

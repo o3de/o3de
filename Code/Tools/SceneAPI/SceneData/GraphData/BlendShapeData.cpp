@@ -12,9 +12,13 @@
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <SceneAPI/SceneData/GraphData/BlendShapeData.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace AZ
 {
+    AZ_TYPE_INFO_SPECIALIZE(SceneAPI::DataTypes::IBlendShapeData::Face, "{C972EC9A-3A5C-47CD-9A92-ECB4C0C0451C}");
+
     namespace SceneData
     {
         namespace GraphData
@@ -23,11 +27,90 @@ namespace AZ
 
             BlendShapeData::~BlendShapeData() = default;
 
-            unsigned int BlendShapeData::AddVertex(const Vector3& position, const Vector3& normal)
+            void BlendShapeData::Reflect(ReflectContext* context)
+            {
+                SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
+                if (serializeContext)
+                {
+                    serializeContext->Class<BlendShapeData, SceneAPI::DataTypes::IBlendShapeData>()
+                        ->Version(1);
+                }
+
+                BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
+                if (behaviorContext)
+                {
+                    behaviorContext->Class<SceneAPI::DataTypes::IBlendShapeData>()
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Method("GetUsedControlPointCount", &SceneAPI::DataTypes::IBlendShapeData::GetUsedControlPointCount)
+                        ->Method("GetControlPointIndex", &SceneAPI::DataTypes::IBlendShapeData::GetControlPointIndex)
+                        ->Method("GetUsedPointIndexForControlPoint", &SceneAPI::DataTypes::IBlendShapeData::GetUsedPointIndexForControlPoint)
+                        ->Method("GetVertexCount", &SceneAPI::DataTypes::IBlendShapeData::GetVertexCount)
+                        ->Method("GetFaceCount", &SceneAPI::DataTypes::IBlendShapeData::GetFaceCount)
+                        ->Method("GetFaceInfo", &SceneAPI::DataTypes::IBlendShapeData::GetFaceInfo)
+                        ->Method("GetPosition", &SceneAPI::DataTypes::IBlendShapeData::GetPosition)
+                        ->Method("GetNormal", &SceneAPI::DataTypes::IBlendShapeData::GetNormal)
+                        ->Method("GetFaceVertexIndex", &SceneAPI::DataTypes::IBlendShapeData::GetFaceVertexIndex);
+
+                    behaviorContext->Class<SceneAPI::DataTypes::IBlendShapeData::Face>("BlendShapeDataFace")
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Method("GetVertexIndex", [](const SceneAPI::DataTypes::IBlendShapeData::Face& self, int index)
+                        {
+                            if (index >= 0 && index < 3)
+                            {
+                                return self.vertexIndex[index];
+                            }
+                            return aznumeric_cast<unsigned int>(0);
+                        });
+
+                    behaviorContext->Class<BlendShapeData>()
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Method("GetUV", &BlendShapeData::GetUV)
+                        ->Method("GetTangent", [](const BlendShapeData& self, size_t index)
+                        {
+                            if (index < self.GetTangents().size())
+                            {
+                                return self.GetTangents().at(index);
+                            }
+                            AZ_Error("SceneGraphData", false, "Cannot get to tangent at index(%zu)", index);
+                            return Vector4::CreateZero();
+                        })
+                        ->Method("GetBitangent", [](const BlendShapeData& self, size_t index)
+                        {
+                            if (index < self.GetBitangents().size())
+                            {
+                                return self.GetBitangents().at(index);
+                            }
+                            AZ_Error("SceneGraphData", false, "Cannot get to bitangents at index(%zu)", index);
+                            return Vector3::CreateZero();
+                        })
+                        ->Method("GetColor", [](const BlendShapeData& self, AZ::u8 colorSetIndex, AZ::u8 colorIndex)
+                        {
+                            SceneAPI::DataTypes::Color color(0,0,0,0);
+                            if (colorSetIndex < MaxNumColorSets)
+                            {
+                                const AZStd::vector<SceneAPI::DataTypes::Color>& colorChannel = self.GetColors(colorSetIndex);
+                                if (colorIndex < colorChannel.size())
+                                {
+                                    return colorChannel[colorIndex];
+                                }
+                            }
+                            AZ_Error("SceneGraphData", false, "Cannot get to color setIndex(%d) at colorIndex(%d)", colorSetIndex, colorIndex);
+                            return color;
+                        });
+                }
+            }
+
+            void BlendShapeData::AddPosition(const Vector3& position)
             {
                 m_positions.push_back(position);
+            }
+
+            void BlendShapeData::AddNormal(const Vector3& normal)
+            {
                 m_normals.push_back(normal);
-                return static_cast<unsigned int>(m_positions.size()-1);
             }
 
             void BlendShapeData::AddTangentAndBitangent(const Vector4& tangent, const Vector3& bitangent)
@@ -133,6 +216,12 @@ namespace AZ
             unsigned int BlendShapeData::GetFaceCount() const
             {
                 return static_cast<unsigned int>(m_faces.size());
+            }
+
+            const BlendShapeData::Face& BlendShapeData::GetFaceInfo(unsigned int index) const
+            {
+                AZ_Assert(index < m_faces.size(), "GetFaceInfo index not in range");
+                return m_faces[index];
             }
 
             const Vector3& BlendShapeData::GetPosition(unsigned int index) const

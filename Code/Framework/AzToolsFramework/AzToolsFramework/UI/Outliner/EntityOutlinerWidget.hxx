@@ -20,10 +20,10 @@
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/ToolsMessaging/EntityHighlightBus.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerCacheBus.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSearchWidget.h>
-#include <AzToolsFramework/UI/Outliner/EntityOutlinerWidgetInterface.h>
 #include <AzToolsFramework/UI/SearchWidget/SearchWidgetTypes.hxx>
 
 #include <QIcon>
@@ -42,6 +42,7 @@ namespace Ui
 
 namespace AzToolsFramework
 {
+    class EditorEntityUiInterface;
     class EntityOutlinerListModel;
     class EntityOutlinerSortFilterProxyModel;
 
@@ -61,7 +62,7 @@ namespace AzToolsFramework
         , private EditorEntityContextNotificationBus::Handler
         , private EditorEntityInfoNotificationBus::Handler
         , private ComponentModeFramework::EditorComponentModeNotificationBus::Handler
-        , private EntityOutlinerWidgetInterface
+        , private Prefab::PrefabPublicNotificationBus::Handler
     {
         Q_OBJECT;
     public:
@@ -105,9 +106,9 @@ namespace AzToolsFramework
         void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
         void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
 
-        // EntityOutlinerWidgetInterface
-        void SetRootEntity(AZ::EntityId rootEntityId) override;
-        void SetUpdatesEnabled(bool enable) override;
+        // PrefabPublicNotificationBus
+        void OnPrefabInstancePropagationBegin() override;
+        void OnPrefabInstancePropagationEnd() override;
 
         // Build a selection object from the given entities. Entities already in the Widget's selection buffers are ignored.
         template <class EntityIdCollection>
@@ -193,6 +194,8 @@ namespace AzToolsFramework
         EntityIdSet m_entitiesToSort;
         EntityOutliner::DisplaySortMode m_sortMode;
         bool m_sortContentQueued;
+
+        EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
     };
 
 }

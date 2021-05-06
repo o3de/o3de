@@ -55,7 +55,7 @@ namespace Maestro
 
         // Don't RemoveEntityToAnimate if we are in the middle of an Undo event.
         // Doing so will create will mark this entity dirty and break the undo system.
-        if (!isDuringUndo)
+        if (!isDuringUndo && m_sequence)
         {
             for (int i = m_sequence->GetNodeCount(); --i >= 0;)
             {
@@ -110,8 +110,8 @@ namespace Maestro
                     "Sequence", "Plays Cinematic Animations")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Cinematics")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Sequence.png")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Sequence.png")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Sequence.png")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Sequence.png")
                       //->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
                         ->Attribute(AZ::Edit::Attributes::AddableByUser, false)     // SequenceAgents are only added by TrackView
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

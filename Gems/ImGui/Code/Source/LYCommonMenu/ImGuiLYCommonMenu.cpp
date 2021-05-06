@@ -23,7 +23,7 @@
 
 namespace ImGui
 {
-    // Resolution Widths to recommend for usage for both LumberYard Rendering and/or ImGui Rendering
+    // Resolution Widths to recommend for usage for both O3DE Rendering and/or ImGui Rendering
     static int s_renderResolutionWidths[7] = { 800, 1280, 1600, 1920, 2560, 3440, 3840 };
     static int s_renderAspectRatios[4][2] = { {16,9}, {16,10}, {43,18}, {4,3} };
     static const char* s_toggleTelemetryConsoleCmd = "radtm_ToggleEnabled 1";
@@ -100,7 +100,7 @@ namespace ImGui
         {
             // Get Discrete Input state now, we will use it both inside the ImGui SubMenu, and along the main task bar ( when it is on )
             bool discreteInputEnabled = false;
-            ImGuiManagerListenerBus::BroadcastResult(discreteInputEnabled, &IImGuiManagerListener::GetEnableDiscreteInputMode);
+            ImGuiManagerBus::BroadcastResult(discreteInputEnabled, &IImGuiManager::GetEnableDiscreteInputMode);
 
             // Input Mode Display
             {
@@ -116,7 +116,7 @@ namespace ImGui
                 {
                     // Discrete Input - Control ImGui and Game independently.
                     ImGui::DisplayState state;
-                    ImGui::ImGuiManagerListenerBus::BroadcastResult(state, &ImGui::IImGuiManagerListener::GetClientMenuBarState);
+                    ImGui::ImGuiManagerBus::BroadcastResult(state, &ImGui::IImGuiManager::GetClientMenuBarState);
                     if (state == DisplayState::Visible)
                     {
                         inputTitle.append("ImGui");
@@ -155,8 +155,11 @@ namespace ImGui
                 ImGui::SetCursorPosX(prevCursorPos);
             }
 
-            // Main LumberYard menu
-            if (ImGui::BeginMenu("LumberYard"))
+            // Add some space before the first menu so it won't overlap with view control buttons
+            ImGui::SetCursorPosX(40.f);
+
+            // Main Open 3D Engine menu
+            if (ImGui::BeginMenu("Open 3D Engine"))
             {
                 // Asset Explorer
                 if (ImGui::MenuItem("Asset Explorer"))
@@ -411,40 +414,40 @@ namespace ImGui
                     // Controller Support - Contextual
                     {
                         bool controllerEnabled = false;
-                        ImGuiManagerListenerBus::BroadcastResult(controllerEnabled, &IImGuiManagerListener::IsControllerSupportModeEnabled, ImGuiControllerModeFlags::Contextual);
+                        ImGuiManagerBus::BroadcastResult(controllerEnabled, &IImGuiManager::IsControllerSupportModeEnabled, ImGuiControllerModeFlags::Contextual);
 
                         bool controllerEnabledCheckbox = controllerEnabled;
                         ImGui::Checkbox(AZStd::string::format("Controller Support (Contextual) %s (Click Checkbox to Toggle)", controllerEnabledCheckbox ? "On" : "Off").c_str(), &controllerEnabledCheckbox);
                         if (controllerEnabledCheckbox != controllerEnabled)
                         {
-                            ImGuiManagerListenerBus::Broadcast(&IImGuiManagerListener::EnableControllerSupportMode, ImGuiControllerModeFlags::Contextual, controllerEnabledCheckbox);
+                            ImGuiManagerBus::Broadcast(&IImGuiManager::EnableControllerSupportMode, ImGuiControllerModeFlags::Contextual, controllerEnabledCheckbox);
                         }
                     }
 
                     // Controller Support - Mouse
                     {
                         bool controllerMouseEnabled = false;
-                        ImGuiManagerListenerBus::BroadcastResult(controllerMouseEnabled, &IImGuiManagerListener::IsControllerSupportModeEnabled, ImGuiControllerModeFlags::Mouse);
+                        ImGuiManagerBus::BroadcastResult(controllerMouseEnabled, &IImGuiManager::IsControllerSupportModeEnabled, ImGuiControllerModeFlags::Mouse);
 
                         bool controllerMouseEnabledCheckbox = controllerMouseEnabled;
                         ImGui::Checkbox(AZStd::string::format("Controller Support (Mouse) %s (Click Checkbox to Toggle)", controllerMouseEnabledCheckbox ? "On" : "Off").c_str(), &controllerMouseEnabledCheckbox);
                         if (controllerMouseEnabledCheckbox != controllerMouseEnabled)
                         {
-                            ImGuiManagerListenerBus::Broadcast(&IImGuiManagerListener::EnableControllerSupportMode, ImGuiControllerModeFlags::Mouse, controllerMouseEnabledCheckbox);
+                            ImGuiManagerBus::Broadcast(&IImGuiManager::EnableControllerSupportMode, ImGuiControllerModeFlags::Mouse, controllerMouseEnabledCheckbox);
                         }
 
                         // Only draw Controller Mouse Sensitivity slider if the mouse is enabled
                         if (controllerMouseEnabled)
                         {
                             float controllerMouseSensitivity = 1.0f;
-                            ImGuiManagerListenerBus::BroadcastResult(controllerMouseSensitivity, &IImGuiManagerListener::GetControllerMouseSensitivity);
+                            ImGuiManagerBus::BroadcastResult(controllerMouseSensitivity, &IImGuiManager::GetControllerMouseSensitivity);
 
                             float controllerMouseSensitivitySlider = controllerMouseSensitivity;
                             ImGui::DragFloat("Controller Mouse Sensitivity", &controllerMouseSensitivitySlider, 0.1f, 0.1f, 50.0f);
 
                             if (controllerMouseSensitivitySlider != controllerMouseSensitivity)
                             {
-                                ImGuiManagerListenerBus::Broadcast(&IImGuiManagerListener::SetControllerMouseSensitivity, controllerMouseSensitivitySlider);
+                                ImGuiManagerBus::Broadcast(&IImGuiManager::SetControllerMouseSensitivity, controllerMouseSensitivitySlider);
                             }
                         }
                     }
@@ -455,7 +458,7 @@ namespace ImGui
                         ImGui::Checkbox(AZStd::string::format("Discrete Input %s (Click Checkbox to Toggle)", discreteInputEnabledCheckbox ? "On" : "Off").c_str(), &discreteInputEnabledCheckbox);
                         if (discreteInputEnabledCheckbox != discreteInputEnabled)
                         {
-                            ImGuiManagerListenerBus::Broadcast(&IImGuiManagerListener::SetEnableDiscreteInputMode, discreteInputEnabledCheckbox);
+                            ImGuiManagerBus::Broadcast(&IImGuiManager::SetEnableDiscreteInputMode, discreteInputEnabledCheckbox);
                         }
                     }
 
@@ -481,7 +484,7 @@ namespace ImGui
                         ImGui::TextColored(ImGui::Colors::s_NiceLabelColor, "ImGui Resolution Mode:");
 
                         ImGuiResolutionMode resMode = ImGuiResolutionMode::MatchRenderResolution;
-                        ImGuiManagerListenerBus::BroadcastResult(resMode, &IImGuiManagerListener::GetResolutionMode);
+                        ImGuiManagerBus::BroadcastResult(resMode, &IImGuiManager::GetResolutionMode);
 
                         int resModeRadioBtn = static_cast<int>(resMode);
                         ImGui::RadioButton("Force Resolution", &resModeRadioBtn, static_cast<int>(ImGuiResolutionMode::LockToResolution));
@@ -493,12 +496,12 @@ namespace ImGui
                         ImGuiResolutionMode resModeRadioBtnResult = static_cast<ImGuiResolutionMode>(resModeRadioBtn);
                         if (resModeRadioBtnResult != resMode)
                         {
-                            ImGuiManagerListenerBus::Broadcast(&IImGuiManagerListener::SetResolutionMode, resModeRadioBtnResult);
+                            ImGuiManagerBus::Broadcast(&IImGuiManager::SetResolutionMode, resModeRadioBtnResult);
                         }
 
                         // Resolutions
                         ImVec2 imGuiRes;
-                        ImGuiManagerListenerBus::BroadcastResult(imGuiRes, &IImGuiManagerListener::GetImGuiRenderResolution);
+                        ImGuiManagerBus::BroadcastResult(imGuiRes, &IImGuiManager::GetImGuiRenderResolution);
 
                         ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Current ImGui Resolution: ");
                         ImGui::SameLine();
@@ -515,7 +518,7 @@ namespace ImGui
                                 if (ImGui::Button(AZStd::string::format("%d x %d", s_renderResolutionWidths[j], renderHeight).c_str(), ImVec2(400, 0)))
                                 {
                                     ImVec2 newRenderRes(static_cast<float>(s_renderResolutionWidths[j]), static_cast<float>(renderHeight));
-                                    ImGuiManagerListenerBus::Broadcast(&IImGuiManagerListener::SetImGuiRenderResolution, newRenderRes);
+                                    ImGuiManagerBus::Broadcast(&IImGuiManager::SetImGuiRenderResolution, newRenderRes);
                                 }
                             }
                         }
@@ -536,8 +539,8 @@ namespace ImGui
                     {
                         int assertLevelValue = gAssertLevelCVAR->GetIVal();
                         int dragIntVal = assertLevelValue;
-                        ImGui::Text("sys_asserts: %d ( 0-off | 1-log | 2-popup )", assertLevelValue);
-                        ImGui::SliderInt("##sys_asserts", &dragIntVal, 0, 2);
+                        ImGui::Text("sys_asserts: %d ( 0-off | 1-log | 2-popup | 3-crash )", assertLevelValue);
+                        ImGui::SliderInt("##sys_asserts", &dragIntVal, 0, 3);
                         if (dragIntVal != assertLevelValue)
                         {
                             gAssertLevelCVAR->Set(dragIntVal);
@@ -574,10 +577,10 @@ namespace ImGui
     void ImGuiLYCommonMenu::OnImGuiUpdate_DrawControllerLegend()
     {
         bool contextualControllerEnabled = false;
-        ImGuiManagerListenerBus::BroadcastResult(contextualControllerEnabled, &IImGuiManagerListener::IsControllerSupportModeEnabled, ImGuiControllerModeFlags::Contextual);
+        ImGuiManagerBus::BroadcastResult(contextualControllerEnabled, &IImGuiManager::IsControllerSupportModeEnabled, ImGuiControllerModeFlags::Contextual);
 
         bool controllerMouseEnabled = false;
-        ImGuiManagerListenerBus::BroadcastResult(controllerMouseEnabled, &IImGuiManagerListener::IsControllerSupportModeEnabled, ImGuiControllerModeFlags::Mouse);
+        ImGuiManagerBus::BroadcastResult(controllerMouseEnabled, &IImGuiManager::IsControllerSupportModeEnabled, ImGuiControllerModeFlags::Mouse);
 
         ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Contextual Controller Input Legend. Currently Enabled:");
         ImGui::SameLine();
@@ -698,10 +701,10 @@ namespace ImGui
         AZ::TickBus::Handler::BusConnect();
 
         // Get the current ImGui Display state to restore it later.
-        ImGuiManagerListenerBus::BroadcastResult(m_telemetryCapturePreCaptureState, &IImGuiManagerListener::GetClientMenuBarState);
+        ImGuiManagerBus::BroadcastResult(m_telemetryCapturePreCaptureState, &IImGuiManager::GetClientMenuBarState);
 
         // Turn off the ImGui Manager
-        ImGuiManagerListenerBus::Broadcast(&IImGuiManagerListener::SetClientMenuBarState, DisplayState::Hidden);
+        ImGuiManagerBus::Broadcast(&IImGuiManager::SetClientMenuBarState, DisplayState::Hidden);
     }
 
     void ImGuiLYCommonMenu::StopTelemetryCapture()
@@ -711,7 +714,7 @@ namespace ImGui
 
         // Restore ImGui State
         // Turn off the ImGui Manager
-        ImGuiManagerListenerBus::Broadcast(&IImGuiManagerListener::SetClientMenuBarState, m_telemetryCapturePreCaptureState);
+        ImGuiManagerBus::Broadcast(&IImGuiManager::SetClientMenuBarState, m_telemetryCapturePreCaptureState);
 
         // Reset timer and disconnect tick bus
         m_telemetryCaptureTimeRemaining = 0.0f;

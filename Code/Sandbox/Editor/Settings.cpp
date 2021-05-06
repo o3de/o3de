@@ -196,7 +196,6 @@ SEditorSettings::SEditorSettings()
     enableSceneInspector = false;
 
     strStandardTempDirectory = "Temp";
-    strEditorEnv = "Editor/Editor.env";
 
     // Init source safe params.
     enableSourceControl = true;
@@ -252,10 +251,6 @@ SEditorSettings::SEditorSettings()
     gui.hSystemFont = QFont("Ms Shell Dlg 2", lfHeight, QFont::Normal);
     gui.hSystemFontBold = QFont("Ms Shell Dlg 2", lfHeight, QFont::Bold);
     gui.hSystemFontItalic = QFont("Ms Shell Dlg 2", lfHeight, QFont::Normal, true);
-
-    bForceSkyUpdate = true;
-
-    bIsSearchFilterActive = false;
 
     backgroundUpdatePeriod = 0;
     g_TemporaryLevelName = nullptr;
@@ -532,7 +527,6 @@ void SEditorSettings::Save()
     SaveValue("Settings", "editorConfigSpec", editorConfigSpec);
 
     SaveValue("Settings", "TemporaryDirectory", strStandardTempDirectory);
-    SaveValue("Settings", "EditorEnv", strEditorEnv);
 
     SaveValue("Settings", "ConsoleBackgroundColorThemeV2", (int)consoleBackgroundColorTheme);
 
@@ -651,14 +645,6 @@ void SEditorSettings::Save()
     SaveValue("Settings\\ObjectColors", "GeometryAlpha", objectColorSettings.fGeomAlpha);
     SaveValue("Settings\\ObjectColors", "ChildGeometryAlpha", objectColorSettings.fChildGeomAlpha);
 
-    SaveValue("Settings", "ForceSkyUpdate", gSettings.bForceSkyUpdate);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Vertex snapping settings
-    //////////////////////////////////////////////////////////////////////////
-    SaveValue("Settings\\VertexSnapping", "VertexCubeSize", vertexSnappingSettings.vertexCubeSize);
-    SaveValue("Settings\\VertexSnapping", "RenderPenetratedBoundBox", vertexSnappingSettings.bRenderPenetratedBoundBox);
-
     //////////////////////////////////////////////////////////////////////////
     // Smart file open settings
     //////////////////////////////////////////////////////////////////////////
@@ -703,6 +689,10 @@ void SEditorSettings::Save()
 //////////////////////////////////////////////////////////////////////////
 void SEditorSettings::Load()
 {
+    // Load from Settings Registry
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        prefabSystem, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
     const int settingsVersion = s_editorSettings()->value(QStringLiteral("Settings/EditorSettingsVersion"), 0).toInt();
 
     if (settingsVersion != EditorSettingsVersion)
@@ -749,7 +739,6 @@ void SEditorSettings::Load()
 
 
     LoadValue("Settings", "TemporaryDirectory", strStandardTempDirectory);
-    LoadValue("Settings", "EditorEnv", strEditorEnv);
 
     int consoleBackgroundColorThemeInt = (int)consoleBackgroundColorTheme;
     LoadValue("Settings", "ConsoleBackgroundColorThemeV2", consoleBackgroundColorThemeInt);
@@ -762,7 +751,7 @@ void SEditorSettings::Load()
     LoadValue("Settings", "ShowTimeInConsole", bShowTimeInConsole);
 
     LoadValue("Settings", "EnableSceneInspector", enableSceneInspector);
-    
+
     //////////////////////////////////////////////////////////////////////////
     // Viewport Settings.
     //////////////////////////////////////////////////////////////////////////
@@ -880,14 +869,6 @@ void SEditorSettings::Load()
     LoadValue("Settings\\ObjectColors", "GeometryAlpha", objectColorSettings.fGeomAlpha);
     LoadValue("Settings\\ObjectColors", "ChildGeometryAlpha", objectColorSettings.fChildGeomAlpha);
 
-    LoadValue("Settings", "ForceSkyUpdate", gSettings.bForceSkyUpdate);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Vertex snapping settings
-    //////////////////////////////////////////////////////////////////////////
-    LoadValue("Settings\\VertexSnapping", "VertexCubeSize", vertexSnappingSettings.vertexCubeSize);
-    LoadValue("Settings\\VertexSnapping", "RenderPenetratedBoundBox", vertexSnappingSettings.bRenderPenetratedBoundBox);
-
     //////////////////////////////////////////////////////////////////////////
     // Smart file open settings
     //////////////////////////////////////////////////////////////////////////
@@ -942,11 +923,6 @@ void SEditorSettings::Load()
             searchPaths[id].push_back(path);
         }
     }
-
-    // Load from Settings Registry
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        prefabSystem, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1091,7 +1067,7 @@ void SEditorSettings::ConvertPath(const AZStd::string_view sourcePath, AZStd::st
 {
     // This API accepts pipe-separated paths like "Category1|Category2|AttributeName"
     // But the SettingsManager requires 2 arguments, a Category like "Category1\Category2" and an attribute "AttributeName"
-    // The reason for the difference is to have this API be consistent with the path syntax in Lumberyard Python APIs.
+    // The reason for the difference is to have this API be consistent with the path syntax in Open 3D Engine Python APIs.
 
     // Find the last pipe separator ("|") in the path
     int lastSeparator = sourcePath.find_last_of("|");

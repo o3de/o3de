@@ -301,7 +301,7 @@ enum EMenuItem
 
 // The 'MI' represents a Menu Item.
 
-#include <Animation/ui_UiAnimViewNodes.h>
+#include <Editor/Animation/ui_UiAnimViewNodes.h>
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -502,8 +502,6 @@ CUiAnimViewNodesCtrl::CRecord* CUiAnimViewNodesCtrl::AddAnimNodeRecord(CRecord* 
 //////////////////////////////////////////////////////////////////////////
 CUiAnimViewNodesCtrl::CRecord* CUiAnimViewNodesCtrl::AddTrackRecord(CRecord* pParentRecord, CUiAnimViewTrack* pTrack)
 {
-    const CUiAnimViewAnimNode* pAnimNode = pTrack->GetAnimNode();
-
     CRecord* pNewTrackRecord = new CRecord(pTrack);
     pNewTrackRecord->setSizeHint(0, QSize(30, 18));
     pNewTrackRecord->setText(0, QtUtil::ToQString(pTrack->GetName()));
@@ -682,26 +680,7 @@ void CUiAnimViewNodesCtrl::UpdateUiAnimNodeRecord(CRecord* pRecord, CUiAnimViewA
     }
     else if (nodeType == eUiAnimNodeType_Material)
     {
-        // Check if a valid material can be found by the node name.
-        _smart_ptr<IMaterial>  pMaterial = nullptr;
-        QString matName;
-        int subMtlIndex = GetMatNameAndSubMtlIndexFromName(matName, pAnimNode->GetName());
-        pMaterial = gEnv->p3DEngine->GetMaterialManager()->FindMaterial(matName.toUtf8().data());
-        if (pMaterial)
-        {
-            bool bMultiMat = pMaterial->GetSubMtlCount() > 0;
-            bool bMultiMatWithoutValidIndex = bMultiMat && (subMtlIndex < 0 || subMtlIndex >= pMaterial->GetSubMtlCount());
-            bool bLeafMatWithIndex = !bMultiMat && subMtlIndex != -1;
-            if (bMultiMatWithoutValidIndex || bLeafMatWithIndex)
-            {
-                pMaterial = nullptr;
-            }
-        }
-
-        if (!pMaterial)
-        {
-            pRecord->setForeground(0, TEXT_COLOR_FOR_INVALID_MATERIAL);
-        }
+        pRecord->setForeground(0, TEXT_COLOR_FOR_INVALID_MATERIAL);
     }
 
     // Mark the active director and other directors properly.
@@ -749,7 +728,7 @@ void CUiAnimViewNodesCtrl::OnFillItems()
         // Additional empty record like space for scrollbar in key control
         CRecord* pGroupRec = new CRecord();
         pGroupRec->setSizeHint(0, QSize(width(), 18));
-        ui->treeWidget->addTopLevelItem(pRootGroupRec);
+        ui->treeWidget->addTopLevelItem(pGroupRec);
     }
 }
 
@@ -1086,7 +1065,7 @@ void CUiAnimViewNodesCtrl::OnNMRclick(QPoint point)
         if (pAnimNode)
         {
             QString matName;
-            int subMtlIndex = GetMatNameAndSubMtlIndexFromName(matName, pAnimNode->GetName());
+            GetMatNameAndSubMtlIndexFromName(matName, pAnimNode->GetName());
             QString newMatName;
             newMatName = QStringLiteral("%1.[%2]").arg(matName).arg(cmd - eMI_SelectSubmaterialBase + 1);
             UiAnimUndo undo("Rename Animation node");
@@ -1196,7 +1175,6 @@ void CUiAnimViewNodesCtrl::AddGroupNodeAddItems(UiAnimContextMenu& contextMenu, 
     }
 
     const bool bIsDirectorOrSequence = (pAnimNode->GetType() == eUiAnimNodeType_Director || pAnimNode->GetNodeType() == eUiAVNT_Sequence);
-    CUiAnimViewAnimNode* pDirector = bIsDirectorOrSequence ? pAnimNode : pAnimNode->GetDirector();
 
 
 #if UI_ANIMATION_REMOVED
@@ -1312,44 +1290,6 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
         bAppended = true;
     }
 
-
-    // Sub material menu
-    if (bOnNode && pAnimNode->GetType() == eUiAnimNodeType_Material)
-    {
-        QString matName;
-        int subMtlIndex = GetMatNameAndSubMtlIndexFromName(matName, pAnimNode->GetName());
-        _smart_ptr<IMaterial>  pMtl = gEnv->p3DEngine->GetMaterialManager()->FindMaterial(matName.toUtf8().data());
-        bool bMultMatNode = pMtl ? pMtl->GetSubMtlCount() > 0 : false;
-
-        bool bMatAppended = false;
-
-        if (bMultMatNode)
-        {
-            for (int k = 0; k < pMtl->GetSubMtlCount(); ++k)
-            {
-                _smart_ptr<IMaterial>  pSubMaterial = pMtl->GetSubMtl(k);
-
-                if (pSubMaterial)
-                {
-                    QString subMaterialName = pSubMaterial->GetName();
-
-                    if (!subMaterialName.isEmpty())
-                    {
-                        AddMenuSeperatorConditional(contextMenu.main, bAppended);
-                        QString subMatName = QString("[%1] %2").arg(k + 1).arg(subMaterialName);
-                        QAction* a = contextMenu.main.addAction(subMatName);
-                        a->setData(eMI_SelectSubmaterialBase + k);
-                        a->setCheckable(true);
-                        a->setChecked(k == subMtlIndex);
-                        bMatAppended = true;
-                    }
-                }
-            }
-        }
-
-        bAppended = bAppended || bMatAppended;
-    }
-
 #if UI_ANIMATION_REMOVED
     // We have removed support for saving out the custom colors per track
     // it may be added back at some point
@@ -1411,7 +1351,6 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuMultiSelection(UiAnimContextMenu& context
     for (int currentNode = 0; currentNode < records.size(); ++currentNode)
     {
         CRecord* pItemInfo = (CRecord*)records[currentNode];
-        EUiAnimViewNodeType type = pItemInfo->GetNode()->GetNodeType();
 
         if (pItemInfo->GetNode()->GetNodeType() == eUiAVNT_AnimNode)
         {
@@ -1614,7 +1553,8 @@ void CUiAnimViewNodesCtrl::ShowNextResult()
 
             if (!items.empty())
             {
-                m_currentMatchIndex = ++m_currentMatchIndex % m_matchCount;
+                ++m_currentMatchIndex;
+                m_currentMatchIndex = m_currentMatchIndex % m_matchCount;
                 ui->treeWidget->selectionModel()->clear();
                 items[m_currentMatchIndex]->setSelected(true);
             }
@@ -1696,8 +1636,7 @@ CUiAnimViewNodesCtrl::CRecord* CUiAnimViewNodesCtrl::GetNodeRecord(const CUiAnim
         return nullptr;
     }
 
-    CRecord* pRecord = findIter->second;
-    assert (pRecord->GetNode() == pNode);
+    assert (findIter->second->GetNode() == pNode);
     return findIter->second;
 }
 

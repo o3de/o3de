@@ -35,8 +35,8 @@ namespace LmbrCentral
                     "Disk Shape", "The Disk Shape component creates a disk around the associated entity")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Shape")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Disk_Shape.svg")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Disk_Shape.png")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Disk_Shape.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Disk_Shape.png")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-shapes.html")
@@ -53,7 +53,6 @@ namespace LmbrCentral
     {
         EditorBaseShapeComponent::GetProvidedServices(provided);
         provided.push_back(AZ_CRC("DiskShapeService", 0xd90c482b));
-        provided.push_back(AZ_CRC("AreaLightShapeService", 0x68ea78dc));
     }
 
     void EditorDiskShapeComponent::Init()

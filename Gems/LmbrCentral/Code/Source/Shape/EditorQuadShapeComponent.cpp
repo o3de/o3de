@@ -35,8 +35,8 @@ namespace LmbrCentral
                     "Quad Shape", "The Quad Shape component creates a quad around the associated entity")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Shape")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Quad_Shape.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Component_Placeholder.png")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Quad_Shape.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.png")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-shapes.html")
@@ -53,7 +53,6 @@ namespace LmbrCentral
     {
         EditorBaseShapeComponent::GetProvidedServices(provided);
         provided.push_back(AZ_CRC("QuadShapeService", 0xe449b0fc));
-        provided.push_back(AZ_CRC("AreaLightShapeService", 0x68ea78dc));
     }
 
     void EditorQuadShapeComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)

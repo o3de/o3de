@@ -10,44 +10,17 @@
 
     <ComponentRelation Constraint="Weak" HasController="false" Name="TransformComponent" Namespace="AzFramework" Include="AzFramework/Components/TransformComponent.h" />
 
-    <Include File="Source/MultiplayerTypes.h"/>
+    <Include File="Include/MultiplayerTypes.h"/>
 
-    <NetworkProperty Type="AZ::Quaternion" Name="rotation" Init="AZ::Quaternion::CreateIdentity()" ReplicateFrom="Authority" ReplicateTo="Client" IsRewindable="true" IsPredictable="true" IsPublic="true" Container="Object" ExposeToEditor="true" GenerateEventBindings="true" />
-    <NetworkProperty Type="AZ::Vector3" Name="translation" Init="AZ::Vector3::CreateZero()" ReplicateFrom="Authority" ReplicateTo="Client" IsRewindable="true" IsPredictable="true" IsPublic="true" Container="Object" ExposeToEditor="true" GenerateEventBindings="true" />
-    <NetworkProperty Type="AZ::Vector3" Name="scale" Init="AZ::Vector3::CreateZero()" ReplicateFrom="Authority" ReplicateTo="Client" IsRewindable="true" IsPredictable="true" IsPublic="true" Container="Object" ExposeToEditor="true" GenerateEventBindings="true" />
-    <NetworkProperty Type="AZ::Vector3" Name="velocity" Init="AZ::Vector3::CreateZero()" ReplicateFrom="Authority" ReplicateTo="Client" IsRewindable="true" IsPredictable="true" IsPublic="true" Container="Object" ExposeToEditor="true" GenerateEventBindings="true" />
+    <NetworkProperty Type="AZ::Quaternion" Name="rotation" Init="AZ::Quaternion::CreateIdentity()" ReplicateFrom="Authority" ReplicateTo="Client" IsRewindable="true" IsPredictable="true" IsPublic="true" Container="Object" ExposeToEditor="false" GenerateEventBindings="true" />
+    <NetworkProperty Type="AZ::Vector3" Name="translation" Init="AZ::Vector3::CreateZero()" ReplicateFrom="Authority" ReplicateTo="Client" IsRewindable="true" IsPredictable="true" IsPublic="true" Container="Object" ExposeToEditor="false" GenerateEventBindings="true" />
+    <NetworkProperty Type="AZ::Vector3" Name="scale" Init="AZ::Vector3::CreateZero()" ReplicateFrom="Authority" ReplicateTo="Client" IsRewindable="true" IsPredictable="true" IsPublic="true" Container="Object" ExposeToEditor="false" GenerateEventBindings="true" />
     <NetworkProperty Type="uint8_t"     Name="resetCount" Init="0" ReplicateFrom="Authority" ReplicateTo="Client" IsRewindable="false" IsPredictable="true" IsPublic="true" Container="Object" ExposeToEditor="false" GenerateEventBindings="true" />
     <NetworkProperty Type="NetEntityId" Name="parentEntityId" Init="InvalidNetEntityId" ReplicateFrom="Authority" ReplicateTo="Client" IsRewindable="true" IsPredictable="true" IsPublic="true" Container="Object" ExposeToEditor="false" GenerateEventBindings="true" />
     <NetworkProperty Type="int32_t"     Name="parentAttachmentBoneId" Init="-1" ReplicateFrom="Authority" ReplicateTo="Client" IsRewindable="true" IsPredictable="true" IsPublic="true" Container="Object" ExposeToEditor="false" GenerateEventBindings="true" />
 
+    <!--
     <ArchetypeProperty Type="bool" Name="snapToGround"    Init="false" ExposeToEditor="true" />
     <ArchetypeProperty Type="bool" Name="useGroundNormal" Init="false" ExposeToEditor="true" />
-
-    <!--
-    This is reference only, will be deleted when we make a better test component that exercizes all aspects of component autogen
-    <RemoteProcedure Name="RPCServerToAuthorityPublic" InvokeFrom="Server" HandleOn="Authority" IsPublic="true" IsReliable="false" Description="Description" >
-        <Param Name="Test" Type="int" DefaultValue="0" Description="Description"/>
-    </RemoteProcedure>
-    <RemoteProcedure Name="RPCServerToAuthorityScriptProtected" InvokeFrom="Server" HandleOn="Authority" IsPublic="false" IsReliable="false" Description="Description"  >
-        <Param Name="Test" Type="int" DefaultValue="0" Description="Description"/>
-    </RemoteProcedure>
-    <RemoteProcedure Name="RPCAutonomousToAuthorityPublic" InvokeFrom="Autonomous" HandleOn="Authority" IsPublic="true" IsReliable="false" Description="Description" >
-        <Param Name="Test" Type="int" DefaultValue="0" Description="Description"/>
-    </RemoteProcedure>
-    <RemoteProcedure Name="RPCAuthorityToAutonomousPublic" InvokeFrom="Authority" HandleOn="Autonomous" IsPublic="true" IsReliable="false" Description="Description" >
-        <Param Name="Test" Type="int" DefaultValue="0" Description="Description"/>
-    </RemoteProcedure>
-    <RemoteProcedure Name="RpcAuthorityToClientPublic" InvokeFrom="Authority" HandleOn="Client" IsPublic="true" IsReliable="false" Description="Description" >
-        <Param Name="Test" Type="int" DefaultValue="0" Description="Description"/>
-    </RemoteProcedure>
-    <RemoteProcedure Name="RpcAuthorityToClientProtected" InvokeFrom="Authority" HandleOn="Client" IsPublic="false" IsReliable="false" Description="Description" >
-        <Param Name="Test" Type="int" DefaultValue="0" Description="Description"/>
-    </RemoteProcedure>
-    <RemoteProcedure Name="RpcAuthorityToServerPublic" InvokeFrom="Authority" HandleOn="Server" IsPublic="true" IsReliable="true" Description="Description" >
-        <Param Name="Test" Type="int" DefaultValue="0" Description="Description"/>
-    </RemoteProcedure>
-    <RemoteProcedure Name="RpcAuthorityToServerProtected" InvokeFrom="Authority" HandleOn="Server" IsPublic="false" IsReliable="true" Description="Description" >
-        <Param Name="Test" Type="int" DefaultValue="0" Description="Description"/>
-    </RemoteProcedure>
     -->
 </Component>
