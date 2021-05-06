@@ -24,16 +24,15 @@
 #define COMMON_SRG_INPUTS_PARALLAX(prefix) \
 Texture2D   prefix##m_depthMap;            \
 float       prefix##m_depthFactor;         \
+float       prefix##m_depthOffset;         \
 bool        prefix##m_depthInverted;
 
 #define COMMON_OPTIONS_PARALLAX(prefix) \
 option bool prefix##o_useDepthMap; 
 
-option bool o_parallax_feature_enabled;
-
-void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float depthFactor, 
+void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float depthFactor, float depthOffset,
                       float4x4 objectWorldMatrix, float3x3 uvMatrix, float3x3 uvMatrixInverse,
-                      inout float2 uv, inout float3 worldPosition, inout float depth)
+                      inout float2 uv, inout float3 worldPosition, inout float depth, out bool isClipped)
 {
     if(o_parallax_feature_enabled)
     {
@@ -49,20 +48,22 @@ void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float dep
             dirToCamera = ViewSrg::m_worldPosition.xyz - worldPosition;
         }
     
-        float3 tangentOffset = GetParallaxOffset( depthFactor,
-                                                  uv,
-                                                  dirToCamera, 
-                                                  tangent,
-                                                  bitangent,
-                                                  normal,
-                                                  uvMatrix);
+        ParallaxOffset tangentOffset = GetParallaxOffset( depthFactor,
+                                                          depthOffset,
+                                                          uv,
+                                                          dirToCamera, 
+                                                          tangent,
+                                                          bitangent,
+                                                          normal,
+                                                          uvMatrix);
 
-        uv += tangentOffset.xy;
+        uv += tangentOffset.m_offsetTS.xy;
+        isClipped = tangentOffset.m_isClipped;
 
         if(o_parallax_enablePixelDepthOffset)
         {
             PixelDepthOffset pdo = CalcPixelDepthOffset(depthFactor,
-                                                        tangentOffset,
+                                                        tangentOffset.m_offsetTS,
                                                         worldPosition,
                                                         tangent,
                                                         bitangent,
@@ -70,9 +71,20 @@ void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float dep
                                                         uvMatrixInverse,
                                                         objectWorldMatrix,
                                                         ViewSrg::m_viewProjectionMatrix);
+
             depth = pdo.m_depth;
+
             worldPosition = pdo.m_worldPosition;
         }
+        
     }
+}
+
+void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float depthFactor, float depthOffset,
+                      float4x4 objectWorldMatrix, float3x3 uvMatrix, float3x3 uvMatrixInverse,
+                      inout float2 uv, inout float3 worldPosition, inout float depth)
+{
+    bool isClipped;
+    GetParallaxInput(normal, tangent, bitangent, depthFactor, depthOffset, objectWorldMatrix, uvMatrix, uvMatrixInverse, uv, worldPosition, depth, isClipped);
 }
 
