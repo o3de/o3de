@@ -26,9 +26,9 @@
 #include <SoundCVars.h>
 #include <ATLUtils.h>
 
-#include <I3DEngine.h>
 #include <IRenderer.h>
 #include <IRenderAuxGeom.h>
+#include <IConsole.h>
 
 #include <CryPhysicsDeprecation.h>
 

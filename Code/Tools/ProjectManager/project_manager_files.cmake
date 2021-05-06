@@ -11,13 +11,32 @@
 
 set(FILES
     project_manager.qrc
-    source/main.cpp
-    source/GemCatalog/GemInfo.h
-    source/GemCatalog/GemInfo.cpp
-    Qt/FirstTimeUse.h
-    Qt/FirstTimeUse.cpp
-    Qt/FirstTimeUse.ui
-    Qt/ProjectManagerWindow.h
-    Qt/ProjectManagerWindow.cpp
-    Qt/ProjectManagerWindow.ui
+    Source/main.cpp
+    Source/ScreenDefs.h
+    Source/ScreenFactory.h
+    Source/ScreenFactory.cpp
+    Source/ScreenWidget.h
+    Source/FirstTimeUse.h
+    Source/FirstTimeUse.cpp
+    Source/FirstTimeUse.ui
+    Source/ProjectManagerWindow.h
+    Source/ProjectManagerWindow.cpp
+    Source/ProjectManagerWindow.ui
+    Source/NewProjectSettings.h
+    Source/NewProjectSettings.cpp
+    Source/NewProjectSettings.ui
+    Source/GemCatalog.h
+    Source/GemCatalog.cpp
+    Source/GemCatalog.ui
+    Source/ProjectsHome.h
+    Source/ProjectsHome.cpp
+    Source/ProjectsHome.ui
+    Source/ProjectSettings.h
+    Source/ProjectSettings.cpp
+    Source/ProjectSettings.ui
+    Source/EngineSettings.h
+    Source/EngineSettings.cpp
+    Source/EngineSettings.ui
+    Source/GemCatalog/GemInfo.h
+    Source/GemCatalog/GemInfo.cpp
 )
