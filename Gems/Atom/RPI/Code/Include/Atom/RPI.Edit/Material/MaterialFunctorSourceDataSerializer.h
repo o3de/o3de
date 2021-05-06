@@ -33,6 +33,8 @@ namespace AZ
 
             JsonSerializationResult::Result Store(rapidjson::Value& outputValue, const void* inputValue,
                 const void* defaultValue, const Uuid& valueTypeId, JsonSerializerContext& context) override;
+
+            BaseJsonSerializer::OperationFlags GetOperationsFlags() const override;
         };
 
     } // namespace RPI

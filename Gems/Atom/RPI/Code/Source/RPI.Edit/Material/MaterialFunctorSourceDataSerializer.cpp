@@ -127,5 +127,10 @@ namespace AZ
 
             return context.Report(result, "Successfully processed MaterialFunctorSourceData.");
         }
+
+        BaseJsonSerializer::OperationFlags JsonMaterialFunctorSourceDataSerializer::GetOperationsFlags() const
+        {
+            return OperationFlags::ManualDefault;
+        }
     } // namespace RPI
 } // namespace AZ
