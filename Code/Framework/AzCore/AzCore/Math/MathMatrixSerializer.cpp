@@ -218,10 +218,16 @@ namespace AZ::JsonMathMatrixSerializerInternal
         result.Combine(intermediateTranslation);
 
         // composed a matrix by rotation, then scale, then translation
-        output = MatrixType::CreateFromQuaternion(rotation);
-        output.MultiplyByScale(Vector3{ scale });
-        output.SetTranslation(translation);
+        auto matrix = MatrixType::CreateFromQuaternion(rotation);
+        matrix.MultiplyByScale(Vector3{ scale });
+        matrix.SetTranslation(translation);
 
+        if (matrix == MatrixType::CreateIdentity())
+        {
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed, "Using identity matrix for empty object.");
+        }
+
+        output = matrix;
         return context.Report(result, "Successfully read math matrix.");
     }
 
@@ -242,10 +248,16 @@ namespace AZ::JsonMathMatrixSerializerInternal
         }
         result.Combine(intermediate);
 
-        // composed a matrix by rotation, then scale, then translation
-        output = Matrix3x3::CreateFromQuaternion(rotation);
-        output.MultiplyByScale(Vector3{ scale });
+        // composed a matrix by rotation then scale
+        auto matrix = Matrix3x3::CreateFromQuaternion(rotation);
+        matrix.MultiplyByScale(Vector3{ scale });
 
+        if (matrix == Matrix3x3::CreateIdentity())
+        {
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed, "Using identity matrix for empty object.");
+        }
+
+        output = matrix;
         return context.Report(result, "Successfully read math matrix.");
     }
 

@@ -24,6 +24,135 @@
 
 namespace JsonSerializationTests
 {
+    namespace DataHelper
+    {
+        template <typename MatrixType>
+        MatrixType CreateArbitraryMatrixRotationAndSale(AZ::SimpleLcgRandom& random)
+        {
+            // start a matrix with arbitrary degrees
+            float roll = random.GetRandomFloat() * 360.0f;
+            float pitch = random.GetRandomFloat() * 360.0f;
+            float yaw = random.GetRandomFloat() * 360.0f;
+            const AZ::Vector3 eulerRadians = AZ::Vector3DegToRad(AZ::Vector3{ roll, pitch, yaw });
+            const auto rotX = MatrixType::CreateRotationX(eulerRadians.GetX());
+            const auto rotY = MatrixType::CreateRotationY(eulerRadians.GetY());
+            const auto rotZ = MatrixType::CreateRotationZ(eulerRadians.GetZ());
+            auto matrix = rotX * rotY * rotZ;
+
+            // apply a scale
+            matrix.MultiplyByScale(AZ::Vector3{ random.GetRandomFloat() });
+            return matrix;
+        }
+
+        template <typename MatrixType>
+        void AssignArbitrarySetTranslation(MatrixType& matrix, AZ::SimpleLcgRandom& random)
+        {
+            float x = random.GetRandomFloat() * 10000.0f;
+            float y = random.GetRandomFloat() * 10000.0f;
+            float z = random.GetRandomFloat() * 10000.0f;
+            matrix.SetTranslation(AZ::Vector3{ x, y, z });
+        }
+
+        template <typename MatrixType>
+        MatrixType CreateArbitraryMatrix(size_t seed);
+
+        template <>
+        AZ::Matrix3x3 CreateArbitraryMatrix(size_t seed)
+        {
+            AZ::SimpleLcgRandom random(seed);
+            return CreateArbitraryMatrixRotationAndSale<AZ::Matrix3x3>(random);
+        }
+
+        template <>
+        AZ::Matrix3x4 CreateArbitraryMatrix(size_t seed)
+        {
+            AZ::SimpleLcgRandom random(seed);
+            auto matrix = CreateArbitraryMatrixRotationAndSale<AZ::Matrix3x4>(random);
+            AssignArbitrarySetTranslation<AZ::Matrix3x4>(matrix, random);
+            return matrix;
+        }
+
+        template <>
+        AZ::Matrix4x4 CreateArbitraryMatrix(size_t seed)
+        {
+            AZ::SimpleLcgRandom random(seed);
+            auto matrix = CreateArbitraryMatrixRotationAndSale<AZ::Matrix4x4>(random);
+            AssignArbitrarySetTranslation<AZ::Matrix4x4>(matrix, random);
+            return matrix;
+        }
+
+        // CreateQuaternion   
+
+        template<typename MatrixType>
+        AZ::Quaternion CreateQuaternion(const MatrixType& matrix);
+
+        template<>
+        AZ::Quaternion CreateQuaternion<AZ::Matrix3x3>(const AZ::Matrix3x3& matrix)
+        {
+            return AZ::Quaternion::CreateFromMatrix3x3(matrix);
+        }
+
+        template<>
+        AZ::Quaternion CreateQuaternion<AZ::Matrix3x4>(const AZ::Matrix3x4& matrix)
+        {
+            return AZ::Quaternion::CreateFromMatrix3x4(matrix);
+        }
+
+        template<>
+        AZ::Quaternion CreateQuaternion<AZ::Matrix4x4>(const AZ::Matrix4x4& matrix)
+        {
+            return AZ::Quaternion::CreateFromMatrix4x4(matrix);
+        }
+
+        template<typename MatrixType>
+        void AddRotation(rapidjson::Value& value, const MatrixType& matrix, rapidjson::Document::AllocatorType& allocator)
+        {
+            AZ::Quaternion rotation = CreateQuaternion<MatrixType>(matrix);
+            const auto degrees = rotation.GetEulerDegrees();
+            value.AddMember("yaw", degrees.GetX(), allocator);
+            value.AddMember("pitch", degrees.GetY(), allocator);
+            value.AddMember("roll", degrees.GetZ(), allocator);
+        }
+
+        void AddScale(rapidjson::Value& value, float scale, rapidjson::Document::AllocatorType& allocator)
+        {
+            value.AddMember("scale", scale, allocator);
+        }
+
+        void AddTranslation(rapidjson::Value& value, const AZ::Vector3& translation, rapidjson::Document::AllocatorType& allocator)
+        {
+            value.AddMember("x", translation.GetX(), allocator);
+            value.AddMember("y", translation.GetY(), allocator);
+            value.AddMember("z", translation.GetZ(), allocator);
+        }
+
+        template <typename MatrixType>
+        void AddData(rapidjson::Value& value, const MatrixType& matrix, rapidjson::Document::AllocatorType& allocator);
+
+        template <>
+        void AddData(rapidjson::Value& value, const AZ::Matrix3x3& matrix, rapidjson::Document::AllocatorType& allocator)
+        {
+            AddScale(value, matrix.RetrieveScale().GetX(), allocator);
+            AddRotation(value, matrix, allocator);
+        }
+
+        template <>
+        void AddData(rapidjson::Value& value, const AZ::Matrix3x4& matrix, rapidjson::Document::AllocatorType& allocator)
+        {
+            AddScale(value, matrix.RetrieveScale().GetX(), allocator);
+            AddTranslation(value, matrix.GetTranslation(), allocator);
+            AddRotation(value, matrix, allocator);
+        }
+
+        template <>
+        void AddData(rapidjson::Value& value, const AZ::Matrix4x4& matrix, rapidjson::Document::AllocatorType& allocator)
+        {
+            AddScale(value, matrix.RetrieveScale().GetX(), allocator);
+            AddTranslation(value, matrix.GetTranslation(), allocator);
+            AddRotation(value, matrix, allocator);
+        }
+    };
+
     template<typename MatrixType, size_t RowCount, size_t ColumnCount, typename Serializer>
     class MathMatrixSerializerTestDescription :
         public JsonSerializerConformityTestDescriptor<MatrixType>
@@ -36,50 +165,35 @@ namespace JsonSerializationTests
 
         AZStd::shared_ptr<MatrixType> CreateDefaultInstance() override
         {
-            auto matrix = AZStd::make_shared<MatrixType>();
-            for (size_t r = 0; r < RowCount; ++r)
-            {
-                for (size_t c = 0; c < ColumnCount; ++c)
-                {
-                    matrix->SetElement(aznumeric_caster(r), aznumeric_caster(c), 0.0f);
-                }
-            }
-            return matrix;
+            return AZStd::make_shared<MatrixType>(MatrixType::CreateIdentity());
         }
 
         AZStd::shared_ptr<MatrixType> CreateFullySetInstance() override
         {
-            auto matrix = AZStd::make_shared<MatrixType>();
-            for (size_t r = 0; r < RowCount; ++r)
-            {
-                for (size_t c = 0; c < ColumnCount; ++c)
-                {
-                    matrix->SetElement(aznumeric_caster(r), aznumeric_caster(c), 1.0f + r + c);
-                }
-            }
-            return matrix;
+            auto matrix = DataHelper::CreateArbitraryMatrix<MatrixType>(RowCount * RowCount * ColumnCount * ColumnCount);
+            return AZStd::make_shared<MatrixType>(matrix);
         }
 
         AZStd::string_view GetJsonForFullySetInstance() override
         {
-            if constexpr (RowCount + ColumnCount == 9)
+            if constexpr (RowCount * ColumnCount == 9)
             {
-                return "[[1.0, 2.0, 3.0],[1.0, 2.0, 3.0],[1.0, 2.0, 3.0]]";
+                return "{\"roll\":2.9116806983947756,\"pitch\":64.10340881347656,\"yaw\":-113.59403991699219,\"scale\":0.30960845947265627}";
             }
-            else if constexpr (RowCount + ColumnCount == 12)
+            else if constexpr (RowCount * ColumnCount == 12)
             {
-                return "[[1.0, 2.0, 3.0, 4.0],[1.0, 2.0, 3.0, 4.0],[1.0, 2.0, 3.0, 4.0]]";
+                return "{\"roll\":129.6565399169922,\"pitch\":3.4360766410827638,\"yaw\":174.74342346191407,\"scale\":0.34746408462524416,\"x\":4694.349609375,\"y\":3518.57177734375,\"z\":8810.7216796875}";
             }
-            else if constexpr (RowCount + ColumnCount == 16)
+            else if constexpr (RowCount * ColumnCount == 16)
             {
-                return "[[1.0, 2.0, 3.0, 4.0],[1.0, 2.0, 3.0, 4.0],[1.0, 2.0, 3.0, 4.0],[1.0, 2.0, 3.0, 4.0]]";
+                return "{\"roll\":-1.040727138519287,\"pitch\":38.50996780395508,\"yaw\":-132.646240234375,\"scale\":0.37979474663734438,\"x\":3340.976318359375,\"y\":6658.28955078125,\"z\":8145.43115234375}";
             }
             else
             {
                 static_assert((RowCount >= 3 && RowCount <= 4) && (ColumnCount >= 3 && ColumnCount <= 4),
                     "Only matrix 3x3, 3x4 or 4x4 are supported by this test.");
             }
-            return "";
+            return "{}";
         }
 
         void ConfigureFeatures(JsonSerializerConformityTestDescriptorFeatures& features) override
@@ -93,7 +207,17 @@ namespace JsonSerializationTests
 
         bool AreEqual(const MatrixType& lhs, const MatrixType& rhs) override
         {
-            return lhs == rhs;
+            for (int r = 0; r < RowCount; ++r)
+            {
+                for (int c = 0; c < ColumnCount; ++c)
+                {
+                    if (!AZ::IsClose(lhs.GetElement(r, c), rhs.GetElement(r, c), AZ::Constants::Tolerance))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
     };
 
@@ -123,113 +247,6 @@ namespace JsonSerializationTests
             BaseJsonSerializerFixture::TearDown();
         }
 
-
-        void AddRotation(rapidjson::Value& value, const AZ::Quaternion& rotation, rapidjson::Document::AllocatorType& allocator)
-        {
-            const auto degrees = rotation.GetEulerDegrees();
-            value.AddMember("yaw", degrees.GetX(), allocator);
-            value.AddMember("pitch", degrees.GetY(), allocator);
-            value.AddMember("roll", degrees.GetZ(), allocator);
-        }
-
-        void AddScale(rapidjson::Value& value, float scale, rapidjson::Document::AllocatorType& allocator)
-        {
-            value.AddMember("scale", scale, allocator);
-        }
-
-        void AddTranslation(rapidjson::Value& value, const AZ::Vector3& translation, rapidjson::Document::AllocatorType& allocator)
-        {
-            value.AddMember("x", translation.GetX(), allocator);
-            value.AddMember("y", translation.GetY(), allocator);
-            value.AddMember("z", translation.GetZ(), allocator);
-        }
-
-        template <bool>
-        void AddData(rapidjson::Value& value, const typename Descriptor::MatrixType& matrix, rapidjson::Document::AllocatorType& allocator);
-
-        template <>
-        void AddData<false>(rapidjson::Value& value, const typename Descriptor::MatrixType& matrix, rapidjson::Document::AllocatorType& allocator)
-        {
-            AddScale(value, matrix.RetrieveScale().GetX(), allocator);
-            AddRotation(value, Descriptor::CreateQuaternion(matrix), allocator);
-        }
-
-        template <>
-        void AddData<true>(rapidjson::Value& value, const typename Descriptor::MatrixType& matrix, rapidjson::Document::AllocatorType& allocator)
-        {
-            AddScale(value, matrix.RetrieveScale().GetX(), allocator);
-            AddTranslation(value, matrix.GetTranslation(), allocator);
-            AddRotation(value, Descriptor::CreateQuaternion(matrix), allocator);
-        }
-
-        enum class InputTypes
-        {
-            Zero,
-            Identity,
-            Incremental
-        };
-
-        typename Descriptor::MatrixType CreateMatrixInstance(InputTypes testType)
-        {
-            typename Descriptor::MatrixType matrix;
-            if (testType == InputTypes::Zero)
-            {
-                matrix = Descriptor::MatrixType::CreateZero();
-            }
-            else if (testType == InputTypes::Identity)
-            {
-                matrix = Descriptor::MatrixType::CreateIdentity();
-            }
-            else if (testType == InputTypes::Incremental)
-            {
-                float value = 0.0f;
-                for (size_t r = 0; r < Descriptor::RowCount; ++r)
-                {
-                    for (size_t c = 0; c < Descriptor::ColumnCount; ++c)
-                    {
-                        matrix.SetElement(aznumeric_caster(r), aznumeric_caster(c), value);
-                        value += 1.0f;
-                    }
-                }
-            }
-            return matrix;
-        }
-
-        template <bool HasTranslation>
-        typename Descriptor::MatrixType CreateArbitraryMatrix(size_t seed);
-
-        template <>
-        typename Descriptor::MatrixType CreateArbitraryMatrix<false>(size_t seed)
-        {
-            AZ::SimpleLcgRandom random(seed);
-
-            // start a matrix with arbitrary degrees
-            float roll = random.GetRandomFloat() * 360.0f;
-            float pitch = random.GetRandomFloat() * 360.0f;
-            float yaw = random.GetRandomFloat() * 360.0f;
-            const AZ::Vector3 eulerRadians = AZ::Vector3DegToRad(AZ::Vector3{ roll, pitch, yaw });
-            const auto rotX = typename Descriptor::MatrixType::CreateRotationX(eulerRadians.GetX());
-            const auto rotY = typename Descriptor::MatrixType::CreateRotationY(eulerRadians.GetY());
-            const auto rotZ = typename Descriptor::MatrixType::CreateRotationZ(eulerRadians.GetZ());
-            auto matrix = rotX * rotY * rotZ;
-
-            // apply a scale
-            matrix.MultiplyByScale(AZ::Vector3{ random.GetRandomFloat() });
-            return matrix;
-        }
-
-        template <>
-        typename Descriptor::MatrixType CreateArbitraryMatrix<true>(size_t seed)
-        {
-            auto matrix = CreateArbitraryMatrix<false>(seed);
-            AZ::SimpleLcgRandom random(seed * seed);
-            float x = random.GetRandomFloat() * 10000.0f;
-            float y = random.GetRandomFloat() * 10000.0f;
-            float z = random.GetRandomFloat() * 10000.0f;
-            matrix.SetTranslation(AZ::Vector3{ x, y, z });
-            return matrix;
-        }
-
     protected:
         AZStd::unique_ptr<typename T::Serializer> m_serializer;
     };
@@ -242,8 +259,6 @@ namespace JsonSerializationTests
         constexpr static size_t ColumnCount = 3;
         constexpr static size_t ElementCount = RowCount * ColumnCount;
         constexpr static bool HasTranslation = false;
-        using CreateQuaternionFunc = AZ::Quaternion(*) (const typename MatrixType&);
-        constexpr static CreateQuaternionFunc CreateQuaternion = &AZ::Quaternion::CreateFromMatrix3x3;
     };
 
     struct Matrix3x4Descriptor
@@ -254,8 +269,6 @@ namespace JsonSerializationTests
         constexpr static size_t ColumnCount = 4;
         constexpr static size_t ElementCount = RowCount * ColumnCount;
         constexpr static bool HasTranslation = true;
-        using CreateQuaternionFunc = AZ::Quaternion(*) (const typename MatrixType&);
-        constexpr static CreateQuaternionFunc CreateQuaternion = &AZ::Quaternion::CreateFromMatrix3x4;
     };
 
     struct Matrix4x4Descriptor
@@ -266,8 +279,6 @@ namespace JsonSerializationTests
         constexpr static size_t ColumnCount = 4;
         constexpr static size_t ElementCount = RowCount * ColumnCount;
         constexpr static bool HasTranslation = true;
-        using CreateQuaternionFunc = AZ::Quaternion(*) (const typename MatrixType&);
-        constexpr static CreateQuaternionFunc CreateQuaternion = &AZ::Quaternion::CreateFromMatrix4x4;
     };
 
     using JsonMathMatrixSerializerTypes = ::testing::Types <
@@ -369,8 +380,8 @@ namespace JsonSerializationTests
         using namespace AZ::JsonSerializationResult;
 
         rapidjson::Value& objectValue = this->m_jsonDocument->SetObject();
-        auto input = this->CreateMatrixInstance(InputTypes::Identity);
-        this->AddData<JsonMathMatrixSerializerTests<TypeParam>::Descriptor::HasTranslation>(objectValue, input, this->m_jsonDocument->GetAllocator());
+        auto input = JsonMathMatrixSerializerTests<TypeParam>::Descriptor::MatrixType::CreateIdentity();
+        DataHelper::AddData(objectValue, input, this->m_jsonDocument->GetAllocator());
 
         auto output = JsonMathMatrixSerializerTests<TypeParam>::Descriptor::MatrixType::CreateZero();
         ResultCode result = this->m_serializer->Load(
@@ -378,8 +389,8 @@ namespace JsonSerializationTests
             azrtti_typeid<typename JsonMathMatrixSerializerTests<TypeParam>::Descriptor::MatrixType>(),
             *this->m_jsonDocument,
             *this->m_jsonDeserializationContext);
-        ASSERT_EQ(Outcomes::Success, result.GetOutcome());
-        EXPECT_EQ(input, output);
+        ASSERT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
+        EXPECT_TRUE(input == output);
     }
 
     TYPED_TEST(JsonMathMatrixSerializerTests, Load_ValidObjectWithExtraFields_ReturnsPartialConvertAndLoadsMatrix)
@@ -387,9 +398,9 @@ namespace JsonSerializationTests
         using namespace AZ::JsonSerializationResult;
 
         rapidjson::Value& objectValue = this->m_jsonDocument->SetObject();
-        auto input = this->CreateMatrixInstance(InputTypes::Identity);
-        this->AddScale(objectValue, input.RetrieveScale().GetX(), this->m_jsonDocument->GetAllocator());
-        this->AddRotation(objectValue, Descriptor::CreateQuaternion(input), this->m_jsonDocument->GetAllocator());
+        auto input = JsonMathMatrixSerializerTests<TypeParam>::Descriptor::MatrixType::CreateIdentity();
+        DataHelper::AddScale(objectValue, input.RetrieveScale().GetX(), this->m_jsonDocument->GetAllocator());
+        DataHelper::AddRotation(objectValue, input, this->m_jsonDocument->GetAllocator());
         objectValue.AddMember(rapidjson::StringRef("extra"), "no value", this->m_jsonDocument->GetAllocator());
 
         auto output = JsonMathMatrixSerializerTests<TypeParam>::Descriptor::MatrixType::CreateZero();
@@ -398,8 +409,8 @@ namespace JsonSerializationTests
             azrtti_typeid<typename JsonMathMatrixSerializerTests<TypeParam>::Descriptor::MatrixType>(),
             *this->m_jsonDocument,
             *this->m_jsonDeserializationContext);
-        ASSERT_EQ(Outcomes::Success, result.GetOutcome());
-        EXPECT_EQ(input, output);
+        ASSERT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
+        EXPECT_TRUE(input == output);
     }
 
     TYPED_TEST(JsonMathMatrixSerializerTests, SaveLoad_Identity_LoadsDefaultMatrixWithIdentity)
@@ -427,7 +438,7 @@ namespace JsonSerializationTests
             *this->m_jsonDocument,
             *this->m_jsonDeserializationContext);
 
-        EXPECT_EQ(defaultValue, output);
+        EXPECT_TRUE(defaultValue == output);
     }
 
     TYPED_TEST(JsonMathMatrixSerializerTests, LoadSave_Zero_SavesAndLoadsIdentityMatrix)
@@ -435,7 +446,7 @@ namespace JsonSerializationTests
         using namespace AZ::JsonSerializationResult;
 
         auto defaultValue = JsonMathMatrixSerializerTests<TypeParam>::Descriptor::MatrixType::CreateIdentity();
-        auto input = this->CreateMatrixInstance(InputTypes::Zero);
+        auto input = JsonMathMatrixSerializerTests<TypeParam>::Descriptor::MatrixType::CreateZero();
 
         rapidjson::Value& objectInput = this->m_jsonDocument->SetObject();
         this->m_serializer->Store(
@@ -453,27 +464,28 @@ namespace JsonSerializationTests
             *this->m_jsonDeserializationContext);
 
         ASSERT_EQ(Outcomes::Unsupported, result.GetOutcome());
-        EXPECT_EQ(defaultValue, output);
+        EXPECT_TRUE(defaultValue == output);
     }
 
     TYPED_TEST(JsonMathMatrixSerializerTests, Load_InvalidFields_ReturnsUnsupportedAndLeavesMatrixUntouched)
     {
         using namespace AZ::JsonSerializationResult;
+        using Descriptor = typename JsonMathMatrixSerializerTests<TypeParam>::Descriptor;
 
-        const auto defaultValue = JsonMathMatrixSerializerTests<TypeParam>::Descriptor::MatrixType::CreateIdentity();
+        const auto defaultValue = Descriptor::MatrixType::CreateIdentity();
         rapidjson::Value& objectValue = this->m_jsonDocument->SetObject();
-        auto input = this->CreateMatrixInstance(InputTypes::Identity);
-        this->AddData<JsonMathMatrixSerializerTests<TypeParam>::Descriptor::HasTranslation>(objectValue, input, this->m_jsonDocument->GetAllocator());
+        auto input = Descriptor::MatrixType::CreateIdentity();
+        DataHelper::AddData(objectValue, input, this->m_jsonDocument->GetAllocator());
         objectValue["yaw"] = "Invalid";
 
-        auto output = JsonMathMatrixSerializerTests<TypeParam>::Descriptor::MatrixType::CreateZero();
+        auto output = Descriptor::MatrixType::CreateZero();
         ResultCode result = this->m_serializer->Load(
             &output,
-            azrtti_typeid<typename JsonMathMatrixSerializerTests<TypeParam>::Descriptor::MatrixType>(),
+            azrtti_typeid<typename Descriptor::MatrixType>(),
             *this->m_jsonDocument,
             *this->m_jsonDeserializationContext);
         ASSERT_EQ(Outcomes::Unsupported, result.GetOutcome());
-        EXPECT_EQ(input, output);
+        EXPECT_TRUE(input == output);
     }
 
     TYPED_TEST(JsonMathMatrixSerializerTests, LoadSave_Arbitrary_SavesAndLoadsArbitraryMatrix)
@@ -482,8 +494,8 @@ namespace JsonSerializationTests
         using Descriptor = typename JsonMathMatrixSerializerTests<TypeParam>::Descriptor;
 
         auto defaultValue = Descriptor::MatrixType::CreateIdentity();
-        auto elementCount = Descriptor::RowCount * Descriptor::ColumnCount;
-        auto input = this->CreateArbitraryMatrix<Descriptor::HasTranslation>(elementCount);
+        size_t elementCount = Descriptor::RowCount * Descriptor::ColumnCount;
+        auto input = DataHelper::CreateArbitraryMatrix<typename Descriptor::MatrixType>(elementCount);
 
         rapidjson::Value& objectInput = this->m_jsonDocument->SetObject();
         this->m_serializer->Store(
