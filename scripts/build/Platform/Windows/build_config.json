@@ -17,10 +17,11 @@
   },
   "debug_vs2019_pipe": {
     "TAGS": [
-      "nightly"
+      "nightly", "default"
     ],
     "steps": [
       "debug_vs2019",
+      "test_impact_analysis_framework",
       "test_debug_vs2019"
     ]
   },
@@ -78,6 +79,15 @@
       "SCRIPT_PARAMETERS": "--platform 3rdParty --type 3rdParty_all"
     }
   },
+  "test_impact_analysis_framework": {
+    "TAGS": [
+    ],
+    "COMMAND": "python_windows.cmd",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "scripts/build/TestAnalysis/TIAF.py",
+      "SCRIPT_PARAMETERS": "--help"
+    }
+  },
   "debug_vs2019": {
     "TAGS": [
         "weekly-build-metrics"
@@ -86,7 +96,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "debug",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG=FALSE",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG=FALSE -DLY_TEST_IMPACT_ACTIVE=1",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
