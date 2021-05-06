@@ -67,8 +67,7 @@ public:
 
     virtual void DrawBone(const Vec3& rParent, const Vec3& rBone, ColorB col);
 
-    virtual void RenderText([[maybe_unused]] Vec3 pos, [[maybe_unused]] SDrawTextInfo& ti, [[maybe_unused]] const char* forma, [[maybe_unused]] va_list args) {}
-    virtual void RenderText_NoArgs([[maybe_unused]] Vec3 pos, [[maybe_unused]] SDrawTextInfo& ti, [[maybe_unused]] const char* text) {}
+    virtual void RenderText([[maybe_unused]] Vec3 pos, [[maybe_unused]] SDrawTextInfo& ti, [[maybe_unused]] const char* format, [[maybe_unused]] va_list args);
 
 public:
     static CAtomShimRenderAuxGeom* Create(CAtomShimRenderer& renderer)
