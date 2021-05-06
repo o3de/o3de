@@ -37,7 +37,21 @@ namespace AzToolsFramework
             // EditorInteractionInterface...
             AZ::EntityId RedirectEntitySelection(AZ::EntityId entityId) override;
 
-            AZStd::deque<AZ::EntityId> m_instanceEditStack;
+            class PrefabInstanceStack
+            {
+            public:
+                void push(AZ::EntityId entityId);
+                AZ::EntityId top();
+                void pop();
+                void push_bottom(AZ::EntityId entityId);
+                bool empty();
+                bool contains(AZ::EntityId entityId);
+
+            private:
+                AZStd::deque<AZ::EntityId> m_stack;
+            };
+
+            PrefabInstanceStack m_instanceEditStack;
 
             PrefabPublicInterface* m_prefabPublicInterface;
         };
