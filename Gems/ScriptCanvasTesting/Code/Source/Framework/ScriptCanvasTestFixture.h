@@ -21,23 +21,24 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/AzTest.h>
 
+#include <Nodes/BehaviorContextObjectTestNode.h>
+#include <Nodes/Nodeables/SharedDataSlotExample.h>
+#include <Nodes/Nodeables/ValuePointerReferenceExample.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/SlotConfigurationDefaults.h>
 #include <ScriptCanvas/ScriptCanvasGem.h>
 #include <ScriptCanvas/SystemComponent.h>
-#include <AzCore/UserSettings/UserSettingsComponent.h>
 
 #include "EntityRefTests.h"
 #include "ScriptCanvasTestApplication.h"
 #include "ScriptCanvasTestBus.h"
 #include "ScriptCanvasTestNodes.h"
 #include "ScriptCanvasTestUtilities.h"
-#include <Nodes/Nodeables/SharedDataSlotExample.h>
-#include <Nodes/Nodeables/ValuePointerReferenceExample.h>
 
 #define SC_EXPECT_DOUBLE_EQ(candidate, reference) EXPECT_NEAR(candidate, reference, 0.001)
 #define SC_EXPECT_FLOAT_EQ(candidate, reference) EXPECT_NEAR(candidate, reference, 0.001f)
@@ -111,6 +112,9 @@ namespace ScriptCanvasTests
 
             ScriptCanvasTesting::Reflect(m_serializeContext);
             ScriptCanvasTesting::Reflect(m_behaviorContext);
+
+            ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(m_serializeContext);
+            ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(m_behaviorContext);
 
             ::Nodes::InputMethodSharedDataSlotExampleNode::Reflect(m_serializeContext);
             ::Nodes::InputMethodSharedDataSlotExampleNode::Reflect(m_behaviorContext);

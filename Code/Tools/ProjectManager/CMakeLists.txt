@@ -27,7 +27,7 @@ ly_add_target(
         PUBLIC
             .
         PRIVATE
-            source
+            Source
 
     BUILD_DEPENDENCIES
         PRIVATE

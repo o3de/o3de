@@ -637,6 +637,16 @@ namespace ScriptCanvas
             {
                 WriteGlobalPropertyRead(execution);
             }
+            else if (Grammar::IsClassPropertyRead(execution))
+            {
+                WriteClassPropertyRead(execution);
+                m_dotLua.WriteNewLine();
+            }
+            else if (Grammar::IsClassPropertyWrite(execution))
+            {
+                WriteClassPropertyWrite(execution);
+                m_dotLua.WriteNewLine();
+            }
             else
             {
                 const bool isNullCheckRequired = Grammar::IsFunctionCallNullCheckRequired(execution);
@@ -1206,6 +1216,19 @@ namespace ScriptCanvas
             // translate the event handling...initialize to nil, check for nil before disconnecting
             TranslateEBusHandling(leftValue);
             TranslateNodeableParse();
+        }
+
+        void GraphToLua::WriteClassPropertyRead(Grammar::ExecutionTreeConstPtr execution)
+        {
+            WriteFunctionCallInput(execution, 0, IsFormatStringInput::No);
+            m_dotLua.Write(".%s", Grammar::ToIdentifier(execution->GetName()).c_str());
+        }
+
+        void GraphToLua::WriteClassPropertyWrite(Grammar::ExecutionTreeConstPtr execution)
+        {
+            WriteClassPropertyRead(execution);
+            m_dotLua.Write(" = ");
+            WriteFunctionCallInput(execution, 1, IsFormatStringInput::No);
         }
 
         void GraphToLua::WriteConditionalCaseSwitch(Grammar::ExecutionTreeConstPtr execution, Grammar::Symbol symbol, const Grammar::ExecutionChild& child, size_t index)

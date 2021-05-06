@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 Test case ID : C4976236
 Test Case Title : Verify that you can add the physX collider component to an entity
                   without it throwing an error or warning
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4976236
+
 """
 
 # fmt: off
