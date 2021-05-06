@@ -53,14 +53,12 @@ AZ_POP_DISABLE_WARNING
 #include "KeyboardCustomizationSettings.h"
 #include "Export/ExportManager.h"
 #include "LevelIndependentFileMan.h"
-#include "Material/MaterialManager.h"
 #include "TrackView/TrackViewSequenceManager.h"
 #include "AnimationContext.h"
 #include "GameEngine.h"
 #include "ToolBox.h"
 #include "MainWindow.h"
 #include "Alembic/AlembicCompiler.h"
-#include "LensFlareEditor/LensFlareManager.h"
 #include "UIEnumsDatabase.h"
 #include "Util/Ruler.h"
 #include "RenderHelpers/AxisHelper.h"
@@ -73,7 +71,6 @@ AZ_POP_DISABLE_WARNING
 #include "BackgroundTaskManager.h"
 #include "BackgroundScheduleManager.h"
 #include "EditorFileMonitor.h"
-#include "Mission.h"
 #include "MainStatusBar.h"
 
 #include "SettingsBlock.h"
@@ -118,29 +115,6 @@ static CCryEditDoc * theDocument;
 
 #undef GetCommandLine
 
-namespace
-{
-    bool SelectionContainsComponentEntities()
-    {
-        bool result = false;
-        CSelectionGroup* pSelection = GetIEditor()->GetObjectManager()->GetSelection();
-        if (pSelection)
-        {
-            CBaseObject* selectedObj = nullptr;
-            for (int selectionCounter = 0; selectionCounter < pSelection->GetCount(); ++selectionCounter)
-            {
-                selectedObj = pSelection->GetObject(selectionCounter);
-                if (selectedObj->GetType() == OBJTYPE_AZENTITY)
-                {
-                    result = true;
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-}
-
 const char* CEditorImpl::m_crashLogFileName = "SessionStatus/editor_statuses.json";
 
 CEditorImpl::CEditorImpl()
@@ -168,9 +142,7 @@ CEditorImpl::CEditorImpl()
     , m_pAnimationContext(nullptr)
     , m_pSequenceManager(nullptr)
     , m_pToolBoxManager(nullptr)
-    , m_pMaterialManager(nullptr)
     , m_pMusicManager(nullptr)
-    , m_pLensFlareManager(nullptr)
     , m_pErrorReport(nullptr)
     , m_pLasLoadedLevelErrorReport(nullptr)
     , m_pErrorsDlg(nullptr)
@@ -224,13 +196,11 @@ CEditorImpl::CEditorImpl()
     m_pIconManager = new CIconManager;
     m_pUndoManager = new CUndoManager;
     m_pToolBoxManager = new CToolBoxManager;
-    m_pMaterialManager = new CMaterialManager(regCtx);
     m_pAlembicCompiler = new CAlembicCompiler();
     m_pSequenceManager = new CTrackViewSequenceManager;
     m_pAnimationContext = new CAnimationContext;
 
     m_pImageUtil = new CImageUtil_impl();
-    m_pLensFlareManager = new CLensFlareManager;
     m_pResourceSelectorHost.reset(CreateResourceSelectorHost());
     m_pRuler = new CRuler;
     m_selectedRegion.min = Vec3(0, 0, 0);
@@ -345,7 +315,6 @@ CEditorImpl::~CEditorImpl()
     m_bExiting = true; // Can't save level after this point (while Crash)
     SAFE_RELEASE(m_pSourceControl);
 
-    SAFE_DELETE(m_pMaterialManager)
     SAFE_DELETE(m_pAlembicCompiler)
     SAFE_DELETE(m_pIconManager)
     SAFE_DELETE(m_pViewManager)
@@ -415,7 +384,6 @@ void CEditorImpl::SetGameEngine(CGameEngine* ge)
     m_pObjectManager->LoadClassTemplates("Editor");
     m_pObjectManager->RegisterCVars();
 
-    m_pMaterialManager->Set3DEngine();
     m_pAnimationContext->Init();
 }
 
@@ -470,15 +438,6 @@ void CEditorImpl::Update()
 ISystem* CEditorImpl::GetSystem()
 {
     return m_pSystem;
-}
-
-I3DEngine* CEditorImpl::Get3DEngine()
-{
-    if (gEnv)
-    {
-        return gEnv->p3DEngine;
-    }
-    return nullptr;
 }
 
 IRenderer*  CEditorImpl::GetRenderer()
@@ -1003,13 +962,8 @@ void CEditorImpl::CloseView(const GUID& classId)
     }
 }
 
-IDataBaseManager* CEditorImpl::GetDBItemManager(EDataBaseItemType itemType)
+IDataBaseManager* CEditorImpl::GetDBItemManager([[maybe_unused]] EDataBaseItemType itemType)
 {
-    switch (itemType)
-    {
-    case EDB_TYPE_MATERIAL:
-        return m_pMaterialManager;
-    }
     return 0;
 }
 
@@ -1752,13 +1706,6 @@ void CEditorImpl::RegisterObjectContextMenuExtension(TContextMenuExtensionFunc f
     m_objectContextMenuExtensions.push_back(func);
 }
 
-void CEditorImpl::SetCurrentMissionTime(float time)
-{
-    if (CMission* pMission = GetIEditor()->GetDocument()->GetCurrentMission())
-    {
-        pMission->SetTime(time);
-    }
-}
 // Vladimir@Conffx
 SSystemGlobalEnvironment* CEditorImpl::GetEnv()
 {
@@ -1775,13 +1722,13 @@ SEditorSettings* CEditorImpl::GetEditorSettings()
 // Vladimir@Conffx
 IBaseLibraryManager* CEditorImpl::GetMaterialManagerLibrary()
 {
-    return m_pMaterialManager;
+    return nullptr;
 }
 
 // Vladimir@Conffx
 IEditorMaterialManager* CEditorImpl::GetIEditorMaterialManager()
 {
-    return m_pMaterialManager;
+    return nullptr;
 }
 
 IImageUtil* CEditorImpl::GetImageUtil()

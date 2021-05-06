@@ -23,7 +23,6 @@
 #include "Objects/SelectionGroup.h"
 #include "ViewManager.h"
 
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzCore/Interface/Interface.h>
 
 // Qt

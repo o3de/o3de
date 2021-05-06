@@ -25,7 +25,7 @@ public:
 
     virtual void mfPrepare(bool bCheckOverflow);
     virtual bool mfDraw(CShader* ef, SShaderPass* sfm);
-    virtual void mfGetPlane(Plane& pl);
+    virtual void mfGetPlane(Plane_tpl<f32>& pl);
 
     virtual void Create(uint32 nVerticesCount, SVF_P3F_C4B_T2F* pVertices, uint32 nIndicesCount, const void* pIndices, uint32 nIndexSizeof);
     void ReleaseOcean();

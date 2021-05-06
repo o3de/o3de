@@ -33,7 +33,6 @@ struct IDisplayViewport;
 struct IRenderer;
 struct IRenderAuxGeom;
 struct IIconManager;
-struct I3DEngine;
 class CDisplaySettings;
 class CCamera;
 
@@ -70,7 +69,6 @@ struct SANDBOX_API DisplayContext
     IRenderer* renderer;
     IRenderAuxGeom* pRenderAuxGeom;
     IIconManager* pIconManager;
-    I3DEngine* engine;
     CCamera*    camera;
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AABB    box;    // Bounding box of volume that need to be repainted.

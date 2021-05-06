@@ -107,9 +107,10 @@ namespace Multiplayer
                 networkedEntityIds.push_back(sourceEntity->GetId());
             }
         }
-        if (!PrefabDomUtils::StoreInstanceInPrefabDom(*sourceInstance, prefab))
+
+        if (networkedEntityIds.empty())
         {
-            AZ_Error("NetworkPrefabProcessor", false, "Saving exported Prefab Instance within a Prefab Dom failed.");
+            // No networked entities in the prefab, no need to do anything in this processor.
             return;
         }
 

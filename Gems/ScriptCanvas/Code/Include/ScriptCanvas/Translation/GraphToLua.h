@@ -116,6 +116,8 @@ namespace ScriptCanvas
             void TranslateNodeableParse();
             void TranslateStaticInitialization();
             void TranslateVariableInitialization(AZStd::string_view leftValue);
+            void WriteClassPropertyRead(Grammar::ExecutionTreeConstPtr);
+            void WriteClassPropertyWrite(Grammar::ExecutionTreeConstPtr);
             void WriteConditionalCaseSwitch(Grammar::ExecutionTreeConstPtr execution, Grammar::Symbol symbol, const Grammar::ExecutionChild& child, size_t index);
             enum class IsLeadingCommaRequired { No, Yes };
             void WriteConstructionArgs();

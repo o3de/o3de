@@ -21,7 +21,7 @@ namespace ScriptCanvas
     class BehaviorContextUtils
     {
     public:
-        static bool FindClass(const AZ::BehaviorMethod*& outMethod, const AZ::BehaviorClass*& outClass, AZStd::string_view className, AZStd::string_view methodName, AZStd::string* outPrettyClassName = nullptr, bool warnOnMissing = true);
+        static bool FindClass(const AZ::BehaviorMethod*& outMethod, const AZ::BehaviorClass*& outClass, AZStd::string_view className, AZStd::string_view methodName, PropertyStatus propertyStatus = PropertyStatus::None, AZStd::string* outPrettyClassName = nullptr, bool warnOnMissing = true);
         static bool FindEBus(const AZ::BehaviorEBus*& outEBus, AZStd::string_view ebusName, bool warnOnMissing = true);
         static bool FindExplicitOverload(const AZ::BehaviorMethod*& outMethod, const AZ::BehaviorClass*& outClass, AZStd::string_view className, AZStd::string_view methodName, AZStd::string* outPrettyClassName = nullptr);
         static AZStd::string FindExposedMethodName(const AZ::BehaviorMethod& method, const AZ::BehaviorClass* behaviorClass);

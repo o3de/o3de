@@ -110,7 +110,7 @@ namespace JsonSerializationTests
         EXPECT_EQ(42, value);
     }
 
-    TEST_F(BaseJsonSerializerTests, ContinueLoading_PointerInstance_ValueLoadedCorrectly)
+    TEST_F(BaseJsonSerializerTests, ContinueLoading_ToPointerInstance_ValueLoadedCorrectly)
     {
         using namespace AZ::JsonSerializationResult;
 
@@ -124,6 +124,51 @@ namespace JsonSerializationTests
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
         ASSERT_NE(nullptr, ptrValue);
         EXPECT_EQ(42, value);
+    }
+
+    TEST_F(BaseJsonSerializerTests, ContinueLoading_ToNullPointer_ValueLoadedCorrectly)
+    {
+        using namespace AZ::JsonSerializationResult;
+
+        rapidjson::Value json;
+        json.Set(42);
+        int* ptrValue = nullptr;
+
+        ResultCode result = ContinueLoading(&ptrValue, azrtti_typeid<int>(), json, *m_jsonDeserializationContext, Flags::ResolvePointer);
+
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+        ASSERT_NE(nullptr, ptrValue);
+        EXPECT_EQ(42, *ptrValue);
+
+        azfree(ptrValue, AZ::SystemAllocator, sizeof(int), alignof(int));
+    }
+
+    TEST_F(BaseJsonSerializerTests, ContinueLoading_DefaultToNullPointer_ValueLoadedCorrectly)
+    {
+        using namespace AZ::JsonSerializationResult;
+
+        rapidjson::Value json(rapidjson::kObjectType);
+        int* ptrValue = nullptr;
+
+        ResultCode result = ContinueLoading(&ptrValue, azrtti_typeid<int>(), json, *m_jsonDeserializationContext, Flags::ResolvePointer);
+
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+        ASSERT_NE(nullptr, ptrValue);
+        
+        azfree(ptrValue, AZ::SystemAllocator, sizeof(int), alignof(int));
+    }
+
+    TEST_F(BaseJsonSerializerTests, ContinueLoading_NullDeletesObject_ValueLoadedCorrectly)
+    {
+        using namespace AZ::JsonSerializationResult;
+
+        rapidjson::Value json(rapidjson::kNullType);
+        int* ptrValue = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int), AZ::SystemAllocator));
+
+        ResultCode result = ContinueLoading(&ptrValue, azrtti_typeid<int>(), json, *m_jsonDeserializationContext, Flags::ResolvePointer);
+
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+        ASSERT_EQ(nullptr, ptrValue);
     }
 
     //
@@ -154,6 +199,64 @@ namespace JsonSerializationTests
 
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
         Expect_DocStrEq("42");
+    }
+
+    TEST_F(BaseJsonSerializerTests, ContinueStoring_StorePointerToFullDefaultedInstance_ValueStoredCorrectly)
+    {
+        using namespace AZ::JsonSerializationResult;
+
+        int value = 42;
+        int* ptrValue = &value;
+        int value2 = 42;
+        int* defaultPtrValue = &value2;
+
+        ResultCode result =
+            ContinueStoring(*m_jsonDocument, &ptrValue, &defaultPtrValue, azrtti_typeid<int>(), *m_jsonSerializationContext, Flags::ResolvePointer);
+
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+        Expect_DocStrEq("{}");
+    }
+
+    TEST_F(BaseJsonSerializerTests, ContinueStoring_StorePointerToNullptr_ValueStoredCorrectly)
+    {
+        using namespace AZ::JsonSerializationResult;
+
+        int* ptrValue = nullptr;
+        
+        ResultCode result = ContinueStoring(
+            *m_jsonDocument, &ptrValue, nullptr, azrtti_typeid<int>(), *m_jsonSerializationContext, Flags::ResolvePointer);
+
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+        Expect_DocStrEq("null");
+    }
+
+    TEST_F(BaseJsonSerializerTests, ContinueStoring_StorePointerToNullptrWithValueDefault_ValueStoredCorrectly)
+    {
+        using namespace AZ::JsonSerializationResult;
+
+        int* ptrValue = nullptr;
+        int value2 = 42;
+        int* defaultPtrValue = &value2;
+
+        ResultCode result =
+            ContinueStoring(*m_jsonDocument, &ptrValue, &defaultPtrValue, azrtti_typeid<int>(), *m_jsonSerializationContext, Flags::ResolvePointer);
+
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+        Expect_DocStrEq("null");
+    }
+
+    TEST_F(BaseJsonSerializerTests, ContinueStoring_StorePointerToNullptrWithNullPtrDefault_NullPtrIsStored)
+    {
+        using namespace AZ::JsonSerializationResult;
+
+        int* ptrValue = nullptr;
+        int* defaultPtrValue = nullptr;
+
+        ResultCode result =
+            ContinueStoring(*m_jsonDocument, &ptrValue, &defaultPtrValue, azrtti_typeid<int>(), *m_jsonSerializationContext, Flags::ResolvePointer);
+
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+        Expect_DocStrEq("null");
     }
 
     TEST_F(BaseJsonSerializerTests, ContinueStoring_ReplaceDefault_ValueStoredCorrectly)

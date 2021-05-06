@@ -11,6 +11,7 @@
 */
 #pragma once
 
+#include <ACES/Aces.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
@@ -66,6 +67,9 @@ namespace MaterialEditor
 
         //! Notify when field of view changes
         virtual void OnFieldOfViewChanged([[maybe_unused]] float fieldOfView) {}
+
+        //! Notify when tone mapping changes
+        virtual void OnDisplayMapperOperationTypeChanged([[maybe_unused]] AZ::Render::DisplayMapperOperationType operationType) {}
     };
 
     using MaterialViewportNotificationBus = AZ::EBus<MaterialViewportNotifications>;

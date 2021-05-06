@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C12868578
 # Test Case Title : Check that World space and local space force direction doesn't affect magnitude of force exerted
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/12868578
+
 
 # fmt: off
 class Tests:
