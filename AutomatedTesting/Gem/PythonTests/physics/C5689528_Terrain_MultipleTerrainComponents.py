@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C5689528
 # Test Case Title : Create multiple entities each with one PhysX terrain component and verify that a warning
 # is thrown to the user
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5689528
+
 
 
 # fmt: off

@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C4976194
 # Test Case Title : Verify that you can add PhysX Rigid Bodies Physics component to an Entity without any warning or Error.
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4976194
+
 
 
 # fmt: off

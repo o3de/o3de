@@ -459,6 +459,11 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
             Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
         }
 
+        {
+            CAutoLogTime logtime("Game Engine level load");
+            GetIEditor()->GetGameEngine()->LoadLevel(true, true);
+        }
+
         if (!isPrefabEnabled)
         {
             //////////////////////////////////////////////////////////////////////////

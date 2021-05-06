@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C14861498
 # Test Case Title : Confirm that when a PhysXCollider has no physics asset, the physics asset collider \
 #   shape throw an error
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/14861498
+
 
 
 # fmt:off
