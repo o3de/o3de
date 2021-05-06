@@ -17,7 +17,6 @@ namespace AzToolsFramework
         PrefabEditManager::PrefabEditManager()
         {
             m_prefabPublicInterface = AZ::Interface<PrefabPublicInterface>::Get();
-
             if (m_prefabPublicInterface == nullptr)
             {
                 AZ_Assert(false, "Prefab - could not get PrefabPublicInterface on PrefabEditManager construction.");
@@ -25,10 +24,12 @@ namespace AzToolsFramework
             }
 
             AZ::Interface<PrefabEditInterface>::Register(this);
+            AZ::Interface<EditorInteractionInterface>::Register(this);
         }
 
         PrefabEditManager::~PrefabEditManager()
         {
+            AZ::Interface<EditorInteractionInterface>::Unregister(this);
             AZ::Interface<PrefabEditInterface>::Unregister(this);
         }
 

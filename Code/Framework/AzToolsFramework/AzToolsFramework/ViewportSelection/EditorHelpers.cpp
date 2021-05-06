@@ -15,10 +15,9 @@
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponentBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
+#include <AzToolsFramework/ViewportSelection/EditorInteractionInterface.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
-
-#include <AzToolsFramework/UI/Prefab/PrefabEditInterface.h>
 
 AZ_CVAR(
     bool,
@@ -177,20 +176,12 @@ namespace AzToolsFramework
             }
         }
 
-        // PREFAB TEST! NOT SURE HOW THIS CODE IS GOING TO BE PLUGGED HERE
-
-        // TODO - If Prefab Mode is enabled
-
-        
-        auto prefabEditInterface = AZ::Interface<Prefab::PrefabEditInterface>::Get();
-
-        if (prefabEditInterface != nullptr)
+        // Allow entity system to override the selection
+        auto editorInteractionInterface = AZ::Interface<EditorInteractionInterface>::Get();
+        if (editorInteractionInterface != nullptr)
         {
-            entityIdUnderCursor = prefabEditInterface->OverrideEntitySelectionInViewport(entityIdUnderCursor);
+            entityIdUnderCursor = editorInteractionInterface->RedirectEntitySelection(entityIdUnderCursor);
         }
-
-
-        // PREFAB TEST END
 
         return entityIdUnderCursor;
     }
