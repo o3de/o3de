@@ -713,6 +713,8 @@ set(FILES
     UI/Prefab/PrefabEditInterface.h
     UI/Prefab/PrefabEditManager.h
     UI/Prefab/PrefabEditManager.cpp
+    UI/Prefab/PrefabEditUndo.h
+    UI/Prefab/PrefabEditUndo.cpp
     UI/Prefab/PrefabIntegrationBus.h
     UI/Prefab/PrefabIntegrationManager.h
     UI/Prefab/PrefabIntegrationManager.cpp
