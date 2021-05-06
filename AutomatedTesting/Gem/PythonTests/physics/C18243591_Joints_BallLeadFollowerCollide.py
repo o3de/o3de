@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C18243591
 # Test Case Title : Check that ball joint allows lead-follower collision
-# URL of the test case :https://testrail.agscollab.com/index.php?/cases/view/18243591
+
 
 # fmt: off
 class Tests:

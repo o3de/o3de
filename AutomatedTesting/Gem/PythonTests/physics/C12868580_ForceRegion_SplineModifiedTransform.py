@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C12868580
 # Test Case Title : Check that spline follow force works if transform components of entity are altered
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/12868580
+
 
 
 # fmt: off

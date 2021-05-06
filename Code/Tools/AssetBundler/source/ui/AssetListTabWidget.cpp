@@ -44,14 +44,22 @@ namespace AssetBundler
         m_ui->mainVerticalLayout->setContentsMargins(10, 10, 10, 10);
 
         // File view of all Asset List Files
-        m_fileTableFilterModel.reset(new AssetBundlerFileTableFilterModel(this, m_fileTableModel->GetFileNameColumnIndex(), m_fileTableModel->GetTimeStampColumnIndex()));
+        m_fileTableFilterModel.reset(new AssetBundlerFileTableFilterModel(
+            this,
+            m_fileTableModel->GetFileNameColumnIndex(),
+            m_fileTableModel->GetTimeStampColumnIndex()));
 
         m_fileTableFilterModel->setSourceModel(m_fileTableModel.data());
         m_ui->assetListsTable->setModel(m_fileTableFilterModel.data());
-        connect(m_ui->fileFilteredSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
-            m_fileTableFilterModel.data(), static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetBundlerFileTableFilterModel::FilterChanged));
+        connect(m_ui->fileFilteredSearchWidget,
+            &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
+            m_fileTableFilterModel.data(),
+            static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetBundlerFileTableFilterModel::FilterChanged));
 
-        connect(m_ui->assetListsTable->selectionModel(), &QItemSelectionModel::selectionChanged, this, &AssetListTabWidget::FileSelectionChanged);
+        connect(m_ui->assetListsTable->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &AssetListTabWidget::FileSelectionChanged);
 
         m_ui->fileTableHeaderLayout->setContentsMargins(0, 0, 0, 0);
         m_ui->fileTableVerticalLayout->setContentsMargins(0, 0, 0, 0);
@@ -70,8 +78,10 @@ namespace AssetBundler
 
         m_assetListContentsFilterModel->setSourceModel(m_assetListContentsModel.data());
         m_ui->assetListContentsTable->setModel(m_assetListContentsFilterModel.data());
-        connect(m_ui->assetListContentsFilteredSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
-            m_assetListContentsFilterModel.data(), static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetBundlerFileTableFilterModel::FilterChanged));
+        connect(m_ui->assetListContentsFilteredSearchWidget,
+            &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
+            m_assetListContentsFilterModel.data(),
+            static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetBundlerFileTableFilterModel::FilterChanged));
 
 
         m_ui->fileContentsHeaderLayout->setContentsMargins(0, 0, 0, 0);
@@ -121,13 +131,21 @@ namespace AssetBundler
 
         m_ui->fileTableFrame->setFixedWidth(config.fileTableWidth);
 
-        m_ui->assetListsTable->header()->resizeSection(AssetListFileTableModel::Column::ColumnFileName, config.assetListFileNameColumnWidth);
-        m_ui->assetListsTable->header()->resizeSection(AssetListFileTableModel::Column::ColumnPlatform, config.assetListPlatformColumnWidth);
+        m_ui->assetListsTable->header()->resizeSection(
+            AssetListFileTableModel::Column::ColumnFileName,
+            config.assetListFileNameColumnWidth);
+        m_ui->assetListsTable->header()->resizeSection(
+            AssetListFileTableModel::Column::ColumnPlatform,
+            config.assetListPlatformColumnWidth);
 
         m_ui->assetListContentsFilteredSearchWidget->setFixedWidth(config.fileTableWidth);
 
-        m_ui->assetListContentsTable->header()->resizeSection(AssetListTableModel::Column::ColumnAssetName, config.productAssetNameColumnWidth);
-        m_ui->assetListContentsTable->header()->resizeSection(AssetListTableModel::Column::ColumnRelativePath, config.productAssetRelativePathColumnWidth);
+        m_ui->assetListContentsTable->header()->resizeSection(
+            AssetListTableModel::Column::ColumnAssetName,
+            config.productAssetNameColumnWidth);
+        m_ui->assetListContentsTable->header()->resizeSection(
+            AssetListTableModel::Column::ColumnRelativePath,
+            config.productAssetRelativePathColumnWidth);
     }
 
 

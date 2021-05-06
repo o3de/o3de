@@ -34,14 +34,22 @@ namespace AssetBundler
         m_ui->mainVerticalLayout->setContentsMargins(MarginSize, MarginSize, MarginSize, MarginSize);
 
         m_fileTableModel.reset(new BundleFileListModel);
-        m_fileTableFilterModel.reset(new AssetBundlerFileTableFilterModel(this, m_fileTableModel->GetFileNameColumnIndex(), m_fileTableModel->GetTimeStampColumnIndex()));
+        m_fileTableFilterModel.reset(new AssetBundlerFileTableFilterModel(
+            this,
+            m_fileTableModel->GetFileNameColumnIndex(),
+            m_fileTableModel->GetTimeStampColumnIndex()));
 
         m_fileTableFilterModel->setSourceModel(m_fileTableModel.data());
         m_ui->fileTableView->setModel(m_fileTableFilterModel.data());
-        connect(m_ui->fileFilteredSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
-            m_fileTableFilterModel.data(), static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetBundlerFileTableFilterModel::FilterChanged));
+        connect(m_ui->fileFilteredSearchWidget,
+            &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
+            m_fileTableFilterModel.data(),
+            static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetBundlerFileTableFilterModel::FilterChanged));
 
-        connect(m_ui->fileTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &BundleListTabWidget::FileSelectionChanged);
+        connect(m_ui->fileTableView->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &BundleListTabWidget::FileSelectionChanged);
 
         m_ui->fileTableView->setIndentation(0);
 

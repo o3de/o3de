@@ -81,7 +81,9 @@ namespace AssetBundler
 
         void ApplyConfig() override;
 
-        void FileSelectionChanged(const QItemSelection& /*selected*/ = QItemSelection(), const QItemSelection& /*deselected*/ = QItemSelection()) override;
+        void FileSelectionChanged(
+            const QItemSelection& /*selected*/ = QItemSelection(),
+            const QItemSelection& /*deselected*/ = QItemSelection()) override;
 
     private:
         void OnNewFileButtonPressed();
@@ -94,7 +96,9 @@ namespace AssetBundler
 
         void PopulateComparisonDataCardList();
 
-        void CreateComparisonDataCard(AZStd::shared_ptr<AzToolsFramework::AssetFileInfoListComparison> comparisonList, size_t comparisonDataIndex);
+        void CreateComparisonDataCard(
+            AZStd::shared_ptr<AzToolsFramework::AssetFileInfoListComparison> comparisonList,
+            size_t comparisonDataIndex);
 
         void RemoveAllComparisonDataCards();
 

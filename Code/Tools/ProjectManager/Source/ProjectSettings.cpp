@@ -10,36 +10,31 @@
  *
  */
 
-#include <Qt/NewProjectSettings.h>
+#include <ProjectSettings.h>
 
-#include <Qt/ui_NewProjectSettings.h>
+#include <Source/ui_ProjectSettings.h>
 
 namespace O3DE::ProjectManager
 {
-    NewProjectSettings::NewProjectSettings(ProjectManagerWindow* window)
+    ProjectSettings::ProjectSettings(ProjectManagerWindow* window)
         : ScreenWidget(window)
-        , m_ui(new Ui::NewProjectSettingsClass())
+        , m_ui(new Ui::ProjectSettingsClass())
     {
         m_ui->setupUi(this);
 
         ConnectSlotsAndSignals();
     }
 
-    NewProjectSettings::~NewProjectSettings()
+    ProjectSettings::~ProjectSettings()
     {
     }
 
-    void NewProjectSettings::ConnectSlotsAndSignals()
+    void ProjectSettings::ConnectSlotsAndSignals()
     {
-        QObject::connect(m_ui->backButton, &QPushButton::pressed, this, &NewProjectSettings::HandleBackButton);
-        QObject::connect(m_ui->nextButton, &QPushButton::pressed, this, &NewProjectSettings::HandleNextButton);
+        QObject::connect(m_ui->gemsButton, &QPushButton::pressed, this, &ProjectSettings::HandleGemsButton);
     }
 
-    void NewProjectSettings::HandleBackButton()
-    {
-        m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::FirstTimeUse);
-    }
-    void NewProjectSettings::HandleNextButton()
+    void ProjectSettings::HandleGemsButton()
     {
         m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::GemCatalog);
     }

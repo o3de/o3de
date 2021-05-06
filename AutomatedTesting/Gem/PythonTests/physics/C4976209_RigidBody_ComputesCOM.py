@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C4976209
 # Test Case Title : Verify that when Compute COM is enabled, the PhysX system computes the COM of the object on its own
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4976209
+
 
 
 # fmt: off
