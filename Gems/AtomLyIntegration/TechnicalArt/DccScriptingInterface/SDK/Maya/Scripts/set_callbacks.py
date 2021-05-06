@@ -49,7 +49,6 @@ _G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, True)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, True)
 
 _MODULENAME = r'DCCsi.SDK.Maya.Scripts.set_callbacks'
-
 _LOGGER = azpy.initialize_logger(_MODULENAME, default_log_level=int(20))
 _LOGGER.debug('Invoking:: {0}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------

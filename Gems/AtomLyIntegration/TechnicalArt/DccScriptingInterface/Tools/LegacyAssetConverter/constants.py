@@ -76,8 +76,40 @@ FBX_ASSIGNED_GEO = 'assigned'
 EMPTY_IMAGE_LOW = 260000
 EMPTY_IMAGE_LOW = 270000
 
+MAYA_ENV = {
+    'DCCSI_PY_VERSION_MAJOR': '2',
+    'DCCSI_PY_VERSION_MINOR': '7',
+    'DCCSI_PY_VERSION_RELEASE': '11',
+    'DCCSI_MAYA_VERSION': '2020',
+    'DCCSI_SDK_MAYA_PATH': f'{os.environ["DCCSIG_PATH"]}\\SDK\\Maya',
+    'DCCSI_AZPY_MAYA_PATH': f'{os.environ["DCCSIG_PATH"]}\\azpy\\Maya',
+    'DCCSI_MAYA_SCRIPT_PATH': f'{os.environ["DCCSIG_PATH"]}\\SDK\\Maya\\Scripts',
+    'DCCSI_PY_MAYA': 'C:\\Program Files\\Autodesk\\Maya2020\\bin\\mayapy.exe',
+    'DCCSI_MAYA_PLUG_IN_PATH': f'{os.environ["DCCSIG_PATH"]}\\SDK\\Maya\\plugins',
+    'DCCSI_MAYA_SHELF_PATH': f'{os.environ["DCCSIG_PATH"]}\\SDK\\Maya\\Prefs\\Shelves',
+    'MAYA_MODULE_PATH': f'{os.environ["DCCSIG_PATH"]}\\SDK\\Maya;'
+                        f'{os.environ["PROGRAMW6432"]}\\Autodesk\\Maya2020\\modules;'
+                        f'{os.environ["PROGRAMW6432"]}\\Autodesk\\maya\\2020\\modules;'
+                        f'{os.environ["USERPROFILE"]}\\Documents\\maya\\modules;'
+                        f'{os.environ["PROGRAMW6432"]}\\Common Files\\Autodesk Shared\\Modules\\maya\\2020;',
+    'MAYA_LOCATION': f'{os.environ["PROGRAMW6432"]}\\Autodesk\\Maya2020',
+    'MAYA_BIN_PATH': f'{os.environ["PROGRAMW6432"]}\\Autodesk\\Maya2020\\bin',
+    'MAYA_PLUG_IN_PATH': f'{os.environ["DCCSIG_PATH"]}\\SDK\\Maya\\plugins',
+    'PYTHONPATH': f'{os.environ["DCCSIG_PATH"]}\\SDK\\Maya\\Scripts;'
+                    f'{os.environ["DCCSIG_PATH"]}\\SDK\\Maya\\Scripts\\Python;'
+                    f'{os.environ["DCCSIG_PATH"]};'
+                    f'{os.environ["DCCSIG_PATH"]}\\3rdParty\\Python\\Lib\\2.x\\2.7.x\\site-packages;'
+                    f'{os.environ["PROGRAMW6432"]}\\Autodesk\\Maya2020\\modules;'
+                    f'{os.environ["LY_DEV"]}\\Build\\bin\\profile;'
+                    f'{os.environ["DCCSIG_PATH"]}\\azpy\\maya;'
+}
+
+DCC_LOCATIONS = {
+    'maya': f"{MAYA_ENV['MAYA_LOCATION']}\\bin\\maya.exe"
+}
+
 EXTERNAL_SCRIPTS = {
-    'Attach Textures': ['maya', f'{os.environ["DCCSIG_PATH"]}\\azpy\\maya\\maya_materials.py'],
+    'Attach Textures': ['maya', 'maya_materials', 'assign_stingray_materials'],
     'Create ID Maps': 'tbd',
     'Create Metallic Map': 'tbd',
     'Set Maya Workspace': 'tbd',

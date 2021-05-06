@@ -27,12 +27,12 @@
 #  built-ins
 import collections
 from collections import abc
-# import subprocess
+import subprocess
 import logging as _logging
 import pathlib
 from pathlib import *
 import shelve
-# import socket
+import psutil
 import shutil
 import math
 import json
@@ -119,6 +119,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.local_host = '127.0.0.1'
         self.port = 54321
         self.p = None
+        self.launcher = None
         self.modal_dialog = None
         self.logger_enabled = True
         self.cli_enabled = cli_enabled
@@ -1139,6 +1140,19 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                         row_info.append(v)
                     writer.writerow(row_info)
 
+    def launch_application(self, application, script_path, function):
+        self.launcher = QProcess(self)
+        env = QtCore.QProcessEnvironment.systemEnvironment()
+        env_variables = self.get_environment_variables(application)
+        for key, value in env_variables:
+            env.insert(key, value)
+        self.launcher.setProcessEnvironment(env)
+        self.launcher.setProgram(constants.DCC_LOCATIONS[application])
+        self.launcher.setArguments(self.get_script_arguments(application, script_path, function))
+        self.launcher.startDetached()
+        self.launcher.waitForFinished(-1)
+        _LOGGER.info(f'Launching {application.capitalize()}...')
+
     def populate_image_table(self, table_items):
         """
         Feeds texture information into the texture table of the UI when inspecting FBX asset information
@@ -1533,6 +1547,31 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         material_list.insert(0, 'Choose')
         return material_list
 
+    def get_environment_variables(self, application):
+        if application == 'maya':
+            return constants.MAYA_ENV.items()
+        return None
+
+    def get_current_maya_file(self):
+        maya_file = self.materials_db[str(self.asset_directory_combobox.currentIndex())]['fbxfiles'][
+            self.fbx_combobox.currentText()]['mayafile']
+        _LOGGER.info(f'Get current maya file: {maya_file}')
+        return str(maya_file)
+
+    def get_current_material_data(self):
+        material_data = self.materials_db[str(self.asset_directory_combobox.currentIndex())]['fbxfiles'][
+            self.fbx_combobox.currentText()]['materials']
+        return material_data
+
+    def get_script_arguments(self, application, script_path, function):
+        file_path = script_data = None
+        if application == 'maya':
+            if script_path == 'maya_materials':
+                file_path = self.get_current_maya_file()
+                script_data = self.get_current_material_data()
+        script_data = str(utilities.convert_box_dict_to_standard(script_data))
+        return [script_path, function, file_path, script_data]
+
     def set_texture_list(self, fbx_dictionary, target_fbx):
         table_texture_list = []
         for key, values in fbx_dictionary.items():
@@ -1704,7 +1743,6 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         :param progress: This contains the type of event and the name of the generated asset
         :return:
         """
-        _LOGGER.info(f'HMM::::: [{progress}]')
         event_type = progress.split('_')[0]
         if event_type in constants.LOAD_WEIGHTS:
             progress_weight = constants.LOAD_WEIGHTS[event_type]
@@ -1901,10 +1939,14 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         Sends commands from the standalone window to a DCC application.
         :return:
         """
-        script_info = constants.EXTERNAL_SCRIPTS[self.run_script_combobox.currentText()]
-        _LOGGER.info(f'Running script [{self.run_script_combobox.currentText()}]: Info: {script_info}')
+        application, script_path, function = constants.EXTERNAL_SCRIPTS[self.run_script_combobox.currentText()]
+        _LOGGER.info(f'Running script [{self.run_script_combobox.currentText()}]: App: {application}')
 
-        # Launch Maya via Launcher
+        app_open = application in (p.name() for p in psutil.process_iter())
+        if app_open:
+            _LOGGER.info(f'{application.capitalize()} is currently open... running script [{script_path}]')
+        else:
+            self.launch_application(application, script_path, function)
 
     def back_button_clicked(self):
         _LOGGER.info('Back button clicked')

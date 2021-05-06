@@ -8,6 +8,7 @@
       <option name="ignoredIdentifiers">
         <list>
           <option value="object.fileTextureName" />
+          <option value="Maya.Scripts.userSetup.TAG_LY_DCC_MAYA_MEL" />
         </list>
       </option>
     </inspection_tool>

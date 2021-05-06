@@ -20,8 +20,20 @@ import json
 import sys
 import time
 import traceback
+import socket
+import logging as _logging
+
+# --------------------------------------------------------------------------
+# -- Global Definitions --
+_MODULENAME = 'azpy.shared.server_base'
+_LOGGER = _logging.getLogger(_MODULENAME)
+
+_LOCAL_HOST = socket.gethostbyname(socket.gethostname())
+_LOGGER.info('local_host: {}'.format(_LOCAL_HOST))
+# -------------------------------------------------------------------------
 
 
+# -------------------------------------------------------------------------
 class ServerBase(QtCore.QObject):
     PORT = 17344
     HEADER_SIZE = 10
@@ -38,9 +50,9 @@ class ServerBase(QtCore.QObject):
         self.server.newConnection.connect(self.establish_connection)
 
         if self.listen():
-            print('[LOG] Server listening on port: {0}'.format(self.port))
+            _LOGGER.info('Server listening on port: {0}'.format(self.port))
         else:
-            print('[ERROR] Server initialization failed')
+            _LOGGER.info('[ERROR] Server initialization failed')
 
     def listen(self):
         if not self.server.isListening():
@@ -52,13 +64,13 @@ class ServerBase(QtCore.QObject):
         if self.socket.state() == QtNetwork.QTcpSocket.ConnectedState:
             self.socket.disconnected.connect(self.on_disconnected)
             self.socket.readyRead.connect(self.read)
-            print('[LOG] Connection Established')
+            _LOGGER.info('Connection Established')
 
     def on_disconnected(self):
         self.socket.disconnected.disconnect()
         self.socket.readyRead.disconnect()
         self.socket.deleteLater()
-        print('[LOG] Connection Disconnected')
+        _LOGGER.info('Connection Disconnected')
 
     def read(self):
         bytes_remaining = -1

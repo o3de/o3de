@@ -13,6 +13,8 @@
 # -- This line is 75 characters -------------------------------------------
 from __future__ import unicode_literals
 
+import importlib
+
 """
 This module fulfills the maya bootstrap pattern as described in their docs
 https://tinyurl.com/y2aoz8es
@@ -35,12 +37,8 @@ _BOOT_INFO = True
 
 # -------------------------------------------------------------------------
 # built in's
-import os
-import sys
-import site
 import inspect
 import traceback
-import logging as _logging
 
 # -- DCCsi Extension Modules
 import azpy
@@ -149,7 +147,6 @@ except Exception as e:
     raise e
 
 # 3rdparty
-from unipath import Path
 from box import Box
 # -------------------------------------------------------------------------
 
@@ -264,7 +261,7 @@ def post_startup():
     # Defered startup after the Ui is running.
     _G_CALLBACKS = Box(box_dots=True)  # this just ensures a global scope container
     if _G_LOAD_CALLBACKS:
-        from set_callbacks import _G_CALLBACKS
+        pass
         # ^ need to hold on to this as the install repopulate set
 
     # this ensures the fixPaths callback is loaded
@@ -293,19 +290,23 @@ def post_startup():
     # Setup UI tools
     if not maya.cmds.about(batch=True):
         _LOGGER.info('Add UI dependent tools')
-        # wrap in a try, because we haven't implmented it yet
+        # wrap in a try, because we haven't implemented it yet
         try:
             mel.eval(str(r'source "{}"'.format(TAG_LY_DCC_MAYA_MEL)))
         except Exception as e:
             _LOGGER.error(e)
 
-    # manage custom menu in a sub-module
+    # Manage custom menu in a sub-module
     from set_menu import set_main_menu
     set_main_menu()
 
     # Add communication server
-    from azpy.maya.utils import maya_server
+    from azpy.maya.utils import maya_server, maya_client
     maya_server.start_server()
+    if len(sys.argv) > 1:
+        maya_file_path = sys.argv[3]
+        cmds.file(maya_file_path, o=True, force=True)
+        maya_client.run_script(sys.argv[1], sys.argv[2], sys.argv[4])
 
     # TODO: manage custom shelf in a sub-module
 
@@ -323,6 +324,7 @@ if __name__ == '__main__':
 
         # This allows defered action post boot (atfer UI is active)
         from maya.utils import executeDeferred
+
         post = executeDeferred(post_startup)
 
     except Exception as e:

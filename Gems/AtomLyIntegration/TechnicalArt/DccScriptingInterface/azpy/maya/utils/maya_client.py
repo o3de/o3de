@@ -58,6 +58,19 @@ class MayaClient(ClientBase):
         else:
             return None
 
+    def run_script(self, script_path, function, data):
+        cmd = {
+            'cmd': 'run_script',
+            'script': script_path,
+            'function': function,
+            'data': data
+        }
+        reply = self.send(cmd)
+        if self.is_valid_reply(reply):
+            return reply['result']
+        else:
+            return None
+
     def sleep(self):
         cmd = {
             'cmd':  'sleep',
@@ -69,13 +82,10 @@ class MayaClient(ClientBase):
             return None
 
 
-if __name__ == '__main__':
+def run_script(script_path, function, script_data):
     client = MayaClient(timeout=10)
     if client.connect():
         _LOGGER.info('Connected successfully')
-        _LOGGER.info(client.ping())
-        _LOGGER.info(client.echo('HelloWorld!'))
-        _LOGGER.info(client.set_title('Maya Server New'))
-        _LOGGER.info(client.sleep())
+        _LOGGER.info(client.run_script(script_path, function, script_data))
         if client.disconnect():
             _LOGGER.info('Disconnected successfully')

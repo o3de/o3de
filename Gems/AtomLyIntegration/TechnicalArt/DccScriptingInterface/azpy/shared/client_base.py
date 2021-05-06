@@ -58,7 +58,7 @@ class ClientBase(object):
         try:
             msg_str = ''.join(message)
             self.client_socket.sendall(msg_str.encode())
-        except Exception as e:
+        except Exception:
             traceback.print_exc()
             return None
         return self.recv()
@@ -114,9 +114,7 @@ class ClientBase(object):
     @staticmethod
     def is_valid_reply(reply):
         if not reply:
-            print('[ERROR] Invalid Reply')
             return False
-
         if not reply['success']:
             print('[ERROR] {} failed: {}'.format(reply['cmd'], reply['msg']))
             return
@@ -125,11 +123,5 @@ class ClientBase(object):
 
 if __name__ == '__main__':
     client = ClientBase()
-    if client.connect():
-        print('Connected successfully')
-        print(client.ping())
-
-        if client.disconnect():
-            print('Disconnected successfully')
-    else:
+    if not client.connect():
         print('Failed to connect')

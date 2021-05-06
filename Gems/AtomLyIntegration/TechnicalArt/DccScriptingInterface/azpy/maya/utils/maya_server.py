@@ -11,20 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 # -- This line is 75 characters -------------------------------------------
+from azpy.shared.server_base import ServerBase
 # -- Standard Python modules --
 import sys
 import os
 import socket
 import time
 import logging as _logging
+import json
+import importlib
 
 # -- External Python modules --
 from PySide2 import QtWidgets
 from shiboken2 import wrapInstance
+from maya import mel
 from maya import OpenMayaUI as omui
-
-shared_path = os.path.join(os.environ['DCCSIG_PATH'], 'azpy', 'shared')
-from azpy.shared.server_base import ServerBase
 
 # -- Extension Modules --
 # -
@@ -69,7 +70,12 @@ class MayaServer(ServerBase):
         reply['success'] = True
 
     def run_script(self, data, reply):
-        reply['result'] = data['text']
+        script_location = data['script']
+        function = data['function']
+        script_data = json.loads("{}".format(data['data'].replace("'", '"')))
+        mod = importlib.import_module('azpy.maya.{}'.format(script_location))
+        getattr(mod, function)(script_data)
+        reply['result'] = True
         reply['success'] = True
 
     def set_title(self, data, reply):
