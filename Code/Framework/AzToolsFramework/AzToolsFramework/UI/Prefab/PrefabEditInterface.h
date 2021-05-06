@@ -28,6 +28,11 @@ namespace AzToolsFramework
              * @param entityId The entity whose owning prefab should be edited.
              */
             virtual void EditOwningPrefab(AZ::EntityId entityId) = 0;
+
+            /**
+             * Clears the editing stack and reverts back to editing the level.
+             */
+            virtual void ClosePrefabEdit() = 0;
             
             /**
              * Queries the Edit Manager to know if the provided entity is part of the prefab currently being edited.

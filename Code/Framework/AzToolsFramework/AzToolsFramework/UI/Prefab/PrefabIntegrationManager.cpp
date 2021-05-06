@@ -136,16 +136,12 @@ namespace AzToolsFramework
 
                         for (AZ::EntityId entityId : selectedEntities)
                         {
-                            if (!layerInSelection)
-                            {
-                                AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-                                    layerInSelection, entityId,
-                                    &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
+                            AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
+                                layerInSelection, entityId, &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
 
-                                if (layerInSelection)
-                                {
-                                    break;
-                                }
+                            if (layerInSelection)
+                            {
+                                break;
                             }
                         }
 
@@ -189,7 +185,16 @@ namespace AzToolsFramework
                         {
                             bool beingEdited = s_prefabEditInterface->IsOwningPrefabBeingEdited(selectedEntity);
 
-                            if (!beingEdited)
+                            if (beingEdited)
+                            {
+                                QAction* closeAction = menu->addAction(QObject::tr("Complete Prefab Edit"));
+                                closeAction->setToolTip(QObject::tr("Exit the prefab focus mode."));
+
+                                QObject::connect(closeAction, &QAction::triggered, closeAction, [this] {
+                                    ContextMenu_CompleteEditPrefab();
+                                });
+                            }
+                            else
                             {
                                 QAction* editAction = menu->addAction(QObject::tr("Edit Prefab"));
                                 editAction->setToolTip(QObject::tr("Edit the prefab in focus mode."));
@@ -197,9 +202,9 @@ namespace AzToolsFramework
                                 QObject::connect(editAction, &QAction::triggered, editAction, [this, selectedEntity] {
                                     ContextMenu_EditPrefab(selectedEntity);
                                 });
-
-                                itemWasShown = true;
                             }
+
+                            itemWasShown = true;
                         }
 
                         // Save Prefab
@@ -379,6 +384,11 @@ namespace AzToolsFramework
         void PrefabIntegrationManager::ContextMenu_EditPrefab(AZ::EntityId containerEntity)
         {
             s_prefabEditInterface->EditOwningPrefab(containerEntity);
+        }
+
+        void PrefabIntegrationManager::ContextMenu_CompleteEditPrefab()
+        {
+            s_prefabEditInterface->ClosePrefabEdit();
         }
 
         void PrefabIntegrationManager::ContextMenu_SavePrefab(AZ::EntityId containerEntity)
