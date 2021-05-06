@@ -1,0 +1,26 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "textureMap": "TestData/Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_bc.png"
+        },
+        "opacity": {
+            "alphaSource": "Split",
+            "mode": "Cutout",
+            "textureMap": "TestData/Textures/checker8x8_512.png"
+        },
+        "parallax": {
+            "algorithm": "POM",
+            "enable": true,
+            "factor": 0.10000000149011612,
+            "quality": "High",
+            "textureMap": "TestData/Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_disp.png"
+        },
+        "uv": {
+            "scale": 0.5
+        }
+    }
+}
