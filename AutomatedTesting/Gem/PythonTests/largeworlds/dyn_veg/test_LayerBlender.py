@@ -20,17 +20,11 @@ import pytest
 
 pytest.importorskip("ly_test_tools")
 
-import time as time
-
-import ly_test_tools.launchers.launcher_helper as launcher_helper
 import ly_remote_console.remote_console_commands as remote_console_commands
-from ly_remote_console.remote_console_commands import send_command_and_expect_response as send_command_and_expect_response
+
 import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.file_system as file_system
 import automatedtesting_shared.hydra_test_utils as hydra
-import automatedtesting_shared.screenshot_utils as screenshot_utils
-
-from automatedtesting_shared.network_utils import check_for_listening_port
 
 
 test_directory = os.path.join(os.path.dirname(__file__), "EditorScripts")
@@ -58,6 +52,7 @@ class TestLayerBlender(object):
     @pytest.mark.test_case_id("C2627906")
     @pytest.mark.BAT
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_area
     @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
     def test_LayerBlender_E2E_Editor(self, workspace, request, editor, project, level, launcher_platform):
         # Make sure temp level doesn't already exist
@@ -95,6 +90,7 @@ class TestLayerBlender(object):
     @pytest.mark.test_case_id("C2627906")
     @pytest.mark.BAT
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_area
     @pytest.mark.xfail
     @pytest.mark.parametrize("launcher_platform", ['windows'])
     def test_LayerBlender_E2E_Launcher(self, workspace, project, launcher, level, remote_console_instance,

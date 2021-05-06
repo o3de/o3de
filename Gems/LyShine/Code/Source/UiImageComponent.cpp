@@ -1040,8 +1040,7 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
             editInfo->DataElement("Sprite", &UiImageComponent::m_spritePathname, "Sprite path", "The sprite path. Can be overridden by another component such as an interactable.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeAsset)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorSpritePathnameChange)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorSpritePathnameChange);
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_spriteSheetCellIndex, "Index", "Sprite-sheet index. Defines which cell in a sprite-sheet is displayed.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeSpriteSheet)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnIndexChange)

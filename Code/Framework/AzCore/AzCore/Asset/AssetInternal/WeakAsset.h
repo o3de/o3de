@@ -28,6 +28,8 @@ namespace AZ::Data::AssetInternal
     class WeakAsset
     {
     public:
+        static constexpr bool EnableAssetCancellation = false;
+
         WeakAsset() = default;
 
         WeakAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior);
@@ -111,7 +113,14 @@ namespace AZ::Data::AssetInternal
         // - If the left and right sides are the same, clearing the right side's reference means one less reference will exist
         if (m_assetData)
         {
-            m_assetData->ReleaseWeak();
+            if constexpr (EnableAssetCancellation)
+            {
+                m_assetData->ReleaseWeak();
+            }
+            else
+            {
+                m_assetData->Release();
+            }
         }
         m_assetData = AZStd::move(rhs.m_assetData);
         rhs.m_assetData = nullptr;
@@ -141,17 +150,27 @@ namespace AZ::Data::AssetInternal
 
         if (assetData)
         {
-            // This should be AcquireWeak but we're using strong references for now to disable asset cancellation
-            // until it is more stable
-            assetData->Acquire();
+            if constexpr (EnableAssetCancellation)
+            {
+                assetData->AcquireWeak();
+            }
+            else
+            {
+                assetData->Acquire();
+            }
             m_assetId = assetData->GetId();
         }
 
         if (m_assetData)
         {
-            // This should be ReleaseWeak but we're using strong references for now to disable asset cancellation
-            // until it is more stable
-            m_assetData->Release();
+            if constexpr (EnableAssetCancellation)
+            {
+                m_assetData->ReleaseWeak();
+            }
+            else
+            {
+                m_assetData->Release();
+            }
         }
 
         m_assetData = assetData;

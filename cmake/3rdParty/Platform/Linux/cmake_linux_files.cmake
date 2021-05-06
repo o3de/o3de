@@ -12,6 +12,5 @@
 set(FILES
     BuiltInPackages_linux.cmake
     Clang_linux.cmake
-    dyad_linux.cmake
     Wwise_linux.cmake
 )

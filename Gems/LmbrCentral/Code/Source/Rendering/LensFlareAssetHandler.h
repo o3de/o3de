@@ -43,7 +43,6 @@ namespace LmbrCentral
         AZ::Data::AssetType GetAssetType() const override;
         const char* GetAssetTypeDisplayName() const override;
         const char* GetBrowserIcon() const override;
-        AZ::Uuid GetComponentTypeId() const override;
         void GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions) override;
         //////////////////////////////////////////////////////////////////////////////////////////////
 

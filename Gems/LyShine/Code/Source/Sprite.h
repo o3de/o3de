@@ -83,6 +83,14 @@ public: // static member functions
     //! Replaces baseSprite with newSprite with proper ref-count handling and null-checks.
     static void ReplaceSprite(ISprite** baseSprite, ISprite* newSprite);
 
+    //! Pathname allows any of the following:
+    //! 1. image source/product path (will use pathname to look for an existing .sprite sidecar file)
+    //! 2. .sprite source/product path (will use pathname to look for an existing image file with a supported extension)
+    //! 3. legacy .dds product path (will use pathname to look for an existing texture file with a supported extension)
+    static bool FixUpSourceImagePathFromUserDefinedPath(const AZStd::string& userDefinedPath, AZStd::string& sourceImagePath);
+
+    static AZStd::string GetImageSourcePathFromProductPath(const AZStd::string& productPathname);
+
 private:
     static bool LoadImage(const AZStd::string& nameTex, AZ::Data::Instance<AZ::RPI::Image>& image);
     static void ReleaseImage(AZ::Data::Instance<AZ::RPI::Image>& image);

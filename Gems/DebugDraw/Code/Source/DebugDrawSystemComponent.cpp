@@ -547,9 +547,9 @@ namespace DebugDraw
             CreateLineEntryForComponent(lineComponent->GetEntityId(), lineComponent->m_element);
         }
         #ifdef DEBUGDRAW_GEM_EDITOR
-        else if (EditorDebugDrawLineComponent* lineComponent = azrtti_cast<EditorDebugDrawLineComponent*>(component))
+        else if (EditorDebugDrawLineComponent* editorLineComponent = azrtti_cast<EditorDebugDrawLineComponent*>(component))
         {
-            CreateLineEntryForComponent(lineComponent->GetEntityId(), lineComponent->m_element);
+            CreateLineEntryForComponent(editorLineComponent->GetEntityId(), editorLineComponent->m_element);
         }
         #endif // DEBUGDRAW_GEM_EDITOR
         else if (DebugDrawRayComponent* rayComponent = azrtti_cast<DebugDrawRayComponent*>(component))
@@ -557,9 +557,9 @@ namespace DebugDraw
             CreateRayEntryForComponent(rayComponent->GetEntityId(), rayComponent->m_element);
         }
         #ifdef DEBUGDRAW_GEM_EDITOR
-        else if (EditorDebugDrawRayComponent* rayComponent = azrtti_cast<EditorDebugDrawRayComponent*>(component))
+        else if (EditorDebugDrawRayComponent* editorRayComponent = azrtti_cast<EditorDebugDrawRayComponent*>(component))
         {
-            CreateRayEntryForComponent(rayComponent->GetEntityId(), rayComponent->m_element);
+            CreateRayEntryForComponent(editorRayComponent->GetEntityId(), editorRayComponent->m_element);
         }
         #endif // DEBUGDRAW_GEM_EDITOR
         else if (DebugDrawSphereComponent* sphereComponent = azrtti_cast<DebugDrawSphereComponent*>(component))
@@ -567,9 +567,9 @@ namespace DebugDraw
             CreateSphereEntryForComponent(sphereComponent->GetEntityId(), sphereComponent->m_element);
         }
         #ifdef DEBUGDRAW_GEM_EDITOR
-        else if (EditorDebugDrawSphereComponent* sphereComponent = azrtti_cast<EditorDebugDrawSphereComponent*>(component))
+        else if (EditorDebugDrawSphereComponent* editorSphereComponent = azrtti_cast<EditorDebugDrawSphereComponent*>(component))
         {
-            CreateSphereEntryForComponent(sphereComponent->GetEntityId(), sphereComponent->m_element);
+            CreateSphereEntryForComponent(editorSphereComponent->GetEntityId(), editorSphereComponent->m_element);
         }
         #endif // DEBUGDRAW_GEM_EDITOR
         else if (DebugDrawObbComponent* obbComponent = azrtti_cast<DebugDrawObbComponent*>(component))
@@ -578,9 +578,9 @@ namespace DebugDraw
         }
 
         #ifdef DEBUGDRAW_GEM_EDITOR
-        else if (EditorDebugDrawObbComponent* obbComponent = azrtti_cast<EditorDebugDrawObbComponent*>(component))
+        else if (EditorDebugDrawObbComponent* editorObbComponent = azrtti_cast<EditorDebugDrawObbComponent*>(component))
         {
-            CreateObbEntryForComponent(obbComponent->GetEntityId(), obbComponent->m_element);
+            CreateObbEntryForComponent(editorObbComponent->GetEntityId(), editorObbComponent->m_element);
         }
         #endif // DEBUGDRAW_GEM_EDITOR
 
@@ -590,9 +590,9 @@ namespace DebugDraw
         }
 
         #ifdef DEBUGDRAW_GEM_EDITOR
-        else if (EditorDebugDrawTextComponent* textComponent = azrtti_cast<EditorDebugDrawTextComponent*>(component))
+        else if (EditorDebugDrawTextComponent* editorTextComponent = azrtti_cast<EditorDebugDrawTextComponent*>(component))
         {
-            CreateTextEntryForComponent(textComponent->GetEntityId(), textComponent->m_element);
+            CreateTextEntryForComponent(editorTextComponent->GetEntityId(), editorTextComponent->m_element);
         }
         #endif // DEBUGDRAW_GEM_EDITOR
     }

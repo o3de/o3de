@@ -82,7 +82,7 @@ namespace AZ
             void RemovePassFromLibrary(Pass* pass);
 
             //! Load pass templates which are list in an AssetAliases
-            void LoadPassTemplateMappings(const AZStd::string& templateMappingPath);
+            bool LoadPassTemplateMappings(const AZStd::string& templateMappingPath);
             bool LoadPassTemplateMappings(Data::Asset<AnyAsset> mappingAsset);
 
             //! Returns a list of passes found in the pass name mapping using the provided pass filter

@@ -39,6 +39,7 @@ class TestSlopeFilter(object):
 
     @pytest.mark.test_case_id("C4874097")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_filter
     def test_SlopeFilter_FilterStageToggle(self, request, editor, level, workspace, launcher_platform):
         cfg_args = [level]
 
@@ -70,6 +71,7 @@ class TestSlopeFilter(object):
 
     @pytest.mark.test_case_id("C4814464", "C4874096")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_filter
     @pytest.mark.skip  # LYN-2211
     def test_SlopeFilter_ComponentAndOverrides_InstancesPlantOnValidSlopes(self, request, editor, level,
                                                                            launcher_platform):

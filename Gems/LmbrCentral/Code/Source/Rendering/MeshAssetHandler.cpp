@@ -252,11 +252,6 @@ namespace LmbrCentral
         return "Editor/Icons/Components/StaticMesh.svg";
     }
 
-    AZ::Uuid MeshAssetHandler::GetComponentTypeId() const
-    {
-        return AZ::Uuid("{FC315B86-3280-4D03-B4F0-5553D7D08432}");
-    }
-
     void MeshAssetHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)
     {
         extensions.push_back(CRY_GEOMETRY_FILE_EXT);
@@ -365,11 +360,6 @@ namespace LmbrCentral
     const char* GeomCacheAssetHandler::GetGroup() const
     {
         return "Geometry";
-    }
-
-    AZ::Uuid GeomCacheAssetHandler::GetComponentTypeId() const
-    {
-        return AZ::Uuid("{045C0C58-C13E-49B0-A471-D4AC5D3FC6BD}");
     }
 
     void GeomCacheAssetHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)
