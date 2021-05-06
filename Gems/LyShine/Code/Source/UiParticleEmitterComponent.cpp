@@ -13,6 +13,8 @@
 
 #include "UiParticleEmitterComponent.h"
 #include "EditorPropertyTypes.h"
+#include "Sprite.h"
+#include "RenderGraph.h"
 
 #include <AzCore/Math/Crc.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -21,7 +23,6 @@
 #include <AzCore/std/sort.h>
 
 #include <LyShine/ISprite.h>
-#include <IRenderer.h>
 
 #include <LyShine/IDraw2d.h>
 #include <LyShine/ISprite.h>
@@ -764,10 +765,11 @@ void UiParticleEmitterComponent::InGamePostActivate()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
 {
-#ifdef LYSHINE_ATOM_TODO
-    const char* profileMarker = "UI_PARTICLESYS";
-    gEnv->pRenderer->PushProfileMarker(profileMarker);
-#endif
+    AZ::u32 particlesToRender = AZ::GetMin<AZ::u32>(m_particleContainer.size(), m_particleBufferSize);
+    if (particlesToRender == 0)
+    {
+        return;
+    }
 
     AZ::Matrix4x4 transform = AZ::Matrix4x4::CreateIdentity();
 
@@ -786,9 +788,15 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
         EBUS_EVENT_ID_RESULT(transform, canvasID, UiCanvasBus, GetCanvasToViewportMatrix);
     }
 
-    AZ::u32 particlesToRender = AZ::GetMin<AZ::u32>(m_particleContainer.size(), m_particleBufferSize);
-
-    ITexture* texture = (m_sprite) ? m_sprite->GetTexture() : nullptr;
+    AZ::Data::Instance<AZ::RPI::Image> image;
+    if (m_sprite)
+    {
+        CSprite* sprite = dynamic_cast<CSprite*>(m_sprite);
+        if (sprite)
+        {
+            image = sprite->GetImage();
+        }
+    }
 
     bool isClampTextureMode = true;
     bool isTextureSRGB = false;
@@ -841,11 +849,11 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
 
     m_cachedPrimitive.m_numVertices = totalVerticesInserted;
     m_cachedPrimitive.m_numIndices = totalParticlesInserted * indicesPerParticle;
-    renderGraph->AddPrimitive(&m_cachedPrimitive, texture, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
-
-#ifdef LYSHINE_ATOM_TODO
-    gEnv->pRenderer->PopProfileMarker(profileMarker);
-#endif
+    LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
+    if (lyRenderGraph)
+    {
+        lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

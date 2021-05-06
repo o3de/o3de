@@ -80,6 +80,9 @@ namespace LyShineExamples
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void UiCustomImageComponent::Render(LyShine::IRenderGraph* renderGraph)
     {
+        (void)renderGraph;
+
+#ifdef LYSHINE_ATOM_TODO // [LYN-3635] convert to use Atom
         // get fade value (tracked by UiRenderer) and compute the desired alpha for the image
         float fade = renderGraph->GetAlphaFade();
         float desiredAlpha = m_overrideAlpha * fade;
@@ -125,6 +128,7 @@ namespace LyShineExamples
         bool isTexturePremultipliedAlpha = false; // we are not rendering from a render target with alpha in it
         LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
         renderGraph->AddPrimitive(&m_cachedPrimitive, texture, m_clamp, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

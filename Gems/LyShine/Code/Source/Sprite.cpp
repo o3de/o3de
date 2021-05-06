@@ -11,7 +11,6 @@
 */
 #include "LyShine_precompiled.h"
 #include "Sprite.h"
-#include <ITexture.h>
 #include <CryPath.h>
 #include <IRenderer.h>
 #include <ISerialize.h>
@@ -197,8 +196,7 @@ AZStd::string CSprite::s_emptyString;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 CSprite::CSprite()
-    : m_texture(nullptr)
-    , m_numSpriteSheetCellTags(0)
+    : m_numSpriteSheetCellTags(0)
     , m_atlas(nullptr)
 {
     AddRef();
@@ -208,8 +206,6 @@ CSprite::CSprite()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 CSprite::~CSprite()
 {
-    ReleaseTexture(m_texture);
-
     s_loadedSprites->erase(m_pathname);
     TextureAtlasNamespace::TextureAtlasNotificationBus::Handler::BusDisconnect();
 }
@@ -254,26 +250,17 @@ void CSprite::SetCellBorders(int cellIndex, Borders borders)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-ITexture* CSprite::GetTexture()
+AZ::Data::Instance<AZ::RPI::Image> CSprite::GetImage()
 {
     // Prioritize usage of an atlas
+#ifdef LYSHINE_ATOM_TODO // texture atlas conversion to use Atom
     if (m_atlas)
     {
         return m_atlas->GetTexture();
     }
+#endif
 
-    if (!m_texture && !m_pathname.empty())
-    {
-        // the render target texture may not have existed when the sprite was created
-        m_texture = gEnv->pRenderer->EF_GetTextureByName(m_pathname.c_str());
-        if (m_texture)
-        {
-            // increase the reference count to this texture so it doesn't get removed while
-            // we are using it
-            m_texture->AddRef();
-        }
-    }
-    return m_texture;
+    return m_image;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -381,31 +368,21 @@ bool CSprite::AreCellBordersZeroWidth(int cellIndex) const
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::Vector2 CSprite::GetSize()
 {
-#ifdef LYSHINE_ATOM_TODO // Convert texture atlases to use Atom
-    ITexture* texture = GetTexture();
-    if (texture)
+    AZ::Data::Instance<AZ::RPI::Image> image = GetImage();
+    if (image)
     {
         if (m_atlas)
         {
             return AZ::Vector2(static_cast<float>(m_atlasCoordinates.GetWidth()), static_cast<float>(m_atlasCoordinates.GetHeight()));
         }
-        return AZ::Vector2(static_cast<float>(texture->GetWidth()), static_cast<float>(texture->GetHeight()));
-    }
-    else
-    {
-        return AZ::Vector2(0.0f, 0.0f);
-    }
-#else
-    if (m_image)
-    {
-        AZ::RHI::Size size = m_image->GetRHIImage()->GetDescriptor().m_size;
+
+        AZ::RHI::Size size = image->GetRHIImage()->GetDescriptor().m_size;
         return AZ::Vector2(size.m_width, size.m_height);
     }
     else
     {
         return AZ::Vector2(0.0f, 0.0f);
     }
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -738,6 +715,7 @@ CSprite* CSprite::CreateSprite(const string& renderTargetName)
     // create Sprite object
     CSprite* sprite = new CSprite;
 
+#ifdef LYSHINE_ATOM_TODO // render target converstion to use ATom
     // the render target texture may not exist yet in which case we will need to load it later
     sprite->m_texture = gEnv->pRenderer->EF_GetTextureByName(renderTargetName.c_str());
     if (sprite->m_texture)
@@ -746,6 +724,7 @@ CSprite* CSprite::CreateSprite(const string& renderTargetName)
         // while we are using it
         sprite->m_texture->AddRef();
     }
+#endif
     sprite->m_pathname = renderTargetName;
     sprite->m_texturePathname.clear();
 
@@ -803,46 +782,6 @@ void CSprite::ReplaceSprite(ISprite** baseSprite, ISprite* newSprite)
         SAFE_RELEASE(*baseSprite);
 
         *baseSprite = newSprite;
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-bool CSprite::LoadTexture(const string& texturePathname, const string& pathname, ITexture*& texture)
-{
-    uint32 loadTextureFlags = (FT_USAGE_ALLOWREADSRGB | FT_DONT_STREAM);
-    texture = gEnv->pRenderer->EF_LoadTexture(texturePathname.c_str(), loadTextureFlags);
-
-    if (!texture || !texture->IsTextureLoaded())
-    {
-        gEnv->pSystem->Warning(
-            VALIDATOR_MODULE_SHINE,
-            VALIDATOR_WARNING,
-            VALIDATOR_FLAG_FILE | VALIDATOR_FLAG_TEXTURE,
-            texturePathname.c_str(),
-            "No texture file found for sprite: %s, no sprite will be used. "
-            "NOTE: File must be in current project or a gem.",
-            pathname.c_str());
-        texture = nullptr;
-        return false;
-    }
-    texture->SetFilter(FILTER_LINEAR);
-    return true;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void CSprite::ReleaseTexture(ITexture*& texture)
-{
-    if (texture)
-    {
-        // In order to avoid the texture being deleted while there are still commands on the render
-        // thread command queue that use it, we queue a command to delete the texture onto the
-        // command queue.
-        auto pInfo = AZStd::make_unique<SResourceAsync>();
-        pInfo->eClassName = eRCN_Texture;
-        pInfo->pResource = texture;
-        gEnv->pRenderer->ReleaseResourceAsync(AZStd::move(pInfo));
-        texture = nullptr;
     }
 }
 

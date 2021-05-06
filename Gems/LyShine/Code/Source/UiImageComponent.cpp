@@ -34,9 +34,8 @@
 #include <LyShine/IRenderGraph.h>
 
 #include "UiSerialize.h"
-#include "Sprite.h"
 #include "UiLayoutHelpers.h"
-
+#include "Sprite.h"
 #include "RenderGraph.h"
 
 namespace
@@ -281,6 +280,20 @@ namespace
         14, 15, 21, 21, 20, 14,     // center quad
     };
 
+    AZ::Data::Instance<AZ::RPI::Image> GetSpriteImage(ISprite* sprite)
+    {
+        AZ::Data::Instance<AZ::RPI::Image> image;
+        if (sprite)
+        {
+            CSprite* cSprite = dynamic_cast<CSprite*>(sprite); // LYSHINE_ATOM_TODO - find a different solution from downcasting
+            if (cSprite)
+            {
+                image = cSprite->GetImage();
+            }
+        }
+
+        return image;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -471,20 +484,12 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
 
         renderGraph->AddPrimitive(&m_cachedPrimitive, texture, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
 #else
-        AZ::Data::Instance<AZ::RPI::Image> image;
-        if (sprite)
-        {
-            CSprite* cSprite = static_cast<CSprite*>(sprite); // LYSHINE_ATOM_TODO - find a different solution from downcasting
-            if (cSprite)
-            {
-                image = cSprite->GetImage();
-            }
-        }
+        AZ::Data::Instance<AZ::RPI::Image> image = GetSpriteImage(sprite);
         bool isClampTextureMode = m_imageType == ImageType::Tiled ? false : true;
         bool isTextureSRGB = IsSpriteTypeRenderTarget() && m_isRenderTargetSRGB;
         bool isTexturePremultipliedAlpha = false; // we are not rendering from a render target with alpha in it
 
-        LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting
+        LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting
         if (lyRenderGraph)
         {
             lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
@@ -880,8 +885,7 @@ float UiImageComponent::GetTargetWidth(float /*maxWidth*/)
 {
     float targetWidth = 0.0f;
 
-    ITexture* texture = (m_sprite) ? m_sprite->GetTexture() : nullptr;
-    if (texture)
+    if (m_sprite)
     {
         switch (m_imageType)
         {
@@ -915,8 +919,7 @@ float UiImageComponent::GetTargetHeight(float /*maxHeight*/)
 {
     float targetHeight = 0.0f;
 
-    ITexture* texture = (m_sprite) ? m_sprite->GetTexture() : nullptr;
-    if (texture)
+    if (m_sprite)
     {
         switch (m_imageType)
         {
@@ -2364,7 +2367,8 @@ void UiImageComponent::SnapOffsetsToFixedImage()
     }
 
     // if the image has no texture it will not use Fixed rendering so do nothing
-    if (!m_sprite || !m_sprite->GetTexture())
+    AZ::Data::Instance<AZ::RPI::Image> image = GetSpriteImage(m_sprite);
+    if (!image)
     {
         return;
     }
