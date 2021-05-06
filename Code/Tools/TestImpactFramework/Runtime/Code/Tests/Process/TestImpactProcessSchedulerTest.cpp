@@ -227,8 +227,6 @@ namespace UnitTest
     // Expects the process to have exited gracefully of its own accord (i.e. not terminated for any reason by the scheduler)
     void ProcessSchedulerTestFixtureWithParams::ExpectGracefulExit(TestImpact::ProcessId pid)
     {
-        const auto& [launchResult, exitStatus, createTime, exitTime, duration, returnCode, std] = m_processResults[pid];
-
         ExpectSuccessfulLaunch(pid);
         ExpectExitCondition(pid, TestImpact::ExitCondition::Gracefull);
     }
@@ -236,8 +234,6 @@ namespace UnitTest
     // Expects the process to have been terminated by the client or scheduler
     void ProcessSchedulerTestFixtureWithParams::ExpectTerminatedProcess(TestImpact::ProcessId pid)
     {
-        const auto& [launchResult, exitStatus, createTime, exitTime, duration, returnCode, std] = m_processResults[pid];
-
         ExpectSuccessfulLaunch(pid);
         ExpectExitCondition(pid, TestImpact::ExitCondition::Terminated);
     }
@@ -245,8 +241,6 @@ namespace UnitTest
     // Expects the process to have been terminated by the scheduler due to the process or scheduler timing out
     void ProcessSchedulerTestFixtureWithParams::ExpectTimeoutProcess(TestImpact::ProcessId pid)
     {
-        const auto& [launchResult, exitStatus, createTime, exitTime, duration, returnCode, std] = m_processResults[pid];
-
         ExpectSuccessfulLaunch(pid);
         ExpectExitCondition(pid, TestImpact::ExitCondition::Timeout);
     }
