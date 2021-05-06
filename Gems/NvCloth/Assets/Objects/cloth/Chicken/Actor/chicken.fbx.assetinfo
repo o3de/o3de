@@ -23,22 +23,15 @@
                                                     {
                                                         "Visible": true,
                                                         "Position": [
-                                                            -0.08505599945783615,
-                                                            0.0,
-                                                            0.009370899759232998
-                                                        ],
-                                                        "Rotation": [
-                                                            0.7071437239646912,
-                                                            0.0,
-                                                            0.0,
-                                                            0.708984375
+                                                            -0.03709467500448227,
+                                                            -3.725290298461914e-9,
+                                                            0.013427333906292916
                                                         ],
                                                         "propertyVisibilityFlags": 248
                                                     },
                                                     {
-                                                        "$type": "CapsuleShapeConfiguration",
-                                                        "Height": 0.191273495554924,
-                                                        "Radius": 0.05063670128583908
+                                                        "$type": "SphereShapeConfiguration",
+                                                        "Radius": 0.12945009768009187
                                                     }
                                                 ]
                                             ]
@@ -50,15 +43,22 @@
                                                     {
                                                         "Visible": true,
                                                         "Position": [
-                                                            -2.0000000233721949e-7,
-                                                            0.012646200135350228,
-                                                            -0.24104370176792146
+                                                            0.0,
+                                                            0.09497000277042389,
+                                                            -0.19093050062656403
+                                                        ],
+                                                        "Rotation": [
+                                                            0.0,
+                                                            0.662880003452301,
+                                                            0.7487256526947022,
+                                                            0.0
                                                         ],
                                                         "propertyVisibilityFlags": 248
                                                     },
                                                     {
-                                                        "$type": "SphereShapeConfiguration",
-                                                        "Radius": 0.24875959753990174
+                                                        "$type": "CapsuleShapeConfiguration",
+                                                        "Height": 0.8597599267959595,
+                                                        "Radius": 0.27968019247055056
                                                     }
                                                 ]
                                             ]
