@@ -208,22 +208,28 @@ namespace AZ
     // BaseJsonSerializer
     //
 
-    JsonSerializationResult::ResultCode BaseJsonSerializer::ContinueLoading(void* object, const Uuid& typeId, const rapidjson::Value& value,
-        JsonDeserializerContext& context, Flags flags)
+    BaseJsonSerializer::OperationFlags BaseJsonSerializer::GetOperationsFlags() const
     {
-        return flags & Flags::ResolvePointer ?
-            JsonDeserializer::LoadToPointer(object, typeId, value, context) :
-            JsonDeserializer::Load(object, typeId, value, context);
+        return OperationFlags::None;
     }
 
-    JsonSerializationResult::ResultCode BaseJsonSerializer::ContinueStoring(rapidjson::Value& output, const void* object,
-        const void* defaultObject, const Uuid& typeId, JsonSerializerContext& context, Flags flags)
+    JsonSerializationResult::ResultCode BaseJsonSerializer::ContinueLoading(
+        void* object, const Uuid& typeId, const rapidjson::Value& value, JsonDeserializerContext& context, ContinuationFlags flags)
+    {
+        return (flags & ContinuationFlags::ResolvePointer) == ContinuationFlags::ResolvePointer
+            ? JsonDeserializer::LoadToPointer(object, typeId, value, context)
+            : JsonDeserializer::Load(object, typeId, value, context);
+    }
+
+    JsonSerializationResult::ResultCode BaseJsonSerializer::ContinueStoring(
+        rapidjson::Value& output, const void* object, const void* defaultObject, const Uuid& typeId, JsonSerializerContext& context,
+        ContinuationFlags flags)
     {
         using namespace JsonSerializationResult;
 
-        if (flags & Flags::ReplaceDefault && !context.ShouldKeepDefaults())
+        if ((flags & ContinuationFlags::ReplaceDefault) == ContinuationFlags::ReplaceDefault && !context.ShouldKeepDefaults())
         {
-            if (flags & Flags::ResolvePointer)
+            if ((flags & ContinuationFlags::ResolvePointer) == ContinuationFlags::ResolvePointer)
             {
                 return JsonSerializer::StoreFromPointer(output, object, nullptr, typeId, context);
             }
@@ -248,7 +254,7 @@ namespace AZ
             }
         }
         
-        return flags & Flags::ResolvePointer ?
+        return (flags & ContinuationFlags::ResolvePointer) == ContinuationFlags::ResolvePointer ?
             JsonSerializer::StoreFromPointer(output, object, defaultObject, typeId, context) :
             JsonSerializer::Store(output, object, defaultObject, typeId, context);
     }
@@ -265,8 +271,9 @@ namespace AZ
         return JsonSerializer::StoreTypeName(output, typeId, context);
     }
 
-    JsonSerializationResult::ResultCode BaseJsonSerializer::ContinueLoadingFromJsonObjectField(void* object, const Uuid& typeId, const rapidjson::Value& value,
-        rapidjson::Value::StringRefType memberName, JsonDeserializerContext& context, Flags flags)
+    JsonSerializationResult::ResultCode BaseJsonSerializer::ContinueLoadingFromJsonObjectField(
+        void* object, const Uuid& typeId, const rapidjson::Value& value, rapidjson::Value::StringRefType memberName,
+        JsonDeserializerContext& context, ContinuationFlags flags)
     {
         using namespace JsonSerializationResult;
 
@@ -291,7 +298,7 @@ namespace AZ
 
     JsonSerializationResult::ResultCode BaseJsonSerializer::ContinueStoringToJsonObjectField(rapidjson::Value& output,
         rapidjson::Value::StringRefType newMemberName, const void* object, const void* defaultObject,
-        const Uuid& typeId, JsonSerializerContext& context, Flags flags)
+        const Uuid& typeId, JsonSerializerContext& context, ContinuationFlags flags)
     {
         using namespace JsonSerializationResult;
 

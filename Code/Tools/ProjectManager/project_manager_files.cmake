@@ -25,9 +25,6 @@ set(FILES
     Source/NewProjectSettings.h
     Source/NewProjectSettings.cpp
     Source/NewProjectSettings.ui
-    Source/GemCatalog.h
-    Source/GemCatalog.cpp
-    Source/GemCatalog.ui
     Source/ProjectsHome.h
     Source/ProjectsHome.cpp
     Source/ProjectsHome.ui
@@ -37,6 +34,14 @@ set(FILES
     Source/EngineSettings.h
     Source/EngineSettings.cpp
     Source/EngineSettings.ui
+    Source/GemCatalog/GemCatalog.h
+    Source/GemCatalog/GemCatalog.cpp
     Source/GemCatalog/GemInfo.h
     Source/GemCatalog/GemInfo.cpp
+    Source/GemCatalog/GemItemDelegate.h
+    Source/GemCatalog/GemItemDelegate.cpp
+    Source/GemCatalog/GemListView.h
+    Source/GemCatalog/GemListView.cpp
+    Source/GemCatalog/GemModel.h
+    Source/GemCatalog/GemModel.cpp
 )
