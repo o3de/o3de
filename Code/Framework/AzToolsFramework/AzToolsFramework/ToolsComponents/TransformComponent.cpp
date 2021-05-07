@@ -25,7 +25,8 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Components/TransformComponent.h>
-#include <AzFramework/Visibility/EntityBoundsUnionBus.h>#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
+#include <AzFramework/Visibility/EntityBoundsUnionBus.h>
+#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
