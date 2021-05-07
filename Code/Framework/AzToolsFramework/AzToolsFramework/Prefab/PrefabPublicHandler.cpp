@@ -258,7 +258,7 @@ namespace AzToolsFramework
             return AZ::Success();
         }
 
-        bool PrefabPublicHandler::IsPrefabInInstanceAncestorHierarchy(TemplateId prefabTemplateId, InstanceOptionalReference instance)
+        bool PrefabPublicHandler::IsPrefabInInstanceAncestorHierarchy(TemplateId prefabTemplateId, InstanceOptionalConstReference instance)
         {
             while (instance.has_value())
             {

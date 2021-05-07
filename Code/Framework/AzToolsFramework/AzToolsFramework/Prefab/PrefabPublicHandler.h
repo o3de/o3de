@@ -112,7 +112,7 @@ namespace AzToolsFramework
              * \param instance The instance whose ancestor hierarchy prefabTemplateId will be tested against.
              * \return true if an instance of the template of id prefabTemplateId could be found in the ancestor hierarchy of instance, false otherwise.
              */
-            bool IsPrefabInInstanceAncestorHierarchy(TemplateId prefabTemplateId, InstanceOptionalReference instance);
+            bool IsPrefabInInstanceAncestorHierarchy(TemplateId prefabTemplateId, InstanceOptionalConstReference instance);
 
             static Instance* GetParentInstance(Instance* instance);
             static Instance* GetAncestorOfInstanceThatIsChildOfRoot(const Instance* ancestor, Instance* descendant);
