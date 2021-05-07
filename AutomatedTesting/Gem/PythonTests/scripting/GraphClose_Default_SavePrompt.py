@@ -29,7 +29,7 @@ class Tests():
 GENERAL_WAIT = 0.5  # seconds
 
 
-class TestGraphCloseSavePrompt:
+class TestGraphClose_Default_SavePrompt:
     """
     Summary:
      The graph is closed when x button is clicked.
@@ -98,5 +98,5 @@ class TestGraphCloseSavePrompt:
         general.close_pane("Script Canvas")
 
 
-test = TestGraphCloseSavePrompt()
+test = TestGraphClose_Default_SavePrompt()
 test.run_test()

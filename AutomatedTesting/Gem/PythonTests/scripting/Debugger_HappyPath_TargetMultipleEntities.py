@@ -21,7 +21,7 @@ class Tests():
 GENERAL_WAIT = 0.5  # seconds
 
 
-def Debugging_TargetMultipleEntities():
+def Debugger_HappyPath_TargetMultipleEntities():
     """
     Summary:
      Multiple Entities can be targeted in the Debugger tool
@@ -135,4 +135,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(Debugging_TargetMultipleEntities)
+    Report.start_test(Debugger_HappyPath_TargetMultipleEntities)

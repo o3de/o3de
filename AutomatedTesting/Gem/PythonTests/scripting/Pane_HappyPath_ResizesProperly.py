@@ -17,7 +17,7 @@ class Tests():
 # fmt: on
 
 
-def Resizing_Pane():
+def Pane_HappyPath_ResizesProperly():
     """
     Summary:
      The Script Canvas window is opened to verify if Script Canvas panes can be resized and scaled
@@ -105,4 +105,4 @@ if __name__ == "__main__":
     imports.init()
     from editor_python_test_tools.utils import Report
 
-    Report.start_test(Resizing_Pane)
+    Report.start_test(Pane_HappyPath_ResizesProperly)

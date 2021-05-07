@@ -20,7 +20,7 @@ class Tests():
 GENERAL_WAIT = 0.5  # seconds
 
 
-def Graph_ZoomInZoomOut():
+def Graph_HappyPath_ZoomInZoomOut():
     """
     Summary:
      The graph can be zoomed in and zoomed out.
@@ -108,4 +108,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(Graph_ZoomInZoomOut)
+    Report.start_test(Graph_HappyPath_ZoomInZoomOut)

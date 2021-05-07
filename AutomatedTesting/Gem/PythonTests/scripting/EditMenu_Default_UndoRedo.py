@@ -18,7 +18,7 @@ class Tests():
 # fmt: on
 
 
-def EditMenu_UndoRedo():
+def EditMenu_Default_UndoRedo():
     """
     Summary:
      Edit > Undo undoes the last action
@@ -110,4 +110,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(EditMenu_UndoRedo)
+    Report.start_test(EditMenu_Default_UndoRedo)

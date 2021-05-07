@@ -21,7 +21,7 @@ class Tests():
 GENERAL_WAIT = 0.5  # seconds
 
 
-def NodeInspector_RenameVariable():
+def NodeInspector_HappyPath_VariableRenames():
     """
     Summary:
      Renaming variables in the Node Inspector, renames the actual variable.
@@ -123,4 +123,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(NodeInspector_RenameVariable)
+    Report.start_test(NodeInspector_HappyPath_VariableRenames)

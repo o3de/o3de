@@ -27,7 +27,7 @@ class Tests():
 # fmt: on
 
 
-def Toggle_ScriptCanvasTools():
+def ScriptCanvasTools_Toggle_OpenCloseSuccess():
     """
     Summary:
      Toggle Node Palette, Node Inspector, Bookmarks and Variable Manager in Script Canvas.
@@ -121,4 +121,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(Toggle_ScriptCanvasTools)
+    Report.start_test(ScriptCanvasTools_Toggle_OpenCloseSuccess)

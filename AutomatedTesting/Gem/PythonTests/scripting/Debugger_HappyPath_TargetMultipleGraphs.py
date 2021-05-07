@@ -19,7 +19,7 @@ class Tests():
 GENERAL_WAIT = 0.5  # seconds
 
 
-def Debugging_TargetMultipleGraphs():
+def Debugger_HappyPath_TargetMultipleGraphs():
     """
     Summary:
      Multiple Graphs can be targeted in the Debugger tool
@@ -103,4 +103,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(Debugging_TargetMultipleGraphs)
+    Report.start_test(Debugger_HappyPath_TargetMultipleGraphs)

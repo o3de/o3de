@@ -18,7 +18,7 @@ class Tests():
 # fmt: on
 
 
-def UnDockedPane_CloseSCWindow():
+def Pane_Undocked_ClosesSuccessfully():
     """
     Summary:
      The Script Canvas window is opened with one of the pane undocked.
@@ -118,4 +118,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(UnDockedPane_CloseSCWindow)
+    Report.start_test(Pane_Undocked_ClosesSuccessfully)

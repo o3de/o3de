@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
 
-def VariableManager_CreateDeleteVars():
+def VariableManager_Default_CreateDeleteVars():
     """
     Summary:
      Creating and deleting each type of variable in the Variable Manager pane
@@ -111,4 +111,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(VariableManager_CreateDeleteVars)
+    Report.start_test(VariableManager_Default_CreateDeleteVars)

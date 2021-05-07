@@ -23,7 +23,7 @@ class LogLines:
     expected_lines = ["Greetings from the first script", "Greetings from the second script"]
 
 
-def ScriptCanvas_TwoComponents():
+def ScriptCanvas_TwoComponents_InteractSuccessfully():
     """
     Summary:
      A test entity contains two Script Canvas components with different unique script canvas files.
@@ -111,4 +111,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(ScriptCanvas_TwoComponents)
+    Report.start_test(ScriptCanvas_TwoComponents_InteractSuccessfully)

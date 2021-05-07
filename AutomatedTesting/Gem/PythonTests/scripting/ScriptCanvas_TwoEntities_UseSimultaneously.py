@@ -19,7 +19,7 @@ class Tests():
 # fmt: on
 
 
-def ScriptCanvas_TwoEntities():
+def ScriptCanvas_TwoEntities_UseSimultaneously():
     """
     Summary:
      Two Entities can use the same Graph asset successfully at RunTime. The script canvas asset
@@ -101,4 +101,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(ScriptCanvas_TwoEntities)
+    Report.start_test(ScriptCanvas_TwoEntities_UseSimultaneously)

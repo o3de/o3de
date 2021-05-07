@@ -20,7 +20,7 @@ class Tests():
 GENERAL_WAIT = 0.5  # seconds
 
 
-def NodePalette_SelectNode():
+def NodePalette_HappyPath_CanSelectNode():
     """
     Summary:
      Categories and Nodes can be selected
@@ -97,4 +97,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(NodePalette_SelectNode)
+    Report.start_test(NodePalette_HappyPath_CanSelectNode)

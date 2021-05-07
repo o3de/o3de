@@ -23,7 +23,7 @@ class Tests():
 # fmt: on
 
 
-def Pane_RetainOnSCRestart():
+def Pane_Default_RetainOnSCRestart():
     """
     Summary:
      The Script Canvas window is opened to verify if Script canvas panes can retain its visibility, size and location
@@ -154,4 +154,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(Pane_RetainOnSCRestart)
+    Report.start_test(Pane_Default_RetainOnSCRestart)

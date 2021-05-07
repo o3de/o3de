@@ -26,7 +26,7 @@ class Tests():
 GENERAL_WAIT = 0.5  # seconds
 
 
-class TestFileMenuNewOpen:
+class TestFileMenuDefaultNewOpen:
     """
     Summary:
      When clicked on File->New, new script opens
@@ -86,5 +86,5 @@ class TestFileMenuNewOpen:
         general.close_pane("Script Canvas")
 
 
-test = TestFileMenuNewOpen()
+test = TestFileMenuDefaultNewOpen()
 test.run_test()

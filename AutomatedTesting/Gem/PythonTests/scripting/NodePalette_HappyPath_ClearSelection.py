@@ -17,7 +17,7 @@ class Tests():
 # fmt: on
 
 
-def NodePalette_ClearSelection():
+def NodePalette_HappyPath_ClearSelection():
     """
     Summary:
      Clicking the X button on the Search Box clears the currently entered string
@@ -85,4 +85,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(NodePalette_ClearSelection)
+    Report.start_test(NodePalette_HappyPath_ClearSelection)

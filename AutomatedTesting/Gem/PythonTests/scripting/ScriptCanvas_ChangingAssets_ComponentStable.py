@@ -20,7 +20,7 @@ class Tests():
 # fmt: on
 
 
-def ScriptCanvas_ChangingAssets():
+def ScriptCanvas_ChangingAssets_ComponentStable():
     """
     Summary:
      Changing the assigned Script Canvas Asset on an entity properly updates level functionality
@@ -106,4 +106,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(ScriptCanvas_ChangingAssets)
+    Report.start_test(ScriptCanvas_ChangingAssets_ComponentStable)

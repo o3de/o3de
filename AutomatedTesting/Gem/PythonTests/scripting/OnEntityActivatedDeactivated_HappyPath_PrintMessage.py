@@ -23,7 +23,7 @@ class Tests():
 # fmt: on
 
 
-def OnEntityActivatedDeactivated_PrintMessage():
+def OnEntityActivatedDeactivated_HappyPath_PrintMessage():
     """
     Summary:
      Verify that the On Entity Activated/On Entity Deactivated nodes are working as expected
@@ -189,4 +189,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(OnEntityActivatedDeactivated_PrintMessage)
+    Report.start_test(OnEntityActivatedDeactivated_HappyPath_PrintMessage)

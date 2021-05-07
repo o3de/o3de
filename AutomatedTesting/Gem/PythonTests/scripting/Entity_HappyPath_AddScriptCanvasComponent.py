@@ -20,7 +20,7 @@ class Tests():
 # fmt: on
 
 
-def Entity_AddScriptCanvasComponent():
+def Entity_HappyPath_AddScriptCanvasComponent():
     """
     Summary:
      Script Canvas Component can be added to an entity
@@ -80,4 +80,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(Entity_AddScriptCanvasComponent)
+    Report.start_test(Entity_HappyPath_AddScriptCanvasComponent)
