@@ -526,6 +526,11 @@ namespace AZ
         // are destroyed
         m_commandLine = {};
 
+        m_entityAddedEvent.DisconnectAllHandlers();
+        m_entityRemovedEvent.DisconnectAllHandlers();
+        m_entityActivatedEvent.DisconnectAllHandlers();
+        m_entityDeactivatedEvent.DisconnectAllHandlers();
+
         DestroyAllocator();
     }
 
