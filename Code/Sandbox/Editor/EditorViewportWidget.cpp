@@ -119,6 +119,18 @@ AZ_CVAR(
     bool, ed_useNewCameraSystem, false, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Use the new Editor camera system (the Atom-native Editor viewport (experimental) must also be enabled)");
 
+//! Viewport settings for the EditorViewportWidget
+struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::ViewportSettings
+{
+    bool GridSnappingEnabled() const override;
+    float GridSize() const override;
+    bool ShowGrid() const override;
+    bool AngleSnappingEnabled() const override;
+    float AngleStep() const override;
+};
+
+static const EditorViewportSettings g_EditorViewportSettings;
+
 namespace AZ::ViewportHelpers
 {
     static const char TextCantCreateCameraNoLevel[] = "Cannot create camera when no level is loaded.";
@@ -1209,7 +1221,7 @@ void EditorViewportWidget::SetViewportId(int id)
         m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::LegacyViewportCameraController>());
     }
 
-    m_renderViewport->SetViewportSettings(&m_editorViewportSettings);
+    m_renderViewport->SetViewportSettings(&g_EditorViewportSettings);
 
     UpdateScene();
 

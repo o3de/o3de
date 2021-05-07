@@ -12,25 +12,27 @@
 
 #pragma once
 
+#include <EditorCoreAPI.h>
+
 namespace Editor
 {
-    bool GridSnappingEnabled();
+    EDITOR_CORE_API bool GridSnappingEnabled();
 
-    float GridSnappingSize();
+    EDITOR_CORE_API float GridSnappingSize();
 
-    bool AngleSnappingEnabled();
+    EDITOR_CORE_API bool AngleSnappingEnabled();
 
-    float AngleSnappingSize();
+    EDITOR_CORE_API float AngleSnappingSize();
 
-    bool ShowingGrid();
+    EDITOR_CORE_API bool ShowingGrid();
 
-    void SetGridSnapping(bool enabled);
+    EDITOR_CORE_API void SetGridSnapping(bool enabled);
 
-    void SetGridSnappingSize(float size);
+    EDITOR_CORE_API void SetGridSnappingSize(float size);
 
-    void SetAngleSnapping(bool enabled);
+    EDITOR_CORE_API void SetAngleSnapping(bool enabled);
 
-    void SetAngleSnappingSize(float size);
+    EDITOR_CORE_API void SetAngleSnappingSize(float size);
 
-    void SetShowingGrid(bool showing);
+    EDITOR_CORE_API void SetShowingGrid(bool showing);
 } // namespace Editor
