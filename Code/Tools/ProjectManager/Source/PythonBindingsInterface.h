@@ -21,40 +21,40 @@ namespace O3DE::ProjectManager
     typedef struct Project
     {
         // from o3de_manifest.json and o3de_projects.json
-        AZStd::string Path;
+        AZStd::string m_path;
 
         // from project.json
-        AZStd::string ProjectName;
-        AZStd::string ProductName;
-        AZStd::string ExecutableName;
-        AZ::Uuid ProjectId;
-    } Project_t;
+        AZStd::string m_projectName;
+        AZStd::string m_productName;
+        AZStd::string m_executableName;
+        AZ::Uuid m_projectId;
+    } Project;
 
     typedef struct GemDependency
     {
-        AZ::Uuid Uuid;
-        AZStd::vector<AZStd::string> VersionConstraints;
-        AZStd::string Comment; // typically contains the Gem dependency name
-    } GemDependency_t;
+        AZ::Uuid m_uuid;
+        AZStd::vector<AZStd::string> m_versionConstraints;
+        AZStd::string m_comment; // typically contains the Gem dependency name
+    } GemDependency;
 
     typedef struct Gem
     {
         // from o3de_manifest.json
-        AZStd::string Path;
+        AZStd::string m_path;
 
         // from gem.json
-        AZ::Uuid Uuid;
-        AZStd::vector<GemDependency> Dependencies; 
-        AZStd::string DisplayName;
-        AZStd::string IconPath;
-        bool IsGameGem = false;
-        bool IsRequired = false;
-        AZStd::string LinkType;
-        AZStd::string Name;
-        AZStd::string Summary;
-        AZStd::vector<AZStd::string> Tags;
-        AZStd::string Version;
-    } Gem_t;
+        AZ::Uuid m_uuid;
+        AZStd::vector<GemDependency> m_dependencies; 
+        AZStd::string m_displayName;
+        AZStd::string m_iconPath;
+        bool m_isGameGem = false;
+        bool m_isRequired = false;
+        AZStd::string m_linkType;
+        AZStd::string m_name;
+        AZStd::string m_summary;
+        AZStd::vector<AZStd::string> m_tags;
+        AZStd::string m_version;
+    } Gem;
 
     //! Interface used to interact with the o3de cli python functions
     class IPythonBindings

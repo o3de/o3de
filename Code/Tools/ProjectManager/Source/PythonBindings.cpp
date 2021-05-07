@@ -134,7 +134,7 @@ namespace O3DE::ProjectManager
             auto getCurrentProject = currentProjectTool.attr("get_current_project");
             auto currentProject = getCurrentProject(m_enginePath.c_str());
 
-            project.Path = currentProject.cast<std::string>().c_str();
+            project.m_path = currentProject.cast<std::string>().c_str();
         });
 
         return project; 
