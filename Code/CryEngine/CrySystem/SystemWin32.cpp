@@ -66,7 +66,7 @@ __pragma(comment(lib, "Winmm.lib"))
 #endif
 
 #if defined(APPLE)
-#include "SystemUtilsApple.h"
+#include <AzFramework/Utils/SystemUtilsApple.h>
 #endif
 
 
