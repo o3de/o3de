@@ -45,7 +45,7 @@ namespace AzFramework
         virtual void OnTransformUpdated(AZ::Entity* entity) = 0;
 
     protected:
-        virtual ~IEntityBoundsUnion() = default;
+        ~IEntityBoundsUnion() = default;
     };
 
     // EBus wrapper for ScriptCanvas
