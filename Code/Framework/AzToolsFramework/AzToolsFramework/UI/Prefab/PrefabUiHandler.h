@@ -13,7 +13,7 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        class PrefabEditInterface;
+        class PrefabEditPublicInterface;
         class PrefabPublicInterface;
     };
 
@@ -38,7 +38,7 @@ namespace AzToolsFramework
             const QModelIndex& descendantIndex) const override;
 
     private:
-        Prefab::PrefabEditInterface* m_prefabEditInterface = nullptr;
+        Prefab::PrefabEditPublicInterface* m_prefabEditPublicInterface = nullptr;
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
 
         static bool IsLastVisibleChild(const QModelIndex& parent, const QModelIndex& child);

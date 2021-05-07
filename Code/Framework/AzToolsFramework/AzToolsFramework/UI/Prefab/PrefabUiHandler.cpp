@@ -7,7 +7,7 @@
 
 #include <AzToolsFramework/UI/Prefab/PrefabUiHandler.h>
 
-#include <AzToolsFramework/UI/Prefab/PrefabEditInterface.h>
+#include <AzToolsFramework/UI/Prefab/PrefabEditPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
 
@@ -25,11 +25,11 @@ namespace AzToolsFramework
 
     PrefabUiHandler::PrefabUiHandler()
     {
-        m_prefabEditInterface = AZ::Interface<Prefab::PrefabEditInterface>::Get();
+        m_prefabEditPublicInterface = AZ::Interface<Prefab::PrefabEditPublicInterface>::Get();
 
-        if (m_prefabEditInterface == nullptr)
+        if (m_prefabEditPublicInterface == nullptr)
         {
-            AZ_Assert(false, "PrefabUiHandler - could not get PrefabEditInterface on PrefabUiHandler construction.");
+            AZ_Assert(false, "PrefabUiHandler - could not get PrefabEditPublicInterface on PrefabUiHandler construction.");
             return;
         }
 
@@ -82,7 +82,7 @@ namespace AzToolsFramework
 
     QPixmap PrefabUiHandler::GenerateItemIcon(AZ::EntityId entityId) const
     {
-        if (m_prefabEditInterface->IsOwningPrefabBeingEdited(entityId))
+        if (m_prefabEditPublicInterface->IsOwningPrefabBeingEdited(entityId))
         {
             return QPixmap(m_prefabEditIconPath);
         }
@@ -97,7 +97,7 @@ namespace AzToolsFramework
 
     bool PrefabUiHandler::GenerateOverriddenExpandedState(AZ::EntityId entityId) const
     {
-        return m_prefabEditInterface->IsOwningPrefabInEditStack(entityId);
+        return m_prefabEditPublicInterface->IsOwningPrefabInEditStack(entityId);
     }
 
     void PrefabUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -114,7 +114,7 @@ namespace AzToolsFramework
         const bool hasVisibleChildren = index.data(EntityOutlinerListModel::ExpandedRole).value<bool>() && index.model()->hasChildren(index);
 
         QColor backgroundColor = m_prefabCapsuleColor;
-        if (m_prefabEditInterface->IsOwningPrefabBeingEdited(entityId))
+        if (m_prefabEditPublicInterface->IsOwningPrefabBeingEdited(entityId))
         {
             backgroundColor = m_prefabCapsuleEditColor;
         }
@@ -200,7 +200,7 @@ namespace AzToolsFramework
         const bool isLastColumn = descendantIndex.column() == EntityOutlinerListModel::ColumnLockToggle;
 
         QColor borderColor = m_prefabCapsuleColor;
-        if (m_prefabEditInterface->IsOwningPrefabBeingEdited(entityId))
+        if (m_prefabEditPublicInterface->IsOwningPrefabBeingEdited(entityId))
         {
             borderColor = m_prefabCapsuleEditColor;
         }

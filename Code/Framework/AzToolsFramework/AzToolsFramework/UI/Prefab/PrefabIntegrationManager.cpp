@@ -39,7 +39,7 @@ namespace AzToolsFramework
         
         EditorEntityUiInterface* PrefabIntegrationManager::s_editorEntityUiInterface = nullptr;
         PrefabPublicInterface* PrefabIntegrationManager::s_prefabPublicInterface = nullptr;
-        PrefabEditInterface* PrefabIntegrationManager::s_prefabEditInterface = nullptr;
+        PrefabEditPublicInterface* PrefabIntegrationManager::s_prefabEditPublicInterface = nullptr;
         PrefabLoaderInterface* PrefabIntegrationManager::s_prefabLoaderInterface = nullptr;
 
         const AZStd::string PrefabIntegrationManager::s_prefabFileExtension = ".prefab";
@@ -72,10 +72,10 @@ namespace AzToolsFramework
                 return;
             }
 
-            s_prefabEditInterface = AZ::Interface<PrefabEditInterface>::Get();
-            if (s_prefabEditInterface == nullptr)
+            s_prefabEditPublicInterface = AZ::Interface<PrefabEditPublicInterface>::Get();
+            if (s_prefabEditPublicInterface == nullptr)
             {
-                AZ_Assert(false, "Prefab - could not get PrefabEditInterface on PrefabIntegrationManager construction.");
+                AZ_Assert(false, "Prefab - could not get PrefabEditPublicInterface on PrefabIntegrationManager construction.");
                 return;
             }
 
@@ -183,7 +183,7 @@ namespace AzToolsFramework
                         // Edit Prefab
                         if (prefabWipFeaturesEnabled)
                         {
-                            bool beingEdited = s_prefabEditInterface->IsOwningPrefabBeingEdited(selectedEntity);
+                            bool beingEdited = s_prefabEditPublicInterface->IsOwningPrefabBeingEdited(selectedEntity);
 
                             if (beingEdited)
                             {
@@ -383,12 +383,12 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::ContextMenu_EditPrefab(AZ::EntityId containerEntity)
         {
-            s_prefabEditInterface->EditOwningPrefab(containerEntity);
+            s_prefabEditPublicInterface->EditOwningPrefab(containerEntity);
         }
 
         void PrefabIntegrationManager::ContextMenu_ClosePrefab()
         {
-            s_prefabEditInterface->EditOwningPrefab(AZ::EntityId());
+            s_prefabEditPublicInterface->EditOwningPrefab(AZ::EntityId());
         }
 
         void PrefabIntegrationManager::ContextMenu_SavePrefab(AZ::EntityId containerEntity)

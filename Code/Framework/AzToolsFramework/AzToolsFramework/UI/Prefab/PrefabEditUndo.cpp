@@ -11,8 +11,8 @@
  */
 
 #include <AzCore/Interface/Interface.h>
-#include <AzToolsFramework/Prefab/Instance/Instance.h>
 
+#include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/UI/Prefab/PrefabEditInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabEditUndo.h>
 
@@ -36,15 +36,13 @@ namespace AzToolsFramework
 
         void PrefabUndoEdit::Undo()
         {
-            m_prefabEditInterface->EditOwningPrefab(m_oldContainerEntityId);
+            m_prefabEditInterface->EditPrefab(m_oldContainerEntityId);
         }
 
         void PrefabUndoEdit::Redo()
         {
-            m_prefabEditInterface->EditOwningPrefab(m_newContainerEntityId);
+            m_prefabEditInterface->EditPrefab(m_newContainerEntityId);
         }
-
-
 
     } // namespace Prefab
 } // namespace AzToolsFramework

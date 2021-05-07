@@ -16,7 +16,7 @@ namespace AzToolsFramework
     {
         /*!
          * PrefabEditInterface
-         * Interface to expose the API to Edit Prefabs in the Editor.
+         * Internal interface exposing the Prefab Edit API.
          */
         class PrefabEditInterface
         {
@@ -27,21 +27,7 @@ namespace AzToolsFramework
              * Sets the prefab for the instance owning the entity provided as the prefab being edited.
              * @param entityId The entity whose owning prefab should be edited.
              */
-            virtual void EditOwningPrefab(AZ::EntityId entityId) = 0;
-            
-            /**
-             * Queries the Edit Manager to know if the provided entity is part of the prefab currently being edited.
-             * @param entityId The entity whose prefab editing state we want to query.
-             * @return True if the prefab owning this entity is being edited, false otherwise.
-             */
-            virtual bool IsOwningPrefabBeingEdited(AZ::EntityId entityId) = 0;
-            
-            /**
-             * Queries the Edit Manager to know if the provided entity is part of a prefab that is currently in the edit stack.
-             * @param entityId The entity whose prefab editing state we want to query.
-             * @return True if the prefab owning this entity is in the edit stack, false otherwise.
-             */
-            virtual bool IsOwningPrefabInEditStack(AZ::EntityId entityId) = 0;
+            virtual void EditPrefab(AZ::EntityId entityId) = 0;
         };
 
     } // namespace Prefab

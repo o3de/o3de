@@ -12,6 +12,7 @@
 
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabEditInterface.h>
+#include <AzToolsFramework/UI/Prefab/PrefabEditPublicInterface.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionInterface.h>
 
 namespace AzToolsFramework
@@ -20,6 +21,7 @@ namespace AzToolsFramework
     {
         class PrefabEditManager final
             : private PrefabEditInterface
+            , private PrefabEditPublicInterface
             , private EditorInteractionInterface
         {
         public:
@@ -30,6 +32,9 @@ namespace AzToolsFramework
 
         private:
             // PrefabEditInterface...
+            void EditPrefab(AZ::EntityId entityId) override;
+
+            // PrefabEditPublicInterface...
             void EditOwningPrefab(AZ::EntityId entityId) override;
             bool IsOwningPrefabBeingEdited(AZ::EntityId entityId) override;
             bool IsOwningPrefabInEditStack(AZ::EntityId entityId) override;

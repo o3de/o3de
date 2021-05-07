@@ -711,6 +711,7 @@ set(FILES
     UI/Prefab/LevelRootUiHandler.h
     UI/Prefab/LevelRootUiHandler.cpp
     UI/Prefab/PrefabEditInterface.h
+    UI/Prefab/PrefabEditPublicInterface.h
     UI/Prefab/PrefabEditManager.h
     UI/Prefab/PrefabEditManager.cpp
     UI/Prefab/PrefabEditUndo.h

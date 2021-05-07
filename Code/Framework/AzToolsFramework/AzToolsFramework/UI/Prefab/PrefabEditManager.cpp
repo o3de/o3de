@@ -8,7 +8,10 @@
 #include <AzToolsFramework/UI/Prefab/PrefabEditManager.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerCacheBus.h>
+#include <AzToolsFramework/UI/Prefab/PrefabEditUndo.h>
 
 namespace AzToolsFramework
 {
@@ -24,21 +27,23 @@ namespace AzToolsFramework
             }
 
             AZ::Interface<PrefabEditInterface>::Register(this);
+            AZ::Interface<PrefabEditPublicInterface>::Register(this);
             AZ::Interface<EditorInteractionInterface>::Register(this);
         }
 
         PrefabEditManager::~PrefabEditManager()
         {
             AZ::Interface<EditorInteractionInterface>::Unregister(this);
+            AZ::Interface<PrefabEditPublicInterface>::Unregister(this);
             AZ::Interface<PrefabEditInterface>::Unregister(this);
         }
 
-        void PrefabEditManager::EditOwningPrefab(AZ::EntityId entityId)
+        void PrefabEditManager::EditPrefab(AZ::EntityId entityId)
         {
             AZ::EntityId containerEntityId = m_prefabPublicInterface->GetInstanceContainerEntityId(entityId);
 
             // Early out if no change - saves time on refreshing the views
-            if (containerEntityId == entityId)
+            if (containerEntityId == m_editedPrefabContainerId)
             {
                 return;
             }
@@ -76,6 +81,29 @@ namespace AzToolsFramework
             for (AZ::EntityId changedEntityId : m_editedPrefabHierarchyCache)
             {
                 EntityOutlinerCacheNotificationBus::Broadcast(&EntityOutlinerCacheNotifications::EntityCacheChanged, changedEntityId);
+            }
+        }
+
+        void PrefabEditManager::EditOwningPrefab(AZ::EntityId entityId)
+        {
+            AZ::EntityId containerEntityId = m_prefabPublicInterface->GetInstanceContainerEntityId(entityId);
+
+            // Initialize Undo Batch object
+            ScopedUndoBatch undoBatch("Edit Prefab");
+
+            // Clear Selection
+            {
+                auto selectionUndo = aznew SelectionCommand({}, "Clear Selection");
+                selectionUndo->SetParent(undoBatch.GetUndoBatch());
+                ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::RunRedoSeparately, selectionUndo);
+            }
+
+            // Edit Prefab
+            {
+                auto editUndo = aznew PrefabUndoEdit("Edit Owning Prefab");
+                editUndo->Capture(m_editedPrefabContainerId, containerEntityId);
+                editUndo->SetParent(undoBatch.GetUndoBatch());
+                ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::RunRedoSeparately, editUndo);
             }
         }
 
