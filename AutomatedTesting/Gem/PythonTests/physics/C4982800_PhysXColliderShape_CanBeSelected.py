@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID : C4982800
 Test Case Title : Verify that the shape Sphere can be selected from the drop downlist and the value for its radius can be set
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4982800
+
 """
 
 

@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C5959808
 # Test Case Title : Verify Force Region Position Offset
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5959808
+
 
 
 # fmt:off

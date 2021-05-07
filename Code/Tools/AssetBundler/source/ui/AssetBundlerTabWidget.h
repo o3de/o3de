@@ -78,7 +78,9 @@ namespace AssetBundler
 
         virtual void ApplyConfig() = 0;
 
-        virtual void FileSelectionChanged(const QItemSelection& /*selected*/ = QItemSelection(), const QItemSelection& /*deselected*/ = QItemSelection()) = 0;
+        virtual void FileSelectionChanged(
+            const QItemSelection& /*selected*/ = QItemSelection(),
+            const QItemSelection& /*deselected*/ = QItemSelection()) = 0;
 
         static void InitAssetBundlerSettings(const char* currentProjectFolderPath);
 

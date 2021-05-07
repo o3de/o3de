@@ -12,36 +12,21 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/optional.h>
 #include <AzFramework/Input/Channels/InputChannel.h>
-#include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
-#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Viewport/ViewportId.h>
 
 namespace AzFramework
 {
-    struct WindowSize;
+    //! Update camera key bindings that can be overridden with AZ console vars (invoke from console to update)
+    void ReloadCameraKeyBindings();
 
-    // to be moved
-    class ModernViewportCameraControllerRequests : public AZ::EBusTraits
-    {
-    public:
-        using BusIdType = AzFramework::ViewportId; ///< ViewportId - used to address requests to this EBus.
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-
-        virtual void SetTargetCameraTransform(const AZ::Transform& transform) = 0;
-
-    protected:
-        ~ModernViewportCameraControllerRequests() = default;
-    };
-
-    using ModernViewportCameraControllerRequestBus = AZ::EBus<ModernViewportCameraControllerRequests>;
+    //! Return Euler angles (pitch, roll, yaw) for the incoming orientation.
+    AZ::Vector3 EulerAngles(const AZ::Matrix3x3& orientation);
 
     struct Camera
     {
@@ -82,6 +67,8 @@ namespace AzFramework
     {
         return Transform().GetTranslation();
     }
+
+    void UpdateCameraFromTransform(Camera& camera, const AZ::Transform& transform);
 
     struct CursorMotionEvent
     {
@@ -177,13 +164,7 @@ namespace AzFramework
         Activation m_activation = Activation::Idle;
     };
 
-    struct SmoothProps
-    {
-        float m_lookSmoothness = 5.0f;
-        float m_moveSmoothness = 5.0f;
-    };
-
-    Camera SmoothCamera(const Camera& currentCamera, const Camera& targetCamera, const SmoothProps& props, float deltaTime);
+    Camera SmoothCamera(const Camera& currentCamera, const Camera& targetCamera, float deltaTime);
 
     class Cameras
     {
@@ -215,19 +196,16 @@ namespace AzFramework
     class RotateCameraInput : public CameraInput
     {
     public:
-        explicit RotateCameraInput(const InputChannelId channelId)
-            : m_channelId(channelId)
+        explicit RotateCameraInput(const InputChannelId rotateChannelId)
+            : m_rotateChannelId(rotateChannelId)
         {
         }
+
         void HandleEvents(const InputEvent& event) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
-        InputChannelId m_channelId;
-
-        struct Props
-        {
-            float m_rotateSpeed = 0.005f;
-        } m_props;
+    private:
+        InputChannelId m_rotateChannelId;
     };
 
     struct PanAxes
@@ -260,22 +238,17 @@ namespace AzFramework
     class PanCameraInput : public CameraInput
     {
     public:
-        explicit PanCameraInput(PanAxesFn panAxesFn)
+        PanCameraInput(const InputChannelId panChannelId, PanAxesFn panAxesFn)
             : m_panAxesFn(AZStd::move(panAxesFn))
+            , m_panChannelId(panChannelId)
         {
         }
         void HandleEvents(const InputEvent& event) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
-        struct Props
-        {
-            float m_panSpeed = 0.01f;
-            bool m_panInvertX = true;
-            bool m_panInvertY = true;
-        } m_props;
-
     private:
         PanAxesFn m_panAxesFn;
+        InputChannelId m_panChannelId;
     };
 
     using TranslationAxesFn = AZStd::function<AZ::Matrix3x3(const Camera& camera)>;
@@ -315,12 +288,6 @@ namespace AzFramework
         void HandleEvents(const InputEvent& event) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
         void ResetImpl() override;
-
-        struct Props
-        {
-            float m_translateSpeed = 10.0f;
-            float m_boostMultiplier = 3.0f;
-        } m_props;
 
     private:
         enum class TranslationType
@@ -372,6 +339,11 @@ namespace AzFramework
             return lhs;
         }
 
+        friend TranslationType operator~(const TranslationType lhs)
+        {
+            return static_cast<TranslationType>(~static_cast<std::underlying_type_t<TranslationType>>(lhs));
+        }
+
         static TranslationType translationFromKey(InputChannelId channelId);
 
         TranslationType m_translation = TranslationType::Nil;
@@ -384,23 +356,19 @@ namespace AzFramework
     public:
         void HandleEvents(const InputEvent& event) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
-
-        struct Props
-        {
-            float m_dollySpeed = 0.02f;
-        } m_props;
     };
 
     class OrbitDollyCursorMoveCameraInput : public CameraInput
     {
     public:
+        explicit OrbitDollyCursorMoveCameraInput(const InputChannelId dollyChannelId)
+            : m_dollyChannelId(dollyChannelId) {}
+
         void HandleEvents(const InputEvent& event) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
-        struct Props
-        {
-            float m_dollySpeed = 0.1f;
-        } m_props;
+    private:
+        InputChannelId m_dollyChannelId;
     };
 
     class ScrollTranslationCameraInput : public CameraInput
@@ -408,11 +376,6 @@ namespace AzFramework
     public:
         void HandleEvents(const InputEvent& event) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
-
-        struct Props
-        {
-            float m_translateSpeed = 0.02f;
-        } m_props;
     };
 
     class OrbitCameraInput : public CameraInput
@@ -426,13 +389,10 @@ namespace AzFramework
         }
 
         Cameras m_orbitCameras;
-
-        struct Props
-        {
-            float m_defaultOrbitDistance = 60.0f;
-            float m_maxOrbitDistance = 100.0f;
-        } m_props;
     };
 
+    struct WindowSize;
+
+    //! Map from a generic InputChannel event to a camera specific InputEvent.
     InputEvent BuildInputEvent(const InputChannel& inputChannel, const WindowSize& windowSize);
 } // namespace AzFramework

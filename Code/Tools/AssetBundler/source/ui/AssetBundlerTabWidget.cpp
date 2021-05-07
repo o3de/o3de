@@ -73,7 +73,10 @@ namespace AssetBundler
         SetupContextMenu();
         Reload();
 
-        connect(GetFileTableView()->header(), &QHeaderView::sortIndicatorChanged, m_fileTableFilterModel.get(), &AssetBundlerFileTableFilterModel::sort);
+        connect(GetFileTableView()->header(),
+            &QHeaderView::sortIndicatorChanged,
+            m_fileTableFilterModel.get(),
+            &AssetBundlerFileTableFilterModel::sort);
         GetFileTableView()->header()->setSortIndicatorShown(true);
         // Setting this in descending order will ensure the most recent files are at the top
         GetFileTableView()->header()->setSortIndicator(GetFileTableModel()->GetTimeStampColumnIndex(), Qt::DescendingOrder);
@@ -163,9 +166,11 @@ namespace AssetBundler
             return;
         }
 
-        QString messageBoxText = QString(tr("Are you sure you would like to delete %1? \n\nThis will permanently delete the file.")).arg(QString(selectedFileAbsolutePath.c_str()));
+        QString messageBoxText =
+            QString(tr("Are you sure you would like to delete %1? \n\nThis will permanently delete the file.")).arg(QString(selectedFileAbsolutePath.c_str()));
 
-        QMessageBox::StandardButton confirmDeleteFileResult = QMessageBox::question(this, QString(tr("Delete %1")).arg(GetFileTypeDisplayName()), messageBoxText);
+        QMessageBox::StandardButton confirmDeleteFileResult =
+            QMessageBox::question(this, QString(tr("Delete %1")).arg(GetFileTypeDisplayName()), messageBoxText);
         if (confirmDeleteFileResult != QMessageBox::StandardButton::Yes)
         {
             // User canceled out of the confirmation dialog
@@ -206,7 +211,8 @@ namespace AssetBundler
             defaultFolderPath = m_guiApplicationManager->GetBundlesFolder();
             break;
         default:
-            AZ_Warning(AssetBundler::AppWindowName, false, "No default folder is defined for AssetBundlingFileType ( %i ).", static_cast<int>(fileType));
+            AZ_Warning(AssetBundler::AppWindowName, false,
+                "No default folder is defined for AssetBundlingFileType ( %i ).", static_cast<int>(fileType));
             break;
         }
 
@@ -224,7 +230,8 @@ namespace AssetBundler
 
     void AssetBundlerTabWidget::AddScanPathToAssetBundlerSettings(AssetBundlingFileType fileType, const QString& filePath)
     {
-        AZStd::string assetBundlerSettingsFileAbsolutePath = GetAssetBundlerUserSettingsFile(m_guiApplicationManager->GetCurrentProjectFolder().c_str());
+        AZStd::string assetBundlerSettingsFileAbsolutePath =
+            GetAssetBundlerUserSettingsFile(m_guiApplicationManager->GetCurrentProjectFolder().c_str());
         QJsonObject assetBundlerSettings = AssetBundler::ReadJson(assetBundlerSettingsFileAbsolutePath);
         QJsonObject scanPathsSettings = assetBundlerSettings[ScanPathsKey].toObject();
         QJsonArray scanPaths = scanPathsSettings[AssetBundlingFileTypes[fileType]].toArray();
@@ -256,7 +263,8 @@ namespace AssetBundler
 
     void AssetBundlerTabWidget::RemoveScanPathFromAssetBundlerSettings(AssetBundlingFileType fileType, const QString& filePath)
     {
-        AZStd::string assetBundlerSettingsFileAbsolutePath = GetAssetBundlerUserSettingsFile(m_guiApplicationManager->GetCurrentProjectFolder().c_str());
+        AZStd::string assetBundlerSettingsFileAbsolutePath =
+            GetAssetBundlerUserSettingsFile(m_guiApplicationManager->GetCurrentProjectFolder().c_str());
         QJsonObject assetBundlerSettings = AssetBundler::ReadJson(assetBundlerSettingsFileAbsolutePath);
         QJsonObject scanPathsSettings = assetBundlerSettings[ScanPathsKey].toObject();
         QJsonArray scanPaths = scanPathsSettings[AssetBundlingFileTypes[fileType]].toArray();
@@ -305,7 +313,10 @@ namespace AssetBundler
     void AssetBundlerTabWidget::SetupContextMenu()
     {
         GetFileTableView()->setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(GetFileTableView(), &QTreeView::customContextMenuRequested, this, &AssetBundlerTabWidget::OnFileTableContextMenuRequested);
+        connect(GetFileTableView(),
+            &QTreeView::customContextMenuRequested,
+            this,
+            &AssetBundlerTabWidget::OnFileTableContextMenuRequested);
     }
 
     void AssetBundlerTabWidget::ReadAssetBundlerSettings(const AZStd::string& filePath, AssetBundlingFileType fileType)

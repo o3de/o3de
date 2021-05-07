@@ -48,7 +48,10 @@ namespace AssetBundler
         RulesFileTableModel();
         virtual ~RulesFileTableModel() {}
 
-        AZStd::vector<AZStd::string> CreateNewFiles(const AZStd::string& absoluteFilePath, const AzFramework::PlatformFlags& platforms = AzFramework::PlatformFlags::Platform_NONE, const QString& project = QString()) override;
+        AZStd::vector<AZStd::string> CreateNewFiles(
+            const AZStd::string& absoluteFilePath,
+            const AzFramework::PlatformFlags& platforms = AzFramework::PlatformFlags::Platform_NONE,
+            const QString& project = QString()) override;
 
         bool DeleteFile(const QModelIndex& index) override;
 

@@ -287,12 +287,16 @@ namespace NvCloth
             const AZ::Vector3 skinnedPosition = vertexSkinningTransform * originalData.m_particles[index].GetAsVector3();
             renderData.m_particles[index].Set(skinnedPosition, renderData.m_particles[index].GetW()); // Avoid overwriting the w component
 
-            // Calculate the reciprocal scale version of the matrix to transform the vectors.
+            // Calculate the reciprocal scale version of the matrix to transform the normals.
+            // Note: This operation is not strictly equivalent to the full inverse transpose when the matrix's
+            //       basis vectors are not perpendicular, which is the case blending linearly the matrices.
+            //       This is a fast approximation, which is also done by the GPU skinning shader.
             const AZ::Matrix3x4 vertexSkinningTransformReciprocalScale = vertexSkinningTransform.GetReciprocalScaled();
 
-            renderData.m_tangents[index] = vertexSkinningTransformReciprocalScale.TransformVector(originalData.m_tangents[index]).GetNormalized();
-            renderData.m_bitangents[index] = vertexSkinningTransformReciprocalScale.TransformVector(originalData.m_bitangents[index]).GetNormalized();
             renderData.m_normals[index] = vertexSkinningTransformReciprocalScale.TransformVector(originalData.m_normals[index]).GetNormalized();
+
+            // Tangents and Bitangents are recalculated immediately after this call
+            // by cloth mesh component, so there is no need to transform them here.
         }
     }
 
@@ -307,7 +311,7 @@ namespace NvCloth
             const float jointWeight = m_skinningInfluences[vertexInfluenceIndex].m_jointWeight;
 
             // Blending matrices the same way done in GPU shaders, by adding each weighted matrix element by element.
-            // This way the skinning results are much similar to the skinning performed in GPU.
+            // This operation results in a non orthogonal matrix, but it's done this way because it's fast to perform.
             vertexSkinningTransform += m_skinningMatrices[jointIndex] * jointWeight;
         }
         return vertexSkinningTransform;
@@ -392,12 +396,14 @@ namespace NvCloth
             const AZ::Vector3 skinnedPosition = vertexSkinningTransform.TransformPoint(originalData.m_particles[index].GetAsVector3());
             renderData.m_particles[index].Set(skinnedPosition, renderData.m_particles[index].GetW()); // Avoid overwriting the w component
 
-            // ComputeVertexSkinnningTransform is normalizing the dual quaternion, so it won't have scale
-            // and there is no need to compute the reciprocal scale version for transforming vectors.
-
-            renderData.m_tangents[index] = vertexSkinningTransform.TransformVector(originalData.m_tangents[index]).GetNormalized();
-            renderData.m_bitangents[index] = vertexSkinningTransform.TransformVector(originalData.m_bitangents[index]).GetNormalized();
+            // ComputeVertexSkinnningTransform is normalizing the blended dual quaternion. This means the dual
+            // quaternion will not have any scale and there is no need to compute the reciprocal scale version
+            // for transforming normals.
+            // Note: The GPU skinning shader does the same operation.
             renderData.m_normals[index] = vertexSkinningTransform.TransformVector(originalData.m_normals[index]).GetNormalized();
+
+            // Tangents and Bitangents are recalculated immediately after this call
+            // by cloth mesh component, so there is no need to transform them here.
         }
     }
 

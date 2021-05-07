@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C5340400
 # Test Case Title : Verify that when Compute inertia is disabled, the user gets to set the moment of inertia
 #                   and physX engine work accordingly
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5340400
+
 
 
 # fmt: off

@@ -32,6 +32,8 @@
 #include "HitContext.h"
 #include "Objects/SelectionGroup.h"
 
+#include <IEntityRenderState.h>
+#include <IStatObj.h>
 
 //////////////////////////////////////////////////////////////////////////
 //! Undo Entity Link
@@ -1924,55 +1926,6 @@ void CEntityObject::OnContextMenu(QMenu* pMenu)
     // Events
 
     CBaseObject::OnContextMenu(pMenu);
-}
-
-//////////////////////////////////////////////////////////////////////////
-IOpticsElementBasePtr CEntityObject::GetOpticsElement()
-{
-    CDLight* pLight = GetLightProperty();
-    if (pLight == NULL)
-    {
-        return NULL;
-    }
-    return pLight->GetLensOpticsElement();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CEntityObject::SetOpticsName(const QString& opticsFullName)
-{
-    if (opticsFullName.isEmpty())
-    {
-        CDLight* pLight = GetLightProperty();
-        if (pLight)
-        {
-            pLight->SetLensOpticsElement(NULL);
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-CDLight* CEntityObject::GetLightProperty() const
-{
-    const PodArray<ILightSource*>* pLightEntities = GetIEditor()->Get3DEngine()->GetLightEntities();
-    if (pLightEntities == NULL)
-    {
-        return NULL;
-    }
-    for (int i = 0, iLightSize(pLightEntities->Count()); i < iLightSize; ++i)
-    {
-        ILightSource* pLightSource = pLightEntities->GetAt(i);
-        if (pLightSource == NULL)
-        {
-            continue;
-        }
-        CDLight& lightProperty = pLightSource->GetLightProperties();
-        if (GetName() != lightProperty.m_sName)
-        {
-            continue;
-        }
-        return &lightProperty;
-    }
-    return NULL;
 }
 
 //////////////////////////////////////////////////////////////////////////

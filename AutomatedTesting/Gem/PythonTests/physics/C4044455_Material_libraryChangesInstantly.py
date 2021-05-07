@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : 4044455
 # Test Case Title : Verify that any change in any of the values including the name of the material, 
 #   once saved, is immediately reflected in the component and functionality
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4044455
+
 
 # fmt: off
 class Tests:

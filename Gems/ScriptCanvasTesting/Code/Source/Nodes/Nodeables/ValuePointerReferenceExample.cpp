@@ -69,7 +69,7 @@ namespace ScriptCanvasTesting
 
         void PropertyExample::In()
         {
-            for (auto& num : Numbers)
+            for ([[maybe_unused]] auto& num : Numbers)
             {
                 AZ_TracePrintf("ScriptCanvas", "%f", num);
             }

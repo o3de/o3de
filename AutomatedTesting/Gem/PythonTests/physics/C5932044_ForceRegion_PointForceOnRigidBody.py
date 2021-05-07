@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C5932044
 # Test Case Title : Check that force region exerts point force on rigid bodies
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5932044
+
 
 
 # fmt: off
