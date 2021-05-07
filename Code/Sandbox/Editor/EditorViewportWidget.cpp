@@ -75,6 +75,7 @@
 #include "ViewportManipulatorController.h"
 #include "LegacyViewportCameraController.h"
 #include "ModernViewportCameraController.h"
+#include "EditorViewportSettings.h"
 
 #include "ViewPane.h"
 #include "CustomResolutionDlg.h"
@@ -2837,28 +2838,27 @@ EditorViewportSettings::EditorViewportSettings(const EditorViewportWidget* edito
 
 bool EditorViewportSettings::GridSnappingEnabled() const
 {
-    return m_editorViewportWidget->GetViewManager()->GetGrid()->IsEnabled();
+    return Editor::GridSnappingEnabled();
 }
 
 float EditorViewportSettings::GridSize() const
 {
-    const CGrid* grid = m_editorViewportWidget->GetViewManager()->GetGrid();
-    return grid->scale * grid->size;
+    return Editor::GridSnappingSize();
 }
 
 bool EditorViewportSettings::ShowGrid() const
 {
-    return gSettings.viewports.bShowGridGuide;
+    return Editor::ShowingGrid();
 }
 
 bool EditorViewportSettings::AngleSnappingEnabled() const
 {
-    return m_editorViewportWidget->GetViewManager()->GetGrid()->IsAngleSnapEnabled();
+    return Editor::AngleSnappingEnabled();
 }
 
 float EditorViewportSettings::AngleStep() const
 {
-    return m_editorViewportWidget->GetViewManager()->GetGrid()->GetAngleSnap();
+    return Editor::AngleSnappingSize();
 }
 
 #include <moc_EditorViewportWidget.cpp>
