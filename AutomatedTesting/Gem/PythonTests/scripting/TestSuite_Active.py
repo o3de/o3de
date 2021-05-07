@@ -12,11 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import pytest
 import os
 import sys
-
 sys.path.append(os.path.dirname(__file__))
 
 import ImportPathHelper as imports
-
 imports.init()
 
 import hydra_test_utils as hydra
@@ -28,25 +26,22 @@ TEST_DIRECTORY = os.path.dirname(__file__)
 
 
 @pytest.mark.SUITE_periodic
-@pytest.mark.parametrize("launcher_platform", ["windows_editor"])
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(TestAutomationBase):
     @pytest.mark.test_case_id("C1702834", "C1702823")
     def test_Opening_Closing_Pane(self, request, workspace, editor, launcher_platform):
         from . import Opening_Closing_Pane as test_module
-
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.test_case_id("C1702824")
     def test_Docking_Pane(self, request, workspace, editor, launcher_platform):
         from . import Docking_Pane as test_module
-
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.test_case_id("C1702829")
     def test_Resizing_Pane(self, request, workspace, editor, launcher_platform):
         from . import Resizing_Pane as test_module
-
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.test_case_id("T92563190")
@@ -54,11 +49,9 @@ class TestAutomation(TestAutomationBase):
     def test_ScriptCanvas_TwoComponents(self, request, workspace, editor, launcher_platform, level):
         def teardown():
             file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-
         request.addfinalizer(teardown)
         file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
         from . import ScriptCanvas_TwoComponents as test_module
-
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.test_case_id("T92562986")
@@ -66,44 +59,35 @@ class TestAutomation(TestAutomationBase):
     def test_ScriptCanvas_ChangingAssets(self, request, workspace, editor, launcher_platform, project, level):
         def teardown():
             file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-
         request.addfinalizer(teardown)
         file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
         from . import ScriptCanvas_ChangingAssets as test_module
-
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.test_case_id("T92569079", "T92569081")
     def test_Graph_ZoomInZoomOut(self, request, workspace, editor, launcher_platform):
         from . import Graph_ZoomInZoomOut as test_module
-
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.test_case_id("T92568940")
     def test_NodePalette_SelectNode(self, request, workspace, editor, launcher_platform):
         from . import NodePalette_SelectNode as test_module
-
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.test_case_id("T92569253")
     @pytest.mark.test_case_id("T92569254")
     @pytest.mark.parametrize("level", ["tmp_level"])
-    def test_OnEntityActivatedDeactivated_PrintMessage(
-        self, request, workspace, editor, launcher_platform, project, level
-    ):
+    def test_OnEntityActivatedDeactivated_PrintMessage(self, request, workspace, editor, launcher_platform, project, level):
         def teardown():
             file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-
         request.addfinalizer(teardown)
         file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
         from . import OnEntityActivatedDeactivated_PrintMessage as test_module
-
         self._run_test(request, workspace, editor, test_module)
-
+    
     @pytest.mark.test_case_id("T92562993")
     def test_NodePalette_ClearSelection(self, request, workspace, editor, launcher_platform, project):
         from . import NodePalette_ClearSelection as test_module
-
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.test_case_id("T92563191")
@@ -111,11 +95,9 @@ class TestAutomation(TestAutomationBase):
     def test_ScriptCanvas_TwoEntities(self, request, workspace, editor, launcher_platform, project, level):
         def teardown():
             file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-
         request.addfinalizer(teardown)
         file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
         from . import ScriptCanvas_TwoEntities as test_module
-
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.test_case_id("T92569013")
@@ -124,31 +106,26 @@ class TestAutomation(TestAutomationBase):
             file_system.delete(
                 [os.path.join(workspace.paths.project(), "ScriptCanvas", "test_file.scriptevent")], True, True
             )
-
         request.addfinalizer(teardown)
         file_system.delete(
             [os.path.join(workspace.paths.project(), "ScriptCanvas", "test_file.scriptevent")], True, True
         )
         from . import AssetEditor_CreateScriptEventFile as test_module
-
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.test_case_id("T92569165", "T92569167", "T92569168", "T92569170")
     def test_Toggle_ScriptCanvasTools(self, request, workspace, editor, launcher_platform):
         from . import Toggle_ScriptCanvasTools as test_module
-
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.test_case_id("T92568982")
     def test_NodeInspector_RenameVariable(self, request, workspace, editor, launcher_platform, project):
         from . import NodeInspector_RenameVariable as test_module
-
         self._run_test(request, workspace, editor, test_module)
-
+        
     @pytest.mark.test_case_id("T92569137")
     def test_Debugging_TargetMultipleGraphs(self, request, workspace, editor, launcher_platform, project):
         from . import Debugging_TargetMultipleGraphs as test_module
-
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.test_case_id("T92568856")
@@ -156,23 +133,19 @@ class TestAutomation(TestAutomationBase):
     def test_Debugging_TargetMultipleEntities(self, request, workspace, editor, launcher_platform, project, level):
         def teardown():
             file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-
         request.addfinalizer(teardown)
         file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
         from . import Debugging_TargetMultipleEntities as test_module
-
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.test_case_id("T92569049", "T92569051")
     def test_EditMenu_UndoRedo(self, request, workspace, editor, launcher_platform, project):
         from . import EditMenu_UndoRedo as test_module
-
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.test_case_id("C1702825", "C1702831")
     def test_UnDockedPane_CloseSCWindow(self, request, workspace, editor, launcher_platform):
         from . import UnDockedPane_CloseSCWindow as test_module
-
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.test_case_id("T92562978")
@@ -180,31 +153,24 @@ class TestAutomation(TestAutomationBase):
     def test_Entity_AddScriptCanvasComponent(self, request, workspace, editor, launcher_platform, project, level):
         def teardown():
             file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-
         request.addfinalizer(teardown)
         file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
         from . import Entity_AddScriptCanvasComponent as test_module
-
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.test_case_id("C1702821", "C1702832")
     def test_Pane_RetainOnSCRestart(self, request, workspace, editor, launcher_platform):
         from . import Pane_RetainOnSCRestart as test_module
-
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.test_case_id("T92567321")
     @pytest.mark.parametrize("level", ["tmp_level"])
-    def test_ScriptEvents_SendReceiveAcrossMultiple(
-        self, request, workspace, editor, launcher_platform, project, level
-    ):
+    def test_ScriptEvents_SendReceiveAcrossMultiple(self, request, workspace, editor, launcher_platform, project, level):
         def teardown():
             file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-
         request.addfinalizer(teardown)
         file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
         from . import ScriptEvents_SendReceiveAcrossMultiple as test_module
-
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.test_case_id("T92567320")
@@ -212,18 +178,14 @@ class TestAutomation(TestAutomationBase):
     def test_ScriptEvents_SendReceiveSuccessfully(self, request, workspace, editor, launcher_platform, project, level):
         def teardown():
             file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-
         request.addfinalizer(teardown)
         file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
         from . import ScriptEvents_SendReceiveSuccessfully as test_module
-
         self._run_test(request, workspace, editor, test_module)
-
+    
     def test_VariableManager_UnpinVariableType(self, request, workspace, editor, launcher_platform):
         from . import VariableManager_UnpinVariableType as test_module
-
         self._run_test(request, workspace, editor, test_module)
-
 
 # NOTE: We had to use hydra_test_utils.py, as TestAutomationBase run_test method
 # fails because of pyside_utils import
