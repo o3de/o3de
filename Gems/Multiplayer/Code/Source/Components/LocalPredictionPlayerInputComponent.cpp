@@ -180,16 +180,16 @@ namespace Multiplayer
                 }
                 if (lostInput)
                 {
-                    AZLOG(NET_Prediction, "InputLost InputId=%u", input.GetClientInputId());
+                    AZLOG(NET_Prediction, "InputLost InputId=%u", aznumeric_cast<uint32_t>(input.GetClientInputId()));
                 }
                 else
                 {
-                    AZLOG(NET_Prediction, "Processed InputId=%u", input.GetClientInputId());
+                    AZLOG(NET_Prediction, "Processed InputId=%u", aznumeric_cast<uint32_t>(input.GetClientInputId()));
                 }
             }
             else
             {
-                AZLOG(NET_Prediction, "Dropped InputId=%u", input.GetClientInputId());
+                AZLOG(NET_Prediction, "Dropped InputId=%u", aznumeric_cast<uint32_t>(input.GetClientInputId()));
             }
             --inputArrayIndex;
         }
