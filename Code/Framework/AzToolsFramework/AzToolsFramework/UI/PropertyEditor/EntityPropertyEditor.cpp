@@ -3730,7 +3730,7 @@ namespace AzToolsFramework
         AZ::s32 newComponentIndex = m_componentEditorsUsed - 1;
 
         // if there is a component id explicitly set as the most recently added, try to find it and make sure it is visible
-        if (m_newComponentId.has_value())
+        if (m_newComponentId.has_value() && m_newComponentId.value() != AZ::InvalidComponentId)
         {
             AZ::ComponentId newComponentId = m_newComponentId.value();
             for (AZ::s32 componentIndex = 0; componentIndex < m_componentEditorsUsed; ++componentIndex)
