@@ -36,6 +36,13 @@ namespace AzToolsFramework
         void PrefabEditManager::EditOwningPrefab(AZ::EntityId entityId)
         {
             AZ::EntityId containerEntityId = m_prefabPublicInterface->GetInstanceContainerEntityId(entityId);
+
+            // Early out if no change - saves time on refreshing the views
+            if (containerEntityId == entityId)
+            {
+                return;
+            }
+
             AZ::EntityId levelContainerEntityId = m_prefabPublicInterface->GetLevelInstanceContainerEntityId();
 
             // Notify Outliner of changes to what was previously in the cache
