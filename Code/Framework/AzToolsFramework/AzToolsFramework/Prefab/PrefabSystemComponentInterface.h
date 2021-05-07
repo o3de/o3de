@@ -44,7 +44,7 @@ namespace AzToolsFramework
 
             //creates a new Link
             virtual LinkId CreateLink(const TemplateId& linkTargetId, const TemplateId& linkSourceId,
-                const InstanceAlias& instanceAlias, const PrefabDomReference linkPatch,
+                const InstanceAlias& instanceAlias, PrefabDom linkPatch,
                 const LinkId& linkId = InvalidLinkId) = 0;
 
             virtual void RemoveLink(const LinkId& linkId) = 0;

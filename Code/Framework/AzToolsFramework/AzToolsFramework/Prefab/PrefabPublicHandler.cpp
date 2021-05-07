@@ -122,6 +122,24 @@ namespace AzToolsFramework
 
                 AZ::EntityId containerEntityId = instanceToCreate->get().GetContainerEntityId();
 
+                // Change top level entities to be parented to the container entity
+                // Mark them as dirty so this change is correctly applied to the template
+                for (AZ::Entity* topLevelEntity : entities)
+                {
+                    //m_prefabUndoCache.UpdateCache(topLevelEntity->GetId());
+                    // undoBatch.MarkEntityDirty(topLevelEntity->GetId());
+                    AZ::TransformBus::Event(topLevelEntity->GetId(), &AZ::TransformBus::Events::SetParent, containerEntityId);
+                    //ToolsApplicationRequests::Bus::Broadcast(
+                    //    &ToolsApplicationRequests::Bus::Events::RemoveDirtyEntity, topLevelEntity->GetId());
+                }
+
+                // Update the template of the instance since we modified the entities of the instance by calling HandleEntitiesAdded.
+                Prefab::PrefabDom serializedInstance;
+                if (Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(instanceToCreate->get(), serializedInstance))
+                {
+                    m_prefabSystemComponentInterface->UpdatePrefabTemplate(instanceToCreate->get().GetTemplateId(), serializedInstance);
+                }
+
                 instanceToCreate->get().GetNestedInstances([&](AZStd::unique_ptr<Instance>& nestedInstance) {
                     AZ_Assert(nestedInstance, "Invalid nested instance found in the new prefab created.");
                     EntityOptionalReference nestedInstanceContainerEntity = nestedInstance->GetContainerEntity();
@@ -129,7 +147,7 @@ namespace AzToolsFramework
                         nestedInstanceContainerEntity, "Invalid container entity found for the nested instance used in prefab creation.");
                     CreateLink(
                         {&nestedInstanceContainerEntity->get()}, *nestedInstance, instanceToCreate->get().GetTemplateId(),
-                        undoBatch.GetUndoBatch(), containerEntityId);
+                        undoBatch.GetUndoBatch(), containerEntityId, false);
                 });
 
                 CreateLink(
@@ -141,9 +159,12 @@ namespace AzToolsFramework
                 for (AZ::Entity* topLevelEntity : topLevelEntities)
                 {
                     m_prefabUndoCache.UpdateCache(topLevelEntity->GetId());
-                    undoBatch.MarkEntityDirty(topLevelEntity->GetId());
-                    AZ::TransformBus::Event(topLevelEntity->GetId(), &AZ::TransformBus::Events::SetParent, containerEntityId);
+                    //undoBatch.MarkEntityDirty(topLevelEntity->GetId());
+                    //AZ::TransformBus::Event(topLevelEntity->GetId(), &AZ::TransformBus::Events::SetParent, containerEntityId);
+                    ToolsApplicationRequests::Bus::Broadcast(
+                        &ToolsApplicationRequests::Bus::Events::RemoveDirtyEntity, topLevelEntity->GetId());
                 }
+                
                 
                 // Select Container Entity
                 {
@@ -244,7 +265,7 @@ namespace AzToolsFramework
 
         void PrefabPublicHandler::CreateLink(
             const EntityList& topLevelEntities, Instance& sourceInstance, TemplateId targetTemplateId,
-            UndoSystem::URSequencePoint* undoBatch, AZ::EntityId commonRootEntityId)
+            UndoSystem::URSequencePoint* undoBatch, AZ::EntityId commonRootEntityId, const bool IsUndoRedoSupportNeeded)
         {
             AZ::EntityId containerEntityId = sourceInstance.GetContainerEntityId();
             AZ::Entity* containerEntity = GetEntityById(containerEntityId);
@@ -270,9 +291,19 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->GeneratePatch(patch, containerEntityDomBefore, containerEntityDomAfter);
             m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, containerEntityId);
 
-            LinkId linkId = PrefabUndoHelpers::CreateLink(
-                sourceInstance.GetTemplateId(), targetTemplateId, patch, sourceInstance.GetInstanceAlias(),
-                undoBatch);
+            LinkId linkId;
+            if (IsUndoRedoSupportNeeded)
+            {
+                linkId = PrefabUndoHelpers::CreateLink(
+                    sourceInstance.GetTemplateId(), targetTemplateId, AZStd::move(patch), sourceInstance.GetInstanceAlias(), undoBatch);
+            }
+            else
+            {
+                linkId = m_prefabSystemComponentInterface->CreateLink(
+                    targetTemplateId, sourceInstance.GetTemplateId(), sourceInstance.GetInstanceAlias(), AZStd::move(patch),
+                    InvalidLinkId);
+                m_prefabSystemComponentInterface->PropagateTemplateChanges(targetTemplateId);
+            }
 
             sourceInstance.SetLinkId(linkId);
 
@@ -305,7 +336,7 @@ namespace AzToolsFramework
             patchesCopyForUndoSupport.CopyFrom(nestedInstanceLinkPatches->get(), patchesCopyForUndoSupport.GetAllocator());
             PrefabUndoHelpers::RemoveLink(
                 sourceInstance->GetTemplateId(), targetTemplateId, sourceInstance->GetInstanceAlias(), sourceInstance->GetLinkId(),
-                patchesCopyForUndoSupport, undoBatch);
+                AZStd::move(patchesCopyForUndoSupport), undoBatch);
         }
 
         PrefabOperationResult PrefabPublicHandler::SavePrefab(AZ::IO::Path filePath)

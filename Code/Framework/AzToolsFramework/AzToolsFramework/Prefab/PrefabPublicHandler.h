@@ -80,7 +80,7 @@ namespace AzToolsFramework
              */
             void CreateLink(
                 const EntityList& topLevelEntities, Instance& sourceInstance, TemplateId targetTemplateId,
-                UndoSystem::URSequencePoint* undoBatch, AZ::EntityId commonRootEntityId);
+                UndoSystem::URSequencePoint* undoBatch, AZ::EntityId commonRootEntityId, const bool IsUndoRedoSupportNeeded = true);
 
             /**
              * Removes the link between template of the sourceInstance and the template corresponding to targetTemplateId.

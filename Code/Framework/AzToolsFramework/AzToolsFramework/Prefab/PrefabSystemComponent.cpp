@@ -583,7 +583,7 @@ namespace AzToolsFramework
             const TemplateId& linkTargetId,
             const TemplateId& linkSourceId,
             const InstanceAlias& instanceAlias,
-            const PrefabDomReference linkPatch,
+            PrefabDom linkPatch,
             const LinkId& linkId)
         {
             if (linkTargetId == InvalidTemplateId)
@@ -667,9 +667,9 @@ namespace AzToolsFramework
                 rapidjson::StringRef(PrefabDomUtils::SourceName), rapidjson::StringRef(sourceTemplate.GetFilePath().c_str()),
                 newLink.GetLinkDom().GetAllocator());
 
-            if (linkPatch && linkPatch->get().IsArray() && !(linkPatch->get().Empty()))
+            if (linkPatch.IsArray() && !(linkPatch.Empty()))
             {
-                m_instanceToTemplatePropagator.AddPatchesToLink(linkPatch.value(), newLink);
+                m_instanceToTemplatePropagator.AddPatchesToLink(AZStd::move(linkPatch), newLink);
             }
 
             //update the target template dom to have the proper values for the source template dom

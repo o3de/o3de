@@ -176,9 +176,14 @@ namespace AzToolsFramework
         {
             PrefabDom& templateDomReference = m_prefabSystemComponentInterface->FindTemplateDom(templateId);
 
+            PrefabDomUtils::PrintPrefabDomValue("patch is ", providedPatch);
+            PrefabDomUtils::PrintPrefabDomValue("template dom before is ", templateDomReference);
+
             //apply patch to template
             AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ApplyPatch(templateDomReference,
                 templateDomReference.GetAllocator(), providedPatch, AZ::JsonMergeApproach::JsonPatch);
+
+            PrefabDomUtils::PrintPrefabDomValue("template dom after is ", templateDomReference);
 
             //trigger propagation
             if (result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success)
@@ -270,7 +275,7 @@ namespace AzToolsFramework
             return parentInstance;
         }
 
-        void InstanceToTemplatePropagator::AddPatchesToLink(PrefabDom& patches, Link& link)
+        void InstanceToTemplatePropagator::AddPatchesToLink(const PrefabDom& patches, Link& link)
         {
             PrefabDom& linkDom = link.GetLinkDom();
             PrefabDomValueReference linkPatchesReference =
@@ -279,7 +284,12 @@ namespace AzToolsFramework
             // This logic only covers addition of patches. If patches already exists, the given list of patches must be appended to them.
             if (!linkPatchesReference.has_value())
             {
-                linkDom.AddMember(rapidjson::StringRef(PrefabDomUtils::PatchesName), patches, linkDom.GetAllocator());
+                // If the original allocator the patches were created with gets destroyed, then the patches would become garbage in the
+                // linkDom. Since we cannot guarantee the lifecycle of the patch allocators, we are doing a copy of the patches here to
+                // associate them with the linkDom's allocator. This is a limitation with rapidjson.
+                PrefabDom patchesCopy;
+                patchesCopy.CopyFrom(patches, linkDom.GetAllocator());
+                linkDom.AddMember(rapidjson::StringRef(PrefabDomUtils::PatchesName), patchesCopy, linkDom.GetAllocator());
             }
         }
     }

@@ -124,7 +124,7 @@ namespace AzToolsFramework
             const TemplateId& targetId,
             const TemplateId& sourceId,
             const InstanceAlias& instanceAlias,
-            PrefabDomReference linkPatches,
+            PrefabDom linkPatches,
             const LinkId linkId)
         {
             m_targetId = targetId;
@@ -132,10 +132,7 @@ namespace AzToolsFramework
             m_instanceAlias = instanceAlias;
             m_linkId = linkId;
 
-            if (linkPatches.has_value())
-            {
-                m_linkPatches = AZStd::move(linkPatches->get());
-            }
+            m_linkPatches = AZStd::move(linkPatches);
 
             //if linkId is invalid, set as ADD
             if (m_linkId == InvalidLinkId)
@@ -193,7 +190,9 @@ namespace AzToolsFramework
 
         void PrefabUndoInstanceLink::AddLink()
         {
-            m_linkId = m_prefabSystemComponentInterface->CreateLink(m_targetId, m_sourceId, m_instanceAlias, m_linkPatches, m_linkId);
+            PrefabDom linkPatchesCopy;
+            linkPatchesCopy.CopyFrom(m_linkPatches, linkPatchesCopy.GetAllocator());
+            m_linkId = m_prefabSystemComponentInterface->CreateLink(m_targetId, m_sourceId, m_instanceAlias, AZStd::move(linkPatchesCopy), m_linkId);
         }
 
         void PrefabUndoInstanceLink::RemoveLink()
@@ -228,8 +227,11 @@ namespace AzToolsFramework
 
             if (link.has_value())
             {
-                m_linkDomPrevious = AZStd::move(link->get().GetLinkDom());
+                m_linkDomPrevious.CopyFrom(link->get().GetLinkDom(), m_linkDomPrevious.GetAllocator());
             }
+
+            PrefabDomUtils::PrintPrefabDomValue("m_linkDomPrevious is : ", m_linkDomPrevious);
+            PrefabDomUtils::PrintPrefabDomValue("link->get().GetLinkDom() is : ", link->get().GetLinkDom());
 
             //get source templateDom
             TemplateReference sourceTemplate = m_prefabSystemComponentInterface->FindTemplate(link->get().GetSourceTemplateId());
@@ -275,7 +277,7 @@ namespace AzToolsFramework
             if (patchesIter == m_linkDomNext.MemberEnd())
             {
                 m_linkDomNext.AddMember(
-                    rapidjson::GenericStringRef(PrefabDomUtils::PatchesName), patchLinkCopy, m_linkDomNext.GetAllocator());
+                    rapidjson::GenericStringRef(PrefabDomUtils::PatchesName), AZStd::move(patchLinkCopy), m_linkDomNext.GetAllocator());
             }
             else
             {
@@ -303,9 +305,14 @@ namespace AzToolsFramework
                 return;
             }
 
+            /*
             PrefabDom moveLink;
             moveLink.CopyFrom(linkDom, linkDom.GetAllocator());
             link->get().GetLinkDom() = AZStd::move(moveLink);
+            */
+            link->get().SetLinkDom(linkDom);
+
+            PrefabDomUtils::PrintPrefabDomValue("dom after updating link is : ", link->get().GetLinkDom());
 
             //propagate the link changes
             link->get().UpdateTarget();
