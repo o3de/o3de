@@ -45,7 +45,7 @@ namespace Multiplayer
         (
             AzNetworking::IConnection* invokingConnection,
             const Multiplayer::NetworkInputArray& inputArray,
-            const AZ::HashValue64& stateHash,
+            const AZ::HashValue32& stateHash,
             const AzNetworking::PacketEncodingBuffer& clientState
         ) override;
 

@@ -107,7 +107,7 @@ namespace Multiplayer
     (
         AzNetworking::IConnection* invokingConnection, 
         const Multiplayer::NetworkInputArray& inputArray,
-        const AZ::HashValue64& stateHash,
+        const AZ::HashValue32& stateHash,
         [[maybe_unused]] const AzNetworking::PacketEncodingBuffer& clientState
     )
     {
@@ -201,7 +201,7 @@ namespace Multiplayer
             AzNetworking::HashSerializer hashSerializer;
             GetNetBindComponent()->SerializeEntityCorrection(hashSerializer);
 
-            const AZ::HashValue64 localAuthorityHash = hashSerializer.GetHash();
+            const AZ::HashValue32 localAuthorityHash = hashSerializer.GetHash();
 
             if (stateHash != localAuthorityHash)
             {

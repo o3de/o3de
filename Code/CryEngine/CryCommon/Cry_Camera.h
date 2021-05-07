@@ -620,24 +620,24 @@ public:
     bool IsPointVisible(const Vec3& p) const;
 
     //sphere-frustum test
-    bool IsSphereVisible_F(const Sphere& s) const;
-    uint8 IsSphereVisible_FH(const Sphere& s) const;   //this is going to be the exact version of sphere-culling
+    bool IsSphereVisible_F(const ::Sphere& s) const;
+    uint8 IsSphereVisible_FH(const ::Sphere& s) const;   //this is going to be the exact version of sphere-culling
 
     // AABB-frustum test
     // Fast
-    bool IsAABBVisible_F(const AABB& aabb) const;
-    uint8 IsAABBVisible_FH(const AABB& aabb, bool* pAllInside) const;
-    uint8 IsAABBVisible_FH(const AABB& aabb) const;
+    bool IsAABBVisible_F(const ::AABB& aabb) const;
+    uint8 IsAABBVisible_FH(const ::AABB& aabb, bool* pAllInside) const;
+    uint8 IsAABBVisible_FH(const ::AABB& aabb) const;
 
     // Exact
-    bool IsAABBVisible_E(const AABB& aabb) const;
-    uint8 IsAABBVisible_EH(const AABB& aabb, bool* pAllInside) const;
-    uint8 IsAABBVisible_EH(const AABB& aabb) const;
+    bool IsAABBVisible_E(const ::AABB& aabb) const;
+    uint8 IsAABBVisible_EH(const ::AABB& aabb, bool* pAllInside) const;
+    uint8 IsAABBVisible_EH(const ::AABB& aabb) const;
 
     // Multi-camera
-    bool IsAABBVisible_EHM(const AABB& aabb, bool* pAllInside) const;
-    bool IsAABBVisible_EM(const AABB& aabb) const;
-    bool IsAABBVisible_FM(const AABB& aabb) const;
+    bool IsAABBVisible_EHM(const ::AABB& aabb, bool* pAllInside) const;
+    bool IsAABBVisible_EM(const ::AABB& aabb) const;
+    bool IsAABBVisible_FM(const ::AABB& aabb) const;
 
     //OBB-frustum test
     bool IsOBBVisible_F(const Vec3& wpos, const OBB& obb) const;
