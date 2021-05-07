@@ -82,15 +82,11 @@ class TestDistanceBetweenFilterComponentOverrides(EditorTestHelper):
         editor.EditorComponentAPIBus(bus.Broadcast, "SetComponentProperty", veg_system_settings_component,
                                      'Configuration|Area System Settings|Sector Point Density', 16)
 
-        # Add a Vegetation Debugger component to allow area refreshes
-        hydra.add_level_component("Vegetation Debugger")
-
         # 5) Add a Vegetation Distance Between Filter, toggle overrides on both the component and descriptor,
         # and verify initial instance counts are accurate
         spawner_entity.add_component("Vegetation Distance Between Filter")
         spawner_entity.get_set_test(3, "Configuration|Allow Per-Item Overrides", True)
         spawner_entity.get_set_test(2, "Configuration|Embedded Assets|[0]|Distance Between Filter (Radius)|Override Enabled", True)
-        general.run_console('veg_debugClearAllAreas')
         self.test_success = self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_a, 0.5, 1), 5.0) and \
                             self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_b, 0.5, 2), 5.0) and \
                             self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_c, 0.5, 2), 5.0) and \
@@ -98,7 +94,6 @@ class TestDistanceBetweenFilterComponentOverrides(EditorTestHelper):
 
         # 6) Change Radius Min to 1.0, refresh, and verify instance counts are accurate
         spawner_entity.get_set_test(2, "Configuration|Embedded Assets|[0]|Distance Between Filter (Radius)|Radius Min", 1.0)
-        general.run_console('veg_debugClearAllAreas')
         self.test_success = self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_a, 0.5, 1), 5.0) and \
                             self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_b, 0.5, 0), 5.0) and \
                             self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_c, 0.5, 1), 5.0) and \
@@ -106,7 +101,6 @@ class TestDistanceBetweenFilterComponentOverrides(EditorTestHelper):
 
         # 7) Change Radius Min to 2.0, refresh, and verify instance counts are accurate
         spawner_entity.get_set_test(2, "Configuration|Embedded Assets|[0]|Distance Between Filter (Radius)|Radius Min", 2.0)
-        general.run_console('veg_debugClearAllAreas')
         self.test_success = self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_a, 0.5, 1), 5.0) and \
                             self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_b, 0.5, 0), 5.0) and \
                             self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_c, 0.5, 0), 5.0) and \
@@ -114,7 +108,6 @@ class TestDistanceBetweenFilterComponentOverrides(EditorTestHelper):
 
         # 8) Change Radius Min to 16.0, refresh, and verify instance counts are accurate, only a single instance should plant
         spawner_entity.get_set_test(2, "Configuration|Embedded Assets|[0]|Distance Between Filter (Radius)|Radius Min", 16.0)
-        general.run_console('veg_debugClearAllAreas')
         num_expected_instances = 1
         final_check_success = self.wait_for_condition(lambda: dynveg.validate_instance_count_in_entity_shape(spawner_entity.id, num_expected_instances), 5.0)
         self.test_success = final_check_success and self.test_success
