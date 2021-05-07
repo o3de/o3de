@@ -27,7 +27,8 @@ set(FILES
     External/Code/src/TressFX/TressFXAsset.cpp
     External/Code/src/TressFX/TressFXConstantBuffers.h
     External/Code/src/TressFX/TressFXFileFormat.h
-    External/Code/src/TressFX/TressFXSettings.h	
+    External/Code/src/TressFX/TressFXSettings.h
+    External/Code/src/TressFX/TressFXSettings.cpp
 #   External/Code/src/Math/Quaternion.h
 #)
 #
@@ -87,16 +88,35 @@ set(FILES
     Assets/Shaders/HairLighting.azsli
 
     Assets/Shaders/HairSimulation.azsl
+    Assets/Shaders/HairGlobalShapeConstraints.azsl
+    Assets/Shaders/HairCalculateStrandLevelData.azsl
+    Assets/Shaders/HairVelocityShockPropagation.azsl
+    Assets/Shaders/HairLocalShapeConstraints.azsl
+    Assets/Shaders/HairLengthConstraintsWindAndCollision.azsl  
+    Assets/Shaders/HairUpdateFollowHair.azsl
     Assets/Shaders/HairRenderingFillPPLL.azsl
     Assets/Shaders/HairRenderingResolvePPLL.azsl
 
     Assets/Shaders/HairSkinningCompute.shader
+    Assets/Shaders/HairGlobalShapeConstraintsCompute.shader  
+    Assets/Shaders/HairCalculateStrandLevelDataCompute.shader
+    Assets/Shaders/HairVelocityShockPropagationCompute.shader
+    Assets/Shaders/HairLocalShapeConstraintsCompute.shader
+    Assets/Shaders/HairLengthConstraintsWindAndCollisionCompute.shader  
+    Assets/Shaders/HairUpdateFollowHairCompute.shader
     Assets/Shaders/HairRenderingFillPPLL.shader
     Assets/Shaders/HairRenderingResolvePPLL.shader
 #)
 #
 #set(atom_hair_passes
+    Assets/Passes/HairParentPass.pass
     Assets/Passes/HairSkinningCompute.pass
+    Assets/Passes/HairGlobalShapeConstraintsCompute.pass
+    Assets/Passes/HairCalculateStrandLevelDataCompute.pass
+    Assets/Passes/HairVelocityShockPropagationCompute.pass
+    Assets/Passes/HairLocalShapeConstraintsCompute.pass
+    Assets/Passes/HairLengthConstraintsWindAndCollisionCompute.pass
+    Assets/Passes/HairUpdateFollowHairCompute.pass
     Assets/Passes/HairFillPPLL.pass
     Assets/Passes/HairResolvePPLL.pass
 )

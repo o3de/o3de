@@ -42,7 +42,7 @@ namespace AZ
             , m_boneTransforms(AZStd::move(boneTransforms))
             {
                 m_skinningShader = HairSkinningPass->GetShader();
-                // CreateShaderOptionGroup will also connect to the HairShaderOptionNotificationBus
+                // To Do] Adi: CreateShaderOptionGroup will also connect to the HairShaderOptionNotificationBus
                 m_shaderOptionGroup = HairSkinningPass->CreateShaderOptionGroup(m_shaderOptions, *this);
             }
             */
@@ -82,33 +82,24 @@ namespace AZ
             // Reference in the code above that tackles handling of the different dispatches possible
             // This one is targeting the per vertex dispatches fro now.
             void HairDispatchItem::InitSkinningDispatch(
-                Data::Instance<RPI::Shader> shader,
+                RPI::Shader* shader,
                 RPI::ShaderResourceGroup* hairGenerationSrg,
                 RPI::ShaderResourceGroup* hairSimSrg,
-                RPI::ShaderResourceGroup* hairPerPassSrg,
-                uint32_t hairVerticesAmount )
+                uint32_t elementsAmount )
             {
                 m_shader = shader;
                 RHI::DispatchDirect dispatchArgs(
-                    hairVerticesAmount, 0, 0,
+                    elementsAmount, 1, 1,
                     TRESSFX_SIM_THREAD_GROUP_SIZE, 1, 1
                 );
                 m_dispatchItem.m_arguments = dispatchArgs;
                 RHI::PipelineStateDescriptorForDispatch pipelineDesc;
                 m_shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId).ConfigurePipelineState(pipelineDesc);
                 m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineDesc);
-
-                // Compile the per draw Srg but not the per pass - it will be compiled by the
-                // feature processor before sending work to the passes.
-
-                hairGenerationSrg->Compile();
-                hairSimSrg->Compile();
-
-                m_dispatchItem.m_shaderResourceGroupCount = 3;  
+                m_dispatchItem.m_shaderResourceGroupCount = 2;  // the per pass will be added by each pass.
                 m_dispatchItem.m_shaderResourceGroups = {
                     hairGenerationSrg->GetRHIShaderResourceGroup(), // Static generation data
-                    hairSimSrg->GetRHIShaderResourceGroup(),        // Dynamic data changed between passes
-                    hairPerPassSrg->GetRHIShaderResourceGroup()     // The shared buffer passed between all compute passes 
+                    hairSimSrg->GetRHIShaderResourceGroup()        // Dynamic data changed between passes
                 };
             }
 

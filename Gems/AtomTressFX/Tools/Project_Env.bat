@@ -50,7 +50,7 @@ set MAYA_VERSION=2020
 echo     MAYA_VERSION = %MAYA_VERSION%
 
 :: now runt the DCCsi env
-CALL %LY_DEV%\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Launchers\Windows\Env.bat
+CALL %LY_DEV%\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Launchers\Windows\Env_Maya.bat
 
 rem :: Constant Vars (Global)
 rem SET LYPY_GDEBUG=0

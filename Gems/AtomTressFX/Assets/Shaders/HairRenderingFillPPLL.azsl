@@ -40,6 +40,13 @@ PS_INPUT_HAIR RenderHairVS(uint vertexId : SV_VertexID)
 {
     TressFXVertex tressfxVert = GetExpandedTressFXVert(vertexId, g_vEye.xyz, g_vViewport.zw, g_mVP);
 
+//    tressfxVert.Position = float4(
+//        (vertexId / 3) * 0.1 + (vertexId % 2) * 0.1,
+//        ((vertexId / 2) % 2) * 0.1,
+//        saturate((vertexId / 3) * 0.01),
+//        1.0
+//    );
+
     PS_INPUT_HAIR Output;
 
     Output.Position = tressfxVert.Position;
@@ -85,6 +92,7 @@ void WriteFragmentAttributes(int nAddress, int nPreviousLink, float4 vData, floa
 struct PSOutput
 {
     float4 m_color : SV_Target0;
+//    float m_depth : SV_Depth;
 };
 
 
@@ -93,7 +101,8 @@ struct PSOutput
 // First pass of PPLL implementation
 // Builds up the linked list of hair fragments
 [earlydepthstencil]
-PSOutput PPLLFillPS(PS_INPUT_HAIR input)
+//PSOutput PPLLFillPS(PS_INPUT_HAIR input)
+void PPLLFillPS(PS_INPUT_HAIR input)
 {
     PSOutput pixelOut;
 
@@ -111,7 +120,9 @@ PSOutput PPLLFillPS(PS_INPUT_HAIR input)
     // If we are supporting strand UV texturing, further blend in the texture color/alpha
     // Do this while computing NDC and coverage to hide latency from texture lookup
     if (EnableStrandUV)
+    {
         strandColor.rgb *= StrandAlbedoTexture.Sample(LinearWrapSampler, strandUV).rgb;
+    }
 
     float3 vNDC = ScreenPosToNDC(input.Position.xyz, g_vViewport);
 
@@ -122,22 +133,17 @@ PSOutput PPLLFillPS(PS_INPUT_HAIR input)
 //    float coverage = ComputeCoverage(input.p0p1.xy, input.p0p1.zw, vNDC.xy, g_vViewport.zw - g_vViewport.xy);
     /// //////////////////////////////////////////////////////////////////
 
-    float3 vPositionWS = NDCToWorld(vNDC, cInvViewProjMatrix);
+    float3 vPositionWS = NDCToWorld(vNDC, ViewSrg::m_viewProjectionInverseMatrix);
     float alpha = coverage;
 
     // Update the alpha to have proper value (accounting for coverage, base alpha, and strand alpha)
     alpha *= strandColor.w;
 
-    
-    // [To Do] Adi: adibugbug - put this early exit block back
     // Early out
     if (alpha < 1.f / 255.f)
     {
         discard;
-        pixelOut.m_color = float4(0.2, 0.2, 0.2, 1.0);
-        return pixelOut;
     }
-
 
     // Get the screen address
     int2 vScreenAddress = int2(input.Position.xy);
@@ -146,11 +152,16 @@ PSOutput PPLLFillPS(PS_INPUT_HAIR input)
     int nNewFragmentAddress = AllocateFragment(vScreenAddress);
 
     int nOldFragmentAddress = MakeFragmentLink(vScreenAddress, nNewFragmentAddress);
-    WriteFragmentAttributes(nNewFragmentAddress, nOldFragmentAddress, float4(input.Tangent.xyz * 0.5 + float3(0.5, 0.5, 0.5), alpha), strandColor.xyz, input.Position.z);
+    WriteFragmentAttributes(nNewFragmentAddress, nOldFragmentAddress, 
+        float4(input.Tangent.xyz * 0.5 + float3(0.5, 0.5, 0.5), alpha), 
+        strandColor.xyz, 
+        input.Position.z
+    );
 
-    pixelOut.m_color = float4(strandColor.rgb, alpha);
-    pixelOut.m_color = float4(1, 0, 1, 0.5 + 0.5 * alpha);// .001);
+//    pixelOut.m_depth = input.Position.z;
+//    pixelOut.m_color = float4(input.Position.z, input.Position.z, input.Position.z, 1);// .2);
+//    pixelOut.m_color = float4(1, 0, 1, 0.5 + 0.5 * alpha);// .001);
 //    discard;
 
-    return pixelOut;
+//    return pixelOut;
 }

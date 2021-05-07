@@ -32,6 +32,7 @@
 #include <Rendering/SharedBufferInterface.h>
 #include <Rendering/HairDispatchItem.h>
 #include <Rendering/HairFeatureProcessor.h>
+#include <Rendering/HairRenderObject.h>
 
 #include <Passes/HairSkinningComputePass.h>
 
@@ -60,19 +61,54 @@ namespace AZ
             {
             }
 
+            void HairSkinningComputePass::OnBuildAttachmentsFinishedInternal()
+            {
+                ComputePass::OnBuildAttachmentsFinishedInternal();
+
+                if (!m_featureProcessor)
+                {
+                    return;
+                }
+
+                if (!m_shaderResourceGroup)
+                {
+                    AZ_Error("Hair Gem", false, "HairSkinningComputePass::OnBuildAttachmentsFinishedInternal: m_shaderResourceGroup not ready yet");
+                    return;
+                }
+
+                // Shared buffer binding
+                {
+                    Name sharedBufferName = Name("m_skinnedHairSharedBuffer");
+                    RHI::ShaderInputBufferIndex indexHandle = m_shaderResourceGroup->FindShaderInputBufferIndex(sharedBufferName);
+                    if (!m_shaderResourceGroup->SetBufferView(indexHandle, m_featureProcessor->GetSharedBuffer()->GetBufferView()))
+                    {
+                        AZ_Error("Hair Gem", false, "Failed to bind buffer view for [%s]", sharedBufferName.GetCStr());
+                    }
+                }
+            }
+
+            void HairSkinningComputePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
+            {
+                ComputePass::SetupFrameGraphDependencies(frameGraph);
+
+                AZ_Error("Hair Gem", m_shaderResourceGroup && m_featureProcessor,
+                    "HairSkinningComputePass::SetupFrameGraphDependencies - m_shaderResourceGroup or Feature processor not initialized");
+            }
+
             void HairSkinningComputePass::BuildAttachmentsInternal()
             {
+                ComputePass::BuildAttachmentsInternal();
+
                 if (!m_featureProcessor)
                 {
                     RPI::Scene* scene = GetScene();
-                    if (!scene)
+                    if (scene)
                     {
-                        return;
+                        m_featureProcessor = scene->GetFeatureProcessor<HairFeatureProcessor>();
                     }
-
-                    m_featureProcessor = scene->GetFeatureProcessor<HairFeatureProcessor>();
                     if (!m_featureProcessor)
                     {
+                        AZ_Error("Hair Gem", false, "HairSkinningComputePass - Failed to retrieve Hair feature processor from the scene");
                         return;
                     }
                 }
@@ -80,48 +116,37 @@ namespace AZ
                 // Output
                 // This is the buffer that is shared between all objects and dispatches and contains
                 // the dynamic data that can be changed between passes.
-                AttachBufferToSlot(Name{ "SkinnedHairSharedBuffer" }, m_featureProcessor->GetSharedBuffer());
+                Name bufferName = Name{ "SkinnedHairSharedBuffer" };
+                RPI::PassAttachmentBinding* localBinding = FindAttachmentBinding(bufferName);
+                if (localBinding && !localBinding->m_attachment)
+                {
+                    AttachBufferToSlot(Name{ "SkinnedHairSharedBuffer" }, m_featureProcessor->GetSharedBuffer());
+                }
              }
 
-            // Currently this is an empty method as the Srgs are connected through the DispatchItem and
-            // compiled according to need.
             void HairSkinningComputePass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
             {
-                if (m_featureProcessor)
+                if (!m_featureProcessor)
                 {
-                    /*
-                    Data::Instance<RPI::AttachmentImage> linkedListHeadImage = m_featureProcessor->GetPerPixelHeadImage();
-                    RHI::Image* image = linkedListHeadImage->GetRHIImage();
-                    RHI::ImageViewDescriptor imageDesc = RHI::ImageViewDescriptor::Create(RHI::Format::R32_UINT, 0, 0);
-                    Data::Instance<RHI::ImageView> imageView = image->GetImageView(imageDesc);
-                    const RHI::Resource& imageResource = imageView->GetResource();
-                    */
-//                    Data::Instance<RPI::Buffer> linkedListBuffer = m_featureProcessor->GetPerPixelListBuffer();
-//                    uint64_t bufferSize = linkedListBuffer->GetBufferSize();
-//                    linkedListBuffer->ResetBufferData(0, bufferSize, 0);
+                    return;
                 }
 
-                // Compile the per pass srg - the rest of the srgs are compiled during DispatchItem creation
+/*
+                Name sharedBufferName = Name("m_skinnedHairSharedBuffer");
+                RHI::ShaderInputBufferIndex indexHandle = m_shaderResourceGroup->FindShaderInputBufferIndex(sharedBufferName);
+                if (!m_shaderResourceGroup->SetBufferView(indexHandle, SharedBufferInterface::Get()->GetBuffer()->GetBufferView()))
+                {
+                    AZ_Error("Hair Gem", false, "HairSkinningComputePass: Failed to bind buffer view for [%s]", sharedBufferName.GetCStr());
+                    return;
+                }
+*/
+                // DON'T call the ComputePass:CompileResources as it will try to compile perDraw srg
+                // under the assumption that this is a single dispatch compute.  Here we have dispatch
+                // per hair object and each has its own perDraw srg.
                 if (m_shaderResourceGroup != nullptr)
                 {
                     BindPassSrg(context, m_shaderResourceGroup);
                     m_shaderResourceGroup->Compile();
-                }
-
-                // Do we need to compile the srg?
-//                AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-//                for (RHI::DispatchItem* dispatchItem : m_dispatchItems)
-//                {
-//
-//                }
-            }
-
-            void HairSkinningComputePass::SetFeatureProcessor(HairFeatureProcessor* featureeProcessor)
-            {
-                m_featureProcessor = featureeProcessor;
-                if (m_featureProcessor)
-                {
-                    m_shaderResourceGroup = featureeProcessor->GetPerPassSrg();
                 }
             }
 
@@ -130,12 +155,41 @@ namespace AZ
                 return (m_dispatchItems.size() ? true : false);
             }
 
-            void HairSkinningComputePass::AddDispatchItem(RHI::DispatchItem* dispatchItem)
+            bool HairSkinningComputePass::BuildDispatchItem(HairRenderObject* hairObject, DispatchLevel dispatchLevel)
             {
+                return hairObject->BuildDispatchItem(m_shader.get(), m_shaderResourceGroup.get(), dispatchLevel);
+            }
+
+            void HairSkinningComputePass::AddDispatchItem(HairRenderObject* hairObject)
+            {
+                if (!hairObject)
+                {
+                    return;
+                }
+
+                const RHI::DispatchItem* dispatchItem = hairObject->GetDispatchItem(m_shaderResourceGroup.get());
+                if (!dispatchItem)
+                {
+                    return;
+                }
+
+                // [To Do] Adi: this was tested and is working properly, however, it is highly
+                // dependent on having the group lock properly set and enough between dispatches.
+                // Fro dispatches that change the same base data this might be dangerous so
+                // monitoring it is crucial and moving towards iterating over passes in the future
+                // is highly recommended to verify that a proper barrier is put in place.
+                // To that affect, iterating over the entire simulation pass chain rather than iterating
+                // over each one separately is much better for improving simulation stability
+                // with minimal amount of steps.
+                // This will also allow us to avoid doing it to the simple follow hair copy at the end.
+                static bool allowIterations = true;
+                uint32_t iterations = allowIterations ? AZ::GetMax(hairObject->GetCPULocalShapeIterations(), 1) : 1;
                 AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-                //using an unordered_set here to prevent redundantly adding the same dispatchItem to the submission queue
-                //(i.e. if the same skinnedMesh exists in multiple views, it can call AddDispatchItem multiple times with the same item)
-                m_dispatchItems.insert(dispatchItem);
+
+                for (int j = 0; j < iterations; ++j)
+                {
+                    m_dispatchItems.insert(dispatchItem);
+                }
             }
 
             void HairSkinningComputePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
@@ -143,12 +197,13 @@ namespace AZ
                 RHI::CommandList* commandList = context.GetCommandList();
 
                 // The following will bind all registered Srgs set in m_shaderResourceGroupsToBind
-                //  and sends them to the command list ahead of the dispatch.
-                // Avoid doing that as we registered the srgs within the dispatchItem itself!
- //               SetSrgsForDispatch(commandList);    
+                // and sends them to the command list ahead of the dispatch.
+                // This includes the PerView, PerScene and PerPass srgs (what about per draw?)
+
+                SetSrgsForDispatch(commandList);
 
                 AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-                for (RHI::DispatchItem* dispatchItem : m_dispatchItems)
+                for (const RHI::DispatchItem* dispatchItem : m_dispatchItems)
                 {
                     commandList->Submit(*dispatchItem);
                 }
@@ -156,54 +211,6 @@ namespace AZ
                 // Clear the dispatch items. They will need to be re-populated next frame
                 m_dispatchItems.clear();
             }
-            /*
-            void HairSkinningComputePass::FrameBeginInternal(FramePrepareParams params)
-            {
-                AZ::RPI::ComputePass::FrameBeginInternal(params);
-
-                if (!m_featureProcessor)
-                {   // Assuming nothing was configured yet.
-                    return;
-                }
-
-                {   // reset the linked list buffer - this can be skipped once the image is being reset!
-                    Data::Instance<RPI::Buffer> linkedListBuffer = m_featureProcessor->GetPerPixelListBuffer();
-                    uint64_t bufferSize = linkedListBuffer->GetBufferSize();
-                    linkedListBuffer->ResetBufferData(0, bufferSize, 0);
-                }
-
-                {
-                    if (GetInputOutputCount() == 0)
-                    {
-                        AZ_Error("Hair Game", false, "Missing Input/Output Attachment in the Hair Compute Pass");
-                        return;
-                    }
-
-                    RPI::PassAttachment* attachment = GetInputOutputBinding(0).m_attachment.get();
-                    if (!attachment)
-                    {
-                        AZ_Error("Hair Game", false, "Input/Output binding in the Hair Compute pass has no attachment!");
-                        return;
-                    }
-                    RHI::Size currentAttachmentSize = attachment->m_descriptor.m_image.m_size;
-                    if (currentAttachmentSize == m_attachmentSize)
-                    {   // No need for an update
-                        return;
-                    }
-
-                    RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::Create2D(
-                        RHI::ImageBindFlags::ShaderReadWrite, // GPU read and write is allowed
-                        currentAttachmentSize.m_width, currentAttachmentSize.m_height, RHI::Format::R32_UINT
-                    );
-
-                    if (m_featureProcessor->CreateAndSetPerPixelHeadImage(imageDesc))
-                    {
-                        m_attachmentSize = currentAttachmentSize;
-                    }
-                }
-            }
-            */
-
         } // namespace Hair
     }   // namespace Render
 }   // namespace AZ

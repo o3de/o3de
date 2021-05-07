@@ -46,11 +46,6 @@ namespace AZ
     namespace RHI
     {
         class DrawPacket;
-
-//        namespace DrawPacketBuilder
-//        {
-//            struct DrawRequest;
-//        }
     }
 
     namespace RPI
@@ -203,25 +198,22 @@ namespace AZ
                 //!  current hair object
                 const RHI::DrawPacket* GetFillDrawPacket()
                 {
-                    m_hairRenderSrg->Compile();
                     return m_fillDrawPacket;
                 }
 
-                bool BuildPPLLDrawPacket(RHI::DrawPacketBuilder::DrawRequest& drawRequest);
+                bool BuildPPLLDrawPacket(RPI::ShaderResourceGroup* perPassSrg, RHI::DrawPacketBuilder::DrawRequest& drawRequest);
 
-                //! Creates and fill the dispatch item associated with the current hair object
-                //!  that will be sent to the Skinning Compute pass 
-                bool BuildSkinningDispatchItem();
+                //! Creates and fill the dispatch item associated with the current per pass Srg
+                //!  based on this hair object.  
+                //!  Since per pass srg is unique to a shader, it will serve specifically for this
+                //!  object only and for the calling shader
+                bool BuildDispatchItem(
+                    RPI::Shader* computeShader,
+                    RPI::ShaderResourceGroup* perPassSrg,   
+                    DispatchLevel dispatchLevel
+                );
 
-                AZStd::vector<Data::Instance<HairDispatchItem>>& GetDispatchItems() 
-                {
-                    return m_dispatchItems;
-                }
-
-                HairDispatchItem& GetSkinningDispatchItem()
-                {
-                    return m_skinningDispatchItem;
-                }
+                const RHI::DispatchItem* GetDispatchItem(RPI::ShaderResourceGroup* perPassSrg);
 
                 void PrepareHairGenerationSrgDescriptors(uint32_t vertexCount, uint32_t numStrands);
 
@@ -260,23 +252,26 @@ namespace AZ
 
                 bool UploadRenderingGPUResources(AMD::TressFXAsset& asset);
 
-                bool UpdateConstantBuffer();
-
                 //! Creation of the render Srg m_hairRenderSrg, followed by creation and binding of the
                 //! GPU render resources: vertex thickness, vertex UV, hair albedo maps and two constant buffers.
                 bool CreateRenderingGPUResources(
                     Data::Instance<RPI::Shader> shader, AMD::TressFXAsset& asset, const char* assetName);
 
+                bool Update();
+
                 //! This method needs to be called in order to fill the bone matrices before the skinning
                 void UpdateBoneMatrices(const AMD::float4x4* pBoneMatricesInWS, int numBoneMatrices);
-                void UpdateBoneMatrices(const AZStd::vector<AZ::Matrix3x4>& boneMatrices);
+                //! update of the skinning matrices per frame.  The matrices are in model / local space
+                //!  which is why the entity world matrix is also passed.
+                void UpdateBoneMatrices(const AZ::Matrix3x4& entityWorldMatrix, const AZStd::vector<AZ::Matrix3x4>& boneMatrices);
                 void InitBoneMatricesPlaceHolder(const AMD::float4x4* pBoneMatricesInWS, int numBoneMatrices);
 
+                void SetFrameDeltaTime(float deltaTime);
                 //! Updating the bone matrices for the skinning in the simulation constant buffer.
                 //! pBoneMatricesInWS constrains array of column major bone matrices in world space.
                 void UpdateRenderingParameters(
-                    const AMD::TressFXRenderingSettings* parameters, const int NodePoolSize, float timeStep,
-                    float Distance, bool ShadowUpdate /*= false*/);
+                    const AMD::TressFXRenderingSettings* parameters, const int nodePoolSize,
+                    float distance, bool shadowUpdate /*= false*/);
 
                 AMD::TressFXRenderParams* GetHairRenderParams() { return m_renderCB.get(); };
 
@@ -287,7 +282,11 @@ namespace AZ
                 void SetWind(const Vector3& windDir, float windMag, int frame);
 
                 void ResetPositions() { m_simCB->g_ResetPositions = 1.0f; }
-                void IncreaseSimulationFrame() { m_simCB->g_ResetPositions = 0.0f; m_SimulationFrame++; }
+                void IncreaseSimulationFrame()
+                {
+                    m_simCB->g_ResetPositions = (m_SimulationFrame < 2) ? 1.0f : 0.0f;
+                    m_SimulationFrame++;
+                }
                 //!-----------------------------------------------------------------
 
             private:
@@ -299,9 +298,8 @@ namespace AZ
             private:
 //                AZ_DISABLE_COPY_MOVE(HairRenderObject);
 
-                //!=================================================================
-                //! Atom specific 
-                //!-----------------------------------------------------------------
+                static uint32_t s_objectCounter;
+
                 //! The feature processor is the centralize entity that gathers all render nodes and
                 //!   responsible for the various stages activation
                 HairFeatureProcessor* m_featureProcessor = nullptr;
@@ -311,8 +309,7 @@ namespace AZ
 
                 //! Array of pointers to the various dispatch items per the various passes
                 //! CURRENTLY NOT USED
-                AZStd::vector<Data::Instance<HairDispatchItem>> m_dispatchItems;
-//                AZStd::vector<Data::Instance<RHI::DrawItem>> m_drawItems;   // probably will not be used.
+                AZStd::map<RPI::ShaderResourceGroup*, Data::Instance<HairDispatchItem>> m_dispatchItems;
 
                 //! Skinning compute shader used for creation of the compute Srgs and dispatch item
                 Data::Instance<RPI::Shader> m_skinningShader = nullptr;
@@ -320,10 +317,12 @@ namespace AZ
                 //! PPLL fill shader used for creation of the raster Srgs and draw item
                 Data::Instance<RPI::Shader> m_PPLLFillShader = nullptr;
 
+                float m_frameDeltaTime = 0.02;
 
                 //! Hair asset information
                 uint32_t m_TotalIndices = 0;
                 uint32_t m_NumTotalVertices = 0;
+                uint32_t m_numGuideVertices = 0;
                 uint32_t m_NumTotalStrands = 0;
                 uint32_t m_NumVerticesPerStrand = 0;
                 uint32_t m_CPULocalShapeIterations = 0;
@@ -336,6 +335,8 @@ namespace AZ
                 uint32_t m_SimulationFrame = 0;
                 // Adi: check if we need this: for parameter indexing of frame % 2
                 uint32_t m_RenderIndex = 0;
+
+
 
                 //!-----------------------------------------------------------------
                 //! The hair dynamic per instance buffers such as vertices, tangents, etc..
@@ -379,6 +380,8 @@ namespace AZ
                 //-------------------------------------------------------------------
 
                 const RHI::DrawPacket* m_fillDrawPacket = nullptr;
+
+                AZStd::mutex m_mutex;
             };
 
         } // namespace Hair

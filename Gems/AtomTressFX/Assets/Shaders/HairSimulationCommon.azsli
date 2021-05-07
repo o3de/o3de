@@ -280,12 +280,13 @@ void CalcIndicesInStrandLevelMaster(uint local_id, uint group_id, inout uint glo
 //
 //  Integrate
 //
-//  Uses Verlet integration to calculate the new position for the current time step
-//
+// Verlet integration for calculating the new position based on exponential decay to move
+//  towards from the current position towards an approximated extrapolation point based
+// on the velocity between the two last points and influenced by gravity force.
 //--------------------------------------------------------------------------------------
 float3 Integrate(float3 curPosition, float3 oldPosition, float3 initialPos, float dampingCoeff = 1.0f)
 {
-    float3 force = g_GravityMagnitude * float3(0, -1.0f, 0);
+    float3 force = g_GravityMagnitude * float3(0, 0, -1.0f);
     // float decay = exp(-g_TimeStep/decayTime)
     float decay = exp(-dampingCoeff * g_TimeStep * 60.0f);
     return curPosition + decay * (curPosition - oldPosition) + force * g_TimeStep * g_TimeStep;
@@ -421,7 +422,7 @@ float3 ApplyVertexBoneSkinning(float3 vertexPos, BoneSkinningData skinningData, 
     return newVertexPos;
 }
 
-/*
+
 //--------------------------------------------------------------------------------------
 //
 //  UpdateFinalVertexPositions
@@ -429,11 +430,10 @@ float3 ApplyVertexBoneSkinning(float3 vertexPos, BoneSkinningData skinningData, 
 //  Updates the  hair vertex positions based on the physics simulation
 //
 //--------------------------------------------------------------------------------------
-void UpdateFinalVertexPositions(float4 oldPosition, float4 newPosition, int globalVertexIndex, int localVertexIndex, int numVerticesInTheStrand)
+void UpdateFinalVertexPositions(float4 oldPosition, float4 newPosition, int globalVertexIndex)
 {
-    g_HairVertexPositionsPrevPrev[globalVertexIndex] = g_HairVertexPositionsPrev[globalVertexIndex];
-    g_HairVertexPositionsPrev[globalVertexIndex] = oldPosition;
-    g_HairVertexPositions[globalVertexIndex] = newPosition;
+    SetSharedPrevPrevPosition(globalVertexIndex, GetSharedPrevPosition(globalVertexIndex));
+    SetSharedPrevPosition(globalVertexIndex, oldPosition);
+    SetSharedPosition(globalVertexIndex, newPosition);
 }
 //--------------------------------------------------------------------------------------
-*/

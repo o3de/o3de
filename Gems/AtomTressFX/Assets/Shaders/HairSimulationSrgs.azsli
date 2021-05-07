@@ -30,7 +30,6 @@
 
 #include <HairSrgs.azsli>
 
-#define UNITS_FACTOR 0.001
 //!-----------------------------------------------------------------------------
 //! 
 //!                    Skinning / Simulation Render Usage
@@ -91,12 +90,12 @@ ShaderResourceGroup HairGenerationSrg : SRG_PerDraw
 // Allow for the code to run with minimal changes - compute passes usage
 
 // [To Do] Adi: Adibugbug - fixed 0.01 scale from cm - REMOVE WHEN VERIFIED
-#define g_InitialHairPositions    UNITS_FACTOR * HairGenerationSrg::m_initialHairPositions
-#define g_HairRestLengthSRV       UNITS_FACTOR * HairGenerationSrg::m_hairRestLengthSRV
+#define g_InitialHairPositions    HairGenerationSrg::m_initialHairPositions
+#define g_HairRestLengthSRV       HairGenerationSrg::m_hairRestLengthSRV
 #define g_HairStrandType          HairGenerationSrg::m_hairStrandType
 
 // [To Do] Adi: Adibugbug - fixed 0.01 scale from cm - REMOVE WHEN VERIFIED
-#define g_FollowHairRootOffset    UNITS_FACTOR * HairGenerationSrg::m_followHairRootOffset
+#define g_FollowHairRootOffset    HairGenerationSrg::m_followHairRootOffset
 #define g_BoneSkinningData        HairGenerationSrg::m_boneSkinningData
 
 #define g_NumOfStrandsPerThreadGroup      HairGenerationSrg::m_tressfxSimParameters.m_Counts.x

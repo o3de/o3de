@@ -17,6 +17,7 @@
 
 #include <Atom/RHI/FreeListAllocator.h>
 #include <Atom/RHI.Reflect/Format.h>
+#include <Atom/RHI/BufferPool.h>
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
@@ -102,7 +103,10 @@ namespace AZ
             void DeAllocate(RHI::VirtualAddress allocation) override;
             void DeAllocateNoSignal(RHI::VirtualAddress allocation) override;
             Data::Asset<RPI::BufferAsset> GetBufferAsset() const override;
+
             Data::Instance<RPI::Buffer> GetBuffer() override;
+//            Data::Instance<RHI::Buffer> GetBuffer() override;
+//            RHI::BufferView* GetBufferView() override;
 
             //! Update buffer's content with sourceData at an offset of bufferByteOffset
             bool UpdateData(const void* sourceData, uint64_t sourceDataSizeInBytes, uint64_t bufferByteOffset = 0) override;
@@ -120,13 +124,22 @@ namespace AZ
 
             void GarbageCollect();
             void CalculateAlignment(AZStd::vector<SrgBufferDescriptor>& buffersDescriptors);
+            void InitAllocator();
             void CreateBufferAsset();
+            void CreateBuffer();
 
 
             AZStd::string m_bufferName = "GenericSharedBuffer";
             Data::Asset<AZ::RPI::ResourcePoolAsset> m_bufferPoolAsset;
-            Data::Asset<RPI::BufferAsset> m_bufferAsset;
             Data::Instance<RPI::Buffer> m_buffer = nullptr;
+            Data::Asset<RPI::BufferAsset> m_bufferAsset = {};
+
+            // new from ComputeExampleComponent
+//            RHI::Ptr<RHI::BufferPool> m_bufferPool;  
+//            Data::Instance<RHI::Buffer> m_buffer;
+//            const RHI::BufferView* m_bufferView = nullptr;
+//            RHI::AttachmentId m_bufferAttachmentId = AZ::RHI::AttachmentId("bufferAttachmentId");
+
             RHI::FreeListAllocator m_freeListAllocator;
             AZStd::mutex m_allocatorMutex;
             uint64_t m_alignment = 256;     // Adi: verify this, otherwise set it to be 16 --> 4 x float

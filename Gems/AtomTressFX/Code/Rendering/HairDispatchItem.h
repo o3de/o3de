@@ -62,23 +62,20 @@ namespace AZ
                 ~HairDispatchItem();
 
                 void InitSkinningDispatch(
-                    Data::Instance<RPI::Shader> shader,
+                    RPI::Shader* shader,
                     RPI::ShaderResourceGroup* hairGenerationSrg,
                     RPI::ShaderResourceGroup* hairSimSrg,
-                    RPI::ShaderResourceGroup* hairPerPassSrg,
-                    uint32_t hairVerticesAmount
+                    uint32_t elementsAmount
                 );
 
                 RHI::DispatchItem* GetDispatchItem() { return &m_dispatchItem;  }
 
- //               Data::Instance<RPI::Buffer> GetBoneTransforms() const;
 
 //                void OnShaderReinitialized() override;
 
                 RHI::DispatchItem m_dispatchItem;
 
-                Data::Instance<RPI::Shader> m_shader;
-//                Data::Instance<RPI::Buffer> m_boneTransforms;
+                RPI::Shader* m_shader;
             };
 
         } // namespace Hair

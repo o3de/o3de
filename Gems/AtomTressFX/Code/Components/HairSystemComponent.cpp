@@ -66,7 +66,7 @@ namespace AZ
 
             void HairSystemComponent::GetRequiredServices([[maybe_unused]] ComponentDescriptor::DependencyArrayType& required)
             {
-                // [To Do] Adi: add dependency in Actor
+//                required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
                 required.push_back(AZ_CRC("ActorSystemService", 0x5e493d6c));
                 required.push_back(AZ_CRC("EMotionFXAnimationService", 0x3f8a6369));
             }
@@ -80,7 +80,6 @@ namespace AZ
                 // Feature processor
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<Hair::HairFeatureProcessor>();
 
-                // Adding all Hair passes
                 auto* passSystem = RPI::PassSystemInterface::Get();
 
                 AZ_Assert(passSystem, "Cannot get the pass system.");

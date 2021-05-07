@@ -15,10 +15,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 
-//#include <AtomCore/Instance/Instance.h>
-
 #include <AzCore/Component/Component.h>
-#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/TickBus.h>
 
 // Hair specific
@@ -28,8 +25,6 @@
 // EMotionFX
 #include <Integration/ActorComponentBus.h>
  
-//#include <Rendering/HairRenderObject.h>
-//#include <Components/HairSettingsInterface.h>
 
 namespace AMD
 {
@@ -73,18 +68,15 @@ namespace AZ
 
                 HairFeatureProcessor* GetFeatureProcessor() { return m_featureProcessor; }
 
-                void SetEntity(Entity* entity) { m_entity = entity;  }
-                void InitHairDefaultParameters();
                 bool UpdateActorMatrices();
-                bool CreateBonesIndicesLUT(
-                    std::vector<std::string>& bonesNames, std::vector<int32_t>& bonesIndicesLUT);
 
                 bool CreateHairObject();
 
             private:
                 AZ_DISABLE_COPY(HairComponentController);
 
-                void OnConfigChanged();
+                void OnHairConfigChanged();
+                void OnHairAssetChanged();
 
                 // AZ::Data::AssetBus::Handler
                 void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
@@ -109,14 +101,13 @@ namespace AZ
                 //! Hair render object for connecting to the skeleton and connecting to the feature processor.
                 HairRenderObject* m_renderObject = nullptr;     // unique to this component - this is the data source.
 
-                //!Temporary default settings for testing & initial pass
-                AMD::TressFXSimulationSettings* m_simDefaultSettings = nullptr;
-                AMD::TressFXRenderingSettings* m_renderDefaultSettings = nullptr;
+                AZStd::mutex m_mutex;
 
-                Entity* m_entity = nullptr;
                 EntityId m_entityId;
                 bool m_initilized = false;
                 EMotionFX::ActorInstance* m_actorInstance = nullptr;
+
+                AZ::Data::Asset<HairAsset> m_hairAsset;
 
                 // Store a cache of the boneIndexMap we generated during the creation of hair object. The index of this map is the local bone index
                 // from the tressFX asset, and the value is the bone index from the emotionfx actor.
@@ -124,6 +115,8 @@ namespace AZ
 
                 // Cache the bone matrices array to avoid frequent allocation.
                 AZStd::vector<AZ::Matrix3x4> m_cachedBoneMatrices;
+
+                AZ::Matrix3x4 m_entityWorldMatrix;
             };
         } // namespace Hair
     }

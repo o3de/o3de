@@ -84,7 +84,7 @@ namespace AMD
         ~TressFXAsset();
 
         // Hair data from *.tfx
-        std::vector<Vector3> m_positions;
+        std::vector<Vector3> m_positions;   // Inspite of the confusing name, this is actually Vector4 with w=1.0
         std::vector<AMD::float2> m_strandUV;
         std::vector<AMD::float4> m_tangents;
         std::vector<Vector3> m_followRootOffsets;

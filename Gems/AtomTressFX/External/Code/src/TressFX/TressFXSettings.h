@@ -33,7 +33,10 @@
 */
 //#include <TressFX/AMD_Types.h>
 #include <TressFX/TressFXCommon.h>
-
+#include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Vector4.h>
+#include <AzCore/std/string/string.h>
 
 #include <memory>
 
@@ -43,60 +46,46 @@ namespace AMD
     class TressFXSimulationSettings
     {
     public:
-        TressFXSimulationSettings() :
-            m_vspCoeff(0.8f),
-            m_vspAccelThreshold(1.4f),
-            m_localConstraintStiffness(0.9f),
-            m_localConstraintsIterations(2),
-            m_globalConstraintStiffness(0.0f),
-            m_globalConstraintsRange(0.0f),
-            m_lengthConstraintsIterations(2),
-            m_damping(0.08f),
-            m_gravityMagnitude(0.0),
-            m_tipSeparation(0.0f),
-            m_windMagnitude(0),
-            m_windAngleRadians(3.1415926f / 180.0f * 40.0f),
-            m_clampPositionDelta(20.f)
-        {
-            m_windDirection[0] = 1.0f;
-            m_windDirection[1] = 0.0f;
-            m_windDirection[2] = 0.0f;
-        }
+        AZ_TYPE_INFO(AZ::Render::TressFXSimulationSettings, "{B16E92B3-C859-4421-9170-65C2C6A60062}");
+        static void Reflect(AZ::ReflectContext* context);
 
         // VSPf
-        float m_vspCoeff;
-        float m_vspAccelThreshold;
+        float m_vspCoeff = 0.758f;
+        float m_vspAccelThreshold = 1.208f;
 
         // local constraint
-        float m_localConstraintStiffness;
-        int   m_localConstraintsIterations;
+        float m_localConstraintStiffness = 0.908f;
+        int   m_localConstraintsIterations = 3;
 
         // global constraint
-        float m_globalConstraintStiffness;
-        float m_globalConstraintsRange;
+        float m_globalConstraintStiffness = 0.408f;
+        float m_globalConstraintsRange = 0.308f;
 
         // length constraint
-        int m_lengthConstraintsIterations;
+        int m_lengthConstraintsIterations = 3;
 
         // damping
-        float m_damping;
+        float m_damping = 0.08f;
 
         // gravity
-        float m_gravityMagnitude;
+        float m_gravityMagnitude = 0.19f;
 
         // tip separation for follow hair from its guide
-        float m_tipSeparation;
+        float m_tipSeparation = 0.1f;
 
         // wind
-        float m_windMagnitude;
-        float m_windDirection[3];
-        float m_windAngleRadians;
-        float m_clampPositionDelta;
+        float m_windMagnitude = 0.0f;
+        AZ::Vector3 m_windDirection{1.0f, 0.0f, 0.0f};
+        float m_windAngleRadians = 3.1415926f / 180.0f * 40.0f;
+        float m_clampPositionDelta = 20.0f;
     };
 
     class TressFXRenderingSettings
     {
     public:
+        AZ_TYPE_INFO(AZ::Render::TressFXRenderingSettings, "{7EFD9317-4DE8-455D-A2E5-B5B62FF1F5D7}");
+        static void Reflect(AZ::ReflectContext* context);
+
         // LOD settings
         float	m_LODStartDistance = 1.f;
         float	m_LODEndDistance = 5.f;
@@ -104,19 +93,19 @@ namespace AMD
         float	m_LODWidthMultiplier = 2.f;
 
         // General information
-        float   m_FiberRadius = 0.0021f;
-        float   m_TipPercentage = 0.f;
+        float   m_FiberRadius = 0.002f;
+        float   m_TipPercentage = 0.0f;
         float   m_StrandUVTilingFactor = 1.f;
-        float   m_FiberRatio = 0.463f;
+        float   m_FiberRatio = 0.06f;
 
         // For lighting/shading
-        AMD::float4  m_HairMatBaseColor = { 1.f, 1.f, 1.f, 0.63f };
-        AMD::float4  m_HairMatTipColor = { 1.f, 1.f, 1.f, 0.63f };
-        float   m_HairKDiffuse = 0.07f;
-        float   m_HairKSpec1 = 0.0017f;
+        AZ::Vector4 m_HairMatBaseColor{ 1.f, 1.f, 1.f, 0.63f };
+        AZ::Vector4 m_HairMatTipColor{1.f, 1.f, 1.f, 0.63f};
+        float   m_HairKDiffuse = 0.22f;
+        float   m_HairKSpec1 = 0.0012f;
         float   m_HairSpecExp1 = 14.40f;
 
-        float   m_HairKSpec2 = 0.072f;
+        float   m_HairKSpec2 = 0.136f;
         float   m_HairSpecExp2 = 11.80f;
 
         // For deep approximated shadow lookup
@@ -130,12 +119,12 @@ namespace AMD
 
         bool    m_EnableStrandUV = false;
         bool    m_EnableStrandTangent = false;
-        bool    m_EnableThinTip = false;
+        bool    m_EnableThinTip = true;
         bool	m_EnableHairLOD = false;
         bool	m_EnableShadowLOD = false;
 
-        std::string m_BaseAlbedoName = "<none>";
-        std::string m_StrandAlbedoName = "<none>";
+        AZStd::string m_BaseAlbedoName = "<none>";
+        AZStd::string m_StrandAlbedoName = "<none>";
     };
 
 } // namespace AMD

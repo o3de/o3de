@@ -57,13 +57,16 @@ namespace AZ
 
                 //! Creates a HairPPLLRasterPass
                 static RPI::Ptr<HairPPLLRasterPass> Create(const RPI::PassDescriptor& descriptor);
-//                bool Init();
+
                 bool BuildDrawPacket(HairRenderObject* hairObject);
                 bool AddDrawPacket(HairRenderObject* hairObject);
 
-                void SetFeatureProcessor(HairFeatureProcessor* featureeProcessor);
-
                 Data::Instance<RPI::Shader> GetShader() { return m_shader; }
+
+                void SetFeatureProcessor(HairFeatureProcessor* featureProcessor)
+                {
+                    m_featureProcessor = featureProcessor;
+                }
 
                 virtual bool IsEnabled() const override;
 
@@ -72,16 +75,13 @@ namespace AZ
 
                 bool LoadShaderAndPipelineState();
 
-
-                void RebuildPPLLBuffers();
-
                 // Pass behavior overrides
                 void BuildAttachmentsInternal() override;
-//                void FrameBeginInternal(FramePrepareParams params) override;
+                void OnBuildAttachmentsFinishedInternal() override;
+                void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
 
                 // Scope producer functions...
                 void CompileResources(const RHI::FrameGraphCompileContext& context) override;
-//                void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
             private:
                 HairFeatureProcessor* m_featureProcessor = nullptr;

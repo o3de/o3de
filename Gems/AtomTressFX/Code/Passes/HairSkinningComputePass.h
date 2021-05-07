@@ -32,6 +32,8 @@ namespace AZ
         {
             class HairDispatchItem;
             class HairFeatureProcessor;
+            class HairRenderObject;
+            enum class DispatchLevel;
 
             // This pass is a temporary test pass that using a compute shader generates the bone
             // skinning per vertex required for the hair to work without needing to have the complete
@@ -54,17 +56,24 @@ namespace AZ
                 // Creates a HairSkinningComputePass
                 static RPI::Ptr<HairSkinningComputePass> Create(const RPI::PassDescriptor& descriptor);
 
+                bool BuildDispatchItem(HairRenderObject* hairObject, DispatchLevel dispatchLevel );
+
                 //! Thread-safe function for adding a dispatch item to the current frame.
-                void AddDispatchItem(RHI::DispatchItem* dispatchItem);
+                void AddDispatchItem(HairRenderObject* hairObject);
 
-                void SetFeatureProcessor(HairFeatureProcessor* featureeProcessor);
-
+                // Pass behavior overrides
                 void CompileResources(const RHI::FrameGraphCompileContext& context) override;
+                void OnBuildAttachmentsFinishedInternal() override;
 
                 virtual bool IsEnabled() const override;
                 //! returns the shader held by the ComputePass
                 //! [To Do] : expose this in the ComputePass
                 Data::Instance<RPI::Shader> GetShader();
+
+                void SetFeatureProcessor(HairFeatureProcessor* featureProcessor)
+                {
+                    m_featureProcessor = featureProcessor;
+                }
 
             protected:
                 HairSkinningComputePass(const RPI::PassDescriptor& descriptor);
@@ -74,8 +83,7 @@ namespace AZ
                 // Attach here all the pass buffers
                 void BuildAttachmentsInternal() override;
 
- //               void FrameBeginInternal(FramePrepareParams params) override;
-
+                void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
 
             private:
                 HairFeatureProcessor* m_featureProcessor = nullptr;
@@ -85,7 +93,7 @@ namespace AZ
 
                 //! list of dispatch items, each represents a single hair object that
                 //!  will be used by the skinning compute shader.
-                AZStd::unordered_set<RHI::DispatchItem*> m_dispatchItems;
+                AZStd::unordered_set<const RHI::DispatchItem*> m_dispatchItems;
             };
 
         }   // namespace Hair

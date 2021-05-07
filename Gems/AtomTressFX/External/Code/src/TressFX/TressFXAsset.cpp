@@ -35,6 +35,7 @@
 
 #include <AzCore/Asset/AssetDataStream.h>
 
+#pragma optimize("", off)
 namespace AMD
 {
     static void GetTangentVectors(const Vector3& n, Vector3& t0, Vector3& t1)
@@ -750,10 +751,9 @@ namespace AMD
 
         if (m_boneIndicesFixed)
         {
-            // Note: In case of reload, the tressFXAsset will recreated again (since it will be destoryed after the renderHairObject is created).
-            // In the current design we should never reach a point that the bone index need to be fixed multiple times.
-            AZ_Error("TressFXAsset", false, "The bone indices has already been fixed.");
-            return;
+            // Note: In case of reload, the tressFXAsset asset is already loaded unless it is
+            // a different asset.
+             return;
         }
 
         for (TressFXBoneSkinningData& skinData : m_boneSkinningData)
@@ -769,3 +769,4 @@ namespace AMD
     }
 } // namespace AMD
 
+#pragma optimize("", on)

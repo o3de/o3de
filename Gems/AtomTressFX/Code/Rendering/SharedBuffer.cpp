@@ -11,13 +11,17 @@
 */
 
 #include <Atom/RHI.Reflect/ShaderSemantic.h>
+#include <Atom/RHI/RHIUtils.h>
+#include <Atom/RHI/Factory.h>
 
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 #include <Atom/RPI.Reflect/ResourcePoolAssetCreator.h>
 
 #include <Rendering/SharedBuffer.h>
+#include <Rendering/HairCommon.h>
 //#include <numeric>
 
+#pragma optimize("",off)
 namespace AZ
 {
     namespace Render
@@ -56,7 +60,7 @@ namespace AZ
             }
         }
 
-        void SharedBuffer::CreateBufferAsset()
+        void SharedBuffer::InitAllocator()
         {
             RHI::FreeListAllocator::Descriptor allocatorDescriptor;
             allocatorDescriptor.m_alignmentInBytes = m_alignment;
@@ -64,13 +68,27 @@ namespace AZ
             allocatorDescriptor.m_policy = RHI::FreeListAllocatorPolicy::BestFit;
             allocatorDescriptor.m_garbageCollectLatency = 0;
             m_freeListAllocator.Init(allocatorDescriptor);
+        }
 
+        void SharedBuffer::CreateBuffer()
+        {
+            SrgBufferDescriptor  descriptor = SrgBufferDescriptor(
+                RPI::CommonBufferPoolType::ReadWrite, RHI::Format::Unknown,
+                sizeof(float), m_sizeInBytes,
+                Name{ "HairSharedDynamicBuffer" }, Name{ "m_skinnedHairSharedBuffer" }, 0, 0
+            );
+            m_buffer = Hair::UtilityClass::CreateBuffer("Hair Gem", descriptor, nullptr);
+        }
+        
+        void SharedBuffer::CreateBufferAsset()
+        {
             // Create the shared buffer pool
             {
                 auto bufferPoolDesc = AZStd::make_unique<RHI::BufferPoolDescriptor>();
                 // Output buffers are both written to during skinning and used as input assembly buffers
                 bufferPoolDesc->m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::Indirect;
                 bufferPoolDesc->m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
+                bufferPoolDesc->m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
 
                 RPI::ResourcePoolAssetCreator creator;
                 creator.Begin(Uuid::CreateRandom());
@@ -95,16 +113,47 @@ namespace AZ
                 bufferDescriptor.m_byteCount = m_sizeInBytes;
                 bufferDescriptor.m_alignment = m_alignment;
                 creator.SetBuffer(nullptr, 0, bufferDescriptor);
-
+                
                 RHI::BufferViewDescriptor viewDescriptor;
-                viewDescriptor.m_elementFormat = RHI::Format::R32_FLOAT;
-                viewDescriptor.m_elementSize = RHI::GetFormatSize(viewDescriptor.m_elementFormat);
-                viewDescriptor.m_elementCount = aznumeric_cast<uint32_t>(m_sizeInBytes) / viewDescriptor.m_elementSize;
+                viewDescriptor.m_elementFormat = RHI::Format::Unknown;
+                // [To Do] Adi: try set it as AZ::Vector4 - might solve alot on the shader side
+                viewDescriptor.m_elementSize = sizeof(float);
+                viewDescriptor.m_elementCount = aznumeric_cast<uint32_t>(m_sizeInBytes) / sizeof(float);
                 viewDescriptor.m_elementOffset = 0;
                 creator.SetBufferViewDescriptor(viewDescriptor);
-
+                
                 creator.End(m_bufferAsset);
             }
+            /*
+            ////////////////////////////
+            RHI::Ptr<RHI::Device> device = RHI::GetRHIDevice();
+
+            RHI::BufferPoolDescriptor bufferPoolDesc;
+            bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
+            bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
+            bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
+
+            RHI::ResultCode result = m_bufferPool->Init(*device, bufferPoolDesc);
+            AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialized compute buffer pool");
+
+            m_buffer = RHI::Factory::Get().CreateBuffer();
+            uint32_t bufferSize = m_sizeInBytes;
+
+            RHI::BufferInitRequest request;
+            request.m_buffer = m_buffer.get();
+            request.m_descriptor = RHI::BufferDescriptor{ RHI::BufferBindFlags::ShaderReadWrite, bufferSize };
+            result = m_bufferPool->InitBuffer(request);
+            AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialized compute buffer");
+
+
+            RHI::BufferViewDescriptor bufferViewDescriptor = RHI::BufferViewDescriptor::CreateStructured(
+                0,
+                aznumeric_cast<uint32_t>(m_sizeInBytes) / sizeof(float),
+                sizeof(float)
+            );
+            m_bufferView = m_buffer->GetBufferView(bufferViewDescriptor);
+            //////////////////////////////
+            */
         }
 
         void SharedBuffer::Init(AZStd::string bufferName, AZStd::vector<SrgBufferDescriptor>& buffersDescriptors)
@@ -124,7 +173,10 @@ namespace AZ
 
             CalculateAlignment(buffersDescriptors);
 
-            CreateBufferAsset();
+            InitAllocator();
+
+//            CreateBufferAsset();
+            CreateBuffer();
 
             SystemTickBus::Handler::BusConnect();
         }
@@ -184,10 +236,37 @@ namespace AZ
             }
             return m_buffer;
         }
+        /*
+
+        Data::Instance<RHI::Buffer> SharedBuffer::GetBuffer()
+        {
+            AZ_Error("Hair Gem", m_buffer, "Shared Buffer was not created!");
+            return m_buffer;
+        }
+
+
+        const RHI::BufferView* SharedBuffer::GetBufferView()
+        {
+            if (!m_buffer)
+            {
+                m_buffer = RPI::Buffer::FindOrCreate(m_bufferAsset);
+            }
+
+            if (m_buffer)
+            {
+                m_bufferView = m_buffer->GetBufferView();
+            }
+
+            AZ_Error("Hair Gem", m_bufferView, "Shared Buffer View and Buffer were not created!");
+            return m_bufferView;
+        }
+        */
 
         //! Update buffer's content with sourceData at an offset of bufferByteOffset
         bool SharedBuffer::UpdateData(const void* sourceData, uint64_t sourceDataSizeInBytes, uint64_t bufferByteOffset) 
         {
+            // [To Do] Adibugbug - fix this now that it's RHI
+
             AZStd::lock_guard<AZStd::mutex> lock(m_allocatorMutex);
             if (m_buffer.get())
             {
@@ -243,3 +322,5 @@ namespace AZ
 
     }// namespace Render
 }// namespace AZ
+
+#pragma optimize("",on)

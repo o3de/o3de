@@ -13,17 +13,16 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/list.h>
+#include <AzCore/Component/TickBus.h>
 
 #include <AtomCore/Instance/Instance.h>
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
-//#include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 
 // Hair specific
-//#include <TressFX/AMD_TressFX.h>
-//#include <TressFX/AMD_Types.h>
 #include <TressFX/TressFXConstantBuffers.h>
 
 #include <Passes/HairSkinningComputePass.h>
@@ -57,7 +56,16 @@ namespace AZ
 
             class HairFeatureProcessor final
                 : public RPI::FeatureProcessor
+                , private AZ::TickBus::Handler
             {
+                Name TestSkinningPass;
+                Name GlobalShapeConstraintsPass;
+                Name CalculateStrandDataPass;
+                Name VelocityShockPropagationPass;
+                Name LocalShapeConstraintsPass;
+                Name LengthConstriantsWindAndCollisionPass;
+                Name UpdateFollowHairPass;
+
             public:
                 AZ_RTTI(AZ::Render::HairFeatureProcessor, "{5F9DDA81-B43F-4E30-9E56-C7C3DC517A4C}", RPI::FeatureProcessor);
                 AZ_FEATURE_PROCESSOR(HairFeatureProcessor);
@@ -77,6 +85,10 @@ namespace AZ
                 void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
                 void Render(const FeatureProcessor::RenderPacket& packet) override;
 
+                // AZ::TickBus::Handler overrides
+                void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+                int GetTickOrder() override;
+
                 void AddHairRenderObject(Data::Instance<HairRenderObject> renderObject);
                 bool RemoveHairRenderObject(Data::Instance<HairRenderObject> renderObject);
 
@@ -88,51 +100,55 @@ namespace AZ
                 void OnBeginPrepareRender() override;
                 void OnEndPrepareRender() override;
 
-                Data::Instance<HairSkinningComputePass> GetHairSkinningComputegPass() { return m_hairSkinningComputePass; }
+                Data::Instance<HairSkinningComputePass> GetHairSkinningComputegPass() { return m_computePasses[TestSkinningPass]; }
+                Data::Instance<HairSkinningComputePass> GetHairGlobalShapeConstraintsComputegPass() { return m_computePasses[GlobalShapeConstraintsPass]; }
+                Data::Instance<HairSkinningComputePass> GetHairUpdateFollowHairPass() { return m_computePasses[UpdateFollowHairPass]; }
                 Data::Instance<HairPPLLRasterPass> GetHairPPLLRasterPass() { return m_hairPPLLRasterPass; }
                 Data::Instance<HairPPLLResolvePass> GetHairPPLLResolvePass() { return m_hairPPLLResolvePass; }
 
                 //! Update the hair objects materials array.
-                void CreateHairMaterialsArray(std::vector<const AMD::TressFXRenderParams*>& renderSettings);
-                bool GetHairSkinningComputeShader();
+                void FillHairMaterialsArray(std::vector<const AMD::TressFXRenderParams*>& renderSettings);
 
-                bool CreateAndBindPerPassSrg();
-
-                Data::Instance<RPI::ShaderResourceGroup> GetPerPassSrg() { return m_perPassSrg; }
-                Data::Instance<RPI::AttachmentImage> GetPerPixelHeadImage() { return m_linkedListPerPixelHead; }
                 Data::Instance<RPI::Buffer> GetSharedBuffer() { return m_sharedDynamicBuffer->GetBuffer(); }
                 Data::Instance<RPI::Buffer> GetPerPixelListBuffer() { return m_linkedListNodesBuffer; }
                 Data::Instance<RPI::Buffer> GetPerPixelCounterBuffer() { return m_linkedListCounterBuffer;  }
+                HairUniformBuffer<AMD::TressFXShadeParams>& GetMaterialsArray() { return m_hairObjectsMaterialsCB;  }
 
-                bool CreateAndSetPerPixelHeadImage(RHI::ImageDescriptor& imageDesc);
+                void SetEnable(bool enable)
+                {   // [To Do] Adi: test is this is all that might be required.
+                    m_isEnabled = enable;
+                    EnablePasses(enable);
+                }
+
+                bool CreatePerPassResources();
 
             private:
                 AZ_DISABLE_COPY_MOVE(HairFeatureProcessor);
 
-                bool InitSkinningPass();
+                void ClearPasses();
+
                 bool InitPPLLFillPass();
                 bool InitPPLLResolvePass();
+                bool InitComputePass(const Name& passName);
+
+                void EnablePasses(bool enable);
 
                 static const char* s_featureProcessorName;
 
                 //! The Hair Objects in the scene (one per hair component)
                 AZStd::list<Data::Instance<HairRenderObject>> m_hairRenderObjects;
 
-                //! Hair Passes - contain the shaders and shaders data within hence no need to hold it here
-                //! The passes also contain the dispathItem for the compute, hence no need to hold this?
-                Data::Instance<HairSkinningComputePass> m_hairSkinningComputePass = nullptr;
+                //! Simulation Compute Passes
+                AZStd::unordered_map<Name, Data::Instance<HairSkinningComputePass> > m_computePasses;
+
+                // Render Passes
                 Data::Instance<HairPPLLRasterPass> m_hairPPLLRasterPass = nullptr;
                 Data::Instance<HairPPLLResolvePass> m_hairPPLLResolvePass = nullptr;
 
-                Data::Instance<RPI::Shader> m_hairSkinningComputerShader = nullptr;
 
                 //--------------------------------------------------------------
-                //                  Per Pass Srg and its data
+                //              Per Pass Resources for all passes
                 //--------------------------------------------------------------
-                //! Per pass srg shared by all passes and contains shared buffers such
-                //!  as the hair vertices, PPLL data and hair objects material array.
-                Data::Instance<RPI::ShaderResourceGroup> m_perPassSrg = nullptr;
-
                 //! The shared buffer used by all dynamic buffer views for the hair skinning / simulation
                 AZStd::unique_ptr<SharedBuffer> m_sharedDynamicBuffer;  // used for the hair data changed between passes.
 
@@ -140,13 +156,6 @@ namespace AZ
                 //!  to be used by the full screen resolve pass.
                 HairUniformBuffer<AMD::TressFXShadeParams> m_hairObjectsMaterialsCB;
 
-                //! Image pool used to create the linked list image.
- //               Data::Instance<RHI::ImagePool> m_imagePool;
-                Data::Instance<RPI::AttachmentImagePool> m_pool = nullptr;
-                //! Image containing the head pointers to each pixel's linked list
-                Data::Instance<RPI::AttachmentImage> m_linkedListPerPixelHead = nullptr;
-//                Data::Instance<RHI::Image> m_linkedListPerPixelHead;
-// 
                 //! PPLL single buffer containing all the PPLL elements
                 Data::Instance<RPI::Buffer> m_linkedListNodesBuffer = nullptr;
                 //! shared counter representing the next free index in the buffer
@@ -154,8 +163,12 @@ namespace AZ
                 Data::Instance<RPI::Buffer> m_linkedListCounterBuffer = nullptr;
                 //--------------------------------------------------------------
 
-                bool m_passSrgCreated = false;
+                float m_currentDeltaTime = 0.02f;    // per frame delta time for the physics simulation.
+                bool m_sharedResourcesCreated = false;
+                bool m_forceRebuildRenderData = true;  // reload / pipeline changes force build dispatches and render items
+                bool m_forceClearRenderData = false;
                 bool m_initialized = false;
+                bool m_isEnabled = true;
             };
         } // namespace Hair
     } // namespace Render

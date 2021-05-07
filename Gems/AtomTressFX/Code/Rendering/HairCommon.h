@@ -74,6 +74,13 @@ namespace AZ
                     Data::Instance<RPI::ShaderResourceGroup> srg
                 );
 
+                static bool BindBufferToSrg(
+                    const char* warningHeader,
+                    Data::Instance<RPI::Buffer> buffer,
+                    SrgBufferDescriptor& bufferDesc,
+                    Data::Instance<RPI::ShaderResourceGroup> srg=nullptr
+                );
+
                 // [To Do] Adi: remove this and use RPI::LoadStreamingTexture instead?
                 static Data::Instance<RPI::StreamingImage> LoadStreamingImage(
                     const char* textureFilePath, [[maybe_unused]] const char* sampleName
@@ -104,9 +111,9 @@ namespace AZ
 
                 Render::SrgBufferDescriptor& GetBufferDescriptor() { return m_bufferDesc;  }
 
-                //! Since this is a constant buffer, set the descriptor as given and bind to the given Srg.
-                //! No buffer creation is required since it is a constant buffer.
-                bool CreateAndBindToSrg(
+                //! Use this method only if the buffer will be attached to a single Srg.
+                //! If this is not the case use InitForUndefinedSrg
+                bool InitForUniqueSrg(
                     Data::Instance<RPI::ShaderResourceGroup> srg,
                     Render::SrgBufferDescriptor& srgDesc)
                 {
@@ -129,7 +136,8 @@ namespace AZ
                     return true;
                 }
 
-                //! Binds the data to the Srg and copies it to the GPU side.
+                //! Updates Binds the data to the Srg and copies it to the GPU side.
+                //! Assumes that the buffer is uniquely attached to the saved srg.
                 bool UpdateGPUData()
                 {
                     if (!m_srg.get())
@@ -140,7 +148,7 @@ namespace AZ
                     }
 
                     RHI::ShaderInputConstantIndex constantIndex = RHI::ShaderInputConstantIndex(m_bufferDesc.m_resourceShaderIndex);
-                    if (!constantIndex.IsValid())
+                    if (constantIndex.IsNull())
                     {
                         AZ_Error("HairUniformBuffer", false, "Critical Error - Srg index is not valide for [%s]",
                             m_bufferDesc.m_paramNameInSrg.GetCStr());
@@ -155,9 +163,44 @@ namespace AZ
                     return true;
                 }
 
+                //! Updates Binds the data to the Srg and copies it to the GPU side.
+                //! Assumes that the buffer can be associated with various srgs.
+                bool UpdateGPUData(
+                    Data::Instance<RPI::ShaderResourceGroup> srg,
+                    Render::SrgBufferDescriptor& srgDesc)
+                {
+                    if (!srg)
+                    {
+                        AZ_Error("HairUniformBuffer", srg, "Critical Error - no Srg was provided to bind buffer to [%s]",
+                            srgDesc.m_bufferName.GetCStr());
+                        return false;
+                    }
+
+                    RHI::ShaderInputConstantIndex indexHandle = srg->FindShaderInputConstantIndex(srgDesc.m_paramNameInSrg);
+                    if (indexHandle.IsNull())
+                    {
+                        AZ_Error("HairUniformBuffer", false,
+                            "Failed to find shader constant buffer index for [%s] in the SRG.",
+                            srgDesc.m_paramNameInSrg.GetCStr());
+                        return false;
+                    }
+
+                    if (!srg->SetConstantRaw(indexHandle, &m_cpuBuffer, srgDesc.m_elementSize))
+                    {
+                        AZ_Error("HairUniformBuffer", false, "Failed to bind Constant Buffer for [%s]", srgDesc.m_bufferName.GetCStr());
+                        return false;
+                    }
+                    return true;
+                }
+
+
             private:
                 TYPE m_cpuBuffer;
-                Data::Instance<RPI::ShaderResourceGroup> m_srg;
+
+                //! If the srg is not defined, we assume that the buffer can be shared between
+                //! several srgs (for example when it is used per pass).
+                Data::Instance<RPI::ShaderResourceGroup> m_srg = nullptr;
+
                 Render::SrgBufferDescriptor  m_bufferDesc = Render::SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::Constant,
                     RHI::Format::Unknown, sizeof(TYPE), 1,
