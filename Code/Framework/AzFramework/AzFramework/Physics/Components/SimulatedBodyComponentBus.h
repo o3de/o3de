@@ -36,7 +36,7 @@ namespace AzPhysics
         //! Retrieves the AABB(aligned-axis bounding box) for this body.
         virtual AZ::Aabb GetAabb() const = 0;
         //! Get the Simulated Body Handle for this body.
-        virtual AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() = 0;
+        virtual AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const = 0;
         //! Retrieves current WorldBody* for this body.
         //! @note Do not hold a reference to AzPhysics::SimulatedBody* as it could be deleted or moved.
         virtual AzPhysics::SimulatedBody* GetSimulatedBody() = 0;

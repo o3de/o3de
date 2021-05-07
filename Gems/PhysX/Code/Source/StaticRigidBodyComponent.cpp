@@ -161,7 +161,7 @@ namespace PhysX
         return m_staticRigidBody->GetAabb();
     }
 
-    AzPhysics::SimulatedBodyHandle StaticRigidBodyComponent::GetSimulatedBodyHandle()
+    AzPhysics::SimulatedBodyHandle StaticRigidBodyComponent::GetSimulatedBodyHandle() const
     {
         return m_staticRigidBodyHandle;
     }

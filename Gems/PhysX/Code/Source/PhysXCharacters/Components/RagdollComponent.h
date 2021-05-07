@@ -81,13 +81,13 @@ namespace PhysX
         void SetNodeState(size_t nodeIndex, const Physics::RagdollNodeState& nodeState) override;
         Physics::RagdollNode* GetNode(size_t nodeIndex) const override;
 
-        // AzPhysics::SimulatedBodyComponentRequestsBus::Handler
+        // AzPhysics::SimulatedBodyComponentRequestsBus::Handler overrides ...
         void EnablePhysics() override;
         void DisablePhysics() override;
         bool IsPhysicsEnabled() const override;
         AZ::Aabb GetAabb() const override;
         AzPhysics::SimulatedBody* GetSimulatedBody() override;
-        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() override;
+        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
         // CharacterPhysicsDataNotificationBus

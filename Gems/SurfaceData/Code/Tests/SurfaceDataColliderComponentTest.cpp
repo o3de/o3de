@@ -81,7 +81,7 @@ namespace UnitTest
         void DisablePhysics() override {}
         bool IsPhysicsEnabled() const override { return true; }
         AzPhysics::SimulatedBody* GetSimulatedBody() override { return nullptr; }
-        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() override { return AzPhysics::InvalidSimulatedBodyHandle; }
+        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override { return AzPhysics::InvalidSimulatedBodyHandle; }
 
         // Functional mocks to mock out the data needed by the component
         AZ::Aabb GetAabb() const override { return m_aabb; }

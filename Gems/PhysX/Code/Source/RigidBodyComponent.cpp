@@ -529,7 +529,7 @@ namespace PhysX
         return m_rigidBody;
     }
 
-    AzPhysics::SimulatedBodyHandle RigidBodyComponent::GetSimulatedBodyHandle()
+    AzPhysics::SimulatedBodyHandle RigidBodyComponent::GetSimulatedBodyHandle() const
     {
         return m_rigidBodyHandle;
     }

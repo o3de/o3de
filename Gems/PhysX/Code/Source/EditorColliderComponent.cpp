@@ -1084,7 +1084,7 @@ namespace PhysX
         return nullptr;
     }
 
-    AzPhysics::SimulatedBodyHandle EditorColliderComponent::GetSimulatedBodyHandle()
+    AzPhysics::SimulatedBodyHandle EditorColliderComponent::GetSimulatedBodyHandle() const
     {
         return m_editorBodyHandle;
     }

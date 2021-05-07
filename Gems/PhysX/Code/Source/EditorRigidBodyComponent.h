@@ -107,13 +107,13 @@ namespace PhysX
         // Physics::ColliderComponentEventBus
         void OnColliderChanged() override;
 
-        // AzPhysics::SimulatedBodyComponentRequestsBus::Handler
+        // AzPhysics::SimulatedBodyComponentRequestsBus::Handler overrides ...
         void EnablePhysics() override;
         void DisablePhysics() override;
         bool IsPhysicsEnabled() const override;
         AZ::Aabb GetAabb() const override;
         AzPhysics::SimulatedBody* GetSimulatedBody() override;
-        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() override;
+        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
         void CreateEditorWorldRigidBody();

@@ -220,7 +220,7 @@ namespace PhysX
         return GetCharacter();
     }
 
-    AzPhysics::SimulatedBodyHandle CharacterControllerComponent::GetSimulatedBodyHandle()
+    AzPhysics::SimulatedBodyHandle CharacterControllerComponent::GetSimulatedBodyHandle() const
     {
         if (m_controller)
         {

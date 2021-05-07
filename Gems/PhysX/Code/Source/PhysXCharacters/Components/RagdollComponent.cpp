@@ -262,7 +262,7 @@ namespace PhysX
         return GetRagdoll();
     }
 
-    AzPhysics::SimulatedBodyHandle RagdollComponent::GetSimulatedBodyHandle()
+    AzPhysics::SimulatedBodyHandle RagdollComponent::GetSimulatedBodyHandle() const
     {
         if (m_ragdoll)
         {

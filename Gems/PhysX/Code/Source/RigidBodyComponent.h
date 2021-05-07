@@ -120,9 +120,9 @@ namespace PhysX
         void SetSleepThreshold(float threshold) override;
         AzPhysics::RigidBody* GetRigidBody() override;
 
-        // AzPhysics::SimulatedBodyComponentRequestsBus::Handler
+        // AzPhysics::SimulatedBodyComponentRequestsBus::Handler overrides ...
         AzPhysics::SimulatedBody* GetSimulatedBody() override;
-        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() override;
+        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
 
         // SliceGameEntityOwnershipServiceNotificationBus
         void OnSliceInstantiated(const AZ::Data::AssetId&, const AZ::SliceComponent::SliceInstanceAddress&,

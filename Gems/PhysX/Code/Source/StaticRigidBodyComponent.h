@@ -44,12 +44,12 @@ namespace PhysX
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        // AzPhysics::SimulatedBodyComponentRequestsBus::Handler
+        // AzPhysics::SimulatedBodyComponentRequestsBus::Handler overrides ...
         void EnablePhysics() override;
         void DisablePhysics() override;
         bool IsPhysicsEnabled() const override;
         AZ::Aabb GetAabb() const override;
-        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() override;
+        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
         AzPhysics::SimulatedBody* GetSimulatedBody() override;
 
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
