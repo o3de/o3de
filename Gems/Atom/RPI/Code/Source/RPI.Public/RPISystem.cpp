@@ -353,12 +353,6 @@ namespace AZ
                 m_descriptor.m_rhiSystemDescriptor.m_platformLimits = RPI::GetDataFromAnyAsset<RHI::PlatformLimits>(platformLimitsAsset);
             }
 
-            m_rhiSystem.Init(m_descriptor.m_rhiSystemDescriptor);
-            m_imageSystem.Init(m_descriptor.m_imageSystemDescriptor);
-            m_bufferSystem.Init();
-            m_dynamicDraw.Init(m_descriptor.m_dynamicDrawSystemDescriptor);
-
-
             m_viewSrgAsset = AssetUtils::LoadCriticalAsset<ShaderResourceGroupAsset>( m_descriptor.m_viewSrgAssetPath.c_str());
             if (!m_viewSrgAsset.IsReady())
             {
@@ -369,6 +363,11 @@ namespace AZ
             {
                 return;
             }
+
+            m_rhiSystem.Init(m_descriptor.m_rhiSystemDescriptor);
+            m_imageSystem.Init(m_descriptor.m_imageSystemDescriptor);
+            m_bufferSystem.Init();
+            m_dynamicDraw.Init(m_descriptor.m_dynamicDrawSystemDescriptor);
 
             // Have pass system load default pass template mapping
             bool passSystemReady = m_passSystem.LoadPassTemplateMappings(m_descriptor.m_passTemplatesMappingPath);
