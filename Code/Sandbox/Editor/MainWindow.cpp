@@ -1327,7 +1327,7 @@ QToolButton* MainWindow::CreateDebugModeButton()
 
 QWidget* MainWindow::CreateSpacerRightWidget()
 {
-    QWidget* spacer = new QWidget();
+    QWidget* spacer = new QWidget(this);
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     spacer->setVisible(true);
     return spacer;
