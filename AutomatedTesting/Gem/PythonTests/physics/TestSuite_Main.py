@@ -73,7 +73,7 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','C4982593_PhysXCollider_CollisionLayer.setreg', 'AutomatedTesting/Registry')
+    @fm.file_override('physxsystemconfiguration.setreg','C4982593_PhysXCollider_CollisionLayer.setreg_override', 'AutomatedTesting/Registry')
     def test_C4982593_PhysXCollider_CollisionLayerTest(self, request, workspace, editor, launcher_platform):
         from . import C4982593_PhysXCollider_CollisionLayerTest as test_module
         self._run_test(request, workspace, editor, test_module)
