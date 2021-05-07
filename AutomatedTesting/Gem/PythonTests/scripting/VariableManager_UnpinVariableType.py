@@ -7,10 +7,6 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test case ID: T92568973
-Test Case Title: Unpin Variable types in Variable Manager
-URLs of the test case: https://testrail.agscollab.com/index.php?/tests/view/92568973
 """
 
 
