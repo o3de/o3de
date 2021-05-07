@@ -179,7 +179,9 @@
   },
   "asset_profile_vs2019": {
     "TAGS": [
-        "weekly-build-metrics"
+      "weekly-build-metrics",
+      "nightly-incremental",
+      "nightly-clean"
     ],
     "COMMAND": "build_asset_windows.cmd",
     "PARAMETERS": {
@@ -193,19 +195,6 @@
       "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
       "ASSET_PROCESSOR_PLATFORMS": "pc,server"
     }
-  },
-  "asset_clean_profile_vs2019": {
-    "TAGS": [
-      "nightly-incremental",
-      "nightly-clean"
-    ],
-    "PIPELINE_ENV": {
-      "CLEAN_ASSETS": "1"
-    },
-    "steps": [
-      "clean",
-      "asset_profile_vs2019"
-    ]
   },
   "periodic_test_profile_vs2019": {
     "TAGS": [

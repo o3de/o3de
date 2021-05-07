@@ -100,7 +100,9 @@
   },
   "asset_profile": {
     "TAGS": [
-      "weekly-build-metrics"
+      "weekly-build-metrics",
+      "nightly-incremental",
+      "nightly-clean"
     ],
     "COMMAND": "build_asset_linux.sh",
     "PARAMETERS": {
@@ -127,19 +129,6 @@
       "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
       "ASSET_PROCESSOR_PLATFORMS": "pc,server"
     }
-  },
-  "asset_clean_profile": {
-    "TAGS": [
-      "nightly-incremental",
-      "nightly-clean"
-    ],
-    "PIPELINE_ENV": {
-      "CLEAN_ASSETS": "1"
-    },
-    "steps": [
-      "clean",
-      "asset_profile"
-    ]
   },
   "periodic_test_profile": {
     "TAGS": [

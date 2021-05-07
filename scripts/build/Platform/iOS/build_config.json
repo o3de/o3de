@@ -84,19 +84,6 @@
       "ASSET_PROCESSOR_PLATFORMS": "ios"
     }
   },
-  "asset_clean_profile": {
-    "TAGS": [
-      "nightly-incremental",
-      "nightly-clean"
-    ],
-    "PIPELINE_ENV": {
-      "CLEAN_ASSETS": "true"
-    },
-    "steps": [
-        "clean",
-        "asset_profile"
-    ]
-  },
   "release": {
     "TAGS": [
       "nightly-incremental",

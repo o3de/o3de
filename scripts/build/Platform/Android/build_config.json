@@ -85,7 +85,9 @@
   "asset_profile": {
     "TAGS":[
         "default",
-        "weekly-build-metrics"
+        "weekly-build-metrics",
+        "nightly-incremental",
+        "nightly-clean"
     ],
     "COMMAND":"../Windows/build_asset_windows.cmd",
     "PARAMETERS": {
@@ -99,19 +101,6 @@
         "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode --regset=\"/Amazon/AssetProcessor/Settings/Exclude Android/pattern=.*/DiffuseGlobalIllumination/.*precompiledshader\"",
         "ASSET_PROCESSOR_PLATFORMS":"es3"
     }
-  },
-  "asset_clean_profile": {
-    "TAGS":[
-        "nightly-incremental",
-        "nightly-clean"
-    ],
-    "PIPELINE_ENV": {
-        "CLEAN_ASSETS": "1"
-    },
-    "steps": [
-        "clean",
-        "asset_profile"
-    ]
   },
   "release": {
     "TAGS":[
