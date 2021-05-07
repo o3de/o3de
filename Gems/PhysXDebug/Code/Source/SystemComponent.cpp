@@ -344,12 +344,12 @@ namespace PhysXDebug
 
     void SystemComponent::BuildColorPickingMenuItem(const AZStd::string& label, AZ::Color& color)
     {
-        float col[3] = {color.GetR() / 255.0f, color.GetG() / 255.0f, color.GetB() / 255.0f};
+        float col[3] = {color.GetR(), color.GetG(), color.GetB()};
         if (ImGui::ColorEdit3(label.c_str(), col, ImGuiColorEditFlags_NoAlpha))
         {
-            const float r =  AZ::GetClamp(col[0] * 255.0f, 0.0f, 255.0f);
-            const float g =  AZ::GetClamp(col[1] * 255.0f, 0.0f, 255.0f);
-            const float b =  AZ::GetClamp(col[2] * 255.0f, 0.0f, 255.0f);
+            const float r = AZ::GetClamp(col[0], 0.0f, 1.0f);
+            const float g = AZ::GetClamp(col[1], 0.0f, 1.0f);
+            const float b = AZ::GetClamp(col[2], 0.0f, 1.0f);
 
             color.SetR(r);
             color.SetG(g);
