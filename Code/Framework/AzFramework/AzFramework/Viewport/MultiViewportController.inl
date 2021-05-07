@@ -50,7 +50,7 @@ namespace AzFramework
     template <class TViewportControllerInstance, ViewportControllerPriority Priority>
     void MultiViewportController<TViewportControllerInstance, Priority>::RegisterViewportContext(ViewportId viewport)
     {
-        m_instances[viewport] = AZStd::make_unique<TViewportControllerInstance>(viewport, static_cast<TViewportControllerInstance::ControllerType*>(this));
+        m_instances[viewport] = AZStd::make_unique<TViewportControllerInstance>(viewport, static_cast<typename TViewportControllerInstance::ControllerType*>(this));
     }
 
     template <class TViewportControllerInstance, ViewportControllerPriority Priority>
