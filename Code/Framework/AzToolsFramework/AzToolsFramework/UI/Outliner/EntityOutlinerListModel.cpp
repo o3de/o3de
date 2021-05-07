@@ -1277,7 +1277,7 @@ namespace AzToolsFramework
     void EntityOutlinerListModel::EntityCacheChanged(AZ::EntityId entityId)
     {
         OnEntityInfoResetBegin();
-        QueueEntityToExpand(entityId, true);
+        QueueEntityToExpand(entityId, IsExpanded(entityId));
         OnEntityInfoResetEnd();
     }
 
