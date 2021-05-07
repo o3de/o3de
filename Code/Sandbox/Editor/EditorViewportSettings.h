@@ -24,13 +24,13 @@ namespace Editor
 
     bool ShowingGrid();
 
-    void SetGridSnapping(const bool enabled);
+    void SetGridSnapping(bool enabled);
 
-    void SetGridSnappingSize(const float size);
+    void SetGridSnappingSize(float size);
 
-    void SetAngleSnapping(const bool enabled);
+    void SetAngleSnapping(bool enabled);
 
-    void SetAngleSnappingSize(const float size);
+    void SetAngleSnappingSize(float size);
 
-    void SetShowingGrid(const bool showing);
+    void SetShowingGrid(bool showing);
 } // namespace Editor
