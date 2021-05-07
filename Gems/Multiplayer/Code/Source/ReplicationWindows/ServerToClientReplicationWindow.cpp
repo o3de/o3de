@@ -56,6 +56,8 @@ namespace Multiplayer
 
     ServerToClientReplicationWindow::ServerToClientReplicationWindow(NetworkEntityHandle controlledEntity, const AzNetworking::IConnection* connection)
         : m_controlledEntity(controlledEntity)
+        , m_entityActivatedEventHandler([this](AZ::Entity* entity) { OnEntityActivated(entity); })
+        , m_entityDeactivatedEventHandler([this](AZ::Entity* entity) { OnEntityDeactivated(entity); })
         , m_connection(connection)
         , m_lastCheckedSentPackets(connection->GetMetrics().m_packetsSent)
         , m_lastCheckedLostPackets(connection->GetMetrics().m_packetsLost)
@@ -74,7 +76,9 @@ namespace Multiplayer
         //}
 
         m_updateWindowEvent.Enqueue(sv_ClientReplicationWindowUpdateMs, true);
-        AZ::EntitySystemBus::Handler::BusConnect();
+
+        AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityActivatedEventHandler(m_entityActivatedEventHandler);
+        AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityDeactivatedEventHandler(m_entityDeactivatedEventHandler);
     }
 
     bool ServerToClientReplicationWindow::ReplicationSetUpdateReady()
@@ -205,10 +209,8 @@ namespace Multiplayer
         //}
     }
 
-    void ServerToClientReplicationWindow::OnEntityActivated(const AZ::EntityId& entityId)
+    void ServerToClientReplicationWindow::OnEntityActivated(AZ::Entity* entity)
     {
-        AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
-
         ConstNetworkEntityHandle entityHandle(entity, GetNetworkEntityTracker());
         NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
         if (netBindComponent != nullptr)
@@ -236,10 +238,8 @@ namespace Multiplayer
         }
     }
 
-    void ServerToClientReplicationWindow::OnEntityDeactivated(const AZ::EntityId& entityId)
+    void ServerToClientReplicationWindow::OnEntityDeactivated(AZ::Entity* entity)
     {
-        AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
-
         ConstNetworkEntityHandle entityHandle(entity, GetNetworkEntityTracker());
         NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
         if (netBindComponent != nullptr)

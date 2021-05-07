@@ -71,7 +71,7 @@ namespace AzFramework
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
 
-        // ignore any entity that might activate which does not have a TransformComponent
+        // ignore any entity that might deactivate which does not have a TransformComponent
         if (entity->GetTransform() == nullptr)
         {
             return;
