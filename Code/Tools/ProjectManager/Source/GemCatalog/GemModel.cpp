@@ -31,11 +31,11 @@ namespace O3DE::ProjectManager
 
         item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 
-        item->setData(gemInfo.m_name, Qt::UserRole + NAME);
-        item->setData(gemInfo.m_creator, Qt::UserRole + CREATOR);
-        item->setData(static_cast<int>(gemInfo.m_platforms), Qt::UserRole + PLATFORMS);
-        item->setData(gemInfo.m_summary, Qt::UserRole + SUMMARY);
-        item->setData(gemInfo.m_isAdded, Qt::UserRole + GETSTATE);
+        item->setData(gemInfo.m_name, RoleName);
+        item->setData(gemInfo.m_creator, RoleCreator);
+        item->setData(static_cast<int>(gemInfo.m_platforms), RolePlatforms);
+        item->setData(gemInfo.m_summary, RoleSummary);
+        item->setData(gemInfo.m_isAdded, RoleIsAdded);
 
         appendRow(item);
     }
@@ -47,26 +47,26 @@ namespace O3DE::ProjectManager
 
     QString GemModel::GetName(const QModelIndex& modelIndex) const
     {
-        return modelIndex.data(Qt::UserRole + NAME).toString();
+        return modelIndex.data(RoleName).toString();
     }
 
     QString GemModel::GetCreator(const QModelIndex& modelIndex) const
     {
-        return modelIndex.data(Qt::UserRole + CREATOR).toString();
+        return modelIndex.data(RoleCreator).toString();
     }
 
     int GemModel::GetPlatforms(const QModelIndex& modelIndex) const
     {
-        return static_cast<GemInfo::Platforms>(modelIndex.data(Qt::UserRole + GemModel::PLATFORMS).toInt());
+        return static_cast<GemInfo::Platforms>(modelIndex.data(RolePlatforms).toInt());
     }
 
     QString GemModel::GetSummary(const QModelIndex& modelIndex) const
     {
-        return modelIndex.data(Qt::UserRole + SUMMARY).toString();
+        return modelIndex.data(RoleSummary).toString();
     }
 
     bool GemModel::IsAdded(const QModelIndex& modelIndex) const
     {
-        return modelIndex.data(Qt::UserRole + GETSTATE).toBool();
+        return modelIndex.data(RoleIsAdded).toBool();
     }
 } // namespace O3DE::ProjectManager

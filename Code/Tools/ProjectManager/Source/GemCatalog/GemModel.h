@@ -41,11 +41,11 @@ namespace O3DE::ProjectManager
     private:
         enum UserRole
         {
-            NAME = 0,
-            CREATOR = 1,
-            PLATFORMS = 2,
-            SUMMARY = 3,
-            GETSTATE = 4
+            RoleName = Qt::UserRole,
+            RoleCreator,
+            RolePlatforms,
+            RoleSummary,
+            RoleIsAdded
         };
 
         QItemSelectionModel* m_selectionModel = nullptr;
