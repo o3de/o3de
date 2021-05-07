@@ -22,6 +22,19 @@
 
 namespace AZ
 {
+    JsonSerializationResult::ResultCode JsonDeserializer::DeserializerDefaultCheck(BaseJsonSerializer* serializer, void* object,
+        const Uuid& typeId, const rapidjson::Value& value, JsonDeserializerContext& context)
+    {
+        using namespace AZ::JsonSerializationResult;
+
+        bool isExplicitDefault = IsExplicitDefault(value);
+        bool manuallyDefaults = (serializer->GetOperationsFlags() & BaseJsonSerializer::OperationFlags::ManualDefault) ==
+            BaseJsonSerializer::OperationFlags::ManualDefault;
+        return !isExplicitDefault || (isExplicitDefault && manuallyDefaults)
+            ? serializer->Load(object, typeId, value, context)
+            : context.Report(Tasks::ReadField, Outcomes::DefaultsUsed, "Value has an explicit default.");
+    }
+
     JsonSerializationResult::ResultCode JsonDeserializer::Load(void* object, const Uuid& typeId, const rapidjson::Value& value,
         JsonDeserializerContext& context)
     {
@@ -33,17 +46,12 @@ namespace AZ
                 "Target object for Json Serialization is pointing to nothing during loading.");
         }
 
-        if (IsExplicitDefault(value))
-        {
-            return context.Report(Tasks::ReadField, Outcomes::DefaultsUsed, "Value has an explicit default.");
-        }
-
         BaseJsonSerializer* serializer = context.GetRegistrationContext()->GetSerializerForType(typeId);
         if (serializer)
         {
-            return serializer->Load(object, typeId, value, context);
+            return DeserializerDefaultCheck(serializer, object, typeId, value, context);
         }
-        
+
         const SerializeContext::ClassData* classData = context.GetSerializeContext()->FindClassData(typeId);
         if (!classData)
         {
@@ -56,8 +64,13 @@ namespace AZ
             serializer = context.GetRegistrationContext()->GetSerializerForType(classData->m_azRtti->GetGenericTypeId());
             if (serializer)
             {
-                return serializer->Load(object, typeId, value, context);
+                return DeserializerDefaultCheck(serializer, object, typeId, value, context);
             }
+        }
+
+        if (IsExplicitDefault(value))
+        {
+            return context.Report(Tasks::ReadField, Outcomes::DefaultsUsed, "Value has an explicit default.");
         }
         
         if (classData->m_azRtti && (classData->m_azRtti->GetTypeTraits() & AZ::TypeTraits::is_enum) == AZ::TypeTraits::is_enum)
@@ -97,7 +110,8 @@ namespace AZ
             return context.Report(Tasks::RetrieveInfo, Outcomes::Unknown,
                 AZStd::string::format("Failed to retrieve rtti information for %s.", classData->m_name));
         }
-        AZ_Assert(classData->m_azRtti->GetTypeId() == typeId, "Type id mismatch during deserialization of a json file. (%s vs %s)");
+        AZ_Assert(classData->m_azRtti->GetTypeId() == typeId, "Type id mismatch during deserialization of a json file. (%s vs %s)",
+            classData->m_azRtti->GetTypeId().ToString<AZStd::string>().c_str(), typeId.ToString<AZStd::string>().c_str());
 
         void** objectPtr = reinterpret_cast<void**>(object);
         bool isNull = *objectPtr == nullptr;
@@ -512,27 +526,24 @@ namespace AZ
             if (*object)
             {
                 const AZ::Uuid& actualClassId = rtti.GetActualUuid(*object);
-                if (actualClassId != objectType)
+                const SerializeContext::ClassData* actualClassData = context.GetSerializeContext()->FindClassData(actualClassId);
+                if (!actualClassData)
                 {
-                    const SerializeContext::ClassData* actualClassData = context.GetSerializeContext()->FindClassData(actualClassId);
-                    if (!actualClassData)
-                    {
-                        status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown,
-                            AZStd::string::format("Unable to find serialization information for type %s.", actualClassId.ToString<AZStd::string>().c_str()));
-                        return ResolvePointerResult::FullyProcessed;
-                    }
+                    status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown,
+                        AZStd::string::format("Unable to find serialization information for type %s.", actualClassId.ToString<AZStd::string>().c_str()));
+                    return ResolvePointerResult::FullyProcessed;
+                }
 
-                    if (actualClassData->m_factory)
-                    {
-                        actualClassData->m_factory->Destroy(*object);
-                        *object = nullptr;
-                    }
-                    else
-                    {
-                        status = context.Report(Tasks::RetrieveInfo, Outcomes::Catastrophic,
-                            "Unable to find the factory needed to clear out the default value.");
-                        return ResolvePointerResult::FullyProcessed;
-                    }
+                if (actualClassData->m_factory)
+                {
+                    actualClassData->m_factory->Destroy(*object);
+                    *object = nullptr;
+                }
+                else
+                {
+                    status = context.Report(Tasks::RetrieveInfo, Outcomes::Catastrophic,
+                        "Unable to find the factory needed to clear out the default value.");
+                    return ResolvePointerResult::FullyProcessed;
                 }
             }
             status = ResultCode(Tasks::ReadField, Outcomes::Success);
