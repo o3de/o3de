@@ -162,7 +162,6 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
     , m_camFOV(gSettings.viewports.fDefaultFov)
     , m_defaultViewName(name)
     , m_renderViewport(nullptr) //m_renderViewport is initialized later, in SetViewportId
-    , m_editorViewportSettings(this)
 {
     // need this to be set in order to allow for language switching on Windows
     setAttribute(Qt::WA_InputMethodEnabled);
@@ -2829,11 +2828,6 @@ void EditorViewportWidget::SetAsActiveViewport()
             viewportContextManager->RenameViewportContext(viewportContext, defaultContextName);
         }
     }
-}
-
-EditorViewportSettings::EditorViewportSettings(const EditorViewportWidget* editorViewportWidget)
-    : m_editorViewportWidget(editorViewportWidget)
-{
 }
 
 bool EditorViewportSettings::GridSnappingEnabled() const

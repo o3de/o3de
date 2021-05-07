@@ -70,16 +70,11 @@ class EditorViewportWidget;
 //! Viewport settings for the EditorViewportWidget
 struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::ViewportSettings
 {
-    explicit EditorViewportSettings(const EditorViewportWidget* editorViewportWidget);
-
     bool GridSnappingEnabled() const override;
     float GridSize() const override;
     bool ShowGrid() const override;
     bool AngleSnappingEnabled() const override;
     float AngleStep() const override;
-
-private:
-    const EditorViewportWidget* m_editorViewportWidget = nullptr;
 };
 
 // EditorViewportWidget window
