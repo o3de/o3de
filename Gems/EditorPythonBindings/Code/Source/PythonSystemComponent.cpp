@@ -543,7 +543,7 @@ namespace EditorPythonBindings
         {
             if (!oldPathSet.contains(thisStr))
             {
-                pathAppend.append(AZStd::string::format("sys.path.append('r%s')\n", thisStr.c_str()));
+                pathAppend.append(AZStd::string::format("sys.path.append(r'%s')\n", thisStr.c_str()));
                 appended = true;
             }
         }
