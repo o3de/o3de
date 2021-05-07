@@ -36,7 +36,7 @@ namespace Editor
 
     float GridSnappingSize()
     {
-        double gridSize = false;
+        double gridSize = 0.1;
         if (auto* registry = AZ::SettingsRegistry::Get())
         {
             registry->Get(gridSize, GridSizeSetting);
@@ -56,7 +56,7 @@ namespace Editor
 
     float AngleSnappingSize()
     {
-        double gridSize = false;
+        double gridSize = 5;
         if (auto* registry = AZ::SettingsRegistry::Get())
         {
             registry->Get(gridSize, AngleSizeSetting);
