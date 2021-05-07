@@ -121,7 +121,7 @@ namespace PhysXEditorTests
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
         
         // since there was no editor rigid body component, the runtime entity should have a static rigid body
-        const auto* staticBody = gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>()->GetStaticRigidBody();
+        const auto* staticBody = azdynamic_cast<PhysX::StaticRigidBody*>(gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>()->GetSimulatedBody());
         const auto* pxRigidStatic = static_cast<const physx::PxRigidStatic*>(staticBody->GetNativePointer());
         
         PHYSX_SCENE_READ_LOCK(pxRigidStatic->getScene());

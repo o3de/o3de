@@ -83,8 +83,8 @@ namespace PhysX
                     continue;
                 }
 
-                AzPhysics::SimulatedBody* body1 = actorData1->GetWorldBody();
-                AzPhysics::SimulatedBody* body2 = actorData2->GetWorldBody();
+                AzPhysics::SimulatedBody* body1 = actorData1->GetSimulatedBody();
+                AzPhysics::SimulatedBody* body2 = actorData2->GetSimulatedBody();
 
                 if (!body1 || !body2)
                 {
@@ -161,7 +161,7 @@ namespace PhysX
             }
 
             ActorData* triggerBodyActorData = Utils::GetUserData(triggerPair.triggerActor);
-            AzPhysics::SimulatedBody* triggerBody = triggerBodyActorData->GetWorldBody();
+            AzPhysics::SimulatedBody* triggerBody = triggerBodyActorData->GetSimulatedBody();
             if (!triggerBody)
             {
                 AZ_Error("PhysX", false, "onTrigger:: trigger body was invalid");
@@ -174,7 +174,7 @@ namespace PhysX
             }
 
             ActorData* otherActorData = Utils::GetUserData(triggerPair.otherActor);
-            AzPhysics::SimulatedBody* otherBody = otherActorData->GetWorldBody();
+            AzPhysics::SimulatedBody* otherBody = otherActorData->GetSimulatedBody();
             if (!otherBody)
             {
                 AZ_Error("PhysX", false, "onTrigger:: otherBody was invalid");
