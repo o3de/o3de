@@ -11,6 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import os
 import pytest
+import boto3
 
 import ly_test_tools.environment.process_utils as process_utils
 from typing import List
@@ -21,10 +22,10 @@ class Cdk:
     Cdk class that provides methods to run cdk application commands.
     Expects system to have NodeJS, AWS CLI and CDK installed globally and have their paths setup as env variables.
     """
-    def __init__(self, cdk_application_path: str, project: str, account_id: str, region: str, profile: str
-                 , workspace: pytest.fixture):
+    def __init__(self, cdk_path: str, project: str, account_id: str, region: str,
+                 workspace: pytest.fixture, session: boto3.session.Session):
         """
-        :param cdk_application_path: Path where cdk app.py is stored.
+        :param cdk_path: Path where cdk app.py is stored.
         :param project: Project name used for cdk project name env variable.
         :param account_id: AWS account to deploy cdk resources in.
         :param region: Region for deploying the cdk resources in.
@@ -35,11 +36,15 @@ class Cdk:
         self._cdk_env['O3DE_AWS_PROJECT_NAME'] = project
         self._cdk_env['O3DE_AWS_DEPLOY_REGION'] = region
         self._cdk_env['O3DE_AWS_DEPLOY_ACCOUNT'] = account_id
-        self._cdk_env['PATH'] = f'{workspace.paths.engine_root()}\\python\\runtime\\python-3.7.10-rev1-windows' \
-                                f'\\python\\;' + self._cdk_env['PATH']
+        self._cdk_env['PATH'] = f'{workspace.paths.engine_root()}\\python' \
+                                f'\\runtime\\python-3.7.10-rev1-windows\\python\\;' + self._cdk_env['PATH']
+
+        credentials = session.get_credentials().get_frozen_credentials()
+        self._cdk_env['AWS_ACCESS_KEY_ID'] = credentials.access_key
+        self._cdk_env['AWS_SECRET_ACCESS_KEY'] = credentials.secret_key
+        self._cdk_env['AWS_SESSION_TOKEN'] = credentials.token
         self._stacks = []
-        self._cdk_path = cdk_application_path
-        self._profile = profile
+        self._cdk_path = cdk_path
 
     def list(self) -> List[str]:
         """
@@ -83,14 +88,14 @@ class Cdk:
         if not self._cdk_path:
             return []
 
-        deploy_cdk_application_cmd = ['cdk', 'deploy', '--require-approval', 'never', '--profile', self._profile]
+        deploy_cdk_application_cmd = ['cdk', 'deploy', '--require-approval', 'never']
         if context_variable:
             deploy_cdk_application_cmd.extend(['-c', f'{context_variable}'])
 
         output = process_utils.check_output(
             deploy_cdk_application_cmd,
             cwd=self._cdk_path,
-            env=dict(os.environ, **self._cdk_env),
+            env=self._cdk_env,
             shell=True)
 
         stacks = []
@@ -109,12 +114,11 @@ class Cdk:
         process_utils.check_output(
             destroy_cdk_application_cmd,
             cwd=self._cdk_path,
-            env=dict(os.environ, **self._cdk_env),
+            env=self._cdk_env,
             shell=True)
 
         self._stacks = []
         self._cdk_path = ''
-        self._profile = ''
 
 
 @pytest.fixture(scope='function')
@@ -124,8 +128,8 @@ def cdk(
         account_id: str,
         region: str,
         feature_name: str,
-        profile: str,
         workspace: pytest.fixture,
+        aws_utils: pytest.fixture,
         destroy_stacks_on_teardown: bool = True) -> Cdk:
     """
     Fixture for setting up a Cdk
@@ -135,14 +139,14 @@ def cdk(
     :param account_id: AWS account to deploy cdk resources in.
     :param region: Region for deploying the cdk resources in.
     :param feature_name: Feature gem name to expect cdk folder in.
-    :param profile: AWS profile to use for credentials.
     :param workspace: ly_test_tools workspace fixture.
+    :param aws_utils: aws_utils fixture.
     :param destroy_stacks_on_teardown: option to control calling destroy ot the end of test.
     :return Cdk class object.
     """
 
     cdk_path = f'{workspace.paths.engine_root()}/Gems/{feature_name}/cdk'
-    cdk_obj = Cdk(cdk_path, project, account_id, region, profile, workspace)
+    cdk_obj = Cdk(cdk_path, project, account_id, region, workspace, aws_utils.session())
 
     def teardown():
         if destroy_stacks_on_teardown:

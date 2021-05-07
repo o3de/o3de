@@ -1,11 +1,21 @@
+"""
+All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+its licensors.
+For complete copyright and license terms please see the LICENSE at the root of this
+distribution (the "License"). All use of this software is governed by the License,
+or, if provided, by the license below or the license accompanying this file. Do not
+remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+"""
 import logging
 import ly_test_tools.log.log_monitor
 from ..resource_mappings.resource_mappings import *
 from ..cdk.cdk import *
+from AWS.common.aws_utils import aws_utils
 
 AWS_PROJECT_NAME = 'AWS-AutomationTest'
 AWS_CLIENT_AUTH_FEATURE_NAME = 'AWSClientAuth'
-AWS_CLIENT_AUTH_DEFAULT_ACCOUNT_ID = '729543576514'
+AWS_CLIENT_AUTH_DEFAULT_ACCOUNT_ID = '645075835648'
 AWS_CLIENT_AUTH_DEFAULT_REGION = 'us-west-2'
 AWS_CLIENT_AUTH_DEFAULT_PROFILE_NAME = 'default'
 AWS_CDK_APP_PATH = ''
@@ -24,25 +34,27 @@ logger = logging.getLogger(__name__)
 @pytest.mark.parametrize('account_id', [AWS_CLIENT_AUTH_DEFAULT_ACCOUNT_ID])
 @pytest.mark.parametrize('region', [AWS_CLIENT_AUTH_DEFAULT_REGION])
 @pytest.mark.parametrize('feature_name', [AWS_CLIENT_AUTH_FEATURE_NAME])
-@pytest.mark.parametrize('profile', ['default'])
 @pytest.mark.usefixtures('resource_mappings')
 @pytest.mark.parametrize('resource_mappings_filename', ['aws_resource_mappings.json'])
+@pytest.mark.usefixtures('aws_utils')
+@pytest.mark.parametrize('assume_role_arn', ['arn:aws:iam::645075835648:role/AutomatedTest'])
+@pytest.mark.parametrize('session_name', ['O3DE-Automation'])
 class TestAWSClientAuthAnonymousCredentials(object):
     """
     Test class to verify AWS Cognito Identity pool anonymous authorization.
     """
 
     def test_anonymous_credentials(self,
-                                     level: str,
-                                     launcher: pytest.fixture,
-                                     cdk: pytest.fixture,
-                                     resource_mappings: pytest.fixture):
+                                   level: str,
+                                   launcher: pytest.fixture,
+                                   cdk: pytest.fixture,
+                                   resource_mappings: pytest.fixture):
         """
         Setup: Deploys cdk and updates resource mapping file.
         Tests: Getting AWS credentials for no signed in user.
         Verification: Log monitor looks for success credentials log.
         """
-        cdk.list()
+        print(cdk.list())
         stacks = cdk.deploy()
         resource_mappings.populate_output_keys(stacks)
 
