@@ -12,105 +12,25 @@
 
 #pragma once
 
-#include <AzCore/Casting/numeric_cast.h>
-#include <AzCore/Settings/SettingsRegistry.h>
-#include <AzCore/std/string/string_view.h>
-
 namespace Editor
 {
-    inline constexpr const AZStd::string_view GridSnappingSetting = "/Amazon/Preferences/Editor/GridSnapping";
-    inline constexpr const AZStd::string_view GridSizeSetting = "/Amazon/Preferences/Editor/GridSize";
-    inline constexpr const AZStd::string_view AngleSnappingSetting = "/Amazon/Preferences/Editor/AngleSnapping";
-    inline constexpr const AZStd::string_view AngleSizeSetting = "/Amazon/Preferences/Editor/AngleSize";
-    inline constexpr const AZStd::string_view ShowGridSetting = "/Amazon/Preferences/Editor/ShowGrid";
+    bool GridSnappingEnabled();
 
-    inline bool GridSnappingEnabled()
-    {
-        bool enabled = false;
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Get(enabled, GridSnappingSetting);
-        }
-        return enabled;
-    }
+    float GridSnappingSize();
 
-    inline float GridSnappingSize()
-    {
-        double gridSize = false;
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Get(gridSize, GridSizeSetting);
-        }
-        return aznumeric_cast<float>(gridSize);
-    }
+    bool AngleSnappingEnabled();
 
-    inline bool AngleSnappingEnabled()
-    {
-        bool enabled = false;
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Get(enabled, AngleSnappingSetting);
-        }
-        return enabled;
-    }
+    float AngleSnappingSize();
 
-    inline float AngleSnappingSize()
-    {
-        double gridSize = false;
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Get(gridSize, AngleSizeSetting);
-        }
-        return aznumeric_cast<float>(gridSize);
-    }
+    bool ShowingGrid();
 
-    inline bool ShowingGrid()
-    {
-        bool enabled = false;
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Get(enabled, ShowGridSetting);
-        }
-        return enabled;
-    }
+    void SetGridSnapping(const bool enabled);
 
-    inline void SetGridSnapping(const bool enabled)
-    {
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Set(GridSnappingSetting, enabled);
-        }
-    }
+    void SetGridSnappingSize(const float size);
 
-    inline void SetGridSnappingSize(const float size)
-    {
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Set(GridSizeSetting, size);
-        }
-    }
+    void SetAngleSnapping(const bool enabled);
 
-    inline void SetAngleSnapping(const bool enabled)
-    {
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Set(AngleSnappingSetting, enabled);
-        }
-    }
+    void SetAngleSnappingSize(const float size);
 
-    inline void SetAngleSnappingSize(const float size)
-    {
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Set(AngleSizeSetting, size);
-        }
-    }
-
-    inline void SetShowingGrid(const bool showing)
-    {
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Set(ShowGridSetting, showing);
-        }
-    }
+    void SetShowingGrid(const bool showing);
 } // namespace Editor
