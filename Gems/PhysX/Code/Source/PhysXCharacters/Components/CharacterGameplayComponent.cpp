@@ -13,7 +13,6 @@
 #include <PhysX_precompiled.h>
 #include <PhysXCharacters/Components/CharacterGameplayComponent.h>
 #include <AzFramework/Physics/CharacterBus.h>
-#include <AzFramework/Physics/WorldBodyBus.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <PhysX/PhysXLocks.h>
@@ -158,7 +157,7 @@ namespace PhysX
     void CharacterGameplayComponent::Activate()
     {
         AzPhysics::SimulatedBody* worldBody = nullptr;
-        Physics::WorldBodyRequestBus::EventResult(worldBody, GetEntityId(), &Physics::WorldBodyRequests::GetWorldBody);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(worldBody, GetEntityId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
         if (worldBody)
         {
             if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())

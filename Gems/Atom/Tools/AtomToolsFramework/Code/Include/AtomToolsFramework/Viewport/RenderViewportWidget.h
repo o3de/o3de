@@ -104,6 +104,7 @@ namespace AtomToolsFramework
         void EndCursorCapture() override;
         AzFramework::ScreenPoint ViewportCursorScreenPosition() override;
         AZStd::optional<AzFramework::ScreenPoint> PreviousViewportCursorScreenPosition() override;
+        bool IsMouseOver() const override;
 
         // AzFramework::WindowRequestBus::Handler ...
         void SetWindowTitle(const AZStd::string& title) override;

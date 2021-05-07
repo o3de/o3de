@@ -22,12 +22,12 @@ namespace Blast
     {
         m_actors.emplace(actor);
         m_entityIdToActor.emplace(actor->GetEntity()->GetId(), actor);
-        m_bodyToActor.emplace(actor->GetWorldBody(), actor);
+        m_bodyToActor.emplace(actor->GetSimulatedBody(), actor);
     }
 
     void ActorTracker::RemoveActor(BlastActor* actor)
     {
-        m_bodyToActor.erase(actor->GetWorldBody());
+        m_bodyToActor.erase(actor->GetSimulatedBody());
         m_entityIdToActor.erase(actor->GetEntity()->GetId());
         m_actors.erase(actor);
     }
