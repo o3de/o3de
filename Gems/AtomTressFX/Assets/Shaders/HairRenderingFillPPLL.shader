@@ -13,8 +13,12 @@
         "Depth" : 
         { 
             "Enable" : true,
-             "CompareFunc" : "LessEqual"
+             "CompareFunc" : "GreaterEqual"
             // Adi - in TressFX this is LessEqual
+        },
+        "Stencil" :
+        {
+            "Enable" : false
         }
     },
 
@@ -25,7 +29,7 @@
 
     "BlendState" : 
     {
-        "Enable" : true,
+        "Enable" : false,
         "BlendSource" : "AlphaSource",
         "BlendDest" : "AlphaSourceInverse",
         "BlendOp" : "Add"
@@ -33,7 +37,7 @@
 
     "ProgramSettings":
     {
-      "EntryPoints":
+        "EntryPoints":
       [
         {
           "name": "RenderHairVS",

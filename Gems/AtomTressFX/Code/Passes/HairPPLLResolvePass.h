@@ -19,6 +19,7 @@
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
 #include <TressFX/TressFXConstantBuffers.h>
 #include <Rendering/HairCommon.h>
@@ -49,23 +50,22 @@ namespace AZ
                 ~HairPPLLResolvePass() = default;
 
                 void Init() override;
-                virtual bool IsEnabled() const override;
 
                 static RPI::Ptr<HairPPLLResolvePass> Create(const RPI::PassDescriptor& descriptor);
 
-                void SetFeatureProcessor(HairFeatureProcessor* featureeProcessor);
+                void SetFeatureProcessor(HairFeatureProcessor* featureProcessor)
+                {
+                    m_featureProcessor = featureProcessor;
+                }
 
                 //! Override pass behavior methods
+                void OnBuildAttachmentsFinishedInternal() override;
                 void BuildAttachmentsInternal() override;
                 void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
                 void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
             private:
                 HairPPLLResolvePass(const RPI::PassDescriptor& descriptor);
-
-                //! Set the binding indices of all members of the SRG
-                void SetSrgsBindIndices();
-                void SetSrgsData();
 
             private:
                 HairFeatureProcessor* m_featureProcessor = nullptr;

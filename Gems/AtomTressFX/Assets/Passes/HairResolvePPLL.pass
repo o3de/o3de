@@ -10,7 +10,16 @@
                 {
                     "Name": "RenderTargetInputOutput",
                     "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "RenderTarget"
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "Store"
+                    }
+                },
+                {
+                    "Name": "Depth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "DepthStencil"
                 },
                 {
                     "Name": "PerPixelListHead",
@@ -18,14 +27,6 @@
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
                     "LoadStoreAction": {
-                        "ClearValue": {
-                            "Value": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ]
-                        },
                         "LoadAction": "Load",
                         "StoreAction": "DontCare"
                     }
@@ -36,14 +37,6 @@
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader",
                     "LoadStoreAction": {
-                        "ClearValue": {
-                            "Value": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ]
-                        },
                         "LoadAction": "Load",
                         "StoreAction": "DontCare"
                     }
@@ -55,9 +48,6 @@
                     // Looking for it in the Shaders directory relative to the Assets directory
                     "FilePath": "Shaders/HairRenderingResolvePPLL.shader"
                 }
-//                "PassSrgAsset": {
-//                   "FilePath": "Shaders/HairSrgs.azsli:HairPerPassSrg"
-//                }
             }
         }
     }

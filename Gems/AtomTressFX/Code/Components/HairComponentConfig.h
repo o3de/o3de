@@ -14,6 +14,8 @@
 
 #include <AzCore/Component/Component.h>
 #include <Assets/HairAsset.h>
+#include <TressFX/TressFXSettings.h>
+
 // #include <Atom/Feature/ParamMacros/ParamMacrosHowTo.inl>    // for education purposes
 //#include <Components/HairSettingsInterface.h>
 
@@ -52,12 +54,12 @@ namespace AZ
                     return m_enabled;
                 }
 
-                AZ::Data::Asset<HairAsset> m_hairAsset;
+                // TressFX settings
+                AMD::TressFXSimulationSettings m_simulationSettings;
+                AMD::TressFXRenderingSettings m_renderingSettings;
 
             private:
                 bool m_enabled = false;
-
-                // shader option flags
             };
 
         } // namespace Hair

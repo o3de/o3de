@@ -24,33 +24,18 @@ namespace AZ
 
             void HairComponentConfig::Reflect(ReflectContext* context)
             {
+                AMD::TressFXSimulationSettings::Reflect(context);
+                AMD::TressFXRenderingSettings::Reflect(context);
+
                 if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
                 {
                     serializeContext->Class<HairComponentConfig, ComponentConfig>()
-                        ->Version(2)
-                        ->Field("HairAsset", &HairComponentConfig::m_hairAsset)
-                        // [To Do] Adi: add auto-gen serialize context code...
+                        ->Version(3)
+                        ->Field("SimulationSettings", &HairComponentConfig::m_simulationSettings)
+                        ->Field("RenderingSettings", &HairComponentConfig::m_renderingSettings)
                         ;
                 }
             }
-/*
-            void HairComponentConfig::CopySettingsFrom(HairSettingsInterface* settings)
-            {
-                if (!settings)
-                {
-                    return;
-                }
-            }
-
-            void HairComponentConfig::CopySettingsTo(HairSettingsInterface* settings)
-            {
-                if (!settings)
-                {
-                    return;
-                }
-            }
-            */
-
         } // namespace Hair
     } // namespace Render
 } // namespace AZ

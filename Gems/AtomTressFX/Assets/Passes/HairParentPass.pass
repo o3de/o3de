@@ -5,16 +5,186 @@
     "ClassData": {
         "PassTemplate": {
             "Name": "HairParentPassTemplate",
-            "PassClass": "HairParentPass",
+            "PassClass": "ParentPass",
             "Slots": [
+                {
+                    "Name": "RenderTargetInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                },
+                {
+                    "Name": "Depth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
+                // Super important to keep DepthLinear as input - used to set the size of the Head PPLL image buffer.
+                // If DepthLinear is not availbale - connect to another viewport (non MSAA) image.
+                {
+                    "Name": "DepthLinear",
+                    "SlotType": "Input"
+                }
             ],
-            "Connections": [
-            ],
+
             "PassRequests": [
                 {
                     "Name": "HairSkinningComputePass",
                     "TemplateName": "HairSkinningComputePassTemplate",
+                    "Enabled": true
+                },
+                {
+                    "Name": "HairGlobalShapeConstraintsComputePass",
+                    "TemplateName": "HairGlobalShapeConstraintsComputePassTemplate",
+                    "Enabled": true,
                     "Connections": [
+                        {
+                            "LocalSlot": "SkinnedHairSharedBuffer",
+                            "AttachmentRef": {
+                                "Pass": "HairSkinningComputePass",
+                                "Attachment": "SkinnedHairSharedBuffer"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "HairCalculateStrandLevelDataComputePass",
+                    "TemplateName": "HairCalculateStrandLevelDataComputePassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedHairSharedBuffer",
+                            "AttachmentRef": {
+                                "Pass": "HairGlobalShapeConstraintsComputePass",
+                                "Attachment": "SkinnedHairSharedBuffer"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "HairVelocityShockPropagationComputePass",
+                    "TemplateName": "HairVelocityShockPropagationComputePassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedHairSharedBuffer",
+                            "AttachmentRef": {
+                                "Pass": "HairCalculateStrandLevelDataComputePass",
+                                "Attachment": "SkinnedHairSharedBuffer"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "HairLocalShapeConstraintsComputePass",
+                    "TemplateName": "HairLocalShapeConstraintsComputePassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedHairSharedBuffer",
+                            "AttachmentRef": {
+                                "Pass": "HairVelocityShockPropagationComputePass",
+                                "Attachment": "SkinnedHairSharedBuffer"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "HairLengthConstraintsWindAndCollisionComputePass",
+                    "TemplateName": "HairLengthConstraintsWindAndCollisionComputePassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedHairSharedBuffer",
+                            "AttachmentRef": {
+                                "Pass": "HairLocalShapeConstraintsComputePass",
+                                "Attachment": "SkinnedHairSharedBuffer"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "HairUpdateFollowHairComputePass",
+                    "TemplateName": "HairUpdateFollowHairComputePassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedHairSharedBuffer",
+                            "AttachmentRef": {
+                                "Pass": "HairLengthConstraintsWindAndCollisionComputePass",
+                                "Attachment": "SkinnedHairSharedBuffer"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "HairPPLLRasterPass",
+                    "TemplateName": "HairPPLLRasterPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedHairSharedBuffer",
+                            "AttachmentRef": {
+                                "Pass": "HairUpdateFollowHairComputePass",
+                                "Attachment": "SkinnedHairSharedBuffer"
+                            }
+                        },
+                        // Super important to keep DepthLinear as input - used to set the size of the Head PPLL image buffer.
+                        // If DepthLinear is not availbale - connect to another viewport (non MSAA) image.
+                        {
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "RenderTargetInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "RenderTargetInputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "HairPPLLResolvePass",
+                    "TemplateName": "HairPPLLResolvePassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "PerPixelListHead",
+                            "AttachmentRef": {
+                                "Pass": "HairPPLLRasterPass",
+                                "Attachment": "PerPixelListHead"
+                            }
+                        },
+                        {
+                            "LocalSlot": "PerPixelLinkedList",
+                            "AttachmentRef": {
+                                "Pass": "HairPPLLRasterPass",
+                                "Attachment": "PerPixelLinkedList"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "RenderTargetInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "RenderTargetInputOutput"
+                            }
+                        }
                     ]
                 }
             ]

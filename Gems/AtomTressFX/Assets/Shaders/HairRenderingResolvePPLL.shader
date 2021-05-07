@@ -11,7 +11,8 @@
     {
         "Depth" : 
         { 
-            "Enable" : false 
+            "Enable" : true,
+            "CompareFunc" : "Always"  // Verified to be the correct direction although LessEqual in TressFX
         },
         "Stencil" :
         {
@@ -22,14 +23,9 @@
     "BlendState" : 
     {
         "Enable" : true,
-
-        "BlendSource" : "AlphaSource",
-        "BlendDest" : "AlphaSourceInverse",
+        "BlendSource" : "One",
+        "BlendDest" : "AlphaSource",
         "BlendOp" : "Add",
-
-//        "BlendSource" : "One",
-//        "BlendDest" : "AlphaSource",
-//        "BlendOp" : "Add",
 
         "BlendAlphaSource" : "Zero",
         "BlendAlphaDest" : "Zero",

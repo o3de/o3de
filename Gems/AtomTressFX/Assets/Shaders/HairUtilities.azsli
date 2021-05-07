@@ -71,8 +71,7 @@ float3 ScreenPosToNDC(float3 vScreenPos, float4 viewport)
     xy.y = 1 - (2 * xy.y);
 #else
     // normalize to screen coords and then add offset in screen coords (ViewSrg::m_unprojectionConstants)
-    float2 xy = vScreenPos * float2(1.0/800,-1.0/800) + float2(1,-1) + 0.0001 * viewport.xy;
-//    float2 xy = vScreenPos * viewport.xy + viewport.zw;
+    float2 xy = vScreenPos.xy * viewport.xy + viewport.zw;
 #endif
 
     return float3(xy, vScreenPos.z);

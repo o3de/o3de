@@ -31,6 +31,7 @@
 
 #include <HairUtilities.azsli>
 #include <HairRenderingSrgs.azsli>
+//#include <Atom/Features/PBR/LightingModel.azsli>
 
 // If you change this, you MUST also change TressFXLightParams in TressFXConstantBuffers.h
 #define AMD_TRESSFX_MAX_LIGHTS 10
@@ -190,7 +191,7 @@ void GetLightParams(float3 WorldPosition, uint lightIndex, inout float3 LightVec
 //
 // The angle of the cone is the last argument, in radians.  
 // It's typically in the range of 5 to 10 degrees
-// [To Do] Adi: research hair lighting model and bring up to date approches
+// [To Do] Adi: research hair lighting model and bring up to date approach
 float3 ComputeDiffuseSpecFactors(
     float3 vEyeDir, float3 vLightDir, float3 vTangentDir, HairShadeParams params, 
     float coneAngleRadians = 10 * AMD_PI / 180)
@@ -304,12 +305,13 @@ float3 AccumulateHairLight(float3 vTangent, float3 vPositionWS, float3 vViewDirW
     float3 color = float3(0.0, 0.0, 0.0);
 
     // Needed for each light calculation
-    float3 LightVector = normalize(float3(0.2, 0.2, -1.0));
+    float3 lightPosWS = float3(4, 1, 2);
+    float3 LightVector = normalize( vPositionWS - lightPosWS );
     float3 lightColor = float3(1.0, 1.0, 1.0);
-    float lightIntensity = 1.0;
+    float lightIntensity = 0.5;
 
     // [To Do] Adi: first render - simply output the hair color
-    return params.m_color;
+//    return params.m_color;
 /*
     float LightIntensity;
 
@@ -345,10 +347,37 @@ float3 AccumulateHairLight(float3 vTangent, float3 vPositionWS, float3 vViewDirW
     }
 */
 
-    return color;
+                return color;
 }
 
+/*
+void ApplyPbrLighting(
+    float3 positionScr, float3 positionWS, float3 tangentWS, float3 vViewDirWS, 
+    inout LightingData lightingData)
+{
+    // Light iterator
+    lightingData.tileIterator.Init(positionScr, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
 
+    float roughness = 0.5;
+    float specularF0 = 
+    lightingData.Init(positionWS, tangentWS, roughness);
+
+    // Diffuse and Specular response (used in IBL calculations)
+    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, roughness );
+    lightingData.diffuseResponse = 1.0 - lightingData.specularResponse;
+
+    // ------- Lighting Calculation -------
+
+    // Apply Direct Lighting
+    ApplyDirectLighting(surface, lightingData);
+
+    // Apply Image Based Lighting (IBL)
+    ApplyIBL(surface, lightingData);
+
+    // Finalize Lighting
+    lightingData.FinalizeLighting(surface.transmission.tint);
+}
+*/
 float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, float3 baseColor, int shaderParamIndex)
 {
     float3 vNDC = ScreenPosToNDC(float3(pixelCoord, depth), g_vViewport);

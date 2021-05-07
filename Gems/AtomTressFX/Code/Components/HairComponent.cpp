@@ -67,7 +67,6 @@ namespace AZ
 
             void HairComponent::Activate()
             {
-                m_controller.SetEntity(GetEntity());
                 BaseClass::Activate();
             }
 

@@ -21,3 +21,4 @@ TestResults/**
 *.swatches
 /imgui.ini
 /scripts/project_manager/logs/
+Gems/AtomTressFX/External/Code/libs/cauldron

@@ -23,6 +23,12 @@
 
 namespace AZ
 {
+    namespace RHI
+    {
+        class Buffer;
+        class BufferView;
+    }
+
     namespace RPI
     {
         class BufferAsset;
@@ -59,6 +65,8 @@ namespace AZ
 
             //! Returns the buffer that is used for all skinned mesh outputs
             virtual Data::Instance<RPI::Buffer> GetBuffer() = 0;
+//            virtual Data::Instance<RHI::Buffer> GetBuffer() = 0;
+//            virtual RHI::BufferView* GetBufferView() = 0;
 
             //! If the allocation succeeds, returns a ref-counted pointer to a VirtualAddress which will be automatically freed if the ref-count drops to zero
             //! If the allocation fails, returns nullptr

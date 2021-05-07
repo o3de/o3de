@@ -7,12 +7,25 @@
             "Name": "HairPPLLRasterPassTemplate",
             "PassClass": "HairPPLLRasterPass",
             "Slots": [
+                // Input/Outputs...
+                { 
+                    // Super important to keep this as it is used to set the size of the Head PPLL image buffer.
+                    // If DepthLinear is not availbale - connect to another viewport (non MSAA) image.
+                    "Name": "DepthLinear",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Depth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
                 {
                     "Name": "RenderTargetInputOutput",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget",
                     "LoadStoreAction": {
-                        "LoadAction": "DontCare",
+                        "LoadAction": "Load",
                         "StoreAction": "Store"
                     }
                 },
@@ -21,27 +34,12 @@
                     "ShaderInputName": "m_skinnedHairSharedBuffer",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
-//                    "LoadStoreAction": {
-//                        "LoadAction": "DontCare"
-//                    }
                 },
                 {
                     "Name": "PPLLIndexCounter",
                     "ShaderInputName": "m_linkedListCounter",
                     "SlotType": "Output",
-                    "ScopeAttachmentUsage": "Shader",
-                    "LoadStoreAction": {
-                        "ClearValue": {
-                            "Value": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ]
-                        },
-                        "LoadAction": "Clear",
-                        "StoreAction": "Store"
-                    }
+                    "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "PerPixelListHead",
@@ -65,18 +63,35 @@
                     "Name": "PerPixelLinkedList",
                     "ShaderInputName": "m_linkedListNodes",
                     "SlotType": "Output",
-                    "ScopeAttachmentUsage": "Shader",
-                    "LoadStoreAction": {
-                        "ClearValue": {
-                            "Value": [
-                                0,
-                                0,
-                                0,
-                                0
-                            ]
-                        },
-                        "LoadAction": "Clear",
-                        "StoreAction": "Store"
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "PerPixelListHead",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "DepthLinear"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R32_UINT",
+                        "SharedQueueMask": "Graphics"
+                    },
+                    "ImageDescriptor": {
+                        "BindFlags": [
+                            "ShaderReadWrite"
+                        ]
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "PerPixelListHead",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "PerPixelListHead"
                     }
                 }
             ],
@@ -84,13 +99,6 @@
                 "$type": "RasterPassData",
                 "DrawListTag": "hairFillPass",
                 "PipelineViewTag": "MainCamera"
-                //                "ShaderAsset": {
-                // Looking for it in the Shaders directory relative to the Assets directory
-                //    "FilePath": "Shaders/HairRenderingFillPPLL.shader"
-                //}
-                //                "PassSrgAsset": {
-                //                    "FilePath": "Shaders/HairSrgs.azsli:HairPerPassSrg"
-                //                }
             }
         }
     }

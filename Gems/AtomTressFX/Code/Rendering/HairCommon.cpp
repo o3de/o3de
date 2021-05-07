@@ -124,6 +124,36 @@ namespace AZ
                 return buffer;
             }
 
+
+            bool UtilityClass::BindBufferToSrg(
+                const char* warningHeader,
+                Data::Instance<RPI::Buffer> buffer,
+                SrgBufferDescriptor& bufferDesc,
+                Data::Instance<RPI::ShaderResourceGroup> srg)
+            {
+                if (!buffer)
+                {
+                    AZ_Error(warningHeader, false, "Trying to bind a null buffer");
+                    return false;
+                }
+
+                RHI::ShaderInputBufferIndex bufferIndex = srg->FindShaderInputBufferIndex(bufferDesc.m_paramNameInSrg);
+                if (!bufferIndex.IsValid())
+                {
+                    AZ_Error(warningHeader, false, "Failed to find shader input index for [%s] in the SRG.",
+                        bufferDesc.m_paramNameInSrg.GetCStr());
+                    return nullptr;
+                }
+
+                if (!srg->SetBufferView(bufferIndex, buffer->GetBufferView()))
+                {
+                    AZ_Error(warningHeader, false, "Failed to bind buffer view for [%s]", bufferDesc.m_bufferName.GetCStr());
+                    return false;
+                }
+
+                return true;
+            }
+
             Data::Instance<RHI::ImagePool> UtilityClass::CreateImagePool(RHI::ImagePoolDescriptor& imagePoolDesc)
             {
                 RHI::Ptr<RHI::Device> device = RHI::GetRHIDevice();

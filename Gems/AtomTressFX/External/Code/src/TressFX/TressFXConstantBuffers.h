@@ -161,10 +161,10 @@ namespace AMD
     {
         // For lighting/shading
         float4      MatBaseColor = { 1.f, 1.f, 1.f, 0.63f };
-        float4      MatTipColor = { 1.f, 1.f, 1.f, 0.63f };
+        float4      MatTipColor = { 0.5f, 0.5f, 1.f, 0.63f };
 
         // General information
-        float       TipPercentage = 0.f;
+        float       TipPercentage = 0.5f;
         float       StrandUVTilingFactor = 1.f;
         float       FiberRatio = 0.463f;
         float       FiberRadius = 0.0021f;
