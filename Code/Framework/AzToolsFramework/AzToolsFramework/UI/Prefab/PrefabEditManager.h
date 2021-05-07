@@ -37,21 +37,10 @@ namespace AzToolsFramework
             // EditorInteractionInterface...
             AZ::EntityId RedirectEntitySelection(AZ::EntityId entityId) override;
 
-            class PrefabInstanceStack
-            {
-            public:
-                void push(AZ::EntityId entityId);
-                AZ::EntityId top();
-                void pop();
-                void push_bottom(AZ::EntityId entityId);
-                bool empty();
-                bool contains(AZ::EntityId entityId);
-
-            private:
-                AZStd::deque<AZ::EntityId> m_stack;
-            };
-
-            PrefabInstanceStack m_instanceEditStack;
+            // EntityId of the container for the prefab instance that is currently being edited
+            AZ::EntityId m_editedPrefabContainerId;
+            // Store the container ids for all prefab instances in the hierarchy that is being edited for quick reference
+            AZStd::set<AZ::EntityId> m_editedPrefabHierarchyCache;
 
             PrefabPublicInterface* m_prefabPublicInterface;
         };

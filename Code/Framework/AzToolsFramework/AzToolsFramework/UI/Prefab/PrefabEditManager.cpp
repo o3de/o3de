@@ -35,84 +35,38 @@ namespace AzToolsFramework
 
         void PrefabEditManager::EditOwningPrefab(AZ::EntityId entityId)
         {
-            if (!entityId.IsValid())
-            {
-                // Clear current stack, notify the Outliner of the changes
-                while (!m_instanceEditStack.empty())
-                {
-                    EntityOutlinerCacheNotificationBus::Broadcast(
-                        &EntityOutlinerCacheNotifications::EntityCacheChanged, m_instanceEditStack.top());
-                    m_instanceEditStack.pop();
-                }
-
-                return;
-            }
-
             AZ::EntityId containerEntityId = m_prefabPublicInterface->GetInstanceContainerEntityId(entityId);
-            AZ::EntityId parentEntityId = m_prefabPublicInterface->GetParentInstanceContainerEntityId(entityId);
             AZ::EntityId levelContainerEntityId = m_prefabPublicInterface->GetLevelInstanceContainerEntityId();
 
-            AZStd::vector<AZ::EntityId> changedEntityIds;
-
-            if (!m_instanceEditStack.empty())
+            // Notify Outliner of changes to what was previously in the cache
+            for (AZ::EntityId changedEntityId : m_editedPrefabHierarchyCache)
             {
-                if (parentEntityId == m_instanceEditStack.top())
-                {
-                    m_instanceEditStack.push(containerEntityId);
-                    changedEntityIds.push_back(containerEntityId);
-                }
-                else
-                {
-                    if (m_instanceEditStack.contains(containerEntityId))
-                    {
-                        // Remove from the stack until you get to the correct one
-                        while (m_instanceEditStack.top() != containerEntityId)
-                        {
-                            changedEntityIds.push_back(m_instanceEditStack.top());
-                            m_instanceEditStack.pop();
-                        }
-                    }
-                    else
-                    {
-                        // Clear current stack, then loop through all ancestors and add them to the stack
-                        while (!m_instanceEditStack.empty())
-                        {
-                            changedEntityIds.push_back(m_instanceEditStack.top());
-                            m_instanceEditStack.pop();
-                        }
+                EntityOutlinerCacheNotificationBus::Broadcast(&EntityOutlinerCacheNotifications::EntityCacheChanged, changedEntityId);
+            }
 
-                        AZ::EntityId currentEntityId = containerEntityId;
-                        while (currentEntityId != levelContainerEntityId)
-                        {
-                            m_instanceEditStack.push_bottom(currentEntityId);
-                            changedEntityIds.push_back(currentEntityId);
-                            currentEntityId = m_prefabPublicInterface->GetParentInstanceContainerEntityId(entityId);
-                        }
-                    }
-                }
+            if (!entityId.IsValid() || containerEntityId == levelContainerEntityId)
+            {
+                // Clear variables, go back to editing the level
+                m_editedPrefabContainerId = AZ::EntityId();
+                m_editedPrefabHierarchyCache.clear();
             }
             else
             {
-                if (parentEntityId == levelContainerEntityId)
+                // Set edited prefab to owning instance
+                m_editedPrefabContainerId = containerEntityId;
+
+                // Clear cache and populate with all ancestors of edited prefab
+                m_editedPrefabHierarchyCache.clear();
+
+                while (containerEntityId != levelContainerEntityId)
                 {
-                    m_instanceEditStack.push(containerEntityId);
-                    changedEntityIds.push_back(containerEntityId);
-                }
-                else
-                {
-                    // Loop through all ancestors and add them to the stack
-                    AZ::EntityId currentEntityId = containerEntityId;
-                    while (currentEntityId != levelContainerEntityId)
-                    {
-                        m_instanceEditStack.push_bottom(currentEntityId);
-                        changedEntityIds.push_back(currentEntityId);
-                        currentEntityId = m_prefabPublicInterface->GetParentInstanceContainerEntityId(entityId);
-                    }
+                    m_editedPrefabHierarchyCache.insert(containerEntityId);
+                    containerEntityId = m_prefabPublicInterface->GetParentInstanceContainerEntityId(containerEntityId);
                 }
             }
 
-            // Notify Outliner of changes to update cache
-            for (AZ::EntityId changedEntityId : changedEntityIds)
+            // Notify Outliner of changes to what was added to the cache
+            for (AZ::EntityId changedEntityId : m_editedPrefabHierarchyCache)
             {
                 EntityOutlinerCacheNotificationBus::Broadcast(&EntityOutlinerCacheNotifications::EntityCacheChanged, changedEntityId);
             }
@@ -120,24 +74,24 @@ namespace AzToolsFramework
 
         bool PrefabEditManager::IsOwningPrefabBeingEdited(AZ::EntityId entityId)
         {
-            if (m_instanceEditStack.empty())
+            if (!m_editedPrefabContainerId.IsValid())
             {
                 return false;
             }
 
             AZ::EntityId containerEntity = m_prefabPublicInterface->GetInstanceContainerEntityId(entityId);
-            return m_instanceEditStack.top() == containerEntity;
+            return m_editedPrefabContainerId == containerEntity;
         }
 
         bool PrefabEditManager::IsOwningPrefabInEditStack(AZ::EntityId entityId)
         {
-            if (m_instanceEditStack.empty())
+            if (!m_editedPrefabContainerId.IsValid())
             {
                 return false;
             }
 
             AZ::EntityId containerEntityId = m_prefabPublicInterface->GetInstanceContainerEntityId(entityId);
-            return m_instanceEditStack.contains(containerEntityId);
+            return m_editedPrefabHierarchyCache.contains(containerEntityId);
         }
 
         AZ::EntityId PrefabEditManager::RedirectEntitySelection(AZ::EntityId entityId)
@@ -149,7 +103,7 @@ namespace AzToolsFramework
             AZ::EntityId containerEntityId =  m_prefabPublicInterface->GetInstanceContainerEntityId(entityId);
 
             // If the entity belongs to the level instance or an instance that is currently being edited, it can be selected
-            if (containerEntityId == levelContainerEntityId || m_instanceEditStack.contains(containerEntityId))
+            if (containerEntityId == levelContainerEntityId || m_editedPrefabHierarchyCache.contains(containerEntityId))
             {
                 return entityId;
             }
@@ -158,7 +112,7 @@ namespace AzToolsFramework
             AZ::EntityId parentContainerEntityId = m_prefabPublicInterface->GetParentInstanceContainerEntityId(containerEntityId);
 
             while (parentContainerEntityId.IsValid() && parentContainerEntityId != levelContainerEntityId &&
-                   !m_instanceEditStack.contains(parentContainerEntityId))
+                   !m_editedPrefabHierarchyCache.contains(parentContainerEntityId))
             {
                 // Else keep going up the hierarchy
                 containerEntityId = parentContainerEntityId;
@@ -166,36 +120,6 @@ namespace AzToolsFramework
             }
 
             return containerEntityId;
-        }
-
-        void PrefabEditManager::PrefabInstanceStack::push(AZ::EntityId entityId)
-        {
-            m_stack.push_back(entityId);
-        }
-
-        AZ::EntityId PrefabEditManager::PrefabInstanceStack::top()
-        {
-            return m_stack.back();
-        }
-
-        void PrefabEditManager::PrefabInstanceStack::pop()
-        {
-            m_stack.pop_back();
-        }
-
-        void PrefabEditManager::PrefabInstanceStack::push_bottom(AZ::EntityId entityId)
-        {
-            m_stack.push_front(entityId);
-        }
-
-        bool PrefabEditManager::PrefabInstanceStack::empty()
-        {
-            return m_stack.empty();
-        }
-
-        bool PrefabEditManager::PrefabInstanceStack::contains(AZ::EntityId entityId)
-        {
-            return AZStd::find(m_stack.begin(), m_stack.end(), entityId) != m_stack.end();
         }
     }
 }

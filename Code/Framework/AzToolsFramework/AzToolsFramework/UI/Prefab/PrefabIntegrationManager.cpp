@@ -191,7 +191,7 @@ namespace AzToolsFramework
                                 closeAction->setToolTip(QObject::tr("Exit the prefab focus mode."));
 
                                 QObject::connect(closeAction, &QAction::triggered, closeAction, [this] {
-                                    ContextMenu_CompleteEditPrefab();
+                                    ContextMenu_ClosePrefab();
                                 });
                             }
                             else
@@ -386,9 +386,9 @@ namespace AzToolsFramework
             s_prefabEditInterface->EditOwningPrefab(containerEntity);
         }
 
-        void PrefabIntegrationManager::ContextMenu_CompleteEditPrefab()
+        void PrefabIntegrationManager::ContextMenu_ClosePrefab()
         {
-            s_prefabEditInterface->ClosePrefabEdit();
+            s_prefabEditInterface->EditOwningPrefab(AZ::EntityId());
         }
 
         void PrefabIntegrationManager::ContextMenu_SavePrefab(AZ::EntityId containerEntity)
