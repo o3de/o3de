@@ -27,7 +27,8 @@
   },
   "debug": {
     "TAGS":[
-        "nightly",
+        "nightly_incremental",
+        "nightly_clean",
         "weekly-build-metrics"
     ],
     "COMMAND":"../Windows/build_ninja_windows.cmd",
@@ -67,7 +68,8 @@
   },
   "profile_nounity": {
     "TAGS":[
-        "nightly",
+        "nightly_incremental",
+        "nightly_clean",
         "weekly-build-metrics"
     ],
     "COMMAND":"../Windows/build_ninja_windows.cmd",
@@ -100,7 +102,8 @@
   },
   "asset_clean_profile": {
     "TAGS":[
-        "nightly"
+        "nightly_incremental",
+        "nightly_clean"
     ],
     "PIPELINE_ENV": {
         "CLEAN_ASSETS": "1"
@@ -112,7 +115,8 @@
   },
   "release": {
     "TAGS":[
-        "nightly",
+        "nightly_incremental",
+        "nightly_clean",
         "weekly-build-metrics"
     ],
     "COMMAND":"../Windows/build_ninja_windows.cmd",
@@ -127,7 +131,8 @@
   },
   "monolithic_release": {
     "TAGS":[
-        "nightly",
+        "nightly_incremental",
+        "nightly_clean",
         "weekly-build-metrics"
     ],
     "COMMAND":"../Windows/build_ninja_windows.cmd",

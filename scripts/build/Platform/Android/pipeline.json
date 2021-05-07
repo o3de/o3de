@@ -13,6 +13,9 @@
         },
         "packaging": {
             "CLEAN_WORKSPACE": true
+        },
+        "nightly_clean": {
+            "CLEAN_WORKSPACE": true
         }
     }
 }

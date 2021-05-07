@@ -9,7 +9,8 @@
   },
   "profile_pipe": {
     "TAGS": [
-      "nightly"
+      "nightly_incremental",
+      "nightly_clean"
     ],
     "steps": [
       "profile",
@@ -28,7 +29,8 @@
   },
   "debug": {
     "TAGS": [
-      "nightly",
+      "nightly_incremental",
+      "nightly_clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_mac.sh",
@@ -56,7 +58,8 @@
   },
   "profile_nounity": {
     "TAGS": [
-      "nightly",
+      "nightly_incremental",
+      "nightly_clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_mac.sh",
@@ -86,7 +89,8 @@
   },
   "asset_clean_profile": {
     "TAGS": [
-      "nightly"
+      "nightly_incremental",
+      "nightly_clean"
     ],
     "PIPELINE_ENV": {
       "CLEAN_ASSETS": "1"
@@ -98,7 +102,8 @@
   },
   "periodic_test_profile": {
     "TAGS": [
-      "nightly",
+      "nightly_incremental",
+      "nightly_clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_mac.sh",
@@ -113,7 +118,8 @@
   },
   "benchmark_test_profile": {
     "TAGS": [
-      "nightly",
+      "nightly_incremental",
+      "nightly_clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_mac.sh",
@@ -128,7 +134,8 @@
   },
   "release": {
     "TAGS": [
-      "nightly",
+      "nightly_incremental",
+      "nightly_clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_mac.sh",
@@ -142,7 +149,8 @@
   },
   "monolithic_release": {
     "TAGS": [
-      "nightly",
+      "nightly_incremental",
+      "nightly_clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_mac.sh",
