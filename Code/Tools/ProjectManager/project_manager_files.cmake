@@ -22,6 +22,9 @@ set(FILES
     Source/ProjectManagerWindow.h
     Source/ProjectManagerWindow.cpp
     Source/ProjectManagerWindow.ui
+    Source/PythonBindings.h
+    Source/PythonBindings.cpp
+    Source/PythonBindingsInterface.h
     Source/NewProjectSettings.h
     Source/NewProjectSettings.cpp
     Source/NewProjectSettings.ui

@@ -14,6 +14,8 @@
 
 #include <Source/ui_ProjectsHome.h>
 
+#include <PythonBindingsInterface.h>
+
 namespace O3DE::ProjectManager
 {
     ProjectsHome::ProjectsHome(ProjectManagerWindow* window)
@@ -23,6 +25,9 @@ namespace O3DE::ProjectManager
         m_ui->setupUi(this);
 
         ConnectSlotsAndSignals();
+
+        // example of how to get the current project name
+        Project currentProject = PythonBindingsInterface::Get()->GetCurrentProject();
     }
 
     ProjectsHome::~ProjectsHome()
