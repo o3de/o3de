@@ -83,7 +83,8 @@ namespace AssetBundler
             ConfigHelpers::read<int>(settings, QStringLiteral("AssetListFileNameColumnWidth"), config.assetListFileNameColumnWidth);
             ConfigHelpers::read<int>(settings, QStringLiteral("AssetListPlatformColumnWidth"), config.assetListPlatformColumnWidth);
             ConfigHelpers::read<int>(settings, QStringLiteral("ProductAssetNameColumnWidth"), config.productAssetNameColumnWidth);
-            ConfigHelpers::read<int>(settings, QStringLiteral("ProductAssetRelativePathColumnWidth"), config.productAssetRelativePathColumnWidth);
+            ConfigHelpers::read<int>(
+                settings, QStringLiteral("ProductAssetRelativePathColumnWidth"), config.productAssetRelativePathColumnWidth);
         }
 
         return config;
@@ -159,8 +160,7 @@ namespace AssetBundler
         m_platformCatalogManager = AZStd::make_unique<AzToolsFramework::PlatformAddressedAssetCatalogManager>();
 
         // Define some application-level settings
-        QApplication::setOrganizationName("Amazon");
-        QApplication::setOrganizationDomain("amazon.com");
+        QApplication::setOrganizationName("O3DE");
         QApplication::setApplicationName("Asset Bundler");
 
         QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
@@ -194,7 +194,12 @@ namespace AssetBundler
             engineRoot);
         AzQtComponents::StyleManager::setStyleSheet(m_mainWindow.data(), QStringLiteral("style:AssetBundler.qss"));
 
-        AzQtComponents::ConfigHelpers::loadConfig<Config, GUIApplicationManager>(&m_fileWatcher, &m_config, QStringLiteral("style:AssetBundlerConfig.ini"), this, std::bind(&GUIApplicationManager::ApplyConfig, this));
+        AzQtComponents::ConfigHelpers::loadConfig<Config, GUIApplicationManager>(
+            &m_fileWatcher,
+            &m_config,
+            QStringLiteral("style:AssetBundlerConfig.ini"),
+            this,
+            std::bind(&GUIApplicationManager::ApplyConfig, this));
         ApplyConfig();
 
         qApp->setWindowIcon(QIcon("style:AssetBundler-Icon-256x256@x2.ico"));
@@ -238,7 +243,12 @@ namespace AssetBundler
         m_fileWatcher.removePaths(paths.values());
     }
 
-    bool GUIApplicationManager::OnPreError(const char* /*window*/, const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* message)
+    bool GUIApplicationManager::OnPreError(
+        const char* /*window*/,
+        const char* /*fileName*/,
+        int /*line*/,
+        const char* /*func*/,
+        const char* message)
     {
         // We want to display errors during initialization, then let the MainWindow handle errors during runtime
         if (m_isInitializing)
@@ -258,7 +268,12 @@ namespace AssetBundler
         return false;
     }
 
-    bool GUIApplicationManager::OnPreWarning(const char* /*window*/, const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* /*message*/)
+    bool GUIApplicationManager::OnPreWarning(
+        const char* /*window*/,
+        const char* /*fileName*/,
+        int /*line*/,
+        const char* /*func*/,
+        const char* /*message*/)
     {
         // Don't handle warnings, let the MainWindow print them
         return false;

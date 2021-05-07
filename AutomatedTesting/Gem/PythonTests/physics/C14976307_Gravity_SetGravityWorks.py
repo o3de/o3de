@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C14976307
 # Test Case Title : Check that Set Gravity Enabled works on an entity with gravity that starts as disabled
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/14976307
+
 
 
 # fmt: off

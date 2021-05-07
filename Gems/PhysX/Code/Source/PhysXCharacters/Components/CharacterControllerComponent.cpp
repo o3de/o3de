@@ -87,7 +87,7 @@ namespace PhysX
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         Physics::CharacterRequestBus::Handler::BusConnect(GetEntityId());
         Physics::CollisionFilteringRequestBus::Handler::BusConnect(GetEntityId());
-        Physics::WorldBodyRequestBus::Handler::BusConnect(GetEntityId());
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 
     void CharacterControllerComponent::Deactivate()
@@ -95,7 +95,7 @@ namespace PhysX
         DestroyController();
 
         Physics::CollisionFilteringRequestBus::Handler::BusDisconnect();
-        Physics::WorldBodyRequestBus::Handler::BusDisconnect();
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         Physics::CharacterRequestBus::Handler::BusDisconnect();
     }
@@ -215,9 +215,18 @@ namespace PhysX
         return AZ::Aabb::CreateNull();
     }
 
-    AzPhysics::SimulatedBody* CharacterControllerComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* CharacterControllerComponent::GetSimulatedBody()
     {
         return GetCharacter();
+    }
+
+    AzPhysics::SimulatedBodyHandle CharacterControllerComponent::GetSimulatedBodyHandle() const
+    {
+        if (m_controller)
+        {
+            return m_controller->m_bodyHandle;
+        }
+        return AzPhysics::InvalidSimulatedBodyHandle;
     }
 
     AzPhysics::SceneQueryHit CharacterControllerComponent::RayCast(const AzPhysics::RayCastRequest& request)
@@ -456,7 +465,5 @@ namespace PhysX
         m_preSimulateHandler.Disconnect();
 
         CharacterControllerRequestBus::Handler::BusDisconnect();
-
-        Physics::WorldBodyNotificationBus::Event(GetEntityId(), &Physics::WorldBodyNotifications::OnPhysicsDisabled);
     }
 } // namespace PhysX

@@ -19,39 +19,8 @@ set(FILES
     FbxSceneSystem.cpp
     ImportContexts/ImportContexts.h
     ImportContexts/ImportContexts.cpp
-    ImportContexts/FbxImportContexts.h
-    ImportContexts/FbxImportContexts.cpp
     ImportContexts/AssImpImportContexts.h
     ImportContexts/AssImpImportContexts.cpp
-    Importers/FbxAnimationImporter.h
-    Importers/FbxAnimationImporter.cpp
-    Importers/FbxBoneImporter.h
-    Importers/FbxBoneImporter.cpp
-    Importers/FbxBlendShapeImporter.h
-    Importers/FbxBlendShapeImporter.cpp
-    Importers/FbxColorStreamImporter.h
-    Importers/FbxColorStreamImporter.cpp
-    Importers/FbxTangentStreamImporter.h
-    Importers/FbxTangentStreamImporter.cpp
-    Importers/FbxBitangentStreamImporter.h
-    Importers/FbxBitangentStreamImporter.cpp
-    Importers/FbxImporterUtilities.h
-    Importers/FbxImporterUtilities.inl
-    Importers/FbxImporterUtilities.cpp
-    Importers/FbxMaterialImporter.h
-    Importers/FbxMaterialImporter.cpp
-    Importers/FbxMeshImporter.h
-    Importers/FbxMeshImporter.cpp
-    Importers/FbxSkinImporter.h
-    Importers/FbxSkinImporter.cpp
-    Importers/FbxSkinWeightsImporter.h
-    Importers/FbxSkinWeightsImporter.cpp
-    Importers/FbxTransformImporter.h
-    Importers/FbxTransformImporter.cpp
-    Importers/FbxUvMapImporter.h
-    Importers/FbxUvMapImporter.cpp
-    Importers/Utilities/FbxMeshImporterUtilities.h
-    Importers/Utilities/FbxMeshImporterUtilities.cpp
     Importers/Utilities/AssImpMeshImporterUtilities.h
     Importers/Utilities/AssImpMeshImporterUtilities.cpp
     Importers/Utilities/RenamedNodesMap.h
@@ -84,4 +53,7 @@ set(FILES
     Importers/AssImpUvMapImporter.cpp
     Importers/AssImpAnimationImporter.h
     Importers/AssImpAnimationImporter.cpp
+    Importers/ImporterUtilities.h
+    Importers/ImporterUtilities.cpp
+    Importers/ImporterUtilities.inl
 )

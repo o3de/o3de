@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C14195074
 # Test Case Title : Verify Postsimulate Events
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/14195074
+
 
 # fmt: off
 class Tests:

@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C5959765
 # Test Case Title : Check that rigid body (asset) gets impulse from force region
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5959765
+
 
 # fmt: off
 

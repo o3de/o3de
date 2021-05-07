@@ -22,7 +22,6 @@
 #include <Maestro/Types/AnimParamType.h>
 
 // Editor
-#include "Geometry/EdGeometry.h"
 #include "ViewManager.h"
 #include "OBJExporter.h"
 #include "OCMExporter.h"
@@ -40,6 +39,9 @@
 #include "TrackView/TrackViewSequenceManager.h"
 #include "Resource.h"
 #include "Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h"
+
+#include <IEntityRenderState.h>
+#include <IStatObj.h>
 
 namespace
 {
@@ -494,53 +496,6 @@ bool CExportManager::AddStatObj(Export::CObject* pObj, IStatObj* pStatObj, Matri
 
 bool CExportManager::AddMeshes(Export::CObject* pObj)
 {
-    CEdGeometry* pEdGeom = m_pBaseObj->GetGeometry();
-    IIndexedMesh* pIndMesh = 0;
-
-    if (pEdGeom)
-    {
-        size_t idx = 0;
-        size_t nextIdx = 0;
-        do
-        {
-            pIndMesh = 0;
-            if (m_isOccluder)
-            {
-                if (pEdGeom->GetIStatObj() && pEdGeom->GetIStatObj()->GetLodObject(2))
-                {
-                    pIndMesh    =   pEdGeom->GetIStatObj()->GetLodObject(2)->GetIndexedMesh(true);
-                }
-                if (!pIndMesh && pEdGeom->GetIStatObj() && pEdGeom->GetIStatObj()->GetLodObject(1))
-                {
-                    pIndMesh    =   pEdGeom->GetIStatObj()->GetLodObject(1)->GetIndexedMesh(true);
-                }
-            }
-
-            if (!pIndMesh)
-            {
-                pIndMesh = pEdGeom->GetIndexedMesh(idx);
-                nextIdx++;
-            }
-
-            if (!pIndMesh)
-            {
-                break;
-            }
-
-            Matrix34 tm;
-            pEdGeom->GetTM(&tm, idx);
-            Matrix34A objTM = tm;
-            AddMesh(pObj, pIndMesh, &objTM);
-            idx = nextIdx;
-        }
-        while (pIndMesh && idx);
-
-        if (idx > 0)
-        {
-            return true;
-        }
-    }
-
     if (m_pBaseObj->GetType() == OBJTYPE_AZENTITY)
     {
         CEntityObject* pEntityObject = (CEntityObject*)m_pBaseObj;
@@ -548,11 +503,7 @@ bool CExportManager::AddMeshes(Export::CObject* pObj)
 
         if (pEngineNode)
         {
-            if (m_isPrecaching)
-            {
-                GetIEditor()->Get3DEngine()->PrecacheRenderNode(pEngineNode, 0);
-            }
-            else
+            if (!m_isPrecaching)
             {
                 for (int i = 0; i < pEngineNode->GetSlotCount(); ++i)
                 {
@@ -1114,8 +1065,6 @@ bool CExportManager::AddSelectedRegionObjects()
     {
         AddObject(objects[i]);
     }
-
-    GetIEditor()->Get3DEngine()->ProposeContentPrecache();
 
     // Repeat pipeline to collect geometry
     m_isPrecaching = false;

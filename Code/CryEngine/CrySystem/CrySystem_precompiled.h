@@ -102,7 +102,6 @@ inline int RoundToClosestMB(size_t memSize)
 #include <IRenderer.h>
 #include <CryFile.h>
 #include <ISystem.h>
-#include <I3DEngine.h>
 #include <ITimer.h>
 #include <IPhysics.h>
 #include <IXml.h>
@@ -127,7 +126,6 @@ namespace AZ::IO
     struct IArchive;
 }
 struct ICryFont;
-struct I3DEngine;
 struct IMovieSystem;
 struct IAudioSystem;
 struct IPhysicalWorld;

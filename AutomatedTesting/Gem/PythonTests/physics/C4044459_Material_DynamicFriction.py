@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C4044459
 # Test Case Title : Verify the functionality of dynamic friction
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4044459
+
 
 
 # fmt: off
