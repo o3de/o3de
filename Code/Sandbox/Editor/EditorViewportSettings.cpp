@@ -56,12 +56,12 @@ namespace Editor
 
     float AngleSnappingSize()
     {
-        double gridSize = 5;
+        double angleSize = 5.0;
         if (auto* registry = AZ::SettingsRegistry::Get())
         {
-            registry->Get(gridSize, AngleSizeSetting);
+            registry->Get(angleSize, AngleSizeSetting);
         }
-        return aznumeric_cast<float>(gridSize);
+        return aznumeric_cast<float>(angleSize);
     }
 
     bool ShowingGrid()
