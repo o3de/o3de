@@ -91,10 +91,9 @@ namespace SandboxEditor
 
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
-            auto handleCameraChange = [this](const AZ::Matrix4x4&) {
+            auto handleCameraChange = [this, viewportContext](const AZ::Matrix4x4&) {
                 if (!m_updating)
                 {
-                    const auto viewportContext = RetrieveViewportContext(GetViewportId());
                     UpdateCameraFromTransform(m_targetCamera, viewportContext->GetCameraTransform());
                 }
             };

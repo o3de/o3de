@@ -29,7 +29,6 @@ namespace AzFramework
     AZ_CVAR(float, ed_cameraSystemOrbitDollyScrollSpeed, 0.02f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, ed_cameraSystemOrbitDollyCursorSpeed, 0.01f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, ed_cameraSystemScrollTranslateSpeed, 0.02f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(float, ed_cameraSystemDefaultOrbitDistance, 60.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, ed_cameraSystemMaxOrbitDistance, 100.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, ed_cameraSystemLookSmoothness, 5.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, ed_cameraSystemTranslateSmoothness, 5.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
@@ -152,14 +151,15 @@ namespace AzFramework
 
         camera.m_pitch = eulerAngles.GetX();
         camera.m_yaw = eulerAngles.GetZ();
-        camera.m_lookAt = transform.GetTranslation() - (camera.Rotation().GetBasisY() * camera.m_lookDist);
+        // note: m_lookDist is negative so we must invert it here
+        camera.m_lookAt = transform.GetTranslation() + (camera.Rotation().GetBasisY() * -camera.m_lookDist);
     }
 
     bool CameraSystem::HandleEvents(const InputEvent& event)
     {
-        if (const auto& cursor_motion = AZStd::get_if<CursorMotionEvent>(&event))
+        if (const auto& cursor = AZStd::get_if<CursorEvent>(&event))
         {
-            m_currentCursorPosition = cursor_motion->m_position;
+            m_currentCursorPosition = cursor->m_position;
         }
         else if (const auto& scroll = AZStd::get_if<ScrollEvent>(&event))
         {
@@ -509,8 +509,10 @@ namespace AzFramework
         if (Beginning())
         {
             float hit_distance = 0.0f;
-            if (AZ::Plane::CreateFromNormalAndPoint(AZ::Vector3::CreateAxisZ(), AZ::Vector3::CreateAxisZ(ed_cameraSystemDefaultPlaneHeight))
-                    .CastRay(targetCamera.Translation(), targetCamera.Rotation().GetBasisY(), hit_distance))
+            AZ::Plane::CreateFromNormalAndPoint(AZ::Vector3::CreateAxisZ(), AZ::Vector3::CreateAxisZ(ed_cameraSystemDefaultPlaneHeight))
+                .CastRay(targetCamera.Translation(), targetCamera.Rotation().GetBasisY(), hit_distance);
+
+            if (hit_distance > 0.0f)
             {
                 hit_distance = AZStd::min<float>(hit_distance, ed_cameraSystemMaxOrbitDistance);
                 nextCamera.m_lookDist = -hit_distance;
@@ -655,7 +657,7 @@ namespace AzFramework
             const auto* position = inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>();
             AZ_Assert(position, "Expected PositionData2D but found nullptr");
 
-            return CursorMotionEvent{ScreenPoint(
+            return CursorEvent{ScreenPoint(
                 position->m_normalizedPosition.GetX() * windowSize.m_width, position->m_normalizedPosition.GetY() * windowSize.m_height)};
         }
         else if (inputChannelId == InputDeviceMouse::Movement::Z)

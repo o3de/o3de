@@ -70,7 +70,7 @@ namespace AzFramework
 
     void UpdateCameraFromTransform(Camera& camera, const AZ::Transform& transform);
 
-    struct CursorMotionEvent
+    struct CursorEvent
     {
         ScreenPoint m_position;
     };
@@ -86,7 +86,7 @@ namespace AzFramework
         InputChannel::State m_state; //!< Channel state. (e.g. Begin/update/end event).
     };
 
-    using InputEvent = AZStd::variant<AZStd::monostate, CursorMotionEvent, ScrollEvent, DiscreteInputEvent>;
+    using InputEvent = AZStd::variant<AZStd::monostate, CursorEvent, ScrollEvent, DiscreteInputEvent>;
 
     class CameraInput
     {
