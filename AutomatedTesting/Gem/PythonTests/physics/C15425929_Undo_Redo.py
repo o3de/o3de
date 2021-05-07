@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C15425929
 # Test Case Title : Verify that undo - redo operations do not create any error
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/15425929
+
 
 
 # fmt: off

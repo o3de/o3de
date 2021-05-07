@@ -102,7 +102,6 @@ set(FILES
     Source/PhysXCharacters/Components/CharacterGameplayComponent.h
     Source/PhysXCharacters/Components/RagdollComponent.cpp
     Source/PhysXCharacters/Components/RagdollComponent.h
-
     Include/PhysX/Debug/PhysXDebugConfiguration.h
     Include/PhysX/Debug/PhysXDebugInterface.h
     Include/PhysX/Configuration/PhysXConfiguration.h

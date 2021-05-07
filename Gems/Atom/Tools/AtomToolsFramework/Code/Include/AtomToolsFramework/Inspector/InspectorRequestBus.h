@@ -55,6 +55,12 @@ namespace AtomToolsFramework
 
         //! Calls Rebuild for all InspectorGroupWidget, allowing for destructive UI changes
         virtual void RebuildAll() = 0;
+
+        //! Expands all groups and headers
+        virtual void ExpandAll() = 0;
+
+        //! Collapses all groups and headers
+        virtual void CollapseAll() = 0;
     };
 
     using InspectorRequestBus = AZ::EBus<InspectorRequests>;

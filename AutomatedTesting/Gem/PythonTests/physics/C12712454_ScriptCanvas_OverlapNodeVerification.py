@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : 12712454
 # Test Case Title : Verify overlap nodes in script canvas
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/12712454
+
 
 # fmt: off
 class Tests:

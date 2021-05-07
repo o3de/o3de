@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C18243588
 # Test Case Title : Check that ball joint constrains 2 bodies within cone limits
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/18243588
+
 # fmt: off
 class Tests:
     enter_game_mode                 = ("Entered game mode",                         "Failed to enter game mode")

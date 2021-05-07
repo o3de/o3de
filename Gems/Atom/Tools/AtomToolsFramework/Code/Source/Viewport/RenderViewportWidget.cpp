@@ -384,27 +384,32 @@ namespace AtomToolsFramework
 
     bool RenderViewportWidget::GridSnappingEnabled()
     {
-        return false;
+        return m_viewportSettings ? m_viewportSettings->GridSnappingEnabled() : false;
     }
 
     float RenderViewportWidget::GridSize()
     {
-        return 0.0f;
+        return m_viewportSettings ? m_viewportSettings->GridSize() : 0.0f;
     }
 
     bool RenderViewportWidget::ShowGrid()
     {
-        return false;
+        return m_viewportSettings ? m_viewportSettings->ShowGrid() : false;
     }
 
     bool RenderViewportWidget::AngleSnappingEnabled()
     {
-        return false;
+        return m_viewportSettings ? m_viewportSettings->AngleSnappingEnabled() : false;
     }
 
     float RenderViewportWidget::AngleStep()
     {
-        return 0.0f;
+        return m_viewportSettings ? m_viewportSettings->AngleStep() : 0.0f;
+    }
+
+    void RenderViewportWidget::SetViewportSettings(AzToolsFramework::ViewportInteraction::ViewportSettings* viewportSettings)
+    {
+        m_viewportSettings = viewportSettings;
     }
 
     AzFramework::ScreenPoint RenderViewportWidget::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
@@ -470,6 +475,11 @@ namespace AtomToolsFramework
         using AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint;
         return m_lastCursorPosition.has_value() ? ScreenPointFromQPoint(mapFromGlobal(m_lastCursorPosition.value()))
                                                 : AZStd::optional<AzFramework::ScreenPoint>{};
+    }
+
+    bool RenderViewportWidget::IsMouseOver() const
+    {
+        return m_mouseOver;
     }
 
     void RenderViewportWidget::BeginCursorCapture()

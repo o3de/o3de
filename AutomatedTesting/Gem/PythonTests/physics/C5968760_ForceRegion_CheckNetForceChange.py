@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C5968760
 # Test Case Title : Check moving force region changes net force
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5968760
+
 
 
 # fmt: off

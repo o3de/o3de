@@ -16,7 +16,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
-#include <AzFramework/Physics/WorldBodyBus.h>
+#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
@@ -35,7 +35,7 @@ namespace PhysX
     class RigidBodyComponent
         : public AZ::Component
         , public Physics::RigidBodyRequestBus::Handler
-        , public Physics::WorldBodyRequestBus::Handler
+        , public AzPhysics::SimulatedBodyComponentRequestsBus::Handler
         , public AZ::TickBus::Handler
         , public AzFramework::SliceGameEntityOwnershipServiceNotificationBus::Handler
         , protected AZ::TransformNotificationBus::MultiHandler
@@ -120,8 +120,9 @@ namespace PhysX
         void SetSleepThreshold(float threshold) override;
         AzPhysics::RigidBody* GetRigidBody() override;
 
-        // WorldBodyRequestBus
-        AzPhysics::SimulatedBody* GetWorldBody() override;
+        // AzPhysics::SimulatedBodyComponentRequestsBus::Handler overrides ...
+        AzPhysics::SimulatedBody* GetSimulatedBody() override;
+        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
 
         // SliceGameEntityOwnershipServiceNotificationBus
         void OnSliceInstantiated(const AZ::Data::AssetId&, const AZ::SliceComponent::SliceInstanceAddress&,

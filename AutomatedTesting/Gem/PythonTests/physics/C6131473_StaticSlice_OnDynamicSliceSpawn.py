@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C6131473
 # Test Case Title : Verify a static slice is not spawned automatically everytime a dynamic slice with
 # PhysX Components is spawned
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/6131473
+
 
 
 # fmt: off
