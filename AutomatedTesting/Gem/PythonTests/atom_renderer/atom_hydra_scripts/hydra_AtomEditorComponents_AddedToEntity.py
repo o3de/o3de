@@ -171,7 +171,7 @@ def run():
         lambda entity_obj: verify_set_property(
             entity_obj, "Controller|Configuration|Camera Entity", camera_entity.id))
 
-    # Decal (Atom) Component
+    # Decal Component
     material_asset_path = os.path.join("AutomatedTesting", "Materials", "basic_grey.material")
     material_asset = asset.AssetCatalogRequestBus(
         bus.Broadcast, "GetAssetIdByPath", material_asset_path, math.Uuid(), False)

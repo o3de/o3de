@@ -1481,7 +1481,7 @@ void OutlinerListModel::OnEntityInfoUpdatedRemoveChildEnd(AZ::EntityId parentId,
     (void)childId;
     AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-	endResetModel();
+    endRemoveRows();
 
     //must refresh partial lock/visibility of parents
     m_isFilterDirty = true;

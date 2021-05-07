@@ -18,9 +18,8 @@ import pytest
 import editor_python_test_tools.hydra_test_utils as hydra
 
 logger = logging.getLogger(__name__)
-
-EDITOR_TIMEOUT = 200
-HYDRA_SCRIPT_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
+EDITOR_TIMEOUT = 120
+TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
 
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
@@ -39,8 +38,7 @@ class TestAtomEditorComponentsMain(object):
         "C32078120",  # Directional Light
         "C32078119",  # DepthOfField
         "C32078118")  # Decal (Atom)
-    def test_AtomEditorComponents_AddedToEntity(
-            self, request, editor, level, workspace, project, launcher_platform):
+    def test_AtomEditorComponents_AddedToEntity(self, request, editor, level, workspace, project, launcher_platform):
         cfg_args = [level]
 
         expected_lines = [
@@ -171,7 +169,7 @@ class TestAtomEditorComponentsMain(object):
 
         hydra.launch_and_validate_results(
             request,
-            HYDRA_SCRIPT_DIRECTORY,
+            TEST_DIRECTORY,
             editor,
             "hydra_AtomEditorComponents_AddedToEntity.py",
             timeout=EDITOR_TIMEOUT,

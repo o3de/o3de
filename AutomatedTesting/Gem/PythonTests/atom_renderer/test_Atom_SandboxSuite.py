@@ -10,6 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Sandbox suite tests for the Atom renderer.
 """
+
 import pytest
 
 
@@ -17,6 +18,7 @@ import pytest
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("level", ["auto_test"])
 class TestAtomEditorComponentsSandbox(object):
+
     # It requires at least one test
     def test_Dummy(self, request, editor, level, workspace, project, launcher_platform):
         pass
