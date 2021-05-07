@@ -53,5 +53,6 @@ set(GEM_DEPENDENCIES
     Gem::EMotionFX.Editor
     Gem::ImGui.Editor
     Gem::Atom_AtomBridge.Editor
+    Gem::NvCloth.Editor
     Gem::Blast.Editor
 )

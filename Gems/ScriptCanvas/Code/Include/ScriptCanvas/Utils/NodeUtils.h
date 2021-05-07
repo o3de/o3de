@@ -38,7 +38,7 @@ namespace ScriptCanvas
         
         static NodeTypeIdentifier ConstructCustomNodeIdentifier(const AZ::Uuid& nodeId);
         
-        static NodeTypeIdentifier ConstructMethodNodeIdentifier(AZStd::string_view methodClass, AZStd::string_view methodName);
+        static NodeTypeIdentifier ConstructMethodNodeIdentifier(AZStd::string_view methodClass, AZStd::string_view methodName, ScriptCanvas::PropertyStatus propertyStatus);
         static NodeTypeIdentifier ConstructGlobalMethodNodeIdentifier(AZStd::string_view methodName);
         static NodeTypeIdentifier ConstructMethodOverloadedNodeIdentifier(AZStd::string_view methodName);
 
