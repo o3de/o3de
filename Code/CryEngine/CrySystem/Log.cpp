@@ -51,7 +51,7 @@
 #define LOG_BACKUP_PATH "@log@/LogBackups"
 
 #if defined(IOS)
-#include "SystemUtilsApple.h"
+#include <AzFramework/Utils/SystemUtilsApple.h>
 #endif
 
 //////////////////////////////////////////////////////////////////////
