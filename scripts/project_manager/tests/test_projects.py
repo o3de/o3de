@@ -9,8 +9,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-'''
+
 import pytest
+'''
 import os
 import sys
 import tempfile
@@ -249,3 +250,6 @@ def test_add_remove_gems(workspace, project_helper):
     my_dialog.remove_gems_handler()
     assert my_test_gem_name not in my_dialog.project_gem_list, f'Gem {my_test_gem_name} still in project gem list'
 '''
+
+def test_project_place_holder():
+    pass
