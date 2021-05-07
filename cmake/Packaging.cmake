@@ -13,7 +13,7 @@ if(NOT PAL_TRAIT_BUILD_CPACK_SUPPORTED)
     return()
 endif()
 
-ly_get_absolute_pal_filename(pal_dir ${CMAKE_SOURCE_DIR}/cmake/Platform/${PAL_HOST_PLATFORM_NAME})
+ly_get_absolute_pal_filename(pal_dir ${LY_ROOT_FOLDER}/cmake/Platform/${PAL_HOST_PLATFORM_NAME})
 include(${pal_dir}/Packaging_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 
 # if we get here and the generator hasn't been set, then a non fatal error occurred disabling packaging support
