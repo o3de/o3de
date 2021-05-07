@@ -739,7 +739,9 @@ namespace ImageProcessing
 
         if (preset == nullptr)
         {
-            AZ_Assert(false, "preset should always exist");
+            AZStd::string uuidStr;
+            textureSettings.m_preset.ToString(uuidStr);
+            AZ_Assert(false, "%s cannot find image preset with ID %s.", imageFilePath.c_str(), uuidStr.c_str());
             return nullptr;
         }
 

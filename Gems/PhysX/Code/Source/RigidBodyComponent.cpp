@@ -189,7 +189,7 @@ namespace PhysX
         }
 
         Physics::RigidBodyRequestBus::Handler::BusDisconnect();
-        Physics::WorldBodyRequestBus::Handler::BusDisconnect();
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
         m_sceneFinishSimHandler.Disconnect();
         AZ::TickBus::Handler::BusDisconnect();
@@ -309,7 +309,7 @@ namespace PhysX
         AZ::TickBus::Handler::BusConnect();
         AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
         Physics::RigidBodyRequestBus::Handler::BusConnect(GetEntityId());
-        Physics::WorldBodyRequestBus::Handler::BusConnect(GetEntityId());
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 
     void RigidBodyComponent::EnablePhysics()
@@ -341,7 +341,6 @@ namespace PhysX
         m_initialScale = transform.ExtractScale();
 
         Physics::RigidBodyNotificationBus::Event(GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsEnabled);
-        Physics::WorldBodyNotificationBus::Event(GetEntityId(), &Physics::WorldBodyNotifications::OnPhysicsEnabled);
     }
 
     void RigidBodyComponent::DisablePhysics()
@@ -352,7 +351,6 @@ namespace PhysX
         }
 
         Physics::RigidBodyNotificationBus::Event(GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsDisabled);
-        Physics::WorldBodyNotificationBus::Event(GetEntityId(), &Physics::WorldBodyNotifications::OnPhysicsDisabled);
     }
 
     bool RigidBodyComponent::IsPhysicsEnabled() const
@@ -526,9 +524,14 @@ namespace PhysX
         return m_rigidBody;
     }
 
-    AzPhysics::SimulatedBody* RigidBodyComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* RigidBodyComponent::GetSimulatedBody()
     {
         return m_rigidBody;
+    }
+
+    AzPhysics::SimulatedBodyHandle RigidBodyComponent::GetSimulatedBodyHandle() const
+    {
+        return m_rigidBodyHandle;
     }
 
     AzPhysics::SceneQueryHit RigidBodyComponent::RayCast(const AzPhysics::RayCastRequest& request)

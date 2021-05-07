@@ -179,7 +179,7 @@ namespace Blast
         {
             return;
         }
-        parentBody = parentActor->GetWorldBody();
+        parentBody = parentActor->GetSimulatedBody();
 
         const bool parentStatic = parentActor->IsStatic();
 
@@ -493,7 +493,7 @@ namespace Blast
             }
 
             // transform all added lines from local to global
-            AZ::Transform localToGlobal = blastActor->GetWorldBody()->GetTransform();
+            AZ::Transform localToGlobal = blastActor->GetSimulatedBody()->GetTransform();
             for (uint32_t i = lineStartIndex; i < debugRenderBuffer.m_lines.size(); i++)
             {
                 DebugLine& line = debugRenderBuffer.m_lines[i];
