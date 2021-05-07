@@ -44,15 +44,6 @@ namespace PhysXDebug
         const AZ::Crc32 VewportId = 0; // was AzFramework::g_defaultSceneEntityDebugDisplayId but it didn't render to the viewport.
     }
 
-    const AZ::Color CreateColorFromU32(AZ::u32 color)
-    {
-        const AZ::u8 a = static_cast<AZ::u8>((color & 0xFF000000) >> 24);
-        const AZ::u8 b = static_cast<AZ::u8>((color & 0x00FF0000) >> 16);
-        const AZ::u8 g = static_cast<AZ::u8>((color & 0x0000FF00) >> 8);
-        const AZ::u8 r = static_cast<AZ::u8>(color & 0x000000FF);
-        return AZ::Color(r, g, b, a);
-    }
-
     bool UseEditorPhysicsScene()
     {
         // Runtime components are created when 'simulation' mode is enabled in the Editor,
@@ -904,18 +895,18 @@ namespace PhysXDebug
     void SystemComponent::InitPhysXColorMappings()
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
-        m_colorMappings.m_defaultColor = CreateColorFromU32(physx::PxDebugColor::eARGB_GREEN);
-        m_colorMappings.m_black = CreateColorFromU32(physx::PxDebugColor::eARGB_BLACK);
-        m_colorMappings.m_red = CreateColorFromU32(physx::PxDebugColor::eARGB_RED);
-        m_colorMappings.m_green = CreateColorFromU32(physx::PxDebugColor::eARGB_GREEN);
-        m_colorMappings.m_blue = CreateColorFromU32(physx::PxDebugColor::eARGB_BLUE);
-        m_colorMappings.m_yellow = CreateColorFromU32(physx::PxDebugColor::eARGB_YELLOW);
-        m_colorMappings.m_magenta = CreateColorFromU32(physx::PxDebugColor::eARGB_MAGENTA);
-        m_colorMappings.m_cyan = CreateColorFromU32(physx::PxDebugColor::eARGB_CYAN);
-        m_colorMappings.m_white = CreateColorFromU32(physx::PxDebugColor::eARGB_WHITE);
-        m_colorMappings.m_grey = CreateColorFromU32(physx::PxDebugColor::eARGB_GREY);
-        m_colorMappings.m_darkRed = CreateColorFromU32(physx::PxDebugColor::eARGB_DARKRED);
-        m_colorMappings.m_darkGreen = CreateColorFromU32(physx::PxDebugColor::eARGB_DARKGREEN);
-        m_colorMappings.m_darkBlue = CreateColorFromU32(physx::PxDebugColor::eARGB_DARKBLUE);
+        m_colorMappings.m_defaultColor.FromU32(physx::PxDebugColor::eARGB_GREEN);
+        m_colorMappings.m_black.FromU32(physx::PxDebugColor::eARGB_BLACK);
+        m_colorMappings.m_red.FromU32(physx::PxDebugColor::eARGB_RED);
+        m_colorMappings.m_green.FromU32(physx::PxDebugColor::eARGB_GREEN);
+        m_colorMappings.m_blue.FromU32(physx::PxDebugColor::eARGB_BLUE);
+        m_colorMappings.m_yellow.FromU32(physx::PxDebugColor::eARGB_YELLOW);
+        m_colorMappings.m_magenta.FromU32(physx::PxDebugColor::eARGB_MAGENTA);
+        m_colorMappings.m_cyan.FromU32(physx::PxDebugColor::eARGB_CYAN);
+        m_colorMappings.m_white.FromU32(physx::PxDebugColor::eARGB_WHITE);
+        m_colorMappings.m_grey.FromU32(physx::PxDebugColor::eARGB_GREY);
+        m_colorMappings.m_darkRed.FromU32(physx::PxDebugColor::eARGB_DARKRED);
+        m_colorMappings.m_darkGreen.FromU32(physx::PxDebugColor::eARGB_DARKGREEN);
+        m_colorMappings.m_darkBlue.FromU32(physx::PxDebugColor::eARGB_DARKBLUE);
     }
 }
