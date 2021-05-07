@@ -38,8 +38,8 @@ namespace LegacyLevelSystem
     //------------------------------------------------------------------------
     static void LoadLevel(const AZ::ConsoleCommandContainer& arguments)
     {
-        AZ_Error("SpawnableLevelSystem", arguments.empty(), "LoadLevel requires a level file name to be provided.");
-        AZ_Error("SpawnableLevelSystem", arguments.size() > 1, "LoadLevel requires a single level file name to be provided.");
+        AZ_Error("SpawnableLevelSystem", !arguments.empty(), "LoadLevel requires a level file name to be provided.");
+        AZ_Error("SpawnableLevelSystem", arguments.size() == 1, "LoadLevel requires a single level file name to be provided.");
 
         if (!arguments.empty() && gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
         {
