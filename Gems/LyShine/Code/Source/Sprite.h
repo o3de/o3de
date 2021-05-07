@@ -41,7 +41,6 @@ public: // member functions
     Borders GetBorders() const override;
     void SetBorders(Borders borders) override;
     void SetCellBorders(int cellIndex, Borders borders) override;
-    ITexture* GetTexture() override;
     void Serialize(TSerialize ser) override;
     bool SaveToXml(const string& pathname) override;
     bool AreBordersZeroWidth() const override;
@@ -71,7 +70,7 @@ public: // member functions
 
     // ~TextureAtlasNotifications
 
-    AZ::Data::Instance<AZ::RPI::Image> GetImage() { return m_image; }
+    AZ::Data::Instance<AZ::RPI::Image> GetImage();
 
 public: // static member functions
 
@@ -93,9 +92,6 @@ public: // static member functions
     static AZStd::string GetImageSourcePathFromProductPath(const AZStd::string& productPathname);
 
 private:
-    static bool LoadTexture(const string& texturePathname, const string& pathname, ITexture*& texture);
-    static void ReleaseTexture(ITexture*& texture);
-
     static bool LoadImage(const AZStd::string& nameTex, AZ::Data::Instance<AZ::RPI::Image>& image);
     static void ReleaseImage(AZ::Data::Instance<AZ::RPI::Image>& image);
 
@@ -120,7 +116,6 @@ private: // data
     string m_pathname;
     string m_texturePathname;
     Borders m_borders;
-    ITexture* m_texture;
     AZ::Data::Instance<AZ::RPI::Image> m_image;
     int m_numSpriteSheetCellTags;                       //!< Number of Cell child-tags in sprite XML; unfortunately needed to help with serialization.
 
