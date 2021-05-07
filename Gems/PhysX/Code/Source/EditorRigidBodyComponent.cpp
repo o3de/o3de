@@ -265,14 +265,14 @@ namespace PhysX
         }
         CreateEditorWorldRigidBody();
 
-        Physics::WorldBodyRequestBus::Handler::BusConnect(GetEntityId());
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 
     void EditorRigidBodyComponent::Deactivate()
     {
         m_debugDisplayDataChangeHandler.Disconnect();
 
-        Physics::WorldBodyRequestBus::Handler::BusDisconnect();
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         m_nonUniformScaleChangedHandler.Disconnect();
         m_sceneStartSimHandler.Disconnect();
         Physics::ColliderComponentEventBus::Handler::BusDisconnect();
@@ -461,9 +461,14 @@ namespace PhysX
         return AZ::Aabb::CreateNull();
     }
 
-    AzPhysics::SimulatedBody* EditorRigidBodyComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* EditorRigidBodyComponent::GetSimulatedBody()
     {
         return m_editorBody;
+    }
+
+    AzPhysics::SimulatedBodyHandle EditorRigidBodyComponent::GetSimulatedBodyHandle() const
+    {
+        return m_rigidBodyHandle;
     }
 
     AzPhysics::SceneQueryHit EditorRigidBodyComponent::RayCast(const AzPhysics::RayCastRequest& request)

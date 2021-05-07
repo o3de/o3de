@@ -77,7 +77,7 @@ namespace PhysXEditorTests
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
         // since there was no editor rigid body component, the runtime entity should have a static rigid body
-        const auto* staticBody = gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>()->GetStaticRigidBody();
+        const auto* staticBody = azdynamic_cast<PhysX::StaticRigidBody*>(gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>()->GetSimulatedBody());
 
         const AZ::Aabb aabb = staticBody->GetAabb();
         EXPECT_THAT(aabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(5.6045f, 4.9960f, 11.7074f), 1e-3f));
@@ -153,7 +153,7 @@ namespace PhysXEditorTests
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
         // since there was no editor rigid body component, the runtime entity should have a static rigid body
-        const auto* staticBody = gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>()->GetStaticRigidBody();
+        const auto* staticBody = azdynamic_cast<PhysX::StaticRigidBody*>(gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>()->GetSimulatedBody());
 
         const AZ::Aabb aabb = staticBody->GetAabb();
 
@@ -231,7 +231,7 @@ namespace PhysXEditorTests
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
         // since there was no editor rigid body component, the runtime entity should have a static rigid body
-        const auto* staticBody = gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>()->GetStaticRigidBody();
+        const auto* staticBody = azdynamic_cast<PhysX::StaticRigidBody*>(gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>()->GetSimulatedBody());
 
         const AZ::Aabb aabb = staticBody->GetAabb();
 
