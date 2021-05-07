@@ -206,8 +206,8 @@ namespace AZ
         void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler& handler) override final;
         void RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler& handler) override final;
         void RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler& handler) override final;
-        void SignalEntityActivated(AZ::Entity* entity) override final;
-        void SignalEntityDeactivated(AZ::Entity* entity) override final;
+        void SignalEntityActivated(Entity* entity) override final;
+        void SignalEntityDeactivated(Entity* entity) override final;
         bool AddEntity(Entity* entity) override;
         bool RemoveEntity(Entity* entity) override;
         bool DeleteEntity(const EntityId& id) override;

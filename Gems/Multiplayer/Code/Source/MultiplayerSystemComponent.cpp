@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  */
-#pragma optimize("", off)
+
 #include <Source/MultiplayerSystemComponent.h>
 #include <Source/Components/MultiplayerComponent.h>
 #include <Source/AutoGen/AutoComponentTypes.h>

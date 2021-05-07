@@ -1234,8 +1234,8 @@ namespace UnitTest
         void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler&) override { }
         void RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler&) override { }
         void RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler&) override { }
-        void SignalEntityActivated(AZ::Entity* entity) override { }
-        void SignalEntityDeactivated(AZ::Entity* entity) override { }
+        void SignalEntityActivated(Entity*) override { }
+        void SignalEntityDeactivated(Entity*) override { }
         bool AddEntity(Entity*) override { return false; }
         bool RemoveEntity(Entity*) override { return false; }
         bool DeleteEntity(const EntityId&) override { return false; }

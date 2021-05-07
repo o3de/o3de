@@ -306,8 +306,8 @@ public:
     void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler&) override { }
     void RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler&) override { }
     void RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler&) override { }
-    void SignalEntityActivated(AZ::Entity* entity) override { }
-    void SignalEntityDeactivated(AZ::Entity* entity) override { }
+    void SignalEntityActivated(Entity*) override { }
+    void SignalEntityDeactivated(Entity*) override { }
     bool AddEntity(Entity*) override { return true; }
     bool RemoveEntity(Entity*) override { return true; }
     bool DeleteEntity(const AZ::EntityId&) override { return true; }
