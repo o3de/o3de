@@ -139,7 +139,7 @@ namespace AZ
             if (m_heatmapEnabled != value)
             {
                 m_heatmapEnabled = value;
-				// Update immediately so that the ExposureControlSettings can just be turned off and killed without having to wait for another Simulate() call
+                // Update immediately so that the ExposureControlSettings can just be turned off and killed without having to wait for another Simulate() call
                 UpdateLuminanceHeatmap();
             }
         }
