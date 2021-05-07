@@ -44,7 +44,7 @@ namespace Multiplayer
         void HandleSendClientInput
         (
             AzNetworking::IConnection* invokingConnection,
-            const Multiplayer::NetworkInputVector& inputArray,
+            const Multiplayer::NetworkInputArray& inputArray,
             const AZ::HashValue64& stateHash,
             const AzNetworking::PacketEncodingBuffer& clientState
         ) override;
@@ -52,7 +52,7 @@ namespace Multiplayer
         void HandleSendMigrateClientInput
         (
             AzNetworking::IConnection* invokingConnection,
-            const Multiplayer::MigrateNetworkInputVector& inputArray
+            const Multiplayer::NetworkInputMigrationVector& inputArray
         ) override;
 
         void HandleSendClientInputCorrection
@@ -87,7 +87,7 @@ namespace Multiplayer
         NetworkInputHistory m_inputHistory;
 
         // Anti-cheat accumulator for clients who purposely mess with their clock rate
-        NetworkInputVector m_lastInputReceived;
+        NetworkInputArray m_lastInputReceived;
 
         AZ::ScheduledEvent m_autonomousUpdateEvent; // Drives autonomous input collection
         AZ::ScheduledEvent m_updateBankedTimeEvent; // Drives authority bank time updates

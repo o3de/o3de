@@ -81,12 +81,14 @@ set(FILES
     Source/NetworkEntity/NetworkEntityUpdateMessage.h
     Source/NetworkInput/NetworkInput.cpp
     Source/NetworkInput/NetworkInput.h
+    Source/NetworkInput/NetworkInputArray.cpp
+    Source/NetworkInput/NetworkInputArray.h
     Source/NetworkInput/NetworkInputChild.cpp
     Source/NetworkInput/NetworkInputChild.h
     Source/NetworkInput/NetworkInputHistory.cpp
     Source/NetworkInput/NetworkInputHistory.h
-    Source/NetworkInput/NetworkInputVector.cpp
-    Source/NetworkInput/NetworkInputVector.h
+    Source/NetworkInput/NetworkInputMigrationVector.cpp
+    Source/NetworkInput/NetworkInputMigrationVector.h
     Source/NetworkTime/NetworkTime.cpp
     Source/NetworkTime/NetworkTime.h
     Source/NetworkTime/RewindableObject.h

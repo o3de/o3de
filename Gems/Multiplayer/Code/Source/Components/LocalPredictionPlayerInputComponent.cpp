@@ -106,7 +106,7 @@ namespace Multiplayer
     void LocalPredictionPlayerInputComponentController::HandleSendClientInput
     (
         AzNetworking::IConnection* invokingConnection, 
-        const Multiplayer::NetworkInputVector& inputArray,
+        const Multiplayer::NetworkInputArray& inputArray,
         const AZ::HashValue64& stateHash,
         [[maybe_unused]] const AzNetworking::PacketEncodingBuffer& clientState
     )
@@ -133,7 +133,7 @@ namespace Multiplayer
         // Figure out which index from the input array we want
         // we start at the oldest input that has not been processed
         int32_t inputArrayIndex = -1;
-        for (int32_t i = NetworkInputVector::MaxElements - 1; i >= 0; --i)
+        for (int32_t i = NetworkInputArray::MaxElements - 1; i >= 0; --i)
         {
             // Find an input that is newer than the last one we processed 
             if (m_lastInputReceived[i].GetClientInputId() > GetLastInputId())
@@ -286,7 +286,7 @@ namespace Multiplayer
     void LocalPredictionPlayerInputComponentController::HandleSendMigrateClientInput
     (
         AzNetworking::IConnection* invokingConnection, 
-        const Multiplayer::MigrateNetworkInputVector& inputArray
+        const Multiplayer::NetworkInputMigrationVector& inputArray
     )
     {
         if (!m_allowMigrateClientInput)
@@ -308,7 +308,7 @@ namespace Multiplayer
         const float clientInputRateSec = static_cast<float>(static_cast<AZ::TimeMs>(cl_InputRateMs)) / 1000.0;
 
         // Copy array so we can modify input ids
-        MigrateNetworkInputVector inputArrayCopy = inputArray;
+        NetworkInputMigrationVector inputArrayCopy = inputArray;
 
         for (uint32_t i = 0; i < inputArrayCopy.GetSize(); ++i)
         {
@@ -447,7 +447,7 @@ namespace Multiplayer
 
     void LocalPredictionPlayerInputComponentController::OnMigrateEnd()
     {
-        MigrateNetworkInputVector inputArray;
+        NetworkInputMigrationVector inputArray;
 
         // Roll up all inputs that the new server doesn't have and send them now
         for (AZStd::size_t i = 0; i < m_inputHistory.Size(); ++i)
@@ -499,7 +499,7 @@ namespace Multiplayer
             m_moveAccumulator -= inputRate;
             ++m_clientInputId;
 
-            NetworkInputVector inputArray(GetEntityHandle());
+            NetworkInputArray inputArray(GetEntityHandle());
             NetworkInput& input = inputArray[0];
 
             input.SetClientInputId(m_clientInputId);
@@ -544,7 +544,7 @@ namespace Multiplayer
 
             // Form the rest of the input array using the n most recent elements in the history buffer
             // NOTE: inputArray[0] has already been initialized hence start at i = 1
-            for (uint32_t i = 1; i < NetworkInputVector::MaxElements; ++i)
+            for (uint32_t i = 1; i < NetworkInputArray::MaxElements; ++i)
             {
                 if (i < inputHistorySize)
                 {

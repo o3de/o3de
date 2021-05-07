@@ -29,8 +29,8 @@ namespace Multiplayer
     public:
         //! Intentionally restrict instancing of these objects to associated containers classes only
         //! This is a mechanism used to restrict calling autonomous client predicted setter functions to the ProcessInput call chain only
-        friend class NetworkInputVector;
-        friend class MigrateNetworkInputVector;
+        friend class NetworkInputArray;
+        friend class NetworkInputMigrationVector;
         friend class NetworkInputHistory;
         friend class NetworkInputChild;
 

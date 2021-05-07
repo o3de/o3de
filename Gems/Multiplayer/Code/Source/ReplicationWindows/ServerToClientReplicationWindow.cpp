@@ -157,14 +157,15 @@ namespace Multiplayer
             //}
 
             // We want to find the closest extent to the player and prioritize using that distance
-            const AZ::Vector3 supportNormal = controlledEntityPosition - visEntry->m_boundingVolume.GetCenter();
-            const AZ::Vector3 closestPosition = visEntry->m_boundingVolume.GetSupport(supportNormal);
-            const float gatherDistanceSquared = controlledEntityPosition.GetDistanceSq(closestPosition);
-            const float priority = (gatherDistanceSquared > 0.0f) ? 1.0f / gatherDistanceSquared : 0.0f;
             AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
             NetBindComponent* entryNetBindComponent = entity->template FindComponent<NetBindComponent>();
             if (entryNetBindComponent != nullptr)
             {
+                const AZ::Vector3 supportNormal = controlledEntityPosition - visEntry->m_boundingVolume.GetCenter();
+                const AZ::Vector3 closestPosition = visEntry->m_boundingVolume.GetSupport(supportNormal);
+                const float gatherDistanceSquared = controlledEntityPosition.GetDistanceSq(closestPosition);
+                const float priority = (gatherDistanceSquared > 0.0f) ? 1.0f / gatherDistanceSquared : 0.0f;
+
                 NetworkEntityHandle entityHandle(entryNetBindComponent, networkEntityTracker);
                 AddEntityToReplicationSet(entityHandle, priority, gatherDistanceSquared);
             }

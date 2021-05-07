@@ -126,7 +126,7 @@ namespace Multiplayer
 
         ReplicationRecord m_currentRecord = NetEntityRole::InvalidRole;
         ReplicationRecord m_totalRecord = NetEntityRole::InvalidRole;
-        ReplicationRecord m_predictableRecord = NetEntityRole::InvalidRole;
+        ReplicationRecord m_predictableRecord = NetEntityRole::Autonomous;
         ReplicationRecord m_localNotificationRecord = NetEntityRole::InvalidRole;
         PrefabEntityId    m_prefabEntityId;
         AZStd::unordered_map<NetComponentId, MultiplayerComponent*> m_multiplayerComponentMap;
