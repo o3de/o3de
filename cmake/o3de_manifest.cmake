@@ -60,13 +60,13 @@ if(O3DE_REGISTER_ENGINE_PATH)
         message(STATUS "register --this-engine")
         if(CMAKE_HOST_WIN32)
             execute_process(
-                      COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --this-engine --override-home-folder ${home_directory}
-                      RESULT_VARIABLE o3de_register_this_engine_cmd_result
+                COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --this-engine --override-home-folder ${home_directory}
+                RESULT_VARIABLE o3de_register_this_engine_cmd_result
             )
         else()
             execute_process(
-                      COMMAND sh ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --this-engine --override-home-folder ${home_directory}
-                      RESULT_VARIABLE o3de_register_this_engine_cmd_result
+                COMMAND sh ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --this-engine --override-home-folder ${home_directory}
+                RESULT_VARIABLE o3de_register_this_engine_cmd_result
             )
         endif()
         if(o3de_register_this_engine_cmd_result)
@@ -81,13 +81,13 @@ if(O3DE_REGISTER_ENGINE_PATH)
         foreach(restricted_path ${O3DE_REGISTER_RESTRICTED_PATHS})
             if(CMAKE_HOST_WIN32)
                 execute_process(
-                   COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --restricted-path ${restricted_path} --override-home-folder ${home_directory}
-                   RESULT_VARIABLE o3de_register_restricted_cmd_result
+                    COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --restricted-path ${restricted_path} --override-home-folder ${home_directory}
+                    RESULT_VARIABLE o3de_register_restricted_cmd_result
                 )
             else()
                 execute_process(
-                   COMMAND sh ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --restricted-path ${restricted_path} --override-home-folder ${home_directory}
-                   RESULT_VARIABLE o3de_register_restricted_cmd_result
+                    COMMAND sh ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --restricted-path ${restricted_path} --override-home-folder ${home_directory}
+                    RESULT_VARIABLE o3de_register_restricted_cmd_result
                 )
             endif()
             if(o3de_register_restricted_cmd_result)
@@ -103,13 +103,13 @@ if(O3DE_REGISTER_ENGINE_PATH)
         foreach(project_path ${O3DE_REGISTER_PROJECT_PATHS})
             if(CMAKE_HOST_WIN32)
                 execute_process(
-                   COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --project-path ${project_path} --override-home-folder ${home_directory}
-                   RESULT_VARIABLE o3de_register_project_cmd_result
+                    COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --project-path ${project_path} --override-home-folder ${home_directory}
+                    RESULT_VARIABLE o3de_register_project_cmd_result
                 )
             else()
                 execute_process(
-                   COMMAND sh ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --project-path ${project_path} --override-home-folder ${home_directory}
-                   RESULT_VARIABLE o3de_register_project_cmd_result
+                    COMMAND sh ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --project-path ${project_path} --override-home-folder ${home_directory}
+                    RESULT_VARIABLE o3de_register_project_cmd_result
                 )
             endif()
             if(o3de_register_project_cmd_result)
@@ -125,13 +125,13 @@ if(O3DE_REGISTER_ENGINE_PATH)
         foreach(gem_path ${O3DE_REGISTER_GEM_PATHS})
             if(CMAKE_HOST_WIN32)
                 execute_process(
-                   COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --gem-path ${gem_path} --override-home-folder ${home_directory}
-                   RESULT_VARIABLE o3de_register_gem_cmd_result
+                    COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --gem-path ${gem_path} --override-home-folder ${home_directory}
+                    RESULT_VARIABLE o3de_register_gem_cmd_result
                 )
             else()
                 execute_process(
-                   COMMAND sh ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --gem-path ${gem_path} --override-home-folder ${home_directory}
-                   RESULT_VARIABLE o3de_register_gem_cmd_result
+                    COMMAND sh ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --gem-path ${gem_path} --override-home-folder ${home_directory}
+                    RESULT_VARIABLE o3de_register_gem_cmd_result
                 )
             endif()
             if(o3de_register_gem_cmd_result)
@@ -169,13 +169,13 @@ if(O3DE_REGISTER_ENGINE_PATH)
         foreach(repo_uri ${O3DE_REGISTER_REPO_URIS})
             if(CMAKE_HOST_WIN32)
                 execute_process(
-                   COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --repo-uri ${repo_uri} --override-home-folder ${home_directory}
-                   RESULT_VARIABLE o3de_register_repo_cmd_result
+                    COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --repo-uri ${repo_uri} --override-home-folder ${home_directory}
+                    RESULT_VARIABLE o3de_register_repo_cmd_result
                 )
             else()
                 execute_process(
-                   COMMAND sh ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --repo-uri ${repo_uri} --override-home-folder ${home_directory}
-                   RESULT_VARIABLE o3de_register_repo_cmd_result
+                    COMMAND sh ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.sh register --repo-uri ${repo_uri} --override-home-folder ${home_directory}
+                    RESULT_VARIABLE o3de_register_repo_cmd_result
                 )
             endif()
             if(o3de_register_repo_cmd_result)
