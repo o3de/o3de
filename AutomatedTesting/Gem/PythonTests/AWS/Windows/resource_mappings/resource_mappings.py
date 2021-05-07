@@ -23,17 +23,18 @@ class ResourceMappings:
     ResourceMappings class that handles writing Cloud formation outputs to resource mappings json file in a project.
     """
 
-    def __init__(self, file_path: str, region: str, feature_name: str, account_id: str,
+    def __init__(self, file_path: str, region: str, feature_name: str, account_id: str, workspace: pytest.fixture,
                  cloud_formation_client):
         """
         :param file_path: Path for the resource mapping file.
         :param region: Region value for the resource mapping file.
         :param feature_name: Feature gem name to use to append name to mappings key.
         :param account_id: AWS account id value for the resource mapping file.
+        :param workspace: ly_test_tools workspace fixture.
+        :param cloud_formation_client: AWS cloud formation client.
         """
         self._cdk_env = os.environ.copy()
-        self._cdk_env['PATH'] = 'e:\\o3de\\python\\runtime\\python-3.7.10-rev1-windows\\python\\;' + self._cdk_env[
-            'PATH']
+        self._cdk_env['PATH'] = f'{workspace.paths.engine_root()}\\python;' + self._cdk_env['PATH']
         self._resource_mapping_file_path = file_path
         self._region = region
         self._feature_name = feature_name
@@ -125,7 +126,7 @@ def resource_mappings(
     """
 
     path = f'{workspace.paths.engine_root()}\\{project}\\Config\\{resource_mappings_filename}'
-    resource_mappings_obj = ResourceMappings(path, region, feature_name, account_id,
+    resource_mappings_obj = ResourceMappings(path, region, feature_name, account_id, workspace,
                                              aws_utils.client('cloudformation'))
 
     def teardown():

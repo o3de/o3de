@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 @pytest.mark.SUITE_periodic
 @pytest.mark.usefixtures('automatic_process_killer')
-# pytest.mark.parametrize("launcher_platform", ['windows'])
+# pytest.mark.parametrize("launcher_platform", ['Windows'])
 @pytest.mark.parametrize('project', ['AutomatedTesting'])
 @pytest.mark.parametrize('level', ['AWS/ClientAuth'])
 @pytest.mark.usefixtures('cdk')
@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 @pytest.mark.usefixtures('resource_mappings')
 @pytest.mark.parametrize('resource_mappings_filename', ['aws_resource_mappings.json'])
 @pytest.mark.usefixtures('aws_utils')
-@pytest.mark.parametrize('assume_role_arn', ['arn:aws:iam::645075835648:role/AutomatedTest'])
+@pytest.mark.parametrize('assume_role_arn', ['arn:aws:iam::645075835648:role/o3de-automation-tests'])
 @pytest.mark.parametrize('session_name', ['O3DE-Automation'])
 class TestAWSClientAuthAnonymousCredentials(object):
     """

@@ -29,15 +29,13 @@ class Cdk:
         :param project: Project name used for cdk project name env variable.
         :param account_id: AWS account to deploy cdk resources in.
         :param region: Region for deploying the cdk resources in.
-        :param profile: AWS profile to use for credentials.
         :param workspace: ly_test_tools workspace fixture.
         """
         self._cdk_env = os.environ.copy()
         self._cdk_env['O3DE_AWS_PROJECT_NAME'] = project
         self._cdk_env['O3DE_AWS_DEPLOY_REGION'] = region
         self._cdk_env['O3DE_AWS_DEPLOY_ACCOUNT'] = account_id
-        self._cdk_env['PATH'] = f'{workspace.paths.engine_root()}\\python' \
-                                f'\\runtime\\python-3.7.10-rev1-windows\\python\\;' + self._cdk_env['PATH']
+        self._cdk_env['PATH'] = f'{workspace.paths.engine_root()}\\python;' + self._cdk_env['PATH']
 
         credentials = session.get_credentials().get_frozen_credentials()
         self._cdk_env['AWS_ACCESS_KEY_ID'] = credentials.access_key
@@ -45,6 +43,12 @@ class Cdk:
         self._cdk_env['AWS_SESSION_TOKEN'] = credentials.token
         self._stacks = []
         self._cdk_path = cdk_path
+
+        output = process_utils.check_output(
+            'python -m pip install -r requirements.txt',
+            cwd=self._cdk_path,
+            env=self._cdk_env,
+            shell=True)
 
     def list(self) -> List[str]:
         """
@@ -64,7 +68,7 @@ class Cdk:
 
         return output.splitlines()
 
-    def synth(self) -> None:
+    def synthesize(self) -> None:
         """
         Synthesizes all cdk stacks
         """

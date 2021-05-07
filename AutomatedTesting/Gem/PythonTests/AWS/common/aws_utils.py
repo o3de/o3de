@@ -10,6 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import boto3
 import pytest
 
+
 class AwsUtils:
 
     def __init__(self, arn: str, session_name: str):
@@ -53,7 +54,7 @@ def aws_utils(
     Fixture for setting up a Cdk
     :param request: _pytest.fixtures.SubRequest class that handles getting
         a pytest fixture from a pytest function/fixture.
-    :param assume_role_arn: Project name used for cdk project name env variable.
+    :param assume_role_arn: Role used to fetch temporary aws credentials, configure service clients with obtained credentials.
     :param session_name: AWS account to deploy cdk resources in.
     :return AWSUtils class object.
     """
