@@ -187,8 +187,8 @@ namespace AzToolsFramework
 
                             if (beingEdited)
                             {
-                                QAction* closeAction = menu->addAction(QObject::tr("Complete Prefab Edit"));
-                                closeAction->setToolTip(QObject::tr("Exit the prefab focus mode."));
+                                QAction* closeAction = menu->addAction(QObject::tr("Close Prefab"));
+                                closeAction->setToolTip(QObject::tr("Close the prefab focus mode."));
 
                                 QObject::connect(closeAction, &QAction::triggered, closeAction, [this] {
                                     ContextMenu_ClosePrefab();
