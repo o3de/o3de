@@ -437,9 +437,6 @@ set(FILES
     GotoPositionDlg.cpp
     GotoPositionDlg.h
     GotoPositionDlg.ui
-    GridSettingsDialog.cpp
-    GridSettingsDialog.h
-    GridSettingsDialog.ui
     InfoBar.cpp
     InfoBar.qrc
     InfoBar.h
@@ -852,8 +849,6 @@ set(FILES
     WelcomeScreen/WelcomeScreenDialog.qrc
     2DViewport.cpp
     2DViewport.h
-    Grid.cpp
-    Grid.h
     LayoutWnd.cpp
     LayoutWnd.h
     EditorViewportWidget.cpp

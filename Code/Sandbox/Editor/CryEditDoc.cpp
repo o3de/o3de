@@ -594,15 +594,6 @@ void CCryEditDoc::SerializeViewSettings(CXmlArchive& xmlAr)
                 tm.SetTranslation(vp);
                 pVP->SetViewTM(tm);
             }
-
-            // Load grid.
-            auto gridName = QString("Grid%1").arg(useOldViewFormat ? "" : QString::number(i));
-            XmlNodeRef gridNode = xmlAr.root->newChild(gridName.toUtf8().constData());
-
-            if (gridNode)
-            {
-                GetIEditor()->GetViewManager()->GetGrid()->Serialize(gridNode, xmlAr.bLoading);
-            }
         }
     }
     else
@@ -628,11 +619,6 @@ void CCryEditDoc::SerializeViewSettings(CXmlArchive& xmlAr)
                 auto viewerAnglesName = QString("ViewerAngles%1").arg(i);
                 view->setAttr(viewerAnglesName.toUtf8().constData(), angles);
             }
-
-            // Save grid.
-            auto gridName = QString("Grid%1").arg(i);
-            XmlNodeRef gridNode = xmlAr.root->newChild(gridName.toUtf8().constData());
-            GetIEditor()->GetViewManager()->GetGrid()->Serialize(gridNode, xmlAr.bLoading);
         }
     }
 }

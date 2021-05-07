@@ -373,7 +373,6 @@ private:
 
     void OnWireframe();
     void OnUpdateWireframe(QAction* action);
-    void OnViewGridsettings();
     void OnViewConfigureLayout();
 
     // Tag Locations.

@@ -1183,12 +1183,12 @@ float QtViewport::GetZoomFactor() const
 //////////////////////////////////////////////////////////////////////////
 Vec3 QtViewport::SnapToGrid(const Vec3& vec)
 {
-    return m_viewManager->GetGrid()->Snap(vec, m_fGridZoom);
+    return vec;
 }
 
 float QtViewport::GetGridStep() const
 {
-    return m_viewManager->GetGrid()->scale * m_viewManager->GetGrid()->size;
+    return 0.0f;
 }
 
 //////////////////////////////////////////////////////////////////////////

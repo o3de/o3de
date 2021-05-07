@@ -95,7 +95,6 @@ AZ_POP_DISABLE_WARNING
 #include "Core/QtEditorApplication.h"
 #include "StringDlg.h"
 #include "NewLevelDialog.h"
-#include "GridSettingsDialog.h"
 #include "LayoutConfigDialog.h"
 #include "ViewManager.h"
 #include "FileTypeUtils.h"
@@ -402,7 +401,6 @@ void CCryEditApp::RegisterActionHandlers()
 
     ON_COMMAND(ID_WIREFRAME, OnWireframe)
 
-    ON_COMMAND(ID_VIEW_GRIDSETTINGS, OnViewGridsettings)
     ON_COMMAND(ID_VIEW_CONFIGURELAYOUT, OnViewConfigureLayout)
 
     ON_COMMAND(IDC_SELECTION, OnDummyCommand)
@@ -3527,14 +3525,6 @@ void CCryEditApp::OnUpdateWireframe(QAction* action)
     }
 
     action->setChecked(nWireframe == R_WIREFRAME_MODE);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnViewGridsettings()
-{
-    CGridSettingsDialog dlg;
-    dlg.exec();
 }
 
 //////////////////////////////////////////////////////////////////////////
