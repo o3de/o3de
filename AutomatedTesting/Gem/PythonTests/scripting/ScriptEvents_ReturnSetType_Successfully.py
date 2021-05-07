@@ -9,8 +9,7 @@ remove or modify any license notices. This file is distributed on an "AS IS" BAS
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92569006
-Test Case Title: Event can return a value of set type successfully 
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92569006
+Test Case Title: Event can return a value of set type successfully
 """
 
 
@@ -24,11 +23,15 @@ class Tests():
 # fmt: on
 
 
-def ScriptEvents_ReturnSetTypeSuccessfully():
+def ScriptEvents_ReturnSetType_Successfully():
     """
-    Summary:
-     An entity exists in the level that contains a Script Canvas component. And verify that Script Event's send and
-     receive nodes return the set value succesfully.
+    Summary: A temporary level is created with an Entity having ScriptCanvas component.
+     ScriptEvent(T92569006_ScriptEvent.scriptevents) is created with one Method that has a return value.
+     ScriptCanvas(T92569006_ScriptCanvas.scriptcanvas) is attached to Entity. Graph has Send node that sends the Method
+     of the ScriptEvent and prints the returned result ( On Entity Activated -> Send node -> Print) and Receive node is
+     set to return custom value ( Receive node -> Print).
+     Verify that the entity containing T92569006_ScriptCanvas.scriptcanvas should print the custom value set in both
+     Send and Receive nodes.
 
     Expected Behavior:
      After entering game mode, the graph on the entity should print an expected message to the console
@@ -107,4 +110,4 @@ if __name__ == "__main__":
 
     from utils import Report
 
-    Report.start_test(ScriptEvents_ReturnSetTypeSuccessfully)
+    Report.start_test(ScriptEvents_ReturnSetType_Successfully)

@@ -185,12 +185,12 @@ class TestAutomation(TestAutomationBase):
 
     @pytest.mark.test_case_id("T92569006")
     @pytest.mark.parametrize("level", ["tmp_level"])
-    def test_ScriptEvents_ReturnSetTypeSuccessfully(self, request, workspace, editor, launcher_platform, project, level):
+    def test_ScriptEvents_ReturnSetType_Successfully(self, request, workspace, editor, launcher_platform, project, level):
         def teardown():
             file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
         request.addfinalizer(teardown)
         file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        from . import ScriptEvents_ReturnSetTypeSuccessfully as test_module
+        from . import ScriptEvents_ReturnSetType_Successfully as test_module
         self._run_test(request, workspace, editor, test_module)
 
 
