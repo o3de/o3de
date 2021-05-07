@@ -183,7 +183,6 @@ class TestAutomation(TestAutomationBase):
         from . import ScriptEvents_SendReceiveSuccessfully as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.test_case_id("T92569006")
     @pytest.mark.parametrize("level", ["tmp_level"])
     def test_ScriptEvents_ReturnSetType_Successfully(self, request, workspace, editor, launcher_platform, project, level):
         def teardown():
