@@ -164,6 +164,7 @@ namespace AZ
             if (m_featureProcessor)
             {
                 m_featureProcessor->RemoveProbe(m_handle);
+                m_handle = nullptr;
             }
 
             LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
