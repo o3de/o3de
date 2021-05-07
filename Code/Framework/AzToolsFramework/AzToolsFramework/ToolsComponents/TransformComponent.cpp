@@ -1203,8 +1203,7 @@ namespace AzToolsFramework
         AZ::Component* TransformComponent::FindPresentOrPendingComponent(AZ::Uuid componentUuid)
         {
             // first check if the component is present and valid
-            AZ::Component* foundComponent = GetEntity()->FindComponent(componentUuid);
-            if (foundComponent)
+            if (AZ::Component* foundComponent = GetEntity()->FindComponent(componentUuid))
             {
                 return foundComponent;
             }
@@ -1241,18 +1240,15 @@ namespace AzToolsFramework
             const AZStd::vector<AZ::EntityId> entityList = { GetEntityId() };
             const AZ::ComponentTypeList componentsToAdd = { EditorNonUniformScaleComponent::TYPEINFO_Uuid() };
 
-            AzToolsFramework::EntityCompositionRequests::AddComponentsOutcome outcome;
-            AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(outcome,
+            AzToolsFramework::EntityCompositionRequests::AddComponentsOutcome addComponentsOutcome;
+            AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(addComponentsOutcome,
                 &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities, entityList, componentsToAdd);
 
-            AZ::ComponentId nonUniformScaleComponentId = AZ::InvalidComponentId;
-            auto nonUniformScaleComponent = FindPresentOrPendingComponent(EditorNonUniformScaleComponent::RTTI_Type());
-            if (nonUniformScaleComponent)
-            {
-                nonUniformScaleComponentId = nonUniformScaleComponent->GetId();
-            }
+            const auto nonUniformScaleComponent = FindPresentOrPendingComponent(EditorNonUniformScaleComponent::RTTI_Type());
+            AZ::ComponentId nonUniformScaleComponentId =
+                nonUniformScaleComponent ? nonUniformScaleComponent->GetId() : AZ::InvalidComponentId;
 
-            if (!outcome.IsSuccess() || nonUniformScaleComponentId == AZ::InvalidComponentId)
+            if (!addComponentsOutcome.IsSuccess() || !nonUniformScaleComponent)
             {
                 AZ_Warning("Transform component", false, "Failed to add non-uniform scale component.");
                 return AZ::Edit::PropertyRefreshLevels::None;
@@ -1293,6 +1289,7 @@ namespace AzToolsFramework
                 {
                     ptrEdit->Class<TransformComponent>("Transform", "Controls the placement of the entity in the world in 3d")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "")->
+                            Attribute(AZ::Edit::Attributes::FixedComponentListIndex, 0)->
                             Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Transform.svg")->
                             Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Transform.png")->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->

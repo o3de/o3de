@@ -1045,28 +1045,23 @@ namespace AzToolsFramework
             sortedComponents.end(),
             [=](const OrderedSortComponentEntry& component1, const OrderedSortComponentEntry& component2)
             {
-                // Transform component must be first, always
-                // If component 1 is a transform component, it is sorted earlier
-                if (component1.m_component->RTTI_IsTypeOf(AZ::EditorTransformComponentTypeId))
+                AZStd::optional<int> fixedComponentListIndex1 = GetFixedComponentListIndex(component1.m_component);
+                AZStd::optional<int> fixedComponentListIndex2 = GetFixedComponentListIndex(component2.m_component);
+
+                // If both components have fixed list indices, sort based on those indices
+                if (fixedComponentListIndex1.has_value() && fixedComponentListIndex2.has_value())
+                {
+                    return fixedComponentListIndex1.value() < fixedComponentListIndex2.value();
+                }
+
+                // If component 1 has a fixed list index, sort it first
+                if (fixedComponentListIndex1.has_value())
                 {
                     return true;
                 }
 
-                // If component 2 is a transform component, component 1 is never sorted earlier
-                if (component2.m_component->RTTI_IsTypeOf(AZ::EditorTransformComponentTypeId))
-                {
-                    return false;
-                }
-
-                // If component 1 is a non-uniform scale component, it is sorted earlier (it should appear immediately after transform)
-                if (component1.m_component->RTTI_IsTypeOf(AzToolsFramework::Components::EditorNonUniformScaleComponent::RTTI_Type()))
-                {
-                    return true;
-                }
-
-                // If component 2 is a non-uniform scale component, component 1 is never sorted earlier
-                // (transform will already dominate in the check above)
-                if (component2.m_component->RTTI_IsTypeOf(AzToolsFramework::Components::EditorNonUniformScaleComponent::RTTI_Type()))
+                // If component 2 has a fixed list index, component 1 should not be sorted before it
+                if (fixedComponentListIndex2.has_value())
                 {
                     return false;
                 }
@@ -1182,32 +1177,34 @@ namespace AzToolsFramework
         return true;
     }
 
-    bool EntityPropertyEditor::IsComponentDraggable(const AZ::Component* component)
+    AZStd::optional<int> EntityPropertyEditor::GetFixedComponentListIndex(const AZ::Component* component)
     {
         auto componentClassData = component ? GetComponentClassData(component) : nullptr;
         if (componentClassData && componentClassData->m_editData)
         {
             if (auto editorDataElement = componentClassData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData))
             {
-                if (auto attribute = editorDataElement->FindAttribute(AZ::Edit::Attributes::DraggableByUser))
+                if (auto attribute = editorDataElement->FindAttribute(AZ::Edit::Attributes::FixedComponentListIndex))
                 {
-                    if (auto attributeData = azdynamic_cast<AZ::Edit::AttributeData<bool>*>(attribute))
+                    if (auto attributeData = azdynamic_cast<AZ::Edit::AttributeData<int>*>(attribute))
                     {
-                        if (!attributeData->Get(nullptr))
-                        {
-                            return false;
-                        }
+                        return { attributeData->Get(nullptr) };
                     }
                 }
             }
         }
+        return {};
+    }
 
-        return true;
+    bool EntityPropertyEditor::IsComponentDraggable(const AZ::Component* component)
+    {
+        return !GetFixedComponentListIndex(component).has_value();
     }
 
     bool EntityPropertyEditor::AreComponentsDraggable(const AZ::Entity::ComponentArrayType& components) const
     {
-        return AZStd::all_of(components.begin(), components.end(), [](AZ::Component* component) {return IsComponentDraggable(component); });
+        return AZStd::all_of(
+            components.begin(), components.end(), [](AZ::Component* component) { return IsComponentDraggable(component); });
     }
 
     bool EntityPropertyEditor::AreComponentsCopyable(const AZ::Entity::ComponentArrayType& components) const
