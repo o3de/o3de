@@ -161,11 +161,17 @@ namespace AZ
     public:
         AZ_RTTI(BaseJsonSerializer, "{7291FFDC-D339-40B5-BB26-EA067A327B21}");
         
-        enum Flags
+        enum class ContinuationFlags
         {
-            None = 0, //! No extra flags.
+            None = 0,                //! No extra flags.
             ResolvePointer = 1 << 0, //! The pointer passed in contains a pointer. The (de)serializer will attempt to resolve to an instance.
             ReplaceDefault = 1 << 1  //! The default value provided for storing will be replaced with a newly created one.
+        };
+
+        enum class OperationFlags
+        {
+            None = 0,               //! No flags that control how the custom json serializer is used.
+            ManualDefault = 1 << 0  //! Even if an (explicit) default is found the custom json serializer will still be called.
         };
 
         virtual ~BaseJsonSerializer() = default;
@@ -180,6 +186,9 @@ namespace AZ
         virtual JsonSerializationResult::Result Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
             const Uuid& valueTypeId, JsonSerializerContext& context) = 0;
 
+        //! Returns the operation flags which tells the Json Serialization how this custom json serializer can be used.
+        virtual OperationFlags GetOperationsFlags() const;
+
     protected:
         //! Continues loading of a (sub)value. Use this function to load member variables for instance. This is more optimal than 
         //! directly calling the json serialization.
@@ -187,8 +196,9 @@ namespace AZ
         //! @param typeId Type id of the object passed in.
         //! @param value The value in the JSON document where the deserializer will start reading data from.
         //! @param context The context used during deserialization. Use the value passed in from Load.
-        JsonSerializationResult::ResultCode ContinueLoading(void* object, const Uuid& typeId, const rapidjson::Value& value,
-            JsonDeserializerContext& context, Flags flags = Flags::None);
+        JsonSerializationResult::ResultCode ContinueLoading(
+            void* object, const Uuid& typeId, const rapidjson::Value& value, JsonDeserializerContext& context,
+            ContinuationFlags flags = ContinuationFlags::None);
 
         //! Continues storing of a (sub)value. Use this function to store member variables for instance. This is more optimal than 
         //! directly calling the json serialization.
@@ -200,8 +210,9 @@ namespace AZ
         //!     the settings.
         //! @param typeId The type id of the object and default object.
         //! @param context The context used during serialization. Use the value passed in from Store.
-        JsonSerializationResult::ResultCode ContinueStoring(rapidjson::Value& output, const void* object, const void* defaultObject, 
-            const Uuid& typeId, JsonSerializerContext& context, Flags flags = Flags::None);
+        JsonSerializationResult::ResultCode ContinueStoring(
+            rapidjson::Value& output, const void* object, const void* defaultObject, const Uuid& typeId, JsonSerializerContext& context,
+            ContinuationFlags flags = ContinuationFlags::None);
 
         //! Retrieves the type id from a json object or json string.
         //! @param typeId The retrieved type id.
@@ -222,12 +233,14 @@ namespace AZ
             const Uuid& typeId, JsonSerializerContext& context);
 
         //! Helper function similar to ContinueLoading, but loads the data as a member of 'value' rather than 'value' itself, if it exists.
-        JsonSerializationResult::ResultCode ContinueLoadingFromJsonObjectField(void* object, const Uuid& typeId, const rapidjson::Value& value,
-            rapidjson::Value::StringRefType memberName, JsonDeserializerContext& context, Flags flags = Flags::None);
+        JsonSerializationResult::ResultCode ContinueLoadingFromJsonObjectField(
+            void* object, const Uuid& typeId, const rapidjson::Value& value, rapidjson::Value::StringRefType memberName,
+            JsonDeserializerContext& context, ContinuationFlags flags = ContinuationFlags::None);
 
         //! Helper function similar to ContinueStoring, but stores the data as a member of 'output' rather than overwriting 'output'.
-        JsonSerializationResult::ResultCode ContinueStoringToJsonObjectField(rapidjson::Value& output, rapidjson::Value::StringRefType newMemberName,
-            const void* object, const void* defaultObject, const Uuid& typeId, JsonSerializerContext& context, Flags flags = Flags::None);
+        JsonSerializationResult::ResultCode ContinueStoringToJsonObjectField(
+            rapidjson::Value& output, rapidjson::Value::StringRefType newMemberName, const void* object, const void* defaultObject,
+            const Uuid& typeId, JsonSerializerContext& context, ContinuationFlags flags = ContinuationFlags::None);
 
         //! Checks if a value is an explicit default. This useful for containers where not storing anything as a default would mean
         //! a slot wouldn't be used so something has to be added to represent the fully default target.
@@ -238,6 +251,7 @@ namespace AZ
         rapidjson::Value GetExplicitDefault();
     };
 
-    AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::BaseJsonSerializer::Flags)
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::BaseJsonSerializer::ContinuationFlags)
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::BaseJsonSerializer::OperationFlags)
 
 } // namespace AZ
