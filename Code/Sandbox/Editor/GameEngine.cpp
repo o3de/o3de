@@ -532,19 +532,12 @@ void CGameEngine::SetLevelPath(const QString& path)
     }
 }
 
-void CGameEngine::SetMissionName(const QString& mission)
-{
-    m_missionName = mission;
-}
-
 bool CGameEngine::LoadLevel(
-    const QString& mission,
     [[maybe_unused]] bool bDeleteAIGraph,
     bool bReleaseResources)
 {
     LOADING_TIME_PROFILE_SECTION(GetIEditor()->GetSystem());
     m_bLevelLoaded = false;
-    m_missionName = mission;
     CLogFile::FormatLine("Loading map '%s' into engine...", m_levelPath.toUtf8().data());
     // Switch the current directory back to the Primary CD folder first.
     // The engine might have trouble to find some files when the current
@@ -593,7 +586,7 @@ bool CGameEngine::LoadLevel(
 
 bool CGameEngine::ReloadLevel()
 {
-    if (!LoadLevel(GetMissionName(), false, false))
+    if (!LoadLevel(false, false))
     {
         return false;
     }

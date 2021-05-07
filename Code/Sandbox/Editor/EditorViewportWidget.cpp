@@ -161,6 +161,7 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
     , m_camFOV(gSettings.viewports.fDefaultFov)
     , m_defaultViewName(name)
     , m_renderViewport(nullptr) //m_renderViewport is initialized later, in SetViewportId
+    , m_editorViewportSettings(this)
 {
     // need this to be set in order to allow for language switching on Windows
     setAttribute(Qt::WA_InputMethodEnabled);
@@ -1094,32 +1095,6 @@ AzFramework::CameraState EditorViewportWidget::GetCameraState()
     return m_renderViewport->GetCameraState();
 }
 
-bool EditorViewportWidget::GridSnappingEnabled()
-{
-    return GetViewManager()->GetGrid()->IsEnabled();
-}
-
-float EditorViewportWidget::GridSize()
-{
-    const CGrid* grid = GetViewManager()->GetGrid();
-    return grid->scale * grid->size;
-}
-
-bool EditorViewportWidget::ShowGrid()
-{
-    return gSettings.viewports.bShowGridGuide;
-}
-
-bool EditorViewportWidget::AngleSnappingEnabled()
-{
-    return GetViewManager()->GetGrid()->IsAngleSnapEnabled();
-}
-
-float EditorViewportWidget::AngleStep()
-{
-    return GetViewManager()->GetGrid()->GetAngleSnap();
-}
-
 AZ::Vector3 EditorViewportWidget::PickTerrain(const AzFramework::ScreenPoint& point)
 {
     FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
@@ -1230,6 +1205,8 @@ void EditorViewportWidget::SetViewportId(int id)
         m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::LegacyViewportCameraController>());
     }
 
+    m_renderViewport->SetViewportSettings(&m_editorViewportSettings);
+
     UpdateScene();
 
     if (m_pPrimaryViewport == this)
@@ -1294,26 +1271,8 @@ namespace AZ::ViewportHelpers
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::OnTitleMenu(QMenu* menu)
 {
-    const int nWireframe = gEnv->pConsole->GetCVar("r_wireframe")->GetIVal();
-    QAction* action = menu->addAction(tr("Wireframe"));
-    connect(action, &QAction::triggered, action, []()
-    {
-        ICVar* piVar(gEnv->pConsole->GetCVar("r_wireframe"));
-        int nRenderMode = piVar->GetIVal();
-        if (nRenderMode != R_WIREFRAME_MODE)
-        {
-            piVar->Set(R_WIREFRAME_MODE);
-        }
-        else
-        {
-            piVar->Set(R_SOLID_MODE);
-        }
-    });
-    action->setCheckable(true);
-    action->setChecked(nWireframe == R_WIREFRAME_MODE);
-
     const bool bDisplayLabels = GetIEditor()->GetDisplaySettings()->IsDisplayLabels();
-    action = menu->addAction(tr("Labels"));
+    QAction* action = menu->addAction(tr("Labels"));
     connect(action, &QAction::triggered, this, [bDisplayLabels] {GetIEditor()->GetDisplaySettings()->DisplayLabels(!bDisplayLabels);
         });
     action->setCheckable(true);
@@ -2865,6 +2824,37 @@ void EditorViewportWidget::SetAsActiveViewport()
             viewportContextManager->RenameViewportContext(viewportContext, defaultContextName);
         }
     }
+}
+
+EditorViewportSettings::EditorViewportSettings(const EditorViewportWidget* editorViewportWidget)
+    : m_editorViewportWidget(editorViewportWidget)
+{
+}
+
+bool EditorViewportSettings::GridSnappingEnabled() const
+{
+    return m_editorViewportWidget->GetViewManager()->GetGrid()->IsEnabled();
+}
+
+float EditorViewportSettings::GridSize() const
+{
+    const CGrid* grid = m_editorViewportWidget->GetViewManager()->GetGrid();
+    return grid->scale * grid->size;
+}
+
+bool EditorViewportSettings::ShowGrid() const
+{
+    return gSettings.viewports.bShowGridGuide;
+}
+
+bool EditorViewportSettings::AngleSnappingEnabled() const
+{
+    return m_editorViewportWidget->GetViewManager()->GetGrid()->IsAngleSnapEnabled();
+}
+
+float EditorViewportSettings::AngleStep() const
+{
+    return m_editorViewportWidget->GetViewManager()->GetGrid()->GetAngleSnap();
 }
 
 #include <moc_EditorViewportWidget.cpp>

@@ -64,7 +64,7 @@ __pragma(comment(lib, "Winmm.lib"))
 #endif
 
 #if defined(APPLE)
-#include "SystemUtilsApple.h"
+#include <AzFramework/Utils/SystemUtilsApple.h>
 #endif
 
 // this is the list of modules that can be loaded into the game process

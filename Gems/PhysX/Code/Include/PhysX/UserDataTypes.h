@@ -88,7 +88,7 @@ namespace PhysX
         Physics::RagdollNode* GetRagdollNode() const;
         void SetRagdollNode(Physics::RagdollNode* ragdollNode);
 
-        AzPhysics::SimulatedBody* GetWorldBody() const;
+        AzPhysics::SimulatedBody* GetSimulatedBody() const;
 
     private:
 

@@ -120,8 +120,6 @@ namespace PhysX
 
     void EditorShapeColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        // Not compatible with Legacy Cry Physics services
-        incompatible.push_back(AZ_CRC("ColliderService", 0x902d4e93));
         incompatible.push_back(AZ_CRC("LegacyCryPhysicsService", 0xbb370351));
         incompatible.push_back(AZ_CRC("PhysXShapeColliderService", 0x98a7e779));
     }
@@ -273,7 +271,7 @@ namespace PhysX
             m_editorBody = azdynamic_cast<StaticRigidBody*>(m_sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_editorBodyHandle));
         }
 
-        Physics::WorldBodyRequestBus::Handler::BusConnect(GetEntityId());
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 
     AZ::u32 EditorShapeColliderComponent::OnConfigurationChanged()
@@ -663,7 +661,7 @@ namespace PhysX
 
     void EditorShapeColliderComponent::Deactivate()
     {
-        Physics::WorldBodyRequestBus::Handler::BusDisconnect();
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         m_colliderDebugDraw.Disconnect();
 
         m_nonUniformScaleChangedHandler.Disconnect();
@@ -761,9 +759,14 @@ namespace PhysX
         return AZ::Aabb::CreateNull();
     }
 
-    AzPhysics::SimulatedBody* EditorShapeColliderComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* EditorShapeColliderComponent::GetSimulatedBody()
     {
         return m_editorBody;
+    }
+
+    AzPhysics::SimulatedBodyHandle EditorShapeColliderComponent::GetSimulatedBodyHandle() const
+    {
+        return m_editorBodyHandle;
     }
 
     AzPhysics::SceneQueryHit EditorShapeColliderComponent::RayCast(const AzPhysics::RayCastRequest& request)

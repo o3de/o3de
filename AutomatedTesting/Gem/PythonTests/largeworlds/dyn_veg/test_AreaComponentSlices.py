@@ -52,6 +52,7 @@ class TestAreaComponents(object):
 
     @pytest.mark.test_case_id("C2627900", "C2627905", "C2627904")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_misc
     def test_AreaComponents_SliceCreationVisibilityToggleWorks(self, request, editor, level, workspace,
                                                               launcher_platform):
         cfg_args = [level]

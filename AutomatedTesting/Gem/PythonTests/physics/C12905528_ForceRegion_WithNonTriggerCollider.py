@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID : C12905528
 Test Case Title : Check that user is warned if non-trigger collider component is used with force region
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/12905528
+
 """
 
 

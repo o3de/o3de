@@ -88,7 +88,6 @@ public:
     //! Load new terrain level into 3d engine.
     //! Also load AI triangulation for this level.
     bool LoadLevel(
-        const QString& mission,
         bool bDeleteAIGraph,
         bool bReleaseResources);
     //!* Reload level if it was already loaded.
@@ -106,14 +105,10 @@ public:
     bool IsLevelLoaded() const { return m_bLevelLoaded; };
     //! Assign new level path name.
     void SetLevelPath(const QString& path);
-    //! Assign new current mission name.
-    void SetMissionName(const QString& mission);
     //! Return name of currently loaded level.
     const QString& GetLevelName() const { return m_levelName; };
     //! Return extension of currently loaded level.
     const QString& GetLevelExtension() const { return m_levelExtension; };
-    //! Return name of currently active mission.
-    const QString& GetMissionName() const { return m_missionName; };
     //! Get fully specified level path.
     const QString& GetLevelPath() const { return m_levelPath; };
     //! Query if engine is in game mode.
@@ -171,7 +166,6 @@ private:
     CLogFile m_logFile;
     QString m_levelName;
     QString m_levelExtension;
-    QString m_missionName;
     QString m_levelPath;
     QString m_MOD;
     bool m_bLevelLoaded;
