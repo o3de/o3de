@@ -159,17 +159,6 @@ namespace AssetBundler
     AZ::Outcome<AZ::IO::Path, AZStd::string> GetProjectCacheFolderPath();
 
     /**
-    * Calculates the list of enabled platforms for the input project by reading the folder names inside the project-specific cache folder.
-    * If the Asset Processor has not been run yet, or has not been run since the enabled platform list inside AssetProcessorPlatformConfig.setreg 
-    *   was changed, the output of this function will be incorrect.
-    *
-    * @param projectCacheFolder The directory of a project-specific cache folder: /ProjectPath/Cache
-    * @param platformNames [out] The list of platforms enabled in the project
-    * @return void on success, error message on failure
-    */
-    AZ::Outcome<void, AZStd::string> GetPlatformNamesFromCacheFolder(AZStd::vector<AZStd::string>& platformNames);
-
-    /**
     * Computes the absolute path to the Asset Catalog file for a specified project and platform.
     * With platform set as "pc" and project as "ProjectName", the path will resemble: C:/ProjectPath/Cache/pc/assetcatalog.xml
     *
@@ -204,8 +193,11 @@ namespace AssetBundler
     AzFramework::PlatformFlags GetPlatformsOnDiskForPlatformSpecificFile(const AZStd::string& platformIndependentAbsolutePath);
 
     //! Returns a map of <absolute file path, source folder display name> of all default Seed List files for the current game project.
-    AZStd::unordered_map<AZStd::string, AZStd::string> GetDefaultSeedListFiles(AZStd::string_view enginePath, AZStd::string_view projectPath,
-        const AZStd::vector<AzFramework::GemInfo>& gemInfoList, AzFramework::PlatformFlags platformFlags);
+    AZStd::unordered_map<AZStd::string, AZStd::string> GetDefaultSeedListFiles(
+        AZStd::string_view enginePath,
+        AZStd::string_view projectPath,
+        const AZStd::vector<AzFramework::GemInfo>& gemInfoList,
+        AzFramework::PlatformFlags platformFlags);
 
     //! Returns a vector of relative paths to Assets that should be included as default Seeds, but are not already in a Seed List file.
     AZStd::vector<AZStd::string> GetDefaultSeeds(AZStd::string_view projectPath, AZStd::string_view projectName);
@@ -217,15 +209,24 @@ namespace AssetBundler
     AZ::IO::Path GetProjectDependenciesAssetPath(AZStd::string_view projectPath, AZStd::string_view projectName);
 
     //! Returns the map from gem seed list file path to gem name
-    AZStd::unordered_map<AZStd::string, AZStd::string> GetGemSeedListFilePathToGemNameMap(const AZStd::vector<AzFramework::GemInfo>& gemInfoList, AzFramework::PlatformFlags platformFlags);
+    AZStd::unordered_map<AZStd::string, AZStd::string> GetGemSeedListFilePathToGemNameMap(
+        const AZStd::vector<AzFramework::GemInfo>& gemInfoList,
+        AzFramework::PlatformFlags platformFlags);
 
     //! Given an absolute gem seed file path determines whether the file is valid for the current game project.
     //! This method is for validating gem seed list files only.
-    bool IsGemSeedFilePathValid(AZStd::string_view enginePath, AZStd::string seedAbsoluteFilePath, const AZStd::vector<AzFramework::GemInfo>& gemInfoList, AzFramework::PlatformFlags platformFlags);
+    bool IsGemSeedFilePathValid(
+        AZStd::string_view enginePath,
+        AZStd::string seedAbsoluteFilePath,
+        const AZStd::vector<AzFramework::GemInfo>& gemInfoList,
+        AzFramework::PlatformFlags platformFlags);
 
     //! Returns platformFlags of all enabled platforms by parsing all the asset processor config files.
     //! Please note that the game project could be in a different location to the engine therefore we need the assetRoot param.
-    AzFramework::PlatformFlags GetEnabledPlatformFlags(AZStd::string_view enginePath, AZStd::string_view assetRoot, AZStd::string_view projectPath);
+    AzFramework::PlatformFlags GetEnabledPlatformFlags(
+        AZStd::string_view enginePath,
+        AZStd::string_view assetRoot,
+        AZStd::string_view projectPath);
 
     QJsonObject ReadJson(const AZStd::string& filePath);
     void SaveJson(const AZStd::string& filePath, const QJsonObject& jsonObject);
@@ -239,7 +240,11 @@ namespace AssetBundler
     {
     public:
         AZ_CLASS_ALLOCATOR(FilePath, AZ::SystemAllocator, 0);
-        explicit FilePath(const AZStd::string& filePath, AZStd::string platformIdentifier = AZStd::string(), bool checkFileCase = false, bool ignoreFileCase = false);
+        explicit FilePath(
+            const AZStd::string& filePath,
+            AZStd::string platformIdentifier = AZStd::string(),
+            bool checkFileCase = false,
+            bool ignoreFileCase = false);
         explicit FilePath(const AZStd::string& filePath, bool checkFileCase, bool ignoreFileCase);
         FilePath() = default;
         const AZStd::string& AbsolutePath() const;
@@ -279,8 +284,10 @@ namespace AssetBundler
         bool m_reportingError = false;
     };
 
-    AZ::Outcome<AzToolsFramework::AssetFileInfoListComparison::ComparisonType, AZStd::string> ParseComparisonType(const AZStd::string& comparisonType);
-    AZ::Outcome<AzToolsFramework::AssetFileInfoListComparison::FilePatternType, AZStd::string> ParseFilePatternType(const AZStd::string& filePatternType);
+    AZ::Outcome<AzToolsFramework::AssetFileInfoListComparison::ComparisonType, AZStd::string> ParseComparisonType(
+        const AZStd::string& comparisonType);
+    AZ::Outcome<AzToolsFramework::AssetFileInfoListComparison::FilePatternType, AZStd::string> ParseFilePatternType(
+        const AZStd::string& filePatternType);
     bool LooksLikePath(const AZStd::string& inputString);
     bool LooksLikeWildcardPattern(const AZStd::string& inputPattern);
 }

@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test Case ID    : C4044694
 # Test Case Title : Verify that if we add an empty Material library in Collider Component, the object continues to use Default material values
-# Test Case URL   : https://testrail.agscollab.com/index.php?/cases/view/4044694
+
 
 
 # fmt: off

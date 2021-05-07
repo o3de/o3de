@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C14654881
 # Test Case Title : Switching levels from a level containing a character controller component
 # should not lead to a crash
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/14654881
+
 
 
 # fmt: off
