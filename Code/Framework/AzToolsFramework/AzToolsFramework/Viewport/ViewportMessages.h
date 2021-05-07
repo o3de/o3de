@@ -262,6 +262,8 @@ namespace AzToolsFramework
             /// from ViewportCursorScreenPosition. This method will always return the correct position to generate a mouse
             /// position delta.
             virtual AZStd::optional<AzFramework::ScreenPoint> PreviousViewportCursorScreenPosition() = 0;
+            /// Is mouse over viewport.
+            virtual bool IsMouseOver() const = 0;
 
         protected:
             ~ViewportMouseCursorRequests() = default;

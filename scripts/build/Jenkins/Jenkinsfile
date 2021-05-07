@@ -549,15 +549,17 @@ finally {
                 message:"${currentBuild.currentResult}:${BUILD_URL}:${env.RECREATE_VOLUME}:${env.CLEAN_OUTPUT_DIRECTORY}:${env.CLEAN_ASSETS}"
             )
         }
-        step([
-            $class: 'Mailer',
-            notifyEveryUnstableBuild: true,
-            sendToIndividuals: true,
-            recipients: emailextrecipients([
-                [$class: 'CulpritsRecipientProvider'],
-                [$class: 'RequesterRecipientProvider']
+        node('controller') {
+            emailRecipients = [[$class: 'RequesterRecipientProvider']]
+            if (env.WATCHED_BRANCHES.tokenize(',').contains(branchName)) {
+                emailRecipients.add([$class: 'CulpritsRecipientProvider'])
+            }
+            step([
+                $class: 'Mailer', 
+                notifyEveryUnstableBuild: true, 
+                recipients: emailextrecipients(emailRecipients)
             ])
-        ])
+        }
     } catch(Exception e) {
     }
 }

@@ -13,32 +13,25 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
+#include <GemCatalog/GemListView.h>
+#include <GemCatalog/GemModel.h>
 #endif
-
-namespace Ui
-{
-    class GemCatalogClass;
-}
 
 namespace O3DE::ProjectManager
 {
     class GemCatalog
         : public ScreenWidget
     {
-
     public:
         explicit GemCatalog(ProjectManagerWindow* window);
-        ~GemCatalog();
-
-    protected:
-        void ConnectSlotsAndSignals() override;
+        ~GemCatalog() = default;
 
     protected slots:
         void HandleBackButton();
         void HandleConfirmButton();
 
     private:
-        QScopedPointer<Ui::GemCatalogClass> m_ui;
+        GemListView* m_gemListView = nullptr;
+        GemModel* m_gemModel = nullptr;
     };
-
 } // namespace O3DE::ProjectManager
