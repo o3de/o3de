@@ -38,7 +38,6 @@
 
 // CryCommon
 #include <CryCommon/INavigationSystem.h>
-#include <CryCommon/IDeferredCollisionEvent.h>
 #include <CryCommon/LyShine/ILyShine.h>
 #include <CryCommon/MainThreadRenderRequestBus.h>
 
@@ -46,7 +45,6 @@
 #include "CryEdit.h"
 
 #include "ViewManager.h"
-#include "Util/Ruler.h"
 #include "AnimationContext.h"
 #include "UndoViewPosition.h"
 #include "UndoViewRotation.h"
@@ -386,7 +384,6 @@ void CGameEngine::SetCurrentViewRotation(const AZ::Vector3& rotation)
 AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     bool bPreviewMode,
     bool bTestMode,
-    bool bShaderCacheGen,
     const char* sInCmdLine,
     IInitializeUIInfo* logo,
     HWND hwndForInputSystem)
@@ -444,10 +441,6 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
         m_modalWindowDismisser = AZStd::make_unique<ModalWindowDismisser>();
     }
 
-    if (bShaderCacheGen)
-    {
-        sip.bSkipFont = true;
-    }
     AssetProcessConnectionStatus apConnectionStatus;
 
     m_pISystem = pfnCreateSystemInterface(sip);
@@ -627,12 +620,6 @@ void CGameEngine::SwitchToInGame()
     m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(true);
     m_bInGameMode = true;
 
-    CRuler* pRuler = GetIEditor()->GetRuler();
-    if (pRuler)
-    {
-        pRuler->SetActive(false);
-    }
-
     gEnv->pSystem->GetViewCamera().SetMatrix(m_playerViewTM);
 
     // Disable accelerators.
@@ -799,12 +786,6 @@ void CGameEngine::SetSimulationMode(bool enabled, bool bOnlyPhysics)
 
     if (enabled)
     {
-        CRuler* pRuler = GetIEditor()->GetRuler();
-        if (pRuler)
-        {
-            pRuler->SetActive(false);
-        }
-
         GetIEditor()->Notify(eNotify_OnBeginSimulationMode);
     }
     else
@@ -929,9 +910,6 @@ void CGameEngine::Update()
         // [marco] check current sound and vis areas for music etc.
         // but if in game mode, 'cos is already done in the above call to game->update()
         unsigned int updateFlags = ESYSUPDATE_EDITOR;
-
-        CRuler* pRuler = GetIEditor()->GetRuler();
-        const bool bRulerNeedsUpdate = (pRuler && pRuler->HasQueuedPaths());
 
         if (!m_bSimulationMode)
         {

@@ -511,17 +511,18 @@ namespace PhysXDebug
 
     void SystemComponent::RenderBuffers()
     {
-        if (gEnv && gEnv->pRenderer && !m_linePoints.empty())
+        // ToDo: With Atom?
+        /*if (!m_linePoints.empty())
         {
             AZ_Assert(m_linePoints.size() == m_lineColors.size(), "Lines: Expected an equal number of points to colors.");
-            gEnv->pRenderer->GetIRenderAuxGeom()->DrawLines(m_linePoints.begin(), m_linePoints.size(), m_lineColors.begin(), 1.0f);
+            ???->DrawLines(m_linePoints.begin(), m_linePoints.size(), m_lineColors.begin(), 1.0f);
         }
 
-        if (gEnv && gEnv->pRenderer && !m_trianglePoints.empty())
+        if (!m_trianglePoints.empty())
         {
             AZ_Assert(m_trianglePoints.size() == m_triangleColors.size(), "Triangles: Expected an equal number of points to colors.");
-            gEnv->pRenderer->GetIRenderAuxGeom()->DrawTriangles(m_trianglePoints.begin(), m_trianglePoints.size(), m_triangleColors.begin());
-        }
+            ???->DrawTriangles(m_trianglePoints.begin(), m_trianglePoints.size(), m_triangleColors.begin());
+        }*/
     }
 
     static void CmdEnableWireFrame([[maybe_unused]] IConsoleCmdArgs* args)
@@ -825,17 +826,18 @@ namespace PhysXDebug
         }
     }
 
-    void SystemComponent::DrawDebugCullingBox(const AZ::Aabb& cullingBoxAabb)
+    void SystemComponent::DrawDebugCullingBox(const AZ::Aabb& /*cullingBoxAabb*/)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
 
-        if (gEnv && gEnv->pRenderer && m_settings.m_visualizationEnabled && m_culling.m_boxWireframe)
+        // ToDo: With Atom?
+        /*if (m_settings.m_visualizationEnabled && m_culling.m_boxWireframe)
         {
             ColorB wireframeColor = MapOriginalPhysXColorToUserDefinedValues(1);
             AABB lyAABB(AZAabbToLyAABB(cullingBoxAabb));
 
-            gEnv->pRenderer->GetIRenderAuxGeom()->DrawAABB(lyAABB, false, wireframeColor, EBoundingBoxDrawStyle::eBBD_Extremes_Color_Encoded);
-        }
+            ???->DrawAABB(lyAABB, false, wireframeColor, EBoundingBoxDrawStyle::eBBD_Extremes_Color_Encoded);
+        }*/
     }
 
     ColorB SystemComponent::MapOriginalPhysXColorToUserDefinedValues(const physx::PxU32& originalColor)

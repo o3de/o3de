@@ -132,7 +132,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "Util/AutoDirectoryRestoreFileDialog.h"
 #include "Util/EditorAutoLevelLoadTest.h"
-#include "Util/Ruler.h"
 #include "Util/IndexedFiles.h"
 #include "AboutDialog.h"
 #include <AzToolsFramework/PythonTerminal/ScriptHelpDialog.h>
@@ -390,7 +389,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_PREFERENCES, OnPreferences)
     ON_COMMAND(ID_REDO, OnRedo)
     ON_COMMAND(ID_TOOLBAR_WIDGET_REDO, OnRedo)
-    ON_COMMAND(ID_RELOAD_TEXTURES, OnReloadTextures)
     ON_COMMAND(ID_FILE_OPEN_LEVEL, OnOpenLevel)
 #ifdef ENABLE_SLICE_EDITOR
     ON_COMMAND(ID_FILE_NEW_SLICE, OnCreateSlice)
@@ -527,12 +525,6 @@ public:
     bool m_bExportTexture = false;
 
     bool m_bMatEditMode = false;
-    bool m_bPrecacheShaders = false;
-    bool m_bPrecacheShadersLevels = false;
-    bool m_bPrecacheShaderList = false;
-    bool m_bStatsShaders = false;
-    bool m_bStatsShaderList = false;
-    bool m_bMergeShaders = false;
 
     bool m_bConsoleMode = false;
     bool m_bNullRenderer = false;
@@ -574,12 +566,6 @@ public:
             { "exportTexture", m_bExportTexture },
             { "test", m_bTest },
             { "auto_level_load", m_bAutoLoadLevel },
-            { "PrecacheShaders", m_bPrecacheShaders },
-            { "PrecacheShadersLevels", m_bPrecacheShadersLevels },
-            { "PrecacheShaderList", m_bPrecacheShaderList },
-            { "StatsShaders", m_bStatsShaders },
-            { "StatsShaderList", m_bStatsShaderList },
-            { "MergeShaders", m_bMergeShaders },
             { "MatEdit", m_bMatEditMode },
             { "BatchMode", m_bConsoleMode },
             { "NullRenderer", m_bNullRenderer },
@@ -1024,26 +1010,12 @@ void CCryEditApp::OutputStartupMessage(QString str)
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::InitFromCommandLine(CEditCommandLineInfo& cmdInfo)
 {
-    //! Setup flags from command line
-    if (cmdInfo.m_bPrecacheShaders || cmdInfo.m_bPrecacheShadersLevels || cmdInfo.m_bMergeShaders
-        || cmdInfo.m_bPrecacheShaderList || cmdInfo.m_bStatsShaderList || cmdInfo.m_bStatsShaders)
-    {
-        m_bPreviewMode = true;
-        m_bConsoleMode = true;
-        m_bTestMode = true;
-    }
     m_bConsoleMode |= cmdInfo.m_bConsoleMode;
     inEditorBatchMode = AZ::Environment::CreateVariable<bool>("InEditorBatchMode", m_bConsoleMode);
 
     m_bTestMode |= cmdInfo.m_bTest;
 
     m_bSkipWelcomeScreenDialog = cmdInfo.m_bSkipWelcomeScreenDialog || !cmdInfo.m_execFile.isEmpty() || !cmdInfo.m_execLineCmd.isEmpty() || cmdInfo.m_bAutotestMode;
-    m_bPrecacheShaderList = cmdInfo.m_bPrecacheShaderList;
-    m_bStatsShaderList = cmdInfo.m_bStatsShaderList;
-    m_bStatsShaders = cmdInfo.m_bStatsShaders;
-    m_bPrecacheShaders = cmdInfo.m_bPrecacheShaders;
-    m_bPrecacheShadersLevels = cmdInfo.m_bPrecacheShadersLevels;
-    m_bMergeShaders = cmdInfo.m_bMergeShaders;
     m_bExportMode = cmdInfo.m_bExport;
     m_bRunPythonTestScript = cmdInfo.m_bRunPythonTestScript;
     m_bRunPythonScript = cmdInfo.m_bRunPythonScript || cmdInfo.m_bRunPythonTestScript;
@@ -1079,11 +1051,9 @@ void CCryEditApp::InitFromCommandLine(CEditCommandLineInfo& cmdInfo)
 /////////////////////////////////////////////////////////////////////////////
 AZ::Outcome<void, AZStd::string> CCryEditApp::InitGameSystem(HWND hwndForInputSystem)
 {
-    bool bShaderCacheGen = m_bPrecacheShaderList | m_bPrecacheShaders | m_bPrecacheShadersLevels;
-
     CGameEngine* pGameEngine = new CGameEngine;
 
-    AZ::Outcome<void, AZStd::string> initOutcome = pGameEngine->Init(m_bPreviewMode, m_bTestMode, bShaderCacheGen, qApp->arguments().join(" ").toUtf8().data(), g_pInitializeUIInfo, hwndForInputSystem);
+    AZ::Outcome<void, AZStd::string> initOutcome = pGameEngine->Init(m_bPreviewMode, m_bTestMode, qApp->arguments().join(" ").toUtf8().data(), g_pInitializeUIInfo, hwndForInputSystem);
     if (!initOutcome.IsSuccess())
     {
         return initOutcome;
@@ -1124,8 +1094,7 @@ BOOL CCryEditApp::CheckIfAlreadyRunning()
         }
     }
 
-    // Shader pre-caching may start multiple editor copies
-    if (!FirstInstance(bForceNewInstance) && !m_bPrecacheShaderList)
+    if (!FirstInstance(bForceNewInstance))
     {
         return false;
     }
@@ -1347,37 +1316,6 @@ void CCryEditApp::InitLevel(const CEditCommandLineInfo& cmdInfo)
 /////////////////////////////////////////////////////////////////////////////
 BOOL CCryEditApp::InitConsole()
 {
-    if (m_bPrecacheShaderList)
-    {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString("r_PrecacheShaderList");
-        return false;
-    }
-    else if (m_bStatsShaderList)
-    {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString("r_StatsShaderList");
-        return false;
-    }
-    else if (m_bStatsShaders)
-    {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString("r_StatsShaders");
-        return false;
-    }
-    else if (m_bPrecacheShaders)
-    {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString("r_PrecacheShaders");
-        return false;
-    }
-    else if (m_bPrecacheShadersLevels)
-    {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString("r_PrecacheShadersLevels");
-        return false;
-    }
-    else if (m_bMergeShaders)
-    {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString("r_MergeShaders");
-        return false;
-    }
-
     // Execute command from cmdline -exec_line if applicable
     if (!m_execLineCmd.isEmpty())
     {
@@ -2928,14 +2866,6 @@ void CCryEditApp::OnPreferences()
         m_AccelManager.UpdateWndTable();
     }
     */
-}
-
-void CCryEditApp::OnReloadTextures()
-{
-    QWaitCursor wait;
-    CLogFile::WriteLine("Reloading Static objects textures and shaders.");
-    GetIEditor()->GetObjectManager()->SendEvent(EVENT_RELOAD_TEXTURES);
-    GetIEditor()->GetRenderer()->EF_ReloadTextures();
 }
 
 //////////////////////////////////////////////////////////////////////////

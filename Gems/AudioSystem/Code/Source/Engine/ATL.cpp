@@ -2018,7 +2018,8 @@ namespace Audio
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
 
-        if (IRenderAuxGeom* pAuxGeom = (g_audioCVars.m_nDrawAudioDebug > 0 && gEnv->pRenderer) ? gEnv->pRenderer->GetIRenderAuxGeom() : nullptr)
+        // ToDo: With Atom?
+        /*if (g_audioCVars.m_nDrawAudioDebug > 0)
         {
             DrawAudioObjectDebugInfo(*pAuxGeom); // needs to be called first so that the rest of the labels are printed
             // on top (Draw2dLabel doesn't provide a way set which labels are printed on top)
@@ -2108,7 +2109,7 @@ namespace Audio
             DrawATLComponentDebugInfo(*pAuxGeom, fPosX, fPosY);
 
             pAuxGeom->Commit(7);
-        }
+        }*/
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////

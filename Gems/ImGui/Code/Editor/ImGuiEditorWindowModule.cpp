@@ -13,7 +13,6 @@
 #include "ImGui_precompiled.h"
 
 #include "ImGuiGem.h"
-#include "ImGuiEditorWindowSystemComponent.h"
 
 namespace ImGui
 {
@@ -26,22 +25,6 @@ namespace ImGui
         ImGuiEditorWindowModule()
             : ImGuiModule()
         {
-            // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
-            m_descriptors.insert(m_descriptors.end(), {
-                ImGuiEditorWindowSystemComponent::CreateDescriptor(),
-            });
-        }
-
-        /**
-         * Add required SystemComponents to the SystemEntity.
-         */
-        AZ::ComponentTypeList GetRequiredSystemComponents() const override
-        {
-            AZ::ComponentTypeList requiredComponents = ImGuiModule::GetRequiredSystemComponents();
-
-            requiredComponents.push_back(azrtti_typeid<ImGuiEditorWindowSystemComponent>());
-
-            return requiredComponents;
         }
     };
 }

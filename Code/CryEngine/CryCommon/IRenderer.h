@@ -1472,7 +1472,6 @@ struct IRenderer
     /////////////////////////////////////////////////////////////////////////////////
     // Shaders/Shaders management /////////////////////////////////////////////////////////////////////////////////
 
-    virtual void                EF_SetShaderMissCallback(ShaderCacheMissCallback callback) = 0;
     virtual const char* EF_GetShaderMissLogPath() = 0;
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -1532,10 +1531,6 @@ struct IRenderer
     //  Loads lightmap for name.
     virtual int           EF_LoadLightmap (const char* name) = 0;
     virtual bool          EF_RenderEnvironmentCubeHDR (int size, Vec3& Pos, TArray<unsigned short>& vecData) = 0;
-
-    // Summary:
-    //  Creates new RE (RenderElement) of type (edt).
-    virtual IRenderElement* EF_CreateRE (EDataType edt) = 0;
 
     // Summary:
     //  Starts using of the shaders (return first index for allow recursions).
@@ -2383,26 +2378,6 @@ struct IRenderer
 private:
     // use private for EF_Query to prevent client code to submit arbitrary combinations of output data/size
     virtual void EF_QueryImpl(ERenderQueryTypes eQuery, void* pInOut0, uint32 nInOutSize0, void* pInOut1, uint32 nInOutSize1) = 0;
-};
-
-// util class to change wireframe mode
-class CScopedWireFrameMode
-{
-public:
-    CScopedWireFrameMode(IRenderer* pRenderer, int nMode)
-        : m_pRenderer(pRenderer)
-        , m_nMode(nMode)
-    {
-        (void) m_nMode; // removes not used warning
-        pRenderer->PushWireframeMode(nMode);
-    }
-    ~CScopedWireFrameMode()
-    {
-        m_pRenderer->PopWireframeMode();
-    }
-private:
-    IRenderer* m_pRenderer;
-    int m_nMode;
 };
 
 struct SShaderCacheStatistics

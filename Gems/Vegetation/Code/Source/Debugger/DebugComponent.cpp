@@ -192,25 +192,8 @@ void DebugComponent::DrawGlobalDebugInfo()
 void DebugComponent::DrawInstanceDebug()
 {
 #if defined(VEG_PROFILE_ENABLED)
-    ISystem* crySystem = GetISystem();
-    if (!crySystem)
-    {
-        return;
-    }
-
-    IRenderer* renderer = crySystem->GetIRenderer();
-    if (!renderer)
-    {
-        return;
-    }
-
-    IRenderAuxGeom* renderAuxGeom = renderer->GetIRenderAuxGeom();
-    if (!renderAuxGeom)
-    {
-        return;
-    }
-
-    renderAuxGeom->SetRenderFlags(e_Mode3D | e_FillModeSolid | e_CullModeBack | e_DepthWriteOff | e_DepthTestOn);
+    // ToDo: Implement with Atom.
+    /*renderAuxGeom->SetRenderFlags(e_Mode3D | e_FillModeSolid | e_CullModeBack | e_DepthWriteOff | e_DepthTestOn);
 
     AZStd::unordered_map<AreaId, AreaDebugDisplayData> areaDebugDisplayDataMap;
 
@@ -241,7 +224,7 @@ void DebugComponent::DrawInstanceDebug()
         AABB bounds(pos - radius, pos + radius);
 
         renderAuxGeom->DrawAABB(bounds, true, ColorB(areaDebugDisplayData.m_instanceColor.ToU32()), eBBD_Faceted);
-    }
+    }*/
 #endif
 }
 
@@ -922,25 +905,8 @@ void DebugComponent::RemoveConsoleVariables()
 
 void DebugComponent::DrawDebugStats()
 {
-    ISystem* crySystem = GetISystem();
-    if (!crySystem)
-    {
-        return;
-    }
-
-    IRenderer* renderer = crySystem->GetIRenderer();
-    if (!renderer)
-    {
-        return;
-    }
-
-    IRenderAuxGeom* renderAuxGeom = renderer->GetIRenderAuxGeom();
-    if (!renderAuxGeom)
-    {
-        return;
-    }
-
-    if (!m_debugData)
+    // ToDo: Implement with Atom.
+    /*if (!m_debugData)
     {
         return;
     }
@@ -961,7 +927,7 @@ void DebugComponent::DrawDebugStats()
         destroyTaskCount,
         m_debugData->m_areaTaskQueueCount.load(AZStd::memory_order_relaxed),
         m_debugData->m_areaTaskActiveCount.load(AZStd::memory_order_relaxed)
-        ).c_str());
+        ).c_str());*/
 }
 
 void DebugComponent::AddConsoleVariables()

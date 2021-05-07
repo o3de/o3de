@@ -839,16 +839,16 @@ namespace Audio
             const AZ::Vector3 vPos(m_oPosition.GetPositionVec());
             AZ::Vector3 vScreenPos(0.f);
 
-            if (IRenderer* pRenderer = gEnv->pRenderer)
-            {
+            // ToDo: With Atom?
+            /*{
                 float screenProj[3];
-                pRenderer->ProjectToScreen(vPos.GetX(), vPos.GetY(), vPos.GetZ(), &screenProj[0], &screenProj[1], &screenProj[2]);
+                ???->ProjectToScreen(vPos.GetX(), vPos.GetY(), vPos.GetZ(), &screenProj[0], &screenProj[1], &screenProj[2]);
 
-                screenProj[0] *= 0.01f * static_cast<float>(pRenderer->GetWidth());
-                screenProj[1] *= 0.01f * static_cast<float>(pRenderer->GetHeight());
+                screenProj[0] *= 0.01f * static_cast<float>(???->GetWidth());
+                screenProj[1] *= 0.01f * static_cast<float>(???->GetHeight());
                 vScreenPos.Set(screenProj);
             }
-            else
+            else*/
             {
                 vScreenPos.SetZ(-1.0f);
             }
@@ -1081,8 +1081,8 @@ namespace Audio
                 );
             }
 
-            IRenderer* renderer = gEnv->pRenderer;
-            if (drawLabels && renderer)
+            // ToDo: With Atom?
+            /*if (drawLabels)
             {
                 float screenProj[3];
                 renderer->ProjectToScreen(rayEnd.GetX(), rayEnd.GetY(), rayEnd.GetZ(),
@@ -1108,7 +1108,7 @@ namespace Audio
                         rayInfo.GetDistanceScaledContribution()
                     );
                 }
-            }
+            }*/
         }
 
         auxGeom.SetRenderFlags(previousRenderFlags);

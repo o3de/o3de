@@ -1211,7 +1211,7 @@ void CStreamEngine::TempFree(void* p, size_t nSize)
 namespace
 {
 #ifdef STREAMENGINE_ENABLE_STATS
-    void DrawText(const float x, const float y, ColorF c, const char* format, ...)
+    void DrawText(const float /*x*/, const float /*y*/, ColorF c, const char* format, ...)
     {
         va_list args;
         va_start(args, format);
@@ -1223,7 +1223,7 @@ namespace
         ti.color[1] = c.g;
         ti.color[2] = c.b;
         ti.color[3] = c.a;
-        gEnv->pRenderer->DrawTextQueued(Vec3(x, y, 1.0f), ti, format, args);
+        // ToDo: Draw with Atom? Think this whole system is dead anyway though.
         va_end(args);
     }
 #endif

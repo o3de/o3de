@@ -31,7 +31,6 @@
 #include "ViewManager.h"
 #include "StringDlg.h"
 #include "GenericSelectItemDialog.h"
-#include "Util/Ruler.h"
 #include "Objects/BaseObject.h"
 #include "Commands/CommandManager.h"
 
@@ -608,8 +607,9 @@ namespace
         }
         else
         {
-            float color[] = {r, g, b, a};
-            gEnv->pRenderer->Draw2dLabel(x, y, size, color, false, pLabel);
+            // ToDo: With Atom?
+            // float color[] = {r, g, b, a};
+            // ???->Draw2dLabel(x, y, size, color, false, pLabel);
         }
     }
 
