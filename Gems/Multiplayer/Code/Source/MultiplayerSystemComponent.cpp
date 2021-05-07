@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  */
-
+#pragma optimize("", off)
 #include <Source/MultiplayerSystemComponent.h>
 #include <Source/Components/MultiplayerComponent.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
@@ -127,6 +127,7 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
+        AZ::TimeMs deltaTimeMs = aznumeric_cast<AZ::TimeMs>(static_cast<int32_t>(deltaTime * 1000.0f));
         AZ::TimeMs hostTimeMs = AZ::GetElapsedTimeMs();
 
         // Handle deferred local rpc messages that were generated during the updates
@@ -137,6 +138,7 @@ namespace Multiplayer
         m_networkEntityManager.NotifyEntitiesDirtied();
 
         MultiplayerStats& stats = GetStats();
+        stats.TickStats(deltaTimeMs);
         stats.m_entityCount = GetNetworkEntityManager()->GetEntityCount();
         stats.m_serverConnectionCount = 0;
         stats.m_clientConnectionCount = 0;
