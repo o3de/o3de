@@ -29,8 +29,8 @@
   },
   "debug": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_linux.sh",
@@ -44,8 +44,8 @@
   },
   "profile": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean",
+      "nightly-incremental",
+      "nightly-clean",
       "daily-pipeline-metrics",
       "weekly-build-metrics"
     ],
@@ -130,8 +130,8 @@
   },
   "asset_clean_profile": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean"
+      "nightly-incremental",
+      "nightly-clean"
     ],
     "PIPELINE_ENV": {
       "CLEAN_ASSETS": "1"
@@ -143,8 +143,8 @@
   },
   "periodic_test_profile": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_linux.sh",
@@ -159,8 +159,8 @@
   },
   "benchmark_test_profile": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_linux.sh",
@@ -175,8 +175,8 @@
   },
   "release": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_linux.sh",
@@ -190,8 +190,8 @@
   },
   "monolithic_release": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_linux.sh",

@@ -17,8 +17,8 @@
   },
   "debug_vs2019_pipe": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean"
+      "nightly-incremental",
+      "nightly-clean"
     ],
     "steps": [
       "debug_vs2019",
@@ -126,8 +126,8 @@
   },
   "profile_vs2019_nounity": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_windows.cmd",
@@ -159,8 +159,8 @@
   },
   "test_gpu_profile_vs2019": {
     "TAGS":[
-      "nightly_incremental",
-      "nightly_clean"
+      "nightly-incremental",
+      "nightly-clean"
     ],
     "PIPELINE_ENV":{
       "NODE_LABEL":"windows-gpu"
@@ -196,8 +196,8 @@
   },
   "asset_clean_profile_vs2019": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean"
+      "nightly-incremental",
+      "nightly-clean"
     ],
     "PIPELINE_ENV": {
       "CLEAN_ASSETS": "1"
@@ -209,8 +209,8 @@
   },
   "periodic_test_profile_vs2019": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_windows.cmd",
@@ -227,8 +227,8 @@
   },
   "sandbox_test_profile_vs2019": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "PIPELINE_ENV": {
@@ -248,8 +248,8 @@
   },
   "benchmark_test_profile_vs2019": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_windows.cmd",
@@ -266,8 +266,8 @@
   },
   "release_vs2019": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_windows.cmd",
@@ -282,8 +282,8 @@
   },
   "monolithic_release_vs2019": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_windows.cmd",
@@ -298,8 +298,8 @@
   },
   "install_profile_vs2019": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean"
+      "nightly-incremental",
+      "nightly-clean"
     ],
     "COMMAND": "build_windows.cmd",
     "PARAMETERS": {

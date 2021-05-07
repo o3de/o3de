@@ -13,7 +13,7 @@
         "packaging": {
             "CLEAN_WORKSPACE": true
         },
-        "nightly_clean": {
+        "nightly-clean": {
             "CLEAN_WORKSPACE": true
         }
     }

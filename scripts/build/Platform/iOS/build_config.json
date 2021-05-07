@@ -19,8 +19,8 @@
   },
   "debug": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "../Mac/build_mac.sh",
@@ -35,8 +35,8 @@
   },
   "profile": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean",
+      "nightly-incremental",
+      "nightly-clean",
       "daily-pipeline-metrics",
       "weekly-build-metrics"
     ],
@@ -52,8 +52,8 @@
   },
   "profile_nounity": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "../Mac/build_mac.sh",
@@ -68,8 +68,8 @@
   },
   "asset_profile": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "../Mac/build_asset_mac.sh",
@@ -86,8 +86,8 @@
   },
   "asset_clean_profile": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean"
+      "nightly-incremental",
+      "nightly-clean"
     ],
     "PIPELINE_ENV": {
       "CLEAN_ASSETS": "true"
@@ -99,8 +99,8 @@
   },
   "release": {
     "TAGS": [
-      "nightly_incremental",
-      "nightly_clean",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "../Mac/build_mac.sh",
