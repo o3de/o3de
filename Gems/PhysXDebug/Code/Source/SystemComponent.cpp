@@ -838,7 +838,7 @@ namespace PhysXDebug
         }
     }
 
-    void SystemComponent::DrawDebugCullingBox(const AZ::Aabb& /*cullingBoxAabb*/)
+    void SystemComponent::DrawDebugCullingBox(const AZ::Aabb& cullingBoxAabb)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
 
