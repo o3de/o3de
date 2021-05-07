@@ -105,10 +105,8 @@ class ResourceMappings:
 def resource_mappings(
         request: pytest.fixture,
         project: str,
-        region: str,
         feature_name: str,
         resource_mappings_filename: str,
-        account_id: str,
         workspace: pytest.fixture,
         aws_utils: pytest.fixture) -> ResourceMappings:
     """
@@ -116,17 +114,16 @@ def resource_mappings(
     :param request: _pytest.fixtures.SubRequest class that handles getting
         a pytest fixture from a pytest function/fixture.
     :param project: Project to find resource mapping file.
-    :param region: Region to update in resource mapping file.
     :param feature_name: AWS Gem name that is prepended to resource mapping keys.
     :param resource_mappings_filename: Name of resource mapping file.
-    :param account_id: AWS account query stacks from.
     :param workspace: Region for deploying the CDK application.
     :param aws_utils: AWS utils fixture.
     :return: ResourceMappings class object.
     """
 
     path = f'{workspace.paths.engine_root()}\\{project}\\Config\\{resource_mappings_filename}'
-    resource_mappings_obj = ResourceMappings(path, region, feature_name, account_id, workspace,
+    resource_mappings_obj = ResourceMappings(path, aws_utils.assume_session().region_name, feature_name,
+                                             aws_utils.assume_account_id(), workspace,
                                              aws_utils.client('cloudformation'))
 
     def teardown():

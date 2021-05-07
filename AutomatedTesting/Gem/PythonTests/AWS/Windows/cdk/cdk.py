@@ -22,18 +22,17 @@ class Cdk:
     Cdk class that provides methods to run cdk application commands.
     Expects system to have NodeJS, AWS CLI and CDK installed globally and have their paths setup as env variables.
     """
-    def __init__(self, cdk_path: str, project: str, account_id: str, region: str,
+    def __init__(self, cdk_path: str, project: str, account_id: str,
                  workspace: pytest.fixture, session: boto3.session.Session):
         """
         :param cdk_path: Path where cdk app.py is stored.
         :param project: Project name used for cdk project name env variable.
-        :param account_id: AWS account to deploy cdk resources in.
-        :param region: Region for deploying the cdk resources in.
+        :param account_id: AWS account id to use with cdk application.
         :param workspace: ly_test_tools workspace fixture.
         """
         self._cdk_env = os.environ.copy()
         self._cdk_env['O3DE_AWS_PROJECT_NAME'] = project
-        self._cdk_env['O3DE_AWS_DEPLOY_REGION'] = region
+        self._cdk_env['O3DE_AWS_DEPLOY_REGION'] = session.region_name
         self._cdk_env['O3DE_AWS_DEPLOY_ACCOUNT'] = account_id
         self._cdk_env['PATH'] = f'{workspace.paths.engine_root()}\\python;' + self._cdk_env['PATH']
 
@@ -129,8 +128,6 @@ class Cdk:
 def cdk(
         request: pytest.fixture,
         project: str,
-        account_id: str,
-        region: str,
         feature_name: str,
         workspace: pytest.fixture,
         aws_utils: pytest.fixture,
@@ -140,8 +137,6 @@ def cdk(
     :param request: _pytest.fixtures.SubRequest class that handles getting
         a pytest fixture from a pytest function/fixture.
     :param project: Project name used for cdk project name env variable.
-    :param account_id: AWS account to deploy cdk resources in.
-    :param region: Region for deploying the cdk resources in.
     :param feature_name: Feature gem name to expect cdk folder in.
     :param workspace: ly_test_tools workspace fixture.
     :param aws_utils: aws_utils fixture.
@@ -150,7 +145,7 @@ def cdk(
     """
 
     cdk_path = f'{workspace.paths.engine_root()}/Gems/{feature_name}/cdk'
-    cdk_obj = Cdk(cdk_path, project, account_id, region, workspace, aws_utils.session())
+    cdk_obj = Cdk(cdk_path, project, aws_utils.assume_account_id(), workspace, aws_utils.assume_session())
 
     def teardown():
         if destroy_stacks_on_teardown:

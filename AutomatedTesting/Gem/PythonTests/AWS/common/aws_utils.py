@@ -14,35 +14,40 @@ import pytest
 class AwsUtils:
 
     def __init__(self, arn: str, session_name: str):
-        client = boto3.client('sts')
-        account_id = client.get_caller_identity()["Account"]
-        print(account_id)
+        local_session = boto3.Session(profile_name='default')
+        local_sts_client = local_session.client('sts')
+        local_account_id = local_sts_client.get_caller_identity()["Account"]
+        print(local_account_id)
 
-        response = client.assume_role(RoleArn=arn, RoleSessionName=session_name)
+        response = local_sts_client.assume_role(RoleArn=arn, RoleSessionName=session_name)
 
-        self._session = boto3.Session(aws_access_key_id=response['Credentials']['AccessKeyId'],
-                                aws_secret_access_key=response['Credentials']['SecretAccessKey'],
-                                aws_session_token=response['Credentials']['SessionToken'])
+        self._assume_session = boto3.Session(aws_access_key_id=response['Credentials']['AccessKeyId'],
+                                             aws_secret_access_key=response['Credentials']['SecretAccessKey'],
+                                             aws_session_token=response['Credentials']['SessionToken'])
 
-        client = self._session.client('sts')
-        account_id = client.get_caller_identity()["Account"]
-        print(account_id)
+        assume_sts_client = self._assume_session.client('sts')
+        assume_account_id = assume_sts_client.get_caller_identity()["Account"]
+        print(assume_account_id)
+        self._assume_account_id = assume_account_id
 
     def client(self, service: str):
         """
         Get the client for a specific AWS service from configured session
         :return: Client for the AWS service.
         """
-        return self._session.client(service)
+        return self._assume_session.client(service)
 
-    def session(self):
-        return self._session
+    def assume_session(self):
+        return self._assume_session
+
+    def assume_account_id(self):
+        return self._assume_account_id
 
     def destroy(self) -> None:
         """
         clears stored session
         """
-        self._session = None
+        self._assume_session = None
 
 
 @pytest.fixture(scope='function')

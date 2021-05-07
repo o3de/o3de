@@ -15,10 +15,7 @@ from AWS.common.aws_utils import aws_utils
 
 AWS_PROJECT_NAME = 'AWS-AutomationTest'
 AWS_CLIENT_AUTH_FEATURE_NAME = 'AWSClientAuth'
-AWS_CLIENT_AUTH_DEFAULT_ACCOUNT_ID = '645075835648'
-AWS_CLIENT_AUTH_DEFAULT_REGION = 'us-west-2'
 AWS_CLIENT_AUTH_DEFAULT_PROFILE_NAME = 'default'
-AWS_CDK_APP_PATH = ''
 
 GAME_LOG_NAME = 'Game.log'
 
@@ -31,14 +28,12 @@ logger = logging.getLogger(__name__)
 @pytest.mark.parametrize('project', ['AutomatedTesting'])
 @pytest.mark.parametrize('level', ['AWS/ClientAuth'])
 @pytest.mark.usefixtures('cdk')
-@pytest.mark.parametrize('account_id', [AWS_CLIENT_AUTH_DEFAULT_ACCOUNT_ID])
-@pytest.mark.parametrize('region', [AWS_CLIENT_AUTH_DEFAULT_REGION])
 @pytest.mark.parametrize('feature_name', [AWS_CLIENT_AUTH_FEATURE_NAME])
 @pytest.mark.usefixtures('resource_mappings')
 @pytest.mark.parametrize('resource_mappings_filename', ['aws_resource_mappings.json'])
 @pytest.mark.usefixtures('aws_utils')
 @pytest.mark.parametrize('assume_role_arn', ['arn:aws:iam::645075835648:role/o3de-automation-tests'])
-@pytest.mark.parametrize('session_name', ['O3DE-Automation'])
+@pytest.mark.parametrize('session_name', ['o3de-Automation'])
 class TestAWSClientAuthAnonymousCredentials(object):
     """
     Test class to verify AWS Cognito Identity pool anonymous authorization.
