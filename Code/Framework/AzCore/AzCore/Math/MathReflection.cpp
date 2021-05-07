@@ -24,6 +24,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/Math/MathMatrixSerializer.h>
 #include <AzCore/Math/MathVectorSerializer.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/ColorSerializer.h>
@@ -366,6 +367,9 @@ namespace AZ
     {
         context.Serializer<JsonColorSerializer>()->HandlesType<Color>();
         context.Serializer<JsonUuidSerializer>()->HandlesType<Uuid>();
+        context.Serializer<JsonMatrix3x3Serializer>()->HandlesType<Matrix3x3>();
+        context.Serializer<JsonMatrix3x4Serializer>()->HandlesType<Matrix3x4>();
+        context.Serializer<JsonMatrix4x4Serializer>()->HandlesType<Matrix4x4>();
         context.Serializer<JsonVector2Serializer>()->HandlesType<Vector2>();
         context.Serializer<JsonVector3Serializer>()->HandlesType<Vector3>();
         context.Serializer<JsonVector4Serializer>()->HandlesType<Vector4>();

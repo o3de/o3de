@@ -68,5 +68,6 @@ set(GEM_DEPENDENCIES
     Gem::ImguiAtom
     Gem::AtomFont
     Gem::AtomToolsFramework.Editor
+    Gem::NvCloth.Editor
     Gem::Blast.Editor
 )

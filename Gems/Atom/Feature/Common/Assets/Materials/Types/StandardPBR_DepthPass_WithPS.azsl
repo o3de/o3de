@@ -10,7 +10,6 @@
 *
 */
 
-#include <Atom/Features/PBR/AlphaUtils.azsli>
 #include "./StandardPBR_Common.azsli"
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/Features/ParallaxMapping.azsli>
@@ -56,7 +55,7 @@ VSDepthOutput MainVS(VSInput IN)
     OUT.m_uv[0] = mul(MaterialSrg::m_uvMatrix, float3(IN.m_uv0, 1.0)).xy;
     OUT.m_uv[1] = IN.m_uv1;
 
-    if(o_parallax_feature_enabled && o_parallax_enablePixelDepthOffset)
+    if(ShouldHandleParallaxInDepthShaders())
     {
         OUT.m_worldPosition = worldPosition.xyz;
 
@@ -75,6 +74,23 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
     PSDepthOutput OUT;
 
+    OUT.m_depth = IN.m_position.z;
+
+    if(ShouldHandleParallaxInDepthShaders())
+    {
+        // We support two UV streams, but only a single stream of tangent/bitangent. So for UV[1+] we generated the tangent/bitangent in screen-space.
+        float3 tangents[UvSetCount] = { IN.m_tangent.xyz, float3(0, 0, 0) };
+        float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, float3(0, 0, 0) };
+        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents, 1);
+    
+        float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
+        float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
+    
+        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_depthFactor, MaterialSrg::m_depthOffset,
+                         ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
+                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, OUT.m_depth);
+    }
+    
     // Alpha
     float2 baseColorUV = IN.m_uv[MaterialSrg::m_baseColorMapUvIndex];
     float2 opacityUV = IN.m_uv[MaterialSrg::m_opacityMapUvIndex];
@@ -82,39 +98,5 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     CheckClipping(alpha, MaterialSrg::m_opacityFactor);
 
-    OUT.m_depth = IN.m_position.z;
-
-    if(o_parallax_feature_enabled && o_parallax_enablePixelDepthOffset)
-    {
-        // We support two UV streams, but only a single stream of tangent/bitangent. So for UV[1+] we generated the tangent/bitangent in screen-space.
-        float3 tangents[UvSetCount] = { IN.m_tangent.xyz, float3(0, 0, 0) };
-        float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, float3(0, 0, 0) };
-        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents, 1);
-
-        float3 tangent = tangents[MaterialSrg::m_parallaxUvIndex];
-        float3 bitangent = bitangents[MaterialSrg::m_parallaxUvIndex];
-
-        float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
-        float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
-
-        float3 tangentOffset = GetParallaxOffset( MaterialSrg::m_depthFactor,
-                                                  IN.m_uv[MaterialSrg::m_parallaxUvIndex],
-                                                  ViewSrg::m_worldPosition.xyz - IN.m_worldPosition,
-                                                  tangent,
-                                                  bitangent,
-                                                  IN.m_normal,
-                                                  uvMatrix);
-
-        PixelDepthOffset pdo = CalcPixelDepthOffset(MaterialSrg::m_depthFactor,
-                                                    tangentOffset,
-                                                    IN.m_worldPosition,
-                                                    tangent,
-                                                    bitangent,
-                                                    IN.m_normal,
-                                                    uvMatrixInverse,
-                                                    ObjectSrg::GetWorldMatrix(),
-                                                    ViewSrg::m_viewProjectionMatrix);
-        OUT.m_depth = pdo.m_depth;
-    }
     return OUT;
 }

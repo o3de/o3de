@@ -108,7 +108,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::SceneData
                 Legacy::CryCommon
                 Legacy::CryCommonTools
-                Legacy::Cry3DEngine.CGF.Static
                 Gem::LmbrCentral
                 Gem::PhysX.NumericalMethods
                 Gem::PhysX.Static
@@ -168,7 +167,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_googlebenchmark(
         NAME Gem::PhysX.Benchmarks
         TARGET Gem::PhysX.Tests
-        TIMEOUT 2400 #40mins
+        TIMEOUT 1500 #25mins
     )
 
     list(APPEND testTargets PhysX.Tests)

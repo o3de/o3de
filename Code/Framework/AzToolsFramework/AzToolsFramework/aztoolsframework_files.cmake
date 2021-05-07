@@ -70,11 +70,6 @@ set(FILES
     AssetCatalog/PlatformAddressedAssetCatalog.cpp
     AssetCatalog/PlatformAddressedAssetCatalogManager.h
     AssetCatalog/PlatformAddressedAssetCatalogManager.cpp
-    MaterialBrowser/MaterialBrowserBus.h
-    MaterialBrowser/MaterialBrowserComponent.cpp
-    MaterialBrowser/MaterialBrowserComponent.h
-    MaterialBrowser/MaterialThumbnail.cpp
-    MaterialBrowser/MaterialThumbnail.h
     Thumbnails/ThumbnailerComponent.cpp
     Thumbnails/ThumbnailerComponent.h
     Thumbnails/LoadingThumbnail.cpp

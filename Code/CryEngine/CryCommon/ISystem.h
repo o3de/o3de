@@ -66,7 +66,6 @@ struct IConsole;
 struct IRemoteConsole;
 struct IRenderer;
 struct IProcess;
-struct I3DEngine;
 struct ITimer;
 struct ICryFont;
 struct IMovieSystem;
@@ -122,8 +121,6 @@ class IResourceCompilerHelper;
 namespace Serialization {
     struct IArchiveHost;
 }
-
-struct ILocalMemoryUsage;
 
 typedef void* WIN_HWND;
 
@@ -793,7 +790,6 @@ struct SSystemUpdateStats
 //   ISystem
 struct SSystemGlobalEnvironment
 {
-    I3DEngine*                 p3DEngine;
     AZ::IO::IArchive*          pCryPak;
     AZ::IO::FileIOBase*        pFileIO;
     IFileChangeMonitor*        pFileChangeMonitor;
@@ -801,7 +797,6 @@ struct SSystemGlobalEnvironment
     IOpticsManager*                      pOpticsManager;
     ITimer*                    pTimer;
     ICryFont*                  pCryFont;
-    ILocalMemoryUsage*     pLocalMemoryUsage;
     ::IConsole*                  pConsole;
     ISystem*                   pSystem = nullptr;
     ILog*                      pLog;
@@ -1113,24 +1108,8 @@ struct ISystem
     virtual void DoWorkDuringOcclusionChecks() = 0;
     virtual bool NeedDoWorkDuringOcclusionChecks() = 0;
 
-    // Summary:
-    //   Renders subsystems.
-    virtual void    Render() = 0;
-    // Summary:
-    //   Begins rendering frame.
-    virtual void    RenderBegin() = 0;
-    // Summary:
-    //   Ends rendering frame and swap back buffer.
-    virtual void    RenderEnd(bool bRenderStats = true, bool bMainWindow = true) = 0;
-
     //! Update screen and call some important tick functions during loading.
     virtual void SynchronousLoadingTick(const char* pFunc, int line) = 0;
-
-    // Description:
-    //   Renders the statistics; this is called from RenderEnd, but if the
-    //   Host application (Editor) doesn't employ the Render cycle in ISystem,
-    //   it may call this method to render the essential statistics.
-    virtual void RenderStatistics() = 0;
 
     // Summary:
     //   Returns the current used memory.
@@ -1229,7 +1208,6 @@ struct ISystem
     virtual ICryFont* GetICryFont() = 0;
     virtual IMemoryManager* GetIMemoryManager() = 0;
     virtual IMovieSystem* GetIMovieSystem() = 0;
-    virtual I3DEngine* GetI3DEngine() = 0;
     virtual ::IConsole* GetIConsole() = 0;
     virtual IRemoteConsole* GetIRemoteConsole() = 0;
     // Returns:

@@ -265,6 +265,7 @@ class Tracer:
         self.warnings = []
         self.errors = []
         self.asserts = []
+        self.prints = []
         self.has_warnings = False
         self.has_errors = False
         self.has_asserts = False
@@ -310,6 +311,11 @@ class Tracer:
             
         def __repr__(self):
             return f"[Assert: {self.message}]"
+
+    class PrintInfo:
+        def __init__(self, args):
+            self.window = args[0]
+            self.message = args[1]
     
     def _on_warning(self, args):
         warningInfo = Tracer.WarningInfo(args)
@@ -331,13 +337,19 @@ class Tracer:
         Report.info("Tracer caught Assert: %s:%i[%s] \"%s\"" % (assertInfo.filename, assertInfo.line, assertInfo.function, assertInfo.message))
         self.has_asserts = True
         return False
-        
+
+    def _on_printf(self, args):
+        printInfo = Tracer.PrintInfo(args)
+        self.prints.append(printInfo)
+        return False
+
     def __enter__(self):
         self.handler = azlmbr.debug.TraceMessageBusHandler()
         self.handler.connect(None)
         self.handler.add_callback("OnPreAssert", self._on_assert)
         self.handler.add_callback("OnPreWarning", self._on_warning)
         self.handler.add_callback("OnPreError", self._on_error)
+        self.handler.add_callback("OnPrintf", self._on_printf)
         return self
         
     def __exit__(self, type, value, traceback):

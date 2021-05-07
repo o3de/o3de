@@ -211,10 +211,7 @@ namespace AtomToolsFramework
 
     AZStd::string DynamicProperty::GetDescription() const
     {
-        return AZStd::string::format("%s%s(Script Name = '%s')",
-            m_config.m_description.c_str(),
-            m_config.m_description.empty() ? "" : "\n",
-            m_config.m_id.GetCStr());
+        return m_config.m_description;
     }
 
     AZ::Crc32 DynamicProperty::GetVisibility() const

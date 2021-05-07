@@ -23,7 +23,6 @@
 #include "Objects/SelectionGroup.h"
 #include "ViewManager.h"
 
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzCore/Interface/Interface.h>
 
 // Qt
@@ -458,8 +457,6 @@ QMenu* LevelEditorMenuHandler::CreateFileMenu()
 
 void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMenu)
 {
-    const bool newViewportInteractionModelEnabled = GetIEditor()->IsNewViewportInteractionModelEnabled();
-
     // Undo
     editMenu.AddAction(ID_UNDO);
 
@@ -496,39 +493,20 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     // Select All
     editMenu.AddAction(ID_EDIT_SELECTALL);
 
-    // Deselect All
-    if (!newViewportInteractionModelEnabled)
-    {
-        editMenu.AddAction(ID_EDIT_SELECTNONE);
-    }
-
     // Invert Selection
     editMenu.AddAction(ID_EDIT_INVERTSELECTION);
 
     editMenu.AddSeparator();
 
     // New Viewport Interaction Model actions/shortcuts
-    if (newViewportInteractionModelEnabled)
-    {
-        editMenu.AddAction(ID_EDIT_PIVOT);
-        editMenu.AddAction(ID_EDIT_RESET);
-        editMenu.AddAction(ID_EDIT_RESET_MANIPULATOR);
-        editMenu.AddAction(ID_EDIT_RESET_LOCAL);
-        editMenu.AddAction(ID_EDIT_RESET_WORLD);
-    }
+    editMenu.AddAction(ID_EDIT_PIVOT);
+    editMenu.AddAction(ID_EDIT_RESET);
+    editMenu.AddAction(ID_EDIT_RESET_MANIPULATOR);
+    editMenu.AddAction(ID_EDIT_RESET_LOCAL);
+    editMenu.AddAction(ID_EDIT_RESET_WORLD);
 
     // Hide Selection
     editMenu.AddAction(ID_EDIT_HIDE);
-
-    if (!newViewportInteractionModelEnabled)
-    {
-        // Show Selection
-        auto showSelectionMenu = editMenu.Get()->addAction(tr("Show Selection"));
-        connect(showSelectionMenu, &QAction::triggered, this, [this]() { ToggleSelection(false); });
-
-        // Show Last Hidden
-        editMenu.AddAction(ID_EDIT_SHOW_LAST_HIDDEN);
-    }
 
     // Unhide All
     editMenu.AddAction(ID_EDIT_UNHIDEALL);
@@ -572,30 +550,9 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     // Modify Menu
     auto modifyMenu = editMenu.AddMenu(tr("&Modify"));
 
-    if (!newViewportInteractionModelEnabled)
-    {
-        modifyMenu.AddAction(ID_MODIFY_LINK);
-        modifyMenu.AddAction(ID_MODIFY_UNLINK);
-        modifyMenu.AddSeparator();
-    }
-
     auto snapMenu = modifyMenu.AddMenu(tr("Snap"));
 
-    if (!newViewportInteractionModelEnabled)
-    {
-        snapMenu.AddAction(ID_SNAP_TO_GRID);
-    }
-
     snapMenu.AddAction(ID_SNAPANGLE);
-
-    if (!newViewportInteractionModelEnabled)
-    {
-        auto fastRotateMenu = modifyMenu.AddMenu(tr("Fast Rotate"));
-        fastRotateMenu.AddAction(ID_ROTATESELECTION_XAXIS);
-        fastRotateMenu.AddAction(ID_ROTATESELECTION_YAXIS);
-        fastRotateMenu.AddAction(ID_ROTATESELECTION_ZAXIS);
-        fastRotateMenu.AddAction(ID_ROTATESELECTION_ROTATEANGLE);
-    }
 
     auto transformModeMenu = modifyMenu.AddMenu(tr("Transform Mode"));
     transformModeMenu.AddAction(ID_EDITMODE_MOVE);
@@ -603,14 +560,6 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     transformModeMenu.AddAction(ID_EDITMODE_SCALE);
 
     editMenu.AddSeparator();
-
-    // Lock Selection
-    // NEWMENUS: NEEDS IMPLEMENTATION
-    //// Unlock Selection
-    //auto unlockSelectionMenu = editMenu.Get()->addAction(tr("Unlock Selection"));
-
-    //// Unlock Last Locked
-    //auto unlockLastLockedMenu = editMenu.Get()->addAction(tr("Unlock Last Locked"));
 
     // Editor Settings
     auto editorSettingsMenu = editMenu.AddMenu(tr("Editor Settings"));
@@ -718,12 +667,6 @@ QMenu* LevelEditorMenuHandler::CreateGameMenu()
 
     gameMenu.AddSeparator();
 
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        gameMenu.AddAction(ID_TERRAIN_VEGETATION);
-        gameMenu.AddSeparator();
-    }
-
     CreateDebuggingSubMenu(gameMenu);
 
     return gameMenu;
@@ -785,12 +728,6 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
 
     viewportViewsMenuWrapper.AddAction(ID_WIREFRAME);
     viewportViewsMenuWrapper.AddSeparator();
-
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        // Ruler
-        viewportViewsMenuWrapper.AddAction(ID_RULER);
-    }
 
     viewportViewsMenuWrapper.AddAction(ID_VIEW_GRIDSETTINGS);
     viewportViewsMenuWrapper.AddSeparator();
@@ -1225,22 +1162,6 @@ void LevelEditorMenuHandler::ClearAll()
 
     // re-update the menus
     UpdateMRUFiles();
-}
-
-void LevelEditorMenuHandler::ToggleSelection(bool hide)
-{
-    CCryEditApp::instance()->OnToggleSelection(hide);
-}
-
-// Used for showing last hidden objects
-void LevelEditorMenuHandler::ShowLastHidden()
-{
-    CSelectionGroup* sel = GetIEditor()->GetSelection();
-    if (!sel->IsEmpty())
-    {
-        CUndo undo("Show Last Hidden");
-        GetIEditor()->GetObjectManager()->ShowLastHiddenObject();
-    }
 }
 
 // Used for disabling "Open Recent" menu option

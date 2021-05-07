@@ -146,8 +146,6 @@ void ImGuiViewportWidget::Render()
     IEditor* editor = nullptr;
     EBUS_EVENT_RESULT(editor, AzToolsFramework::EditorRequests::Bus, GetEditor);
 
-    editor->GetEnv()->pSystem->RenderBegin();
-
     IRenderer* renderer = editor->GetEnv()->pRenderer;
 
     ColorF viewportBackgroundColor(Col_Gray);
@@ -276,8 +274,6 @@ void ImGuiViewportWidget::Render()
         renderer->Unset2DMode(backupSceneMatrices);
     }
 
-    bool renderStats = false;
-    editor->GetEnv()->pSystem->RenderEnd(renderStats, false);
     RestorePreviousContext();
 }
 

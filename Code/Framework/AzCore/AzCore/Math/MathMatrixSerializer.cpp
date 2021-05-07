@@ -1,0 +1,485 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <AzCore/Math/MathMatrixSerializer.h>
+#include <AzCore/Math/Matrix3x3.h>
+#include <AzCore/Math/Matrix3x4.h>
+#include <AzCore/Math/Matrix4x4.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/Serialization/Json/StackedString.h>
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/string/osstring.h>
+#include <AzCore/Casting/numeric_cast.h>
+
+namespace AZ::JsonMathMatrixSerializerInternal
+{
+    template<typename MatrixType, size_t RowCount, size_t ColumnCount>
+    JsonSerializationResult::Result LoadArray(MatrixType& output, const rapidjson::Value& inputValue, JsonDeserializerContext& context)
+    {
+        namespace JSR = JsonSerializationResult; // Used remove name conflicts in AzCore in uber builds.
+
+        constexpr size_t ElementCount = RowCount * ColumnCount;
+        static_assert(ElementCount == 9 || ElementCount == 12 || ElementCount == 16,
+            "MathMatrixSerializer only support Matrix3x3, Matrix3x4 and Matrix4x4.");
+
+        rapidjson::SizeType arraySize = inputValue.Size();
+        if (arraySize < ElementCount)
+        {
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported,
+                "Not enough numbers in JSON array to load math matrix from.");
+        }
+
+        AZ::BaseJsonSerializer* floatSerializer = context.GetRegistrationContext()->GetSerializerForType(azrtti_typeid<float>());
+        if (!floatSerializer)
+        {
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Catastrophic, "Failed to find the JSON float serializer.");
+        }
+
+        constexpr const char* names[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"};
+        float values[ElementCount];
+        for (int i = 0; i < ElementCount; ++i)
+        {
+            ScopedContextPath subPath(context, names[i]);
+            JSR::Result intermediate = floatSerializer->Load(values + i, azrtti_typeid<float>(), inputValue[i], context);
+            if (intermediate.GetResultCode().GetProcessing() != JSR::Processing::Completed)
+            {
+                return intermediate;
+            }
+        }
+
+        size_t valueIndex = 0;
+        for (size_t r = 0; r < RowCount; ++r)
+        {
+            for (size_t c = 0; c < ColumnCount; ++c)
+            {
+                output.SetElement(aznumeric_caster(r), aznumeric_caster(c), values[valueIndex++]);
+            }
+        }
+
+        return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Success, "Successfully read math matrix.");
+    }
+
+    JsonSerializationResult::Result LoadFloatFromObject(
+        float& output,
+        const rapidjson::Value& inputValue,
+        JsonDeserializerContext& context,
+        const char* name,
+        const char* altName)
+    {
+        namespace JSR = JsonSerializationResult; // Used remove name conflicts in AzCore in uber builds.
+
+        AZ::BaseJsonSerializer* floatSerializer = context.GetRegistrationContext()->GetSerializerForType(azrtti_typeid<float>());
+        if (!floatSerializer)
+        {
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Catastrophic, "Failed to find the json float serializer.");
+        }
+
+        const char* nameUsed = name;
+        JSR::ResultCode result(JSR::Tasks::ReadField);
+        auto iterator = inputValue.FindMember(rapidjson::StringRef(name));
+        if (iterator == inputValue.MemberEnd())
+        {
+            nameUsed = altName;
+            iterator = inputValue.FindMember(rapidjson::StringRef(altName));
+            if (iterator == inputValue.MemberEnd())
+            {
+                // field not found so leave default value
+                result.Combine(JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed));
+                nameUsed = nullptr;
+            }
+        }
+
+        if (nameUsed)
+        {
+            ScopedContextPath subPath(context, nameUsed);
+            JSR::Result intermediate = floatSerializer->Load(&output, azrtti_typeid<float>(), iterator->value, context);
+            if (intermediate.GetResultCode().GetProcessing() != JSR::Processing::Completed)
+            {
+                return intermediate;
+            }
+            else
+            {
+                result.Combine(JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::Success));
+            }
+        }
+
+        return context.Report(result, "Successfully read float.");
+    }
+
+    JsonSerializationResult::Result LoadVector3FromObject(
+        Vector3& output,
+        const rapidjson::Value& inputValue,
+        JsonDeserializerContext& context,
+        AZStd::fixed_vector<AZStd::string_view, 6> names)
+    {
+        namespace JSR = JsonSerializationResult; // Used remove name conflicts in AzCore in uber builds.
+        constexpr size_t ElementCount = 3; // Vector3
+
+        JSR::ResultCode result(JSR::Tasks::ReadField);
+        float values[ElementCount];
+        for (int i = 0; i < ElementCount; ++i)
+        {
+            values[i] = output.GetElement(i);
+            auto name = names[i * 2];
+            auto altName = names[(i * 2) + 1];
+
+            JSR::Result intermediate = LoadFloatFromObject(values[i], inputValue, context, name.data(), altName.data());
+            if (intermediate.GetResultCode().GetProcessing() != JSR::Processing::Completed)
+            {
+                return intermediate;
+            }
+            else
+            {
+                result.Combine(JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::Success));
+            }
+        }
+
+        for (int i = 0; i < ElementCount; ++i)
+        {
+            output.SetElement(i, values[i]);
+        }
+
+        return context.Report(result, "Successfully read math matrix.");
+    }
+
+    JsonSerializationResult::Result LoadQuaternionAndScale(
+        AZ::Quaternion& quaternion,
+        float& scale,
+        const rapidjson::Value& inputValue,
+        JsonDeserializerContext& context)
+    {
+        namespace JSR = JsonSerializationResult; // Used remove name conflicts in AzCore in uber builds.
+
+        JSR::ResultCode result(JSR::Tasks::ReadField);
+        scale = 1.0f;
+        JSR::Result intermediateScale = LoadFloatFromObject(scale, inputValue, context, "scale", "Scale");
+        if (intermediateScale.GetResultCode().GetProcessing() != JSR::Processing::Completed)
+        {
+            return intermediateScale;
+        }
+        result.Combine(intermediateScale);
+
+        if (AZ::IsClose(scale, 0.0f))
+        {
+            result.Combine({ JSR::Tasks::ReadField, JSR::Outcomes::Unsupported });
+            return context.Report(result, "Scale can not be zero.");
+        }
+
+        AZ::Vector3 degreesRollPitchYaw = AZ::Vector3::CreateZero();
+        JSR::Result intermediateDegrees = LoadVector3FromObject(degreesRollPitchYaw, inputValue, context, { "roll", "Roll", "pitch", "Pitch", "yaw", "Yaw" });
+        if (intermediateDegrees.GetResultCode().GetProcessing() != JSR::Processing::Completed)
+        {
+            return intermediateDegrees;
+        }
+        result.Combine(intermediateDegrees);
+
+        // the quaternion should be equivalent to a series of rotations in the order z, then y, then x
+        const AZ::Vector3 eulerRadians = AZ::Vector3DegToRad(degreesRollPitchYaw);
+        quaternion = AZ::Quaternion::CreateRotationX(eulerRadians.GetX()) *
+                     AZ::Quaternion::CreateRotationY(eulerRadians.GetY()) *
+                     AZ::Quaternion::CreateRotationZ(eulerRadians.GetZ());
+
+        return context.Report(result, "Successfully read math yaw, pitch, roll, and scale.");
+    }
+
+    template<typename MatrixType>
+    JsonSerializationResult::Result LoadObject(MatrixType& output, const rapidjson::Value& inputValue, JsonDeserializerContext& context)
+    {
+        namespace JSR = JsonSerializationResult; // Used remove name conflicts in AzCore in uber builds.
+        output = MatrixType::CreateIdentity();
+
+        JSR::ResultCode result(JSR::Tasks::ReadField);
+        float scale;
+        AZ::Quaternion rotation;
+
+        JSR::Result intermediate = LoadQuaternionAndScale(rotation, scale, inputValue, context);
+        if (intermediate.GetResultCode().GetProcessing() != JSR::Processing::Completed)
+        {
+            return intermediate;
+        }
+        result.Combine(intermediate);
+
+        AZ::Vector3 translation = AZ::Vector3::CreateZero();
+        JSR::Result intermediateTranslation = LoadVector3FromObject(translation, inputValue, context, { "x", "X", "y", "Y", "z", "Z" });
+        if (intermediateTranslation.GetResultCode().GetProcessing() != JSR::Processing::Completed)
+        {
+            return intermediateTranslation;
+        }
+        result.Combine(intermediateTranslation);
+
+        // composed a matrix by rotation, then scale, then translation
+        auto matrix = MatrixType::CreateFromQuaternion(rotation);
+        matrix.MultiplyByScale(Vector3{ scale });
+        matrix.SetTranslation(translation);
+
+        if (matrix == MatrixType::CreateIdentity())
+        {
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed, "Using identity matrix for empty object.");
+        }
+
+        output = matrix;
+        return context.Report(result, "Successfully read math matrix.");
+    }
+
+    template<>
+    JsonSerializationResult::Result LoadObject<Matrix3x3>(Matrix3x3& output, const rapidjson::Value& inputValue, JsonDeserializerContext& context)
+    {
+        namespace JSR = JsonSerializationResult; // Used remove name conflicts in AzCore in uber builds.
+        output = Matrix3x3::CreateIdentity();
+
+        JSR::ResultCode result(JSR::Tasks::ReadField);
+        float scale;
+        AZ::Quaternion rotation;
+
+        JSR::Result intermediate = LoadQuaternionAndScale(rotation, scale, inputValue, context);
+        if (intermediate.GetResultCode().GetProcessing() != JSR::Processing::Completed)
+        {
+            return intermediate;
+        }
+        result.Combine(intermediate);
+
+        // composed a matrix by rotation then scale
+        auto matrix = Matrix3x3::CreateFromQuaternion(rotation);
+        matrix.MultiplyByScale(Vector3{ scale });
+
+        if (matrix == Matrix3x3::CreateIdentity())
+        {
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed, "Using identity matrix for empty object.");
+        }
+
+        output = matrix;
+        return context.Report(result, "Successfully read math matrix.");
+    }
+
+    template<typename MatrixType, size_t RowCount, size_t ColumnCount>
+    JsonSerializationResult::Result Load(void* outputValue, const Uuid& outputValueTypeId,
+        const rapidjson::Value& inputValue, JsonDeserializerContext& context)
+    {
+        namespace JSR = JsonSerializationResult; // Used remove name conflicts in AzCore in uber builds.
+
+        constexpr size_t ElementCount = RowCount * ColumnCount;
+        static_assert(ElementCount == 9 || ElementCount == 12 || ElementCount == 16,
+            "MathMatrixSerializer only support Matrix3x3, Matrix3x4 and Matrix4x4.");
+
+        AZ_Assert(azrtti_typeid<MatrixType>() == outputValueTypeId,
+            "Unable to deserialize Matrix%zux%zu to json because the provided type is %s",
+            RowCount, ColumnCount, outputValueTypeId.ToString<OSString>().c_str());
+        AZ_UNUSED(outputValueTypeId);
+
+        MatrixType* matrix = reinterpret_cast<MatrixType*>(outputValue);
+        AZ_Assert(matrix, "Output value for JsonMatrix%zux%zuSerializer can't be null.", RowCount, ColumnCount);
+
+        switch (inputValue.GetType())
+        {
+        case rapidjson::kArrayType:
+            return LoadArray<MatrixType, RowCount, ColumnCount>(*matrix, inputValue, context);
+        case rapidjson::kObjectType:
+            return LoadObject<MatrixType>(*matrix, inputValue, context);
+
+        case rapidjson::kStringType:
+            [[fallthrough]];
+        case rapidjson::kNumberType:
+            [[fallthrough]];
+        case rapidjson::kNullType:
+            [[fallthrough]];
+        case rapidjson::kFalseType:
+            [[fallthrough]];
+        case rapidjson::kTrueType:
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported,
+                "Unsupported type. Math matrix can only be read from arrays or objects.");
+
+        default:
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unknown,
+                "Unknown json type encountered in math matrix.");
+        }
+    }
+
+    template<typename MatrixType>
+    AZ::Quaternion CreateQuaternion(const MatrixType& matrix);
+
+    template<>
+    AZ::Quaternion CreateQuaternion<AZ::Matrix3x3>(const AZ::Matrix3x3& matrix)
+    {
+        return Quaternion::CreateFromMatrix3x3(matrix);
+    }
+
+    template<>
+    AZ::Quaternion CreateQuaternion<AZ::Matrix3x4>(const AZ::Matrix3x4& matrix)
+    {
+        return Quaternion::CreateFromMatrix3x4(matrix);
+    }
+
+    template<>
+    AZ::Quaternion CreateQuaternion<AZ::Matrix4x4>(const AZ::Matrix4x4& matrix)
+    {
+        return Quaternion::CreateFromMatrix4x4(matrix);
+    }
+
+    template<typename MatrixType>
+    JsonSerializationResult::Result StoreRotationAndScale(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
+        const Uuid& valueTypeId, JsonSerializerContext& context)
+    {
+        namespace JSR = JsonSerializationResult; // Used remove name conflicts in AzCore in uber builds.
+        AZ_UNUSED(valueTypeId);
+
+        const MatrixType* matrix = reinterpret_cast<const MatrixType*>(inputValue);
+        AZ_Assert(matrix, "Input value for JsonMatrixSerializer can't be null.");
+        const MatrixType* defaultMatrix = reinterpret_cast<const MatrixType*>(defaultValue);
+
+        if (!context.ShouldKeepDefaults() && defaultMatrix && *matrix == *defaultMatrix)
+        {
+            return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::DefaultsUsed, "Default math Matrix used.");
+        }
+
+        MatrixType matrixToExport = *matrix;
+        AZ::Vector3 scale = matrixToExport.ExtractScale();
+
+        AZ::Quaternion rotation = CreateQuaternion(matrixToExport);
+        auto degrees = rotation.GetEulerDegrees();
+        outputValue.AddMember(rapidjson::StringRef("roll"), degrees.GetX(), context.GetJsonAllocator());
+        outputValue.AddMember(rapidjson::StringRef("pitch"), degrees.GetY(), context.GetJsonAllocator());
+        outputValue.AddMember(rapidjson::StringRef("yaw"), degrees.GetZ(), context.GetJsonAllocator());
+        outputValue.AddMember(rapidjson::StringRef("scale"), scale.GetX(), context.GetJsonAllocator());
+
+        return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::Success, "Math Matrix successfully stored.");
+    }
+
+    template<typename MatrixType>
+    JsonSerializationResult::Result StoreTranslation(rapidjson::Value& outputValue, const void* inputValue,
+        const void* defaultValue, const Uuid& valueTypeId, JsonSerializerContext& context)
+    {
+        namespace JSR = JsonSerializationResult; // Used remove name conflicts in AzCore in uber builds.
+        AZ_UNUSED(valueTypeId);
+
+        const MatrixType* matrix = reinterpret_cast<const MatrixType*>(inputValue);
+        AZ_Assert(matrix, "Input value for JsonMatrixSerializer can't be null.");
+        const MatrixType* defaultMatrix = reinterpret_cast<const MatrixType*>(defaultValue);
+
+        if (!context.ShouldKeepDefaults() && defaultMatrix && *matrix == *defaultMatrix)
+        {
+            return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::DefaultsUsed, "Default math Matrix used.");
+        }
+
+        auto translation = matrix->GetTranslation();
+        outputValue.AddMember(rapidjson::StringRef("x"), translation.GetX(), context.GetJsonAllocator());
+        outputValue.AddMember(rapidjson::StringRef("y"), translation.GetY(), context.GetJsonAllocator());
+        outputValue.AddMember(rapidjson::StringRef("z"), translation.GetZ(), context.GetJsonAllocator());
+
+        return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::Success, "Math Matrix successfully stored.");
+    }
+}
+
+namespace AZ
+{
+    // Matrix3x3
+
+    AZ_CLASS_ALLOCATOR_IMPL(JsonMatrix3x3Serializer, SystemAllocator, 0);
+
+    JsonSerializationResult::Result JsonMatrix3x3Serializer::Load(void* outputValue, const Uuid& outputValueTypeId,
+        const rapidjson::Value& inputValue, JsonDeserializerContext& context)
+    {
+        return JsonMathMatrixSerializerInternal::Load<Matrix3x3, 3, 3>(
+            outputValue,
+            outputValueTypeId,
+            inputValue,
+            context);
+    }
+
+    JsonSerializationResult::Result JsonMatrix3x3Serializer::Store(rapidjson::Value& outputValue, const void* inputValue,
+        const void* defaultValue, const Uuid& valueTypeId, JsonSerializerContext& context)
+    {
+        outputValue.SetObject();
+
+        return JsonMathMatrixSerializerInternal::StoreRotationAndScale<Matrix3x3>(
+            outputValue,
+            inputValue,
+            defaultValue,
+            valueTypeId,
+            context);
+    }
+
+
+    // Matrix3x4
+
+    AZ_CLASS_ALLOCATOR_IMPL(JsonMatrix3x4Serializer, SystemAllocator, 0);
+
+    JsonSerializationResult::Result JsonMatrix3x4Serializer::Load(void* outputValue, const Uuid& outputValueTypeId,
+        const rapidjson::Value& inputValue, JsonDeserializerContext& context)
+    {
+        return JsonMathMatrixSerializerInternal::Load<Matrix3x4, 3, 4>(
+            outputValue,
+            outputValueTypeId,
+            inputValue,
+            context);
+    }
+
+    JsonSerializationResult::Result JsonMatrix3x4Serializer::Store(rapidjson::Value& outputValue, const void* inputValue,
+        const void* defaultValue, const Uuid& valueTypeId, JsonSerializerContext& context)
+    {
+        outputValue.SetObject();
+
+        auto result = JsonMathMatrixSerializerInternal::StoreRotationAndScale<Matrix3x4>(
+            outputValue,
+            inputValue,
+            defaultValue,
+            valueTypeId,
+            context);
+
+        auto resultTranslation = JsonMathMatrixSerializerInternal::StoreTranslation<Matrix3x4>(
+            outputValue,
+            inputValue,
+            defaultValue,
+            valueTypeId,
+            context);
+
+        result.GetResultCode().Combine(resultTranslation);
+        return result;
+    }
+
+    // Matrix4x4
+
+    AZ_CLASS_ALLOCATOR_IMPL(JsonMatrix4x4Serializer, SystemAllocator, 0);
+
+    JsonSerializationResult::Result JsonMatrix4x4Serializer::Load(void* outputValue, const Uuid& outputValueTypeId,
+        const rapidjson::Value& inputValue, JsonDeserializerContext& context)
+    {
+        return JsonMathMatrixSerializerInternal::Load<Matrix4x4, 4, 4>(
+            outputValue,
+            outputValueTypeId,
+            inputValue,
+            context);
+    }
+
+    JsonSerializationResult::Result JsonMatrix4x4Serializer::Store(rapidjson::Value& outputValue, const void* inputValue,
+        const void* defaultValue, const Uuid& valueTypeId, JsonSerializerContext& context)
+    {
+        outputValue.SetObject();
+
+        auto result = JsonMathMatrixSerializerInternal::StoreRotationAndScale<Matrix4x4>(
+            outputValue,
+            inputValue,
+            defaultValue,
+            valueTypeId,
+            context);
+
+        auto resultTranslation = JsonMathMatrixSerializerInternal::StoreTranslation<Matrix4x4>(
+            outputValue,
+            inputValue,
+            defaultValue,
+            valueTypeId,
+            context);
+
+        result.GetResultCode().Combine(resultTranslation);
+        return result;
+    }
+}

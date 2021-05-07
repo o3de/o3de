@@ -90,6 +90,16 @@ public:
     }
 };
 
+TEST_F(ScriptCanvasTestFixture, UseRawBehaviorProperties)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_UseRawBehaviorProperties");
+}
+
+TEST_F(ScriptCanvasTestFixture, StringSanitization)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_StringSanitization");
+}
+
 TEST_F(ScriptCanvasTestFixture, InterpretedHelloWorld)
 {
     RunUnitTestGraph("LY_SC_UnitTest_HelloWorld");
@@ -133,6 +143,11 @@ TEST_F(ScriptCanvasTestFixture, InterpretedEventHandlerDisconnect)
     };
 
     RunUnitTestGraph("LY_SC_UnitTest_EventHandlerDisconnect", runSpec);
+}
+
+TEST_F(ScriptCanvasTestFixture, FunctionLocalStaticsUnique)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_FunctionLocalStaticsUnique");
 }
 
 TEST_F(ScriptCanvasTestFixture, FunctionContainerInputTest)

@@ -79,6 +79,10 @@ namespace ScriptCanvas
 
         bool IsBreak(const ExecutionTreeConstPtr& execution);
 
+        bool IsClassPropertyRead(ExecutionTreeConstPtr execution);
+
+        bool IsClassPropertyWrite(ExecutionTreeConstPtr execution);
+
         bool IsCodeConstructable(VariableConstPtr value);
 
         bool IsCycle(const Node& node);

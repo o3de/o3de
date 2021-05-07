@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C4976201
 # Test Case Title : Verify that the value assigned to the Mass of the object, gets actually assigned to the object
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4976201
+
 
 # fmt: off
 class Tests:

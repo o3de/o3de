@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C4925577
 # Test Case Title : Verify that material can be assigned to PhysX terrain in Terrain Texture Layers
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4925577
+
 
 # fmt: off
 class Tests:
