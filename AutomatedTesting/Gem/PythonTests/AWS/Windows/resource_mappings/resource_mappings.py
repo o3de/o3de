@@ -58,7 +58,7 @@ class ResourceMappings:
 
             self.__write_resource_mappings(stacks[0].get('Outputs', []))
 
-    def __write_resource_mappings(self, outputs) -> None:
+    def __write_resource_mappings(self, outputs, append_feature_name = True) -> None:
         with open(self._resource_mapping_file_path) as file_content:
             resource_mappings = json.load(file_content)
 
@@ -69,7 +69,10 @@ class ResourceMappings:
         resource_mappings[AWS_RESOURCE_MAPPINGS_KEY] = resource_mappings.get(AWS_RESOURCE_MAPPINGS_KEY, {})
 
         for output in outputs:
-            resource_key = f'{self._feature_name}.{output.get("OutputKey", "InvalidKey")}'
+            if append_feature_name:
+                resource_key = f'{self._feature_name}.{output.get("OutputKey", "InvalidKey")}'
+            else:
+                resource_key = output.get("OutputKey", "InvalidKey")
             resource_mappings[AWS_RESOURCE_MAPPINGS_KEY][resource_key] = resource_mappings[
                 AWS_RESOURCE_MAPPINGS_KEY].get(resource_key, {})
             resource_mappings[AWS_RESOURCE_MAPPINGS_KEY][resource_key]['Type'] = 'AutomationTestType'

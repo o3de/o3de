@@ -20,6 +20,12 @@ choco install -y git
 choco install -y git-lfs
 choco install -y p4
 
+# Install NodeJS
+choco install -y nodejs
+
+# Install AWS Cloud development kit (cdk)
+npm install -g aws-cdk
+
 Write-Host "Configuring Git"
 git config --global "credential.helper" "!aws codecommit credential-helper $@"
 git config --global "credential.UseHttpPath" "true"
