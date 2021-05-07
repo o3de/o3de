@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C18243587
 # Test Case Title : Check that hinge joint is breakable
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/18243587
+
 
 # fmt: off
 class Tests:

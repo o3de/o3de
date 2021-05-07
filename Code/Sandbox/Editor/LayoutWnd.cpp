@@ -24,7 +24,6 @@
 #include <QTextDocumentFragment>
 
 #include <AzCore/Interface/Interface.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzQtComponents/Components/Style.h>    // for AzQtComponents::Style
 
 // Editor

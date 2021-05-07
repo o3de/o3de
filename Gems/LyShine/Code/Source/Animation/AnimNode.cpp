@@ -22,7 +22,6 @@
 #include "CompoundSplineTrack.h"
 
 #include <AzCore/std/sort.h>
-#include <I3DEngine.h>
 #include <ctime>
 
 //////////////////////////////////////////////////////////////////////////

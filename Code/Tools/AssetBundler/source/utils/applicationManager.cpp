@@ -45,8 +45,9 @@ namespace AssetBundler
 {
     const char compareVariablePrefix = '$';
 
-    ApplicationManager::ApplicationManager(int* argc, char*** argv)
-        : AzToolsFramework::ToolsApplication(argc, argv)
+    ApplicationManager::ApplicationManager(int* argc, char*** argv, QObject* parent)
+        : QObject(parent)
+        , AzToolsFramework::ToolsApplication(argc, argv)
     {
     }
 
@@ -55,7 +56,7 @@ namespace AssetBundler
         DestroyApplication();
     }
 
-    void ApplicationManager::Init()
+    bool ApplicationManager::Init()
     {
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
         Start(AzFramework::Application::Descriptor());
@@ -74,6 +75,7 @@ namespace AssetBundler
 
         // There is no need to update the UserSettings file, so we can avoid a race condition by disabling save on shutdown
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
+        return true;
     }
 
     void ApplicationManager::DestroyApplication()
@@ -372,6 +374,13 @@ namespace AssetBundler
     {
         using namespace AzToolsFramework;
 
+        auto validateArgsOutcome = ValidateInputArgs(parser, m_allSeedsArgs);
+        if (!validateArgsOutcome.IsSuccess())
+        {
+            OutputHelpSeeds();
+            return AZ::Failure(validateArgsOutcome.TakeError());
+        }
+
         SeedsParams params;
 
         params.m_ignoreFileCase = parser->HasSwitch(IgnoreFileCaseFlag);
@@ -462,6 +471,13 @@ namespace AssetBundler
 
     AZ::Outcome<AssetListsParams, AZStd::string> ApplicationManager::ParseAssetListsCommandData(const AZ::CommandLine* parser)
     {
+        auto validateArgsOutcome = ValidateInputArgs(parser, m_allAssetListsArgs);
+        if (!validateArgsOutcome.IsSuccess())
+        {
+            OutputHelpAssetLists();
+            return AZ::Failure(validateArgsOutcome.TakeError());
+        }
+
         AssetListsParams params;
 
         // Read in Platform arg
@@ -525,6 +541,13 @@ namespace AssetBundler
 
     AZ::Outcome<ComparisonRulesParams, AZStd::string> ApplicationManager::ParseComparisonRulesCommandData(const AZ::CommandLine* parser)
     {
+        auto validateArgsOutcome = ValidateInputArgs(parser, m_allComparisonRulesArgs);
+        if (!validateArgsOutcome.IsSuccess())
+        {
+            OutputHelpComparisonRules();
+            return AZ::Failure(validateArgsOutcome.TakeError());
+        }
+
         ScopedTraceHandler traceHandler;
         ComparisonRulesParams params;
 
@@ -907,6 +930,13 @@ namespace AssetBundler
 
     AZ::Outcome<ComparisonParams, AZStd::string> ApplicationManager::ParseCompareCommandData(const AZ::CommandLine* parser)
     {
+        auto validateArgsOutcome = ValidateInputArgs(parser, m_allCompareArgs);
+        if (!validateArgsOutcome.IsSuccess())
+        {
+            OutputHelpCompare();
+            return AZ::Failure(validateArgsOutcome.TakeError());
+        }
+
         ComparisonParams params;
 
         // Read in Platform arg
@@ -998,6 +1028,13 @@ namespace AssetBundler
 
     AZ::Outcome<BundleSettingsParams, AZStd::string> ApplicationManager::ParseBundleSettingsCommandData(const AZ::CommandLine* parser)
     {
+        auto validateArgsOutcome = ValidateInputArgs(parser, m_allBundleSettingsArgs);
+        if (!validateArgsOutcome.IsSuccess())
+        {
+            OutputHelpBundleSettings();
+            return AZ::Failure(validateArgsOutcome.TakeError());
+        }
+
         BundleSettingsParams params;
 
         // Read in Platform arg
@@ -1202,6 +1239,13 @@ namespace AssetBundler
 
     AZ::Outcome<BundlesParamsList, AZStd::string> ApplicationManager::ParseBundlesCommandData(const AZ::CommandLine* parser)
     {
+        auto validateArgsOutcome = ValidateInputArgs(parser, m_allBundlesArgs);
+        if (!validateArgsOutcome.IsSuccess())
+        {
+            OutputHelpBundles();
+            return AZ::Failure(validateArgsOutcome.TakeError());
+        }
+
         auto parseSettingsOutcome = ParseBundleSettingsAndOverrides(parser, BundlesCommand);
         if (!parseSettingsOutcome.IsSuccess())
         {
@@ -1213,6 +1257,14 @@ namespace AssetBundler
 
     AZ::Outcome<BundleSeedParams, AZStd::string> ApplicationManager::ParseBundleSeedCommandData(const AZ::CommandLine* parser)
     {
+
+        auto validateArgsOutcome = ValidateInputArgs(parser, m_allBundleSeedArgs);
+        if (!validateArgsOutcome.IsSuccess())
+        {
+            OutputHelpBundleSeed();
+            return AZ::Failure(validateArgsOutcome.TakeError());
+        }
+
         BundleSeedParams params;
 
         params.m_addSeedList = GetAddSeedArgList(parser);
@@ -1230,6 +1282,12 @@ namespace AssetBundler
 
     AZ::Outcome<void, AZStd::string> ApplicationManager::ValidateInputArgs(const AZ::CommandLine* parser, const AZStd::vector<const char*>& validArgList)
     {
+        constexpr AZStd::string_view ApplicationArgList = "/O3DE/AzCore/Application/ValidCommandOptions";
+        AZStd::vector<AZStd::string> validApplicationArgs;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            settingsRegistry->GetObject(validApplicationArgs, ApplicationArgList);
+        }
         for (const auto& paramInfo : *parser)
         {
             // Skip positional arguments
@@ -1247,10 +1305,18 @@ namespace AssetBundler
                     break;
                 }
             }
+            for (const auto& validArg : validApplicationArgs)
+            {
+                if (AZ::StringFunc::Equal(paramInfo.m_option, validArg))
+                {
+                    isValidArg = true;
+                    break;
+                }
+            }
 
             if (!isValidArg)
             {
-                return AZ::Failure(AZStd::string::format("Unknown argument: \"--%s\" is not an unknown argument for this sub-command.", paramInfo.m_option.c_str()));
+                return AZ::Failure(AZStd::string::format(R"(Invalid argument: "--%s" is not a valid argument for this sub-command.)", paramInfo.m_option.c_str()));
             }
         }
 
@@ -1335,10 +1401,10 @@ namespace AssetBundler
         }
 
         // If no platform was specified, defaulting to platforms specified in the asset processor config files
-        const char* appRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(appRoot, &AzFramework::ApplicationRequests::GetAppRoot);
-
-        AzFramework::PlatformFlags platformFlags = GetEnabledPlatformFlags(GetEngineRoot(), appRoot, AZ::Utils::GetProjectPath().c_str());
+        AzFramework::PlatformFlags platformFlags = GetEnabledPlatformFlags(
+            AZStd::string_view{ AZ::Utils::GetEnginePath() },
+            AZStd::string_view{ AZ::Utils::GetEnginePath() },
+            AZStd::string_view{ AZ::Utils::GetProjectPath() });
         auto platformsString = AzFramework::PlatformHelper::GetCommaSeparatedPlatformList(platformFlags);
 
         AZ_TracePrintf(AppWindowName, "No platform specified, defaulting to platforms ( %s ).\n", platformsString.c_str());
@@ -1522,7 +1588,7 @@ namespace AssetBundler
                 }
             }
 
-            AZStd::vector<AZStd::string> defaultSeeds = GetDefaultSeeds(GetEngineRoot(), AZ::Utils::GetProjectPath(), m_currentProjectName);
+            AZStd::vector<AZStd::string> defaultSeeds = GetDefaultSeeds(AZ::Utils::GetProjectPath(), m_currentProjectName);
             if (defaultSeeds.empty())
             {
                 // Error has already been thrown
@@ -2847,3 +2913,4 @@ namespace AssetBundler
         return !m_showVerboseOutput;
     }
 } // namespace AssetBundler
+#include <source/utils/moc_applicationManager.cpp>

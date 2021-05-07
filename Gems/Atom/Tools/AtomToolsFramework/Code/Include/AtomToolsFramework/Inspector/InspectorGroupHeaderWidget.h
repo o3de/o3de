@@ -15,6 +15,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzQtComponents/Components/ExtendedLabel.h>
+#include <QMouseEvent>
 #include <QPaintEvent>
 #endif
 
@@ -31,7 +32,11 @@ namespace AtomToolsFramework
         void SetExpanded(bool expanded);
         bool IsExpanded() const;
 
+    Q_SIGNALS:
+        void clicked(QMouseEvent* event);
+
     protected:
+        void mousePressEvent(QMouseEvent* event) override;
         void paintEvent(QPaintEvent* event) override;
 
     private:

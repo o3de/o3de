@@ -20,15 +20,6 @@
 
 #include <AzCore/std/containers/vector.h>
 
-#define DECLARE_CRYREGISTER_SINGLETON_CLASS(implclassname) \
-    void* Get##implclassname##Factory();
-
-DECLARE_CRYREGISTER_SINGLETON_CLASS(CEngineModule_Cry3DEngine)
-DECLARE_CRYREGISTER_SINGLETON_CLASS(CEngineModule_CryFont)
-DECLARE_CRYREGISTER_SINGLETON_CLASS(CEngineModule_CryRenderer)
-
-#undef DECLARE_CRYREGISTER_SINGLETON_CLASS
-
 namespace AZ
 {
     class Module;
@@ -39,14 +30,6 @@ ${extern_module_declarations}
 extern "C" void CreateStaticModules(AZStd::vector<AZ::Module*>& modulesOut)
 {
 ${module_invocations}
-    // Call methods to avoid symbol striping
-#define NON_STRIPPING_CALL(Module) \
-    AZ_UNUSED(Get##Module##Factory())
-
-    NON_STRIPPING_CALL(CEngineModule_Cry3DEngine);
-    NON_STRIPPING_CALL(CEngineModule_CryFont);
-    NON_STRIPPING_CALL(CEngineModule_CryRenderer);
-#undef NON_STRIPPING_CALL
 }
 
 #endif // AZ_MONOLITHIC_BUILD

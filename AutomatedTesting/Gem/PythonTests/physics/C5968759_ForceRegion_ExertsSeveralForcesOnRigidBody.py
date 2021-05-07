@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C5968759
 # Test Case Title : Check nested force regions exert forces simultaneously on rigid body
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5968759
+
 
 # fmt: off
 class Tests:

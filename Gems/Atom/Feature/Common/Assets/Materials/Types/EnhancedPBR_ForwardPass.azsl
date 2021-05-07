@@ -40,8 +40,8 @@ COMMON_OPTIONS_NORMAL()
 COMMON_OPTIONS_CLEAR_COAT()
 COMMON_OPTIONS_OCCLUSION()
 COMMON_OPTIONS_EMISSIVE()
-COMMON_OPTIONS_PARALLAX()
 COMMON_OPTIONS_DETAIL_MAPS()
+// Note COMMON_OPTIONS_PARALLAX is in StandardPBR_Common.azsli because it's needed by all StandardPBR shaders.
 
 // Alpha
 #include "MaterialInputs/AlphaInput.azsli"
@@ -102,8 +102,11 @@ VSOutput EnhancedPbr_ForwardPassVS(VSInput IN)
     // but we would need to address how it works with the parallax code below that indexes into the m_detailUV array.
     OUT.m_detailUv[0] = mul(MaterialSrg::m_detailUvMatrix, float3(IN.m_uv0, 1.0)).xy;
     OUT.m_detailUv[1] = mul(MaterialSrg::m_detailUvMatrix, float3(IN.m_uv1, 1.0)).xy;
+    
+    // Shadow coords will be calculated in the pixel shader in this case
+    bool skipShadowCoords = ShouldHandleParallax() && o_parallax_enablePixelDepthOffset;
 
-    VertexHelper(IN, OUT, worldPosition, o_parallax_feature_enabled && o_parallax_enablePixelDepthOffset);
+    VertexHelper(IN, OUT, worldPosition, skipShadowCoords);
 
     return OUT;
 }
@@ -132,9 +135,11 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // ------- Depth & Parallax -------
 
     depth = IN.m_position.z;
+    
+    bool displacementIsClipped = false;
 
     // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scatteirng is enabled
-    if(!o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_useDepthMap)
+    if(ShouldHandleParallax())
     {
         // GetParallaxInput applies an tangent offset to the UV. We want to apply the same offset to the detailUv (note: this needs to be tested with content)
         // The math is:   offset = newUv - oldUv;   detailUv += offset;
@@ -143,9 +148,9 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
         float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
 
-        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_depthFactor, 
+        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_depthFactor, MaterialSrg::m_depthOffset,
                          ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
-                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depth);
+                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depth, displacementIsClipped);
 
         // Apply second part of the offset to the detail UV (see comment above)
         IN.m_detailUv[MaterialSrg::m_parallaxUvIndex] -= IN.m_uv[MaterialSrg::m_parallaxUvIndex];
@@ -206,6 +211,11 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     float3 baseColor = GetDetailedBaseColorInput(
         MaterialSrg::m_baseColorMap,             MaterialSrg::m_sampler, baseColorUv, o_baseColor_useTexture,        MaterialSrg::m_baseColor,  MaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode,
         MaterialSrg::m_detail_baseColor_texture, MaterialSrg::m_sampler, detailUv,    o_detail_baseColor_useTexture, detailLayerBaseColorFactor);
+        
+    if(o_parallax_highlightClipping && displacementIsClipped)
+    {
+        ApplyParallaxClippingHighlight(baseColor);
+    }
 
     // ------- Metallic -------
 

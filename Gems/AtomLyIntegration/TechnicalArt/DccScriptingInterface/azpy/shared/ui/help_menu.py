@@ -68,7 +68,7 @@ class HelpMenu():
     INPUTS:
     main_window = the class instance of the QMainWindow
     tool_label = the menu label for the tool's help item
-    tool_help_page = the http:// path to the specific bpTool help page
+    tool_help_page = the http:// path to the tool specific help page
 
     Here's an example
     # self.help_menu = azpy.shared.ui.help_menu.setup(self, 'Help...', 'https://some.site.com/azpy')

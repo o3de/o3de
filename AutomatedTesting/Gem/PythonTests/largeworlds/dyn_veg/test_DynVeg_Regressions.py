@@ -40,6 +40,7 @@ class Test_DynVeg_Regressions(object):
 
     @pytest.mark.test_case_id("C29470845")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_regression
     def test_SurfaceDataRefreshes_RemainsStable(self, request, editor, level, launcher_platform):
 
         expected_lines = [

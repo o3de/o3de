@@ -75,7 +75,6 @@
 #define IDC_PLATFORM_SALEM                         2759
 #define IDC_GROUPBOX_GLOBALTAGS                    2916
 #define IDC_GROUPBOX_FRAGMENTTAGS                  2917
-#define ID_RESOURCES_GENERATECGFTHUMBNAILS         32894
 #define ID_RESOURCES_REDUCEWORKINGSET              32896
 #define ID_EDIT_HIDE                               32898
 #define ID_EDIT_UNHIDEALL                          32899
@@ -91,13 +90,9 @@
 #define ID_EXPORT_INDOORS                          32915
 #define ID_VIEW_CYCLE2DVIEWPORT                    32916
 #define ID_SNAPANGLE                               32917
-#define ID_EDIT_RENAMEOBJECT                       32925
 #define ID_CHANGEMOVESPEED_INCREASE                32928
 #define ID_CHANGEMOVESPEED_DECREASE                32929
 #define ID_CHANGEMOVESPEED_CHANGESTEP              32930
-#define ID_MATERIAL_ASSIGNCURRENT                  32933
-#define ID_MATERIAL_RESETTODEFAULT                 32934
-#define ID_MATERIAL_GETMATERIAL                    32935
 #define ID_PHYSICS_GETPHYSICSSTATE                 32937
 #define ID_PHYSICS_RESETPHYSICSSTATE               32938
 #define ID_GAME_SYNCPLAYER                         32941
@@ -137,7 +132,6 @@
 #define ID_FILE_EDITEDITORINI                      33543
 #define ID_FILE_EDITLOGFILE                        33544
 #define ID_PREFERENCES                             33546
-#define ID_RELOAD_GEOMETRY                         33549
 #define ID_REDO                                    33550
 #define ID_SWITCH_PHYSICS                          33555
 #define ID_REF_COORDS_SYS                          33556

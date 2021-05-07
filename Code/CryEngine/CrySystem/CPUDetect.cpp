@@ -52,11 +52,7 @@
 # define cpuid(op, eax, ebx, ecx, edx) __asm__("cpuid" : "=a" (eax), "=b" (ebx), "=c" (ecx), "=d" (edx) : "a" (op) : "cc");
 #endif
 
-#if defined(AZ_MONOLITHIC_BUILD)
-extern int g_CpuFlags;
-#else
 int g_CpuFlags;
-#endif
 
 struct SAutoMaxPriority
 {
