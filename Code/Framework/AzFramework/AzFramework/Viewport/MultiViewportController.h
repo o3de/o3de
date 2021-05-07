@@ -54,23 +54,23 @@ namespace AzFramework
     public:
         using ControllerType = TController;
 
-        explicit MultiViewportControllerInstanceInterface(ViewportId viewport, TController* controller)
+        MultiViewportControllerInstanceInterface(ViewportId viewport, ControllerType* controller)
             : m_viewportId(viewport)
             , m_controller(controller)
         {
         }
 
         ViewportId GetViewportId() const { return m_viewportId; }
-        TController* GetController() { return m_controller; }
-        const TController* GetController() const { return m_controller; }
+        ControllerType* GetController() { return m_controller; }
+        const ControllerType* GetController() const { return m_controller; }
 
         virtual bool HandleInputChannelEvent([[maybe_unused]]const ViewportControllerInputEvent& event) { return false; }
         virtual void ResetInputChannels() {}
         virtual void UpdateViewport([[maybe_unused]]const ViewportControllerUpdateEvent& event) {}
 
     private:
-        TController* m_controller;
         ViewportId m_viewportId;
+        ControllerType* m_controller;
     };
 } //namespace AzFramework
 
