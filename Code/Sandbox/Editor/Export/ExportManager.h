@@ -128,10 +128,6 @@ public:
     bool Export(const char* defaultName, const char* defaultExt = "", const char* defaultPath = "", bool isSelectedObjects = true,
         bool isSelectedRegionObjects = false, bool isOccluder = false, bool bAnimationExport = false);
 
-    //! Add to Export Data geometry from selected objects
-    //! return true if succeed, otherwise false
-    bool AddSelectedObjects();
-
     bool AddSelectedEntityObjects();
 
     //! Add to Export Data geometry from objects inside selected region volume

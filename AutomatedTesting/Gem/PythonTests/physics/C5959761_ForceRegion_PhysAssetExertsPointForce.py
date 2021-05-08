@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C5959761
 # Test Case Title : Check that force region (physics asset) exerts point force
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5959761
+
 
 
 # fmt: off

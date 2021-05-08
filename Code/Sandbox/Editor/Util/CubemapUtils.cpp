@@ -30,6 +30,7 @@
 #include "Util/ImageTIF.h"
 #include "Objects/BaseObject.h"
 
+#include <IEntityRenderState.h>
 
 class CubemapSizeModel
     : public QAbstractListModel

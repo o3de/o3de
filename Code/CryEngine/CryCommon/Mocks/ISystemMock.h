@@ -37,12 +37,6 @@ public:
         void());
     MOCK_METHOD0(NeedDoWorkDuringOcclusionChecks,
         bool());
-    MOCK_METHOD0(Render,
-        void());
-    MOCK_METHOD0(RenderBegin,
-        void());
-    MOCK_METHOD2(RenderEnd,
-        void(bool, bool));
     MOCK_METHOD2(SynchronousLoadingTick,
         void(const char* pFunc, int line));
     MOCK_METHOD0(RenderStatistics,
@@ -124,8 +118,6 @@ public:
         IMovieSystem * ());
     MOCK_METHOD0(GetIAudioSystem,
         Audio::IAudioSystem * ());
-    MOCK_METHOD0(GetI3DEngine,
-        I3DEngine * ());
     MOCK_METHOD0(GetIConsole,
         ::IConsole * ());
     MOCK_METHOD0(GetIRemoteConsole,

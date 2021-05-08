@@ -252,8 +252,6 @@ SEditorSettings::SEditorSettings()
     gui.hSystemFontBold = QFont("Ms Shell Dlg 2", lfHeight, QFont::Bold);
     gui.hSystemFontItalic = QFont("Ms Shell Dlg 2", lfHeight, QFont::Normal, true);
 
-    bForceSkyUpdate = true;
-
     backgroundUpdatePeriod = 0;
     g_TemporaryLevelName = nullptr;
 
@@ -647,8 +645,6 @@ void SEditorSettings::Save()
     SaveValue("Settings\\ObjectColors", "GeometryAlpha", objectColorSettings.fGeomAlpha);
     SaveValue("Settings\\ObjectColors", "ChildGeometryAlpha", objectColorSettings.fChildGeomAlpha);
 
-    SaveValue("Settings", "ForceSkyUpdate", gSettings.bForceSkyUpdate);
-
     //////////////////////////////////////////////////////////////////////////
     // Smart file open settings
     //////////////////////////////////////////////////////////////////////////
@@ -872,8 +868,6 @@ void SEditorSettings::Load()
     LoadValue("Settings\\ObjectColors", "SolidBrushGeometryHighlightColor", objectColorSettings.solidBrushGeometryColor);
     LoadValue("Settings\\ObjectColors", "GeometryAlpha", objectColorSettings.fGeomAlpha);
     LoadValue("Settings\\ObjectColors", "ChildGeometryAlpha", objectColorSettings.fChildGeomAlpha);
-
-    LoadValue("Settings", "ForceSkyUpdate", gSettings.bForceSkyUpdate);
 
     //////////////////////////////////////////////////////////////////////////
     // Smart file open settings

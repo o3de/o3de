@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C6090547
 # Test Case Title : Check that force regions in parent and child entities work together.
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/6090547
+
 
 
 # fmt: off

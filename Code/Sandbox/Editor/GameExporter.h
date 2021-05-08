@@ -91,9 +91,7 @@ private:
     void ExportLevelData(const QString& path, bool bExportMission = true);
     void ExportLevelInfo(const QString& path);
 
-    void ExportVisAreas(const char* pszGamePath, EEndian eExportEndian);
     void ExportOcclusionMesh(const char* pszGamePath);
-    void ExportMapInfo(XmlNodeRef& node);
 
     void ExportLevelResourceList(const QString& path);
     void ExportLevelUsedResourceList(const QString& path);

@@ -38,6 +38,7 @@ class TestShapeIntersectionFilter(object):
 
     @pytest.mark.test_case_id("C4874094")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_filter
     def test_ShapeIntersectionFilter_InstancesPlantInAssignedShape(self, request, editor, level, launcher_platform):
 
         expected_lines = [

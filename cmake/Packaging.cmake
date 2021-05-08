@@ -13,7 +13,13 @@ if(NOT PAL_TRAIT_BUILD_CPACK_SUPPORTED)
     return()
 endif()
 
-set(CPACK_GENERATOR "ZIP")
+ly_get_absolute_pal_filename(pal_dir ${CMAKE_SOURCE_DIR}/cmake/Platform/${PAL_HOST_PLATFORM_NAME})
+include(${pal_dir}/Packaging_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
+
+# if we get here and the generator hasn't been set, then a non fatal error occurred disabling packaging support
+if(NOT CPACK_GENERATOR)
+    return()
+endif()
 
 set(CPACK_PACKAGE_VENDOR "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VERSION "${LY_VERSION_STRING}")
@@ -26,6 +32,8 @@ set(DEFAULT_LICENSE_NAME "Apache-2.0")
 set(DEFAULT_LICENSE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
 
 set(CPACK_RESOURCE_FILE_LICENSE ${DEFAULT_LICENSE_FILE})
+
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_VENDOR}/${CPACK_PACKAGE_VERSION}")
 
 # IMPORTANT: required to be included AFTER setting all property overrides
 include(CPack REQUIRED)

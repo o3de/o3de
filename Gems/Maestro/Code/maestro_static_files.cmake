@@ -14,8 +14,6 @@ set(FILES
     Source/Maestro_precompiled.h
     Source/Cinematics/ShadowsSetupNode.h
     Source/Cinematics/ShadowsSetupNode.cpp
-    Source/Cinematics/AnimEnvironmentNode.h
-    Source/Cinematics/AnimEnvironmentNode.cpp
     Include/Maestro/MaestroBus.h
     Source/MaestroSystemComponent.cpp
     Source/MaestroSystemComponent.h

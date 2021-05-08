@@ -384,67 +384,71 @@ namespace AtomToolsFramework
 
     bool RenderViewportWidget::GridSnappingEnabled()
     {
-        return false;
+        return m_viewportSettings ? m_viewportSettings->GridSnappingEnabled() : false;
     }
 
     float RenderViewportWidget::GridSize()
     {
-        return 0.0f;
+        return m_viewportSettings ? m_viewportSettings->GridSize() : 0.0f;
     }
 
     bool RenderViewportWidget::ShowGrid()
     {
-        return false;
+        return m_viewportSettings ? m_viewportSettings->ShowGrid() : false;
     }
 
     bool RenderViewportWidget::AngleSnappingEnabled()
     {
-        return false;
+        return m_viewportSettings ? m_viewportSettings->AngleSnappingEnabled() : false;
     }
 
     float RenderViewportWidget::AngleStep()
     {
-        return 0.0f;
+        return m_viewportSettings ? m_viewportSettings->AngleStep() : 0.0f;
     }
 
-    QPoint RenderViewportWidget::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
+    void RenderViewportWidget::SetViewportSettings(AzToolsFramework::ViewportInteraction::ViewportSettings* viewportSettings)
     {
-        AZ::RPI::ViewPtr currentView = m_viewportContext->GetDefaultView();
-        if (currentView == nullptr)
-        {
-            return QPoint();
-        }
-        AzFramework::ScreenPoint position = AzFramework::WorldToScreen(
-            worldPosition,
-            GetCameraState()
-        );
-        return {position.m_x, position.m_y};
+        m_viewportSettings = viewportSettings;
     }
 
-    AZStd::optional<AZ::Vector3> RenderViewportWidget::ViewportScreenToWorld(const QPoint& screenPosition, float depth)
+    AzFramework::ScreenPoint RenderViewportWidget::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
+    {
+        if (AZ::RPI::ViewPtr currentView = m_viewportContext->GetDefaultView();
+            currentView == nullptr)
+        {
+            return AzFramework::ScreenPoint(0, 0);
+        }
+
+        return AzFramework::WorldToScreen(worldPosition, GetCameraState());
+    }
+
+    AZStd::optional<AZ::Vector3> RenderViewportWidget::ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition, float depth)
     {
         const auto& cameraProjection = m_viewportContext->GetCameraProjectionMatrix();
         const auto& cameraView = m_viewportContext->GetCameraViewMatrix();
 
         const AZ::Vector4 normalizedScreenPosition {
-            screenPosition.x() * 2.f / width() - 1.0f,
-            (height() - screenPosition.y()) * 2.f / height() - 1.0f,
+            screenPosition.m_x * 2.f / width() - 1.0f,
+            (height() - screenPosition.m_y) * 2.f / height() - 1.0f,
             1.f - depth, // [GFX TODO] [ATOM-1501] Currently we always assume reverse depth
             1.f
         };
+
         AZ::Matrix4x4 worldFromScreen = cameraProjection * cameraView;
         worldFromScreen.InvertFull();
 
-        AZ::Vector4 projectedPosition = worldFromScreen * normalizedScreenPosition;
-        if (projectedPosition.GetW() == 0.f)
+        const AZ::Vector4 projectedPosition = worldFromScreen * normalizedScreenPosition;
+        if (projectedPosition.GetW() == 0.0f)
         {
             return {};
         }
+
         return projectedPosition.GetAsVector3() / projectedPosition.GetW();
     }
 
     AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> RenderViewportWidget::ViewportScreenToWorldRay(
-        const QPoint& screenPosition)
+        const AzFramework::ScreenPoint& screenPosition)
     {
         auto pos0 = ViewportScreenToWorld(screenPosition, 0.f);
         auto pos1 = ViewportScreenToWorld(screenPosition, 1.f);
@@ -457,6 +461,7 @@ namespace AtomToolsFramework
         AZ::Vector3 rayOrigin = pos0.value();
         AZ::Vector3 rayDirection = pos1.value() - pos0.value();
         rayDirection.Normalize();
+
         return AzToolsFramework::ViewportInteraction::ProjectedViewportRay{rayOrigin, rayDirection};
     }
 
@@ -470,6 +475,11 @@ namespace AtomToolsFramework
         using AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint;
         return m_lastCursorPosition.has_value() ? ScreenPointFromQPoint(mapFromGlobal(m_lastCursorPosition.value()))
                                                 : AZStd::optional<AzFramework::ScreenPoint>{};
+    }
+
+    bool RenderViewportWidget::IsMouseOver() const
+    {
+        return m_mouseOver;
     }
 
     void RenderViewportWidget::BeginCursorCapture()
