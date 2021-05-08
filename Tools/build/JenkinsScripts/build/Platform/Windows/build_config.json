@@ -17,7 +17,8 @@
   },
   "debug_vs2019_pipe": {
     "TAGS": [
-      "nightly"
+      "nightly-incremental",
+      "nightly-clean"
     ],
     "steps": [
       "debug_vs2019",
@@ -125,7 +126,8 @@
   },
   "profile_vs2019_nounity": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_windows.cmd",
@@ -156,10 +158,11 @@
   },
   "test_gpu_profile_vs2019": {
     "TAGS":[
-        "nightly"
+      "nightly-incremental",
+      "nightly-clean"
     ],
     "PIPELINE_ENV":{
-        "NODE_LABEL":"windows-gpu"
+      "NODE_LABEL":"windows-gpu"
     },
     "COMMAND": "build_test_windows.cmd",
     "PARAMETERS": {
@@ -174,7 +177,9 @@
   },
   "asset_profile_vs2019": {
     "TAGS": [
-        "weekly-build-metrics"
+      "weekly-build-metrics",
+      "nightly-incremental",
+      "nightly-clean"
     ],
     "COMMAND": "build_asset_windows.cmd",
     "PARAMETERS": {
@@ -189,21 +194,10 @@
       "ASSET_PROCESSOR_PLATFORMS": "pc,server"
     }
   },
-  "asset_clean_profile_vs2019": {
-    "TAGS": [
-      "nightly"
-    ],
-    "PIPELINE_ENV": {
-      "CLEAN_ASSETS": "1"
-    },
-    "steps": [
-      "clean",
-      "asset_profile_vs2019"
-    ]
-  },
   "periodic_test_profile_vs2019": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_windows.cmd",
@@ -219,7 +213,8 @@
   },
   "sandbox_test_profile_vs2019": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "PIPELINE_ENV": {
@@ -238,7 +233,8 @@
   },
   "benchmark_test_profile_vs2019": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_windows.cmd",
@@ -254,7 +250,8 @@
   },
   "release_vs2019": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_windows.cmd",
@@ -269,7 +266,8 @@
   },
   "monolithic_release_vs2019": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_windows.cmd",
