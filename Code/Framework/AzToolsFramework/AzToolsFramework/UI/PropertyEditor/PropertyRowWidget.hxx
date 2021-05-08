@@ -156,7 +156,7 @@ namespace AzToolsFramework
         bool CanMoveDown() const;
 
         int GetParentWidgetWidth();
-        QPixmap createDragImage(const QColor backgroundColor, const QColor borderColor, const float alpha, QSize& size);
+        QPixmap createDragImage(const QColor backgroundColor, const QColor borderColor, const float alpha, bool includeVisibleChildren, QSize& size);
 
     protected:
         int CalculateLabelWidth() const;

@@ -4872,7 +4872,7 @@ namespace AzToolsFramework
 
             drag->setMimeData(mimeData);
             QSize imageSize;
-            drag->setPixmap(m_reorderRowWidget->createDragImage(QColor("#8E863E"), QColor("#EAECAA"), 0.5f, imageSize));
+            drag->setPixmap(m_reorderRowWidget->createDragImage(QColor("#8E863E"), QColor("#EAECAA"), 0.5f, false, imageSize));
             drag->setHotSpot(m_dragStartPosition - GetWidgetGlobalRect(m_reorderRowWidget).topLeft());
             drag->setDragCursor(m_dragIcon.pixmap(32), Qt::DropAction::MoveAction);
             //Ensure we can tidy up if the drop happens elsewhere.
@@ -4974,7 +4974,7 @@ namespace AzToolsFramework
     void EntityPropertyEditor::SetRowWidgetHighlighted(PropertyRowWidget* rowWidget)
     {
         m_reorderRowWidget = rowWidget;
-        m_reorderRowImage = rowWidget->createDragImage(QColor("#8E863E"), QColor("#EAECAA"), 0.5f, m_reorderRowImageSize);
+        m_reorderRowImage = rowWidget->createDragImage(QColor("#8E863E"), QColor("#EAECAA"), 0.5f, true, m_reorderRowImageSize);
     }
 
     void EntityPropertyEditor::EndRowWidgetReorder()

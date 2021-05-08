@@ -1780,12 +1780,22 @@ namespace AzToolsFramework
         return ypos - ystart;
     }
 
-    QPixmap PropertyRowWidget::createDragImage(const QColor backgroundColor, const QColor borderColor, const float alpha, QSize& size)
+    QPixmap PropertyRowWidget::createDragImage(const QColor backgroundColor, const QColor borderColor, const float alpha, bool includeVisibleChildren, QSize& size)
     {
         // Make the drag box as wide as the containing editor minus a gap each side for the border.
         static int ParentEditorBorderSize = 2;
         int width = GetParentWidgetWidth() - ParentEditorBorderSize * 2;
-        int height = GetHeightOfRowAndVisibleChildren();
+        int height = 0;
+
+
+        if (includeVisibleChildren)
+        {
+            height = GetHeightOfRowAndVisibleChildren();
+        }
+        else
+        {
+            height = rect().height();
+        }
 
         size.setWidth(width);
         size.setHeight(height);
@@ -1808,7 +1818,14 @@ namespace AzToolsFramework
 
         int marginWidth = (imageRect.width() - rect().width()) / 2 + ParentEditorBorderSize - 1;
 
-        DrawDragImageAndVisibleChildrenInto(dragPainter, marginWidth, 0);
+        if (includeVisibleChildren)
+        {
+            DrawDragImageAndVisibleChildrenInto(dragPainter, marginWidth, 0);
+        }
+        else
+        {
+            render(&dragPainter, QPoint(marginWidth, 0));
+        }
 
         QPen pen;
         pen.setColor(QColor(borderColor));
