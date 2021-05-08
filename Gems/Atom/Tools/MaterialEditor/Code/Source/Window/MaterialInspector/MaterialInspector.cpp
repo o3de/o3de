@@ -21,13 +21,17 @@
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 
-#include <Source/Window/MaterialInspector/MaterialInspector.h>
+#include <Atom/Window/MaterialEditorWindowSettings.h>
+#include <Window/MaterialInspector/MaterialInspector.h>
 
 namespace MaterialEditor
 {
     MaterialInspector::MaterialInspector(QWidget* parent)
         : AtomToolsFramework::InspectorWidget(parent)
     {
+        m_windowSettings = AZ::UserSettings::CreateFind<MaterialEditorWindowSettings>(
+            AZ::Crc32("MaterialEditorWindowSettings"), AZ::UserSettings::CT_GLOBAL);
+
         MaterialDocumentNotificationBus::Handler::BusConnect();
     }
 
@@ -45,6 +49,22 @@ namespace MaterialEditor
 
         AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
         AtomToolsFramework::InspectorWidget::Reset();
+    }
+
+    bool MaterialInspector::ShouldGroupAutoExpanded(const AZStd::string& groupNameId) const
+    {
+        auto stateItr = m_windowSettings->m_inspectorCollapsedGroups.find(GetGroupSaveStateKey(groupNameId));
+        return stateItr == m_windowSettings->m_inspectorCollapsedGroups.end();
+    }
+
+    void MaterialInspector::OnGroupExpanded(const AZStd::string& groupNameId)
+    {
+        m_windowSettings->m_inspectorCollapsedGroups.erase(GetGroupSaveStateKey(groupNameId));
+    }
+
+    void MaterialInspector::OnGroupCollapsed(const AZStd::string& groupNameId)
+    {
+        m_windowSettings->m_inspectorCollapsedGroups.insert(GetGroupSaveStateKey(groupNameId));
     }
 
     void MaterialInspector::OnDocumentOpened(const AZ::Uuid& documentId)
@@ -73,6 +93,20 @@ namespace MaterialEditor
         AddGroupsEnd();
     }
 
+    AZ::Crc32 MaterialInspector::GetGroupSaveStateKey(const AZStd::string& groupNameId) const
+    {
+        return AZ::Crc32(
+            AZStd::string::format("MaterialInspector::PropertyGroup::%s::%s", m_documentPath.c_str(), groupNameId.c_str()));
+    }
+
+    bool MaterialInspector::CompareInstanceNodeProperties(
+        const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) const
+    {
+        AZ_UNUSED(source);
+        const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
+        return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
+    }
+
     void MaterialInspector::AddDetailsGroup()
     {
         const AZ::RPI::MaterialTypeSourceData* materialTypeSourceData = nullptr;
@@ -92,15 +126,9 @@ namespace MaterialEditor
         group.m_properties.push_back(property);
 
         // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-        const AZ::Crc32 saveStateKey(
-            AZStd::string::format("MaterialInspector::PropertyGroup::%s::%s", m_documentPath.c_str(), groupDisplayName.c_str()));
         auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-            &group, &group, group.TYPEINFO_Uuid(), this, this, saveStateKey,
-            [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
-                AZ_UNUSED(source);
-                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
-                return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
-            });
+            &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupNameId),
+            [this](const auto source, const auto target) { return CompareInstanceNodeProperties(source, target); });
         AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
     }
 
@@ -127,15 +155,9 @@ namespace MaterialEditor
         }
 
         // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-        const AZ::Crc32 saveStateKey(
-            AZStd::string::format("MaterialInspector::PropertyGroup::%s::%s", m_documentPath.c_str(), groupDisplayName.c_str()));
         auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-            &group, &group, group.TYPEINFO_Uuid(), this, this, saveStateKey,
-            [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
-                AZ_UNUSED(source);
-                const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
-                return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
-            });
+            &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupNameId),
+            [this](const auto source, const auto target) { return CompareInstanceNodeProperties(source, target); });
         AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
     }
 
@@ -165,15 +187,9 @@ namespace MaterialEditor
             }
 
             // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-            const AZ::Crc32 saveStateKey(
-                AZStd::string::format("MaterialInspector::PropertyGroup::%s::%s", m_documentPath.c_str(), groupDisplayName.c_str()));
             auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                &group, &group, group.TYPEINFO_Uuid(), this, this, saveStateKey,
-                [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
-                    AZ_UNUSED(source);
-                    const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
-                    return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
-                });
+                &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupNameId),
+                [this](const auto source, const auto target) { return CompareInstanceNodeProperties(source, target); });
             AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
         }
     }
@@ -270,4 +286,4 @@ namespace MaterialEditor
     }
 } // namespace MaterialEditor
 
-#include <Source/Window/MaterialInspector/moc_MaterialInspector.cpp>
+#include <Window/MaterialInspector/moc_MaterialInspector.cpp>

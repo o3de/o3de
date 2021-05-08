@@ -29,11 +29,13 @@ namespace AtomToolsFramework
         AZ_CLASS_ALLOCATOR(InspectorGroupHeaderWidget, AZ::SystemAllocator, 0);
 
         explicit InspectorGroupHeaderWidget(QWidget* parent = nullptr);
-        void SetExpanded(bool expanded);
+        void SetExpanded(bool expand);
         bool IsExpanded() const;
 
     Q_SIGNALS:
         void clicked(QMouseEvent* event);
+        void expanded();
+        void collapsed();
 
     protected:
         void mousePressEvent(QMouseEvent* event) override;

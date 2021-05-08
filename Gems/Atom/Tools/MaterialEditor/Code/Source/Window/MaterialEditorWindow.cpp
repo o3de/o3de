@@ -143,7 +143,7 @@ namespace MaterialEditor
 
         // Restore additional state for docked windows
         auto windowSettings = AZ::UserSettings::CreateFind<MaterialEditorWindowSettings>(
-            AZ::Crc32("MaterialEditorwindowSettings"), AZ::UserSettings::CT_GLOBAL);
+            AZ::Crc32("MaterialEditorWindowSettings"), AZ::UserSettings::CT_GLOBAL);
 
         if (!windowSettings->m_mainWindowState.empty())
         {
@@ -272,7 +272,7 @@ namespace MaterialEditor
 
         // Capture docking state before shutdown
         auto windowSettings = AZ::UserSettings::CreateFind<MaterialEditorWindowSettings>(
-            AZ::Crc32("MaterialEditorwindowSettings"), AZ::UserSettings::CT_GLOBAL);
+            AZ::Crc32("MaterialEditorWindowSettings"), AZ::UserSettings::CT_GLOBAL);
 
         QByteArray windowState = m_advancedDockManager->saveState();
         windowSettings->m_mainWindowState.assign(windowState.begin(), windowState.end());

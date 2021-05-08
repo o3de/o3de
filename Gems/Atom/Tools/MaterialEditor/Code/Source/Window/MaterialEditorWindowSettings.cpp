@@ -23,6 +23,7 @@ namespace MaterialEditor
             serializeContext->Class<MaterialEditorWindowSettings, AZ::UserSettings>()
                 ->Version(1)
                 ->Field("mainWindowState", &MaterialEditorWindowSettings::m_mainWindowState)
+                ->Field("inspectorCollapsedGroups", &MaterialEditorWindowSettings::m_inspectorCollapsedGroups)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())

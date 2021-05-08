@@ -215,7 +215,7 @@ namespace AZ
                 // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
                 const AZ::Crc32 saveStateKey(AZStd::string::format(
                     "MaterialPropertyInspector::PropertyGroup::%s::%s", m_materialAssetId.ToString<AZStd::string>().c_str(),
-                    groupDisplayName.c_str()));
+                    groupNameId.c_str()));
                 auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
                     &group, &group, group.TYPEINFO_Uuid(), this, this, saveStateKey,
                     [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
@@ -268,7 +268,7 @@ namespace AZ
                     // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
                     const AZ::Crc32 saveStateKey(AZStd::string::format(
                         "MaterialPropertyInspector::PropertyGroup::%s::%s", m_materialAssetId.ToString<AZStd::string>().c_str(),
-                        groupDisplayName.c_str()));
+                        groupNameId.c_str()));
                     auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
                         &group, &group, group.TYPEINFO_Uuid(), this, this, saveStateKey,
                         [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {

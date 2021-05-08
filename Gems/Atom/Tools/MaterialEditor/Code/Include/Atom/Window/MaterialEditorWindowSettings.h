@@ -30,5 +30,6 @@ namespace MaterialEditor
         static void Reflect(AZ::ReflectContext* context);
 
         AZStd::vector<char> m_mainWindowState;
+        AZStd::unordered_set<AZ::u32> m_inspectorCollapsedGroups;
     };
 } // namespace MaterialEditor

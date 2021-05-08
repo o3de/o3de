@@ -41,7 +41,16 @@ namespace MaterialEditor
         // AtomToolsFramework::InspectorRequestBus::Handler overrides...
         void Reset() override;
 
+    protected:
+        bool ShouldGroupAutoExpanded(const AZStd::string& groupNameId) const override;
+        void OnGroupExpanded(const AZStd::string& groupNameId) override;
+        void OnGroupCollapsed(const AZStd::string& groupNameId) override;
+
     private:
+        AZ::Crc32 GetGroupSaveStateKey(const AZStd::string& groupNameId) const;
+        bool CompareInstanceNodeProperties(
+            const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) const;
+
         void AddDetailsGroup();
         void AddUvNamesGroup();
         void AddPropertiesGroup();
@@ -66,5 +75,6 @@ namespace MaterialEditor
         AZ::Uuid m_documentId = AZ::Uuid::CreateNull();
         AZStd::string m_documentPath;
         AZStd::unordered_map<AZStd::string, AtomToolsFramework::DynamicPropertyGroup> m_groups;
+        AZStd::intrusive_ptr<MaterialEditorWindowSettings> m_windowSettings;
     };
 } // namespace MaterialEditor
