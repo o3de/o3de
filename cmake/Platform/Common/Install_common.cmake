@@ -104,6 +104,13 @@ function(ly_generate_target_find_file)
     unset(INCLUDE_DIRECTORIES_PLACEHOLDER)
     set(RUNTIME_DEPENDENCIES_PLACEHOLDER ${ly_generate_target_find_file_RUNTIME_DEPENDENCIES})
 
+    set(TARGET_TYPE_PLACEHOLDER "IMPORTED")
+    #set(TARGET_TYPE_PLACEHOLDER)
+    get_target_property(target_type ${NAME_PLACEHOLDER} TYPE)
+    if(target_type STREQUAL INTERFACE_LIBRARY)
+        set(TARGET_TYPE_PLACEHOLDER "HEADERONLY")
+    endif()
+
     # These targets will be imported. We will expose PUBLIC and INTERFACE properties as INTERFACE properties since
     # only INTERFACE properties can be exposed on imported targets
     ly_strip_private_properties(COMPILE_DEFINITIONS_PLACEHOLDER ${ly_generate_target_find_file_COMPILE_DEFINITIONS})
@@ -225,13 +232,17 @@ function(ly_setup_cmake_install)
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/cmake"
         DESTINATION .
         COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+        PATTERN "__pycache__" EXCLUDE
         REGEX "Findo3de.cmake" EXCLUDE
         REGEX "Platform\/.*\/BuiltInPackages_.*\.cmake" EXCLUDE
     )
+
+    configure_file(${CMAKE_SOURCE_DIR}/cmake/install/engine.json.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/engine.json @ONLY)
+
     install(
         FILES
             "${CMAKE_SOURCE_DIR}/CMakeLists.txt"
-            "${CMAKE_SOURCE_DIR}/engine.json"
+            "${CMAKE_CURRENT_BINARY_DIR}/cmake/engine.json"
         DESTINATION .
         COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
@@ -369,6 +380,7 @@ function(ly_setup_others)
         install(DIRECTORY "${CMAKE_SOURCE_DIR}/${dir}"
             DESTINATION ${install_path}
             COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+            PATTERN "__pycache__" EXCLUDE
         )
 
     endforeach()
@@ -450,7 +462,7 @@ function(ly_setup_others)
         get_filename_component(gem_relative_path ${gem_json_path} DIRECTORY)
         install(FILES ${gem_json_path}
             DESTINATION ${gem_relative_path}
-            COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}    
+            COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
         )
     endforeach()
 
