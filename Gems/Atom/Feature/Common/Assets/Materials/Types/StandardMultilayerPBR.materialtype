@@ -204,7 +204,7 @@
                     "displayName": "Debug Draw Mode",
                     "description": "Enables various debug view features.",
                     "type": "Enum",
-                    "enumValues": [ "None", "BlendMaskValues", "DepthMaps" ],
+                    "enumValues": [ "None", "BlendWeights", "DisplacementMaps" ],
                     "defaultValue": "None",
                     "connection": {
                         "type": "ShaderOption",
@@ -305,11 +305,11 @@
                     "displayName": "Blend Source",
                     "description": "The source to use for defining the blend mask. Note VertexColors mode will still use the texture as a fallback if the mesh does not have a COLOR0 stream.",
                     "type": "Enum",
-                    "enumValues":  ["TextureMap", "VertexColors"],
-                    "defaultValue":  "TextureMap",
+                    "enumValues":  ["BlendMask", "VertexColors", "Displacement"],
+                    "defaultValue":  "BlendMask",
                     "connection": {
                         "type": "ShaderOption",
-                        "id": "o_blendSource"
+                        "id": "o_layerBlendSource"
                     }
                 },
                 {

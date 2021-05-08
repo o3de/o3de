@@ -33,7 +33,7 @@ function GetShaderOptionDependencies()
     return {"o_parallax_feature_enabled"}
 end
  
-function MergeRange(heightMinMax, offset, factor)
+function GetMergedHeightRange(heightMinMax, offset, factor)
     top = offset
     bottom = offset - factor
 
@@ -68,9 +68,9 @@ function Process(context)
         local offsetLayer3 = context:GetMaterialPropertyValue_float("layer3_parallax.offset")
 
         local heightMinMax = {nil, nil}
-        if(enable1) then MergeRange(heightMinMax, offsetLayer1, factorLayer1) end
-        if(enable2) then MergeRange(heightMinMax, offsetLayer2, factorLayer2) end
-        if(enable3) then MergeRange(heightMinMax, offsetLayer3, factorLayer3) end
+        if(enable1) then GetMergedHeightRange(heightMinMax, offsetLayer1, factorLayer1) end
+        if(enable2) then GetMergedHeightRange(heightMinMax, offsetLayer2, factorLayer2) end
+        if(enable3) then GetMergedHeightRange(heightMinMax, offsetLayer3, factorLayer3) end
 
         if(heightMinMax[1] - heightMinMax[0] < 0.0001) then
             context:SetShaderOptionValue_bool("o_parallax_feature_enabled", false)
