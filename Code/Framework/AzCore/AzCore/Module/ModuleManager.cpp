@@ -512,7 +512,7 @@ namespace AZ
         // Load DLLs specified in the application descriptor
         for (const auto& moduleDescriptor : modules)
         {
-           // For each module that is loaded, attempt to set the module's folder as a path for dependent module resolution
+            // For each module that is loaded, attempt to set the module's folder as a path for dependent module resolution
             moduleSearchPathHelper.SetModuleSearchPath(moduleDescriptor);
 
             LoadModuleOutcome result = LoadDynamicModule(moduleDescriptor.m_dynamicLibraryPath.c_str(), lastStepToPerform, maintainReferences);

@@ -488,8 +488,8 @@ namespace O3DELauncher
         const AZStd::string_view buildTargetName = GetBuildTargetName();
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(*settingsRegistry, buildTargetName);
 
-        AZ_TracePrintf("Launcher", R"(Running project "%.*s.)" "\n"
-            R"(The project name value has been successfully set in the Settings Registry at key "%s/project_name)"
+        AZ_TracePrintf("Launcher", R"(Running project "%.*s")" "\n"
+            R"(The project name has been successfully set in the Settings Registry at key "%s/project_name")"
             R"( for Launcher target "%.*s")" "\n",
             aznumeric_cast<int>(launcherProjectName.size()), launcherProjectName.data(),
             AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey,
