@@ -53,13 +53,22 @@ PSOutput MainPS(VSOutput IN)
 
     uint width, height, samples;
     PassSrg::m_reflection.GetDimensions(width, height, samples);
+    float nonZeroSamples = 0.0f;
     for (uint sampleIndex = 0; sampleIndex < samples; ++sampleIndex)
     {
-        reflection += PassSrg::m_reflection.Load(IN.m_position.xy, sampleIndex).rgb;
+        float3 reflectionSample = PassSrg::m_reflection.Load(IN.m_position.xy, sampleIndex).rgb;
+        if(any(reflectionSample))
+        {
+            reflection += reflectionSample;
+            nonZeroSamples += 1.0f;
+        }
     }
 
-    reflection /= samples;
-    
+    if(nonZeroSamples != 0.0f)
+    {
+        reflection /= nonZeroSamples;
+    }
+
     PSOutput OUT;
     OUT.m_color = float4(reflection, 1.0f);
     return OUT;

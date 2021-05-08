@@ -52,6 +52,8 @@ set(FILES
     Materials/Types/StandardPBR_ForwardPass_EDS.shader
     Materials/Types/StandardPBR_HandleOpacityDoubleSided.lua
     Materials/Types/StandardPBR_HandleOpacityMode.lua
+    Materials/Types/StandardPBR_LowEndForward.azsl
+    Materials/Types/StandardPBR_LowEndForward.shader
     Materials/Types/StandardPBR_ParallaxState.lua
     Materials/Types/StandardPBR_Roughness.lua
     Materials/Types/StandardPBR_ShaderEnable.lua
@@ -116,6 +118,7 @@ set(FILES
     Passes/DiffuseProbeGridBlendDistance.pass
     Passes/DiffuseProbeGridBlendIrradiance.pass
     Passes/DiffuseProbeGridBorderUpdate.pass
+    Passes/DiffuseProbeGridClassification.pass
     Passes/DiffuseProbeGridDownsample.pass
     Passes/DiffuseProbeGridRayTracing.pass
     Passes/DiffuseProbeGridRelocation.pass
@@ -144,6 +147,7 @@ set(FILES
     Passes/FullscreenCopy.pass
     Passes/FullscreenOutputOnly.pass
     Passes/ImGui.pass
+    Passes/LightAdaptationParent.pass
     Passes/LightCulling.pass
     Passes/LightCullingHeatmap.pass
     Passes/LightCullingParent.pass
@@ -152,6 +156,8 @@ set(FILES
     Passes/LightCullingTilePrepareMSAA.pass
     Passes/LookModificationComposite.pass
     Passes/LookModificationTransform.pass
+    Passes/LowEndForward.pass
+    Passes/LowEndPipeline.pass
     Passes/LuminanceHeatmap.pass
     Passes/LuminanceHistogramGenerator.pass
     Passes/MainPipeline.pass
@@ -179,8 +185,10 @@ set(FILES
     Passes/ReflectionScreenSpace.pass
     Passes/ReflectionScreenSpaceBlur.pass
     Passes/ReflectionScreenSpaceBlurHorizontal.pass
+    Passes/ReflectionScreenSpaceBlurMobile.pass
     Passes/ReflectionScreenSpaceBlurVertical.pass
     Passes/ReflectionScreenSpaceComposite.pass
+    Passes/ReflectionScreenSpaceMobile.pass
     Passes/ReflectionScreenSpaceTrace.pass
     Passes/Reflections_nomsaa.pass
     Passes/ShadowParent.pass
@@ -205,6 +213,7 @@ set(FILES
     ShaderLib/Atom/Features/IndirectRendering.azsli
     ShaderLib/Atom/Features/MatrixUtility.azsli
     ShaderLib/Atom/Features/ParallaxMapping.azsli
+    ShaderLib/Atom/Features/ShaderQualityOptions.azsli
     ShaderLib/Atom/Features/SphericalHarmonicsUtility.azsli
     ShaderLib/Atom/Features/SrgSemantics.azsli
     ShaderLib/Atom/Features/ColorManagement/TransformColor.azsli
@@ -234,6 +243,7 @@ set(FILES
     ShaderLib/Atom/Features/PBR/Hammersley.azsli
     ShaderLib/Atom/Features/PBR/LightingOptions.azsli
     ShaderLib/Atom/Features/PBR/LightingUtils.azsli
+    ShaderLib/Atom/Features/PBR/LowEndForwardPassOutput.azsli
     ShaderLib/Atom/Features/PBR/TransparentPassSrg.azsli
     ShaderLib/Atom/Features/PBR/Lighting/DualSpecularLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/EnhancedLighting.azsli

@@ -316,13 +316,6 @@
                             }
                         },
                         {
-                            "LocalSlot": "ReflectionInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "ReflectionsPass",
-                                "Attachment": "ReflectionOutput"
-                            }
-                        },
-                        {
                             "LocalSlot": "SkyBoxDepth",
                             "AttachmentRef": {
                                 "Pass": "ReflectionsPass",
@@ -338,8 +331,8 @@
                         {
                             "LocalSlot": "ReflectionInput",
                             "AttachmentRef": {
-                                "Pass": "SkyBoxPass",
-                                "Attachment": "ReflectionInputOutput"
+                                "Pass": "ReflectionsPass",
+                                "Attachment": "ReflectionOutput"
                             }
                         },
                         {

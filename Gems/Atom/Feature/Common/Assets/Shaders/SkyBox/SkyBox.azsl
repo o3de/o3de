@@ -102,7 +102,6 @@ float3 GetCubemapCoords(float3 original)
 struct PSOutput
 {
     float4 m_specular : SV_Target0;
-    float4 m_reflection : SV_Target1;
 };
 
 PSOutput MainPS(VSOutput input)
@@ -163,6 +162,5 @@ PSOutput MainPS(VSOutput input)
 
     PSOutput OUT;
     OUT.m_specular = float4(color, 1.0);
-    OUT.m_reflection = float4(color, 1.0);
     return OUT;
 }

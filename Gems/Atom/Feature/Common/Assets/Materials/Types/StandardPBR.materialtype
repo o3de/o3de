@@ -78,6 +78,13 @@
         "properties": {
             "general": [
                 {
+                    "id": "useLowEndShader",
+                    "displayName": "Use Low End",
+                    "description": "Whether to use the low end shader.",
+                    "type": "Bool",
+                    "defaultValue": false
+                },
+                {
                     "id": "applySpecularAA",
                     "displayName": "Apply Specular AA",
                     "description": "Whether to apply specular anti-aliasing in the shader.",
@@ -1174,6 +1181,14 @@
         {
             "file": "./StandardPBR_ForwardPass_EDS.shader",
             "tag": "ForwardPass_EDS"
+        },
+        {
+            "file": "./StandardPBR_LowEndForward.shader",
+            "tag": "LowEndForward"
+        },
+        {
+            "file": "./StandardPBR_LowEndForward_EDS.shader",
+            "tag": "LowEndForward_EDS"
         },
         {
             "file": "Shaders/Shadow/Shadowmap.shader",
