@@ -137,7 +137,7 @@ namespace AzFramework::ProjectManager
             }
             AZ::IO::FixedMaxPath pythonPath = engineRootPath / "python";
             pythonPath /= AZ_TRAIT_AZFRAMEWORK_PYTHON_SHELL;
-            auto cmdPath = AZ::IO::FixedMaxPathString::format("%s %s%s --executable_path=%s --parent_pid=%" PRId64, pythonPath.Native().c_str(),
+            auto cmdPath = AZ::IO::FixedMaxPathString::format("%s %s%s --executable_path=%s --parent_pid=%" PRIu32, pythonPath.Native().c_str(),
                 debugOption.c_str(), (projectManagerPath / projectsScript).c_str(), executablePath.c_str(), AZ::Platform::GetCurrentProcessId());
 
             AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;

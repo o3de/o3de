@@ -52,14 +52,16 @@ namespace ScriptCanvasEditor
                 ->Field("BusName", &CreateEBusSenderMimeEvent::m_busName)
                 ->Field("EventName", &CreateEBusSenderMimeEvent::m_eventName)
                 ->Field("IsOverload", &CreateEBusSenderMimeEvent::m_isOverload)
+                ->Field("propertyStatus", &CreateEBusSenderMimeEvent::m_propertyStatus)
                 ;
         }
     }
 
-    CreateEBusSenderMimeEvent::CreateEBusSenderMimeEvent(AZStd::string_view busName, AZStd::string_view eventName, bool isOverload)
+    CreateEBusSenderMimeEvent::CreateEBusSenderMimeEvent(AZStd::string_view busName, AZStd::string_view eventName, bool isOverload, ScriptCanvas::PropertyStatus propertyStatus)
         : m_busName(busName.data())
         , m_eventName(eventName.data())
         , m_isOverload(isOverload)
+        , m_propertyStatus(propertyStatus)
     {
     }
 
@@ -71,7 +73,7 @@ namespace ScriptCanvasEditor
         }
         else
         {
-            return Nodes::CreateObjectMethodNode(m_busName, m_eventName, scriptCanvasId);
+            return Nodes::CreateObjectMethodNode(m_busName, m_eventName, scriptCanvasId, m_propertyStatus);
         }
     }
 
@@ -91,13 +93,14 @@ namespace ScriptCanvasEditor
         return defaultIcon;
     }
 
-    EBusSendEventPaletteTreeItem::EBusSendEventPaletteTreeItem(AZStd::string_view busName, AZStd::string_view eventName, const ScriptCanvas::EBusBusId& busIdentifier, const ScriptCanvas::EBusEventId& eventIdentifier, bool isOverload)
+    EBusSendEventPaletteTreeItem::EBusSendEventPaletteTreeItem(AZStd::string_view busName, AZStd::string_view eventName, const ScriptCanvas::EBusBusId& busIdentifier, const ScriptCanvas::EBusEventId& eventIdentifier, bool isOverload, ScriptCanvas::PropertyStatus propertyStatus)
         : DraggableNodePaletteTreeItem(eventName, ScriptCanvasEditor::AssetEditorId)
         , m_busName(busName.data())
         , m_eventName(eventName.data())
         , m_busId(busIdentifier)
         , m_eventId(eventIdentifier)
         , m_isOverload(isOverload)
+        , m_propertyStatus(propertyStatus)
     {
         AZStd::string displayEventName = TranslationHelper::GetKeyTranslation(TranslationContextGroup::EbusSender, m_busName.toUtf8().data(), m_eventName.toUtf8().data(), TranslationItemType::Node, TranslationKeyId::Name);
 
@@ -122,7 +125,7 @@ namespace ScriptCanvasEditor
 
     GraphCanvas::GraphCanvasMimeEvent* EBusSendEventPaletteTreeItem::CreateMimeEvent() const
     {
-        return aznew CreateEBusSenderMimeEvent(m_busName.toUtf8().data(), m_eventName.toUtf8().data(), m_isOverload);
+        return aznew CreateEBusSenderMimeEvent(m_busName.toUtf8().data(), m_eventName.toUtf8().data(), m_isOverload, ScriptCanvas::PropertyStatus::None);
     }
 
     AZStd::string EBusSendEventPaletteTreeItem::GetBusName() const
@@ -143,6 +146,11 @@ namespace ScriptCanvasEditor
     ScriptCanvas::EBusEventId EBusSendEventPaletteTreeItem::GetEventId() const
     {
         return m_eventId;
+    }
+
+    ScriptCanvas::PropertyStatus EBusSendEventPaletteTreeItem::GetPropertyStatus() const
+    {
+        return m_propertyStatus;
     }
 
     bool EBusSendEventPaletteTreeItem::IsOverload() const 

@@ -16,7 +16,6 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
 
 #include <Atom/Document/MaterialDocumentNotificationBus.h>
 #include <Atom/Document/MaterialDocumentSystemRequestBus.h>
@@ -35,7 +34,6 @@ namespace MaterialEditor
     class MaterialDocumentSystemComponent
         : public AZ::Component
         , private AZ::TickBus::Handler
-        , private AzFramework::TmMsgBus::Handler
         , private MaterialDocumentNotificationBus::Handler
         , private MaterialDocumentSystemRequestBus::Handler
     {
@@ -71,11 +69,6 @@ namespace MaterialEditor
         // AZ::TickBus::Handler overrides...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         ////////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
-        // AzFramework::TmMsgBus::Handler overrides...
-        void OnReceivedMsg(AzFramework::TmMsgPtr msg) override;
-        //////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
         // MaterialDocumentSystemRequestBus::Handler overrides...

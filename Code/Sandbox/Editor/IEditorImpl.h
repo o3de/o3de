@@ -116,7 +116,6 @@ public:
     bool IsInitialized() const{ return m_bInitialized; }
     bool SaveDocument();
     ISystem*    GetSystem();
-    I3DEngine*  Get3DEngine();
     IRenderer*  GetRenderer();
     void WriteToConsole(const char* string) { CLogFile::WriteLine(string); };
     void WriteToConsole(const QString& string) { CLogFile::WriteLine(string); };
@@ -180,7 +179,6 @@ public:
     bool IsSelectionLocked();
 
     IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType);
-    CMaterialManager* GetMaterialManager() { return m_pMaterialManager; }
     CMusicManager* GetMusicManager() { return m_pMusicManager; };
 
     IBackgroundTaskManager* GetBackgroundTaskManager() override;
@@ -322,7 +320,6 @@ public:
     void OnObjectContextMenuOpened(QMenu* pMenu, const CBaseObject* pObject);
     virtual void RegisterObjectContextMenuExtension(TContextMenuExtensionFunc func) override;
 
-    virtual void SetCurrentMissionTime(float time);
     virtual SSystemGlobalEnvironment* GetEnv() override;
     virtual IBaseLibraryManager* GetMaterialManagerLibrary() override; // Vladimir@Conffx
     virtual IEditorMaterialManager* GetIEditorMaterialManager() override; // Vladimir@Conffx
@@ -379,7 +376,6 @@ protected:
     CAnimationContext* m_pAnimationContext;
     CTrackViewSequenceManager* m_pSequenceManager;
     CToolBoxManager* m_pToolBoxManager;
-    CMaterialManager* m_pMaterialManager;
     CAlembicCompiler* m_pAlembicCompiler;
     CMusicManager* m_pMusicManager;
     CErrorReport* m_pErrorReport;

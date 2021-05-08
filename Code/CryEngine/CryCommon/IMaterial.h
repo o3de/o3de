@@ -273,7 +273,7 @@ struct IMaterial
     //////////////////////////////////////////////////////////////////////////
     // material name
     //////////////////////////////////////////////////////////////////////////
-    //! Set material name, (Do not use this directly, to change material name use I3DEngine::RenameMatInfo method).
+    //! Set material name, (Do not use this directly
     virtual void SetName(const char* pName) = 0;
     //! Returns material name.
     virtual const char* GetName() const = 0;
@@ -404,7 +404,6 @@ struct IMaterial
 
     //////////////////////////////////////////////////////////////////////////
     // Makes this specific material enter sketch mode.
-    // Se also: I3DEngine::LoadCGF, in I3DEngine.h.
     // Current supported sketch modes:
     //  - 0, no sketch.
     //  - 1, normal sketch mode.

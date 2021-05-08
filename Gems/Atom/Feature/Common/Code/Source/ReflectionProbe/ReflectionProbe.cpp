@@ -244,9 +244,10 @@ namespace AZ
             m_updateSrg = true;
         }
 
-        void ReflectionProbe::SetCubeMapImage(const Data::Instance<RPI::Image>& cubeMapImage)
+        void ReflectionProbe::SetCubeMapImage(const Data::Instance<RPI::Image>& cubeMapImage, const AZStd::string& relativePath)
         {
             m_cubeMapImage = cubeMapImage;
+            m_cubeMapRelativePath = relativePath;
             m_updateSrg = true;
         }
 

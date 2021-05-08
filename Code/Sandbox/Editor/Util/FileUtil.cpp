@@ -2088,7 +2088,6 @@ void CFileUtil::GatherAssetFilenamesFromLevel(std::set<QString>& rOutFilenames, 
     rOutFilenames.clear();
     CBaseObjectsArray objArr;
     CUsedResources usedRes;
-    IMaterialManager* pMtlMan = GetIEditor()->Get3DEngine()->GetMaterialManager();
 
     GetIEditor()->GetObjectManager()->GetObjects(objArr);
 
@@ -2114,66 +2113,6 @@ void CFileUtil::GatherAssetFilenamesFromLevel(std::set<QString>& rOutFilenames, 
             }
 
             rOutFilenames.insert(tmpStr);
-        }
-    }
-
-    uint32 mtlCount = 0;
-
-    pMtlMan->GetLoadedMaterials(NULL, mtlCount);
-
-    if (mtlCount > 0)
-    {
-        AZStd::vector<_smart_ptr<IMaterial>> arrMtls;
-
-        arrMtls.resize(mtlCount);
-        pMtlMan->GetLoadedMaterials(&arrMtls, mtlCount);
-
-        for (size_t i = 0; i < mtlCount; ++i)
-        {
-            _smart_ptr<IMaterial> pMtl = arrMtls[i];
-
-            size_t subMtls = pMtl->GetSubMtlCount();
-
-            // for the main material
-            IRenderShaderResources* pShaderRes = pMtl->GetShaderItem().m_pShaderResources;
-
-            // add the material filename
-            rOutFilenames.insert(pMtl->GetName());
-
-            if (pShaderRes)
-            {
-                for ( auto iter= pShaderRes->GetTexturesResourceMap()->begin() ;
-                    iter!= pShaderRes->GetTexturesResourceMap()->end() ; ++iter )
-                {
-                    SEfResTexture*  pTex = &(iter->second);
-                    // add the texture filename
-                    rOutFilenames.insert(pTex->m_Name.c_str());
-                }
-            }
-
-            // for the submaterials
-            for (size_t s = 0; s < subMtls; ++s)
-            {
-                _smart_ptr<IMaterial> pSubMtl = pMtl->GetSubMtl(s);
-
-                // fill up dependencies
-                if (pSubMtl)
-                {
-                    IRenderShaderResources* pShaderRes2 = pSubMtl->GetShaderItem().m_pShaderResources;
-
-                    rOutFilenames.insert(pSubMtl->GetName());
-
-                    if (pShaderRes2)
-                    {
-                        for (auto iter = pShaderRes2->GetTexturesResourceMap()->begin();
-                            iter != pShaderRes2->GetTexturesResourceMap()->end(); ++iter)
-                        {
-                            SEfResTexture*  pTex = &(iter->second);
-                            rOutFilenames.insert(pTex->m_Name.c_str());
-                        }
-                    }
-                }
-            }
         }
     }
 }
