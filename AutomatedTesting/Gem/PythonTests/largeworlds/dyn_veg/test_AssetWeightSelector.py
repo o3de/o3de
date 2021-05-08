@@ -42,6 +42,7 @@ class TestAssetWeightSelector(object):
 
     @pytest.mark.test_case_id("C6269654", "C4762368")
     @pytest.mark.SUITE_sandbox
+    @pytest.mark.dynveg_filter
     def test_AssetWeightSelector_InstancesExpressBasedOnWeight(self, request, editor, level, launcher_platform):
 
         expected_lines = [

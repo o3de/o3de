@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C15425935
 # Test Case Title : Verify that the change in Material Library gets updated across levels
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/15425935
+
 
 # fmt: off
 class Tests:

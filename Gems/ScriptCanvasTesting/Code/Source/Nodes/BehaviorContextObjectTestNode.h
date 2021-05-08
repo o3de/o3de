@@ -30,10 +30,10 @@ namespace ScriptCanvasTestingNodes
             {
                 serializeContext->Class<BehaviorContextObjectTest>()
                     ->Version(0)
-                    ->Field("StringName", &BehaviorContextObjectTest::m_string)
+                    ->Field("String", &BehaviorContextObjectTest::m_string)
+                    ->Field("Name", &BehaviorContextObjectTest::m_name)
                     ;
-
-                
+                                
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<BehaviorContextObjectTest>("Behavior Context Object Test", "An Object that lives within Behavior Context exclusively for testing")
@@ -52,6 +52,7 @@ namespace ScriptCanvasTestingNodes
                     ->Attribute(AZ::Script::Attributes::Category, "Tests/Behavior Context")
                     ->Method("SetString", &BehaviorContextObjectTest::SetString)
                     ->Method("GetString", &BehaviorContextObjectTest::GetString)
+                    ->Property("Name", BehaviorValueProperty(&BehaviorContextObjectTest::m_name))
                     ;
             }
         }
@@ -73,7 +74,7 @@ namespace ScriptCanvasTestingNodes
         }
 
     private:
-        
+        AZStd::string m_name;
         AZStd::string m_string;
 
     };

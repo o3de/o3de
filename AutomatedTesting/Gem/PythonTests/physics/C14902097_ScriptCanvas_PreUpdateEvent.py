@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C14902097
 # Test Case Title : Verify Presimulate Events
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/14902097
+
 
 # fmt: off
 class Tests:

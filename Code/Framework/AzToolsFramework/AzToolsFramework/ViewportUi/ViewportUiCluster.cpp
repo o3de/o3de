@@ -9,21 +9,22 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
+
 #include "AzToolsFramework_precompiled.h"
 
-#include <AzToolsFramework/ViewportUi/Cluster.h>
+#include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiCluster.h>
 
 namespace AzToolsFramework::ViewportUi::Internal
 {
-    ViewportUiCluster::ViewportUiCluster(AZStd::shared_ptr<Cluster> cluster)
+    ViewportUiCluster::ViewportUiCluster(AZStd::shared_ptr<ButtonGroup> buttonGroup)
         : QToolBar(nullptr)
-        , m_cluster(cluster)
+        , m_buttonGroup(buttonGroup)
     {
         setOrientation(Qt::Orientation::Vertical);
         setStyleSheet("background: black;");
 
-        const AZStd::vector<Button*> buttons = cluster->GetButtons();
+        const AZStd::vector<Button*> buttons = buttonGroup->GetButtons();
         for (auto button : buttons)
         {
             RegisterButton(button);
@@ -39,7 +40,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         AddClusterAction(
             action,
             [this, button]() {
-                m_cluster->PressButton(button->m_buttonId);
+                m_buttonGroup->PressButton(button->m_buttonId);
             },
             [button](QAction* action) {
                 action->setChecked(button->m_state == Button::State::Selected);

@@ -51,6 +51,7 @@ namespace AzFramework
         //////////////////////////////////////////////////////////////////////////
         // GameEntityContextRequestBus
         AZ::Uuid GetGameEntityContextId() override { return GetContextId(); }
+        EntityContext* GetGameEntityContextInstance() override { return this; }
         void ResetGameContext() override;
         AZ::Entity* CreateGameEntity(const char* name) override;
         BehaviorEntity CreateGameEntityForBehaviorContext(const char* name) override;

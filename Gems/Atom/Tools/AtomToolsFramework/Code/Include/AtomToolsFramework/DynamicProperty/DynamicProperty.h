@@ -63,6 +63,7 @@ namespace AtomToolsFramework
         AZStd::vector<AZStd::string> m_vectorLabels;
         bool m_visible = true;
         bool m_readOnly = false;
+        bool m_showThumbnail = false;
     };
 
     //! Wraps an AZStd::any value and configuration so that it can be displayed and edited in a ReflectedPropertyEditor.

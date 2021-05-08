@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID : C14861504
 Test Case Title : Verify if Rendering Mesh does not have a PhysX Collision Mesh fbx, then PxMesh is not auto-assigned
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/14861504
+
 """
 
 

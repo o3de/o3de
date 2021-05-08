@@ -13,6 +13,7 @@ set(FILES
     Tests/AWSCoreEditorSystemComponentTest.cpp
     Tests/Editor/UI/AWSCoreEditorMenuTest.cpp
     Tests/Editor/UI/AWSCoreEditorUIFixture.h
+    Tests/Editor/UI/AWSCoreResourceMappingToolActionTest.cpp
     Tests/Editor/AWSCoreEditorManagerTest.cpp
     Tests/Editor/AWSCoreEditorTest.cpp
 )

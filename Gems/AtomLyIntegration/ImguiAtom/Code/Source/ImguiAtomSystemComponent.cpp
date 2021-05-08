@@ -99,7 +99,7 @@ namespace AZ
 #endif
         }
 
-        void ImguiAtomSystemComponent::OnViewportSizeChanged(AzFramework::WindowSize size)
+        void ImguiAtomSystemComponent::OnViewportSizeChanged([[maybe_unused]] AzFramework::WindowSize size)
         {
 #if defined(IMGUI_ENABLED)
             ImGui::ImGuiManagerBus::Broadcast([this, size](ImGui::ImGuiManagerBus::Events* imgui)

@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C3510642
 # Test Case Title : Check that when no physX terrain component is added, collision of a PhysX object
 # with terrain does not work. Consequently, PhysX material assignment to terrain cannot be tested.
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/3510642
+
 
 
 # fmt: off

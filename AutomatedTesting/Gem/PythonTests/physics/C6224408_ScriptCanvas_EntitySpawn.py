@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C6224408
 # Test Case Title : Entity using PhysX nodes in Script Canvas can be spawned.
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/6224408
+
 
 # fmt: off
 class Tests:

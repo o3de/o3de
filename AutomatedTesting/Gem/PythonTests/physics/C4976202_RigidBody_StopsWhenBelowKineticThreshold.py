@@ -14,7 +14,7 @@ Test case ID : C4976202
 Test Case Title : Verify that if the object is moving with Kinetic energy less than 
   the sleep threshold value, then physX will put it to stop after 0.4 secs (once the 
   wake counter goes to zero) if the KE is still below the threshold
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4976202
+
 """
 
 # fmt: off

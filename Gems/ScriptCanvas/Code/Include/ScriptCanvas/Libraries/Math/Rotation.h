@@ -39,7 +39,7 @@ namespace ScriptCanvas
                         {
                             editContext->Class<Quaternion>("Quaternion", "imaginary(X, Y, Z), real W")
                                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                                ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Quaternion.png")
+                                ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Quaternion.png")
                                 ;
                         }
                     }

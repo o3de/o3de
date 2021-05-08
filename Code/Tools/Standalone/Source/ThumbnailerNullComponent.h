@@ -42,7 +42,7 @@ namespace LUAEditor
             //////////////////////////////////////////////////////////////////////////
             // ThumbnailerRequests
             //////////////////////////////////////////////////////////////////////////
-            void RegisterContext(const char* contextName, int thumbnailSize) override;
+            void RegisterContext(const char* contextName) override;
             void UnregisterContext(const char* contextName) override;
             bool HasContext(const char* contextName) const override;
             void RegisterThumbnailProvider(AzToolsFramework::Thumbnailer::SharedThumbnailProvider provider, const char* contextName) override;

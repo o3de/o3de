@@ -288,9 +288,7 @@ namespace UnitTest
         EXPECT_TRUE(!(instanceSpawner1 == instanceSpawner2));
     }
 
-    // [LY-118267] This test intermittently fails on automated builds, so disabling temporarily until the root cause
-    // can be identified
-    TEST_F(DynamicSliceInstanceSpawnerTests, DISABLED_LoadAndUnloadAssets)
+    TEST_F(DynamicSliceInstanceSpawnerTests, LoadAndUnloadAssets)
     {
         // The spawner should successfully load/unload assets without errors.
 

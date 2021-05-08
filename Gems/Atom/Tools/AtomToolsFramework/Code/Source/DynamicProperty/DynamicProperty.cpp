@@ -141,6 +141,7 @@ namespace AtomToolsFramework
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::EnumValues, &DynamicProperty::GetEnumValues);
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::ChangeNotify, &DynamicProperty::OnDataChanged);
             AddEditDataAttribute(AZ::Edit::Attributes::ShowProductAssetFileName, false);
+            AddEditDataAttribute(AZ_CRC_CE("Thumbnail"), m_config.m_showThumbnail);
 
             switch (m_config.m_dataType)
             {
@@ -210,10 +211,7 @@ namespace AtomToolsFramework
 
     AZStd::string DynamicProperty::GetDescription() const
     {
-        return AZStd::string::format("%s%s(Script Name = '%s')",
-            m_config.m_description.c_str(),
-            m_config.m_description.empty() ? "" : "\n",
-            m_config.m_id.GetCStr());
+        return m_config.m_description;
     }
 
     AZ::Crc32 DynamicProperty::GetVisibility() const

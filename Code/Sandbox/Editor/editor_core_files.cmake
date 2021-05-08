@@ -54,13 +54,11 @@ set(FILES
     Util/MemoryBlock.cpp
     Util/Variable.cpp
     Util/UndoUtil.cpp
-    Util/VariableTypeInfo.cpp
     Util/VariablePropertyType.cpp
     Clipboard.h
     Util/MemoryBlock.h
     Util/Variable.h
     Util/UndoUtil.h
-    Util/VariableTypeInfo.h
     Util/VariablePropertyType.h
     Util/RefCountBase.h
     Util/PathUtil.h

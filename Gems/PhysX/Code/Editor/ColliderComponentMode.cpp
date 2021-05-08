@@ -223,7 +223,7 @@ namespace PhysX
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
             buttonId, AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton, clusterId,
-            AZStd::string::format("Editor/Icons/PhysX/%s.svg", iconName));
+            AZStd::string::format("Icons/PhysX/%s.svg", iconName));
 
         return buttonId;
     }

@@ -22,13 +22,13 @@ namespace ImageProcessingAtom
 {
     namespace Thumbnails
     {
-        const int ImageThumbnailSize = 200;
+        static constexpr const int ImageThumbnailSize = 256;
 
         //////////////////////////////////////////////////////////////////////////
         // ImageThumbnail
         //////////////////////////////////////////////////////////////////////////
-        ImageThumbnail::ImageThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key, int thumbnailSize)
-            : Thumbnail(key, thumbnailSize)
+        ImageThumbnail::ImageThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key)
+            : Thumbnail(key)
         {
             auto sourceKey = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceThumbnailKey*>(key.data());
             if (sourceKey)
@@ -66,7 +66,7 @@ namespace ImageProcessingAtom
             AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::QueueEvent(
                 AZ::RPI::StreamingImageAsset::RTTI_Type(), &AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests::RenderThumbnail,
                 m_key,
-                m_thumbnailSize);
+                ImageThumbnailSize);
             // wait for response from thumbnail renderer
             m_renderWait.acquire();
         }

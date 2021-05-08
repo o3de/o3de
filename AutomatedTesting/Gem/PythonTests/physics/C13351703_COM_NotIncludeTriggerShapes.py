@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C13351703
 # Test Case Title : Check that Center of Mass calculations should not include trigger shapes
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/13351703
+
 
 
 # fmt: off

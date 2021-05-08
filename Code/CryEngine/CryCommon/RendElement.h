@@ -119,7 +119,7 @@ struct IRenderElement
     virtual void mfCenter(Vec3& centr, CRenderObject* pObj) = 0;
     virtual void mfGetBBox(Vec3& vMins, Vec3& vMaxs) = 0;
     virtual void mfReset() = 0;
-    virtual void mfGetPlane(Plane& pl) = 0;
+    virtual void mfGetPlane(Plane_tpl<f32>& pl) = 0;
     virtual void mfExport(struct SShaderSerializeContext& SC) = 0;
     virtual void mfImport(struct SShaderSerializeContext& SC, uint32& offset) = 0;
     virtual void mfPrecache(const SShaderItem& SH) = 0;
@@ -265,7 +265,7 @@ public:
     void mfPrecache([[maybe_unused]] const SShaderItem& SH) override {}
     void mfExport([[maybe_unused]] struct SShaderSerializeContext& SC) override { CryFatalError("mfExport has not been implemented for this render element type"); }
     void mfImport([[maybe_unused]] struct SShaderSerializeContext& SC, [[maybe_unused]] uint32& offset) override { CryFatalError("mfImport has not been implemented for this render element type"); }
-    void mfGetPlane(Plane& pl) override;
+    void mfGetPlane(Plane_tpl<f32>& pl) override;
     void* mfGetPointer([[maybe_unused]] ESrcPointer ePT, [[maybe_unused]] int* Stride, [[maybe_unused]] EParamType Type, [[maybe_unused]] ESrcPointer Dst, [[maybe_unused]] int Flags) override { return nullptr; }
     
     uint16 mfGetFlags()  override { return m_Flags; }

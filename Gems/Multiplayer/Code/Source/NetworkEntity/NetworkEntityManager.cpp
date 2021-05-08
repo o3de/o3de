@@ -11,19 +11,20 @@
  */
 
 #include <Source/NetworkEntity/NetworkEntityManager.h>
-#include <Source/Components/NetBindComponent.h>
-#include <Include/IMultiplayer.h>
-#include <AzCore/Interface/Interface.h>
+
+#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Slice/SliceMetadataInfoComponent.h>
+#include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
-#include <AzFramework/Components/TransformComponent.h>
+#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <Include/IMultiplayer.h>
 #include <Pipeline/NetworkSpawnableHolderComponent.h>
-#include <AzCore/Asset/AssetManager.h>
+#include <Source/Components/NetBindComponent.h>
 
 namespace Multiplayer
 {
@@ -34,9 +35,14 @@ namespace Multiplayer
         : m_networkEntityAuthorityTracker(*this)
         , m_removeEntitiesEvent([this] { RemoveEntities(); }, AZ::Name("NetworkEntityManager remove entities event"))
         , m_updateEntityDomainEvent([this] { UpdateEntityDomain(); }, AZ::Name("NetworkEntityManager update entity domain event"))
+        , m_onSpawnedHandler([this](AZ::Data::Asset<AzFramework::Spawnable> spawnable) { this->OnSpawned(spawnable); })
+        , m_onDespawnedHandler([this](AZ::Data::Asset<AzFramework::Spawnable> spawnable) { this->OnDespawned(spawnable); })
     {
         AZ::Interface<INetworkEntityManager>::Register(this);
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
+
+        AzFramework::SpawnableEntitiesInterface::Get()->AddOnSpawnedHandler(m_onSpawnedHandler);
+        AzFramework::SpawnableEntitiesInterface::Get()->AddOnDespawnedHandler(m_onDespawnedHandler);
     }
 
     NetworkEntityManager::~NetworkEntityManager()
@@ -361,57 +367,61 @@ namespace Multiplayer
 
     INetworkEntityManager::EntityList NetworkEntityManager::CreateEntitiesImmediate(
         const PrefabEntityId& prefabEntryId, NetEntityId netEntityId, NetEntityRole netEntityRole,
-        const AZ::Transform& transform)
+        AutoActivate autoActivate, const AZ::Transform& transform)
     {
         INetworkEntityManager::EntityList returnList;
 
-        // TODO: Implement for non-root spawnables
         auto spawnableAssetId = m_networkPrefabLibrary.GetAssetIdByName(prefabEntryId.m_prefabName);
-        if (spawnableAssetId == m_rootSpawnableAsset.GetId())
+        // Required for sync-instantiation. Todo: keep the reference in NetworkSpawnableLibrary
+        auto netSpawnableAsset = AZ::Data::AssetManager::Instance().GetAsset<AzFramework::Spawnable>(spawnableAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+        AZ::Data::AssetManager::Instance().BlockUntilLoadComplete(netSpawnableAsset);
+       
+        AzFramework::Spawnable* netSpawnable = netSpawnableAsset.GetAs<AzFramework::Spawnable>();
+        if (!netSpawnable)
         {
-            AzFramework::Spawnable* netSpawnable = m_rootSpawnableAsset.GetAs<AzFramework::Spawnable>();
-            if (!netSpawnable)
+            return returnList;
+        }
+
+        const uint32_t entityIndex = prefabEntryId.m_entityOffset;
+
+        if (entityIndex == PrefabEntityId::AllIndices)
+        {
+            return CreateEntitiesImmediate(*netSpawnable, netEntityRole);
+        }
+
+        const AzFramework::Spawnable::EntityList& entities = netSpawnable->GetEntities();
+        size_t entitiesSize = entities.size();
+        if (entityIndex >= entitiesSize)
+        {
+            return returnList;
+        }
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+        AZ::Entity* clone = serializeContext->CloneObject(entities[entityIndex].get());
+        AZ_Assert(clone != nullptr, "Failed to clone spawnable entity.");
+        clone->SetId(AZ::Entity::MakeId());
+
+        NetBindComponent* netBindComponent = clone->FindComponent<NetBindComponent>();
+        if (netBindComponent)
+        {
+            netBindComponent->PreInit(clone, prefabEntryId, netEntityId, netEntityRole);
+
+            auto* transformComponent = clone->FindComponent<AzFramework::TransformComponent>();
+            if (transformComponent)
             {
-                return returnList;
+                transformComponent->SetWorldTM(transform);
             }
 
-            const uint32_t entityIndex = prefabEntryId.m_entityOffset;
-
-            if (entityIndex == PrefabEntityId::AllIndices)
+            if (autoActivate == AutoActivate::DoNotActivate)
             {
-                return CreateEntitiesImmediate(*netSpawnable, netEntityRole);
+                clone->SetRuntimeActiveByDefault(false);
             }
 
-            const AzFramework::Spawnable::EntityList& entities = netSpawnable->GetEntities();
-            size_t entitiesSize = entities.size();
-            if (entityIndex >= entitiesSize)
-            {
-                return returnList;
-            }
+            AzFramework::GameEntityContextRequestBus::Broadcast(&AzFramework::GameEntityContextRequestBus::Events::AddGameEntity, clone);
 
-            AZ::SerializeContext* serializeContext = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-
-            AZ::Entity* clone = serializeContext->CloneObject(entities[entityIndex].get());
-            AZ_Assert(clone != nullptr, "Failed to clone spawnable entity.");
-            clone->SetId(AZ::Entity::MakeId());
-
-            NetBindComponent* netBindComponent = clone->FindComponent<NetBindComponent>();
-            if (netBindComponent)
-            {
-                netBindComponent->PreInit(clone, prefabEntryId, netEntityId, netEntityRole);
-
-                auto* transformComponent = clone->FindComponent<AzFramework::TransformComponent>();
-                if (transformComponent)
-                {
-                    transformComponent->SetWorldTM(transform);
-                }
-
-                AzFramework::GameEntityContextRequestBus::Broadcast(
-                    &AzFramework::GameEntityContextRequestBus::Events::AddGameEntity, clone);
-
-                returnList.push_back(netBindComponent->GetEntityHandle());
-            }
+            returnList.push_back(netBindComponent->GetEntityHandle());
         }
 
         return returnList;
@@ -424,13 +434,37 @@ namespace Multiplayer
     }
 
     void NetworkEntityManager::OnRootSpawnableAssigned(
-        AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
+        [[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
     {
-        AzFramework::Spawnable* rootSpawnableData = rootSpawnable.GetAs<AzFramework::Spawnable>();
-        const auto& entityList = rootSpawnableData->GetEntities();
+        auto* multiplayer = AZ::Interface<IMultiplayer>::Get();
+        const auto agentType = multiplayer->GetAgentType();
+
+        if (agentType == MultiplayerAgentType::Client)
+        {
+            multiplayer->SendReadyForEntityUpdates(true);
+        }
+    }
+
+    void NetworkEntityManager::OnRootSpawnableReleased([[maybe_unused]] uint32_t generation)
+    {
+        // TODO: Do we need to clear all entities here?
+        auto* multiplayer = AZ::Interface<IMultiplayer>::Get();
+        const auto agentType = multiplayer->GetAgentType();
+
+        if (agentType == MultiplayerAgentType::Client)
+        {
+            multiplayer->SendReadyForEntityUpdates(false);
+        }
+    }
+
+    void NetworkEntityManager::OnSpawned(AZ::Data::Asset<AzFramework::Spawnable> spawnable)
+    {
+        AzFramework::Spawnable* spawnableData = spawnable.GetAs<AzFramework::Spawnable>();
+        const auto& entityList = spawnableData->GetEntities();
         if (entityList.size() == 0)
         {
-            AZ_Error("NetworkEntityManager", false, "OnRootSpawnableAssigned: Root spawnable doesn't have any entities.");
+            AZ_Error("NetworkEntityManager", false, "OnSpawned: Spawnable %s doesn't have any entities.",
+                spawnable.GetHint().c_str());
             return;
         }
 
@@ -438,7 +472,7 @@ namespace Multiplayer
         auto* spawnableHolder = rootEntity->FindComponent<NetworkSpawnableHolderComponent>();
         if (!spawnableHolder)
         {
-            AZ_Error("NetworkEntityManager", false, "OnRootSpawnableAssigned: Root entity doesn't have NetworkSpawnableHolderComponent.");
+            // Root entity doesn't have NetworkSpawnableHolderComponent. It means there's no corresponding network spawnable.
             return;
         }
 
@@ -460,9 +494,9 @@ namespace Multiplayer
             return;
         }
 
-        m_rootSpawnableAsset = netSpawnableAsset;
+        auto* multiplayer = AZ::Interface<IMultiplayer>::Get();
 
-        const auto agentType = AZ::Interface<IMultiplayer>::Get()->GetAgentType();
+        const auto agentType = multiplayer->GetAgentType();
         const bool spawnImmediately =
             (agentType == MultiplayerAgentType::ClientServer || agentType == MultiplayerAgentType::DedicatedServer);
 
@@ -472,9 +506,8 @@ namespace Multiplayer
         }
     }
 
-    void NetworkEntityManager::OnRootSpawnableReleased([[maybe_unused]] uint32_t generation)
+    void NetworkEntityManager::OnDespawned([[maybe_unused]]AZ::Data::Asset<AzFramework::Spawnable> spawnable)
     {
-        // TODO: Do we need to clear all entities here?
-        m_rootSpawnableAsset.Release();
+        // TODO: Remove entities instantiated from the spawnable
     }
 }

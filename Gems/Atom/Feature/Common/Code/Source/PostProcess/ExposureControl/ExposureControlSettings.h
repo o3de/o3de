@@ -84,8 +84,8 @@ namespace AZ
 
             void UpdateExposureControlRelatedPassParameters();
             
-            void UpdateLuminanceHeatmap(RPI::PassSystemInterface* passSystem);
-            void UpdateEyeAdaptationPass(RPI::PassSystemInterface* passSystem);
+            void UpdateLuminanceHeatmap();
+            void UpdateEyeAdaptationPass();
             
             PostProcessSettings* m_parentSettings = nullptr;
             bool m_shouldUpdatePassParameters = true;

@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C4982797
 # Test Case Title : Check that collision offsets trigger collision events,
 #                   not entity transform locations
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4982797
+
 
 
 # fmt: off
