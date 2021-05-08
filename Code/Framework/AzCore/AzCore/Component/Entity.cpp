@@ -112,7 +112,11 @@ namespace AZ
         {
             EBUS_EVENT(EntitySystemBus, OnEntityDestruction, m_id);
             EBUS_EVENT_ID(m_id, EntityBus, OnEntityDestruction, m_id);
-            AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RemoveEntity(this);
+            AZ::ComponentApplicationRequests* componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+            if (componentApplication != nullptr)
+            {
+                componentApplication->RemoveEntity(this);
+            }
             m_stateEvent.Signal(State::Init, State::Destroying);
         }
 
@@ -216,14 +220,22 @@ namespace AZ
 
         EBUS_EVENT_ID(m_id, EntityBus, OnEntityActivated, m_id);
         EBUS_EVENT(EntitySystemBus, OnEntityActivated, m_id);
-        AZ::Interface<AZ::ComponentApplicationRequests>::Get()->SignalEntityActivated(this);
+        AZ::ComponentApplicationRequests* componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+        if (componentApplication != nullptr)
+        {
+            componentApplication->SignalEntityActivated(this);
+        }
     }
 
     void Entity::Deactivate()
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
 
-        AZ::Interface<AZ::ComponentApplicationRequests>::Get()->SignalEntityDeactivated(this);
+        AZ::ComponentApplicationRequests* componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+        if (componentApplication != nullptr)
+        {
+            componentApplication->SignalEntityDeactivated(this);
+        }
         EBUS_EVENT_ID(m_id, EntityBus, OnEntityDeactivated, m_id);
         EBUS_EVENT(EntitySystemBus, OnEntityDeactivated, m_id);
 

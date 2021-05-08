@@ -174,7 +174,11 @@ namespace AZ
     //=========================================================================
     void ComponentDescriptor::ReleaseDescriptor()
     {
-        AZ::Interface<AZ::ComponentApplicationRequests>::Get()->UnregisterComponentDescriptor(this);
+        AZ::ComponentApplicationRequests* componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+        if (componentApplication != nullptr)
+        {
+            componentApplication->UnregisterComponentDescriptor(this);
+        }
         delete this;
     }
 } // namespace AZ
