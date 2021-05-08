@@ -308,7 +308,7 @@ namespace AZ
             uint32_t exitCode = 0;
             bool timedOut = false;
 
-            const AZStd::sys_time_t maxWaitTimeSeconds = 240;
+            const AZStd::sys_time_t maxWaitTimeSeconds = 120;
             const AZStd::sys_time_t startTimeSeconds = AZStd::GetTimeNowSecond();
             const AZStd::sys_time_t startTime = AZStd::GetTimeNowTicks();
 
