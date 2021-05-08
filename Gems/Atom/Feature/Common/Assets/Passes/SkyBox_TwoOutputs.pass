@@ -4,7 +4,7 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "SkyBoxTemplate",
+            "Name": "SkyBoxTwoOutputsTemplate",
             "PassClass": "FullScreenTriangle",
             "Slots": [
                 {
@@ -26,7 +26,7 @@
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
-                    "FilePath": "shaders/skybox/skybox.shader"
+                    "FilePath": "shaders/skybox/skybox_twooutputs.shader"
                 },
                 "PipelineViewTag": "MainCamera",
                 "ShaderDataMappings": {

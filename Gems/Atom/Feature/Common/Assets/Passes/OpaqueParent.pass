@@ -305,7 +305,7 @@
                 },
                 {
                     "Name": "SkyBoxPass",
-                    "TemplateName": "SkyBoxTemplate",
+                    "TemplateName": "SkyBoxTwoOutputsTemplate",
                     "Enabled": true,
                     "Connections": [
                         {
@@ -313,6 +313,13 @@
                             "AttachmentRef": {
                                 "Pass": "ReflectionsPass",
                                 "Attachment": "SpecularInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ReflectionInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "ReflectionsPass",
+                                "Attachment": "ReflectionOutput"
                             }
                         },
                         {
@@ -331,8 +338,8 @@
                         {
                             "LocalSlot": "ReflectionInput",
                             "AttachmentRef": {
-                                "Pass": "ReflectionsPass",
-                                "Attachment": "ReflectionOutput"
+                                "Pass": "SkyBoxPass",
+                                "Attachment": "ReflectionInputOutput"
                             }
                         },
                         {

@@ -93,6 +93,10 @@
                 "Path": "Passes/SkyBox.pass"
             },
             {
+                "Name": "SkyBoxTwoOutputsTemplate",
+                "Path": "Passes/SkyBox_TwoOutputs.pass"
+            },
+            {
                 "Name": "UIPassTemplate",
                 "Path": "Passes/UI.pass"
             },
