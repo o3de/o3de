@@ -10,46 +10,50 @@
 *
 */
 
-#include <AzFramework/Application/Application.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-#include <AzQtComponents/Components/StyleManager.h>
-#include <AzQtComponents/Utilities/QtPluginPaths.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
-#include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
-
-#include <AtomToolsFramework/Util/Util.h>
-
-#include <Atom/Document/MaterialDocumentRequestBus.h>
-#include <Atom/Document/MaterialDocumentSystemRequestBus.h>
-#include <Atom/Window/MaterialEditorWindowNotificationBus.h>
-
 #include <Atom/RHI/Factory.h>
-
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
+#include <Atom/Document/MaterialDocumentRequestBus.h>
+#include <Atom/Document/MaterialDocumentSystemRequestBus.h>
+#include <Atom/Window/MaterialEditorWindowNotificationBus.h>
+#include <Atom/Window/MaterialEditorWindowSettings.h>
+
+#include <AtomToolsFramework/Util/Util.h>
+
+#include <AzFramework/Application/Application.h>
+#include <AzFramework/StringFunc/StringFunc.h>
+
+#include <AzQtComponents/Components/StyleManager.h>
+#include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <AzQtComponents/Utilities/QtPluginPaths.h>
+
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
+
 #include <Viewport/MaterialViewportWidget.h>
-#include <Viewport/MaterialViewportWidget.h>
-#include <Window/MaterialEditorWindow.h>
-#include <Window/PerformanceMonitor/PerformanceMonitorWidget.h>
+#include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
 #include <Window/HelpDialog/HelpDialog.h>
 #include <Window/MaterialBrowserWidget.h>
+#include <Window/MaterialEditorWindow.h>
 #include <Window/MaterialInspector/MaterialInspector.h>
+#include <Window/PerformanceMonitor/PerformanceMonitorWidget.h>
 #include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
-#include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
+#include <QApplication>
+#include <QByteArray>
 #include <QCloseEvent>
-#include <QVariant>
+#include <QDesktopWidget>
 #include <QFileDialog>
-#include <QWindow>
 #include <QVBoxLayout>
+#include <QVariant>
+#include <QWindow>
 AZ_POP_DISABLE_WARNING
 
 namespace MaterialEditor
@@ -57,6 +61,15 @@ namespace MaterialEditor
     MaterialEditorWindow::MaterialEditorWindow(QWidget* parent /* = 0 */)
         : AzQtComponents::DockMainWindow(parent)
     {
+        resize(1280, 1024);
+
+        // Among other things, we need the window wrapper to save the main window size, position, and state
+        auto mainWindowWrapper =
+            new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons);
+        mainWindowWrapper->setGuest(this);
+        mainWindowWrapper->enableSaveRestoreGeometry("amazon", "MaterialEditor", "mainWindowGeometry");
+
+        // set the style sheet for RPE highlighting and other styling
         AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral(":/MaterialEditor.qss"));
 
         QApplication::setWindowIcon(QIcon(":/Icons/materialtype.svg"));
@@ -75,6 +88,7 @@ namespace MaterialEditor
 
         m_advancedDockManager = new AzQtComponents::FancyDocking(this);
 
+        setObjectName("MaterialEditorWindow");
         setDockNestingEnabled(true);
         setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
         setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
@@ -82,17 +96,21 @@ namespace MaterialEditor
         setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
         m_menuBar = new QMenuBar(this);
+        m_menuBar->setObjectName("MenuBar");
         setMenuBar(m_menuBar);
 
         m_toolBar = new MaterialEditorToolBar(this);
+        m_toolBar->setObjectName("ToolBar");
         addToolBar(m_toolBar);
 
         m_centralWidget = new QWidget(this);
         m_tabWidget = new AzQtComponents::TabWidget(m_centralWidget);
+        m_tabWidget->setObjectName("TabWidget");
         m_tabWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
         m_tabWidget->setContentsMargins(0, 0, 0, 0);
 
         m_materialViewport = new MaterialViewportWidget(m_centralWidget);
+        m_materialViewport->setObjectName("Viewport");
         m_materialViewport->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 
         QVBoxLayout* vl = new QVBoxLayout(m_centralWidget);
@@ -104,7 +122,8 @@ namespace MaterialEditor
         setCentralWidget(m_centralWidget);
 
         m_statusBar = new StatusBarWidget(this);
-        this->statusBar()->addPermanentWidget(m_statusBar, 1);
+        m_statusBar->setObjectName("StatusBar");
+        statusBar()->addPermanentWidget(m_statusBar, 1);
 
         SetupMenu();
         SetupTabs();
@@ -119,27 +138,26 @@ namespace MaterialEditor
         SetDockWidgetVisible("Performance Monitor", false);
         SetDockWidgetVisible("Python Terminal", false);
 
+        // Restore geometry and show the window
+        mainWindowWrapper->showFromSettings();
+
+        // Restore additional state for docked windows
+        auto windowSettings = AZ::UserSettings::CreateFind<MaterialEditorWindowSettings>(
+            AZ::Crc32("MaterialEditorwindowSettings"), AZ::UserSettings::CT_GLOBAL);
+
+        if (!windowSettings->m_mainWindowState.empty())
+        {
+            QByteArray windowState(windowSettings->m_mainWindowState.data(), windowSettings->m_mainWindowState.size());
+            m_advancedDockManager->restoreState(windowState);
+        }
+
         MaterialEditorWindowRequestBus::Handler::BusConnect();
         MaterialDocumentNotificationBus::Handler::BusConnect();
         OnDocumentOpened(AZ::Uuid::CreateNull());
-
-        auto windowState = AZ::UserSettings::Find<AzToolsFramework::QWidgetSavedState>(
-            AZ::Crc32("MaterialEditorWindowState"), AZ::UserSettings::CT_GLOBAL);
-        if (windowState)
-        {
-            windowState->RestoreGeometry(this);
-        }
     }
 
     MaterialEditorWindow::~MaterialEditorWindow()
     {
-        auto windowState = AZ::UserSettings::CreateFind<AzToolsFramework::QWidgetSavedState>(
-            AZ::Crc32("MaterialEditorWindowState"), AZ::UserSettings::CT_GLOBAL);
-        if (windowState)
-        {
-            windowState->CaptureGeometry(this);
-        }
-
         MaterialDocumentNotificationBus::Handler::BusDisconnect();
         MaterialEditorWindowRequestBus::Handler::BusDisconnect();
     }
@@ -159,8 +177,9 @@ namespace MaterialEditor
         }
 
         auto dockWidget = new AzQtComponents::StyledDockWidget(name.c_str());
-        dockWidget->setObjectName(name.c_str());
+        dockWidget->setObjectName(QString("%1_DockWidget").arg(name.c_str()));
         dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
+        widget->setObjectName(name.c_str());
         widget->setParent(dockWidget);
         widget->setMinimumSize(QSize(300, 300));
         dockWidget->setWidget(widget);
@@ -218,15 +237,16 @@ namespace MaterialEditor
         QSize requestedWindowSize = size() + offset;
         resize(requestedWindowSize);
 
-        AZ_Assert(m_materialViewport->size() == requestedViewportSize,
+        AZ_Assert(
+            m_materialViewport->size() == requestedViewportSize,
             "Resizing the window did not give the expected viewport size. Requested %d x %d but got %d x %d.",
-            requestedViewportSize.width(), requestedViewportSize.height(),
-            m_materialViewport->size().width(), m_materialViewport->size().height());
+            requestedViewportSize.width(), requestedViewportSize.height(), m_materialViewport->size().width(),
+            m_materialViewport->size().height());
 
         QSize newDeviceSize = m_materialViewport->size();
-        AZ_Warning("Material Editor", newDeviceSize.width() == width && newDeviceSize.height() == height,
-            "Resizing the window did not give the expected frame size. Requested %d x %d but got %d x %d.",
-            width, height,
+        AZ_Warning(
+            "Material Editor", newDeviceSize.width() == width && newDeviceSize.height() == height,
+            "Resizing the window did not give the expected frame size. Requested %d x %d but got %d x %d.", width, height,
             newDeviceSize.width(), newDeviceSize.height());
     }
 
@@ -249,6 +269,13 @@ namespace MaterialEditor
             closeEvent->ignore();
             return;
         }
+
+        // Capture docking state before shutdown
+        auto windowSettings = AZ::UserSettings::CreateFind<MaterialEditorWindowSettings>(
+            AZ::Crc32("MaterialEditorwindowSettings"), AZ::UserSettings::CT_GLOBAL);
+
+        QByteArray windowState = m_advancedDockManager->saveState();
+        windowSettings->m_mainWindowState.assign(windowState.begin(), windowState.end());
 
         MaterialEditorWindowNotificationBus::Broadcast(&MaterialEditorWindowNotifications::OnMaterialEditorWindowClosing);
     }

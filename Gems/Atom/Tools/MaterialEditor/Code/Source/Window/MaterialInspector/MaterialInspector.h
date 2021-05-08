@@ -64,6 +64,7 @@ namespace MaterialEditor
         const AtomToolsFramework::DynamicProperty* m_activeProperty = nullptr;
 
         AZ::Uuid m_documentId = AZ::Uuid::CreateNull();
+        AZStd::string m_documentPath;
         AZStd::unordered_map<AZStd::string, AtomToolsFramework::DynamicPropertyGroup> m_groups;
     };
 } // namespace MaterialEditor

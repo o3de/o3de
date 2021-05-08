@@ -22,11 +22,8 @@ namespace MaterialEditor
         {
             serializeContext->Class<MaterialEditorWindowSettings, AZ::UserSettings>()
                 ->Version(1)
-                ->Field("enableGrid", &MaterialEditorWindowSettings::m_enableGrid)
-                ->Field("enableShadowCatcher", &MaterialEditorWindowSettings::m_enableShadowCatcher)
-                ->Field("enableAlternateSkybox", &MaterialEditorWindowSettings::m_enableAlternateSkybox)
-                ->Field("fieldOfView", &MaterialEditorWindowSettings::m_fieldOfView)
-            ;
+                ->Field("mainWindowState", &MaterialEditorWindowSettings::m_mainWindowState)
+                ;
 
             if (auto editContext = serializeContext->GetEditContext())
             {
@@ -34,12 +31,6 @@ namespace MaterialEditor
                     "MaterialEditorWindowSettings", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialEditorWindowSettings::m_enableGrid, "Enable Grid", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialEditorWindowSettings::m_enableShadowCatcher, "Enable Shadow Catcher", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialEditorWindowSettings::m_enableAlternateSkybox, "Enable Alternate Skybox", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &MaterialEditorWindowSettings::m_fieldOfView, "Field Of View", "")
-                        ->Attribute(AZ::Edit::Attributes::Min, 60.0f)
-                        ->Attribute(AZ::Edit::Attributes::Max, 120.0f)
                     ;
             }
         }
@@ -52,10 +43,6 @@ namespace MaterialEditor
                 ->Attribute(AZ::Script::Attributes::Module, "render")
                 ->Constructor()
                 ->Constructor<const MaterialEditorWindowSettings&>()
-                ->Property("enableGrid", BehaviorValueProperty(&MaterialEditorWindowSettings::m_enableGrid))
-                ->Property("enableShadowCatcher", BehaviorValueProperty(&MaterialEditorWindowSettings::m_enableShadowCatcher))
-                ->Property("enableAlternateSkybox", BehaviorValueProperty(&MaterialEditorWindowSettings::m_enableAlternateSkybox))
-                ->Property("fieldOfView", BehaviorValueProperty(&MaterialEditorWindowSettings::m_fieldOfView))
                 ;
         }
     }

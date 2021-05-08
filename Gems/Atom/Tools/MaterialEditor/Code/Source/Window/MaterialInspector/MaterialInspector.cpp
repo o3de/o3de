@@ -39,6 +39,7 @@ namespace MaterialEditor
 
     void MaterialInspector::Reset()
     {
+        m_documentPath.clear();
         m_documentId = AZ::Uuid::CreateNull();
         m_groups = {};
 
@@ -54,6 +55,8 @@ namespace MaterialEditor
 
         bool isOpen = false;
         MaterialDocumentRequestBus::EventResult(isOpen, m_documentId, &MaterialDocumentRequestBus::Events::IsOpen);
+
+        MaterialDocumentRequestBus::EventResult(m_documentPath, m_documentId, &MaterialDocumentRequestBus::Events::GetAbsolutePath);
 
         if (!m_documentId.IsNull() && isOpen)
         {
@@ -89,7 +92,10 @@ namespace MaterialEditor
         group.m_properties.push_back(property);
 
         // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-        auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(&group, &group, group.TYPEINFO_Uuid(), this, this,
+        const AZ::Crc32 saveStateKey(
+            AZStd::string::format("MaterialInspector::PropertyGroup::%s::%s", m_documentPath.c_str(), groupDisplayName.c_str()));
+        auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
+            &group, &group, group.TYPEINFO_Uuid(), this, this, saveStateKey,
             [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
                 AZ_UNUSED(source);
                 const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
@@ -121,7 +127,10 @@ namespace MaterialEditor
         }
 
         // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-        auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(&group, &group, group.TYPEINFO_Uuid(), this, this,
+        const AZ::Crc32 saveStateKey(
+            AZStd::string::format("MaterialInspector::PropertyGroup::%s::%s", m_documentPath.c_str(), groupDisplayName.c_str()));
+        auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
+            &group, &group, group.TYPEINFO_Uuid(), this, this, saveStateKey,
             [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
                 AZ_UNUSED(source);
                 const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
@@ -156,7 +165,10 @@ namespace MaterialEditor
             }
 
             // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-            auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(&group, &group, group.TYPEINFO_Uuid(), this, this,
+            const AZ::Crc32 saveStateKey(
+                AZStd::string::format("MaterialInspector::PropertyGroup::%s::%s", m_documentPath.c_str(), groupDisplayName.c_str()));
+            auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
+                &group, &group, group.TYPEINFO_Uuid(), this, this, saveStateKey,
                 [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
                     AZ_UNUSED(source);
                     const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);

@@ -58,9 +58,11 @@ namespace MaterialEditor
         const AZStd::string groupDisplayName = "General";
         const AZStd::string groupDescription = "General";
 
+        const AZ::Crc32 saveStateKey(AZStd::string::format("ViewportSettingsInspector::GeneralGroup"));
         AddGroup(
             groupNameId, groupDisplayName, groupDescription,
-            new AtomToolsFramework::InspectorPropertyGroupWidget(m_viewportSettings.get(), nullptr, m_viewportSettings->TYPEINFO_Uuid(), this));
+            new AtomToolsFramework::InspectorPropertyGroupWidget(
+                m_viewportSettings.get(), nullptr, m_viewportSettings->TYPEINFO_Uuid(), this, this, saveStateKey));
     }
 
     void ViewportSettingsInspector::AddModelGroup()
@@ -92,8 +94,9 @@ namespace MaterialEditor
 
         if (m_modelPreset)
         {
+            const AZ::Crc32 saveStateKey(AZStd::string::format("ViewportSettingsInspector::ModelGroup"));
             auto inspectorWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                m_modelPreset.get(), nullptr, m_modelPreset.get()->TYPEINFO_Uuid(), this, groupWidget);
+                m_modelPreset.get(), nullptr, m_modelPreset.get()->TYPEINFO_Uuid(), this, groupWidget, saveStateKey);
 
             groupWidget->layout()->addWidget(inspectorWidget);
         }
@@ -179,8 +182,9 @@ namespace MaterialEditor
 
         if (m_lightingPreset)
         {
+            const AZ::Crc32 saveStateKey(AZStd::string::format("ViewportSettingsInspector::LightingGroup"));
             auto inspectorWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                m_lightingPreset.get(), nullptr, m_lightingPreset.get()->TYPEINFO_Uuid(), this, groupWidget);
+                m_lightingPreset.get(), nullptr, m_lightingPreset.get()->TYPEINFO_Uuid(), this, groupWidget, saveStateKey);
 
             groupWidget->layout()->addWidget(inspectorWidget);
         }

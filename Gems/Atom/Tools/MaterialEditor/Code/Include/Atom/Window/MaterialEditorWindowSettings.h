@@ -29,9 +29,6 @@ namespace MaterialEditor
 
         static void Reflect(AZ::ReflectContext* context);
 
-        bool m_enableGrid = true;
-        bool m_enableShadowCatcher = true;
-        bool m_enableAlternateSkybox = false;
-        float m_fieldOfView = 90.0f;
+        AZStd::vector<char> m_mainWindowState;
     };
 } // namespace MaterialEditor
