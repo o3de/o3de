@@ -695,8 +695,8 @@ namespace AzFramework
             parentId = handler->GetParentId();
         }
 #endif
-
-        AZ::Entity* parentEntity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(parentEntityId);
+        AZ::ComponentApplicationRequests* componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+        AZ::Entity* parentEntity = (componentApplication != nullptr) ? componentApplication->FindEntity(parentEntityId) : nullptr;
         AZ_Assert(parentEntity, "We expect to have a parent entity associated with the provided parent's entity Id.");
         if (parentEntity)
         {
@@ -745,7 +745,8 @@ namespace AzFramework
         m_parentId = parentId;
         if (m_parentId.IsValid())
         {
-            AZ::Entity* parentEntity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(m_parentId);
+            AZ::ComponentApplicationRequests* componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+            AZ::Entity* parentEntity = (componentApplication != nullptr) ? componentApplication->FindEntity(m_parentId) : nullptr;
             m_parentActive = parentEntity && (parentEntity->GetState() == AZ::Entity::State::Active);
 
             m_onNewParentKeepWorldTM = isKeepWorldTM;
