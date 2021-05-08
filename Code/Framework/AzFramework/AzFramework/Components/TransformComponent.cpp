@@ -833,7 +833,11 @@ namespace AzFramework
         EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnTransformChanged, m_localTM, m_worldTM);
         m_transformChangedEvent.Signal(m_localTM, m_worldTM);
 
-        AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->OnTransformUpdated(GetEntity());
+        AzFramework::IEntityBoundsUnion* boundsUnion = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get();
+        if (boundsUnion != nullptr)
+        {
+            boundsUnion->OnTransformUpdated(GetEntity());
+        }
     }
 
     void TransformComponent::ComputeWorldTM()

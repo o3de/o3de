@@ -268,7 +268,11 @@ namespace AzToolsFramework
                     GetEntityId(), &TransformNotification::OnTransformChanged, localTM, worldTM);
                 m_transformChangedEvent.Signal(localTM, worldTM);
 
-                AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->OnTransformUpdated(GetEntity());
+                AzFramework::IEntityBoundsUnion* boundsUnion = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get();
+                if (boundsUnion != nullptr)
+                {
+                    boundsUnion->OnTransformUpdated(GetEntity());
+                }
             }
         }
 
