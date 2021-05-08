@@ -260,14 +260,16 @@ namespace AzToolsFramework
 
         bool PrefabPublicHandler::IsPrefabInInstanceAncestorHierarchy(TemplateId prefabTemplateId, InstanceOptionalConstReference instance)
         {
-            while (instance.has_value())
+            InstanceOptionalConstReference currentInstance = instance;
+
+            while (currentInstance.has_value())
             {
-                if (instance->get().GetTemplateId() == prefabTemplateId)
+                if (currentInstance->get().GetTemplateId() == prefabTemplateId)
                 {
                     return true;
                 }
 
-                instance = instance->get().GetParentInstance();
+                currentInstance = currentInstance->get().GetParentInstance();
             }
 
             return false;
