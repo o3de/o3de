@@ -387,7 +387,7 @@ namespace PhysX
 
     void EditorColliderComponent::Deactivate()
     {
-        Physics::WorldBodyRequestBus::Handler::BusDisconnect();
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         m_colliderDebugDraw.Disconnect();
         AZ::Data::AssetBus::MultiHandler::BusDisconnect();
         m_nonUniformScaleChangedHandler.Disconnect();
@@ -642,7 +642,7 @@ namespace PhysX
 
         m_colliderDebugDraw.ClearCachedGeometry();
 
-        Physics::WorldBodyRequestBus::Handler::BusConnect(GetEntityId());
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 
     AZ::Data::Asset<Pipeline::MeshAsset> EditorColliderComponent::GetMeshAsset() const
@@ -1072,7 +1072,7 @@ namespace PhysX
         return AZ::Aabb::CreateNull();
     }
 
-    AzPhysics::SimulatedBody* EditorColliderComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* EditorColliderComponent::GetSimulatedBody()
     {
         if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
@@ -1082,6 +1082,11 @@ namespace PhysX
             }
         }
         return nullptr;
+    }
+
+    AzPhysics::SimulatedBodyHandle EditorColliderComponent::GetSimulatedBodyHandle() const
+    {
+        return m_editorBodyHandle;
     }
 
     AzPhysics::SceneQueryHit EditorColliderComponent::RayCast(const AzPhysics::RayCastRequest& request)

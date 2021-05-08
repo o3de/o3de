@@ -15,7 +15,7 @@
 #include <AzCore/std/string/string.h>
 
 #include "MobileDetectSpec.h"
-#include "SystemUtilsApple.h"
+#include <AzFramework/Utils/SystemUtilsApple.h>
 
 namespace MobileSysInspect
 {

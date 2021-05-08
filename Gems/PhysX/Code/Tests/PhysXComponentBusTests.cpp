@@ -613,17 +613,17 @@ namespace PhysX
         // Create 3 colliders, one of each type and check that the AABB of their body is the expected
         EntityPtr box = TestUtils::CreateBoxEntity(m_testSceneHandle, AZ::Vector3(0, 0, 0), AZ::Vector3(32, 32, 32));
         AZ::Aabb boxAABB;
-        Physics::WorldBodyRequestBus::EventResult(boxAABB, box->GetId(), &Physics::WorldBodyRequests::GetAabb);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(boxAABB, box->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetAabb);
         EXPECT_TRUE(boxAABB.GetMin().IsClose(AZ::Vector3(-16, -16, -16)) && boxAABB.GetMax().IsClose(AZ::Vector3(16, 16, 16)));
 
         EntityPtr sphere = TestUtils::CreateSphereEntity(m_testSceneHandle, AZ::Vector3(-100, 0, 0), 16);
         AZ::Aabb sphereAABB;
-        Physics::WorldBodyRequestBus::EventResult(sphereAABB, sphere->GetId(), &Physics::WorldBodyRequests::GetAabb);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(sphereAABB, sphere->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetAabb);
         EXPECT_TRUE(sphereAABB.GetMin().IsClose(AZ::Vector3(-16 -100, -16, -16)) && sphereAABB.GetMax().IsClose(AZ::Vector3(16 -100, 16, 16)));
 
         EntityPtr capsule = TestUtils::CreateCapsuleEntity(m_testSceneHandle, AZ::Vector3(100, 0, 0), 128, 16);
         AZ::Aabb capsuleAABB;
-        Physics::WorldBodyRequestBus::EventResult(capsuleAABB, capsule->GetId(), &Physics::WorldBodyRequests::GetAabb);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(capsuleAABB, capsule->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetAabb);
         EXPECT_TRUE(capsuleAABB.GetMin().IsClose(AZ::Vector3(-16 +100, -16, -64)) && capsuleAABB.GetMax().IsClose(AZ::Vector3(16 +100, 16, 64)));
     }
 
@@ -632,17 +632,17 @@ namespace PhysX
         // Create 3 colliders, one of each type and check that the AABB of their body is the expected
         EntityPtr box = TestUtils::CreateStaticBoxEntity(m_testSceneHandle, AZ::Vector3(0, 0, 0), AZ::Vector3(32, 32, 32));
         AZ::Aabb boxAABB;
-        Physics::WorldBodyRequestBus::EventResult(boxAABB, box->GetId(), &Physics::WorldBodyRequests::GetAabb);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(boxAABB, box->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetAabb);
         EXPECT_TRUE(boxAABB.GetMin().IsClose(AZ::Vector3(-16, -16, -16)) && boxAABB.GetMax().IsClose(AZ::Vector3(16, 16, 16)));
 
         EntityPtr sphere = TestUtils::CreateStaticSphereEntity(m_testSceneHandle, AZ::Vector3(-100, 0, 0), 16);
         AZ::Aabb sphereAABB;
-        Physics::WorldBodyRequestBus::EventResult(sphereAABB, sphere->GetId(), &Physics::WorldBodyRequests::GetAabb);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(sphereAABB, sphere->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetAabb);
         EXPECT_TRUE(sphereAABB.GetMin().IsClose(AZ::Vector3(-16 -100, -16, -16)) && sphereAABB.GetMax().IsClose(AZ::Vector3(16 -100, 16, 16)));
 
         EntityPtr capsule = TestUtils::CreateStaticCapsuleEntity(m_testSceneHandle, AZ::Vector3(100, 0, 0), 128, 16);
         AZ::Aabb capsuleAABB;
-        Physics::WorldBodyRequestBus::EventResult(capsuleAABB, capsule->GetId(), &Physics::WorldBodyRequests::GetAabb);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(capsuleAABB, capsule->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetAabb);
         EXPECT_TRUE(capsuleAABB.GetMin().IsClose(AZ::Vector3(-16 +100, -16, -64)) && capsuleAABB.GetMax().IsClose(AZ::Vector3(16 +100, 16, 64)));
     }
 
@@ -662,19 +662,19 @@ namespace PhysX
             request.m_direction = AZ::Vector3(0, 0, -1);
             request.m_distance = 200.f;
 
-            Physics::WorldBodyRequestBus::Event(entity->GetId(), &Physics::WorldBodyRequests::DisablePhysics);
+            AzPhysics::SimulatedBodyComponentRequestsBus::Event(entity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::DisablePhysics);
 
             bool enabled = true;
-            Physics::WorldBodyRequestBus::EventResult(enabled, entity->GetId(), &Physics::WorldBodyRequests::IsPhysicsEnabled);
+            AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(enabled, entity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::IsPhysicsEnabled);
             EXPECT_FALSE(enabled);
 
             AzPhysics::SceneQueryHits result = sceneInterface->QueryScene(sceneHandle, &request);
             EXPECT_FALSE(result);
 
-            Physics::WorldBodyRequestBus::Event(entity->GetId(), &Physics::WorldBodyRequests::EnablePhysics);
+            AzPhysics::SimulatedBodyComponentRequestsBus::Event(entity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::EnablePhysics);
 
             enabled = false;
-            Physics::WorldBodyRequestBus::EventResult(enabled, entity->GetId(), &Physics::WorldBodyRequests::IsPhysicsEnabled);
+            AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(enabled, entity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::IsPhysicsEnabled);
             EXPECT_TRUE(enabled);
 
             result = sceneInterface->QueryScene(sceneHandle, &request);
@@ -718,7 +718,7 @@ namespace PhysX
         request.m_distance = 200.0f;
 
         AzPhysics::SceneQueryHit hit;
-        Physics::WorldBodyRequestBus::EventResult(hit, staticBoxEntity->GetId(), &Physics::WorldBodyRequests::RayCast, request);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(hit, staticBoxEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::RayCast, request);
 
         EXPECT_TRUE(hit);
 
@@ -922,7 +922,7 @@ namespace PhysX
     static const RayCastFunc WorldBodyRaycastEBusCall = []([[maybe_unused]] AZ::EntityId entityId, [[maybe_unused]] const AzPhysics::RayCastRequest& request)
     {
         AzPhysics::SceneQueryHit ret;
-        Physics::WorldBodyRequestBus::EventResult(ret, entityId, &Physics::WorldBodyRequests::RayCast, request);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(ret, entityId, &AzPhysics::SimulatedBodyComponentRequests::RayCast, request);
         return ret;
     };
 
