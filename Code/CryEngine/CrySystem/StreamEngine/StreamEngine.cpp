@@ -1211,20 +1211,9 @@ void CStreamEngine::TempFree(void* p, size_t nSize)
 namespace
 {
 #ifdef STREAMENGINE_ENABLE_STATS
-    void DrawText(const float /*x*/, const float /*y*/, ColorF c, const char* format, ...)
+    void DrawText(const float, const float, ColorF, const char*, ...)
     {
-        va_list args;
-        va_start(args, format);
-
-        SDrawTextInfo ti;
-        ti.flags = eDrawText_FixedSize | eDrawText_2D | eDrawText_Monospace;
-        ti.xscale = ti.yscale = 1.2f;
-        ti.color[0] = c.r;
-        ti.color[1] = c.g;
-        ti.color[2] = c.b;
-        ti.color[3] = c.a;
-        // ToDo: Draw with Atom? Think this whole system is dead anyway though.
-        va_end(args);
+        // ToDo: Remove whole file with SPEC-343, or update to draw with Atom? Likely the former as I think this whole system is dead.
     }
 #endif
 

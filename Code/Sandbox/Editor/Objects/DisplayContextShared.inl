@@ -37,7 +37,7 @@ DisplayContext::DisplayContext()
 
     m_currentMatrix = 0;
     m_matrixStack[m_currentMatrix].SetIdentity();
-    pRenderAuxGeom = nullptr; // ToDo: With Atom.
+    pRenderAuxGeom = nullptr; // ToDo: Remove DisplayContext or update to work with Atom: LYN-3670
     m_thickness = 0;
 
     m_width = 0;

@@ -150,7 +150,7 @@ void QTopRendererWnd::UpdateContent(int flags)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void QTopRendererWnd::Draw(DisplayContext& /*dc*/)
+void QTopRendererWnd::Draw([[maybe_unused]] DisplayContext& dc)
 {
     FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
 
@@ -165,7 +165,7 @@ void QTopRendererWnd::Draw(DisplayContext& /*dc*/)
     ////////////////////////////////////////////////////////////////////////
     // Render the 2D map
     ////////////////////////////////////////////////////////////////////////
-    // ToDo: With Atom?
+     // ToDo: Remove TopRendererWnd or update to work with Atom: LYN-3671
     /*if (!m_terrainTextureId)
     {
         //GL_BGRA_EXT

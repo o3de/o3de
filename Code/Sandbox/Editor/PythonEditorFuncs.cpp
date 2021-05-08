@@ -607,7 +607,7 @@ namespace
         }
         else
         {
-            // ToDo: With Atom?
+            // ToDo: Remove function or update to work With Atom? LYN-3672
             // float color[] = {r, g, b, a};
             // ???->Draw2dLabel(x, y, size, color, false, pLabel);
         }
