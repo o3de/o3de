@@ -9,13 +9,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-ly_add_bundle_resources(
-    TARGET Editor
-    FILES
-        ${CMAKE_SOURCE_DIR}/Code/Tools/RC/Config/rc/xmlfilter.txt
-        ${CMAKE_SOURCE_DIR}/Code/Tools/RC/Config/rc/rc.ini
-)
-
 # Set resources directory for app icons
 target_sources(Editor PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Images.xcassets)
 set_target_properties(Editor PROPERTIES

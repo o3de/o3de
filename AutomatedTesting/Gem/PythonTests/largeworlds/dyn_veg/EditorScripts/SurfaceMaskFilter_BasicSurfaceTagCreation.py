@@ -15,7 +15,7 @@ import sys
 import azlmbr.surface_data as surface_data
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 
 class TestSurfaceMaskFilter_BasicSurfaceTagCreation(EditorTestHelper):

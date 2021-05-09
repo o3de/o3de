@@ -73,6 +73,9 @@ namespace AZ
 
             bool RequiresShapeComponent() const;
 
+            //! Returns true if the light type is anything other than unknown.
+            bool LightTypeIsSelected() const;
+
             //! Returns true if m_attenuationRadiusMode is set to LightAttenuationRadiusMode::Automatic
             bool IsAttenuationRadiusModeAutomatic() const;
 

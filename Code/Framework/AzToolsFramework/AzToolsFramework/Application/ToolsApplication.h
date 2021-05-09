@@ -101,6 +101,7 @@ namespace AzToolsFramework
         SourceControlFileInfo GetSceneSourceControlInfo() override;
 
         bool AreAnyEntitiesSelected() override { return !m_selectedEntities.empty(); }
+        int GetSelectedEntitiesCount() override { return m_selectedEntities.size(); }
         const EntityIdList& GetSelectedEntities() override { return m_selectedEntities; }
         const EntityIdList& GetHighlightedEntities() override { return m_highlightedEntities; }
         void SetSelectedEntities(const EntityIdList& selectedEntities) override;
@@ -150,8 +151,6 @@ namespace AzToolsFramework
         void EnterEditorIsolationMode() override;
         void ExitEditorIsolationMode() override;
         bool IsEditorInIsolationMode() override;
-        const char* GetEngineRootPath() const override;
-        const char* GetEngineVersion() const override;
 
         void CreateAndAddEntityFromComponentTags(const AZStd::vector<AZ::Crc32>& requiredTags, const char* entityName) override;
 
@@ -174,7 +173,6 @@ namespace AzToolsFramework
 
         void CreateUndosForDirtyEntities();
         void ConsistencyCheckUndoCache();
-        void InitializeEngineConfig();
         AZ::Aabb                            m_selectionBounds;
         EntityIdList                        m_selectedEntities;
         EntityIdList                        m_highlightedEntities;
@@ -185,9 +183,6 @@ namespace AzToolsFramework
         bool                                m_isDuringUndoRedo;
         bool                                m_isInIsolationMode;
         EntityIdSet                         m_isolatedEntityIdSet;
-
-        class EngineConfigImpl;
-        AZStd::unique_ptr<EngineConfigImpl> m_engineConfigImpl;
 
         EditorEntityAPI* m_editorEntityAPI = nullptr;
 

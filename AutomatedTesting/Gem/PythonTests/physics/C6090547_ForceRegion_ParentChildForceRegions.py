@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C6090547
 # Test Case Title : Check that force regions in parent and child entities work together.
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/6090547
+
 
 
 # fmt: off
@@ -81,13 +81,12 @@ def C6090547_ForceRegion_ParentChildForceRegions():
 
     imports.init()
 
-
     import azlmbr.legacy.general as general
     import azlmbr.bus
     import azlmbr.math as lymath
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     # Constants
     TIMEOUT = 3.0
@@ -207,5 +206,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C6090547_ForceRegion_ParentChildForceRegions)

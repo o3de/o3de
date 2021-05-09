@@ -349,6 +349,11 @@ namespace AzToolsFramework
         virtual bool AreAnyEntitiesSelected() = 0;
 
         /*!
+         * Returns the number of selected entities.
+         */
+        virtual int GetSelectedEntitiesCount() = 0;
+
+        /*!
          * Retrieves the set of selected entities.
          * \return a list of entity Ids.
          */
@@ -577,16 +582,6 @@ namespace AzToolsFramework
          * /return boolean indicating if the editor is currently in Isolation Mode
          */
         virtual bool IsEditorInIsolationMode() = 0;
-
-        /*!
-        * Get the engine root path that the current tool is running under.  
-        */
-        virtual const char* GetEngineRootPath() const = 0;
-
-        /**
-        * Get the version of the engine the current tools application is running under
-        */
-        virtual const char* GetEngineVersion() const = 0;
 
         /**
         * Creates and adds a new entity to the tools application from components which match at least one of the requiredTags
@@ -824,8 +819,6 @@ namespace AzToolsFramework
 
         /// Hide or show the circular dependency error when saving slices
         virtual void SetShowCircularDependencyError(const bool& /*showCircularDependencyError*/) {}
-
-        virtual void SetEditTool(const char* /*tool*/) {}
 
         /// Launches the Lua editor and opens the specified (space separated) files.
         virtual void LaunchLuaEditor(const char* /*files*/) {}

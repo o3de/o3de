@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C5968759
 # Test Case Title : Check nested force regions exert forces simultaneously on rigid body
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5968759
+
 
 # fmt: off
 class Tests:
@@ -67,7 +67,8 @@ def C5968759_ForceRegion_ExertsSeveralForcesOnRigidBody():
     import azlmbr.legacy.general as general
     import azlmbr.bus as bus
     import azlmbr.physics
-    from utils import Report, TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     # Constants
     TIME_OUT = 6.0  # Second to wait before timing out
@@ -181,5 +182,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C5968759_ForceRegion_ExertsSeveralForcesOnRigidBody)

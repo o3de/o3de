@@ -8,7 +8,7 @@
  remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
-
+import re
 from aws_cdk import core
 
 
@@ -21,7 +21,9 @@ def format_aws_resource_id(feature_name: str, project_name: str, env: core.Envir
 
 
 def format_aws_resource_sid(feature_name: str, project_name: str, resource_type: str):
-    return f'{project_name}{feature_name}{resource_type}SId'
+    sid = f'{project_name}{feature_name}{resource_type}SId'
+    # Strip out all chars not valid in a sid
+    return re.sub(r'[^a-zA-Z0-9]', '', sid)
 
 
 def format_aws_resource_authenticated_id(feature_name: str, project_name: str, env: core.Environment,

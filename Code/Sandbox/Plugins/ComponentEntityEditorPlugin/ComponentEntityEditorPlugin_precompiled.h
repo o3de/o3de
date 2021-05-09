@@ -21,7 +21,6 @@
 #include <ISerialize.h>
 #include <CryName.h>
 #include <EditorDefs.h>
-#include <EditTool.h>
 #include <Resource.h>
 
 /////////////////////////////////////////////////////////////////////////////

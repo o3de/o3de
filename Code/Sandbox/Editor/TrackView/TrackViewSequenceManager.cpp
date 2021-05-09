@@ -27,7 +27,6 @@
 #include "AnimationContext.h"
 #include "GameEngine.h"
 #include "Include/IObjectManager.h"
-#include "Material/MaterialManager.h"
 #include "Objects/ObjectManager.h"
 
 
@@ -35,7 +34,6 @@
 CTrackViewSequenceManager::CTrackViewSequenceManager()
 {
     GetIEditor()->RegisterNotifyListener(this);
-    GetIEditor()->GetMaterialManager()->AddListener(this);
 
     AZ::EntitySystemBus::Handler::BusConnect();
 }
@@ -45,7 +43,6 @@ CTrackViewSequenceManager::~CTrackViewSequenceManager()
 {
     AZ::EntitySystemBus::Handler::BusDisconnect();
 
-    GetIEditor()->GetMaterialManager()->RemoveListener(this);
     GetIEditor()->UnregisterNotifyListener(this);
 }
 

@@ -16,7 +16,7 @@ import logging
 # Bail on the test if ly_test_tools doesn't exist.
 pytest.importorskip("ly_test_tools")
 import ly_test_tools.environment.file_system as file_system
-import automatedtesting_shared.hydra_test_utils as hydra
+import editor_python_test_tools.hydra_test_utils as hydra
 
 logger = logging.getLogger(__name__)
 test_directory = os.path.join(os.path.dirname(__file__), "EditorScripts")
@@ -38,6 +38,7 @@ class TestMeshSurfaceTagEmitter(object):
 
     @pytest.mark.test_case_id("C2908172")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_surfacetagemitter
     def test_MeshSurfaceTagEmitter_DependentOnMeshComponent(self, request, editor, level, launcher_platform):
 
         expected_lines = [
@@ -66,6 +67,7 @@ class TestMeshSurfaceTagEmitter(object):
 
     @pytest.mark.test_case_id("C2908174")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_surfacetagemitter
     def test_MeshSurfaceTagEmitter_SurfaceTagsAddRemoveSuccessfully(self, request, editor, level, launcher_platform):
 
         expected_lines = [

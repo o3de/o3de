@@ -69,7 +69,6 @@ void CShadowsSetupNode::Animate(SAnimContext& ac)
     {
         bool val(false);
         pGsmCache->GetValue(ac.time, val);
-        gEnv->p3DEngine->SetShadowsGSMCache(val);
     }
 }
 
@@ -82,7 +81,6 @@ void CShadowsSetupNode::CreateDefaultTracks()
 //-----------------------------------------------------------------------------
 void CShadowsSetupNode::OnReset()
 {
-    gEnv->p3DEngine->SetShadowsGSMCache(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -117,8 +115,11 @@ bool CShadowsSetupNode::GetParamInfoFromType(const CAnimParamType& paramId, SPar
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CShadowsSetupNode::Reflect(AZ::SerializeContext* serializeContext)
+void CShadowsSetupNode::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CShadowsSetupNode, CAnimNode>()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CShadowsSetupNode, CAnimNode>()
+            ->Version(1);
+    }
 }

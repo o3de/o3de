@@ -32,7 +32,8 @@ include(cmake/LySet.cmake)
 # also allowed:
 # "s3://bucketname" (it will use LYPackage_S3Downloader.cmake to download it from a s3 bucket)
 
-set(LY_PACKAGE_SERVER_URLS "" CACHE STRING "Server URLS to fetch packages from")
+# https://d2c171ws20a1rv.cloudfront.net will be the current "production" CDN until formally moved to the public O3DE repo
+set(LY_PACKAGE_SERVER_URLS "https://d2c171ws20a1rv.cloudfront.net" CACHE STRING "Server URLS to fetch packages from")
 # Note: if you define the "LY_PACKAGE_SERVER_URLS" environment variable
 # it will be added to this value in the front, so that users can set
 # an env var and use that as an "additional" set of servers beyond the default set.
@@ -621,7 +622,6 @@ endfunction()
 # - this waill cause it to automatically download and activate this package if it finds a target that
 # depends on '3rdParty::zlib' in its runtime or its build time dependency list.
 # - note that '3rdParty' is implied, do not specify it in the TARGETS list.
-
 function(ly_associate_package)
     set(_oneValueArgs PACKAGE_NAME PACKAGE_HASH)
     set(_multiValueArgs TARGETS)
@@ -643,6 +643,9 @@ function(ly_associate_package)
         set_property(GLOBAL PROPERTY LY_PACKAGE_ASSOCIATION_${find_package_name} ${ly_associate_package_PACKAGE_NAME})
         set_property(GLOBAL PROPERTY LY_PACKAGE_HASH_${ly_associate_package_PACKAGE_NAME} ${ly_associate_package_PACKAGE_HASH})
     endforeach()
+
+    set_property(GLOBAL APPEND PROPERTY LY_PACKAGE_NAMES ${ly_associate_package_PACKAGE_NAME})
+    set_property(GLOBAL PROPERTY LY_PACKAGE_TARGETS_${ly_associate_package_PACKAGE_NAME} ${ly_associate_package_TARGETS})
 endfunction()
 
 #!  Given a package find_package name (eg, 'zlib' not the actual package name)

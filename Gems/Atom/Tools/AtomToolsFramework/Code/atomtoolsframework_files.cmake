@@ -10,6 +10,9 @@
 #
 
 set(FILES
+    Include/AtomToolsFramework/Communication/LocalServer.h
+    Include/AtomToolsFramework/Communication/LocalSocket.h
+    Include/AtomToolsFramework/Debug/TraceRecorder.h
     Include/AtomToolsFramework/DynamicProperty/DynamicProperty.h
     Include/AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h
     Include/AtomToolsFramework/Inspector/InspectorWidget.h
@@ -21,6 +24,9 @@ set(FILES
     Include/AtomToolsFramework/Util/MaterialPropertyUtil.h
     Include/AtomToolsFramework/Util/Util.h
     Include/AtomToolsFramework/Viewport/RenderViewportWidget.h
+    Source/Communication/LocalServer.cpp
+    Source/Communication/LocalSocket.cpp
+    Source/Debug/TraceRecorder.cpp
     Source/DynamicProperty/DynamicProperty.cpp
     Source/DynamicProperty/DynamicPropertyGroup.cpp
     Source/Inspector/InspectorWidget.cpp

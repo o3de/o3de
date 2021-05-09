@@ -17,6 +17,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzToolsFramework/Viewport/ViewportTypes.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 #include <Cry_Color.h>
 #include "IPostRenderer.h"
@@ -45,7 +46,6 @@ struct DisplayContext;
 class CCryEditDoc;
 class CLayoutViewPane;
 class CViewManager;
-class CEditTool;
 class CBaseObjectsCache;
 struct HitContext;
 struct IRenderListener;
@@ -255,8 +255,6 @@ public:
     virtual void SetSupplementaryCursorStr(const QString& str) = 0;
     virtual void SetCursorString(const QString& str) = 0;
 
-    virtual CEditTool* GetEditTool() = 0;
-
     virtual void SetFocus() = 0;
     virtual void Invalidate(BOOL bErase = 1) = 0;
 
@@ -408,6 +406,12 @@ public:
 
     void SetAxisConstrain(int axis);
 
+    /// Take raw input and create a final mouse interaction.
+    /// @attention Do not map **point** from widget to viewport explicitly,
+    /// this is handled internally by BuildMouseInteraction - just pass directly.
+    virtual AzToolsFramework::ViewportInteraction::MouseInteraction BuildMouseInteraction(
+        Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, const QPoint& point);
+
     //////////////////////////////////////////////////////////////////////////
     // Selection.
     //////////////////////////////////////////////////////////////////////////
@@ -487,10 +491,6 @@ public:
     virtual void SetCursorString(const QString& cursorString);
     void ResetCursor();
     void SetSupplementaryCursorStr(const QString& str);
-
-    virtual CEditTool* GetEditTool();
-    // Assign an edit tool to viewport
-    virtual void SetEditTool(CEditTool* pEditTool, bool bLocalToViewport = false);
 
     //////////////////////////////////////////////////////////////////////////
     // Return visble objects cache.
@@ -626,8 +626,6 @@ protected:
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     // Same construction matrix is shared by all viewports.
     Matrix34 m_constructionMatrix[LAST_COORD_SYSTEM];
-
-    QPointer<CEditTool> m_pLocalEditTool;
 
     std::vector<IRenderListener*>           m_cRenderListeners;
 

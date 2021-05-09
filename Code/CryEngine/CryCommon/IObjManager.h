@@ -202,7 +202,6 @@ struct IObjManager
 
     // time counters
     virtual bool IsAfterWater(const Vec3& vPos, const SRenderingPassInfo& passInfo) = 0;
-    virtual void GetObjectsStreamingStatus(I3DEngine::SObjectsStreamingStatus& outStatus) = 0;
     virtual void FreeNotUsedCGFs() = 0;
     virtual void MakeUnitCube() = 0;
 

@@ -41,7 +41,7 @@ namespace ScriptCanvas
                         {
                             editContext->Class<CRC>("CRC", "A CRC value")
                                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                                ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/CRC.png")
+                                ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/CRC.png")
                                 ;
                         }
                     }

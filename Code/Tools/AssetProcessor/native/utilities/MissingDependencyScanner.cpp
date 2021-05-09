@@ -20,30 +20,32 @@ AZ_POP_DISABLE_WARNING
 #include "native/AssetDatabase/AssetDatabase.h"
 #include "native/assetprocessor.h"
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/wildcard.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzCore/XML/rapidxml.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/FileTag/FileTag.h>
 #include <AzFramework/FileTag/FileTagBus.h>
-#include <AzFramework/IO/LocalFileIO.h>
 
 namespace AssetProcessor
 {
-    const char* EngineFolder = "Engine";
+    constexpr auto EngineFolder = AZ::IO::FixedMaxPath("Assets") / "Engine";
 
     AZStd::string GetXMLDependenciesFile(const AZStd::string& fullPath, const AZStd::vector<AzFramework::GemInfo>& gemInfoList, AZStd::string& tokenName)
     {
         AZ::IO::Path xmlDependenciesFileFullPath;
-        tokenName = EngineFolder;
+        tokenName = EngineFolder.String();
         for (const AzFramework::GemInfo& gemElement : gemInfoList)
         {
             for (const AZ::IO::Path& absoluteSourcePath : gemElement.m_absoluteSourcePaths)
             {
-                if (AZ::StringFunc::StartsWith(fullPath, absoluteSourcePath.Native()) || AZ::StringFunc::Equal(absoluteSourcePath.Native(), fullPath))
+                if (AZ::IO::PathView(fullPath).IsRelativeTo(absoluteSourcePath))
                 {
+                    xmlDependenciesFileFullPath = absoluteSourcePath;
                     xmlDependenciesFileFullPath /= AzFramework::GemInfo::GetGemAssetFolder();
                     xmlDependenciesFileFullPath /= AZStd::string::format("%s_Dependencies.xml", gemElement.m_gemName.c_str());;
                     if (AZ::IO::FileIOBase::GetInstance()->Exists(xmlDependenciesFileFullPath.c_str()))
@@ -57,7 +59,7 @@ namespace AssetProcessor
 
         // if we are here than either the %gemName%_Dependencies.xml file does not exists or the user inputted path is not inside a gems folder,
         // in both the cases we will return the engine dependencies file
-        xmlDependenciesFileFullPath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devroot@");
+        xmlDependenciesFileFullPath = AZ::Utils::GetEnginePath();
         xmlDependenciesFileFullPath /= EngineFolder;
         xmlDependenciesFileFullPath /= "Engine_Dependencies.xml";
 

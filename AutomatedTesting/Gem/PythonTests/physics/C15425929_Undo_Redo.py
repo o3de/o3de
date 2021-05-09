@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C15425929
 # Test Case Title : Verify that undo - redo operations do not create any error
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/15425929
+
 
 
 # fmt: off
@@ -53,10 +53,9 @@ def C15425929_Undo_Redo():
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
-    from utils import Tracer
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
+    from editor_python_test_tools.utils import Tracer
 
     import azlmbr.legacy.general as general
 
@@ -99,5 +98,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C15425929_Undo_Redo)

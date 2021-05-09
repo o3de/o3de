@@ -55,6 +55,16 @@ namespace PhysX
             }
         }
 
+        if (classElement.GetVersion() < 3)
+        {
+            int ragdollElementIndex = classElement.FindElement(AZ_CRC_CE("PhysXRagdoll"));
+
+            if (ragdollElementIndex >= 0)
+            {
+                classElement.RemoveElement(ragdollElementIndex);
+            }
+        }
+
         return true;
     }
 
@@ -66,8 +76,7 @@ namespace PhysX
         if (serializeContext)
         {
             serializeContext->Class<RagdollComponent, AZ::Component>()
-                ->Version(2, &VersionConverter)
-                ->Field("PhysXRagdoll", &RagdollComponent::m_ragdoll)
+                ->Version(3, &VersionConverter)
                 ->Field("PositionIterations", &RagdollComponent::m_positionIterations)
                 ->Field("VelocityIterations", &RagdollComponent::m_velocityIterations)
                 ->Field("EnableJointProjection", &RagdollComponent::m_enableJointProjection)
@@ -82,8 +91,8 @@ namespace PhysX
                     "PhysX Ragdoll", "Provides simulation of characters in PhysX.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/PhysXRagdoll.svg")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/PhysXRagdoll.svg")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRagdoll.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/PhysXRagdoll.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RagdollComponent::m_positionIterations, "Position Iteration Count",
@@ -187,7 +196,7 @@ namespace PhysX
 
     Physics::Ragdoll* RagdollComponent::GetRagdoll()
     {
-        return m_ragdoll.get();
+        return m_ragdoll;
     }
 
     void RagdollComponent::GetState(Physics::RagdollState& ragdollState) const
@@ -248,9 +257,18 @@ namespace PhysX
         return AZ::Aabb::CreateNull();
     }
 
-    AzPhysics::SimulatedBody* RagdollComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* RagdollComponent::GetSimulatedBody()
     {
-        return m_ragdoll.get();
+        return GetRagdoll();
+    }
+
+    AzPhysics::SimulatedBodyHandle RagdollComponent::GetSimulatedBodyHandle() const
+    {
+        if (m_ragdoll)
+        {
+            return m_ragdoll->m_bodyHandle;
+        }
+        return AzPhysics::InvalidSimulatedBodyHandle;
     }
 
     AzPhysics::SceneQueryHit RagdollComponent::RayCast(const AzPhysics::RayCastRequest& request)
@@ -283,8 +301,8 @@ namespace PhysX
             return;
         }
 
-        ParentIndices parentIndices;
-        parentIndices.resize(numNodes);
+        
+        ragdollConfiguration.m_parentIndices.resize(numNodes);
         for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
         {
             AZStd::string parentName;
@@ -292,7 +310,7 @@ namespace PhysX
             AzFramework::CharacterPhysicsDataRequestBus::EventResult(parentName, GetEntityId(),
                 &AzFramework::CharacterPhysicsDataRequests::GetParentNodeName, nodeName);
             AZ::Outcome<size_t> parentIndex = Utils::Characters::GetNodeIndex(ragdollConfiguration, parentName);
-            parentIndices[nodeIndex] = parentIndex ? parentIndex.GetValue() : SIZE_MAX;
+            ragdollConfiguration.m_parentIndices[nodeIndex] = parentIndex ? parentIndex.GetValue() : SIZE_MAX;
 
             ragdollConfiguration.m_nodes[nodeIndex].m_entityId = GetEntityId();
         }
@@ -303,12 +321,17 @@ namespace PhysX
 
         AZ::Transform entityTransform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(entityTransform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-        Physics::RagdollState bindPoseWorld = GetBindPoseWorld(bindPose, entityTransform);
+        ragdollConfiguration.m_initialState = GetBindPoseWorld(bindPose, entityTransform);
 
         AzPhysics::SceneHandle defaultSceneHandle = AzPhysics::InvalidSceneHandle;
         Physics::DefaultWorldBus::BroadcastResult(defaultSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
-        m_ragdoll = Utils::Characters::CreateRagdoll(ragdollConfiguration, bindPoseWorld, parentIndices, defaultSceneHandle);
-        if (!m_ragdoll)
+
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            AzPhysics::SimulatedBodyHandle bodyHandle = sceneInterface->AddSimulatedBody(defaultSceneHandle, &ragdollConfiguration);
+            m_ragdoll = azdynamic_cast<PhysX::Ragdoll*>(sceneInterface->GetSimulatedBodyFromHandle(defaultSceneHandle, bodyHandle));
+        }
+        if (m_ragdoll == nullptr)
         {
             AZ_Error("PhysX Ragdoll Component", false, "Failed to create ragdoll.");
             return;
@@ -343,7 +366,7 @@ namespace PhysX
         }
 
         AzFramework::RagdollPhysicsRequestBus::Handler::BusConnect(GetEntityId());
-        Physics::WorldBodyRequestBus::Handler::BusConnect(GetEntityId());
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
 
         AzFramework::RagdollPhysicsNotificationBus::Event(GetEntityId(),
             &AzFramework::RagdollPhysicsNotifications::OnRagdollActivated);
@@ -353,12 +376,15 @@ namespace PhysX
     {
         if (m_ragdoll)
         {
-            Physics::WorldBodyRequestBus::Handler::BusDisconnect();
             AzFramework::RagdollPhysicsRequestBus::Handler::BusDisconnect();
             AzFramework::RagdollPhysicsNotificationBus::Event(GetEntityId(),
                 &AzFramework::RagdollPhysicsNotifications::OnRagdollDeactivated);
 
-            m_ragdoll.reset();
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                sceneInterface->RemoveSimulatedBody(m_ragdoll->m_sceneOwner, m_ragdoll->m_bodyHandle);
+            }
+            m_ragdoll = nullptr;
         }
     }
 

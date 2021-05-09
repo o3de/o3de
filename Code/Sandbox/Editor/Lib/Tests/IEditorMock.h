@@ -20,7 +20,7 @@ class CEditorMock
     : public IEditor
 {
 public:
-    // GMock does not work with a variadic function (https://github.com/google/googlemock/blob/master/googlemock/docs/FrequentlyAskedQuestions.md)
+    // GMock does not work with a variadic function
     void ExecuteCommand(const char* sCommand, ...) override
     {
         va_list args;
@@ -32,7 +32,6 @@ public:
 public:
     MOCK_METHOD0(DeleteThis, void());
     MOCK_METHOD0(GetSystem, ISystem*());
-    MOCK_METHOD0(Get3DEngine, I3DEngine* ());
     MOCK_METHOD0(GetRenderer, IRenderer* ());
     MOCK_METHOD0(GetClassFactory, IEditorClassFactory* ());
     MOCK_METHOD0(GetCommandManager, CEditorCommandManager*());
@@ -90,16 +89,11 @@ public:
     MOCK_METHOD0(IsSelectionLocked, bool());
     MOCK_METHOD0(GetObjectManager, struct IObjectManager* ());
     MOCK_METHOD0(GetSettingsManager, CSettingsManager* ());
-    MOCK_METHOD4(PickObject, void(IPickObjectCallback*,const QMetaObject*,const char* ,bool bMultipick));
-    MOCK_METHOD0(CancelPick, void());
-    MOCK_METHOD0(IsPicking, bool());
     MOCK_METHOD1(GetDBItemManager, IDataBaseManager* (EDataBaseItemType));
-    MOCK_METHOD0(GetMaterialManager, CMaterialManager* ());
     MOCK_METHOD0(GetMaterialManagerLibrary, IBaseLibraryManager* ()); 
     MOCK_METHOD0(GetIEditorMaterialManager, IEditorMaterialManager* ()); 
     MOCK_METHOD0(GetIconManager, IIconManager* ());
     MOCK_METHOD0(GetMusicManager, CMusicManager* ());
-    MOCK_METHOD0(GetLensFlareManager, CLensFlareManager* ());
     MOCK_METHOD2(GetTerrainElevation, float(float , float ));
     MOCK_METHOD0(GetVegetationMap, class CVegetationMap* ());
     MOCK_METHOD0(GetEditorQtApplication, Editor::EditorQtApplication* ());
@@ -126,12 +120,6 @@ public:
     MOCK_METHOD0(GetRuler, CRuler* ());
     MOCK_METHOD1(SetOperationMode, void(EOperationMode ));
     MOCK_METHOD0(GetOperationMode, EOperationMode());
-    MOCK_METHOD1(SetEditMode, void(int ));
-    MOCK_METHOD0(GetEditMode, int());
-    MOCK_METHOD2(SetEditTool, void(CEditTool*, bool));
-    MOCK_METHOD2(SetEditTool, void(const QString&, bool));
-    MOCK_METHOD0(ReinitializeEditTool, void());
-    MOCK_METHOD0(GetEditTool, CEditTool* ());
     MOCK_METHOD1(ShowTransformManipulator, ITransformManipulator* (bool));
     MOCK_METHOD0(GetTransformManipulator, ITransformManipulator* ());
     MOCK_METHOD1(SetAxisConstraints, void(AxisConstrains ));
@@ -144,7 +132,6 @@ public:
     MOCK_METHOD0(GetReferenceCoordSys, RefCoordSys());
     MOCK_METHOD1(FindTemplate, XmlNodeRef(const QString& ));
     MOCK_METHOD2(AddTemplate, void(const QString& , XmlNodeRef& ));
-    MOCK_METHOD1(OpenMaterialLibrary, void (IDataBaseItem*));
     MOCK_METHOD2(OpenView, const QtViewPane* (QString , bool ));
     MOCK_METHOD1(FindView, QWidget* (QString ));
     MOCK_METHOD1(CloseView, bool(const char* ));
@@ -203,14 +190,12 @@ public:
     MOCK_METHOD0(GetBackgroundScheduleManager, struct IBackgroundScheduleManager* ());
     MOCK_METHOD1(ShowStatusText, void(bool ));
     MOCK_METHOD1(RegisterObjectContextMenuExtension, void(TContextMenuExtensionFunc ));
-    MOCK_METHOD1(SetCurrentMissionTime, void(float ));
     MOCK_METHOD0(GetEnv, SSystemGlobalEnvironment* ());
     MOCK_METHOD0(GetImageUtil, IImageUtil* ());
     MOCK_METHOD0(GetEditorSettings, SEditorSettings* ());
     MOCK_METHOD0(GetLogFile, ILogFile* ());  
     MOCK_METHOD0(UnloadPlugins, void());
     MOCK_METHOD0(LoadPlugins, void());
-    MOCK_CONST_METHOD0(IsNewViewportInteractionModelEnabled, bool());
     MOCK_METHOD1(GetSearchPath, QString(EEditorPathName));
     MOCK_METHOD0(GetEditorPanelUtils, IEditorPanelUtils* ());
 

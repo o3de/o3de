@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C14976307
 # Test Case Title : Check that Set Gravity Enabled works on an entity with gravity that starts as disabled
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/14976307
+
 
 
 # fmt: off
@@ -69,9 +69,8 @@ def C14976307_Gravity_SetGravityWorks():
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -130,5 +129,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C14976307_Gravity_SetGravityWorks)

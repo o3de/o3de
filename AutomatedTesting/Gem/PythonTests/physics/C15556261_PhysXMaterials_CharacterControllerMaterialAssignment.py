@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C15556261
 # Test Case Title : Check that the material assignment works with Character Controller
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/15556261
+
 
 
 # fmt: off
@@ -88,8 +88,8 @@ def C15556261_PhysXMaterials_CharacterControllerMaterialAssignment():
 
     imports.init()
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
     import azlmbr.legacy.general as general
     import azlmbr.bus
 
@@ -209,5 +209,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C15556261_PhysXMaterials_CharacterControllerMaterialAssignment)

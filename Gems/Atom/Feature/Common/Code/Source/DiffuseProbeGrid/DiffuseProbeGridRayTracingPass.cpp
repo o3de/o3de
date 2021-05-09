@@ -291,6 +291,19 @@ namespace AZ
 
                     frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
                 }
+
+                // probe classification
+                {
+                    [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetClassificationImageAttachmentId(), diffuseProbeGrid->GetClassificationImage());
+                    AZ_Assert(result == RHI::ResultCode::Success, "Failed to import probeClassificationImage");
+
+                    RHI::ImageScopeAttachmentDescriptor desc;
+                    desc.m_attachmentId = diffuseProbeGrid->GetClassificationImageAttachmentId();
+                    desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeClassificationImageViewDescriptor;
+                    desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
+
+                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
+                }
             }
         }
 

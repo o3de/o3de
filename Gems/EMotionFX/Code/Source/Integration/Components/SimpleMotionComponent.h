@@ -46,7 +46,7 @@ namespace EMotionFX
             struct Configuration
             {
                 AZ_TYPE_INFO(Configuration, "{DA661C5F-E79E-41C3-B055-5F5A4E353F84}")
-                    Configuration();
+                Configuration();
 
                 AZ::Data::Asset<MotionAsset>         m_motionAsset;             ///< Assigned motion asset
                 bool                                 m_loop;                    ///< Toggles looping of the motion
@@ -56,7 +56,8 @@ namespace EMotionFX
                 float                                m_playspeed;               ///< Determines the rate at which the motion is played
                 float                                m_blendInTime;             ///< Determines the blend in time in seconds.
                 float                                m_blendOutTime;            ///< Determines the blend out time in seconds.
-                bool                                 m_playOnActivation;                 ///< Determines if the motion should be played immediately
+                bool                                 m_playOnActivation;        ///< Determines if the motion should be played immediately
+                bool                                 m_inPlace;                 ///< Determines if the motion should be played in-place.
 
                 static void Reflect(AZ::ReflectContext* context);
             };
@@ -121,7 +122,7 @@ namespace EMotionFX
 
             void RemoveMotionInstanceFromActor(EMotionFX::MotionInstance* motionInstance);
 
-            static EMotionFX::MotionInstance* PlayMotionInternal(const EMotionFX::ActorInstance* actorInstance, const SimpleMotionComponent::Configuration& cfg, bool deleteOnZeroWeight, bool inPlace);
+            static EMotionFX::MotionInstance* PlayMotionInternal(const EMotionFX::ActorInstance* actorInstance, const SimpleMotionComponent::Configuration& cfg, bool deleteOnZeroWeight);
 
             Configuration                               m_configuration;        ///< Component configuration.
             EMotionFXPtr<EMotionFX::ActorInstance>      m_actorInstance;        ///< Associated actor instance (retrieved from Actor Component).

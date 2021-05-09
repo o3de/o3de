@@ -63,13 +63,13 @@ namespace AZ
             static AssetTrackingImpl* GetSharedInstance();
             static ThreadData& GetSharedThreadData();
 
-            using MasterAssets = AZStd::unordered_map<AssetTrackingId, AssetMasterInfo, AZStd::hash<AssetTrackingId>, AZStd::equal_to<AssetTrackingId>, AZStdAssetTrackingAllocator>;
+            using PrimaryAssets = AZStd::unordered_map<AssetTrackingId, AssetPrimaryInfo, AZStd::hash<AssetTrackingId>, AZStd::equal_to<AssetTrackingId>, AZStdAssetTrackingAllocator>;
             using ThreadData = ThreadData;
             using mutex_type = AZStd::mutex;
             using lock_type = AZStd::lock_guard<mutex_type>;
 
             mutex_type m_mutex;
-            MasterAssets m_masterAssets;
+            PrimaryAssets m_primaryAssets;
             AssetTreeNodeBase* m_assetRoot = nullptr;
             AssetAllocationTableBase* m_allocationTable = nullptr;
             bool m_performingAnalysis = false;
@@ -118,7 +118,7 @@ namespace AZ
             auto& threadData = GetSharedThreadData();
             AssetTreeNodeBase* parentAsset = threadData.m_currentAssetStack.empty() ? nullptr : threadData.m_currentAssetStack.back();
             AssetTreeNodeBase* childAsset;
-            AssetMasterInfo* assetMasterInfo;
+            AssetPrimaryInfo* assetPrimaryInfo;
 
             if (!parentAsset)
             {
@@ -128,22 +128,22 @@ namespace AZ
             {
                 lock_type lock(m_mutex);
 
-                // Locate or create the master record for this asset
-                auto masterItr = m_masterAssets.find(assetId);
+                // Locate or create the primary record for this asset
+                auto primaryItr = m_primaryAssets.find(assetId);
 
-                if (masterItr != m_masterAssets.end())
+                if (primaryItr != m_primaryAssets.end())
                 {
-                    assetMasterInfo = &masterItr->second;
+                    assetPrimaryInfo = &primaryItr->second;
                 }
                 else
                 {
-                    auto insertResult = m_masterAssets.emplace(assetId, AssetMasterInfo());
-                    assetMasterInfo = &insertResult.first->second;
-                    assetMasterInfo->m_id = &insertResult.first->first;
+                    auto insertResult = m_primaryAssets.emplace(assetId, AssetPrimaryInfo());
+                    assetPrimaryInfo = &insertResult.first->second;
+                    assetPrimaryInfo->m_id = &insertResult.first->first;
                 }
 
                 // Add this asset to the stack for this thread's context
-                childAsset = parentAsset->FindOrAddChild(assetId, assetMasterInfo);
+                childAsset = parentAsset->FindOrAddChild(assetId, assetPrimaryInfo);
             }
 
             threadData.m_currentAssetStack.push_back(childAsset);
@@ -304,7 +304,7 @@ namespace AZ
                 char* pos = buffer;
                 for (auto itr = assetStack.rbegin(); itr != assetStack.rend(); ++itr)
                 {
-                    pos += azsnprintf(pos, BUFFER_SIZE - (pos - buffer), "%s\n", (*itr)->GetAssetMasterInfo()->m_id->m_id.c_str());
+                    pos += azsnprintf(pos, BUFFER_SIZE - (pos - buffer), "%s\n", (*itr)->GetAssetPrimaryInfo()->m_id->m_id.c_str());
 
                     if (pos >= buffer + BUFFER_SIZE)
                     {

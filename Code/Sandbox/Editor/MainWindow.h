@@ -24,13 +24,11 @@
 #include <QPointer>
 #include <QToolButton>
 #include <QTimer>
-#include <QAbstractNativeEventFilter>
 
 #include "Include/SandboxAPI.h"
 #include <AzQtComponents/Components/ToolButtonComboBox.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-#include <QAbstractNativeEventFilter>
 
 #include "IEditor.h"
 #endif
@@ -77,19 +75,6 @@ namespace AzToolsFramework
 // Subclassing so we can add slots to our toolbar widgets
 // Using lambdas is crashy since the lamdba doesn't know when the widget is deleted.
 
-class RefCoordComboBox
-    : public QComboBox
-{
-    Q_OBJECT
-public:
-    explicit RefCoordComboBox(QWidget* parent);
-public Q_SLOTS:
-    void ToggleRefCoordSys();
-    void UpdateRefCoordSys();
-private:
-    QStringList coordSysList() const;
-};
-
 class UndoRedoToolButton
     : public QToolButton
 {
@@ -106,9 +91,6 @@ class SANDBOX_API MainWindow
     : public QMainWindow
     , public IEditorNotifyListener
     , private AzToolsFramework::SourceControlNotificationBus::Handler
-#ifdef Q_OS_WIN
-    , public QAbstractNativeEventFilter
-#endif
 {
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
@@ -173,13 +155,9 @@ public:
     void UpdateToolsMenu();
 
     int ViewPaneVersion() const;
-    void MatEditSend(int param);
 
     LevelEditorMenuHandler* GetLevelEditorMenuHandler() { return m_levelEditorMenuHandler; }
 
-#ifdef Q_OS_WIN
-    bool nativeEventFilter(const QByteArray& eventType, void* message, long* result) override;
-#endif
     bool event(QEvent* event) override;
 
     void OnGotoSliceRoot();
@@ -228,8 +206,7 @@ private:
 
     QWidget* CreateSnapToGridWidget();
     QWidget* CreateSnapToAngleWidget();
-
-    QComboBox* CreateRefCoordComboBox();
+    QWidget* CreateSpacerRightWidget();
 
     QToolButton* CreateUndoRedoButton(int command);
 

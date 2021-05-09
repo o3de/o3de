@@ -27,7 +27,8 @@
   },
   "debug": {
     "TAGS":[
-        "nightly",
+        "nightly-incremental",
+        "nightly-clean",
         "weekly-build-metrics"
     ],
     "COMMAND":"../Windows/build_ninja_windows.cmd",
@@ -38,6 +39,16 @@
       "CMAKE_LY_PROJECTS":"AutomatedTesting",
       "CMAKE_TARGET":"all",
       "CMAKE_BUILD_ARGS":"-j!NUMBER_OF_PROCESSORS!"
+    }
+  },
+  "android_packaging_all": {
+    "TAGS": [
+      "packaging"
+    ],
+    "COMMAND": "../Windows/python_windows.cmd",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "scripts/build/package/package.py",
+      "SCRIPT_PARAMETERS": "--platform Android --type all"
     }
   },
   "profile": {
@@ -57,7 +68,8 @@
   },
   "profile_nounity": {
     "TAGS":[
-        "nightly",
+        "nightly-incremental",
+        "nightly-clean",
         "weekly-build-metrics"
     ],
     "COMMAND":"../Windows/build_ninja_windows.cmd",
@@ -73,7 +85,9 @@
   "asset_profile": {
     "TAGS":[
         "default",
-        "weekly-build-metrics"
+        "weekly-build-metrics",
+        "nightly-incremental",
+        "nightly-clean"
     ],
     "COMMAND":"../Windows/build_asset_windows.cmd",
     "PARAMETERS": {
@@ -88,21 +102,10 @@
         "ASSET_PROCESSOR_PLATFORMS":"es3"
     }
   },
-  "asset_clean_profile": {
-    "TAGS":[
-        "nightly"
-    ],
-    "PIPELINE_ENV": {
-        "CLEAN_ASSETS": "1"
-    },
-    "steps": [
-        "clean",
-        "asset_profile"
-    ]
-  },
   "release": {
     "TAGS":[
-        "nightly",
+        "nightly-incremental",
+        "nightly-clean",
         "weekly-build-metrics"
     ],
     "COMMAND":"../Windows/build_ninja_windows.cmd",
@@ -117,7 +120,8 @@
   },
   "monolithic_release": {
     "TAGS":[
-        "nightly",
+        "nightly-incremental",
+        "nightly-clean",
         "weekly-build-metrics"
     ],
     "COMMAND":"../Windows/build_ninja_windows.cmd",
@@ -148,8 +152,6 @@
   },
   "periodic_test_profile": {
     "TAGS":[
-        "nightly",
-        "weekly-build-metrics"
     ],
     "COMMAND":"build_and_run_unit_tests.cmd",
     "PARAMETERS": {
@@ -163,5 +165,4 @@
       "ADDITIONAL_GENERATE_ARGS": "--unit-test"
     }
   }
-
 }

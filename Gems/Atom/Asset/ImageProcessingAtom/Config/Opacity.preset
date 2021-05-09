@@ -11,7 +11,14 @@
             "FileMasks": [
                 "_sss",
                 "_trans",
-                "_opac"
+                "_opac",
+                "_opacity",
+                "_o",
+                "_opac",
+                "_op",
+                "_mask",
+                "_msk",
+                "_blend"
             ],
             "PixelFormat": "BC4",
             "IsPowerOf2": true,
@@ -28,7 +35,14 @@
                 "FileMasks": [
                     "_sss",
                     "_trans",
-                    "_opac"
+                    "_opac",
+                    "_opacity",
+                    "_o",
+                    "_opac",
+                    "_op",
+                    "_mask",
+                    "_msk",
+                    "_blend"
                 ],
                 "PixelFormat": "EAC_R11",
                 "IsPowerOf2": true,
@@ -67,7 +81,14 @@
                 "FileMasks": [
                     "_sss",
                     "_trans",
-                    "_opac"
+                    "_opac",
+                    "_opacity",
+                    "_o",
+                    "_opac",
+                    "_op",
+                    "_mask",
+                    "_msk",
+                    "_blend"
                 ],
                 "PixelFormat": "BC4",
                 "IsPowerOf2": true,
@@ -83,7 +104,14 @@
                 "FileMasks": [
                     "_sss",
                     "_trans",
-                    "_opac"
+                    "_opac",
+                    "_opacity",
+                    "_o",
+                    "_opac",
+                    "_op",
+                    "_mask",
+                    "_msk",
+                    "_blend"
                 ],
                 "PixelFormat": "BC4",
                 "IsPowerOf2": true,

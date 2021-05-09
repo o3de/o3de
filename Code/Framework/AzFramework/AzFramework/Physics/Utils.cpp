@@ -21,7 +21,7 @@
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/CollisionBus.h>
-#include <AzFramework/Physics/WorldBodyBus.h>
+#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/WindBus.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
@@ -39,19 +39,19 @@ namespace Physics
 {
     namespace ReflectionUtils
     {
-        void ReflectWorldBodyBus(AZ::ReflectContext* context)
+        void ReflectSimulatedBodyComponentRequestsBus(AZ::ReflectContext* context)
         {
             if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
-                behaviorContext->EBus<Physics::WorldBodyRequestBus>("WorldBodyRequestBus")
+                behaviorContext->EBus<AzPhysics::SimulatedBodyComponentRequestsBus>("SimulatedBodyComponentRequestBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Module, "physics")
                     ->Attribute(AZ::Script::Attributes::Category, "PhysX")
-                    ->Event("EnablePhysics", &WorldBodyRequests::EnablePhysics)
-                    ->Event("DisablePhysics", &WorldBodyRequests::DisablePhysics)
-                    ->Event("IsPhysicsEnabled", &WorldBodyRequests::IsPhysicsEnabled)
-                    ->Event("GetAabb", &WorldBodyRequests::GetAabb)
-                    ->Event("RayCast", &WorldBodyRequests::RayCast)
+                    ->Event("EnablePhysics", &AzPhysics::SimulatedBodyComponentRequests::EnablePhysics)
+                    ->Event("DisablePhysics", &AzPhysics::SimulatedBodyComponentRequests::DisablePhysics)
+                    ->Event("IsPhysicsEnabled", &AzPhysics::SimulatedBodyComponentRequests::IsPhysicsEnabled)
+                    ->Event("GetAabb", &AzPhysics::SimulatedBodyComponentRequests::GetAabb)
+                    ->Event("RayCast", &AzPhysics::SimulatedBodyComponentRequests::RayCast)
                     ;
             }
         }
@@ -131,7 +131,7 @@ namespace Physics
             AnimationConfiguration::Reflect(context);
             CharacterConfiguration::Reflect(context);
             AzPhysics::SimulatedBody::Reflect(context);
-            ReflectWorldBodyBus(context);
+            ReflectSimulatedBodyComponentRequestsBus(context);
             CollisionFilteringRequests::Reflect(context);
             AzPhysics::SceneQuery::ReflectSceneQueryObjects(context);
             ReflectWindBus(context);

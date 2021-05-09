@@ -41,6 +41,13 @@ namespace AZ
             //! Otherwise false is returned and result is left untouched.
             bool End(Data::Asset<ModelAsset>& result);
 
+            //! Clone the given source model asset.
+            //! @param sourceAsset The source model asset to clone.
+            //! @param clonedResult The resulting, cloned model lod asset.
+            //! @param cloneAssetId The asset id to assign to the cloned model asset
+            //! @result True in case the asset got cloned successfully, false in case an error happened and the clone process got cancelled.
+            static bool Clone(const Data::Asset<ModelAsset>& sourceAsset, Data::Asset<ModelAsset>& clonedResult, const Data::AssetId& cloneAssetId);
+
         private:
             AZ::Aabb m_modelAabb;
         };

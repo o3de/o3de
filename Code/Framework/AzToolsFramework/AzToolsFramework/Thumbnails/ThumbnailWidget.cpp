@@ -71,15 +71,12 @@ namespace AzToolsFramework
                 SharedThumbnail thumbnail;
                 ThumbnailerRequestsBus::BroadcastResult(thumbnail, &ThumbnailerRequests::GetThumbnail, m_key, m_contextName.c_str());
                 QPainter painter(this);
-                QPixmap pixmap = thumbnail->GetPixmap();
-                // preserve thumbnail image's ratio, if the widget is wider than the image, center the image hotizontally
-                float aspectRatio = aznumeric_cast<float>(pixmap.width()) / pixmap.height();
-                int originalWidth = width();
-                int originalHeight = height();
-                int realHeight = qMin(aznumeric_cast<int>(originalWidth /aspectRatio), originalHeight);
-                int realWidth = aznumeric_cast<int>(realHeight * aspectRatio);
-                int x = (originalWidth - realWidth) / 2;
-                painter.drawPixmap(QRect(x, 0, realHeight, realWidth), pixmap);
+
+                // Scaling and centering pixmap within bounds to preserve aspect ratio
+                const QPixmap pixmap = thumbnail->GetPixmap().scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                const QSize sizeDelta = size() - pixmap.size();
+                const QPoint pointDelta = QPoint(sizeDelta.width() / 2, sizeDelta.height() / 2);
+                painter.drawPixmap(pointDelta, pixmap);
             }
             QWidget::paintEvent(event);
         }

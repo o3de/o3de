@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C13352089
 # Test Case Title : Verify that maximum angular velocity interacts correctly with initial angular velocity
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/13352089
+
 
 
 # fmt: off
@@ -131,8 +131,8 @@ def C13352089_RigidBodies_MaxAngularVelocity():
 
     imports.init()
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
     import azlmbr.math as lymath
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -288,5 +288,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C13352089_RigidBodies_MaxAngularVelocity)

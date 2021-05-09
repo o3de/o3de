@@ -15,7 +15,7 @@
 #include <AzFramework/Physics/CharacterBus.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/CollisionBus.h>
-#include <AzFramework/Physics/WorldBodyBus.h>
+#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <PhysXCharacters/API/CharacterController.h>
 #include <AzCore/Component/TransformBus.h>
@@ -35,7 +35,7 @@ namespace PhysX
     class CharacterControllerComponent
         : public AZ::Component
         , public Physics::CharacterRequestBus::Handler
-        , public Physics::WorldBodyRequestBus::Handler
+        , public AzPhysics::SimulatedBodyComponentRequestsBus::Handler
         , public AZ::TransformNotificationBus::Handler
         , public CharacterControllerRequestBus::Handler
         , public Physics::CollisionFilteringRequestBus::Handler
@@ -47,7 +47,7 @@ namespace PhysX
 
         CharacterControllerComponent();
         CharacterControllerComponent(AZStd::unique_ptr<Physics::CharacterConfiguration> characterConfig,
-            AZStd::unique_ptr<Physics::ShapeConfiguration> shapeConfig);
+            AZStd::shared_ptr<Physics::ShapeConfiguration> shapeConfig);
         ~CharacterControllerComponent();
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -99,12 +99,13 @@ namespace PhysX
         bool IsPresent() const override { return IsPhysicsEnabled(); }
         Physics::Character* GetCharacter() override;
 
-        // WorldBodyRequestBus
+        // AzPhysics::SimulatedBodyComponentRequestsBus::Handler overrides ...
         void EnablePhysics() override;
         void DisablePhysics() override;
         bool IsPhysicsEnabled() const override;
         AZ::Aabb GetAabb() const override;
-        AzPhysics::SimulatedBody* GetWorldBody() override;
+        AzPhysics::SimulatedBody* GetSimulatedBody() override;
+        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
         // CharacterControllerRequestBus
@@ -131,12 +132,12 @@ namespace PhysX
     private:
         void CreateController();
         void DestroyController();
-        void AttachColliders(Physics::Character& character);
+
         void OnPreSimulate(float deltaTime);
 
         AZStd::unique_ptr<Physics::CharacterConfiguration> m_characterConfig;
-        AZStd::unique_ptr<Physics::ShapeConfiguration> m_shapeConfig;
-        AZStd::unique_ptr<PhysX::CharacterController> m_controller;
+        AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfig;
+        PhysX::CharacterController* m_controller = nullptr;
         AzPhysics::SystemEvents::OnPresimulateEvent::Handler m_preSimulateHandler;
     };
 } // namespace PhysX

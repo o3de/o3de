@@ -4,9 +4,8 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
-        "ambientOcclusion": {
-            "enable": true,
-            "textureMap": "Textures/bricks_1k_ao.png"
+        "occlusion": {
+            "diffuseTextureMap": "Textures/bricks_1k_ao.png"
         },
         "baseColor": {
             "color": [

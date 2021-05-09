@@ -126,8 +126,7 @@ namespace UnitTest
         const AZStd::vector<AZ::Vector3>& vertices,
         const AZStd::vector<AZ::u32>& indices,
         const AZStd::vector<VertexSkinInfluences>& skinningInfo,
-        const AZStd::vector<AZ::Vector2>& uvs,
-        const AZStd::vector<AZ::Color>& clothData)
+        const AZStd::vector<AZ::Vector2>& uvs)
     {
         // Generate the normals for this mesh
         AZStd::vector<AZ::Vector4> particles(vertices.size());
@@ -142,7 +141,6 @@ namespace UnitTest
             vertices,
             normals,
             uvs,
-            clothData,
             skinningInfo
         );
     }

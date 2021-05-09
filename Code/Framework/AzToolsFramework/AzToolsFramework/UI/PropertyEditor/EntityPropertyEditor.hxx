@@ -211,6 +211,7 @@ namespace AzToolsFramework
         // EntityPropertEditorRequestBus
         void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) override;
         void GetSelectedEntities(EntityIdList& selectedEntityIds) override;
+        void SetNewComponentId(AZ::ComponentId componentId) override;
 
         bool IsEntitySelected(const AZ::EntityId& id) const;
         bool IsSingleEntitySelected(const AZ::EntityId& id) const;
@@ -237,6 +238,9 @@ namespace AzToolsFramework
         static bool DoesComponentPassFilter(const AZ::Component* component, const ComponentFilter& filter);
         static bool IsComponentRemovable(const AZ::Component* component);
         bool AreComponentsRemovable(const AZ::Entity::ComponentArrayType& components) const;
+        static AZStd::optional<int> GetFixedComponentListIndex(const AZ::Component* component);
+        static bool IsComponentDraggable(const AZ::Component* component);
+        bool AreComponentsDraggable(const AZ::Entity::ComponentArrayType& components) const;
         bool AreComponentsCopyable(const AZ::Entity::ComponentArrayType& components) const;
 
         void AddMenuOptionsForComponents(QMenu& menu, const QPoint& position);
@@ -521,6 +525,15 @@ namespace AzToolsFramework
         bool m_isSystemEntityEditor;
         bool m_isLevelEntityEditor = false;
 
+        enum class InspectorLayout
+        {
+            ENTITY = 0,     // All selected entities are regular entities
+            LEVEL,          // The selected entity is the level prefab container entity
+            INVALID         // Other entities are selected alongside the level prefab container entity
+        };
+
+        InspectorLayout GetCurrentInspectorLayout() const;
+
         // the spacer's job is to make sure that its always at the end of the list of components.
         QSpacerItem* m_spacer;
         bool m_isAlreadyQueuedRefresh;
@@ -558,6 +571,9 @@ namespace AzToolsFramework
         bool m_initiatingPropertyChangeNotification = false;
         void ConnectToEntityBuses(const AZ::EntityId& entityId);
         void DisconnectFromEntityBuses(const AZ::EntityId& entityId);
+
+        //! Stores a component id to be focused on next time the UI updates.
+        AZStd::optional<AZ::ComponentId> m_newComponentId;
 
     private slots:
         void OnPropertyRefreshRequired(); // refresh is needed for a property.

@@ -154,7 +154,7 @@
 								</Class>
 								<Class name="EditorTransform" field="Transform Data" version="2" type="{B02B7063-D238-4F40-A724-405F7A6D68CB}">
 									<Class name="Vector3" field="Translate" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
-									<Class name="Vector3" field="Rotate" value="0.0000000 0.0000000 359.9999695" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+									<Class name="Vector3" field="Rotate" value="0.0000000 0.0000000 -0.0000683" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 									<Class name="Vector3" field="Scale" value="1.0000000 1.0000000 1.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 									<Class name="bool" field="Locked" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 								</Class>
@@ -184,15 +184,15 @@
 										<Class name="AZ::u64" field="SortIndex" value="1" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 									</Class>
 									<Class name="ComponentOrderEntry" field="element" version="1" type="{335C5861-5197-4DD5-A766-EF2B551B0D9D}">
-										<Class name="AZ::u64" field="ComponentId" value="5667723981259402575" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+										<Class name="AZ::u64" field="ComponentId" value="2933618168100824891" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 										<Class name="AZ::u64" field="SortIndex" value="2" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 									</Class>
 									<Class name="ComponentOrderEntry" field="element" version="1" type="{335C5861-5197-4DD5-A766-EF2B551B0D9D}">
-										<Class name="AZ::u64" field="ComponentId" value="2933618168100824891" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+										<Class name="AZ::u64" field="ComponentId" value="8777596718122199558" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 										<Class name="AZ::u64" field="SortIndex" value="3" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 									</Class>
 									<Class name="ComponentOrderEntry" field="element" version="1" type="{335C5861-5197-4DD5-A766-EF2B551B0D9D}">
-										<Class name="AZ::u64" field="ComponentId" value="8777596718122199558" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+										<Class name="AZ::u64" field="ComponentId" value="7236637452394054627" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 										<Class name="AZ::u64" field="SortIndex" value="4" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 									</Class>
 								</Class>
@@ -265,66 +265,7 @@
 									<Class name="float" field="BlendIn" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 									<Class name="float" field="BlendOut" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 									<Class name="bool" field="PlayOnActivation" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-								</Class>
-							</Class>
-							<Class name="EditorClothComponent" field="element" type="{2C99B4EF-8A5F-4585-89F9-86D50754DF7E}">
-								<Class name="EditorComponentBase" field="BaseClass1" version="1" type="{D5346BD4-7F20-444E-B370-327ACD03D4A0}">
-									<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
-										<Class name="AZ::u64" field="Id" value="5667723981259402575" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-									</Class>
-								</Class>
-								<Class name="ClothConfiguration" field="Configuration" version="2" type="{96E2AF5E-3C98-4872-8F90-F56302A44F2A}">
-									<Class name="AZStd::string" field="Mesh Node" value="chicken_mohawk" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-									<Class name="float" field="Mass" value="4.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="bool" field="Use Custom Gravity" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-									<Class name="Vector3" field="Custom Gravity" value="0.0000000 0.0000000 -9.8100004" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
-									<Class name="float" field="Gravity Scale" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Stiffness Frequency" value="10.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Motion Constraints Max Distance" value="10.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Motion Constraints Scale" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Motion Constraints Bias" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Motion Constraints Stiffness" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Backstop Radius" value="0.1000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Backstop Back Offset" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Backstop Front Offset" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="Vector3" field="Damping" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
-									<Class name="Vector3" field="Linear Drag" value="0.1000000 0.1000000 0.1000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
-									<Class name="Vector3" field="Angular Drag" value="0.1000000 0.1000000 0.1000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
-									<Class name="Vector3" field="Linear Inertia" value="1.0000000 1.0000000 1.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
-									<Class name="Vector3" field="Angular Inertia" value="1.0000000 1.0000000 1.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
-									<Class name="Vector3" field="Centrifugal Inertia" value="1.0000000 1.0000000 1.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
-									<Class name="bool" field="Use Custom Wind Velocity" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-									<Class name="Vector3" field="Wind Velocity" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
-									<Class name="float" field="Air Drag Coefficient" value="0.2000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Air Lift Coefficient" value="0.2000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Fluid Density" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Collision Friction" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Collision Mass Scale" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="bool" field="Continuous Collision Detection" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-									<Class name="bool" field="Collision Affects Static Particles" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-									<Class name="float" field="Self Collision Distance" value="0.0200000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Self Collision Stiffness" value="0.5800000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Horizontal Stiffness" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Horizontal Stiffness Multiplier" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Horizontal Compression Limit" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Horizontal Stretch Limit" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Vertical Stiffness" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Vertical Stiffness Multiplier" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Vertical Compression Limit" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Vertical Stretch Limit" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Bending Stiffness" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Bending Stiffness Multiplier" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Bending Compression Limit" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Bending Stretch Limit" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Shearing Stiffness" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Shearing Stiffness Multiplier" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Shearing Compression Limit" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Shearing Stretch Limit" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Tether Constraint Stiffness" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Tether Constraint Scale" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="float" field="Solver Frequency" value="300.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-									<Class name="unsigned int" field="Acceleration Filter Iterations" value="30" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-									<Class name="bool" field="Remove Static Triangles" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+									<Class name="bool" field="InPlace" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 								</Class>
 							</Class>
 							<Class name="EditorLockComponent" field="element" type="{C3A169C9-7EFB-4D6C-8710-3591680D0936}">
@@ -379,20 +320,7 @@
 															<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 															<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 																<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																<Class name="unsigned int" field="subId" value="4115391834" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-														</Class>
-														<Class name="AZ::Render::MaterialAssignment" field="value2" version="1" type="{C66E5214-A24B-4722-B7F0-5991E6F8F163}">
-															<Class name="Asset" field="MaterialAsset" value="id={80F92051-203E-52CE-B4D6-E3AED21795C9}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_mohawkmat.azmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
-															<Class name="AZStd::unordered_map" field="PropertyOverrides" type="{6E6962E1-04C9-56F9-89C4-361031CC1384}"/>
-														</Class>
-													</Class>
-													<Class name="AZStd::pair" field="element" type="{F652A87A-0FDF-527C-B0ED-340C074A4874}">
-														<Class name="AZ::Render::MaterialAssignmentId" field="value1" version="1" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
-															<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-															<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-																<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																<Class name="unsigned int" field="subId" value="3988576522" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+																<Class name="unsigned int" field="subId" value="1541321207" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 															</Class>
 														</Class>
 														<Class name="AZ::Render::MaterialAssignment" field="value2" version="1" type="{C66E5214-A24B-4722-B7F0-5991E6F8F163}">
@@ -405,11 +333,24 @@
 															<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 															<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 																<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																<Class name="unsigned int" field="subId" value="2328463833" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+																<Class name="unsigned int" field="subId" value="668669130" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 															</Class>
 														</Class>
 														<Class name="AZ::Render::MaterialAssignment" field="value2" version="1" type="{C66E5214-A24B-4722-B7F0-5991E6F8F163}">
 															<Class name="Asset" field="MaterialAsset" value="id={FB34D8F7-E8CA-542D-92A3-F0E04F3A3EC3}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_chicken_body_mat.azmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
+															<Class name="AZStd::unordered_map" field="PropertyOverrides" type="{6E6962E1-04C9-56F9-89C4-361031CC1384}"/>
+														</Class>
+													</Class>
+													<Class name="AZStd::pair" field="element" type="{F652A87A-0FDF-527C-B0ED-340C074A4874}">
+														<Class name="AZ::Render::MaterialAssignmentId" field="value1" version="1" type="{EB603581-4654-4C17-B6DE-AE61E79EDA97}">
+															<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+															<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
+																<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+																<Class name="unsigned int" field="subId" value="2608524672" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+															</Class>
+														</Class>
+														<Class name="AZ::Render::MaterialAssignment" field="value2" version="1" type="{C66E5214-A24B-4722-B7F0-5991E6F8F163}">
+															<Class name="Asset" field="MaterialAsset" value="id={80F92051-203E-52CE-B4D6-E3AED21795C9}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_mohawkmat.azmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
 															<Class name="AZStd::unordered_map" field="PropertyOverrides" type="{6E6962E1-04C9-56F9-89C4-361031CC1384}"/>
 														</Class>
 													</Class>
@@ -437,7 +378,7 @@
 											<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 											<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 												<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-												<Class name="unsigned int" field="subId" value="2328463833" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+												<Class name="unsigned int" field="subId" value="668669130" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 											</Class>
 										</Class>
 										<Class name="Asset" field="materialAsset" value="id={FB34D8F7-E8CA-542D-92A3-F0E04F3A3EC3}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_chicken_body_mat.azmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
@@ -449,7 +390,7 @@
 											<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 											<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 												<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-												<Class name="unsigned int" field="subId" value="3988576522" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+												<Class name="unsigned int" field="subId" value="1541321207" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 											</Class>
 										</Class>
 										<Class name="Asset" field="materialAsset" value="id={6114C408-26EE-51DC-8733-A07800BF4991}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_chicken_eye_mat.azmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
@@ -461,7 +402,7 @@
 											<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 											<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 												<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-												<Class name="unsigned int" field="subId" value="4115391834" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+												<Class name="unsigned int" field="subId" value="2608524672" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 											</Class>
 										</Class>
 										<Class name="Asset" field="materialAsset" value="id={80F92051-203E-52CE-B4D6-E3AED21795C9}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/chicken/actor/chicken_mohawkmat.azmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
@@ -477,7 +418,7 @@
 												<Class name="AZ::u64" field="lodIndex" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 												<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 													<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													<Class name="unsigned int" field="subId" value="2328463833" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+													<Class name="unsigned int" field="subId" value="668669130" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 												</Class>
 											</Class>
 											<Class name="Asset" field="materialAsset" value="id={00000000-0000-0000-0000-000000000000}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
@@ -489,7 +430,7 @@
 												<Class name="AZ::u64" field="lodIndex" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 												<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 													<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													<Class name="unsigned int" field="subId" value="3988576522" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+													<Class name="unsigned int" field="subId" value="1541321207" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 												</Class>
 											</Class>
 											<Class name="Asset" field="materialAsset" value="id={00000000-0000-0000-0000-000000000000}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
@@ -501,7 +442,7 @@
 												<Class name="AZ::u64" field="lodIndex" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 												<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 													<Class name="AZ::Uuid" field="guid" value="{3E4C6A29-92A4-523E-8739-F3E64957569E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													<Class name="unsigned int" field="subId" value="4115391834" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+													<Class name="unsigned int" field="subId" value="2608524672" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 												</Class>
 											</Class>
 											<Class name="Asset" field="materialAsset" value="id={00000000-0000-0000-0000-000000000000}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
@@ -509,6 +450,66 @@
 											<Class name="AZStd::unordered_map" field="matModUvOverrides" type="{D6E637F3-3BD8-55E7-911F-F35DE5769296}"/>
 										</Class>
 									</Class>
+								</Class>
+							</Class>
+							<Class name="EditorClothComponent" field="element" type="{2C99B4EF-8A5F-4585-89F9-86D50754DF7E}">
+								<Class name="EditorComponentBase" field="BaseClass1" version="1" type="{D5346BD4-7F20-444E-B370-327ACD03D4A0}">
+									<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
+										<Class name="AZ::u64" field="Id" value="7236637452394054627" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+									</Class>
+								</Class>
+								<Class name="ClothConfiguration" field="Configuration" version="2" type="{96E2AF5E-3C98-4872-8F90-F56302A44F2A}">
+									<Class name="AZStd::string" field="Mesh Node" value="chicken_mohawk" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+									<Class name="float" field="Mass" value="4.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="bool" field="Use Custom Gravity" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+									<Class name="Vector3" field="Custom Gravity" value="0.0000000 0.0000000 -9.8100004" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+									<Class name="float" field="Gravity Scale" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Stiffness Frequency" value="10.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Motion Constraints Max Distance" value="10.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Motion Constraints Scale" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Motion Constraints Bias" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Motion Constraints Stiffness" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Backstop Radius" value="0.1000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Backstop Back Offset" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Backstop Front Offset" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="Vector3" field="Damping" value="0.2000000 0.2000000 0.2000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+									<Class name="Vector3" field="Linear Drag" value="0.2000000 0.2000000 0.2000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+									<Class name="Vector3" field="Angular Drag" value="0.2000000 0.2000000 0.2000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+									<Class name="Vector3" field="Linear Inertia" value="1.0000000 1.0000000 1.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+									<Class name="Vector3" field="Angular Inertia" value="1.0000000 1.0000000 1.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+									<Class name="Vector3" field="Centrifugal Inertia" value="1.0000000 1.0000000 1.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+									<Class name="bool" field="Use Custom Wind Velocity" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+									<Class name="Vector3" field="Wind Velocity" value="0.0000000 20.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
+									<Class name="float" field="Air Drag Coefficient" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Air Lift Coefficient" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Fluid Density" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Collision Friction" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Collision Mass Scale" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="bool" field="Continuous Collision Detection" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+									<Class name="bool" field="Collision Affects Static Particles" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+									<Class name="float" field="Self Collision Distance" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Self Collision Stiffness" value="0.2000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Horizontal Stiffness" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Horizontal Stiffness Multiplier" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Horizontal Compression Limit" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Horizontal Stretch Limit" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Vertical Stiffness" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Vertical Stiffness Multiplier" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Vertical Compression Limit" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Vertical Stretch Limit" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Bending Stiffness" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Bending Stiffness Multiplier" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Bending Compression Limit" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Bending Stretch Limit" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Shearing Stiffness" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Shearing Stiffness Multiplier" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Shearing Compression Limit" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Shearing Stretch Limit" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Tether Constraint Stiffness" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Tether Constraint Scale" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="float" field="Solver Frequency" value="300.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+									<Class name="unsigned int" field="Acceleration Filter Iterations" value="30" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+									<Class name="bool" field="Remove Static Triangles" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 								</Class>
 							</Class>
 						</Class>

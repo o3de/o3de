@@ -211,7 +211,6 @@ namespace PhysX
         Physics::SystemRequestBus::Handler::BusConnect();
         PhysX::SystemRequestsBus::Handler::BusConnect();
         Physics::CollisionRequestBus::Handler::BusConnect();
-        Physics::CharacterSystemRequestBus::Handler::BusConnect();
 
         ActivatePhysXSystem();
     }
@@ -219,7 +218,6 @@ namespace PhysX
     void SystemComponent::Deactivate()
     {
         AZ::TickBus::Handler::BusDisconnect();
-        Physics::CharacterSystemRequestBus::Handler::BusDisconnect();
         Physics::CollisionRequestBus::Handler::BusDisconnect();
         PhysX::SystemRequestsBus::Handler::BusDisconnect();
         Physics::SystemRequestBus::Handler::BusDisconnect();
@@ -419,13 +417,6 @@ namespace PhysX
         {
             static_cast<physx::PxBase*>(nativeMeshObject)->release();
         }
-    }
-
-    // Physics::CharacterSystemRequestBus
-    AZStd::unique_ptr<Physics::Character> SystemComponent::CreateCharacter(const Physics::CharacterConfiguration&
-        characterConfig, const Physics::ShapeConfiguration& shapeConfig, AzPhysics::SceneHandle& sceneHandle)
-    {
-        return Utils::Characters::CreateCharacterController(characterConfig, shapeConfig, sceneHandle);
     }
 
     AzPhysics::CollisionLayer SystemComponent::GetCollisionLayerByName(const AZStd::string& layerName)
