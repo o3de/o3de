@@ -6,9 +6,16 @@
  */
 #pragma once
 
+<<<<<<<< HEAD:Gems/LyShine/Code/Include/LyShine/Draw2d.h
 #include <LyShine/IDraw2d.h>
 #include <LyShine/ILyShine.h>
 #include <LyShine/Bus/UiTransformBus.h>
+========
+#include <IRenderer.h>
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Color.h>
+>>>>>>>> 84d2d03463 (Hair - merging squashed latest from main to TressFX branch):Code/CryEngine/CryCommon/LyShine/IDraw2d.h
 
 #include <AzFramework/Font/FontInterface.h>
 #include <Atom/Bootstrap/BootstrapNotificationBus.h>
@@ -27,6 +34,7 @@ class CDraw2d
 {
 public: // member functions
 
+<<<<<<<< HEAD:Gems/LyShine/Code/Include/LyShine/Draw2d.h
     //! Constructor, constructed by the LyShine class
     CDraw2d(AZ::RPI::ViewportContextPtr viewportContext = nullptr);
 
@@ -568,4 +576,8 @@ protected: // attributes
     IDraw2d::TextOptions    m_textOptions;  //!< text options are stored locally and updated by member functions
     CDraw2d* m_draw2d;
     bool m_previousDeferCalls;
+========
+    //! Implement virtual destructor just for safety.
+    virtual ~IDraw2d() {}
+>>>>>>>> 84d2d03463 (Hair - merging squashed latest from main to TressFX branch):Code/CryEngine/CryCommon/LyShine/IDraw2d.h
 };

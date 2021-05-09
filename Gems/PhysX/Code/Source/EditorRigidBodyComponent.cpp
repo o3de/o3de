@@ -485,6 +485,11 @@ namespace PhysX
         return m_editorRigidBodyHandle;
     }
 
+    AzPhysics::SimulatedBodyHandle EditorRigidBodyComponent::GetSimulatedBodyHandle() const
+    {
+        return m_rigidBodyHandle;
+    }
+
     AzPhysics::SceneQueryHit EditorRigidBodyComponent::RayCast(const AzPhysics::RayCastRequest& request)
     {
         if (AzPhysics::SimulatedBody* body = GetSimulatedBody())
