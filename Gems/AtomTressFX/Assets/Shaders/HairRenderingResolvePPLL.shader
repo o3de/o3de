@@ -11,8 +11,10 @@
     {
         "Depth" : 
         { 
-            "Enable" : true,
-            "CompareFunc" : "Always"  // Verified to be the correct direction although LessEqual in TressFX
+            "Enable" : true,    // The resolve will write the closest hair depth
+            // Pixels that don't belong to the hair will be discarded, otherwise if a fragment
+            // exist in the list, it already passed the depth test
+            "CompareFunc" : "Always"    
         },
         "Stencil" :
         {

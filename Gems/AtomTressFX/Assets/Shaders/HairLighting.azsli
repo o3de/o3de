@@ -31,15 +31,36 @@
 
 #include <HairUtilities.azsli>
 #include <HairRenderingSrgs.azsli>
+
+#include <Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli>
 //#include <Atom/Features/PBR/LightingModel.azsli>
 
-// If you change this, you MUST also change TressFXLightParams in TressFXConstantBuffers.h
-#define AMD_TRESSFX_MAX_LIGHTS 10
+// Given the depth buffer depth of the current pixel and the fragment XY position, 
+// reconstruct the world space position
+// screenCoords - from 0.. dimension of the screen of the current pixel
+// screenTexture - screen buffer texture representing the same resolution we work in
+// sDepth - the depth buffer depth at the fragment location
+float3 WorldPositionFromScreenTexture( 
+    Texture2D<float> screenTexture, float zDepth, float2 screenCoords,
+    inout float3 screenNormalizedCoords )
+{ 
+    uint2 dimensions;
+    screenTexture.GetDimensions(dimensions.x, dimensions.y);
+    float2 UV = saturate(screenCoords / dimensions.xy);
 
-// These come from GltfCommon (just re-using them)
-#define LightType_Directional 0
-#define LightType_Point 1
-#define LightType_Spot 2
+    float x = UV.x * 2.0f - 1.0f;
+    float y = (1.0f - UV.y) * 2.0f - 1.0f;
+    screenNormalizedCoords = float3(x, y, zDepth);
+    float4 projectedPos = float4(x, y, zDepth, 1.0f);    // warped projected space [0..1]
+
+    float4 positionVS = mul(ViewSrg::m_projectionMatrixInverse, projectedPos);
+
+    positionVS /= positionVS.w; // notice the normalization factor - crucial!
+    float4 positionWS = mul(ViewSrg::m_viewMatrixInverse, positionVS);
+
+    return positionWS.xyz;
+}
+
 
 //------------------------------------------------------------------------------
 struct HairShadeParams
@@ -55,6 +76,15 @@ struct HairShadeParams
     float m_Ks2;
     float m_Ex2;
 };
+
+/*
+// If you change this, you MUST also change TressFXLightParams in TressFXConstantBuffers.h
+#define AMD_TRESSFX_MAX_LIGHTS 10
+
+// These come from GltfCommon (just re-using them)
+#define LightType_Directional 0
+#define LightType_Point 1
+#define LightType_Spot 2
 
 //------------------------------------------------------------------------------
 struct LightParams
@@ -84,7 +114,7 @@ struct LightParams
     int     ShadowMapSize;      // Dimension of the shadow slice we are sampling from
     int     Padding2;
 };
-/*
+
 //===========================================================================
 // [To Do] Adi: replace with Atom lighting pass
 //===========================================================================
@@ -199,6 +229,7 @@ float3 ComputeDiffuseSpecFactors(
     // in Kajiya's model: diffuse component: sin(t, l)
     float cosTL = (dot(vTangentDir, vLightDir));
     float sinTL = sqrt(1 - cosTL * cosTL);
+    // [To Do] Adi: if below horizon the sine will still be positive - need to correct this case 
     float diffuse = sinTL; // here sinTL is apparently larger than 0
 
     float cosTRL = -cosTL;
@@ -304,51 +335,64 @@ float3 AccumulateHairLight(float3 vTangent, float3 vPositionWS, float3 vViewDirW
 
     float3 color = float3(0.0, 0.0, 0.0);
 
+    float3 lightPosWSVec[2] = {
+        float3(4, -1, 2),
+        g_vEye.xyz
+    };
     // Needed for each light calculation
-    float3 lightPosWS = float3(4, 1, 2);
-    float3 LightVector = normalize( vPositionWS - lightPosWS );
-    float3 lightColor = float3(1.0, 1.0, 1.0);
-    float lightIntensity = 0.5;
+//    float3 lightPosWS = float3(4, -1, 2);
 
-    // [To Do] Adi: first render - simply output the hair color
-//    return params.m_color;
-/*
-    float LightIntensity;
-
-    // Start with non-shadowed lights
-    uint lightCount = min(NumLights, AMD_TRESSFX_MAX_LIGHTS);
-    for (uint i = 0; i < lightCount; i++)
+    for (int l = 0; l < 2; l++)
     {
-        GetLightParams(vPositionWS, i, LightVector, LightIntensity, params);
+        float3 lightPosWS = lightPosWSVec[l];
+        float3 LightVector = normalize( vPositionWS - lightPosWS );
+        float3 lightColor = float3(1.0, 1.0, 1.0);
+        float lightIntensity = 0.5;
 
-        if (LightIntensity)
+        // [To Do] Adi: first render - simply output the hair color
+    //    return params.m_color;
+    /*
+        float LightIntensity;
+
+        // Start with non-shadowed lights
+        uint lightCount = min(NumLights, AMD_TRESSFX_MAX_LIGHTS);
+        for (uint i = 0; i < lightCount; i++)
         {
-            // Compute shadow term (if we've got one)
-            float fShadowTerm = ComputeLightShadow(i, vPositionWS, params);
+            GetLightParams(vPositionWS, i, LightVector, LightIntensity, params);
 
-            if (fShadowTerm > 0.f)
+            if (LightIntensity)
             {
-*/
-                float3 L = LightVector;
-                float3 LightColor = lightColor; 
-// [To Do] Adi: put this back               float3 LightColor =  LightData[i].LightColor;
+                // Compute shadow term (if we've got one)
+                float fShadowTerm = ComputeLightShadow(i, vPositionWS, params);
 
-                float3 reflection = ComputeDiffuseSpecFactors(V, L, T, params);
-                float3 ReflectedLight = reflection.x * LightColor * params.m_color;
-                ReflectedLight += reflection.y * LightColor;
-                ReflectedLight += reflection.z * LightColor * params.m_color;
+                if (fShadowTerm > 0.f)
+                {
+    */
+                    float3 L = LightVector;
+                    float3 LightColor = lightColor; 
+    // [To Do] Adi: put this back               float3 LightColor =  LightData[i].LightColor;
 
-// [To Do] Adi: put this back                ReflectedLight *= fShadowTerm * LightIntensity;
+                    float3 reflection = ComputeDiffuseSpecFactors(V, L, T, params);
+                    float3 ReflectedLight = reflection.x * LightColor * params.m_color;
+                    ReflectedLight += reflection.y * LightColor;
+                    ReflectedLight += reflection.z * LightColor * params.m_color;
 
-                color += max(float3(0, 0, 0), ReflectedLight);
-/*
-            }
-        }
+                    ReflectedLight *= lightIntensity;
+    // [To Do] Adi: put this back                ReflectedLight *= fShadowTerm * LightIntensity;
+
+                    color += max(float3(0, 0, 0), ReflectedLight);
+
+    //            }
+     //       }
+     //   }
     }
-*/
 
+
+
+ //               return params.m_color;  // OK
                 return color;
 }
+
 
 /*
 void ApplyPbrLighting(
@@ -380,8 +424,15 @@ void ApplyPbrLighting(
 */
 float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, float3 baseColor, int shaderParamIndex)
 {
-    float3 vNDC = ScreenPosToNDC(float3(pixelCoord, depth), g_vViewport);
-    float3 vPositionWS = NDCToWorld(vNDC, cInvViewProjMatrix);
+ //   float3 vNDC = ScreenPosToNDC(float3(pixelCoord, depth), g_vViewport);
+
+    float3 vNDC;    // normalized device / screen coordinates: [-1..1, -1..1, 0..1]
+    float3 vPositionWS = WorldPositionFromScreenTexture( PassSrg::m_linearDepth, depth, pixelCoord, vNDC);
+
+    // [To Do] Adi: adibugbug - the following is a horrible hack because we don'e have the viewport 
+    // dimensions, inverse and ofset - how come this was never done / requested?
+//    vNDC = float3(pixelCoord, depth) * float3(0.001, 0.0013, 1.0);
+//    float3 vPositionWS = NDCToWorld(vNDC, cInvViewProjMatrix);
     float3 vViewDirWS = g_vEye - vPositionWS;
 
     // Need to expand the tangent that was compressed to store in the buffer
@@ -406,5 +457,13 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
     //                  Dummy Lighting BLock
     // 
     //------------------------------------------------------------------
+    
+    // Adi - Conclusion: vNDC is totally messed up because Atom never bothered to pass viewport
+    // corrections.    There must be a diferent way to approach it in Atom?  will check.
+//    return vPositionWS;
+//    vPositionWS = float3(0,0,0);
+//    return vNDC;
+//    return vPositionWS;
+//    return float3( float2(0, 1) + pixelCoord * float2(0.00071, -0.00081), depth);
     return AccumulateHairLight(vTangent, vPositionWS, vViewDirWS, params, vNDC);
 }

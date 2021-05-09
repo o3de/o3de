@@ -109,7 +109,10 @@ namespace AMD
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<TressFXRenderingSettings>()
-                ->Version(0)
+                ->Version(1)
+                // Albedo assets
+                ->Field("BaseAlbedoAsset", &TressFXRenderingSettings::m_baseAlbedoAsset)
+                ->Field("StrandAlbedoAsset", &TressFXRenderingSettings::m_strandAlbedoAsset)
                 // LOD Settings
                 ->Field("LODStartDistance", &TressFXRenderingSettings::m_LODStartDistance)
                 ->Field("LODEndDistance", &TressFXRenderingSettings::m_LODEndDistance)
@@ -142,13 +145,18 @@ namespace AMD
                 ->Field("EnableThinTip", &TressFXRenderingSettings::m_EnableThinTip)
                 ->Field("EnableHairLOD", &TressFXRenderingSettings::m_EnableHairLOD)
                 ->Field("EnableShadowLOD", &TressFXRenderingSettings::m_EnableShadowLOD)
-                ->Field("BaseAlbedoName", &TressFXRenderingSettings::m_BaseAlbedoName)
-                ->Field("StrandAlbedoName", &TressFXRenderingSettings::m_StrandAlbedoName);
+                ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<TressFXRenderingSettings>("TressFXRenderingSettings", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &TressFXRenderingSettings::m_baseAlbedoAsset, "Base Albedo Asset",
+                        "This texture is the UV mapped color texture to use for the 'scalp'.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &TressFXRenderingSettings::m_strandAlbedoAsset, "Strand Albedo Asset",
+                        "Albedo texture to use along the strand.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TressFXRenderingSettings::m_LODStartDistance, "LOD Start Distance",
                         "Distance to begin LOD. Distance is in centimeters between the camera and hair.")
@@ -231,12 +239,7 @@ namespace AMD
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TressFXRenderingSettings::m_EnableShadowLOD, "Enable Hair LOD(Shadow)",
                         "Turn on Level of Detail usage for the shadow fo the hair.")
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TressFXRenderingSettings::m_BaseAlbedoName, "Base Albedo Name",
-                        "Name of the base albedo.")
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TressFXRenderingSettings::m_StrandAlbedoName, "Strand Albedo Name",
-                        "Name of the strand albedo.");
+                    ;
             }
         }
     }

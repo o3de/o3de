@@ -115,6 +115,8 @@ namespace AZ
 
             bool HairPPLLRasterPass::LoadShaderAndPipelineState()
             {
+                RPI::ShaderReloadNotificationBus::Handler::BusDisconnect();
+
                 const RPI::RasterPassData* passData = RPI::PassUtils::GetPassData<RPI::RasterPassData>(m_passDescriptor);
 
                 // If we successfully retrieved our custom data, use it to set the DrawListTag
@@ -178,6 +180,9 @@ namespace AZ
                     AZ_Error("Hair Gem", false, "Pipeline state could not be acquired");
                     return false;
                 }
+
+                RPI::ShaderReloadNotificationBus::Handler::BusConnect(shaderAsset.GetId());
+
                 m_initialized = true;
                 return true;
             }
@@ -256,6 +261,23 @@ namespace AZ
                 RPI::RasterPass::CompileResources(context);
             }
 
+            void HairPPLLRasterPass::OnShaderReinitialized([[maybe_unused]] const RPI::Shader & shader)
+            {
+                LoadShaderAndPipelineState();
+                m_featureProcessor->ForceRebuildRenderData();
+            }
+
+            void HairPPLLRasterPass::OnShaderAssetReinitialized([[maybe_unused]] const Data::Asset<RPI::ShaderAsset>& shaderAsset)
+            {
+                LoadShaderAndPipelineState();
+                m_featureProcessor->ForceRebuildRenderData();
+            }
+
+            void HairPPLLRasterPass::OnShaderVariantReinitialized([[maybe_unused]] const RPI::Shader& shader, [[maybe_unused]] const RPI::ShaderVariantId& shaderVariantId, [[maybe_unused]] RPI::ShaderVariantStableId shaderVariantStableId)
+            {
+                LoadShaderAndPipelineState();
+                m_featureProcessor->ForceRebuildRenderData();
+            }
         } // namespace Hair
     }   // namespace Render
 }   // namespace AZ
