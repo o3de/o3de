@@ -233,6 +233,8 @@ namespace MaterialEditor
         MaterialViewportRequestBus::BroadcastResult(modelPreset, &MaterialViewportRequestBus::Events::GetModelPresetSelection);
         OnModelPresetSelected(modelPreset);
 
+        m_viewportController->Init(m_cameraEntity->GetId(), m_modelEntity->GetId(), m_iblEntity->GetId());
+
         // Apply user settinngs restored since last run
         AZStd::intrusive_ptr<MaterialViewportSettings> viewportSettings =
             AZ::UserSettings::CreateFind<MaterialViewportSettings>(AZ::Crc32("MaterialViewportSettings"), AZ::UserSettings::CT_GLOBAL);
@@ -248,8 +250,6 @@ namespace MaterialEditor
         AZ::TickBus::Handler::BusConnect();
         AZ::TransformNotificationBus::MultiHandler::BusConnect(m_cameraEntity->GetId());
         AzFramework::WindowSystemRequestBus::Handler::BusConnect();
-
-        m_viewportController->Init(m_cameraEntity->GetId(), m_modelEntity->GetId(), m_iblEntity->GetId());
     }
 
     MaterialViewportRenderer::~MaterialViewportRenderer()

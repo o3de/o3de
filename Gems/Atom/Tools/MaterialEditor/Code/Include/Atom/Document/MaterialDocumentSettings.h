@@ -30,5 +30,6 @@ namespace MaterialEditor
         static void Reflect(AZ::ReflectContext* context);
 
         bool m_showReloadDocumentPrompt = true;
+        AZStd::string m_defaultMaterialTypeName = "StandardPBR";
     };
 } // namespace MaterialEditor

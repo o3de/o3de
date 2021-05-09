@@ -23,6 +23,7 @@ namespace MaterialEditor
             serializeContext->Class<MaterialDocumentSettings, AZ::UserSettings>()
                 ->Version(1)
                 ->Field("showReloadDocumentPrompt", &MaterialDocumentSettings::m_showReloadDocumentPrompt)
+                ->Field("defaultMaterialTypeName", &MaterialDocumentSettings::m_defaultMaterialTypeName)
             ;
 
             if (auto editContext = serializeContext->GetEditContext())
@@ -32,6 +33,7 @@ namespace MaterialEditor
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialDocumentSettings::m_showReloadDocumentPrompt, "Show Reload Document Prompt", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialDocumentSettings::m_defaultMaterialTypeName, "Default Material Type Name", "")
                     ;
             }
         }
@@ -45,6 +47,7 @@ namespace MaterialEditor
                 ->Constructor()
                 ->Constructor<const MaterialDocumentSettings&>()
                 ->Property("showReloadDocumentPrompt", BehaviorValueProperty(&MaterialDocumentSettings::m_showReloadDocumentPrompt))
+                ->Property("defaultMaterialTypeName", BehaviorValueProperty(&MaterialDocumentSettings::m_defaultMaterialTypeName))
                 ;
         }
     }

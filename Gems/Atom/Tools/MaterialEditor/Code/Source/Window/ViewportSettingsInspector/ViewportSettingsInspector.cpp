@@ -43,7 +43,7 @@ namespace MaterialEditor
         AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
     }
 
-    void ViewportSettingsInspector::Popuate()
+    void ViewportSettingsInspector::Populate()
     {
         AddGroupsBegin();
         AddGeneralGroup();
@@ -271,7 +271,7 @@ namespace MaterialEditor
     {
         if (m_lightingPreset != preset)
         {
-            Popuate();
+            Populate();
         }
     }
 
@@ -279,7 +279,7 @@ namespace MaterialEditor
     {
         if (m_modelPreset != preset)
         {
-            Popuate();
+            Populate();
         }
     }
 

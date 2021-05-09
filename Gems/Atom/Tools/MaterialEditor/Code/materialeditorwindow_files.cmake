@@ -28,6 +28,10 @@ set(FILES
     Source/Window/MaterialEditor.qss
     Source/Window/MaterialEditorWindowComponent.h
     Source/Window/MaterialEditorWindowComponent.cpp
+    Source/Window/SettingsDialog/SettingsDialog.cpp
+    Source/Window/SettingsDialog/SettingsDialog.h
+    Source/Window/SettingsDialog/SettingsWidget.cpp
+    Source/Window/SettingsDialog/SettingsWidget.h
     Source/Window/CreateMaterialDialog/CreateMaterialDialog.cpp
     Source/Window/CreateMaterialDialog/CreateMaterialDialog.h
     Source/Window/CreateMaterialDialog/CreateMaterialDialog.ui
