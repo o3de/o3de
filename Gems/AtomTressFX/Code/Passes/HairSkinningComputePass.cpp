@@ -211,6 +211,56 @@ namespace AZ
                 // Clear the dispatch items. They will need to be re-populated next frame
                 m_dispatchItems.clear();
             }
+
+            // Before reloading shaders, we want to wait for existing dispatches to finish
+            // so shader reloading does not interfere in any way. Because AP reloads are async, there might
+            // be a case where dispatch resources are destructed and will most certainly cause a GPU crash.
+            // Once m_dispatchItems are empty, we hold the thread lock, reload shaders, then allow things to
+            // resume back to normal.
+            void HairSkinningComputePass::OnShaderReinitialized([[maybe_unused]] const AZ::RPI::Shader& shader)
+            {
+                while (true)
+                {
+                    AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+                    if (m_dispatchItems.empty())
+                    {
+                        m_featureProcessor->SetAddDispatchEnable(false);
+                        LoadShader();
+                        m_featureProcessor->ForceRebuildRenderData();
+                        break;
+                    }
+                }
+            }
+
+            void HairSkinningComputePass::OnShaderAssetReinitialized([[maybe_unused]] const Data::Asset<AZ::RPI::ShaderAsset>& shaderAsset)
+            {
+                while (true)
+                {
+                    AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+                    if (m_dispatchItems.empty())
+                    {
+                        m_featureProcessor->SetAddDispatchEnable(false);
+                        LoadShader();
+                        m_featureProcessor->ForceRebuildRenderData();
+                        break;
+                    }
+                }
+            }
+
+            void HairSkinningComputePass::OnShaderVariantReinitialized([[maybe_unused]] const AZ::RPI::Shader& shader, [[maybe_unused]] const AZ::RPI::ShaderVariantId& shaderVariantId, [[maybe_unused]] AZ::RPI::ShaderVariantStableId shaderVariantStableId)
+            {
+                while (true)
+                {
+                    AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+                    if (m_dispatchItems.empty())
+                    {
+                        m_featureProcessor->SetAddDispatchEnable(false);
+                        LoadShader();
+                        m_featureProcessor->ForceRebuildRenderData();
+                        break;
+                    }
+                }
+            }
         } // namespace Hair
     }   // namespace Render
 }   // namespace AZ

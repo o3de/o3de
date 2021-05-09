@@ -250,6 +250,9 @@ namespace AZ
                 //!     If the image was not changed it should only bind without the retrieve operation.
                 bool PopulateDrawStrandsBindSet(AMD::TressFXRenderingSettings* pRenderSettings/*=nullptr*/);
 
+                // This function will called when the image asset changed from the component.
+                bool LoadImageAsset(AMD::TressFXRenderingSettings* pRenderSettings);
+
                 bool UploadRenderingGPUResources(AMD::TressFXAsset& asset);
 
                 //! Creation of the render Srg m_hairRenderSrg, followed by creation and binding of the

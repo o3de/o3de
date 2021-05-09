@@ -24,7 +24,6 @@
 
 // EMotionFX
 #include <Integration/ActorComponentBus.h>
- 
 
 namespace AMD
 {
@@ -68,10 +67,6 @@ namespace AZ
 
                 HairFeatureProcessor* GetFeatureProcessor() { return m_featureProcessor; }
 
-                bool UpdateActorMatrices();
-
-                bool CreateHairObject();
-
             private:
                 AZ_DISABLE_COPY(HairComponentController);
 
@@ -90,12 +85,19 @@ namespace AZ
                 void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
                 int GetTickOrder() override;
 
+                bool CreateHairObject();
+                void RemoveHairObject();
+
+                // Extract actor matrix from the actor instance.
+                bool UpdateActorMatrices();
+
                 HairFeatureProcessor* m_featureProcessor = nullptr;
                 // Possibly connect here to the object's settings or specifically create object
 
                 //! Hair render object for connecting to the skeleton and connecting to the feature processor.
 //                Data::Instance<HairRenderObject> m_renderObject = nullptr;  // consider moving to the component
 
+                bool m_configChanged = false; // Flag used to defer the configuration change to onTick.
                 HairComponentConfig m_configuration;     // Settings per hair component
 
                 //! Hair render object for connecting to the skeleton and connecting to the feature processor.
@@ -104,10 +106,9 @@ namespace AZ
                 AZStd::mutex m_mutex;
 
                 EntityId m_entityId;
-                bool m_initilized = false;
                 EMotionFX::ActorInstance* m_actorInstance = nullptr;
 
-                AZ::Data::Asset<HairAsset> m_hairAsset;
+                Data::Asset<HairAsset> m_hairAsset;
 
                 // Store a cache of the boneIndexMap we generated during the creation of hair object. The index of this map is the local bone index
                 // from the tressFX asset, and the value is the bone index from the emotionfx actor.

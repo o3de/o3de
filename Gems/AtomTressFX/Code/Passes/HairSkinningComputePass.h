@@ -85,6 +85,11 @@ namespace AZ
 
                 void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
 
+                // ShaderReloadNotificationBus::Handler overrides...
+                void OnShaderReinitialized(const AZ::RPI::Shader& shader) override;
+                void OnShaderAssetReinitialized(const Data::Asset<AZ::RPI::ShaderAsset>& shaderAsset) override;
+                void OnShaderVariantReinitialized(const AZ::RPI::Shader& shader, const AZ::RPI::ShaderVariantId& shaderVariantId, AZ::RPI::ShaderVariantStableId shaderVariantStableId) override;
+
             private:
                 HairFeatureProcessor* m_featureProcessor = nullptr;
                 RHI::Size  m_attachmentSize = RHI::Size(1,1,0);    // for buffer set.

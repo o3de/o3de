@@ -18,6 +18,7 @@
 #include <Atom/RPI.Public/Pass/RasterPass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
 namespace AZ
 {
@@ -47,6 +48,7 @@ namespace AZ
             //!     should be replaced by the Atom PerViewSrg and calculated only once per view.
             class HairPPLLRasterPass
                 : public RPI::RasterPass
+                , private RPI::ShaderReloadNotificationBus::Handler
             {
                 AZ_RPI_PASS(HairPPLLRasterPass);
 
@@ -69,6 +71,11 @@ namespace AZ
                 }
 
                 virtual bool IsEnabled() const override;
+            protected:
+                // ShaderReloadNotificationBus::Handler overrides...
+                void OnShaderReinitialized(const RPI::Shader& shader) override;
+                void OnShaderAssetReinitialized(const Data::Asset<RPI::ShaderAsset>& shaderAsset) override;
+                void OnShaderVariantReinitialized(const RPI::Shader& shader, const RPI::ShaderVariantId& shaderVariantId, RPI::ShaderVariantStableId shaderVariantStableId) override;
 
             private:
                 explicit HairPPLLRasterPass(const RPI::PassDescriptor& descriptor);

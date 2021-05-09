@@ -132,8 +132,6 @@ void PPLLFillPS(PS_INPUT_HAIR input)
 //    float coverage = ComputeCoverage(input.p0p1.xy, input.p0p1.zw, vNDC.xy, float2(1600,1600));
 //    float coverage = ComputeCoverage(input.p0p1.xy, input.p0p1.zw, vNDC.xy, g_vViewport.zw - g_vViewport.xy);
     /// //////////////////////////////////////////////////////////////////
-
-    float3 vPositionWS = NDCToWorld(vNDC, ViewSrg::m_viewProjectionInverseMatrix);
     float alpha = coverage;
 
     // Update the alpha to have proper value (accounting for coverage, base alpha, and strand alpha)
@@ -152,8 +150,8 @@ void PPLLFillPS(PS_INPUT_HAIR input)
     int nNewFragmentAddress = AllocateFragment(vScreenAddress);
 
     int nOldFragmentAddress = MakeFragmentLink(vScreenAddress, nNewFragmentAddress);
-    WriteFragmentAttributes(nNewFragmentAddress, nOldFragmentAddress, 
-        float4(input.Tangent.xyz * 0.5 + float3(0.5, 0.5, 0.5), alpha), 
+    WriteFragmentAttributes(nNewFragmentAddress, nOldFragmentAddress,
+        float4(input.Tangent.xyz * 0.5 + float3(0.5, 0.5, 0.5), alpha),
         strandColor.xyz, 
         input.Position.z
     );

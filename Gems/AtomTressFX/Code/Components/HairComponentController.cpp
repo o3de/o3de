@@ -104,7 +104,7 @@ namespace AZ
                 m_entityId = entityId;
 
                 m_featureProcessor = RPI::Scene::GetFeatureProcessorForEntity<Hair::HairFeatureProcessor>(m_entityId);
-                if (!m_initilized && m_featureProcessor)
+                if (m_featureProcessor)
                 {
                     // Call this function to trigger the load of the existing asset
                     OnHairAssetChanged();
@@ -114,6 +114,7 @@ namespace AZ
 
                 EMotionFX::Integration::ActorComponentNotificationBus::Handler::BusConnect(m_entityId);
                 HairRequestsBus::Handler::BusConnect(m_entityId);
+                TickBus::Handler::BusConnect();
             }
 
             void HairComponentController::Deactivate()
@@ -139,7 +140,6 @@ namespace AZ
 
             void HairComponentController::OnHairAssetChanged()
             {
-                // Load Hair Asset
                 Data::AssetBus::MultiHandler::BusDisconnect();
                 if (m_hairAsset.GetId().IsValid())
                 {
@@ -148,19 +148,23 @@ namespace AZ
                 }
             }
 
+            void HairComponentController::RemoveHairObject()
+            {
+                if (m_renderObject && m_featureProcessor)
+                {
+                    m_featureProcessor->RemoveHairRenderObject(m_renderObject);
+                    m_renderObject = nullptr; // Actual removal is via the instance mechanism in the feature processor
+                }
+            }
+
             void HairComponentController::OnHairConfigChanged()
             {
-                // Settings can only affect the render object when it already been created.
+                // The actual config change to render object happens in the onTick function. We do this to make sure it 
+                // always happen pre-rendering. There is no need to do it before render object created, because the object
+                // will always be created with the updated configuration.
                 if (m_renderObject)
                 {
-                    // Since both simulation settings and render settings are stored in the configuration, we have to update both.
-                    m_renderObject->UpdateSimulationParameters(&m_configuration.m_simulationSettings, 0.035f /*default value in hairRenderObject*/);
-
-                    // [To Do] Adi: change the following settings before the final submit.
-                    const float distanceFromCamera = 1.0;
-                    const float updateShadows = false;
-                    m_renderObject->UpdateRenderingParameters(
-                        &m_configuration.m_renderingSettings, RESERVED_PIXELS_FOR_OIT, distanceFromCamera, updateShadows);
+                    m_configChanged = true;
                 }
             }
 
@@ -169,9 +173,7 @@ namespace AZ
                 if (asset.GetId() == m_hairAsset.GetId())
                 {
                     m_hairAsset = asset;
-
-                    // Hair data is ready to be used at this point.
-                    m_initilized = CreateHairObject();
+                    CreateHairObject();
                 }
             }
 
@@ -183,27 +185,36 @@ namespace AZ
             void HairComponentController::OnActorInstanceCreated(EMotionFX::ActorInstance* actorInstance)
             {
                 m_actorInstance = actorInstance;
-                if (!m_initilized)
-                {
-                    m_initilized = CreateHairObject();
-                }
+                CreateHairObject();
             }
 
             void HairComponentController::OnActorInstanceDestroyed([[maybe_unused]]EMotionFX::ActorInstance* actorInstance)
             {
                 m_actorInstance = nullptr;
-                // [To Do] Adi: stop the render object from rendering?
-                // Disconnect the tick bus when actor instance got destroyed. (No need to update the bone matrices anymore).
-                TickBus::Handler::BusDisconnect();
+                RemoveHairObject();
             }
 
             void HairComponentController::OnTick([[maybe_unused]]float deltaTime, [[maybe_unused]]AZ::ScriptTimePoint time)
             {
-                // Settings can only affect the render object when it already been created.
                 if (!m_renderObject)
                 {
-                    AZ_WarningOnce("Hair Gem", false, "Error getting the renderObject.");
                     return;
+                }
+
+                // Config change to renderObject happens on the OnTick, so we know the it occurs before render update.
+                if (m_configChanged)
+                {
+                    m_renderObject->UpdateSimulationParameters(
+                        &m_configuration.m_simulationSettings, 0.035f /*default value in hairRenderObject*/);
+
+                    // [To Do] Adi: change the following settings before the final submit.
+                    const float distanceFromCamera = 1.0;
+                    const float updateShadows = false;
+                    m_renderObject->UpdateRenderingParameters(
+                        &m_configuration.m_renderingSettings, RESERVED_PIXELS_FOR_OIT, distanceFromCamera, updateShadows);
+
+                    m_renderObject->LoadImageAsset(&m_configuration.m_renderingSettings);
+                    m_configChanged = false;
                 }
 
                 // Optional - move this to be done by the feature processor
@@ -250,6 +261,7 @@ namespace AZ
                 return true;
             }
 
+            // The hair object will only be created when 1) The hair asset is loaded AND 2) The actor instance is created.
             bool HairComponentController::CreateHairObject()
             {
                 if (!m_actorInstance)
@@ -305,14 +317,10 @@ namespace AZ
                 
                 // First remove the existing hair object - this can happen if the configuration
                 // or the hair asset selected changes.
-                if (m_renderObject)
-                {   // this will remove the old instance in the feature processor
-                    m_featureProcessor->RemoveHairRenderObject(m_renderObject);
-                    m_renderObject = nullptr;   // Actual removal is via the instance mechanism in the feature processor
-                }
+                RemoveHairObject();
 
                 // create a new instance - will remove the old one.
-                m_renderObject = new HairRenderObject;
+                m_renderObject = new HairRenderObject();
                 AZStd::string hairName;
                 AzFramework::StringFunc::Path::GetFileName(m_hairAsset.GetHint().c_str(), hairName);
                 if (!m_renderObject->Init( m_featureProcessor, hairName.c_str(), hairAsset,
@@ -325,9 +333,6 @@ namespace AZ
 
                 // Resize the bone matrices array. The size should equal to the number of bones in the tressFXAsset.
                 m_cachedBoneMatrices.resize(numBones);
-
-                // Connect the tick bus in order to update the bone matrices every tick.
-                TickBus::Handler::BusConnect();
 
                 // Feature processor registration that will hold an instance.
                 // Remark: DO NOT remove the TressFX asset - it's data might be required for

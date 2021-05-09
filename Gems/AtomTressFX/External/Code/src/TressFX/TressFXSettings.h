@@ -38,6 +38,9 @@
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/std/string/string.h>
 
+// Atom
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+
 #include <memory>
 
 // Probably want to unify or rename these.
@@ -123,8 +126,12 @@ namespace AMD
         bool	m_EnableHairLOD = false;
         bool	m_EnableShadowLOD = false;
 
+        // Legacy settings, replaced by assets. Only reserved as a fallback option.
         AZStd::string m_BaseAlbedoName = "<none>";
         AZStd::string m_StrandAlbedoName = "<none>";
+
+        AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_baseAlbedoAsset;
+        AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_strandAlbedoAsset;
     };
 
 } // namespace AMD

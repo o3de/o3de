@@ -12,12 +12,15 @@
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget"
                 },
+                // This is the depth stencil buffer that is to be used by the fill pass
+                // to early reject pixels by depth and in the resolve pass to write the 
+                // the hair depth 
                 {
                     "Name": "Depth",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "DepthStencil"
                 },
-                // Super important to keep DepthLinear as input - used to set the size of the Head PPLL image buffer.
+                // Keep DepthLinear as input - used to set the size of the Head PPLL image buffer.
                 // If DepthLinear is not availbale - connect to another viewport (non MSAA) image.
                 {
                     "Name": "DepthLinear",
@@ -127,7 +130,7 @@
                                 "Attachment": "SkinnedHairSharedBuffer"
                             }
                         },
-                        // Super important to keep DepthLinear as input - used to set the size of the Head PPLL image buffer.
+                        // Keep DepthLinear as input - used to set the size of the Head PPLL image buffer.
                         // If DepthLinear is not availbale - connect to another viewport (non MSAA) image.
                         {
                             "LocalSlot": "DepthLinear",
@@ -157,6 +160,13 @@
                     "TemplateName": "HairPPLLResolvePassTemplate",
                     "Enabled": true,
                     "Connections": [
+                        {
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
                         {
                             "LocalSlot": "PerPixelListHead",
                             "AttachmentRef": {

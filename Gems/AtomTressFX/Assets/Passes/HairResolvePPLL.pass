@@ -16,10 +16,21 @@
                         "StoreAction": "Store"
                     }
                 },
-                {
-                    "Name": "Depth",
+                {   // Used to get the transform from screen space to world space.
+                    // If DepthLinear is not availbale - connect to another viewport (non MSAA) image.
+                    "Name": "DepthLinear",
                     "SlotType": "Input",
-                    "ScopeAttachmentUsage": "DepthStencil"
+                    "ShaderInputName": "m_linearDepth",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                { // The depth buffer will be used to write the closest hair fragment depth
+                    "Name": "Depth",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "Store"
+                    }
                 },
                 {
                     "Name": "PerPixelListHead",

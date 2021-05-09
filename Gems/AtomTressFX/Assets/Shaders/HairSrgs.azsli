@@ -103,6 +103,9 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressW = Clamp;
     };
 
+    // The following texture is mainly for getting the screen to world transform
+    Texture2D<float>                m_linearDepth;
+
     //------------------------------
     //        Lighting Data
     //------------------------------
@@ -110,18 +113,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Texture2DArray<float> m_directionalLightExponentialShadowmap;
     Texture2DArray<float> m_spotLightShadowmaps;
     Texture2DArray<float> m_spotLightExponentialShadowmap;
-    Texture2D m_brdfMap;
-
-    Sampler LinearSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-    
+    Texture2D m_brdfMap;   
     Texture2D<uint4> m_tileLightData;
     StructuredBuffer<uint> m_lightListRemapped;
 }
@@ -304,28 +296,7 @@ float3 GetSharedTangent(int tangentIndex)
         asfloat(PassSrg::m_skinnedHairSharedBuffer[tangentOffset + 2])
     );
 }
-/*
-void GetStrandLevelData(int dataIndex, StrandLevelData data )
-{
-    int startOffset = HairDynamicDataSrg::m_strandLevelDataOffset;
 
-    StrandLevelData* dataBase = (StrandLevelData*)&PassSrg::m_skinnedHairSharedBuffer[startOffset];
-    data.skinningQuat = dataBase[dataIndex].skinningQuat;
-    data.vspQuat = dataBase[dataIndex].skinnivspQuatngQuat;    
-    data.vspTranslation = dataBase[dataIndex].vspTranslation;
-}
-
-void SetStrandLevelData(int dataIndex, StrandLevelData data)
-{
-    int startOffset = HairDynamicDataSrg::m_strandLevelDataOffset;
-
-    // [To Do] Adi: test this or copy manually
-//    PassSrg::m_skinnedHairSharedBuffer[startOffset] = data;
-    PassSrg::m_skinnedHairSharedBuffer[startOffset].skinningQuat = data.skinningQuat;
-    PassSrg::m_skinnedHairSharedBuffer[startOffset].vspQuat = data.vspQuat;
-    PassSrg::m_skinnedHairSharedBuffer[startOffset].vspTranslation = data.vspTranslation;
-}
-*/
 /*
 //! Same as the above only using the dynamic (per object) buffer and not the per pass
 void SetSharedDynamicPosition(int vertexIndex, float3 currentPos)

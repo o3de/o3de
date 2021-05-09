@@ -41,7 +41,7 @@ namespace AZ
                 f4.x = vec4.GetX();
                 f4.y = vec4.GetY();
                 f4.z = vec4.GetZ();
-                f4.w = vec4.GetZ();
+                f4.w = vec4.GetW();
                 return f4;
             }
 
@@ -213,7 +213,7 @@ namespace AZ
             {
                 AZ_Error("Hair Gem", m_initialized, "Attempt to load Hair dynamic data for [%s] without views being properly initilized", name);
 
-                SrgBufferDescriptor* streamDesc = &m_dynamicBuffersDescriptors[uint8_t(HairDynamicBuffersSemantics::Position)];
+                const SrgBufferDescriptor* streamDesc = &m_dynamicBuffersDescriptors[uint8_t(HairDynamicBuffersSemantics::Position)];
                 uint32_t requiredSize = streamDesc->m_elementSize * streamDesc->m_elementCount;
                 Data::Instance<RPI::Buffer> sharedBuffer = SharedBufferInterface::Get()->GetBuffer();
                 AZ_Error("Hair Gem", sharedBuffer, "Attempt to load Hair dynamic data for [%s] without initialize shared buffer", name);
@@ -340,7 +340,7 @@ namespace AZ
                 // [To Do] Adi: notice that the data update of the constant buffer is NOT done here
                 for (uint8_t buffer = 0; buffer < uint8_t(HairGenerationBuffersSemantics::NumBufferStreams) ; ++buffer)
                 {
-                    SrgBufferDescriptor& streamDesc = m_hairGenerationDescriptors[buffer];
+                    const SrgBufferDescriptor& streamDesc = m_hairGenerationDescriptors[buffer];
                     uint32_t requiredSize = streamDesc.m_elementSize * streamDesc.m_elementCount;
 
                     if (buffer == uint8_t(HairGenerationBuffersSemantics::TressFXSimulationConstantBuffer))
@@ -430,7 +430,7 @@ namespace AZ
                 bindSuccess &= m_strandCB.UpdateGPUData();
 
                 // Albedo textures 
-                SrgBufferDescriptor* desc = &m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::BaseAlbedo)];
+                const SrgBufferDescriptor* desc = &m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::BaseAlbedo)];
                 if (!m_hairRenderSrg->SetImage(RHI::ShaderInputImageIndex(desc->m_resourceShaderIndex), m_baseAlbedo))
                 {
                     bindSuccess = false;
@@ -541,39 +541,66 @@ namespace AZ
             //!     If the image was not changed it should only bind without the retrieve operation.
             bool HairRenderObject::PopulateDrawStrandsBindSet(AMD::TressFXRenderingSettings* pRenderSettings)
             {
-                // Load the two albedo maps required for coloring the hair base.
-                // [To Do] Adi: make sure this method is only called when there is an update in the parameters
-                // and / or reload textures only when it is specifically required!
-                AZStd::string baseAlbedoName = "white.tif.streamingimage";
-                AZStd::string strandAlbedoName = "white.tif.streamingimage";
+                // First, Directly loading from the asset stored in the render settings.
                 if (pRenderSettings)
                 {
-                    // Hair base albedo color
-                    if (pRenderSettings->m_BaseAlbedoName != "<none>")
+                    m_baseAlbedo = RPI::StreamingImage::FindOrCreate(pRenderSettings->m_baseAlbedoAsset);
+                    m_strandAlbedo = RPI::StreamingImage::FindOrCreate(pRenderSettings->m_strandAlbedoAsset);
+                }
+
+                // Fallback, using the texture name stored in the render settings. 
+                // [To Do] Adi: make sure this method is only called when there is an update in the parameters
+                // and / or reload textures only when it is specifically required!
+                if (!m_baseAlbedo)
+                {
+                    AZStd::string baseAlbedoName = "white.tif.streamingimage";
+                    if (pRenderSettings && pRenderSettings->m_BaseAlbedoName != "<none>")
                     {
                         baseAlbedoName = pRenderSettings->m_BaseAlbedoName;
                     }
-
-                    // Strand base albedo color
-                    if (pRenderSettings->m_StrandAlbedoName != "<none>")
+                    m_baseAlbedo = UtilityClass::LoadStreamingImage(baseAlbedoName.c_str(), "Hair Gem");
+                }
+                if (!m_strandAlbedo)
+                {
+                    AZStd::string strandAlbedoName = "white.tif.streamingimage";
+                    if (pRenderSettings && pRenderSettings->m_StrandAlbedoName != "<none>")
                     {
                         strandAlbedoName = pRenderSettings->m_StrandAlbedoName;
                     }
-                    else
-                    {
-                        strandAlbedoName = baseAlbedoName;
-                    }
+                    m_strandAlbedo = UtilityClass::LoadStreamingImage(strandAlbedoName.c_str(), "Hair Gem");
                 }
-
-                // Loading the images from file or from the asset catalog if loaded already.
-                // Can be improved by skipping that and only binding.
-                m_baseAlbedo = UtilityClass::LoadStreamingImage(baseAlbedoName.c_str(), "Hair Gem");
-                m_strandAlbedo = UtilityClass::LoadStreamingImage(strandAlbedoName.c_str(), "Hair Gem");
 
                 // Bind the Srg resources
                 return BindRenderSrgResources();
             }
 
+            bool HairRenderObject::LoadImageAsset(AMD::TressFXRenderingSettings* pRenderSettings)
+            {
+                Data::Instance<RPI::StreamingImage> baseAlbedo = RPI::StreamingImage::FindOrCreate(pRenderSettings->m_baseAlbedoAsset);
+                Data::Instance<RPI::StreamingImage> strandAlbedo = RPI::StreamingImage::FindOrCreate(pRenderSettings->m_strandAlbedoAsset);
+
+                // Protect Update and Render if on async threads.
+                AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+
+                // Set albedo textures on shader resources.
+                m_baseAlbedo = baseAlbedo;
+                m_strandAlbedo = strandAlbedo;
+
+                bool success = true;
+                const SrgBufferDescriptor* desc = &m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::BaseAlbedo)];
+                if (!m_hairRenderSrg->SetImage(RHI::ShaderInputImageIndex(desc->m_resourceShaderIndex), m_baseAlbedo))
+                {
+                    success = false;
+                    AZ_Error("Hair Gem", false, "Failed to bind SRG image for [%s]", desc->m_paramNameInSrg.GetCStr());
+                }
+                desc = &m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::StrandAlbedo)];
+                if (!m_hairRenderSrg->SetImage(RHI::ShaderInputImageIndex(desc->m_resourceShaderIndex), m_strandAlbedo))
+                {
+                    success = false;
+                    AZ_Error("Hair Gem", false, "Failed to bind SRG image for [%s]", desc->m_paramNameInSrg.GetCStr());
+                }
+                return success;
+            }
 
             bool HairRenderObject::UploadRenderingGPUResources(AMD::TressFXAsset& asset)
             {
@@ -590,11 +617,11 @@ namespace AZ
                 // Vertex streams data update
                 if (asset.m_strandUV.data())
                 {
-                    SrgBufferDescriptor* desc = &m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairTexCoords)];
+                    const SrgBufferDescriptor* desc = &m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairTexCoords)];
                     updateSuccess &= m_hairTexCoords->UpdateData( (void*)asset.m_strandUV.data(), desc->m_elementCount * desc->m_elementSize, 0);
                 }
 
-                SrgBufferDescriptor* desc = &m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairVertexRenderParams)];
+                const SrgBufferDescriptor* desc = &m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairVertexRenderParams)];
                 updateSuccess &= m_hairVertexRenderParams->UpdateData((void*)asset.m_thicknessCoeffs.data(), desc->m_elementCount * desc->m_elementSize, 0);
 
                 // [To Do] Adi: no need to update index buffer data unless we go to dynamic reduction

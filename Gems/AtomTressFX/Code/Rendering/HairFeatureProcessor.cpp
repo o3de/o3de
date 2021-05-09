@@ -117,26 +117,11 @@ namespace AZ
                 }
 
                 m_hairRenderObjects.push_back(renderObject);
-                HairRenderObject* renderObjectPtr = renderObject.get();
 
-                // Compute pases
-                m_computePasses[TestSkinningPass]->BuildDispatchItem( // [To Do] Adi: Debug pass - remove at polish
-                    renderObjectPtr, DispatchLevel::DISPATCHLEVEL_VERTEX);
-                m_computePasses[GlobalShapeConstraintsPass]->BuildDispatchItem(
-                    renderObjectPtr, DispatchLevel::DISPATCHLEVEL_VERTEX);
-                m_computePasses[CalculateStrandDataPass]->BuildDispatchItem(
-                    renderObjectPtr, DispatchLevel::DISPATCHLEVEL_STRAND);
-                m_computePasses[VelocityShockPropagationPass]->BuildDispatchItem(
-                    renderObjectPtr, DispatchLevel::DISPATCHLEVEL_VERTEX);
-                m_computePasses[LocalShapeConstraintsPass]->BuildDispatchItem(
-                    renderObjectPtr, DispatchLevel::DISPATCHLEVEL_STRAND);
-                m_computePasses[LengthConstriantsWindAndCollisionPass]->BuildDispatchItem(
-                    renderObjectPtr, DispatchLevel::DISPATCHLEVEL_VERTEX);
-                m_computePasses[UpdateFollowHairPass]->BuildDispatchItem(
-                    renderObjectPtr, DispatchLevel::DISPATCHLEVEL_VERTEX);
+                BuildDispatchItems(renderObject);
 
                 // Render / Raster pass
-                m_hairPPLLRasterPass->BuildDrawPacket(renderObjectPtr);
+                m_hairPPLLRasterPass->BuildDrawPacket(renderObject.get());
 
                 EnablePasses(true);
             }
@@ -233,6 +218,18 @@ namespace AZ
                     return;
                 }
 
+                if (m_forceRebuildRenderData)
+                {
+                    for (auto& hairRenderObject : m_hairRenderObjects)
+                    {
+                        BuildDispatchItems(hairRenderObject);
+                        
+                        m_hairPPLLRasterPass->BuildDrawPacket(hairRenderObject.get());
+                    }
+                    m_forceRebuildRenderData = false;
+                    m_addDispatchEnabled = true;
+                }
+
                 // Prepare materials array for the per pass srg
                 std::vector<const AMD::TressFXRenderParams*> hairObjectsRenderMaterials;
                 uint32_t obj = 0;
@@ -277,9 +274,12 @@ namespace AZ
                     HairRenderObject* renderObject = objIter->get();
 
                     // Compute pases
-                    for (auto mapIter = m_computePasses.begin(); mapIter != m_computePasses.end(); ++mapIter)
+                    if (m_addDispatchEnabled)
                     {
-                        mapIter->second->AddDispatchItem(renderObject); 
+                        for (auto mapIter = m_computePasses.begin(); mapIter != m_computePasses.end(); ++mapIter)
+                        {
+                            mapIter->second->AddDispatchItem(renderObject);
+                        }
                     }
 
                     // Render / Raster Passes
@@ -502,6 +502,25 @@ namespace AZ
                 return true;
             }
 
+            void HairFeatureProcessor::BuildDispatchItems(Data::Instance<HairRenderObject> renderObject)
+            {
+                HairRenderObject* renderObjectPtr = renderObject.get();
+
+                m_computePasses[TestSkinningPass]->BuildDispatchItem(
+                    renderObjectPtr, DispatchLevel::DISPATCHLEVEL_VERTEX);
+                m_computePasses[GlobalShapeConstraintsPass]->BuildDispatchItem(
+                    renderObjectPtr, DispatchLevel::DISPATCHLEVEL_VERTEX);
+                m_computePasses[CalculateStrandDataPass]->BuildDispatchItem(
+                    renderObjectPtr, DispatchLevel::DISPATCHLEVEL_STRAND);
+                m_computePasses[VelocityShockPropagationPass]->BuildDispatchItem(
+                    renderObjectPtr, DispatchLevel::DISPATCHLEVEL_VERTEX);
+                m_computePasses[LocalShapeConstraintsPass]->BuildDispatchItem(
+                    renderObjectPtr, DispatchLevel::DISPATCHLEVEL_STRAND);
+                m_computePasses[LengthConstriantsWindAndCollisionPass]->BuildDispatchItem(
+                    renderObjectPtr, DispatchLevel::DISPATCHLEVEL_VERTEX);
+                m_computePasses[UpdateFollowHairPass]->BuildDispatchItem(
+                    renderObjectPtr, DispatchLevel::DISPATCHLEVEL_VERTEX);
+            }
         } // namespace Hair
     } // namespace Render
 } // namespace AZ

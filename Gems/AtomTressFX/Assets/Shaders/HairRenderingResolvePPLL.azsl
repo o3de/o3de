@@ -198,8 +198,7 @@ float4 GatherLinkedList(float2 vfScreenAddress )//, inout float outDepth )
         float alpha = vData.w;
         uint shadeParamIndex;	// So we know what settings to shade with
 
-        const float adibugbugColorDarkener = 0.65;  // [To Do] Adi: remove - testing only
-        float3 vColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);// *adibugbugColorDarkener;
+        float3 vColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
         float3 fragmentColor = TressFXShading(vfScreenAddress, fDepth, vTangent, vColor, shadeParamIndex);
 
         // Blend in the fragment color
@@ -236,16 +235,17 @@ void SortFragmentArray( inout IndexArray indexArray, uint fragmentsAmount )
     for (uint ind1 = 0; ind1 < fragmentsAmount; ++ind1)
     {
         uint index1 = indexArray.fragmentIndexArray[ind1];
-        float depth1 = asfloat(NODE_DEPTH(index1));
+        float depth1 = asfloat(NODE_DEPTH(index1)); // we want this depth to be the largest (closest) in this loop
         for (uint ind2 = ind1+1 ; ind2 < fragmentsAmount; ++ind2)
         {
             uint index2 = indexArray.fragmentIndexArray[ind2];
             float depth2 = asfloat(NODE_DEPTH(index2));
-            if (depth2 < depth1)
+            if (depth2 > depth1)
             {
                 uint tmpIndex = index2;
                 indexArray.fragmentIndexArray[ind2] = index1;
                 indexArray.fragmentIndexArray[ind1] = tmpIndex;
+                depth1 = depth2;
             }
         }
     }    
@@ -296,8 +296,8 @@ float4 CalculateFrontFregmentShading(
 {
     // Blend the closest fragments - first ones in the sorted array
     float4 finalColor = baseColor;
-    uint count = min(fragmentsToCompute, maxFragments);
-    for (int j = 0; j < count ; j++)
+    uint count = min(fragmentsToCompute, maxFragments) - 1;
+    for (int j = count; j >= 0 ; --j )
     {
         uint pointer = indexArray.fragmentIndexArray[j];
         uint data = NODE_DATA(pointer);
@@ -322,7 +322,7 @@ float4 CalculateFrontFregmentShading(
     return finalColor;
 }
 
-float4 CombineFragments(float2 vfScreenAddress)
+float4 CombineFragments(float2 vfScreenAddress, inout float closestDepth )
 {
     uint2 vScreenAddress = uint2(vfScreenAddress);
     uint pointer = FragmentListHead[vScreenAddress];
@@ -351,11 +351,12 @@ float4 CombineFragments(float2 vfScreenAddress)
     // Using the base color we are now running the full lighting loop on the closest
     // hair fragment in the current pixel.
     float4 finalColor = CalculateFrontFregmentShading(vfScreenAddress, baseColor, indexArray, KBUFFER_SIZE, fragmentsAmount);
+    closestDepth = asfloat(NODE_DEPTH(indexArray.fragmentIndexArray[0]));
 
     return finalColor;
 }
 
-float4 GetClosestFragment(float2 vfScreenAddress)
+float4 GetClosestFragment(float2 vfScreenAddress, inout float3 tangent, inout float closestDepth)
 {
     uint2 vScreenAddress = uint2(vfScreenAddress);
     uint pointer = FragmentListHead[vScreenAddress];
@@ -385,7 +386,7 @@ float4 GetClosestFragment(float2 vfScreenAddress)
     }
     FragmentListHead[vScreenAddress] = FRAGMENT_LIST_NULL;  // Clear for next frame
 
-    float curDepth = maxDepth;
+    float curDepth = closestDepth = maxDepth;
     float4 vData = UnpackUintIntoFloat4(curData);
     float3 vTangent = vData.xyz;
     float alpha = vData.w;
@@ -394,20 +395,35 @@ float4 GetClosestFragment(float2 vfScreenAddress)
     float3 fragmentColor = TressFXShading(vfScreenAddress, curDepth, vTangent, vColor, shadeParamIndex);
 
     // Blend in the fragment color
-    fcolor.xyz = vColor;
-    fcolor.xyz = fcolor.xyz * (1.f - alpha) + (fragmentColor * alpha) * alpha;
+    alpha = 1.0;   // Simplified, otherwise it doesn't match the full pass and is too transparent.
+    fcolor.xyz = fragmentColor * alpha;     // simplified since there is no base layer
     fcolor.w *= (1.f - alpha);
+   
+    tangent = vTangent;
 
     return fcolor;
 }
 
-//////////////////////////////////////////////////////////////
-// PPLL Resolve PS
-// Full-screen pass that sorts through the written samples and shades the hair
-[earlydepthstencil]
-float4 PPLLResolvePS(VSOutput input) : SV_Target
+struct PSColorDepthOutput
 {
-    return CombineFragments(input.m_position.xy);
-//    return GetClosestFragment(input.m_position.xy);
-//    return GatherLinkedList(input.m_position.xy);
+    float4 m_color : SV_Target;
+    float m_depth : SV_Depth;
+}; 
+
+// The resolve will combine the base color driven by the further fragments while 
+// the actual shading will be combined on top based on the shaded closest fragments.
+// The closest depth will be returned and written in the depth buffer.
+PSColorDepthOutput PPLLResolvePS(VSOutput input) 
+{
+    PSColorDepthOutput pixOut;
+
+    float3 tangent;
+//    pixOut.m_color = GetClosestFragment(input.m_position.xy, tangent, pixOut.m_depth);
+//    pixOut.m_color.rgb = tangent;
+//    pixOut.m_color = GetClosestFragment(input.m_position.xy, tangent, pixOut.m_depth);
+//    pixOut.m_color = float4(0, pixOut.m_color.w, 0, 0);
+
+    pixOut.m_color = CombineFragments(input.m_position.xy, pixOut.m_depth);
+
+    return pixOut;
 }
