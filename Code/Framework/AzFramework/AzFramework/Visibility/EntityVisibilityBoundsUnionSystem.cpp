@@ -36,6 +36,9 @@ namespace AzFramework
 
     void EntityVisibilityBoundsUnionSystem::Disconnect()
     {
+        m_entityActivatedEventHandler.Disconnect();
+        m_entityDeactivatedEventHandler.Disconnect();
+
         AZ::TickBus::Handler::BusDisconnect();
         IEntityBoundsUnionRequestBus::Handler::BusDisconnect();
         AZ::Interface<IEntityBoundsUnion>::Unregister(this);
