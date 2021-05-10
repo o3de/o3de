@@ -25,13 +25,37 @@ include(cmake/LySet.cmake)
 include(cmake/Version.cmake)
 include(cmake/OutputDirectory.cmake)
 
+# Set the engine_path and engine_json
+set(o3de_engine_path ${CMAKE_CURRENT_LIST_DIR})
+set(o3de_engine_json ${o3de_engine_path}/engine.json)
+
 if(NOT PROJECT_NAME)
     project(O3DE
         LANGUAGES C CXX
         VERSION ${LY_VERSION_STRING}
     )
+
+    # o3de manifest
+    include(cmake/o3de_manifest.cmake)
 endif()
 
+################################################################################
+# Resolve this engines name and restricted path
+################################################################################
+o3de_engine_name(${o3de_engine_json} o3de_engine_name)
+o3de_restricted_path(${o3de_engine_json} o3de_engine_restricted_path)
+message(STATUS "O3DE Engine Name: ${o3de_engine_name}")
+message(STATUS "O3DE Engine Path: ${o3de_engine_path}")
+if(o3de_engine_restricted_path)
+    message(STATUS "O3DE Engine Restricted Path: ${o3de_engine_restricted_path}")
+endif()
+
+# add the engines cmake folder to the CMAKE_MODULE_PATH
+list(APPEND CMAKE_MODULE_PATH "${o3de_engine_path}/cmake")
+
+################################################################################
+# Initialize
+################################################################################
 include(cmake/GeneralSettings.cmake)
 include(cmake/FileUtil.cmake)
 include(cmake/PAL.cmake)
@@ -62,7 +86,6 @@ if(NOT INSTALLED_ENGINE)
     
     # Add the rest of the targets
     add_subdirectory(Code)
-    add_subdirectory(Gems)
     add_subdirectory(scripts)
 
     # SPEC-1417 will investigate and fix this
@@ -71,15 +94,12 @@ if(NOT INSTALLED_ENGINE)
         add_subdirectory(Tools/RemoteConsole/ly_remote_console/tests/)
     endif()
 
-    set(enabled_platforms
-    ${PAL_PLATFORM_NAME}
-    ${LY_PAL_TOOLS_ENABLED})
+    # Add any engine restricted platforms as external subdirs
+    o3de_add_engine_restricted_platform_external_subdirs()
 
-    foreach(restricted_platform ${PAL_RESTRICTED_PLATFORMS})
-        if(restricted_platform IN_LIST enabled_platforms)
-            add_subdirectory(restricted/${restricted_platform})
-        endif()
-    endforeach()
+    # Add external subdirectories listed in the manifest. LY_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
+    # external subdirectories
+    list(APPEND LY_EXTERNAL_SUBDIRS ${o3de_engine_external_subdirectories})
 
     # Loop over the additional external subdirectories and invoke add_subdirectory on them
     foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
@@ -121,10 +141,10 @@ endif()
 ly_delayed_generate_runtime_dependencies()
 # 5. Perform test impact framework post steps once all of the targets have been enumerated
 ly_test_impact_post_step()
-# 6. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
-if(NOT INSTALLED_ENGINE)
-    ly_setup_o3de_install()
 
+if(NOT INSTALLED_ENGINE)
+    # 6. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
+    ly_setup_o3de_install()
     # 7. CPack information (to be included after install)
     include(cmake/Packaging.cmake)
 endif()

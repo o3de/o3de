@@ -15,7 +15,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/DataStructures/FixedSizeBitsetView.h>
-#include <Source/NetworkEntity/NetworkEntityHandle.h>
+#include <Include/NetworkEntityHandle.h>
 #include <Include/MultiplayerTypes.h>
 #include <Include/IMultiplayer.h>
 
@@ -69,7 +69,7 @@ namespace Multiplayer
 
         virtual NetComponentId GetNetComponentId() const = 0;
 
-        virtual bool HandleRpcMessage(NetEntityRole netEntityRole, NetworkEntityRpcMessage& rpcMessage) = 0;
+        virtual bool HandleRpcMessage(AzNetworking::IConnection* invokingConnection, NetEntityRole netEntityRole, NetworkEntityRpcMessage& rpcMessage) = 0;
         virtual bool SerializeStateDeltaMessage(ReplicationRecord& replicationRecord, AzNetworking::ISerializer& serializer) = 0;
         virtual void NotifyStateDeltaChanges(ReplicationRecord& replicationRecord) = 0;
         virtual bool HasController() const = 0;

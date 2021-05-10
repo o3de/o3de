@@ -306,7 +306,7 @@ namespace AZ
             for (const RPI::ViewPtr& view : packet.m_views)
             {
                 if (m_renderPipelineIdsForPersistentView.find(view.get()) != m_renderPipelineIdsForPersistentView.end() &&
-                    (view->GetUsageFlags() & RPI::View::UsageCamera))
+                    (RHI::CheckBitsAny(view->GetUsageFlags(), RPI::View::UsageCamera | RPI::View::UsageReflectiveCubeMap)))
                 {
                     RPI::ShaderResourceGroup* viewSrg = view->GetShaderResourceGroup().get();
 
