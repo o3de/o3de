@@ -71,6 +71,7 @@ namespace AzToolsFramework
             /**
             * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.
             * @param instance The Instance to load.
+            * @param referencedAssets AZ::Assets discovered during json load are added to this list
             * @param prefabDom the prefabDom that will be used to load the Instance data.
             * @param shouldClearContainers whether to clear containers in Instance while loading.
             * @return bool on whether the operation succeeded.
