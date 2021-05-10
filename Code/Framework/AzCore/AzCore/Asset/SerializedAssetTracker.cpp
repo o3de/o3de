@@ -25,5 +25,10 @@ namespace AZ
         {
             return m_serializedAssets;
         }
+
+        AZStd::vector<Asset<AssetData>>& SerializedAssetTracker::GetTrackedAssets()
+        {
+            return m_serializedAssets;
+        }
     }
 }
