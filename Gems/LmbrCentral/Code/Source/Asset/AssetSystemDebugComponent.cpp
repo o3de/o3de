@@ -72,7 +72,7 @@ namespace LmbrCentral
             return;
         }
 
-        // ToDo: Implement with Atom.
+        // ToDo: Remove class or update to work with Atom? LYN-3672
         /*float x = 10;
         float y = 15;
         ColorF color(1, 1, 1);

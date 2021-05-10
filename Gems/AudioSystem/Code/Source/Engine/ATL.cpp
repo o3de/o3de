@@ -2018,7 +2018,7 @@ namespace Audio
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
 
-        // ToDo: With Atom?
+        // ToDo: Update to work with Atom? LYN-3677
         /*if (g_audioCVars.m_nDrawAudioDebug > 0)
         {
             DrawAudioObjectDebugInfo(*pAuxGeom); // needs to be called first so that the rest of the labels are printed

@@ -98,14 +98,14 @@ namespace TextureAtlasNamespace
                     SResourceAsync* pInfo = new SResourceAsync();
                     pInfo->eClassName = eRCN_Texture;
                     pInfo->pResource = iterator->second.m_atlas->GetTexture();
-                    // ToDo: With Atom?
+                    // ToDo: Update to work with Atom? LYN-3680
                     // ???->ReleaseResourceAsync(pInfo);
                 }
                 // Reload Texture
                 AZStd::string imagePath = iterator->second.m_path.substr(0, iterator->second.m_path.find_last_of('.'));
                 imagePath.append(".dds");
 
-                // ToDo: With Atom?
+                // ToDo: Update to work with Atom? LYN-3680
                 // uint32 loadTextureFlags = (FT_USAGE_ALLOWREADSRGB | FT_DONT_STREAM);
                 ITexture* texture = nullptr;
 
@@ -191,7 +191,7 @@ namespace TextureAtlasNamespace
             AzFramework::StringFunc::Path::ReplaceExtension(imagePath, "dds");
 
             // Load the image in
-            // ToDo: With Atom?
+            // ToDo: Update to work with Atom? LYN-3680
             // uint32 loadTextureFlags = (FT_USAGE_ALLOWREADSRGB | FT_DONT_STREAM);
             ITexture* texture = nullptr;
 
@@ -244,7 +244,7 @@ namespace TextureAtlasNamespace
                         SResourceAsync* pInfo = new SResourceAsync();
                         pInfo->eClassName = eRCN_Texture;
                         pInfo->pResource = temp.m_atlas->GetTexture();
-                        // ToDo: With Atom?
+                        // ToDo: Update to work with Atom? LYN-3680
                         // ???->ReleaseResourceAsync(pInfo);
                     }
                     // Delete the atlas

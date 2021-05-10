@@ -1233,7 +1233,7 @@ void AZ::FFont::WrapText(string& result, float maxWidth, const char* str, const 
 
     if (ctx.m_sizeIn800x600)
     {
-        // ToDo: With Atom?
+        // ToDo: Update to work with Atom? LYN-3676
         // maxWidth = ???->ScaleCoordX(maxWidth);
     }
 

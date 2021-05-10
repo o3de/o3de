@@ -839,7 +839,7 @@ namespace Audio
             const AZ::Vector3 vPos(m_oPosition.GetPositionVec());
             AZ::Vector3 vScreenPos(0.f);
 
-            // ToDo: With Atom?
+            // ToDo: Update to work with Atom? LYN-3677
             /*{
                 float screenProj[3];
                 ???->ProjectToScreen(vPos.GetX(), vPos.GetY(), vPos.GetZ(), &screenProj[0], &screenProj[1], &screenProj[2]);
@@ -1081,7 +1081,7 @@ namespace Audio
                 );
             }
 
-            // ToDo: With Atom?
+            // ToDo: Update to work with Atom? LYN-3677
             /*if (drawLabels)
             {
                 float screenProj[3];

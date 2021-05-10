@@ -816,7 +816,7 @@ bool UiCanvasManager::HandleInputEventForInWorldCanvases(const AzFramework::Inpu
     // This requires knowledge of the camera
     // for initial testing we will just use a ray in the center of the viewport
 
-    // ToDo: Re-implement by getting the camera from Atom
+    // ToDo: Re-implement by getting the camera from Atom. LYN-3680
     return false;
     const CCamera cam;
 

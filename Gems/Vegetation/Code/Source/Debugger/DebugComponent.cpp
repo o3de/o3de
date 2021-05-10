@@ -192,7 +192,7 @@ void DebugComponent::DrawGlobalDebugInfo()
 void DebugComponent::DrawInstanceDebug()
 {
 #if defined(VEG_PROFILE_ENABLED)
-    // ToDo: Implement with Atom.
+    // ToDo: Re-implement with Atom. LYN-3681
     /*renderAuxGeom->SetRenderFlags(e_Mode3D | e_FillModeSolid | e_CullModeBack | e_DepthWriteOff | e_DepthTestOn);
 
     AZStd::unordered_map<AreaId, AreaDebugDisplayData> areaDebugDisplayDataMap;
@@ -905,7 +905,7 @@ void DebugComponent::RemoveConsoleVariables()
 
 void DebugComponent::DrawDebugStats()
 {
-    // ToDo: Implement with Atom.
+    // ToDo: Re-implement with Atom. LYN-3681
     /*if (!m_debugData)
     {
         return;
