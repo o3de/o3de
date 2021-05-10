@@ -42,7 +42,8 @@ function ProcessEditor(context)
     if(not enable or textureMap == nil) then
         visibility = MaterialPropertyVisibility_Hidden
     end
-
+    
     context:SetMaterialPropertyVisibility("parallax.factor", visibility)
+    context:SetMaterialPropertyVisibility("parallax.offset", visibility)
     context:SetMaterialPropertyVisibility("parallax.invert", visibility)
 end

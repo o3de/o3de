@@ -39,9 +39,10 @@ namespace AzToolsFramework
                     editContext->Class<EditorNonUniformScaleComponent>("Non-uniform Scale",
                         "Non-uniform scale for this entity only (does not propagate through hierarchy)")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::Category, "Non-uniform Scale")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::FixedComponentListIndex, 1)
+                        ->Attribute(AZ::Edit::Attributes::RemoveableByUser, true)
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/NonUniformScale.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/NonUniformScale.svg")
                         ->DataElement(
                             AZ::Edit::UIHandlers::Default, &EditorNonUniformScaleComponent::m_scale, "Non-uniform Scale",
                             "Non-uniform scale for this entity only (does not propagate through hierarchy)")
@@ -61,6 +62,8 @@ namespace AzToolsFramework
 
         void EditorNonUniformScaleComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
+            incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+
             incompatible.push_back(AZ_CRC_CE("DebugDrawObbService"));
             incompatible.push_back(AZ_CRC_CE("DebugDrawService"));
             incompatible.push_back(AZ_CRC_CE("EMotionFXActorService"));

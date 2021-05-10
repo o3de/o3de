@@ -98,7 +98,7 @@ public:
             "AWSResourceMappingManager", AZ::Uuid::CreateRandom().ToString<AZStd::string>(false, false).c_str());
         AzFramework::StringFunc::Path::Normalize(m_normalizedSourceProjectFolder);
         m_normalizedConfigFolderPath = AZStd::string::format("%s/%s/",
-            m_normalizedSourceProjectFolder.c_str(), AWSCore::AWSCoreConfiguration::AWSCORE_RESOURCE_MAPPING_CONFIG_FOLDERNAME);
+            m_normalizedSourceProjectFolder.c_str(), AWSCore::AWSCoreConfiguration::AWSCoreResourceMappingConfigFolderName);
         AzFramework::StringFunc::Path::Normalize(m_normalizedConfigFolderPath);
         AWSCoreInternalRequestBus::Handler::BusConnect();
     }
@@ -178,6 +178,7 @@ TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseInvalidConfigFile_Con
     EXPECT_EQ(m_reloadConfigurationCounter, 1);
     EXPECT_TRUE(actualAccountId.empty());
     EXPECT_TRUE(actualRegion.empty());
+    EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::Error);
 }
 
 TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_ConfigDataIsNotEmpty)
@@ -192,6 +193,7 @@ TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_Confi
     EXPECT_EQ(m_reloadConfigurationCounter, 1);
     EXPECT_FALSE(actualAccountId.empty());
     EXPECT_FALSE(actualRegion.empty());
+    EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::Ready);
 }
 
 TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_ConfigDataIsNotEmptyWithMultithreadCalls)
@@ -230,11 +232,13 @@ TEST_F(AWSResourceMappingManagerTest, DeactivateManager_AfterActivatingWithValid
     AWSResourceMappingRequestBus::BroadcastResult(actualRegion, &AWSResourceMappingRequests::GetDefaultRegion);
     EXPECT_FALSE(actualAccountId.empty());
     EXPECT_FALSE(actualRegion.empty());
+    EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::Ready);
 
     m_resourceMappingManager->DeactivateManager();
 
     EXPECT_TRUE(m_resourceMappingManager->GetDefaultAccountId().empty());
     EXPECT_TRUE(m_resourceMappingManager->GetDefaultRegion().empty());
+    EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::NotLoaded);
 }
 
 TEST_F(AWSResourceMappingManagerTest, GetDefaultAccountId_AfterParsingValidConfigFile_GetExpectedDefaultAccountId)
@@ -416,6 +420,7 @@ TEST_F(AWSResourceMappingManagerTest, ReloadConfigFile_ParseValidConfigFileAfter
     EXPECT_EQ(m_reloadConfigurationCounter, 1);
     EXPECT_TRUE(actualAccountId.empty());
     EXPECT_TRUE(actualRegion.empty());
+    EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::Error);
 
     CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ReloadConfigFile();
@@ -425,6 +430,7 @@ TEST_F(AWSResourceMappingManagerTest, ReloadConfigFile_ParseValidConfigFileAfter
     EXPECT_EQ(m_reloadConfigurationCounter, 1);
     EXPECT_FALSE(actualAccountId.empty());
     EXPECT_FALSE(actualRegion.empty());
+    EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::Ready);
 }
 
 TEST_F(AWSResourceMappingManagerTest, ReloadConfigFile_ReloadConfigFileNameAndParseValidConfigFile_ConfigDataGetParsed)
@@ -435,6 +441,7 @@ TEST_F(AWSResourceMappingManagerTest, ReloadConfigFile_ReloadConfigFileNameAndPa
     EXPECT_EQ(m_reloadConfigurationCounter, 1);
     EXPECT_FALSE(m_resourceMappingManager->GetDefaultAccountId().empty());
     EXPECT_FALSE(m_resourceMappingManager->GetDefaultRegion().empty());
+    EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::Ready);
 }
 
 TEST_F(AWSResourceMappingManagerTest, ReloadConfigFile_MissingSetRegFile_ConfigDataIsNotParsed)
@@ -444,4 +451,5 @@ TEST_F(AWSResourceMappingManagerTest, ReloadConfigFile_MissingSetRegFile_ConfigD
     EXPECT_EQ(m_reloadConfigurationCounter, 1);
     EXPECT_TRUE(m_resourceMappingManager->GetDefaultAccountId().empty());
     EXPECT_TRUE(m_resourceMappingManager->GetDefaultRegion().empty());
+    EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::NotLoaded);
 }
