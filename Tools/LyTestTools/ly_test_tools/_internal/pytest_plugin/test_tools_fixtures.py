@@ -29,7 +29,7 @@ import ly_test_tools.environment.file_system
 import ly_test_tools.launchers.launcher_helper
 import ly_test_tools.launchers.platforms.base
 import ly_test_tools.environment.watchdog
-from ly_test_tools import ALL_PLATFORM_OPTIONS, HOST_OS_PLATFORM, HOST_OS_GENERIC_EXECUTABLE
+from ly_test_tools import ALL_PLATFORM_OPTIONS, HOST_OS_PLATFORM, HOST_OS_DEDICATED_SERVER, HOST_OS_GENERIC_EXECUTABLE
 
 logger = logging.getLogger(__name__)
 
@@ -260,7 +260,7 @@ def dedicated_launcher(request, workspace, crash_log_watchdog):
     return _dedicated_launcher(
         request=request,
         workspace=workspace,
-        launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_PLATFORM),
+        launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_DEDICATED_SERVER),
         level=get_fixture_argument(request, 'level', ''))
 
 
