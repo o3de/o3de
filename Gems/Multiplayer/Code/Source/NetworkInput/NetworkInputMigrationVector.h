@@ -13,54 +13,22 @@
 #pragma once
 
 #include <Source/NetworkInput/NetworkInput.h>
-#include <Source/NetworkEntity/NetworkEntityHandle.h>
+#include <Include/NetworkEntityHandle.h>
+#include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/fixed_vector.h>
 
 namespace Multiplayer
 {
-    //! @class NetworkInputVector
-    //! @brief An array of network inputs. Used to mitigate loss of input packets on the server. Compresses subsequent elements.
-    class NetworkInputVector final
-    {
-    public:
-        static constexpr uint32_t MaxElements = 8; // Never try to replicate a list larger than this amount
-
-        NetworkInputVector();
-        NetworkInputVector(const ConstNetworkEntityHandle& entityHandle);
-        ~NetworkInputVector() = default;
-
-        NetworkInput& operator[](uint32_t index);
-        const NetworkInput& operator[](uint32_t index) const;
-
-        void SetPreviousInputId(ClientInputId previousInputId);
-        ClientInputId GetPreviousInputId() const;
-
-        bool Serialize(AzNetworking::ISerializer& serializer);
-
-    private:
-
-        struct Wrapper // Strictly a workaround to deal with the private constructor of NetworkInput
-        {
-            Wrapper() : m_networkInput() {}
-            Wrapper(const NetworkInput& networkInput) : m_networkInput(networkInput) {}
-            NetworkInput m_networkInput;
-        };
-
-        ConstNetworkEntityHandle m_owner;
-        AZStd::fixed_vector<Wrapper, MaxElements> m_inputs;
-        ClientInputId m_previousInputId;
-    };
-
-    //! @class MigrateNetworkInputVector
+    //! @class NetworkInputMigrationVector
     //! @brief A variable sized array of input commands, used specifically when migrate a clients inputs.
-    class MigrateNetworkInputVector final
+    class NetworkInputMigrationVector final
     {
     public:
         static constexpr uint32_t MaxElements = 90; // Never try to migrate a list larger than this amount, bumped up to handle DTLS connection time
 
-        MigrateNetworkInputVector();
-        MigrateNetworkInputVector(const ConstNetworkEntityHandle& entityHandle);
-        virtual ~MigrateNetworkInputVector() = default;
+        NetworkInputMigrationVector();
+        NetworkInputMigrationVector(const ConstNetworkEntityHandle& entityHandle);
+        virtual ~NetworkInputMigrationVector() = default;
 
         uint32_t GetSize() const;
         NetworkInput& operator[](uint32_t index);

@@ -10,21 +10,21 @@
 *
 */
 
-#include <Source/NetworkInput/NetworkInputVector.h>
-#include <Source/NetworkEntity/INetworkEntityManager.h>
+#include <Source/NetworkInput/NetworkInputArray.h>
+#include <Include/INetworkEntityManager.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/Serialization/DeltaSerializer.h>
 
 namespace Multiplayer
 {
-    NetworkInputVector::NetworkInputVector()
+    NetworkInputArray::NetworkInputArray()
         : m_owner()
         , m_inputs()
     {
         ;
     }
 
-    NetworkInputVector::NetworkInputVector(const ConstNetworkEntityHandle& entityHandle)
+    NetworkInputArray::NetworkInputArray(const ConstNetworkEntityHandle& entityHandle)
         : m_owner(entityHandle)
         , m_inputs()
     {
@@ -38,27 +38,27 @@ namespace Multiplayer
         }
     }
 
-    NetworkInput& NetworkInputVector::operator[](uint32_t index)
+    NetworkInput& NetworkInputArray::operator[](uint32_t index)
     {
         return m_inputs[index].m_networkInput;
     }
 
-    const NetworkInput& NetworkInputVector::operator[](uint32_t index) const
+    const NetworkInput& NetworkInputArray::operator[](uint32_t index) const
     {
         return m_inputs[index].m_networkInput;
     }
 
-    void NetworkInputVector::SetPreviousInputId(ClientInputId previousInputId)
+    void NetworkInputArray::SetPreviousInputId(ClientInputId previousInputId)
     {
         m_previousInputId = previousInputId;
     }
 
-    ClientInputId NetworkInputVector::GetPreviousInputId() const
+    ClientInputId NetworkInputArray::GetPreviousInputId() const
     {
         return m_previousInputId;
     }
 
-    bool NetworkInputVector::Serialize(AzNetworking::ISerializer& serializer)
+    bool NetworkInputArray::Serialize(AzNetworking::ISerializer& serializer)
     {
         // Always serialize the full first element
         if (!m_inputs[0].m_networkInput.Serialize(serializer))
@@ -104,68 +104,5 @@ namespace Multiplayer
         }
         serializer.Serialize(m_previousInputId, "PreviousInputId");
         return true;
-    }
-
-
-    MigrateNetworkInputVector::MigrateNetworkInputVector()
-        : m_owner()
-    {
-        ;
-    }
-
-    MigrateNetworkInputVector::MigrateNetworkInputVector(const ConstNetworkEntityHandle& entityHandle)
-        : m_owner(entityHandle)
-    {
-        ;
-    }
-
-    uint32_t MigrateNetworkInputVector::GetSize() const
-    {
-        return aznumeric_cast<uint32_t>(m_inputs.size());
-    }
-
-    NetworkInput& MigrateNetworkInputVector::operator[](uint32_t index)
-    {
-        return m_inputs[index].m_networkInput;
-    }
-
-    const NetworkInput& MigrateNetworkInputVector::operator[](uint32_t index) const
-    {
-        return m_inputs[index].m_networkInput;
-    }
-
-    bool MigrateNetworkInputVector::PushBack(const NetworkInput& networkInput)
-    {
-        if (m_inputs.size() < m_inputs.capacity())
-        {
-            m_inputs.push_back(networkInput);
-            return true;
-        }
-        return false;
-    }
-
-    bool MigrateNetworkInputVector::Serialize(AzNetworking::ISerializer& serializer)
-    {
-        NetEntityId ownerId = m_owner.GetNetEntityId();
-        serializer.Serialize(ownerId, "OwnerId");
-
-        uint32_t inputCount = aznumeric_cast<uint32_t>(m_inputs.size());
-        serializer.Serialize(inputCount, "InputCount");
-
-        if (serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject)
-        {
-            // make sure all the possible NetworkInputs get attached prior to serialization, this double sends the size, but this message is only sent on server migration
-            m_inputs.resize(inputCount);
-            m_owner = GetNetworkEntityManager()->GetEntity(ownerId);
-            NetBindComponent* netBindComponent = m_owner.GetNetBindComponent();
-            if (netBindComponent)
-            {
-                for (uint32_t i = 0; i < m_inputs.size(); ++i)
-                {
-                    m_inputs[i].m_networkInput.AttachNetBindComponent(netBindComponent);
-                }
-            }
-        }
-        return serializer.Serialize(m_inputs, "Inputs");
     }
 }
