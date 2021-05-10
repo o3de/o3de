@@ -16,6 +16,7 @@
 #include <QStyledItemDelegate>
 #include "GemInfo.h"
 #include "GemModel.h"
+#include <QHash>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QEvent)
@@ -38,6 +39,9 @@ namespace O3DE::ProjectManager
     private:
         void CalcRects(const QStyleOptionViewItem& option, const QModelIndex& modelIndex, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const;
         QRect GetTextRect(QFont& font, const QString& text, qreal fontSize) const;
+        QRect CalcButtonRect(const QRect& contentRect) const;
+        void DrawPlatformIcons(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const;
+        void DrawButton(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const;
 
         GemModel* m_gemModel = nullptr;
 
@@ -47,9 +51,10 @@ namespace O3DE::ProjectManager
         const QColor m_backgroundColor = QColor("#333333"); // Outside of the actual gem item
         const QColor m_itemBackgroundColor = QColor("#404040"); // Background color of the gem item
         const QColor m_borderColor = QColor("#1E70EB");
+        const QColor m_buttonEnabledColor = QColor("#00B931");
 
         // Item
-        inline constexpr static int s_height = 140; // Gem item total height
+        inline constexpr static int s_height = 135; // Gem item total height
         inline constexpr static qreal s_gemNameFontSize = 16.0;
         inline constexpr static qreal s_fontSize = 15.0;
         inline constexpr static int s_summaryStartX = 200;
@@ -58,5 +63,17 @@ namespace O3DE::ProjectManager
         inline constexpr static QMargins s_itemMargins = QMargins(/*left=*/20, /*top=*/10, /*right=*/20, /*bottom=*/10); // Item border distances
         inline constexpr static QMargins s_contentMargins = QMargins(/*left=*/15, /*top=*/12, /*right=*/12, /*bottom=*/12); // Distances of the elements within an item to the item borders
         inline constexpr static int s_borderWidth = 4;
+
+        // Button
+        inline constexpr static int s_buttonWidth = 70;
+        inline constexpr static int s_buttonHeight = 24;
+        inline constexpr static int s_buttonBorderRadius = 12;
+        inline constexpr static int s_buttonCircleRadius = s_buttonBorderRadius - 3;
+        inline constexpr static qreal s_buttonFontSize = 12.0;
+
+        // Platform icons
+        void AddPlatformIcon(GemInfo::Platform platform, const QString& iconPath);
+        inline constexpr static int s_platformIconSize = 16;
+        QHash<GemInfo::Platform, QPixmap> m_platformIcons;
     };
 } // namespace O3DE::ProjectManager

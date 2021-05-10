@@ -17,13 +17,13 @@
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
+#include <AzToolsFramework/ToolsComponents/ScriptEditorComponent.h>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
 
-#include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/std/sort.h>
 
@@ -55,7 +55,7 @@ namespace UnitTest
 
     TEST(EntityPropertyEditorTests, PrioritySort_NonTransformAsFirstItem_TransformMovesToTopRemainderUnchanged)
     {
-        ComponentApplication app;
+        ToolsApplication app;
 
         AZ::Entity::ComponentArrayType unorderedComponents;
         AZ::Entity::ComponentArrayType orderedComponents;
@@ -68,12 +68,18 @@ namespace UnitTest
 
         Entity* systemEntity = app.Create(desc, startupParams);
 
+        // Need to reflect the components so that edit attribute used for sorting, such as FixedComponentListIndex, get set.
+        app.RegisterComponentDescriptor(AzToolsFramework::Components::TransformComponent::CreateDescriptor());
+        app.RegisterComponentDescriptor(AzToolsFramework::Components::ScriptEditorComponent::CreateDescriptor());
+        app.RegisterComponentDescriptor(AZ::AssetManagerComponent::CreateDescriptor());
+
         // Add more than 31 components, as we are testing the case where the sort fails when there are 32 or more items.
         const int numFillerItems = 32;
 
         for (int commentIndex = 0; commentIndex < numFillerItems; commentIndex++)
         {
-            unorderedComponents.insert(unorderedComponents.begin(), systemEntity->CreateComponent(AZ::StreamerComponent::RTTI_Type()));
+            unorderedComponents.insert(unorderedComponents.begin(), systemEntity->CreateComponent(
+                AzToolsFramework::Components::ScriptEditorComponent::RTTI_Type()));
         }
 
         // Add a TransformComponent at the end which should be sorted to the beginning by the priority sort.
