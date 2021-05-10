@@ -249,6 +249,12 @@ namespace AZ::AtomBridge
         //! Convert direction to world space (translation is not considered)
         AZ::Vector3 ToWorldSpaceVector(const AZ::Vector3& v) const { return m_rendState.m_transformStack[m_rendState.m_currentTransform].Multiply3x3(v); }
 
+        //! Convert position to world space.
+        AZStd::vector<AZ::Vector3> ToWorldSpacePosition(const AZStd::vector<AZ::Vector3>& positions) const;
+
+        //! Convert direction to world space (translation is not considered)
+        AZStd::vector<AZ::Vector3> ToWorldSpaceVector(const AZStd::vector<AZ::Vector3>& vectors) const;
+
         void CalcBasisVectors(const AZ::Vector3& n, AZ::Vector3& b1, AZ::Vector3& b2) const;
         
         const AZ::Matrix3x4& GetCurrentTransform() const;
