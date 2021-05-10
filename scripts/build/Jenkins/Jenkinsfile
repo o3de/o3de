@@ -55,12 +55,12 @@ def palMkdir(path) {
 
 def palRm(path) {
     if (env.IS_UNIX) {
-        sh label: "Removing ${path}",
+        sh label: "Removing ${path}",   
            script: "rm ${path}"
     } else {
         def win_path = path.replace('/','\\')
         bat label: "Removing ${win_path}",
-            script: "del ${win_path}"
+            script: "del /Q ${win_path}"
     }
 }
 
@@ -357,8 +357,7 @@ def TestMetrics(Map pipelineConfig, String workspace, String branchName, String 
 def TestResults(Map options, String platform, String type, String workspace, Map params) {
     def o3deroot = "${workspace}/${ENGINE_REPOSITORY_NAME}"
     dir("${o3deroot}/${params.OUTPUT_DIRECTORY}/Testing") {
-        junit testResults: "**/*.xml",
-              keepLongStdio : true
+        junit testResults: "**/*.xml"
         echo "Clean test output dir"
         palRm("PyTest/*")
         palRm("GTest/*")
