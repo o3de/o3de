@@ -190,9 +190,7 @@ namespace AzToolsFramework
 
         void PrefabUndoInstanceLink::AddLink()
         {
-            PrefabDom linkPatchesCopy;
-            linkPatchesCopy.CopyFrom(m_linkPatches, linkPatchesCopy.GetAllocator());
-            m_linkId = m_prefabSystemComponentInterface->CreateLink(m_targetId, m_sourceId, m_instanceAlias, AZStd::move(linkPatchesCopy), m_linkId);
+            m_linkId = m_prefabSystemComponentInterface->CreateLink(m_targetId, m_sourceId, m_instanceAlias, m_linkPatches, m_linkId);
         }
 
         void PrefabUndoInstanceLink::RemoveLink()
@@ -229,9 +227,6 @@ namespace AzToolsFramework
             {
                 m_linkDomPrevious.CopyFrom(link->get().GetLinkDom(), m_linkDomPrevious.GetAllocator());
             }
-
-            PrefabDomUtils::PrintPrefabDomValue("m_linkDomPrevious is : ", m_linkDomPrevious);
-            PrefabDomUtils::PrintPrefabDomValue("link->get().GetLinkDom() is : ", link->get().GetLinkDom());
 
             //get source templateDom
             TemplateReference sourceTemplate = m_prefabSystemComponentInterface->FindTemplate(link->get().GetSourceTemplateId());
@@ -305,14 +300,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            /*
-            PrefabDom moveLink;
-            moveLink.CopyFrom(linkDom, linkDom.GetAllocator());
-            link->get().GetLinkDom() = AZStd::move(moveLink);
-            */
             link->get().SetLinkDom(linkDom);
-
-            PrefabDomUtils::PrintPrefabDomValue("dom after updating link is : ", link->get().GetLinkDom());
 
             //propagate the link changes
             link->get().UpdateTarget();

@@ -43,9 +43,9 @@ namespace AzToolsFramework
                 PrefabDomValue::MemberIterator& instanceIterator, InstanceOptionalReference instance) = 0;
 
             //creates a new Link
-            virtual LinkId CreateLink(const TemplateId& linkTargetId, const TemplateId& linkSourceId,
-                const InstanceAlias& instanceAlias, PrefabDom linkPatch,
-                const LinkId& linkId = InvalidLinkId) = 0;
+            virtual LinkId CreateLink(
+                const TemplateId& linkTargetId, const TemplateId& linkSourceId, const InstanceAlias& instanceAlias,
+                const PrefabDomConstReference linkPatches, const LinkId& linkId = InvalidLinkId) = 0;
 
             virtual void RemoveLink(const LinkId& linkId) = 0;
 
