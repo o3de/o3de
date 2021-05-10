@@ -10,11 +10,11 @@
 #
 
 # The current supported version of Wwise
-set(WWISE_VERSION 2021.1.0.7575)
+set(WWISE_VERSION 2021.1.1.7601)
 
 # Wwise Install Path
 # Initialize to the default 3rdParty path
-set(LY_WWISE_INSTALL_PATH "${LY_3RDPARTY_PATH}/Wwise/${WWISE_VERSION}" CACHE PATH "Path to Wwise version ${WWISE_VERSION} installation.")
+set(LY_WWISE_INSTALL_PATH "" CACHE PATH "Path to Wwise version ${WWISE_VERSION} installation.")
 
 function(is_valid_sdk sdk_path is_valid)
     set(${is_valid} FALSE PARENT_SCOPE)
@@ -55,7 +55,10 @@ endforeach()
 if(NOT found_sdk)
     # If we don't find a path that appears to be a valid Wwise install, we can bail here.
     # No 3rdParty::Wwise target will exist, so that can be checked elsewhere.
+    message(STATUS "Wwise SDK version ${WWISE_VERSION} was not found.")
     return()
+else()
+    message(STATUS "Using Wwise SDK at ${LY_WWISE_INSTALL_PATH}")
 endif()
 
 
