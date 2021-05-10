@@ -297,7 +297,7 @@ namespace AzToolsFramework
             else
             {
                 linkId = m_prefabSystemComponentInterface->CreateLink(
-                    targetTemplateId, sourceInstance.GetTemplateId(), sourceInstance.GetInstanceAlias(), AZStd::move(patch),
+                    targetTemplateId, sourceInstance.GetTemplateId(), sourceInstance.GetInstanceAlias(), patch,
                     InvalidLinkId);
                 m_prefabSystemComponentInterface->PropagateTemplateChanges(targetTemplateId);
             }
@@ -438,8 +438,6 @@ namespace AzToolsFramework
 
                     PrefabDom patch;
                     m_instanceToTemplateInterface->GeneratePatch(patch, beforeState, afterState);
-
-                    PrefabDomUtils::PrintPrefabDomValue(entity->GetName(), patch);
 
                     if (patch.IsArray() && !patch.Empty() && beforeState.IsObject())
                     {
