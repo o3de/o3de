@@ -202,7 +202,7 @@ function(ly_add_target)
     endif()
 
     if (ly_add_target_INCLUDE_DIRECTORIES)
-        ly_target_include_directories(${ly_add_target_NAME}
+        target_include_directories(${ly_add_target_NAME}
             ${ly_add_target_INCLUDE_DIRECTORIES}
         )
     endif()
@@ -299,7 +299,7 @@ function(ly_add_target)
     endif()
 
     # Store the target so we can walk through all of them in LocationDependencies.cmake
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGETS ${ly_add_target_NAME})
+    set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGETS ${interface_name})
 
     set(runtime_dependencies_list SHARED MODULE EXECUTABLE APPLICATION)
     if(linking_options IN_LIST runtime_dependencies_list)
@@ -327,18 +327,6 @@ function(ly_add_target)
             INCLUDE_DIRECTORIES ${ly_add_target_INCLUDE_DIRECTORIES}
             AUTOGEN_RULES ${ly_add_target_AUTOGEN_RULES}
             ALLFILES ${ALLFILES}
-        )
-    endif()
-
-    if(NOT ly_add_target_IMPORTED)
-        ly_install_target(
-            ${ly_add_target_NAME}
-            NAMESPACE ${ly_add_target_NAMESPACE}
-            INCLUDE_DIRECTORIES ${ly_add_target_INCLUDE_DIRECTORIES}
-            BUILD_DEPENDENCIES ${ly_add_target_BUILD_DEPENDENCIES}
-            RUNTIME_DEPENDENCIES ${ly_add_target_RUNTIME_DEPENDENCIES}
-            COMPILE_DEFINITIONS ${ly_add_target_COMPILE_DEFINITIONS}
-            COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
         )
     endif()
 
@@ -401,7 +389,7 @@ function(ly_delayed_target_link_libraries)
                     endif()
 
                     if(item_type STREQUAL MODULE_LIBRARY)
-                        ly_target_include_directories(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_INCLUDE_DIRECTORIES>)
+                        target_include_directories(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_INCLUDE_DIRECTORIES>)
                         target_link_libraries(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_LINK_LIBRARIES>)
                         target_compile_definitions(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_COMPILE_DEFINITIONS>)
                         target_compile_options(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_COMPILE_OPTIONS>)
@@ -502,7 +490,7 @@ endfunction()
 # Looks at the the following variables within the platform include file to set the equivalent target properties
 # LY_FILES_CMAKE -> extract list of files -> target_sources
 # LY_FILES -> target_source
-# LY_INCLUDE_DIRECTORIES -> ly_target_include_directories
+# LY_INCLUDE_DIRECTORIES -> target_include_directories
 # LY_COMPILE_DEFINITIONS -> target_compile_definitions
 # LY_COMPILE_OPTIONS -> target_compile_options
 # LY_LINK_OPTIONS -> target_link_options
@@ -528,7 +516,11 @@ macro(ly_configure_target_platform_properties)
             message(FATAL_ERROR "The supplied PLATFORM_INCLUDE_FILE(${platform_include_file}) cannot be included.\
  Parsing of target will halt")
         endif()
-        target_sources(${ly_add_target_NAME} PRIVATE ${platform_include_file})
+        if(ly_add_target_HEADERONLY)
+            target_sources(${ly_add_target_NAME} INTERFACE ${platform_include_file})
+        else()
+            target_sources(${ly_add_target_NAME} PRIVATE ${platform_include_file})
+        endif()
         ly_source_groups_from_folders("${platform_include_file}")
 
         if(LY_FILES_CMAKE)
@@ -544,7 +536,7 @@ macro(ly_configure_target_platform_properties)
             target_sources(${ly_add_target_NAME} PRIVATE ${LY_FILES})
         endif()
         if (LY_INCLUDE_DIRECTORIES)
-            ly_target_include_directories(${ly_add_target_NAME} ${LY_INCLUDE_DIRECTORIES})
+            target_include_directories(${ly_add_target_NAME} ${LY_INCLUDE_DIRECTORIES})
         endif()
         if(LY_COMPILE_DEFINITIONS)
             target_compile_definitions(${ly_add_target_NAME} ${LY_COMPILE_DEFINITIONS})
@@ -647,42 +639,6 @@ function(ly_add_source_properties)
 
 endfunction()
 
-function(ly_target_include_directories TARGET)
-
-    # Add the includes to the build and install interface
-    set(reserved_keywords PRIVATE PUBLIC INTERFACE)
-    unset(last_keyword)
-    foreach(include ${ARGN})
-        if(${include} IN_LIST reserved_keywords)
-            list(APPEND adapted_includes ${include})
-        elseif(IS_ABSOLUTE ${include})
-            list(APPEND adapted_includes
-                $<BUILD_INTERFACE:${include}>
-            )
-        else()
-            string(GENEX_STRIP ${include} include_genex_expr)
-            if(include_genex_expr STREQUAL include) # only for cases where there are no generation expressions
-                # We will be installing the includes using the same directory structure used in our source tree.
-                # The INSTALL_INTERFACE path tells CMake the location of the includes relative to the install prefix.
-                # When the target is imported into an external project, cmake will find these includes at <install_prefix>/include/<path_relative_to_root>
-                # where <install_prefix> is the location of the lumberyard install on disk.
-                file(REAL_PATH ${include} include_real)
-                file(RELATIVE_PATH install_dir ${CMAKE_SOURCE_DIR} ${include_real})
-                list(APPEND adapted_includes
-                    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${include}>
-                    $<INSTALL_INTERFACE:include/${install_dir}>
-                )
-            else()
-                list(APPEND adapted_includes
-                    ${include}
-                )
-            endif()
-        endif()
-    endforeach()
-    target_include_directories(${TARGET} ${adapted_includes})
-
-endfunction()
-
 
 #! ly_project_add_subdirectory: calls add_subdirectory() if the project name is in the project list
 #
@@ -712,4 +668,23 @@ function(ly_project_add_subdirectory project_name)
            add_subdirectory(${project_name} ${binary_project_dir})
        endif()
     endif()
+endfunction()
+
+# given a target name, returns the "real" name of the target if its an alias.
+# this function recursively de-aliases
+function(ly_de_alias_target target_name output_variable_name)
+    # its not okay to call get_target_property on a non-existant target
+    if (NOT TARGET ${target_name})
+        message(FATAL_ERROR "ly_de_alias_target called on non-existant target: ${target_name}")
+    endif()
+
+    while(target_name)
+        set(de_aliased_target_name ${target_name})
+        get_target_property(target_name ${target_name} ALIASED_TARGET)
+    endwhile()
+
+    if(NOT de_aliased_target_name)
+        message(FATAL_ERROR "Empty de_aliased for ${target_name}")
+    endif()
+    set(${output_variable_name} ${de_aliased_target_name} PARENT_SCOPE)
 endfunction()

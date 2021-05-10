@@ -11,11 +11,5 @@
 
 # Empty implementations for untested platforms to fix build errors.
 
-function(ly_install_target ly_install_target_NAME)
-
-endfunction()
-
-
 function(ly_setup_o3de_install)
-
 endfunction()

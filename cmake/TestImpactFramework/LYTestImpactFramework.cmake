@@ -204,7 +204,10 @@ function(ly_test_impact_export_source_target_mappings MAPPING_TEMPLATE_FILE)
     get_property(LY_ALL_TARGETS GLOBAL PROPERTY LY_ALL_TARGETS)
 
     # Walk the build targets
-    foreach(target ${LY_ALL_TARGETS})
+    foreach(aliased_target ${LY_ALL_TARGETS})
+
+        unset(target)
+        ly_de_alias_target(${aliased_target} target)
         message(TRACE "Exporting static source file mappings for ${target}")
         
         # Target name and path relative to root

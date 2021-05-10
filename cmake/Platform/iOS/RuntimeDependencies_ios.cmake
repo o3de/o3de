@@ -143,7 +143,11 @@ function(ly_delayed_generate_runtime_dependencies)
 
     get_property(all_targets GLOBAL PROPERTY LY_ALL_TARGETS)
     unset(test_runner_dependencies)
-    foreach(target IN LISTS all_targets)
+    foreach(aliased_target IN LISTS all_targets)
+
+        unset(target)
+        ly_de_alias_target(${aliased_target} target)
+
         # Exclude targets that dont produce runtime outputs
         get_target_property(target_type ${target} TYPE)
         if(NOT target_type IN_LIST LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS)

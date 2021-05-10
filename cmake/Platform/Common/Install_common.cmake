@@ -17,49 +17,61 @@ file(RELATIVE_PATH runtime_output_directory ${CMAKE_BINARY_DIR} ${CMAKE_RUNTIME_
 file(RELATIVE_PATH library_output_directory ${CMAKE_BINARY_DIR} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 set(install_output_folder "${CMAKE_INSTALL_PREFIX}/${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>")
 
+#! ly_setup_targets: setups all targets
+function(ly_setup_targets)
+    get_property(all_targets GLOBAL PROPERTY LY_ALL_TARGETS)
+    foreach(target IN LISTS all_targets)
+        ly_setup_target(${target})
+    endforeach()
+endfunction()
 
-#! ly_install_target: registers the target to be installed by cmake install.
-#
-# \arg:NAME name of the target
-# \arg:COMPONENT the grouping string of the target used for splitting up the install
-#                    into smaller packages.
-# All other parameters are forwarded to ly_generate_target_find_file
-function(ly_install_target ly_install_target_NAME)
+#! ly_setup_target: setups the target to be installed by cmake install.
+function(ly_setup_target ALIAS_TARGET_NAME)
 
-    set(options)
-    set(oneValueArgs NAMESPACE COMPONENT)
-    set(multiValueArgs INCLUDE_DIRECTORIES BUILD_DEPENDENCIES RUNTIME_DEPENDENCIES COMPILE_DEFINITIONS)
-
-    cmake_parse_arguments(ly_install_target "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    unset(TARGET_NAME)
+    ly_de_alias_target(${ALIAS_TARGET_NAME} TARGET_NAME)
+    
+    get_target_property(absolute_target_source_dir ${TARGET_NAME} SOURCE_DIR)
+    file(RELATIVE_PATH target_source_dir ${CMAKE_SOURCE_DIR} ${absolute_target_source_dir})
 
     # All include directories marked PUBLIC or INTERFACE will be installed
     set(include_location "include")
-    get_target_property(include_directories ${ly_install_target_NAME} INTERFACE_INCLUDE_DIRECTORIES)
-
+    get_target_property(include_directories ${TARGET_NAME} INTERFACE_INCLUDE_DIRECTORIES)
     if (include_directories)
-        set_target_properties(${ly_install_target_NAME} PROPERTIES PUBLIC_HEADER "${include_directories}")
-        # The include directories are specified relative to the CMakeLists.txt file that adds the target.
-        # We need to install the includes relative to our source tree root because that's where INSTALL_INTERFACE
-        # will point CMake when it looks for headers
-        file(RELATIVE_PATH relative_path ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
-        string(APPEND include_location "/${relative_path}")
+        unset(public_headers)
+        foreach(include_directory ${include_directories})
+            string(GENEX_STRIP ${include_directory} include_genex_expr)
+            if(include_genex_expr STREQUAL include_directory) # only for cases where there are no generation expressions
+                unset(current_public_headers)
+                # We install all header types for the time being until we clean up certain libraries that contain all sorts
+                # of files in the public include directories (e.g. CryCommon)
+                file(GLOB_RECURSE current_public_headers 
+                    LIST_DIRECTORIES false
+                    ${include_directory}/*.h 
+                    ${include_directory}/*.hpp
+                    ${include_directory}/*.inl
+                )
+                list(APPEND public_headers ${current_public_headers})
+            endif()
+        endforeach()
+        set_target_properties(${TARGET_NAME} PROPERTIES PUBLIC_HEADER "${public_headers}")
     endif()
 
     # Get the output folders, archive is always the same, but runtime/library can be in subfolders defined per target
     file(RELATIVE_PATH archive_output_directory ${CMAKE_BINARY_DIR} ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 
-    get_target_property(target_runtime_output_directory ${ly_install_target_NAME} RUNTIME_OUTPUT_DIRECTORY)
+    get_target_property(target_runtime_output_directory ${TARGET_NAME} RUNTIME_OUTPUT_DIRECTORY)
     if(target_runtime_output_directory)
         file(RELATIVE_PATH target_runtime_output_subdirectory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} ${target_runtime_output_directory})
     endif()
 
-    get_target_property(target_library_output_directory ${ly_install_target_NAME} LIBRARY_OUTPUT_DIRECTORY)
+    get_target_property(target_library_output_directory ${TARGET_NAME} LIBRARY_OUTPUT_DIRECTORY)
     if(target_library_output_directory)
         file(RELATIVE_PATH target_library_output_subdirectory ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${target_library_output_directory})
     endif()
 
     install(
-        TARGETS ${ly_install_target_NAME}
+        TARGETS ${TARGET_NAME}
         ARCHIVE
             DESTINATION ${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>
             COMPONENT ${ly_install_target_COMPONENT}
@@ -70,81 +82,78 @@ function(ly_install_target ly_install_target_NAME)
             DESTINATION ${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_runtime_output_subdirectory}
             COMPONENT ${ly_install_target_COMPONENT}
         PUBLIC_HEADER
-            DESTINATION ${include_location}
+            # The include directories are specified relative to the CMakeLists.txt file that adds the target.
+            # We need to install the includes relative to our source tree root
+            DESTINATION ${include_location}/${target_source_dir}
             COMPONENT ${ly_install_target_COMPONENT}
     )
 
-    ly_generate_target_find_file(NAME ${ly_install_target_NAME} ${ARGN})
-    ly_generate_target_config_file(${ly_install_target_NAME})
-    
-endfunction()
-
-
-#! ly_generate_target_find_file: generates the Find${target}.cmake file which is used when importing installed packages.
-#
-# \arg:NAME name of the target
-# \arg:NAMESPACE namespace declaration for this target. It will be used for IDE and dependencies
-# \arg:INCLUDE_DIRECTORIES paths to the include directories
-# \arg:BUILD_DEPENDENCIES list of interfaces this target depends on (could be a compilation dependency
-#                             if the dependency is only exposing an include path, or could be a linking
-#                             dependency is exposing a lib)
-# \arg:RUNTIME_DEPENDENCIES list of dependencies this target depends on at runtime
-# \arg:COMPILE_DEFINITIONS list of compilation definitions this target will use to compile
-function(ly_generate_target_find_file)
-
-    set(options)
-    set(oneValueArgs NAME NAMESPACE)
-    set(multiValueArgs INCLUDE_DIRECTORIES COMPILE_DEFINITIONS BUILD_DEPENDENCIES RUNTIME_DEPENDENCIES)
-    cmake_parse_arguments(ly_generate_target_find_file "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-    set(NAME_PLACEHOLDER ${ly_generate_target_find_file_NAME})
-    unset(NAMESPACE_PLACEHOLDER)
-    unset(COMPILE_DEFINITIONS_PLACEHOLDER)
-    unset(include_directories_interface_props)
-    unset(INCLUDE_DIRECTORIES_PLACEHOLDER)
-    set(RUNTIME_DEPENDENCIES_PLACEHOLDER ${ly_generate_target_find_file_RUNTIME_DEPENDENCIES})
-
-    # These targets will be imported. We will expose PUBLIC and INTERFACE properties as INTERFACE properties since
-    # only INTERFACE properties can be exposed on imported targets
-    ly_strip_private_properties(COMPILE_DEFINITIONS_PLACEHOLDER ${ly_generate_target_find_file_COMPILE_DEFINITIONS})
-    ly_strip_private_properties(include_directories_interface_props ${ly_generate_target_find_file_INCLUDE_DIRECTORIES})
-    ly_strip_private_properties(BUILD_DEPENDENCIES_PLACEHOLDER ${ly_generate_target_find_file_BUILD_DEPENDENCIES})
-
-    if(ly_generate_target_find_file_NAMESPACE)
-        set(NAMESPACE_PLACEHOLDER "NAMESPACE ${ly_generate_target_find_file_NAMESPACE}")
+    # CMakeLists.txt file
+    string(REGEX MATCH "(.*)::(.*)$" match ${ALIAS_TARGET_NAME})
+    if(match)
+        set(NAMESPACE_PLACEHOLDER "NAMESPACE ${CMAKE_MATCH_1}")
+        set(NAME_PLACEHOLDER ${CMAKE_MATCH_2})
+    else()
+        set(NAMESPACE_PLACEHOLDER "")
+        set(NAME_PLACEHOLDER ${TARGET_NAME})
     endif()
 
-    string(REPLACE ";" "\n" COMPILE_DEFINITIONS_PLACEHOLDER "${COMPILE_DEFINITIONS_PLACEHOLDER}")
+    get_target_property(COMPILE_DEFINITIONS_PLACEHOLDER ${TARGET_NAME} INTERFACE_COMPILE_DEFINITIONS)
+    if(COMPILE_DEFINITIONS_PLACEHOLDER)
+        string(REPLACE ";" "\n" COMPILE_DEFINITIONS_PLACEHOLDER "${COMPILE_DEFINITIONS_PLACEHOLDER}")
+    else()
+        unset(COMPILE_DEFINITIONS_PLACEHOLDER)
+    endif()
 
     # Includes need additional processing to add the install root
-    foreach(include ${include_directories_interface_props})
-        file(RELATIVE_PATH relative_path ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/${include})
-        string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "\${LY_ROOT_FOLDER}/include/${relative_path}\n")
-    endforeach()
+    get_target_property(include_directories_interface_props ${TARGET_NAME} INTERFACE_INCLUDE_DIRECTORIES)
+    unset(INCLUDE_DIRECTORIES_PLACEHOLDER)
+    if(include_directories_interface_props)
+        foreach(include ${include_directories_interface_props})
+            string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "\${LY_ROOT_FOLDER}/include/${target_source_dir}\n")
+        endforeach()
+    endif()
 
-    string(REPLACE ";" "\n" BUILD_DEPENDENCIES_PLACEHOLDER "${BUILD_DEPENDENCIES_PLACEHOLDER}")
-    string(REPLACE ";" "\n" RUNTIME_DEPENDENCIES_PLACEHOLDER "${RUNTIME_DEPENDENCIES_PLACEHOLDER}")
+    get_target_property(RUNTIME_DEPENDENCIES_PLACEHOLDER ${TARGET_NAME} MANUALLY_ADDED_DEPENDENCIES)
+    if(RUNTIME_DEPENDENCIES_PLACEHOLDER) # not found properties return the name of the variable with a "-NOTFOUND" at the end, here we set it to empty if not found
+        string(REPLACE ";" "\n" RUNTIME_DEPENDENCIES_PLACEHOLDER "${RUNTIME_DEPENDENCIES_PLACEHOLDER}")
+    else()
+        unset(RUNTIME_DEPENDENCIES_PLACEHOLDER)
+    endif()
 
-    # Since a CMakeLists could contain multiple targets, we generate it in a folder per target
-    configure_file(${LY_ROOT_FOLDER}/cmake/install/TargetCMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/install/${ly_generate_target_find_file_NAME}/CMakeLists.txt @ONLY)
-    get_target_property(target_source_dir ${ly_generate_target_find_file_NAME} SOURCE_DIR)
-    file(RELATIVE_PATH target_source_dir_relative ${CMAKE_SOURCE_DIR} ${target_source_dir})
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/install/${ly_generate_target_find_file_NAME}/CMakeLists.txt"
-        DESTINATION ${target_source_dir_relative}/${ly_generate_target_find_file_NAME}
+    get_target_property(inteface_build_dependencies_props ${TARGET_NAME} INTERFACE_LINK_LIBRARIES)
+    unset(INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
+    if(inteface_build_dependencies_props)
+        foreach(build_dependency ${inteface_build_dependencies_props})
+            # Skip wrapping produced when targets are not created in the same directory 
+            if(NOT ${build_dependency} MATCHES "^::@")
+                string(APPEND INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${build_dependency}\n")     
+            endif()
+        endforeach()
+    endif()
+
+    # We also need to declare teh private link libraries since we will use that to generate the runtime dependencies
+    get_target_property(private_build_dependencies_props ${TARGET_NAME} LINK_LIBRARIES)
+    unset(PRIVATE_BUILD_DEPENDENCIES_PLACEHOLDER)
+    if(private_build_dependencies_props)
+        foreach(build_dependency ${private_build_dependencies_props})
+            # Skip wrapping produced when targets are not created in the same directory 
+            if(NOT ${build_dependency} MATCHES "^::@")
+                string(APPEND PRIVATE_BUILD_DEPENDENCIES_PLACEHOLDER "${build_dependency}\n")     
+            endif()
+        endforeach()
+    endif()
+
+    # Since a CMakeLists.txt could contain multiple targets, we generate it in a folder per target
+    configure_file(${LY_ROOT_FOLDER}/cmake/install/TargetCMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/install/${NAME_PLACEHOLDER}/CMakeLists.txt @ONLY)
+    
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/install/${NAME_PLACEHOLDER}/CMakeLists.txt"
+        DESTINATION ${target_source_dir}/${NAME_PLACEHOLDER}
         COMPONENT ${ly_install_target_COMPONENT}
     )
 
-endfunction()
-
-
-#! ly_generate_target_config_file: generates the ${target}_$<CONFIG>.cmake files for a target
-#
-# The generated file will set the location of the target binary per configuration
-# These per config files will be included by the target's find file to set the location of the binary/
-# \arg:NAME name of the target
-function(ly_generate_target_config_file NAME)
-
-    get_target_property(target_type ${NAME} TYPE)
+    # Config file
+    get_target_property(target_type ${TARGET_NAME} TYPE)
 
     set(target_file_contents "# Generated by O3DE install\n\n")
     if(NOT target_type STREQUAL INTERFACE_LIBRARY)
@@ -152,66 +161,43 @@ function(ly_generate_target_config_file NAME)
         unset(target_location)
         set(runtime_types EXECUTABLE APPLICATION)
         if(target_type IN_LIST runtime_types)
-            string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_runtime_output_subdirectory}/$<TARGET_FILE_NAME:${NAME}>\"")
+            string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_runtime_output_subdirectory}/$<TARGET_FILE_NAME:${TARGET_NAME}>\"")
         elseif(target_type STREQUAL MODULE_LIBRARY)
-            string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${NAME}>\"")
+            string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${TARGET_NAME}>\"")
         elseif(target_type STREQUAL SHARED_LIBRARY)
-            string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${NAME}>\"")
-            string(APPEND target_file_contents "ly_add_target_files(TARGETS ${NAME} FILES \"\${LY_ROOT_FOLDER}/${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${NAME}>\")\n")
+            string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>\"")
+            string(APPEND target_file_contents "target_link_libraries(${TARGET_NAME} INTERFACE \"\${LY_ROOT_FOLDER}/${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${TARGET_NAME}>\")\n")
         else() # STATIC_LIBRARY, OBJECT_LIBRARY, INTERFACE_LIBRARY
-            string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${NAME}>\"")
+            string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>\"")
         endif()
 
         string(APPEND target_file_contents
 "set(target_location ${target_location})
-set_target_properties(${NAME}
+set_target_properties(${TARGET_NAME}
     PROPERTIES
         $<$<CONFIG:profile>:IMPORTED_LOCATION \"\${target_location}\">
         IMPORTED_LOCATION_$<UPPER_CASE:$<CONFIG>> \"\${target_location}\"
 )
 if(EXISTS \"\${target_location}\")
-    set(${NAME}_$<CONFIG>_FOUND TRUE)
+    set(${NAME_PLACEHOLDER}_$<CONFIG>_FOUND TRUE)
 else()
-    set(${NAME}_$<CONFIG>_FOUND FALSE)
+    set(${NAME_PLACEHOLDER}_$<CONFIG>_FOUND FALSE)
 endif()
 ")
     endif()
 
-    file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/install/${NAME}/${NAME}_$<CONFIG>.cmake" CONTENT "${target_file_contents}")
-    get_target_property(target_source_dir ${NAME} SOURCE_DIR)
-    file(RELATIVE_PATH target_source_dir_relative ${CMAKE_SOURCE_DIR} ${target_source_dir})
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/install/${NAME}/${NAME}_$<CONFIG>.cmake"
-        DESTINATION ${target_source_dir_relative}/${NAME}
+    file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/install/${NAME_PLACEHOLDER}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake" CONTENT "${target_file_contents}")
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/install/${NAME_PLACEHOLDER}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake"
+        DESTINATION ${target_source_dir}/${NAME_PLACEHOLDER}
         COMPONENT ${ly_install_target_COMPONENT}
     )
 
 endfunction()
 
-
-#! ly_strip_private_properties: strips private properties since we're exporting an interface target
-#
-# \arg:INTERFACE_PROPERTIES list of interface properties to be returned
-function(ly_strip_private_properties INTERFACE_PROPERTIES)
-    set(reserved_keywords PRIVATE PUBLIC INTERFACE)
-    unset(last_keyword)
-    unset(stripped_props)
-    foreach(prop ${ARGN})
-        if(${prop} IN_LIST reserved_keywords)
-            set(last_keyword ${prop})
-        else()
-            if (NOT last_keyword STREQUAL "PRIVATE")
-                list(APPEND stripped_props ${prop})
-            endif()
-        endif()
-    endforeach()
-
-    set(${INTERFACE_PROPERTIES} ${stripped_props} PARENT_SCOPE)
-endfunction()
-
-
 #! ly_setup_o3de_install: orchestrates the installation of the different parts. This is the entry point from the root CMakeLists.txt
 function(ly_setup_o3de_install)
 
+    ly_setup_targets()
     ly_setup_cmake_install()
     ly_setup_target_generator()
     ly_setup_runtime_dependencies()
@@ -478,7 +464,6 @@ function(ly_setup_others)
     )
 
 endfunction()
-
 
 #! ly_setup_target_generator: install source files needed for project launcher generation
 function(ly_setup_target_generator)
