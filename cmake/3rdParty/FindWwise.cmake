@@ -9,22 +9,53 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
+# The current supported version of Wwise
 set(WWISE_VERSION 2021.1.0.7575)
 
-function(check_wwise)
-    set(stamp_file install-${WWISE_VERSION}.stamp)
-    if (EXISTS ${stamp_file})
-        return()
+# Wwise Install Path
+# Initialize to the default 3rdParty path
+set(LY_WWISE_INSTALL_PATH "${LY_3RDPARTY_PATH}/Wwise/${WWISE_VERSION}" CACHE PATH "Path to Wwise version ${WWISE_VERSION} installation.")
+
+function(is_valid_sdk sdk_path is_valid)
+    set(${is_valid} FALSE PARENT_SCOPE)
+    if(EXISTS ${sdk_path})
+        set(sdk_version_file ${sdk_path}/SDK/include/AK/AkWwiseSDKVersion.h)
+        if(EXISTS ${sdk_version_file})
+            string(FIND ${sdk_path} ${WWISE_VERSION} index)
+            if(NOT index EQUAL -1)
+                set(${is_valid} TRUE PARENT_SCOPE)
+            else()
+                # The install path doesn't contain the WWISE_VERSION string.
+                # The path could still be correct, but it would require parsing the AkWwiseSDKVersion.h to verify.
+            endif()
+        endif()
     endif()
-
-    message(STATUS "Checking for Wwise...")
-
-    # Check various file paths for the Wwise version...
-    # If found, touch the stamp file
-    #file(TOUCH ${stamp_file})
 endfunction()
 
-check_wwise()
+
+function(find_wwise_sdk)
+    set(WWISE_SDK_PATHS
+        "${LY_WWISE_INSTALL_PATH}"
+        "$ENV{WWISEROOT}"
+        "${LY_3RDPARTY_PATH}/Wwise/${WWISE_VERSION}"
+    )
+
+    set(found_sdk FALSE)
+    foreach(test_path ${WWISE_SDK_PATHS})
+        is_valid_sdk(${test_path} found_sdk)
+        if (found_sdk)
+            # Update the Wwise Install Path cache variable
+            set(LY_WWISE_INSTALL_PATH "${test_path}" CACHE PATH "Path to Wwise version ${WWISE_VERSION} installation." FORCE)
+            return()
+        endif()
+    endforeach()
+
+    message(FATAL_ERROR "Failed to find a valid Wwise install path. Please provide a valid path to cache variable: LY_WWISE_INSTALL_PATH")
+endfunction()
+
+
+find_wwise_sdk()
+
 
 set(WWISE_COMMON_LIB_NAMES
     # Core AK
@@ -73,25 +104,23 @@ set(WWISE_NON_RELEASE_LIB_NAMES
 )
 
 set(WWISE_ADDITIONAL_LIB_NAMES
-    # Additional Libraries (i.e. Plugins)
-    # These can be added/enabled to the linker depending on what your Wwise project uses.
-    # In addition to adding libraries here, be sure to add the appropriate plugin factory
-    # header includes to PluginRegistration_wwise.h.
-
-# Examples...
-    #AkConvolutionReverbFX
-    #AkReflectFX
-    #AkRouterMixerFX
-    # ...
+    # Additional Libraries
 )
 
 set(WWISE_COMPILE_DEFINITIONS
     $<IF:$<CONFIG:Release>,AK_OPTIMIZED,>
 )
 
+
+# The install directory might be different than the standard 3rdParty format (${LY_3RDPARTY_PATH}/<Name>/<Version>).
+# Use these to get the parent path and folder name before adding the external 3p target.
+get_filename_component(WWISE_3P_ROOT ${LY_WWISE_INSTALL_PATH} DIRECTORY)
+get_filename_component(WWISE_FOLDER ${LY_WWISE_INSTALL_PATH} NAME)
+
 ly_add_external_target(
     NAME Wwise
-    VERSION ${WWISE_VERSION}
+    VERSION "${WWISE_FOLDER}"
+    3RDPARTY_ROOT_DIRECTORY "${WWISE_3P_ROOT}"
     INCLUDE_DIRECTORIES SDK/include
     COMPILE_DEFINITIONS ${WWISE_COMPILE_DEFINITIONS}
 )

@@ -14,7 +14,7 @@ set(WWISE_WINDOWS_LIB_NAMES
     SFLib
 )
 
-set(WWISE_VS_VER "vc150") # use the version of Wwise built with MSVC2017, or toolset 141
+set(WWISE_VS_VER "vc160")
 
 set(WWISE_LIB_PATH ${BASE_PATH}/SDK/x64_${WWISE_VS_VER}/$<IF:$<CONFIG:Debug>,Debug,$<IF:$<CONFIG:Profile>,Profile,Release>>/lib)
 
