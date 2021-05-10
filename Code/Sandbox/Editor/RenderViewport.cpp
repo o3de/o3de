@@ -1309,10 +1309,6 @@ void CRenderViewport::OnEditorNotifyEvent(EEditorNotifyEvent event)
                 // failed to set the context back when done, or set it back to the wrong one.
                 CryWarning(VALIDATOR_MODULE_3DENGINE, VALIDATOR_WARNING, "RenderViewport render context was not correctly restored by someone else.");
             }
-            if (gSettings.bEnableGameModeVR)
-            {
-                outputToHMD->Set(0);
-            }
             RestorePreviousContext(m_previousContext);
             m_bInRotateMode = false;
             m_bInMoveMode = false;
