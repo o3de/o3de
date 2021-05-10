@@ -42,7 +42,6 @@ class CUndoManager;
 class CGameEngine;
 class CExportManager;
 class CErrorsDlg;
-class CLensFlareManager;
 class CIconManager;
 class CBackgroundTaskManager;
 class CTrackViewSequenceManager;
@@ -54,7 +53,6 @@ class CAlembicCompiler;
 struct IBackgroundTaskManager;
 struct IBackgroundScheduleManager;
 struct IEditorFileMonitor;
-class CShaderEnum;
 class CVegetationMap;
 
 
@@ -117,8 +115,6 @@ public:
     bool IsInitialized() const{ return m_bInitialized; }
     bool SaveDocument();
     ISystem*    GetSystem();
-    I3DEngine*  Get3DEngine();
-    IRenderer*  GetRenderer();
     void WriteToConsole(const char* string) { CLogFile::WriteLine(string); };
     void WriteToConsole(const QString& string) { CLogFile::WriteLine(string); };
     // Change the message in the status bar
@@ -181,9 +177,7 @@ public:
     bool IsSelectionLocked();
 
     IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType);
-    CMaterialManager* GetMaterialManager() { return m_pMaterialManager; }
     CMusicManager* GetMusicManager() { return m_pMusicManager; };
-    CLensFlareManager* GetLensFlareManager()    { return m_pLensFlareManager; };
 
     IBackgroundTaskManager* GetBackgroundTaskManager() override;
     IBackgroundScheduleManager* GetBackgroundScheduleManager() override;
@@ -219,7 +213,6 @@ public:
     void SetMarkerPosition(const Vec3& pos) { m_marker = pos; };
     void    SetSelectedRegion(const AABB& box);
     void    GetSelectedRegion(AABB& box);
-    CRuler* GetRuler() { return m_pRuler; }
     bool AddToolbarItem(uint8 iId, IUIEvent* pIHandler);
     void SetDataModified();
     void SetOperationMode(EOperationMode mode);
@@ -260,7 +253,6 @@ public:
     SFileVersion GetFileVersion() { return m_fileVersion; };
     SFileVersion GetProductVersion() { return m_productVersion; };
     //! Get shader enumerator.
-    CShaderEnum* GetShaderEnum();
     CUndoManager* GetUndoManager() { return m_pUndoManager; };
     void BeginUndo();
     void RestoreUndo(bool undo);
@@ -324,7 +316,6 @@ public:
     void OnObjectContextMenuOpened(QMenu* pMenu, const CBaseObject* pObject);
     virtual void RegisterObjectContextMenuExtension(TContextMenuExtensionFunc func) override;
 
-    virtual void SetCurrentMissionTime(float time);
     virtual SSystemGlobalEnvironment* GetEnv() override;
     virtual IBaseLibraryManager* GetMaterialManagerLibrary() override; // Vladimir@Conffx
     virtual IEditorMaterialManager* GetIEditorMaterialManager() override; // Vladimir@Conffx
@@ -338,8 +329,6 @@ public:
 
     QMimeData* CreateQMimeData() const override;
     void DestroyQMimeData(QMimeData* data) const override;
-
-    bool IsNewViewportInteractionModelEnabled() const override;
 
 protected:
 
@@ -372,7 +361,6 @@ protected:
     SFileVersion m_productVersion;
     CXmlTemplateRegistry m_templateRegistry;
     CDisplaySettings* m_pDisplaySettings;
-    CShaderEnum* m_pShaderEnum;
     CIconManager* m_pIconManager;
     std::unique_ptr<SGizmoParameters> m_pGizmoParameters;
     QString m_primaryCDFolder;
@@ -383,10 +371,8 @@ protected:
     CAnimationContext* m_pAnimationContext;
     CTrackViewSequenceManager* m_pSequenceManager;
     CToolBoxManager* m_pToolBoxManager;
-    CMaterialManager* m_pMaterialManager;
     CAlembicCompiler* m_pAlembicCompiler;
     CMusicManager* m_pMusicManager;
-    CLensFlareManager* m_pLensFlareManager;
     CErrorReport* m_pErrorReport;
     //! Contains the error reports for the last loaded level.
     CErrorReport* m_pLasLoadedLevelErrorReport;
@@ -399,8 +385,6 @@ protected:
     CSelectionTreeManager* m_pSelectionTreeManager;
 
     CUIEnumsDatabase* m_pUIEnumsDatabase;
-    //! Currently used ruler
-    CRuler* m_pRuler;
     //! CConsole Synchronization
     CConsoleSynchronization* m_pConsoleSync;
     //! Editor Settings Manager
@@ -442,7 +426,5 @@ protected:
 
     CryMutex m_pluginMutex; // protect any pointers that come from plugins, such as the source control cached pointer.
     static const char* m_crashLogFileName;
-
-    bool m_isNewViewportInteractionModelEnabled = true;
 };
 

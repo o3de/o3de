@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C13508019
 # Test Case Title : Verify terrain materials are updated after using terrain texture layer painter.
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/13508019
+
 
 # fmt: off
 class Tests:

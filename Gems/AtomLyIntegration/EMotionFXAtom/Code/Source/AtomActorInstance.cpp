@@ -82,8 +82,7 @@ namespace AZ
             // Update RenderActorInstance local bounding box
             m_localAABB = AZ::Aabb::CreateFromMinMax(m_actorInstance->GetStaticBasedAABB().GetMin(), m_actorInstance->GetStaticBasedAABB().GetMax());
 
-            AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-                &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, m_entityId);
+            AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(m_entityId);
         }
 
         AZ::Aabb AtomActorInstance:: GetWorldBounds()

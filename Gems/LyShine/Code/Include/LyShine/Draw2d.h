@@ -172,6 +172,9 @@ public: // member functions
     //! Return whether future primitives will be deferred or rendered right away
     bool GetDeferPrimitives();
 
+    //! Set sort key offset for following draws.
+    void SetSortKey(int64_t key);
+
 private:
 
     AZ_DISABLE_COPY_MOVE(CDraw2d);

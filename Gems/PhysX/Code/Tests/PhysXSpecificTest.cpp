@@ -312,7 +312,7 @@ namespace PhysX
     {
         // set up a trigger box
         auto triggerBox = TestUtils::CreateTriggerAtPosition<BoxColliderComponent>(AZ::Vector3(0.0f, 0.0f, 12.0f));
-        auto triggerBody = triggerBox->FindComponent<StaticRigidBodyComponent>()->GetStaticRigidBody();
+        auto* triggerBody = azdynamic_cast<PhysX::StaticRigidBody*>(triggerBox->FindComponent<PhysX::StaticRigidBodyComponent>()->GetSimulatedBody());
         auto triggerShape = triggerBody->GetShape(0);
 
         TestTriggerAreaNotificationListener testTriggerAreaNotificationListener(triggerBox->GetId());
@@ -445,7 +445,7 @@ namespace PhysX
         auto obj02 = TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 0.0f), "TestBox01");
 
         auto body01 = obj01->FindComponent<RigidBodyComponent>()->GetRigidBody();
-        auto body02 = obj02->FindComponent<StaticRigidBodyComponent>()->GetStaticRigidBody();
+        auto* body02 = azdynamic_cast<PhysX::StaticRigidBody*>(obj02->FindComponent<PhysX::StaticRigidBodyComponent>()->GetSimulatedBody());
 
         auto shape01 = body01->GetShape(0).get();
         auto shape02 = body02->GetShape(0).get();
@@ -588,7 +588,7 @@ namespace PhysX
     {
         // set up a trigger box
         auto triggerBox = TestUtils::CreateTriggerAtPosition<BoxColliderComponent>(AZ::Vector3(0.0f, 0.0f, 0.0f));
-        auto triggerBody = triggerBox->FindComponent<StaticRigidBodyComponent>()->GetStaticRigidBody();
+        auto* triggerBody = azdynamic_cast<PhysX::StaticRigidBody*>(triggerBox->FindComponent<PhysX::StaticRigidBodyComponent>()->GetSimulatedBody());
 
         // Create a test box above the trigger so when it falls down it'd enter and leave the trigger box
         auto testBox = TestUtils::AddUnitTestObject(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 1.5f), "TestBox");
@@ -628,7 +628,7 @@ namespace PhysX
     {
         // Set up a static non trigger box
         auto staticBox = TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 0.0f));
-        auto staticBody = staticBox->FindComponent<StaticRigidBodyComponent>()->GetStaticRigidBody();
+        auto* staticBody = azdynamic_cast<PhysX::StaticRigidBody*>(staticBox->FindComponent<PhysX::StaticRigidBodyComponent>()->GetSimulatedBody());
 
         // Create a test trigger box above the static box so when it falls down it'd enter and leave the trigger box
         auto dynamicTrigger = TestUtils::CreateDynamicTriggerAtPosition<BoxColliderComponent>(AZ::Vector3(0.0f, 0.0f, 5.0f));

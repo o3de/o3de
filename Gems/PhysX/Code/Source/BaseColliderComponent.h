@@ -100,10 +100,9 @@ namespace PhysX
             required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
         }
 
-        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+        static void GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            // Not compatible with cry engine colliders
-            incompatible.push_back(AZ_CRC("ColliderService", 0x902d4e93));
+            
         }
 
         // AZ::Component

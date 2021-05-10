@@ -345,7 +345,6 @@ namespace PhysX
         AzToolsFramework::BoxManipulatorRequestBus::Handler::BusConnect(
             AZ::EntityComponentIdPair(GetEntityId(), GetId()));
         ColliderShapeRequestBus::Handler::BusConnect(GetEntityId());
-        LmbrCentral::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
         AZ::Render::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
         EditorColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
         m_nonUniformScaleChangedHandler = AZ::NonUniformScaleChangedEvent::Handler(
@@ -388,13 +387,12 @@ namespace PhysX
 
     void EditorColliderComponent::Deactivate()
     {
-        Physics::WorldBodyRequestBus::Handler::BusDisconnect();
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         m_colliderDebugDraw.Disconnect();
         AZ::Data::AssetBus::MultiHandler::BusDisconnect();
         m_nonUniformScaleChangedHandler.Disconnect();
         EditorColliderComponentRequestBus::Handler::BusDisconnect();
         AZ::Render::MeshComponentNotificationBus::Handler::BusDisconnect();
-        LmbrCentral::MeshComponentNotificationBus::Handler::BusDisconnect();
         ColliderShapeRequestBus::Handler::BusDisconnect();
         AzToolsFramework::BoxManipulatorRequestBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
@@ -644,7 +642,7 @@ namespace PhysX
 
         m_colliderDebugDraw.ClearCachedGeometry();
 
-        Physics::WorldBodyRequestBus::Handler::BusConnect(GetEntityId());
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 
     AZ::Data::Asset<Pipeline::MeshAsset> EditorColliderComponent::GetMeshAsset() const
@@ -1074,7 +1072,7 @@ namespace PhysX
         return AZ::Aabb::CreateNull();
     }
 
-    AzPhysics::SimulatedBody* EditorColliderComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* EditorColliderComponent::GetSimulatedBody()
     {
         if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
@@ -1084,6 +1082,11 @@ namespace PhysX
             }
         }
         return nullptr;
+    }
+
+    AzPhysics::SimulatedBodyHandle EditorColliderComponent::GetSimulatedBodyHandle() const
+    {
+        return m_editorBodyHandle;
     }
 
     AzPhysics::SceneQueryHit EditorColliderComponent::RayCast(const AzPhysics::RayCastRequest& request)
@@ -1179,17 +1182,7 @@ namespace PhysX
         AZ::Render::MeshComponentRequestBus::EventResult(atomMeshAsset, GetEntityId(),
             &AZ::Render::MeshComponentRequestBus::Events::GetModelAsset);
 
-        if (atomMeshAsset.GetId().IsValid())
-        {
-            return atomMeshAsset;
-        }
-
-        // Try legacy render MeshComponent
-        AZ::Data::Asset<AZ::Data::AssetData> legacyMeshAsset;
-        LmbrCentral::MeshComponentRequestBus::EventResult(legacyMeshAsset,
-            GetEntityId(), &LmbrCentral::MeshComponentRequests::GetMeshAsset);
-
-        return legacyMeshAsset;
+        return atomMeshAsset;
     }
 
     void EditorColliderComponent::SetCollisionMeshFromRender()
@@ -1262,14 +1255,6 @@ namespace PhysX
                 GetEntity()->GetName().c_str(), 
                 renderMeshAsset.GetId().m_guid.ToString<AZStd::string>().c_str(),
                 renderMeshAsset.GetHint().c_str());
-        }
-    }
-    
-    void EditorColliderComponent::OnMeshCreated([[maybe_unused]] const AZ::Data::Asset<AZ::Data::AssetData>& asset)
-    {
-        if (ShouldUpdateCollisionMeshFromRender())
-        {
-            SetCollisionMeshFromRender();
         }
     }
 

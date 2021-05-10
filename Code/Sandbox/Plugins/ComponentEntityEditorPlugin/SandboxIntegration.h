@@ -104,7 +104,6 @@ class SandboxIntegrationManager
     , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
     , private AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
     , private IUndoManagerListener
-    , private AzToolsFramework::NewViewportInteractionModelEnabledRequestBus::Handler
     , private AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler
 {
 public:
@@ -144,9 +143,6 @@ private:
     QDockWidget* InstanceViewPane(const char* paneName) override;
     void CloseViewPane(const char* paneName) override;
     void BrowseForAssets(AzToolsFramework::AssetBrowser::AssetSelectionModel& selection) override;
-    void GenerateAllCubemaps() override;
-    void GenerateCubemapForEntity(AZ::EntityId entityId, AZStd::string* cubemapOutputPath, bool hideEntity) override;
-    void GenerateCubemapWithIDForEntity(AZ::EntityId entityId, AZ::Uuid cubemapId, AZStd::string* cubemapOutputPath, bool hideEntity, bool hasCubemapId) override;
     void HandleObjectModeSelection(const AZ::Vector2& point, int flags, bool& handled) override;
     void UpdateObjectModeCursor(AZ::u32& cursorId, AZStd::string& cursorStr) override;
     void CreateEditorRepresentation(AZ::Entity* entity) override;
@@ -250,7 +246,6 @@ private:
     void DrawArrow(const AZ::Vector3& src, const AZ::Vector3& trg, float fHeadScale, bool b2SidedArrow) override;
     void DrawTextLabel(const AZ::Vector3& pos, float size, const char* text, const bool bCenter, int srcOffsetX, int scrOffsetY) override;
     void Draw2dTextLabel(float x, float y, float size, const char* text, bool bCenter) override;
-    void DrawTextOn2DBox(const AZ::Vector3& pos, const char* text, float textScale, const AZ::Vector4& TextColor, const AZ::Vector4& TextBackColor) override;
     void DrawTextureLabel(ITexture* texture, const AZ::Vector3& pos, float sizeX, float sizeY, int texIconFlags) override;
     void DrawTextureLabel(int textureId, const AZ::Vector3& pos, float sizeX, float sizeY, int texIconFlags) override;
     void SetLineWidth(float width) override;
@@ -274,9 +269,6 @@ private:
     // AzFramework::DisplayContextRequestBus
     void SetDC(DisplayContext* dc) override;
     DisplayContext* GetDC() override;
-
-    // NewViewportInteractionModelEnabledRequestBus
-    bool IsNewViewportInteractionModelEnabled() override;
 
     // Context menu handlers.
     void ContextMenu_NewEntity();
@@ -368,8 +360,6 @@ private:
     AzToolsFramework::SliceOverridesNotificationWindowManager* m_notificationWindowManager;
 
     DisplayContext* m_dc;
-
-    AZStd::unique_ptr<class ComponentEntityDebugPrinter> m_entityDebugPrinter;
 
     AZStd::vector<SliceAssetDeletionErrorInfo> m_sliceAssetDeletionErrorRestoreInfos;
 

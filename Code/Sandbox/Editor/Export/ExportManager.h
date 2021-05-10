@@ -43,8 +43,6 @@ namespace Export
         virtual int GetFaceCount() const { return m_faces.size(); }
         virtual const Face* GetFaceBuffer() const { return m_faces.size() ? &m_faces[0] : 0; }
 
-        void SetMaterial(CMaterial* pMtl, CBaseObject* pBaseObj);
-
     private:
         std::vector<Face> m_faces;
 
@@ -129,10 +127,6 @@ public:
     //! return true if succeed, otherwise false
     bool Export(const char* defaultName, const char* defaultExt = "", const char* defaultPath = "", bool isSelectedObjects = true,
         bool isSelectedRegionObjects = false, bool isOccluder = false, bool bAnimationExport = false);
-
-    //! Add to Export Data geometry from selected objects
-    //! return true if succeed, otherwise false
-    bool AddSelectedObjects();
 
     bool AddSelectedEntityObjects();
 

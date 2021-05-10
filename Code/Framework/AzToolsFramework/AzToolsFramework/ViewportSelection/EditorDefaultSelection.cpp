@@ -30,15 +30,9 @@ namespace AzToolsFramework
         ActionOverrideRequestBus::Handler::BusConnect(GetEntityContextId());
         ComponentModeFramework::ComponentModeSystemRequestBus::Handler::BusConnect();
 
-        // only create EditorTransformComponentSelection if we are using the new viewport interaction model
-        // note: EditorDefaultSelection is still used when the new viewport interaction model is disabled to support
-        // Component Mode when using legacy viewport interaction model
-        if (IsNewViewportInteractionModelEnabled())
-        {
-            m_manipulatorManager =
-                AZStd::make_shared<AzToolsFramework::ManipulatorManager>(AzToolsFramework::g_mainManipulatorManagerId);
-            m_transformComponentSelection = AZStd::make_unique<EditorTransformComponentSelection>(entityDataCache);
-        }
+        m_manipulatorManager =
+            AZStd::make_shared<AzToolsFramework::ManipulatorManager>(AzToolsFramework::g_mainManipulatorManagerId);
+        m_transformComponentSelection = AZStd::make_unique<EditorTransformComponentSelection>(entityDataCache);
     }
 
     EditorDefaultSelection::~EditorDefaultSelection()
@@ -325,17 +319,14 @@ namespace AzToolsFramework
             m_transformComponentSelection->DisplayViewportSelection(viewportInfo, debugDisplay);
         }
 
-        if (IsNewViewportInteractionModelEnabled())
-        {
-            // poll and set the keyboard modifiers to ensure the mouse interaction is up to date
-            m_currentInteraction.m_keyboardModifiers =
-                AzToolsFramework::ViewportInteraction::BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers());
-            // draw the manipulators
-            const AzFramework::CameraState cameraState = GetCameraState(viewportInfo.m_viewportId);
-            debugDisplay.DepthTestOff();
-            m_manipulatorManager->DrawManipulators(debugDisplay, cameraState, m_currentInteraction);
-            debugDisplay.DepthTestOn();
-        }
+        // poll and set the keyboard modifiers to ensure the mouse interaction is up to date
+        m_currentInteraction.m_keyboardModifiers =
+            AzToolsFramework::ViewportInteraction::BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers());
+        // draw the manipulators
+        const AzFramework::CameraState cameraState = GetCameraState(viewportInfo.m_viewportId);
+        debugDisplay.DepthTestOff();
+        m_manipulatorManager->DrawManipulators(debugDisplay, cameraState, m_currentInteraction);
+        debugDisplay.DepthTestOn();
     }
 
     void EditorDefaultSelection::DisplayViewportSelection2d(

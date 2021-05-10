@@ -75,8 +75,8 @@ namespace Multiplayer
         const PropertyPublisher* GetPropertyPublisher() const;
         PropertySubscriber* GetPropertySubscriber();
 
-        // Handlers for messages
-        bool HandleRpcMessage(NetworkEntityRpcMessage& entityRpcMessage);
+        // Handlers for Rpc messages
+        bool HandleRpcMessage(AzNetworking::IConnection* invokingConnection, NetworkEntityRpcMessage& entityRpcMessage);
 
         //! AZ::EntityBus overrides
         //! @{

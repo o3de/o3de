@@ -200,6 +200,22 @@ namespace AzToolsFramework
                 instanceToParentUnder = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
                 parent = instanceToParentUnder->get().GetContainerEntityId();
             }
+
+            //Detect whether this instantiation would produce a cyclical dependency
+            auto relativePath = m_prefabLoaderInterface->GetRelativePathToProject(filePath);
+            Prefab::TemplateId templateId = m_prefabSystemComponentInterface->GetTemplateIdFromFilePath(relativePath);
+
+            // If the template isn't currently loaded, there's no way for it to be in the hierarchy so we just skip the check.
+            if (templateId != Prefab::InvalidTemplateId && IsPrefabInInstanceAncestorHierarchy(templateId, instanceToParentUnder->get()))
+            {
+                return AZ::Failure(
+                    AZStd::string::format(
+                        "Instantiate Prefab operation aborted - Cyclical dependency detected\n(%s depends on %s).",
+                        relativePath.Native().c_str(),
+                        instanceToParentUnder->get().GetTemplateSourcePath().Native().c_str()
+                    )
+                );
+            }
             
             {
                 // Initialize Undo Batch object
@@ -210,7 +226,7 @@ namespace AzToolsFramework
                     instanceToParentUnderDomBeforeCreate, instanceToParentUnder->get());
 
                 // Instantiate the Prefab
-                auto instanceToCreate = prefabEditorEntityOwnershipInterface->InstantiatePrefab(filePath, instanceToParentUnder);
+                auto instanceToCreate = prefabEditorEntityOwnershipInterface->InstantiatePrefab(relativePath, instanceToParentUnder);
 
                 if (!instanceToCreate)
                 {
@@ -258,6 +274,23 @@ namespace AzToolsFramework
                 commonRootEntityOwningInstance.has_value(),
                 "Failed to create prefab : Couldn't get a valid owning instance for the common root entity of the enities provided");
             return AZ::Success();
+        }
+
+        bool PrefabPublicHandler::IsPrefabInInstanceAncestorHierarchy(TemplateId prefabTemplateId, InstanceOptionalConstReference instance)
+        {
+            InstanceOptionalConstReference currentInstance = instance;
+
+            while (currentInstance.has_value())
+            {
+                if (currentInstance->get().GetTemplateId() == prefabTemplateId)
+                {
+                    return true;
+                }
+
+                currentInstance = currentInstance->get().GetParentInstance();
+            }
+
+            return false;
         }
 
         void PrefabPublicHandler::CreateLink(

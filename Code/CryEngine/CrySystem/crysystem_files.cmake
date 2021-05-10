@@ -19,7 +19,6 @@ set(FILES
     ConsoleBatchFile.cpp
     ConsoleHelpGen.cpp
     CryAsyncMemcpy.cpp
-    CrySizerStats.cpp
     DebugCallStack.cpp
     GeneralMemoryHeap.cpp
     HandlerBase.cpp
@@ -57,8 +56,6 @@ set(FILES
     UnixConsole.h
     SystemInit.h
     Serialization/MemoryReader.h
-    Statistics/LocalMemoryUsage.h
-    MemoryFragmentationProfiler.h
     XML/ReadWriteXMLSink.h
     Serialization/ArchiveHost.h
     Serialization/MemoryWriter.h
@@ -71,7 +68,6 @@ set(FILES
     CmdLineArg.h
     ConsoleBatchFile.h
     ConsoleHelpGen.h
-    CrySizerStats.h
     CryWaterMark.h
     DebugCallStack.h
     GeneralMemoryHeap.h
@@ -93,13 +89,11 @@ set(FILES
     crash_face.bmp
     ImageHandler.h
     ImageHandler.cpp
-    DefragAllocator.cpp
     MemoryAddressRange.cpp
     PageMappingHeap.cpp
     CustomMemoryHeap.cpp
     MemoryManager.cpp
     MTSafeAllocator.cpp
-    DefragAllocator.h
     MemoryAddressRange.h
     PageMappingHeap.h
     MemoryManager.h
@@ -119,10 +113,8 @@ set(FILES
     XML/WriteXMLSource.cpp
     ZipFile.h
     ZipFileFormat_info.h
-    PerfHUD.cpp
     ProfileLogSystem.cpp
     Sampler.cpp
-    PerfHUD.h
     ProfileLogSystem.h
     Sampler.h
     LocalizedStringManager.cpp
@@ -139,25 +131,10 @@ set(FILES
     ExtensionSystem/CryFactoryRegistryImpl.h
     ExtensionSystem/TestCases/TestExtensions.cpp
     ExtensionSystem/TestCases/TestExtensions.h
-    MiniGUI/DrawContext.cpp
-    MiniGUI/MiniButton.cpp
-    MiniGUI/MiniGUI.cpp
-    MiniGUI/MiniInfoBox.cpp
-    MiniGUI/MiniMenu.cpp
-    MiniGUI/MiniTable.cpp
-    MiniGUI/DrawContext.h
-    MiniGUI/MiniButton.h
-    MiniGUI/MiniGUI.h
-    MiniGUI/MiniInfoBox.h
-    MiniGUI/MiniMenu.h
-    MiniGUI/MiniTable.h
-    Statistics/LocalMemoryUsage.cpp
     ZLibCompressor.cpp
     ZLibCompressor.h
     SoftCode/SoftCodeMgr.cpp
     SoftCode/SoftCodeMgr.h
-    OverloadSceneManager/OverloadSceneManager.cpp
-    OverloadSceneManager/OverloadSceneManager.h
     Huffman.cpp
     Huffman.h
     RemoteConsole/RemoteConsole.cpp
@@ -199,8 +176,6 @@ set(FILES
     Serialization/XmlIArchive.h
     Serialization/XmlOArchive.cpp
     Serialization/XmlOArchive.h
-    HMDCVars.h
-    HMDCVars.cpp
     StreamEngine/StreamAsyncFileRequest.cpp
     StreamEngine/StreamAsyncFileRequest_Jobs.cpp
     StreamEngine/StreamEngine.cpp
@@ -212,13 +187,9 @@ set(FILES
     StreamEngine/StreamIOThread.h
     StreamEngine/StreamReadStream.h
     StreamEngine/AZRequestReadStream.h
-    VisRegTest.cpp
-    VisRegTest.h
     CrashHandler.rc
     CrySystem_precompiled.cpp
     CPUDetect.cpp
     CPUDetect.h
-    CrySizerImpl.cpp
-    CrySizerImpl.h
     WindowsErrorReporting.cpp
 )

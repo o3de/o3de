@@ -30,7 +30,6 @@
 #include "Include/HitContext.h"
 #include "Objects/ObjectManager.h"
 #include "Util/3DConnexionDriver.h"
-#include "Util/Ruler.h"
 #include "PluginManager.h"
 #include "Include/IRenderListener.h"
 #include "GameEngine.h"
@@ -1414,17 +1413,7 @@ bool QtViewport::MouseCallback(EMouseEvent event, const QPoint& point, Qt::Keybo
         break;
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    // Asks Ruler to handle mouse callback.
-    CRuler* pRuler = GetIEditor()->GetRuler();
     QPoint tempPoint(point.x(), point.y());
-    if (pRuler)
-    {
-        if (pRuler->MouseCallback(this, event, tempPoint, flags))
-        {
-            return true;
-        }
-    }
 
     //////////////////////////////////////////////////////////////////////////
     // Handle viewport manipulators.

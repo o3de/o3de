@@ -116,7 +116,6 @@ public:
     static CCryEditApp* instance();
 
     bool GetRootEnginePath(QDir& rootEnginePath) const;
-    void OnToggleSelection(bool hide);
     bool CreateLevel(bool& wasCreateLevelOperationCancelled);
     void LoadFile(QString fileName);
     void ForceNextIdleProcessing() { m_bForceProcessIdle = true; }
@@ -210,13 +209,9 @@ public:
     void OnExportSelectedObjects();
     void OnEditHold();
     void OnEditFetch();
-    void OnGeneratorsStaticobjects();
     void OnFileExportToGameNoSurfaceTexture();
     void OnViewSwitchToGame();
     void OnViewDeploy();
-    void OnEditSelectAll();
-    void OnEditSelectNone();
-    void OnEditDelete();
     void DeleteSelectedEntities(bool includeDescendants);
     void OnMoveObject();
     void OnRenameObj();
@@ -229,18 +224,14 @@ public:
     void OnUndo();
     void OnOpenAssetImporter();
     void OnUpdateSelected(QAction* action);
-    void OnLockSelection();
     void OnEditLevelData();
     void OnFileEditLogFile();
     void OnFileResaveSlices();
     void OnFileEditEditorini();
     void OnPreferences();
-    void OnReloadTextures();
-    void OnReloadGeometry();
     void OnRedo();
     void OnUpdateRedo(QAction* action);
     void OnUpdateUndo(QAction* action);
-    void OnGenerateCgfThumbnails();
     void OnSwitchPhysics();
     void OnSwitchPhysicsUpdate(QAction* action);
     void OnSyncPlayer();
@@ -292,12 +283,6 @@ private:
     //! Test mode is a special mode enabled when Editor ran with /test command line.
     //! In this mode editor starts up, but exit immediately after all initialization.
     bool m_bTestMode = false;
-    bool m_bPrecacheShaderList = false;
-    bool m_bPrecacheShaders = false;
-    bool m_bPrecacheShadersLevels = false;
-    bool m_bMergeShaders = false;
-    bool m_bStatsShaderList = false;
-    bool m_bStatsShaders = false;
     //! In this mode editor will load specified cry file, export t, and then close.
     bool m_bExportMode = false;
     QString m_exportFile;
@@ -379,11 +364,6 @@ private:
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     friend struct PythonTestOutputHandler;
 
-    void OnEditHide();
-    void OnUpdateEditHide(QAction* action);
-    void OnEditShowLastHidden();
-    void OnEditUnhideall();
-    void OnSnap();
     void OnWireframe();
     void OnUpdateWireframe(QAction* action);
     void OnViewGridsettings();
@@ -421,28 +401,14 @@ private:
     void OnToolsScriptHelp();
     void OnViewCycle2dviewport();
     void OnDisplayGotoPosition();
-    void OnSnapangle();
-    void OnUpdateSnapangle(QAction* action);
-    void OnRuler();
-    void OnUpdateRuler(QAction* action);
-    void OnRotateselectionXaxis();
-    void OnRotateselectionYaxis();
-    void OnRotateselectionZaxis();
-    void OnRotateselectionRotateangle();
-    void OnEditRenameobject();
     void OnChangemovespeedIncrease();
     void OnChangemovespeedDecrease();
     void OnChangemovespeedChangestep();
-    void OnMaterialAssigncurrent();
-    void OnMaterialResettodefault();
-    void OnMaterialGetmaterial();
     void OnFileSavelevelresources();
     void OnClearRegistryData();
     void OnValidatelevel();
-    void OnValidateObjectPositions();
     void OnToolsPreferences();
     void OnGraphicsSettings();
-    void OnEditInvertselection();
     void OnSwitchToDefaultCamera();
     void OnUpdateSwitchToDefaultCamera(QAction* action);
     void OnSwitchToSequenceCamera();
@@ -455,8 +421,6 @@ private:
     void OnOpenTrackView();
     void OnOpenAudioControlsEditor();
     void OnOpenUICanvasEditor();
-    void OnGotoViewportSearch();
-    void OnTimeOfDay();
     void OnChangeGameSpec(UINT nID);
     void SetGameSpecCheck(ESystemConfigSpec spec, ESystemConfigPlatform platform, int &nCheck, bool &enable);
     void OnUpdateGameSpec(QAction* action);

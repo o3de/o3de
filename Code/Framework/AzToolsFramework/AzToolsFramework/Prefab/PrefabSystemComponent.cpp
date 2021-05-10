@@ -721,6 +721,8 @@ namespace AzToolsFramework
 
         TemplateId PrefabSystemComponent::GetTemplateIdFromFilePath(AZ::IO::PathView filePath) const
         {
+            AZ_Assert(!filePath.IsAbsolute(), "Prefab - GetTemplateIdFromFilePath was passed an absolute path. Prefabs use paths relative to the project folder.");
+
             auto found = m_templateFilePathToIdMap.find(filePath);
             if (found != m_templateFilePathToIdMap.end())
             {
@@ -771,8 +773,8 @@ namespace AzToolsFramework
                 return false;
             }
 
-            Template& sourceTemplate = sourceTemplateReference->get();
 #if defined(AZ_ENABLE_TRACING)
+            Template& sourceTemplate = sourceTemplateReference->get();
             Template& targetTemplate = targetTemplateReference->get();
 #endif
 

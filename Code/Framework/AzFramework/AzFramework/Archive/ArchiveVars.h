@@ -51,7 +51,6 @@ namespace AZ::IO
             : ArchiveLocationPriority::ePakPriorityFileFirst }; // Which file location to favor (loose vs. pak files)
         int nMessageInvalidFileAccess{};
         int nLogInvalidFileAccess{ IsReleaseConfig ? 0 : 1 };
-        int nLoadFrontendShaderCache{ FRONTEND_SHADER_CACHE_DEFAULT };
         int nDisableNonLevelRelatedPaks{ 1 };
         int nWarnOnPakAccessFails{ 1 }; // Whether to treat failed pak access as a warning or log message
         int nSetLogLevel{ 3 };
