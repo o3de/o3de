@@ -10,6 +10,8 @@
 *
 */
 
+// NOTE: This file is a temporary workaround until .shader files can #define macros for their .azsl files
+
 #define QUALITY_LOW_END 1
 
 #include "StandardPBR_ForwardPass.azsl"

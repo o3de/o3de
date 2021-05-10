@@ -54,6 +54,7 @@ set(FILES
     Materials/Types/StandardPBR_HandleOpacityMode.lua
     Materials/Types/StandardPBR_LowEndForward.azsl
     Materials/Types/StandardPBR_LowEndForward.shader
+    Materials/Types/StandardPBR_LowEndForward_EDS.shader
     Materials/Types/StandardPBR_ParallaxState.lua
     Materials/Types/StandardPBR_Roughness.lua
     Materials/Types/StandardPBR_ShaderEnable.lua
@@ -194,6 +195,7 @@ set(FILES
     Passes/ShadowParent.pass
     Passes/Skinning.pass
     Passes/SkyBox.pass
+    Passes/SkyBox_TwoOutputs.pass
     Passes/SMAA1xApplyLinearHDRColor.pass
     Passes/SMAA1xApplyPerceptualColor.pass
     Passes/SMAABlendingWeightCalculation.pass
@@ -483,4 +485,6 @@ set(FILES
     Shaders/SkinnedMesh/LinearSkinningPassSRG.azsli
     Shaders/SkyBox/SkyBox.azsl
     Shaders/SkyBox/SkyBox.shader
+    Shaders/SkyBox/SkyBox_TwoOutputs.azsl
+    Shaders/SkyBox/SkyBox_TwoOutputs.shader
 ) 

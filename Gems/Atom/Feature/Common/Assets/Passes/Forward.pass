@@ -222,19 +222,6 @@
                     "AssetRef": {
                         "FilePath": "Textures/BRDFTexture.attimage"
                     }
-                },
-                {
-                    "Name": "ScatterDistanceImage",
-                    "SizeSource": {
-                        "Source": {
-                            "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
-                        }
-                    },
-                    "ImageDescriptor": {
-                        "Format": "R11G11B10_FLOAT",
-                        "SharedQueueMask": "Graphics"
-                    }
                 }
             ],
             "Connections": [
@@ -278,13 +265,6 @@
                     "AttachmentRef": {
                         "Pass": "This",
                         "Attachment": "BRDFTexture"
-                    }
-                },
-                {
-                    "LocalSlot": "ScatterDistanceOutput",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "ScatterDistanceImage"
                     }
                 }
             ]
