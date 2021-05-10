@@ -88,4 +88,24 @@ namespace AZ
     {
         return index < m_names.size() ? m_names[index] : AZStd::string_view();
     }
+
+    SettingsRegistryInterface::CommandLineArgumentSettings::CommandLineArgumentSettings()
+    {
+        m_delimiterFunc = [](AZStd::string_view line) -> JsonPathValue
+        {
+            constexpr AZStd::string_view CommandLineArgumentDelimiters{ "=:" };
+            JsonPathValue pathValue;
+            pathValue.m_value = line;
+
+            // Splits the line on the first delimiter and stores that in the
+            // TokenizeNext updates the string_view input parameter in place
+            // the JSON pointer path is the portion of the line to the left of the first delimiter
+            if (auto path = AZ::StringFunc::TokenizeNext(pathValue.m_value, CommandLineArgumentDelimiters); path.has_value())
+            {
+                pathValue.m_path = AZ::StringFunc::StripEnds(*path);
+            }
+            pathValue.m_value = AZ::StringFunc::StripEnds(pathValue.m_value);
+            return pathValue;
+        };
+    }
 } // namespace AZ

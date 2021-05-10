@@ -419,9 +419,6 @@ namespace AZ
     bool SettingsRegistryImpl::MergeCommandLineArgument(AZStd::string_view argument, AZStd::string_view rootKey,
         const CommandLineArgumentSettings& commandLineSettings)
     {
-        const char* front = argument.begin();
-        const char* back = argument.end();
-
         if (!commandLineSettings.m_delimiterFunc)
         {
             AZ_Error("SettingsRegistry", false,
@@ -429,87 +426,33 @@ namespace AZ
                 aznumeric_cast<int>(argument.size()), argument.data());
             return false;
         }
-        const char* split = AZStd::find_if(front, back, commandLineSettings.m_delimiterFunc);
-        if (split == front || // There is no key
-            split == (back-1) || // There is no value
-            split == back) // Split character not found. 
+
+        auto [key, value] = commandLineSettings.m_delimiterFunc(argument);
+        if (key.empty())
         {
+            // They key where to set the JSON value cannot be empty
+            // The value of the JSON can be though
+            // This is so that a key can be set to empty string using "/KeyPath="
             return false;
         }
 
-        const char* keyStart = front;
-        while (std::isspace(*keyStart)) // This is safe because it will eventually stop on =
+        // Prepend the rootKey as an anchor to the argument key
+        SettingsRegistryInterface::FixedValueString keyPath{ rootKey.ends_with('/')
+            ? rootKey.substr(0, rootKey.size() - 1)
+            : rootKey };
+        // Append the JSON reference token prefix of '/' to the keyPath
+        if (!key.starts_with('/'))
         {
-            keyStart++;
+            keyPath.push_back('/');
         }
-        if (keyStart == split) // Key is just white spaces
-        {
-            return false;
-        }
-        const char* keyEnd = split;
-        while (std::isspace(*--keyEnd));
-        keyEnd++;
+        keyPath += key;
+        key = keyPath;
 
-        char buffer[MaxJsonPathLength];
-        AZStd::string_view key;
-        bool keyHasDivider = *keyStart == '/';
-        if (!rootKey.empty())
+        if (value.empty())
         {
-            bool rootKeyHasDivider = (rootKey[rootKey.length() - 1]) == '/';
-            size_t count;
-            if (!rootKeyHasDivider && !keyHasDivider)
-            {
-                count = azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "%.*s/%.*s",
-                    aznumeric_cast<int>(rootKey.length()), rootKey.data(),
-                    aznumeric_cast<int>(keyEnd - keyStart), keyStart);
-            }
-            else if (rootKeyHasDivider && keyHasDivider)
-            {
-                count = azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "%.*s%.*s",
-                    aznumeric_cast<int>(rootKey.length()) - 1, rootKey.data(),
-                    aznumeric_cast<int>(keyEnd - keyStart), keyStart);
-            }
-            else
-            {
-                count = azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "%.*s%.*s",
-                    aznumeric_cast<int>(rootKey.length()), rootKey.data(),
-                    aznumeric_cast<int>(keyEnd - keyStart), keyStart);
-            }
-            if (count >= AZ_ARRAY_SIZE(buffer) - 1)
-            {
-                return false;
-            }
-            key = AZStd::string_view(buffer, count);
-        }
-        else if (!keyHasDivider)
-        {
-            size_t count = azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "/%.*s",
-                aznumeric_cast<int>(keyEnd - keyStart), keyStart);
-            if (count >= AZ_ARRAY_SIZE(buffer) - 1)
-            {
-                return false;
-            }
-            key = AZStd::string_view(buffer, count);
-        }
-        else
-        {
-            key = AZStd::string_view(keyStart, keyEnd);
+            return Set(key, value);
         }
 
-        const char* valueStart = split + 1;
-        while (std::isspace(*valueStart) && valueStart < back)
-        {
-            valueStart++;
-        }
-        if (valueStart == back)
-        {
-            return false; // The value is empty
-        }
-        const char* valueEnd = back;
-        while (std::isspace(*(--valueEnd)));
-        valueEnd++;
-
-        AZStd::string_view value(valueStart, valueEnd);
         if (value == "true")
         {
             return Set(key, true);
@@ -519,23 +462,27 @@ namespace AZ
             return Set(key, false);
         }
 
-        if (value.length() - 1 >= MaxCommandLineArgumentLength)
-        {
-            return false;
-        }
-        char argumentString[MaxCommandLineArgumentLength];
-        snprintf(argumentString, AZ_ARRAY_SIZE(argument), "%.*s", aznumeric_cast<int>(value.length()), value.data());
-        char* argumentStringEnd = argumentString + value.length();
+        SettingsRegistryInterface::FixedValueString valueString(value);
+        const char* valueStringEnd = valueString.c_str() + valueString.size();
 
+        errno = 0;
         char* convertEnd = nullptr;
-        s64 intValue = strtoll(argumentString, &convertEnd, 0);
-        if (convertEnd == argumentStringEnd)
+        s64 intValue = strtoll(valueString.c_str(), &convertEnd, 0);
+        if (errno != ERANGE && convertEnd == valueStringEnd)
         {
             return Set(key, intValue);
         }
+        errno = 0;
         convertEnd = nullptr;
-        double floatingPointValue = strtod(argumentString, &convertEnd);
-        if (convertEnd == argumentStringEnd)
+        u64 uintValue = strtoull(valueString.c_str(), &convertEnd, 0);
+        if (errno != ERANGE && convertEnd == valueStringEnd)
+        {
+            return Set(key, uintValue);
+        }
+        errno = 0;
+        convertEnd = nullptr;
+        double floatingPointValue = strtod(valueString.c_str(), &convertEnd);
+        if (errno != ERANGE && convertEnd == valueStringEnd)
         {
             return Set(key, floatingPointValue);
         }
@@ -1145,7 +1092,7 @@ namespace AZ
         JsonSerializationResult::ResultCode mergeResult(JsonSerializationResult::Tasks::Merge);
         if (rootKey.empty())
         {
-            mergeResult = JsonSerialization::ApplyPatch(m_settings, m_settings.GetAllocator(), jsonPatch, mergeApproach);
+            mergeResult = JsonSerialization::ApplyPatch(m_settings, m_settings.GetAllocator(), jsonPatch, mergeApproach, m_applyPatchSettings);
         }
         else
         {
@@ -1153,7 +1100,7 @@ namespace AZ
             if (root.IsValid())
             {
                 Value& rootValue = root.Create(m_settings, m_settings.GetAllocator());
-                mergeResult = JsonSerialization::ApplyPatch(rootValue, m_settings.GetAllocator(), jsonPatch, mergeApproach);
+                mergeResult = JsonSerialization::ApplyPatch(rootValue, m_settings.GetAllocator(), jsonPatch, mergeApproach, m_applyPatchSettings);
             }
             else
             {
@@ -1179,5 +1126,14 @@ namespace AZ
         m_notifiers.Signal("", Type::Object);
 
         return true;
+    }
+
+    void SettingsRegistryImpl::SetApplyPatchSettings(const AZ::JsonApplyPatchSettings& applyPatchSettings)
+    {
+        m_applyPatchSettings = applyPatchSettings;
+    }
+    void SettingsRegistryImpl::GetApplyPatchSettings(AZ::JsonApplyPatchSettings& applyPatchSettings)
+    {
+        applyPatchSettings = m_applyPatchSettings;
     }
 } // namespace AZ
