@@ -56,7 +56,7 @@ private:
     QScopedPointer<Ui::AzAssetBrowserWindowClass> m_ui;
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserFilterModel> m_filterModel;
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserTableModel> m_tableModel;
-    QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserTableFilterModel> m_tableFilterModel;
+    //QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserTableFilterModel> m_tableFilterModel;
     AzToolsFramework::AssetBrowser::AssetBrowserModel* m_assetBrowserModel;
     
     void UpdatePreview() const;

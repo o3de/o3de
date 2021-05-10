@@ -68,7 +68,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     , m_ui(new Ui::AzAssetBrowserWindowClass())
     , m_filterModel(new AzToolsFramework::AssetBrowser::AssetBrowserFilterModel(parent))
     , m_tableModel(new AzToolsFramework::AssetBrowser::AssetBrowserTableModel(parent))
-    , m_tableFilterModel(new AzToolsFramework::AssetBrowser::AssetBrowserTableFilterModel(parent))
+    /*, m_tableFilterModel(new AzToolsFramework::AssetBrowser::AssetBrowserTableFilterModel(parent))*/
 {
     m_ui->setupUi(this);
     m_ui->m_searchWidget->Setup(true, true);
@@ -83,8 +83,8 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_tableModel->setSourceModel(m_filterModel.data());
     //m_tableModel->setSourceModel(m_assetBrowserModel);
 
-    m_tableFilterModel->setSourceModel(m_tableModel.data());
-    m_tableFilterModel->SetFilter(m_ui->m_searchWidget->GetFilter());
+    //m_tableFilterModel->setSourceModel(m_tableModel.data());
+    //m_tableFilterModel->SetFilter(m_ui->m_searchWidget->GetFilter());
 
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());

@@ -5,7 +5,7 @@
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 
 #include <AssetBrowser/AssetBrowserTableModel.h>
-#include <AssetBrowser/AssetBrowserModel.h>
+#include <AssetBrowser/AssetBrowserFilterModel.h>
 
 #include <QCollator>
 #include <QSharedPointer>
@@ -29,10 +29,12 @@ namespace AzToolsFramework
         }
         void AssetBrowserTableModel::OnAssetBrowserComponentReady()
         {
-            BuildMap(sourceModel());
+            //BuildMap(sourceModel());
         }
         void AssetBrowserTableModel::setSourceModel(QAbstractItemModel* sourceModel)
         {
+            m_filterModel = qobject_cast<AssetBrowserFilterModel*>(sourceModel);
+            AZ_Assert(m_filterModel, "Expecting AssetBrowserFilterModel");
             QSortFilterProxyModel::setSourceModel(sourceModel);
         }
 
@@ -58,6 +60,18 @@ namespace AzToolsFramework
                 return QModelIndex();
             }
             return createIndex(m_rowMap[sourceIndex], sourceIndex.column(), sourceIndex.internalPointer());
+        }
+
+        bool AssetBrowserTableModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
+        {
+            AZ_UNUSED(source_row);
+            AZ_UNUSED(source_parent);
+            // no filter present, every entry is not visible
+            if (!m_filterModel->GetFilter())
+            {
+                return false;
+            }
+            return true;
         }
 
         QModelIndex AssetBrowserTableModel::index(int row, int column, const QModelIndex& parent) const
@@ -159,158 +173,172 @@ namespace AzToolsFramework
         }
         void AssetBrowserTableModel::UpdateMap()
         {
-            m_indexMap.clear();
-            m_rowMap.clear();
+            //m_indexMap.clear();
+            //m_rowMap.clear();
+
+            if (m_indexMap.size() > 0)
+            {
+                //beginRemoveRows(m_indexMap.first().parent(), m_indexMap.first().row(), m_indexMap.last().row()); 
+                for (const auto& key : m_indexMap.keys())
+                {
+                    beginRemoveRows(m_indexMap[key], m_indexMap[key].row(), m_indexMap[key].row());
+                    m_rowMap.remove(m_indexMap[key]);
+                    m_indexMap.remove(key);
+                    endRemoveRows();
+                }
+                //endRemoveRows();
+            }
+
             BuildMap(sourceModel());
         }
 
         //---------------------------------------AssetBrowserTableFilterModel--------------------------------------------
-        AssetBrowserTableFilterModel::AssetBrowserTableFilterModel(QObject* parent)
-            : QSortFilterProxyModel(parent)
-        {
-            m_showColumn.insert(static_cast<int>(AssetBrowserEntry::Column::DisplayName));
-            m_showColumn.insert(static_cast<int>(AssetBrowserEntry::Column::Path));
-            AssetBrowserComponentNotificationBus::Handler::BusConnect();
-        }
+        //AssetBrowserTableFilterModel::AssetBrowserTableFilterModel(QObject* parent)
+        //    : QSortFilterProxyModel(parent)
+        //{
+        //    m_showColumn.insert(static_cast<int>(AssetBrowserEntry::Column::DisplayName));
+        //    m_showColumn.insert(static_cast<int>(AssetBrowserEntry::Column::Path));
+        //    AssetBrowserComponentNotificationBus::Handler::BusConnect();
+        //}
 
-        AssetBrowserTableFilterModel::~AssetBrowserTableFilterModel()
-        {
-            AssetBrowserComponentNotificationBus::Handler::BusDisconnect();
-        }
+        //AssetBrowserTableFilterModel::~AssetBrowserTableFilterModel()
+        //{
+        //    AssetBrowserComponentNotificationBus::Handler::BusDisconnect();
+        //}
 
-        void AssetBrowserTableFilterModel::setSourceModel(QAbstractItemModel* sourceModel)
-        {
-            QSortFilterProxyModel::setSourceModel(sourceModel);
-        }
+        //void AssetBrowserTableFilterModel::setSourceModel(QAbstractItemModel* sourceModel)
+        //{
+        //    QSortFilterProxyModel::setSourceModel(sourceModel);
+        //}
 
-        void AssetBrowserTableFilterModel::SetFilter(FilterConstType filter)
-        {
-            connect(filter.data(), &AssetBrowserEntryFilter::updatedSignal, this, &AssetBrowserTableFilterModel::filterUpdatedSlot);
-            m_filter = filter;
-            m_invalidateFilter = true;
-            // asset browser entries are not guaranteed to have populated when the filter is set, delay filtering until they are
-            bool isAssetBrowserComponentReady = false;
-            AssetBrowserComponentRequestBus::BroadcastResult(isAssetBrowserComponentReady, &AssetBrowserComponentRequests::AreEntriesReady);
-            if (isAssetBrowserComponentReady)
-            {
-                OnAssetBrowserComponentReady();
-            }
-        }
+        //void AssetBrowserTableFilterModel::SetFilter(FilterConstType filter)
+        //{
+        //    connect(filter.data(), &AssetBrowserEntryFilter::updatedSignal, this, &AssetBrowserTableFilterModel::filterUpdatedSlot);
+        //    m_filter = filter;
+        //    m_invalidateFilter = true;
+        //    // asset browser entries are not guaranteed to have populated when the filter is set, delay filtering until they are
+        //    bool isAssetBrowserComponentReady = false;
+        //    AssetBrowserComponentRequestBus::BroadcastResult(isAssetBrowserComponentReady, &AssetBrowserComponentRequests::AreEntriesReady);
+        //    if (isAssetBrowserComponentReady)
+        //    {
+        //        OnAssetBrowserComponentReady();
+        //    }
+        //}
 
-        void AssetBrowserTableFilterModel::FilterUpdatedSlotImmediate()
-        {
-            auto compFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(m_filter);
-            if (compFilter)
-            {
-                auto& subFilters = compFilter->GetSubFilters();
-                auto it = AZStd::find_if(subFilters.begin(), subFilters.end(), [subFilters](FilterConstType filter) -> bool {
-                    auto assetTypeFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(filter);
-                    return !assetTypeFilter.isNull();
-                });
-                if (it != subFilters.end())
-                {
-                    m_assetTypeFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(*it);
-                }
-                it = AZStd::find_if(subFilters.begin(), subFilters.end(), [subFilters](FilterConstType filter) -> bool {
-                    auto stringFilter = qobject_cast<QSharedPointer<const StringFilter>>(filter);
-                    return !stringFilter.isNull();
-                });
-                if (it != subFilters.end())
-                {
-                    m_stringFilter = qobject_cast<QSharedPointer<const StringFilter>>(*it);
-                }
-            }
-            invalidateFilter();
-            Q_EMIT filterChanged();
-        }
+        //void AssetBrowserTableFilterModel::FilterUpdatedSlotImmediate()
+        //{
+        //    auto compFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(m_filter);
+        //    if (compFilter)
+        //    {
+        //        auto& subFilters = compFilter->GetSubFilters();
+        //        auto it = AZStd::find_if(subFilters.begin(), subFilters.end(), [subFilters](FilterConstType filter) -> bool {
+        //            auto assetTypeFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(filter);
+        //            return !assetTypeFilter.isNull();
+        //        });
+        //        if (it != subFilters.end())
+        //        {
+        //            m_assetTypeFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(*it);
+        //        }
+        //        it = AZStd::find_if(subFilters.begin(), subFilters.end(), [subFilters](FilterConstType filter) -> bool {
+        //            auto stringFilter = qobject_cast<QSharedPointer<const StringFilter>>(filter);
+        //            return !stringFilter.isNull();
+        //        });
+        //        if (it != subFilters.end())
+        //        {
+        //            m_stringFilter = qobject_cast<QSharedPointer<const StringFilter>>(*it);
+        //        }
+        //    }
+        //    invalidateFilter();
+        //    Q_EMIT filterChanged();
+        //}
 
-        void AssetBrowserTableFilterModel::OnAssetBrowserComponentReady()
-        {
-            if (m_invalidateFilter)
-            {
-                invalidateFilter();
-                m_invalidateFilter = false;
-            }
-            Q_EMIT entriesUpdated();
-        }
+        //void AssetBrowserTableFilterModel::OnAssetBrowserComponentReady()
+        //{
+        //    if (m_invalidateFilter)
+        //    {
+        //        invalidateFilter();
+        //        m_invalidateFilter = false;
+        //    }
+        //    Q_EMIT entriesUpdated();
+        //}
 
-        bool AssetBrowserTableFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
-        {
-            AZ_UNUSED(source_row);
-            AZ_UNUSED(source_parent);
-            QModelIndex idx = sourceModel()->index(source_row, 0, source_parent);
-            if (!idx.isValid())
-            {
-                return false;
-            }
-            // no filter present, every entry is visible
-            if (!m_filter)
-            {
-                return true;
-            }
+        //bool AssetBrowserTableFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
+        //{
+        //    AZ_UNUSED(source_row);
+        //    AZ_UNUSED(source_parent);
+        //    QModelIndex idx = sourceModel()->index(source_row, 0, source_parent);
+        //    if (!idx.isValid())
+        //    {
+        //        return false;
+        //    }
+        //    // no filter present, every entry is visible
+        //    if (!m_filter)
+        //    {
+        //        return true;
+        //    }
 
-            //// the entry is the internal pointer of the index
-            //auto entry = static_cast<AssetBrowserEntry*>(idx.internalPointer());
+        //    //// the entry is the internal pointer of the index
+        //    //auto entry = static_cast<AssetBrowserEntry*>(idx.internalPointer());
 
-            //if (entry)
-            //{
-            //    // root should return true even if its not displayed in the treeview
-            //    if (entry && entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Root)
-            //    {
-            //        return true;
-            //    }
-            //    return m_filter->Match(entry);
-            //}
-            return true;
-        }
+        //    //if (entry)
+        //    //{
+        //    //    // root should return true even if its not displayed in the treeview
+        //    //    if (entry && entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Root)
+        //    //    {
+        //    //        return true;
+        //    //    }
+        //    //    return m_filter->Match(entry);
+        //    //}
+        //    return true;
+        //}
 
-        bool AssetBrowserTableFilterModel::filterAcceptsColumn(int source_column, const QModelIndex&) const
-        {
-            return m_showColumn.find(source_column) != m_showColumn.end();
-        }
+        //bool AssetBrowserTableFilterModel::filterAcceptsColumn(int source_column, const QModelIndex&) const
+        //{
+        //    return m_showColumn.find(source_column) != m_showColumn.end();
+        //}
 
-        bool AssetBrowserTableFilterModel::lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const
-        {
-            if (source_left.column() == source_right.column())
-            {
-                QVariant leftData = sourceModel()->data(source_left, AssetBrowserModel::Roles::EntryRole);
-                QVariant rightData = sourceModel()->data(source_right, AssetBrowserModel::Roles::EntryRole);
-                if (leftData.canConvert<const AssetBrowserEntry*>() && rightData.canConvert<const AssetBrowserEntry*>())
-                {
-                    auto leftEntry = qvariant_cast<const AssetBrowserEntry*>(leftData);
-                    auto rightEntry = qvariant_cast<const AssetBrowserEntry*>(rightData);
+        //bool AssetBrowserTableFilterModel::lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const
+        //{
+        //    if (source_left.column() == source_right.column())
+        //    {
+        //        QVariant leftData = sourceModel()->data(source_left, AssetBrowserModel::Roles::EntryRole);
+        //        QVariant rightData = sourceModel()->data(source_right, AssetBrowserModel::Roles::EntryRole);
+        //        if (leftData.canConvert<const AssetBrowserEntry*>() && rightData.canConvert<const AssetBrowserEntry*>())
+        //        {
+        //            auto leftEntry = qvariant_cast<const AssetBrowserEntry*>(leftData);
+        //            auto rightEntry = qvariant_cast<const AssetBrowserEntry*>(rightData);
 
-                    // folders should always come first
-                    if (azrtti_istypeof<const FolderAssetBrowserEntry*>(leftEntry) &&
-                        azrtti_istypeof<const SourceAssetBrowserEntry*>(rightEntry))
-                    {
-                        return false;
-                    }
-                    if (azrtti_istypeof<const SourceAssetBrowserEntry*>(leftEntry) &&
-                        azrtti_istypeof<const FolderAssetBrowserEntry*>(rightEntry))
-                    {
-                        return true;
-                    }
+        //            // folders should always come first
+        //            if (azrtti_istypeof<const FolderAssetBrowserEntry*>(leftEntry) &&
+        //                azrtti_istypeof<const SourceAssetBrowserEntry*>(rightEntry))
+        //            {
+        //                return false;
+        //            }
+        //            if (azrtti_istypeof<const SourceAssetBrowserEntry*>(leftEntry) &&
+        //                azrtti_istypeof<const FolderAssetBrowserEntry*>(rightEntry))
+        //            {
+        //                return true;
+        //            }
 
-                    // if both entries are of same type, sort alphabetically
-                    return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
-                }
-            }
-            return QSortFilterProxyModel::lessThan(source_left, source_right);
-        }
+        //            // if both entries are of same type, sort alphabetically
+        //            return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
+        //        }
+        //    }
+        //    return QSortFilterProxyModel::lessThan(source_left, source_right);
+        //}
 
-        void AssetBrowserTableFilterModel::filterUpdatedSlot()
-        {
-            if (!m_alreadyRecomputingFilters)
-            {
-                m_alreadyRecomputingFilters = true;
-                // de-bounce it, since we may get many filter updates all at once.
-                QTimer::singleShot(0, this, [this]() {
-                    m_alreadyRecomputingFilters = false;
-                    FilterUpdatedSlotImmediate();
-                });
-            }
-        }
+        //void AssetBrowserTableFilterModel::filterUpdatedSlot()
+        //{
+        //    if (!m_alreadyRecomputingFilters)
+        //    {
+        //        m_alreadyRecomputingFilters = true;
+        //        // de-bounce it, since we may get many filter updates all at once.
+        //        QTimer::singleShot(0, this, [this]() {
+        //            m_alreadyRecomputingFilters = false;
+        //            FilterUpdatedSlotImmediate();
+        //        });
+        //    }
+        //}
 
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
