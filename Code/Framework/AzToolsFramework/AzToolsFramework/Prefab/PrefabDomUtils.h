@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/std/optional.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 
@@ -66,6 +67,16 @@ namespace AzToolsFramework
             */
             bool LoadInstanceFromPrefabDom(
                 Instance& instance, const PrefabDom& prefabDom, LoadInstanceFlags flags = LoadInstanceFlags::None);
+
+            /**
+            * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.
+            * @param instance The Instance to load.
+            * @param prefabDom the prefabDom that will be used to load the Instance data.
+            * @param shouldClearContainers whether to clear containers in Instance while loading.
+            * @return bool on whether the operation succeeded.
+            */
+            bool LoadInstanceFromPrefabDom(
+                Instance& instance, const PrefabDom& prefabDom, AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& loadedAssets, LoadInstanceFlags flags = LoadInstanceFlags::None);
 
             /**
             * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.

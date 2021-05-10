@@ -13,6 +13,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Script/ScriptSystemBus.h>
+#include <AzCore/Serialization/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
@@ -342,6 +343,45 @@ namespace AzToolsFramework
         m_validateEntitiesCallback = AZStd::move(validateEntitiesCallback);
     }
 
+    void LoadReferencedAssets(AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets)
+    {
+        for (AZ::Data::Asset<AZ::Data::AssetData>& asset : referencedAssets)
+        {
+            if (!asset.GetId().IsValid())
+            {
+                continue;
+            }
+
+            const AZ::Data::AssetLoadBehavior loadBehavior = asset.GetAutoLoadBehavior();
+
+            if (loadBehavior == AZ::Data::AssetLoadBehavior::NoLoad)
+            {
+                continue;
+            }
+
+            AZ::Data::AssetId assetId = asset.GetId();
+            AZ::Data::AssetType assetType = asset.GetType();
+            const bool blockingLoad = loadBehavior == AZ::Data::AssetLoadBehavior::PreLoad;
+
+            asset = AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, loadBehavior);
+
+            if (!asset.GetId().IsValid())
+            {
+                continue;
+            }
+
+            if (blockingLoad)
+            {
+                asset.BlockUntilLoadComplete();
+
+                if (asset.IsError())
+                {
+                    continue;
+                }
+            }
+        }
+    }
+
     void PrefabEditorEntityOwnershipService::StartPlayInEditor()
     {
         // This is a workaround until the replacement for GameEntityContext is done
@@ -381,13 +421,15 @@ namespace AzToolsFramework
                                 rootSpawnableIndex = m_playInEditorData.m_assets.size();
                             }
 
+                            LoadReferencedAssets(product.GetReferencedAssets());
+
                             AZ::Data::AssetInfo info;
                             info.m_assetId = product.GetAsset().GetId();
                             info.m_assetType = product.GetAssetType();
                             info.m_relativePath = product.GetId();
 
                             AZ::Data::AssetCatalogRequestBus::Broadcast(
-                                &AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, product.GetAsset().GetId(), info);
+                                &AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, info.m_assetId, info);
                             m_playInEditorData.m_assets.emplace_back(product.ReleaseAsset().release(), AZ::Data::AssetLoadBehavior::Default);
                         }
 
@@ -397,6 +439,8 @@ namespace AzToolsFramework
                             m_playInEditorData.m_entities.Reset(m_playInEditorData.m_assets[rootSpawnableIndex]);
                             m_playInEditorData.m_entities.SpawnAllEntities();
                         }
+
+                        AZ::Data::AssetManager::Instance().DispatchEvents();
 
                         // This is a workaround until the replacement for GameEntityContext is done
                         AzFramework::GameEntityContextEventBus::Broadcast(

@@ -20,6 +20,8 @@
 #include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/Prefab/Spawnable/SpawnableUtils.h>
 
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
     void PrefabCatchmentProcessor::Process(PrefabProcessorContext& context)
@@ -63,7 +65,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             AZStd::move(uniqueName), context.GetSourceUuid(), AZStd::move(serializer));
         AZ_Assert(spawnable, "Failed to create a new spawnable.");
 
-        bool result = SpawnableUtils::CreateSpawnable(*spawnable, prefab);
+        Prefab::PrefabDomUtils::PrintPrefabDomValue("Prefab used for spawnable", prefab);
+        bool result = SpawnableUtils::CreateSpawnable(*spawnable, prefab, object.GetReferencedAssets());
         if (result)
         {
             AzFramework::Spawnable::EntityList& entities = spawnable->GetEntities();

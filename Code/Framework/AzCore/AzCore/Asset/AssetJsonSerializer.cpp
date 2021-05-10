@@ -12,6 +12,7 @@
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetJsonSerializer.h>
+#include <AzCore/Asset/SerializedAssetTracker.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/StackedString.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -71,6 +72,17 @@ namespace AZ
             }
 
             {
+                const AZ::Data::AssetLoadBehavior autoLoadBehavior = instance->GetAutoLoadBehavior();
+                const AZ::Data::AssetLoadBehavior defaultAutoLoadBehavior = defaultInstance ?
+                    defaultInstance->GetAutoLoadBehavior() : AZ::Data::AssetLoadBehavior::Default;
+
+                result.Combine(
+                    ContinueStoringToJsonObjectField(outputValue, "loadBehavior",
+                        &autoLoadBehavior, &defaultAutoLoadBehavior,
+                        azrtti_typeid<Data::AssetLoadBehavior>(), context));
+            }
+
+            {
                 ScopedContextPath subPathHint(context, "m_assetHint");
                 const AZStd::string* hint = &instance->GetHint();
                 const AZStd::string defaultHint;
@@ -100,6 +112,20 @@ namespace AZ
             AssetId id;
             JSR::ResultCode result(JSR::Tasks::ReadField);
 
+            SerializedAssetTracker** assetIdTracker =
+                context.GetMetadata().Find<SerializedAssetTracker*>();
+
+            {
+                Data::AssetLoadBehavior loadBehavior = instance->GetAutoLoadBehavior();
+
+                result.Combine(
+                    ContinueLoadingFromJsonObjectField(&loadBehavior,
+                        azrtti_typeid<Data::AssetLoadBehavior>(),
+                        inputValue, "loadBehavior", context));
+
+                instance->SetAutoLoadBehavior(loadBehavior);
+            }
+
             auto it = inputValue.FindMember("assetId");
             if (it != inputValue.MemberEnd())
             {
@@ -107,7 +133,7 @@ namespace AZ
                 result = ContinueLoading(&id, azrtti_typeid<AssetId>(), it->value, context);
                 if (!id.m_guid.IsNull())
                 {
-                    *instance = AssetManager::Instance().FindOrCreateAsset(id, instance->GetType(), AssetLoadBehavior::NoLoad);
+                    *instance = AssetManager::Instance().FindOrCreateAsset(id, instance->GetType(), instance->GetAutoLoadBehavior());
 
 
                     result.Combine(context.Report(result, "Successfully created Asset<T> with id."));
@@ -140,6 +166,11 @@ namespace AZ
             {
                 result.Combine(context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed,
                     "The asset hint is missing for Asset<T>, so it will be left empty."));
+            }
+
+            if (assetIdTracker && *assetIdTracker)
+            {
+                (*assetIdTracker)->AddAsset(*instance);
             }
 
             bool success = result.GetOutcome() <= JSR::Outcomes::PartialSkip;

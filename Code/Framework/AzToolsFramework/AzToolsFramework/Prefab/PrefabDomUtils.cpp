@@ -11,8 +11,10 @@
 */
 
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/SerializedAssetTracker.h>
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
@@ -112,6 +114,49 @@ namespace AzToolsFramework
                     return false;
                 }
 
+                return true;
+            }
+
+            bool LoadInstanceFromPrefabDom(
+                Instance& instance, const PrefabDom& prefabDom, AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& loadedAssets, LoadInstanceFlags flags)
+            {
+                // When entities are rebuilt they are first destroyed. As a result any assets they were exclusively holding on to will
+                // be released and reloaded once the entities are built up again. By suspending asset release temporarily the asset reload
+                // is avoided.
+                AZ::Data::AssetManager::Instance().SuspendAssetRelease();
+
+                InstanceEntityIdMapper entityIdMapper;
+                entityIdMapper.SetLoadingInstance(instance);
+                if ((flags & LoadInstanceFlags::AssignRandomEntityId) == LoadInstanceFlags::AssignRandomEntityId)
+                {
+                    entityIdMapper.SetEntityIdGenerationApproach(InstanceEntityIdMapper::EntityIdGenerationApproach::Random);
+                }
+
+                AZ::Data::SerializedAssetTracker assetTracker;
+
+                AZ::JsonDeserializerSettings settings;
+                // The InstanceEntityIdMapper is registered twice because it's used in several places during deserialization where one is
+                // specific for the InstanceEntityIdMapper and once for the generic JsonEntityIdMapper. Because the Json Serializer's meta
+                // data has strict typing and doesn't look for inheritance both have to be explicitly added so they're found both locations.
+                settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
+                settings.m_metadata.Add(&entityIdMapper);
+                settings.m_metadata.Add(&assetTracker);
+
+                AZ::JsonSerializationResult::ResultCode result =
+                    AZ::JsonSerialization::Load(instance, prefabDom, settings);
+
+                AZ::Data::AssetManager::Instance().ResumeAssetRelease();
+
+                if (result.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                {
+                    AZ_Error("Prefab", false,
+                        "Failed to de-serialize Prefab Instance from Prefab DOM. "
+                        "Unable to proceed.");
+
+                    return false;
+                }
+
+                loadedAssets = assetTracker.GetTrackedAssets();
                 return true;
             }
 

@@ -1,7 +1,8 @@
 {
     "Amazon": {
         "Preferences": {
-            "EnablePrefabSystem": false
+            "EnablePrefabSystem": true,
+            "EnablePrefabSystemWipFeatures": true
         }
     }
 }
