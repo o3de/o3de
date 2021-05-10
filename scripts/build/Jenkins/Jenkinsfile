@@ -354,6 +354,17 @@ def TestMetrics(Map pipelineConfig, String workspace, String branchName, String 
     }
 }
 
+def TestResults(Map options, String platform, String type, String workspace, Map params) {
+    def o3deroot = "${workspace}/${ENGINE_REPOSITORY_NAME}"
+    dir("${o3deroot}/${params.OUTPUT_DIRECTORY}/Testing") {
+        junit testResults: "**/*.xml",
+              keepLongStdio : True
+        echo "Clean test output dir"
+        palRm("PyTest/*")
+        palRm("GTest/*")
+    }
+}
+
 def PostBuildCommonSteps(String workspace, boolean mount = true) {
     echo 'Starting post-build common steps...'
 
@@ -392,6 +403,14 @@ def CreateTestMetricsStage(Map pipelineConfig, String branchName, Map environmen
     return {
         stage("${buildJobName}_metrics") {
             TestMetrics(pipelineConfig, environmentVars['WORKSPACE'], branchName, env.DEFAULT_REPOSITORY_NAME, buildJobName, outputDirectory, configuration)
+        }
+    }
+}
+
+def CreateTestResultsStage(Map pipelineConfig, String platformName, String jobName, Map environmentVars, Map params) {
+    return {
+        stage("${jobName}_results") {
+            TestResults(pipelineConfig, platformName, jobName, environmentVars['WORKSPACE'], params)
         }
     }
 }
@@ -486,6 +505,7 @@ try {
                         }
                         withEnv(GetEnvStringList(envVars)) {
                             def build_job_name = build_job.key
+                            def params = platform.value.build_types[build_job_name].PARAMETERS
                             try {
                                 CreateSetupStage(pipelineConfig, repositoryName, projectName, pipelineName, branchName, platform.key, build_job.key, envVars).call()
 
@@ -511,10 +531,18 @@ try {
                                 }
                             }
                             finally {
-                                if (env.MARS_REPO && platform.value.build_types[build_job_name].PARAMETERS.containsKey('TEST_METRICS') && platform.value.build_types[build_job_name].PARAMETERS.TEST_METRICS == 'True') {
-                                    def output_directory = platform.value.build_types[build_job_name].PARAMETERS.OUTPUT_DIRECTORY
-                                    def configuration = platform.value.build_types[build_job_name].PARAMETERS.CONFIGURATION
+                                if (env.MARS_REPO && params && params.containsKey('TEST_METRICS') && params.TEST_METRICS == 'True') {
+                                    def output_directory = params.OUTPUT_DIRECTORY
+                                    def configuration = params.CONFIGURATION
                                     CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, output_directory, configuration).call()
+                                }
+                                if (params && params.containsKey('TEST_RESULTS') && params.TEST_RESULTS == 'True') {
+                                    try {
+                                        CreateTestResultsStage(pipelineConfig,  platform.key, build_job_name, envVars, params).call()
+                                    }
+                                    catch(Exception e) {
+                                        error "Test result collection error: ${e}"
+                                    }
                                 }
                                 CreateTeardownStage(envVars).call()
                             }
