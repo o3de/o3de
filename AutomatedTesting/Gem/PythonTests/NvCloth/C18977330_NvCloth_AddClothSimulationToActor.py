@@ -11,7 +11,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C18977330
 # Test Case Title : Add cloth simulation to an Actor
-# Test case ID: 18977330
 
 # fmt: off
 class Tests:

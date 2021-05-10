@@ -10,7 +10,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92569253 // T92569254
 Test Case Title: On Entity Activated // On Entity Deactivated
-Test case ID: 92569253 // 92569254
 """
 
 

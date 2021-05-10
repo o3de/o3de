@@ -10,7 +10,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92562978
 Test Case Title: Script Canvas Component can be added to an entity
-Test case ID: 92562978
 """
 
 

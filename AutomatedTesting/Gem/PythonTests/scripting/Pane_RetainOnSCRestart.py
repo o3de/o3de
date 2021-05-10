@@ -10,7 +10,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: C1702821 // C1702832
 Test Case Title: Retain visibility, size and location upon Script Canvas restart
-Test case ID: 1702821 and 1702832
 """
 
 

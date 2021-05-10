@@ -11,7 +11,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C18977329
 # Test Case Title : Add cloth simulation to a Mesh
-# Test case ID: 18977329
 
 # fmt: off
 class Tests:

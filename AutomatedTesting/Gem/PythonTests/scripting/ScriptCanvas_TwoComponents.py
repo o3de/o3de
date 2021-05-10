@@ -10,7 +10,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92563190
 Test Case Title: A single Entity with two Script Canvas components works properly
-Test case ID: 92563190
 """
 
 

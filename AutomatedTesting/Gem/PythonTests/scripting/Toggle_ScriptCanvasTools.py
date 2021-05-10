@@ -13,11 +13,6 @@ Test Case Title: Tools > Node Palette toggles the Node Palette
                  Tools > Node Inspector toggles the Node Inspector
                  Tools > Bookmarks toggles the Bookmarks
                  Tools > Variable Manager toggles the Variable Manager
-                 
-Test case ID: 92569165
-              92569167
-              92569168
-              92569170
 """
 
 

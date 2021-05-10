@@ -10,7 +10,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: C1702824
 Test Case Title: Docking
-Test case ID: 1702824
 """
 
 

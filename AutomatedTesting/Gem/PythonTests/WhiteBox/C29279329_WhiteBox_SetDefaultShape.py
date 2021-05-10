@@ -12,7 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID :  C29279329
 # Test Case Title : White Box mesh shape can be changed with the Default Shape dropdown on the Component
-# Test case ID: 29279329
 
 
 # fmt:off

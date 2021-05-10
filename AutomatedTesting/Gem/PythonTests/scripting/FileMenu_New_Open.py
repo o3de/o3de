@@ -11,10 +11,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92569037
 Test Case Title: File > New Script creates a new script
-Test case ID: 92569037
 Test case ID: T92569039
 Test Case Title: File > Open opens the Open... dialog
-Test case ID: 92569039
 """
 
 import os

@@ -13,7 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C3510644
 # Test Case Title : Check that the collision layer and collision group of the terrain can be changed
 #     and the collision behavior of the terrain changes accordingly
-# Test case ID: 3510644
 
 
 # fmt: off

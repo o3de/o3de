@@ -10,7 +10,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92569013
 Test Case Title: Script Event file can be created
-Test case ID: 92569013
 """
 
 

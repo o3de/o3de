@@ -10,7 +10,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: C1702829
 Test Case Title: Resizing pane
-Test case ID: 1702829
 """
 
 

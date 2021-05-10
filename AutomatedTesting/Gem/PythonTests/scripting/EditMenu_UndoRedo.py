@@ -11,10 +11,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92569049
 Test Case Title: Edit > Undo undoes the last action
-Test case ID: 92569049
 Test case ID: T92569051
 Test Case Title: Edit > Redo redoes the last undone action
-Test case ID: 92569051
 """
 
 

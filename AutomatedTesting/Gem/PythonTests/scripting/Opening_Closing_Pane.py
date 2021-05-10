@@ -10,7 +10,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: C1702834 // C1702823
 Test Case Title: Opening pane // Closing pane
-Test case ID: 1702834 and 1702823
 """
 
 

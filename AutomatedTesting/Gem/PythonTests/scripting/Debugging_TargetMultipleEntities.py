@@ -11,7 +11,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92568856
 Test Case Title: Multiple Entities can be targeted in the Debugger tool
-Test case ID: 92568856
 """
 
 

@@ -12,7 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID :  C28798177
 # Test Case Title : White Box Tool Component can be added to an Entity
-# Test case ID: 28798177
 
 
 # fmt:off

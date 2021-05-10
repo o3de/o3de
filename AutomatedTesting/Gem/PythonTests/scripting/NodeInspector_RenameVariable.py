@@ -10,7 +10,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92568982
 Test Case Title: Renaming variables in the Node Inspector
-Test case ID: 92568982
 """
 
 
