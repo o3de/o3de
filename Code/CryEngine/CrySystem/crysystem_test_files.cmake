@@ -15,7 +15,6 @@ set(FILES
     Tests/Test_CLog.cpp
     Tests/Test_CommandRegistration.cpp
     Tests/Test_CryPrimitives.cpp
-    Tests/Test_CrySizer.cpp
     Tests/test_CrySystem.cpp
     Tests/Test_Localization.cpp
     Tests/test_Main.cpp
