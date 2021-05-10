@@ -160,7 +160,7 @@ namespace AzQtComponents
         QObject::connect(m_dropZoneHoverFadeInTimer, &QTimer::timeout, this, &FancyDocking::onDropZoneHoverFadeInUpdate);
         m_dropZoneHoverFadeInTimer->setInterval(g_FancyDockingConstants.dropZoneHoverFadeUpdateIntervalMS);
         QIcon dragIcon = QIcon(QStringLiteral(":/Cursors/Grabbing.svg"));
-        m_dragCursor = QCursor(dragIcon.pixmap(32), 10, 5);
+        m_dragCursor = QCursor(dragIcon.pixmap(16), 5, 2);
     }
 
     FancyDocking::~FancyDocking()

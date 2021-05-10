@@ -422,10 +422,10 @@ namespace AzQtComponents
         AzQtComponents::Style::addClass(this, g_emptyStyleClass);
 
         QIcon icon = QIcon(QStringLiteral(":/Cursors/Grab_release.svg"));
-        m_hoverCursor = QCursor(icon.pixmap(32), 10, 5);
+        m_hoverCursor = QCursor(icon.pixmap(16), 5, 2);
 
         icon = QIcon(QStringLiteral(":/Cursors/Grabbing.svg"));
-        m_dragCursor = QCursor(icon.pixmap(32), 10, 5);
+        m_dragCursor = QCursor(icon.pixmap(16), 5, 2);
 
         this->setCursor(m_hoverCursor);                                  
     }
