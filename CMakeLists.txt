@@ -34,14 +34,12 @@ if(NOT PROJECT_NAME)
         LANGUAGES C CXX
         VERSION ${LY_VERSION_STRING}
     )
-
-    # o3de manifest
-    include(cmake/o3de_manifest.cmake)
 endif()
 
 ################################################################################
 # Resolve this engines name and restricted path
 ################################################################################
+include(cmake/o3de_manifest.cmake)
 o3de_engine_name(${o3de_engine_json} o3de_engine_name)
 o3de_restricted_path(${o3de_engine_json} o3de_engine_restricted_path)
 message(STATUS "O3DE Engine Name: ${o3de_engine_name}")
