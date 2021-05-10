@@ -100,7 +100,9 @@ namespace AZ
                 Size size,
                 uint32_t rowCount,
                 uint32_t bytesPerRow,
-                uint32_t bytesPerImage);
+                uint32_t bytesPerImage,
+                uint32_t numBlocksWidth,
+                uint32_t numBlocksHeight);
 
             /// The size of the image subresource in pixels. Certain formats have alignment requirements.
             /// Block compressed formats are 4 pixel aligned. Other non-standard formats may be 2 pixel aligned.
@@ -114,6 +116,13 @@ namespace AZ
 
             /// The number of bytes in a single image slice. 3D textures are comprised of m_size.m_depth image slices.
             uint32_t m_bytesPerImage = 0;
+            
+            /// The number of blocks in width based on the texture fomat
+            uint32_t m_numBlocksWidth = 1;
+            
+            /// The number of blocks in height based on the texture fomat
+            uint32_t m_numBlocksHeight = 1;
+            
         };
 
         struct ImageSubresourceLayoutPlaced : ImageSubresourceLayout
