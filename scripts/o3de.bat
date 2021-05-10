@@ -33,4 +33,6 @@ popd
 EXIT /b 1
 :end
 popd
+EXIT /b %ERRORLEVEL%
+
 
