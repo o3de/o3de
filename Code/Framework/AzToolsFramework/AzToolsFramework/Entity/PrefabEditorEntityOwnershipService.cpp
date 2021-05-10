@@ -343,12 +343,13 @@ namespace AzToolsFramework
         m_validateEntitiesCallback = AZStd::move(validateEntitiesCallback);
     }
 
-    void LoadReferencedAssets(AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets)
+    void PrefabEditorEntityOwnershipService::LoadReferencedAssets(AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets)
     {
         for (AZ::Data::Asset<AZ::Data::AssetData>& asset : referencedAssets)
         {
             if (!asset.GetId().IsValid())
             {
+                AZ_Error("Prefab", false, "Invalid asset found referenced in scene while entering game mode");
                 continue;
             }
 
@@ -367,6 +368,7 @@ namespace AzToolsFramework
 
             if (!asset.GetId().IsValid())
             {
+                AZ_Error("Prefab", false, "Invalid asset found referenced in scene while entering game mode");
                 continue;
             }
 
@@ -376,6 +378,9 @@ namespace AzToolsFramework
 
                 if (asset.IsError())
                 {
+                    AZ_Error("Prefab", false, "Asset with id %s failed to preload while entering game mode",
+                        asset.GetId().ToString<AZStd::string>().c_str());
+
                     continue;
                 }
             }
