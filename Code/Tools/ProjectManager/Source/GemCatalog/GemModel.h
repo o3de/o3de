@@ -34,7 +34,7 @@ namespace O3DE::ProjectManager
 
         QString GetName(const QModelIndex& modelIndex) const;
         QString GetCreator(const QModelIndex& modelIndex) const;
-        int GetPlatforms(const QModelIndex& modelIndex) const;
+        GemInfo::Platforms GetPlatforms(const QModelIndex& modelIndex) const;
         QString GetSummary(const QModelIndex& modelIndex) const;
         bool IsAdded(const QModelIndex& modelIndex) const;
 

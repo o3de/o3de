@@ -31,6 +31,7 @@ set(FILES
     iterator.h
     limits.h
     numeric.h
+    math.h
     optional.h
     ratio.h
     reference_wrapper.h

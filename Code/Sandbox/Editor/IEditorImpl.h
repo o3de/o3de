@@ -53,7 +53,6 @@ class CAlembicCompiler;
 struct IBackgroundTaskManager;
 struct IBackgroundScheduleManager;
 struct IEditorFileMonitor;
-class CShaderEnum;
 class CVegetationMap;
 
 
@@ -116,7 +115,6 @@ public:
     bool IsInitialized() const{ return m_bInitialized; }
     bool SaveDocument();
     ISystem*    GetSystem();
-    IRenderer*  GetRenderer();
     void WriteToConsole(const char* string) { CLogFile::WriteLine(string); };
     void WriteToConsole(const QString& string) { CLogFile::WriteLine(string); };
     // Change the message in the status bar
@@ -215,7 +213,6 @@ public:
     void SetMarkerPosition(const Vec3& pos) { m_marker = pos; };
     void    SetSelectedRegion(const AABB& box);
     void    GetSelectedRegion(AABB& box);
-    CRuler* GetRuler() { return m_pRuler; }
     bool AddToolbarItem(uint8 iId, IUIEvent* pIHandler);
     void SetDataModified();
     void SetOperationMode(EOperationMode mode);
@@ -256,7 +253,6 @@ public:
     SFileVersion GetFileVersion() { return m_fileVersion; };
     SFileVersion GetProductVersion() { return m_productVersion; };
     //! Get shader enumerator.
-    CShaderEnum* GetShaderEnum();
     CUndoManager* GetUndoManager() { return m_pUndoManager; };
     void BeginUndo();
     void RestoreUndo(bool undo);
@@ -365,7 +361,6 @@ protected:
     SFileVersion m_productVersion;
     CXmlTemplateRegistry m_templateRegistry;
     CDisplaySettings* m_pDisplaySettings;
-    CShaderEnum* m_pShaderEnum;
     CIconManager* m_pIconManager;
     std::unique_ptr<SGizmoParameters> m_pGizmoParameters;
     QString m_primaryCDFolder;
@@ -390,8 +385,6 @@ protected:
     CSelectionTreeManager* m_pSelectionTreeManager;
 
     CUIEnumsDatabase* m_pUIEnumsDatabase;
-    //! Currently used ruler
-    CRuler* m_pRuler;
     //! CConsole Synchronization
     CConsoleSynchronization* m_pConsoleSync;
     //! Editor Settings Manager

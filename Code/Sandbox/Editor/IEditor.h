@@ -66,7 +66,6 @@ class CDialog;
 #if defined(AZ_PLATFORM_WINDOWS)
 class C3DConnexionDriver;
 #endif
-class CRuler;
 class CSettingsManager;
 struct IExportManager;
 class CDisplaySettings;
@@ -425,7 +424,6 @@ struct IEditor
     virtual void DeleteThis() = 0;
     //! Access to Editor ISystem interface.
     virtual ISystem* GetSystem() = 0;
-    virtual IRenderer* GetRenderer() = 0;
     //! Access to class factory.
     virtual IEditorClassFactory* GetClassFactory() = 0;
     //! Access to commands manager.
@@ -589,8 +587,6 @@ struct IEditor
     virtual void    SetSelectedRegion(const AABB& box) = 0;
     //! Get currently selected region.
     virtual void    GetSelectedRegion(AABB& box) = 0;
-    //! Get current ruler
-    virtual CRuler* GetRuler() = 0;
 
     virtual void SetOperationMode(EOperationMode mode) = 0;
     virtual EOperationMode GetOperationMode() = 0;
@@ -635,7 +631,6 @@ struct IEditor
     //! Returns true if selection is made and false if selection is canceled.
     virtual bool SelectColor(QColor& color, QWidget* parent = 0) = 0;
     //! Get shader enumerator.
-    virtual class CShaderEnum* GetShaderEnum() = 0;
     virtual class CUndoManager* GetUndoManager() = 0;
     //! Begin operation requiring undo
     //! Undo manager enters holding state.

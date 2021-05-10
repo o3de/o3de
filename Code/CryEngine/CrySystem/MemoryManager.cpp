@@ -17,7 +17,6 @@
 #include "CustomMemoryHeap.h"
 #include "GeneralMemoryHeap.h"
 #include "PageMappingHeap.h"
-#include "DefragAllocator.h"
 
 
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -215,11 +214,6 @@ IMemoryAddressRange* CCryMemoryManager::ReserveAddressRange(size_t capacity, con
 IPageMappingHeap* CCryMemoryManager::CreatePageMappingHeap(size_t addressSpace, const char* sName)
 {
     return new CPageMappingHeap(addressSpace, sName);
-}
-
-IDefragAllocator* CCryMemoryManager::CreateDefragAllocator()
-{
-    return new CDefragAllocator();
 }
 
 extern "C"
