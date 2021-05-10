@@ -36,10 +36,6 @@ namespace Audio
 {
     CAudioLogger g_audioImplLogger_wwise;
 
-#if AZ_TRAIT_AUDIOENGINEWWISE_PROVIDE_IMPL_SECONDARY_POOL
-    TMemoryPoolReferenced g_audioImplMemoryPoolSecondary_wwise;
-#endif // AZ_TRAIT_AUDIOENGINEWWISE_PROVIDE_IMPL_SECONDARY_POOL
-
     namespace Platform
     {
         void* InitializeSecondaryMemoryPool(size_t& secondarySize);
@@ -154,13 +150,6 @@ namespace AudioEngineWwiseGem
         m_engineWwise = AZStd::make_unique<Audio::CAudioSystemImpl_wwise>(assetPlatform.c_str());
         if (m_engineWwise)
         {
-        #if AZ_TRAIT_AUDIOENGINEWWISE_PROVIDE_IMPL_SECONDARY_POOL
-            size_t secondarySize = 0;
-            void* secondaryMemoryPtr = Audio::Platform::InitializeSecondaryMemoryPool(secondarySize);
-
-            Audio::g_audioImplMemoryPoolSecondary_wwise.InitMem(secondarySize, static_cast<uint8*>(secondaryMemoryPtr));
-        #endif // AZ_TRAIT_AUDIOENGINEWWISE_PROVIDE_IMPL_SECONDARY_POOL
-
             Audio::g_audioImplLogger_wwise.Log(Audio::eALT_ALWAYS, "AudioEngineWwise created!");
 
             Audio::SAudioRequest oAudioRequestData;

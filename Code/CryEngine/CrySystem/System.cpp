@@ -121,7 +121,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 #include <IRenderer.h>
 #include <IMovieSystem.h>
-#include <ServiceNetwork.h>
 #include <ILog.h>
 #include <IAudioSystem.h>
 #include <IProcess.h>
@@ -145,7 +144,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 #include "LocalizedStringManager.h"
 #include "XML/XmlUtils.h"
-#include "Serialization/ArchiveHost.h"
 #include "SystemEventDispatcher.h"
 #include "ServerThrottle.h"
 #include "ResourceManager.h"
@@ -445,7 +443,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
 
 
     m_pXMLUtils = new CXmlUtils(this);
-    m_pArchiveHost = Serialization::CreateArchiveHost();
     m_pMemoryManager = CryGetIMemoryManager();
     m_pThreadTaskManager = new CThreadTaskManager;
     m_pResourceManager = new CResourceManager;
@@ -499,7 +496,6 @@ CSystem::~CSystem()
     CRY_ASSERT(m_windowMessageHandlers.empty() && "There exists a dangling window message handler somewhere");
 
     SAFE_DELETE(m_pXMLUtils);
-    SAFE_DELETE(m_pArchiveHost);
     SAFE_DELETE(m_pThreadTaskManager);
     SAFE_DELETE(m_pResourceManager);
     SAFE_DELETE(m_pSystemEventDispatcher);
@@ -671,7 +667,6 @@ void CSystem::ShutDown()
     SAFE_DELETE(m_env.pResourceCompilerHelper);
 
     SAFE_RELEASE(m_env.pMovieSystem);
-    SAFE_DELETE(m_env.pServiceNetwork);
     SAFE_RELEASE(m_env.pLyShine);
     SAFE_RELEASE(m_env.pCryFont);
     if (m_env.pConsole)
