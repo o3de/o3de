@@ -68,6 +68,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     , m_ui(new Ui::AzAssetBrowserWindowClass())
     , m_filterModel(new AzToolsFramework::AssetBrowser::AssetBrowserFilterModel(parent))
     , m_tableModel(new AzToolsFramework::AssetBrowser::AssetBrowserTableModel(parent))
+    , m_tableFilterModel(new AzToolsFramework::AssetBrowser::AssetBrowserTableFilterModel(parent))
 {
     m_ui->setupUi(this);
     m_ui->m_searchWidget->Setup(true, true);
@@ -82,12 +83,18 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_tableModel->setSourceModel(m_filterModel.data());
     //m_tableModel->setSourceModel(m_assetBrowserModel);
 
-    m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
-    m_ui->m_assetBrowserTableViewWidget->setModel(m_tableModel.data());
+    m_tableFilterModel->setSourceModel(m_tableModel.data());
+    m_tableFilterModel->SetFilter(m_ui->m_searchWidget->GetFilter());
 
+
+    m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
+    m_ui->m_assetBrowserTreeViewWidget->hideColumn(static_cast<int>(AssetBrowserEntry::Column::Path));
+
+    //m_ui->m_assetBrowserTableViewWidget->setModel(m_tableFilterModel.data());
+    m_ui->m_assetBrowserTableViewWidget->setModel(m_tableModel.data());
     m_ui->m_assetBrowserTableViewWidget->setVisible(false);
 
-    connect(m_filterModel.data(), &AssetBrowserFilterModel::entriesUpdated, m_tableModel.data(), &AssetBrowserTableModel::UpdateMap);
+    //connect(m_filterModel.data(), &AssetBrowserFilterModel::entriesUpdated, m_tableModel.data(), &AssetBrowserTableModel::UpdateMap);
 
     connect(m_ui->m_searchWidget->GetFilter().data(), &AssetBrowserEntryFilter::updatedSignal,
         m_filterModel.data(), &AssetBrowserFilterModel::filterUpdatedSlot);
@@ -97,12 +104,26 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         const bool selectFirstFilteredIndex = false;
         m_ui->m_assetBrowserTreeViewWidget->UpdateAfterFilter(hasFilter, selectFirstFilteredIndex);
     });
+
+    //connect( m_ui->m_searchWidget->GetFilter().data(), &AssetBrowserEntryFilter::updatedSignal, m_tableFilterModel.data(),
+    //    &AssetBrowserTableFilterModel::filterUpdatedSlot);
+    //connect(m_tableFilterModel.data(), &AssetBrowserTableFilterModel::filterChanged, this, [this]() {
+    //    const bool hasFilter = !m_ui->m_searchWidget->GetFilterString().isEmpty();
+    //    const bool selectFirstFilteredIndex = false;
+    //    m_ui->m_assetBrowserTableViewWidget->UpdateAfterFilter(hasFilter, selectFirstFilteredIndex);
+    //});
+
+    connect(m_filterModel.data(), &AssetBrowserFilterModel::filterChanged, m_tableModel.data(), &AssetBrowserTableModel::UpdateMap);
+
     connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::selectionChangedSignal,
         this, &AzAssetBrowserWindow::SelectionChangedSlot);
     connect(m_ui->m_assetBrowserTreeViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
 
     connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::ClearStringFilter, m_ui->m_searchWidget, &SearchWidget::ClearStringFilter);
     connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::ClearTypeFilter, m_ui->m_searchWidget, &SearchWidget::ClearTypeFilter);
+
+    connect(m_ui->m_assetBrowserTableViewWidget, &AssetBrowserTableView::ClearStringFilter, m_ui->m_searchWidget, &SearchWidget::ClearStringFilter);
+    connect(m_ui->m_assetBrowserTableViewWidget, &AssetBrowserTableView::ClearTypeFilter, m_ui->m_searchWidget, &SearchWidget::ClearTypeFilter);
 
     m_ui->m_assetBrowserTreeViewWidget->SetName("AssetBrowserTreeView_main");
     m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");

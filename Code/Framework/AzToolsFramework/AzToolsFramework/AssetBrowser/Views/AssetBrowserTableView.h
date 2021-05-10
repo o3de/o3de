@@ -48,18 +48,32 @@ namespace AzToolsFramework
             void OnAssetBrowserComponentReady() override;
             //////////////////////////////////////////////////////////////////////////
 
-        private Q_SLOTS:
-            void OnContextMenu(const QPoint& point);
+
+        Q_SIGNALS:
+            void selectionChangedSignal(const QItemSelection& selected, const QItemSelection& deselected);
+            void ClearStringFilter();
+            void ClearTypeFilter();
+
+        protected Q_SLOTS:
+            void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
+            void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
 
             //! Get all visible source entries and place them in a queue to update their source control status
             //void OnUpdateSCThumbnailsList();
 
         private:
             QString m_name;
-            QPointer<AssetBrowserFilterModel> m_sourceFilterModel = nullptr;
-            QPointer<AssetBrowserTableModel> m_sourceModel = nullptr;
+            QPointer<AssetBrowserTableModel> m_filterModel = nullptr;
+            QPointer<AssetBrowserFilterModel> m_sourceModel = nullptr;
             EntryDelegate* m_delegate = nullptr;
 
+            QTimer* m_scTimer = nullptr;
+            const int m_scUpdateInterval = 100;
+
+        private Q_SLOTS:
+            void OnContextMenu(const QPoint& point);
+            //! Get all visible source entries and place them in a queue to update their source control status
+            void OnUpdateSCThumbnailsList();
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

@@ -41,13 +41,13 @@ namespace AzToolsFramework
         {
             setSortingEnabled(true);
             setItemDelegate(m_delegate);
-           // header()->hide();
+            //header()->hide();
             setContextMenuPolicy(Qt::CustomContextMenu);
 
             setMouseTracking(true);
 
             connect(this, &QTableView::customContextMenuRequested, this, &AssetBrowserTableView::OnContextMenu);
-            //connect(m_scTimer, &QTimer::timeout, this, &AssetBrowserTreeView::OnUpdateSCThumbnailsList);
+            connect(m_scTimer, &QTimer::timeout, this, &AssetBrowserTableView::OnUpdateSCThumbnailsList);
 
             AssetBrowserViewRequestBus::Handler::BusConnect();
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
@@ -59,9 +59,9 @@ namespace AzToolsFramework
         }
         void AssetBrowserTableView::setModel(QAbstractItemModel* model)
         {
-            m_sourceModel = qobject_cast<AssetBrowserTableModel*>(model);
-            AZ_Assert(m_sourceModel, "Expecting AssetBrowserTableModel");
-            m_sourceFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_sourceModel->sourceModel());
+            m_filterModel = qobject_cast<AssetBrowserTableModel*>(model);
+            AZ_Assert(m_filterModel, "Expecting AssetBrowserTableModel");
+            m_sourceModel = qobject_cast<AssetBrowserFilterModel*>(m_filterModel->sourceModel());
             QTableView::setModel(model);
         }
         void AssetBrowserTableView::SetName(const QString& name)
@@ -76,9 +76,40 @@ namespace AzToolsFramework
         }
         AZStd::vector<AssetBrowserEntry*> AssetBrowserTableView::GetSelectedAssets() const
         {
-            return AZStd::vector<AssetBrowserEntry*>();
-        }
+            QModelIndexList sourceIndexes{};
+            //for (const auto& index : selectedIndexes())
+            //{
+            //    sourceIndexes.push_back(m_sourceModel->mapToSource(index));
+            //}
 
+            AZStd::vector<AssetBrowserEntry*> entries;
+            //AssetBrowserModel::SourceIndexesToAssetDatabaseEntries(sourceIndexes, entries);
+            return entries;
+        }
+        void AssetBrowserTableView::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+        {
+            AZ_UNUSED(selected);
+            AZ_UNUSED(deselected);
+        }
+        void AssetBrowserTableView::rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end)
+        {
+            // if selected entry is being removed, clear selection so not to select (and attempt to preview) other entries potentially
+            // marked for deletion
+            if (selectionModel() && selectionModel()->selectedIndexes().size() == 1)
+            {
+                QModelIndex selectedIndex = selectionModel()->selectedIndexes().first();
+                QModelIndex parentSelectedIndex = selectedIndex.parent();
+                if (parentSelectedIndex == parent && selectedIndex.row() >= start && selectedIndex.row() <= end)
+                {
+                    selectionModel()->clear();
+                }
+            }
+            QTableView::rowsAboutToBeRemoved(parent, start, end);
+        }
+        void AssetBrowserTableView::OnUpdateSCThumbnailsList()
+        {
+
+        }
         void AssetBrowserTableView::SelectProduct(AZ::Data::AssetId assetID)
         {
             AZ_UNUSED(assetID);
@@ -91,6 +122,9 @@ namespace AzToolsFramework
 
         void AssetBrowserTableView::ClearFilter()
         {
+            emit ClearStringFilter();
+            emit ClearTypeFilter();
+            m_sourceModel->FilterUpdatedSlotImmediate();
         }
 
         void AssetBrowserTableView::Update()

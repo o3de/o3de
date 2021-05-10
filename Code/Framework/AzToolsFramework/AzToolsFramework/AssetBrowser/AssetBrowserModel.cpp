@@ -144,7 +144,8 @@ namespace AzToolsFramework
             if (parent.isValid())
             {
                 if ((parent.column() != static_cast<int>(AssetBrowserEntry::Column::DisplayName)) &&
-                    (parent.column() != static_cast<int>(AssetBrowserEntry::Column::Name)))
+                    (parent.column() != static_cast<int>(AssetBrowserEntry::Column::Name)) &&
+                    (parent.column() != static_cast<int>(AssetBrowserEntry::Column::Path)))
                 {
                     return 0;
                 }

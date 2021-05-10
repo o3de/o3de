@@ -31,7 +31,8 @@ namespace AzToolsFramework
         AssetBrowserFilterModel::AssetBrowserFilterModel(QObject* parent)
             : QSortFilterProxyModel(parent)
         {
-            m_showColumn.insert(AssetBrowserModel::m_column);
+            m_showColumn.insert(static_cast<int>(AssetBrowserEntry::Column::DisplayName));
+            m_showColumn.insert(static_cast<int>(AssetBrowserEntry::Column::Path));
             m_collator.setNumericMode(true);
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
         }
@@ -163,7 +164,6 @@ namespace AzToolsFramework
                 {
                     m_alreadyRecomputingFilters = false;
                     FilterUpdatedSlotImmediate();
-                    //beginInsertRows()
                 }
                 );
             }
