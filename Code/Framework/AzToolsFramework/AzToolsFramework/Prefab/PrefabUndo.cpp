@@ -113,7 +113,7 @@ namespace AzToolsFramework
             , m_sourceId(InvalidTemplateId)
             , m_instanceAlias("")
             , m_linkId(InvalidLinkId)
-            , m_linkDom(PrefabDom())
+            , m_linkPatches(PrefabDom())
             , m_linkStatus(LinkStatus::LINKSTATUS)
         {
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
@@ -124,7 +124,7 @@ namespace AzToolsFramework
             const TemplateId& targetId,
             const TemplateId& sourceId,
             const InstanceAlias& instanceAlias,
-            const PrefabDomReference linkDom,
+            PrefabDomReference linkPatches,
             const LinkId linkId)
         {
             m_targetId = targetId;
@@ -132,9 +132,9 @@ namespace AzToolsFramework
             m_instanceAlias = instanceAlias;
             m_linkId = linkId;
 
-            if (linkDom.has_value())
+            if (linkPatches.has_value())
             {
-                m_linkDom = AZStd::move(linkDom->get());
+                m_linkPatches = AZStd::move(linkPatches->get());
             }
 
             //if linkId is invalid, set as ADD
@@ -193,7 +193,7 @@ namespace AzToolsFramework
 
         void PrefabUndoInstanceLink::AddLink()
         {
-            m_linkId = m_prefabSystemComponentInterface->CreateLink(m_targetId, m_sourceId, m_instanceAlias, m_linkDom, m_linkId);
+            m_linkId = m_prefabSystemComponentInterface->CreateLink(m_targetId, m_sourceId, m_instanceAlias, m_linkPatches, m_linkId);
         }
 
         void PrefabUndoInstanceLink::RemoveLink()

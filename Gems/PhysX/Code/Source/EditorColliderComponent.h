@@ -20,7 +20,7 @@
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
-#include <AzFramework/Physics/WorldBodyBus.h>
+#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 
@@ -31,8 +31,6 @@
 
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
-
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
 
 #include <PhysX/ColliderShapeBus.h>
 #include <PhysX/EditorColliderComponentRequestBus.h>
@@ -105,10 +103,9 @@ namespace PhysX
         , private PhysX::MeshColliderComponentRequestsBus::Handler
         , private AZ::TransformNotificationBus::Handler
         , private PhysX::ColliderShapeRequestBus::Handler
-        , private LmbrCentral::MeshComponentNotificationBus::Handler
         , private AZ::Render::MeshComponentNotificationBus::Handler
         , private PhysX::EditorColliderComponentRequestBus::Handler
-        , private Physics::WorldBodyRequestBus::Handler
+        , private AzPhysics::SimulatedBodyComponentRequestsBus::Handler
     {
     public:
         AZ_RTTI(EditorColliderComponent, "{FD429282-A075-4966-857F-D0BBF186CFE6}", AzToolsFramework::Components::EditorComponentBase);
@@ -175,9 +172,6 @@ namespace PhysX
         AZ::Transform GetCurrentTransform() override;
         AZ::Vector3 GetBoxScale() override;
 
-        // LmbrCentral::MeshComponentNotificationBus
-        void OnMeshCreated(const AZ::Data::Asset<AZ::Data::AssetData>& asset) override;
-
         // AZ::Render::MeshComponentNotificationBus
         void OnModelReady(const AZ::Data::Asset<AZ::RPI::ModelAsset>& modelAsset,
             const AZ::Data::Instance<AZ::RPI::Model>& model) override;
@@ -211,12 +205,13 @@ namespace PhysX
         AZ::u32 OnConfigurationChanged();
         void UpdateShapeConfigurationScale();
 
-        // WorldBodyRequestBus
+        // AzPhysics::SimulatedBodyComponentRequestsBus::Handler overrides ...
         void EnablePhysics() override;
         void DisablePhysics() override;
         bool IsPhysicsEnabled() const override;
         AZ::Aabb GetAabb() const override;
-        AzPhysics::SimulatedBody* GetWorldBody() override;
+        AzPhysics::SimulatedBody* GetSimulatedBody() override;
+        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
         // Mesh collider
@@ -261,6 +256,8 @@ namespace PhysX
         bool m_hasNonUniformScale = false; //!< Whether there is a non-uniform scale component on this entity.
         AZ::Vector3 m_cachedNonUniformScale = AZ::Vector3::CreateOne(); //!< Caches the current non-uniform scale.
         mutable AZStd::optional<Physics::CookedMeshShapeConfiguration> m_scaledPrimitive; //!< Approximation for non-uniformly scaled primitive.
+        AZ::Aabb m_cachedAabb = AZ::Aabb::CreateNull(); //!< Cache the Aabb to avoid recalculating it.
+        bool m_cachedAabbDirty = true; //!< Track whether the cached Aabb needs to be recomputed.
 
         AZ::ComponentDescriptor::StringWarningArray m_componentWarnings;
     };

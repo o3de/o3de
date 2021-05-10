@@ -10,7 +10,7 @@
 #
 
 set(FILES
-    ../Common/Unimplemented/ModuleStub_Unimplemented.cpp
+    RHI/WSISurface_Linux.cpp
     Vulkan_Traits_Linux.h
     Vulkan_Traits_Platform.h
 )

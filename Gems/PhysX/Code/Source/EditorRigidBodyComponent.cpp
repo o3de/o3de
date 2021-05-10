@@ -36,7 +36,7 @@ namespace PhysX
 
             const bool hasNonUniformScaleComponent = (AZ::NonUniformScaleRequestBus::FindFirstHandler(entity->GetId()) != nullptr);
 
-            const AZStd::vector<EditorColliderComponent*> colliders = entity->FindComponents<EditorColliderComponent>();           
+            const AZStd::vector<EditorColliderComponent*> colliders = entity->FindComponents<EditorColliderComponent>();
             for (const EditorColliderComponent* collider : colliders)
             {
                 const EditorProxyShapeConfig& shapeConfigurationProxy = collider->GetShapeConfiguration();
@@ -45,12 +45,14 @@ namespace PhysX
                     continue;
                 }
 
-                const Physics::ColliderConfiguration colliderConfiguration = collider->GetColliderConfigurationScaled();
+                const Physics::ColliderConfiguration colliderConfigurationScaled = collider->GetColliderConfigurationScaled();
+                const Physics::ColliderConfiguration colliderConfigurationUnscaled = collider->GetColliderConfiguration();
+
                 if (shapeConfigurationProxy.IsAssetConfig())
                 {
                     AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
                     Utils::GetShapesFromAsset(shapeConfigurationProxy.m_physicsAsset.m_configuration,
-                        colliderConfiguration, hasNonUniformScaleComponent, shapeConfigurationProxy.m_subdivisionLevel, shapes);
+                        colliderConfigurationUnscaled, hasNonUniformScaleComponent, shapeConfigurationProxy.m_subdivisionLevel, shapes);
 
                     for (const auto& shape : shapes)
                     {
@@ -64,7 +66,7 @@ namespace PhysX
                     if (!hasNonUniformScaleComponent)
                     {
                         AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::System>::Get()->CreateShape(
-                            colliderConfiguration, shapeConfiguration);
+                            colliderConfigurationScaled, shapeConfiguration);
                         AZ_Assert(shape, "CreateEditorWorldRigidBody: Shape must not be null!");
                         if (shape)
                         {
@@ -73,7 +75,6 @@ namespace PhysX
                     }
                     else
                     {
-                        const Physics::ColliderConfiguration colliderConfigurationUnscaled = collider->GetColliderConfiguration();
                         auto convexConfig = Utils::CreateConvexFromPrimitive(colliderConfigurationUnscaled, shapeConfiguration,
                             shapeConfigurationProxy.m_subdivisionLevel, shapeConfiguration.m_scale);
                         auto colliderConfigurationNoOffset = colliderConfigurationUnscaled;
@@ -264,14 +265,15 @@ namespace PhysX
         }
         CreateEditorWorldRigidBody();
 
-        Physics::WorldBodyRequestBus::Handler::BusConnect(GetEntityId());
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 
     void EditorRigidBodyComponent::Deactivate()
     {
         m_debugDisplayDataChangeHandler.Disconnect();
 
-        Physics::WorldBodyRequestBus::Handler::BusDisconnect();
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
+        m_nonUniformScaleChangedHandler.Disconnect();
         m_sceneStartSimHandler.Disconnect();
         Physics::ColliderComponentEventBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
@@ -305,8 +307,8 @@ namespace PhysX
                     "PhysX Rigid Body", "The entity behaves as a movable rigid object in PhysX.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/PhysXRigidBody.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/PhysXRigidBody.svg")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRigidBody.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/PhysXRigidBody.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/console/lumberyard/components/physx/rigid-body")
@@ -377,7 +379,7 @@ namespace PhysX
         configuration.m_kinematic = m_config.m_kinematic;
         configuration.m_colliderAndShapeData = Internal::GetCollisionShapes(GetEntity());
 
-        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())        
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             m_rigidBodyHandle = sceneInterface->AddSimulatedBody(m_editorSceneHandle, &configuration);
             m_editorBody = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_rigidBodyHandle));
@@ -459,9 +461,14 @@ namespace PhysX
         return AZ::Aabb::CreateNull();
     }
 
-    AzPhysics::SimulatedBody* EditorRigidBodyComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* EditorRigidBodyComponent::GetSimulatedBody()
     {
         return m_editorBody;
+    }
+
+    AzPhysics::SimulatedBodyHandle EditorRigidBodyComponent::GetSimulatedBodyHandle() const
+    {
+        return m_rigidBodyHandle;
     }
 
     AzPhysics::SceneQueryHit EditorRigidBodyComponent::RayCast(const AzPhysics::RayCastRequest& request)

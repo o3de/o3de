@@ -394,6 +394,7 @@ namespace ScriptCanvas
         AZ::Uuid m_type = AZ::Uuid::CreateNull();
         AZStd::string m_className;
         AZStd::string m_methodName;
+        PropertyStatus m_propertyStatus = PropertyStatus::None;
 
         bool IsValid()
         {
@@ -700,6 +701,8 @@ namespace ScriptCanvas
         // override if necessary, usually only when the node's execution topology dramatically alters at edit-time in a way that is not generally parseable 
         ConstSlotsOutcome GetSlotsInExecutionThreadByType(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot = nullptr) const;
 
+        size_t GetOutIndex(const Slot& slot) const;
+
         // override if necessary, only used by NodeableNodes which can hide branched outs and rename them later
         virtual AZ::Outcome<AZStd::string> GetInternalOutKey(const Slot& slot) const;
 
@@ -750,6 +753,8 @@ namespace ScriptCanvas
         virtual const Slot* GetEBusDisconnectSlot() const;
 
         virtual AZStd::string GetEBusName() const;
+
+        virtual AZStd::optional<size_t> GetEventIndex(AZStd::string eventName) const;
 
         virtual AZStd::vector<SlotId> GetEventSlotIds() const;
 

@@ -10,7 +10,7 @@
 #
 
 # Do not overcomplicate searching for the 3rdParty path, if it is not easy to find,
-# the user should define it. 
+# the user should define it.
 
 set(LY_3RDPARTY_PATH "" CACHE PATH "Path to the 3rdParty folder")
 
@@ -42,7 +42,7 @@ endfunction()
 # \arg:PACKAGE if defined, defines the name of the external library "package". This is used when a package exposes multiple interfaces
 #              if not defined, NAME is used
 # \arg:COMPILE_DEFINITIONS compile definitions to be added to the interface
-# \arg:BUILD_DEPENDENCIES list of interfaces this target depends on (could be a compilation dependency if the dependency is only 
+# \arg:BUILD_DEPENDENCIES list of interfaces this target depends on (could be a compilation dependency if the dependency is only
 #                         exposing an include path, or could be a linking dependency is exposing a lib)
 # \arg:RUNTIME_DEPENDENCIES list of files this target depends on (could be a dynamic libraries, text files, executables,
 #                           applications, other 3rdParty targets, etc)
@@ -116,10 +116,6 @@ function(ly_add_external_target)
         # Setting BASE_PATH variable in the parent scope to allow for the Find<3rdParty>.cmake scripts to use them
         set(BASE_PATH ${BASE_PATH} PARENT_SCOPE)
 
-        if(NOT EXISTS ${BASE_PATH})
-            message(FATAL_ERROR "Cannot find 3rdParty library ${ly_add_external_target_NAME} on path ${BASE_PATH}")
-        endif()
-
         add_library(3rdParty::${NAME_WITH_NAMESPACE} INTERFACE IMPORTED GLOBAL)
 
         if(ly_add_external_target_INCLUDE_DIRECTORIES)
@@ -133,7 +129,7 @@ function(ly_add_external_target)
                 INTERFACE ${ly_add_external_target_INCLUDE_DIRECTORIES}
             )
         endif()
-        
+
         # Check if there is a pal file
         ly_get_absolute_pal_filename(pal_file ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}/${ly_add_external_target_PACKAGE}_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
         if(NOT EXISTS ${pal_file})
@@ -142,7 +138,7 @@ function(ly_add_external_target)
         if(EXISTS ${pal_file})
             include(${pal_file})
         endif()
-    
+
         if(${PACKAGE_AND_NAME}_INCLUDE_DIRECTORIES)
             list(TRANSFORM ${PACKAGE_AND_NAME}_INCLUDE_DIRECTORIES PREPEND ${BASE_PATH}/)
             foreach(include_path ${${PACKAGE_AND_NAME}_INCLUDE_DIRECTORIES})
@@ -263,7 +259,7 @@ function(ly_add_external_target)
             list(APPEND ly_add_external_target_BUILD_DEPENDENCIES "${${PACKAGE_AND_NAME}_BUILD_DEPENDENCIES}")
             list(REMOVE_DUPLICATES ly_add_external_target_BUILD_DEPENDENCIES)
         endif()
-        
+
         # Interface dependencies may require to find_packages. So far, we are just using packages for 3rdParty, so we will
         # search for those and automatically bring those packages. The naming convention used is 3rdParty::PackageName::OptionalInterface
         foreach(dependency ${ly_add_external_target_BUILD_DEPENDENCIES})
@@ -278,7 +274,7 @@ function(ly_add_external_target)
 
         if(ly_add_external_target_BUILD_DEPENDENCIES)
             target_link_libraries(3rdParty::${NAME_WITH_NAMESPACE}
-                INTERFACE 
+                INTERFACE
                     ${ly_add_external_target_BUILD_DEPENDENCIES}
             )
         endif()
@@ -291,9 +287,12 @@ endfunction()
 #
 # \arg:3RDPARTY_ROOT_DIRECTORY custom 3rd party directory which needs to be installed
 function(ly_install_external_target 3RDPARTY_ROOT_DIRECTORY)
-    
-    # Install the Find file to our <install_location>/cmake directory 
-    install(FILES ${CMAKE_CURRENT_LIST_FILE} DESTINATION cmake)
+
+    # Install the Find file to our <install_location>/cmake directory
+    install(FILES ${CMAKE_CURRENT_LIST_FILE}
+        DESTINATION cmake
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+    )
 
     # We only want to install external targets that are part of our source tree
     # Checking for relative path beginning with "../" also works when the path
@@ -301,7 +300,10 @@ function(ly_install_external_target 3RDPARTY_ROOT_DIRECTORY)
     file(RELATIVE_PATH rel_path ${CMAKE_SOURCE_DIR} ${3RDPARTY_ROOT_DIRECTORY})
     if (NOT ${rel_path} MATCHES "^../")
         get_filename_component(rel_path ${rel_path} DIRECTORY)
-        install(DIRECTORY ${3RDPARTY_ROOT_DIRECTORY} DESTINATION ${rel_path})
+        install(DIRECTORY ${3RDPARTY_ROOT_DIRECTORY}
+            DESTINATION ${rel_path}
+            COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+        )
     endif()
 
 endfunction()

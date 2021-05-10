@@ -156,6 +156,13 @@ namespace AZ
             //! Get the shader which is associated with this DynamicDrawContext
             const Data::Instance<Shader>& GetShader() const;
 
+            //! Set the sort key for the next draw.
+            //! Note: The sort key will be increased by 1 whenever the a draw function is called.
+            void SetSortKey(RHI::DrawItemSortKey key);
+
+            //! Get the current sort key.
+            RHI::DrawItemSortKey GetSortKey() const;
+
         private:
             DynamicDrawContext() = default;
 
@@ -214,6 +221,10 @@ namespace AZ
             Scene* m_scene = nullptr;
             RHI::DrawListTag m_drawListTag;
 
+            // All draw items use this filter when submit them to views
+            // It's set to RenderPipeline's draw filter mask if the DynamicDrawContext was created for a render pipeline.
+            RHI::DrawFilterMask m_drawFilter = RHI::DrawFilterMaskDefaultValue;
+
             // Cached draw data
             AZStd::vector<RHI::StreamBufferView> m_cachedStreamBufferViews;
             AZStd::vector<RHI::IndexBufferView> m_cachedIndexBufferViews;
@@ -224,6 +235,7 @@ namespace AZ
             struct DrawItemInfo
             {
                 RHI::DrawItem m_drawItem;
+                RHI::DrawItemSortKey m_sortKey;
                 uint32_t m_vertexBufferViewIndex = InvalidIndex;
                 uint32_t m_indexBufferViewIndex = InvalidIndex;
             };
@@ -239,6 +251,8 @@ namespace AZ
             // This variable is used to see if the context is initialized.
             // You can only add draw calls when the context is initialized.
             bool m_initialized = false;
+
+            RHI::DrawItemSortKey m_sortKey = 0;
         };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RPI::DynamicDrawContext::DrawStateOptions);

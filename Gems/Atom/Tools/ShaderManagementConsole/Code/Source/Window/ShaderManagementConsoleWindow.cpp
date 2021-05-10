@@ -368,6 +368,7 @@ namespace ShaderManagementConsole
         // The document tab contains a table view.
         auto tableView = new QTableView(m_centralWidget);
         tableView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
 
         auto model = new QStandardItemModel();
         tableView->setModel(model);

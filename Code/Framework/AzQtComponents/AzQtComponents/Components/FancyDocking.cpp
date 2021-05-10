@@ -2302,6 +2302,12 @@ namespace AzQtComponents
             OptimizedSetParent(dock, mainWindow);
             mainWindow->addDockWidget(Qt::LeftDockWidgetArea, dock);
             dock->show();
+
+            // Make sure we listen for events on the dock widget being put into a floating dock window
+            // because this might be called programmatically, so the dock widget might have never been
+            // parented to our m_mainWindow initially, so it won't already have an event filter,
+            // which will prevent the docking functionality from working.
+            dock->installEventFilter(this);
         }
     }
 

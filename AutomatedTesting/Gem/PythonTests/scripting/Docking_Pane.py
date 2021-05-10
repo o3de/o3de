@@ -16,7 +16,6 @@ URLs of the test case: https://testrail.agscollab.com/index.php?/cases/view/1702
 
 # fmt: off
 class Tests():
-    open_sc_window  = ("Script Canvas window is opened", "Failed to open Script Canvas window")
     pane_opened     = ("Pane is opened successfully",    "Failed to open pane")
     dock_pane       = ("Pane is docked successfully",    "Failed to dock Pane into one or more allowed area")
 # fmt: on
@@ -51,9 +50,9 @@ def Docking_Pane():
 
     imports.init()
 
-    from utils import Report
-    from utils import TestHelper as helper
-    import pyside_utils
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
+    import editor_python_test_tools.pyside_utils as pyside_utils
 
     # Open 3D Engine imports
     import azlmbr.legacy.general as general
@@ -78,8 +77,7 @@ def Docking_Pane():
 
     # 1) Open Script Canvas window (Tools > Script Canvas)
     general.open_pane("Script Canvas")
-    is_sc_visible = helper.wait_for_condition(lambda: general.is_pane_visible("Script Canvas"), 5.0)
-    Report.result(Tests.open_sc_window, is_sc_visible)
+    helper.wait_for_condition(lambda: general.is_pane_visible("Script Canvas"), 5.0)
 
     # 2) Make sure Node Palette pane is opened
     editor_window = pyside_utils.get_editor_main_window()
@@ -114,6 +112,6 @@ if __name__ == "__main__":
 
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
 
     Report.start_test(Docking_Pane)

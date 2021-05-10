@@ -193,6 +193,22 @@ namespace ScriptCanvas
                 return DynamicDataType::Any;
             }
 
+            PropertyStatus Method::GetPropertyStatus() const
+            {
+                switch (m_methodType)
+                {
+                case MethodType::Getter:
+                    return PropertyStatus::Getter;
+
+                case MethodType::Setter:
+                    return PropertyStatus::Setter;
+
+                default:
+                    return PropertyStatus::None;
+                }
+            }
+
+
             void Method::InitializeMethod(const MethodConfiguration& config)
             {
                 m_namespaces = config.m_namespaces ? *config.m_namespaces : m_namespaces;
@@ -239,7 +255,7 @@ namespace ScriptCanvas
                 OnInitializeOutputPost(outputConfig);
             }
 
-            void Method::InitializeBehaviorMethod(const NamespacePath& namespaces, AZStd::string_view className, AZStd::string_view methodName)
+            void Method::InitializeBehaviorMethod(const NamespacePath& namespaces, AZStd::string_view className, AZStd::string_view methodName, PropertyStatus propertyStatus)
             {
                 AZ::BehaviorContext* behaviorContext = nullptr;
                 AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
@@ -249,23 +265,49 @@ namespace ScriptCanvas
                     return;
                 }
 
-                if (className.empty())
+                if (!InitializeOverloaded(namespaces, className, methodName))
                 {
-                    InitializeFree(namespaces, methodName);
-                }
-                else if (auto ebusIterator = behaviorContext->m_ebuses.find(className); ebusIterator == behaviorContext->m_ebuses.end())
-                {
-                    InitializeClass(namespaces, className, methodName);
-                }
-                else
-                {
-                    InitializeEvent(namespaces, className, methodName);
+                    if (className.empty())
+                    {
+                        InitializeFree(namespaces, methodName);
+                    }
+                    else if (auto ebusIterator = behaviorContext->m_ebuses.find(className); ebusIterator != behaviorContext->m_ebuses.end())
+                    {
+                        InitializeEvent(namespaces, className, methodName);
+                    }
+                    else
+                    {
+                        InitializeClass(namespaces, className, methodName, propertyStatus);
+                    }
                 }
 
                 PopulateNodeType();
             }
 
-            void Method::InitializeClass(const NamespacePath&, AZStd::string_view className, AZStd::string_view methodName)
+            bool Method::InitializeOverloaded([[maybe_unused]] const NamespacePath& namespaces, AZStd::string_view className, AZStd::string_view methodName)
+            {
+                const AZ::BehaviorMethod* method{};
+                const AZ::BehaviorClass* bcClass{};
+                AZStd::string prettyClassName;
+
+                if (IsMethodOverloaded() && BehaviorContextUtils::FindExplicitOverload(method, bcClass, className, methodName, &prettyClassName))
+                {
+                    MethodConfiguration config(*method, MethodType::Member);
+                    config.m_class = bcClass;
+                    config.m_namespaces = &m_namespaces;
+                    config.m_className = &className;
+                    config.m_lookupName = &methodName;
+                    config.m_prettyClassName = prettyClassName;
+                    InitializeMethod(config);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            void Method::InitializeClass(const NamespacePath&, AZStd::string_view className, AZStd::string_view methodName, PropertyStatus propertyStatus)
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
 
@@ -273,10 +315,11 @@ namespace ScriptCanvas
                 const AZ::BehaviorClass* bcClass{};
                 AZStd::string prettyClassName;
 
-                if ((IsMethodOverloaded() && BehaviorContextUtils::FindExplicitOverload(method, bcClass, className, methodName, &prettyClassName))
-                    || BehaviorContextUtils::FindClass(method, bcClass, className, methodName, &prettyClassName))
+                if (BehaviorContextUtils::FindClass(method, bcClass, className, methodName, propertyStatus, &prettyClassName))
                 {
-                    MethodConfiguration config(*method, MethodType::Member);
+                    const auto methodType = propertyStatus == PropertyStatus::None ? MethodType::Member : propertyStatus == PropertyStatus::Getter ? MethodType::Getter : MethodType::Setter;
+
+                    MethodConfiguration config(*method, methodType);
                     config.m_class = bcClass;
                     config.m_namespaces = &m_namespaces;
                     config.m_className = &className;
@@ -308,6 +351,7 @@ namespace ScriptCanvas
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
 
                 const AZ::BehaviorMethod* method{};
+
                 if (BehaviorContextUtils::FindFree(method, methodName))
                 {
                     MethodConfiguration config(*method, MethodType::Free);
@@ -525,6 +569,17 @@ namespace ScriptCanvas
 
                 m_method = &method;
                 m_class = bcClass;
+                AZ::BehaviorContext* behaviorContext = nullptr;
+                AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
+
+                if (bcClass && behaviorContext)
+                {
+                    if (auto prettyNameAttribute = AZ::FindAttribute(AZ::ScriptCanvasAttributes::PrettyName, bcClass->m_attributes))
+                    {
+                        AZ::AttributeReader operatorAttrReader(nullptr, prettyNameAttribute);
+                        operatorAttrReader.Read<AZStd::string>(m_classNamePretty, *behaviorContext);
+                    }
+                }
 
                 if (m_classNamePretty.empty())
                 {
@@ -610,8 +665,12 @@ namespace ScriptCanvas
                     break;
 
                     case MethodType::Member:
+                    case MethodType::Getter:
+                    case MethodType::Setter:
                     {
-                        if (BehaviorContextUtils::FindClass(method, bcClass, m_className, methodName, nullptr, m_warnOnMissingFunction))
+                        PropertyStatus status = m_methodType == MethodType::Getter ? PropertyStatus::Getter : m_methodType == MethodType::Setter ? PropertyStatus::Setter : PropertyStatus::None;
+
+                        if (BehaviorContextUtils::FindClass(method, bcClass, m_className, methodName, status, nullptr, m_warnOnMissingFunction))
                         {
                             outClass = bcClass;
                             outMethod = method;

@@ -13,6 +13,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <ACES/Aces.h>
 #include <Atom/Viewport/MaterialViewportNotificationBus.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
@@ -32,6 +33,7 @@ namespace MaterialEditor
         bool m_enableShadowCatcher = true;
         bool m_enableAlternateSkybox = false;
         float m_fieldOfView = 90.0f;
+        AZ::Render::DisplayMapperOperationType m_displayMapperOperationType = AZ::Render::DisplayMapperOperationType::Aces;
     };
 
     //! Provides controls for viewing and editing a material document settings.
@@ -74,6 +76,7 @@ namespace MaterialEditor
         void OnGridEnabledChanged(bool enable) override;
         void OnAlternateSkyboxEnabledChanged(bool enable) override;
         void OnFieldOfViewChanged(float fieldOfView) override;
+        void OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType) override;
 
         // AzToolsFramework::IPropertyEditorNotify overrides...
         void BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode) override;

@@ -14,13 +14,14 @@
 #include <AzCore/Component/Component.h>
 
 #include <AzFramework/Application/Application.h>
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
 
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 
 #include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h>
+
+#include <Material/MaterialBrowserInteractions.h>
 
 namespace AZ
 {
@@ -30,7 +31,6 @@ namespace AZ
         class EditorMaterialSystemComponent
             : public AZ::Component
             , private EditorMaterialSystemComponentRequestBus::Handler
-            , private AzFramework::TargetManagerClient::Bus::Handler
             , private AzFramework::ApplicationLifecycleEvents::Bus::Handler
             , public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
             , public AzToolsFramework::EditorMenuNotificationBus::Handler
@@ -55,10 +55,6 @@ namespace AZ
             //! EditorMaterialSystemComponentRequestBus::Handler overrides...
             void OpenInMaterialEditor(const AZStd::string& sourcePath) override;
 
-            //! AzFramework::TargetManagerClient::Bus::Handler overrides...
-            void TargetJoinedNetwork(AzFramework::TargetInfo info) override;
-            void TargetLeftNetwork(AzFramework::TargetInfo info) override;
-            
             // AzFramework::ApplicationLifecycleEvents overrides...
             void OnApplicationAboutToStop() override;
 
@@ -72,10 +68,9 @@ namespace AZ
             void SetupThumbnails();
             void TeardownThumbnails();
 
-            // Material Editor target for interprocess communication with MaterialEditor
-            AzFramework::TargetInfo m_materialEditorTarget;
-
             QAction* m_openMaterialEditorAction = nullptr;
+
+            AZStd::unique_ptr<MaterialBrowserInteractions> m_materialBrowserInteractions;
         };
     } // namespace Render
 } // namespace AZ

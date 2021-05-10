@@ -98,6 +98,7 @@ set(FILES
     Serialization/Json/BaseJsonSerializerTests.cpp
     Serialization/Json/BasicContainerSerializerTests.cpp
     Serialization/Json/BoolSerializerTests.cpp
+    Serialization/Json/ByteStreamSerializerTests.cpp
     Serialization/Json/ColorSerializerTests.cpp
     Serialization/Json/DoubleSerializerTests.cpp
     Serialization/Json/IntSerializerTests.cpp
@@ -110,6 +111,7 @@ set(FILES
     Serialization/Json/JsonSerializerMock.h
     Serialization/Json/MapSerializerTests.cpp
     Serialization/Json/MathVectorSerializerTests.cpp
+    Serialization/Json/MathMatrixSerializerTests.cpp
     Serialization/Json/SmartPointerSerializerTests.cpp
     Serialization/Json/StringSerializerTests.cpp
     Serialization/Json/TestCases.h

@@ -14,10 +14,10 @@
 #include "EditorCommon.h"
 
 ViewportAnchor::ViewportAnchor()
-    : m_anchorWhole(new ViewportIcon("Editor/Plugins/UiCanvasEditor/CanvasIcons/Anchor_Whole.tif"))
-    , m_anchorLeft(new ViewportIcon("Editor/Plugins/UiCanvasEditor/CanvasIcons/Anchor_Left.tif"))
-    , m_anchorLeftTop(new ViewportIcon("Editor/Plugins/UiCanvasEditor/CanvasIcons/Anchor_TopLeft.tif"))
-    , m_dottedLine(new ViewportIcon("Editor/Plugins/UiCanvasEditor/CanvasIcons/DottedLine.tif"))
+    : m_anchorWhole(new ViewportIcon("Plugins/UiCanvasEditor/CanvasIcons/Anchor_Whole.tif"))
+    , m_anchorLeft(new ViewportIcon("Plugins/UiCanvasEditor/CanvasIcons/Anchor_Left.tif"))
+    , m_anchorLeftTop(new ViewportIcon("Plugins/UiCanvasEditor/CanvasIcons/Anchor_TopLeft.tif"))
+    , m_dottedLine(new ViewportIcon("Plugins/UiCanvasEditor/CanvasIcons/DottedLine.tif"))
 {
 }
 

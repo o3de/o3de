@@ -72,7 +72,7 @@ namespace TestNodes
             {
                 editContext->Class<TestResult>("TestResult", "Development node, will be replaced by a Log node")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/TestResult.png")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/TestResult.png")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TestResult::m_string, "String", "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

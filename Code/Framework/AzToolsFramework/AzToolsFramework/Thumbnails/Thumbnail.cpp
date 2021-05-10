@@ -10,20 +10,20 @@
 *
 */
 
+#include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 AZ_PUSH_DISABLE_WARNING(4127 4251 4800 4244, "-Wunknown-warning-option") // 4127: conditional expression is constant
                                                                          // 4251: 'QTextCodec::ConverterState::flags': class 'QFlags<QTextCodec::ConversionFlag>' needs to have dll-interface to be used by clients of struct 'QTextCodec::ConverterState'
                                                                          // 4800: 'QTextBoundaryFinderPrivate *const ': forcing value to bool 'true' or 'false' (performance warning)
                                                                          // 4244: conversion from 'int' to 'qint8', possible loss of data
 #include <QtConcurrent/QtConcurrent>
+#include <QThreadPool>
 AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
-        static const int DefaultIconSize = 16;
-
         //////////////////////////////////////////////////////////////////////////
         // ThumbnailKey
         //////////////////////////////////////////////////////////////////////////
@@ -52,10 +52,9 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         // Thumbnail
         //////////////////////////////////////////////////////////////////////////
-        Thumbnail::Thumbnail(SharedThumbnailKey key, int thumbnailSize)
+        Thumbnail::Thumbnail(SharedThumbnailKey key)
             : QObject()
             , m_state(State::Unloaded)
-            , m_thumbnailSize(thumbnailSize)
             , m_key(key)
         {
             connect(&m_watcher, &QFutureWatcher<void>::finished, this, [this]()
@@ -80,24 +79,18 @@ namespace AzToolsFramework
             if (m_state == State::Unloaded)
             {
                 m_state = State::Loading;
-                QFuture<void> future = QtConcurrent::run([this](){ LoadThread(); });
+                QThreadPool* threadPool;
+                ThumbnailContextRequestBus::BroadcastResult(
+                    threadPool,
+                    &ThumbnailContextRequestBus::Handler::GetThreadPool);
+                QFuture<void> future = QtConcurrent::run(threadPool, [this](){ LoadThread(); });
                 m_watcher.setFuture(future);
             }
         }
 
-        QPixmap Thumbnail::GetPixmap() const
+        const QPixmap& Thumbnail::GetPixmap() const
         {
-            return GetPixmap(QSize(DefaultIconSize, DefaultIconSize));
-        }
-
-        QPixmap Thumbnail::GetPixmap(const QSize& size) const
-        {
-            if (m_icon.isNull())
-            {
-                return m_pixmap;
-            }
-
-            return m_icon.pixmap(size);
+            return m_pixmap;
         }
 
         SharedThumbnailKey Thumbnail::GetKey() const

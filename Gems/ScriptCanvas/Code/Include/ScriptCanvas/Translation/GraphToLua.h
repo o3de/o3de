@@ -111,11 +111,13 @@ namespace ScriptCanvas
             void TranslateFunctionBlock(Grammar::ExecutionTreeConstPtr execution, FunctionBlockConfig functionBlockConfig, IsNamed lex);
             void TranslateFunctionDefinition(Grammar::ExecutionTreeConstPtr execution, IsNamed lex);
             void TranslateInheritance();
-            void TranslateNodeableOut(Grammar::ExecutionTreeConstPtr execution);
-            void TranslateNodeableOuts(Grammar::ExecutionTreeConstPtr execution);
+            void TranslateNodeableOut(Grammar::VariableConstPtr host, Grammar::ExecutionTreeConstPtr execution);
+            void TranslateNodeableOuts(Grammar::VariableConstPtr host, Grammar::ExecutionTreeConstPtr execution);
             void TranslateNodeableParse();
             void TranslateStaticInitialization();
             void TranslateVariableInitialization(AZStd::string_view leftValue);
+            void WriteClassPropertyRead(Grammar::ExecutionTreeConstPtr);
+            void WriteClassPropertyWrite(Grammar::ExecutionTreeConstPtr);
             void WriteConditionalCaseSwitch(Grammar::ExecutionTreeConstPtr execution, Grammar::Symbol symbol, const Grammar::ExecutionChild& child, size_t index);
             enum class IsLeadingCommaRequired { No, Yes };
             void WriteConstructionArgs();

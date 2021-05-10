@@ -68,6 +68,7 @@ namespace AzToolsFramework
             AddedLastScanTimeField = 28,
             AddedScanTimeSecondsSinceEpochField = 29,
             ChangedSortFunctionFromQSortToStdStableSort = 30,
+            RemoveOutputPrefixFromScanFolders,
             //Add all new versions before this
             DatabaseVersionCount,
             LatestVersion = DatabaseVersionCount - 1
@@ -99,12 +100,10 @@ namespace AzToolsFramework
                 const char* scanFolder,
                 const char* displayName,
                 const char* portableKey,
-                const char* outputPrefix,
                 int isRoot = 0);
             ScanFolderDatabaseEntry(const char* scanFolder,
                 const char* displayName,
                 const char* portableKey,
-                const char* outputPrefix,
                 int isRoot = 0);
             ScanFolderDatabaseEntry(const ScanFolderDatabaseEntry& other);
             ScanFolderDatabaseEntry(ScanFolderDatabaseEntry&& other);
@@ -120,7 +119,6 @@ namespace AzToolsFramework
             AZStd::string m_scanFolder; // the actual local computer path to that scan folder.
             AZStd::string m_displayName; // a display name, blank means it should not show up in UIs
             AZStd::string m_portableKey; // a key that uniquely identifies a scan folder so that we can recognize the same one in other databases/computer
-            AZStd::string m_outputPrefix;
             int m_isRoot = 0;
         };
 

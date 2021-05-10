@@ -25,7 +25,7 @@
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/Scene/Scene.h>
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
 
@@ -111,6 +111,18 @@ namespace AZ
             m_boxShapeInterface = LmbrCentral::BoxShapeComponentRequestsBus::FindFirstHandler(m_entityId);
             AZ_Assert(m_boxShapeInterface, "ReflectionProbeComponentController was unable to find box shape component");
 
+            // special handling is required if this component is being cloned in the editor:
+            // if this probe is using a baked cubemap, check to see if it is already referenced by another probe
+            if (m_configuration.m_useBakedCubemap)
+            {
+                if (m_featureProcessor->IsCubeMapReferenced(m_configuration.m_bakedCubeMapRelativePath))
+                {
+                    // clear the cubeMapRelativePath to prevent the newly cloned reflection probe
+                    // from using the same cubemap path as the original reflection probe
+                    m_configuration.m_bakedCubeMapRelativePath = "";
+                }
+            }
+
             // add this reflection probe to the feature processor
             const AZ::Transform& transform = m_transformInterface->GetWorldTM();
             m_handle = m_featureProcessor->AddProbe(transform, m_configuration.m_useParallaxCorrection);
@@ -130,12 +142,15 @@ namespace AZ
                 m_configuration.m_useBakedCubemap ? m_configuration.m_bakedCubeMapAsset : m_configuration.m_authoredCubeMapAsset;
             Data::AssetBus::MultiHandler::BusConnect(cubeMapAsset.GetId());
 
+            const AZStd::string& relativePath =
+                m_configuration.m_useBakedCubemap ? m_configuration.m_bakedCubeMapRelativePath : m_configuration.m_authoredCubeMapAsset.GetHint();
+
             if (cubeMapAsset.GetId().IsValid())
             {
                 if (cubeMapAsset.IsReady())
                 {
                     Data::Instance<RPI::Image> image = RPI::StreamingImage::FindOrCreate(cubeMapAsset);
-                    m_featureProcessor->SetProbeCubeMap(m_handle, image);
+                    m_featureProcessor->SetProbeCubeMap(m_handle, image, relativePath);
                 }
                 else
                 {
@@ -149,6 +164,7 @@ namespace AZ
             if (m_featureProcessor)
             {
                 m_featureProcessor->RemoveProbe(m_handle);
+                m_handle = nullptr;
             }
 
             LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
@@ -169,8 +185,11 @@ namespace AZ
                 return;
             }
 
+            const AZStd::string& relativePath =
+                m_configuration.m_useBakedCubemap ? m_configuration.m_bakedCubeMapRelativePath : m_configuration.m_authoredCubeMapAsset.GetHint();
+
             Data::Instance<RPI::Image> image = RPI::StreamingImage::FindOrCreate(asset);
-            m_featureProcessor->SetProbeCubeMap(m_handle, image);
+            m_featureProcessor->SetProbeCubeMap(m_handle, image, relativePath);
         }
 
         void ReflectionProbeComponentController::SetConfiguration(const ReflectionProbeComponentConfig& config)
@@ -188,8 +207,11 @@ namespace AZ
             Data::Asset<RPI::StreamingImageAsset>& cubeMapAsset =
                 m_configuration.m_useBakedCubemap ? m_configuration.m_bakedCubeMapAsset : m_configuration.m_authoredCubeMapAsset;
 
+            const AZStd::string& relativePath =
+                m_configuration.m_useBakedCubemap ? m_configuration.m_bakedCubeMapRelativePath : m_configuration.m_authoredCubeMapAsset.GetHint();
+
             Data::Instance<RPI::Image> image = RPI::StreamingImage::FindOrCreate(cubeMapAsset);
-            m_featureProcessor->SetProbeCubeMap(m_handle, image);
+            m_featureProcessor->SetProbeCubeMap(m_handle, image, relativePath);
         }
 
         void ReflectionProbeComponentController::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
@@ -240,14 +262,14 @@ namespace AZ
             m_configuration.m_innerHeight = AZStd::min(m_configuration.m_innerHeight, m_configuration.m_outerHeight);
         }
 
-        void ReflectionProbeComponentController::BakeReflectionProbe(BuildCubeMapCallback callback)
+        void ReflectionProbeComponentController::BakeReflectionProbe(BuildCubeMapCallback callback, const AZStd::string& relativePath)
         {
             if (!m_featureProcessor)
             {
                 return;
             }
 
-            m_featureProcessor->BakeProbe(m_handle, callback);
+            m_featureProcessor->BakeProbe(m_handle, callback, relativePath);
         }
 
         AZ::Aabb ReflectionProbeComponentController::GetAabb() const

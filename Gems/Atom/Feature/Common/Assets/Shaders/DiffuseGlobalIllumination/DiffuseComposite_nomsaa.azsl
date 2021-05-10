@@ -27,7 +27,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Texture2D<float4> m_downsampledProbeIrradiance;
     Texture2D<float>  m_downsampledDepth;
     Texture2D<float4> m_downsampledNormal;
-    Texture2D<float4> m_albedo;       // RGB8 = Albedo, A = Occlusion
+    Texture2D<float4> m_albedo;       // RGB8 = Albedo with pre-multiplied factors, A = Unused here
     Texture2D<float4> m_normal;       // RGB10 = Normal (Encoded), A2 = Flags
     Texture2D<float>  m_depth;
     
@@ -121,7 +121,7 @@ float3 SampleProbeIrradiance(uint2 probeIrradianceCoords, float depth, float3 no
 }
 
 // retrieve irradiance from the global IBL diffuse cubemap
-float3 SampleGlobalIBL(uint2 screenCoords, float depth, float3 normal, float3 albedo)
+float3 SampleGlobalIBL(uint2 screenCoords, float depth, float3 normal)
 {
     uint2 dimensions;
     PassSrg::m_depth.GetDimensions(dimensions.x, dimensions.y);
@@ -162,22 +162,18 @@ PSOutput MainPS(VSOutput IN)
     float4 encodedNormal = PassSrg::m_normal.Load(int3(screenCoords, 0));
     float3 normal = DecodeNormalSignedOctahedron(encodedNormal.rgb);
     float4 albedo = PassSrg::m_albedo.Load(int3(screenCoords, 0));
-    float occlusion = albedo.a;
     float useProbeIrradiance = PassSrg::m_downsampledProbeIrradiance.Load(int3(probeIrradianceCoords,0)).a;
   
     float3 diffuse = float3(0.0f, 0.0f, 0.0f);
     if (useProbeIrradiance > 0.0f)
     {   
         float3 irradiance = SampleProbeIrradiance(probeIrradianceCoords, depth, normal, albedo, ImageScale);
-        diffuse = (albedo.rgb / PI) * irradiance * occlusion;
+        diffuse = (albedo.rgb / PI) * irradiance;
     }
     else
     {
-        float3 irradiance = SampleGlobalIBL(screenCoords, depth, normal, albedo);
+        float3 irradiance = SampleGlobalIBL(screenCoords, depth, normal);
         diffuse = albedo * irradiance;
-
-        // apply ambient occlusion to indirect diffuse
-        diffuse *= occlusion;
 
         // adjust IBL lighting by exposure.
         float iblExposureFactor = pow(2.0, SceneSrg::m_iblExposure);

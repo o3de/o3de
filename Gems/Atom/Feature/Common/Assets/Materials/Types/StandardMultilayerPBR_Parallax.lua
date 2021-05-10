@@ -20,10 +20,12 @@ function GetMaterialPropertyDependencies()
         "layer1_parallax.enable",
         "layer2_parallax.enable",
         "layer3_parallax.enable",
-        "parallax.factor",
         "layer1_parallax.factor",
         "layer2_parallax.factor",
-        "layer3_parallax.factor" 
+        "layer3_parallax.factor",
+        "layer1_parallax.offset",
+        "layer2_parallax.offset",
+        "layer3_parallax.offset" 
     }
 end
 
@@ -31,6 +33,23 @@ function GetShaderOptionDependencies()
     return {"o_parallax_feature_enabled"}
 end
  
+function MergeRange(heightMinMax, offset, factor)
+    top = offset
+    bottom = offset - factor
+
+    if(heightMinMax[1] == nil) then
+        heightMinMax[1] = top
+    else
+        heightMinMax[1] = math.max(heightMinMax[1], top)
+    end
+    
+    if(heightMinMax[0] == nil) then
+        heightMinMax[0] = bottom
+    else
+        heightMinMax[0] = math.min(heightMinMax[0], bottom)
+    end
+end
+
 function Process(context)
     local enableParallax = context:GetMaterialPropertyValue_bool("parallax.enable")
     local enable1 = context:GetMaterialPropertyValue_bool("layer1_parallax.enable")
@@ -39,30 +58,25 @@ function Process(context)
     enableParallax = enableParallax and (enable1 or enable2 or enable3)
     context:SetShaderOptionValue_bool("o_parallax_feature_enabled", enableParallax)
     
-    -- Smaller values for the main parallax factor used in GetParallaxOffset() give better quality.
-    -- So increase the per-layer parallax factors by normalizing them, and reduce the main factor accordingly.
     if(enableParallax) then
         local factorLayer1 = context:GetMaterialPropertyValue_float("layer1_parallax.factor")
         local factorLayer2 = context:GetMaterialPropertyValue_float("layer2_parallax.factor")
         local factorLayer3 = context:GetMaterialPropertyValue_float("layer3_parallax.factor")
-        local mainFactor = context:GetMaterialPropertyValue_float("parallax.factor")
 
-        maxLayerFactor = 0.0
-        if(enable1) then maxLayerFactor = math.max(maxLayerFactor, factorLayer1) end
-        if(enable2) then maxLayerFactor = math.max(maxLayerFactor, factorLayer2) end
-        if(enable3) then maxLayerFactor = math.max(maxLayerFactor, factorLayer3) end
+        local offsetLayer1 = context:GetMaterialPropertyValue_float("layer1_parallax.offset")
+        local offsetLayer2 = context:GetMaterialPropertyValue_float("layer2_parallax.offset")
+        local offsetLayer3 = context:GetMaterialPropertyValue_float("layer3_parallax.offset")
 
-        if(maxLayerFactor < 0.0001) then
+        local heightMinMax = {nil, nil}
+        if(enable1) then MergeRange(heightMinMax, offsetLayer1, factorLayer1) end
+        if(enable2) then MergeRange(heightMinMax, offsetLayer2, factorLayer2) end
+        if(enable3) then MergeRange(heightMinMax, offsetLayer3, factorLayer3) end
+
+        if(heightMinMax[1] - heightMinMax[0] < 0.0001) then
             context:SetShaderOptionValue_bool("o_parallax_feature_enabled", false)
         else
-            factorLayer1 = factorLayer1 / maxLayerFactor
-            factorLayer2 = factorLayer2 / maxLayerFactor
-            factorLayer3 = factorLayer3 / maxLayerFactor
-            mainFactor = mainFactor * maxLayerFactor;
-            context:SetShaderConstant_float("m_layer1_m_depthFactor", factorLayer1)
-            context:SetShaderConstant_float("m_layer2_m_depthFactor", factorLayer2)
-            context:SetShaderConstant_float("m_layer3_m_depthFactor", factorLayer3)
-            context:SetShaderConstant_float("m_parallaxMainDepthFactor", mainFactor)
+            context:SetShaderConstant_float("m_displacementMin", heightMinMax[0])
+            context:SetShaderConstant_float("m_displacementMax", heightMinMax[1])
         end
     end
 end
@@ -76,8 +90,8 @@ function ProcessEditor(context)
     end
     
     context:SetMaterialPropertyVisibility("parallax.parallaxUv", visibility)
-    context:SetMaterialPropertyVisibility("parallax.factor", visibility)
     context:SetMaterialPropertyVisibility("parallax.algorithm", visibility)
     context:SetMaterialPropertyVisibility("parallax.quality", visibility)
     context:SetMaterialPropertyVisibility("parallax.pdo", visibility)
+    context:SetMaterialPropertyVisibility("parallax.showClipping", visibility)
 end

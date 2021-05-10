@@ -16,7 +16,7 @@ import logging
 # Bail on the test if ly_test_tools doesn't exist.
 pytest.importorskip("ly_test_tools")
 import ly_test_tools.environment.file_system as file_system
-import automatedtesting_shared.hydra_test_utils as hydra
+import editor_python_test_tools.hydra_test_utils as hydra
 
 logger = logging.getLogger(__name__)
 test_directory = os.path.join(os.path.dirname(__file__), "EditorScripts")
@@ -40,6 +40,7 @@ class TestDebugger(object):
 
     @pytest.mark.test_case_id("C2789148")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_misc
     def test_Debugger_DebugCVarsWork(self, request, editor, level, workspace, launcher_platform):
         cfg_args = [level]
 

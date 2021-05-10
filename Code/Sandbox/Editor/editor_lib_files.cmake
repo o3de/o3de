@@ -10,8 +10,6 @@
 #
 
 set(FILES
-    NullEditTool.h
-    NullEditTool.cpp
     Translations/editor_en-us.ts
     Translations/assetbrowser_en-us.ts
     DPIAware.xml
@@ -311,17 +309,6 @@ set(FILES
     Util/AffineParts.cpp
     Objects/BaseObject.cpp
     Objects/BaseObject.h
-    Material/Material.cpp
-    Material/Material.h
-    Material/MaterialHelpers.cpp
-    Material/MaterialHelpers.h
-    Material/MaterialDialog.qrc
-    Material/MaterialDialog.cpp
-    Material/MaterialDialog.h
-    Material/MaterialPreviewModelView.cpp
-    Material/MaterialPreviewModelView.h
-    Material/PreviewModelView.cpp
-    Material/PreviewModelView.h
     Alembic/AlembicCompileDialog.cpp
     Alembic/AlembicCompileDialog.h
     Alembic/AlembicCompileDialog.ui
@@ -336,11 +323,6 @@ set(FILES
     AzAssetBrowser/AzAssetBrowserWindow.cpp
     AzAssetBrowser/AzAssetBrowserWindow.h
     AzAssetBrowser/AzAssetBrowserWindow.ui
-    AzAssetBrowser/Preview/LegacyPreviewer.cpp
-    AzAssetBrowser/Preview/LegacyPreviewer.h
-    AzAssetBrowser/Preview/LegacyPreviewer.ui
-    AzAssetBrowser/Preview/LegacyPreviewerFactory.cpp
-    AzAssetBrowser/Preview/LegacyPreviewerFactory.h
     AssetDatabase/AssetDatabaseLocationListener.h
     AssetDatabase/AssetDatabaseLocationListener.cpp
     AssetImporter/AssetImporterManager/AssetImporterDragAndDropHandler.cpp
@@ -389,10 +371,7 @@ set(FILES
     Controls/MultiMonHelper.h
     Controls/NumberCtrl.cpp
     Controls/NumberCtrl.h
-    Controls/PreviewModelCtrl.cpp
-    Controls/PreviewModelCtrl.h
-    Controls/QRollupCtrl.cpp
-    Controls/QRollupCtrl.h
+    Controls/NumberCtrl.h
     Controls/SplineCtrl.cpp
     Controls/SplineCtrl.h
     Controls/SplineCtrlEx.cpp
@@ -401,10 +380,6 @@ set(FILES
     Controls/TextEditorCtrl.h
     Controls/TimelineCtrl.cpp
     Controls/TimelineCtrl.h
-    Controls/TimeOfDaySlider.cpp
-    Controls/TimeOfDaySlider.h
-    Controls/ToolButton.cpp
-    Controls/ToolButton.h
     Controls/WndGridHelper.h
     Controls/ReflectedPropertyControl/PropertyAnimationCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyAnimationCtrl.h
@@ -453,8 +428,6 @@ set(FILES
     CustomResolutionDlg.cpp
     CustomResolutionDlg.ui
     CustomResolutionDlg.h
-    Dialogs/ButtonsPanel.cpp
-    Dialogs/ButtonsPanel.h
     ErrorReportDialog.ui
     ErrorReportDialog.cpp
     ErrorReportDialog.h
@@ -479,8 +452,6 @@ set(FILES
     LevelFileDialog.qrc
     LevelFileDialog.h
     LevelFileDialog.ui
-    PanelPreview.cpp
-    PanelPreview.h
     QuickAccessBar.cpp
     QuickAccessBar.h
     QuickAccessBar.ui
@@ -494,9 +465,6 @@ set(FILES
     SelectLightAnimationDialog.h
     SelectSequenceDialog.cpp
     SelectSequenceDialog.h
-    SetVectorDlg.cpp
-    SetVectorDlg.h
-    SetVectorDlg.ui
     ShadersDialog.cpp
     ShadersDialog.h
     ShadersDialog.ui
@@ -517,16 +485,9 @@ set(FILES
     IconListDialog.ui
     UndoDropDown.cpp
     UndoDropDown.h
-    TimeOfDayDialog.cpp
-    TimeOfDayDialog.h
-    TimeOfDayDialog.ui
-    TimeOfDay.qrc
     DimensionsDialog.cpp
     DimensionsDialog.h
     DimensionsDialog.ui
-    Dialogs/QT/NewEntityDialog.cpp
-    Dialogs/QT/NewEntityDialog.h
-    Dialogs/QT/NewEntityDialog.ui
     NewLevelDialog.cpp
     NewLevelDialog.h
     NewLevelDialog.ui
@@ -535,24 +496,8 @@ set(FILES
     Dialogs/PythonScriptsDialog.ui
     Dialogs/Generic/UserOptions.cpp
     Dialogs/Generic/UserOptions.h
-    AlignTool.cpp
-    AlignTool.h
-    ObjectCloneTool.cpp
-    ObjectCloneTool.h
     EditMode/SubObjectSelectionReferenceFrameCalculator.cpp
     EditMode/SubObjectSelectionReferenceFrameCalculator.h
-    EditMode/ObjectMode.cpp
-    EditMode/ObjectMode.h
-    RotateTool.cpp
-    RotateTool.h
-    EditTool.cpp
-    EditTool.h
-    LinkTool.cpp
-    LinkTool.h
-    PickObjectTool.cpp
-    PickObjectTool.h
-    VoxelAligningTool.cpp
-    VoxelAligningTool.h
     Export/ExportManager.cpp
     Export/ExportManager.h
     Export/OBJExporter.cpp
@@ -569,28 +514,18 @@ set(FILES
     GameResourcesExporter.cpp
     GameExporter.h
     GameResourcesExporter.h
-    Geometry/EdGeometry.cpp
-    Geometry/EdMesh.cpp
     Geometry/TriMesh.cpp
-    Geometry/EdGeometry.h
-    Geometry/EdMesh.h
     Geometry/TriMesh.h
     AboutDialog.h
     AboutDialog.ui
-    DatabaseFrameWnd.h
-    DatabaseFrameWnd.ui
-    DatabaseFrameWnd.qrc
-    Dialogs/DuplicatedObjectsHandlerDlg.h
     DocMultiArchive.h
     EditMode/DeepSelection.h
-    EditMode/VertexSnappingModeTool.h
     FBXExporterDialog.h
     FileTypeUtils.h
     GridUtils.h
     IObservable.h
     IPostRenderer.h
     LightmapCompiler/SimpleTriangleRasterizer.h
-    SurfaceInfoPicker.h
     ToolBox.h
     TrackViewNewSequenceDialog.h
     UndoConfigSpec.h
@@ -605,65 +540,13 @@ set(FILES
     WipFeaturesDlg.qrc
     LevelIndependentFileMan.cpp
     LevelIndependentFileMan.h
-    LensFlareEditor/ILensFlareListener.h
-    LensFlareEditor/LensFlareAtomicList.cpp
-    LensFlareEditor/LensFlareAtomicList.h
-    LensFlareEditor/LensFlareEditor.cpp
-    LensFlareEditor/LensFlareEditor.h
-    LensFlareEditor/LensFlareElement.cpp
-    LensFlareEditor/LensFlareElement.h
-    LensFlareEditor/LensFlareElementTree.cpp
-    LensFlareEditor/LensFlareElementTree.h
-    LensFlareEditor/LensFlareItem.cpp
-    LensFlareEditor/LensFlareItem.h
-    LensFlareEditor/LensFlareItemTree.cpp
-    LensFlareEditor/LensFlareItemTree.h
-    LensFlareEditor/LensFlareLibrary.cpp
-    LensFlareEditor/LensFlareLibrary.h
-    LensFlareEditor/LensFlareLightEntityTree.cpp
-    LensFlareEditor/LensFlareLightEntityTree.h
-    LensFlareEditor/LensFlareManager.cpp
-    LensFlareEditor/LensFlareManager.h
-    LensFlareEditor/LensFlareUndo.cpp
-    LensFlareEditor/LensFlareUndo.h
-    LensFlareEditor/LensFlareUtil.cpp
-    LensFlareEditor/LensFlareUtil.h
-    LensFlareEditor/LensFlareView.cpp
-    LensFlareEditor/LensFlareView.h
     LogFileImpl.cpp
     LogFileImpl.h
-    MatEditMainDlg.cpp
-    MatEditMainDlg.h
-    MatEditPreviewDlg.cpp
-    MatEditPreviewDlg.h
-    Material/MaterialBrowser.cpp
-    Material/MaterialBrowser.h
-    Material/MaterialBrowser.ui
-    Material/MaterialBrowserSearchFilters.cpp
-    Material/MaterialBrowserSearchFilters.h
-    Material/MaterialBrowserFilterModel.cpp
-    Material/MaterialBrowserFilterModel.h
-    Material/MaterialImageListCtrl.cpp
-    Material/MaterialImageListCtrl.h
-    Material/MaterialLibrary.cpp
-    Material/MaterialLibrary.h
-    Material/MaterialManager.cpp
-    Material/MaterialManager.h
-    Material/MaterialPickTool.cpp
-    Material/MaterialPickTool.h
-    MaterialSender.h
-    MaterialSender.cpp
-    Material/MaterialPythonFuncs.h
-    Material/MaterialPythonFuncs.cpp
-    Mission.cpp
-    Mission.h
     Objects/ClassDesc.cpp
     Objects/ClassDesc.h
     Objects/IEntityObjectListener.h
     Objects/SelectionGroup.cpp
     Objects/SelectionGroup.h
-    Objects/StatObjValidator.cpp
-    Objects/StatObjValidator.h
     Objects/SubObjSelection.cpp
     Objects/SubObjSelection.h
     Objects/ObjectLoader.cpp
@@ -672,8 +555,6 @@ set(FILES
     Objects/ObjectManager.h
     Objects/ObjectManagerLegacyUndo.cpp
     Objects/ObjectManagerLegacyUndo.h
-    Objects/ObjectPhysicsManager.cpp
-    Objects/ObjectPhysicsManager.h
     Objects/DisplayContext.cpp
     Objects/DisplayContext.h
     Objects/EntityObject.cpp
@@ -699,9 +580,7 @@ set(FILES
     QtUI/WaitCursor.h
     QtUI/WaitCursor.cpp
     RenderHelpers/AxisHelper.cpp
-    RenderHelpers/AxisHelperExtended.cpp
     RenderHelpers/AxisHelper.h
-    RenderHelpers/AxisHelperExtended.h
     Serialization.h
     Serialization/VariableOArchive.cpp
     Serialization/VariableOArchive.h
@@ -746,22 +625,15 @@ set(FILES
     GraphicsSettingsDialog.cpp
     graphicssettingsdialog.ui
     AboutDialog.cpp
-    DatabaseFrameWnd.cpp
-    Dialogs/DuplicatedObjectsHandlerDlg.cpp
-    Dialogs/DuplicatedObjectsHandlerDlg.ui
     ErrorReportTableModel.h
     ErrorReportTableModel.cpp
     EditMode/DeepSelection.cpp
-    EditMode/VertexSnappingModeTool.cpp
     FBXExporterDialog.cpp
     FBXExporterDialog.ui
     FileTypeUtils.cpp
     LightmapCompiler/SimpleTriangleRasterizer.cpp
     ResourceSelectorHost.cpp
     ResourceSelectorHost.h
-    SurfaceInfoPicker.cpp
-    ThumbnailGenerator.cpp
-    ThumbnailGenerator.h
     ToolBox.cpp
     TrackViewNewSequenceDialog.cpp
     TrackViewNewSequenceDialog.ui
@@ -793,9 +665,6 @@ set(FILES
     ShaderEnum.h
     SurfaceTypeValidator.cpp
     SurfaceTypeValidator.h
-    EnvironmentPanel.cpp
-    EnvironmentPanel.h
-    EnvironmentPanel.ui
     TrackView/AtomOutputFrameCapture.cpp
     TrackView/AtomOutputFrameCapture.h
     TrackView/TrackViewDialog.qrc
@@ -987,9 +856,6 @@ set(FILES
     Grid.h
     LayoutWnd.cpp
     LayoutWnd.h
-    ModelViewport.cpp
-    ModelViewport.h
-    ModelViewportDC.cpp
     EditorViewportWidget.cpp
     EditorViewportWidget.h
     ViewportManipulatorController.cpp

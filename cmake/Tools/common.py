@@ -162,7 +162,7 @@ def validate_ap_config_asset_type_enabled(engine_root, bootstrap_asset_type):
     :return:    True if the asset type was enabled, false if not
     """
     
-    ap_config_file = os.path.join(engine_root, 'AssetProcessorPlatformConfig.setreg')
+    ap_config_file = os.path.join(engine_root, 'Registry', 'AssetProcessorPlatformConfig.setreg')
     if not os.path.isfile(ap_config_file):
         raise LmbrCmdError("Missing required asset processor configuration file at '{}'".format(engine_root),
                            ERROR_CODE_FILE_NOT_FOUND)
@@ -628,8 +628,8 @@ def get_test_module_registry(build_dir_path):
 
         test_module_items = unit_test_json['Amazon']
         for _, test_module_item in test_module_items.items():
-            module_file = test_module_item['Modules']
-            dep_modules.append(module_file)
+            module_files = test_module_item['Modules']
+            dep_modules.extend(module_files)
 
     except FileNotFoundError:
         raise LmbrCmdError(f"Unit test registry not found ('{str(unit_test_module_path)}')")
@@ -659,7 +659,10 @@ def get_validated_test_modules(test_modules, build_dir_path):
         for test_target_check in test_modules:
             if test_target_check not in all_test_modules:
                 raise LmbrCmdError(f"Invalid test module {test_target_check}")
-            validated_test_modules.append(test_target_check)
+            if isinstance(test_target_check, list):
+                validated_test_modules.extend(test_target_check)    
+            else:
+                validated_test_modules.append(test_target_check)
     else:
         validated_test_modules = all_test_modules
 

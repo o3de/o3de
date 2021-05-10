@@ -39,8 +39,6 @@ CGridSettingsDialog::CGridSettingsDialog(QWidget* pParent /*=NULL*/)
 
     connect(ui->m_userDefined, &QCheckBox::clicked, this, &CGridSettingsDialog::OnBnUserDefined);
     connect(ui->m_getFromObject, &QCheckBox::clicked, this, &CGridSettingsDialog::OnBnGetFromObject);
-    connect(ui->m_getAnglesFromObject, &QPushButton::clicked, this, &CGridSettingsDialog::OnBnGetAngles);
-    connect(ui->m_getTranslationFromObject, &QPushButton::clicked, this, &CGridSettingsDialog::OnBnGetTranslation);
 
     auto doubleSpinBoxValueChanged = static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged);
 
@@ -113,39 +111,6 @@ void CGridSettingsDialog::OnBnUserDefined()
 void CGridSettingsDialog::OnBnGetFromObject()
 {
     EnableGridPropertyControls(ui->m_userDefined->isChecked(), ui->m_getFromObject->isChecked());
-}
-
-void CGridSettingsDialog::OnBnGetAngles()
-{
-    CSelectionGroup* sel = GetIEditor()->GetSelection();
-    if (sel->GetCount() > 0)
-    {
-        CBaseObject* obj = sel->GetObject(0);
-        Matrix34 tm = obj->GetWorldTM();
-        AffineParts ap;
-        ap.SpectralDecompose(tm);
-
-        Vec3 rotation = Vec3(RAD2DEG(Ang3::GetAnglesXYZ(Matrix33(ap.rot))));
-
-        ui->m_angleX->setValue(rotation.x);
-        ui->m_angleY->setValue(rotation.y);
-        ui->m_angleZ->setValue(rotation.z);
-    }
-}
-
-void CGridSettingsDialog::OnBnGetTranslation()
-{
-    CSelectionGroup* sel = GetIEditor()->GetSelection();
-    if (sel->GetCount() > 0)
-    {
-        CBaseObject* obj = sel->GetObject(0);
-        Matrix34 tm = obj->GetWorldTM();
-        Vec3 translation = tm.GetTranslation();
-
-        ui->m_translationX->setValue(translation.x);
-        ui->m_translationY->setValue(translation.y);
-        ui->m_translationZ->setValue(translation.z);
-    }
 }
 
 void CGridSettingsDialog::EnableGridPropertyControls(const bool isUserDefined, const bool isGetFromObject)

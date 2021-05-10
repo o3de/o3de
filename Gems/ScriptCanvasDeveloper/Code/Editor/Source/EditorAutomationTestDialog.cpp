@@ -47,7 +47,7 @@ namespace ScriptCanvasDeveloper
     //////////////////
 
     TestListModel::TestListModel()
-        : m_runningIcon("Editor/Icons/AssetBrowser/in_progress.gif")
+        : m_runningIcon("Icons/AssetBrowser/in_progress.gif")
         , m_passedIcon(":/ScriptCanvasEditorResources/Resources/valid_icon.png")
         , m_failedIcon(":/ScriptCanvasEditorResources/Resources/error_icon.png")
     {

@@ -74,10 +74,7 @@ namespace Blast
         {
             if (m_chunkActors[chunkId])
             {
-                auto transform = m_chunkActors[chunkId]->GetWorldBody()->GetTransform();
-                // Multiply by scale because the transform on the world body does not store scale
-                transform.MultiplyByScale(m_scale);
-                m_meshFeatureProcessor->SetTransform(m_chunkMeshHandles[chunkId], transform);
+                m_meshFeatureProcessor->SetTransform(m_chunkMeshHandles[chunkId], m_chunkActors[chunkId]->GetSimulatedBody()->GetTransform(), m_scale);
             }
         }
     }

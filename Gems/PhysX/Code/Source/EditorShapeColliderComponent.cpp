@@ -83,8 +83,8 @@ namespace PhysX
                     "PhysX Shape Collider", "Creates geometry in the PhysX simulation based on an attached shape component")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/PhysXCollider.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/PhysXCollider.svg")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/PhysXCollider.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorShapeColliderComponent::m_colliderConfig,
@@ -120,8 +120,6 @@ namespace PhysX
 
     void EditorShapeColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        // Not compatible with Legacy Cry Physics services
-        incompatible.push_back(AZ_CRC("ColliderService", 0x902d4e93));
         incompatible.push_back(AZ_CRC("LegacyCryPhysicsService", 0xbb370351));
         incompatible.push_back(AZ_CRC("PhysXShapeColliderService", 0x98a7e779));
     }
@@ -273,7 +271,7 @@ namespace PhysX
             m_editorBody = azdynamic_cast<StaticRigidBody*>(m_sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_editorBodyHandle));
         }
 
-        Physics::WorldBodyRequestBus::Handler::BusConnect(GetEntityId());
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 
     AZ::u32 EditorShapeColliderComponent::OnConfigurationChanged()
@@ -663,9 +661,10 @@ namespace PhysX
 
     void EditorShapeColliderComponent::Deactivate()
     {
-        Physics::WorldBodyRequestBus::Handler::BusDisconnect();
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         m_colliderDebugDraw.Disconnect();
 
+        m_nonUniformScaleChangedHandler.Disconnect();
         PhysX::ColliderShapeRequestBus::Handler::BusDisconnect();
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
@@ -686,8 +685,14 @@ namespace PhysX
     {
         if (auto* physXSystem = GetPhysXSystem())
         {
-            physXSystem->RegisterSystemConfigurationChangedEvent(m_physXConfigChangedHandler);
-            physXSystem->RegisterOnDefaultMaterialLibraryChangedEventHandler(m_onDefaultMaterialLibraryChangedEventHandler);
+            if (!m_physXConfigChangedHandler.IsConnected())
+            {
+                physXSystem->RegisterSystemConfigurationChangedEvent(m_physXConfigChangedHandler);
+            }
+            if (!m_onDefaultMaterialLibraryChangedEventHandler.IsConnected())
+            {
+                physXSystem->RegisterOnDefaultMaterialLibraryChangedEventHandler(m_onDefaultMaterialLibraryChangedEventHandler);
+            }
         }
     }
 
@@ -754,9 +759,14 @@ namespace PhysX
         return AZ::Aabb::CreateNull();
     }
 
-    AzPhysics::SimulatedBody* EditorShapeColliderComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* EditorShapeColliderComponent::GetSimulatedBody()
     {
         return m_editorBody;
+    }
+
+    AzPhysics::SimulatedBodyHandle EditorShapeColliderComponent::GetSimulatedBodyHandle() const
+    {
+        return m_editorBodyHandle;
     }
 
     AzPhysics::SceneQueryHit EditorShapeColliderComponent::RayCast(const AzPhysics::RayCastRequest& request)

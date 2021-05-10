@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID : C19723164
 Test Case Title : Verify that if we had 512 shape colliders in the level, the level does not crash
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/19723164
+
 """
 
 
@@ -47,9 +47,9 @@ def C19723164_ShapeColliders_WontCrashEditor():
     import ImportPathHelper as imports
 
     imports.init()
-    from utils import Report
-    from utils import TestHelper as helper
-    from editor_entity_utils import EditorEntity as Entity
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
+    from editor_python_test_tools.editor_entity_utils import EditorEntity as Entity
 
     # Open 3D Engine Imports
     import azlmbr.legacy.general as general
@@ -103,5 +103,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C19723164_ShapeColliders_WontCrashEditor)

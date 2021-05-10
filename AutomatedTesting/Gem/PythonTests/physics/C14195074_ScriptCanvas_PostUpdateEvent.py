@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C14195074
 # Test Case Title : Verify Postsimulate Events
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/14195074
+
 
 # fmt: off
 class Tests:
@@ -70,9 +70,8 @@ def C14195074_ScriptCanvas_PostUpdateEvent():
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr
     import azlmbr.legacy.general as general
@@ -190,5 +189,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C14195074_ScriptCanvas_PostUpdateEvent)

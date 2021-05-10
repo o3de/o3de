@@ -20,7 +20,7 @@
 
 #include <IRenderer.h>
 
-#include <LyShine/IDraw2d.h>
+#include <LyShine/Draw2d.h>
 #include <LyShine/ISprite.h>
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiCanvasBus.h>
@@ -97,7 +97,8 @@ namespace LyShineExamples
         if (!texture)
         {
             // if there is no texture we will just use a white texture
-            texture = gEnv->pRenderer->EF_GetTextureByID(gEnv->pRenderer->GetWhiteTextureId());
+            // TODO:  Get a default atom texture here when possible
+            //texture = gEnv->pRenderer->EF_GetTextureByID(gEnv->pRenderer->GetWhiteTextureId());
         }
 
         if (m_isRenderCacheDirty)

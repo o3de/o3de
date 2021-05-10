@@ -124,7 +124,7 @@ namespace Blast
 
     AZ::Vector3 DamageManager::TransformToLocal(BlastActor& actor, const AZ::Vector3& globalPosition)
     {
-        const AZ::Transform hitToActorTransform(actor.GetWorldBody()->GetTransform().GetInverse());
+        const AZ::Transform hitToActorTransform(actor.GetSimulatedBody()->GetTransform().GetInverse());
         const AZ::Vector3 hitPos = hitToActorTransform.TransformPoint(globalPosition);
         return hitPos;
     }

@@ -79,6 +79,10 @@ namespace ScriptCanvas
 
         bool IsBreak(const ExecutionTreeConstPtr& execution);
 
+        bool IsClassPropertyRead(ExecutionTreeConstPtr execution);
+
+        bool IsClassPropertyWrite(ExecutionTreeConstPtr execution);
+
         bool IsCodeConstructable(VariableConstPtr value);
 
         bool IsCycle(const Node& node);
@@ -162,6 +166,8 @@ namespace ScriptCanvas
         bool IsSwitchStatement(const ExecutionTreeConstPtr& execution);
 
         bool IsUserFunctionCall(const ExecutionTreeConstPtr& execution);
+
+        bool IsUserFunctionCallPure(const ExecutionTreeConstPtr& execution);
 
         bool IsUserFunctionDefinition(const ExecutionTreeConstPtr& execution);
 

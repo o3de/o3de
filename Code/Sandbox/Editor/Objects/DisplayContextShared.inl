@@ -18,8 +18,6 @@
 #include "Include/IIconManager.h"
 #include "Include/IDisplayViewport.h"
 
-#include <I3DEngine.h>
-
 #include <QDateTime>
 #include <QPoint>
 
@@ -32,7 +30,6 @@ DisplayContext::DisplayContext()
 {
     view = 0;
     renderer = 0;
-    engine = 0;
     flags = 0;
     settings = 0;
     pIconManager = 0;
@@ -981,27 +978,8 @@ void DisplayContext::RenderObject(int objectType, const Vec3& pos, float scale)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void DisplayContext::RenderObject(int objectType, const Matrix34& tm)
+void DisplayContext::RenderObject(int, const Matrix34&)
 {
-    IStatObj* object = pIconManager ? pIconManager->GetObject((EStatObject)objectType) : 0;
-    if (object)
-    {
-        float color[4];
-        color[0] = m_color4b.r * (1.0f / 255.0f);
-        color[1] = m_color4b.g * (1.0f / 255.0f);
-        color[2] = m_color4b.b * (1.0f / 255.0f);
-        color[3] = m_color4b.a * (1.0f / 255.0f);
-
-        SRenderingPassInfo passInfo = SRenderingPassInfo::CreateGeneralPassRenderingInfo(GetIEditor()->GetSystem()->GetViewCamera());
-
-        Matrix34 xform = m_matrixStack[m_currentMatrix] * tm;
-        SRendParams rp;
-        rp.pMatrix = &xform;
-        rp.AmbientColor = ColorF(color[0], color[1], color[2], 1);
-        rp.fAlpha = color[3];
-
-        object->Render(rp, passInfo);
-    }
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -1241,28 +1219,6 @@ uint32 DisplayContext::SetState(uint32 state)
 {
     uint32 old = m_renderState;
     m_renderState = state;
-    pRenderAuxGeom->SetRenderFlags(m_renderState);
-    return old;
-}
-
-//! Set a new render state flags.
-//! @param returns previous render state.
-uint32 DisplayContext::SetStateFlag(uint32 state)
-{
-    uint32 old = m_renderState;
-    m_renderState |= state;
-    m_renderState = pRenderAuxGeom->GetRenderFlags().m_renderFlags;
-    pRenderAuxGeom->SetRenderFlags(m_renderState);
-    return old;
-}
-
-//! Clear specified flags in render state.
-//! @param returns previous render state.
-uint32 DisplayContext::ClearStateFlag(uint32 state)
-{
-    uint32 old = m_renderState;
-    m_renderState &= ~state;
-    m_renderState = pRenderAuxGeom->GetRenderFlags().m_renderFlags;
     pRenderAuxGeom->SetRenderFlags(m_renderState);
     return old;
 }
