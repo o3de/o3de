@@ -11,13 +11,17 @@
 */
 
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/JSON/stringbuffer.h>
 #include <AzCore/Serialization/Json/JsonMerger.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/StackedString.h>
+#include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/osstring.h>
 
 namespace AZ
 {
+    using ReporterString = AZStd::fixed_string<1024>;
+
     JsonSerializationResult::ResultCode JsonMerger::ApplyPatch(rapidjson::Value& target,
         rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& patch,
         JsonApplyPatchSettings& settings)
@@ -132,6 +136,14 @@ namespace AZ
         rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& patch,
         JsonApplyPatchSettings& settings)
     {
+        StackedString element(StackedString::Format::JsonPointer);
+        return ApplyMergePatchInternal(target, allocator, patch, settings, element);
+    }
+
+    JsonSerializationResult::ResultCode JsonMerger::ApplyMergePatchInternal(rapidjson::Value& target,
+        rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& patch,
+        JsonApplyPatchSettings& settings, StackedString& element)
+    {
         using namespace JsonSerializationResult;
 
         ResultCode result(Tasks::Merge);
@@ -150,14 +162,18 @@ namespace AZ
                 {
                     if (targetField != target.MemberEnd())
                     {
-                        result.Combine(ApplyMergePatch(targetField->value, allocator, field.value, settings));
+                        ScopedStackedString fieldNameScope{ element,
+                            AZStd::string_view(field.name.GetString(), field.name.GetStringLength()) };
+                        result.Combine(ApplyMergePatchInternal(targetField->value, allocator, field.value, settings, element));
                     }
                     else
                     {
                         rapidjson::Value name;
                         name.CopyFrom(field.name, allocator, true);
                         rapidjson::Value value;
-                        result.Combine(ApplyMergePatch(value, allocator, field.value, settings));
+                        ScopedStackedString fieldNameScope{ element,
+                            AZStd::string_view(field.name.GetString(), field.name.GetStringLength()) };
+                        result.Combine(ApplyMergePatchInternal(value, allocator, field.value, settings, element));
                         target.AddMember(AZStd::move(name), AZStd::move(value), allocator);
                     }
                 }
@@ -165,7 +181,15 @@ namespace AZ
                 {
                     if (targetField != target.MemberEnd())
                     {
+                        ScopedStackedString fieldNameScope{ element,
+                            AZStd::string_view(field.name.GetString(), field.name.GetStringLength()) };
+                        AZStd::string_view jsonPath = element.Get();
+
                         target.RemoveMember(targetField);
+                        result.Combine(settings.m_reporting(ReporterString::format(
+                            R"(Successfully removed member from "%.*s" using JSON Merge Patch)", aznumeric_cast<int>(jsonPath.size()),
+                            jsonPath.data()),
+                            ResultCode(Tasks::Merge, Outcomes::Success), element));
                     }
                 }
                 else
@@ -173,6 +197,13 @@ namespace AZ
                     if (targetField != target.MemberEnd())
                     {
                         targetField->value.CopyFrom(field.value, allocator, true);
+
+                        ScopedStackedString fieldNameScope{ element, AZStd::string_view(field.name.GetString(), field.name.GetStringLength()) };
+                        AZStd::string_view jsonPath = element.Get();
+                        result.Combine(settings.m_reporting(ReporterString::format(
+                            R"(Successfully updated JSON field "%.*s" using JSON Merge Patch)", aznumeric_cast<int>(jsonPath.size()),
+                            jsonPath.data()),
+                            ResultCode(Tasks::Merge, Outcomes::Success), element));
                     }
                     else
                     {
@@ -181,6 +212,13 @@ namespace AZ
                         name.CopyFrom(field.name, allocator, true);
                         value.CopyFrom(field.value, allocator, true);
                         target.AddMember(AZStd::move(name), AZStd::move(value), allocator);
+
+                        ScopedStackedString fieldNameScope{ element, AZStd::string_view(field.name.GetString(), field.name.GetStringLength()) };
+                        AZStd::string_view jsonPath = element.Get();
+                        result.Combine(settings.m_reporting(ReporterString::format(
+                            R"(Successfully added JSON field "%.*s" using JSON Merge Patch)", aznumeric_cast<int>(jsonPath.size()),
+                            jsonPath.data()),
+                            ResultCode(Tasks::Merge, Outcomes::Success), element));
                     }
                 }
             }
@@ -190,7 +228,7 @@ namespace AZ
             target.CopyFrom(patch, allocator, true);
         }
         result.Combine(settings.m_reporting("Successfully applied patch to target using JSON Merge Patch.",
-            ResultCode(Tasks::Merge, Outcomes::Success), StackedString(StackedString::Format::JsonPointer)));
+            ResultCode(Tasks::Merge, Outcomes::Success), element));
         return result;
     }
 
@@ -268,9 +306,11 @@ namespace AZ
         const rapidjson::Pointer::Token* const tokens = path.GetTokens();
         if (path.GetTokenCount() == 0)
         {
+            rapidjson::StringBuffer pointerPathString;
+            path.Stringify(pointerPathString);
             target = AZStd::move(newValue);
             return settings.m_reporting(R"(Successfully applied "add" operation.)",
-                ResultCode(Tasks::Merge, Outcomes::Success), element);
+                ResultCode(Tasks::Merge, Outcomes::Success), pointerPathString.GetString());
         }
 
         rapidjson::Pointer parent = rapidjson::Pointer(tokens, path.GetTokenCount() - 1);
@@ -342,8 +382,10 @@ namespace AZ
                 ResultCode(Tasks::Merge, Outcomes::TypeMismatch), element);
         }
 
+        rapidjson::StringBuffer pointerPathString;
+        path.Stringify(pointerPathString);
         return settings.m_reporting(R"(Successfully applied "add" operation.)",
-            ResultCode(Tasks::Merge, Outcomes::Success), element);
+            ResultCode(Tasks::Merge, Outcomes::Success), pointerPathString.GetString());
     }
 
     JsonSerializationResult::ResultCode JsonMerger::ApplyPatch_Remove(rapidjson::Value& target, const rapidjson::Pointer& path,
@@ -393,8 +435,10 @@ namespace AZ
                 ResultCode(Tasks::Merge, Outcomes::TypeMismatch), element);
         }
 
+        rapidjson::StringBuffer pointerPathString;
+        path.Stringify(pointerPathString);
         return settings.m_reporting(R"(Successfully applied "remove" operation.)",
-            ResultCode(Tasks::Merge, Outcomes::Success), element);
+            ResultCode(Tasks::Merge, Outcomes::Success), pointerPathString.GetString());
     }
 
     JsonSerializationResult::ResultCode JsonMerger::ApplyPatch_Replace(rapidjson::Value& target,
@@ -420,8 +464,10 @@ namespace AZ
 
         memberValue->CopyFrom(value->value, allocator);
 
+        rapidjson::StringBuffer pointerPathString;
+        path.Stringify(pointerPathString);
         return settings.m_reporting(R"(Successfully applied "replace" operation.)",
-            ResultCode(Tasks::Merge, Outcomes::Success), element);
+            ResultCode(Tasks::Merge, Outcomes::Success), pointerPathString.GetString());
     }
 
     JsonSerializationResult::ResultCode JsonMerger::ApplyPatch_Move(rapidjson::Value& target,
