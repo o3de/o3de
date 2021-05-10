@@ -203,3 +203,19 @@ class WinEditor(WinLauncher):
         """
         assert self.workspace.project is not None
         return os.path.join(self.workspace.paths.build_directory(), "Editor.exe")
+
+
+class WinGenericLauncher(WinLauncher):
+
+    def __init__(self, build, exe_file_name, args=None):
+        super(WinGenericLauncher, self).__init__(build, args)
+        self.exe_file_name = exe_file_name
+
+    def binary_path(self):
+        """
+        Return full path to the .exe file for this build's configuration and project
+
+        :return: full path to the given exe file
+        """
+        assert self.workspace.project is not None
+        return os.path.join(self.workspace.paths.build_directory(), f"{self.exe_file_name}.exe")

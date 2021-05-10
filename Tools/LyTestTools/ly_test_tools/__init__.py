@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 # Supported platforms.
 ALL_PLATFORM_OPTIONS = ['android', 'ios', 'linux', 'mac', 'windows']
-ALL_LAUNCHER_OPTIONS = ['android', 'base', 'mac', 'windows', 'windows_editor', 'windows_dedicated']
+ALL_LAUNCHER_OPTIONS = ['android', 'base', 'mac', 'windows', 'windows_editor', 'windows_dedicated', 'windows_generic']
 ANDROID = False
 IOS = False  # Not implemented - see SPEC-2505
 LINUX = sys.platform.startswith('linux')  # Not implemented - see SPEC-2501
@@ -38,11 +38,13 @@ if WINDOWS:
     HOST_OS_EDITOR = 'windows_editor'
     HOST_OS_DEDICATED_SERVER = 'windows_dedicated'
     import ly_test_tools.mobile.android
-    from ly_test_tools.launchers import AndroidLauncher, WinLauncher, DedicatedWinLauncher, WinEditor
+    from ly_test_tools.launchers import (
+        AndroidLauncher, WinLauncher, DedicatedWinLauncher, WinEditor, WinGenericLauncher)
     ANDROID = ly_test_tools.mobile.android.can_run_android()
     LAUNCHERS['windows'] = WinLauncher
     LAUNCHERS['windows_editor'] = WinEditor
     LAUNCHERS['windows_dedicated'] = DedicatedWinLauncher
+    LAUNCHERS['windows_generic'] = WinGenericLauncher
     LAUNCHERS['android'] = AndroidLauncher
 elif MAC:
     HOST_OS_PLATFORM = 'mac'

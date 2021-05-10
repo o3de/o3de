@@ -61,3 +61,19 @@ def create_editor(workspace, launcher_platform=ly_test_tools.HOST_OS_EDITOR, arg
     """
     launcher_class = ly_test_tools.LAUNCHERS.get(launcher_platform, ly_test_tools.HOST_OS_EDITOR)
     return launcher_class(workspace, args)
+
+
+def create_generic_launcher(workspace, launcher_platform, exe_file_name, args=None):
+    # type: (ly_test_tools.managers.workspace.WorkspaceManager, str, str, List[str]) -> Launcher
+    """
+    Create a generic launcher compatible with the specified workspace.
+    Allows custom .exe files to serve as the launcher instead of ones listed in the ly_test_tools.LAUNCHERS constant
+
+    :param workspace: lumberyard workspace to use
+    :param launcher_platform: the platform to target for a launcher (i.e. 'windows' for WinLauncher)
+    :param exe_file_name: .exe file name which has to be launched for this launcher (i.e. 'MaterialEditor.exe')
+    :param args: List of arguments to pass to the launcher's 'args' argument during construction
+    :return: Launcher instance.
+    """
+    launcher_class = ly_test_tools.LAUNCHERS.get(launcher_platform, ly_test_tools.HOST_OS_PLATFORM)
+    return launcher_class(workspace, exe_file_name, args)
