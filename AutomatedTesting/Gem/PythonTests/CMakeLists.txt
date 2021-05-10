@@ -122,6 +122,22 @@ endif()
 #    )
 #endif()
 
+## Prefab ##
+ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
+     ly_add_pytest(
+         NAME AutomatedTesting::PrefabTests
+         TEST_SUITE main
+         TEST_SERIAL
+         PATH ${CMAKE_CURRENT_LIST_DIR}/prefab/TestSuite_Active.py
+         TIMEOUT 3600
+         RUNTIME_DEPENDENCIES
+             Legacy::Editor
+             Legacy::CryRenderNULL
+             AZ::AssetProcessor
+             AutomatedTesting.Assets
+     )
+ endif()
+
 ## Editor Python Bindings ##
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_pytest(
