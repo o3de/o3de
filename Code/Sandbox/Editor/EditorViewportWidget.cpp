@@ -106,6 +106,15 @@ AZ_CVAR(
 
 EditorViewportWidget* EditorViewportWidget::m_pPrimaryViewport = nullptr;
 
+namespace AzFramework
+{
+    extern InputChannelId CameraFreeLookButton;
+    extern InputChannelId CameraFreePanButton;
+    extern InputChannelId CameraOrbitLookButton;
+    extern InputChannelId CameraOrbitDollyButton;
+    extern InputChannelId CameraOrbitPanButton;
+}
+
 #if AZ_TRAIT_OS_PLATFORM_APPLE
 void StopFixedCursorMode();
 void StartFixedCursorMode(QObject *viewport);
@@ -161,6 +170,7 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
     , m_camFOV(gSettings.viewports.fDefaultFov)
     , m_defaultViewName(name)
     , m_renderViewport(nullptr) //m_renderViewport is initialized later, in SetViewportId
+    , m_editorViewportSettings(this)
 {
     // need this to be set in order to allow for language switching on Windows
     setAttribute(Qt::WA_InputMethodEnabled);
@@ -781,10 +791,6 @@ void EditorViewportWidget::OnRender()
         // This is necessary so that automated editor tests using the null renderer to test systems like dynamic vegetation
         // are still able to manipulate the current logical camera position, even if nothing is rendered.
         GetIEditor()->GetSystem()->SetViewCamera(m_Camera);
-        if (GetIEditor()->GetRenderer())
-        {
-            GetIEditor()->GetRenderer()->SetCamera(gEnv->pSystem->GetViewCamera());
-        }
         return;
     }
 
@@ -1098,32 +1104,6 @@ AzFramework::CameraState EditorViewportWidget::GetCameraState()
     return m_renderViewport->GetCameraState();
 }
 
-bool EditorViewportWidget::GridSnappingEnabled()
-{
-    return GetViewManager()->GetGrid()->IsEnabled();
-}
-
-float EditorViewportWidget::GridSize()
-{
-    const CGrid* grid = GetViewManager()->GetGrid();
-    return grid->scale * grid->size;
-}
-
-bool EditorViewportWidget::ShowGrid()
-{
-    return gSettings.viewports.bShowGridGuide;
-}
-
-bool EditorViewportWidget::AngleSnappingEnabled()
-{
-    return GetViewManager()->GetGrid()->IsAngleSnapEnabled();
-}
-
-float EditorViewportWidget::AngleStep()
-{
-    return GetViewManager()->GetGrid()->GetAngleSnap();
-}
-
 AZ::Vector3 EditorViewportWidget::PickTerrain(const AzFramework::ScreenPoint& point)
 {
     FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
@@ -1227,12 +1207,46 @@ void EditorViewportWidget::SetViewportId(int id)
     if (ed_useNewCameraSystem)
     {
         AzFramework::ReloadCameraKeyBindings();
-        m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::ModernViewportCameraController>());
+
+        auto controller = AZStd::make_shared<SandboxEditor::ModernViewportCameraController>();
+        controller->SetCameraListBuilderCallback([](AzFramework::Cameras& cameras)
+        {
+            auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraFreeLookButton);
+            auto firstPersonPanCamera =
+                AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraFreePanButton, AzFramework::LookPan);
+            auto firstPersonTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::LookTranslation);
+            auto firstPersonWheelCamera = AZStd::make_shared<AzFramework::ScrollTranslationCameraInput>();
+
+            auto orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>();
+            auto orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraOrbitLookButton);
+            auto orbitTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::OrbitTranslation);
+            auto orbitDollyWheelCamera = AZStd::make_shared<AzFramework::OrbitDollyScrollCameraInput>();
+            auto orbitDollyMoveCamera =
+                AZStd::make_shared<AzFramework::OrbitDollyCursorMoveCameraInput>(AzFramework::CameraOrbitDollyButton);
+            auto orbitPanCamera =
+                AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraOrbitPanButton, AzFramework::OrbitPan);
+
+            orbitCamera->m_orbitCameras.AddCamera(orbitRotateCamera);
+            orbitCamera->m_orbitCameras.AddCamera(orbitTranslateCamera);
+            orbitCamera->m_orbitCameras.AddCamera(orbitDollyWheelCamera);
+            orbitCamera->m_orbitCameras.AddCamera(orbitDollyMoveCamera);
+            orbitCamera->m_orbitCameras.AddCamera(orbitPanCamera);
+
+            cameras.AddCamera(firstPersonRotateCamera);
+            cameras.AddCamera(firstPersonPanCamera);
+            cameras.AddCamera(firstPersonTranslateCamera);
+            cameras.AddCamera(firstPersonWheelCamera);
+            cameras.AddCamera(orbitCamera);
+        });
+
+        m_renderViewport->GetControllerList()->Add(controller);
     }
     else
     {
         m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::LegacyViewportCameraController>());
     }
+
+    m_renderViewport->SetViewportSettings(&m_editorViewportSettings);
 
     UpdateScene();
 
@@ -2851,6 +2865,37 @@ void EditorViewportWidget::SetAsActiveViewport()
             viewportContextManager->RenameViewportContext(viewportContext, defaultContextName);
         }
     }
+}
+
+EditorViewportSettings::EditorViewportSettings(const EditorViewportWidget* editorViewportWidget)
+    : m_editorViewportWidget(editorViewportWidget)
+{
+}
+
+bool EditorViewportSettings::GridSnappingEnabled() const
+{
+    return m_editorViewportWidget->GetViewManager()->GetGrid()->IsEnabled();
+}
+
+float EditorViewportSettings::GridSize() const
+{
+    const CGrid* grid = m_editorViewportWidget->GetViewManager()->GetGrid();
+    return grid->scale * grid->size;
+}
+
+bool EditorViewportSettings::ShowGrid() const
+{
+    return gSettings.viewports.bShowGridGuide;
+}
+
+bool EditorViewportSettings::AngleSnappingEnabled() const
+{
+    return m_editorViewportWidget->GetViewManager()->GetGrid()->IsAngleSnapEnabled();
+}
+
+float EditorViewportSettings::AngleStep() const
+{
+    return m_editorViewportWidget->GetViewManager()->GetGrid()->GetAngleSnap();
 }
 
 #include <moc_EditorViewportWidget.cpp>
