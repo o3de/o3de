@@ -54,6 +54,7 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Gem::Atom_RHI.Private
         Gem::Atom_RPI.Private
+        Gem::Atom_RHI_Null.Private
         Gem::Atom_Feature_Common
         Gem::Atom_Bootstrap
         Gem::Atom_Component_DebugCamera
@@ -89,6 +90,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::Atom_RHI.Private
             Gem::Atom_RPI.Builders
             Gem::Atom_RPI.Editor
+            Gem::Atom_RHI_Null.Private
+            Gem::Atom_RHI_Null.Builders
             Gem::Atom_Feature_Common.Builders
             Gem::Atom_Feature_Common.Editor
             Gem::Atom_Bootstrap
