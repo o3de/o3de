@@ -12,47 +12,45 @@
 # PySide project and gem selector GUI
 
 import os
+import pathlib
 import sys
 import argparse
 import json
 import logging
 import subprocess
-import threading
-import platform
 from logging.handlers import RotatingFileHandler
-
 from typing import List
-
-from pathlib import Path
 from pyside import add_pyside_environment, is_pyside_ready, uninstall_env
+
+engine_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(engine_path)
+executable_path = ''
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-log_path = os.path.join(os.path.dirname(__file__), "logs")
-if not os.path.isdir(log_path):
-    os.makedirs(log_path)
-log_path = os.path.join(log_path, "project_manager.log")
-log_file_handler = RotatingFileHandler(filename=log_path, maxBytes=1024 * 1024, backupCount=1)
+from cmake.Tools import engine_template
+from cmake.Tools import registration
+
+o3de_folder = registration.get_o3de_folder()
+o3de_logs_folder = registration.get_o3de_logs_folder()
+project_manager_log_file_path = o3de_log_folder / "project_manager.log"
+log_file_handler = RotatingFileHandler(filename=project_manager_log_file_path, maxBytes=1024 * 1024, backupCount=1)
 formatter = logging.Formatter('%(asctime)s | %(levelname)s : %(message)s')
 log_file_handler.setFormatter(formatter)
 logger.addHandler(log_file_handler)
 
 logger.info("Starting Project Manager")
 
-engine_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..'))
-sys.path.append(engine_path)
-executable_path = ''
-
 
 def initialize_pyside_from_parser():
     # Parse arguments up top.  We need to know the path to our binaries and QT libs in particular to load up
     # PySide
     parser = argparse.ArgumentParser()
-    parser.add_argument('--executable_path', required=True, help='Path to Executable to launch with project')
-    parser.add_argument('--binaries_path', default=None, help='Path to QT Binaries necessary for PySide.  If not'
-                        'provided executable_path folder is assumed')
-    parser.add_argument('--parent_pid', default=0, help='Process ID of launching process')
+    parser.add_argument('--executable-path', required=True, help='Path to Executable to launch with project')
+    parser.add_argument('--binaries-path', default=None, help='Path to QT Binaries necessary for PySide.  If not'
+                                                              ' provided executable_path folder is assumed')
+    parser.add_argument('--parent-pid', default=0, help='Process ID of launching process')
 
     args = parser.parse_args()
 
@@ -80,21 +78,6 @@ except ImportError as e:
     exit(-1)
 
 logger.error(f"PySide2 imports successful")
-
-from cmake.Tools import engine_template
-from cmake.Tools import add_remove_gem
-
-ui_path = os.path.join(os.path.join(os.path.dirname(__file__), 'ui'))
-ui_file = 'projects.ui'
-ui_icon_file = 'projects.ico'
-manage_gems_file = 'manage_gems.ui'
-create_project_file = 'create_project.ui'
-
-mru_file_name = 'o3de_projects.json'
-default_settings_folder = os.path.join(Path.home(), '.o3de')
-
-# Used to indicate a folder which appears to be a valid o3de project
-project_marker_file = 'project.json'
 
 
 class DialogLoggerSignaller(QObject):
@@ -132,14 +115,16 @@ class DialogLogger(logging.Handler):
             self.signaller.send_to_dialog.emit(self.format(record))
 
 
-
-class ProjectDialog(QObject):
+class ProjectManagerDialog(QObject):
     """
-    Main project dialog class responsible for displaying the project selection list
+    Main project manager dialog is responsible for displaying the project selection list and output pane
     """
 
-    def __init__(self, parent=None, my_ui_path=ui_path, settings_folder=default_settings_folder):
-        super(ProjectDialog, self).__init__(parent)
+    def __init__(self, parent=None):
+        super(ProjectManagerDialog, self).__init__(parent)
+
+        self.ui_path = (pathlib.Path(__file__).parent / 'ui').resolve()
+        self.home_folder = registration.get_home_folder()
 
         self.log_display = None
         self.dialog_logger = DialogLogger(self)
@@ -147,170 +132,83 @@ class ProjectDialog(QObject):
         logger.setLevel(logging.INFO)
 
         self.dialog_logger.signaller.send_to_dialog.connect(self.handle_log_message)
-        self.displayed_projects = []
+        self.mru_file_path = o3de_folder / 'mru.json'
 
-        self.mru_file_path = os.path.join(settings_folder, mru_file_name)
+        self.create_from_template_ui_file_path = self.ui_path / 'create_from_template.ui'
+        self.create_gem_ui_file_path = self.ui_path / 'create_gem.ui'
+        self.create_project_ui_file_path = self.ui_path / 'create_project.ui'
+        self.manage_project_gem_targets_ui_file_path = self.ui_path / 'manage_gem_targets.ui'
+        self.project_manager_icon_file_path = self.ui_path / 'project_manager.ico'
+        self.project_manager_ui_file_path = self.ui_path / 'project_manager.ui'
 
-        self.my_ui_file_path = os.path.join(my_ui_path, ui_file)
-        self.my_ui_icon_path = os.path.join(my_ui_path, ui_icon_file)
-        self.my_ui_manage_gems_path = os.path.join(my_ui_path, manage_gems_file)
-        self.my_ui_create_project_path = os.path.join(my_ui_path, create_project_file)
-        self.ui_dir = my_ui_path
-        self.ui_file = QFile(self.my_ui_file_path)
-        self.ui_file.open(QFile.ReadOnly)
+        self.project_manager_ui_file = QFile(self.project_manager_ui_file_path.as_posix())
+        self.project_manager_ui_file.open(QFile.ReadOnly)
 
         loader = QUiLoader()
-        self.dialog = loader.load(self.ui_file)
-        self.dialog.setWindowIcon(QIcon(self.my_ui_icon_path))
+        self.dialog = loader.load(self.project_manager_ui_file)
+        self.dialog.setWindowIcon(QIcon(self.project_manager_icon_file_path.as_posix()))
         self.dialog.setFixedSize(self.dialog.size())
-        self.browse_projects_button = self.dialog.findChild(QPushButton, 'browseProjectsButton')
-        self.browse_projects_button.clicked.connect(self.browse_projects_handler)
 
-        self.log_display = self.dialog.findChild(QLabel, 'logDisplay')
+        self.project_list_box = self.dialog.findChild(QComboBox, 'projectListBox')
+        self.refresh_project_list()
+        mru = self.get_mru_list()
+        if len(mru):
+            last_mru = pathlib.Path(mru[0]).resolve()
+            for this_slot in range(self.project_list_box.count()):
+                item_text = self.project_list_box.itemText(this_slot)
+                if last_mru.as_posix() in item_text:
+                    self.project_list_box.setCurrentIndex(this_slot)
+                    break
 
         self.create_project_button = self.dialog.findChild(QPushButton, 'createProjectButton')
         self.create_project_button.clicked.connect(self.create_project_handler)
+        self.create_gem_button = self.dialog.findChild(QPushButton, 'createGemButton')
+        self.create_gem_button.clicked.connect(self.create_gem_handler)
+        self.create_template_button = self.dialog.findChild(QPushButton, 'createTemplateButton')
+        self.create_template_button.clicked.connect(self.create_template_handler)
+        self.create_from_template_button = self.dialog.findChild(QPushButton, 'createFromTemplateButton')
+        self.create_from_template_button.clicked.connect(self.create_from_template_handler)
+
+        self.add_project_button = self.dialog.findChild(QPushButton, 'addProjectButton')
+        self.add_project_button.clicked.connect(self.add_project_handler)
+        self.add_gem_button = self.dialog.findChild(QPushButton, 'addGemButton')
+        self.add_gem_button.clicked.connect(self.add_gem_handler)
+        self.add_template_button = self.dialog.findChild(QPushButton, 'addTemplateButton')
+        self.add_template_button.clicked.connect(self.add_template_handler)
+        self.add_restricted_button = self.dialog.findChild(QPushButton, 'addRestrictedButton')
+        self.add_restricted_button.clicked.connect(self.add_restricted_handler)
+
+        self.remove_project_button = self.dialog.findChild(QPushButton, 'removeProjectButton')
+        self.remove_project_button.clicked.connect(self.remove_project_handler)
+        self.remove_gem_button = self.dialog.findChild(QPushButton, 'removeGemButton')
+        self.remove_gem_button.clicked.connect(self.remove_gem_handler)
+        self.remove_template_button = self.dialog.findChild(QPushButton, 'removeTemplateButton')
+        self.remove_template_button.clicked.connect(self.remove_template_handler)
+        self.remove_restricted_button = self.dialog.findChild(QPushButton, 'removeRestrictedButton')
+        self.remove_restricted_button.clicked.connect(self.remove_restricted_handler)
+
+        self.manage_runtime_project_gem_targets_button = self.dialog.findChild(QPushButton, 'manageRuntimeGemTargetsButton')
+        self.manage_runtime_project_gem_targets_button.clicked.connect(self.manage_runtime_project_gem_targets_handler)
+        self.manage_tool_project_gem_targets_button = self.dialog.findChild(QPushButton, 'manageToolGemTargetsButton')
+        self.manage_tool_project_gem_targets_button.clicked.connect(self.manage_tool_project_gem_targets_handler)
+        self.manage_server_project_gem_targets_button = self.dialog.findChild(QPushButton, 'manageServerGemTargetsButton')
+        self.manage_server_project_gem_targets_button.clicked.connect(self.manage_server_project_gem_targets_handler)
+
+        self.log_display = self.dialog.findChild(QLabel, 'logDisplay')
 
         self.ok_cancel_button = self.dialog.findChild(QDialogButtonBox, 'okCancel')
         self.ok_cancel_button.accepted.connect(self.accepted_handler)
 
-        self.manage_gems_button = self.dialog.findChild(QPushButton, 'manageGemsButton')
-        self.manage_gems_button.clicked.connect(self.manage_gems_handler)
-
-        self.project_list_box = self.dialog.findChild(QComboBox, 'projectListBox')
-        self.add_projects(self.get_mru_list())
-        self.project_gem_list = []
-
         self.dialog.show()
 
-        self.load_thread = None
-        self.gems_list = []
-        self.load_gems()
-
-    def update_gems(self) -> None:
-        """
-        Perform a full refresh of active project and available gems.  Loads both from
-        data on disk and refreshes UI
-        :return: None
-        """
-        project_path = self.path_for_selection()
-        if not project_path:
-            self.project_gem_list = set()
-        else:
-            self.project_gem_list = add_remove_gem.get_project_gem_list(self.path_for_selection())
-        project_gem_model = QStandardItemModel()
-        for item in sorted(self.project_gem_list):
-            project_gem_model.appendRow(QStandardItem(item))
-        self.project_gems.setModel(project_gem_model)
-
-        add_gem_model = QStandardItemModel()
-        for item in self.gems_list:
-            if item.get('Name') in self.project_gem_list:
-                continue
-            model_item = QStandardItem(item.get('Name'))
-            model_item.setData(item.get('Path'), Qt.UserRole)
-            add_gem_model.appendRow(model_item)
-        self.add_gems_list.setModel(add_gem_model)
-
-    def get_selected_project_name(self) -> str:
-        return os.path.basename(self.path_for_selection())
-
-    def get_launch_project(self) -> str:
-        return os.path.normpath(self.path_for_selection())
-
-    def get_executable_launch_params(self) -> list:
-        """
-        Retrieve the necessary launch parameters to make the subprocess launch call with - this is the path
-        to the executable such as the Editor and the path to the selected project
-        :return: list of params
-        """
-        launch_params = [executable_path,
-                         f'-regset="/Amazon/AzCore/Bootstrap/project_path={self.get_launch_project()}"']
-        return launch_params
-
-    def load_gems(self) -> None:
-        """
-        Starts another thread to discover available gems.  This requires file discovery/parsing and would likely
-        cause a noticeable pause if it were not on another thread
-        :return: None
-        """
-        self.load_thread = threading.Thread(target=self.load_gems_thread_func)
-        self.load_thread.start()
-
-    def load_gems_thread_func(self) -> None:
-        """
-        Actual load function for load_gems thread.  Blocking call to lower level find method to fill out gems_list
-        :return: None
-        """
-        self.gems_list = add_remove_gem.find_all_gems([os.path.join(engine_path, 'Gems')])
-
-    def load_template_list(self) -> None:
-        """
-        Search for available templates to fill out template list
-        :return: None
-        """
-        self.project_templates = engine_template.find_all_project_templates([os.path.join(engine_path, 'Templates')])
-
-    def get_gem_info(self, gem_name: str) -> str:
-        """
-        Provided a known gem name provides gem info
-        :param gem_name: Name of known gem.  Names are based on Gem.<Gemname> module names in CMakeLists.txt rather
-        than folders a Gem lives in.
-        :return: Dictionary with data about gem if known
-        """
-        for this_gem in self.gems_list:
-            if this_gem.get('Name') == gem_name:
-                this_gem
-        return None
-
-    def get_gem_info_by_path(self, gem_path: str) -> str:
-        """
-        Provided a gem path returns the gem info if known
-        :param gem_path: Path to gem
-        :return: Dictionary with data about gem if known
-        """
-        for this_gem in self.gems_list:
-            if this_gem.get('Path') == gem_path:
-                return this_gem
-        return None
-
-    def path_for_gem(self, gem_name: str) -> str:
-        """
-        Provided a known gem name provides the full path on disk
-        :param gem_name: Name of known gem.  Names are based on Gem.<Gemname> module names in CMakeLists.txt rather
-        than folders a Gem lives in.
-        :return: Path to CMakeLists.txt containing the Gem modules
-        """
-        for this_gem in self.gems_list:
-            if this_gem.get('Name') == gem_name:
-                return this_gem.get('Path')
-        return ''
-
-    def open_project(self, project_path: str) -> None:
-        """
-        Launch the desired application given the selected project
-        :param project_path: Path to currently selected project
-        :return: None
-        """
-        logger.info(f'Attempting to open {project_path}')
-        self.update_mru_list(project_path)
-        launch_params = self.get_executable_launch_params()
-        try:
-            logger.info(f'Launching with params {launch_params}')
-            subprocess.Popen(launch_params, env=uninstall_env())
-            quit(0)
-        except subprocess.CalledProcessError as e:
-            logger.error(f'Failed to start executable with launch params {launch_params} error {e}')
-
-    def path_for_selection(self) -> str:
-        """
-        Retrive the full path to the project the user currently has selected in the drop down
-        :return: str path to project
-        """
-        if self.project_list_box.currentIndex() == -1:
-            logger.warning("No project selected")
-            return ""
-        return self.project_list_box.itemData(self.project_list_box.currentIndex(), Qt.ToolTipRole)
+    def refresh_project_list(self) -> None:
+        projects = registration.get_all_projects()
+        self.project_list_box.clear()
+        for this_slot in range(len(projects)):
+            display_name = f'{os.path.basename(os.path.normpath(projects[this_slot]))}  ({projects[this_slot]})'
+            self.project_list_box.addItem(display_name)
+            self.project_list_box.setItemData(self.project_list_box.count() - 1, projects[this_slot],
+                                              Qt.ToolTipRole)
 
     def accepted_handler(self) -> None:
         """
@@ -324,152 +222,42 @@ class ProjectDialog(QObject):
             msg_box.setText("Please select a project")
             msg_box.exec()
             return
-        self.open_project(self.path_for_selection())
+        self.launch_with_project_path(self.get_selected_project_path())
 
-    def is_project_folder(self, project_path: str) -> bool:
-        """
-        Checks whether the supplied path appears to be a canonical project folder.
-        Root of a valid project should contain the canonical file
-        :param project_path:
-        :return:
-        """
-        return os.path.isfile(os.path.join(project_path, project_marker_file))
+    def get_launch_project(self) -> str:
+        return os.path.normpath(self.get_selected_project_path())
 
-    def add_new_project(self, project_folder, update_mru=True, reset_selected=True, validate=True):
+    def get_executable_launch_params(self) -> list:
         """
-        Handle request to add a new project to our display and mru lists.  Validation checks whether the folder
-        appears to be a project.  Duplicates should never be added with or without validation.
-        :param project_folder: Absolute path to project folder
-        :param update_mru: Should the project also be promoted to "most recent" in our mru list
-        :param reset_selected: Update our drop down to show this as our current selection
-        :param validate: Verify the folder appears to be a valid project folder
-        :return:
+        Retrieve the necessary launch parameters to make the subprocess launch call with - this is the path
+        to the executable such as the Editor and the path to the selected project
+        :return: list of params
         """
-        if validate:
-            if not self.is_project_folder(project_folder):
-                QMessageBox.warning(self.dialog, "Invalid Project Folder",
-                                    f"{project_folder} does not contain a {project_marker_file}"
-                                    f" and does not appear to be a valid project")
-                return
-        self.add_projects([project_folder])
-        if reset_selected:
-            self.project_list_box.setCurrentIndex(self.project_list_box.count() - 1)
-        if update_mru:
-            self.update_mru_list(project_folder)
+        launch_params = [executable_path,
+                         f'-regset="/Amazon/AzCore/Bootstrap/project_path={self.get_launch_project()}"']
+        return launch_params
 
-    def browse_projects_handler(self):
+    def launch_with_project_path(self, project_path: str) -> None:
         """
-        Open a file search dialog looking for a folder which contains a valid project marker.  If valid
-        will update the mru list with the new entry, if invalid will warn the user.
+        Launch the desired application given the selected project
+        :param project_path: Path to currently selected project
         :return: None
         """
-        project_folder = QFileDialog.getExistingDirectory(self.dialog, "Select Project Folder", engine_path)
-        if project_folder:
-            self.add_new_project(project_folder)
+        logger.info(f'Attempting to open {project_path}')
+        self.update_mru_list(project_path)
+        launch_params = self.get_executable_launch_params()
+        logger.info(f'Launching with params {launch_params}')
+        subprocess.run(launch_params, env=uninstall_env())
 
-        return
+    def get_selected_project_path(self) -> str:
+        if self.project_list_box.currentIndex() == -1:
+            logger.warning("No project selected")
+            return ""
+        return self.project_list_box.itemData(self.project_list_box.currentIndex(), Qt.ToolTipRole)
 
-    def get_selected_project_gems(self) -> list:
-        """
-        :return: List of (GemName, GemPath) of currently selected gems in the project gems list
-        """
-        selected_items = self.project_gems.selectionModel().selectedRows()
-        return [self.project_gems.model().data(item) for item in selected_items]
-
-    def remove_gems_handler(self):
-        """
-        Finds the currently selected gems in the active gems list and attempts to remove each and updates the UI.
-        :return: None
-        """
-        remove_gems = self.get_selected_project_gems()
-
-        for this_gem in remove_gems:
-            gem_path = self.path_for_gem(this_gem)
-            add_remove_gem.add_remove_gem(add=False,
-                                          dev_root=engine_path,
-                                          gem_path=gem_path or os.path.join(engine_path, 'Gems', this_gem),
-                                          gem_target=this_gem,
-                                          project_path=self.path_for_selection(),
-                                          dependencies_file=None,
-                                          runtime_dependency=True,
-                                          tool_dependency=True,
-                                          server_dependency=True)
-        self.update_gems()
-
-    def manage_gems_handler(self):
-        """
-        Opens the Gem management pane.  Waits for the load thread to complete if still running and displays all
-        active gems for the current project as well as all available gems which aren't currently active.
-        :return: None
-        """
-
-        if not self.path_for_selection():
-            msg_box = QMessageBox(parent=self.dialog)
-            msg_box.setWindowTitle("O3DE")
-            msg_box.setText("Please select a project")
-            msg_box.exec()
-            return
-
-        self.load_thread.join()
-        loader = QUiLoader()
-        self.manage_gems_file = QFile(self.my_ui_manage_gems_path)
-
-        if not self.manage_gems_file:
-            logger.error(f'Failed to load gems UI file at {self.manage_gems_file}')
-            return
-
-        self.manage_gems_dialog = loader.load(self.manage_gems_file)
-
-        if not self.manage_gems_dialog:
-            logger.error(f'Failed to load gems dialog file at {self.manage_gems_file}')
-            return
-
-        self.manage_gems_dialog.setWindowTitle(f"Manage Gems for {self.get_selected_project_name()}")
-
-        self.add_gems_button = self.manage_gems_dialog.findChild(QPushButton, 'addGemsButton')
-        self.add_gems_button.clicked.connect(self.add_gems_handler)
-
-        self.add_gems_list = self.manage_gems_dialog.findChild(QListView, 'addGemsList')
-
-        self.remove_gems_button = self.manage_gems_dialog.findChild(QPushButton, 'removeGemsButton')
-        self.remove_gems_button.clicked.connect(self.remove_gems_handler)
-
-        self.project_gems = self.manage_gems_dialog.findChild(QListView, 'projectGems')
-        self.update_gems()
-
-        self.manage_gems_dialog.exec()
-
-    def get_selected_add_gems(self) -> list:
-        """
-        Find returns a list of currently selected gems in the add listas (GemName, GemPath)
-        :return:
-        """
-        selected_items = self.add_gems_list.selectionModel().selectedRows()
-        return [(self.add_gems_list.model().data(item), self.add_gems_list.model().data(item, Qt.UserRole)) for
-                         item in selected_items]
-
-    def add_gems_handler(self) -> None:
-        """
-        Searches the available gems list for selected gems and attempts to add each one to the current project.
-        Updates UI after completion.
-        :return: None
-        """
-        add_gems_list = self.get_selected_add_gems()
-        for this_gem in add_gems_list:
-            gem_info = self.get_gem_info_by_path(this_gem[1])
-            if not gem_info:
-                logger.error(f'Unknown gem {this_gem}!')
-                continue
-            add_remove_gem.add_remove_gem(add=True,
-                                          dev_root=engine_path,
-                                          gem_path=this_gem[1],
-                                          gem_target=gem_info.get('Name'),
-                                          project_path=self.path_for_selection(),
-                                          dependencies_file=None,
-                                          runtime_dependency=gem_info.get('Runtime', False),
-                                          tool_dependency=gem_info.get('Tools', False),
-                                          server_dependency=gem_info.get('Tools', False))
-        self.update_gems()
+    def get_selected_project_name(self) -> str:
+        project_data = registration.get_project_data(project_path=self.get_selected_project_path())
+        return project_data['project_name']
 
     def create_project_handler(self):
         """
@@ -477,7 +265,7 @@ class ProjectDialog(QObject):
         :return: None
         """
         loader = QUiLoader()
-        self.create_project_file = QFile(self.my_ui_create_project_path)
+        self.create_project_file = QFile(self.create_project_ui_file_path.as_posix())
 
         if not self.create_project_file:
             logger.error(f'Failed to create project UI file at {self.create_project_file}')
@@ -492,34 +280,10 @@ class ProjectDialog(QObject):
         self.create_project_ok_button = self.create_project_dialog.findChild(QDialogButtonBox, 'okCancel')
         self.create_project_ok_button.accepted.connect(self.create_project_accepted_handler)
 
-        self.project_template_list = self.create_project_dialog.findChild(QListView, 'projectTemplates')
-
-        self.load_template_list()
-
-        self.load_template_model = QStandardItemModel()
-        for item in self.project_templates:
-            model_item = QStandardItem(item[0])
-            model_item.setData(item[1], Qt.UserRole)
-            self.load_template_model.appendRow(model_item)
-
-        self.project_template_list.setModel(self.load_template_model)
+        self.create_project_template_list = self.create_project_dialog.findChild(QListView, 'projectTemplates')
+        self.refresh_create_project_template_list()
 
         self.create_project_dialog.exec()
-
-    def get_selected_project_template(self) -> tuple:
-        """
-        Get the current pair templatename, path to template selecte dby the user
-        :return: pair
-        """
-
-        selected_item = self.project_template_list.selectionModel().currentIndex()
-        if not selected_item.isValid():
-            logger.warning("Select a template to create from")
-            return None
-
-        create_project_item = (self.project_template_list.model().data(selected_item),
-                               self.project_template_list.model().data(selected_item, Qt.UserRole))
-        return create_project_item
 
     def create_project_accepted_handler(self) -> None:
         """
@@ -527,11 +291,14 @@ class ProjectDialog(QObject):
         Updates UI after completion.
         :return: None
         """
-        create_project_item = self.get_selected_project_template()
-        if not create_project_item:
+
+        selected_item = self.create_project_template_list.selectionModel().currentIndex()
+        project_template_path = self.create_project_template_list.model().data(selected_item)
+        if not project_template_path:
             return
 
-        folder_dialog = QFileDialog(self.dialog, "Select a Folder and Enter a New Project Name", engine_path)
+        folder_dialog = QFileDialog(self.dialog, "Select a Folder and Enter a New Project Name",
+                                    registration.get_o3de_projects_folder().as_posix())
         folder_dialog.setFileMode(QFileDialog.AnyFile)
         folder_dialog.setOptions(QFileDialog.ShowDirsOnly)
         project_count = 0
@@ -544,47 +311,644 @@ class ProjectDialog(QObject):
         if folder_dialog.exec():
             project_folder = folder_dialog.selectedFiles()
         if project_folder:
-            if engine_template.create_project(engine_path, project_folder[0], create_project_item[1]) == 0:
+            if engine_template.create_project(project_path=project_folder[0],
+                                              template_path=project_template_path) == 0:
                 # Success
-                self.add_new_project(project_folder[0], validate=False)
+                registration.register(project_path=project_folder[0])
+                self.refresh_project_list()
                 msg_box = QMessageBox(parent=self.dialog)
                 msg_box.setWindowTitle("O3DE")
-                msg_box.setText(f"Project {os.path.basename(os.path.normpath(project_folder[0]))} created."
-                                "  Build your\nnew project before hitting OK to launch.")
+                msg_box.setText(f"Project {project_folder[0]} created.")
                 msg_box.exec()
                 return
 
-    def get_display_name(self, project_path: str) -> str:
+    def create_gem_handler(self):
         """
-        Returns the project path in the format to be displayed in the projects MRU list
-        :param project_path: Path to the project folder
-        :return: Formatted path
-        """
-        return f'{os.path.basename(os.path.normpath(project_path))}  ({project_path})'
-
-    def add_projects(self, new_list: List[str]) -> None:
-        """
-        Attempt to add a list of known projects.  Performs validation first that the supplied folder appears valid and
-        silently drops invalid folders - these can simply be folders which were previously valid and are in the MRU list
-        but have been moved or deleted.  Used both when loading the MRU list or when a user browses or creates a new
-        project
-        :param new_list: List of full paths to projects to add
+        Opens the Create Gem pane.  Retrieves a list of available templates for display
         :return: None
         """
-        new_display_items = []
-        new_display_paths = []
-        for this_item in new_list:
-            if self.is_project_folder(this_item) and this_item not in self.displayed_projects:
-                self.displayed_projects.append(this_item)
-                new_display_items.append(self.get_display_name(this_item))
-                new_display_paths.append(this_item)
-                # Storing the full path in the tooltip, if this is altered we need to store this elsewhere
-                # as it's used when selecting a project to open
+        loader = QUiLoader()
+        self.create_gem_file = QFile(self.create_gem_ui_file_path.as_posix())
 
-        for this_slot in range(len(new_display_items)):
-            self.project_list_box.addItem(new_display_items[this_slot])
-            self.project_list_box.setItemData(self.project_list_box.count() - 1, new_display_paths[this_slot],
-                                              Qt.ToolTipRole)
+        if not self.create_gem_file:
+            logger.error(f'Failed to create gem UI file at {self.create_gem_file}')
+            return
+
+        self.create_gem_dialog = loader.load(self.create_gem_file)
+
+        if not self.create_gem_dialog:
+            logger.error(f'Failed to load create gem dialog file at {self.create_gem_file}')
+            return
+
+        self.create_gem_ok_button = self.create_gem_dialog.findChild(QDialogButtonBox, 'okCancel')
+        self.create_gem_ok_button.accepted.connect(self.create_gem_accepted_handler)
+
+        self.create_gem_template_list = self.create_gem_dialog.findChild(QListView, 'gemTemplates')
+        self.refresh_create_gem_template_list()
+
+        self.create_gem_dialog.exec()
+
+    def create_gem_accepted_handler(self) -> None:
+        """
+        Searches the available gems list for selected gems and attempts to add each one to the current gem.
+        Updates UI after completion.
+        :return: None
+        """
+        selected_item = self.create_gem_template_list.selectionModel().currentIndex()
+        gem_template_path = self.create_gem_template_list.model().data(selected_item)
+        if not gem_template_path:
+            return
+
+        folder_dialog = QFileDialog(self.dialog, "Select a Folder and Enter a New Gem Name",
+                                    registration.get_o3de_gems_folder().as_posix())
+        folder_dialog.setFileMode(QFileDialog.AnyFile)
+        folder_dialog.setOptions(QFileDialog.ShowDirsOnly)
+        gem_count = 0
+        gem_name = "MyNewGem"
+        while os.path.exists(os.path.join(engine_path, gem_name)):
+            gem_name = f"MyNewGem{gem_count}"
+            gem_count += 1
+        folder_dialog.selectFile(gem_name)
+        gem_folder = None
+        if folder_dialog.exec():
+            gem_folder = folder_dialog.selectedFiles()
+        if gem_folder:
+            if engine_template.create_gem(gem_path=gem_folder[0],
+                                          template_path=gem_template_path) == 0:
+                # Success
+                registration.register(gem_path=gem_folder[0])
+                msg_box = QMessageBox(parent=self.dialog)
+                msg_box.setWindowTitle("O3DE")
+                msg_box.setText(f"Gem {gem_folder[0]} created.")
+                msg_box.exec()
+                return
+
+    def create_template_handler(self):
+        """
+        Opens a foldr select dialog and lets the user select the source folder they want to make a template
+        out of, then opens a second folder select dialog to get where they want to put the template and it name
+        :return: None
+        """
+
+        source_folder = QFileDialog.getExistingDirectory(self.dialog,
+                                                         "Select a Folder to make a template out of.",
+                                                         registration.get_o3de_folder().as_posix())
+        if not source_folder:
+            return
+
+        destination_template_folder_dialog = QFileDialog(self.dialog,
+                                                         "Select where the template is to be created and named.",
+                                                         registration.get_o3de_templates_folder().as_posix())
+        destination_template_folder_dialog.setFileMode(QFileDialog.AnyFile)
+        destination_template_folder_dialog.setOptions(QFileDialog.ShowDirsOnly)
+        destination_folder = None
+        if destination_template_folder_dialog.exec():
+            destination_folder = destination_template_folder_dialog.selectedFiles()
+        if not destination_folder:
+            return
+
+        if engine_template.create_template(source_path=source_folder,
+                                           template_path=destination_folder[0]) == 0:
+            # Success
+            registration.register(template_path=destination_folder[0])
+            msg_box = QMessageBox(parent=self.dialog)
+            msg_box.setWindowTitle("O3DE")
+            msg_box.setText(f"Template {destination_folder[0]} created.")
+            msg_box.exec()
+            return
+
+    def create_from_template_handler(self):
+        """
+        Opens the Create from_template pane.  Retrieves a list of available from_templates for display
+        :return: None
+        """
+        loader = QUiLoader()
+        self.create_from_template_file = QFile(self.create_from_template_ui_file_path.as_posix())
+
+        if not self.create_from_template_file:
+            logger.error(f'Failed to create from_template UI file at {self.create_from_template_file}')
+            return
+
+        self.create_from_template_dialog = loader.load(self.create_from_template_file)
+
+        if not self.create_from_template_dialog:
+            logger.error(f'Failed to load create from_template dialog file at {self.create_from_template_file}')
+            return
+
+        self.create_from_template_ok_button = self.create_from_template_dialog.findChild(QDialogButtonBox, 'okCancel')
+        self.create_from_template_ok_button.accepted.connect(self.create_from_template_accepted_handler)
+
+        self.create_from_template_list = self.create_from_template_dialog.findChild(QListView, 'genericTemplates')
+        self.refresh_create_from_template_list()
+
+        self.create_from_template_dialog.exec()
+
+    def create_from_template_accepted_handler(self) -> None:
+        """
+        Searches the available gems list for selected gems and attempts to add each one to the current gem.
+        Updates UI after completion.
+        :return: None
+        """
+        create_gem_item = self.get_selected_gem_template()
+        if not create_gem_item:
+            return
+
+        folder_dialog = QFileDialog(self.dialog, "Select a Folder and Enter a New Gem Name",
+                                    registration.get_o3de_gems_folder().as_posix())
+        folder_dialog.setFileMode(QFileDialog.AnyFile)
+        folder_dialog.setOptions(QFileDialog.ShowDirsOnly)
+        gem_count = 0
+        gem_name = "MyNewGem"
+        while os.path.exists(os.path.join(engine_path, gem_name)):
+            gem_name = f"MyNewGem{gem_count}"
+            gem_count += 1
+        folder_dialog.selectFile(gem_name)
+        gem_folder = None
+        if folder_dialog.exec():
+            gem_folder = folder_dialog.selectedFiles()
+        if gem_folder:
+            if engine_template.create_gem(gem_folder[0], create_gem_item[1]) == 0:
+                # Success
+                msg_box = QMessageBox(parent=self.dialog)
+                msg_box.setWindowTitle("O3DE")
+                msg_box.setText(f"gem {os.path.basename(os.path.normpath(gem_folder[0]))} created."
+                                "  Build your\nnew gem before hitting OK to launch.")
+                msg_box.exec()
+                return
+
+    def add_project_handler(self):
+        """
+        Open a file search dialog looking for a folder which contains a valid project.  If valid
+        will update the mru list with the new entry, if invalid will warn the user.
+        :return: None
+        """
+        project_folder = QFileDialog.getExistingDirectory(self.dialog, "Select Project Folder",
+                                                          registration.get_o3de_projects_folder().as_posix())
+        if project_folder:
+            if registration.register(project_path=project_folder) == 0:
+                # Success
+                self.refresh_project_list()
+
+                msg_box = QMessageBox(parent=self.dialog)
+                msg_box.setWindowTitle("O3DE")
+                msg_box.setText(f"Added Project {project_folder}.")
+                msg_box.exec()
+        return
+
+    def add_gem_handler(self):
+        """
+        Open a file search dialog looking for a folder which contains a gem.  If valid
+        will update the mru list with the new entry, if invalid will warn the user.
+        :return: None
+        """
+        gem_folder = QFileDialog.getExistingDirectory(self.dialog, "Select Gem Folder",
+                                                      registration.get_o3de_gems_folder().as_posix())
+        if gem_folder:
+            if registration.register(gem_path=gem_folder) == 0:
+                # Success
+                msg_box = QMessageBox(parent=self.dialog)
+                msg_box.setWindowTitle("O3DE")
+                msg_box.setText(f"Added Gem {gem_folder}.")
+                msg_box.exec()
+        return
+
+    def add_template_handler(self):
+        """
+        Open a file search dialog looking for a folder which contains a valid template.  If valid
+        will update the mru list with the new entry, if invalid will warn the user.
+        :return: None
+        """
+        template_folder = QFileDialog.getExistingDirectory(self.dialog, "Select Template Folder",
+                                                           registration.get_o3de_templates_folder().as_posix())
+        if template_folder:
+            if registration.register(template_path=template_folder) == 0:
+                # Success
+                msg_box = QMessageBox(parent=self.dialog)
+                msg_box.setWindowTitle("O3DE")
+                msg_box.setText(f"Added Template {template_folder}.")
+                msg_box.exec()
+        return
+
+    def add_restricted_handler(self):
+        """
+        Open a file search dialog looking for a folder which contains a valid template.  If valid
+        will update the mru list with the new entry, if invalid will warn the user.
+        :return: None
+        """
+        restricted_folder = QFileDialog.getExistingDirectory(self.dialog, "Select Restricted Folder",
+                                                             registration.get_o3de_restricted_folder().as_posix())
+        if restricted_folder:
+            if registration.register(restricted_path=restricted_folder) == 0:
+                # Success
+                msg_box = QMessageBox(parent=self.dialog)
+                msg_box.setWindowTitle("O3DE")
+                msg_box.setText(f"Added Restricted {restricted_folder}.")
+                msg_box.exec()
+        return
+
+    def remove_project_handler(self):
+        """
+        Open a file search dialog looking for a folder which contains a valid project.  If valid
+        will update the mru list with the new entry, if invalid will warn the user.
+        :return: None
+        """
+        project_folder = QFileDialog.getExistingDirectory(self.dialog, "Select Project Folder",
+                                                          registration.get_o3de_projects_folder().as_posix())
+        if project_folder:
+            if registration.register(project_path=project_folder, remove=True) == 0:
+                # Success
+                self.refresh_project_list()
+
+                msg_box = QMessageBox(parent=self.dialog)
+                msg_box.setWindowTitle("O3DE")
+                msg_box.setText(f"Removed Project {project_folder}.")
+                msg_box.exec()
+        return
+
+    def remove_gem_handler(self):
+        """
+        Open a file search dialog looking for a folder which contains a gem.  If valid
+        will update the mru list with the new entry, if invalid will warn the user.
+        :return: None
+        """
+        gem_folder = QFileDialog.getExistingDirectory(self.dialog, "Select Gem Folder",
+                                                      registration.get_o3de_gems_folder().as_posix())
+        if gem_folder:
+            if registration.register(gem_path=gem_folder, remove=True) == 0:
+                # Success
+                msg_box = QMessageBox(parent=self.dialog)
+                msg_box.setWindowTitle("O3DE")
+                msg_box.setText(f"Removed Gem {gem_folder}.")
+                msg_box.exec()
+        return
+
+    def remove_template_handler(self):
+        """
+        Open a file search dialog looking for a folder which contains a valid template.  If valid
+        will update the mru list with the new entry, if invalid will warn the user.
+        :return: None
+        """
+        template_folder = QFileDialog.getExistingDirectory(self.dialog, "Select Template Folder",
+                                                           registration.get_o3de_templates_folder().as_posix())
+        if template_folder:
+            if registration.register(template_path=template_folder, remove=True) == 0:
+                # Success
+                msg_box = QMessageBox(parent=self.dialog)
+                msg_box.setWindowTitle("O3DE")
+                msg_box.setText(f"Removed Template {template_folder}.")
+                msg_box.exec()
+        return
+
+    def remove_restricted_handler(self):
+        """
+        Open a file search dialog looking for a folder which contains a valid template.  If valid
+        will update the mru list with the new entry, if invalid will warn the user.
+        :return: None
+        """
+        restricted_folder = QFileDialog.getExistingDirectory(self.dialog, "Select Restricted Folder",
+                                                             registration.get_o3de_restricted_folder().as_posix())
+        if restricted_folder:
+            if registration.register(restricted_path=restricted_folder, remove=True) == 0:
+                # Success
+                msg_box = QMessageBox(parent=self.dialog)
+                msg_box.setWindowTitle("O3DE")
+                msg_box.setText(f"Removed Restricted {restricted_folder}.")
+                msg_box.exec()
+        return
+
+    def manage_runtime_project_gem_targets_handler(self):
+        """
+        Opens the Gem management pane.  Waits for the load thread to complete if still running and displays all
+        active gems for the current project as well as all available gems which aren't currently active.
+        :return: None
+        """
+
+        if not self.get_selected_project_path():
+            msg_box = QMessageBox(parent=self.dialog)
+            msg_box.setWindowTitle("O3DE")
+            msg_box.setText("Please select a project")
+            msg_box.exec()
+            return
+
+        loader = QUiLoader()
+        self.manage_project_gem_targets_file = QFile(self.manage_project_gem_targets_ui_file_path.as_posix())
+
+        if not self.manage_project_gem_targets_file:
+            logger.error(f'Failed to load manage gem targets UI file at {self.manage_project_gem_targets_ui_file_path}')
+            return
+
+        self.manage_project_gem_targets_dialog = loader.load(self.manage_project_gem_targets_file)
+
+        if not self.manage_project_gem_targets_dialog:
+            logger.error(f'Failed to load gems dialog file at {self.manage_project_gem_targets_ui_file_path.as_posix()}')
+            return
+
+        self.manage_project_gem_targets_dialog.setWindowTitle(f"Manage Runtime Gem Targets for Project:"
+                                                              f" {self.get_selected_project_name()}")
+
+        self.add_gem_button = self.manage_project_gem_targets_dialog.findChild(QPushButton, 'addGemTargetsButton')
+        self.add_gem_button.clicked.connect(self.add_runtime_project_gem_targets_handler)
+
+        self.available_gem_targets_list = self.manage_project_gem_targets_dialog.findChild(QListView,
+                                                                                           'availableGemTargetsList')
+        self.refresh_runtime_project_gem_targets_available_list()
+
+        self.remove_project_gem_targets_button = self.manage_project_gem_targets_dialog.findChild(QPushButton,
+                                                                                            'removeGemTargetsButton')
+        self.remove_project_gem_targets_button.clicked.connect(self.remove_runtime_project_gem_targets_handler)
+
+        self.enabled_gem_targets_list = self.manage_project_gem_targets_dialog.findChild(QListView,
+                                                                                         'enabledGemTargetsList')
+        self.refresh_runtime_project_gem_targets_enabled_list()
+
+        self.manage_project_gem_targets_dialog.exec()
+
+    def manage_tool_project_gem_targets_handler(self):
+        """
+        Opens the Gem management pane.  Waits for the load thread to complete if still running and displays all
+        active gems for the current project as well as all available gems which aren't currently active.
+        :return: None
+        """
+
+        if not self.get_selected_project_path():
+            msg_box = QMessageBox(parent=self.dialog)
+            msg_box.setWindowTitle("O3DE")
+            msg_box.setText("Please select a project")
+            msg_box.exec()
+            return
+
+        loader = QUiLoader()
+        self.manage_project_gem_targets_file = QFile(self.manage_project_gem_targets_ui_file_path.as_posix())
+
+        if not self.manage_project_gem_targets_file:
+            logger.error(f'Failed to load manage gem targets UI file at {self.manage_project_gem_targets_ui_file_path}')
+            return
+
+        self.manage_project_gem_targets_dialog = loader.load(self.manage_project_gem_targets_file)
+
+        if not self.manage_project_gem_targets_dialog:
+            logger.error(
+                f'Failed to load gems dialog file at {self.manage_project_gem_targets_ui_file_path.as_posix()}')
+            return
+
+        self.manage_project_gem_targets_dialog.setWindowTitle(f"Manage Tool Gem Targets for Project:"
+                                                              f" {self.get_selected_project_name()}")
+
+        self.add_gem_button = self.manage_project_gem_targets_dialog.findChild(QPushButton, 'addGemTargetsButton')
+        self.add_gem_button.clicked.connect(self.add_tool_project_gem_targets_handler)
+
+        self.available_gem_targets_list = self.manage_project_gem_targets_dialog.findChild(QListView,
+                                                                                           'availableGemTargetsList')
+        self.refresh_tool_project_gem_targets_available_list()
+
+        self.remove_project_gem_targets_button = self.manage_project_gem_targets_dialog.findChild(QPushButton,
+                                                                                            'removeGemTargetsButton')
+        self.remove_project_gem_targets_button.clicked.connect(self.remove_tool_project_gem_targets_handler)
+
+        self.enabled_gem_targets_list = self.manage_project_gem_targets_dialog.findChild(QListView,
+                                                                                         'enabledGemTargetsList')
+        self.refresh_tool_project_gem_targets_enabled_list()
+
+        self.manage_project_gem_targets_dialog.exec()
+
+    def manage_server_project_gem_targets_handler(self):
+        """
+        Opens the Gem management pane.  Waits for the load thread to complete if still running and displays all
+        active gems for the current project as well as all available gems which aren't currently active.
+        :return: None
+        """
+
+        if not self.get_selected_project_path():
+            msg_box = QMessageBox(parent=self.dialog)
+            msg_box.setWindowTitle("O3DE")
+            msg_box.setText("Please select a project")
+            msg_box.exec()
+            return
+
+        loader = QUiLoader()
+        self.manage_project_gem_targets_file = QFile(self.manage_project_gem_targets_ui_file_path.as_posix())
+
+        if not self.manage_project_gem_targets_file:
+            logger.error(f'Failed to load manage gem targets UI file at {self.manage_project_gem_targets_ui_file_path}')
+            return
+
+        self.manage_project_gem_targets_dialog = loader.load(self.manage_project_gem_targets_file)
+
+        if not self.manage_project_gem_targets_dialog:
+            logger.error(
+                f'Failed to load gems dialog file at {self.manage_project_gem_targets_ui_file_path.as_posix()}')
+            return
+
+        self.manage_project_gem_targets_dialog.setWindowTitle(f"Manage Server Gem Targets for Project:"
+                                                              f" {self.get_selected_project_name()}")
+
+        self.add_gem_button = self.manage_project_gem_targets_dialog.findChild(QPushButton, 'addGemTargetsButton')
+        self.add_gem_button.clicked.connect(self.add_server_project_gem_targets_handler)
+
+        self.available_gem_targets_list = self.manage_project_gem_targets_dialog.findChild(QListView,
+                                                                                           'availableGemTargetsList')
+        self.refresh_server_project_gem_targets_available_list()
+
+        self.remove_project_gem_targets_button = self.manage_project_gem_targets_dialog.findChild(QPushButton,
+                                                                                            'removeGemTargetsButton')
+        self.remove_project_gem_targets_button.clicked.connect(self.remove_server_project_gem_targets_handler)
+
+        self.enabled_gem_targets_list = self.manage_project_gem_targets_dialog.findChild(QListView,
+                                                                                         'enabledGemTargetsList')
+        self.refresh_server_project_gem_targets_enabled_list()
+
+        self.manage_project_gem_targets_dialog.exec()
+
+    def manage_project_gem_targets_get_selected_available_gems(self) -> list:
+        selected_items = self.available_gem_targets_list.selectionModel().selectedRows()
+        return [(self.available_gem_targets_list.model().data(item)) for item in selected_items]
+
+    def manage_project_gem_targets_get_selected_enabled_gems(self) -> list:
+        selected_items = self.enabled_gem_targets_list.selectionModel().selectedRows()
+        return [(self.enabled_gem_targets_list.model().data(item)) for item in selected_items]
+
+    def add_runtime_project_gem_targets_handler(self) -> None:
+        gem_paths = registration.get_all_gems()
+        for gem_target in self.manage_project_gem_targets_get_selected_available_gems():
+            for gem_path in gem_paths:
+                this_gems_targets = registration.get_gem_targets(gem_path=gem_path)
+                for this_gem_target in this_gems_targets:
+                    if gem_target == this_gem_target:
+                        registration.add_gem_to_project(gem_path=gem_path,
+                                                        gem_target=gem_target,
+                                                        project_path=self.get_selected_project_path(),
+                                                        runtime_dependency=True)
+                        self.refresh_runtime_project_gem_targets_available_list()
+                        self.refresh_runtime_project_gem_targets_enabled_list()
+                        return
+        self.refresh_runtime_project_gem_targets_available_list()
+        self.refresh_runtime_project_gem_targets_enabled_list()
+
+    def remove_runtime_project_gem_targets_handler(self):
+        gem_paths = registration.get_all_gems()
+        for gem_target in self.manage_project_gem_targets_get_selected_enabled_gems():
+            for gem_path in gem_paths:
+                this_gems_targets = registration.get_gem_targets(gem_path=gem_path)
+                for this_gem_target in this_gems_targets:
+                    if gem_target == this_gem_target:
+                        registration.remove_gem_from_project(gem_path=gem_path,
+                                                             gem_target=gem_target,
+                                                             project_path=self.get_selected_project_path(),
+                                                             runtime_dependency=True)
+                        self.refresh_runtime_project_gem_targets_available_list()
+                        self.refresh_runtime_project_gem_targets_enabled_list()
+                        return
+        self.refresh_runtime_project_gem_targets_available_list()
+        self.refresh_runtime_project_gem_targets_enabled_list()
+
+    def add_tool_project_gem_targets_handler(self) -> None:
+        gem_paths = registration.get_all_gems()
+        for gem_target in self.manage_project_gem_targets_get_selected_available_gems():
+            for gem_path in gem_paths:
+                this_gems_targets = registration.get_gem_targets(gem_path=gem_path)
+                for this_gem_target in this_gems_targets:
+                    if gem_target == this_gem_target:
+                        registration.add_gem_to_project(gem_path=gem_path,
+                                                        gem_target=gem_target,
+                                                        project_path=self.get_selected_project_path(),
+                                                        tool_dependency=True)
+                        self.refresh_tool_project_gem_targets_available_list()
+                        self.refresh_tool_project_gem_targets_enabled_list()
+                        return
+        self.refresh_tool_project_gem_targets_available_list()
+        self.refresh_tool_project_gem_targets_enabled_list()
+
+    def remove_tool_project_gem_targets_handler(self):
+        gem_paths = registration.get_all_gems()
+        for gem_target in self.manage_project_gem_targets_get_selected_enabled_gems():
+            for gem_path in gem_paths:
+                this_gems_targets = registration.get_gem_targets(gem_path=gem_path)
+                for this_gem_target in this_gems_targets:
+                    if gem_target == this_gem_target:
+                        registration.remove_gem_from_project(gem_path=gem_path,
+                                                             gem_target=gem_target,
+                                                             project_path=self.get_selected_project_path(),
+                                                             tool_dependency=True)
+                        self.refresh_tool_project_gem_targets_available_list()
+                        self.refresh_tool_project_gem_targets_enabled_list()
+                        return
+        self.refresh_tool_project_gem_targets_available_list()
+        self.refresh_tool_project_gem_targets_enabled_list()
+        
+    def add_server_project_gem_targets_handler(self) -> None:
+        gem_paths = registration.get_all_gems()
+        for gem_target in self.manage_project_gem_targets_get_selected_available_gems():
+            for gem_path in gem_paths:
+                this_gems_targets = registration.get_gem_targets(gem_path=gem_path)
+                for this_gem_target in this_gems_targets:
+                    if gem_target == this_gem_target:
+                        registration.add_gem_to_project(gem_path=gem_path,
+                                                        gem_target=gem_target,
+                                                        project_path=self.get_selected_project_path(),
+                                                        server_dependency=True)
+                        self.refresh_server_project_gem_targets_available_list()
+                        self.refresh_server_project_gem_targets_enabled_list()
+                        return
+        self.refresh_server_project_gem_targets_available_list()
+        self.refresh_server_project_gem_targets_enabled_list()
+
+    def remove_server_project_gem_targets_handler(self):
+        gem_paths = registration.get_all_gems()
+        for gem_target in self.manage_project_gem_targets_get_selected_enabled_gems():
+            for gem_path in gem_paths:
+                this_gems_targets = registration.get_gem_targets(gem_path=gem_path)
+                for this_gem_target in this_gems_targets:
+                    if gem_target == this_gem_target:
+                        registration.remove_gem_from_project(gem_path=gem_path,
+                                                             gem_target=gem_target,
+                                                             project_path=self.get_selected_project_path(),
+                                                             server_dependency=True)
+                        self.refresh_server_project_gem_targets_available_list()
+                        self.refresh_server_project_gem_targets_enabled_list()
+                        return
+        self.refresh_server_project_gem_targets_available_list()
+        self.refresh_server_project_gem_targets_enabled_list()
+
+    def refresh_runtime_project_gem_targets_enabled_list(self) -> None:
+        enabled_project_gem_targets_model = QStandardItemModel()
+        enabled_project_gem_targets = registration.get_project_runtime_gem_targets(
+            project_path=self.get_selected_project_path())
+        for gem_target in sorted(enabled_project_gem_targets):
+            model_item = QStandardItem(gem_target)
+            enabled_project_gem_targets_model.appendRow(model_item)
+        self.enabled_gem_targets_list.setModel(enabled_project_gem_targets_model)
+
+    def refresh_runtime_project_gem_targets_available_list(self) -> None:
+        available_project_gem_targets_model = QStandardItemModel()
+        enabled_project_gem_targets = registration.get_project_runtime_gem_targets(
+            project_path=self.get_selected_project_path())
+        all_gem_targets = registration.get_all_gem_targets()
+        for gem_target in sorted(all_gem_targets):
+            if gem_target not in enabled_project_gem_targets:
+                model_item = QStandardItem(gem_target)
+                available_project_gem_targets_model.appendRow(model_item)
+        self.available_gem_targets_list.setModel(available_project_gem_targets_model)
+        
+    def refresh_tool_project_gem_targets_enabled_list(self) -> None:
+        enabled_project_gem_targets_model = QStandardItemModel()
+        enabled_project_gem_targets = registration.get_project_tool_gem_targets(
+            project_path=self.get_selected_project_path())
+        for gem_target in sorted(enabled_project_gem_targets):
+            model_item = QStandardItem(gem_target)
+            enabled_project_gem_targets_model.appendRow(model_item)
+        self.enabled_gem_targets_list.setModel(enabled_project_gem_targets_model)
+
+    def refresh_tool_project_gem_targets_available_list(self) -> None:
+        available_project_gem_targets_model = QStandardItemModel()
+        enabled_project_gem_targets = registration.get_project_tool_gem_targets(
+            project_path=self.get_selected_project_path())
+        all_gem_targets = registration.get_all_gem_targets()
+        for gem_target in sorted(all_gem_targets):
+            if gem_target not in enabled_project_gem_targets:
+                model_item = QStandardItem(gem_target)
+                available_project_gem_targets_model.appendRow(model_item)
+        self.available_gem_targets_list.setModel(available_project_gem_targets_model)
+        
+    def refresh_server_project_gem_targets_enabled_list(self) -> None:
+        enabled_project_gem_targets_model = QStandardItemModel()
+        enabled_project_gem_targets = registration.get_project_server_gem_targets(
+            project_path=self.get_selected_project_path())
+        for gem_target in sorted(enabled_project_gem_targets):
+            model_item = QStandardItem(gem_target)
+            enabled_project_gem_targets_model.appendRow(model_item)
+        self.enabled_gem_targets_list.setModel(enabled_project_gem_targets_model)
+
+    def refresh_server_project_gem_targets_available_list(self) -> None:
+        available_project_gem_targets_model = QStandardItemModel()
+        enabled_project_gem_targets = registration.get_project_server_gem_targets(
+            project_path=self.get_selected_project_path())
+        all_gem_targets = registration.get_all_gem_targets()
+        for gem_target in sorted(all_gem_targets):
+            if gem_target not in enabled_project_gem_targets:
+                model_item = QStandardItem(gem_target)
+                available_project_gem_targets_model.appendRow(model_item)
+        self.available_gem_targets_list.setModel(available_project_gem_targets_model)
+
+    def refresh_create_project_template_list(self) -> None:
+        self.create_project_template_model = QStandardItemModel()
+        for project_template_path in registration.get_project_templates():
+            model_item = QStandardItem(project_template_path)
+            self.create_project_template_model.appendRow(model_item)
+        self.create_project_template_list.setModel(self.create_project_template_model)
+
+    def refresh_create_gem_template_list(self) -> None:
+        self.create_gem_template_model = QStandardItemModel()
+        for gem_template_path in registration.get_gem_templates():
+            model_item = QStandardItem(gem_template_path)
+            self.create_gem_template_model.appendRow(model_item)
+        self.create_gem_template_list.setModel(self.create_gem_template_model)
+
+    def refresh_create_from_template_list(self) -> None:
+        self.create_from_template_model = QStandardItemModel()
+        for generic_template_path in registration.get_generic_templates():
+            model_item = QStandardItem(generic_template_path)
+            self.create_from_template_model.appendRow(model_item)
+        self.create_from_template_list.setModel(self.create_from_template_model)
 
     def update_mru_list(self, used_project: str) -> None:
         """
@@ -621,7 +985,7 @@ class ProjectDialog(QObject):
 
     def get_mru_list(self) -> List[str]:
         """
-        Retrive the current MRU list.  Does not perform validation that the projects still appear valid
+        Retrieve the current MRU list.  Does not perform validation that the projects still appear valid
         :return: list of full path strings to project folders
         """
         if not os.path.exists(os.path.dirname(self.mru_file_path)):
@@ -653,6 +1017,6 @@ class ProjectDialog(QObject):
 
 if __name__ == "__main__":
     dialog_app = QApplication(sys.argv)
-    my_dialog = ProjectDialog()
+    my_dialog = ProjectManagerDialog()
     dialog_app.exec_()
     sys.exit(0)

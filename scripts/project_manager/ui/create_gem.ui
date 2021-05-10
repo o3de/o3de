@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>createProjectDialog</class>
- <widget class="QDialog" name="createProjectDialog">
+ <class>createGemDialog</class>
+ <widget class="QDialog" name="createGemDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Create Project</string>
+   <string>Create Gem</string>
   </property>
   <widget class="QDialogButtonBox" name="okCancel">
    <property name="geometry">
@@ -29,7 +29,7 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
-  <widget class="QListView" name="projectTemplates">
+  <widget class="QListView" name="gemTemplates">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -61,7 +61,7 @@
   <connection>
    <sender>okCancel</sender>
    <signal>accepted()</signal>
-   <receiver>createProjectDialog</receiver>
+   <receiver>createGemDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -77,7 +77,7 @@
   <connection>
    <sender>okCancel</sender>
    <signal>rejected()</signal>
-   <receiver>createProjectDialog</receiver>
+   <receiver>createGemDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
