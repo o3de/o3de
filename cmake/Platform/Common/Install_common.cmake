@@ -34,7 +34,10 @@ function(ly_setup_target ALIAS_TARGET_NAME)
     get_target_property(absolute_target_source_dir ${TARGET_NAME} SOURCE_DIR)
     file(RELATIVE_PATH target_source_dir ${LY_ROOT_FOLDER} ${absolute_target_source_dir})
 
-    # All include directories marked PUBLIC or INTERFACE will be installed
+    # All include directories marked PUBLIC or INTERFACE will be installed. We dont use PUBLIC_HEADER because in order to do that
+    # we need to set the PUBLIC_HEADER property of the target for all the headers we are exporting. After doing that, installing the
+    # headers end up in one folder instead of duplicating the folder structure of the public/interface include directory.
+    # Instead, we install them with install(DIRECTORY)
     set(include_location "include")
     get_target_property(include_directories ${TARGET_NAME} INTERFACE_INCLUDE_DIRECTORIES)
     if (include_directories)
@@ -43,18 +46,16 @@ function(ly_setup_target ALIAS_TARGET_NAME)
             string(GENEX_STRIP ${include_directory} include_genex_expr)
             if(include_genex_expr STREQUAL include_directory) # only for cases where there are no generation expressions
                 unset(current_public_headers)
-                # We install all header types for the time being until we clean up certain libraries that contain all sorts
-                # of files in the public include directories (e.g. CryCommon)
-                file(GLOB_RECURSE current_public_headers 
-                    LIST_DIRECTORIES false
-                    ${include_directory}/*.h 
-                    ${include_directory}/*.hpp
-                    ${include_directory}/*.inl
+                install(DIRECTORY ${include_directory}
+                    DESTINATION ${include_location}/${target_source_dir}
+                    COMPONENT ${ly_install_target_COMPONENT}
+                    FILES_MATCHING 
+                        PATTERN *.h
+                        PATTERN *.hpp
+                        PATTERN *.inl
                 )
-                list(APPEND public_headers ${current_public_headers})
             endif()
         endforeach()
-        set_target_properties(${TARGET_NAME} PROPERTIES PUBLIC_HEADER "${public_headers}")
     endif()
 
     # Get the output folders, archive is always the same, but runtime/library can be in subfolders defined per target
@@ -80,11 +81,6 @@ function(ly_setup_target ALIAS_TARGET_NAME)
             COMPONENT ${ly_install_target_COMPONENT}
         RUNTIME
             DESTINATION ${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_runtime_output_subdirectory}
-            COMPONENT ${ly_install_target_COMPONENT}
-        PUBLIC_HEADER
-            # The include directories are specified relative to the CMakeLists.txt file that adds the target.
-            # We need to install the includes relative to our source tree root
-            DESTINATION ${include_location}/${target_source_dir}
             COMPONENT ${ly_install_target_COMPONENT}
     )
 
@@ -112,11 +108,13 @@ function(ly_setup_target ALIAS_TARGET_NAME)
     endif()
 
     # Includes need additional processing to add the install root
-    get_target_property(include_directories_interface_props ${TARGET_NAME} INTERFACE_INCLUDE_DIRECTORIES)
-    unset(INCLUDE_DIRECTORIES_PLACEHOLDER)
-    if(include_directories_interface_props)
-        foreach(include ${include_directories_interface_props})
-            string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "\${LY_ROOT_FOLDER}/include/${target_source_dir}\n")
+    if(include_directories)
+        foreach(include ${include_directories})
+            string(GENEX_STRIP ${include} include_genex_expr)
+            if(include_genex_expr STREQUAL include) # only for cases where there are no generation expressions
+                file(RELATIVE_PATH relative_include ${absolute_target_source_dir} ${include})
+                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "\${LY_ROOT_FOLDER}/include/${target_source_dir}/${relative_include}\n")
+            endif()
         endforeach()
     endif()
 
@@ -137,15 +135,13 @@ function(ly_setup_target ALIAS_TARGET_NAME)
             endif()
         endforeach()
     endif()
-
-    # We also need to declare teh private link libraries since we will use that to generate the runtime dependencies
+    # We also need to pass the private link libraries since we will use that to generate the runtime dependencies
     get_target_property(private_build_dependencies_props ${TARGET_NAME} LINK_LIBRARIES)
-    unset(PRIVATE_BUILD_DEPENDENCIES_PLACEHOLDER)
     if(private_build_dependencies_props)
         foreach(build_dependency ${private_build_dependencies_props})
             # Skip wrapping produced when targets are not created in the same directory 
             if(NOT ${build_dependency} MATCHES "^::@")
-                string(APPEND PRIVATE_BUILD_DEPENDENCIES_PLACEHOLDER "${build_dependency}\n")     
+                string(APPEND INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${build_dependency}\n")     
             endif()
         endforeach()
     endif()
@@ -247,7 +243,9 @@ function(ly_setup_cmake_install)
     # targets that are pre-built
     get_property(all_targets GLOBAL PROPERTY LY_ALL_TARGETS)
     unset(FIND_PACKAGES_PLACEHOLDER)
-    foreach(target IN LISTS all_targets)
+    foreach(alias_target IN LISTS all_targets)
+        unset(TARGET_NAME)
+        ly_de_alias_target(${alias_target} target)
         get_target_property(target_source_dir ${target} SOURCE_DIR)
         file(RELATIVE_PATH target_source_dir_relative ${LY_ROOT_FOLDER} ${target_source_dir})
         string(APPEND FIND_PACKAGES_PLACEHOLDER "    add_subdirectory(${target_source_dir_relative}/${target})\n")
