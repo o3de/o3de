@@ -131,7 +131,7 @@ function(ly_setup_target ALIAS_TARGET_NAME)
         foreach(build_dependency ${inteface_build_dependencies_props})
             # Skip wrapping produced when targets are not created in the same directory 
             if(NOT ${build_dependency} MATCHES "^::@")
-                string(APPEND INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${build_dependency}\n")     
+                list(APPEND INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${build_dependency}")     
             endif()
         endforeach()
     endif()
@@ -141,10 +141,12 @@ function(ly_setup_target ALIAS_TARGET_NAME)
         foreach(build_dependency ${private_build_dependencies_props})
             # Skip wrapping produced when targets are not created in the same directory 
             if(NOT ${build_dependency} MATCHES "^::@")
-                string(APPEND INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${build_dependency}\n")     
+                list(APPEND INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${build_dependency}")
             endif()
         endforeach()
     endif()
+    list(REMOVE_DUPLICATES INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
+    string(REPLACE ";" "\n" INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER}")
 
     # Since a CMakeLists.txt could contain multiple targets, we generate it in a folder per target
     configure_file(${LY_ROOT_FOLDER}/cmake/install/TargetCMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/install/${NAME_PLACEHOLDER}/CMakeLists.txt @ONLY)
