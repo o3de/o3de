@@ -28,35 +28,21 @@ TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
 class TestAtomEditorComponentsMain(object):
 
     @pytest.mark.test_case_id(
-        "C32078117",  # Area Light
         "C32078130",  # Display Mapper
         "C32078129",  # Light
         "C32078131",  # Radius Weight Modifier
         "C32078127",  # PostFX Layer
-        "C32078126",  # Point Light
         "C32078125",  # Physical Sky
         "C32078115",  # Global Skylight (IBL)
         "C32078121",  # Exposure Control
         "C32078120",  # Directional Light
         "C32078119",  # DepthOfField
-        "C32078118")  # Decal
+        "C32078118")  # Decal (Atom)
     def test_AtomEditorComponents_AddedToEntity(self, request, editor, level, workspace, project, launcher_platform):
         cfg_args = [level]
 
         expected_lines = [
-            # Area Light Component
-            "Area Light Entity successfully created",
-            "Area Light_test: Component added to the entity: True",
-            "Area Light_test: Component removed after UNDO: True",
-            "Area Light_test: Component added after REDO: True",
-            "Area Light_test: Entered game mode: True",
-            "Area Light_test: Entity enabled after adding required components: True",
-            "Area Light_test: Entity is hidden: True",
-            "Area Light_test: Entity is shown: True",
-            "Area Light_test: Entity deleted: True",
-            "Area Light_test: UNDO entity deletion works: True",
-            "Area Light_test: REDO entity deletion works: True",
-            # Decal Component
+            # Decal (Atom) Component
             "Decal (Atom) Entity successfully created",
             "Decal (Atom)_test: Component added to the entity: True",
             "Decal (Atom)_test: Component removed after UNDO: True",
@@ -84,19 +70,6 @@ class TestAtomEditorComponentsMain(object):
             "DepthOfField_test: Entity deleted: True",
             "DepthOfField_test: UNDO entity deletion works: True",
             "DepthOfField_test: REDO entity deletion works: True",
-            # Directional Light Component
-            "Directional Light Entity successfully created",
-            "Directional Light_test: Component added to the entity: True",
-            "Directional Light_test: Component removed after UNDO: True",
-            "Directional Light_test: Component added after REDO: True",
-            "Directional Light_test: Entered game mode: True",
-            "Directional Light_test: Exit game mode: True",
-            "Directional Light Controller|Configuration|Shadow|Camera: SUCCESS",
-            "Directional Light_test: Entity is hidden: True",
-            "Directional Light_test: Entity is shown: True",
-            "Directional Light_test: Entity deleted: True",
-            "Directional Light_test: UNDO entity deletion works: True",
-            "Directional Light_test: REDO entity deletion works: True",
             # Exposure Control Component
             "Exposure Control Entity successfully created",
             "Exposure Control_test: Component added to the entity: True",
@@ -139,18 +112,6 @@ class TestAtomEditorComponentsMain(object):
             "Physical Sky_test: Entity deleted: True",
             "Physical Sky_test: UNDO entity deletion works: True",
             "Physical Sky_test: REDO entity deletion works: True",
-            # Point Light Component
-            "Point Light Entity successfully created",
-            "Point Light_test: Component added to the entity: True",
-            "Point Light_test: Component removed after UNDO: True",
-            "Point Light_test: Component added after REDO: True",
-            "Point Light_test: Entered game mode: True",
-            "Point Light_test: Exit game mode: True",
-            "Point Light_test: Entity is hidden: True",
-            "Point Light_test: Entity is shown: True",
-            "Point Light_test: Entity deleted: True",
-            "Point Light_test: UNDO entity deletion works: True",
-            "Point Light_test: REDO entity deletion works: True",
             # PostFX Layer Component
             "PostFX Layer Entity successfully created",
             "PostFX Layer_test: Component added to the entity: True",

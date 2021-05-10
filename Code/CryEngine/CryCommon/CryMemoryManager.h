@@ -116,7 +116,6 @@ namespace CryMemory
 struct ICustomMemoryHeap;
 class IGeneralMemoryHeap;
 class IPageMappingHeap;
-class IDefragAllocator;
 class IMemoryAddressRange;
 
 // Description:
@@ -180,8 +179,6 @@ struct IMemoryManager
 
     virtual IMemoryAddressRange* ReserveAddressRange(size_t capacity, const char* sName) = 0;
     virtual IPageMappingHeap* CreatePageMappingHeap(size_t addressSpace, const char* sName) = 0;
-
-    virtual IDefragAllocator* CreateDefragAllocator() = 0;
 };
 
 // Global function implemented in CryMemoryManager_impl.h

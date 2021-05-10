@@ -43,11 +43,6 @@ struct SDefaultValidator
                 }
 
 #ifdef WIN32
-                ICVar* pFullscreen = (gEnv && gEnv->pConsole) ? gEnv->pConsole->GetCVar("r_Fullscreen") : 0;
-                if (pFullscreen && pFullscreen->GetIVal() != 0 && gEnv->pRenderer && gEnv->pRenderer->GetHWND())
-                {
-                    ::ShowWindow((HWND)gEnv->pRenderer->GetHWND(), SW_MINIMIZE);
-                }
                 string strMessage = record.text;
                 strMessage += "\n---------------------------------------------\nAbort - terminate application\nRetry - continue running the application\nIgnore - don't show this message box any more";
                 switch (::MessageBox(NULL, strMessage.c_str(), "CryEngine Warning", MB_ABORTRETRYIGNORE | MB_DEFBUTTON2 | MB_ICONWARNING | MB_SYSTEMMODAL))

@@ -152,7 +152,7 @@ struct IVariable
         DT_LOCAL_STRING,
         DT_EQUIP,
         DT_REVERBPRESET,
-        DT_MATERIAL,
+        DT_DEPRECATED0, // formerly DT_MATERIAL
         DT_MATERIALLOOKUP,
         DT_EXTARRAY,    // Extendable Array
         DT_SEQUENCE,    // Movie Sequence (DEPRECATED, use DT_SEQUENCE_ID, instead.)
@@ -163,7 +163,7 @@ struct IVariable
         DT_LIGHT_ANIMATION, // Light Animation Node in the global Light Animation Set
         DT_PARTICLE_EFFECT,
         DT_GEOM_CACHE, // Geometry cache
-        DT_FLARE,
+        DT_DEPRECATED, // formerly DT_FLARE
         DT_AUDIO_TRIGGER,
         DT_AUDIO_SWITCH,
         DT_AUDIO_SWITCH_STATE,

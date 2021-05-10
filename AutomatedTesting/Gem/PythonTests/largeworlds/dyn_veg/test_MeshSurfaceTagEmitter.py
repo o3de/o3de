@@ -38,6 +38,7 @@ class TestMeshSurfaceTagEmitter(object):
 
     @pytest.mark.test_case_id("C2908172")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_surfacetagemitter
     def test_MeshSurfaceTagEmitter_DependentOnMeshComponent(self, request, editor, level, launcher_platform):
 
         expected_lines = [
@@ -66,6 +67,7 @@ class TestMeshSurfaceTagEmitter(object):
 
     @pytest.mark.test_case_id("C2908174")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_surfacetagemitter
     def test_MeshSurfaceTagEmitter_SurfaceTagsAddRemoveSuccessfully(self, request, editor, level, launcher_platform):
 
         expected_lines = [

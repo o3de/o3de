@@ -77,6 +77,7 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         // EditorEntityContextRequestBus
         AzFramework::EntityContextId GetEditorEntityContextId() override { return GetContextId(); }
+        AzFramework::EntityContext* GetEditorEntityContextInstance() override { return this; }
         void ResetEditorContext() override;
 
         AZ::EntityId CreateNewEditorEntity(const char* name) override;
@@ -188,8 +189,6 @@ namespace AzToolsFramework
         //! EditorEntityContextRequestBus::Events::AddRequiredComponents()
         AZ::ComponentTypeList m_requiredEditorComponentTypes;
 
-        //! Edit time visibility management integrating entities with the IVisibilitySystem.
-        AzFramework::EntityVisibilityBoundsUnionSystem m_entityVisibilityBoundsUnionSystem;
         bool m_isLegacySliceService;
 
         UndoSystem::UndoCacheInterface* m_undoCacheInterface = nullptr;

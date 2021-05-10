@@ -36,6 +36,7 @@ ly_add_target(
         metastream_shared_files.cmake
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
+        ${pal_source_dir}/metastream_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
         ${common_source_dir}/${PAL_TRAIT_COMPILER_ID}/metastream_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
@@ -62,6 +63,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             metastream_shared_files.cmake
             ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
         PLATFORM_INCLUDE_FILES
+            ${pal_source_dir}/metastream_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
             ${common_source_dir}/${PAL_TRAIT_COMPILER_ID}/metastream_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
         INCLUDE_DIRECTORIES
             PRIVATE

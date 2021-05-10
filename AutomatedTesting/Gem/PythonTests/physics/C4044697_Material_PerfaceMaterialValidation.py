@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C4044697
 # Test Case Title : Verify that each surface picks up the material assigned to it and behaves accordingly.
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4044697
+
 
 # fmt: off
 class Tests:

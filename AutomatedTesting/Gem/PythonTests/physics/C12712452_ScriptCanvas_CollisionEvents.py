@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test Case ID    : C12712452
 # Test Case Title : Verify ScriptCanvas Collision Events
-# Test Case URL   : https://testrail.agscollab.com/index.php?/cases/view/12712452
+
 
 
 # fmt: off

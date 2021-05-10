@@ -6,7 +6,7 @@
 	       PreferredClassName="Event Handler"
            Uuid="{33E12915-EFCA-4AA7-A188-D694DAD58980}"
            Base="ScriptCanvas::Node"
-           Icon="Editor/Icons/ScriptCanvas/Bus.png"
+           Icon="Icons/ScriptCanvas/Bus.png"
            Version="5"
            VersionConverter="ScriptCanvas::VersionConverters::EBusEventHandlerVersionConverter"
            EventHandler="SerializeContextOnWriteEndHandler&lt;EBusEventHandler&gt;"

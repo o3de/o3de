@@ -31,7 +31,7 @@ namespace AZ
             public:
                 AZ_RTTI(BlendShapeData, "{FF875C22-2E4F-4CE3-BA49-09BF78C70A09}", SceneAPI::DataTypes::IBlendShapeData)
 
-                SCENE_DATA_API static void Reflect(ReflectContext* context);
+                static void Reflect(ReflectContext* context);
 
                 // Maximum number of color sets matches limitation set in assImp (AI_MAX_NUMBER_OF_COLOR_SETS)
                 static constexpr AZ::u8 MaxNumColorSets = 8;

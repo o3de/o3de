@@ -51,12 +51,7 @@ namespace LmbrCentral
 
     const char* MaterialAssetTypeInfo::GetBrowserIcon() const
     {
-        return "Editor/Icons/Components/Decal.svg";
-    }
-
-    AZ::Uuid MaterialAssetTypeInfo::GetComponentTypeId() const
-    {
-        return AZ::Uuid("{BA3890BD-D2E7-4DB6-95CD-7E7D5525567A}");
+        return "Icons/Components/Decal.svg";
     }
 
     // DccMaterialAssetTypeInfo
@@ -93,6 +88,6 @@ namespace LmbrCentral
 
     const char* DccMaterialAssetTypeInfo::GetBrowserIcon() const
     {
-        return "Editor/Icons/Components/Decal.svg";
+        return "Icons/Components/Decal.svg";
     }
 } // namespace LmbrCentral

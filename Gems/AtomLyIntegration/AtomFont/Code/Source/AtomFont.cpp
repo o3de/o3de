@@ -353,6 +353,18 @@ AZ::AtomFont::AtomFont(ISystem* system)
         "Reload all fonts");
 #endif
     AZ::Interface<AzFramework::FontQueryInterface>::Register(this);
+
+    m_sceneEventHandler = AzFramework::ISceneSystem::SceneEvent::Handler(
+        [this](AzFramework::ISceneSystem::EventType eventType, const AZStd::shared_ptr<AzFramework::Scene>& scene)
+        {
+            if (eventType == AzFramework::ISceneSystem::EventType::ScenePendingRemoval)
+            {
+                SceneAboutToBeRemoved(*scene);
+            }
+        });
+    auto sceneSystem = AzFramework::SceneSystemInterface::Get();
+    AZ_Assert(sceneSystem, "Font created before the scene system is available.");
+    sceneSystem->ConnectToEvents(m_sceneEventHandler);
 }
 
 AZ::AtomFont::~AtomFont()
@@ -851,12 +863,14 @@ XmlNodeRef AZ::AtomFont::LoadFontFamilyXml(const char* fontFamilyName, string& o
 
 void AZ::AtomFont::SceneAboutToBeRemoved(AzFramework::Scene& scene)
 {
-    AZ::RPI::Scene* rpiScene = scene.GetSubsystem<AZ::RPI::Scene>();
-
-    AZStd::lock_guard<AZStd::shared_mutex> lock(m_sceneToDynamicDrawMutex);
-    if ( auto it = m_sceneToDynamicDrawMap.find(rpiScene); it != m_sceneToDynamicDrawMap.end())
+    AZ::RPI::ScenePtr* rpiScene = scene.FindSubsystem<AZ::RPI::ScenePtr>();
+    if (rpiScene)
     {
-        m_sceneToDynamicDrawMap.erase(it);
+        AZStd::lock_guard<AZStd::shared_mutex> lock(m_sceneToDynamicDrawMutex);
+        if (auto it = m_sceneToDynamicDrawMap.find(rpiScene->get()); it != m_sceneToDynamicDrawMap.end())
+        {
+            m_sceneToDynamicDrawMap.erase(it);
+        }
     }
 }
 

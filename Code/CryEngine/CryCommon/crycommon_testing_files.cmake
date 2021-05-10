@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Mocks/I3DEngineMock.h
     Mocks/IAudioSystemMock.h
     Mocks/IConsoleMock.h
     Mocks/ICryPakMock.h

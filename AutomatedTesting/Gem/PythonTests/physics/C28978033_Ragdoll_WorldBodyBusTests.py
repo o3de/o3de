@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C28978033
 # Test Case Title : Check that WorldRequestBus works with PhysX ragdoll
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/28978033
+
 
 
 # fmt: off
