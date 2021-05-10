@@ -112,10 +112,10 @@ namespace AZ
 
         AZ::Transform View::GetCameraTransform() const
         {
-            const Quaternion zUpToYUp = Quaternion::CreateRotationX(-AZ::Constants::HalfPi);
+            static const Quaternion yUpToZUp = Quaternion::CreateRotationX(-AZ::Constants::HalfPi);
             return AZ::Transform::CreateFromQuaternionAndTranslation(
-                Quaternion::CreateFromMatrix4x4(m_worldToViewMatrix) * zUpToYUp,
-                m_worldToViewMatrix.GetTranslation()
+                Quaternion::CreateFromMatrix4x4(m_viewToWorldMatrix) * yUpToZUp,
+                m_viewToWorldMatrix.GetTranslation()
             ).GetOrthogonalized();
         }
 
@@ -127,7 +127,7 @@ namespace AZ
             // is in a Z-up world and an identity matrix means that it faces along the positive-Y axis and Z is up.
             // An identity view matrix on the other hand looks along the negative Z-axis.
             // So we adjust for this by rotating the camera world matrix by 90 degrees around the X axis.
-            AZ::Matrix3x4 zUpToYUp = AZ::Matrix3x4::CreateRotationX(AZ::Constants::HalfPi);
+            static AZ::Matrix3x4 zUpToYUp = AZ::Matrix3x4::CreateRotationX(AZ::Constants::HalfPi);
             AZ::Matrix3x4 yUpWorld = cameraTransform * zUpToYUp;
 
             float viewToWorldMatrixRaw[16] = {
