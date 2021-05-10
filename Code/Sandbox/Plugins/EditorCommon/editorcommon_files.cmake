@@ -15,8 +15,6 @@ set(FILES
     EditorCommon.rc
     EditorCommon.qrc
     EditorCommonAPI.h
-    ManipScene.cpp
-    ManipScene.h
     moc.cpp
     QViewportConsumer.h
     TimelineContent.h

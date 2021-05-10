@@ -44,8 +44,6 @@ public:
 
     virtual IMemoryAddressRange* ReserveAddressRange(size_t capacity, const char* sName);
     virtual IPageMappingHeap* CreatePageMappingHeap(size_t addressSpace, const char* sName);
-
-    virtual IDefragAllocator* CreateDefragAllocator();
 };
 #else
 typedef IMemoryManager CCryMemoryManager;
