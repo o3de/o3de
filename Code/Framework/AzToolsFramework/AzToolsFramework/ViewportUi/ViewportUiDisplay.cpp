@@ -18,6 +18,7 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiDisplay.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiCluster.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiTextField.h>
 #include <QWidget>
 
@@ -55,16 +56,16 @@ namespace AzToolsFramework::ViewportUi::Internal
         UnparentWidgets(m_viewportUiElements);
     }
 
-    void ViewportUiDisplay::AddCluster(AZStd::shared_ptr<Cluster> cluster)
+    void ViewportUiDisplay::AddCluster(AZStd::shared_ptr<ButtonGroup> buttonGroup)
     {
-        if (!cluster.get())
+        if (!buttonGroup.get())
         {
             return;
         }
 
-        auto viewportUiCluster = AZStd::make_shared<ViewportUiCluster>(cluster);
+        auto viewportUiCluster = AZStd::make_shared<ViewportUiCluster>(buttonGroup);
         auto id = AddViewportUiElement(viewportUiCluster);
-        cluster->SetViewportUiElementId(id);
+        buttonGroup->SetViewportUiElementId(id);
         PositionViewportUiElementAnchored(id, Qt::AlignTop | Qt::AlignLeft);
     }
 
@@ -90,6 +91,51 @@ namespace AzToolsFramework::ViewportUi::Internal
         if (auto cluster = qobject_cast<ViewportUiCluster*>(GetViewportUiElement(clusterId).get()))
         {
             cluster->Update();
+        }
+    }
+
+    void ViewportUiDisplay::AddSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup)
+    {
+        if (!buttonGroup.get())
+        {
+            return;
+        }
+
+        auto viewportUiSwitcher = AZStd::make_shared<ViewportUiSwitcher>(buttonGroup);
+        auto id = AddViewportUiElement(viewportUiSwitcher);
+        buttonGroup->SetViewportUiElementId(id);
+        PositionViewportUiElementAnchored(id, Qt::AlignTop | Qt::AlignLeft);
+    }
+
+    void ViewportUiDisplay::AddSwitcherButton(const ViewportUiElementId clusterId, Button* button)
+    {
+        if (auto viewportUiSwitcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(clusterId).get()))
+        {
+            viewportUiSwitcher->AddButton(button);
+        }
+    }
+
+    void ViewportUiDisplay::RemoveSwitcherButton(ViewportUiElementId clusterId, ButtonId buttonId)
+    {
+        if (auto cluster = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(clusterId).get()))
+        {
+            cluster->RemoveButton(buttonId);
+        }
+    }
+
+    void ViewportUiDisplay::UpdateSwitcher(ViewportUiElementId clusterId)
+    {
+        if (auto cluster = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(clusterId).get()))
+        {
+            cluster->Update();
+        }
+    }
+
+    void ViewportUiDisplay::SetSwitcherActiveButton(ViewportUiElementId clusterId, ButtonId buttonId)
+    {
+        if (auto viewportUiSwitcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(clusterId).get()))
+        {
+            viewportUiSwitcher->SetActiveButton(buttonId);
         }
     }
 

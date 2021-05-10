@@ -13,7 +13,7 @@
 #include "GradientSignal_precompiled.h"
 
 #include <GradientSignal/GradientImageConversion.h>
-#include <ImageProcessing/PixelFormats.h>
+#include <Atom/ImageProcessing/PixelFormats.h>
 
 namespace
 {
@@ -25,10 +25,10 @@ namespace
         constexpr auto A = 3;
     }
 
-    ImageProcessing::EPixelFormat ExportFormatToPixelFormat(GradientSignal::ExportFormat format)
+    ImageProcessingAtom::EPixelFormat ExportFormatToPixelFormat(GradientSignal::ExportFormat format)
     {
         using namespace GradientSignal;
-        using namespace ImageProcessing;
+        using namespace ImageProcessingAtom;
 
         switch (format)
         {
@@ -49,29 +49,29 @@ namespace
         }
     }
 
-    template <ImageProcessing::EPixelFormat>
+    template <ImageProcessingAtom::EPixelFormat>
     struct Underlying {};
 
     template <>
-    struct Underlying<ImageProcessing::EPixelFormat::ePixelFormat_R8>
+    struct Underlying<ImageProcessingAtom::EPixelFormat::ePixelFormat_R8>
     {
         using type = AZ::u8;
     };
 
     template <>
-    struct Underlying<ImageProcessing::EPixelFormat::ePixelFormat_R16>
+    struct Underlying<ImageProcessingAtom::EPixelFormat::ePixelFormat_R16>
     {
         using type = AZ::u16;
     };
 
     template <>
-    struct Underlying<ImageProcessing::EPixelFormat::ePixelFormat_R32>
+    struct Underlying<ImageProcessingAtom::EPixelFormat::ePixelFormat_R32>
     {
         using type = AZ::u32;
     };
 
     template <>
-    struct Underlying<ImageProcessing::EPixelFormat::ePixelFormat_R32F>
+    struct Underlying<ImageProcessingAtom::EPixelFormat::ePixelFormat_R32F>
     {
         using type = float;
     };
@@ -167,10 +167,10 @@ namespace
         buffer = AZStd::move(newBuffer);
     }
 
-    template <ImageProcessing::EPixelFormat Old>
-    void ConvertBufferType(AZStd::vector<AZ::u8>& buffer, ImageProcessing::EPixelFormat newFormat, bool autoScale, AZStd::pair<float, float> userRange)
+    template <ImageProcessingAtom::EPixelFormat Old>
+    void ConvertBufferType(AZStd::vector<AZ::u8>& buffer, ImageProcessingAtom::EPixelFormat newFormat, bool autoScale, AZStd::pair<float, float> userRange)
     {
-        using namespace ImageProcessing;
+        using namespace ImageProcessingAtom;
 
         switch (newFormat)
         {
@@ -195,9 +195,9 @@ namespace
         }
     }
 
-    ImageProcessing::EPixelFormat ConvertBufferType(AZStd::vector<AZ::u8>& buffer, ImageProcessing::EPixelFormat old, ImageProcessing::EPixelFormat newFormat, bool autoScale, AZStd::pair<float, float> userRange)
+    ImageProcessingAtom::EPixelFormat ConvertBufferType(AZStd::vector<AZ::u8>& buffer, ImageProcessingAtom::EPixelFormat old, ImageProcessingAtom::EPixelFormat newFormat, bool autoScale, AZStd::pair<float, float> userRange)
     {
-        using namespace ImageProcessing;
+        using namespace ImageProcessingAtom;
 
         switch (old)
         {
@@ -356,9 +356,9 @@ namespace
         mem.resize(mem.size() / channels);
     }
 
-    AZStd::size_t GetChannels(ImageProcessing::EPixelFormat format)
+    AZStd::size_t GetChannels(ImageProcessingAtom::EPixelFormat format)
     {
-        using namespace ImageProcessing;
+        using namespace ImageProcessingAtom;
 
         switch (format)
         {
@@ -379,10 +379,10 @@ namespace
     }
 
     template <template <typename> typename Op>
-    ImageProcessing::EPixelFormat CallHelper(ImageProcessing::EPixelFormat format,
+    ImageProcessingAtom::EPixelFormat CallHelper(ImageProcessingAtom::EPixelFormat format,
         GradientSignal::ChannelMask mask, GradientSignal::AlphaExportTransform alphaTransform, AZStd::vector<AZ::u8>& mem)
     {
-        using namespace ImageProcessing;
+        using namespace ImageProcessingAtom;
 
         switch (format)
         {
@@ -447,7 +447,7 @@ namespace
         }
     };
 
-    ImageProcessing::EPixelFormat OperationHelper(GradientSignal::ChannelExportTransform op, ImageProcessing::EPixelFormat format,
+    ImageProcessingAtom::EPixelFormat OperationHelper(GradientSignal::ChannelExportTransform op, ImageProcessingAtom::EPixelFormat format,
         GradientSignal::ChannelMask mask, GradientSignal::AlphaExportTransform alphaTransform, AZStd::vector<AZ::u8>& mem)
     {
         switch (op)

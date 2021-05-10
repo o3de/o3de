@@ -90,9 +90,9 @@ namespace AZ
             AddDrawPacket(drawPacket, depth);
         }
 
-        void View::AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemKeyPair& drawItemKeyPair)
+        void View::AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties)
         {
-            m_drawListContext.AddDrawItem(drawListTag, drawItemKeyPair);
+            m_drawListContext.AddDrawItem(drawListTag, drawItemProperties);
         }
 
         void View::SetWorldToViewMatrix(const AZ::Matrix4x4& worldToView)

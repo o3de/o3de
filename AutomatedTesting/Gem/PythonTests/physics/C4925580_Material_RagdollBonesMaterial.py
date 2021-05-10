@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test Case ID    : C4925580
 # Test Case Title : Verify that Material can be assigned to Ragdoll Bones and they behave as per their material
-# Test Case URL   : https://testrail.agscollab.com/index.php?/cases/view/4925580
+
 
 
 # fmt: off

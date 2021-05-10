@@ -22,7 +22,6 @@
 #include <TimeValue.h>
 #endif
 
-class CMission;
 class CLevelShaderCache;
 class CClouds;
 struct LightingSettings;
@@ -124,18 +123,6 @@ public: // Create from serialization only
     const char* GetTemporaryLevelName() const;
     void DeleteTemporaryLevel();
 
-    void ChangeMission();
-    //! Return currently active Mission.
-    CMission*   GetCurrentMission(bool bSkipLoadingAIWhenSyncingContent = false);
-    //! Get number of missions on Map.
-    int GetMissionCount() const { return m_missions.size(); }
-    //! Get Mission by index.
-    CMission*   GetMission(int index) const { return m_missions[index]; }
-    //! Find Mission by name.
-    CMission*   FindMission(const QString& name) const;
-    //! Makes specified mission current.
-    void SetCurrentMission(CMission* mission);
-
     CLevelShaderCache* GetShaderCache() { return m_pLevelShaderCache; }
     CClouds* GetClouds() { return m_pClouds; }
     void SetWaterColor(const QColor& col) { m_waterColor = col; }
@@ -167,7 +154,6 @@ protected:
 
     virtual void Load(TDocMultiArchive& arrXmlAr, const QString& szFilename);
     virtual void StartStreamingLoad(){}
-    virtual void SyncCurrentMissionContent(bool bRetrieve);
 
     void Save(CXmlArchive& xmlAr);
     void Load(CXmlArchive& xmlAr, const QString& szFilename);
@@ -179,14 +165,8 @@ protected:
     bool LoadEntitiesFromSlice(const QString& sliceFile);
     void SerializeFogSettings(CXmlArchive& xmlAr);
     virtual void SerializeViewSettings(CXmlArchive& xmlAr);
-    void SerializeMissions(TDocMultiArchive& arrXmlAr, QString& currentMission, bool bPartsInXml);
     void SerializeShaderCache(CXmlArchive& xmlAr);
     void SerializeNameSelection(CXmlArchive& xmlAr);
-    void ForceSkyUpdate();
-    //! Add new mission to map.
-    void AddMission(CMission* mission);
-    //! Remove existing mission from map.
-    void RemoveMission(CMission* mission);
     void LogLoadTime(int time);
 
     struct TSaveDocContext
@@ -200,10 +180,8 @@ protected:
 
     virtual bool OnSaveDocument(const QString& lpszPathName);
     virtual void OnFileSaveAs();
-    void LoadTemplates();
     //! called immediately after saving the level.
     void AfterSave();
-    void ClearMissions();
     void RegisterConsoleVariables();
     void OnStartLevelResourceList();
     static void OnValidateSurfaceTypesChanged(ICVar*);
@@ -220,9 +198,7 @@ protected:
     QColor m_waterColor;
     XmlNodeRef m_fogTemplate;
     XmlNodeRef m_environmentTemplate;
-    CMission*   m_mission;
     CClouds* m_pClouds;
-    std::vector<CMission*> m_missions;
     std::list<IDocListener*> m_listeners;
     bool m_bDocumentReady;
     CLevelShaderCache* m_pLevelShaderCache;

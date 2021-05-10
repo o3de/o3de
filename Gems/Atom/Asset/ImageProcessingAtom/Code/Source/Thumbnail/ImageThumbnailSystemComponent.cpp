@@ -129,7 +129,7 @@ namespace ImageProcessingAtom
                 {
                     AZStd::string fullPath;
                     AZ::StringFunc::Path::Join(watchFolder.c_str(), assetInfo.m_relativePath.c_str(), fullPath);
-                    if (RenerThumbnailFromImage(thumbnailKey, thumbnailSize, IImageObjectPtr(LoadImageFromFile(fullPath))))
+                    if (RenderThumbnailFromImage(thumbnailKey, thumbnailSize, IImageObjectPtr(LoadImageFromFile(fullPath))))
                     {
                         return;
                     }
@@ -139,7 +139,7 @@ namespace ImageProcessingAtom
             auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(thumbnailKey.data());
             if (productKey)
             {
-                if (RenerThumbnailFromImage(thumbnailKey, thumbnailSize, Utils::LoadImageFromImageAsset(productKey->GetAssetId())))
+                if (RenderThumbnailFromImage(thumbnailKey, thumbnailSize, Utils::LoadImageFromImageAsset(productKey->GetAssetId())))
                 {
                     return;
                 }
@@ -149,7 +149,7 @@ namespace ImageProcessingAtom
                 thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
         }
 
-        bool ImageThumbnailSystemComponent::RenerThumbnailFromImage(
+        bool ImageThumbnailSystemComponent::RenderThumbnailFromImage(
             AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize, IImageObjectPtr previewImage) const
         {
             if (!previewImage)

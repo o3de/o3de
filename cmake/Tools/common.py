@@ -162,7 +162,7 @@ def validate_ap_config_asset_type_enabled(engine_root, bootstrap_asset_type):
     :return:    True if the asset type was enabled, false if not
     """
     
-    ap_config_file = os.path.join(engine_root, 'AssetProcessorPlatformConfig.setreg')
+    ap_config_file = os.path.join(engine_root, 'Registry', 'AssetProcessorPlatformConfig.setreg')
     if not os.path.isfile(ap_config_file):
         raise LmbrCmdError("Missing required asset processor configuration file at '{}'".format(engine_root),
                            ERROR_CODE_FILE_NOT_FOUND)

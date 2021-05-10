@@ -109,7 +109,6 @@ namespace MaterialEditor
 
     void MaterialDocumentSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TargetManagerService", 0x6d5708bc));
         required.push_back(AZ_CRC("AssetProcessorToolsConnection", 0x734669bc));
         required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
         required.push_back(AZ_CRC("PropertyManagerService", 0x63a3d7ad));
@@ -135,29 +134,14 @@ namespace MaterialEditor
         m_documentMap.clear();
         MaterialDocumentSystemRequestBus::Handler::BusConnect();
         MaterialDocumentNotificationBus::Handler::BusConnect();
-        AzFramework::TmMsgBus::Handler::BusConnect(AZ_CRC("OpenInMaterialEditor", 0x9f92aac8));
     }
 
     void MaterialDocumentSystemComponent::Deactivate()
     {
         AZ::TickBus::Handler::BusDisconnect();
-        AzFramework::TmMsgBus::Handler::BusDisconnect();
         MaterialDocumentNotificationBus::Handler::BusDisconnect();
         MaterialDocumentSystemRequestBus::Handler::BusDisconnect();
         m_documentMap.clear();
-    }
-
-    void MaterialDocumentSystemComponent::OnReceivedMsg(AzFramework::TmMsgPtr msg)
-    {
-        if (msg->GetId() == AZ_CRC("OpenInMaterialEditor", 0x9f92aac8))
-        {
-            const char* documentPath = reinterpret_cast<const char*>(msg->GetCustomBlob());
-            MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::OpenDocument, documentPath);
-        }
-        else
-        {
-            AZ_Assert(false, "We received a message of an unrecognized class type!");
-        }
     }
 
     AZ::Uuid MaterialDocumentSystemComponent::CreateDocument()

@@ -19,8 +19,6 @@ namespace AzToolsFramework
 {
     namespace ViewportInteraction
     {
-        const AZ::s32 g_mainViewportEntityDebugDisplayId = AZ_CRC("MainViewportEntityDebugDisplayId", 0x58ae7fe8);
-
         void ViewportInteractionReflect(AZ::ReflectContext* context)
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))

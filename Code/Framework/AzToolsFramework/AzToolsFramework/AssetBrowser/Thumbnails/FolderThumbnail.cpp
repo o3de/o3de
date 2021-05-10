@@ -10,8 +10,8 @@
 *
 */
 
+#include <AzCore/Utils/Utils.h>
 #include <AzCore/Debug/Trace.h>
-#include <AzCore/StringFunc/StringFunc.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/FolderThumbnail.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <QPixmap>
@@ -50,11 +50,11 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         // FolderThumbnail
         //////////////////////////////////////////////////////////////////////////
-        static constexpr const char* FolderIconPath = "Editor/Icons/AssetBrowser/Folder_16.svg";
-        static constexpr const char* GemIconPath = "Editor/Icons/AssetBrowser/GemFolder_16.svg";
+        static constexpr const char* FolderIconPath = "Assets/Editor/Icons/AssetBrowser/Folder_16.svg";
+        static constexpr const char* GemIconPath = "Assets/Editor/Icons/AssetBrowser/GemFolder_16.svg";
 
-        FolderThumbnail::FolderThumbnail(SharedThumbnailKey key, int thumbnailSize)
-            : Thumbnail(key, thumbnailSize)
+        FolderThumbnail::FolderThumbnail(SharedThumbnailKey key)
+            : Thumbnail(key)
         {}
 
         void FolderThumbnail::LoadThread()
@@ -62,14 +62,10 @@ namespace AzToolsFramework
             auto folderKey = azrtti_cast<const FolderThumbnailKey*>(m_key.data());
             AZ_Assert(folderKey, "Incorrect key type, excpected FolderThumbnailKey");
 
-            const char* engineRoot = nullptr;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-            AZ_Assert(engineRoot, "Engine Root not initialized");
             const char* folderIcon = folderKey->IsGem() ? GemIconPath : FolderIconPath;
-            AZStd::string absoluteIconPath;
-            AZ::StringFunc::Path::Join(engineRoot, folderIcon, absoluteIconPath);
-
-            m_icon = QIcon(absoluteIconPath.c_str());
+            auto absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / folderIcon;
+            m_pixmap.load(absoluteIconPath.c_str());
+            m_state = m_pixmap.isNull() ? State::Failed : State::Ready;
         }
 
         //////////////////////////////////////////////////////////////////////////

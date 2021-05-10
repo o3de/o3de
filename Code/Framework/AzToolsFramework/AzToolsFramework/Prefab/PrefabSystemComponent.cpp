@@ -663,8 +663,9 @@ namespace AzToolsFramework
             newLink.SetSourceTemplateId(linkSourceId);
             newLink.SetInstanceName(instanceAlias.c_str());
             newLink.GetLinkDom().SetObject();
-            newLink.GetLinkDom().AddMember(rapidjson::StringRef(PrefabDomUtils::SourceName),
-                rapidjson::StringRef(sourceTemplate.GetFilePath().c_str()), newLink.GetLinkDom().GetAllocator());
+            newLink.GetLinkDom().AddMember(
+                rapidjson::StringRef(PrefabDomUtils::SourceName), rapidjson::StringRef(sourceTemplate.GetFilePath().c_str()),
+                newLink.GetLinkDom().GetAllocator());
 
             if (linkPatch && linkPatch->get().IsArray() && !(linkPatch->get().Empty()))
             {
@@ -720,6 +721,8 @@ namespace AzToolsFramework
 
         TemplateId PrefabSystemComponent::GetTemplateIdFromFilePath(AZ::IO::PathView filePath) const
         {
+            AZ_Assert(!filePath.IsAbsolute(), "Prefab - GetTemplateIdFromFilePath was passed an absolute path. Prefabs use paths relative to the project folder.");
+
             auto found = m_templateFilePathToIdMap.find(filePath);
             if (found != m_templateFilePathToIdMap.end())
             {
@@ -770,8 +773,8 @@ namespace AzToolsFramework
                 return false;
             }
 
-            Template& sourceTemplate = sourceTemplateReference->get();
 #if defined(AZ_ENABLE_TRACING)
+            Template& sourceTemplate = sourceTemplateReference->get();
             Template& targetTemplate = targetTemplateReference->get();
 #endif
 
@@ -782,21 +785,20 @@ namespace AzToolsFramework
             link.SetInstanceName(instanceName.data());
 
             PrefabDomValue& instance = instanceIterator->value;
+            AZ_Assert(instance.IsObject(), "Nested instance DOM provided is not a valid JSON object.");
+            PrefabDomValueReference sourceTemplateName = PrefabDomUtils::FindPrefabDomValue(instance, PrefabDomUtils::SourceName);
+            AZ_Assert(sourceTemplateName, "Couldn't find source template name in the DOM of the nested instance while creating a link.");
+            AZ_Assert(
+                sourceTemplateName->get() == sourceTemplate.GetFilePath().c_str(),
+                "The name of the source template in the nested instance DOM does not match the name of the source template already loaded");
 
             PrefabDomValueReference patchesReference = PrefabDomUtils::FindPrefabDomValue(instance, PrefabDomUtils::PatchesName);
-            if (!patchesReference.has_value())
+            if (patchesReference.has_value())
             {
-                PrefabDom& newLinkDom = link.GetLinkDom();
-
-                newLinkDom.SetObject();
-
-                newLinkDom.AddMember(rapidjson::StringRef(PrefabDomUtils::SourceName),
-                    rapidjson::StringRef(sourceTemplate.GetFilePath().c_str()), newLinkDom.GetAllocator());
+                AZ_Assert(patchesReference->get().IsArray(), "Patches in the nested instance DOM are not represented as an array.");
             }
-            else
-            {
-                link.SetTemplatePatches(patchesReference->get());
-            }
+
+            link.SetLinkDom(instance);
 
             if (!link.UpdateTarget())
             {
