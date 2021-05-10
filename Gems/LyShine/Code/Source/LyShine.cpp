@@ -166,11 +166,6 @@ CLyShine::CLyShine(ISystem* system)
 
     UiAnimationSystem::StaticInitialize();
 
-    if (m_system->GetIRenderer())
-    {
-        m_system->GetIRenderer()->AddRenderDebugListener(this);
-    }
-
     AzFramework::InputChannelEventListener::Connect();
     AzFramework::InputTextEventListener::Connect();
     UiCursorBus::Handler::BusConnect();
@@ -253,11 +248,6 @@ CLyShine::~CLyShine()
     AZ::TickBus::Handler::BusDisconnect();
     AzFramework::InputTextEventListener::Disconnect();
     AzFramework::InputChannelEventListener::Disconnect();
-
-    if (m_system->GetIRenderer())
-    {
-        m_system->GetIRenderer()->RemoveRenderDebugListener(this);
-    }
 
     UiCanvasComponent::Shutdown();
 
