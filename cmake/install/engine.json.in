@@ -1,0 +1,7 @@
+{
+    "engine_name": "@LY_VERSION_ENGINE_NAME@",
+    "FileVersion": 1,
+    "O3DEVersion": "@LY_VERSION_STRING@",
+    "O3DECopyrightYear": @LY_VERSION_COPYRIGHT_YEAR@,
+    "O3DEBuildNumber": @LY_VERSION_BUILD_NUMBER@
+}
