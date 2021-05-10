@@ -205,9 +205,8 @@ class DedicatedWinLauncher(WinLauncher):
         """
         assert self.workspace.project is not None, (
             'Project cannot be NoneType - please specify a project name string.')
-        return "C:\Program Files\Sublime Text 3\sublime_text.exe"
-        # return os.path.join(f"{self.workspace.paths.build_directory()}",
-        #                     f"{self.workspace.project}.ServerLauncher.exe")
+        return os.path.join(f"{self.workspace.paths.build_directory()}",
+                            f"{self.workspace.project}.ServerLauncher.exe")
 
 
 class WinEditor(WinLauncher):
