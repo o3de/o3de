@@ -27,6 +27,7 @@ ly_add_target(
 @RUNTIME_DEPENDENCIES_PLACEHOLDER@
 )
 
-foreach(config @CMAKE_CONFIGURATION_TYPES@)
+set(configs @CMAKE_CONFIGURATION_TYPES@)
+foreach(config ${configs})
     include("@NAME_PLACEHOLDER@_${config}.cmake" OPTIONAL)
 endforeach()
