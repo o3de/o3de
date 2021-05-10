@@ -287,18 +287,6 @@ int DebugCallStack::handleException(EXCEPTION_POINTERS* exception_pointer)
             gEnv->szDebugStatus[SSystemGlobalEnvironment::MAX_DEBUG_STRING_LENGTH - 1] = '\0';
             WriteLineToLog("Debug Status: %s", gEnv->szDebugStatus);
         }
-
-        if (gEnv->pRenderer)
-        {
-            ID3DDebugMessage* pMsg = 0;
-            gEnv->pRenderer->EF_Query(EFQ_GetLastD3DDebugMessage, pMsg);
-            if (pMsg)
-            {
-                const char* pStr = pMsg->GetMessage();
-                WriteLineToLog("Last D3D debug message: %s", pStr ? pStr : "#unknown#");
-                SAFE_RELEASE(pMsg);
-            }
-        }
     }
 
     firstTime = false;
@@ -831,17 +819,6 @@ int DebugCallStack::SubmitBug(EXCEPTION_POINTERS* exception_pointer)
     int ret = IDB_EXIT;
 
     assert(!hwndException);
-
-    // If in full screen minimize render window
-    {
-        ICVar* pFullscreen = (gEnv && gEnv->pConsole) ? gEnv->pConsole->GetCVar("r_Fullscreen") : 0;
-        if (pFullscreen && pFullscreen->GetIVal() != 0 && gEnv->pRenderer && gEnv->pRenderer->GetHWND())
-        {
-            ::ShowWindow((HWND)gEnv->pRenderer->GetHWND(), SW_MINIMIZE);
-        }
-    }
-
-    //hwndException = CreateDialog( gDLLHandle,MAKEINTRESOURCE(IDD_EXCEPTION),NULL,NULL );
 
     RemoveOldFiles();
 
