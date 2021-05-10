@@ -335,14 +335,6 @@ public:
         m_updateCallbacks[id] = [action = m_actions.value(id), fn] { fn(action); };
     }
 
-    template<typename Fn>
-    void RegisterUpdateCallback(int id, Fn&& fn)
-    {
-        Q_ASSERT(m_actions.contains(id));
-        auto f = AZStd::bind(fn, m_actions.value(id));
-        m_updateCallbacks[id] = f;
-    }
-
     template<typename T>
     void RegisterActionHandler(int id, T method)
     {
