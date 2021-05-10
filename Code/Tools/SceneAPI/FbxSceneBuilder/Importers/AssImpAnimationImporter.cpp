@@ -22,11 +22,6 @@
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpAnimationImporter.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpImporterUtilities.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/Utilities/RenamedNodesMap.h>
-#include <SceneAPI/FbxSDKWrapper/FbxAnimCurveWrapper.h>
-#include <SceneAPI/FbxSDKWrapper/FbxAnimLayerWrapper.h>
-#include <SceneAPI/FbxSDKWrapper/FbxNodeWrapper.h>
-#include <SceneAPI/FbxSDKWrapper/FbxSceneWrapper.h>
-#include <SceneAPI/FbxSDKWrapper/FbxTimeSpanWrapper.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneData/GraphData/AnimationData.h>
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
@@ -156,7 +151,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<AssImpAnimationImporter, SceneCore::LoadingComponent>()->Version(2); // [LYN-2281] Skinned mesh loading fixes
+                    serializeContext->Class<AssImpAnimationImporter, SceneCore::LoadingComponent>()->Version(3); // [LYN-3349] Rolling back rotation change
                 }
             }
 

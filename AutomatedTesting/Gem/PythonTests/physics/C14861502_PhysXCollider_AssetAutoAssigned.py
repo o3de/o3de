@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID : C14861502
 Test Case Title : Verify PxMesh is auto-assigned in collider when Mesh is assigned in Rendering Mesh component
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/14861502
+
 """
 
 
@@ -62,8 +62,8 @@ def C14861502_PhysXCollider_AssetAutoAssigned():
     # Open 3D Engine Imports
     import azlmbr.legacy.general as general
 
-    MESH_ASSET_PATH = os.path.join("Objects", "SphereBot", "r0-b_body.cgf")
-    MESH_PROPERTY_PATH = "MeshComponentRenderNode|Mesh asset"
+    MESH_ASSET_PATH = os.path.join("Objects", "SphereBot", "r0-b_body.azmodel")
+    MESH_PROPERTY_PATH = "Controller|Configuration|Mesh Asset"
     TESTED_PROPERTY_PATH = "Shape Configuration|Asset|PhysX Mesh"
 
     helper.init_idle()

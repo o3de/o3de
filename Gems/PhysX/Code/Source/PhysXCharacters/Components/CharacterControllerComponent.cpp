@@ -87,7 +87,7 @@ namespace PhysX
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         Physics::CharacterRequestBus::Handler::BusConnect(GetEntityId());
         Physics::CollisionFilteringRequestBus::Handler::BusConnect(GetEntityId());
-        Physics::WorldBodyRequestBus::Handler::BusConnect(GetEntityId());
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 
     void CharacterControllerComponent::Deactivate()
@@ -95,7 +95,7 @@ namespace PhysX
         DestroyController();
 
         Physics::CollisionFilteringRequestBus::Handler::BusDisconnect();
-        Physics::WorldBodyRequestBus::Handler::BusDisconnect();
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         Physics::CharacterRequestBus::Handler::BusDisconnect();
     }
@@ -215,9 +215,18 @@ namespace PhysX
         return AZ::Aabb::CreateNull();
     }
 
-    AzPhysics::SimulatedBody* CharacterControllerComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* CharacterControllerComponent::GetSimulatedBody()
     {
         return GetCharacter();
+    }
+
+    AzPhysics::SimulatedBodyHandle CharacterControllerComponent::GetSimulatedBodyHandle() const
+    {
+        if (m_controller)
+        {
+            return m_controller->m_bodyHandle;
+        }
+        return AzPhysics::InvalidSimulatedBodyHandle;
     }
 
     AzPhysics::SceneQueryHit CharacterControllerComponent::RayCast(const AzPhysics::RayCastRequest& request)
@@ -412,7 +421,6 @@ namespace PhysX
         AZ::TransformBus::EventResult(entityTranslation, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
         m_characterConfig->m_position = entityTranslation;
 
-        AZ_Assert(m_controller == nullptr, "Calling create CharacterControllerComponent::CreateController() with an already created controller.");
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             AzPhysics::SimulatedBodyHandle bodyHandle = sceneInterface->AddSimulatedBody(defaultSceneHandle, m_characterConfig.get());
@@ -451,13 +459,11 @@ namespace PhysX
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             sceneInterface->RemoveSimulatedBody(m_controller->m_sceneOwner, m_controller->m_bodyHandle);
-            m_controller = nullptr;
         }
+        m_controller = nullptr;
 
         m_preSimulateHandler.Disconnect();
 
         CharacterControllerRequestBus::Handler::BusDisconnect();
-
-        Physics::WorldBodyNotificationBus::Event(GetEntityId(), &Physics::WorldBodyNotifications::OnPhysicsDisabled);
     }
 } // namespace PhysX

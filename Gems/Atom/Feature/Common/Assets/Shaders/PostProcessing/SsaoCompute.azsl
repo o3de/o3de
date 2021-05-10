@@ -277,6 +277,8 @@ void MainCS(uint3 thread_id : SV_GroupThreadID, uint3 group_id : SV_GroupID, uin
 
         // Gather depth values
         float2 depthGatherUV = mad(float2(ldsPosition), GetPixelSize(), ldsOffsetUV);
+        // Gather on some GPUs will fall onto same pixels in adjacent coordinates due to rounding errors
+        depthGatherUV += GetHalfPixelSize();
         float4 depthGather = PassSrg::m_linearDepth.Gather(PassSrg::PointSampler, depthGatherUV);
 
         WriteDepthGatherToLDS(ldsPosition, depthGather);

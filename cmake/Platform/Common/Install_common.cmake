@@ -11,10 +11,21 @@
 
 set(CMAKE_INSTALL_MESSAGE NEVER) # Simplify messages to reduce output noise
 
+ly_set(LY_DEFAULT_INSTALL_COMPONENT "Core")
+
 #! ly_install_target: registers the target to be installed by cmake install.
 #
 # \arg:NAME name of the target
+# \arg:COMPONENT the grouping string of the target used for splitting up the install
+#                    into smaller packages.
+# All other parameters are forwarded to ly_generate_target_find_file
 function(ly_install_target ly_install_target_NAME)
+
+    set(options)
+    set(oneValueArgs NAMESPACE COMPONENT)
+    set(multiValueArgs INCLUDE_DIRECTORIES BUILD_DEPENDENCIES RUNTIME_DEPENDENCIES COMPILE_DEFINITIONS)
+
+    cmake_parse_arguments(ly_install_target "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     # All include directories marked PUBLIC or INTERFACE will be installed
     set(include_location "include")
@@ -29,25 +40,49 @@ function(ly_install_target ly_install_target_NAME)
         string(APPEND include_location "/${relative_path}")
     endif()
 
+    # Get the output folders, archive is always the same, but runtime/library can be in subfolders defined per target
+    file(RELATIVE_PATH archive_output_directory ${CMAKE_BINARY_DIR} ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
+
+    get_target_property(target_runtime_output_directory ${ly_install_target_NAME} RUNTIME_OUTPUT_DIRECTORY)
+    if(target_runtime_output_directory)
+        file(RELATIVE_PATH target_runtime_output_subdirectory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} ${target_runtime_output_directory})
+    endif()
+    file(RELATIVE_PATH runtime_output_directory ${CMAKE_BINARY_DIR} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+    get_target_property(target_library_output_directory ${ly_install_target_NAME} LIBRARY_OUTPUT_DIRECTORY)
+    if(target_library_output_directory)
+        file(RELATIVE_PATH target_library_output_subdirectory ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${target_library_output_directory})
+    endif()
+    file(RELATIVE_PATH library_output_directory ${CMAKE_BINARY_DIR} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+
+    install(
+        TARGETS ${ly_install_target_NAME}
+        ARCHIVE
+            DESTINATION ${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>
+            COMPONENT ${ly_install_target_COMPONENT}
+        LIBRARY
+            DESTINATION ${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}
+            COMPONENT ${ly_install_target_COMPONENT}
+        RUNTIME
+            DESTINATION ${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_runtime_output_subdirectory}
+            COMPONENT ${ly_install_target_COMPONENT}
+        PUBLIC_HEADER
+            DESTINATION ${include_location}
+            COMPONENT ${ly_install_target_COMPONENT}
+    )
+
     ly_generate_target_find_file(
         NAME ${ly_install_target_NAME}
         ${ARGN}
     )
-
-    install(
-        TARGETS ${ly_install_target_NAME}
-        LIBRARY DESTINATION lib/$<CONFIG>
-        ARCHIVE DESTINATION lib/$<CONFIG>
-        RUNTIME DESTINATION bin/$<CONFIG>
-        PUBLIC_HEADER DESTINATION ${include_location}
-    )
-   
     ly_generate_target_config_file(${ly_install_target_NAME})
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${ly_install_target_NAME}_$<CONFIG>.cmake"
         DESTINATION cmake_autogen/${ly_install_target_NAME}
+        COMPONENT ${ly_install_target_COMPONENT}
     )
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/Find${ly_install_target_NAME}.cmake"
         DESTINATION cmake
+        COMPONENT ${ly_install_target_COMPONENT}
     )
 
 endfunction()
@@ -64,7 +99,7 @@ endfunction()
 # \arg:RUNTIME_DEPENDENCIES list of dependencies this target depends on at runtime
 # \arg:COMPILE_DEFINITIONS list of compilation definitions this target will use to compile
 function(ly_generate_target_find_file)
-    
+
     set(options)
     set(oneValueArgs NAME NAMESPACE)
     set(multiValueArgs INCLUDE_DIRECTORIES COMPILE_DEFINITIONS BUILD_DEPENDENCIES RUNTIME_DEPENDENCIES)
@@ -81,7 +116,7 @@ function(ly_generate_target_find_file)
     # only INTERFACE properties can be exposed on imported targets
     ly_strip_private_properties(COMPILE_DEFINITIONS_PLACEHOLDER ${ly_generate_target_find_file_COMPILE_DEFINITIONS})
     ly_strip_private_properties(include_directories_interface_props ${ly_generate_target_find_file_INCLUDE_DIRECTORIES})
-    ly_strip_private_properties(BUILD_DEPENDENCIES_PLACEHOLDER ${ly_generate_target_find_file_BUILD_DEPENDENCIES}) 
+    ly_strip_private_properties(BUILD_DEPENDENCIES_PLACEHOLDER ${ly_generate_target_find_file_BUILD_DEPENDENCIES})
 
     if(ly_generate_target_find_file_NAMESPACE)
         set(NAMESPACE_PLACEHOLDER "NAMESPACE ${ly_generate_target_find_file_NAMESPACE}")
@@ -111,29 +146,30 @@ endfunction()
 # These per config files will be included by the target's find file to set the location of the binary/
 # \arg:NAME name of the target
 function(ly_generate_target_config_file NAME)
-    
+
     get_target_property(target_type ${NAME} TYPE)
-    
-    unset(target_file_contents)
+
+    set(target_file_contents "# Generated by O3DE install\n\n")
     if(NOT target_type STREQUAL INTERFACE_LIBRARY)
 
-        set(BINARY_DIR_OUTPUTS EXECUTABLE APPLICATION)
-        set(target_file_contents "")
-        if(${target_type} IN_LIST BINARY_DIR_OUTPUTS)
-            set(out_file_generator TARGET_FILE_NAME)
-            set(out_dir bin)
-        else()
-            set(out_file_generator TARGET_LINKER_FILE_NAME)
-            set(out_dir lib)
+        unset(target_location)
+        set(runtime_types EXECUTABLE APPLICATION)
+        if(target_type IN_LIST runtime_types)
+            string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_runtime_output_subdirectory}/$<TARGET_FILE_NAME:${NAME}>\"")
+        elseif(target_type STREQUAL MODULE_LIBRARY)
+            string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${NAME}>\"")
+        elseif(target_type STREQUAL SHARED_LIBRARY)
+            string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${NAME}>\"")
+            string(APPEND target_file_contents "ly_add_dependencies(${NAME} \"\${LY_ROOT_FOLDER}/${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${NAME}>\")\n")
+        else() # STATIC_LIBRARY, OBJECT_LIBRARY, INTERFACE_LIBRARY
+            string(APPEND target_location "\"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${NAME}>\"")
         endif()
 
-        string(APPEND target_file_contents 
-"# Generated by O3DE install
-
-set(target_location \"\${LY_ROOT_FOLDER}/${out_dir}/$<CONFIG>/$<${out_file_generator}:${NAME}>\")
-set_target_properties(${NAME} 
+        string(APPEND target_file_contents
+"set(target_location ${target_location})
+set_target_properties(${NAME}
     PROPERTIES
-        $<$<CONFIG:profile>:IMPORTED_LOCATION \"\${target_location}>\"
+        $<$<CONFIG:profile>:IMPORTED_LOCATION \"\${target_location}\">
         IMPORTED_LOCATION_$<UPPER_CASE:$<CONFIG>> \"\${target_location}\"
 )
 if(EXISTS \"\${target_location}\")
@@ -172,7 +208,7 @@ endfunction()
 
 #! ly_setup_o3de_install: orchestrates the installation of the different parts. This is the entry point from the root CMakeLists.txt
 function(ly_setup_o3de_install)
-    
+
     ly_setup_cmake_install()
     ly_setup_target_generator()
     ly_setup_others()
@@ -184,14 +220,16 @@ function(ly_setup_cmake_install)
 
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/cmake"
         DESTINATION .
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
         REGEX "Findo3de.cmake" EXCLUDE
         REGEX "Platform\/.*\/BuiltInPackages_.*\.cmake" EXCLUDE
     )
     install(
-        FILES 
+        FILES
             "${CMAKE_SOURCE_DIR}/CMakeLists.txt"
             "${CMAKE_SOURCE_DIR}/engine.json"
         DESTINATION .
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
     # Collect all Find files that were added with ly_add_external_target_path
@@ -204,6 +242,7 @@ function(ly_setup_cmake_install)
     endforeach()
     install(FILES ${additional_find_files}
         DESTINATION cmake/3rdParty
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
     # Findo3de.cmake file: we generate a different Findo3de.camke file than the one we have in cmake. This one is going to expose all
@@ -218,8 +257,9 @@ function(ly_setup_cmake_install)
 
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/cmake/Findo3de.cmake"
         DESTINATION cmake
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
-    
+
     # BuiltInPackage_<platform>.cmake: since associations could happen in any cmake file across the engine. We collect
     # all the associations in ly_associate_package and then generate them into BuiltInPackages_<platform>.cmake. This
     # will consolidate all associations in one file
@@ -237,6 +277,7 @@ function(ly_setup_cmake_install)
     )
     install(FILES "${pal_builtin_file}"
         DESTINATION cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
 endfunction()
@@ -245,22 +286,42 @@ endfunction()
 function(ly_setup_others)
 
     # List of directories we want to install relative to engine root
-    set(DIRECTORIES_TO_INSTALL Tools/LyTestTools Tools/RemoteConsole ctest_scripts scripts)
+    set(DIRECTORIES_TO_INSTALL Tools/LyTestTools Tools/RemoteConsole)
     foreach(dir ${DIRECTORIES_TO_INSTALL})
-        
+
         get_filename_component(install_path ${dir} DIRECTORY)
         if (NOT install_path)
             set(install_path .)
         endif()
-        
+
         install(DIRECTORY "${CMAKE_SOURCE_DIR}/${dir}"
             DESTINATION ${install_path}
+            COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
         )
 
     endforeach()
 
+    # Scripts
+    file(GLOB o3de_scripts "${CMAKE_SOURCE_DIR}/scripts/o3de.*")
+    install(FILES
+        ${o3de_scripts}
+        DESTINATION ./scripts
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+    )
+
+    install(DIRECTORY
+        ${CMAKE_SOURCE_DIR}/scripts/bundler
+        ${CMAKE_SOURCE_DIR}/scripts/project_manager
+        DESTINATION ./scripts
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN "CMakeLists.txt" EXCLUDE
+        PATTERN "tests" EXCLUDE
+    )
+
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/python"
         DESTINATION .
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
         REGEX "downloaded_packages" EXCLUDE
         REGEX "runtime" EXCLUDE
     )
@@ -268,31 +329,59 @@ function(ly_setup_others)
     # Registry
     install(DIRECTORY
         ${CMAKE_CURRENT_BINARY_DIR}/bin/$<CONFIG>/Registry
-        DESTINATION ./bin/$<CONFIG>
+        DESTINATION ./bin/${PAL_PLATFORM_NAME}/$<CONFIG>
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
     install(DIRECTORY
-        # This one will change soon, Engine/Registry files will be relocated to Registry
-        ${CMAKE_SOURCE_DIR}/Engine/Registry
-        DESTINATION ./Engine
-    )
-    install(FILES
-        ${CMAKE_SOURCE_DIR}/AssetProcessorPlatformConfig.setreg
-        DESTINATION ./Registry
+        ${CMAKE_SOURCE_DIR}/Registry
+        DESTINATION .
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
-    # Qt Binaries
-    set(QT_BIN_DIRS bearer iconengines imageformats platforms styles translations)
-    foreach(qt_dir ${QT_BIN_DIRS})
-        install(DIRECTORY
-            ${CMAKE_CURRENT_BINARY_DIR}/bin/$<CONFIG>/${qt_dir}
-            DESTINATION ./bin/$<CONFIG>
-        )
+    # Engine Source Assets
+    install(DIRECTORY
+        ${CMAKE_SOURCE_DIR}/Assets
+        DESTINATION .
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+    )
+
+    # Gem Source Assets and Registry
+    # Find all gem directories relative to the CMake Source Dir
+    file(
+        GLOB_RECURSE
+        gems_assets_path
+        LIST_DIRECTORIES TRUE
+        RELATIVE "${CMAKE_SOURCE_DIR}/"
+        "Gems/*"
+    )
+    list(FILTER gems_assets_path INCLUDE REGEX "/(Assets|Registry)$")
+
+    foreach (gem_assets_path ${gems_assets_path})
+        set(gem_abs_assets_path ${CMAKE_SOURCE_DIR}/${gem_assets_path}/)
+        if (EXISTS ${gem_abs_assets_path})
+            # The trailing slash is IMPORTANT here as that is needed to prevent
+            # the "Assets" folder from being copied underneath the <gem-root>/Assets folder
+            install(DIRECTORY ${gem_abs_assets_path}
+                DESTINATION ${gem_assets_path}
+                COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+            )
+        endif()
     endforeach()
+
+    # Qt Binaries
+    set(QT_DIRS bearer iconengines imageformats platforms styles translations)
+    list(TRANSFORM QT_DIRS PREPEND "${CMAKE_CURRENT_BINARY_DIR}/bin/$<CONFIG>/" OUTPUT_VARIABLE QT_BIN_DIRS)
+    install(DIRECTORY
+        ${QT_BIN_DIRS}
+        DESTINATION ./bin/${PAL_PLATFORM_NAME}/$<CONFIG>
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+    )
 
     # Templates
     install(DIRECTORY
         ${CMAKE_SOURCE_DIR}/Templates
         DESTINATION .
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
     # Misc
@@ -301,6 +390,7 @@ function(ly_setup_others)
         ${CMAKE_SOURCE_DIR}/LICENSE.txt
         ${CMAKE_SOURCE_DIR}/README.md
         DESTINATION .
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
 endfunction()
@@ -315,12 +405,15 @@ function(ly_setup_target_generator)
         ${CMAKE_SOURCE_DIR}/Code/LauncherUnified/LauncherProject.cpp
         ${CMAKE_SOURCE_DIR}/Code/LauncherUnified/StaticModules.in
         DESTINATION LauncherGenerator
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/Code/LauncherUnified/Platform
         DESTINATION LauncherGenerator
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
     install(FILES ${CMAKE_SOURCE_DIR}/Code/LauncherUnified/FindLauncherGenerator.cmake
         DESTINATION cmake
+        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
 endfunction()

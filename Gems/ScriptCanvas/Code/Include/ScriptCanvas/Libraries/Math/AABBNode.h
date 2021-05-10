@@ -41,7 +41,7 @@ namespace ScriptCanvas
                         {
                             editContext->Class<AABB>("AABB", "An axis-aligned bounding box value")
                                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                                ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/AABB.png")
+                                ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/AABB.png")
                                 ;
                         }
                     }

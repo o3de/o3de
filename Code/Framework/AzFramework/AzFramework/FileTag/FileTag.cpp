@@ -12,11 +12,13 @@
 
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/string/wildcard.h>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzCore/XML/rapidxml.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/FileTagAsset.h>
@@ -31,7 +33,7 @@ namespace AzFramework
         const char* ExcludeFileName = "exclude";
         const char* IncludeFileName = "include";
         const char* FileTags[] = { "ignore", "error", "productdependency", "editoronly", "shader" };
-        const char EngineName[] = "Engine";
+        constexpr AZ::IO::PathView EngineAssetSourceRelPath = "Assets/Engine";
 
         void LowerCaseFileTags(AZStd::vector<AZStd::string>& fileTags)
         {
@@ -107,7 +109,7 @@ namespace AzFramework
         }
 
         AZ::Outcome<AZStd::string, AZStd::string> FileTagManager::AddTagsInternal(AZStd::string filePath, FileTagType fileTagType, AZStd::vector<AZStd::string> fileTags, AzFramework::FileTag::FilePatternType filePatternType)
-        {   
+        {
             if (!NormalizeFileAndLowerCaseTags(filePath, filePatternType, fileTags))
             {
                 return AZ::Failure(AZStd::string::format("Unable to normalize file (%s). Unable to remove the file.\n", filePath.c_str()));
@@ -243,11 +245,10 @@ namespace AzFramework
 
         AZStd::string FileTagQueryManager::GetDefaultFileTagFilePath(FileTagType fileTagType)
         {
-            AZStd::string destinationFilePath;
-            const char* engineRoot = nullptr;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-            AzFramework::StringFunc::Path::ConstructFull(engineRoot, EngineName, fileTagType == FileTagType::Exclude ? ExcludeFileName : IncludeFileName, AzFramework::FileTag::FileTagAsset::Extension(), destinationFilePath, true);
-            return destinationFilePath;
+            auto destinationFilePath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / EngineAssetSourceRelPath;
+            destinationFilePath /= fileTagType == FileTagType::Exclude ? ExcludeFileName : IncludeFileName;
+            destinationFilePath.ReplaceExtension(AzFramework::FileTag::FileTagAsset::Extension());
+            return destinationFilePath.String();
         }
 
         bool FileTagQueryManager::Load(const AZStd::string& filePath)

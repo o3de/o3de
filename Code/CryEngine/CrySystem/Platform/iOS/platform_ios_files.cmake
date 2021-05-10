@@ -13,8 +13,6 @@ set(FILES
     ../../MobileDetectSpec_Ios.cpp
     ../../MobileDetectSpec.cpp
     ../../MobileDetectSpec.h
-    ../../SystemUtilsApple.h
-    ../../SystemUtilsApple.mm
 )
 
 

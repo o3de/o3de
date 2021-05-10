@@ -139,8 +139,11 @@ namespace AzToolsFramework
             }
             else
             {
-                QPixmap pixmap = thumbnail->GetPixmap(size);
-                painter->drawPixmap(point, pixmap.scaled(size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+                // Scaling and centering pixmap within bounds to preserve aspect ratio
+                const QPixmap pixmap = thumbnail->GetPixmap().scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                const QSize sizeDelta = size - pixmap.size();
+                const QPoint pointDelta = QPoint(sizeDelta.width() / 2, sizeDelta.height() / 2);
+                painter->drawPixmap(point + pointDelta, pixmap);
             }
             return m_iconSize;
         }

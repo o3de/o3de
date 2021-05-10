@@ -21,7 +21,7 @@
 #include <Source/NetworkEntity/NetworkEntityRpcMessage.h>
 #include <Source/EntityDomains/IEntityDomain.h>
 #include <Source/NetworkEntity/NetworkSpawnableLibrary.h>
-
+#include <Source/Components/MultiplayerComponentRegistry.h>
 
 namespace Multiplayer
 {
@@ -42,6 +42,7 @@ namespace Multiplayer
         //! @{
         NetworkEntityTracker* GetNetworkEntityTracker() override;
         NetworkEntityAuthorityTracker* GetNetworkEntityAuthorityTracker() override;
+        MultiplayerComponentRegistry* GetMultiplayerComponentRegistry() override;
         HostId GetHostId() const override;
         ConstNetworkEntityHandle GetEntity(NetEntityId netEntityId) const override;
 
@@ -49,7 +50,7 @@ namespace Multiplayer
 
         EntityList CreateEntitiesImmediate(
             const PrefabEntityId& prefabEntryId, NetEntityId netEntityId, NetEntityRole netEntityRole,
-            const AZ::Transform& transform) override;
+            AutoActivate autoActivate, const AZ::Transform& transform) override;
 
         uint32_t GetEntityCount() const override;
         NetworkEntityHandle AddEntityToEntityMap(NetEntityId netEntityId, AZ::Entity* entity) override;
@@ -83,8 +84,13 @@ namespace Multiplayer
 
         NetEntityId NextId();
 
+        void OnSpawned(AZ::Data::Asset<AzFramework::Spawnable> spawnable);
+        void OnDespawned(AZ::Data::Asset<AzFramework::Spawnable> spawnable);
+
         NetworkEntityTracker m_networkEntityTracker;
         NetworkEntityAuthorityTracker m_networkEntityAuthorityTracker;
+        MultiplayerComponentRegistry m_multiplayerComponentRegistry;
+
         AZ::ScheduledEvent m_removeEntitiesEvent;
         AZStd::vector<NetEntityId> m_removeList;
         AZStd::unique_ptr<IEntityDomain> m_entityDomain;
@@ -108,6 +114,8 @@ namespace Multiplayer
         DeferredRpcMessages m_localDeferredRpcMessages;
 
         NetworkSpawnableLibrary m_networkPrefabLibrary;
-        AZ::Data::Asset<AzFramework::Spawnable> m_rootSpawnableAsset;
+
+        AZ::Event<AZ::Data::Asset<AzFramework::Spawnable>>::Handler m_onSpawnedHandler;
+        AZ::Event<AZ::Data::Asset<AzFramework::Spawnable>>::Handler m_onDespawnedHandler;
     };
 }

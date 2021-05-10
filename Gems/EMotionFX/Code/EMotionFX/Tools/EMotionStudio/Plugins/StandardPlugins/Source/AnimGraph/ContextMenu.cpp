@@ -183,17 +183,11 @@ namespace EMStudio
             if (graphNode == nullptr)
             {
                 QMenu* menu = new QMenu(parentWidget);
-                if (actionFilter.m_copyAndPaste && actionManager.GetIsReadyForPaste())
-                {
-                    const QModelIndex modelIndex = nodeGraph->GetModelIndex();
-                    if (modelIndex.isValid())
-                    {
-                        localMousePos = SnapLocalToGrid(LocalToGlobal(localMousePos));
 
-                        QAction* pasteAction = menu->addAction("Paste");
-                        connect(pasteAction, &QAction::triggered, [&actionManager, modelIndex, localMousePos]() { actionManager.Paste(modelIndex, localMousePos); });
-                        menu->addSeparator();
-                    }
+                if (actionFilter.m_copyAndPaste && actionManager.GetIsReadyForPaste() && nodeGraph->GetModelIndex().isValid())
+                {
+                    menu->addAction(viewWidget->GetAction(BlendGraphViewWidget::EDIT_PASTE));
+                    menu->addSeparator();
                 }
 
                 if (actionFilter.m_createNodes)
@@ -324,8 +318,7 @@ namespace EMStudio
             // we can only go to the selected node in case the selected node has a visual graph (state machine / blend tree)
             if (animGraphNode->GetHasVisualGraph())
             {
-                QAction* goToNodeAction = menu->addAction("Open Selected Node");
-                connect(goToNodeAction, &QAction::triggered, &actionManager, &AnimGraphActionManager::NavigateToNode);
+                menu->addAction(viewWidget->GetAction(BlendGraphViewWidget::NAVIGATION_OPEN_SELECTED));
                 menu->addSeparator();
             }
 
@@ -360,20 +353,17 @@ namespace EMStudio
                     if (!inReferenceGraph)
                     {
                         // cut and copy actions
-                        QAction* cutAction = menu->addAction("Cut");
-                        connect(cutAction, &QAction::triggered, &actionManager, &AnimGraphActionManager::Cut);
+                        menu->addAction(viewWidget->GetAction(BlendGraphViewWidget::EDIT_CUT));
                     }
 
-                    QAction* ccopyAction = menu->addAction("Copy");
-                    connect(ccopyAction, &QAction::triggered, &actionManager, &AnimGraphActionManager::Copy);
+                    menu->addAction(viewWidget->GetAction(BlendGraphViewWidget::EDIT_COPY));
                     menu->addSeparator();
                 }
 
                 if (actionFilter.m_delete &&
                     !inReferenceGraph)
                 {
-                    QAction* removeNodeAction = menu->addAction("Delete Node");
-                    connect(removeNodeAction, &QAction::triggered, &actionManager, &AnimGraphActionManager::DeleteSelectedNodes);
+                    menu->addAction(viewWidget->GetAction(BlendGraphViewWidget::EDIT_DELETE));
                     menu->addSeparator();
                 }
             }
@@ -403,22 +393,14 @@ namespace EMStudio
             if (actionFilter.m_editNodes &&
                 !inReferenceGraph)
             {
-                QAction* alignLeftAction = menu.addAction("Align Left");
-                QAction* alignRightAction = menu.addAction("Align Right");
-                QAction* alignTopAction = menu.addAction("Align Top");
-                QAction* alignBottomAction = menu.addAction("Align Bottom");
-
-
-                connect(alignLeftAction, &QAction::triggered, &actionManager, &AnimGraphActionManager::AlignLeft);
-                connect(alignRightAction, &QAction::triggered, &actionManager, &AnimGraphActionManager::AlignRight);
-                connect(alignTopAction, &QAction::triggered, &actionManager, &AnimGraphActionManager::AlignTop);
-                connect(alignBottomAction, &QAction::triggered, &actionManager, &AnimGraphActionManager::AlignBottom);
-
+                menu.addAction(viewWidget->GetAction(BlendGraphViewWidget::SELECTION_ALIGNLEFT));
+                menu.addAction(viewWidget->GetAction(BlendGraphViewWidget::SELECTION_ALIGNRIGHT));
+                menu.addAction(viewWidget->GetAction(BlendGraphViewWidget::SELECTION_ALIGNTOP));
+                menu.addAction(viewWidget->GetAction(BlendGraphViewWidget::SELECTION_ALIGNBOTTOM));
                 menu.addSeparator();
             }
 
-            QAction* zoomSelectionAction = menu.addAction("Zoom Selection");
-            connect(zoomSelectionAction, &QAction::triggered, viewWidget, &BlendGraphViewWidget::ZoomSelected);
+            menu.addAction(viewWidget->GetAction(BlendGraphViewWidget::NAVIGATION_ZOOMSELECTION));
 
             menu.addSeparator();
 
@@ -494,12 +476,10 @@ namespace EMStudio
 
                     if (!inReferenceGraph)
                     {
-                        QAction* cutAction = menu.addAction("Cut");
-                        connect(cutAction, &QAction::triggered, &actionManager, &AnimGraphActionManager::Cut);
+                        menu.addAction(viewWidget->GetAction(BlendGraphViewWidget::EDIT_CUT));
                     }
 
-                    QAction* ccopyAction = menu.addAction("Copy");
-                    connect(ccopyAction, &QAction::triggered, &actionManager, &AnimGraphActionManager::Copy);
+                    menu.addAction(viewWidget->GetAction(BlendGraphViewWidget::EDIT_COPY));
                 }
 
                 menu.addSeparator();
@@ -507,8 +487,7 @@ namespace EMStudio
                 if (actionFilter.m_delete &&
                     !inReferenceGraph)
                 {
-                    QAction* removeNodesAction = menu.addAction("Delete Nodes");
-                    connect(removeNodesAction, &QAction::triggered, &actionManager, &AnimGraphActionManager::DeleteSelectedNodes);
+                    menu.addAction(viewWidget->GetAction(BlendGraphViewWidget::EDIT_DELETE));
 
                     menu.addSeparator();
                 }
@@ -526,4 +505,4 @@ namespace EMStudio
             }
         }
     }
-}
+} // namespace EMStudio

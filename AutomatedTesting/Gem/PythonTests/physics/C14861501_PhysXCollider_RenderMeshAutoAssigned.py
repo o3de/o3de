@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID : C14861501
 Test Case Title : Verify PxMesh is auto-assigned when Collider component is added after Rendering Mesh component
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/14861501
+
 """
 
 
@@ -24,7 +24,7 @@ class Tests():
 # fmt: on
 
 
-def run():
+def C14861501_PhysXCollider_RenderMeshAutoAssigned():
     """
     Summary:
      Create entity with Mesh component and assign a render mesh to the Mesh component. Add Physics Collider component
@@ -61,7 +61,7 @@ def run():
     from asset_utils import Asset
 
     # Asset paths
-    STATIC_MESH = os.path.join("assets", "c14861501_physxcollider_rendermeshautoassigned", "spherebot", "r0-b_body.cgf")
+    STATIC_MESH = os.path.join("assets", "c14861501_physxcollider_rendermeshautoassigned", "spherebot", "r0-b_body.azmodel")
     PHYSX_MESH = os.path.join(
         "assets", "c14861501_physxcollider_rendermeshautoassigned", "spherebot", "r0-b_body.pxmesh"
     )
@@ -80,8 +80,8 @@ def run():
 
     # 4) Assign a render mesh asset to Mesh component (the fbx mesh having both Static mesh and PhysX collision Mesh)
     mesh_asset = Asset.find_asset_by_path(STATIC_MESH)
-    mesh_component.set_component_property_value("MeshComponentRenderNode|Mesh asset", mesh_asset.id)
-    mesh_asset.id = mesh_component.get_component_property_value("MeshComponentRenderNode|Mesh asset")
+    mesh_component.set_component_property_value("Controller|Configuration|Mesh Asset", mesh_asset.id)
+    mesh_asset.id = mesh_component.get_component_property_value("Controller|Configuration|Mesh Asset")
     Report.result(Tests.assign_mesh_asset, mesh_asset.get_path() == STATIC_MESH.replace(os.sep, "/"))
 
     # 5) Add PhysX Collider component
@@ -95,4 +95,8 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    import ImportPathHelper as imports
+    imports.init()
+
+    from editor_python_test_tools.utils import Report
+    Report.start_test(C14861501_PhysXCollider_RenderMeshAutoAssigned)

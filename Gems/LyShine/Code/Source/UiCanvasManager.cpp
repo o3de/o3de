@@ -612,10 +612,12 @@ void UiCanvasManager::RenderLoadedCanvases()
         m_fontTextureHasChanged = false;
     }
 
+#ifdef LYSHINE_ATOM_TODO // render target conversion to Atom
     // clear the stencil buffer before rendering the loaded canvases - required for masking
     // NOTE: We want to use ClearTargetsImmediately instead of ClearTargetsLater since we will not be setting the render target
     ColorF viewportBackgroundColor(0, 0, 0, 0); // if clearing color we want to set alpha to zero also
     gEnv->pRenderer->ClearTargetsImmediately(FRT_CLEAR_STENCIL, viewportBackgroundColor);
+#endif
 
     for (auto canvas : m_loadedCanvases)
     {

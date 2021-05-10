@@ -508,6 +508,17 @@ namespace MaterialEditor
         return m_fieldOfView;
     }
 
+    void MaterialViewportComponent::SetDisplayMapperOperationType(AZ::Render::DisplayMapperOperationType operationType)
+    {
+        m_displayMapperOperationType = operationType;
+        MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnDisplayMapperOperationTypeChanged, operationType);
+    }
+
+    AZ::Render::DisplayMapperOperationType MaterialViewportComponent::GetDisplayMapperOperationType() const
+    {
+        return m_displayMapperOperationType;
+    }
+
     void MaterialViewportComponent::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
     {
         AZ::TickBus::QueueFunction([this]() {

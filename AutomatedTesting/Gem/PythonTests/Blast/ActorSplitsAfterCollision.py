@@ -22,7 +22,7 @@ class Tests():
 # fmt: on
 
 
-def run():
+def ActorSplitsAfterCollision():
 
     """
     Summary:
@@ -60,8 +60,8 @@ def run():
     import azlmbr.legacy.general as general
     import azlmbr.bus
 
-    from editor_python_test_tools.utils import CollisionHandler
-    from editor_python_test_tools.utils import BlastNotificationHandler
+    from BlastUtils import CollisionHandler
+    from BlastUtils import BlastNotificationHandler
 
     # Constants
     TIMEOUT = 2.0
@@ -107,4 +107,8 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    import ImportPathHelper as imports
+    imports.init()
+
+    from editor_python_test_tools.utils import Report
+    Report.start_test(ActorSplitsAfterCollision)

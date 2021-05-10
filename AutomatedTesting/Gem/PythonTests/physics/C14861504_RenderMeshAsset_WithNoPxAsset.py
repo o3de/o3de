@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID : C14861504
 Test Case Title : Verify if Rendering Mesh does not have a PhysX Collision Mesh fbx, then PxMesh is not auto-assigned
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/14861504
+
 """
 
 
@@ -69,7 +69,7 @@ def run():
     import azlmbr.asset as azasset
 
     # Asset paths
-    STATIC_MESH = os.path.join("assets", "c14861504_rendermeshasset_withnopxasset", "test_asset.cgf")
+    STATIC_MESH = os.path.join("assets", "c14861504_rendermeshasset_withnopxasset", "test_asset.azmodel")
 
     helper.init_idle()
     # 1) Load the empty level
@@ -85,8 +85,8 @@ def run():
 
     # 4) Assign a render mesh asset to Mesh component (the fbx mesh having both Static mesh and PhysX collision Mesh)
     mesh_asset = Asset.find_asset_by_path(STATIC_MESH)
-    mesh_component.set_component_property_value("MeshComponentRenderNode|Mesh asset", mesh_asset.id)
-    mesh_asset.id = mesh_component.get_component_property_value("MeshComponentRenderNode|Mesh asset")
+    mesh_component.set_component_property_value("Controller|Configuration|Mesh Asset", mesh_asset.id)
+    mesh_asset.id = mesh_component.get_component_property_value("Controller|Configuration|Mesh Asset")
     Report.result(Tests.assign_mesh_asset, mesh_asset.get_path() == STATIC_MESH.replace(os.sep, "/"))
 
     # 5) Add PhysX Collider component

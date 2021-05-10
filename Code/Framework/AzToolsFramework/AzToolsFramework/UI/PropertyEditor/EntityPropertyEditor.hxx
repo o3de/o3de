@@ -236,6 +236,7 @@ namespace AzToolsFramework
         // EntityPropertEditorRequestBus
         void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) override;
         void GetSelectedEntities(EntityIdList& selectedEntityIds) override;
+        void SetNewComponentId(AZ::ComponentId componentId) override;
 
         // TickBus
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
@@ -265,6 +266,9 @@ namespace AzToolsFramework
         static bool DoesComponentPassFilter(const AZ::Component* component, const ComponentFilter& filter);
         static bool IsComponentRemovable(const AZ::Component* component);
         bool AreComponentsRemovable(const AZ::Entity::ComponentArrayType& components) const;
+        static AZStd::optional<int> GetFixedComponentListIndex(const AZ::Component* component);
+        static bool IsComponentDraggable(const AZ::Component* component);
+        bool AreComponentsDraggable(const AZ::Entity::ComponentArrayType& components) const;
         bool AreComponentsCopyable(const AZ::Entity::ComponentArrayType& components) const;
 
         void AddMenuOptionsForComponents(QMenu& menu, const QPoint& position);
@@ -627,6 +631,10 @@ namespace AzToolsFramework
         void DisconnectFromEntityBuses(const AZ::EntityId& entityId);
 
         void BeginMoveRowWidgetFade();
+
+        //! Stores a component id to be focused on next time the UI updates.
+        AZStd::optional<AZ::ComponentId> m_newComponentId;
+
     private slots:
         void OnPropertyRefreshRequired(); // refresh is needed for a property.
         void UpdateContents();
