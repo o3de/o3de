@@ -26,7 +26,7 @@ namespace O3DE::ProjectManager
         ~PythonBindings() override;
 
         // PythonBindings overrides
-        Project GetCurrentProject() override;
+        ProjectInfo GetCurrentProject() override;
 
     private:
         AZ_DISABLE_COPY_MOVE(PythonBindings);

@@ -27,7 +27,7 @@ namespace O3DE::ProjectManager
         ConnectSlotsAndSignals();
 
         // example of how to get the current project name
-        Project currentProject = PythonBindingsInterface::Get()->GetCurrentProject();
+        ProjectInfo currentProject = PythonBindingsInterface::Get()->GetCurrentProject();
     }
 
     ProjectsHome::~ProjectsHome()

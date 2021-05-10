@@ -29,9 +29,26 @@
 
 namespace Platform
 {
-    // Implemented in each different platform's implentation files, as it differs per platform.
-    bool InsertPythonBinaryLibraryPaths(AZStd::unordered_set<AZStd::string>& paths, const char* pythonPackage, const char* engineRoot);
+    bool InsertPythonLibraryPath(
+        AZStd::unordered_set<AZStd::string>& paths, const char* pythonPackage, const char* engineRoot, const char* subPath)
+    {
+        // append lib path to Python paths
+        AZ::IO::FixedMaxPath libPath = engineRoot;
+        libPath /= AZ::IO::FixedMaxPathString::format(subPath, pythonPackage);
+        libPath = libPath.LexicallyNormal();
+        if (AZ::IO::SystemFile::Exists(libPath.c_str()))
+        {
+            paths.insert(libPath.c_str());
+            return true;
+        }
+
+        AZ_Warning("python", false, "Python library path should exist. path:%s", libPath.c_str());
+        return false;
+    }
+
+    // Implemented in each different platform's PAL implentation files, as it differs per platform.
     AZStd::string GetPythonHomePath(const char* pythonPackage, const char* engineRoot);
+
 } // namespace Platform
 
 namespace O3DE::ProjectManager 
@@ -51,7 +68,7 @@ namespace O3DE::ProjectManager
     {
         if (Py_IsInitialized())
         {
-            AZ_Warning("python", false, "Python is already active!");
+            AZ_Warning("python", false, "Python is already active");
             return false;
         }
 
@@ -59,7 +76,7 @@ namespace O3DE::ProjectManager
         AZStd::string pyBasePath = Platform::GetPythonHomePath(PY_PACKAGE, m_enginePath.c_str());
         if (!AZ::IO::SystemFile::Exists(pyBasePath.c_str()))
         {
-            AZ_Warning("python", false, "Python home path must exist! path:%s", pyBasePath.c_str());
+            AZ_Warning("python", false, "Python home path must exist. path:%s", pyBasePath.c_str());
             return false;
         }
 
@@ -86,20 +103,16 @@ namespace O3DE::ProjectManager
             AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
             pybind11::gil_scoped_acquire acquire;
 
-            // print Python version using AZ logging
-            const int verRet = PyRun_SimpleStringFlags("import sys \nprint (sys.version) \n", nullptr);
-            AZ_Error("python", verRet == 0, "Error trying to fetch the version number in Python!");
-
             // Setup sys.path
             int result = PyRun_SimpleString("import sys");
-            AZ_Warning("ProjectManagerWindow", result != -1, "import sys failed");
+            AZ_Warning("ProjectManagerWindow", result != -1, "Import sys failed");
             result = PyRun_SimpleString(AZStd::string::format("sys.path.append('%s')", m_enginePath.c_str()).c_str());
-            AZ_Warning("ProjectManagerWindow", result != -1, "append to sys path failed");
+            AZ_Warning("ProjectManagerWindow", result != -1, "Append to sys path failed");
 
-            return verRet == 0 && !PyErr_Occurred();
+            return result == 0 && !PyErr_Occurred();
         } catch ([[maybe_unused]] const std::exception& e)
         {
-            AZ_Warning("python", false, "Py_Initialize() failed with %s!", e.what());
+            AZ_Warning("python", false, "Py_Initialize() failed with %s", e.what());
             return false;
         }
     }
@@ -112,7 +125,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            AZ_Warning("python", false, "Did not finalize since Py_IsInitialized() was false.");
+            AZ_Warning("python", false, "Did not finalize since Py_IsInitialized() was false");
         }
         return !PyErr_Occurred();
     }
@@ -125,9 +138,9 @@ namespace O3DE::ProjectManager
         executionCallback();
     }
 
-    Project PythonBindings::GetCurrentProject()
+    ProjectInfo PythonBindings::GetCurrentProject()
     {
-        Project project;
+        ProjectInfo project;
 
         ExecuteWithLock([&] {
             auto currentProjectTool = pybind11::module::import("cmake.Tools.current_project");

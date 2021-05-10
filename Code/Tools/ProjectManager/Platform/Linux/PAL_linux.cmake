@@ -9,7 +9,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(LY_COMPILE_OPTIONS
-    PRIVATE
-        -fexceptions # The macro PYBIND11_EMBEDDED_MODULE uses a try catch block
-)

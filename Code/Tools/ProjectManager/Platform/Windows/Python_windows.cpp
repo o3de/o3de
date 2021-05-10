@@ -18,31 +18,17 @@
 
 namespace Platform
 {
-    bool InsertPythonLibraryPath(AZStd::unordered_set<AZStd::string>& paths, const char* pythonPackage, const char* engineRoot, const char* subPath)
-    {
-        // append lib path to Python paths
-        AZ::IO::FixedMaxPath libPath = engineRoot;
-        libPath /= AZ::IO::FixedMaxPathString::format(subPath, pythonPackage);
-        libPath = libPath.LexicallyNormal();
-        if (AZ::IO::SystemFile::Exists(libPath.c_str()))
-        {
-            paths.insert(libPath.c_str());
-            return true;
-        }
-        
-        AZ_Warning("python", false, "Python library path should exist! path:%s", libPath.c_str());
-        return false;
-    }
+    extern bool InsertPythonLibraryPath(AZStd::unordered_set<AZStd::string>& paths, const char* pythonPackage, const char* engineRoot, const char* subPath);
 
     bool InsertPythonBinaryLibraryPaths(AZStd::unordered_set<AZStd::string>& paths, const char* pythonPackage, const char* engineRoot)
     {
-        // append lib path to Python paths
         bool succeeded = true;
         
         succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/python");
         succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/python/lib");
         succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/python/lib/site-packages");
         succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/python/DLLs");
+
         return succeeded;
     }
 

@@ -19,6 +19,8 @@ set(FILES
     Source/FirstTimeUse.h
     Source/FirstTimeUse.cpp
     Source/FirstTimeUse.ui
+    Source/ProjectInfo.h
+    Source/ProjectInfo.cpp
     Source/ProjectManagerWindow.h
     Source/ProjectManagerWindow.cpp
     Source/ProjectManagerWindow.ui

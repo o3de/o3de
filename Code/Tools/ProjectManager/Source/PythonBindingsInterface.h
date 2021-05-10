@@ -16,46 +16,11 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 
+#include <GemCatalog/GemInfo.h>
+#include <ProjectInfo.h>
+
 namespace O3DE::ProjectManager
 {
-    typedef struct Project
-    {
-        // from o3de_manifest.json and o3de_projects.json
-        AZStd::string m_path;
-
-        // from project.json
-        AZStd::string m_projectName;
-        AZStd::string m_productName;
-        AZStd::string m_executableName;
-        AZ::Uuid m_projectId;
-    } Project;
-
-    typedef struct GemDependency
-    {
-        AZ::Uuid m_uuid;
-        AZStd::vector<AZStd::string> m_versionConstraints;
-        AZStd::string m_comment; // typically contains the Gem dependency name
-    } GemDependency;
-
-    typedef struct Gem
-    {
-        // from o3de_manifest.json
-        AZStd::string m_path;
-
-        // from gem.json
-        AZ::Uuid m_uuid;
-        AZStd::vector<GemDependency> m_dependencies; 
-        AZStd::string m_displayName;
-        AZStd::string m_iconPath;
-        bool m_isGameGem = false;
-        bool m_isRequired = false;
-        AZStd::string m_linkType;
-        AZStd::string m_name;
-        AZStd::string m_summary;
-        AZStd::vector<AZStd::string> m_tags;
-        AZStd::string m_version;
-    } Gem;
-
     //! Interface used to interact with the o3de cli python functions
     class IPythonBindings
     {
@@ -67,7 +32,7 @@ namespace O3DE::ProjectManager
         virtual ~IPythonBindings() = default;
 
         //! Get the current project 
-        virtual Project GetCurrentProject() = 0;
+        virtual ProjectInfo GetCurrentProject() = 0;
     };
 
     using PythonBindingsInterface = AZ::Interface<IPythonBindings>;
