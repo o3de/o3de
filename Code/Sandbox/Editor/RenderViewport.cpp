@@ -1259,9 +1259,6 @@ CBaseObject* CRenderViewport::GetCameraObject() const
 //////////////////////////////////////////////////////////////////////////
 void CRenderViewport::OnEditorNotifyEvent(EEditorNotifyEvent event)
 {
-    static ICVar* outputToHMD = gEnv->pConsole->GetCVar("output_to_hmd");
-    AZ_Assert(outputToHMD, "cvar output_to_hmd is undeclared");
-
     switch (event)
     {
     case eNotify_OnBeginGameMode:
@@ -1282,7 +1279,6 @@ void CRenderViewport::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
                 if (deviceInfo)
                 {
-                    outputToHMD->Set(1);
                     m_previousContext = SetCurrentContext(deviceInfo->renderWidth, deviceInfo->renderHeight);
                     if (m_renderer->GetIStereoRenderer())
                     {
