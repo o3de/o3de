@@ -529,8 +529,8 @@ try {
                                     unstable(message: "UNSTABLE: ${e}")
                                 }
                             }
-                            def params = platform.value.build_types[build_job_name].PARAMETERS
                             finally {
+                                def params = platform.value.build_types[build_job_name].PARAMETERS
                                 if (env.MARS_REPO && params && params.containsKey('TEST_METRICS') && params.TEST_METRICS == 'True') {
                                     def output_directory = params.OUTPUT_DIRECTORY
                                     def configuration = params.CONFIGURATION
