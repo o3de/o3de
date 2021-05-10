@@ -20,6 +20,7 @@ import json
 
 # -- External Python modules --
 import maya.cmds as mc
+mc.loadPlugin("fbxmaya")
 
 # --------------------------------------------------------------------------
 # -- Global Definitions --
@@ -30,10 +31,28 @@ _LOGGER.info('local_host: {}'.format(_LOCAL_HOST))
 # -------------------------------------------------------------------------
 
 
-# TODO - Revamp original processing- remove create maya files, maybe this should be imported into separate Maya tool?
 # TODO - You need to provide for creating new files while Maya is already open
 # TODO - You could add this tool to the shelf and incorporate that as well
-# TODO - Create a modal dialog that asks if you want to convert current file, current directory, or all directories
+
+
+def create_preview_files(target_files, database_values):
+    """
+    This function is run from the 'material_preview_builder' tool to build Maya preview files using fbx files, recorded
+    materials and attached texture files from legacy .mtl file information
+    :param target_files: List of fbx files to process
+    :param database_values: Values extracted from legacy .mtl files that assist with material assignments
+    :return:
+    """
+    _LOGGER.info('Database values passed: {}'.format(database_values))
+    for file in target_files:
+        _LOGGER.info('Creating Maya preview file:::> {}'.format(file))
+        maya_file_path = get_maya_file_path(file)
+        mc.file(new=True, force=True)
+        mc.file(file, i=True, type="FBX")
+        set_scene_attributes()
+        set_stingray_materials(database_values)
+        mc.file(rename=maya_file_path)
+        mc.file(save=True, type='mayaAscii', force=True)
 
 
 def process_single_file(action, target_file, data):
@@ -57,15 +76,35 @@ def process_single_file(action, target_file, data):
                 _LOGGER.info('Material conversion failed [{}]-- Error: {}'.format(material, e))
 
 
-def process_multiple_files(action, target_files, data):
+def refresh_stingray_attributes():
     """
-        Provides mechanism for compound material actions to be performed for a list of Maya scenes
-        :param action: Description of the task that needs to be performed to the target_files list
-        :param target_files: List of files to perform actions to
-        :param data: Information needed to perform the specified action
-        :return:
-        """
-    pass
+    THIS WORKAROUND STILL DOESN'T FIX THE PROBLEM- MIGHT NEED TO WAIT FOR AUTODESK TO FIX THIS
+    Stingray materials do not initialize when creating a new Maya file. The only way currently to get around
+    activating them manually is to put together less than desirable workarounds like this to initialize.
+    :return:
+    """
+    scene_geo = mc.ls(v=True, geometry=True)
+
+    for target_mesh in scene_geo:
+        shading_groups = list(set(mc.listConnections(target_mesh, type='shadingEngine')))
+        for sg in shading_groups:
+            materials = mc.ls(mc.listConnections(sg), materials=True)
+            for material in materials:
+                material_name = str(material)
+                material_attributes = {}
+
+                # Get shader attributes
+                for material_attribute in mc.listAttr(material_name, s=True, iu=True):
+                    try:
+                        target_value = mc.getAttr('{}.{}'.format(material_name, material_attribute))
+                        material_attributes[material_attribute] = target_value
+                    except Exception:
+                        pass
+
+                for attr_name, attr_value in material_attributes.items():
+                    if attr_name == 'use_color_map':
+                        return True
+    return False
 
 
 def get_materials_in_scene():
@@ -157,7 +196,83 @@ def get_material_textures(material_name):
     return material_textures
 
 
-def set_material(material_name, material_type, shading_group, assignment_list):
+def get_maya_file_path(fbx_file_path):
+    return os.path.splitext(fbx_file_path)[0] + '.ma'
+
+
+def set_scene_attributes():
+    set_camera_attributes()
+    mc.currentUnit(linear='meter')
+    mc.grid(reset=True)
+
+
+def set_camera_attributes():
+    camera_list = mc.ls(type='camera')
+    attributes = {'nearClipPlane': 0.01, 'farClipPlane': 1000000}
+    for c in camera_list:
+        for attrName in attributes.keys():
+            mc.setAttr('{}.{}'.format(c, attrName), attributes[attrName])
+
+
+def set_stingray_materials(material_list):
+    for material_name, material_values in material_list.items():
+        if 'textures' in material_values.keys():
+            _LOGGER.info('+++++++++++++++++++++++++++++')
+            _LOGGER.info('Converting material: {}'.format(material_name))
+            sha, sg = get_material(material_name)
+            material_textures = material_values['textures']
+            _LOGGER.info('Material Textures: {}'.format(material_textures))
+            material_assignments = material_values['assigned']
+            _LOGGER.info('Material Assignments: {}'.format(material_assignments))
+            material_modifications = material_values['modifications']
+
+            registered = False
+            counter = 0
+            while not registered:
+                registered = refresh_stingray_attributes()
+                _LOGGER.info('Registered: {}'.format(registered))
+                counter += 1
+                if counter == 10:
+                    registered = True
+
+            try:
+                set_material(material_name, sg, material_assignments)
+                set_textures(material_name, material_textures)
+                if material_modifications:
+                    _LOGGER.info('\n++++++++++++++\nMaterialMods: {}\n++++++++++++++'.format(material_modifications))
+            except Exception as e:
+                _LOGGER.info('Material Assignment failed: {}'.format(e))
+
+
+def get_material(material_name):
+    """
+    Gets material assignments and swaps legacy formatted materials with Stingray PBS materials
+    :param material_name: Target material name
+    :return:
+    """
+    _LOGGER.info('Shaders in scene: {}'.format(get_materials_in_scene()))
+    sha = None
+    sg = None
+    if material_name in get_materials_in_scene():
+        _LOGGER.info('Deleting material: {}'.format(material_name))
+        mc.delete(material_name)
+
+    _LOGGER.info('Creating Stingray material: {}'.format(material_name))
+    try:
+        sha = mc.shadingNode('StingrayPBS', asShader=True, name=material_name)
+        sg = mc.sets(renderable=True, noSurfaceShader=True, empty=True)
+        mc.connectAttr(sha + '.outColor', sg + '.surfaceShader', force=True)
+        mc.setAttr('{}.use_color_map'.format(material_name), 1)
+        mc.setAttr('{}.use_normal_map'.format(material_name), 1)
+        mc.setAttr('{}.use_metallic_map'.format(material_name), 1)
+        mc.setAttr('{}.use_roughness_map'.format(material_name), 1)
+        mc.setAttr('{}.use_emissive_map'.format(material_name), 1)
+    except Exception as e:
+        _LOGGER.info('Shader creation failed: {}'.format(e))
+    return sha, sg
+
+
+def set_material(material_name, shading_group, assignment_list):
     """
     Assigns specified material to specified mesh
     :param material_name: Material name
@@ -210,6 +325,3 @@ def set_textures(material_name, texture_list):
         except Exception as e:
             _LOGGER.info('Conversion failed: {}'.format(e))
 
-
-def assign_stingray_materials(action):
-    _LOGGER.info('AssignStingrayMaterials fired in maya_materials: {}'.format(action))

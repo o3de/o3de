@@ -109,7 +109,7 @@ DCC_LOCATIONS = {
 }
 
 EXTERNAL_SCRIPTS = {
-    'Attach Textures': ['maya', 'maya_materials', 'assign_stingray_materials'],
+    'Create Maya Files': ['maya', 'material_preview_builder', 'show_ui'],
     'Create ID Maps': 'tbd',
     'Create Metallic Map': 'tbd',
     'Set Maya Workspace': 'tbd',

@@ -72,11 +72,16 @@ class MayaServer(ServerBase):
     def run_script(self, data, reply):
         script_location = data['script']
         function = data['function']
-        script_data = json.loads("{}".format(data['data'].replace("'", '"')))
+        if not isinstance(data['data'], list):
+            script_data = json.loads("{}".format(data['data'].replace("'", '"')))
+        else:
+            script_dict = json.loads("{}".format(data['data'][0].replace("'", '"')))
+            script_data = [script_dict, data['data'][1]]
         mod = importlib.import_module('azpy.maya.{}'.format(script_location))
         getattr(mod, function)(script_data)
         reply['result'] = True
         reply['success'] = True
+
 
     def set_title(self, data, reply):
         self.window.setWindowTitle(data['title'])
@@ -87,7 +92,6 @@ class MayaServer(ServerBase):
         for i in range(6):
             _LOGGER.info('Sleeping::: {}'.format(i))
             time.sleep(1)
-
         reply['result'] = True
         reply['success'] = True
 

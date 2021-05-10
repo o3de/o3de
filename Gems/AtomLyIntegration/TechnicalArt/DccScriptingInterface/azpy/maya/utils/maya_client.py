@@ -82,10 +82,15 @@ class MayaClient(ClientBase):
             return None
 
 
-def run_script(script_path, function, script_data):
+def run_script(script_path, function, script_data=None, target_path=None):
+    _LOGGER.info('Script Path: {}'.format(script_path))
+    _LOGGER.info('Function: {}'.format(function))
+    _LOGGER.info('Script Data: {}'.format(script_data))
+    _LOGGER.info('Start Path: {}'.format(target_path))
     client = MayaClient(timeout=10)
     if client.connect():
         _LOGGER.info('Connected successfully')
-        _LOGGER.info(client.run_script(script_path, function, script_data))
+        data = script_data if script_data and not target_path else [script_data, target_path]
+        client.run_script(script_path, function, data)
         if client.disconnect():
             _LOGGER.info('Disconnected successfully')

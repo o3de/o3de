@@ -23,14 +23,12 @@
 # -------------------------------------------------------------------------
 
 
-
 #  built-ins
 import collections
 from collections import abc
 import subprocess
 import logging as _logging
-import pathlib
-from pathlib import *
+from pathlib import Path
 import shelve
 import psutil
 import shutil
@@ -47,7 +45,6 @@ from shutil import copyfile
 
 # azpy bootstrapping and extensions
 import azpy.config_utils
-import azpy.maya.utils.simple_command_port as command_port
 
 _config = azpy.config_utils.get_dccsi_config()
 print(_config)
@@ -249,9 +246,6 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.create_material_files_checkbox = QtWidgets.QCheckBox('Create .material files')
         self.create_material_files_checkbox.setChecked(True)
         self.left_checkbox_items.addWidget(self.create_material_files_checkbox)
-        self.create_maya_files_checkbox = QtWidgets.QCheckBox('Create Maya Files')
-        self.create_maya_files_checkbox.setChecked(True)
-        self.left_checkbox_items.addWidget(self.create_maya_files_checkbox)
 
         # Center Column
         self.center_checkbox_items = QtWidgets.QVBoxLayout()
@@ -263,8 +257,6 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.create_checklist_checkbox = QtWidgets.QCheckBox('Create Asset Checklists')
         self.create_checklist_checkbox.setChecked(False)
         self.center_checkbox_items.addWidget(self.create_checklist_checkbox)
-        self.reprocess_checkbox = QtWidgets.QCheckBox('Reprocess Existing Files')
-        self.center_checkbox_items.addWidget(self.reprocess_checkbox)
 
         # Right Column
         self.right_checkbox_items = QtWidgets.QVBoxLayout()
@@ -273,6 +265,8 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.clean_material_names_checkbox = QtWidgets.QCheckBox('Clean Material Names')
         self.clean_material_names_checkbox.setChecked(False)
         self.right_checkbox_items.addWidget(self.clean_material_names_checkbox)
+        self.reprocess_checkbox = QtWidgets.QCheckBox('Reprocess Existing Files')
+        self.right_checkbox_items.addWidget(self.reprocess_checkbox)
         self.main_container.addWidget(self.actions_groupbox)
 
         self.process_files_button = QtWidgets.QPushButton('Process Files')
@@ -412,7 +406,6 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.material_files_items = ['Choose']
         self.material_files_combobox.addItems(self.material_files_items)
         self.material_files_combobox.setFixedHeight(25)
-        self.material_files_combobox.setStyleSheet('QComboBox:item {padding-left:30px;}')
         self.material_files_layout.addWidget(self.material_files_combobox)
         self.material_file_open_button = QtWidgets.QPushButton('Open')
         self.material_file_open_button.setFixedSize(40, 27)
@@ -618,7 +611,6 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                     self.asset_data_window.setText('Ready.')
             self.show()
             self.set_io_directories()
-            self.initialize_qprocess()
 
     def process_directory(self, directory_path):
         """
@@ -644,7 +636,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                 mtl_info = lumberyard_data.get_material_info(base_directory_path, f'{fbx_file.stem}.mtl')
                 asset_information = self.filter_asset_information(fbx_file, directory_audit, mtl_info)
                 self.set_material_information(asset_information, mtl_info, fbx_file, destination_directory)
-            self.create_maya_files(base_directory_path, destination_directory, fbx_files)
+            # self.create_maya_files(base_directory_path, destination_directory, fbx_files)
         self.reset_load_progress()
 
     def process_directories_in_place(self, directory_path):
@@ -664,7 +656,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                 mtl_info = lumberyard_data.get_material_info(Path(values.directorypath), f'{fbx_file.stem}.mtl')
                 asset_information = self.filter_asset_information(fbx_file, values, mtl_info)
                 self.set_material_information(asset_information, mtl_info, fbx_file, destination_directory)
-                self.create_maya_files(values.directorypath, destination_directory, [fbx_file])
+                # self.create_maya_files(values.directorypath, destination_directory, [fbx_file])
         self.reset_load_progress()
 
     def process_single_asset(self, fbx_path, in_place=False):
@@ -688,7 +680,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         asset_information = self.filter_asset_information(fbx_file, directory_audit[0], mtl_info)
         self.transfer_existing_files(fbx_file.parent, destination_directory, fbx_file.name)
         self.set_material_information(asset_information, mtl_info, fbx_file, destination_directory)
-        self.create_maya_files(base_directory_path, destination_directory, [fbx_file])
+        # self.create_maya_files(base_directory_path, destination_directory, [fbx_file])
         self.reset_load_progress()
 
     def update_db_listing(self, index, asset_information):
@@ -886,18 +878,6 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             return os.path.abspath(export_file_path)
         return None
 
-    def get_emission_intensity(self, mtl_setting):
-        """
-        This converts the emission intensity setting of an mtl file into an equivalent exposure value for the
-        .material format.
-        :param mtl_setting: The float value to be converted from the .mtl file
-        :return:
-        """
-        if float(mtl_setting) > 0.0:
-            return math.log(mtl_setting * 1000.0 / .125, 2) / 3.0
-        else:
-            return -5.0
-
     def filter_asset_information(self, target_path, directory_audit, mtl_info):
         """
         Helper function used for comparisons as well as structuring information for shelve database entries
@@ -910,8 +890,6 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         if target_path.is_file():
             directory_name = directory_audit.directoryname
             directory_path = Path(directory_audit.directorypath)
-            directory_files = directory_audit.files
-            _LOGGER.info(f'SECOND LOCATION: {directory_path}')
             materials = self.get_material_information(directory_path, mtl_info, f'{target_path.name}.assetinfo')
             fbx_files = {target_path.name: {constants.FBX_MAYA_FILE: '', constants.FBX_MATERIALS: materials}}
             asset_dictionary = {constants.FBX_DIRECTORY_NAME: directory_name, constants.FBX_DIRECTORY_PATH: directory_path,
@@ -923,152 +901,6 @@ class LegacyFilesConverter(QtWidgets.QDialog):
     ##############################
     # Creation ###################
     ##############################
-
-    def reformat_materials_db(self, to_maya, updates=False):
-        """
-        This function is ran before and after the interchange of files between Maya, and is needed so that Maya
-        (which runs on Python 2.7) is able to access the information gathered from the main script, as opposed to
-        trying to shuttle and manage information based back and forth as strings through a subprocess. This function
-        will also prompt a listing update when new file information is received from Maya
-        :param to_maya: Specifies whether the reformatting is being executed before or after handoff to Maya for
-        generating Maya files
-        :param updates: Currently this only holds a list of Maya files generated after the return trip completes,
-        but can be used to shuttle any information back from Maya as needed.
-        :return:
-        """
-        temp_dictionary = {}
-        for k, v in self.materials_db.items():
-            temp_dictionary[k] = v
-        self.materials_db.clear()
-
-        if updates:
-            temp_dictionary = self.update_maya_files(temp_dictionary, updates)
-
-        if to_maya:
-            reformatted_database = utilities.convert_box_dict_to_standard(temp_dictionary)
-            for key, value in reformatted_database.items():
-                self.materials_db[key] = value
-        else:
-            reformatted_database = utilities.convert_standard_dict_to_box(temp_dictionary)
-            for key, value in reformatted_database.items():
-                self.materials_db[key] = value
-
-    def update_maya_files(self, temp_dictionary, updates):
-        """
-        Updates the "mayafiles" entry of each FBX file that has had a Maya file successfully generated for it.
-        :param temp_dictionary: Dictionary containing the current shelve database listing relating to the Maya
-        files generated.
-        :param updates: Dictionary containing the Maya file information
-        :return:
-        """
-        _LOGGER.info('Updating Maya Files ------------------->>')
-        for key, value in temp_dictionary.items():
-            for k, v in updates.items():
-                if k == key:
-                    for fbx_file, maya_file_value in v.items():
-                        for target_fbx, target_fbx_listing in value[constants.FBX_FILES].items():
-                            if fbx_file == target_fbx:
-                                _LOGGER.info('Updating Mayafile: {}'.format(maya_file_value['maya_file']))
-                                target_fbx_listing[constants.FBX_MAYA_FILE] = maya_file_value['maya_file']
-        return temp_dictionary
-
-    def initialize_qprocess(self):
-        """
-        This sets the QProcess object up and adds all of the aspects that will remain consistent for each directory
-        processed.
-        :return:
-        """
-        self.p = QProcess()
-        env = [env for env in QtCore.QProcess.systemEnvironment() if not env.startswith('PYTHONPATH=')]
-        env.append(f'MAYA_LOCATION={os.path.dirname(self.mayapy_path)}')
-        env.append(f'PYTHONPATH={os.path.dirname(self.mayapy_path)}')
-        self.p.setEnvironment(env)
-        self.p.setProgram(str(self.mayapy_path))
-        self.p.setProcessChannelMode(QProcess.SeparateChannels)
-        self.p.readyReadStandardOutput.connect(self.handle_stdout)
-        self.p.readyReadStandardError.connect(self.handle_stderr)
-        self.p.stateChanged.connect(self.handle_state)
-        self.p.started.connect(self.processStarted)
-        self.p.finished.connect(self.cleanup)
-
-    def create_maya_files(self, base_directory, destination_directory, fbx_files):
-        """
-        Once information is gathered for targeted directories and all the texture files have been converted, this is the
-        final processing step run before the material files are generated. The creation of the Maya files is done by
-        way of Maya Standalone. There are some reported issues with Stingray textures and Maya that have been formally
-        added to the bug fix queue at Autodesk. Until then, there is an additional script to run for each of the Maya
-        files generated to attach texture connections (isolate_and_assign.py).
-        :param base_directory: The directory that contains the FBX files used for creating the Maya files
-        :param destination_directory: Where the Maya files are to be saved
-        :param fbx_files: List of FBX files to be converted to Maya ascii files
-        :return:
-        """
-        if self.create_maya_files_checkbox.isChecked():
-            self.reformat_materials_db(True)
-            db_updates = None
-            fbx_list = []
-            for file in fbx_files:
-                maya_file = Path(os.path.join(destination_directory, str(file.stem) + '.ma'))
-                if not maya_file.is_file():
-                    fbx_list.append(str(file))
-            try:
-                script_path = os.path.join(os.getcwd(), 'create_maya_files.py')
-                modify_material_names = 'True' if self.clean_material_names_checkbox.isChecked() else 'False'
-                fbx_list.append(os.path.normpath(base_directory))
-                fbx_list.append(os.path.normpath(destination_directory))
-                fbx_list.append(modify_material_names)
-
-                command = [script_path]
-                for file in fbx_list:
-                    command.append(file)
-
-                self.p.setArguments(command)
-                self.p.start()
-                self.p.waitForFinished(-1)
-            except Exception as e:
-                _LOGGER.warning(f'Error creating Maya Files: {e}')
-
-    def processStarted(self):
-        _LOGGER.info('Maya Standalone Process Started....')
-
-    def handle_stderr(self):
-        pass
-        # data = self.p.readAllStandardError()
-        # stderr = bytes(data).decode("utf8")
-        # _LOGGER.info(f'STD_ERROR_FIRED: {stderr}')
-
-    def handle_stdout(self):
-        """
-        This catches standard output from Maya while processing. It is used for keeping track of progress, and once
-        the last FBX file in a target directory is processed, it updates the database with the newly created Maya files.
-        :return:
-        """
-        data = self.p.readAllStandardOutput()
-        stdout = bytes(data).decode("utf8")
-        if stdout.startswith('{'):
-            _LOGGER.info('QProcess Complete.')
-            db_updates = json.loads(stdout)
-            self.maya_processing_complete(db_updates)
-        else:
-            self.progress_event_fired(stdout)
-
-    def handle_state(self, state):
-        """
-        Mainly just for an indication in the Logging statements as to whether or not the QProcess is running
-        :param state:
-        :return:
-        """
-        states = {
-            QProcess.NotRunning: 'Not running',
-            QProcess.Starting:   'Starting',
-            QProcess.Running:    'Running'
-        }
-        state_name = states[state]
-        _LOGGER.info(f'QProcess State Change: {state_name}')
-
-    def cleanup(self):
-        self.p.closeWriteChannel()
-        _LOGGER.info("Maya File Conversion Complete")
 
     def create_designer_files(self, fbx_file):
         """
@@ -1117,11 +949,11 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                         checklist['status'] = 'Started'
                         checklist['synced'] = 'No'
                         checklist_data[material_name] = {key: values for key, values in checklist.items()}
-                self.export_checklist(destination_directory, dict(checklist_data))
+                self.create_checklist(destination_directory, dict(checklist_data))
             except Exception as e:
                 _LOGGER.info(f'Checklist data could not be processed- Exception: {e}')
 
-    def export_checklist(self, target_path, export_data):
+    def create_checklist(self, target_path, export_data):
         """
         Creates the auditing checklist csv file for keeping logs on progress in the conversion process.
         :param target_path:
@@ -1217,6 +1049,18 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                 pass
         _LOGGER.info(f'\n_____\n_____FBX Material Dictionary:::: {fbx_material_dictionary}\n______\n')
         return fbx_material_dictionary
+
+    def get_emission_intensity(self, mtl_setting):
+        """
+        This converts the emission intensity setting of an mtl file into an equivalent exposure value for the
+        .material format.
+        :param mtl_setting: The float value to be converted from the .mtl file
+        :return:
+        """
+        if float(mtl_setting) > 0.0:
+            return math.log(mtl_setting * 1000.0 / .125, 2) / 3.0
+        else:
+            return -5.0
 
     def get_additional_textures(self, search_path, texture_set):
         """
@@ -1337,9 +1181,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         if maya_versions:
             target_version = f'Maya{max(maya_versions)}'
             return self.autodesk_directory / target_version / 'bin\mayapy.exe'
-        else:
-            self.create_maya_files_checkbox.setEnabled(False)
-            return None
+        return None
 
     def get_section_audit(self, key):
         """
@@ -1405,6 +1247,63 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             readout_text += f'{texture_file}\n'
         readout_text += '\n\n\n'
         return readout_text
+
+    def get_fbx_info(self, fbx_files):
+        fbx_dictionary = {}
+        for key, values in fbx_files.items():
+            temp_dictionary = {}
+            if 'mayafile' in values.keys():
+                temp_dictionary['mayafile'] = values[constants.FBX_MAYA_FILE]
+            if 'materials' in values.keys():
+                temp_dictionary['materials'] = values[constants.FBX_MATERIALS]
+            if temp_dictionary:
+                fbx_dictionary[key] = temp_dictionary
+        return fbx_dictionary
+
+    def get_material_list(self, fbx_dictionary):
+        material_list = []
+        for key, values in fbx_dictionary.items():
+            for k, v in values['materials'].items():
+                if 'materialfile' in v.keys():
+                    if v['materialfile']:
+                        file_path = Path(v['materialfile'])
+                        material_list.append(file_path.name)
+        material_list.insert(0, 'Choose')
+        return material_list
+
+    def get_environment_variables(self, application):
+        if application == 'maya':
+            return constants.MAYA_ENV.items()
+        return None
+
+    def get_current_maya_file(self):
+        maya_file = self.materials_db[str(self.asset_directory_combobox.currentIndex())]['fbxfiles'][
+            self.fbx_combobox.currentText()]['mayafile']
+        _LOGGER.info(f'Get current maya file: {maya_file}')
+        return str(maya_file)
+
+    def get_current_fbx_file(self):
+        fbx_name = self.fbx_combobox.currentText()
+        if self.input_directory != self.output_directory:
+            directory_name = self.materials_db[str(self.asset_directory_combobox.currentIndex())]['directoryname']
+            target_path = Path(f'{self.output_directory}/Assets/Objects/{directory_name}/{fbx_name}')
+        else:
+            target_path = self.output_directory.glob(fbx_name)
+        return str(target_path)
+
+    def get_current_material_data(self):
+        material_data = self.materials_db[str(self.asset_directory_combobox.currentIndex())]['fbxfiles'][
+            self.fbx_combobox.currentText()]['materials']
+        return material_data
+
+    def get_script_arguments(self, application, script_path, function):
+        file_path = script_data = None
+        if application == 'maya':
+            if script_path == 'material_preview_builder':
+                file_path = self.get_current_fbx_file()
+                script_data = self.get_current_material_data()
+        script_data = str(utilities.convert_box_dict_to_standard(script_data))
+        return [script_path, function, script_data, file_path]
 
     def set_material_information(self, asset_information, mtl_info, fbx_file, destination_directory):
         """
@@ -1523,54 +1422,6 @@ class LegacyFilesConverter(QtWidgets.QDialog):
 
         except Exception as e:
             _LOGGER.info(f'Exception occured in set asset window: {e}')
-
-    def get_fbx_info(self, fbx_files):
-        fbx_dictionary = {}
-        for key, values in fbx_files.items():
-            temp_dictionary = {}
-            if 'mayafile' in values.keys():
-                temp_dictionary['mayafile'] = values[constants.FBX_MAYA_FILE]
-            if 'materials' in values.keys():
-                temp_dictionary['materials'] = values[constants.FBX_MATERIALS]
-            if temp_dictionary:
-                fbx_dictionary[key] = temp_dictionary
-        return fbx_dictionary
-
-    def get_material_list(self, fbx_dictionary):
-        material_list = []
-        for key, values in fbx_dictionary.items():
-            for k, v in values['materials'].items():
-                if 'materialfile' in v.keys():
-                    if v['materialfile']:
-                        file_path = Path(v['materialfile'])
-                        material_list.append(file_path.name)
-        material_list.insert(0, 'Choose')
-        return material_list
-
-    def get_environment_variables(self, application):
-        if application == 'maya':
-            return constants.MAYA_ENV.items()
-        return None
-
-    def get_current_maya_file(self):
-        maya_file = self.materials_db[str(self.asset_directory_combobox.currentIndex())]['fbxfiles'][
-            self.fbx_combobox.currentText()]['mayafile']
-        _LOGGER.info(f'Get current maya file: {maya_file}')
-        return str(maya_file)
-
-    def get_current_material_data(self):
-        material_data = self.materials_db[str(self.asset_directory_combobox.currentIndex())]['fbxfiles'][
-            self.fbx_combobox.currentText()]['materials']
-        return material_data
-
-    def get_script_arguments(self, application, script_path, function):
-        file_path = script_data = None
-        if application == 'maya':
-            if script_path == 'maya_materials':
-                file_path = self.get_current_maya_file()
-                script_data = self.get_current_material_data()
-        script_data = str(utilities.convert_box_dict_to_standard(script_data))
-        return [script_path, function, file_path, script_data]
 
     def set_texture_list(self, fbx_dictionary, target_fbx):
         table_texture_list = []
@@ -1725,15 +1576,9 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             fbx_files = listing['files']['.fbx']
             if isinstance(fbx_files, list):
                 for fbx in fbx_files:
-                    if self.create_maya_files_checkbox.isChecked():
-                        self.load_events[1] += constants.LOAD_WEIGHTS['maya'] + constants.LOAD_WEIGHTS['fbx']
-                    else:
-                        self.load_events[1] += constants.LOAD_WEIGHTS['fbx']
+                    self.load_events[1] += constants.LOAD_WEIGHTS['fbx']
             else:
-                if self.create_maya_files_checkbox.isChecked():
-                    self.load_events[1] = constants.LOAD_WEIGHTS['maya'] + constants.LOAD_WEIGHTS['fbx']
-                else:
-                    self.load_events[1] = constants.LOAD_WEIGHTS['fbx']
+                self.load_events[1] = constants.LOAD_WEIGHTS['fbx']
         _LOGGER.info('LoadEventTotal: {}'.format(self.load_events[1]))
 
     def progress_event_fired(self, progress):
@@ -1751,9 +1596,6 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             load_percentage = int((self.load_events[0] / self.load_events[1]) * 100)
             self.progress_bar.setValue(load_percentage)
             self.app.processEvents()
-
-    def maya_processing_complete(self, db_updates):
-        self.reformat_materials_db(False, db_updates)
 
     def reset_load_progress(self):
         self.set_data_window()
