@@ -14,6 +14,7 @@
 #include <platform.h>
 #include <StringUtils.h>
 #include <ISystem.h>
+#include <Random.h>
 #include <UnicodeFunctions.h>
 #include <IConsole.h>
 
