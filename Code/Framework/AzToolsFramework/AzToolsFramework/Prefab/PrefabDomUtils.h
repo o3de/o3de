@@ -76,7 +76,8 @@ namespace AzToolsFramework
             * @return bool on whether the operation succeeded.
             */
             bool LoadInstanceFromPrefabDom(
-                Instance& instance, const PrefabDom& prefabDom, AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& loadedAssets, LoadInstanceFlags flags = LoadInstanceFlags::None);
+                Instance& instance, const PrefabDom& prefabDom, AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets,
+                LoadInstanceFlags flags = LoadInstanceFlags::None);
 
             /**
             * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.

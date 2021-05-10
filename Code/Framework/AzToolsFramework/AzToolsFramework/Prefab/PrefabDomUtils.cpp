@@ -118,7 +118,7 @@ namespace AzToolsFramework
             }
 
             bool LoadInstanceFromPrefabDom(
-                Instance& instance, const PrefabDom& prefabDom, AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& loadedAssets, LoadInstanceFlags flags)
+                Instance& instance, const PrefabDom& prefabDom, AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets, LoadInstanceFlags flags)
             {
                 // When entities are rebuilt they are first destroyed. As a result any assets they were exclusively holding on to will
                 // be released and reloaded once the entities are built up again. By suspending asset release temporarily the asset reload
@@ -156,7 +156,7 @@ namespace AzToolsFramework
                     return false;
                 }
 
-                loadedAssets = assetTracker.GetTrackedAssets();
+                referencedAssets = AZStd::move(assetTracker.GetTrackedAssets());
                 return true;
             }
 
