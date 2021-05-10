@@ -29,7 +29,7 @@ import ly_test_tools.environment.file_system
 import ly_test_tools.launchers.launcher_helper
 import ly_test_tools.launchers.platforms.base
 import ly_test_tools.environment.watchdog
-from ly_test_tools import ALL_PLATFORM_OPTIONS, HOST_OS_PLATFORM
+from ly_test_tools import ALL_PLATFORM_OPTIONS, HOST_OS_PLATFORM, HOST_OS_GENERIC_EXECUTABLE
 
 logger = logging.getLogger(__name__)
 
@@ -287,7 +287,7 @@ def generic_launcher(workspace, request, crash_log_watchdog):
     # type: (...) -> ly_test_tools.launchers.platforms.base.Launcher
     return _generic_launcher(
         workspace=workspace,
-        launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_PLATFORM),
+        launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_GENERIC_EXECUTABLE),
         exe_file_name=get_fixture_argument(request, 'exe_file_name', ''))
 
 

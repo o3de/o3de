@@ -75,5 +75,5 @@ def create_generic_launcher(workspace, launcher_platform, exe_file_name, args=No
     :param args: List of arguments to pass to the launcher's 'args' argument during construction
     :return: Launcher instance.
     """
-    launcher_class = ly_test_tools.LAUNCHERS.get(launcher_platform, ly_test_tools.HOST_OS_PLATFORM)
+    launcher_class = ly_test_tools.LAUNCHERS.get(launcher_platform, ly_test_tools.HOST_OS_GENERIC_EXECUTABLE)
     return launcher_class(workspace, exe_file_name, args)

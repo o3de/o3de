@@ -37,6 +37,7 @@ if WINDOWS:
     HOST_OS_PLATFORM = 'windows'
     HOST_OS_EDITOR = 'windows_editor'
     HOST_OS_DEDICATED_SERVER = 'windows_dedicated'
+    HOST_OS_GENERIC_EXECUTABLE = 'windows_generic'
     import ly_test_tools.mobile.android
     from ly_test_tools.launchers import (
         AndroidLauncher, WinLauncher, DedicatedWinLauncher, WinEditor, WinGenericLauncher)
