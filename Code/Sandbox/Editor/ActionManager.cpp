@@ -213,18 +213,18 @@ void DynamicMenu::AddAction(int id, QAction* action)
     action->setData(id);
     action->setParent(m_menu);
 
-    m_actions[id] = action;
+    //m_actions[id] = action;
     m_menu->addAction(action);
 
 
     connect(action, SIGNAL(triggered()), m_actionMapper, SLOT(map()));
     m_actionMapper->setMapping(action, id);
 
+    AzToolsFramework::EditorActionRequestBus::Broadcast(&AzToolsFramework::EditorActionRequests::AddActionViaBus, id, action);
 
     //NEW// 
     //m_actionManager->m_shortcutDispatcher->AddNewAction(action);
     //QObject::connect(action, &QAction::triggered, action, action);
-    AzToolsFramework::EditorActionRequestBus::Broadcast(&AzToolsFramework::EditorActionRequests::AddActionViaBus, id, action);
 
 }
 
@@ -238,6 +238,13 @@ ActionManager::ActionWrapper DynamicMenu::AddAction(int id, const QString& name)
 {
     QAction* action = new PatchedAction(name, this);
     AddAction(id, action);
+    return ActionManager::ActionWrapper(action, m_actionManager);
+}
+
+ActionManager::ActionWrapper DynamicMenu::AddAction(AZ::Crc32 id, const QString& name)
+{
+    QAction* action = new PatchedAction(name, this);
+    AddAction(static_cast<int>(id), action);
     return ActionManager::ActionWrapper(action, m_actionManager);
 }
 
@@ -413,7 +420,6 @@ void ActionManager::AddAction(QAction* action)
         Q_ASSERT(false);
     }
 
-    m_actions[id] = action;
     connect(action, SIGNAL(triggered()), m_actionMapper, SLOT(map()));
     m_actionMapper->setMapping(action, id);
 
@@ -451,9 +457,50 @@ ActionManager::ActionWrapper ActionManager::AddAction(int id, const QString& nam
         : static_cast<QAction*>(new PatchedAction(name, this)); // static cast to base so ternary compiles
 
     action->setData(id);
+
+    connect(action, SIGNAL(triggered()), m_actionMapper, SLOT(map()));
+    m_actionMapper->setMapping(action, id);
+
+    auto widget = qobject_cast<QWidget*>(parent());
+
+    if (widget)
+    {
+        widget->addAction(action);
+        action->setParent(widget);
+    }
+
     m_shortcutDispatcher->AddNewAction(action);
+
     return ActionWrapper(action, this);
 }
+
+ActionManager::ActionWrapper ActionManager::AddAction(AZ::Crc32 id, const QString& name)
+{
+    int new_id = static_cast<int>(id);
+
+    QAction* action = ActionIsWidget(new_id)
+        ? new WidgetAction(id, m_mainWindow, name, this)
+    : static_cast<QAction*>(new PatchedAction(name, this)); // static cast to base so ternary compiles
+
+    action->setData(static_cast<int>(new_id));
+
+    connect(action, SIGNAL(triggered()), m_actionMapper, SLOT(map()));
+    m_actionMapper->setMapping(action, new_id);
+
+    auto widget = qobject_cast<QWidget*>(parent());
+
+    if (widget)
+    {
+        widget->addAction(action);
+        action->setParent(widget);
+    }
+
+    m_shortcutDispatcher->AddNewAction(action);
+
+    return ActionWrapper(action, this);
+}
+
+
 
 bool ActionManager::HasAction(QAction* action) const
 {
@@ -467,7 +514,7 @@ bool ActionManager::HasAction(int id) const
 
 QAction* ActionManager::GetAction(int id) const
 {
-    auto it = m_actions.find(id);
+    //auto it = m_actions.find(id);
 
     for (unsigned i = 0; i < m_shortcutDispatcher->m_all_actions.size(); i++)
     {
@@ -475,16 +522,18 @@ QAction* ActionManager::GetAction(int id) const
             return m_shortcutDispatcher->m_all_actions[i].second;
     }
 
-    if (it == m_actions.cend())
-    {
-        qWarning() << Q_FUNC_INFO << "Couldn't get action " << id;
-        Q_ASSERT(false);
-        return nullptr;
-    }
-    else
-    {
-        return *it;
-    }
+    return nullptr;
+
+    //if (it == m_actions.cend())
+    //{
+    //    qWarning() << Q_FUNC_INFO << "Couldn't get action " << id;
+    //    Q_ASSERT(false);
+    //    return nullptr;
+    //}
+    //else
+    //{
+    //    return *it;
+    //}
 }
 
 void ActionManager::ActionTriggered(int id)
@@ -627,6 +676,8 @@ void ActionManager::AddActionViaBus(int id, QAction* action)
 {
     action->setData(id);
     m_shortcutDispatcher->AddNewAction(action);
+
+    // change this alex
 }
 
 void ActionManager::RemoveActionViaBus(QAction* action)
@@ -676,3 +727,5 @@ QWidget* WidgetAction::createWidget(QWidget* parent)
 }
 
 #include <moc_ActionManager.cpp>
+
+

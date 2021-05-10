@@ -287,6 +287,7 @@ bool ShortcutDispatcher::FindCandidateActionAndFire(
     [[maybe_unused]] QList<QAction*>& candidates,
     [[maybe_unused]] QSet<QObject*>& previouslyVisited)
 {
+
     for (unsigned i = 0; i < m_all_actions.size(); i++)
     {
         if (shortcutEvent->key() == m_all_actions[i].second->shortcut())
@@ -295,12 +296,9 @@ bool ShortcutDispatcher::FindCandidateActionAndFire(
             {
                 // has to be send, not post, or the dispatcher will get the event again and won't know that it was the one that queued it
                 bool isAmbiguous = false;
-                QAction* testing = m_all_actions[i].second;
-                int testing_name = 0;
-                testing_name = testing->data().toInt();
 
                 QShortcutEvent newEvent(shortcutEvent->key(), isAmbiguous);
-                if (QApplication::sendEvent(testing, &newEvent))
+                if (QApplication::sendEvent(m_all_actions[i].second, &newEvent))
                 {
                     shortcutEvent->accept();
                     return true;

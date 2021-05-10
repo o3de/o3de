@@ -742,13 +742,24 @@ void MainWindow::InitActions()
     am->AddAction(ID_TOOLBAR_WIDGET_SPACER_RIGHT, QString());
 
     // File actions
-    am->AddAction(ID_FILE_NEW, tr("New Level"))
+        am->AddAction(ID_FILE_NEW, tr("New Level"))
         .SetShortcut(tr("Ctrl+N"))
         .Connect(&QAction::triggered, [cryEdit]()
         {
             cryEdit->OnCreateLevel();
         })
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateNewLevel);
+
+        static const AZ::Crc32 s_newlevel = AZ_CRC("com.amazon.action.common.newLevel");
+        am->AddAction(s_newlevel,tr("New Level Test"))
+        .SetShortcut(tr("Ctrl+K"))
+        .Connect(&QAction::triggered, [cryEdit]()
+        {
+             cryEdit->OnCreateLevel();
+        })
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateNewLevel);
+
+
     am->AddAction(ID_FILE_OPEN_LEVEL, tr("Open Level..."))
         .SetShortcut(tr("Ctrl+O"))
         .SetStatusTip(tr("Open an existing level"))
@@ -763,11 +774,13 @@ void MainWindow::InitActions()
         .SetStatusTip(tr("Save the selected slice to the first level root"));
     am->AddAction(ID_FILE_SAVE_SLICE_TO_ROOT, tr("Save Slice to root")).SetShortcut(tr("Ctrl+Alt+S"))
         .SetStatusTip(tr("Save the selected slice to the top level root"));
+    
     am->AddAction(ID_FILE_SAVE_LEVEL, tr("&Save"))
         .SetShortcut(tr("Ctrl+S"))
         .SetReserved()
         .SetStatusTip(tr("Save the current level"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateDocumentReady);
+
     am->AddAction(ID_FILE_SAVE_AS, tr("Save &As..."))
         .SetShortcut(tr("Ctrl+Shift+S"))
         .SetReserved()
@@ -927,7 +940,6 @@ void MainWindow::InitActions()
         .SetStatusTip(tr("Snap angle"))
         .SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSnapangle);
-
     // Display actions
     am->AddAction(ID_WIREFRAME, tr("&Wireframe"))
         .SetShortcut(tr("F3"))
