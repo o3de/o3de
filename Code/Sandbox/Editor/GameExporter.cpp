@@ -293,6 +293,17 @@ void CGameExporter::ExportLevelData(const QString& path, bool /*bExportMission*/
     CCryMemFile fileAction;
     fileAction.Write(xmlDataAction.c_str(), xmlDataAction.length());
     m_levelPak.m_pakFile.UpdateFile(levelDataActionFile.toUtf8().data(), fileAction);
+
+    AZStd::vector<char> entitySaveBuffer;
+    AZ::IO::ByteContainerStream<AZStd::vector<char> > entitySaveStream(&entitySaveBuffer);
+    bool savedEntities = false;
+    EBUS_EVENT_RESULT(savedEntities, AzToolsFramework::EditorEntityContextRequestBus, SaveToStreamForGame, entitySaveStream, AZ::DataStream::ST_BINARY);
+    if (savedEntities)
+    {
+        QString entitiesFile;
+        entitiesFile = QStringLiteral("%1%2.entities_xml").arg(path, "Mission0");
+        m_levelPak.m_pakFile.UpdateFile(entitiesFile.toUtf8().data(), entitySaveBuffer.begin(), entitySaveBuffer.size());
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
