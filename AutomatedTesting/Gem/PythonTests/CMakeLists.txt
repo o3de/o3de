@@ -366,6 +366,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
             Legacy::Editor
             AZ::AssetProcessor
             AutomatedTesting.Assets
+            3rdParty::Qt::Test
         COMPONENT
             Editor
     )
