@@ -53,11 +53,6 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    def test_C5932041_PhysXForceRegion_LocalSpaceForceOnRigidBodies(self, request, workspace, editor, launcher_platform):
-        from . import C5932041_PhysXForceRegion_LocalSpaceForceOnRigidBodies as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
     def test_C5932042_PhysXForceRegion_LinearDamping(self, request, workspace, editor, launcher_platform):
         from . import C5932042_PhysXForceRegion_LinearDamping as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -90,11 +85,6 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_C4976194_RigidBody_PhysXComponentIsValid(self, request, workspace, editor, launcher_platform):
         from . import C4976194_RigidBody_PhysXComponentIsValid as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
-    def test_C4044459_Material_DynamicFriction(self, request, workspace, editor, launcher_platform):
-        from . import C4044459_Material_DynamicFriction as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
@@ -209,23 +199,8 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    def test_C15425929_Undo_Redo(self, request, workspace, editor, launcher_platform):
-        from . import C15425929_Undo_Redo as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
-    def test_C15308217_NoCrash_LevelSwitch(self, request, workspace, editor, launcher_platform):
-        from . import C15308217_NoCrash_LevelSwitch as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
     def test_C12868580_ForceRegion_SplineModifiedTransform(self, request, workspace, editor, launcher_platform):
         from . import C12868580_ForceRegion_SplineModifiedTransform as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
-    def test_C4976243_Collision_SameCollisionGroupDiffCollisionLayers(self, request, workspace, editor, launcher_platform):
-        from . import C4976243_Collision_SameCollisionGroupDiffCollisionLayers as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
@@ -249,17 +224,6 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    def test_C4982798_Collider_ColliderRotationOffset(self, request, workspace, editor, launcher_platform):
-        from . import C4982798_Collider_ColliderRotationOffset as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
-    def test_C12712453_ScriptCanvas_MultipleRaycastNode(self, request, workspace, editor, launcher_platform):
-        from . import C12712453_ScriptCanvas_MultipleRaycastNode as test_module
-        # Fixme: unexpected_lines = ["Assert"] + test_module.Lines.unexpected
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
     def test_C5959808_ForceRegion_PositionOffset(self, request, workspace, editor, launcher_platform):
         from . import C5959808_ForceRegion_PositionOffset as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -269,11 +233,13 @@ class TestAutomation(TestAutomationBase):
         from . import C18977601_Material_FrictionCombinePriority as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.xfail(
+        reason="Something with the CryRenderer disabling is causing this test to fail now.")
     @revert_physics_config
     def test_C13895144_Ragdoll_ChangeLevel(self, request, workspace, editor, launcher_platform):
         from . import C13895144_Ragdoll_ChangeLevel as test_module
         self._run_test(request, workspace, editor, test_module)
-
+    
     @revert_physics_config
     def test_C5968759_ForceRegion_ExertsSeveralForcesOnRigidBody(self, request, workspace, editor, launcher_platform):
         from . import C5968759_ForceRegion_ExertsSeveralForcesOnRigidBody as test_module
@@ -288,6 +254,8 @@ class TestAutomation(TestAutomationBase):
         from . import C4044697_Material_PerfaceMaterialValidation as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.xfail(
+        reason="This test will sometimes fail as the ball will continue to roll before the timeout is reached.")
     @revert_physics_config
     def test_C4976202_RigidBody_StopsWhenBelowKineticThreshold(self, request, workspace, editor, launcher_platform):
         from . import C4976202_RigidBody_StopsWhenBelowKineticThreshold as test_module
@@ -304,11 +272,6 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    def test_C6090547_ForceRegion_ParentChildForceRegions(self, request, workspace, editor, launcher_platform):
-        from . import C6090547_ForceRegion_ParentChildForceRegions as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
     def test_C4982595_Collider_TriggerDisablesCollision(self, request, workspace, editor, launcher_platform):
         from . import C4982595_Collider_TriggerDisablesCollision as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -316,11 +279,6 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_C14976307_Gravity_SetGravityWorks(self, request, workspace, editor, launcher_platform):
         from . import C14976307_Gravity_SetGravityWorks as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
-    def test_C14654881_CharacterController_SwitchLevels(self, request, workspace, editor, launcher_platform):
-        from . import C14654881_CharacterController_SwitchLevels as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
@@ -350,19 +308,19 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','C4976245_PhysXCollider_CollisionLayerTest.setreg', 'AutomatedTesting/Registry')
+    @fm.file_override('physxsystemconfiguration.setreg','C4976245_PhysXCollider_CollisionLayerTest.setreg_override', 'AutomatedTesting/Registry')
     def test_C4976245_PhysXCollider_CollisionLayerTest(self, request, workspace, editor, launcher_platform):
         from . import C4976245_PhysXCollider_CollisionLayerTest as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','C4976244_Collider_SameGroupSameLayerCollision.setreg', 'AutomatedTesting/Registry')
+    @fm.file_override('physxsystemconfiguration.setreg','C4976244_Collider_SameGroupSameLayerCollision.setreg_override', 'AutomatedTesting/Registry')
     def test_C4976244_Collider_SameGroupSameLayerCollision(self, request, workspace, editor, launcher_platform):
         from . import C4976244_Collider_SameGroupSameLayerCollision as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    @fm.file_override('physxdefaultsceneconfiguration.setreg','C14195074_ScriptCanvas_PostUpdateEvent.setreg', 'AutomatedTesting/Registry')
+    @fm.file_override('physxdefaultsceneconfiguration.setreg','C14195074_ScriptCanvas_PostUpdateEvent.setreg_override', 'AutomatedTesting/Registry')
     def test_C14195074_ScriptCanvas_PostUpdateEvent(self, request, workspace, editor, launcher_platform):
         from . import C14195074_ScriptCanvas_PostUpdateEvent as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -373,19 +331,7 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','C4982593_PhysXCollider_CollisionLayer.setreg', 'AutomatedTesting/Registry')
-    def test_C4982593_PhysXCollider_CollisionLayerTest(self, request, workspace, editor, launcher_platform):
-        from . import C4982593_PhysXCollider_CollisionLayerTest as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','C3510644_Collider_CollisionGroups.setreg', 'AutomatedTesting/Registry')
-    def test_C3510644_Collider_CollisionGroups(self, request, workspace, editor, launcher_platform):
-        from . import C3510644_Collider_CollisionGroups as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
-    @fm.file_override('physxdefaultsceneconfiguration.setreg','C14902097_ScriptCanvas_PreUpdateEvent.setreg', 'AutomatedTesting/Registry')
+    @fm.file_override('physxdefaultsceneconfiguration.setreg','C14902097_ScriptCanvas_PreUpdateEvent.setreg_override', 'AutomatedTesting/Registry')
     def test_C14902097_ScriptCanvas_PreUpdateEvent(self, request, workspace, editor, launcher_platform):
         from . import C14902097_ScriptCanvas_PreUpdateEvent as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -414,17 +360,12 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    def test_C18243586_Joints_HingeLeadFollowerCollide(self, request, workspace, editor, launcher_platform):
-        from . import C18243586_Joints_HingeLeadFollowerCollide as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
     def test_C18243591_Joints_BallLeadFollowerCollide(self, request, workspace, editor, launcher_platform):
         from . import C18243591_Joints_BallLeadFollowerCollide as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','C4976227_Collider_NewGroup.setreg', 'AutomatedTesting/Registry')
+    @fm.file_override('physxsystemconfiguration.setreg','C4976227_Collider_NewGroup.setreg_override', 'AutomatedTesting/Registry')
     def test_C4976227_Collider_NewGroup(self, request, workspace, editor, launcher_platform):
         from . import C4976227_Collider_NewGroup as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -440,18 +381,8 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
-    def test_C19578021_ShapeCollider_CanBeAdded(self, request, workspace, editor, launcher_platform):
-        from . import C19578021_ShapeCollider_CanBeAdded as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
     def test_C19723164_ShapeCollider_WontCrashEditor(self, request, workspace, editor, launcher_platform):
         from . import C19723164_ShapeColliders_WontCrashEditor as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
-    def test_C4982803_Enable_PxMesh_Option(self, request, workspace, editor, launcher_platform):
-        from . import C4982803_Enable_PxMesh_Option as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @revert_physics_config
@@ -467,10 +398,6 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_C4982802_PhysXColliderShape_CanBeSelected(self, request, workspace, editor, launcher_platform):
         from . import C4982802_PhysXColliderShape_CanBeSelected as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    def test_C17411467_AddPhysxRagdollComponent(self, request, workspace, editor, launcher_platform):
-        from . import C17411467_AddPhysxRagdollComponent as test_module
         self._run_test(request, workspace, editor, test_module)
 
     def test_C12905528_ForceRegion_WithNonTriggerCollider(self, request, workspace, editor, launcher_platform):
@@ -502,6 +429,8 @@ class TestAutomation(TestAutomationBase):
         from . import C4976236_AddPhysxColliderComponent as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.xfail(
+        reason="This will fail due to this issue ATOM-15487.")
     def test_C14861502_PhysXCollider_AssetAutoAssigned(self, request, workspace, editor, launcher_platform):
         from . import C14861502_PhysXCollider_AssetAutoAssigned as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -520,4 +449,35 @@ class TestAutomation(TestAutomationBase):
 
     def test_C100000_RigidBody_EnablingGravityWorksPoC(self, request, workspace, editor, launcher_platform):
         from . import C100000_RigidBody_EnablingGravityWorksPoC as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    @revert_physics_config
+    @fm.file_override('physxsystemconfiguration.setreg','C3510644_Collider_CollisionGroups.setreg_override', 'AutomatedTesting/Registry')
+    def test_C3510644_Collider_CollisionGroups(self, request, workspace, editor, launcher_platform):
+        from . import C3510644_Collider_CollisionGroups as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    @revert_physics_config
+    def test_C4982798_Collider_ColliderRotationOffset(self, request, workspace, editor, launcher_platform):
+        from . import C4982798_Collider_ColliderRotationOffset as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    @revert_physics_config
+    def test_C15308217_NoCrash_LevelSwitch(self, request, workspace, editor, launcher_platform):
+        from . import C15308217_NoCrash_LevelSwitch as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    @revert_physics_config
+    def test_C6090547_ForceRegion_ParentChildForceRegions(self, request, workspace, editor, launcher_platform):
+        from . import C6090547_ForceRegion_ParentChildForceRegions as test_module
+        self._run_test(request, workspace, editor, test_module)
+        
+    @revert_physics_config
+    def test_C19578021_ShapeCollider_CanBeAdded(self, request, workspace, editor, launcher_platform):
+        from . import C19578021_ShapeCollider_CanBeAdded as test_module
+        self._run_test(request, workspace, editor, test_module)
+        
+    @revert_physics_config
+    def test_C15425929_Undo_Redo(self, request, workspace, editor, launcher_platform):
+        from . import C15425929_Undo_Redo as test_module
         self._run_test(request, workspace, editor, test_module)

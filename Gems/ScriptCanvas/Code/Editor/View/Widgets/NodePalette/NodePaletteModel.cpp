@@ -129,6 +129,7 @@ namespace
         , const AZ::BehaviorClass* behaviorClass
         , const AZStd::string& name
         , const AZ::BehaviorMethod& method
+        , ScriptCanvas::PropertyStatus propertyStatus
         , bool isOverloaded)
     {
         if (IsDeprecated(method.m_attributes))
@@ -170,7 +171,7 @@ namespace
             serializeContext->RegisterType(resultParameter->m_typeId, AZStd::move(classData), EventPlaceholderAnyCreator);
 
         }
-        nodePaletteModel.RegisterClassNode(categoryPath, behaviorClass ? behaviorClass->m_name : "", name, &method, &behaviorContext, isOverloaded);
+        nodePaletteModel.RegisterClassNode(categoryPath, behaviorClass ? behaviorClass->m_name : "", name, &method, &behaviorContext, propertyStatus, isOverloaded);
     }
 
     void RegisterGlobalMethod(ScriptCanvasEditor::NodePaletteModel& nodePaletteModel, const AZ::BehaviorContext& behaviorContext,
@@ -558,9 +559,14 @@ namespace
 
                 for (auto property : behaviorClass->m_properties)
                 {
+                    if (property.second->m_getter)
+                    {
+                        RegisterMethod(nodePaletteModel, behaviorContext, categoryPath, behaviorClass, property.first, *property.second->m_getter, ScriptCanvas::PropertyStatus::Getter, behaviorClass->IsMethodOverloaded(property.first));
+                    }
+
                     if (property.second->m_setter)
                     {
-                        RegisterMethod(nodePaletteModel, behaviorContext, categoryPath, behaviorClass, property.first, *property.second->m_setter, behaviorClass->IsMethodOverloaded(property.first));
+                        RegisterMethod(nodePaletteModel, behaviorContext, categoryPath, behaviorClass, property.first, *property.second->m_setter, ScriptCanvas::PropertyStatus::Setter, behaviorClass->IsMethodOverloaded(property.first));
                     }
                 }
 
@@ -575,7 +581,7 @@ namespace
                             continue;
                         }
 
-                        RegisterMethod(nodePaletteModel, behaviorContext, categoryPath, behaviorClass, methodIter.first, *methodIter.second, behaviorClass->IsMethodOverloaded(methodIter.first));
+                        RegisterMethod(nodePaletteModel, behaviorContext, categoryPath, behaviorClass, methodIter.first, *methodIter.second, ScriptCanvas::PropertyStatus::None, behaviorClass->IsMethodOverloaded(methodIter.first));
                     }
                 }
             }
@@ -587,7 +593,7 @@ namespace
     {
         for (const AZ::ExplicitOverloadInfo& explicitOverload : behaviorContext.m_explicitOverloads)
         {
-            RegisterMethod(nodePaletteModel, behaviorContext, explicitOverload.m_categoryPath, nullptr, explicitOverload.m_name, *explicitOverload.m_overloads.begin()->first, true);
+            RegisterMethod(nodePaletteModel, behaviorContext, explicitOverload.m_categoryPath, nullptr, explicitOverload.m_name, *explicitOverload.m_overloads.begin()->first, ScriptCanvas::PropertyStatus::None, true);
         }
     }
 
@@ -725,7 +731,7 @@ namespace
                 }
 
                 const bool isOverload{ false }; // overloaded events are not trivially supported
-                nodePaletteModel.RegisterEBusSenderNodeModelInformation(categoryPath, behaviorEbus.m_name, event.first, ScriptCanvas::EBusBusId(behaviorEbus.m_name.c_str()), ScriptCanvas::EBusEventId(event.first.c_str()), event.second, isOverload);
+                nodePaletteModel.RegisterEBusSenderNodeModelInformation(categoryPath, behaviorEbus.m_name, event.first, ScriptCanvas::EBusBusId(behaviorEbus.m_name.c_str()), ScriptCanvas::EBusEventId(event.first.c_str()), event.second, ScriptCanvas::PropertyStatus::None, isOverload);
             }
         }
     }
@@ -1032,11 +1038,16 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void NodePaletteModel::RegisterClassNode(const AZStd::string& categoryPath, const AZStd::string& methodClass,
-        const AZStd::string& methodName, const AZ::BehaviorMethod* behaviorMethod, const AZ::BehaviorContext* behaviorContext,
-        bool isOverload)
+    void NodePaletteModel::RegisterClassNode
+        ( const AZStd::string& categoryPath
+        , const AZStd::string& methodClass
+        , const AZStd::string& methodName
+        , const AZ::BehaviorMethod* behaviorMethod
+        , const AZ::BehaviorContext* behaviorContext
+        , ScriptCanvas::PropertyStatus propertyStatus
+        , bool isOverload)
     {
-        ScriptCanvas::NodeTypeIdentifier nodeIdentifier = isOverload ? ScriptCanvas::NodeUtils::ConstructMethodOverloadedNodeIdentifier(methodName) : ScriptCanvas::NodeUtils::ConstructMethodNodeIdentifier(methodClass, methodName);
+        ScriptCanvas::NodeTypeIdentifier nodeIdentifier = isOverload ? ScriptCanvas::NodeUtils::ConstructMethodOverloadedNodeIdentifier(methodName) : ScriptCanvas::NodeUtils::ConstructMethodNodeIdentifier(methodClass, methodName, propertyStatus);
 
         auto registerIter = m_registeredNodes.find(nodeIdentifier);
 
@@ -1047,7 +1058,7 @@ namespace ScriptCanvasEditor
             methodModelInformation->m_nodeIdentifier = nodeIdentifier;
             methodModelInformation->m_classMethod = methodClass;
             methodModelInformation->m_methodName = methodName;
-
+            methodModelInformation->m_propertyStatus = propertyStatus;
             methodModelInformation->m_titlePaletteOverride = "MethodNodeTitlePalette";
 
             methodModelInformation->m_displayName = TranslationHelper::GetKeyTranslation(TranslationContextGroup::ClassMethod, methodClass.c_str(), methodName.c_str(), TranslationItemType::Node, TranslationKeyId::Name);
@@ -1206,7 +1217,15 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void NodePaletteModel::RegisterEBusSenderNodeModelInformation(AZStd::string_view categoryPath, AZStd::string_view busName, AZStd::string_view eventName, const ScriptCanvas::EBusBusId& busId, const ScriptCanvas::EBusEventId& eventId, const AZ::BehaviorEBusEventSender&, bool isOverload)
+    void NodePaletteModel::RegisterEBusSenderNodeModelInformation
+        ( AZStd::string_view categoryPath
+        , AZStd::string_view busName
+        , AZStd::string_view eventName
+        , const ScriptCanvas::EBusBusId& busId
+        , const ScriptCanvas::EBusEventId& eventId
+        , const AZ::BehaviorEBusEventSender&
+        , ScriptCanvas::PropertyStatus propertyStatus
+        , bool isOverload)
     {
         ScriptCanvas::NodeTypeIdentifier nodeIdentifier = isOverload ? ScriptCanvas::NodeUtils::ConstructEBusEventSenderOverloadedIdentifier(busId, eventId) : ScriptCanvas::NodeUtils::ConstructEBusEventSenderIdentifier(busId, eventId);
 
@@ -1220,6 +1239,7 @@ namespace ScriptCanvasEditor
             senderInformation->m_titlePaletteOverride = "MethodNodeTitlePalette";
             senderInformation->m_categoryPath = categoryPath;
             senderInformation->m_nodeIdentifier = nodeIdentifier;
+            senderInformation->m_propertyStatus = propertyStatus;
 
             senderInformation->m_busName = busName;
             senderInformation->m_eventName = eventName;

@@ -122,7 +122,7 @@ namespace Maestro
     ///////////////////////////////////////////////////////////////////////////////////////////////
     void MaestroSystemComponent::OnCrySystemInitialized(ISystem& system, const SSystemInitParams& startupParams)
     {
-        if (!startupParams.bSkipMovie && !startupParams.bShaderCacheGen)
+        if (!startupParams.bSkipMovie)
         {
             // OnCrySystemInitialized should only ever be called once, and we should be the only one initializing gEnv->pMovieSystem
             AZ_Assert(!m_movieSystemEventListener && gEnv && !gEnv->pMovieSystem, "MaestroSystemComponent::OnCrySystemInitialized - movie system was alread initialized.");

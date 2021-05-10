@@ -99,8 +99,13 @@ AZ::RPI::WindowContextSharedPtr AZ::FFont::GetDefaultWindowContext() const
     return {};
 }
 
-bool AZ::FFont::InitFont()
+bool AZ::FFont::InitFont(AZ::RPI::Scene* renderScene)
 {
+    if (!renderScene)
+    {
+        return false;
+    }
+
     auto initializationState = InitializationState::Uninitialized;
     // Do an atomic transition to Initializing if we're in the Uninitialized state.
     // Otherwise, check the current state.
@@ -112,7 +117,7 @@ bool AZ::FFont::InitFont()
     }
 
     // Create and initialize DynamicDrawContext for font draw
-    AZ::RPI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = m_atomFont->GetOrCreateDynamicDrawForScene(GetDefaultViewportContext()->GetRenderScene().get());
+    AZ::RPI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = m_atomFont->GetOrCreateDynamicDrawForScene(renderScene);
 
     // Save draw srg input indices for later use
     Data::Instance<RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
@@ -299,7 +304,7 @@ void AZ::FFont::DrawStringUInternal(
     const TextDrawContext& ctx)
 {
     // Lazily ensure we're initialized before attempting to render.
-    if (!InitFont())
+    if (!viewportContext || !InitFont(viewportContext->GetRenderScene().get()))
     {
         return;
     }
@@ -1228,7 +1233,8 @@ void AZ::FFont::WrapText(string& result, float maxWidth, const char* str, const 
 
     if (ctx.m_sizeIn800x600)
     {
-        maxWidth = gEnv->pRenderer->ScaleCoordX(maxWidth);
+        // ToDo: Update to work with Atom? LYN-3676
+        // maxWidth = ???->ScaleCoordX(maxWidth);
     }
 
     Vec2 strSize = GetTextSize(result.c_str(), true, ctx);
@@ -1623,7 +1629,7 @@ void AZ::FFont::ScaleCoord(const RHI::Viewport& viewport, float& x, float& y) co
 
 void AZ::FFont::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapScene)
 {
-    InitFont();
+    InitFont(bootstrapScene);
 }
 
 static void SetCommonContextFlags(AZ::TextDrawContext& ctx, const AzFramework::TextDrawParameters& params)

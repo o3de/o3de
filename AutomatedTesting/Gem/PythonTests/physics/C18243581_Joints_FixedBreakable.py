@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C18243581
 # Test Case Title : Check that fixed joint is breakable
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/18243581
+
 
 # fmt: off
 class Tests:

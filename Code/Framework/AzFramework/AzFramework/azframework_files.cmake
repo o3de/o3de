@@ -14,7 +14,6 @@ set(FILES
     AzFrameworkModule.h
     AzFrameworkModule.cpp
     API/ApplicationAPI.h
-    API/AtomActiveInterface.h
     Application/Application.cpp
     Application/Application.h
     Archive/Archive.cpp
@@ -194,10 +193,11 @@ set(FILES
     Logging/MissingAssetLogger.h
     Logging/MissingAssetNotificationBus.h
     Scene/Scene.h
+    Scene/Scene.inl
     Scene/Scene.cpp
-    Scene/SceneSystemBus.h
     Scene/SceneSystemComponent.h
     Scene/SceneSystemComponent.cpp
+    Scene/SceneSystemInterface.h
     Script/ScriptComponent.h
     Script/ScriptComponent.cpp
     Script/ScriptDebugAgentBus.h
@@ -213,6 +213,12 @@ set(FILES
     StreamingInstall/StreamingInstall.cpp
     StreamingInstall/StreamingInstallRequests.h
     StreamingInstall/StreamingInstallNotifications.h
+    Physics/Collision/CollisionEvents.h
+    Physics/Collision/CollisionEvents.cpp
+    Physics/Collision/CollisionLayers.h
+    Physics/Collision/CollisionLayers.cpp
+    Physics/Collision/CollisionGroups.h
+    Physics/Collision/CollisionGroups.cpp
     Physics/Common/PhysicsSceneQueries.h
     Physics/Common/PhysicsSceneQueries.cpp
     Physics/Common/PhysicsEvents.h
@@ -223,12 +229,7 @@ set(FILES
     Physics/Common/PhysicsSimulatedBodyEvents.h
     Physics/Common/PhysicsSimulatedBodyEvents.cpp
     Physics/Common/PhysicsTypes.h
-    Physics/Collision/CollisionEvents.h
-    Physics/Collision/CollisionEvents.cpp
-    Physics/Collision/CollisionLayers.h
-    Physics/Collision/CollisionLayers.cpp
-    Physics/Collision/CollisionGroups.h
-    Physics/Collision/CollisionGroups.cpp
+    Physics/Components/SimulatedBodyComponentBus.h
     Physics/Configuration/CollisionConfiguration.h
     Physics/Configuration/CollisionConfiguration.cpp
     Physics/Configuration/RigidBodyConfiguration.h
@@ -265,7 +266,6 @@ set(FILES
     Physics/ShapeConfiguration.h
     Physics/ShapeConfiguration.cpp
     Physics/SystemBus.h
-    Physics/WorldBodyBus.h
     Physics/ColliderComponentBus.h
     Physics/RagdollPhysicsBus.h
     Physics/CharacterPhysicsDataBus.h

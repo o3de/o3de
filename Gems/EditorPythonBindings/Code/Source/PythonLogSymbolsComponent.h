@@ -62,6 +62,7 @@ namespace EditorPythonBindings
         void LogGlobalMethod(AZStd::string_view moduleName, AZStd::string_view methodName, AZ::BehaviorMethod* behaviorMethod) override;
         void LogGlobalProperty(AZStd::string_view moduleName, AZStd::string_view propertyName, AZ::BehaviorProperty* behaviorProperty) override;
         void Finalize() override;
+        AZStd::string FetchPythonTypeName(const AZ::BehaviorParameter& param) override;
 
         ////////////////////////////////////////////////////////////////////////
         // EditorPythonConsoleInterface
@@ -71,7 +72,6 @@ namespace EditorPythonBindings
         ////////////////////////////////////////////////////////////////////////
         // Python type deduction
         AZStd::string_view FetchPythonTypeAndTraits(const AZ::TypeId& typeId, AZ::u32 traits);
-        AZStd::string_view FetchPythonType(const AZ::BehaviorParameter& param);
 
     private:
         using ModuleSet = AZStd::unordered_set<AZStd::string>;

@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID : C4982801
 Test Case Title : Verify that the shape Box can be selected from drop downlist and the value for its dimensions in x,y,z can be set after that
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4982801
+
 """
 
 

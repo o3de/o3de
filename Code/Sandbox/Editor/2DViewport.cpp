@@ -86,7 +86,6 @@ inline Vec3 SnapToSize(Vec3 v, double size)
 //////////////////////////////////////////////////////////////////////
 Q2DViewport::Q2DViewport(QWidget* parent)
     : QtViewport(parent)
-    , m_renderer(nullptr)
 {
     // Scroll offset equals origin
     m_rcSelect.setRect(0, 0, 0, 0);
@@ -528,15 +527,6 @@ void Q2DViewport::paintEvent([[maybe_unused]] QPaintEvent* event)
 //////////////////////////////////////////////////////////////////////////
 int Q2DViewport::OnCreate()
 {
-    m_renderer = GetIEditor()->GetRenderer();
-    assert (m_renderer != NULL);
-    if (m_renderer)
-    {
-        WIN_HWND previousContext = m_renderer->GetCurrentContextHWND();
-        m_renderer->CreateContext(renderOverlayHWND());
-        m_renderer->SetCurrentContext(previousContext);
-    }
-
     // Calculate the View transformation matrix.
     CalculateViewTM();
 
@@ -641,123 +631,11 @@ void Q2DViewport::OnTitleMenu(QMenu* menu)
 //////////////////////////////////////////////////////////////////////////
 void Q2DViewport::OnDestroy()
 {
-    if (m_renderer)
-    {
-        m_renderer->DeleteContext(renderOverlayHWND());
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 void Q2DViewport::Render()
 {
-    if (GetIEditor()->IsInGameMode())
-    {
-        return;
-    }
-
-    if (!m_renderer)
-    {
-        return;
-    }
-
-    if (!isVisible())
-    {
-        return;
-    }
-
-    if (!GetIEditor()->GetDocument()->IsDocumentReady())
-    {
-        return;
-    }
-
-    if (m_renderer->IsStereoEnabled())
-    {
-        return;
-    }
-
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-
-    QRect rc = rect();
-    if (rc.isEmpty())
-    {
-        return;
-    }
-
-    CalculateViewTM();
-
-    // Render
-    WIN_HWND priorContext = m_renderer->GetCurrentContextHWND();
-
-    m_renderer->SetCurrentContext(renderOverlayHWND());
-    m_renderer->BeginFrame();
-    m_renderer->ChangeViewport(0, 0, rc.right(), rc.bottom(), true);
-
-    CScopedWireFrameMode scopedWireFrame(m_renderer, R_SOLID_MODE);
-    auto colorf = Rgb2ColorF(m_colorBackground);
-    m_renderer->ClearTargetsLater(FRT_CLEAR, colorf);
-
-    //////////////////////////////////////////////////////////////////////////
-    // 2D Mode.
-    //////////////////////////////////////////////////////////////////////////
-    if (rc.right() != 0 && rc.bottom() != 0)
-    {
-        TransformationMatrices backupSceneMatrices;
-
-        m_renderer->Set2DMode(rc.right(), rc.bottom(), backupSceneMatrices);
-
-        //////////////////////////////////////////////////////////////////////////
-        // Draw viewport elements here.
-        //////////////////////////////////////////////////////////////////////////
-        // Calc world bounding box for objects rendering.
-        m_displayBounds = GetWorldBounds(QPoint(0, 0), QPoint(rc.width(), rc.height()));
-
-        // Draw all objects.
-        DisplayContext& dc = m_displayContext;
-        dc.settings = GetIEditor()->GetDisplaySettings();
-        dc.view = this;
-        dc.renderer = m_renderer;
-        dc.engine = GetIEditor()->Get3DEngine();
-        dc.flags = DISPLAY_2D;
-        dc.box = m_displayBounds;
-        dc.camera = &GetIEditor()->GetSystem()->GetViewCamera();
-
-        if (!dc.settings->IsDisplayLabels() || !dc.settings->IsDisplayHelpers())
-        {
-            dc.flags |= DISPLAY_HIDENAMES;
-        }
-        if (dc.settings->IsDisplayLinks() && dc.settings->IsDisplayHelpers())
-        {
-            dc.flags |= DISPLAY_LINKS;
-        }
-        if (m_bDegradateQuality)
-        {
-            dc.flags |= DISPLAY_DEGRADATED;
-        }
-
-        SRenderingPassInfo passInfo = SRenderingPassInfo::CreateGeneralPassRenderingInfo(GetIEditor()->GetSystem()->GetViewCamera());
-
-        m_renderer->BeginSpawningGeneratingRendItemJobs(passInfo.ThreadID());
-        m_renderer->BeginSpawningShadowGeneratingRendItemJobs(passInfo.ThreadID());
-        m_renderer->EF_StartEf(passInfo);
-
-        dc.SetState(e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOff | e_DepthTestOn);
-        Draw(dc);
-
-        m_renderer->EF_EndEf3D(SHDF_STREAM_SYNC, -1, -1, passInfo);
-
-        m_renderer->EF_RenderTextMessages();
-
-        // Return back from 2D mode.
-        m_renderer->Unset2DMode(backupSceneMatrices);
-
-        m_renderer->RenderDebug(false);
-
-        ProcessRenderLisneters(m_displayContext);
-
-        m_renderer->EndFrame();
-    }
-
-    GetIEditor()->GetRenderer()->SetCurrentContext(priorContext);
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -29,11 +29,8 @@ namespace Ui
 
 namespace AtomToolsFramework
 {
-    class InspectorPropertyGroupWidget;
-}
+    class InspectorGroupHeaderWidget;
 
-namespace AtomToolsFramework
-{
     //! Provides controls for viewing and editing object settings.
     //! The settings can be divided into groups, with each one showing a subset of properties.
     class InspectorWidget
@@ -66,8 +63,15 @@ namespace AtomToolsFramework
         void RefreshAll() override;
         void RebuildAll() override;
 
+        void ExpandAll() override;
+        void CollapseAll() override;
+
     private:
+        void OnHeaderClicked(QMouseEvent* event, InspectorGroupHeaderWidget* groupHeader, QWidget* groupWidget);
+
         QVBoxLayout* m_layout = nullptr;
         QScopedPointer<Ui::InspectorWidget> m_ui;
+        AZStd::vector<InspectorGroupHeaderWidget*> m_headers;
+        AZStd::vector<QWidget*> m_groups;
     };
 } // namespace AtomToolsFramework

@@ -156,7 +156,7 @@ Please note that only those seed files will get updated that are active for your
         else
         {
             QString relativePathQString;
-            if (!PlatformConfiguration::ConvertToRelativePath(normalizedSource.c_str(), scanFolderInfo, relativePathQString, false))
+            if (!PlatformConfiguration::ConvertToRelativePath(normalizedSource.c_str(), scanFolderInfo, relativePathQString))
             {
                 return AZ::Failure(AZStd::string::format("Failed to convert path to relative path. %s\n", normalizedSource.c_str()));
             }
@@ -165,16 +165,6 @@ Please note that only those seed files will get updated that are active for your
         }
 
         return AZ::Success();
-    }
-
-    AZStd::string SourceFileRelocator::RemoveDatabasePrefix(const ScanFolderInfo* scanFolder, AZStd::string sourceName)
-    {
-        if (!scanFolder->GetOutputPrefix().isEmpty())
-        {
-            return sourceName.substr(scanFolder->GetOutputPrefix().size() + 1); //+1 to remove the slash after the prefix
-        }
-
-        return sourceName;
     }
 
     QHash<QString, int> SourceFileRelocator::GetSources(QStringList pathMatches, const ScanFolderInfo* scanFolderInfo,
@@ -188,7 +178,7 @@ Please note that only those seed files will get updated that are active for your
             PlatformConfiguration::ConvertToRelativePath(file, scanFolderInfo, databaseSourceName);
             m_stateData->QuerySourceBySourceNameScanFolderID(databaseSourceName.toUtf8().constData(), scanFolderInfo->ScanFolderID(), [this, &sources, &scanFolderInfo, &sourceIndexMap, &databaseSourceName](const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
                 {
-                    sources.emplace_back(entry, GetProductMapForSource(entry.m_sourceID), RemoveDatabasePrefix(scanFolderInfo, entry.m_sourceName), scanFolderInfo);
+                    sources.emplace_back(entry, GetProductMapForSource(entry.m_sourceID), entry.m_sourceName, scanFolderInfo);
                     sourceIndexMap[databaseSourceName] = aznumeric_cast<int> (sources.size() - 1);
                     return true;
                 });
@@ -356,12 +346,6 @@ Please note that only those seed files will get updated that are active for your
                     }
 
                     QString relativeFileName(normalizedSource.c_str());
-
-                    //if relative path starts with the output prefix than remove it first
-                    if (!scanFolderInfo->GetOutputPrefix().isEmpty() && relativeFileName.startsWith(scanFolderInfo->GetOutputPrefix(), Qt::CaseInsensitive))
-                    {
-                        relativeFileName = relativeFileName.right(relativeFileName.length() - (scanFolderInfo->GetOutputPrefix().length() + 1)); // adding 1 for slash
-                    }
 
                     QDir rooted(scanFolderInfo->ScanPath());
                     QString absolutePath = rooted.absoluteFilePath(relativeFileName);
@@ -620,7 +604,7 @@ Please note that only those seed files will get updated that are active for your
             {
                 QString relativePath;
                 QString scanFolderName;
-                m_platformConfig->ConvertToRelativePath(newDestinationPath.c_str(), relativePath, scanFolderName, false);
+                m_platformConfig->ConvertToRelativePath(newDestinationPath.c_str(), relativePath, scanFolderName);
 
                 relocationInfo.m_newAbsolutePath = newDestinationPath;
                 relocationInfo.m_newRelativePath = relativePath.toUtf8().constData();

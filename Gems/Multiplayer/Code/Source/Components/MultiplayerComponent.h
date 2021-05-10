@@ -15,8 +15,8 @@
 #include <AzCore/Component/Component.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/DataStructures/FixedSizeBitsetView.h>
-#include <Source/NetworkEntity/NetworkEntityHandle.h>
-#include <Source/MultiplayerTypes.h>
+#include <Include/NetworkEntityHandle.h>
+#include <Include/MultiplayerTypes.h>
 #include <Include/IMultiplayer.h>
 
 //! Macro to declare bindings for a multiplayer component inheriting from MultiplayerComponent
@@ -69,7 +69,7 @@ namespace Multiplayer
 
         virtual NetComponentId GetNetComponentId() const = 0;
 
-        virtual bool HandleRpcMessage(NetEntityRole netEntityRole, NetworkEntityRpcMessage& rpcMessage) = 0;
+        virtual bool HandleRpcMessage(AzNetworking::IConnection* invokingConnection, NetEntityRole netEntityRole, NetworkEntityRpcMessage& rpcMessage) = 0;
         virtual bool SerializeStateDeltaMessage(ReplicationRecord& replicationRecord, AzNetworking::ISerializer& serializer) = 0;
         virtual void NotifyStateDeltaChanges(ReplicationRecord& replicationRecord) = 0;
         virtual bool HasController() const = 0;
@@ -104,13 +104,14 @@ namespace Multiplayer
     template <typename TYPE>
     inline void SerializeNetworkPropertyHelper
     (
-        AzNetworking::ISerializer& serializer,
-        bool modifyRecord,
-        AzNetworking::FixedSizeBitsetView& bitset,
-        int32_t bitIndex,
-        TYPE& value,
-        const char* name,
-        [[maybe_unused]] NetComponentId componentId,
+        AzNetworking::ISerializer& serializer, 
+        bool modifyRecord, 
+        AzNetworking::FixedSizeBitsetView& bitset, 
+        int32_t bitIndex, 
+        TYPE& value, 
+        const char* name, 
+        NetComponentId componentId, 
+        PropertyIndex propertyIndex, 
         MultiplayerStats& stats
     )
     {
@@ -131,13 +132,11 @@ namespace Multiplayer
             {
                 if (modifyRecord)
                 {
-                    stats.m_propertyUpdatesRecv++;
-                    stats.m_propertyUpdatesRecvBytes += updateSize;
+                    stats.RecordPropertyReceived(componentId, propertyIndex, updateSize);
                 }
                 else
                 {
-                    stats.m_propertyUpdatesSent++;
-                    stats.m_propertyUpdatesSentBytes += updateSize;
+                    stats.RecordPropertySent(componentId, propertyIndex, updateSize);
                 }
             }
         }

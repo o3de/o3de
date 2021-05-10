@@ -21,9 +21,10 @@
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <Source/NetworkEntity/EntityReplication/ReplicationRecord.h>
-#include <Source/NetworkEntity/NetworkEntityHandle.h>
-#include <Source/NetworkInput/IMultiplayerComponentInput.h>
-#include <Source/MultiplayerTypes.h>
+#include <Include/NetworkEntityHandle.h>
+#include <Include/IMultiplayerComponentInput.h>
+#include <Include/INetworkTime.h>
+#include <Include/MultiplayerTypes.h>
 #include <AzCore/EBus/Event.h>
 
 namespace Multiplayer
@@ -34,7 +35,9 @@ namespace Multiplayer
 
     using EntityStopEvent = AZ::Event<const ConstNetworkEntityHandle&>;
     using EntityDirtiedEvent = AZ::Event<>;
-    using EntityMigrationEvent = AZ::Event<const ConstNetworkEntityHandle&, HostId, AzNetworking::ConnectionId>;
+    using EntityMigrationStartEvent = AZ::Event<ClientInputId>;
+    using EntityMigrationEndEvent = AZ::Event<>;
+    using EntityServerMigrationEvent = AZ::Event<const ConstNetworkEntityHandle&, HostId, AzNetworking::ConnectionId>;
 
     //! @class NetBindComponent
     //! @brief Component that provides net-binding to a networked entity.
@@ -72,7 +75,7 @@ namespace Multiplayer
         void ProcessInput(NetworkInput& networkInput, float deltaTime);
         AZ::Aabb GetRewindBoundsForInput(const NetworkInput& networkInput, float deltaTime) const;
 
-        bool HandleRpcMessage(NetEntityRole remoteRole, NetworkEntityRpcMessage& message);
+        bool HandleRpcMessage(AzNetworking::IConnection* invokingConnection, NetEntityRole remoteRole, NetworkEntityRpcMessage& message);
         bool HandlePropertyChangeMessage(AzNetworking::ISerializer& serializer, bool notifyChanges = true);
 
         RpcSendEvent& GetSendAuthorityToClientRpcEvent();
@@ -84,11 +87,15 @@ namespace Multiplayer
 
         void MarkDirty();
         void NotifyLocalChanges();
-        void NotifyMigration(HostId remoteHostId, AzNetworking::ConnectionId connectionId);
+        void NotifyMigrationStart(ClientInputId migratedInputId);
+        void NotifyMigrationEnd();
+        void NotifyServerMigration(HostId hostId, AzNetworking::ConnectionId connectionId);
 
         void AddEntityStopEventHandler(EntityStopEvent::Handler& eventHandler);
         void AddEntityDirtiedEventHandler(EntityDirtiedEvent::Handler& eventHandler);
-        void AddEntityMigrationEventHandler(EntityMigrationEvent::Handler& eventHandler);
+        void AddEntityMigrationStartEventHandler(EntityMigrationStartEvent::Handler& eventHandler);
+        void AddEntityMigrationEndEventHandler(EntityMigrationEndEvent::Handler& eventHandler);
+        void AddEntityServerMigrationEventHandler(EntityServerMigrationEvent::Handler& eventHandler);
 
         bool SerializeEntityCorrection(AzNetworking::ISerializer& serializer);
 
@@ -119,7 +126,7 @@ namespace Multiplayer
 
         ReplicationRecord m_currentRecord = NetEntityRole::InvalidRole;
         ReplicationRecord m_totalRecord = NetEntityRole::InvalidRole;
-        ReplicationRecord m_predictableRecord = NetEntityRole::InvalidRole;
+        ReplicationRecord m_predictableRecord = NetEntityRole::Autonomous;
         ReplicationRecord m_localNotificationRecord = NetEntityRole::InvalidRole;
         PrefabEntityId    m_prefabEntityId;
         AZStd::unordered_map<NetComponentId, MultiplayerComponent*> m_multiplayerComponentMap;
@@ -133,7 +140,9 @@ namespace Multiplayer
 
         EntityStopEvent       m_entityStopEvent;
         EntityDirtiedEvent    m_dirtiedEvent;
-        EntityMigrationEvent  m_entityMigrationEvent;
+        EntityMigrationStartEvent  m_entityMigrationStartEvent;
+        EntityMigrationEndEvent    m_entityMigrationEndEvent;
+        EntityServerMigrationEvent m_entityServerMigrationEvent;
         AZ::Event<>           m_onRemove;
         RpcSendEvent::Handler m_handleLocalServerRpcMessageEventHandle;
         AZ::Event<>::Handler  m_handleMarkedDirty;

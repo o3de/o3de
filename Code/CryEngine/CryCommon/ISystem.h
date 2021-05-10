@@ -66,7 +66,6 @@ struct IConsole;
 struct IRemoteConsole;
 struct IRenderer;
 struct IProcess;
-struct I3DEngine;
 struct ITimer;
 struct ICryFont;
 struct IMovieSystem;
@@ -90,7 +89,6 @@ struct IResourceManager;
 struct ITextModeConsole;
 struct IAVI_Reader;
 class CPNoise3;
-struct IFileChangeMonitor;
 struct IVisualLog;
 struct ILocalizationManager;
 struct ICryFactoryRegistry;
@@ -100,7 +98,6 @@ struct IZLibDecompressor;
 struct ILZ4Decompressor;
 class IZStdDecompressor;
 struct IOutputPrintSink;
-struct IOverloadSceneManager;
 struct IThreadManager;
 struct IServiceNetwork;
 struct IRemoteCommandManager;
@@ -123,8 +120,6 @@ namespace Serialization {
     struct IArchiveHost;
 }
 
-struct ILocalMemoryUsage;
-
 typedef void* WIN_HWND;
 
 class CCamera;
@@ -133,7 +128,6 @@ struct CLoadingTimeProfiler;
 class ICmdLine;
 
 struct INotificationNetwork;
-struct ICryPerfHUD;
 class ILyShine;
 
 namespace JobManager {
@@ -644,14 +638,12 @@ struct SSystemInitParams
     bool bDedicatedServer;                          // When running a dedicated server.
     bool bExecuteCommandLine;                       // can be switched of to suppress the feature or do it later during the initialization.
     bool bSkipFont;                                     // Don't load CryFont.dll
-    bool bSkipRenderer;                                 // Don't load Renderer
     bool bSkipConsole;                                  // Don't create console
     bool bSkipNetwork;                                  // Don't create Network
     bool bSkipWebsocketServer;      // Don't create the WebSocket server
     bool bMinimal;                              // Don't load banks
     bool bTesting;                              // CryUnit
     bool bNoRandom;                             //use fixed generator init/seed
-    bool bShaderCacheGen;                   // When running in shadercache gen mode
     bool bUnattendedMode;                           // When running as part of a build on build-machines: Prevent popping up of any dialog
     bool bSkipMovie;            // Don't load movie
     bool bSkipAnimation;        // Don't load animation
@@ -702,7 +694,6 @@ struct SSystemInitParams
         bExecuteCommandLine = true;
         bExecuteCommandLine = true;
         bSkipFont = false;
-        bSkipRenderer = false;
         bSkipConsole = false;
         bSkipNetwork = false;
 #if defined(WIN32) || defined(WIN64)
@@ -715,7 +706,6 @@ struct SSystemInitParams
         bMinimal = false;
         bTesting = false;
         bNoRandom = false;
-        bShaderCacheGen = false;
         bUnattendedMode = false;
         bSkipMovie = false;
         bSkipAnimation = false;
@@ -793,15 +783,12 @@ struct SSystemUpdateStats
 //   ISystem
 struct SSystemGlobalEnvironment
 {
-    I3DEngine*                 p3DEngine;
     AZ::IO::IArchive*          pCryPak;
     AZ::IO::FileIOBase*        pFileIO;
-    IFileChangeMonitor*        pFileChangeMonitor;
     IProfileLogSystem*         pProfileLogSystem;
     IOpticsManager*                      pOpticsManager;
     ITimer*                    pTimer;
     ICryFont*                  pCryFont;
-    ILocalMemoryUsage*     pLocalMemoryUsage;
     ::IConsole*                  pConsole;
     ISystem*                   pSystem = nullptr;
     ILog*                      pLog;
@@ -811,7 +798,6 @@ struct SSystemGlobalEnvironment
     IRenderer*                 pRenderer;
     IMaterialEffects*          pMaterialEffects;
     ISoftCodeMgr*                            pSoftCodeMgr;
-    IOverloadSceneManager*       pOverloadSceneManager;
     IServiceNetwork*              pServiceNetwork;
     IRemoteCommandManager*        pRemoteCommandManager;
     ILyShine*                      pLyShine;
@@ -1113,24 +1099,8 @@ struct ISystem
     virtual void DoWorkDuringOcclusionChecks() = 0;
     virtual bool NeedDoWorkDuringOcclusionChecks() = 0;
 
-    // Summary:
-    //   Renders subsystems.
-    virtual void    Render() = 0;
-    // Summary:
-    //   Begins rendering frame.
-    virtual void    RenderBegin() = 0;
-    // Summary:
-    //   Ends rendering frame and swap back buffer.
-    virtual void    RenderEnd(bool bRenderStats = true, bool bMainWindow = true) = 0;
-
     //! Update screen and call some important tick functions during loading.
     virtual void SynchronousLoadingTick(const char* pFunc, int line) = 0;
-
-    // Description:
-    //   Renders the statistics; this is called from RenderEnd, but if the
-    //   Host application (Editor) doesn't employ the Render cycle in ISystem,
-    //   it may call this method to render the essential statistics.
-    virtual void RenderStatistics() = 0;
 
     // Summary:
     //   Returns the current used memory.
@@ -1149,14 +1119,6 @@ struct ISystem
     virtual int GetLogicalCPUCount() = 0;
 
     // Summary:
-    //   Return the rendering driver name. GL or Metal
-    virtual const char* GetRenderingDriverName() const = 0;
-
-    // Summary:
-    //   Dumps the memory usage statistics to the logging default MB. (can be KB)
-    virtual void DumpMemoryUsageStatistics(bool bUseKB = false) = 0;
-
-    // Summary:
     //   Quits the application.
     virtual void    Quit() = 0;
     // Summary:
@@ -1165,9 +1127,6 @@ struct ISystem
     // Summary:
     //   Returns true if the application is in the shutdown phase.
     virtual bool    IsQuitting() const = 0;
-    // Summary:
-    //   Returns true if the application was initialized to generate the shader cache.
-    virtual bool    IsShaderCacheGenMode() const = 0;
     // Summary:
     //   Tells the system in which way we are using the serialization system.
     virtual void  SerializingFile(int mode) = 0;
@@ -1216,7 +1175,6 @@ struct ISystem
     virtual IZLibDecompressor* GetIZLibDecompressor() = 0;
     virtual ILZ4Decompressor* GetLZ4Decompressor() = 0;
     virtual IZStdDecompressor* GetZStdDecompressor() = 0;
-    virtual ICryPerfHUD* GetPerfHUD() = 0;
     virtual INotificationNetwork* GetINotificationNetwork() = 0;
     virtual IViewSystem* GetIViewSystem() = 0;
     virtual ILevelSystem* GetILevelSystem() = 0;
@@ -1229,7 +1187,6 @@ struct ISystem
     virtual ICryFont* GetICryFont() = 0;
     virtual IMemoryManager* GetIMemoryManager() = 0;
     virtual IMovieSystem* GetIMovieSystem() = 0;
-    virtual I3DEngine* GetI3DEngine() = 0;
     virtual ::IConsole* GetIConsole() = 0;
     virtual IRemoteConsole* GetIRemoteConsole() = 0;
     // Returns:
@@ -1239,15 +1196,9 @@ struct ISystem
     virtual IProfilingSystem* GetIProfilingSystem() = 0;
     virtual ISystemEventDispatcher* GetISystemEventDispatcher() = 0;
     virtual IVisualLog* GetIVisualLog() = 0;
-    virtual IFileChangeMonitor* GetIFileChangeMonitor() = 0;
 
-    virtual WIN_HWND GetHWND() = 0;
-
-    virtual IRenderer* GetIRenderer() = 0;
     virtual ITimer* GetITimer() = 0;
     virtual IThreadManager* GetIThreadManager() = 0;
-
-    //irtual IThreadManager* GetIThreadManager() = 0;
 
     virtual void SetLoadingProgressListener(ILoadingProgressListener* pListener) = 0;
     virtual ISystem::ILoadingProgressListener* GetLoadingProgressListener() const = 0;
@@ -1256,7 +1207,6 @@ struct ISystem
     //   Game is created after System init, so has to be set explicitly.
     virtual void SetIMaterialEffects(IMaterialEffects* pMaterialEffects) = 0;
     virtual void SetIOpticsManager(IOpticsManager* pOpticsManager) = 0;
-    virtual void SetIFileChangeMonitor(IFileChangeMonitor* pFileChangeMonitor) = 0;
     virtual void SetIVisualLog(IVisualLog* pVisualLog) = 0;
 
     //virtual   const char          *GetGamePath()=0;
@@ -1400,10 +1350,6 @@ struct ISystem
     virtual int SetThreadState(ESubsystem subsys, bool bActive) = 0;
 
     // Summary:
-    //   Creates and returns a usable object implementing ICrySizer interface.
-    virtual ICrySizer* CreateSizer() = 0;
-
-    // Summary:
     //   Query if system is now paused.
     //   Pause flag is set when calling system update with pause mode.
     virtual bool IsPaused() const = 0;
@@ -1513,11 +1459,6 @@ struct ISystem
     //  returns zeroes if no updates happened yet
     virtual void GetUpdateStats(SSystemUpdateStats& stats) = 0;
 
-    // Description:
-    //   Useful to investigate memory fragmentation.
-    //   Every time you call this from the console: #System.DumpMemoryCoverage()
-    //   it adds a line to "MemoryCoverage.bmp" (generated the first time, there is a max line count).
-    virtual void DumpMemoryCoverage() = 0;
     virtual ESystemGlobalState  GetSystemGlobalState(void) = 0;
     virtual void SetSystemGlobalState(ESystemGlobalState systemGlobalState) = 0;
 

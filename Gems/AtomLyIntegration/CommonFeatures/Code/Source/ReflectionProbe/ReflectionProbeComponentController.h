@@ -79,7 +79,7 @@ namespace AZ
             AZ::Aabb GetAabb() const;
 
             // initiate the reflection probe bake, invokes callback when complete
-            void BakeReflectionProbe(BuildCubeMapCallback callback);
+            void BakeReflectionProbe(BuildCubeMapCallback callback, const AZStd::string& relativePath);
 
             // update the currently rendering cubemap asset for this probe
             void UpdateCubeMap();

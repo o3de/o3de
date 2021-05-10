@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C4976244
 # Test Case Title : Checks that two entities of similar custom layer collide
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4976244
+
 
 
 # fmt: off

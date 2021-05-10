@@ -699,6 +699,10 @@ Data::AssetHandler::LoadResult ScriptSystemComponent::LoadAssetData(
         script->m_scriptBuffer.resize(scriptDataLength);
         stream->Read(scriptDataLength, script->m_scriptBuffer.data());
 
+        // Clear cached references in the event of a successful load. This function has to be queued on
+        // AssetBus where NotifyAssetReloaded is also queued, to ensure its execution before NotifyAssetReloaded
+        Data::AssetBus::QueueFunction(&ScriptSystemComponent::ClearAssetReferences, this, asset.GetId());
+
         return Data::AssetHandler::LoadResult::LoadComplete;
     }
 
@@ -853,7 +857,7 @@ const char* ScriptSystemComponent::GetGroup() const
 
 const char* AZ::ScriptSystemComponent::GetBrowserIcon() const
 {
-    return "Editor/Icons/Components/LuaScript.svg";
+    return "Icons/Components/LuaScript.svg";
 }
 
 AZ::Uuid AZ::ScriptSystemComponent::GetComponentTypeId() const

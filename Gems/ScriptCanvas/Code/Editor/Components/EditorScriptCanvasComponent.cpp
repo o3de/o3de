@@ -99,8 +99,8 @@ namespace ScriptCanvasEditor
                 editContext->Class<EditorScriptCanvasComponent>("Script Canvas", "The Script Canvas component allows you to add a Script Canvas asset to a component, and have it execute on the specified entity.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Scripting")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/ScriptCanvas.svg")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/ScriptCanvas/Viewport/ScriptCanvas.png")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/ScriptCanvas.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/ScriptCanvas/Viewport/ScriptCanvas.png")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, ScriptCanvasAssetHandler::GetAssetTypeStatic())
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
@@ -528,8 +528,10 @@ namespace ScriptCanvasEditor
         {
             const auto& variableId = varConfig.m_graphVariable.GetVariableId();
 
+            // We only add component sourced graph properties to the script canvas component, so if this variable was switched to a graph-only property remove it.
+            // Also be sure to remove this variable if it's been deleted entirely.
             auto graphVariable = graphVarData.FindVariable(variableId);
-            if (!graphVariable->IsComponentProperty())
+            if (!graphVariable || !graphVariable->IsComponentProperty())
             {
                 oldVariableIds.push_back(variableId);
             }

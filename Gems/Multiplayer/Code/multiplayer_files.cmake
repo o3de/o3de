@@ -10,12 +10,22 @@
 #
 
 set(FILES
+    Include/IConnectionData.h
+    Include/IEntityDomain.h
     Include/IMultiplayer.h
+    Include/IMultiplayerComponentInput.h
+    Include/INetworkEntityManager.h
+    Include/INetworkTime.h
+    Include/IReplicationWindow.h
+    Include/MultiplayerStats.cpp
+    Include/MultiplayerStats.h
+    Include/MultiplayerTypes.h
+    Include/NetworkEntityHandle.h
+    Include/NetworkEntityHandle.inl
     Source/Multiplayer_precompiled.cpp
     Source/Multiplayer_precompiled.h
     Source/MultiplayerSystemComponent.cpp
     Source/MultiplayerSystemComponent.h
-    Source/MultiplayerTypes.h
     Source/AutoGen/AutoComponent_Header.jinja
     Source/AutoGen/AutoComponent_Source.jinja
     Source/AutoGen/AutoComponent_Common.jinja
@@ -26,6 +36,8 @@ set(FILES
     Source/AutoGen/NetworkTransformComponent.AutoComponent.xml
     Source/Components/LocalPredictionPlayerInputComponent.cpp
     Source/Components/LocalPredictionPlayerInputComponent.h
+    Source/Components/MultiplayerComponentRegistry.cpp
+    Source/Components/MultiplayerComponentRegistry.h
     Source/Components/MultiplayerComponent.cpp
     Source/Components/MultiplayerComponent.h
     Source/Components/MultiplayerController.cpp
@@ -37,13 +49,11 @@ set(FILES
     Source/ConnectionData/ClientToServerConnectionData.cpp
     Source/ConnectionData/ClientToServerConnectionData.h
     Source/ConnectionData/ClientToServerConnectionData.inl
-    Source/ConnectionData/IConnectionData.h
     Source/ConnectionData/ServerToClientConnectionData.cpp
     Source/ConnectionData/ServerToClientConnectionData.h
     Source/ConnectionData/ServerToClientConnectionData.inl
     Source/EntityDomains/FullOwnershipEntityDomain.cpp
     Source/EntityDomains/FullOwnershipEntityDomain.h
-    Source/EntityDomains/IEntityDomain.h
     Source/NetworkEntity/EntityReplication/EntityReplicationManager.cpp
     Source/NetworkEntity/EntityReplication/EntityReplicationManager.h
     Source/NetworkEntity/EntityReplication/EntityReplicator.cpp
@@ -55,12 +65,9 @@ set(FILES
     Source/NetworkEntity/EntityReplication/PropertySubscriber.h
     Source/NetworkEntity/EntityReplication/ReplicationRecord.cpp
     Source/NetworkEntity/EntityReplication/ReplicationRecord.h
-    Source/NetworkEntity/INetworkEntityManager.h
     Source/NetworkEntity/NetworkEntityAuthorityTracker.cpp
     Source/NetworkEntity/NetworkEntityAuthorityTracker.h
     Source/NetworkEntity/NetworkEntityHandle.cpp
-    Source/NetworkEntity/NetworkEntityHandle.h
-    Source/NetworkEntity/NetworkEntityHandle.inl
     Source/NetworkEntity/NetworkEntityManager.cpp
     Source/NetworkEntity/NetworkEntityManager.h
     Source/NetworkEntity/NetworkSpawnableLibrary.cpp
@@ -72,16 +79,16 @@ set(FILES
     Source/NetworkEntity/NetworkEntityTracker.inl
     Source/NetworkEntity/NetworkEntityUpdateMessage.cpp
     Source/NetworkEntity/NetworkEntityUpdateMessage.h
-    Source/NetworkInput/IMultiplayerComponentInput.h
     Source/NetworkInput/NetworkInput.cpp
     Source/NetworkInput/NetworkInput.h
+    Source/NetworkInput/NetworkInputArray.cpp
+    Source/NetworkInput/NetworkInputArray.h
     Source/NetworkInput/NetworkInputChild.cpp
     Source/NetworkInput/NetworkInputChild.h
     Source/NetworkInput/NetworkInputHistory.cpp
     Source/NetworkInput/NetworkInputHistory.h
-    Source/NetworkInput/NetworkInputVector.cpp
-    Source/NetworkInput/NetworkInputVector.h
-    Source/NetworkTime/INetworkTime.h
+    Source/NetworkInput/NetworkInputMigrationVector.cpp
+    Source/NetworkInput/NetworkInputMigrationVector.h
     Source/NetworkTime/NetworkTime.cpp
     Source/NetworkTime/NetworkTime.h
     Source/NetworkTime/RewindableObject.h
@@ -92,7 +99,6 @@ set(FILES
     Source/Pipeline/NetworkSpawnableHolderComponent.h
     Source/ReplicationWindows/NullReplicationWindow.cpp
     Source/ReplicationWindows/NullReplicationWindow.h
-    Source/ReplicationWindows/IReplicationWindow.h
     Source/ReplicationWindows/ServerToClientReplicationWindow.cpp
     Source/ReplicationWindows/ServerToClientReplicationWindow.h
 )

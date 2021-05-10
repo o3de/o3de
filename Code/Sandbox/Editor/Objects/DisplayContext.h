@@ -33,7 +33,6 @@ struct IDisplayViewport;
 struct IRenderer;
 struct IRenderAuxGeom;
 struct IIconManager;
-struct I3DEngine;
 class CDisplaySettings;
 class CCamera;
 
@@ -70,7 +69,6 @@ struct SANDBOX_API DisplayContext
     IRenderer* renderer;
     IRenderAuxGeom* pRenderAuxGeom;
     IIconManager* pIconManager;
-    I3DEngine* engine;
     CCamera*    camera;
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AABB    box;    // Bounding box of volume that need to be repainted.
@@ -229,7 +227,6 @@ struct SANDBOX_API DisplayContext
 
     void DrawTextLabel(const Vec3& pos, float size, const char* text, const bool bCenter = false, int srcOffsetX = 0, int scrOffsetY = 0);
     void Draw2dTextLabel(float x, float y, float size, const char* text, bool bCenter = false);
-    void DrawTextOn2DBox(const Vec3& pos, const char* text, float textScale, const ColorF& TextColor, const ColorF& TextBackColor);
     void SetLineWidth(float width);
 
     //! Is given bbox visible in this display context.

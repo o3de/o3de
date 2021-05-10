@@ -15,6 +15,8 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
+#include <Include/INetworkTime.h>
+#include <Include/MultiplayerStats.h>
 
 namespace AzNetworking
 {
@@ -23,21 +25,6 @@ namespace AzNetworking
 
 namespace Multiplayer
 {
-    struct MultiplayerStats
-    {
-        uint64_t m_entityCount = 0;
-        uint64_t m_clientConnectionCount = 0;
-        uint64_t m_serverConnectionCount = 0;
-        uint64_t m_propertyUpdatesSent = 0;
-        uint64_t m_propertyUpdatesSentBytes = 0;
-        uint64_t m_propertyUpdatesRecv = 0;
-        uint64_t m_propertyUpdatesRecvBytes = 0;
-        uint64_t m_rpcsSent = 0;
-        uint64_t m_rpcsSentBytes = 0;
-        uint64_t m_rpcsRecv = 0;
-        uint64_t m_rpcsRecvBytes = 0;
-    };
-
     //! Collection of types of Multiplayer Connections
     enum class MultiplayerAgentType
     {
@@ -70,7 +57,7 @@ namespace Multiplayer
 
         //! Gets the type of Agent this IMultiplayer impl represents
         //! @return The type of agents represented
-        virtual MultiplayerAgentType GetAgentType() = 0;
+        virtual MultiplayerAgentType GetAgentType() const = 0;
 
         //! Sets the type of this Multiplayer connection and calls any related callback
         //! @param state The state of this connection
@@ -87,6 +74,40 @@ namespace Multiplayer
         //! Adds a SessionShutdownEvent Handler which is invoked when the current network session ends
         //! @param handler The SessionShutdownEvent handler to add
         virtual void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) = 0;
+
+        //! Sends a packet telling if entity update messages can be sent
+        //! @param readyForEntityUpdates Ready for entity updates or not
+        virtual void SendReadyForEntityUpdates(bool readyForEntityUpdates) = 0;
+
+        //! Returns the current server time in milliseconds.
+        //! This can be one of three possible values:
+        //!   1. On the host outside of rewind scope, this will return the latest application elapsed time in ms.
+        //!   2. On the host within rewind scope, this will return the rewound time in ms.
+        //!   3. On the client, this will return the most recently replicated server time in ms.
+        //! @return the current server time in milliseconds
+        virtual AZ::TimeMs GetCurrentHostTimeMs() const = 0;
+
+        //! Returns the gem name associated with the provided component index.
+        //! @param  netComponentId the componentId to return the gem name of
+        //! @return the name of the gem that contains the requested component
+        virtual const char* GetComponentGemName(NetComponentId netComponentId) const = 0;
+
+        //! Returns the component name associated with the provided component index.
+        //! @param  netComponentId the componentId to return the component name of
+        //! @return the name of the component
+        virtual const char* GetComponentName(NetComponentId netComponentId) const = 0;
+
+        //! Returns the property name associated with the provided component index and property index.
+        //! @param  netComponentId the component index to return the property name of
+        //! @param  propertyIndex  the index of the network property to return the property name of
+        //! @return the name of the network property
+        virtual const char* GetComponentPropertyName(NetComponentId netComponentId, PropertyIndex propertyIndex) const = 0;
+
+        //! Returns the Rpc name associated with the provided component index and rpc index.
+        //! @param  netComponentId the componentId to return the property name of
+        //! @param  rpcIndex       the index of the rpc to return the rpc name of
+        //! @return the name of the requested rpc
+        virtual const char* GetComponentRpcName(NetComponentId netComponentId, RpcIndex rpcIndex) const = 0;
 
         //! Retrieve the stats object bound to this multiplayer instance.
         //! @return the stats object bound to this multiplayer instance

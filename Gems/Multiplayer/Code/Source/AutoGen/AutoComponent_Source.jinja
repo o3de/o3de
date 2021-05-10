@@ -285,15 +285,15 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Prop
 {{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
 void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramDefines) }})
 {
-    constexpr uint8_t rpcId = static_cast<uint8_t>({{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ UpperFirst(Property.attrib['Name']) }});
-    constexpr Multiplayer::NetComponentId componentId = static_cast<Multiplayer::NetComponentId>({{ Component.attrib['Namespace'] }}::ComponentTypes::{{ Component.attrib['Name'] }});
+    constexpr RpcIndex rpcId = static_cast<RpcIndex>({{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ UpperFirst(Property.attrib['Name']) }});
 {% if Property.attrib['IsReliable']|booleanTrue %}
     constexpr AzNetworking::ReliabilityType isReliable = Multiplayer::ReliabilityType::Reliable;
 {% else %}
     constexpr AzNetworking::ReliabilityType isReliable = Multiplayer::ReliabilityType::Unreliable;
 {% endif %}
 
-    Multiplayer::NetworkEntityRpcMessage rpcMessage(Multiplayer::RpcDeliveryType::{{ InvokeFrom }}To{{ HandleOn }}, GetNetEntityId(), componentId, rpcId, isReliable);
+    const Multiplayer::NetComponentId netComponentId = GetParent().GetNetComponentId();
+    Multiplayer::NetworkEntityRpcMessage rpcMessage(Multiplayer::RpcDeliveryType::{{ InvokeFrom }}To{{ HandleOn }}, GetNetEntityId(), netComponentId, rpcId, isReliable);
 {%     if paramNames|count > 0 %}
     {{ UpperFirst(Component.attrib['Name']) }}Internal::{{ UpperFirst(Property.attrib['Name']) }}RpcStruct rpcStruct({{ ', '.join(paramNames) }});
 {%     else %}
@@ -336,7 +336,7 @@ case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ Upp
             if (m_controller)
             {
                 AZ_Assert(GetNetBindComponent()->GetNetEntityRole() == Multiplayer::NetEntityRole::Authority, "Entity proxy does not have authority");
-                m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(rpcParamList) }});
+                m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection, {{ ', '.join(rpcParamList) }});
             }
 {% if Property.attrib['IsReliable']|booleanTrue %}
 {# if the rpc is not reliable we can simply drop it, also note message reliability type is default reliable in EntityRpcMessage #}
@@ -350,7 +350,7 @@ case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ Upp
             if (m_controller)
             {
                 AZ_Assert(GetNetBindComponent()->GetNetEntityRole() == Multiplayer::NetEntityRole::Autonomous, "Entity proxy does not have autonomy");
-                m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(rpcParamList) }});
+                m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection, {{ ', '.join(rpcParamList) }});
             }
 {% else %}
             Handle{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(rpcParamList) }});
@@ -509,6 +509,7 @@ bool {{ ClassName }}::Serialize{{ AutoComponentMacros.GetNetPropertiesSetName(Re
         m_{{ LowerFirst(Property.attrib['Name']) }}, 
         "{{ Property.attrib['Name'] }}", 
         GetNetComponentId(), 
+        static_cast<PropertyIndex>({{ UpperFirst(Component.attrib['Name']) }}Internal::NetworkProperties::{{ UpperFirst(Property.attrib['Name']) }}), 
         stats
     );
 {%     endif %}
@@ -643,6 +644,16 @@ enum class RemoteProcedure
 {% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, 'Autonomous', 'Authority') %}
     {{ Property.attrib['Name'] }},
 {% endcall %}
+    MAX
+};
+
+{% endmacro %}
+{% macro DeclareNetworkPropertyEnumerations(Component) %}
+enum class NetworkProperties
+{
+{% for NetworkProperty in Component.iter('NetworkProperty') %}
+    {{ UpperFirst(NetworkProperty.attrib['Name']) }},
+{% endfor %}
     MAX
 };
 
@@ -881,6 +892,9 @@ m_{{ LowerFirst(Property.attrib['Name']) }} = m_{{ LowerFirst(Property.attrib['N
 {% else %}
 {%      set ControllerBaseName = ControllerName %}
 {% endif %}
+{% set NetworkInputCount = Component.findall('NetworkInput') | len %}
+{% set NetworkPropertyCount = Component.findall('NetworkProperty') | len %}
+{% set RpcCount = Component.findall('RemoteProcedure') | len %}
 #include "{{ includeFile }}"
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
@@ -901,9 +915,12 @@ m_{{ LowerFirst(Property.attrib['Name']) }} = m_{{ LowerFirst(Property.attrib['N
 
 namespace {{ Component.attrib['Namespace'] }}
 {
+    NetComponentId {{ UpperFirst(ComponentBaseName) }}::s_netComponentId = InvalidNetComponentId;
+
     namespace {{ UpperFirst(Component.attrib['Name']) }}Internal
     {
         {{ DeclareRemoteProcedureEnumerations(Component)|indent(8) }}
+        {{ DeclareNetworkPropertyEnumerations(Component)|indent(8) }}
         {{ DefineNetworkPropertyDirtyEnumeration(Component, ClassType, 'Authority', 'Authority')|indent(8) }}
         {{ DefineNetworkPropertyDirtyEnumeration(Component, ClassType, 'Authority', 'Client')|indent(8) }}
         {{ DefineNetworkPropertyDirtyEnumeration(Component, ClassType, 'Authority', 'Server')|indent(8) }}
@@ -1229,14 +1246,19 @@ namespace {{ Component.attrib['Namespace'] }}
 
     Multiplayer::NetComponentId {{ ComponentBaseName }}::GetNetComponentId() const
     {
-        return s_componentId;
+        return s_netComponentId;
     }
 
 #pragma warning(push)
 #pragma warning(disable: 4065) // switch statement contains 'default' but no 'case' labels 
-    bool {{ ComponentBaseName }}::HandleRpcMessage([[maybe_unused]] Multiplayer::NetEntityRole remoteRole, Multiplayer::NetworkEntityRpcMessage& message)
+    bool {{ ComponentBaseName }}::HandleRpcMessage
+    (
+        [[maybe_unused]] AzNetworking::IConnection* invokingConnection, 
+        [[maybe_unused]] Multiplayer::NetEntityRole remoteRole, 
+        Multiplayer::NetworkEntityRpcMessage& message
+    )
     {
-        const {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure rpcType = static_cast<{{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure>(message.GetRpcMessageType());
+        const {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure rpcType = static_cast<{{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure>(message.GetRpcIndex());
         switch (rpcType)
         {
         {{ DeclareRpcHandleCases(Component, ComponentDerived, 'Server', 'Authority', "(remoteRole == Multiplayer::NetEntityRole::Authority || remoteRole == Multiplayer::NetEntityRole::Server)" )|indent(8) }}
@@ -1379,6 +1401,35 @@ namespace {{ Component.attrib['Namespace'] }}
     }
 
 {%      endif %}
+    const char* {{ ComponentBaseName }}::GetNetworkPropertyName([[maybe_unused]] PropertyIndex propertyIndex)
+    {
+{% if NetworkPropertyCount > 0 %}
+        const {{ UpperFirst(Component.attrib['Name']) }}Internal::NetworkProperties propertyId = static_cast<{{ UpperFirst(Component.attrib['Name']) }}Internal::NetworkProperties>(propertyIndex);
+        switch (propertyId)
+        {
+{% for NetworkProperty in Component.iter('NetworkProperty') %}
+        case {{ UpperFirst(Component.attrib['Name']) }}Internal::NetworkProperties::{{ UpperFirst(NetworkProperty.attrib['Name']) }}:
+            return "{{ UpperFirst(NetworkProperty.attrib['Name']) }}";
+{% endfor %}
+        }
+{% endif %}
+        return "Unknown network property";
+    }
+
+    const char* {{ ComponentBaseName }}::GetRpcName([[maybe_unused]] RpcIndex rpcIndex)
+    {
+{% if RpcCount > 0 %}
+        const {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure rpcId = static_cast<{{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure>(rpcIndex);
+        switch (rpcId)
+        {
+{% for RemoteProcedure in Component.iter('RemoteProcedure') %}
+        case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ RemoteProcedure.attrib['Name'] }}:
+            return "{{ RemoteProcedure.attrib['Name'] }}";
+{% endfor %}
+        }
+{% endif %}
+        return "Unknown Rpc";
+    }
 {% endfor %}
 }
 {% endfor %}

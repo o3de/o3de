@@ -180,6 +180,8 @@ namespace AzQtComponents
         textSearch->setFrame(false);
         textSearch->setText(QString());
         textSearch->setPlaceholderText(QObject::tr("Search..."));
+        textSearch->setClearButtonEnabled(true);
+        LineEdit::applySearchStyle(textSearch);
         connect(textSearch, &QLineEdit::textChanged, this, &SearchTypeSelector::FilterTextChanged);
 
         m_searchLayout->addWidget(textSearch);

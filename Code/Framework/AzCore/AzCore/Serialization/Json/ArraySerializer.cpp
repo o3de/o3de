@@ -74,7 +74,7 @@ namespace AZ
                 "Unable to retrieve the correct container information for AZStd::array instance.");
         }
 
-        Flags flags = Flags::None;
+        ContinuationFlags flags = ContinuationFlags::None;
         Uuid elementTypeId = Uuid::CreateNull();
         auto typeEnumCallback = [&elementTypeId, &flags](const Uuid&, const SerializeContext::ClassElement* genericClassElement)
         {
@@ -82,7 +82,7 @@ namespace AZ
             elementTypeId = genericClassElement->m_typeId;
             if (genericClassElement->m_flags & SerializeContext::ClassElement::Flags::FLG_POINTER)
             {
-                flags = Flags::ResolvePointer;
+                flags = ContinuationFlags::ResolvePointer;
             }
             return false;
         };
@@ -161,7 +161,7 @@ namespace AZ
                 "Not enough entries in JSON array to load an AZStd::array from.");
         }
 
-        Flags flags = Flags::None;
+        ContinuationFlags flags = ContinuationFlags::None;
         Uuid elementTypeId = Uuid::CreateNull();
         auto typeEnumCallback = [&elementTypeId, &flags](const Uuid&, const SerializeContext::ClassElement* genericClassElement)
         {
@@ -169,7 +169,7 @@ namespace AZ
             elementTypeId = genericClassElement->m_typeId;
             if (genericClassElement->m_flags & SerializeContext::ClassElement::Flags::FLG_POINTER)
             {
-                flags = Flags::ResolvePointer;
+                flags = ContinuationFlags::ResolvePointer;
             }
             return false;
         };

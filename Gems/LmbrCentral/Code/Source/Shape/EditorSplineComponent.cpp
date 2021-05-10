@@ -63,8 +63,8 @@ namespace LmbrCentral
                     "Spline", "Defines a sequence of points that can be interpolated.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Shape")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Spline.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Spline.png")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Spline.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Spline.png")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "http://docs.aws.amazon.com/console/lumberyard/userguide/spline-component")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -378,9 +378,7 @@ namespace LmbrCentral
     {
         SplineComponentNotificationBus::Event(
             GetEntityId(), &SplineComponentNotificationBus::Events::OnSplineChanged);
-
-        AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-            &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());
+        AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(GetEntityId());
     }
 
     AZ::SplinePtr EditorSplineComponent::GetSpline()

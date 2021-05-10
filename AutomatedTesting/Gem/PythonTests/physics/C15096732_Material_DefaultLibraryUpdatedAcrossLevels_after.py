@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C15096732
 # Test Case Title : Verify Default material library works across different levels
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/15096732
+
 
 # fmt: off
 class Tests:

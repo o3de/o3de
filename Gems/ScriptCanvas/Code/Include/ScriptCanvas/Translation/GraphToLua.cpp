@@ -582,7 +582,7 @@ namespace ScriptCanvas
 
         void GraphToLua::TranslateExecutionTreeFunctionCall(Grammar::ExecutionTreeConstPtr execution)
         {
-            TranslateNodeableOuts(execution);
+            TranslateNodeableOuts(execution->GetNodeable(), execution);
             WriteDebugInfoIn(execution, "TranslateExecutionTreeFunctionCall begin");
             m_dotLua.WriteIndent();
             WriteLocalOutputInitialization(execution);
@@ -636,6 +636,16 @@ namespace ScriptCanvas
             else if (Grammar::IsGlobalPropertyRead(execution))
             {
                 WriteGlobalPropertyRead(execution);
+            }
+            else if (Grammar::IsClassPropertyRead(execution))
+            {
+                WriteClassPropertyRead(execution);
+                m_dotLua.WriteNewLine();
+            }
+            else if (Grammar::IsClassPropertyWrite(execution))
+            {
+                WriteClassPropertyWrite(execution);
+                m_dotLua.WriteNewLine();
             }
             else
             {
@@ -955,7 +965,7 @@ namespace ScriptCanvas
                 for (auto& out : nodeAndParse->m_latents)
                 {
                     m_dotLua.WriteNewLine();
-                    TranslateNodeableOut(out.second);
+                    TranslateNodeableOut(nodeAndParse->m_nodeable, out.second);
                 }
 
                 if (!nodeAndParse->m_latents.empty())
@@ -1017,7 +1027,7 @@ namespace ScriptCanvas
             m_dotLua.WriteNewLine();
         }
 
-        void GraphToLua::TranslateNodeableOut(Grammar::ExecutionTreeConstPtr execution)
+        void GraphToLua::TranslateNodeableOut(Grammar::VariableConstPtr host, Grammar::ExecutionTreeConstPtr execution)
         {
             auto outCallIndexOptional = execution->GetOutCallIndex();
             if (!outCallIndexOptional)
@@ -1037,7 +1047,7 @@ namespace ScriptCanvas
 
             m_dotLua.WriteLineIndented("%s(self.%s, %zu, -- %s"
                 , setExecutionOutName
-                , execution->GetNodeable()->m_name.data()
+                , host->m_name.data()
                 , outIndex
                 , execution->GetName().data());
 
@@ -1048,14 +1058,14 @@ namespace ScriptCanvas
             m_dotLua.Outdent();
         }
 
-        void GraphToLua::TranslateNodeableOuts(Grammar::ExecutionTreeConstPtr execution)
+        void GraphToLua::TranslateNodeableOuts(Grammar::VariableConstPtr host, Grammar::ExecutionTreeConstPtr execution)
         {
             const auto outs = execution->GetInternalOuts();
             
             for (const auto& out : outs)
             {
                 m_dotLua.WriteNewLine();
-                TranslateNodeableOut(out);
+                TranslateNodeableOut(host, out);
             }
 
             if (!outs.empty())
@@ -1206,6 +1216,19 @@ namespace ScriptCanvas
             // translate the event handling...initialize to nil, check for nil before disconnecting
             TranslateEBusHandling(leftValue);
             TranslateNodeableParse();
+        }
+
+        void GraphToLua::WriteClassPropertyRead(Grammar::ExecutionTreeConstPtr execution)
+        {
+            WriteFunctionCallInput(execution, 0, IsFormatStringInput::No);
+            m_dotLua.Write(".%s", Grammar::ToIdentifier(execution->GetName()).c_str());
+        }
+
+        void GraphToLua::WriteClassPropertyWrite(Grammar::ExecutionTreeConstPtr execution)
+        {
+            WriteClassPropertyRead(execution);
+            m_dotLua.Write(" = ");
+            WriteFunctionCallInput(execution, 1, IsFormatStringInput::No);
         }
 
         void GraphToLua::WriteConditionalCaseSwitch(Grammar::ExecutionTreeConstPtr execution, Grammar::Symbol symbol, const Grammar::ExecutionChild& child, size_t index)
