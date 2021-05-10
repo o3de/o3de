@@ -105,7 +105,8 @@
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
       "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu)\" -T Test",
-      "TEST_METRICS": "True"
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "profile_vs2019": {
@@ -152,7 +153,8 @@
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
       "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu)\" -T Test",
-      "TEST_METRICS": "True"
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "test_gpu_profile_vs2019": {
@@ -171,7 +173,8 @@
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
       "CTEST_OPTIONS": "-L \"(SUITE_smoke_REQUIRES_gpu|SUITE_main_REQUIRES_gpu)\" -T Test",
-      "TEST_METRICS": "True"
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "asset_profile_vs2019": {
@@ -217,7 +220,8 @@
       "CMAKE_TARGET": "TEST_SUITE_periodic",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
       "CTEST_OPTIONS": "-L \"(SUITE_periodic)\" -T Test",
-      "TEST_METRICS": "True"
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "sandbox_test_profile_vs2019": {
@@ -237,7 +241,8 @@
       "CMAKE_TARGET": "TEST_SUITE_sandbox",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
       "CTEST_OPTIONS": "-L \"(SUITE_sandbox)\" -T Test",
-      "TEST_METRICS": "True"
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "benchmark_test_profile_vs2019": {
@@ -254,7 +259,8 @@
       "CMAKE_TARGET": "TEST_SUITE_benchmark",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
       "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\" -T Test",
-      "TEST_METRICS": "True"
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "release_vs2019": {
