@@ -333,7 +333,7 @@ namespace AZ
                                     const uint32_t endRow = AZStd::min(startRow + rowsPerSplit, subresourceLayout.m_rowCount);
 
                                     // Calculate the blocksize for BC formatted images; the copy command works in texels.
-                                    const uint32_t heightToCopy = (endRow - startRow) * compressedTexelBlockSizeHeight;
+                                    uint32_t heightToCopy = (endRow - startRow) * compressedTexelBlockSizeHeight;
 
                                     // Copy subresource data to staging memory.
                                     {
