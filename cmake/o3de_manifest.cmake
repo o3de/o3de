@@ -24,7 +24,6 @@ endif()
 
 # Optionally delete the home directory
 if(O3DE_DELETE_HOME_PATH)
-    message(STATUS "O3DE_DELETE_HOME_PATH=${O3DE_DELETE_HOME_PATH}")
     if(EXISTS ${home_directory}/.o3de)
         message(STATUS "Deleting ${home_directory}/.o3de")
         file(REMOVE_RECURSE ${home_directory}/.o3de)
@@ -53,11 +52,7 @@ endif()
 #   -DO3DE_REGISTER_RESTRICTED_PATHS=C:\this\engine\Restricted;C:\ThisGame\Restricted;C:\ThisGem\Restricted
 ########################################################################################################################
 if(O3DE_REGISTER_ENGINE_PATH)
-    message(STATUS "O3DE_REGISTER_ENGINE_PATH=${O3DE_REGISTER_ENGINE_PATH}")
-
     if(O3DE_REGISTER_THIS_ENGINE)
-        message(STATUS "O3DE_REGISTER_THIS_ENGINE=${O3DE_REGISTER_THIS_ENGINE}")
-        message(STATUS "register --this-engine")
         if(CMAKE_HOST_WIN32)
             execute_process(
                 COMMAND cmd /c ${O3DE_REGISTER_ENGINE_PATH}/scripts/o3de.bat register --this-engine --override-home-folder ${home_directory}
@@ -77,7 +72,6 @@ if(O3DE_REGISTER_ENGINE_PATH)
     endif()
 
     if(O3DE_REGISTER_RESTRICTED_PATHS)
-        message(STATUS "O3DE_REGISTER_RESTRICTED_PATHS=${O3DE_REGISTER_RESTRICTED_PATHS}")
         foreach(restricted_path ${O3DE_REGISTER_RESTRICTED_PATHS})
             if(CMAKE_HOST_WIN32)
                 execute_process(
@@ -99,7 +93,6 @@ if(O3DE_REGISTER_ENGINE_PATH)
     endif()
 
     if(O3DE_REGISTER_PROJECT_PATHS)
-        message(STATUS "O3DE_REGISTER_PROJECT_PATHS=${O3DE_REGISTER_PROJECT_PATHS}")
         foreach(project_path ${O3DE_REGISTER_PROJECT_PATHS})
             if(CMAKE_HOST_WIN32)
                 execute_process(
@@ -121,7 +114,6 @@ if(O3DE_REGISTER_ENGINE_PATH)
     endif()
 
     if(O3DE_REGISTER_GEM_PATHS)
-        message(STATUS "O3DE_REGISTER_GEM_PATHS=${O3DE_REGISTER_GEM_PATHS}")
         foreach(gem_path ${O3DE_REGISTER_GEM_PATHS})
             if(CMAKE_HOST_WIN32)
                 execute_process(
@@ -143,7 +135,6 @@ if(O3DE_REGISTER_ENGINE_PATH)
     endif()
 
     if(O3DE_REGISTER_TEMPLATE_PATHS)
-        message(STATUS "O3DE_REGISTER_TEMPLATE_PATHS=${O3DE_REGISTER_TEMPLATE_PATHS}")
         foreach(template_path ${O3DE_REGISTER_TEMPLATE_PATHS})
             if(CMAKE_HOST_WIN32)
                 execute_process(
@@ -165,7 +156,6 @@ if(O3DE_REGISTER_ENGINE_PATH)
     endif()
 
     if(O3DE_REGISTER_REPO_URIS)
-        message(STATUS "O3DE_REGISTER_REPO_URIS=${O3DE_REGISTER_REPO_URIS}")
         foreach(repo_uri ${O3DE_REGISTER_REPO_URIS})
             if(CMAKE_HOST_WIN32)
                 execute_process(
@@ -201,7 +191,6 @@ file(READ ${o3de_manifest_json_path} manifest_json_data)
 # o3de manifest name
 ################################################################################
 string(JSON o3de_manifest_name ERROR_VARIABLE json_error GET ${manifest_json_data} o3de_manifest_name)
-message(STATUS "o3de_manifest_name: ${o3de_manifest_name}")
 if(json_error)
     message(FATAL_ERROR "Unable to read repo_name from '${o3de_manifest_json_path}', error: ${json_error}")
 endif()
@@ -218,7 +207,6 @@ endif()
 # o3de default engines folder
 ################################################################################
 string(JSON o3de_default_engines_folder ERROR_VARIABLE json_error GET ${manifest_json_data} default_engines_folder)
-message(STATUS "default_engines_folder: ${o3de_default_engines_folder}")
 if(json_error)
     message(FATAL_ERROR "Unable to read default_engines_folder from '${o3de_manifest_json_path}', error: ${json_error}")
 endif()
@@ -227,7 +215,6 @@ endif()
 # o3de default projects folder
 ################################################################################
 string(JSON o3de_default_projects_folder ERROR_VARIABLE json_error GET ${manifest_json_data} default_projects_folder)
-message(STATUS "default_projects_folder: ${o3de_default_projects_folder}")
 if(json_error)
     message(FATAL_ERROR "Unable to read default_projects_folder from '${o3de_manifest_json_path}', error: ${json_error}")
 endif()
@@ -236,7 +223,6 @@ endif()
 # o3de default gems folder
 ################################################################################
 string(JSON o3de_default_gems_folder ERROR_VARIABLE json_error GET ${manifest_json_data} default_gems_folder)
-message(STATUS "default_gems_folder: ${o3de_default_gems_folder}")
 if(json_error)
     message(FATAL_ERROR "Unable to read default_gems_folder from '${o3de_manifest_json_path}', error: ${json_error}")
 endif()
@@ -245,7 +231,6 @@ endif()
 # o3de default templates folder
 ################################################################################
 string(JSON o3de_default_templates_folder ERROR_VARIABLE json_error GET ${manifest_json_data} default_templates_folder)
-message(STATUS "default_templates_folder: ${o3de_default_templates_folder}")
 if(json_error)
     message(FATAL_ERROR "Unable to read default_templates_folder from '${o3de_manifest_json_path}', error: ${json_error}")
 endif()
@@ -254,7 +239,6 @@ endif()
 # o3de default restricted folder
 ################################################################################
 string(JSON o3de_default_restricted_folder ERROR_VARIABLE json_error GET ${manifest_json_data} default_restricted_folder)
-message(STATUS "default_restricted_folder: ${o3de_default_restricted_folder}")
 if(json_error)
     message(FATAL_ERROR "Unable to read default_restricted_folder from '${o3de_manifest_json_path}', error: ${json_error}")
 endif()
