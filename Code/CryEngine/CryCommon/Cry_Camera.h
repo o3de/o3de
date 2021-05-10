@@ -620,24 +620,24 @@ public:
     bool IsPointVisible(const Vec3& p) const;
 
     //sphere-frustum test
-    bool IsSphereVisible_F(const Sphere& s) const;
-    uint8 IsSphereVisible_FH(const Sphere& s) const;   //this is going to be the exact version of sphere-culling
+    bool IsSphereVisible_F(const ::Sphere& s) const;
+    uint8 IsSphereVisible_FH(const ::Sphere& s) const;   //this is going to be the exact version of sphere-culling
 
     // AABB-frustum test
     // Fast
-    bool IsAABBVisible_F(const AABB& aabb) const;
-    uint8 IsAABBVisible_FH(const AABB& aabb, bool* pAllInside) const;
-    uint8 IsAABBVisible_FH(const AABB& aabb) const;
+    bool IsAABBVisible_F(const ::AABB& aabb) const;
+    uint8 IsAABBVisible_FH(const ::AABB& aabb, bool* pAllInside) const;
+    uint8 IsAABBVisible_FH(const ::AABB& aabb) const;
 
     // Exact
-    bool IsAABBVisible_E(const AABB& aabb) const;
-    uint8 IsAABBVisible_EH(const AABB& aabb, bool* pAllInside) const;
-    uint8 IsAABBVisible_EH(const AABB& aabb) const;
+    bool IsAABBVisible_E(const ::AABB& aabb) const;
+    uint8 IsAABBVisible_EH(const ::AABB& aabb, bool* pAllInside) const;
+    uint8 IsAABBVisible_EH(const ::AABB& aabb) const;
 
     // Multi-camera
-    bool IsAABBVisible_EHM(const AABB& aabb, bool* pAllInside) const;
-    bool IsAABBVisible_EM(const AABB& aabb) const;
-    bool IsAABBVisible_FM(const AABB& aabb) const;
+    bool IsAABBVisible_EHM(const ::AABB& aabb, bool* pAllInside) const;
+    bool IsAABBVisible_EM(const ::AABB& aabb) const;
+    bool IsAABBVisible_FM(const ::AABB& aabb) const;
 
     //OBB-frustum test
     bool IsOBBVisible_F(const Vec3& wpos, const OBB& obb) const;
@@ -1386,7 +1386,7 @@ inline bool CCamera::IsPointVisible(const Vec3& p) const
 // return values
 //   CULL_EXCLUSION = sphere outside of frustum (very fast rejection-test)
 //   CULL_INTERSECT = sphere and frustum intersects or sphere in completely inside frustum
-inline bool CCamera::IsSphereVisible_F(const Sphere& s) const
+inline bool CCamera::IsSphereVisible_F(const ::Sphere& s) const
 {
     if ((m_fp[0] | s.center) > s.radius)
     {
@@ -1427,7 +1427,7 @@ inline bool CCamera::IsSphereVisible_F(const Sphere& s) const
 //   CULL_EXCLUSION   = sphere outside of frustum (very fast rejection-test)
 //   CULL_INTERSECT   = sphere intersects the borders of the frustum, further checks necessary
 //   CULL_INCLUSION   = sphere is complete inside the frustum, no further checks necessary
-inline uint8 CCamera::IsSphereVisible_FH(const Sphere& s) const
+inline uint8 CCamera::IsSphereVisible_FH(const ::Sphere& s) const
 {
     f32 nc, rc, lc, tc, bc, cc;
     if ((nc = m_fp[0] | s.center) > s.radius)

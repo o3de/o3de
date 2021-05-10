@@ -467,7 +467,7 @@ namespace Blast
             }
 
             // transform all added lines from local to global
-            const AZ::Transform& localToGlobal = blastActor->GetWorldBody()->GetTransform();
+            const AZ::Transform& localToGlobal = blastActor->GetSimulatedBody()->GetTransform();
             for (uint32_t i = lineStartIndex; i < debugRenderBuffer.m_lines.size(); i++)
             {
                 DebugLine& line = debugRenderBuffer.m_lines[i];
@@ -485,7 +485,7 @@ namespace Blast
         {
             for (auto actor : m_family->GetActorTracker().GetActors())
             {
-                auto worldBody = actor->GetWorldBody();
+                auto worldBody = actor->GetSimulatedBody();
                 if (actor->IsStatic())
                 {
                     AZ::Vector3 gravity = AzPhysics::DefaultGravity;

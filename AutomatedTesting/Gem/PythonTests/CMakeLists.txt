@@ -107,20 +107,21 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 endif()
 
 ## NvCloth ##
-# [TODO LYN-1928] Enable when AutomatedTesting runs with Atom
-#if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
-#    ly_add_pytest(
-#        NAME AutomatedTesting::NvClothTests
-#        TEST_SUITE main
-#        TEST_SERIAL
-#        PATH ${CMAKE_CURRENT_LIST_DIR}/NvCloth/TestSuite_Active.py
-#        TIMEOUT 1500
-#        RUNTIME_DEPENDENCIES
-#            Legacy::Editor
-#            AZ::AssetProcessor
-#            AutomatedTesting.Assets
-#    )
-#endif()
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_add_pytest(
+        NAME AutomatedTesting::NvClothTests_Main
+        TEST_SUITE main
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}/NvCloth/TestSuite_Active.py
+        TIMEOUT 1500
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+        COMPONENT
+            NvCloth
+    )
+endif()
 
 ## Prefab ##
  if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)

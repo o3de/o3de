@@ -1179,7 +1179,7 @@ namespace Distance {
     //  float result = Distance::Point_TriangleSq( pos, triangle );
     //----------------------------------------------------------------------------------
     template<typename F>
-    ILINE F Sphere_TriangleSq(const Sphere& s, const Triangle_tpl<F>& t)
+    ILINE F Sphere_TriangleSq(const ::Sphere& s, const Triangle_tpl<F>& t)
     {
         F sqdistance =  Distance::Point_TriangleSq(s.center, t) - (s.radius * s.radius);
         if (sqdistance < 0)
@@ -1190,7 +1190,7 @@ namespace Distance {
     }
 
     template<typename F>
-    ILINE F Sphere_TriangleSq(const Sphere& s, const Triangle_tpl<F>& t, Vec3_tpl<F>& output)
+    ILINE F Sphere_TriangleSq(const ::Sphere& s, const Triangle_tpl<F>& t, Vec3_tpl<F>& output)
     {
         F sqdistance =  Distance::Point_TriangleSq(s.center, t, output) - (s.radius * s.radius);
         if (sqdistance < 0)
