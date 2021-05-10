@@ -20,7 +20,7 @@
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Utils.h>
-#include <AzFramework/Physics/WorldBodyBus.h>
+#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <Blast/BlastActor.h>
 #include <Family/BlastFamily.h>
 #include <NvBlastExtPxAsset.h>
@@ -164,7 +164,7 @@ namespace Blast
 
     AZ::Transform BlastActorImpl::GetTransform() const
     {
-        return GetWorldBody()->GetTransform();
+        return GetSimulatedBody()->GetTransform();
     }
 
     const BlastFamily& BlastActorImpl::GetFamily() const
@@ -177,19 +177,19 @@ namespace Blast
         return m_tkActor;
     }
 
-    AzPhysics::SimulatedBody* BlastActorImpl::GetWorldBody()
+    AzPhysics::SimulatedBody* BlastActorImpl::GetSimulatedBody()
     {
         AzPhysics::SimulatedBody* worldBody = nullptr;
-        Physics::WorldBodyRequestBus::EventResult(
-            worldBody, m_entity->GetId(), &Physics::WorldBodyRequests::GetWorldBody);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            worldBody, m_entity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
         return worldBody;
     }
 
-    const AzPhysics::SimulatedBody* BlastActorImpl::GetWorldBody() const
+    const AzPhysics::SimulatedBody* BlastActorImpl::GetSimulatedBody() const
     {
         AzPhysics::SimulatedBody* worldBody = nullptr;
-        Physics::WorldBodyRequestBus::EventResult(
-            worldBody, m_entity->GetId(), &Physics::WorldBodyRequests::GetWorldBody);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
+            worldBody, m_entity->GetId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
         return worldBody;
     }
 

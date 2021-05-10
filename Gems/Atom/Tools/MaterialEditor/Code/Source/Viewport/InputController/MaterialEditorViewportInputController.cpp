@@ -17,6 +17,8 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Components/CameraBus.h>
+#include <AzFramework/Viewport/ScreenGeometry.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
@@ -136,6 +138,11 @@ namespace MaterialEditor
         const InputChannel::State state = event.m_inputChannel.GetState();
         const KeyMask keysOld = m_keys;
 
+        bool mouseOver = false;
+        AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::EventResult(
+            mouseOver, GetViewportId(),
+            &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::IsMouseOver);
+
         if (!m_behavior)
         {
             EvaluateControlBehavior();
@@ -178,7 +185,10 @@ namespace MaterialEditor
             }
             else if (inputChannelId == InputDeviceMouse::Movement::Z)
             {
-                m_behavior->MoveZ(event.m_inputChannel.GetValue());
+                if (mouseOver)
+                {
+                    m_behavior->MoveZ(event.m_inputChannel.GetValue());
+                }
             }
             break;
         case InputChannel::State::Ended:
@@ -222,7 +232,10 @@ namespace MaterialEditor
             }
             else if (inputChannelId == InputDeviceMouse::Movement::Z)
             {
-                m_behavior->MoveZ(event.m_inputChannel.GetValue());
+                if (mouseOver)
+                {
+                    m_behavior->MoveZ(event.m_inputChannel.GetValue());
+                }
             }
             break;
         }

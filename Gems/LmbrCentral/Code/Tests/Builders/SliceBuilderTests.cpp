@@ -304,6 +304,10 @@ public:
     void UnregisterComponentDescriptor(const ComponentDescriptor*) override { }
     void RegisterEntityAddedEventHandler(EntityAddedEvent::Handler&) override { }
     void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler&) override { }
+    void RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler&) override { }
+    void RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler&) override { }
+    void SignalEntityActivated(Entity*) override { }
+    void SignalEntityDeactivated(Entity*) override { }
     bool AddEntity(Entity*) override { return true; }
     bool RemoveEntity(Entity*) override { return true; }
     bool DeleteEntity(const AZ::EntityId&) override { return true; }
@@ -329,6 +333,7 @@ public:
         m_serializeContext = aznew SerializeContext(true, true);
 
         ComponentApplicationBus::Handler::BusConnect();
+        AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
 
         m_sliceDescriptor = SliceComponent::CreateDescriptor();
         m_mockAssetDescriptor = MockAssetRefComponent::CreateDescriptor();
@@ -358,6 +363,7 @@ public:
     void TearDown() override
     {
         m_catalog->DisableCatalog();
+        AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
         ComponentApplicationBus::Handler::BusDisconnect();
 
         Data::AssetManager::Destroy();

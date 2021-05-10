@@ -36,6 +36,12 @@ namespace Multiplayer
     AZ_TYPE_SAFE_INTEGRAL(PropertyIndex, uint16_t);
     AZ_TYPE_SAFE_INTEGRAL(RpcIndex, uint16_t);
 
+    AZ_TYPE_SAFE_INTEGRAL(ClientInputId, uint16_t);
+
+    //! This is a strong typedef for representing the number of application frames since application start.
+    AZ_TYPE_SAFE_INTEGRAL(HostFrameId, uint32_t);
+    static constexpr HostFrameId InvalidHostFrameId = HostFrameId{ 0xFFFFFFFF };
+
     using LongNetworkString = AZ::CVarFixedString;
     using ReliabilityType = AzNetworking::ReliabilityType;
 
@@ -122,3 +128,5 @@ AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::NetEntityId);
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::NetComponentId);
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::PropertyIndex);
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::RpcIndex);
+AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::ClientInputId);
+AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::HostFrameId);

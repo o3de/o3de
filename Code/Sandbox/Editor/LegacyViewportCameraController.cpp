@@ -28,8 +28,8 @@
 namespace SandboxEditor
 {
 
-LegacyViewportCameraControllerInstance::LegacyViewportCameraControllerInstance(AzFramework::ViewportId viewportId)
-    : AzFramework::MultiViewportControllerInstanceInterface(viewportId)
+LegacyViewportCameraControllerInstance::LegacyViewportCameraControllerInstance(AzFramework::ViewportId viewportId, LegacyViewportCameraController* controller)
+    : AzFramework::MultiViewportControllerInstanceInterface<LegacyViewportCameraController>(viewportId, controller)
 {
 }
 

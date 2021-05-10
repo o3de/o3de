@@ -145,7 +145,6 @@ QViewport::QViewport(QWidget* parent, StartupMode startupMode)
 void QViewport::Startup()
 {
     m_frameTimer = new QElapsedTimer();
-    CreateRenderContext();
 
     m_camera.reset(new CCamera());
     ResetCamera();
@@ -162,8 +161,6 @@ void QViewport::Startup()
 
 QViewport::~QViewport()
 {
-    DestroyRenderContext();
-
     m_viewportRequests.reset();
 }
 
@@ -180,51 +177,14 @@ void QViewport::UpdateBackgroundColor()
 
 bool QViewport::ScreenToWorldRay(Ray* ray, int x, int y)
 {
-    if (!GetIEditor()->GetEnv()->pRenderer)
-    {
-        return false;
-    }
-
-    SetCurrentContext();
-
-    Vec3 pos0, pos1;
-    float wx, wy, wz;
-    if (!GetIEditor()->GetEnv()->pRenderer->UnProjectFromScreen(float(x), float(m_height - y), 0, &wx, &wy, &wz))
-    {
-        RestorePreviousContext();
-        return false;
-    }
-    pos0(wx, wy, wz);
-    if (!GetIEditor()->GetEnv()->pRenderer->UnProjectFromScreen(float(x), float(m_height - y), 1, &wx, &wy, &wz))
-    {
-        RestorePreviousContext();
-        return false;
-    }
-    pos1(wx, wy, wz);
-
-    RestorePreviousContext();
-
-    Vec3 v = (pos1 - pos0);
-    v = v.GetNormalized();
-
-    ray->origin = pos0;
-    ray->direction = v;
-    return true;
+    AZ_UNUSED(ray);
+    AZ_UNUSED(x);
+    AZ_UNUSED(y);
+    return false;
 }
 
-QPoint QViewport::ProjectToScreen(const Vec3& wp)
+QPoint QViewport::ProjectToScreen(const Vec3&)
 {
-    float x, y, z;
-
-    SetCurrentContext();
-    GetIEditor()->GetEnv()->pRenderer->ProjectToScreen(wp.x, wp.y, wp.z, &x, &y, &z);
-    if (_finite(x) || _finite(y))
-    {
-        RestorePreviousContext();
-        return QPoint(int((x / 100.0) * Width()), int((y / 100.0) * Height()));
-    }
-    RestorePreviousContext();
-
     return QPoint(0, 0);
 }
 
@@ -243,105 +203,6 @@ int QViewport::Width() const
 int QViewport::Height() const
 {
     return rect().height();
-}
-
-bool QViewport::CreateRenderContext()
-{
-    if (m_creatingRenderContext || !isVisible())
-    {
-        return false;
-    }
-
-    HWND windowHandle = reinterpret_cast<HWND>(QWidget::winId());
-
-    if( m_renderContextCreated && windowHandle == m_lastHwnd)
-    {
-        // the hwnd has not changed, no need to destroy and recreate context (and swap chain etc)
-        return false;
-    }
-
-    m_creatingRenderContext = true;
-    DestroyRenderContext();
-    if (windowHandle && GetIEditor()->GetEnv()->pRenderer && !m_renderContextCreated)
-    {
-        m_renderContextCreated = true;
-
-        m_viewportRequests.get()->BusConnect(windowHandle);
-        AzFramework::WindowSystemNotificationBus::Broadcast(&AzFramework::WindowSystemNotificationBus::Handler::OnWindowCreated, windowHandle);
-
-        m_lastHwnd = windowHandle;
-
-        StorePreviousContext();
-        GetIEditor()->GetEnv()->pRenderer->CreateContext(windowHandle);
-        RestorePreviousContext();
-
-        m_creatingRenderContext = false;
-        return true;
-    }
-    m_creatingRenderContext = false;
-    return false;
-}
-
-void QViewport::DestroyRenderContext()
-{
-    if (GetIEditor()->GetEnv()->pRenderer && m_renderContextCreated)
-    {
-        HWND windowHandle = reinterpret_cast<HWND>(QWidget::winId());
-
-        if (windowHandle != GetIEditor()->GetEnv()->pRenderer->GetHWND())
-        {
-            GetIEditor()->GetEnv()->pRenderer->DeleteContext(windowHandle);
-        }
-        m_renderContextCreated = false;
-
-        AzFramework::WindowNotificationBus::Event(windowHandle, &AzFramework::WindowNotificationBus::Handler::OnWindowClosed);
-        m_viewportRequests.get()->BusDisconnect();
-        m_lastHwnd = 0;
-    }
-}
-
-void QViewport::StorePreviousContext()
-{
-    SPreviousContext previous;
-    previous.width = GetIEditor()->GetEnv()->pRenderer->GetWidth();
-    previous.height = GetIEditor()->GetEnv()->pRenderer->GetHeight();
-    previous.window = reinterpret_cast<HWND>(GetIEditor()->GetEnv()->pRenderer->GetCurrentContextHWND());
-    previous.renderCamera = GetIEditor()->GetEnv()->pRenderer->GetCamera();
-    previous.systemCamera = GetISystem()->GetViewCamera();
-    previous.isMainViewport = GetIEditor()->GetEnv()->pRenderer->IsCurrentContextMainVP();
-    m_previousContexts.push_back(previous);
-}
-
-void QViewport::SetCurrentContext()
-{
-    StorePreviousContext();
-
-    if (m_camera.get() == 0)
-    {
-        return;
-    }
-
-    HWND windowHandle = reinterpret_cast<HWND>(QWidget::winId());
-    GetIEditor()->GetEnv()->pRenderer->SetCurrentContext(windowHandle);
-    GetIEditor()->GetEnv()->pRenderer->ChangeViewport(0, 0, m_width, m_height);
-    GetIEditor()->GetEnv()->pRenderer->SetCamera(*m_camera);
-    GetIEditor()->GetEnv()->pSystem->SetViewCamera(*m_camera);
-}
-
-void QViewport::RestorePreviousContext()
-{
-    if (m_previousContexts.empty())
-    {
-        assert(0);
-        return;
-    }
-
-    SPreviousContext x = m_previousContexts.back();
-    m_previousContexts.pop_back();
-    GetIEditor()->GetEnv()->pRenderer->SetCurrentContext(x.window);
-    GetIEditor()->GetEnv()->pRenderer->ChangeViewport(0, 0, x.width, x.height, x.isMainViewport);
-    GetIEditor()->GetEnv()->pRenderer->SetCamera(x.renderCamera);
-    GetIEditor()->GetEnv()->pSystem->SetViewCamera(x.systemCamera);
 }
 
 void QViewport::Serialize(IArchive& ar)
@@ -720,45 +581,6 @@ void QViewport::RenderInternal()
 {
 }
 
-void QViewport::GetImageOffscreen(CImageEx& image, const QSize& customSize)
-{
-    if ((m_width == 0) || (m_height == 0))
-    {
-        // This can occur, for example, if the material editor window is sized to zero OR
-        // if it is docked as a tab in another view pane window and is not the active tab when the editor starts.
-        image.Allocate(1, 1);
-        image.Clear();
-        return;
-    }
-
-    IRenderer* renderer = GetIEditor()->GetRenderer();
-
-    renderer->EnableSwapBuffers(false);
-    RenderInternal();
-    renderer->EnableSwapBuffers(true);
-
-    int w;
-    int h;
-
-    if (customSize.isValid())
-    {
-        w = customSize.width();
-        h = customSize.height();
-    }
-    else
-    {
-        w = width();
-        h = height();
-    }
-
-    image.Allocate(w, h);
-
-    // the renderer will read the frame buffer of the current render context, so we need to set ours as the current before we execute this command.
-    SetCurrentContext();
-    renderer->ReadFrameBufferFast(image.GetData(), w, h);
-    RestorePreviousContext();
-}
-
 void QViewport::SetWindowTitle(const AZStd::string& title)
 {
     // Do not support the WindowRequestBus changing the editor window title
@@ -1022,12 +844,6 @@ void QViewport::resizeEvent(QResizeEvent* ev)
     m_width = cx;
     m_height = cy;
 
-    // We queue the window resize event in case the windows is hidden.
-    // If the QWidget is hidden, the native windows does not resize and the
-    // swapchain may have the incorrect size. We need to wait
-    // until it's visible to trigger the resize event.
-    m_resizeWindowEvent = true;
-
     GetIEditor()->GetEnv()->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_RESIZE, cx, cy);
     SignalUpdate();
     Update();
@@ -1035,16 +851,7 @@ void QViewport::resizeEvent(QResizeEvent* ev)
 
 void QViewport::showEvent(QShowEvent* ev)
 {
-    // force a context create once we're shown
-    // This must be queued, as the showEvent is sent before the widget is actually shown, not after
-    QMetaObject::invokeMethod(this, "ForceRebuildRenderContext", Qt::QueuedConnection);
-
     QWidget::showEvent(ev);
-}
-
-void QViewport::ForceRebuildRenderContext()
-{
-    CreateRenderContext();
 }
 
 void QViewport::moveEvent(QMoveEvent* ev)
@@ -1057,11 +864,6 @@ void QViewport::moveEvent(QMoveEvent* ev)
 bool QViewport::event(QEvent* ev)
 {
     bool result = QWidget::event(ev);
-
-    if (ev->type() == QEvent::WinIdChange)
-    {
-        CreateRenderContext();
-    }
 
     if (ev->type() == QEvent::ShortcutOverride)
     {
