@@ -181,8 +181,6 @@ namespace AzToolsFramework
             }
             else
             {
-                PrefabDomUtils::PrintPrefabDomValue("Patches are : ", m_linkDom);
-                PrefabDomUtils::PrintPrefabDomValue("Linked instance dom before is : ", linkedInstanceDom);
                 AZ::JsonSerializationResult::ResultCode applyPatchResult = AZ::JsonSerialization::ApplyPatch(
                     linkedInstanceDom,
                     targetTemplatePrefabDom.GetAllocator(),
@@ -195,7 +193,6 @@ namespace AzToolsFramework
                         "Link::UpdateTarget - "
                         "ApplyPatches failed for Prefab DOM from source Template '%u' and target Template '%u'.",
                         m_sourceTemplateId, m_targetTemplateId);
-                    PrefabDomUtils::PrintPrefabDomValue("Linked instance dom after is : ", linkedInstanceDom);
                     return false;
                 }
             }

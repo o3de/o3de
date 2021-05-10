@@ -122,18 +122,14 @@ namespace AzToolsFramework
 
                 AZ::EntityId containerEntityId = instanceToCreate->get().GetContainerEntityId();
 
-                // Change top level entities to be parented to the container entity
-                // Mark them as dirty so this change is correctly applied to the template
+                // Parent the entities to the container entity. Parenting the container entities of the instances passed to createPrefab
+                // will be done during the creation of links below.
                 for (AZ::Entity* topLevelEntity : entities)
                 {
-                    //m_prefabUndoCache.UpdateCache(topLevelEntity->GetId());
-                    // undoBatch.MarkEntityDirty(topLevelEntity->GetId());
                     AZ::TransformBus::Event(topLevelEntity->GetId(), &AZ::TransformBus::Events::SetParent, containerEntityId);
-                    //ToolsApplicationRequests::Bus::Broadcast(
-                    //    &ToolsApplicationRequests::Bus::Events::RemoveDirtyEntity, topLevelEntity->GetId());
                 }
 
-                // Update the template of the instance since we modified the entities of the instance by calling HandleEntitiesAdded.
+                // Update the template of the instance since the entities are modified since the template creation.
                 Prefab::PrefabDom serializedInstance;
                 if (Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(instanceToCreate->get(), serializedInstance))
                 {
@@ -145,26 +141,27 @@ namespace AzToolsFramework
                     EntityOptionalReference nestedInstanceContainerEntity = nestedInstance->GetContainerEntity();
                     AZ_Assert(
                         nestedInstanceContainerEntity, "Invalid container entity found for the nested instance used in prefab creation.");
+
+                    // These link creations shouldn't be undone because that would put the template in a non-usable state if a user
+                    // chooses to instantiate the template after undoing the creation.
                     CreateLink(
                         {&nestedInstanceContainerEntity->get()}, *nestedInstance, instanceToCreate->get().GetTemplateId(),
                         undoBatch.GetUndoBatch(), containerEntityId, false);
                 });
 
                 CreateLink(
-                    topLevelEntities, instanceToCreate->get(), commonRootEntityOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch(),
-                    commonRootEntityId);
+                    topLevelEntities, instanceToCreate->get(), commonRootEntityOwningInstance->get().GetTemplateId(),
+                    undoBatch.GetUndoBatch(), commonRootEntityId);
 
-                // Change top level entities to be parented to the container entity
-                // Mark them as dirty so this change is correctly applied to the template
                 for (AZ::Entity* topLevelEntity : topLevelEntities)
                 {
                     m_prefabUndoCache.UpdateCache(topLevelEntity->GetId());
-                    //undoBatch.MarkEntityDirty(topLevelEntity->GetId());
-                    //AZ::TransformBus::Event(topLevelEntity->GetId(), &AZ::TransformBus::Events::SetParent, containerEntityId);
+
+                    // Parenting entities would mark entities as dirty. But we want to unmark the top level entities as dirty because
+                    // if we don't, the template created would be updated and cause issues with undo operation followed by instantiation.
                     ToolsApplicationRequests::Bus::Broadcast(
                         &ToolsApplicationRequests::Bus::Events::RemoveDirtyEntity, topLevelEntity->GetId());
                 }
-                
                 
                 // Select Container Entity
                 {
@@ -441,6 +438,8 @@ namespace AzToolsFramework
 
                     PrefabDom patch;
                     m_instanceToTemplateInterface->GeneratePatch(patch, beforeState, afterState);
+
+                    PrefabDomUtils::PrintPrefabDomValue(entity->GetName(), patch);
 
                     if (patch.IsArray() && !patch.Empty() && beforeState.IsObject())
                     {
