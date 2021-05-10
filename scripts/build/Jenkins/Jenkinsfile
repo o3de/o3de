@@ -358,7 +358,7 @@ def TestResults(Map options, String platform, String type, String workspace, Map
     def o3deroot = "${workspace}/${ENGINE_REPOSITORY_NAME}"
     dir("${o3deroot}/${params.OUTPUT_DIRECTORY}/Testing") {
         junit testResults: "**/*.xml",
-              keepLongStdio : True
+              keepLongStdio : true
         echo "Clean test output dir"
         palRm("PyTest/*")
         palRm("GTest/*")
