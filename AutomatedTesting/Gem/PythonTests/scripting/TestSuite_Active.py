@@ -68,12 +68,12 @@ class TestAutomation(TestAutomationBase):
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.parametrize("level", ["tmp_level"])
-    def test_OnEntityActivatedDeactivated_HappyPath_PrintMessage(self, request, workspace, editor, launcher_platform, project, level):
+    def test_ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage(self, request, workspace, editor, launcher_platform, project, level):
         def teardown():
             file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
         request.addfinalizer(teardown)
         file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        from . import OnEntityActivatedDeactivated_HappyPath_PrintMessage as test_module
+        from . import ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage as test_module
         self._run_test(request, workspace, editor, test_module)
 
     def test_NodePalette_HappyPath_ClearSelection(self, request, workspace, editor, launcher_platform, project):
