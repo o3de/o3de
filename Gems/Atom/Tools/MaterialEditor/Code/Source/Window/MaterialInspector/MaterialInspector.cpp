@@ -1,14 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
@@ -21,7 +21,6 @@
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 
-#include <Atom/Window/MaterialEditorWindowSettings.h>
 #include <Window/MaterialInspector/MaterialInspector.h>
 
 namespace MaterialEditor
@@ -95,8 +94,7 @@ namespace MaterialEditor
 
     AZ::Crc32 MaterialInspector::GetGroupSaveStateKey(const AZStd::string& groupNameId) const
     {
-        return AZ::Crc32(
-            AZStd::string::format("MaterialInspector::PropertyGroup::%s::%s", m_documentPath.c_str(), groupNameId.c_str()));
+        return AZ::Crc32(AZStd::string::format("MaterialInspector::PropertyGroup::%s::%s", m_documentPath.c_str(), groupNameId.c_str()));
     }
 
     bool MaterialInspector::CompareInstanceNodeProperties(
@@ -110,7 +108,8 @@ namespace MaterialEditor
     void MaterialInspector::AddDetailsGroup()
     {
         const AZ::RPI::MaterialTypeSourceData* materialTypeSourceData = nullptr;
-        MaterialDocumentRequestBus::EventResult(materialTypeSourceData, m_documentId, &MaterialDocumentRequestBus::Events::GetMaterialTypeSourceData);
+        MaterialDocumentRequestBus::EventResult(
+            materialTypeSourceData, m_documentId, &MaterialDocumentRequestBus::Events::GetMaterialTypeSourceData);
 
         const AZStd::string groupNameId = "details";
         const AZStd::string groupDisplayName = "Details";
@@ -118,11 +117,13 @@ namespace MaterialEditor
         auto& group = m_groups[groupNameId];
 
         AtomToolsFramework::DynamicProperty property;
-        MaterialDocumentRequestBus::EventResult(property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::Name("details.materialType"));
+        MaterialDocumentRequestBus::EventResult(
+            property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::Name("details.materialType"));
         group.m_properties.push_back(property);
 
         property = {};
-        MaterialDocumentRequestBus::EventResult(property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::Name("details.parentMaterial"));
+        MaterialDocumentRequestBus::EventResult(
+            property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::Name("details.parentMaterial"));
         group.m_properties.push_back(property);
 
         // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
@@ -148,7 +149,9 @@ namespace MaterialEditor
         for (const auto& uvNamePair : uvNameMap)
         {
             AtomToolsFramework::DynamicProperty property;
-            MaterialDocumentRequestBus::EventResult(property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::RPI::MaterialPropertyId(groupNameId, uvNamePair.m_shaderInput.ToString()).GetFullName());
+            MaterialDocumentRequestBus::EventResult(
+                property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty,
+                AZ::RPI::MaterialPropertyId(groupNameId, uvNamePair.m_shaderInput.ToString()).GetFullName());
             group.m_properties.push_back(property);
 
             property.SetValue(property.GetConfig().m_parentValue);
@@ -164,13 +167,15 @@ namespace MaterialEditor
     void MaterialInspector::AddPropertiesGroup()
     {
         const AZ::RPI::MaterialTypeSourceData* materialTypeSourceData = nullptr;
-        MaterialDocumentRequestBus::EventResult(materialTypeSourceData, m_documentId, &MaterialDocumentRequestBus::Events::GetMaterialTypeSourceData);
+        MaterialDocumentRequestBus::EventResult(
+            materialTypeSourceData, m_documentId, &MaterialDocumentRequestBus::Events::GetMaterialTypeSourceData);
 
         for (const auto& groupDefinition : materialTypeSourceData->GetGroupDefinitionsInDisplayOrder())
         {
             const AZStd::string& groupNameId = groupDefinition.m_nameId;
             const AZStd::string& groupDisplayName = !groupDefinition.m_displayName.empty() ? groupDefinition.m_displayName : groupNameId;
-            const AZStd::string& groupDescription = !groupDefinition.m_description.empty() ? groupDefinition.m_description : groupDisplayName;
+            const AZStd::string& groupDescription =
+                !groupDefinition.m_description.empty() ? groupDefinition.m_description : groupDisplayName;
             auto& group = m_groups[groupNameId];
 
             const auto& propertyLayout = materialTypeSourceData->m_propertyLayout;
@@ -181,7 +186,9 @@ namespace MaterialEditor
                 for (const auto& propertyDefinition : propertyListItr->second)
                 {
                     AtomToolsFramework::DynamicProperty property;
-                    MaterialDocumentRequestBus::EventResult(property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::RPI::MaterialPropertyId(groupNameId, propertyDefinition.m_nameId).GetFullName());
+                    MaterialDocumentRequestBus::EventResult(
+                        property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty,
+                        AZ::RPI::MaterialPropertyId(groupNameId, propertyDefinition.m_nameId).GetFullName());
                     group.m_properties.push_back(property);
                 }
             }
@@ -205,7 +212,8 @@ namespace MaterialEditor
                     if (!AtomToolsFramework::ArePropertyValuesEqual(reflectedProperty.GetValue(), property.GetValue()))
                     {
                         reflectedProperty.SetValue(property.GetValue());
-                        AtomToolsFramework::InspectorRequestBus::Event(documentId, &AtomToolsFramework::InspectorRequestBus::Events::RefreshGroup, groupPair.first);
+                        AtomToolsFramework::InspectorRequestBus::Event(
+                            documentId, &AtomToolsFramework::InspectorRequestBus::Events::RefreshGroup, groupPair.first);
                     }
                     return;
                 }
@@ -213,7 +221,8 @@ namespace MaterialEditor
         }
     }
 
-    void MaterialInspector::OnDocumentPropertyConfigModified(const AZ::Uuid& documentId, const AtomToolsFramework::DynamicProperty& property)
+    void MaterialInspector::OnDocumentPropertyConfigModified(
+        const AZ::Uuid& documentId, const AtomToolsFramework::DynamicProperty& property)
     {
         for (auto& groupPair : m_groups)
         {
@@ -225,12 +234,14 @@ namespace MaterialEditor
                     if (reflectedProperty.GetVisibility() != property.GetVisibility())
                     {
                         reflectedProperty.SetConfig(property.GetConfig());
-                        AtomToolsFramework::InspectorRequestBus::Event(documentId, &AtomToolsFramework::InspectorRequestBus::Events::RebuildGroup, groupPair.first);
+                        AtomToolsFramework::InspectorRequestBus::Event(
+                            documentId, &AtomToolsFramework::InspectorRequestBus::Events::RebuildGroup, groupPair.first);
                     }
                     else
                     {
                         reflectedProperty.SetConfig(property.GetConfig());
-                        AtomToolsFramework::InspectorRequestBus::Event(documentId, &AtomToolsFramework::InspectorRequestBus::Events::RefreshGroup, groupPair.first);
+                        AtomToolsFramework::InspectorRequestBus::Event(
+                            documentId, &AtomToolsFramework::InspectorRequestBus::Events::RefreshGroup, groupPair.first);
                     }
                     return;
                 }
@@ -242,7 +253,8 @@ namespace MaterialEditor
     {
         // For some reason the reflected property editor notifications are not symmetrical
         // This function is called continuously anytime a property changes until the edit has completed
-        // Because of that, we have to track whether or not we are continuing to edit the same property to know when editing has started and ended
+        // Because of that, we have to track whether or not we are continuing to edit the same property to know when editing has started and
+        // ended
         const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
         if (property)
         {
@@ -261,23 +273,24 @@ namespace MaterialEditor
         {
             if (m_activeProperty == property)
             {
-                MaterialDocumentRequestBus::Event(m_documentId, &MaterialDocumentRequestBus::Events::SetPropertyValue,
-                    property->GetId(), property->GetValue());
+                MaterialDocumentRequestBus::Event(
+                    m_documentId, &MaterialDocumentRequestBus::Events::SetPropertyValue, property->GetId(), property->GetValue());
             }
         }
     }
 
     void MaterialInspector::SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* pNode)
     {
-        // As above, there are symmetrical functions on the notification interface for when editing begins and ends and has been completed but they are not being called following that pattern.
-        // when this function executes the changes to the property are ready to be committed or reverted
+        // As above, there are symmetrical functions on the notification interface for when editing begins and ends and has been completed
+        // but they are not being called following that pattern. when this function executes the changes to the property are ready to be
+        // committed or reverted
         const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(pNode);
         if (property)
         {
             if (m_activeProperty == property)
             {
-                MaterialDocumentRequestBus::Event(m_documentId, &MaterialDocumentRequestBus::Events::SetPropertyValue,
-                    property->GetId(), property->GetValue());
+                MaterialDocumentRequestBus::Event(
+                    m_documentId, &MaterialDocumentRequestBus::Events::SetPropertyValue, property->GetId(), property->GetValue());
 
                 MaterialDocumentRequestBus::Event(m_documentId, &MaterialDocumentRequestBus::Events::EndEdit);
                 m_activeProperty = nullptr;

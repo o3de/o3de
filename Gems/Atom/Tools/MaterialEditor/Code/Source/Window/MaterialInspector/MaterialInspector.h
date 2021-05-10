@@ -20,6 +20,7 @@
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 
 #include <Atom/Document/MaterialDocumentNotificationBus.h>
+#include <Atom/Window/MaterialEditorWindowSettings.h>
 #endif
 
 namespace MaterialEditor

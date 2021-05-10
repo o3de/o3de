@@ -1,27 +1,27 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
 
-#include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
 #include <Atom/Viewport/MaterialViewportRequestBus.h>
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <Window/PresetBrowserDialogs/LightingPresetBrowserDialog.h>
 #include <Window/PresetBrowserDialogs/ModelPresetBrowserDialog.h>
+#include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
 
+#include <QAction>
 #include <QApplication>
+#include <QHBoxLayout>
 #include <QPushButton>
 #include <QToolButton>
-#include <QAction>
-#include <QHBoxLayout>
 #include <QVBoxLayout>
 
 namespace MaterialEditor
@@ -31,6 +31,9 @@ namespace MaterialEditor
     {
         m_viewportSettings =
             AZ::UserSettings::CreateFind<MaterialViewportSettings>(AZ::Crc32("MaterialViewportSettings"), AZ::UserSettings::CT_GLOBAL);
+
+        m_windowSettings = AZ::UserSettings::CreateFind<MaterialEditorWindowSettings>(
+            AZ::Crc32("MaterialEditorWindowSettings"), AZ::UserSettings::CT_GLOBAL);
 
         MaterialViewportNotificationBus::Handler::BusConnect();
     }
@@ -54,22 +57,21 @@ namespace MaterialEditor
 
     void ViewportSettingsInspector::AddGeneralGroup()
     {
-        const AZStd::string groupNameId = "general";
-        const AZStd::string groupDisplayName = "General";
-        const AZStd::string groupDescription = "General";
+        const AZStd::string groupNameId = "generalSettings";
+        const AZStd::string groupDisplayName = "General Settings";
+        const AZStd::string groupDescription = "General Settings";
 
-        const AZ::Crc32 saveStateKey(AZStd::string::format("ViewportSettingsInspector::GeneralGroup"));
         AddGroup(
             groupNameId, groupDisplayName, groupDescription,
             new AtomToolsFramework::InspectorPropertyGroupWidget(
-                m_viewportSettings.get(), nullptr, m_viewportSettings->TYPEINFO_Uuid(), this, this, saveStateKey));
+                m_viewportSettings.get(), nullptr, m_viewportSettings->TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupNameId)));
     }
 
     void ViewportSettingsInspector::AddModelGroup()
     {
-        const AZStd::string groupNameId = "model";
-        const AZStd::string groupDisplayName = "Model";
-        const AZStd::string groupDescription = "Model";
+        const AZStd::string groupNameId = "modelSettings";
+        const AZStd::string groupDisplayName = "Model Settings";
+        const AZStd::string groupDescription = "Model Settings";
 
         auto groupWidget = new QWidget(this);
         auto buttonGroupWidget = new QWidget(groupWidget);
@@ -94,9 +96,8 @@ namespace MaterialEditor
 
         if (m_modelPreset)
         {
-            const AZ::Crc32 saveStateKey(AZStd::string::format("ViewportSettingsInspector::ModelGroup"));
             auto inspectorWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                m_modelPreset.get(), nullptr, m_modelPreset.get()->TYPEINFO_Uuid(), this, groupWidget, saveStateKey);
+                m_modelPreset.get(), nullptr, m_modelPreset.get()->TYPEINFO_Uuid(), this, groupWidget, GetGroupSaveStateKey(groupNameId));
 
             groupWidget->layout()->addWidget(inspectorWidget);
         }
@@ -155,9 +156,9 @@ namespace MaterialEditor
 
     void ViewportSettingsInspector::AddLightingGroup()
     {
-        const AZStd::string groupNameId = "lighting";
-        const AZStd::string groupDisplayName = "Lighting";
-        const AZStd::string groupDescription = "Lighting";
+        const AZStd::string groupNameId = "lightingSettings";
+        const AZStd::string groupDisplayName = "Lighting Settings";
+        const AZStd::string groupDescription = "Lighting Settings";
 
         auto groupWidget = new QWidget(this);
         auto buttonGroupWidget = new QWidget(groupWidget);
@@ -182,9 +183,9 @@ namespace MaterialEditor
 
         if (m_lightingPreset)
         {
-            const AZ::Crc32 saveStateKey(AZStd::string::format("ViewportSettingsInspector::LightingGroup"));
             auto inspectorWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                m_lightingPreset.get(), nullptr, m_lightingPreset.get()->TYPEINFO_Uuid(), this, groupWidget, saveStateKey);
+                m_lightingPreset.get(), nullptr, m_lightingPreset.get()->TYPEINFO_Uuid(), this, groupWidget,
+                GetGroupSaveStateKey(groupNameId));
 
             groupWidget->layout()->addWidget(inspectorWidget);
         }
@@ -202,8 +203,7 @@ namespace MaterialEditor
             AZ::Render::LightingPresetPtr preset;
             MaterialViewportRequestBus::BroadcastResult(
                 preset, &MaterialViewportRequestBus::Events::AddLightingPreset, AZ::Render::LightingPreset());
-            MaterialViewportRequestBus::Broadcast(
-                &MaterialViewportRequestBus::Events::SaveLightingPreset, preset, savePath);
+            MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SaveLightingPreset, preset, savePath);
             MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SelectLightingPreset, preset);
         }
     }
@@ -227,7 +227,8 @@ namespace MaterialEditor
         MaterialViewportRequestBus::BroadcastResult(preset, &MaterialViewportRequestBus::Events::GetLightingPresetSelection);
 
         AZStd::string defaultPath;
-        MaterialViewportRequestBus::BroadcastResult(defaultPath, &MaterialViewportRequestBus::Events::GetLightingPresetLastSavePath, preset);
+        MaterialViewportRequestBus::BroadcastResult(
+            defaultPath, &MaterialViewportRequestBus::Events::GetLightingPresetLastSavePath, preset);
 
         if (defaultPath.empty())
         {
@@ -260,8 +261,10 @@ namespace MaterialEditor
             m_viewportSettings->m_enableShadowCatcher, &MaterialViewportRequestBus::Events::GetShadowCatcherEnabled);
         MaterialViewportRequestBus::BroadcastResult(
             m_viewportSettings->m_enableAlternateSkybox, &MaterialViewportRequestBus::Events::GetAlternateSkyboxEnabled);
-        MaterialViewportRequestBus::BroadcastResult(m_viewportSettings->m_fieldOfView, &MaterialViewportRequestBus::Handler::GetFieldOfView);
-        MaterialViewportRequestBus::BroadcastResult(m_viewportSettings->m_displayMapperOperationType, &MaterialViewportRequestBus::Handler::GetDisplayMapperOperationType);
+        MaterialViewportRequestBus::BroadcastResult(
+            m_viewportSettings->m_fieldOfView, &MaterialViewportRequestBus::Handler::GetFieldOfView);
+        MaterialViewportRequestBus::BroadcastResult(
+            m_viewportSettings->m_displayMapperOperationType, &MaterialViewportRequestBus::Handler::GetDisplayMapperOperationType);
 
         AtomToolsFramework::InspectorRequestBus::Handler::BusDisconnect();
         AtomToolsFramework::InspectorWidget::Reset();
@@ -340,7 +343,8 @@ namespace MaterialEditor
         MaterialViewportRequestBus::Broadcast(
             &MaterialViewportRequestBus::Events::SetAlternateSkyboxEnabled, m_viewportSettings->m_enableAlternateSkybox);
         MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Handler::SetFieldOfView, m_viewportSettings->m_fieldOfView);
-        MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Handler::SetDisplayMapperOperationType, m_viewportSettings->m_displayMapperOperationType);
+        MaterialViewportRequestBus::Broadcast(
+            &MaterialViewportRequestBus::Handler::SetDisplayMapperOperationType, m_viewportSettings->m_displayMapperOperationType);
     }
 
     AZStd::string ViewportSettingsInspector::GetDefaultUniqueSaveFilePath(const AZStd::string& baseName) const
@@ -353,6 +357,28 @@ namespace MaterialEditor
         savePath = AtomToolsFramework::GetUniqueFileInfo(savePath.c_str()).absoluteFilePath().toUtf8().constData();
         return savePath;
     }
+
+    AZ::Crc32 ViewportSettingsInspector::GetGroupSaveStateKey(const AZStd::string& groupNameId) const
+    {
+        return AZ::Crc32(AZStd::string::format("ViewportSettingsInspector::PropertyGroup::%s", groupNameId.c_str()));
+    }
+
+    bool ViewportSettingsInspector::ShouldGroupAutoExpanded(const AZStd::string& groupNameId) const
+    {
+        auto stateItr = m_windowSettings->m_inspectorCollapsedGroups.find(GetGroupSaveStateKey(groupNameId));
+        return stateItr == m_windowSettings->m_inspectorCollapsedGroups.end();
+    }
+
+    void ViewportSettingsInspector::OnGroupExpanded(const AZStd::string& groupNameId)
+    {
+        m_windowSettings->m_inspectorCollapsedGroups.erase(GetGroupSaveStateKey(groupNameId));
+    }
+
+    void ViewportSettingsInspector::OnGroupCollapsed(const AZStd::string& groupNameId)
+    {
+        m_windowSettings->m_inspectorCollapsedGroups.insert(GetGroupSaveStateKey(groupNameId));
+    }
+
 } // namespace MaterialEditor
 
 #include <Source/Window/ViewportSettingsInspector/moc_ViewportSettingsInspector.cpp>
