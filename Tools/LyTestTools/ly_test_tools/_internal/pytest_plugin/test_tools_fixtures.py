@@ -287,8 +287,8 @@ def generic_launcher(workspace, request, crash_log_watchdog):
     # type: (...) -> ly_test_tools.launchers.platforms.base.Launcher
     return _generic_launcher(
         workspace=workspace,
-                            launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_PLATFORM),
-                            exe_file_name=get_fixture_argument(request, 'exe_file_name', ''))
+        launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_PLATFORM),
+        exe_file_name=get_fixture_argument(request, 'exe_file_name', ''))
 
 
 def _generic_launcher(workspace, launcher_platform, exe_file_name):
