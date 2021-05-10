@@ -98,7 +98,6 @@
 #define ID_FILE_SAVELEVELRESOURCES                 32942
 #define ID_VALIDATELEVEL                           32943
 #define ID_TERRAIN_RESIZE                          32944
-#define ID_RELOAD_TEXTURES                         32952
 #define ID_TERRAIN_COLLISION                       32960
 #define ID_TOOL_FIRST                              32972
 #define ID_EDIT_UNFREEZE                           32973

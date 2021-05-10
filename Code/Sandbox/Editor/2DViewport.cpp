@@ -86,7 +86,6 @@ inline Vec3 SnapToSize(Vec3 v, double size)
 //////////////////////////////////////////////////////////////////////
 Q2DViewport::Q2DViewport(QWidget* parent)
     : QtViewport(parent)
-    , m_renderer(nullptr)
 {
     // Scroll offset equals origin
     m_rcSelect.setRect(0, 0, 0, 0);
@@ -528,15 +527,6 @@ void Q2DViewport::paintEvent([[maybe_unused]] QPaintEvent* event)
 //////////////////////////////////////////////////////////////////////////
 int Q2DViewport::OnCreate()
 {
-    m_renderer = GetIEditor()->GetRenderer();
-    assert (m_renderer != NULL);
-    if (m_renderer)
-    {
-        WIN_HWND previousContext = m_renderer->GetCurrentContextHWND();
-        m_renderer->CreateContext(renderOverlayHWND());
-        m_renderer->SetCurrentContext(previousContext);
-    }
-
     // Calculate the View transformation matrix.
     CalculateViewTM();
 
@@ -641,10 +631,6 @@ void Q2DViewport::OnTitleMenu(QMenu* menu)
 //////////////////////////////////////////////////////////////////////////
 void Q2DViewport::OnDestroy()
 {
-    if (m_renderer)
-    {
-        m_renderer->DeleteContext(renderOverlayHWND());
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
