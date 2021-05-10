@@ -35,6 +35,12 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
         return spawnable;
     }
 
+    bool CreateSpawnable(AzFramework::Spawnable& spawnable, const PrefabDom& prefabDom)
+    {
+        AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> referencedAssets;
+        return CreateSpawnable(spawnable, prefabDom, referencedAssets);
+    }
+
     bool CreateSpawnable(AzFramework::Spawnable& spawnable, const PrefabDom& prefabDom, AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets)
     {
         Instance instance;
