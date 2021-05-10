@@ -398,8 +398,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_GAME_SYNCPLAYER, OnSyncPlayer)
     ON_COMMAND(ID_RESOURCES_REDUCEWORKINGSET, OnResourcesReduceworkingset)
 
-    ON_COMMAND(ID_SNAP_TO_GRID, OnSnap)
-
     ON_COMMAND(ID_WIREFRAME, OnWireframe)
 
     ON_COMMAND(ID_VIEW_GRIDSETTINGS, OnViewGridsettings)
@@ -442,7 +440,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_VIEW_CYCLE2DVIEWPORT, OnViewCycle2dviewport)
 #endif
     ON_COMMAND(ID_DISPLAY_GOTOPOSITION, OnDisplayGotoPosition)
-    ON_COMMAND(ID_SNAPANGLE, OnSnapangle)
     ON_COMMAND(ID_CHANGEMOVESPEED_INCREASE, OnChangemovespeedIncrease)
     ON_COMMAND(ID_CHANGEMOVESPEED_DECREASE, OnChangemovespeedDecrease)
     ON_COMMAND(ID_CHANGEMOVESPEED_CHANGESTEP, OnChangemovespeedChangestep)
@@ -3423,14 +3420,6 @@ void CCryEditApp::OnResourcesReduceworkingset()
 #endif
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnSnap()
-{
-    // Switch current snap to grid state.
-    bool bGridEnabled = gSettings.pGrid->IsEnabled();
-    gSettings.pGrid->Enable(!bGridEnabled);
-}
-
 void CCryEditApp::OnWireframe()
 {
     int             nWireframe(R_SOLID_MODE);
@@ -3677,19 +3666,6 @@ void CCryEditApp::OnDisplayGotoPosition()
 {
     CGotoPositionDlg dlg;
     dlg.exec();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnSnapangle()
-{
-    gSettings.pGrid->EnableAngleSnap(!gSettings.pGrid->IsAngleSnapEnabled());
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateSnapangle(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    action->setChecked(gSettings.pGrid->IsAngleSnapEnabled());
 }
 
 //////////////////////////////////////////////////////////////////////////
