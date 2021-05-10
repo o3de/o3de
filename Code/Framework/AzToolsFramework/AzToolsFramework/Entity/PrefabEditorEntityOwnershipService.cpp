@@ -345,6 +345,7 @@ namespace AzToolsFramework
 
     void PrefabEditorEntityOwnershipService::LoadReferencedAssets(AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets)
     {
+        // Start our loads on all assets by calling GetAsset from the AssetManager
         for (AZ::Data::Asset<AZ::Data::AssetData>& asset : referencedAssets)
         {
             if (!asset.GetId().IsValid())
@@ -362,7 +363,6 @@ namespace AzToolsFramework
 
             AZ::Data::AssetId assetId = asset.GetId();
             AZ::Data::AssetType assetType = asset.GetType();
-            const bool blockingLoad = loadBehavior == AZ::Data::AssetLoadBehavior::PreLoad;
 
             asset = AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, loadBehavior);
 
@@ -371,18 +371,33 @@ namespace AzToolsFramework
                 AZ_Error("Prefab", false, "Invalid asset found referenced in scene while entering game mode");
                 continue;
             }
+        }
 
-            if (blockingLoad)
+        // For all Preload assets we block until they're ready
+        // We do this as a seperate pass so that we don't interrupt queuing up all other asset loads
+        for (AZ::Data::Asset<AZ::Data::AssetData>& asset : referencedAssets)
+        {
+            if (!asset.GetId().IsValid())
             {
-                asset.BlockUntilLoadComplete();
+                AZ_Error("Prefab", false, "Invalid asset found referenced in scene while entering game mode");
+                continue;
+            }
 
-                if (asset.IsError())
-                {
-                    AZ_Error("Prefab", false, "Asset with id %s failed to preload while entering game mode",
-                        asset.GetId().ToString<AZStd::string>().c_str());
+            const AZ::Data::AssetLoadBehavior loadBehavior = asset.GetAutoLoadBehavior();
 
-                    continue;
-                }
+            if (loadBehavior != AZ::Data::AssetLoadBehavior::PreLoad)
+            {
+                continue;
+            }
+
+            asset.BlockUntilLoadComplete();
+
+            if (asset.IsError())
+            {
+                AZ_Error("Prefab", false, "Asset with id %s failed to preload while entering game mode",
+                    asset.GetId().ToString<AZStd::string>().c_str());
+
+                continue;
             }
         }
     }
@@ -438,14 +453,15 @@ namespace AzToolsFramework
                             m_playInEditorData.m_assets.emplace_back(product.ReleaseAsset().release(), AZ::Data::AssetLoadBehavior::Default);
                         }
 
+                        // make sure that PRE_NOTIFY assets get their notify before we activate, so that we can preserve the order of 
+                        // (load asset) -> (notify) -> (init) -> (activate)
+                        AZ::Data::AssetManager::Instance().DispatchEvents();
 
                         if (rootSpawnableIndex != NoRootSpawnable)
                         {
                             m_playInEditorData.m_entities.Reset(m_playInEditorData.m_assets[rootSpawnableIndex]);
                             m_playInEditorData.m_entities.SpawnAllEntities();
                         }
-
-                        AZ::Data::AssetManager::Instance().DispatchEvents();
 
                         // This is a workaround until the replacement for GameEntityContext is done
                         AzFramework::GameEntityContextEventBus::Broadcast(
