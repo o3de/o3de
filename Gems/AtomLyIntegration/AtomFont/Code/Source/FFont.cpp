@@ -101,6 +101,11 @@ AZ::RPI::WindowContextSharedPtr AZ::FFont::GetDefaultWindowContext() const
 
 bool AZ::FFont::InitFont(AZ::RPI::Scene* renderScene)
 {
+    if (!renderScene)
+    {
+        return false;
+    }
+
     auto initializationState = InitializationState::Uninitialized;
     // Do an atomic transition to Initializing if we're in the Uninitialized state.
     // Otherwise, check the current state.
@@ -109,11 +114,6 @@ bool AZ::FFont::InitFont(AZ::RPI::Scene* renderScene)
     if (!m_fontInitializationState.compare_exchange_strong(initializationState, InitializationState::Initializing))
     {
         return initializationState == InitializationState::Initialized;
-    }
-
-    if (!renderScene)
-    {
-        return false;
     }
 
     // Create and initialize DynamicDrawContext for font draw
@@ -1233,7 +1233,8 @@ void AZ::FFont::WrapText(string& result, float maxWidth, const char* str, const 
 
     if (ctx.m_sizeIn800x600)
     {
-        maxWidth = gEnv->pRenderer->ScaleCoordX(maxWidth);
+        // ToDo: Update to work with Atom? LYN-3676
+        // maxWidth = ???->ScaleCoordX(maxWidth);
     }
 
     Vec2 strSize = GetTextSize(result.c_str(), true, ctx);

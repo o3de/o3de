@@ -161,6 +161,19 @@ class TestAutomation(TestAutomationBase):
         from . import ScriptEvents_Default_SendReceiveSuccessfully as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.parametrize("level", ["tmp_level"])
+    def test_ScriptEvents_ReturnSetType_Successfully(self, request, workspace, editor, launcher_platform, project, level):
+        def teardown():
+            file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
+        request.addfinalizer(teardown)
+        file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
+        from . import ScriptEvents_ReturnSetType_Successfully as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_NodeCategory_ExpandOnClick(self, request, workspace, editor, launcher_platform):
+        from . import NodeCategory_ExpandOnClick as test_module
+        self._run_test(request, workspace, editor, test_module)
+
 # NOTE: We had to use hydra_test_utils.py, as TestAutomationBase run_test method
 # fails because of pyside_utils import
 @pytest.mark.SUITE_periodic

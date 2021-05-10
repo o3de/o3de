@@ -3413,6 +3413,6 @@ struct SShaderGraphBlock
 typedef std::vector<SShaderGraphBlock*> FXShaderGraphBlocks;
 typedef FXShaderGraphBlocks::iterator FXShaderGraphBlocksItor;
 
-#include "RendElement.h"
+#include <CryCommon/StaticInstance.h>
 
 #endif // CRYINCLUDE_CRYCOMMON_ISHADER_H
