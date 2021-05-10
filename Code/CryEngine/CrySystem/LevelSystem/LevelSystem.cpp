@@ -108,10 +108,11 @@ bool CLevelInfo::ReadInfo()
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
         usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
 
+    // Set up a default game type for legacy code.
+    m_defaultGameTypeName = "Mission0";
+
     if (usePrefabSystemForLevels)
     {
-        // Set up a default game type for legacy code.
-        m_defaultGameTypeName = "Mission0";
         return true;
     }
 

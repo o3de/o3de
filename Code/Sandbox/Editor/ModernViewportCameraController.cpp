@@ -22,15 +22,6 @@
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
-namespace AzFramework
-{
-    extern InputChannelId CameraFreeLookButton;
-    extern InputChannelId CameraFreePanButton;
-    extern InputChannelId CameraOrbitLookButton;
-    extern InputChannelId CameraOrbitDollyButton;
-    extern InputChannelId CameraOrbitPanButton;
-}
-
 namespace SandboxEditor
 {
     static void DrawPreviewAxis(AzFramework::DebugDisplayRequests& display, const AZ::Transform& transform, const float axisLength)
@@ -60,36 +51,23 @@ namespace SandboxEditor
         return viewportContext;
     }
 
-    ModernViewportCameraControllerInstance::ModernViewportCameraControllerInstance(const AzFramework::ViewportId viewportId)
-        : MultiViewportControllerInstanceInterface(viewportId)
+    void ModernViewportCameraController::SetCameraListBuilderCallback(const CameraListBuilder& builder)
     {
-        // LYN-2315 TODO - move setup out of constructor, pass cameras in
-        auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraFreeLookButton);
-        auto firstPersonPanCamera =
-            AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraFreePanButton, AzFramework::LookPan);
-        auto firstPersonTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::LookTranslation);
-        auto firstPersonWheelCamera = AZStd::make_shared<AzFramework::ScrollTranslationCameraInput>();
+        m_cameraListBuilder = builder;
+    }
 
-        auto orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>();
-        auto orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraOrbitLookButton);
-        auto orbitTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::OrbitTranslation);
-        auto orbitDollyWheelCamera = AZStd::make_shared<AzFramework::OrbitDollyScrollCameraInput>();
-        auto orbitDollyMoveCamera =
-            AZStd::make_shared<AzFramework::OrbitDollyCursorMoveCameraInput>(AzFramework::CameraOrbitDollyButton);
-        auto orbitPanCamera =
-            AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraOrbitPanButton, AzFramework::OrbitPan);
+    void ModernViewportCameraController::SetupCameras(AzFramework::Cameras& cameras)
+    {
+        if (m_cameraListBuilder)
+        {
+            m_cameraListBuilder(cameras);
+        }
+    }
 
-        orbitCamera->m_orbitCameras.AddCamera(orbitRotateCamera);
-        orbitCamera->m_orbitCameras.AddCamera(orbitTranslateCamera);
-        orbitCamera->m_orbitCameras.AddCamera(orbitDollyWheelCamera);
-        orbitCamera->m_orbitCameras.AddCamera(orbitDollyMoveCamera);
-        orbitCamera->m_orbitCameras.AddCamera(orbitPanCamera);
-
-        m_cameraSystem.m_cameras.AddCamera(firstPersonRotateCamera);
-        m_cameraSystem.m_cameras.AddCamera(firstPersonPanCamera);
-        m_cameraSystem.m_cameras.AddCamera(firstPersonTranslateCamera);
-        m_cameraSystem.m_cameras.AddCamera(firstPersonWheelCamera);
-        m_cameraSystem.m_cameras.AddCamera(orbitCamera);
+    ModernViewportCameraControllerInstance::ModernViewportCameraControllerInstance(const AzFramework::ViewportId viewportId, ModernViewportCameraController* controller)
+        : MultiViewportControllerInstanceInterface<ModernViewportCameraController>(viewportId, controller)
+    {
+        controller->SetupCameras(m_cameraSystem.m_cameras);
 
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
