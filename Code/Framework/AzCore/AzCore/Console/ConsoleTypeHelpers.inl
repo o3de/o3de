@@ -148,7 +148,15 @@ namespace AZ
             {
                 AZ::CVarFixedString convertCandidate{ arguments.front() };
                 char* endPtr = nullptr;
-                MAX_TYPE value = static_cast<MAX_TYPE>(strtoll(convertCandidate.c_str(), &endPtr, 0));
+                MAX_TYPE value;
+                if constexpr (AZStd::is_unsigned_v<MAX_TYPE>)
+                {
+                    value = static_cast<MAX_TYPE>(strtoull(convertCandidate.c_str(), &endPtr, 0));
+                }
+                else
+                {
+                    value = static_cast<MAX_TYPE>(strtoll(convertCandidate.c_str(), &endPtr, 0));
+                }
 
                 if (endPtr == convertCandidate.c_str())
                 {

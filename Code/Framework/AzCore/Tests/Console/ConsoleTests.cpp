@@ -13,24 +13,25 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/Console.h>
-
+#include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/Utils/Utils.h>
 
 namespace AZ
 {
     using namespace UnitTest;
 
-    AZ_CVAR(bool,   testBool, false, nullptr, ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(char,     testChar,   0, nullptr, ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(int8_t,   testInt8,   0, nullptr, ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(int16_t,  testInt16,  0, nullptr, ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(int32_t,  testInt32,  0, nullptr, ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(int64_t,  testInt64,  0, nullptr, ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(uint8_t,  testUInt8,  0, nullptr, ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(bool, testBool, false, nullptr, ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(char, testChar, 0, nullptr, ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(int8_t, testInt8, 0, nullptr, ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(int16_t, testInt16, 0, nullptr, ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(int32_t, testInt32, 0, nullptr, ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(int64_t, testInt64, 0, nullptr, ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(uint8_t, testUInt8, 0, nullptr, ConsoleFunctorFlags::Null, "");
     AZ_CVAR(uint16_t, testUInt16, 0, nullptr, ConsoleFunctorFlags::Null, "");
     AZ_CVAR(uint32_t, testUInt32, 0, nullptr, ConsoleFunctorFlags::Null, "");
     AZ_CVAR(uint64_t, testUInt64, 0, nullptr, ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(float,    testFloat,  0, nullptr, ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(double,   testDouble, 0, nullptr, ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(float, testFloat, 0, nullptr, ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(double, testDouble, 0, nullptr, ConsoleFunctorFlags::Null, "");
 
     AZ_CVAR(AZ::CVarFixedString, testString, "default", nullptr, ConsoleFunctorFlags::Null, "");
 
@@ -189,7 +190,7 @@ namespace AZ
 
     TEST_F(ConsoleTests, CVar_GetSetTest_Vector2)
     {
-        testVec2 = AZ::Vector2{ 0.0f, 0.0f};
+        testVec2 = AZ::Vector2{ 0.0f, 0.0f };
         TestCVarHelper(testVec2, "testVec2", "testVec2 1 1", "testVec2 asdf", AZ::Vector2(100, 100), AZ::Vector2(0, 0), AZ::Vector2(1, 1));
     }
 
@@ -349,4 +350,228 @@ namespace AZ
             EXPECT_EQ(2, instance.m_classFuncArgs);
         }
     }
+}
+
+
+namespace ConsoleSettingsRegistryTests
+{
+    //! ConfigFile MergeUtils Test
+    struct ConfigFileParams
+    {
+        AZStd::string_view m_testConfigFileName;
+        AZStd::string_view m_testConfigContents;
+    };
+    class ConsoleSettingsRegistryFixture
+        : public UnitTest::ScopedAllocatorSetupFixture
+        , public ::testing::WithParamInterface<ConfigFileParams>
+    {
+    public:
+        void SetUp() override
+        {
+            m_registry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+            // Store off the old global settings registry to restore after each test
+            m_oldSettingsRegistry = AZ::SettingsRegistry::Get();
+            if (m_oldSettingsRegistry != nullptr)
+            {
+                AZ::SettingsRegistry::Unregister(m_oldSettingsRegistry);
+            }
+            AZ::SettingsRegistry::Register(m_registry.get());
+
+            // Create a TestFile in the Test Directory
+            m_testFolder = AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / "ConsoleTestFolder";
+            auto configFileParams = GetParam();
+            CreateTestFile(m_testFolder / configFileParams.m_testConfigFileName, configFileParams.m_testConfigContents);
+        }
+
+        void TearDown() override
+        {
+            // Remove the Test Directory
+            DeleteFolderRecursive(m_testFolder);
+
+            // Restore the old global settings registry
+            AZ::SettingsRegistry::Unregister(m_registry.get());
+            if (m_oldSettingsRegistry != nullptr)
+            {
+                AZ::SettingsRegistry::Register(m_oldSettingsRegistry);
+                m_oldSettingsRegistry = {};
+            }
+            m_registry.reset();
+        }
+
+        void TestClassFunc(const AZ::ConsoleCommandContainer& someStrings)
+        {
+            m_stringArgCount = someStrings.size();
+        }
+
+        AZ_CONSOLEFUNC(ConsoleSettingsRegistryFixture, TestClassFunc, AZ::ConsoleFunctorFlags::Null, "");
+
+        static void DeleteFolderRecursive(const AZ::IO::PathView& path)
+        {
+            auto callback = [&path](AZStd::string_view filename, bool isFile) -> bool
+            {
+                if (isFile)
+                {
+                    auto filePath = AZ::IO::FixedMaxPath(path) / filename;
+                    AZ::IO::SystemFile::Delete(filePath.c_str());
+                }
+                else
+                {
+                    if (filename != "." && filename != "..")
+                    {
+                        auto folderPath = AZ::IO::FixedMaxPath(path) / filename;
+                        DeleteFolderRecursive(folderPath);
+                    }
+                }
+                return true;
+            };
+            auto searchPath = AZ::IO::FixedMaxPath(path) / "*";
+            AZ::IO::SystemFile::FindFiles(searchPath.c_str(), callback);
+            AZ::IO::SystemFile::DeleteDir(AZ::IO::FixedMaxPathString(path.Native()).c_str());
+        }
+
+        static bool CreateTestFile(const AZ::IO::FixedMaxPath& testPath, AZStd::string_view content)
+        {
+            AZ::IO::SystemFile file;
+            if (!file.Open(testPath.c_str(), AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE
+                | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
+            {
+                AZ_Assert(false, "Unable to open test file for writing: %s", testPath.c_str());
+                return false;
+            }
+
+            if (file.Write(content.data(), content.size()) != content.size())
+            {
+                AZ_Assert(false, "Unable to write content to test file: %s", testPath.c_str());
+                return false;
+            }
+
+            return true;
+        }
+
+    protected:
+        size_t m_stringArgCount{};
+        AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_registry;
+        AZ::IO::FixedMaxPath m_testFolder;
+
+    private:
+        AZ::SettingsRegistryInterface* m_oldSettingsRegistry{};
+    };
+
+    TEST_P(ConsoleSettingsRegistryFixture, Console_AbleToLoadSettingsFile_Successfully)
+    {
+        AZ::Console testConsole(*m_registry);
+        AZ_CVAR_SCOPED(int32_t, testInit, 0, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+        testConsole.LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
+        testInit = {};
+        AZ::testChar = {};
+        AZ::testBool = {};
+        AZ::testInt8 = {};
+        AZ::testInt16 = {};
+        AZ::testInt32 = {};
+        AZ::testInt64 = {};
+        AZ::testUInt8 = {};
+        AZ::testUInt16 = {};
+        AZ::testUInt32 = {};
+        AZ::testUInt64 = {};
+        AZ::testFloat= {};
+        AZ::testDouble = {};
+        AZ::testString = {};
+
+        auto configFileParams = GetParam();
+        testConsole.ExecuteConfigFile((m_testFolder / configFileParams.m_testConfigFileName).Native());
+        EXPECT_EQ(3, testInit);
+        EXPECT_TRUE(static_cast<bool>(AZ::testBool));
+        EXPECT_EQ('Q', AZ::testChar);
+        EXPECT_EQ(24, AZ::testInt8);
+        EXPECT_EQ(-32, AZ::testInt16);
+        EXPECT_EQ(41, AZ::testInt32);
+        EXPECT_EQ(-51, AZ::testInt64);
+        EXPECT_EQ(3, AZ::testUInt8);
+        EXPECT_EQ(5, AZ::testUInt16);
+        EXPECT_EQ(6, AZ::testUInt32);
+        EXPECT_EQ(0xFFFF'FFFF'FFFF'FFFF, AZ::testUInt64);
+        EXPECT_FLOAT_EQ(1.0f, AZ::testFloat);
+        EXPECT_DOUBLE_EQ(2, AZ::testDouble);
+        EXPECT_STREQ("Stable", static_cast<AZ::CVarFixedString>(AZ::testString).c_str());
+        EXPECT_EQ(3, m_stringArgCount);
+    }
+
+
+    static constexpr AZStd::string_view UserINIStyleContent =
+        R"(
+            testInit = 3
+            testBool true
+            testChar Q
+            testInt8 24
+            testInt16 -32
+            testInt32 41
+            testInt64 -51
+            testUInt8 3
+            testUInt16 5
+            testUInt32 6
+            testUInt64 18446744073709551615
+            testFloat 1.0
+            testDouble 2
+            testString Stable
+            ConsoleSettingsRegistryFixture.testClassFunc Foo Bar Baz
+        )";
+
+    static constexpr AZStd::string_view UserJsonMergePatchContent =
+        R"(
+            {
+                "Amazon": {
+                    "AzCore": {
+                        "Runtime": {
+                            "ConsoleCommands": {
+                                "testInit": 3,
+                                "testBool": true,
+                                "testChar": "Q",
+                                "testInt8": 24,
+                                "testInt16": -32,
+                                "testInt32": 41,
+                                "testInt64": -51,
+                                "testUInt8": 3,
+                                "testUInt16": 5,
+                                "testUInt32": 6,
+                                "testUInt64": 18446744073709551615,
+                                "testFloat": 1.0,
+                                "testDouble": 2,
+                                "testString": "Stable",
+                                "ConsoleSettingsRegistryFixture.testClassFunc": "Foo Bar Baz"
+                            }
+                        }
+                    }
+                }
+            }
+        )";
+    static constexpr AZStd::string_view UserJsonPatchContent =
+        R"(
+            [
+                { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testInit", "value": 3 },
+                { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testBool", "value": true },
+                { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testChar", "value": "Q" },
+                { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testInt8", "value": 24 },
+                { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testInt16", "value": -32 },
+                { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testInt32", "value": 41 },
+                { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testInt64", "value": -51 },
+                { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testUInt8", "value": 3 },
+                { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testUInt16", "value": 5 },
+                { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testUInt32", "value": 6 },
+                { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testUInt64", "value": 18446744073709551615 },
+                { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testFloat", "value": 1.0 },
+                { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testDouble", "value": 2 },
+                { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testString", "value": "Stable" },
+                { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/ConsoleSettingsRegistryFixture.testClassFunc", "value": "Foo Bar Baz" }
+            ]
+        )";
+
+    INSTANTIATE_TEST_CASE_P(
+        ExecuteCommandFromSettingsFile,
+        ConsoleSettingsRegistryFixture,
+        ::testing::Values(
+            ConfigFileParams{"user.cfg", UserINIStyleContent},
+            ConfigFileParams{"user.setreg", UserJsonMergePatchContent},
+            ConfigFileParams{"user.setregpatch", UserJsonPatchContent}
+        )
+    );
 }

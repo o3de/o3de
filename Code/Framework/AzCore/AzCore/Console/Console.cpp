@@ -13,7 +13,9 @@
 #include <AzCore/Console/Console.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Serialization/Json/JsonSerializationSettings.h>
 #include <AzCore/Settings/CommandLine.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/IO/FileIO.h>
@@ -41,6 +43,12 @@ namespace AZ
     Console::Console()
         : m_head(nullptr)
     {
+    }
+
+    Console::Console(AZ::SettingsRegistryInterface& settingsRegistryInterface)
+        : Console()
+    {
+        RegisterCommandInvokerWithSettingsRegistry(settingsRegistryInterface);
     }
 
     Console::~Console()
@@ -111,51 +119,51 @@ namespace AZ
 
     void Console::ExecuteConfigFile(AZStd::string_view configFileName)
     {
-        IO::FixedMaxPath filePathFixed = configFileName;
-        if (AZ::IO::FileIOBase* fileIOBase = AZ::IO::FileIOBase::GetInstance())
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        // If the config file is a settings registry file use the SettingsRegistryInterface MergeSettingsFile function
+        // otherwise use the SettingsRegistryMergeUtils MergeSettingsToRegistry_ConfigFile function to merge an INI-style
+        // file to the settings registry
+        AZ::IO::PathView configFile(configFileName);
+        if (configFile.Extension() == ".setreg")
         {
-            fileIOBase->ResolvePath(filePathFixed, configFileName);
+            settingsRegistry->MergeSettingsFile(configFile.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch);
         }
-
-        IO::SystemFile file;
-        if (!file.Open(filePathFixed.c_str(), AZ::IO::SystemFile::SF_OPEN_READ_ONLY))
+        else if (configFile.Extension() == ".setregpatch")
         {
-            AZLOG_ERROR("Failed to load '%s'. File could not be opened.", filePathFixed.c_str());
-            return;
+            settingsRegistry->MergeSettingsFile(configFile.Native(), AZ::SettingsRegistryInterface::Format::JsonPatch);
         }
-        const IO::SizeType length = file.Length();
-        if (length == 0)
+        else
         {
-            AZLOG_ERROR("Failed to load '%s'. File is empty.", filePathFixed.c_str());
-            return;
-        }
-        file.Seek(0, IO::SystemFile::SF_SEEK_BEGIN);
-        AZStd::string fileBuffer;
-        fileBuffer.resize(length);
-        IO::SizeType bytesRead = file.Read(length, fileBuffer.data());
-        file.Close();
-        // Resize again just in case bytesRead is less than length for some reason
-        fileBuffer.resize(bytesRead);
-
-        AZLOG_INFO("Loading config file %s", filePathFixed.c_str());
-
-        AZStd::vector<AZStd::string_view> separatedCommands;
-        auto BreakCommandsByLine = [&separatedCommands](AZStd::string_view token)
-        {
-            separatedCommands.emplace_back(token);
-        };
-        StringFunc::TokenizeVisitor(fileBuffer, BreakCommandsByLine, "\n\r");
-
-        for (const auto& commandView : separatedCommands)
-        {
-            ConsoleCommandContainer commandArgsView;
-            auto ConvertCommandStringToArray = [&commandArgsView](AZStd::string_view token)
+            AZ::SettingsRegistryMergeUtils::ConfigParserSettings configParserSettings;
+            configParserSettings.m_registryRootPointerPath = "/Amazon/AzCore/Runtime/ConsoleCommands";
+            configParserSettings.m_commandLineSettings.m_delimiterFunc = [](AZStd::string_view line)
             {
-                commandArgsView.emplace_back(token);
+                SettingsRegistryInterface::CommandLineArgumentSettings::JsonPathValue pathValue;
+                AZStd::string_view parsedLine = line;
+
+                // Splits the line based on the <equal> or <colon>
+                if (auto path = AZ::StringFunc::TokenizeNext(parsedLine, "=:"); path.has_value())
+                {
+                    pathValue.m_path = AZ::StringFunc::StripEnds(*path);
+                    pathValue.m_value = AZ::StringFunc::StripEnds(parsedLine);
+                }
+                // If the value is empty, then the line either contained an equal sign followed only by whitespace or the line was empty
+                // 1. line="testInit=", pathValue.m_path="testInit", pathValue.m_value=""
+                // 2. line="testInit 1", pathValue.m_path="testInit 1", pathValue.m_value=""
+                // Therefore the path is split the path on whitespace in order to retrieve a value
+                if (pathValue.m_value.empty())
+                {
+                    parsedLine = pathValue.m_path;
+                    if (auto path = AZ::StringFunc::TokenizeNext(parsedLine, " \t"); path.has_value())
+                    {
+                        pathValue.m_path = AZ::StringFunc::StripEnds(*path);
+                        pathValue.m_value = AZ::StringFunc::StripEnds(parsedLine);
+                    }
+
+                }
+                return pathValue;
             };
-            constexpr AZStd::string_view commandSeparators = " =";
-            StringFunc::TokenizeVisitor(commandView, ConvertCommandStringToArray, commandSeparators);
-            PerformCommand(commandArgsView, ConsoleSilentMode::NotSilent, ConsoleInvokedFrom::AzConsole, ConsoleFunctorFlags::Null, ConsoleFunctorFlags::Null);
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ConfigFile(*settingsRegistry, configFile.Native(), configParserSettings);
         }
     }
 
@@ -446,5 +454,128 @@ namespace AZ
         }
 
         return result;
+    }
+
+    struct ConsoleCommandKeyNotificationHandler
+    {
+        ConsoleCommandKeyNotificationHandler(AZ::SettingsRegistryInterface& registry, Console& console)
+            : m_settingsRegistry(registry)
+            , m_console(console)
+        {
+        }
+
+        // Responsible for using the Json Serialization Issue Callback system
+        // to determine when a JSON Patch or JSON Merge Patch modifies a value
+        // at a path underneath the IConsole::ConsoleRootCommandKey JSON pointer
+        JsonSerializationResult::ResultCode operator()(AZStd::string_view message,
+            JsonSerializationResult::ResultCode result, AZStd::string_view path)
+        {
+            AZ::IO::PathView consoleRootCommandKey{ IConsole::ConsoleRootCommandKey, AZ::IO::PosixPathSeparator };
+            AZ::IO::PathView inputKey{ path, AZ::IO::PosixPathSeparator };
+            if (result.GetTask() == JsonSerializationResult::Tasks::Merge
+                && result.GetProcessing() == JsonSerializationResult::Processing::Completed
+                && inputKey.IsRelativeTo(consoleRootCommandKey))
+            {
+                if (auto type = m_settingsRegistry.GetType(path); type != SettingsRegistryInterface::Type::NoType)
+                {
+                    operator()(path, type);
+                }
+            }
+
+            // This is the default issue reporting, that logs using the warning category
+            if (result.GetProcessing() != JsonSerializationResult::Processing::Completed)
+            {
+                scratchBuffer.append(message.begin(), message.end());
+                scratchBuffer.append("\n    Reason: ");
+                result.AppendToString(scratchBuffer, path);
+                scratchBuffer.append(".");
+                AZ_Warning("JSON Serialization", false, "%s", scratchBuffer.c_str());
+
+                scratchBuffer.clear();
+            }
+            return result;
+        }
+
+        void operator()(AZStd::string_view path, SettingsRegistryInterface::Type type)
+        {
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+
+            AZ::IO::PathView consoleRootCommandKey{ IConsole::ConsoleRootCommandKey, AZ::IO::PosixPathSeparator };
+            AZ::IO::PathView inputKey{ path, AZ::IO::PosixPathSeparator };
+            if (inputKey.IsRelativeTo(consoleRootCommandKey))
+            {
+                AZStd::string_view command = inputKey.LexicallyRelative(consoleRootCommandKey).Native();
+                ConsoleCommandContainer commandArgs;
+                // Argument string which stores the value from the Settings Registry long enough
+                // to pass into the PerformCommand. The ConsoleCommandContainer stores string_views
+                // and therefore doesn't own the memory.
+                FixedValueString commandArgString;
+
+                if (type == SettingsRegistryInterface::Type::String)
+                {
+                    if (m_settingsRegistry.Get(commandArgString, path))
+                    {
+                        auto ConvertCommandArgumentToArray = [&commandArgs](AZStd::string_view token)
+                        {
+                            commandArgs.emplace_back(token);
+                        };
+                        constexpr AZStd::string_view commandSeparators = " \t\n\r";
+                        StringFunc::TokenizeVisitor(commandArgString, ConvertCommandArgumentToArray, commandSeparators);
+                    }
+                }
+                else if (type == SettingsRegistryInterface::Type::Boolean)
+                {
+                    bool commandArgBool{};
+                    if (m_settingsRegistry.Get(commandArgBool, path))
+                    {
+                        commandArgString = commandArgBool ? "true" : "false";
+                        commandArgs.emplace_back(commandArgString);
+                    }
+                }
+                else if (type == SettingsRegistryInterface::Type::Integer)
+                {
+                    // Try converting to a signed 64-bit number first and then an unsigned 64-bit number
+                    AZ::s64 commandArgInt{};
+                    AZ::u64 commandArgUInt{};
+                    if (m_settingsRegistry.Get(commandArgInt, path))
+                    {
+                        AZStd::to_string(commandArgString, commandArgInt);
+                        commandArgs.emplace_back(commandArgString);
+                    }
+                    else if (m_settingsRegistry.Get(commandArgUInt, path))
+                    {
+                        AZStd::to_string(commandArgString, commandArgUInt);
+                        commandArgs.emplace_back(commandArgString);
+                    }
+                }
+                else if (type == SettingsRegistryInterface::Type::FloatingPoint)
+                {
+                    double commandArgFloat{};
+                    if (m_settingsRegistry.Get(commandArgFloat, path))
+                    {
+                        AZStd::to_string(commandArgString, commandArgFloat);
+                        commandArgs.emplace_back(commandArgString);
+                    }
+                }
+                m_console.PerformCommand(command, commandArgs, ConsoleSilentMode::NotSilent, ConsoleInvokedFrom::AzConsole, ConsoleFunctorFlags::Null, ConsoleFunctorFlags::Null);
+            }
+        }
+
+        AZ::Console& m_console;
+        AZ::SettingsRegistryInterface& m_settingsRegistry;
+        AZStd::string scratchBuffer;
+    };
+
+    void Console::RegisterCommandInvokerWithSettingsRegistry(AZ::SettingsRegistryInterface& settingsRegistry)
+    {
+        // Make sure the there is a JSON object at the path of AZ::IConsole::ConsoleRootCommandKey
+        // So that JSON Patch is able to add values underneath that object (JSON Patch doesn't create intermediate objects)
+        settingsRegistry.MergeSettings(R"({ "Amazon": { "AzCore": { "Runtime": { "ConsoleCommands": {} } }}})",
+            SettingsRegistryInterface::Format::JsonMergePatch);
+        m_consoleCommandKeyHandler = settingsRegistry.RegisterNotifier(ConsoleCommandKeyNotificationHandler{ settingsRegistry, *this });
+
+        JsonApplyPatchSettings applyPatchSettings;
+        applyPatchSettings.m_reporting = ConsoleCommandKeyNotificationHandler{ settingsRegistry, *this };
+        settingsRegistry.SetApplyPatchSettings(applyPatchSettings);
     }
 }

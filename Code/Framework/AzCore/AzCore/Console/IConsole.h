@@ -22,7 +22,9 @@
 
 namespace AZ
 {
+    class SettingsRegistryInterface;
     class CommandLine;
+
 
     //! @class IConsole
     //! A simple console class for providing text based variable and process interaction.
@@ -32,6 +34,8 @@ namespace AZ
         AZ_RTTI(IConsole, "{20001930-119D-4A80-BD67-825B7E4AEB3D}");
 
         using FunctorVisitor = AZStd::function<void(ConsoleFunctorBase*)>;
+
+        inline static constexpr AZStd::string_view ConsoleRootCommandKey = "/Amazon/AzCore/Runtime/ConsoleCommands";
 
         IConsole() = default;
         virtual ~IConsole() = default;
@@ -144,6 +148,12 @@ namespace AZ
 
         //! Returns the AZ::Event<> invoked whenever a console command could not be found.
         DispatchCommandNotFoundEvent& GetDispatchCommandNotFoundEvent();
+
+        //! Register a notification event handler with the Settings Registry
+        //! That is responsible for updating console commands whenever
+        //! a key underneath "/Amazon/AzCore/Runtime/ConsoleCommands"
+        //! @param reference to Settings Registry to registry Notifier with
+        virtual void RegisterCommandInvokerWithSettingsRegistry(AZ::SettingsRegistryInterface&) = 0;
 
         AZ_DISABLE_COPY_MOVE(IConsole);
 
