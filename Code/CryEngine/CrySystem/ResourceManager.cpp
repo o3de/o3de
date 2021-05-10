@@ -320,7 +320,6 @@ bool CResourceManager::LoadFastLoadPaks(bool bToMemory)
         }
 
         const char* const assetsDir = "@assets@";
-        const char* shaderPakPath = "ShaderCacheStartup.pak";
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION RESOURCEMANAGER_CPP_SECTION_2
@@ -328,7 +327,6 @@ bool CResourceManager::LoadFastLoadPaks(bool bToMemory)
 #endif
 
         gEnv->pCryPak->OpenPacks(assetsDir, AZ::IO::PathString(FAST_LOADING_PAKS_SRC_FOLDER) + "*.pak", nPakPreloadFlags, &m_fastLoadPakPaths);
-        gEnv->pCryPak->OpenPack(assetsDir, shaderPakPath, AZ::IO::IArchive::FLAGS_PAK_IN_MEMORY | AZ::IO::INestedArchive::FLAGS_OVERRIDE_PAK);
         gEnv->pCryPak->OpenPack(assetsDir, "Engine.pak", AZ::IO::IArchive::FLAGS_PAK_IN_MEMORY);
         return !m_fastLoadPakPaths.empty();
     }
@@ -343,11 +341,6 @@ void CResourceManager::UnloadFastLoadPaks()
         gEnv->pCryPak->ClosePack(m_fastLoadPakPaths[i].c_str(), AZ::IO::IArchive::FLAGS_PATH_REAL);
     }
     m_fastLoadPakPaths.clear();
-
-    if (gEnv && gEnv->pRenderer)
-    {
-        gEnv->pRenderer->UnloadShaderStartupCache();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -712,23 +705,11 @@ void CResourceManager::OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_P
             }
         }
 
-        //Load and precache frontend shader cache
-        if (g_cvars.archiveVars.nLoadFrontendShaderCache)
-        {
-            gEnv->pRenderer->LoadShaderLevelCache();
-            gEnv->pRenderer->EF_Query(EFQ_SetShaderCombinations);
-        }
-
         break;
     }
 
     case ESYSTEM_EVENT_LEVEL_LOAD_PREPARE:
     {
-        if (g_cvars.archiveVars.nLoadFrontendShaderCache)
-        {
-            gEnv->pRenderer->UnloadShaderLevelCache();
-        }
-
         if (!gEnv->bMultiplayer)
         {
             UnloadMenuCommonPak(FRONTEND_COMMON_PAK_FILENAME_SP, FRONTEND_COMMON_LIST_FILENAME "_sp");
