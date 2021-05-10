@@ -55,7 +55,7 @@ def palMkdir(path) {
 
 def palRm(path) {
     if (env.IS_UNIX) {
-        sh label: "Removing ${path}",   
+        sh label: "Removing ${path}",
            script: "rm ${path}"
     } else {
         def win_path = path.replace('/','\\')
@@ -354,13 +354,13 @@ def TestMetrics(Map pipelineConfig, String workspace, String branchName, String 
     }
 }
 
-def TestResults(Map options, String platform, String type, String workspace, Map params) {
-    def o3deroot = "${workspace}/${ENGINE_REPOSITORY_NAME}"
-    dir("${o3deroot}/${params.OUTPUT_DIRECTORY}/Testing") {
-        junit testResults: "**/*.xml"
-        echo "Clean test output dir"
-        palRm("PyTest/*")
-        palRm("GTest/*")
+def ExportTestResults(Map options, String platform, String type, String workspace, Map params) {
+    catchError(message: "Error exporting tests results (this won't fail the build)", buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+        def o3deroot = "${workspace}/${ENGINE_REPOSITORY_NAME}"
+        dir("${o3deroot}/${params.OUTPUT_DIRECTORY}") {
+            junit testResults: "Testing/**/*.xml"
+            palRmDir("TestingAAAAA")
+        }
     }
 }
 
@@ -406,10 +406,10 @@ def CreateTestMetricsStage(Map pipelineConfig, String branchName, Map environmen
     }
 }
 
-def CreateTestResultsStage(Map pipelineConfig, String platformName, String jobName, Map environmentVars, Map params) {
+def CreateExportTestResultsStage(Map pipelineConfig, String platformName, String jobName, Map environmentVars, Map params) {
     return {
         stage("${jobName}_results") {
-            TestResults(pipelineConfig, platformName, jobName, environmentVars['WORKSPACE'], params)
+            ExportTestResults(pipelineConfig, platformName, jobName, environmentVars['WORKSPACE'], params)
         }
     }
 }
@@ -536,12 +536,7 @@ try {
                                     CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, output_directory, configuration).call()
                                 }
                                 if (params && params.containsKey('TEST_RESULTS') && params.TEST_RESULTS == 'True') {
-                                    try {
-                                        CreateTestResultsStage(pipelineConfig,  platform.key, build_job_name, envVars, params).call()
-                                    }
-                                    catch(Exception e) {
-                                        error "Test result collection error: ${e}"
-                                    }
+                                    CreateExportTestResultsStage(pipelineConfig,  platform.key, build_job_name, envVars, params).call()
                                 }
                                 CreateTeardownStage(envVars).call()
                             }
