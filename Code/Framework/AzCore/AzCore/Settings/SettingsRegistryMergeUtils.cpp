@@ -599,6 +599,17 @@ namespace AZ::SettingsRegistryMergeUtils
                 ? devWriteStorage.value()
                 : projectUserPath.Native());
 
+            // Set the project in-memory build path if the ProjectBuildPath key has been supplied
+            if (AZ::IO::FixedMaxPath projectBuildPath; registry.Get(projectBuildPath.Native(), ProjectBuildPath))
+            {
+                registry.Set(FilePathKey_ProjectBuildPath, (normalizedProjectPath / projectBuildPath).LexicallyNormal().Native());
+            }
+            else
+            {
+                // Default to <project-root>/Bin if not set
+                registry.Set(FilePathKey_ProjectBuildPath, (normalizedProjectPath / "Bin").LexicallyNormal().Native());
+            }
+
             // Project name - if it was set via merging project.json use that value, otherwise use the project path's folder name.
             auto projectNameKey =
                 AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey)
@@ -688,6 +699,20 @@ namespace AZ::SettingsRegistryMergeUtils
             mergePath = AZStd::move(cacheRootPath);
             mergePath /= SettingsRegistryInterface::RegistryFolder;
             registry.MergeSettingsFolder(mergePath.Native(), specializations, platform, "", scratchBuffer);
+        }
+
+        AZ::IO::FixedMaxPath projectBuildPath;
+        if (registry.Get(projectBuildPath.Native(), FilePathKey_ProjectBuildPath))
+        {
+            // Append the project build path path to the project root
+            AZ::IO::FixedMaxPath projectPath;
+            registry.Get(projectPath.Native(), FilePathKey_ProjectPath);
+            projectBuildPath = projectPath / projectBuildPath;
+            projectBuildPath /= "bin";
+            projectBuildPath /= AZ_BUILD_CONFIGURATION_TYPE;
+            projectBuildPath /= SettingsRegistryInterface::RegistryFolder;
+
+            registry.MergeSettingsFolder(projectBuildPath.Native(), specializations, platform, "", scratchBuffer);
         }
     }
 
@@ -934,7 +959,8 @@ namespace AZ::SettingsRegistryMergeUtils
                 "project-path", AZStd::string::format("%s/project_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)},
             OptionKeyToRegsetKey{
                 "project-cache-path",
-                AZStd::string::format("%s/project_cache_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)}};
+                AZStd::string::format("%s/project_cache_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)},
+            OptionKeyToRegsetKey{"project-build-path", ProjectBuildPath} };
 
         AZStd::fixed_vector<AZStd::string, commandOptions.size()> overrideArgs;
 
