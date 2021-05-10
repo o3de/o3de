@@ -32,29 +32,31 @@ function(is_valid_sdk sdk_path is_valid)
     endif()
 endfunction()
 
+# Paths that will be checked, in order:
+# - CMake cache variable
+# - WWISEROOT Environment Variable
+# - Standard 3rdParty path
+set(WWISE_SDK_PATHS
+    "${LY_WWISE_INSTALL_PATH}"
+    "$ENV{WWISEROOT}"
+    "${LY_3RDPARTY_PATH}/Wwise/${WWISE_VERSION}"
+)
 
-function(find_wwise_sdk)
-    set(WWISE_SDK_PATHS
-        "${LY_WWISE_INSTALL_PATH}"
-        "$ENV{WWISEROOT}"
-        "${LY_3RDPARTY_PATH}/Wwise/${WWISE_VERSION}"
-    )
+set(found_sdk FALSE)
+foreach(test_path ${WWISE_SDK_PATHS})
+    is_valid_sdk(${test_path} found_sdk)
+    if(found_sdk)
+        # Update the Wwise Install Path cache variable
+        set(LY_WWISE_INSTALL_PATH "${test_path}" CACHE PATH "Path to Wwise version ${WWISE_VERSION} installation." FORCE)
+        break()
+    endif()
+endforeach()
 
-    set(found_sdk FALSE)
-    foreach(test_path ${WWISE_SDK_PATHS})
-        is_valid_sdk(${test_path} found_sdk)
-        if (found_sdk)
-            # Update the Wwise Install Path cache variable
-            set(LY_WWISE_INSTALL_PATH "${test_path}" CACHE PATH "Path to Wwise version ${WWISE_VERSION} installation." FORCE)
-            return()
-        endif()
-    endforeach()
-
-    message(FATAL_ERROR "Failed to find a valid Wwise install path. Please provide a valid path to cache variable: LY_WWISE_INSTALL_PATH")
-endfunction()
-
-
-find_wwise_sdk()
+if(NOT found_sdk)
+    # If we don't find a path that appears to be a valid Wwise install, we can bail here.
+    # No 3rdParty::Wwise target will exist, so that can be checked elsewhere.
+    return()
+endif()
 
 
 set(WWISE_COMMON_LIB_NAMES
@@ -112,7 +114,7 @@ set(WWISE_COMPILE_DEFINITIONS
 )
 
 
-# The install directory might be different than the standard 3rdParty format (${LY_3RDPARTY_PATH}/<Name>/<Version>).
+# The default install path might look different than the standard 3rdParty format (${LY_3RDPARTY_PATH}/<Name>/<Version>).
 # Use these to get the parent path and folder name before adding the external 3p target.
 get_filename_component(WWISE_3P_ROOT ${LY_WWISE_INSTALL_PATH} DIRECTORY)
 get_filename_component(WWISE_FOLDER ${LY_WWISE_INSTALL_PATH} NAME)
@@ -124,3 +126,5 @@ ly_add_external_target(
     INCLUDE_DIRECTORIES SDK/include
     COMPILE_DEFINITIONS ${WWISE_COMPILE_DEFINITIONS}
 )
+
+set(Wwise_FOUND TRUE)
