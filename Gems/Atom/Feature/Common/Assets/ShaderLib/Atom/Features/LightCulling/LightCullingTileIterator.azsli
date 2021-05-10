@@ -17,13 +17,13 @@
 // This class is used by forward shaders to iterate through lights (and decals) that are visible at this pixel position
 class LightCullingTileIterator
 {       
-    void Init(float4 svPosition, StructuredBuffer<uint> lightListRemapped, Texture2D<uint4> tileLightDataTex)
+    void Init(float2 screenPos, float depth, StructuredBuffer<uint> lightListRemapped, Texture2D<uint4> tileLightDataTex)
     {
         m_lightListRemapped = lightListRemapped;
     
-        uint2 tileId = ComputeTileId(svPosition.xy);
+        uint2 tileId = ComputeTileId(screenPos);
         
-        float viewz = abs(svPosition.w);
+        float viewz = abs(depth);
 
         // https://jira.agscollab.com/browse/ATOM-4198
         // Replace GetDimensions() with a cbuffer uint read. Reading it from a cbuffer should be faster

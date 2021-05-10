@@ -324,7 +324,7 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
     LightingData lightingData;
 
     // Light iterator
-    lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    lightingData.tileIterator.Init(IN.m_position.xy, IN.m_position.z, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
     
     // Directional light shadow coordinates
