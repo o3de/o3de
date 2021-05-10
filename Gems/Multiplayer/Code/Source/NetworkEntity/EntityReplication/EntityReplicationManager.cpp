@@ -550,10 +550,10 @@ namespace Multiplayer
             {
                 replicatorEntity = entityList[0];
             }
-            
-            AZ_Assert(replicatorEntity != nullptr, "Failed to create entity from prefab %s", prefabEntityId.m_prefabName.GetCStr());
-            if (replicatorEntity == nullptr)
+            else
             {
+                AZ_Assert(false, "There should be exactly one created entity out of prefab %s, index %d. Got: %d",
+                    prefabEntityId.m_prefabName.GetCStr(), prefabEntityId.m_entityOffset, entityList.size());
                 return false;
             }
         }

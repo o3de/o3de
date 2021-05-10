@@ -334,15 +334,39 @@ namespace Multiplayer
         const AzFramework::Spawnable::EntityList& entities = spawnable.GetEntities();
         size_t entitiesSize = entities.size();
 
+        using EntityIdMap = AZStd::unordered_map<AZ::EntityId, AZ::EntityId>;
+        EntityIdMap originalToCloneIdMap;
+
         for (size_t i = 0; i < entitiesSize; ++i)
         {
-            AZ::Entity* clone = serializeContext->CloneObject(entities[i].get());
+            AZ::Entity* originalEntity = entities[i].get();
+            AZ::Entity* clone = serializeContext->CloneObject(originalEntity);
             AZ_Assert(clone != nullptr, "Failed to clone spawnable entity.");
+
             clone->SetId(AZ::Entity::MakeId());
+
+            originalToCloneIdMap[originalEntity->GetId()] = clone->GetId();
 
             NetBindComponent* netBindComponent = clone->FindComponent<NetBindComponent>();
             if (netBindComponent != nullptr)
             {
+                // Update TransformComponent parent Id. It is guaranteed for the entities array to be sorted from parent->child here.
+                auto* transformComponent = clone->FindComponent<AzFramework::TransformComponent>();
+                AZ::EntityId parentId = transformComponent->GetParentId();
+                if (parentId.IsValid())
+                {
+                    auto it = originalToCloneIdMap.find(parentId);
+                    if (it != originalToCloneIdMap.end())
+                    {
+                        transformComponent->SetParentRelative(it->second);
+                    }
+                    else
+                    {
+                        AZ_Warning("NetworkEntityManager", false, "Entity %s doesn't have the parent entity %s present in network.spawnable",
+                            clone->GetName().c_str(), parentId.ToString().data());
+                    }
+                }
+
                 PrefabEntityId prefabEntityId;
                 prefabEntityId.m_prefabName = m_networkPrefabLibrary.GetPrefabNameFromAssetId(spawnable.GetId());
                 prefabEntityId.m_entityOffset = aznumeric_cast<uint32_t>(i);

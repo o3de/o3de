@@ -59,6 +59,7 @@ namespace Multiplayer
 
         return result;
     }
+
     void NetworkPrefabProcessor::ProcessPrefab(PrefabProcessorContext& context, AZStd::string_view prefabName, PrefabDom& prefab)
     {
         using namespace AzToolsFramework::Prefab;
@@ -175,6 +176,9 @@ namespace Multiplayer
                 (*it)->InvalidateDependencies();
                 (*it)->EvaluateDependencies();
             }
+
+            SpawnableUtils::SortEntitiesByTransformHierarchy(*networkSpawnable);
+
             context.GetProcessedObjects().push_back(AZStd::move(object));
         }
         else
