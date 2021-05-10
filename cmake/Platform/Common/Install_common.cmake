@@ -244,7 +244,6 @@ function(ly_setup_cmake_install)
     get_property(all_targets GLOBAL PROPERTY LY_ALL_TARGETS)
     unset(FIND_PACKAGES_PLACEHOLDER)
     foreach(alias_target IN LISTS all_targets)
-        unset(TARGET_NAME)
         ly_de_alias_target(${alias_target} target)
         get_target_property(target_source_dir ${target} SOURCE_DIR)
         file(RELATIVE_PATH target_source_dir_relative ${LY_ROOT_FOLDER} ${target_source_dir})
@@ -301,7 +300,8 @@ endfunction()"
     
     unset(runtime_commands)
     get_property(all_targets GLOBAL PROPERTY LY_ALL_TARGETS)
-    foreach(target IN LISTS all_targets)
+    foreach(alias_target IN LISTS all_targets)
+        ly_de_alias_target(${alias_target} target)
 
         # Exclude targets that dont produce runtime outputs
         get_target_property(target_type ${target} TYPE)
