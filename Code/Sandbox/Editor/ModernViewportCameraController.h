@@ -20,14 +20,13 @@
 namespace SandboxEditor
 {
     class ModernViewportCameraControllerInstance;
-    class ModernViewportCameraController 
-        : public AzFramework::MultiViewportController<ModernViewportCameraControllerInstance>
+    class ModernViewportCameraController : public AzFramework::MultiViewportController<ModernViewportCameraControllerInstance>
     {
     public:
         using CameraListBuilder = AZStd::function<void(AzFramework::Cameras&)>;
+
         //! Sets the camera list builder callback used to populate new ModernViewportCameraControllerInstances
         void SetCameraListBuilderCallback(const CameraListBuilder& builder);
-
         //! Sets up a camera list based on this controller's CameraListBuilderCallback
         void SetupCameras(AzFramework::Cameras& cameras);
 
@@ -35,9 +34,9 @@ namespace SandboxEditor
         CameraListBuilder m_cameraListBuilder;
     };
 
-    class ModernViewportCameraControllerInstance final 
-        : public AzFramework::MultiViewportControllerInstanceInterface<ModernViewportCameraController>
-        , private AzFramework::ViewportDebugDisplayEventBus::Handler
+    class ModernViewportCameraControllerInstance final
+        : public AzFramework::MultiViewportControllerInstanceInterface<ModernViewportCameraController>,
+          private AzFramework::ViewportDebugDisplayEventBus::Handler
     {
     public:
         explicit ModernViewportCameraControllerInstance(AzFramework::ViewportId viewportId, ModernViewportCameraController* controller);

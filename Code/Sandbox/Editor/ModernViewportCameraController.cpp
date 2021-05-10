@@ -65,7 +65,8 @@ namespace SandboxEditor
         }
     }
 
-    ModernViewportCameraControllerInstance::ModernViewportCameraControllerInstance(const AzFramework::ViewportId viewportId, ModernViewportCameraController* controller)
+    ModernViewportCameraControllerInstance::ModernViewportCameraControllerInstance(
+        const AzFramework::ViewportId viewportId, ModernViewportCameraController* controller)
         : MultiViewportControllerInstanceInterface<ModernViewportCameraController>(viewportId, controller)
     {
         controller->SetupCameras(m_cameraSystem.m_cameras);
@@ -76,6 +77,7 @@ namespace SandboxEditor
                 if (!m_updating)
                 {
                     UpdateCameraFromTransform(m_targetCamera, viewportContext->GetCameraTransform());
+                    m_camera = m_targetCamera;
                 }
             };
 
