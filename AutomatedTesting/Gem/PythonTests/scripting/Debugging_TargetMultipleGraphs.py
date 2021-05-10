@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92569137
 Test Case Title: Multiple Graphs can be targeted in the Debugger tool
-URLs of the test case: https://testrail.agscollab.com/index.php?/tests/view/92569137
+Test case ID: 92569137
 """
 
 

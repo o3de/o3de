@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92567321
 Test Case Title: Script Events: Can send and receive a script event across multiple entities successfully
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92567321
+Test case ID: 92567321
 """
 
 

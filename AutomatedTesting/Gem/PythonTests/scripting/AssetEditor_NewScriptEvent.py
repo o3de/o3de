@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 Test case ID: T92568942
 Test Case Title: Clicking the "+" button and selecting "New Script Event" opens the
 Asset Editor with a new Script Event asset
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92568942
+Test case ID: 92568942
 """
 
 from PySide2 import QtWidgets

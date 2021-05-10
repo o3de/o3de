@@ -11,10 +11,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92569049
 Test Case Title: Edit > Undo undoes the last action
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92569049
+Test case ID: 92569049
 Test case ID: T92569051
 Test Case Title: Edit > Redo redoes the last undone action
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92569051
+Test case ID: 92569051
 """
 
 

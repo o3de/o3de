@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92569253 // T92569254
 Test Case Title: On Entity Activated // On Entity Deactivated
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92569253 // https://testrail.agscollab.com/index.php?/tests/view/92569254
+Test case ID: 92569253 // 92569254
 """
 
 

@@ -17,7 +17,7 @@
 #include <Atom/RPI/Math.azsli>
 #include <Atom/Features/LightCulling/LightCullingShared.azsli>
 
-enum QuadLightFlag // Copied from QuadLight.azsli. See https://jira.agscollab.com/browse/ATOM-3731
+enum QuadLightFlag // Copied from QuadLight.azsli. See ATOM-3731
 {
     None = 0x00,
     EmitsBothDirections  = 0x01, // 1 << 0, // Quad should emit light from both sides
@@ -33,7 +33,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 {
     // Figure out how to remove duplicate struct definitions.
     // These are also defined in View.srg
-    // https://jira.agscollab.com/browse/ATOM-3731
+    // ATOM-3731
     
     struct SimplePointLight
     {
@@ -370,7 +370,7 @@ void CullDecals(uint groupIndex, TileLightData tileLightData, float3 aabb_center
         float3 decalPosition = WorldToView_Point(decal.m_position); 
         
         // just wrapping a bounding sphere around a cube for now to get a minor perf boost. i.e. the sphere radius is sqrt(x*x + y*y + z*z)
-        // https://jira.agscollab.com/browse/ATOM-4224 - try AABB-AABB and implement depth binning for the decals
+        // ATOM-4224 - try AABB-AABB and implement depth binning for the decals
         float maxHalfSize = max(max(decal.m_halfSize.x, decal.m_halfSize.y), decal.m_halfSize.z);
         float boundingSphereRadiusSqr = maxHalfSize * maxHalfSize * 3;            
           
@@ -378,7 +378,7 @@ void CullDecals(uint groupIndex, TileLightData tileLightData, float3 aabb_center
         if (potentiallyIntersects) 
         {                                           
             // Implement and profile fine-grained light culling testing
-            // https://jira.agscollab.com/browse/ATOM-3732 
+            // ATOM-3732 
             MarkLightAsVisibleInSharedMemory(decalIndex, 0xFFFF);            
         }          
     }   
@@ -391,7 +391,7 @@ void CullPointLight(uint lightIndex, float3 lightPosition, float invLightRadius,
     if (potentiallyIntersects)
     {                                           
         // Implement and profile fine-grained light culling testing
-        // https://jira.agscollab.com/browse/ATOM-3732
+        // ATOM-3732
 
         uint inside = 0;
         float2 minmax = ComputePointLightMinMaxZ(rsqrt(invLightRadius), lightPosition);
@@ -432,7 +432,7 @@ void CullSimpleSpotLights(uint groupIndex, TileLightData tileLightData, float3 a
         if (potentiallyIntersects)
         {
             // Implement and profile fine-grained light culling testing
-            // https://jira.agscollab.com/browse/ATOM-3732
+            // ATOM-3732
 
             uint inside = 0;
             float2 minmax = ComputeSimpleSpotLightMinMax(light, lightPosition);
@@ -477,7 +477,7 @@ void CullDiskLights(uint groupIndex, TileLightData tileLightData, float3 aabb_ce
         if (potentiallyIntersects)
         {
             // Implement and profile fine-grained light culling testing
-            // https://jira.agscollab.com/browse/ATOM-3732
+            // ATOM-3732
 
             uint inside = 0;
             float2 minmax = ComputeDiskLightMinMax(light, lightPosition);
@@ -505,7 +505,7 @@ void CullCapsuleLights(uint groupIndex, TileLightData tileLightData, float3 aabb
         if (potentiallyIntersects)
         {
             // Implement and profile fine-grained light culling testing
-            // https://jira.agscollab.com/browse/ATOM-3732
+            // ATOM-3732
 
             uint inside = 0;
             float2 minmax = ComputeCapsuleLightMinMax(light, lightMiddleView, lightFalloffRadius);
@@ -520,7 +520,7 @@ void CullCapsuleLights(uint groupIndex, TileLightData tileLightData, float3 aabb
 void CullQuadLights(uint groupIndex, TileLightData tileLightData, float3 aabb_center, float3 aabb_extents)
 {
     // Implement and profile fine-grained light culling testing
-    // https://jira.agscollab.com/browse/ATOM-3732
+    // ATOM-3732
 
     for (uint lightIndex = groupIndex ; lightIndex < PassSrg::m_quadLightCount ; lightIndex += TILE_DIM_X * TILE_DIM_Y)
     {

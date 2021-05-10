@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92562993
 Test Case Title: Clicking the X button on the Search Box clears the currently entered string
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92562993
+Test case ID: 92562993
 """
 
 

@@ -10,8 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: C1702834 // C1702823
 Test Case Title: Opening pane // Closing pane
-URLs of the test case: https://testrail.agscollab.com/index.php?/cases/view/1702834 and
-    https://testrail.agscollab.com/index.php?/cases/view/1702823
+Test case ID: 1702834 and 1702823
 """
 
 

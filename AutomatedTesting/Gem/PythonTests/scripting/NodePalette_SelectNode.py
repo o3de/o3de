@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92568940
 Test Case Title: Categories and Nodes can be selected
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92568940
+Test case ID: 92568940
 """
 
 

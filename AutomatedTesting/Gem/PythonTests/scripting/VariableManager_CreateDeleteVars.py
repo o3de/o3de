@@ -10,10 +10,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92564789
 Test Case Title: Each Variable type can be created
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92564789
+Test case ID: 92564789
 Test case ID: T92568873
 Test Case Title: Each Variable type can be deleted
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92568873
+Test case ID: 92568873
 """
 
 

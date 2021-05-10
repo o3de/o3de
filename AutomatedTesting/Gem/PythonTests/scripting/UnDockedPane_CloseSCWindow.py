@@ -10,8 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: C1702825 // C1702831
 Test Case Title: Undocking // Closing script canvas with the pane floating
-URLs of the test case: https://testrail.agscollab.com/index.php?/cases/view/1702825 &
-    https://testrail.agscollab.com/index.php?/cases/view/1702831
+Test case ID: 1702825 & 1702831
 """
 
 

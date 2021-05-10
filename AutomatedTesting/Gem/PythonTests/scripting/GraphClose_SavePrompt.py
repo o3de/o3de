@@ -11,11 +11,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92563070
 Test Case Title: Graphs can be closed by clicking X on the Graph name tab
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92563070
+Test case ID: 92563070
 Test case ID: T92563068
 Test Case Title: Save Prompt: User is prompted to save a graph on close after
 creating a new graph
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92563068
+Test case ID: 92563068
 """
 
 import os
