@@ -27,8 +27,8 @@ static const auto InteractionPriority = AzFramework::ViewportControllerPriority:
 namespace SandboxEditor
 {
 
-ViewportManipulatorControllerInstance::ViewportManipulatorControllerInstance(AzFramework::ViewportId viewport)
-    : AzFramework::MultiViewportControllerInstanceInterface(viewport)
+ViewportManipulatorControllerInstance::ViewportManipulatorControllerInstance(AzFramework::ViewportId viewport, ViewportManipulatorController* controller)
+    : AzFramework::MultiViewportControllerInstanceInterface<ViewportManipulatorController>(viewport, controller)
 {
 }
 
@@ -112,8 +112,7 @@ bool ViewportManipulatorControllerInstance::HandleInputChannelEvent(const AzFram
             m_state.m_mousePick.m_screenCoordinates = screenPosition;
             AZStd::optional<ProjectedViewportRay> ray;
             ViewportInteractionRequestBus::EventResult(
-                ray, GetViewportId(), &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay,
-                QPoint(screenPosition.m_x, screenPosition.m_y));
+                ray, GetViewportId(), &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay, screenPosition);
 
             if (ray.has_value())
             {

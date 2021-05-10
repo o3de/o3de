@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 Test case ID : C4044695
 Test Case Title : Verify that when you add a multiple surface fbx in PxMesh in PhysxCollider,
                   multiple number of Material Slots populate in the Materials Section
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4044695
+
 """
 
 
@@ -114,5 +114,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C4044695_PhysXCollider_AddMultipleSurfaceFbx)

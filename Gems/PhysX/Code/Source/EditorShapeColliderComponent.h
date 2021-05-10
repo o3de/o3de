@@ -16,7 +16,7 @@
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/Shape.h>
-#include <AzFramework/Physics/WorldBodyBus.h>
+#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -68,7 +68,7 @@ namespace PhysX
         , protected DebugDraw::DisplayCallback
         , protected LmbrCentral::ShapeComponentNotificationsBus::Handler
         , private PhysX::ColliderShapeRequestBus::Handler
-        , protected Physics::WorldBodyRequestBus::Handler
+        , protected AzPhysics::SimulatedBodyComponentRequestsBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(EditorShapeColliderComponent, "{2389DDC7-871B-42C6-9C95-2A679DDA0158}",
@@ -120,12 +120,13 @@ namespace PhysX
         // handling for non-uniform scale
         void OnNonUniformScaleChanged(const AZ::Vector3& scale);
 
-        // WorldBodyRequestBus
+        // AzPhysics::SimulatedBodyComponentRequestsBus::Handler overrides ...
         void EnablePhysics() override;
         void DisablePhysics() override;
         bool IsPhysicsEnabled() const override;
         AZ::Aabb GetAabb() const override;
-        AzPhysics::SimulatedBody* GetWorldBody() override;
+        AzPhysics::SimulatedBody* GetSimulatedBody() override;
+        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
         // LmbrCentral::ShapeComponentNotificationBus

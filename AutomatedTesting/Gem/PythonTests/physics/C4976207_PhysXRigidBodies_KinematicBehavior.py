@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C4976207
 # Test Case Title : Verify that when Kinematic is checked, the object behaves as a Kinematic object
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4976207
+
 
 
 # fmt: off

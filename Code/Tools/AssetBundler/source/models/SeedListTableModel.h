@@ -36,7 +36,11 @@ namespace AssetBundler
         : public QAbstractTableModel
     {
     public:
-        explicit SeedListTableModel(QObject* parent = nullptr, const AZStd::string& absolutePath = AZStd::string(), const AZStd::vector<AZStd::string>& defaultSeeds = AZStd::vector<AZStd::string>(), const AzFramework::PlatformFlags& platforms = AzFramework::PlatformFlags::Platform_NONE);
+        explicit SeedListTableModel(
+            QObject* parent = nullptr,
+            const AZStd::string& absolutePath = AZStd::string(),
+            const AZStd::vector<AZStd::string>& defaultSeeds = AZStd::vector<AZStd::string>(),
+            const AzFramework::PlatformFlags& platforms = AzFramework::PlatformFlags::Platform_NONE);
         virtual ~SeedListTableModel() {}
 
         AZStd::shared_ptr<AzToolsFramework::AssetSeedManager> GetSeedListManager() { return m_seedListManager; }

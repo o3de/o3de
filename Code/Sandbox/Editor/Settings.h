@@ -467,8 +467,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     bool bSettingsManagerMode;
 
-    bool bForceSkyUpdate;
-
     bool bAutoSaveTagPoints;
 
     bool bNavigationContinuousUpdate;

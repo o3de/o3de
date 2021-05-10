@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID : C19578018
 Test Case Title : Verify that a shape collider component with no shape component indicates a missing service
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/19578018
+
 """
 
 # fmt: off

@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test Case Title : Create an entity with PhysX Terrain component and add
 #                   PhysX Rigid Body PhysX, PhysX Collider and Rendering Mesh to it and
 #                   verify that it works in game mode
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5689529
+
 
 
 # fmt: off

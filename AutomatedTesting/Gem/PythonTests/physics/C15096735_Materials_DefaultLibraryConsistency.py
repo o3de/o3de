@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C15096735
 # Test Case Title : Verify that default material library works consistently across all systems that use it
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/15096735
+
 
 
 # fmt:off

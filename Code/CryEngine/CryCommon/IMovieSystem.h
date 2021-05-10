@@ -26,7 +26,6 @@
 #include <ISplines.h>
 #include <IRenderer.h>
 #include <IRenderAuxGeom.h>
-#include <I3DEngine.h>
 #include <VectorSet.h>
 #include <CryName.h>
 
