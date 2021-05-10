@@ -52,7 +52,6 @@ struct SShaderItem;
 class ITexture;
 struct IMaterial;
 struct SParam;
-class CMaterial;
 struct SShaderSerializeContext;
 struct IAnimNode;
 struct SSkinningData;

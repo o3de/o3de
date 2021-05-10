@@ -75,9 +75,10 @@ namespace AZ
         auto elementCallback = [this, &array, &retVal, &index, &context]
             (void* elementPtr, const Uuid& elementId, const SerializeContext::ClassData*, const SerializeContext::ClassElement* classElement)
         {
-            Flags flags = classElement->m_flags & SerializeContext::ClassElement::Flags::FLG_POINTER ?
-                Flags::ResolvePointer : Flags::None;
-            flags |= Flags::ReplaceDefault;
+            ContinuationFlags flags = classElement->m_flags & SerializeContext::ClassElement::Flags::FLG_POINTER
+                ? ContinuationFlags::ResolvePointer
+                : ContinuationFlags::None;
+            flags |= ContinuationFlags::ReplaceDefault;
             
             ScopedContextPath subPath(context, index);
             index++;
@@ -161,8 +162,9 @@ namespace AZ
         container->EnumTypes(typeEnumCallback);
         AZ_Assert(classElement, "No class element found for the type in the basic container.");
 
-        Flags flags = classElement->m_flags & SerializeContext::ClassElement::Flags::FLG_POINTER ?
-            Flags::ResolvePointer : Flags::None;
+        ContinuationFlags flags = classElement->m_flags & SerializeContext::ClassElement::Flags::FLG_POINTER
+            ? ContinuationFlags::ResolvePointer
+            : ContinuationFlags::None;
 
         const size_t capacity = container->IsFixedCapacity() ? container->Capacity(outputValue) : std::numeric_limits<size_t>::max();
 

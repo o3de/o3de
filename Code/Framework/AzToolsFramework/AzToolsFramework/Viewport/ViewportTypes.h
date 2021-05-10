@@ -256,9 +256,5 @@ namespace AzToolsFramework
 
         /// Reflect all viewport related types.
         void ViewportInteractionReflect(AZ::ReflectContext* context);
-
-        /// The Id the main DebugDisplayRequestBus will be connected on.
-        extern const AZ::s32 g_mainViewportEntityDebugDisplayId;
-
     } // namespace ViewportInteraction
 } // namespace AzToolsFramework

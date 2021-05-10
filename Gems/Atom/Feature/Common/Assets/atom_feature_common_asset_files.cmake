@@ -292,8 +292,6 @@ set(FILES
     ShaderLib/Atom/Features/Shadow/Shadow.azsli
     ShaderLib/Atom/Features/Shadow/ShadowmapAtlasLib.azsli
     ShaderLib/Atom/Features/Vertex/VertexHelper.azsli
-    ShaderResourceGroups/RayTracingSceneSrg.azsli
-    ShaderResourceGroups/RayTracingSceneSrgAll.azsli
     ShaderResourceGroups/SceneSrg.azsli
     ShaderResourceGroups/SceneSrgAll.azsli
     ShaderResourceGroups/SceneTimeSrg.azsli

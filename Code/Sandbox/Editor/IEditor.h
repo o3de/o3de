@@ -46,9 +46,7 @@ class CGameEngine;
 struct IIconManager;
 class CToolBoxManager;
 class CClassFactory;
-class CMaterialManager;
 class CMusicManager;
-class CMaterail;
 struct IEditorParticleManager;
 class CEAXPresetManager;
 class CErrorReport;
@@ -87,7 +85,6 @@ namespace WinWidget
 }
 
 struct ISystem;
-struct I3DEngine;
 struct IRenderer;
 struct AABB;
 struct IEventLoopHook;
@@ -139,7 +136,6 @@ enum EEditorNotifyEvent
     eNotify_OnEndLayerExport,          // Sent after a layer have been exported.
     eNotify_OnCloseScene,              // Send when the document is about to close.
     eNotify_OnSceneClosed,             // Send when the document is closed.
-    eNotify_OnMissionChange,           // Send when the current mission changes.
     eNotify_OnBeginLoad,               // Sent when the document is start to load.
     eNotify_OnEndLoad,                 // Sent when the document loading is finished
 
@@ -181,8 +177,6 @@ enum EEditorNotifyEvent
     eNotify_OnVegetationPanelUpdate,   // When vegetation objects selection change.
 
     eNotify_OnDisplayRenderUpdate,     // Sent when editor finish terrain texture generation.
-
-    eNotify_OnTimeOfDayChange,         // Time of day parameters where modified.
 
     eNotify_OnDataBaseUpdate,          // DataBase Library was modified.
 
@@ -243,8 +237,6 @@ struct IDocListener
     virtual void OnLoadDocument() = 0;
     //! Called when document is being closed.
     virtual void OnCloseDocument() = 0;
-    //! Called when mission changes.
-    virtual void OnMissionChange() = 0;
 };
 
 //! Derive from this class if you want to register for getting global editor notifications.
@@ -433,7 +425,6 @@ struct IEditor
     virtual void DeleteThis() = 0;
     //! Access to Editor ISystem interface.
     virtual ISystem* GetSystem() = 0;
-    virtual I3DEngine* Get3DEngine() = 0;
     virtual IRenderer* GetRenderer() = 0;
     //! Access to class factory.
     virtual IEditorClassFactory* GetClassFactory() = 0;
@@ -544,8 +535,6 @@ struct IEditor
     virtual CSettingsManager* GetSettingsManager() = 0;
     //! Get DB manager that own items of specified type.
     virtual IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType) = 0;
-    //! Get Manager of Materials.
-    virtual CMaterialManager* GetMaterialManager() = 0;
     virtual IBaseLibraryManager* GetMaterialManagerLibrary() = 0; // Vladimir@conffx
     virtual IEditorMaterialManager* GetIEditorMaterialManager() = 0; // Vladimir@Conffx
     //! Returns IconManager.
@@ -742,8 +731,6 @@ struct IEditor
     // Provides a way to extend the context menu of an object. The function gets called every time the menu is opened.
     typedef AZStd::function<void(QMenu*, const CBaseObject*)> TContextMenuExtensionFunc;
     virtual void RegisterObjectContextMenuExtension(TContextMenuExtensionFunc func) = 0;
-
-    virtual void SetCurrentMissionTime(float time) = 0;
 
     virtual SSystemGlobalEnvironment* GetEnv() = 0;
     virtual IImageUtil* GetImageUtil() = 0;  // Vladimir@conffx

@@ -14,6 +14,8 @@
 
 #include "KDTree.h"
 
+#include <IStatObj.h>
+
 class KDTreeNode
 {
 public:

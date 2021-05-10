@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C4976245
 # Test Case Title : Check that two entities of collision group "None" do not collide,
 #       even though they have the same collision layer
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4976245
+
 
 
 # fmt: off

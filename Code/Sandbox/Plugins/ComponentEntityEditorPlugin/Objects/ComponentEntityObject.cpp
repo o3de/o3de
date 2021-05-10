@@ -46,9 +46,7 @@
 #include <LmbrCentral/Rendering/MaterialOwnerBus.h>
 
 #include <IDisplayViewport.h>
-#include <Material/MaterialManager.h>
 #include <MathConversion.h>
-#include <Objects/StatObjValidator.h>
 #include <TrackView/TrackViewAnimNode.h>
 #include <ViewManager.h>
 #include <Viewport.h>
@@ -907,7 +905,7 @@ void CComponentEntityObject::Display(DisplayContext& dc)
 
             AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
             AzFramework::DebugDisplayRequestBus::Bind(
-                debugDisplayBus, AzToolsFramework::ViewportInteraction::g_mainViewportEntityDebugDisplayId);
+                debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
             AZ_Assert(debugDisplayBus, "Invalid DebugDisplayRequestBus.");
 
             AzFramework::DebugDisplayRequests* debugDisplay =
@@ -1096,56 +1094,3 @@ void CComponentEntityObject::DrawAccent(DisplayContext& dc)
         dc.DrawWireBox(box.min, box.max);
     }
 }
-
-void CComponentEntityObject::SetMaterial(CMaterial* material)
-{
-    AZ::Entity* entity = nullptr;
-    EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, m_entityId);
-    if (entity)
-    {
-        if (material)
-        {
-            EBUS_EVENT_ID(m_entityId, LmbrCentral::MaterialOwnerRequestBus, SetMaterial, material->GetMatInfo());
-        }
-        else
-        {
-            EBUS_EVENT_ID(m_entityId, LmbrCentral::MaterialOwnerRequestBus, SetMaterial, nullptr);
-        }
-    }
-
-    ValidateMeshStatObject();
-}
-
-CMaterial* CComponentEntityObject::GetMaterial() const
-{
-    _smart_ptr<IMaterial> material = nullptr;
-    EBUS_EVENT_ID_RESULT(material, m_entityId, LmbrCentral::MaterialOwnerRequestBus, GetMaterial);
-    return GetIEditor()->GetMaterialManager()->FromIMaterial(material);
-}
-
-CMaterial* CComponentEntityObject::GetRenderMaterial() const
-{
-    AZ::Entity* entity = nullptr;
-    EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, m_entityId);
-    if (entity)
-    {
-        _smart_ptr<IMaterial> material = nullptr;
-        EBUS_EVENT_ID_RESULT(material, m_entityId, LmbrCentral::MaterialOwnerRequestBus, GetMaterial);
-
-        if (material)
-        {
-            return GetIEditor()->GetMaterialManager()->LoadMaterial(material->GetName(), false);
-        }
-    }
-
-    return nullptr;
-}
-
-void CComponentEntityObject::ValidateMeshStatObject()
-{
-    IStatObj* statObj = GetIStatObj();
-    CMaterial* editorMaterial = GetMaterial();
-    CStatObjValidator statValidator;
-    statValidator.Validate(statObj, editorMaterial);
-}
-

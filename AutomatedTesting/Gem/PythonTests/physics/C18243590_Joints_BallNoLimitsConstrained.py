@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C18243590
 # Test Case Title : Check that ball joint allows no limit constraints
-# URL of the test case :https://testrail.agscollab.com/index.php?/cases/view/18243590
+
 
 # fmt: off
 class Tests:
