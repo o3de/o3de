@@ -18,11 +18,11 @@
 
 namespace Editor
 {
-    constexpr const AZStd::string_view GridSnappingSetting = "/Amazon/Preferences/Editor/GridSnapping";
-    constexpr const AZStd::string_view GridSizeSetting = "/Amazon/Preferences/Editor/GridSize";
-    constexpr const AZStd::string_view AngleSnappingSetting = "/Amazon/Preferences/Editor/AngleSnapping";
-    constexpr const AZStd::string_view AngleSizeSetting = "/Amazon/Preferences/Editor/AngleSize";
-    constexpr const AZStd::string_view ShowGridSetting = "/Amazon/Preferences/Editor/ShowGrid";
+    constexpr AZStd::string_view GridSnappingSetting = "/Amazon/Preferences/Editor/GridSnapping";
+    constexpr AZStd::string_view GridSizeSetting = "/Amazon/Preferences/Editor/GridSize";
+    constexpr AZStd::string_view AngleSnappingSetting = "/Amazon/Preferences/Editor/AngleSnapping";
+    constexpr AZStd::string_view AngleSizeSetting = "/Amazon/Preferences/Editor/AngleSize";
+    constexpr AZStd::string_view ShowGridSetting = "/Amazon/Preferences/Editor/ShowGrid";
 
     bool GridSnappingEnabled()
     {
