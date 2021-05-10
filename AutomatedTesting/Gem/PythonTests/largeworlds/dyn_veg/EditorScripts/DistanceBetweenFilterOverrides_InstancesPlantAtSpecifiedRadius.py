@@ -87,30 +87,29 @@ class TestDistanceBetweenFilterComponentOverrides(EditorTestHelper):
         spawner_entity.add_component("Vegetation Distance Between Filter")
         spawner_entity.get_set_test(3, "Configuration|Allow Per-Item Overrides", True)
         spawner_entity.get_set_test(2, "Configuration|Embedded Assets|[0]|Distance Between Filter (Radius)|Override Enabled", True)
-        self.test_success = self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_a, 0.5, 1), 5.0) and \
-                            self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_b, 0.5, 2), 5.0) and \
-                            self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_c, 0.5, 2), 5.0) and \
-                            self.test_success
+        num_expected = 16 * 16
+        initial_success = self.wait_for_condition(lambda: dynveg.validate_instance_count_in_entity_shape(spawner_entity.id, num_expected), 5.0)
+        self.test_success = self.test_success and initial_success
 
         # 6) Change Radius Min to 1.0, refresh, and verify instance counts are accurate
         spawner_entity.get_set_test(2, "Configuration|Embedded Assets|[0]|Distance Between Filter (Radius)|Radius Min", 1.0)
-        self.test_success = self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_a, 0.5, 1), 5.0) and \
-                            self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_b, 0.5, 0), 5.0) and \
-                            self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_c, 0.5, 1), 5.0) and \
-                            self.test_success
+        point_a_success = self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_a, 0.5, 1), 5.0)
+        point_b_success = self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_b, 0.5, 0), 5.0)
+        point_c_success = self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_c, 0.5, 1), 5.0)
+        self.test_success = self.test_success and point_a_success and point_b_success and point_c_success
 
         # 7) Change Radius Min to 2.0, refresh, and verify instance counts are accurate
         spawner_entity.get_set_test(2, "Configuration|Embedded Assets|[0]|Distance Between Filter (Radius)|Radius Min", 2.0)
-        self.test_success = self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_a, 0.5, 1), 5.0) and \
-                            self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_b, 0.5, 0), 5.0) and \
-                            self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_c, 0.5, 0), 5.0) and \
-                            self.test_success
+        point_a_success = self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_a, 0.5, 1), 5.0)
+        point_b_success = self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_b, 0.5, 0), 5.0)
+        point_c_success = self.wait_for_condition(lambda: dynveg.validate_instance_count(instance_query_point_c, 0.5, 0), 5.0)
+        self.test_success = self.test_success and point_a_success and point_b_success and point_c_success
 
         # 8) Change Radius Min to 16.0, refresh, and verify instance counts are accurate, only a single instance should plant
         spawner_entity.get_set_test(2, "Configuration|Embedded Assets|[0]|Distance Between Filter (Radius)|Radius Min", 16.0)
         num_expected_instances = 1
         final_check_success = self.wait_for_condition(lambda: dynveg.validate_instance_count_in_entity_shape(spawner_entity.id, num_expected_instances), 5.0)
-        self.test_success = final_check_success and self.test_success
+        self.test_success = self.test_success and final_check_success
 
 
 test = TestDistanceBetweenFilterComponentOverrides()
