@@ -29,13 +29,14 @@ namespace AzFramework
     AZ_CVAR(float, ed_cameraSystemOrbitDollyScrollSpeed, 0.02f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, ed_cameraSystemOrbitDollyCursorSpeed, 0.01f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, ed_cameraSystemScrollTranslateSpeed, 0.02f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(float, ed_cameraSystemMaxOrbitDistance, 100.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(float, ed_cameraSystemMaxOrbitDistance, 60.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, ed_cameraSystemLookSmoothness, 5.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, ed_cameraSystemTranslateSmoothness, 5.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, ed_cameraSystemRotateSpeed, 0.005f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, ed_cameraSystemPanSpeed, 0.01f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(bool, ed_cameraSystemPanInvertX, true, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(bool, ed_cameraSystemPanInvertY, true, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(int, ed_cameraSystemLookDeadzone, 2, nullptr, AZ::ConsoleFunctorFlags::Null, "");
 
     AZ_CVAR(
         AZ::CVarFixedString, ed_cameraSystemTranslateForwardKey, "keyboard_key_alphanumeric_W", nullptr, AZ::ConsoleFunctorFlags::Null, "");
@@ -155,6 +156,12 @@ namespace AzFramework
         camera.m_lookAt = transform.GetTranslation() + (camera.Rotation().GetBasisY() * -camera.m_lookDist);
     }
 
+    static ScreenVector CursorDelta(const AZStd::optional<ScreenPoint>& currentPosition, const AZStd::optional<ScreenPoint>& lastPosition)
+    {
+        return currentPosition.has_value() && lastPosition.has_value() ? currentPosition.value() - lastPosition.value()
+                                                                       : ScreenVector(0, 0);
+    }
+
     bool CameraSystem::HandleEvents(const InputEvent& event)
     {
         if (const auto& cursor = AZStd::get_if<CursorEvent>(&event))
@@ -166,15 +173,12 @@ namespace AzFramework
             m_scrollDelta = scroll->m_delta;
         }
 
-        return m_cameras.HandleEvents(event);
+        return m_cameras.HandleEvents(event, CursorDelta(m_currentCursorPosition, m_lastCursorPosition), m_scrollDelta);
     }
 
     Camera CameraSystem::StepCamera(const Camera& targetCamera, const float deltaTime)
     {
-        const auto cursorDelta = m_currentCursorPosition.has_value() && m_lastCursorPosition.has_value()
-            ? m_currentCursorPosition.value() - m_lastCursorPosition.value()
-            : ScreenVector(0, 0);
-
+        const auto cursorDelta = CursorDelta(m_currentCursorPosition, m_lastCursorPosition);
         if (m_currentCursorPosition.has_value())
         {
             m_lastCursorPosition = m_currentCursorPosition;
@@ -192,18 +196,18 @@ namespace AzFramework
         m_idleCameraInputs.push_back(AZStd::move(cameraInput));
     }
 
-    bool Cameras::HandleEvents(const InputEvent& event)
+    bool Cameras::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta)
     {
         bool handling = false;
         for (auto& cameraInput : m_activeCameraInputs)
         {
-            cameraInput->HandleEvents(event);
+            cameraInput->HandleEvents(event, cursorDelta, scrollDelta);
             handling = !cameraInput->Idle() || handling;
         }
 
         for (auto& cameraInput : m_idleCameraInputs)
         {
-            cameraInput->HandleEvents(event);
+            cameraInput->HandleEvents(event, cursorDelta, scrollDelta);
         }
 
         return handling;
@@ -271,7 +275,8 @@ namespace AzFramework
         }
     }
 
-    void RotateCameraInput::HandleEvents(const InputEvent& event)
+    void RotateCameraInput::HandleEvents(
+        const InputEvent& event, const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
     {
         if (const auto& input = AZStd::get_if<DiscreteInputEvent>(&event))
         {
@@ -279,12 +284,25 @@ namespace AzFramework
             {
                 if (input->m_state == InputChannel::State::Began)
                 {
-                    BeginActivation();
+                    m_tryingToBegin = true;
+                    m_moveAccumulator = 0;
                 }
                 else if (input->m_state == InputChannel::State::Ended)
                 {
+                    m_tryingToBegin = false;
                     EndActivation();
                 }
+            }
+        }
+
+        if (m_tryingToBegin)
+        {
+            // only allow the action to begin if the mouse has been moved a small amount
+            m_moveAccumulator += ScreenVectorLength(cursorDelta);
+            if (m_moveAccumulator > ed_cameraSystemLookDeadzone)
+            {
+                BeginActivation();
+                m_tryingToBegin = false;
             }
         }
     }
@@ -307,7 +325,8 @@ namespace AzFramework
         return nextCamera;
     }
 
-    void PanCameraInput::HandleEvents(const InputEvent& event)
+    void PanCameraInput::HandleEvents(
+        const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
     {
         if (const auto& input = AZStd::get_if<DiscreteInputEvent>(&event))
         {
@@ -382,7 +401,8 @@ namespace AzFramework
         return TranslationType::Nil;
     }
 
-    void TranslateCameraInput::HandleEvents(const InputEvent& event)
+    void TranslateCameraInput::HandleEvents(
+        const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
     {
         if (const auto& input = AZStd::get_if<DiscreteInputEvent>(&event))
         {
@@ -478,7 +498,7 @@ namespace AzFramework
         m_boost = false;
     }
 
-    void OrbitCameraInput::HandleEvents(const InputEvent& event)
+    void OrbitCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta)
     {
         if (const auto* input = AZStd::get_if<DiscreteInputEvent>(&event))
         {
@@ -497,7 +517,7 @@ namespace AzFramework
 
         if (Active())
         {
-            m_orbitCameras.HandleEvents(event);
+            m_orbitCameras.HandleEvents(event, cursorDelta, scrollDelta);
         }
     }
 
@@ -541,7 +561,8 @@ namespace AzFramework
         return nextCamera;
     }
 
-    void OrbitDollyScrollCameraInput::HandleEvents(const InputEvent& event)
+    void OrbitDollyScrollCameraInput::HandleEvents(
+        const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
     {
         if (const auto* scroll = AZStd::get_if<ScrollEvent>(&event))
         {
@@ -559,7 +580,8 @@ namespace AzFramework
         return nextCamera;
     }
 
-    void OrbitDollyCursorMoveCameraInput::HandleEvents(const InputEvent& event)
+    void OrbitDollyCursorMoveCameraInput::HandleEvents(
+        const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
     {
         if (const auto& input = AZStd::get_if<DiscreteInputEvent>(&event))
         {
@@ -586,7 +608,8 @@ namespace AzFramework
         return nextCamera;
     }
 
-    void ScrollTranslationCameraInput::HandleEvents(const InputEvent& event)
+    void ScrollTranslationCameraInput::HandleEvents(
+        const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
     {
         if (const auto* scroll = AZStd::get_if<ScrollEvent>(&event))
         {
