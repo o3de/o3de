@@ -359,7 +359,7 @@ def ExportTestResults(Map options, String platform, String type, String workspac
         def o3deroot = "${workspace}/${ENGINE_REPOSITORY_NAME}"
         dir("${o3deroot}/${params.OUTPUT_DIRECTORY}") {
             junit testResults: "Testing/**/*.xml"
-            palRmDir("TestingAAAAA")
+            palRmDir("Testing")
         }
     }
 }
