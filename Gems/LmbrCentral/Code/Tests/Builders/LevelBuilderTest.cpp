@@ -309,22 +309,6 @@ TEST_F(LevelBuilderTest, DynamicSlice_NoAssetReferences_HasNoProductDependencies
     ASSERT_EQ(productPathDependencies.size(), 0);
 }
 
-TEST_F(LevelBuilderTest, DynamicSlice_HasAssetReference_HasCorrectProductDependency)
-{
-    LevelBuilderWorker worker;
-    AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
-    ProductPathDependencySet productPathDependencies;
-
-    AZStd::string filePath(GetTestFileAliasedPath("levelSlice_oneAssetRef.entities_xml"));
-    ASSERT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(filePath.c_str()));
-
-    worker.PopulateLevelSliceDependenciesHelper(filePath, productDependencies, productPathDependencies);
-    ASSERT_EQ(productPathDependencies.size(), 0);
-    ASSERT_EQ(productDependencies.size(), 1);
-    ASSERT_EQ(productDependencies[0].m_dependencyId.m_guid, AZ::Uuid("A8970A25-5043-5519-A927-F180E7D6E8C1"));
-    ASSERT_EQ(productDependencies[0].m_dependencyId.m_subId, 1);
-}
-
 void BuildSliceWithSimpleAssetReference(const AZStd::vector<AZStd::string>& filePaths, AZStd::vector<AssetBuilderSDK::ProductDependency>& productDependencies, ProductPathDependencySet& productPathDependencies)
 {
     auto* assetComponent = aznew MockSimpleAssetRefComponent;
