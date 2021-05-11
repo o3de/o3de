@@ -1523,7 +1523,9 @@ namespace AZ::AtomBridge
     {
         AZStd::vector<AZ::Vector3> transformedPositions;
         transformedPositions.resize_no_construct(positions.size());
-        AZStd::transform(positions.begin(), positions.end(), transformedPositions.begin(), [this](const AZ::Vector3& position){ return ToWorldSpacePosition(position); });
+        AZStd::transform(positions.begin(), positions.end(), transformedPositions.begin(), [this](const AZ::Vector3& position) {
+            return ToWorldSpacePosition(position);
+        });
         return transformedPositions;
     }
 
@@ -1531,7 +1533,9 @@ namespace AZ::AtomBridge
     {
         AZStd::vector<AZ::Vector3> transformedVectors;
         transformedVectors.resize_no_construct(vectors.size());
-        AZStd::transform(vectors.begin(), vectors.end(), transformedVectors.begin(), [this](const AZ::Vector3& vector) { return ToWorldSpaceVector(vector); });
+        AZStd::transform(vectors.begin(), vectors.end(), transformedVectors.begin(), [this](const AZ::Vector3& vector) {
+            return ToWorldSpaceVector(vector);
+        });
         return transformedVectors;
     }
 
