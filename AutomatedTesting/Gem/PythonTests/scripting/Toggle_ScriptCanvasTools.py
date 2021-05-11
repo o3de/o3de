@@ -13,11 +13,6 @@ Test Case Title: Tools > Node Palette toggles the Node Palette
                  Tools > Node Inspector toggles the Node Inspector
                  Tools > Bookmarks toggles the Bookmarks
                  Tools > Variable Manager toggles the Variable Manager
-                 
-URLs of the test case: https://testrail.agscollab.com/index.php?/cases/view/92569165
-                       https://testrail.agscollab.com/index.php?/cases/view/92569167
-                       https://testrail.agscollab.com/index.php?/cases/view/92569168
-                       https://testrail.agscollab.com/index.php?/cases/view/92569170
 """
 
 
