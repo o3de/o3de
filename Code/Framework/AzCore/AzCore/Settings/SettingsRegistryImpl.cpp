@@ -445,6 +445,13 @@ namespace AZ
         {
             keyPath.push_back('/');
         }
+        if ((key.size() + keyPath.size()) > keyPath.max_size())
+        {
+            // The key portion is longer than the FixedValueString max size that can be stored
+            // This limitation is arbitrary, if an AZStd::string is used or if the C++17 std::to_chars
+            // function is used, there wouldn't need to be a limitation
+            return false;
+        }
         keyPath += key;
         key = keyPath;
 
@@ -462,7 +469,15 @@ namespace AZ
             return Set(key, false);
         }
 
-        SettingsRegistryInterface::FixedValueString valueString(value);
+        SettingsRegistryInterface::FixedValueString valueString;
+        if (value.size() > valueString.max_size())
+        {
+            // The value portion is longer than the FixedValueString max size that can be stored
+            // This limitation is arbitrary, if an AZStd::string is used or if the C++17 std::to_chars
+            // function is used, there wouldn't need to be a limitation
+            return false;
+        }
+        valueString = value;
         const char* valueStringEnd = valueString.c_str() + valueString.size();
 
         errno = 0;
@@ -558,7 +573,7 @@ namespace AZ
         }
         else
         {
-            if (MaxFilePathLength < path.length() + 1)
+            if (AZ::IO::MaxPathLength < path.length() + 1)
             {
                 AZ_Error("Settings Registry", false,
                     R"(Path "%.*s" is too long. Either make sure that the provided path is terminated or use a shorter path.)",
@@ -570,10 +585,8 @@ namespace AZ
                     .AddMember(StringRef("Path"), AZStd::move(pathValue), m_settings.GetAllocator());
                 return false;
             }
-            char filePath[MaxFilePathLength];
-            azstrncpy(filePath, AZ_ARRAY_SIZE(filePath), path.data(), path.length());
-            filePath[path.length()] = 0;
-            result = MergeSettingsFileInternal(filePath, format, rootKey, *scratchBuffer);
+            AZ::IO::FixedMaxPathString filePath(path);
+            result = MergeSettingsFileInternal(filePath.c_str(), format, rootKey, *scratchBuffer);
         }
 
         scratchBuffer->clear();
@@ -607,7 +620,7 @@ namespace AZ
             additionalSpaceRequired += AZ_ARRAY_SIZE(PlatformFolder) + platform.length() + 2; // +2 for the two slashes.
         }
 
-        if (path.length() + additionalSpaceRequired > MaxFilePathLength)
+        if (path.length() + additionalSpaceRequired > AZ::IO::MaxPathLength)
         {
             AZ_Error("Settings Registry", false, "Folder path for the Setting Registry is too long: %.*s",
                 static_cast<int>(path.size()), path.data());
@@ -620,7 +633,7 @@ namespace AZ
         RegistryFileList fileList;
         scratchBuffer->clear();
 
-        AZStd::fixed_string<MaxFilePathLength> folderPath{ path };
+        AZ::IO::FixedMaxPathString folderPath{ path };
         constexpr AZStd::string_view pathSeparators{ AZ_CORRECT_AND_WRONG_DATABASE_SEPARATOR };
         if (pathSeparators.find_first_of(folderPath.back()) == AZStd::string_view::npos)
         {
@@ -873,7 +886,7 @@ namespace AZ
         // Sort by the name first so the registry file gets applied with all its specializations.
         if (lhs.m_tags[0] != rhs.m_tags[0])
         {
-            return strcmp(lhs.m_relativePath, rhs.m_relativePath) < 0;
+            return lhs.m_relativePath < rhs.m_relativePath;
         }
 
         // Then sort by size first so the files with the fewest specializations get applied first.
@@ -903,14 +916,14 @@ namespace AZ
         }
 
         collisionFound = true;
-        AZ_Error("Settings Registry", false, R"(Two registry files point to the same specialization: "%s" and "%s")",
-            lhs.m_relativePath, rhs.m_relativePath);
+        AZ_Error("Settings Registry", false, R"(Two registry files in "%.*s" point to the same specialization: "%s" and "%s")",
+            AZ_STRING_ARG(folderPath), lhs.m_relativePath.c_str(), rhs.m_relativePath.c_str());
         historyPointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
             .AddMember(StringRef("Error"), StringRef("Too many files in registry folder."), m_settings.GetAllocator())
             .AddMember(StringRef("Path"),
                 Value(folderPath.data(), aznumeric_caster(folderPath.length()), m_settings.GetAllocator()), m_settings.GetAllocator())
-            .AddMember(StringRef("File1"), Value(lhs.m_relativePath, m_settings.GetAllocator()), m_settings.GetAllocator())
-            .AddMember(StringRef("File2"), Value(rhs.m_relativePath, m_settings.GetAllocator()), m_settings.GetAllocator());
+            .AddMember(StringRef("File1"), Value(lhs.m_relativePath.c_str(), m_settings.GetAllocator()), m_settings.GetAllocator())
+            .AddMember(StringRef("File2"), Value(rhs.m_relativePath.c_str(), m_settings.GetAllocator()), m_settings.GetAllocator());
         return false;
     }
 
@@ -983,9 +996,9 @@ namespace AZ
         // thats the name tag.
         AZStd::sort(AZStd::next(output.m_tags.begin()), output.m_tags.end());
 
-        if (filePathSize < AZ_ARRAY_SIZE(output.m_relativePath))
+        if (filePathSize < output.m_relativePath.max_size())
         {
-            azstrcpy(output.m_relativePath, AZ_ARRAY_SIZE(output.m_relativePath), filename);
+            output.m_relativePath = filename;
             return true;
         }
         else

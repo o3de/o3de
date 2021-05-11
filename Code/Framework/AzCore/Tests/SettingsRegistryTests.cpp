@@ -1228,27 +1228,33 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, MergeCommandLineArgument_KeyIsTooLong_ReturnsFalse)
     {
-        AZStd::string argument = AZStd::string::format("Te%*cst=Value", aznumeric_cast<int>(AZ::SettingsRegistryImpl::MaxJsonPathLength), ' ');
+        constexpr int LongKeySize = 1024;
+        AZStd::string argument = AZStd::string::format("Te%*cst=Value", LongKeySize, ' ');
         EXPECT_FALSE(m_registry->MergeCommandLineArgument(argument, {}, {}));
     }
 
     TEST_F(SettingsRegistryTest, MergeCommandLineArgument_KeyIsTooLongWithDivider_ReturnsFalse)
     {
-        AZStd::string argument = AZStd::string::format("/Te%*cst=Value", aznumeric_cast<int>(AZ::SettingsRegistryImpl::MaxJsonPathLength), ' ');
+        constexpr int LongKeySize = 1024;
+        AZStd::string argument = AZStd::string::format("/Te%*cst=Value", LongKeySize, ' ');
         EXPECT_FALSE(m_registry->MergeCommandLineArgument(argument, "/Path", {}));
     }
 
     TEST_F(SettingsRegistryTest, MergeCommandLineArgument_ValueIsTooLong_ReturnsFalse)
     {
-        AZStd::string argument = AZStd::string::format("Test=Val%*cue", aznumeric_cast<int>(AZ::SettingsRegistryImpl::MaxCommandLineArgumentLength), ' ');
+        constexpr int LongValueSize = 1024;
+        AZStd::string argument = AZStd::string::format("Test=Val%*cue", LongValueSize, ' ');
         EXPECT_FALSE(m_registry->MergeCommandLineArgument(argument, {}, {}));
         EXPECT_EQ(AZ::SettingsRegistryInterface::Type::NoType, m_registry->GetType("/Test"));
     }
 
-    TEST_F(SettingsRegistryTest, MergeCommandLineArgument_MissingValue_ReturnsFalse)
+    TEST_F(SettingsRegistryTest, MergeCommandLineArgument_MissingValue_ReturnsEmptyString)
     {
-        EXPECT_FALSE(m_registry->MergeCommandLineArgument("Test=", {}, {}));
-        EXPECT_EQ(AZ::SettingsRegistryInterface::Type::NoType, m_registry->GetType("/Test"));
+        EXPECT_TRUE(m_registry->MergeCommandLineArgument("Test=", {}, {}));
+        EXPECT_EQ(AZ::SettingsRegistryInterface::Type::String, m_registry->GetType("/Test"));
+        AZ::SettingsRegistryInterface::FixedValueString value;
+        EXPECT_TRUE(m_registry->Get(value, "/Test"));
+        EXPECT_TRUE(value.empty());
     }
 
     TEST_F(SettingsRegistryTest, MergeCommandLineArgument_MissingKey_ReturnsFalse)
@@ -1271,9 +1277,13 @@ namespace SettingsRegistryTests
         EXPECT_FALSE(m_registry->MergeCommandLineArgument("    =Value", {}, {}));
     }
 
-    TEST_F(SettingsRegistryTest, MergeCommandLineArgument_ValueIsSpaces_ReturnsFalse)
+    TEST_F(SettingsRegistryTest, MergeCommandLineArgument_ValueIsSpaces_ReturnsEmptyString)
     {
-        EXPECT_FALSE(m_registry->MergeCommandLineArgument("Key=    ", {}, {}));
+        EXPECT_TRUE(m_registry->MergeCommandLineArgument("Key=    ", {}, {}));
+        EXPECT_EQ(AZ::SettingsRegistryInterface::Type::String, m_registry->GetType("/Key"));
+        AZ::SettingsRegistryInterface::FixedValueString value;
+        EXPECT_TRUE(m_registry->Get(value, "/Key"));
+        EXPECT_TRUE(value.empty());
     }
 
     TEST_F(SettingsRegistryTest, MergeCommandLineArgument_KeyAndValueAreSpaces_ReturnsFalse)
@@ -1367,9 +1377,8 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, MergeSettingsFile_PathAsSubStringThatsTooLong_ReturnsFalse)
     {
-        char path[AZ::SettingsRegistryImpl::MaxFilePathLength + 1];
-        memset(path, '1', sizeof(path));
-        AZStd::string_view subPath(path, AZ::SettingsRegistryImpl::MaxFilePathLength);
+        constexpr AZStd::fixed_string<AZ::IO::MaxPathLength + 1> path(AZ::IO::MaxPathLength + 1, '1');
+        constexpr AZStd::string_view subPath(path);
 
         AZ_TEST_START_TRACE_SUPPRESSION;
         bool result = m_registry->MergeSettingsFile(subPath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {}, nullptr);
@@ -1719,8 +1728,7 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, MergeSettingsFolder_PathTooLong_ReportsErrorAndReturnsFalse)
     {
-        char path[AZ::SettingsRegistryImpl::MaxFilePathLength + 1]{};
-        memset(path, 'a', AZ_ARRAY_SIZE(path));
+        constexpr AZStd::fixed_string<AZ::IO::MaxPathLength + 1> path(AZ::IO::MaxPathLength + 1, 'a');
         
         AZ_TEST_START_TRACE_SUPPRESSION;
         bool result = m_registry->MergeSettingsFolder(path, { "editor", "test" }, {}, nullptr);
