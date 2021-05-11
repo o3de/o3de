@@ -20,7 +20,7 @@ namespace AZ
     {
         AZ::IO::FixedMaxPath GetModulePath()
         {
-            return AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory();
+            return AZ::Utils::GetExecutableDirectory();
         }
 
         void* OpenModule(const AZ::OSString& fileName, bool& alreadyOpen)

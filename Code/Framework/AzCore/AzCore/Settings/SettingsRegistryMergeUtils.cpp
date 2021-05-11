@@ -600,24 +600,31 @@ namespace AZ::SettingsRegistryMergeUtils
                 : projectUserPath.Native());
 
             // Set the project in-memory build path if the ProjectBuildPath key has been supplied
+            if (AZ::IO::FixedMaxPath projectBuildPath; registry.Get(projectBuildPath.Native(), ProjectBuildPath))
             {
-                AZ::IO::FixedMaxPath buildConfigurationPath;
-                if (AZ::IO::FixedMaxPath projectBuildPath; registry.Get(projectBuildPath.Native(), ProjectBuildPath))
+                registry.Remove(FilePathKey_ProjectBuildPath);
+                registry.Remove(FilePathKey_ProjectConfigurationBinPath);
+                AZ::IO::FixedMaxPath buildConfigurationPath = normalizedProjectPath / projectBuildPath;
+                if (IO::SystemFile::Exists(buildConfigurationPath.c_str()))
                 {
-                    buildConfigurationPath = normalizedProjectPath / projectBuildPath;
-                    registry.Set(FilePathKey_ProjectBuildPath, buildConfigurationPath.LexicallyNormal().Native());
-                }
-                else
-                {
-                    // Default to <project-root>/Prebuilt/<platform-name> if not set
-                    buildConfigurationPath = normalizedProjectPath / "Prebuilt" / AZ_TRAIT_OS_PLATFORM_CODENAME;
                     registry.Set(FilePathKey_ProjectBuildPath, buildConfigurationPath.LexicallyNormal().Native());
                 }
 
                 // Add the specific build configuration paths to the Settings Registry
-
+                // First try <project-build-path>/bin/$<CONFIG> and if that path doesn't exist
+                // try <project-build-path>/bin/$<PLATFORM>/$<CONFIG>
                 buildConfigurationPath /= "bin";
-                registry.Set(FilePathKey_ProjectConfigurationBinPath, (buildConfigurationPath / AZ_BUILD_CONFIGURATION_TYPE).LexicallyNormal().Native());
+                if (IO::SystemFile::Exists((buildConfigurationPath / AZ_BUILD_CONFIGURATION_TYPE).c_str()))
+                {
+                    registry.Set(FilePathKey_ProjectConfigurationBinPath,
+                        (buildConfigurationPath / AZ_BUILD_CONFIGURATION_TYPE).LexicallyNormal().Native());
+                }
+                else if (IO::SystemFile::Exists((buildConfigurationPath / AZ_TRAIT_OS_PLATFORM_CODENAME / AZ_BUILD_CONFIGURATION_TYPE).c_str()))
+                {
+                    registry.Set(FilePathKey_ProjectConfigurationBinPath,
+                        (buildConfigurationPath / AZ_TRAIT_OS_PLATFORM_CODENAME / AZ_BUILD_CONFIGURATION_TYPE).LexicallyNormal().Native());
+                }
+
             }
 
             // Project name - if it was set via merging project.json use that value, otherwise use the project path's folder name.
