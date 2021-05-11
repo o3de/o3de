@@ -36,6 +36,8 @@ namespace AzFramework
 
     void NonUniformScaleComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+
         incompatible.push_back(AZ_CRC_CE("DebugDrawObbService"));
         incompatible.push_back(AZ_CRC_CE("DebugDrawService"));
         incompatible.push_back(AZ_CRC_CE("EMotionFXActorService"));

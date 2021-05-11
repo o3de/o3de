@@ -36,5 +36,7 @@ set(FILES
     AzFramework/Process/ProcessCommon.h
     AzFramework/Process/ProcessWatcher_iOS.cpp
     AzFramework/Process/ProcessCommunicator_iOS.cpp
+    ../Common/Apple/AzFramework/Utils/SystemUtilsApple.h
+    ../Common/Apple/AzFramework/Utils/SystemUtilsApple.mm
 )
 

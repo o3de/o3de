@@ -13,6 +13,49 @@
 #pragma once
 
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+#include <Atom/Features/Shadow/ProjectedShadow.azsli>
+
+// The order should match m_pointShadowTransforms in PointLightFeatureProcessor.h/.cpp
+static const float3 PointLightShadowCubemapDirections[6] = {float3(-1,0,0), float3(1,0,0), float3(0,-1,0), float3(0,1,0), float3(0,0,-1), float3(0,0,1)};                  
+
+int GetPointLightShadowCubemapFace(const float3 targetPos, const float3 lightPos)
+{
+    const float3 toPoint = targetPos - lightPos;    
+    const float maxElement = max(abs(toPoint.z), max(abs(toPoint.x), abs(toPoint.y)));
+    if (toPoint.x == -maxElement)
+    {
+        return 0;
+    }
+    else if (toPoint.x == maxElement)
+    {
+        return 1;
+    }   
+    else if (toPoint.y == -maxElement)
+    {
+        return 2;
+    }
+    else if (toPoint.y == maxElement)
+    {
+        return 3;
+    }
+    else if (toPoint.z == -maxElement)
+    {
+        return 4;
+    }
+    else 
+    {
+        return 5;
+    }   
+}
+
+// PointLight::m_shadowIndices actually consists of uint16_t x 6 on the CPU, but visible as a uint32_t x 3 on the GPU. 
+// This function returns the proper uint16_t value given an input face in the range 0-5
+int UnpackPointLightShadowIndex(const ViewSrg::PointLight light, const int face)
+{
+    const int index = face >> 1;
+    const int shiftAmount = (face & 1) * 16;
+    return (light.m_shadowIndices[index] >> shiftAmount) & 0xFFFF;
+} 
 
 void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingData lightingData)
 {
@@ -31,11 +74,38 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         d2 = max(0.001 * 0.001, d2); // clamp the light to at least 1mm away to avoid extreme values.
         float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
 
+        // shadow
+        float litRatio = 1.0;
+
+        // How much is back face shadowed, it's set to the reverse of litRatio to share the same default value with thickness, which should be 0 if no shadow map available
+        float backShadowRatio = 0.0;
+        if (o_enableShadows)
+        {
+            const int shadowCubemapFace = GetPointLightShadowCubemapFace(surface.position, light.m_position);
+            const int shadowIndex = UnpackPointLightShadowIndex(light, shadowCubemapFace);
+
+            litRatio *= ProjectedShadow::GetVisibility(
+                    shadowIndex,
+                    light.m_position,
+                    surface.position,
+                    PointLightShadowCubemapDirections[shadowCubemapFace],
+                    surface.normal);
+                        
+            // Use backShadowRatio to carry thickness from shadow map for thick mode
+            backShadowRatio = 1.0 - litRatio;
+            if (o_transmission_mode == TransmissionMode::ThickObject)
+            {
+                backShadowRatio = ProjectedShadow::GetThickness(
+                    shadowIndex,
+                    surface.position);
+            }                   
+        }
+
         // Diffuse contribution
-        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, normalize(posToLight));
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, normalize(posToLight)) * litRatio;
 
         // Tranmission contribution
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), 0.0);
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), backShadowRatio);
 
         // Adjust the light direcion for specular based on bulb size
 

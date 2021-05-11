@@ -15,6 +15,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
+#include <Include/INetworkTime.h>
 #include <Include/MultiplayerStats.h>
 
 namespace AzNetworking
@@ -56,7 +57,7 @@ namespace Multiplayer
 
         //! Gets the type of Agent this IMultiplayer impl represents
         //! @return The type of agents represented
-        virtual MultiplayerAgentType GetAgentType() = 0;
+        virtual MultiplayerAgentType GetAgentType() const = 0;
 
         //! Sets the type of this Multiplayer connection and calls any related callback
         //! @param state The state of this connection
@@ -77,6 +78,14 @@ namespace Multiplayer
         //! Sends a packet telling if entity update messages can be sent
         //! @param readyForEntityUpdates Ready for entity updates or not
         virtual void SendReadyForEntityUpdates(bool readyForEntityUpdates) = 0;
+
+        //! Returns the current server time in milliseconds.
+        //! This can be one of three possible values:
+        //!   1. On the host outside of rewind scope, this will return the latest application elapsed time in ms.
+        //!   2. On the host within rewind scope, this will return the rewound time in ms.
+        //!   3. On the client, this will return the most recently replicated server time in ms.
+        //! @return the current server time in milliseconds
+        virtual AZ::TimeMs GetCurrentHostTimeMs() const = 0;
 
         //! Returns the gem name associated with the provided component index.
         //! @param  netComponentId the componentId to return the gem name of

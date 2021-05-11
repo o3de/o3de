@@ -13,11 +13,9 @@
 
 #include "EditorCommon_precompiled.h"
 #include <QViewport.h>
-#include <ManipScene.h>
 #include <Timeline.h>
 #include <CurveEditor.h>
 
 #include <moc_QViewport.cpp>
-#include <moc_ManipScene.cpp>
 #include <moc_Timeline.cpp>
 #include <moc_CurveEditor.cpp>

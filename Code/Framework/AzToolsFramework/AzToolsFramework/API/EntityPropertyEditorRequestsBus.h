@@ -31,6 +31,10 @@ namespace AzToolsFramework
         //! Allows a component to get the list of selected entities
         //! \param selectedEntityIds the return vector holding the entities required
         virtual void GetSelectedEntities(EntityIdList& selectedEntityIds) = 0;
+
+        //! Explicitly sets a component as having been the most recently added.
+        //! This means that the next time the UI refreshes, that component will be ensured to be visible.
+        virtual void SetNewComponentId(AZ::ComponentId componentId) = 0;
     };
 
     using EntityPropertyEditorRequestBus = AZ::EBus<EntityPropertyEditorRequests>;

@@ -25,13 +25,37 @@ include(cmake/LySet.cmake)
 include(cmake/Version.cmake)
 include(cmake/OutputDirectory.cmake)
 
+# Set the engine_path and engine_json
+set(o3de_engine_path ${CMAKE_CURRENT_LIST_DIR})
+set(o3de_engine_json ${o3de_engine_path}/engine.json)
+
 if(NOT PROJECT_NAME)
     project(O3DE
         LANGUAGES C CXX
         VERSION ${LY_VERSION_STRING}
     )
+
+    # o3de manifest
+    include(cmake/o3de_manifest.cmake)
 endif()
 
+################################################################################
+# Resolve this engines name and restricted path
+################################################################################
+o3de_engine_name(${o3de_engine_json} o3de_engine_name)
+o3de_restricted_path(${o3de_engine_json} o3de_engine_restricted_path)
+message(STATUS "O3DE Engine Name: ${o3de_engine_name}")
+message(STATUS "O3DE Engine Path: ${o3de_engine_path}")
+if(o3de_engine_restricted_path)
+    message(STATUS "O3DE Engine Restricted Path: ${o3de_engine_restricted_path}")
+endif()
+
+# add the engines cmake folder to the CMAKE_MODULE_PATH
+list(APPEND CMAKE_MODULE_PATH "${o3de_engine_path}/cmake")
+
+################################################################################
+# Initialize
+################################################################################
 include(cmake/GeneralSettings.cmake)
 include(cmake/FileUtil.cmake)
 include(cmake/PAL.cmake)
@@ -60,20 +84,19 @@ include(cmake/Projects.cmake)
 if(NOT INSTALLED_ENGINE)
     # Add the rest of the targets
     add_subdirectory(Code)
-    add_subdirectory(Gems)
 else()
     ly_find_o3de_packages()
 endif()
+
+# Add external subdirectories listed in the manifest
+list(APPEND LY_EXTERNAL_SUBDIRS ${o3de_engine_external_subdirectories})
 
 set(enabled_platforms
     ${PAL_PLATFORM_NAME}
     ${LY_PAL_TOOLS_ENABLED})
 
-foreach(restricted_platform ${PAL_RESTRICTED_PLATFORMS})
-    if(restricted_platform IN_LIST enabled_platforms)
-        add_subdirectory(restricted/${restricted_platform})
-    endif()
-endforeach()
+# Add any engine restricted platforms as external subdirs
+o3de_add_engine_restricted_platform_external_subdirs()
 
 if(NOT INSTALLED_ENGINE)
     add_subdirectory(scripts)
