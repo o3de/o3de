@@ -11,10 +11,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92569079
 Test Case Title: View > Zoom In zooms the graph in
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92569079
 Test case ID: T92569081
 Test Case Title: View > Zoom In zooms the graph out
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92569081
 """
 
 

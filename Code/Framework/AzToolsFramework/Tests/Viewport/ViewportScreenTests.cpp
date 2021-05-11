@@ -211,6 +211,15 @@ namespace UnitTest
         EXPECT_EQ(screenPoint, ScreenPoint(45, 170));
     }
 
+    TEST(ViewportScreen, ScreenVectorLengthReturned)
+    {
+        using AzFramework::ScreenVector;
+
+        EXPECT_NEAR(AzFramework::ScreenVectorLength(ScreenVector(1, 1)), 1.41421f, 0.001f);
+        EXPECT_NEAR(AzFramework::ScreenVectorLength(ScreenVector(3, 4)), 5.0f, 0.001f);
+        EXPECT_NEAR(AzFramework::ScreenVectorLength(ScreenVector(12, 15)), 19.20937f, 0.001f);
+    }
+
     TEST(ViewportScreen, CanGetCameraTransformFromCameraViewAndBack)
     {
         const auto screenDimensions = AZ::Vector2(1024.0f, 768.0f);

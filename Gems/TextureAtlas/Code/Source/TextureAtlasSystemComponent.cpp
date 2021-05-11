@@ -98,14 +98,16 @@ namespace TextureAtlasNamespace
                     SResourceAsync* pInfo = new SResourceAsync();
                     pInfo->eClassName = eRCN_Texture;
                     pInfo->pResource = iterator->second.m_atlas->GetTexture();
-                    gEnv->pRenderer->ReleaseResourceAsync(pInfo);
+                    // ToDo: Update to work with Atom? LYN-3680
+                    // ???->ReleaseResourceAsync(pInfo);
                 }
                 // Reload Texture
                 AZStd::string imagePath = iterator->second.m_path.substr(0, iterator->second.m_path.find_last_of('.'));
                 imagePath.append(".dds");
 
-                uint32 loadTextureFlags = (FT_USAGE_ALLOWREADSRGB | FT_DONT_STREAM);
-                ITexture* texture = gEnv->pRenderer->EF_LoadTexture(imagePath.c_str(), loadTextureFlags);
+                // ToDo: Update to work with Atom? LYN-3680
+                // uint32 loadTextureFlags = (FT_USAGE_ALLOWREADSRGB | FT_DONT_STREAM);
+                ITexture* texture = nullptr;
 
                 if (!texture || !texture->IsTextureLoaded())
                 {
@@ -189,8 +191,9 @@ namespace TextureAtlasNamespace
             AzFramework::StringFunc::Path::ReplaceExtension(imagePath, "dds");
 
             // Load the image in
-            uint32 loadTextureFlags = (FT_USAGE_ALLOWREADSRGB | FT_DONT_STREAM);
-            ITexture* texture = gEnv->pRenderer->EF_LoadTexture(imagePath.c_str(), loadTextureFlags);
+            // ToDo: Update to work with Atom? LYN-3680
+            // uint32 loadTextureFlags = (FT_USAGE_ALLOWREADSRGB | FT_DONT_STREAM);
+            ITexture* texture = nullptr;
 
             if (!texture || !texture->IsTextureLoaded())
             {
@@ -241,7 +244,8 @@ namespace TextureAtlasNamespace
                         SResourceAsync* pInfo = new SResourceAsync();
                         pInfo->eClassName = eRCN_Texture;
                         pInfo->pResource = temp.m_atlas->GetTexture();
-                        gEnv->pRenderer->ReleaseResourceAsync(pInfo);
+                        // ToDo: Update to work with Atom? LYN-3680
+                        // ???->ReleaseResourceAsync(pInfo);
                     }
                     // Delete the atlas
                     SAFE_DELETE(temp.m_atlas);

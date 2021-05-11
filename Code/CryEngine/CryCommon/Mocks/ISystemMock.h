@@ -49,17 +49,11 @@ public:
         int());
     MOCK_METHOD0(GetLogicalCPUCount,
         int());
-    MOCK_CONST_METHOD0(GetRenderingDriverName,
-        const char*());
-    MOCK_METHOD1(DumpMemoryUsageStatistics,
-        void(bool));
     MOCK_METHOD0(Quit,
         void());
     MOCK_METHOD1(Relaunch,
         void(bool bRelaunch));
     MOCK_CONST_METHOD0(IsQuitting,
-        bool());
-    MOCK_CONST_METHOD0(IsShaderCacheGenMode,
         bool());
     MOCK_METHOD1(SerializingFile,
         void(int mode));
@@ -90,8 +84,6 @@ public:
         ILZ4Decompressor * ());
     MOCK_METHOD0(GetZStdDecompressor,
         IZStdDecompressor * ());
-    MOCK_METHOD0(GetPerfHUD,
-        ICryPerfHUD * ());
     MOCK_METHOD0(GetINotificationNetwork,
         INotificationNetwork * ());
     MOCK_METHOD0(GetIViewSystem,
@@ -132,12 +124,6 @@ public:
         ISystemEventDispatcher * ());
     MOCK_METHOD0(GetIVisualLog,
         IVisualLog * ());
-    MOCK_METHOD0(GetIFileChangeMonitor,
-        IFileChangeMonitor * ());
-    MOCK_METHOD0(GetHWND,
-        WIN_HWND());
-    MOCK_METHOD0(GetIRenderer,
-        IRenderer * ());
     MOCK_METHOD0(GetITimer,
         ITimer * ());
     MOCK_METHOD0(GetIThreadManager,
@@ -150,8 +136,6 @@ public:
         void(IMaterialEffects * pMaterialEffects));
     MOCK_METHOD1(SetIOpticsManager,
         void(IOpticsManager * pOpticsManager));
-    MOCK_METHOD1(SetIFileChangeMonitor,
-        void(IFileChangeMonitor * pFileChangeMonitor));
     MOCK_METHOD1(SetIVisualLog,
         void(IVisualLog * pVisualLog));
     MOCK_METHOD2(DebugStats,
@@ -229,8 +213,6 @@ public:
         void(bool detectResolution));
     MOCK_METHOD2(SetThreadState,
         int(ESubsystem subsys, bool bActive));
-    MOCK_METHOD0(CreateSizer,
-        ICrySizer * ());
     MOCK_CONST_METHOD0(IsPaused,
         bool());
     MOCK_METHOD0(GetLocalizationManager,
@@ -275,8 +257,6 @@ public:
         void(bool));
     MOCK_METHOD1(GetUpdateStats,
         void(SSystemUpdateStats & stats));
-    MOCK_METHOD0(DumpMemoryCoverage,
-        void());
     MOCK_METHOD0(GetSystemGlobalState,
         ESystemGlobalState(void));
     MOCK_METHOD1(SetSystemGlobalState,

@@ -34,6 +34,10 @@ set(FILES
     Source/EngineSettings.h
     Source/EngineSettings.cpp
     Source/EngineSettings.ui
+    Source/LinkWidget.h
+    Source/LinkWidget.cpp
+    Source/TagWidget.h
+    Source/TagWidget.cpp
     Source/GemCatalog/GemCatalog.h
     Source/GemCatalog/GemCatalog.cpp
     Source/GemCatalog/GemInfo.h

@@ -328,7 +328,6 @@ CXConsole::CXConsole()
     m_fRepeatTimer = 0;
     m_pSysDeactivateConsole = 0;
     m_pFont = NULL;
-    m_pRenderer = NULL;
     m_pImage = NULL;
     m_nCursorPos = 0;
     m_nScrollPos = 0;
@@ -397,18 +396,6 @@ CXConsole::~CXConsole()
 //////////////////////////////////////////////////////////////////////////
 void CXConsole::FreeRenderResources()
 {
-    if (m_pRenderer)
-    {
-        if (m_nLoadingBackTexID)
-        {
-            m_pRenderer->RemoveTexture(m_nLoadingBackTexID);
-            m_nLoadingBackTexID = -1;
-        }
-        if (m_pImage)
-        {
-            m_pImage->Release();
-        }
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -485,7 +472,6 @@ void CXConsole::Init(ISystem* pSystem)
     {
         m_pFont = pSystem->GetICryFont()->GetFont("default");
     }
-    m_pRenderer = pSystem->GetIRenderer();
     m_pTimer = pSystem->GetITimer();
 
     AzFramework::InputChannelEventListener::Connect();
@@ -534,10 +520,7 @@ void CXConsole::Init(ISystem* pSystem)
 
     // ----------------------------------------------------------
 
-    if (!m_pRenderer || gEnv->IsInToolMode())
-    {
-        m_nLoadingBackTexID = -1;
-    }
+    m_nLoadingBackTexID = -1;
 
     if (gEnv->IsDedicated())
     {
@@ -1176,7 +1159,6 @@ void CXConsole::Clear()
 //////////////////////////////////////////////////////////////////////////
 void CXConsole::Update()
 {
-    // Repeat GetIRenderer (For Editor).
     if (!m_pSystem)
     {
         return;
@@ -1191,8 +1173,6 @@ void CXConsole::Update()
 
     // Execute the deferred commands
     ExecuteDeferredCommands();
-
-    m_pRenderer = m_pSystem->GetIRenderer();
 
     if (!m_bConsoleActive)
     {
@@ -1588,206 +1568,10 @@ const char* CXConsole::GetHistoryElement(const bool bUpOrDown)
 //////////////////////////////////////////////////////////////////////////
 void CXConsole::Draw()
 {
-    //ShowConsole(true);
-    if (!m_pSystem || !m_nTempScrollMax)
-    {
-        return;
-    }
-
-    if (!m_pRenderer)
-    {
-        // For Editor.
-        m_pRenderer = m_pSystem->GetIRenderer();
-    }
-
-    if (!m_pRenderer)
-    {
-        return;
-    }
-
-    if (!m_pFont)
-    {
-        // For Editor.
-        ICryFont* pICryFont = m_pSystem->GetICryFont();
-
-        if (pICryFont)
-        {
-            m_pFont = m_pSystem->GetICryFont()->GetFont("default");
-        }
-    }
-
-    ScrollConsole();
-
-    if (!m_bConsoleActive && con_display_last_messages == 0)
-    {
-        return;
-    }
-
-    if (m_pRenderer->GetIRenderAuxGeom())
-    {
-        m_pRenderer->GetIRenderAuxGeom()->Flush();
-    }
-
-    m_pRenderer->EF_RenderTextMessages();
-
-    m_pRenderer->PushProfileMarker("DISPLAY_CONSOLE");
-
-    if (m_nScrollPos <= 0)
-    {
-        DrawBuffer(70, "console");
-    }
-    else
-    {
-        // cursor blinking
-        {
-            m_fCursorBlinkTimer += gEnv->pTimer->GetRealFrameTime();                                            // works even when time is manipulated
-            //  m_fCursorBlinkTimer += gEnv->pTimer->GetFrameTime(ITimer::ETIMER_UI);                   // can be used once ETIMER_UI works even with t_FixedTime
-
-            const float fCursorBlinkDelay = 0.5f;                       // in sec (similar to Windows default but might differ from actual setting)
-
-            if (m_fCursorBlinkTimer > fCursorBlinkDelay)
-            {
-                m_bDrawCursor = !m_bDrawCursor;
-                m_fCursorBlinkTimer = 0.0f;
-            }
-        }
-
-        CScopedWireFrameMode scopedWireFrame(m_pRenderer, R_SOLID_MODE);
-
-        if (!m_nProgressRange)
-        {
-            int whiteTexId = gEnv->pRenderer ? gEnv->pRenderer->GetWhiteTextureId() : -1;
-
-            if (m_bStaticBackground)
-            {
-                m_pRenderer->SetState(GS_NODEPTHTEST);
-                m_pRenderer->Draw2dImage(0, 0, 800, 600, m_pImage ? m_pImage->GetTextureID() : whiteTexId, 0.0f, 1.0f, 1.0f, 0.0f);
-            }
-            else
-            {
-                TransformationMatrices backupSceneMatrices;
-                m_pRenderer->Set2DMode(m_pRenderer->GetWidth(), m_pRenderer->GetHeight(), backupSceneMatrices);
-
-                float fReferenceSize = 600.0f;
-
-                float fSizeX = (float)m_pRenderer->GetWidth();
-                float fSizeY = m_nTempScrollMax * m_pRenderer->GetHeight() / fReferenceSize;
-
-                m_pRenderer->SetState(GS_NODEPTHTEST | GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA);
-                m_pRenderer->DrawImage(0, 0, fSizeX, fSizeY, whiteTexId, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.7f);
-                m_pRenderer->DrawImage(0, fSizeY, fSizeX, 2.0f * m_pRenderer->GetHeight() / fReferenceSize, whiteTexId, 0, 0, 0, 0, 0.0f, 0.0f, 0.0f, 1.0f);
-
-                m_pRenderer->Unset2DMode(backupSceneMatrices);
-            }
-        }
-
-        // draw progress bar
-        if (m_nProgressRange)
-        {
-            m_pRenderer->SetState(GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA | GS_NODEPTHTEST);
-            m_pRenderer->Draw2dImage(0.0, 0.0, 800.0f, 600.0f, m_nLoadingBackTexID, 0.0f, 1.0f, 1.0f, 0.0f);
-        }
-
-        DrawBuffer(m_nScrollPos, "console");
-    }
-
-    m_pRenderer->PopProfileMarker("DISPLAY_CONSOLE");
 }
 
-void CXConsole::DrawBuffer(int nScrollPos, const char* szEffect)
+void CXConsole::DrawBuffer(int, const char*)
 {
-    if (m_pFont && m_pRenderer)
-    {
-        // The scroll position is in pixels for a 800x600 screen so we scale it to the current resolution.
-        Vec2 referenceSize(800.0f, 600.0f);
-        const float fontSizeIn800x600 = 14;
-        const float maxYPos = nScrollPos * (m_pRenderer->GetHeight() / referenceSize.y);
-        // We also scale the font from the original 800x600 size
-        float fontSize = fontSizeIn800x600 * (m_pRenderer->GetWidth() / referenceSize.x);
-        const float fontAspectRatio = 0.75f;
-        float minFontSize = 10.f;
-        float maxFontSize = 50.f;
-        ICVar* minFontCVar = GetCVar("r_minConsoleFontSize");
-        if (minFontCVar)
-        {
-            minFontSize = minFontCVar->GetFVal();
-        }
-
-        ICVar* maxFontCVar = GetCVar("r_maxConsoleFontSize");
-        if (maxFontCVar)
-        {
-            maxFontSize = maxFontCVar->GetFVal();
-        }
-
-        // Limit max font size in case minFontSize > maxFontSize
-        maxFontSize = AZStd::max(minFontSize, maxFontSize);
-        fontSize = AZStd::min(AZStd::max(fontSize, minFontSize), maxFontSize);
-
-        STextDrawContext ctx;
-        //ctx.Reset();
-        ctx.SetEffect(m_pFont->GetEffectId(szEffect));
-        ctx.SetProportional(false);
-        ctx.SetCharWidthScale(0.5f);
-        ctx.SetSize(Vec2(fontSize, fontAspectRatio * fontSize));
-        ctx.SetColor(ColorF(1, 1, 1, 1));
-        ctx.SetFlags(eDrawText_CenterV | eDrawText_2D);
-
-        float csize = 0.8f * ctx.GetCharHeight();
-        ctx.SetSizeIn800x600(false);
-
-        float yPos = maxYPos - csize - 3.0f;
-        float xPos = LINE_BORDER;
-
-        float fCharWidth = (ctx.GetCharWidth() * ctx.GetCharWidthScale());
-
-        //int ypos=nScrollPos-csize-3;
-
-        //Draw the input line
-        if (m_bConsoleActive && !m_nProgressRange)
-        {
-            /*m_pRenderer->DrawString(xPos-nCharWidth, yPos, false, ">");
-            m_pRenderer->DrawString(xPos, yPos, false, m_sInputBuffer.c_str());
-                if(m_bDrawCursor)
-                    m_pRenderer->DrawString(xPos+nCharWidth*m_nCursorPos, yPos, false, "_");*/
-
-            m_pFont->DrawString((float)(xPos - fCharWidth), (float)yPos, ">", false, ctx);
-            m_pFont->DrawString((float)xPos, (float)yPos, m_sInputBuffer.c_str(), false, ctx);
-
-            if (m_bDrawCursor)
-            {
-                string szCursorLeft(m_sInputBuffer.c_str(), m_sInputBuffer.c_str() + m_nCursorPos);
-                int n = m_pFont->GetTextLength(szCursorLeft.c_str(), false);
-
-                m_pFont->DrawString((float)(xPos + (fCharWidth * n)), (float)yPos, "_", false, ctx);
-            }
-        }
-
-        yPos -= csize;
-
-        ConsoleBufferRItor ritor;
-        ritor = m_dqConsoleBuffer.rbegin();
-        int nScroll = 0;
-        while (ritor != m_dqConsoleBuffer.rend() && yPos >= 0)
-        {
-            if (nScroll >= m_nScrollLine)
-            {
-                const char* buf = ritor->c_str();// GetBuf(k);
-
-                if (*buf > 0 && *buf < 32)
-                {
-                    buf++;                          // to jump over verbosity level character
-                }
-                if (yPos + csize > 0)
-                {
-                    m_pFont->DrawString((float)xPos, (float)yPos, buf, false, ctx);
-                }
-                yPos -= csize;
-            }
-            nScroll++;
-
-            ++ritor;
-        } //k
-    }
 }
 
 
@@ -1828,44 +1612,6 @@ int CXConsole::GetLineCount() const
 //////////////////////////////////////////////////////////////////////////
 void CXConsole::ScrollConsole()
 {
-    if (!m_pRenderer)
-    {
-        return;
-    }
-
-    int nCurrHeight = m_pRenderer->GetHeight();
-
-    switch (m_sdScrollDir)
-    {
-    /////////////////////////////////
-    case sdDOWN:     // The console is scrolling down
-
-        // Vlads note: console should go down immediately, otherwise it can look very bad on startup
-        //m_nScrollPos+=nCurrHeight/2;
-        m_nScrollPos = m_nTempScrollMax;
-
-        if (m_nScrollPos > m_nTempScrollMax)
-        {
-            m_nScrollPos = m_nTempScrollMax;
-            m_sdScrollDir = sdNONE;
-        }
-        break;
-    /////////////////////////////////
-    case sdUP: // The console is scrolling up
-
-        m_nScrollPos -= nCurrHeight;//2;
-
-        if (m_nScrollPos < 0)
-        {
-            m_nScrollPos = 0;
-            m_sdScrollDir = sdNONE;
-        }
-        break;
-    /////////////////////////////////
-    case sdNONE:
-        break;
-        /////////////////////////////////
-    }
 }
 
 
@@ -2467,13 +2213,6 @@ void CXConsole::ExecuteStringInternal(const char* command, const bool bFromConso
 
                     if (!sTemp.empty() || (pCVar->GetType() == CVAR_STRING))
                     {
-                        // renderer cvars will be updated in the render thread
-                        if ((pCVar->GetFlags() & VF_RENDERER_CVAR) && m_pRenderer)
-                        {
-                            m_pRenderer->SetRendererCVar(pCVar, sTemp.c_str(), bSilentMode);
-                            continue;
-                        }
-
                         pCVar->Set(sTemp.c_str());
                     }
                 }
@@ -2500,36 +2239,8 @@ void CXConsole::ExecuteDeferredCommands()
 {
     TDeferredCommandList::iterator it;
 
-    //  const float fontHeight = 10;
-    //  ColorF col = Col_Yellow;
-    //
-    //  float curX = 10;
-    //  float curY = 10;
-
-    //IRenderer* pRenderer = gEnv->pRenderer;
-
-    // Print the deferred messages
-    //  it = m_deferredCommands.begin();
-    //  if (it != m_deferredCommands.end())
-    //  {
-    //      pRenderer->Draw2dLabel( curX, curY += fontHeight, 1.2f, &col.r, false
-    //      , "Pending deferred commands = %d", m_deferredCommands.size() );
-    //  }
-    //
-    //  for (
-    //          ; it != m_deferredCommands.end()
-    //          ; ++it
-    //          )
-    //  {
-    //      pRenderer->Draw2dLabel( curX + fontHeight * 2.0f, curY += fontHeight, 1.2f, &col.r, false
-    //          , "Cmd: %s", it->command.c_str() );
-    //  }
-
     if (m_waitFrames)
     {
-        //      pRenderer->Draw2dLabel( curX, curY += fontHeight, 1.2f, &col.r, false
-        //          , "Waiting frames = %d", m_waitFrames );
-
         --m_waitFrames;
         return;
     }
@@ -2538,10 +2249,6 @@ void CXConsole::ExecuteDeferredCommands()
     {
         if (m_waitSeconds > gEnv->pTimer->GetFrameStartTime())
         {
-            //          pRenderer->Draw2dLabel( curX, curY += fontHeight, 1.2f, &col.r, false
-            //              , "Waiting seconds = %f"
-            //              , m_waitSeconds.GetSeconds() - gEnv->pTimer->GetFrameStartTime().GetSeconds() );
-
             return;
         }
 
@@ -2566,8 +2273,6 @@ void CXConsole::ExecuteDeferredCommands()
             break;
         }
     }
-
-    //m_deferredExecution = false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3143,71 +2848,18 @@ void CXConsole::PostLine(const char* lineOfText, size_t len)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CXConsole::ResetProgressBar(int nProgressBarRange)
+void CXConsole::ResetProgressBar(int)
 {
-    m_nProgressRange = nProgressBarRange;
-    m_nProgress = 0;
-
-    if (nProgressBarRange < 0)
-    {
-        nProgressBarRange = 0;
-    }
-
-    if (!m_nProgressRange)
-    {
-        if (m_nLoadingBackTexID)
-        {
-            if (m_pRenderer)
-            {
-                m_pRenderer->RemoveTexture(m_nLoadingBackTexID);
-            }
-            m_nLoadingBackTexID = -1;
-        }
-    }
-
-    static ICVar* log_Verbosity = GetCVar("log_Verbosity");
-
-    if (log_Verbosity && (!log_Verbosity->GetIVal()))
-    {
-        Clear();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CXConsole::TickProgressBar()
 {
-    if (m_nProgressRange != 0 && m_nProgressRange > m_nProgress)
-    {
-        m_nProgress++;
-        m_pSystem->UpdateLoadingScreen();
-    }
-    if (m_pSystem->GetIRenderer())
-    {
-        m_pSystem->GetIRenderer()->FlushRTCommands(false, false, false); // Try to switch render thread contexts to make RT always busy during loading
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CXConsole::SetLoadingImage(const char* szFilename)
+void CXConsole::SetLoadingImage(const char*)
 {
-    ITexture* pTex = 0;
-
-    pTex = m_pSystem->GetIRenderer()->EF_LoadTexture(szFilename, FT_DONT_STREAM | FT_NOMIPS);
-
-    if (!pTex || (pTex->GetFlags() & FT_FAILED))
-    {
-        SAFE_RELEASE(pTex);
-        pTex = m_pSystem->GetIRenderer()->EF_LoadTexture("Textures/Console/loadscreen_default.dds", FT_DONT_STREAM | FT_NOMIPS);
-    }
-
-    if (pTex)
-    {
-        m_nLoadingBackTexID = pTex->GetTextureID();
-    }
-    else
-    {
-        m_nLoadingBackTexID = -1;
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

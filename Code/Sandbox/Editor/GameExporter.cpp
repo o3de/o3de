@@ -24,7 +24,6 @@
 #include "GameExporter.h"
 #include "GameEngine.h"
 #include "CryEditDoc.h"
-#include "ShaderCache.h"
 #include "UsedResources.h"
 #include "WaitProgress.h"
 #include "Util/CryMemFile.h"
@@ -197,7 +196,6 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
 
             ExportLevelResourceList(sLevelPath);
             ExportLevelUsedResourceList(sLevelPath);
-            ExportLevelShaderCache(sLevelPath);
 
             //////////////////////////////////////////////////////////////////////////
             // End Exporting Game data.
@@ -377,18 +375,6 @@ void CGameExporter::ExportLevelUsedResourceList(const QString& path)
     QString resFile = Path::Make(path, USED_RESOURCE_LIST_FILE);
 
     m_levelPak.m_pakFile.UpdateFile(resFile.toUtf8().data(), memFile, true);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CGameExporter::ExportLevelShaderCache(const QString& path)
-{
-    QString buf;
-    GetIEditor()->GetDocument()->GetShaderCache()->SaveBuffer(buf);
-    CCryMemFile memFile;
-    memFile.Write(buf.toUtf8().data(), buf.toUtf8().length());
-
-    QString filename = Path::Make(path, SHADER_LIST_FILE);
-    m_levelPak.m_pakFile.UpdateFile(filename.toUtf8().data(), memFile, true);
 }
 
 //////////////////////////////////////////////////////////////////////////

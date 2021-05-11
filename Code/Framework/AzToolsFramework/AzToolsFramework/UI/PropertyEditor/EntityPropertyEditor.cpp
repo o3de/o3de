@@ -335,6 +335,7 @@ namespace AzToolsFramework
         m_gui->m_entityDetailsLabel->setObjectName("LabelEntityDetails");
         m_gui->m_entitySearchBox->setReadOnly(false);
         m_gui->m_entitySearchBox->setContextMenuPolicy(Qt::CustomContextMenu);
+        m_gui->m_entitySearchBox->setClearButtonEnabled(true);
         AzQtComponents::LineEdit::applySearchStyle(m_gui->m_entitySearchBox);
 
         AzFramework::ApplicationRequests::Bus::BroadcastResult(
