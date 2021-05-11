@@ -11,7 +11,7 @@
 */
 
 #include <Source/NetworkInput/NetworkInputChild.h>
-#include <Source/NetworkEntity/INetworkEntityManager.h>
+#include <Include/INetworkEntityManager.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 
 namespace Multiplayer

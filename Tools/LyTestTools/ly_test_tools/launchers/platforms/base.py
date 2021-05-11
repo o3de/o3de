@@ -70,7 +70,7 @@ class Launcher(object):
 
         return config_dict
 
-    def setup(self, backupFiles = True, launch_ap = True):
+    def setup(self, backupFiles=True, launch_ap=True):
         """
         Perform setup of this launcher, must be called before launching.
         Subclasses should call its parent's setup() before calling its own code, unless it changes configuration files
@@ -193,7 +193,7 @@ class Launcher(object):
         """
         raise NotImplementedError("There is no binary file for this launcher")
 
-    def start(self, backupFiles = True, launch_ap = True):
+    def start(self, backupFiles=True, launch_ap=None):
         """
         Automatically prepare and launch the application
         When called using "with launcher.start():" it will automatically call stop() when block exits
@@ -203,14 +203,14 @@ class Launcher(object):
         """
         return _Application(self, backupFiles, launch_ap=launch_ap)
 
-    def _start_impl(self, backupFiles = True, launch_ap=True):
+    def _start_impl(self, backupFiles = True, launch_ap=None):
         """
         Implementation of start(), intended to be called via context manager in _Application
 
         :param backupFiles: Bool to backup settings files
         :return None:
         """
-        self.setup(backupFiles, launch_ap=launch_ap)
+        self.setup(backupFiles=backupFiles, launch_ap=launch_ap)
         self.launch()
 
     def stop(self):
@@ -326,7 +326,7 @@ class _Application(object):
     """
     Context-manager for opening an application, enables using both "launcher.start()" and "with launcher.start()"
     """
-    def __init__(self, launcher, backupFiles = True, launch_ap = True):
+    def __init__(self, launcher, backupFiles = True, launch_ap=None):
         """
         Called during both "launcher.start()" and "with launcher.start()"
 
@@ -334,7 +334,7 @@ class _Application(object):
         :return None:
         """
         self.launcher = launcher
-        launcher._start_impl(backupFiles, launch_ap=launch_ap)
+        launcher._start_impl(backupFiles, launch_ap)
 
     def __enter__(self):
         """

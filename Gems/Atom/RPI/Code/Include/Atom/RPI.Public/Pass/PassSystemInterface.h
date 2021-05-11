@@ -65,7 +65,7 @@ namespace AZ
             virtual void ProcessQueuedChanges() = 0;
             
             //! Load pass templates listed in a name-assetid mapping asset 
-            virtual void LoadPassTemplateMappings(const AZStd::string& templateMappingPath) = 0;
+            virtual bool LoadPassTemplateMappings(const AZStd::string& templateMappingPath) = 0;
             
             //! Writes a pass template to a .pass file which can then be used as a pass asset. Useful for
             //! quickly authoring a pass template in code and then outputting it as a pass asset using JSON

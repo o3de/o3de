@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Source/NetworkTime/INetworkTime.h>
+#include <Include/INetworkTime.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/Utilities/NetworkCommon.h>
@@ -87,25 +87,25 @@ namespace Multiplayer
 
         //! Returns what the appropriate current time is for this rewindable property.
         //! @return the appropriate current time is for this rewindable property
-        ApplicationFrameId GetCurrentTimeForProperty() const;
+        HostFrameId GetCurrentTimeForProperty() const;
 
         //! Updates the latest value for this object instance, if frameTime represents a current or future time.
         //! Any attempts to set old values on the object will fail
         //! @param value     the new value to set in the object history
         //! @param frameTime the time to set the value for
-        void SetValueForTime(const BASE_TYPE& value, ApplicationFrameId frameTime);
+        void SetValueForTime(const BASE_TYPE& value, HostFrameId frameTime);
 
         //! Const value accessor, returns the correct value for the provided input time.
         //! @param frameTime the frame time to return the associated value for
         //! @return value given the current input time
-        const BASE_TYPE& GetValueForTime(ApplicationFrameId frameTime) const;
+        const BASE_TYPE& GetValueForTime(HostFrameId frameTime) const;
 
         //! Helper method to compute clamped array index values accounting for the offset head index.
         AZStd::size_t GetOffsetIndex(AZStd::size_t absoluteIndex) const;
 
         AZStd::array<BASE_TYPE, REWIND_SIZE> m_history;
         AzNetworking::ConnectionId m_owningConnectionId = AzNetworking::InvalidConnectionId;
-        ApplicationFrameId m_headTime = ApplicationFrameId{0};
+        HostFrameId m_headTime = HostFrameId{0};
         uint32_t m_headIndex = 0;
     };
 }

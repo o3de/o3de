@@ -3114,7 +3114,7 @@ namespace ScriptCanvas
             /// NOTE: after basic iteration works correctly
             /// \todo when subsequent input (from nodes connected to the break slot) looks up the slot from the node with key or the value,
             /// it is going to have to find the output of the get/key value functions in BOTH the child outs of break and loop
-            /// https://jira.agscollab.com/browse/LY-109862 may be required for this
+            /// LY-109862 may be required for this
 
             ExecutionTreePtr lastExecution = forEachLoopBody;
 
