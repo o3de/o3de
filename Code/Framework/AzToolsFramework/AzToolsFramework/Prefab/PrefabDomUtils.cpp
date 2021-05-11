@@ -61,40 +61,19 @@ namespace AzToolsFramework
 
                 for (const AZ::IO::PathView& pathElement : valuePath)
                 {
-                    if (value->get().IsObject())
+                    if (!value->get().IsObject())
                     {
-                        PrefabDomValue::MemberIterator valueIterator = value->get().FindMember(pathElement.Native().data());
-                        if (valueIterator != value->get().MemberEnd())
-                        {
-                            value = valueIterator->value;
-                        }
-                        else
-                        {
-                            return AZStd::nullopt;
-                        }
+                        return AZStd::nullopt;
                     }
-                    else if (value->get().IsArray())
-                    {
-                        PrefabDomValue::ValueIterator valueIterator = value->get().Begin();
-                        bool found = false;
-                        while (valueIterator != value->get().End())
-                        {
-                            if (valueIterator->IsObject())
-                            {
-                                PrefabDomValue::MemberIterator aliasIterator = value->get().FindMember("Alias");
-                                if (aliasIterator != value->get().MemberEnd() && pathElement.Native().compare(aliasIterator->value.GetString()) == 0)
-                                {
-                                    value = *valueIterator;
-                                    found = true;
-                                    break;
-                                }
-                            }
-                        }
 
-                        if (!found)
-                        {
-                            return AZStd::nullopt;
-                        }
+                    PrefabDomValue::MemberIterator valueIterator = value->get().FindMember(pathElement.Native().data());
+                    if (valueIterator != value->get().MemberEnd())
+                    {
+                        value = valueIterator->value;
+                    }
+                    else
+                    {
+                        return AZStd::nullopt;
                     }
                 }
 

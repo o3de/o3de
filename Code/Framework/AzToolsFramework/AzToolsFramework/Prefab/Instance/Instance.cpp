@@ -489,8 +489,6 @@ namespace AzToolsFramework
                 currentInstance = currentInstance->m_parent;
             }
 
-            //pathOfInstances.emplace_back(currentInstance);
-
             for (auto instanceIter = pathOfInstances.rbegin(); instanceIter != pathOfInstances.rend(); ++instanceIter)
             {
                 aliasPathResult.Append("Instances");
