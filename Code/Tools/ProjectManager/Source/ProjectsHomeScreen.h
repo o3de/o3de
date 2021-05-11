@@ -27,7 +27,7 @@ namespace O3DE::ProjectManager
     {
 
     public:
-        explicit ProjectsHomeScreen(QWidget* parent);
+        explicit ProjectsHomeScreen(QWidget* parent = nullptr);
         ~ProjectsHomeScreen() = default;
 
     protected slots:

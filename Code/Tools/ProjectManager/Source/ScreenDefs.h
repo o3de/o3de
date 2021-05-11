@@ -13,9 +13,10 @@
 
 namespace O3DE::ProjectManager
 {
-    enum class ProjectManagerScreen
+    enum ProjectManagerScreen
     {
-        Blank,
+        Invalid = -1,
+        Empty,
         FirstTimeUse,
         NewProjectSettings,
         GemCatalog,

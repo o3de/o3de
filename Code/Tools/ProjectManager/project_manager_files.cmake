@@ -15,8 +15,9 @@ set(FILES
     Source/ScreenDefs.h
     Source/ScreenFactory.h
     Source/ScreenFactory.cpp
+    Source/ScreensCtrl.h
+    Source/ScreensCtrl.cpp
     Source/ScreenWidget.h
-    Source/ProjectSettingsScreenWidget.h
     Source/FirstTimeUseScreen.h
     Source/FirstTimeUseScreen.cpp
     Source/FirstTimeUseScreen.ui

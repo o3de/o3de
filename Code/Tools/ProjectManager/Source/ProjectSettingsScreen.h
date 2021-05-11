@@ -26,7 +26,7 @@ namespace O3DE::ProjectManager
         : public ScreenWidget
     {
     public:
-        explicit ProjectSettingsScreen(QWidget* parent);
+        explicit ProjectSettingsScreen(QWidget* parent = nullptr);
         ~ProjectSettingsScreen() = default;
 
     protected slots:

@@ -12,10 +12,9 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <ScreenDefs.h>
-
 #include <QMainWindow>
-#include <QStackedWidget>
+
+#include <ScreensCtrl.h>
 
 #include <AzCore/IO/Path/Path_fwd.h>
 #endif
@@ -36,22 +35,13 @@ namespace O3DE::ProjectManager
         explicit ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& engineRootPath);
         ~ProjectManagerWindow();
 
-        void BuildScreens();
-        QStackedWidget* GetScreenStack();
-
-    public slots:
-        void ChangeToScreen(ProjectManagerScreen screen);
-        void ResetScreen(ProjectManagerScreen screen);
-
-    protected:
-        void ConnectSlotsAndSignals();
-
     protected slots:
         void HandleProjectsMenu();
         void HandleEngineMenu();
 
     private:
         QScopedPointer<Ui::ProjectManagerWindowClass> m_ui;
+        ScreensCtrl* m_screensCtrl;
     };
 
 } // namespace O3DE::ProjectManager

@@ -28,6 +28,9 @@ namespace O3DE::ProjectManager
     {
         m_ui->setupUi(this);
 
+        m_screensCtrl = new ScreensCtrl();
+        m_ui->verticalLayout->addWidget(m_screensCtrl);
+
         QObject::connect(m_ui->projectsMenu, &QMenu::aboutToShow, this, &ProjectManagerWindow::HandleProjectsMenu);
         QObject::connect(m_ui->engineMenu, &QMenu::aboutToShow, this, &ProjectManagerWindow::HandleEngineMenu);
 
@@ -38,70 +41,30 @@ namespace O3DE::ProjectManager
 
         AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("projectlauncherwindow:ProjectManagerWindow.qss"));
 
-        BuildScreens();
-
-        ChangeToScreen(ProjectManagerScreen::FirstTimeUse);
+        QVector<ProjectManagerScreen> screenEnums =
+        {
+            ProjectManagerScreen::FirstTimeUse,
+            ProjectManagerScreen::NewProjectSettings,
+            ProjectManagerScreen::GemCatalog,
+            ProjectManagerScreen::ProjectsHome,
+            ProjectManagerScreen::ProjectSettings,
+            ProjectManagerScreen::EngineSettings
+        };
+        m_screensCtrl->BuildScreens(screenEnums);
+        m_screensCtrl->ForceChangeToScreen(ProjectManagerScreen::FirstTimeUse);
     }
 
     ProjectManagerWindow::~ProjectManagerWindow()
     {
     }
 
-    void ProjectManagerWindow::BuildScreens()
-    {
-        // Basically just iterate over the ProjectManagerScreen enum creating each screen
-        // Could add some fancy to do this but there are few screens right now
-
-        ResetScreen(ProjectManagerScreen::FirstTimeUse);
-        ResetScreen(ProjectManagerScreen::NewProjectSettings);
-        ResetScreen(ProjectManagerScreen::GemCatalog);
-        ResetScreen(ProjectManagerScreen::ProjectsHome);
-        ResetScreen(ProjectManagerScreen::ProjectSettings);
-        ResetScreen(ProjectManagerScreen::EngineSettings);
-    }
-
-    QStackedWidget* ProjectManagerWindow::GetScreenStack()
-    {
-        return m_ui->stackedScreens;
-    }
-
-    void ProjectManagerWindow::ChangeToScreen(ProjectManagerScreen screen)
-    {
-        int index = aznumeric_cast<int, ProjectManagerScreen>(screen);
-        m_ui->stackedScreens->setCurrentIndex(index);
-    }
-
-    void ProjectManagerWindow::ResetScreen(ProjectManagerScreen screen)
-    {
-        int index = aznumeric_cast<int, ProjectManagerScreen>(screen);
-
-        // Fine the old screen if it exists and get rid of it so we can start fresh
-        QWidget* oldScreen = m_ui->stackedScreens->widget(index);
-
-        if (oldScreen)
-        {
-            m_ui->stackedScreens->removeWidget(oldScreen);
-            oldScreen->deleteLater();
-        }
-
-        // Add new screen
-        ScreenWidget* newScreen = BuildScreen(this, screen);
-        m_ui->stackedScreens->insertWidget(index, newScreen);
-
-        QObject::connect(newScreen, &ScreenWidget::ChangeScreenRequest, this, &ProjectManagerWindow::ChangeToScreen);
-    }
-
-    void ProjectManagerWindow::ConnectSlotsAndSignals()
-    {
-    }
-
     void ProjectManagerWindow::HandleProjectsMenu()
     {
-        ChangeToScreen(ProjectManagerScreen::ProjectsHome);
+        m_screensCtrl->ChangeToScreen(ProjectManagerScreen::ProjectsHome);
     }
     void ProjectManagerWindow::HandleEngineMenu()
     {
-        ChangeToScreen(ProjectManagerScreen::EngineSettings);
+        m_screensCtrl->ChangeToScreen(ProjectManagerScreen::EngineSettings);
     }
 
 } // namespace O3DE::ProjectManager

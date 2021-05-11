@@ -28,16 +28,23 @@ namespace O3DE::ProjectManager
         {
         case (ProjectManagerScreen::FirstTimeUse):
             newScreen = new FirstTimeUseScreen(parent);
+            break;
         case (ProjectManagerScreen::NewProjectSettings):
             newScreen = new NewProjectSettingsScreen(parent);
+            break;
         case (ProjectManagerScreen::GemCatalog):
             newScreen = new GemCatalogScreen(parent);
+            break;
         case (ProjectManagerScreen::ProjectsHome):
             newScreen = new ProjectsHomeScreen(parent);
+            break;
         case (ProjectManagerScreen::ProjectSettings):
             newScreen = new ProjectSettingsScreen(parent);
+            break;
         case (ProjectManagerScreen::EngineSettings):
             newScreen = new EngineSettingsScreen(parent);
+            break;
+        case (ProjectManagerScreen::Empty):
         default:
             newScreen = new ScreenWidget(parent);
         }

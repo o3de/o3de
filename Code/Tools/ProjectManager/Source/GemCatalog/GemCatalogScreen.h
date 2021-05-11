@@ -23,7 +23,7 @@ namespace O3DE::ProjectManager
         : public ScreenWidget
     {
     public:
-        explicit GemCatalogScreen(QWidget* parent);
+        explicit GemCatalogScreen(QWidget* parent = nullptr);
         ~GemCatalogScreen() = default;
 
     protected slots:

@@ -26,7 +26,7 @@ namespace O3DE::ProjectManager
         : public ScreenWidget
     {
     public:
-        explicit FirstTimeUseScreen(QWidget* parent);
+        explicit FirstTimeUseScreen(QWidget* parent = nullptr);
         ~FirstTimeUseScreen() = default;
 
     protected slots:

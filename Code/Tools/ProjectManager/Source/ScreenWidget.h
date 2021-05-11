@@ -22,15 +22,23 @@ namespace O3DE::ProjectManager
     class ScreenWidget
         : public QWidget
     {
+        Q_OBJECT
+
     public:
-        explicit ScreenWidget(QWidget* parent)
+        explicit ScreenWidget(QWidget* parent = nullptr)
             : QWidget(parent)
         {
         }
         ~ScreenWidget() = default;
 
+        virtual bool IsReadyForNextScreen()
+        {
+            return true;
+        }
+
     signals:
         void ChangeScreenRequest(ProjectManagerScreen screen);
+        void GoBackScreenRequest();
     };
 
 } // namespace O3DE::ProjectManager
