@@ -29,6 +29,3 @@ choco install corretto8jdk -y --ia INSTALLDIR="c:\jdk8" # Custom directory to ha
 
 # Install CMake
 choco install cmake -y --installargs 'ADD_CMAKE_TO_PATH=System'
-
-# Install Gradle (for Android projects)
-choco install -y gradle
