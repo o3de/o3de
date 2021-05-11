@@ -57,12 +57,10 @@ namespace AZ
             {
             }
 
+            // [To Do] Adi: remove the following two methods since they are no longer required - test with RHI validation
             void HairPPLLRasterPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
             {
                 RasterPass::SetupFrameGraphDependencies(frameGraph);
-
- //               AZ_Error("Hair Gem", m_shaderResourceGroup && m_featureProcessor,
- //                   "HairPPLLRasterPass::SetupFrameGraphDependencies - m_shaderResourceGroup or Feature processor not initialized");
             }
 
             void HairPPLLRasterPass::OnBuildAttachmentsFinishedInternal()
@@ -93,13 +91,12 @@ namespace AZ
 
                 if (!m_featureProcessor || !m_shaderResourceGroup)
                 {
-//                    AZ_Error("Hair Gem", false, "HairPPLLRasterPass: Could not set per pass srg resources: feature processor OR m_shaderResourceGroup not ready yet");
                     return;
                 }
 
                 // Input
                 // This is the buffer that is shared between all objects and dispatches and contains
-                // the dynamic data that can be changed between passes.
+                // the dynamic data that can change between passes.
                 // NO need to define it - this is already defined by the Compute pass
 //                AttachBufferToSlot(Name{ "SkinnedHairSharedBuffer" }, m_featureProcessor->GetSharedBuffer());
 
@@ -236,16 +233,8 @@ namespace AZ
                 return true;
             }
 
-            
-            void HairPPLLRasterPass::CompileResources(const RHI::FrameGraphCompileContext& context)
+            void HairPPLLRasterPass::FrameBeginInternal(FramePrepareParams params)
             {
-                AZ_PROFILE_FUNCTION(Debug::ProfileCategory::Hair);
-
-                if (!m_featureProcessor)
-                {
-                    return;
-                }
-
                 {
                     if (auto ppllCounterBuffer = m_featureProcessor->GetPerPixelCounterBuffer())
                     {   // This is crucial to be able to count properly from 0. Currently trying to
@@ -255,6 +244,19 @@ namespace AZ
                         bool updateSuccess = ppllCounterBuffer->UpdateData(&sourceData, sizeof(uint32_t), 0);
                         AZ_Warning("Hair Gem", updateSuccess, "HairPPLLRasterPass::CompileResources could not reset PPLL counter");
                     }
+                }
+
+                RPI::RasterPass::FrameBeginInternal(params);
+            }
+
+            // [To Do] Adi: since it no longer have special purpose, remove and test
+            void HairPPLLRasterPass::CompileResources(const RHI::FrameGraphCompileContext& context)
+            {
+                AZ_PROFILE_FUNCTION(Debug::ProfileCategory::Hair);
+
+                if (!m_featureProcessor)
+                {
+                    return;
                 }
 
                 // Compilation of remaining srgs will be done by the parent class 

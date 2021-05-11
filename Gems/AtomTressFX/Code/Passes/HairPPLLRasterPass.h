@@ -85,6 +85,7 @@ namespace AZ
                 // Pass behavior overrides
                 void BuildAttachmentsInternal() override;
                 void OnBuildAttachmentsFinishedInternal() override;
+                void FrameBeginInternal(FramePrepareParams params) override;
                 void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
 
                 // Scope producer functions...

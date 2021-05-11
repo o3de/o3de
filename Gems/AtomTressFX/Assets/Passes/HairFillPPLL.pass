@@ -77,12 +77,8 @@
                     },
                     "ImageDescriptor": {
                         "Format": "R32_UINT",
-                        "SharedQueueMask": "Graphics"
-                    },
-                    "ImageDescriptor": {
-                        "BindFlags": [
-                            "ShaderReadWrite"
-                        ]
+                        "SharedQueueMask": "Graphics",
+                        "BindFlags": "ShaderReadWrite"
                     }
                 }
             ],

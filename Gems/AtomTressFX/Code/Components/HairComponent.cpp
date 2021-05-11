@@ -14,19 +14,8 @@
 
 #include <AzFramework/Components/TransformComponent.h>
 
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
-/*
-#include <Integration/ActorComponentBus.h>
-#include <Integration/Components/ActorComponent.h>
-
-#include <EMotionFX/Source/ActorInstance.h>
-*/
-// Hair specific
-//#include <Code/src/TressFX/TressFXAsset.h>
-//#include <TressFX/TressFXSettings.h>
-
 #include <Components/HairComponent.h>
-//#include <Rendering/HairRenderObject.h>
+
 #include <Rendering/HairFeatureProcessor.h>
 
 #pragma optimize("", off)

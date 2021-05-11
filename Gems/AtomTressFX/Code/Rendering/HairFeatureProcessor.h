@@ -131,7 +131,7 @@ namespace AZ
 
                 bool InitPPLLFillPass();
                 bool InitPPLLResolvePass();
-                bool InitComputePass(const Name& passName);
+                bool InitComputePass(const Name& passName, bool allowIterations = false);
 
                 void BuildDispatchItems(Data::Instance<HairRenderObject> renderObject);
 
