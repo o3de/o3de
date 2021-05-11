@@ -9,6 +9,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(GEM_DEPENDENCIES
-    Gem::QtForPython.Editor
+set(LY_RUNTIME_DEPENDENCIES
+    Gem::Atom_RHI_Vulkan.Private
+    Gem::Atom_RHI_DX12.Private
+    Gem::Atom_RHI_Null.Private
 )

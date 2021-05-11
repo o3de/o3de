@@ -9,6 +9,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
+ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
+
 ly_add_target(
     NAME Atom_AtomBridge.Static STATIC
     NAMESPACE Gem
@@ -41,12 +43,26 @@ ly_add_target(
             Source
         PUBLIC
             Include
+    PLATFORM_INCLUDE_FILES
+        ${pal_dir}/additional_${PAL_PLATFORM_NAME_LOWERCASE}_runtime_deps.cmake
     COMPILE_DEFINITIONS
         PRIVATE
             ENABLE_ATOM_DEBUG_DISPLAY=1
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::Atom_AtomBridge.Static
+    RUNTIME_DEPENDENCIES
+        Gem::Atom_RHI.Private
+        Gem::Atom_RPI.Private
+        Gem::Atom_RHI_Null.Private
+        Gem::Atom_Feature_Common
+        Gem::Atom_Bootstrap
+        Gem::Atom_Component_DebugCamera
+        Gem::AtomImGuiTools
+        Gem::AtomLyIntegration_CommonFeatures
+        Gem::EMotionFX_Atom
+        Gem::ImguiAtom
+        Gem::AtomFont
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -60,6 +76,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Source
             PUBLIC
                 Include
+        PLATFORM_INCLUDE_FILES
+           ${pal_dir}/additional_${PAL_PLATFORM_NAME_LOWERCASE}_tool_deps.cmake
         COMPILE_DEFINITIONS
             PRIVATE
                 EDITOR
@@ -68,5 +86,23 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AssetBuilderSDK
                 Gem::Atom_Utils.Static
                 Gem::Atom_AtomBridge.Static
+        RUNTIME_DEPENDENCIES
+            Gem::Atom_RHI.Private
+            Gem::Atom_RPI.Builders
+            Gem::Atom_RPI.Editor
+            Gem::Atom_RHI_Null.Private
+            Gem::Atom_RHI_Null.Builders
+            Gem::Atom_Feature_Common.Builders
+            Gem::Atom_Feature_Common.Editor
+            Gem::Atom_Bootstrap
+            Gem::Atom_Asset_Shader.Builders
+            Gem::Atom_Component_DebugCamera
+            Gem::AtomImGuiTools
+            Gem::AtomLyIntegration_CommonFeatures.Editor
+            Gem::EMotionFX_Atom.Editor
+            Gem::ImageProcessingAtom.Editor
+            Gem::ImguiAtom
+            Gem::AtomFont
+            Gem::AtomToolsFramework.Editor
     )
 endif()
