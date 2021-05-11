@@ -38,6 +38,7 @@ namespace AzToolsFramework
             */
             PrefabDomValueReference FindPrefabDomValue(PrefabDomValue& parentValue, const char* valueName);
             PrefabDomValueConstReference FindPrefabDomValue(const PrefabDomValue& parentValue, const char* valueName);
+            PrefabDomValueReference FindPrefabDomValue(PrefabDomValue& parentValue, AZ::IO::Path valuePath);
 
             /**
             * Stores a valid Prefab Instance within a Prefab Dom. Useful for generating Templates
