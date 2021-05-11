@@ -858,7 +858,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
         prev_sys_float_exceptions = g_cvars.sys_float_exceptions;
 
         EnableFloatExceptions(g_cvars.sys_float_exceptions);
-        UpdateFPExceptionsMaskForThreads();
     }
 #endif //EXCLUDE_UPDATE_ON_CONSOLE
        //////////////////////////////////////////////////////////////////////////
