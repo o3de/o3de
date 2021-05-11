@@ -10,7 +10,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: C1702824
 Test Case Title: Docking
-URLs of the test case: https://testrail.agscollab.com/index.php?/cases/view/1702824
 """
 
 
