@@ -129,7 +129,7 @@ namespace AZ
             if (it != inputValue.MemberEnd())
             {
                 ScopedContextPath subPath(context, "assetId");
-                result = ContinueLoading(&id, azrtti_typeid<AssetId>(), it->value, context);
+                result.Combine(ContinueLoading(&id, azrtti_typeid<AssetId>(), it->value, context));
                 if (!id.m_guid.IsNull())
                 {
                     *instance = AssetManager::Instance().FindOrCreateAsset(id, instance->GetType(), instance->GetAutoLoadBehavior());
