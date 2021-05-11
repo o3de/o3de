@@ -752,7 +752,14 @@ namespace PhysX
 
     bool EditorShapeColliderComponent::IsPhysicsEnabled() const
     {
-        return m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle;
+        if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
+        {
+            if (auto* body = m_sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_editorBodyHandle))
+            {
+                return body->m_simulating;
+            }
+        }
+        return false;
     }
 
     AZ::Aabb EditorShapeColliderComponent::GetAabb() const
