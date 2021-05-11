@@ -77,7 +77,7 @@ unsigned int g_EnableMultipleAssert = 0;//set to something else than 0 if to ena
 #endif
 
 #if defined(APPLE)
-    #include "../CrySystem/SystemUtilsApple.h"
+    #include <AzFramework/Utils/SystemUtilsApple.h>
 #endif
 
 #include "StringUtils.h"

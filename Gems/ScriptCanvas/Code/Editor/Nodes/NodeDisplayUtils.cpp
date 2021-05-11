@@ -327,12 +327,14 @@ namespace ScriptCanvasEditor::Nodes
             contextGroup = TranslationContextGroup::EbusSender;
             break;
         case ScriptCanvas::MethodType::Member:
+        case ScriptCanvas::MethodType::Getter:
+        case ScriptCanvas::MethodType::Setter:
         case ScriptCanvas::MethodType::Free:
             graphCanvasEntity->CreateComponent<ClassMethodNodeDescriptorComponent>();
             contextGroup = TranslationContextGroup::ClassMethod;
             break;
         default:
-            AZ_Error("ScriptCanvas", false, "Invalid method node type, node creation failed. This node nodes to be deleted.");
+            AZ_Error("ScriptCanvas", false, "Invalid method node type, node creation failed. This node needs to be deleted.");
             break;
         }
 

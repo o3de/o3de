@@ -37,6 +37,7 @@ namespace Multiplayer
         using MetricRingbuffer = AZStd::array<uint64_t, RingbufferSamples>;
         struct Metric
         {
+            Metric();
             uint64_t m_totalCalls = 0;
             uint64_t m_totalBytes = 0;
             MetricRingbuffer m_callHistory;

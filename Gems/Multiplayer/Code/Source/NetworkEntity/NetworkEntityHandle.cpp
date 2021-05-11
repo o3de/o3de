@@ -10,7 +10,7 @@
 *
 */
 
-#include <Source/NetworkEntity/NetworkEntityHandle.h>
+#include <Include/NetworkEntityHandle.h>
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
 #include <Source/Components/NetBindComponent.h>
 #include <Source/Components/MultiplayerController.h>

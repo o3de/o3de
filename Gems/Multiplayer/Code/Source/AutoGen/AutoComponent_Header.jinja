@@ -221,11 +221,11 @@ AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }
 #include <AzCore/EBus/Event.h>
 #include <AzCore/EBus/ScheduledEvent.h>
 #include <AzNetworking/DataStructures/FixedSizeBitsetView.h>
-#include <Source/NetworkEntity/NetworkEntityHandle.h>
+#include <Include/IMultiplayerComponentInput.h>
+#include <Include/NetworkEntityHandle.h>
 #include <Source/NetworkEntity/EntityReplication/ReplicationRecord.h>
 #include <Source/Components/MultiplayerComponent.h>
 #include <Source/Components/MultiplayerController.h>
-#include <Source/NetworkInput/IMultiplayerComponentInput.h>
 #include <Source/NetworkTime/RewindableObject.h>
 #include <Include/MultiplayerTypes.h>
 {% call(Include) AutoComponentMacros.ParseIncludes(Component) %}
@@ -435,7 +435,7 @@ namespace {{ Component.attrib['Namespace'] }}
         //! MultiplayerComponent interface
         //! @{
         NetComponentId GetNetComponentId() const override;
-        bool HandleRpcMessage(Multiplayer::NetEntityRole remoteRole, Multiplayer::NetworkEntityRpcMessage& rpcMessage) override;
+        bool HandleRpcMessage(AzNetworking::IConnection* invokingConnection, Multiplayer::NetEntityRole remoteRole, Multiplayer::NetworkEntityRpcMessage& rpcMessage) override;
         bool SerializeStateDeltaMessage(Multiplayer::ReplicationRecord& replicationRecord, AzNetworking::ISerializer& serializer) override;
         void NotifyStateDeltaChanges(Multiplayer::ReplicationRecord& replicationRecord) override;
         bool HasController() const override;

@@ -514,7 +514,7 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     /*
      * The following block of code is part of the feature "Isolation Mode" and is temporarily
      * disabled for 1.10 release.
-     * Jira: https://jira.agscollab.com/browse/LY-49532
+     * Jira: LY-49532
 
     // Isolate Selected
     QAction* isolateSelectedAction = editMenu->addAction(tr("Isolate Selected"));
@@ -727,9 +727,6 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
 #endif
 
     viewportViewsMenuWrapper.AddAction(ID_WIREFRAME);
-    viewportViewsMenuWrapper.AddSeparator();
-
-    viewportViewsMenuWrapper.AddAction(ID_VIEW_GRIDSETTINGS);
     viewportViewsMenuWrapper.AddSeparator();
 
     if (CViewManager::IsMultiViewportEnabled())

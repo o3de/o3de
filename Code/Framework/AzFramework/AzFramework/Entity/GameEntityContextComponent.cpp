@@ -93,6 +93,8 @@ namespace AzFramework
         InitContext();
 
         GameEntityContextRequestBus::Handler::BusConnect();
+
+        m_entityVisibilityBoundsUnionSystem.Connect();
     }
 
     //=========================================================================
@@ -100,6 +102,8 @@ namespace AzFramework
     //=========================================================================
     void GameEntityContextComponent::Deactivate()
     {
+        m_entityVisibilityBoundsUnionSystem.Disconnect();
+
         GameEntityContextRequestBus::Handler::BusDisconnect();
 
         DestroyContext();
