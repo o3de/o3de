@@ -452,6 +452,15 @@ void EditorViewportWidget::Update()
         return;
     }
 
+    static bool sentOnWindowCreated = false;
+    if (!sentOnWindowCreated && windowHandle()->isActive())
+    {
+        sentOnWindowCreated = true;
+        AzFramework::WindowSystemNotificationBus::Broadcast(
+            &AzFramework::WindowSystemNotificationBus::Handler::OnWindowCreated,
+            reinterpret_cast<AzFramework::NativeWindowHandle>(winId()));
+    }
+
     m_updatingCameraPosition = true;
     auto transform = LYTransformToAZTransform(m_Camera.GetMatrix());
     m_renderViewport->GetViewportContext()->SetCameraTransform(transform);
