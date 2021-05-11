@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/Memory/Memory.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 
 namespace AZ
@@ -36,6 +37,19 @@ namespace AZ
 
         private:
             JsonSerializationResult::Result LoadAsset(void* outputValue, const rapidjson::Value& inputValue, JsonDeserializerContext& context);
+        };
+
+        class SerializedAssetTracker
+        {
+        public:
+            AZ_RTTI(SerializedAssetTracker, "{1E067091-8C0A-44B1-A455-6E97663F6963}");
+
+            void AddAsset(Asset<AssetData>& asset);
+            AZStd::vector<Asset<AssetData>>& GetTrackedAssets();
+            const AZStd::vector<Asset<AssetData>>& GetTrackedAssets() const;
+
+        private:
+            AZStd::vector<Asset<AssetData>> m_serializedAssets;
         };
     } // namespace Data
 } // namespace AZ

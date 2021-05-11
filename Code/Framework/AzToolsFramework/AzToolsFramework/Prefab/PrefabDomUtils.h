@@ -43,7 +43,7 @@ namespace AzToolsFramework
             /**
             * Stores a valid Prefab Instance within a Prefab Dom. Useful for generating Templates
             * @param instance The instance to store
-            * @param prefabDom the prefabDom that will be used to store the Instance data
+            * @param prefabDom The prefabDom that will be used to store the Instance data
             * @return bool on whether the operation succeeded
             */
             bool StoreInstanceInPrefabDom(const Instance& instance, PrefabDom& prefabDom);
@@ -61,8 +61,8 @@ namespace AzToolsFramework
             /**
             * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.
             * @param instance The Instance to load.
-            * @param prefabDom the prefabDom that will be used to load the Instance data.
-            * @param shouldClearContainers whether to clear containers in Instance while loading.
+            * @param prefabDom The prefabDom that will be used to load the Instance data.
+            * @param shouldClearContainers Whether to clear containers in Instance while loading.
             * @return bool on whether the operation succeeded.
             */
             bool LoadInstanceFromPrefabDom(
@@ -72,8 +72,8 @@ namespace AzToolsFramework
             * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.
             * @param instance The Instance to load.
             * @param referencedAssets AZ::Assets discovered during json load are added to this list
-            * @param prefabDom the prefabDom that will be used to load the Instance data.
-            * @param shouldClearContainers whether to clear containers in Instance while loading.
+            * @param prefabDom The prefabDom that will be used to load the Instance data.
+            * @param shouldClearContainers Whether to clear containers in Instance while loading.
             * @return bool on whether the operation succeeded.
             */
             bool LoadInstanceFromPrefabDom(
@@ -85,8 +85,8 @@ namespace AzToolsFramework
             * @param instance The Instance to load.
             * @param newlyAddedEntities The new instances added during deserializing the instance. These are the entities found
             *       in the prefabDom.
-            * @param prefabDom the prefabDom that will be used to load the Instance data.
-            * @param shouldClearContainers whether to clear containers in Instance while loading.
+            * @param prefabDom The prefabDom that will be used to load the Instance data.
+            * @param shouldClearContainers Whether to clear containers in Instance while loading.
             * @return bool on whether the operation succeeded.
             */
             bool LoadInstanceFromPrefabDom(

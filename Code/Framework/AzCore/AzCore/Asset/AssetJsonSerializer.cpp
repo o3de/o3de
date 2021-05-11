@@ -12,7 +12,6 @@
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetJsonSerializer.h>
-#include <AzCore/Asset/SerializedAssetTracker.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/StackedString.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -112,8 +111,8 @@ namespace AZ
             AssetId id;
             JSR::ResultCode result(JSR::Tasks::ReadField);
 
-            SerializedAssetTracker** assetIdTracker =
-                context.GetMetadata().Find<SerializedAssetTracker*>();
+            SerializedAssetTracker* assetTracker =
+                context.GetMetadata().Find<SerializedAssetTracker>();
 
             {
                 Data::AssetLoadBehavior loadBehavior = instance->GetAutoLoadBehavior();
@@ -168,9 +167,9 @@ namespace AZ
                     "The asset hint is missing for Asset<T>, so it will be left empty."));
             }
 
-            if (assetIdTracker && *assetIdTracker)
+            if (assetTracker)
             {
-                (*assetIdTracker)->AddAsset(*instance);
+                assetTracker->AddAsset(*instance);
             }
 
             bool success = result.GetOutcome() <= JSR::Outcomes::PartialSkip;
@@ -180,6 +179,21 @@ namespace AZ
                 defaulted ? "A default id was provided for Asset<T>, so no instance could be created." :
                 "Not enough information was available to create an instance of Asset<T> or data was corrupted.";
             return context.Report(result, message);
+        }
+
+        void SerializedAssetTracker::AddAsset(Asset<AssetData>& asset)
+        {
+            m_serializedAssets.emplace_back(asset);
+        }
+
+        const AZStd::vector<Asset<AssetData>>& SerializedAssetTracker::GetTrackedAssets() const
+        {
+            return m_serializedAssets;
+        }
+
+        AZStd::vector<Asset<AssetData>>& SerializedAssetTracker::GetTrackedAssets()
+        {
+            return m_serializedAssets;
         }
     } // namespace Data
 } // namespace AZ

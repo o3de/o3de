@@ -35,8 +35,6 @@ set(FILES
     Asset/AssetSerializer.h
     Asset/AssetTypeInfoBus.h
     Asset/AssetInternal/WeakAsset.h
-    Asset/SerializedAssetTracker.cpp
-    Asset/SerializedAssetTracker.h
     Casting/lossy_cast.h
     Casting/numeric_cast.h
     Component/Component.cpp
