@@ -261,21 +261,15 @@ namespace AZ::Prefab
         if (context.HasCompletedSuccessfully())
         {
             AZ_TracePrintf("Prefab Builder", "Finalizing products.\n");
-            if (!context.HasPrefabs())
+
+            if (StoreProducts(tempDirPath, context.GetProcessedObjects(),
+                context.GetRegisteredProductAssetDependencies(), jobProducts))
             {
-                if (StoreProducts(tempDirPath, context.GetProcessedObjects(),
-                    context.GetRegisteredProductAssetDependencies(), jobProducts))
-                {
-                    return true;
-                }
-                else
-                {
-                    AZ_Error("Prefab Builder", false, "One or more objects couldn't be committed to disk.");
-                }
+                return true;
             }
             else
             {
-                AZ_Error("Prefab Builder", false, "After processing there were still Prefabs left.");
+                AZ_Error("Prefab Builder", false, "One or more objects couldn't be committed to disk.");
             }
         }
         else
