@@ -166,6 +166,8 @@ namespace AZ
             m_features.m_rayTracing = false;
 #endif
 
+            m_features.m_unboundedArrays = true;
+
             m_limits.m_maxImageDimension1D = D3D12_REQ_TEXTURE1D_U_DIMENSION;
             m_limits.m_maxImageDimension2D = D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
             m_limits.m_maxImageDimension3D = D3D12_REQ_TEXTURE3D_U_V_OR_W_DIMENSION;
