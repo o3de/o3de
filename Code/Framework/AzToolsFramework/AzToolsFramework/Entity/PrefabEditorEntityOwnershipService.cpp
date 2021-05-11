@@ -321,6 +321,12 @@ namespace AzToolsFramework
         return *m_rootInstance;
     }
 
+    Prefab::TemplateId PrefabEditorEntityOwnershipService::GetRootPrefabInstanceTemplateId()
+    {
+        AZ_Assert(m_rootInstance, "A valid root prefab instance couldn't be found in PrefabEditorEntityOwnershipService.");
+        return m_rootInstance.get()->GetTemplateId();
+    }
+
     void PrefabEditorEntityOwnershipService::OnEntityRemoved(AZ::EntityId entityId)
     {
         AzFramework::SliceEntityRequestBus::MultiHandler::BusDisconnect(entityId);

@@ -45,6 +45,7 @@ namespace AzToolsFramework
             AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder = AZStd::nullopt) = 0;
 
         virtual Prefab::InstanceOptionalReference GetRootPrefabInstance() = 0;
+        virtual Prefab::TemplateId GetRootPrefabInstanceTemplateId() = 0;
 
         virtual bool LoadFromStream(AZ::IO::GenericStream& stream, AZStd::string_view filename) = 0;
         virtual bool SaveToStream(AZ::IO::GenericStream& stream, AZStd::string_view filename) = 0;

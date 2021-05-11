@@ -195,6 +195,7 @@ namespace AzToolsFramework
             AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder) override;
 
         Prefab::InstanceOptionalReference GetRootPrefabInstance() override;
+        Prefab::TemplateId GetRootPrefabInstanceTemplateId() override;
         //////////////////////////////////////////////////////////////////////////
 
         void OnEntityRemoved(AZ::EntityId entityId);
