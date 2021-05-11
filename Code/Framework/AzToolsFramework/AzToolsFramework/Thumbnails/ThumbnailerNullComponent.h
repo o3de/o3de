@@ -15,7 +15,11 @@
 #include <AzCore/Component/Component.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 
-namespace LUAEditor
+// ThumbnailerNullComponent is an alternative to ThumbnailerComponent that can be used by tools that don't use Qt.
+// It doesn't do anything (hence "null"), but it allows the system and editor components that rely on the ThumbnailService
+// to start up and function.
+
+namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
@@ -53,4 +57,4 @@ namespace LUAEditor
             AzToolsFramework::Thumbnailer::SharedThumbnail m_nullThumbnail;
         };
     } // Thumbnailer
-} // namespace LUAEditor
+} // namespace AzToolsFramework
