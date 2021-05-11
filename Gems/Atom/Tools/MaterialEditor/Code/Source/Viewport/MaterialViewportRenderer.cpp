@@ -41,6 +41,7 @@
 #include <Atom/Feature/Utils/ModelPreset.h>
 #include <Atom/Viewport/MaterialViewportRequestBus.h>
 #include <Atom/Viewport/PerformanceMonitorRequestBus.h>
+#include <Atom/Viewport/MaterialViewportSettings.h>
 
 #include <AtomLyIntegration/CommonFeatures/Grid/GridComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/Grid/GridComponentConfig.h>
@@ -92,6 +93,7 @@ namespace MaterialEditor
         auto sceneSystem = AzFramework::SceneSystemInterface::Get();
         AZ_Assert(sceneSystem, "MaterialViewportRenderer was unable to get the scene system during construction.");
         AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
+
         // This should never happen unless scene creation has changed.
         AZ_Assert(mainScene, "Main scenes missing during system component initialization");
         mainScene->SetSubsystem(m_scene);
@@ -138,7 +140,6 @@ namespace MaterialEditor
         m_renderPipeline->SetDefaultViewFromEntity(m_cameraEntity->GetId());
 
         // Configure tone mapper
-
         AzFramework::EntityContextRequestBus::EventResult(m_postProcessEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "postProcessEntity");
         AZ_Assert(m_postProcessEntity != nullptr, "Failed to create post process entity.");
 
@@ -154,13 +155,11 @@ namespace MaterialEditor
         m_displayMapperFeatureProcessor = m_scene->GetFeatureProcessor<Render::DisplayMapperFeatureProcessorInterface>();
 
         // Init Skybox
-
         m_skyboxFeatureProcessor = m_scene->GetFeatureProcessor<AZ::Render::SkyBoxFeatureProcessorInterface>();
         m_skyboxFeatureProcessor->Enable(true);
         m_skyboxFeatureProcessor->SetSkyboxMode(AZ::Render::SkyBoxMode::Cubemap);
 
         // Create IBL
-
         AzFramework::EntityContextRequestBus::EventResult(m_iblEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "IblEntity");
         AZ_Assert(m_iblEntity != nullptr, "Failed to create ibl entity.");
 
@@ -176,8 +175,8 @@ namespace MaterialEditor
         m_modelEntity->CreateComponent(AZ::Render::MaterialComponentTypeId);
         m_modelEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
         m_modelEntity->Activate();
-        // Create shadow catcher
 
+        // Create shadow catcher
         AzFramework::EntityContextRequestBus::EventResult(m_shadowCatcherEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "ViewportShadowCatcher");
         AZ_Assert(m_shadowCatcherEntity != nullptr, "Failed to create shadow catcher entity.");
         m_shadowCatcherEntity->CreateComponent(AZ::Render::MeshComponentTypeId);
@@ -208,7 +207,6 @@ namespace MaterialEditor
         }
 
         // Create grid
-
         AzFramework::EntityContextRequestBus::EventResult(m_gridEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "ViewportGrid");
         AZ_Assert(m_gridEntity != nullptr, "Failed to create grid entity.");
 
@@ -235,13 +233,23 @@ namespace MaterialEditor
         MaterialViewportRequestBus::BroadcastResult(modelPreset, &MaterialViewportRequestBus::Events::GetModelPresetSelection);
         OnModelPresetSelected(modelPreset);
 
+        m_viewportController->Init(m_cameraEntity->GetId(), m_modelEntity->GetId(), m_iblEntity->GetId());
+
+        // Apply user settinngs restored since last run
+        AZStd::intrusive_ptr<MaterialViewportSettings> viewportSettings =
+            AZ::UserSettings::CreateFind<MaterialViewportSettings>(AZ::Crc32("MaterialViewportSettings"), AZ::UserSettings::CT_GLOBAL);
+
+        OnGridEnabledChanged(viewportSettings->m_enableGrid);
+        OnShadowCatcherEnabledChanged(viewportSettings->m_enableShadowCatcher);
+        OnAlternateSkyboxEnabledChanged(viewportSettings->m_enableAlternateSkybox);
+        OnFieldOfViewChanged(viewportSettings->m_fieldOfView);
+        OnDisplayMapperOperationTypeChanged(viewportSettings->m_displayMapperOperationType);
+
         MaterialDocumentNotificationBus::Handler::BusConnect();
         MaterialViewportNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
         AZ::TransformNotificationBus::MultiHandler::BusConnect(m_cameraEntity->GetId());
         AzFramework::WindowSystemRequestBus::Handler::BusConnect();
-
-        m_viewportController->Init(m_cameraEntity->GetId(), m_modelEntity->GetId(), m_iblEntity->GetId());
     }
 
     MaterialViewportRenderer::~MaterialViewportRenderer()

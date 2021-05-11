@@ -75,6 +75,7 @@
 #include "ViewportManipulatorController.h"
 #include "LegacyViewportCameraController.h"
 #include "ModernViewportCameraController.h"
+#include "EditorViewportSettings.h"
 
 #include "ViewPane.h"
 #include "CustomResolutionDlg.h"
@@ -127,6 +128,18 @@ AZ_CVAR(
     bool, ed_useNewCameraSystem, false, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Use the new Editor camera system (the Atom-native Editor viewport (experimental) must also be enabled)");
 
+//! Viewport settings for the EditorViewportWidget
+struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::ViewportSettings
+{
+    bool GridSnappingEnabled() const override;
+    float GridSize() const override;
+    bool ShowGrid() const override;
+    bool AngleSnappingEnabled() const override;
+    float AngleStep() const override;
+};
+
+static const EditorViewportSettings g_EditorViewportSettings;
+
 namespace AZ::ViewportHelpers
 {
     static const char TextCantCreateCameraNoLevel[] = "Cannot create camera when no level is loaded.";
@@ -170,7 +183,6 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
     , m_camFOV(gSettings.viewports.fDefaultFov)
     , m_defaultViewName(name)
     , m_renderViewport(nullptr) //m_renderViewport is initialized later, in SetViewportId
-    , m_editorViewportSettings(this)
 {
     // need this to be set in order to allow for language switching on Windows
     setAttribute(Qt::WA_InputMethodEnabled);
@@ -441,8 +453,11 @@ void EditorViewportWidget::Update()
     }
 
     m_updatingCameraPosition = true;
-    auto transform = LYTransformToAZTransform(m_Camera.GetMatrix());
-    m_renderViewport->GetViewportContext()->SetCameraTransform(transform);
+    if (!ed_useNewCameraSystem)
+    {
+        m_renderViewport->GetViewportContext()->SetCameraTransform(LYTransformToAZTransform(m_Camera.GetMatrix()));
+    }
+
     AZ::Matrix4x4 clipMatrix;
     AZ::MakePerspectiveFovMatrixRH(
         clipMatrix,
@@ -644,9 +659,6 @@ CBaseObject* EditorViewportWidget::GetCameraObject() const
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
 {
-    static ICVar* outputToHMD = gEnv->pConsole->GetCVar("output_to_hmd");
-    AZ_Assert(outputToHMD, "cvar output_to_hmd is undeclared");
-
     switch (event)
     {
     case eNotify_OnBeginGameMode:
@@ -668,7 +680,6 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
                 if (deviceInfo)
                 {
                     // Note: This may also need to adjust the viewport size
-                    outputToHMD->Set(1);
                     SetActiveWindow();
                     SetFocus();
                     SetSelected(true);
@@ -688,10 +699,6 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
         if (GetIEditor()->GetViewManager()->GetGameViewport() == this)
         {
             SetCurrentCursor(STD_CURSOR_DEFAULT);
-            if (gSettings.bEnableGameModeVR)
-            {
-                outputToHMD->Set(0);
-            }
             m_bInRotateMode = false;
             m_bInMoveMode = false;
             m_bInOrbitMode = false;
@@ -1246,7 +1253,7 @@ void EditorViewportWidget::SetViewportId(int id)
         m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::LegacyViewportCameraController>());
     }
 
-    m_renderViewport->SetViewportSettings(&m_editorViewportSettings);
+    m_renderViewport->SetViewportSettings(&g_EditorViewportSettings);
 
     UpdateScene();
 
@@ -2867,35 +2874,29 @@ void EditorViewportWidget::SetAsActiveViewport()
     }
 }
 
-EditorViewportSettings::EditorViewportSettings(const EditorViewportWidget* editorViewportWidget)
-    : m_editorViewportWidget(editorViewportWidget)
-{
-}
-
 bool EditorViewportSettings::GridSnappingEnabled() const
 {
-    return m_editorViewportWidget->GetViewManager()->GetGrid()->IsEnabled();
+    return Editor::GridSnappingEnabled();
 }
 
 float EditorViewportSettings::GridSize() const
 {
-    const CGrid* grid = m_editorViewportWidget->GetViewManager()->GetGrid();
-    return grid->scale * grid->size;
+    return Editor::GridSnappingSize();
 }
 
 bool EditorViewportSettings::ShowGrid() const
 {
-    return gSettings.viewports.bShowGridGuide;
+    return Editor::ShowingGrid();
 }
 
 bool EditorViewportSettings::AngleSnappingEnabled() const
 {
-    return m_editorViewportWidget->GetViewManager()->GetGrid()->IsAngleSnapEnabled();
+    return Editor::AngleSnappingEnabled();
 }
 
 float EditorViewportSettings::AngleStep() const
 {
-    return m_editorViewportWidget->GetViewManager()->GetGrid()->GetAngleSnap();
+    return Editor::AngleSnappingSize();
 }
 
 #include <moc_EditorViewportWidget.cpp>

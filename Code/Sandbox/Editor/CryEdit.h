@@ -364,10 +364,8 @@ private:
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     friend struct PythonTestOutputHandler;
 
-    void OnSnap();
     void OnWireframe();
     void OnUpdateWireframe(QAction* action);
-    void OnViewGridsettings();
     void OnViewConfigureLayout();
 
     // Tag Locations.
@@ -402,8 +400,6 @@ private:
     void OnToolsScriptHelp();
     void OnViewCycle2dviewport();
     void OnDisplayGotoPosition();
-    void OnSnapangle();
-    void OnUpdateSnapangle(QAction* action);
     void OnChangemovespeedIncrease();
     void OnChangemovespeedDecrease();
     void OnChangemovespeedChangestep();

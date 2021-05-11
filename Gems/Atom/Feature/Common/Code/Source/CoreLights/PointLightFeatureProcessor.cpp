@@ -44,6 +44,13 @@ namespace AZ
         PointLightFeatureProcessor::PointLightFeatureProcessor()
             : PointLightFeatureProcessorInterface()
         {
+            // Note must match PointShadowDirections in PointLight.azsli
+            m_pointShadowTransforms[0] = AZ::Transform::CreateLookAt(AZ::Vector3::CreateZero(), -AZ::Vector3::CreateAxisX());
+            m_pointShadowTransforms[1] = AZ::Transform::CreateLookAt(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisX());
+            m_pointShadowTransforms[2] = AZ::Transform::CreateLookAt(AZ::Vector3::CreateZero(), -AZ::Vector3::CreateAxisY());
+            m_pointShadowTransforms[3] = AZ::Transform::CreateLookAt(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisY());
+            m_pointShadowTransforms[4] = AZ::Transform::CreateLookAt(AZ::Vector3::CreateZero(), -AZ::Vector3::CreateAxisZ());
+            m_pointShadowTransforms[5] = AZ::Transform::CreateLookAt(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisZ());
         }
 
         void PointLightFeatureProcessor::Activate()
@@ -54,6 +61,7 @@ namespace AZ
             desc.m_elementCountSrgName = "m_pointLightCount";
             desc.m_elementSize = sizeof(PointLightData);
             desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+            m_shadowFeatureProcessor = GetParentScene()->GetFeatureProcessor<ProjectedShadowFeatureProcessor>();
 
             m_lightBufferHandler = GpuBufferHandler(desc);
         }
@@ -83,6 +91,15 @@ namespace AZ
         {
             if (handle.IsValid())
             {
+                for (int i = 0; i < PointLightData::NumShadowFaces; ++i)
+                {
+                    ShadowId shadowId = ShadowId(m_pointLightData.GetData(handle.GetIndex()).m_shadowIndices[i]);
+                    if (shadowId.IsValid())
+                    {
+                        m_shadowFeatureProcessor->ReleaseShadow(shadowId);
+                    }
+                }
+
                 m_pointLightData.RemoveIndex(handle.GetIndex());
                 m_deviceBufferNeedsUpdate = true;
                 handle.Reset();
@@ -148,6 +165,7 @@ namespace AZ
             lightPosition.StoreToFloat3(position.data());
 
             m_deviceBufferNeedsUpdate = true;
+            UpdateShadow(handle);
         }
 
         void PointLightFeatureProcessor::SetAttenuationRadius(LightHandle handle, float attenuationRadius)
@@ -175,6 +193,123 @@ namespace AZ
         uint32_t PointLightFeatureProcessor::GetLightCount() const
         {
             return m_lightBufferHandler.GetElementCount();
+        }
+
+        void PointLightFeatureProcessor::SetShadowsEnabled(LightHandle handle, bool enabled)
+        {
+            auto& light = m_pointLightData.GetData(handle.GetIndex());
+            for (int i = 0; i < PointLightData::NumShadowFaces; ++i)
+            {
+                ShadowId shadowId = ShadowId(light.m_shadowIndices[i]);
+                if (shadowId.IsValid() && !enabled)
+                {
+                    // Disable shadows
+                    m_shadowFeatureProcessor->ReleaseShadow(shadowId);
+                    shadowId.Reset();
+                    light.m_shadowIndices[i] = shadowId.GetIndex();
+                    m_deviceBufferNeedsUpdate = true;
+                }
+                else if (shadowId.IsNull() && enabled)
+                {
+                    // Enable shadows
+                    light.m_shadowIndices[i] = m_shadowFeatureProcessor->AcquireShadow().GetIndex();
+
+                    UpdateShadow(handle);
+                    m_deviceBufferNeedsUpdate = true;
+                }
+            }
+        }
+
+        void PointLightFeatureProcessor::SetPointData(LightHandle handle, const PointLightData& data)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PointLightFeatureProcessor::SetPointData().");
+
+            m_pointLightData.GetData(handle.GetIndex()) = data;
+            m_deviceBufferNeedsUpdate = true;
+            UpdateShadow(handle);
+        }
+
+        void PointLightFeatureProcessor::UpdateShadow(LightHandle handle)
+        {
+            constexpr float SqrtHalf = 0.707106781187f; // sqrt(0.5);
+
+            const auto& pointLight = m_pointLightData.GetData(handle.GetIndex());
+            for (int i = 0; i < PointLightData::NumShadowFaces; ++i)
+            {
+                ShadowId shadowId = ShadowId(pointLight.m_shadowIndices[i]);
+                if (shadowId.IsNull())
+                {
+                    // Early out if shadows are disabled.
+                    return;
+                }
+
+                ProjectedShadowFeatureProcessorInterface::ProjectedShadowDescriptor desc = m_shadowFeatureProcessor->GetShadowProperties(shadowId);
+                // Make it slightly larger than 90 degrees to avoid artifacts on the boundary between 2 cubemap faces
+                desc.m_fieldOfViewYRadians = DegToRad(91.0f); 
+                desc.m_transform = m_pointShadowTransforms[i];
+                desc.m_transform.SetTranslation(pointLight.m_position[0], pointLight.m_position[1], pointLight.m_position[2]);
+                desc.m_aspectRatio = 1.0f;
+                desc.m_nearPlaneDistance = SqrtHalf * pointLight.m_bulbRadius;
+
+                const float invRadiusSquared = pointLight.m_invAttenuationRadiusSquared;
+                if (invRadiusSquared <= 0.f)
+                {
+                    AZ_Assert(false, "Attenuation radius must be set before using the light.");
+                    return;
+                }
+                const float attenuationRadius = sqrtf(1.f / invRadiusSquared);
+                desc.m_farPlaneDistance = attenuationRadius + pointLight.m_bulbRadius;
+
+                m_shadowFeatureProcessor->SetShadowProperties(shadowId, desc);
+            }
+        }
+
+        template<typename Functor, typename ParamType>
+        void PointLightFeatureProcessor::SetShadowSetting(LightHandle handle, Functor&& functor, ParamType&& param)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to PointLightFeatureProcessor::SetShadowSetting().");
+
+            auto& light = m_pointLightData.GetData(handle.GetIndex());
+            for (int lightIndex = 0; lightIndex < PointLightData::NumShadowFaces; ++lightIndex)
+            {
+                ShadowId shadowId = ShadowId(light.m_shadowIndices[lightIndex]);
+
+                AZ_Assert(shadowId.IsValid(), "Attempting to set a shadow property when shadows are not enabled.");
+                if (shadowId.IsValid())
+                {
+                    AZStd::invoke(AZStd::forward<Functor>(functor), m_shadowFeatureProcessor, shadowId, AZStd::forward<ParamType>(param));
+                }
+            }
+        }
+
+        void PointLightFeatureProcessor::SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowmapMaxResolution, shadowmapSize);
+        }
+
+        void PointLightFeatureProcessor::SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowFilterMethod, method);
+        }
+
+        void PointLightFeatureProcessor::SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetSofteningBoundaryWidthAngle, boundaryWidthRadians);
+        }
+
+        void PointLightFeatureProcessor::SetPredictionSampleCount(LightHandle handle, uint16_t count)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetPredictionSampleCount, count);
+        }
+
+        void PointLightFeatureProcessor::SetFilteringSampleCount(LightHandle handle, uint16_t count)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetFilteringSampleCount, count);
+        }
+
+        void PointLightFeatureProcessor::SetPcfMethod(LightHandle handle, PcfMethod method)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetPcfMethod, method);
         }
 
     } // namespace Render

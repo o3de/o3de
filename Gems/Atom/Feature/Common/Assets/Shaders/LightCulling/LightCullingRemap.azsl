@@ -186,7 +186,7 @@ void InitWriteIndices(uint3 groupID, uint baseBin, out uint writeIndices[NVLC_MA
 // light indices until it hits an END_OF_X marker
 
 // Note that this code could probably be made faster with wave intrinsics
-// https://jira.agscollab.com/browse/ATOM-4104
+// ATOM-4104
 [numthreads(NUM_THREADS, 1, 1)]
 void MainCS(
     uint3 dispatchThreadID : SV_DispatchThreadID, 
