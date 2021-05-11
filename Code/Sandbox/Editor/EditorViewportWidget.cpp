@@ -453,8 +453,11 @@ void EditorViewportWidget::Update()
     }
 
     m_updatingCameraPosition = true;
-    auto transform = LYTransformToAZTransform(m_Camera.GetMatrix());
-    m_renderViewport->GetViewportContext()->SetCameraTransform(transform);
+    if (!ed_useNewCameraSystem)
+    {
+        m_renderViewport->GetViewportContext()->SetCameraTransform(LYTransformToAZTransform(m_Camera.GetMatrix()));
+    }
+
     AZ::Matrix4x4 clipMatrix;
     AZ::MakePerspectiveFovMatrixRH(
         clipMatrix,
