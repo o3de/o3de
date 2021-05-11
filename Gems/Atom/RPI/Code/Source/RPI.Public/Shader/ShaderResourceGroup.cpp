@@ -118,6 +118,16 @@ namespace AZ
             return m_layout->FindShaderInputConstantIndex(name);
         }
 
+        RHI::ShaderInputBufferUnboundedArrayIndex ShaderResourceGroup::FindShaderInputBufferUnboundedArrayIndex(const Name& name) const
+        {
+            return m_layout->FindShaderInputBufferUnboundedArrayIndex(name);
+        }
+
+        RHI::ShaderInputImageUnboundedArrayIndex  ShaderResourceGroup::FindShaderInputImageUnboundedArrayIndex(const Name& name) const
+        {
+            return m_layout->FindShaderInputImageUnboundedArrayIndex(name);
+        }
+
         const Data::Asset<ShaderResourceGroupAsset>& ShaderResourceGroup::GetAsset() const
         {
             return m_asset;

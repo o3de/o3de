@@ -43,7 +43,7 @@ Note: to get this to work unfortunatley each user must configure the wingide pre
 (there is no shared project / data-driven way that I know of to set this up otherwise)
 
 Note: lumberyard is not currently generating __init__.pyi files in that package structure:
-https://jira.agscollab.com/browse/SPEC-3315
+SPEC-3315
 
 The workaround is to create them yourself (they can be empty) and needs to be in the root of each package folder, like this:
 dev\Cache\AtomTechArt\pc\user\python_symbols\azlmbr\__init__.pyi
@@ -63,4 +63,4 @@ You might need to reboot wing.  Then you should have auto-complete for the lumbe
 Note: the entirety of azlmbr api does not generate .pyi files currently,
 all of the "Behaviour Context" based classes do
 non-BC modules such as azlmbr.paths currently do not
-https://jira.agscollab.com/browse/SPEC-3316
+SPEC-3316

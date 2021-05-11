@@ -51,7 +51,6 @@
 #include "Include/IObjectManager.h"
 #include "ErrorReportDialog.h"
 #include "SurfaceTypeValidator.h"
-#include "ShaderCache.h"
 #include "Util/AutoLogTime.h"
 #include "CheckOutDialog.h"
 #include "GameExporter.h"
@@ -143,7 +142,6 @@ CCryEditDoc::CCryEditDoc()
         m_environmentTemplate = XmlHelpers::CreateXmlNode("Environment");
     }
 
-    m_pLevelShaderCache = new CLevelShaderCache;
     m_bDocumentReady = false;
     GetIEditor()->SetDocument(this);
     CLogFile::WriteLine("Document created");
@@ -155,8 +153,6 @@ CCryEditDoc::CCryEditDoc()
 CCryEditDoc::~CCryEditDoc()
 {
     GetIEditor()->SetDocument(nullptr);
-
-    delete m_pLevelShaderCache;
 
     CLogFile::WriteLine("Document destroyed");
 
@@ -337,7 +333,6 @@ void CCryEditDoc::Save(TDocMultiArchive& arrXmlAr)
             // Fog settings  ///////////////////////////////////////////////////////
             SerializeFogSettings((*arrXmlAr[DMAS_GENERAL]));
 
-            SerializeShaderCache((*arrXmlAr[DMAS_GENERAL_NAMED_DATA]));
             SerializeNameSelection((*arrXmlAr[DMAS_GENERAL]));
         }
     }
@@ -486,7 +481,6 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
         {
             // Serialize Shader Cache.
             CAutoLogTime logtime("Load Level Shader Cache");
-            SerializeShaderCache((*arrXmlAr[DMAS_GENERAL_NAMED_DATA]));
         }
 
         {
@@ -585,23 +579,13 @@ void CCryEditDoc::SerializeViewSettings(CXmlArchive& xmlAr)
                 view->getAttr(viewerAnglesName.toUtf8().constData(), va);
             }
 
-            CViewport* pVP = GetIEditor()->GetViewManager()->GetView(i);
+            Matrix34 tm = Matrix34::CreateRotationXYZ(va);
+            tm.SetTranslation(vp);
 
-
-            if (pVP)
+            auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+            if (auto viewportContext = viewportContextManager->GetViewportContextById(i))
             {
-                Matrix34 tm = Matrix34::CreateRotationXYZ(va);
-                tm.SetTranslation(vp);
-                pVP->SetViewTM(tm);
-            }
-
-            // Load grid.
-            auto gridName = QString("Grid%1").arg(useOldViewFormat ? "" : QString::number(i));
-            XmlNodeRef gridNode = xmlAr.root->newChild(gridName.toUtf8().constData());
-
-            if (gridNode)
-            {
-                GetIEditor()->GetViewManager()->GetGrid()->Serialize(gridNode, xmlAr.bLoading);
+                viewportContext->SetCameraTransform(LYTransformToAZTransform(tm));
             }
         }
     }
@@ -628,11 +612,6 @@ void CCryEditDoc::SerializeViewSettings(CXmlArchive& xmlAr)
                 auto viewerAnglesName = QString("ViewerAngles%1").arg(i);
                 view->setAttr(viewerAnglesName.toUtf8().constData(), angles);
             }
-
-            // Save grid.
-            auto gridName = QString("Grid%1").arg(i);
-            XmlNodeRef gridNode = xmlAr.root->newChild(gridName.toUtf8().constData());
-            GetIEditor()->GetViewManager()->GetGrid()->Serialize(gridNode, xmlAr.bLoading);
         }
     }
 }
@@ -664,39 +643,6 @@ void CCryEditDoc::SerializeFogSettings(CXmlArchive& xmlAr)
         if (m_fogTemplate)
         {
             CXmlTemplate::SetValues(m_fogTemplate, fog);
-        }
-    }
-}
-
-void CCryEditDoc::SerializeShaderCache(CXmlArchive& xmlAr)
-{
-    if (xmlAr.bLoading)
-    {
-        void* pData = 0;
-        int nSize = 0;
-
-        if (xmlAr.pNamedData->GetDataBlock("ShaderCache", pData, nSize))
-        {
-            if (nSize <= 0)
-            {
-                return;
-            }
-
-            QByteArray str(nSize + 1, 0);
-            memcpy(str.data(), pData, nSize);
-            str[nSize] = 0;
-            m_pLevelShaderCache->LoadBuffer(str);
-        }
-    }
-    else
-    {
-        QString buf;
-
-        m_pLevelShaderCache->SaveBuffer(buf);
-
-        if (!buf.isEmpty())
-        {
-            xmlAr.pNamedData->AddDataBlock("ShaderCache", buf.toUtf8().data(), buf.toUtf8().count());
         }
     }
 }

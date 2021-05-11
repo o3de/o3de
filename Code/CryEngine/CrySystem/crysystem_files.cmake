@@ -19,7 +19,6 @@ set(FILES
     ConsoleBatchFile.cpp
     ConsoleHelpGen.cpp
     CryAsyncMemcpy.cpp
-    CrySizerStats.cpp
     DebugCallStack.cpp
     GeneralMemoryHeap.cpp
     HandlerBase.cpp
@@ -56,21 +55,13 @@ set(FILES
     SystemScheduler.h
     UnixConsole.h
     SystemInit.h
-    Serialization/MemoryReader.h
-    MemoryFragmentationProfiler.h
     XML/ReadWriteXMLSink.h
-    Serialization/ArchiveHost.h
-    Serialization/MemoryWriter.h
-    Serialization/JSONIArchive.h
-    Serialization/JSONOArchive.h
-    Serialization/BinArchive.h
     AZCrySystemInitLogSink.h
     AZCoreLogSink.h
     CmdLine.h
     CmdLineArg.h
     ConsoleBatchFile.h
     ConsoleHelpGen.h
-    CrySizerStats.h
     CryWaterMark.h
     DebugCallStack.h
     GeneralMemoryHeap.h
@@ -92,13 +83,11 @@ set(FILES
     crash_face.bmp
     ImageHandler.h
     ImageHandler.cpp
-    DefragAllocator.cpp
     MemoryAddressRange.cpp
     PageMappingHeap.cpp
     CustomMemoryHeap.cpp
     MemoryManager.cpp
     MTSafeAllocator.cpp
-    DefragAllocator.h
     MemoryAddressRange.h
     PageMappingHeap.h
     MemoryManager.h
@@ -118,10 +107,8 @@ set(FILES
     XML/WriteXMLSource.cpp
     ZipFile.h
     ZipFileFormat_info.h
-    PerfHUD.cpp
     ProfileLogSystem.cpp
     Sampler.cpp
-    PerfHUD.h
     ProfileLogSystem.h
     Sampler.h
     LocalizedStringManager.cpp
@@ -134,42 +121,16 @@ set(FILES
     ThreadConfigManager.h
     ThreadConfigManager.cpp
     SystemThreading.cpp
-    ExtensionSystem/CryFactoryRegistryImpl.cpp
-    ExtensionSystem/CryFactoryRegistryImpl.h
-    ExtensionSystem/TestCases/TestExtensions.cpp
-    ExtensionSystem/TestCases/TestExtensions.h
-    MiniGUI/DrawContext.cpp
-    MiniGUI/MiniButton.cpp
-    MiniGUI/MiniGUI.cpp
-    MiniGUI/MiniInfoBox.cpp
-    MiniGUI/MiniMenu.cpp
-    MiniGUI/MiniTable.cpp
-    MiniGUI/DrawContext.h
-    MiniGUI/MiniButton.h
-    MiniGUI/MiniGUI.h
-    MiniGUI/MiniInfoBox.h
-    MiniGUI/MiniMenu.h
-    MiniGUI/MiniTable.h
     ZLibCompressor.cpp
     ZLibCompressor.h
     SoftCode/SoftCodeMgr.cpp
     SoftCode/SoftCodeMgr.h
-    OverloadSceneManager/OverloadSceneManager.cpp
-    OverloadSceneManager/OverloadSceneManager.h
     Huffman.cpp
     Huffman.h
     RemoteConsole/RemoteConsole.cpp
     RemoteConsole/RemoteConsole.h
     RemoteConsole/RemoteConsole_impl.inl
     RemoteConsole/RemoteConsole_none.inl
-    ServiceNetwork.cpp
-    ServiceNetwork.h
-    RemoteCommand.cpp
-    RemoteCommand.h
-    RemoteCommandHelpers.cpp
-    RemoteCommandHelpers.h
-    RemoteCommandServer.cpp
-    RemoteCommandClient.cpp
     ZLibDecompressor.h
     ZLibDecompressor.cpp
     LZ4Decompressor.h
@@ -186,19 +147,6 @@ set(FILES
     ViewSystem/ViewSystem.h
     ZStdDecompressor.h
     ZStdDecompressor.cpp
-    Serialization/ArchiveHost.cpp
-    Serialization/BinArchive.cpp
-    Serialization/JSONIArchive.cpp
-    Serialization/JSONOArchive.cpp
-    Serialization/MemoryReader.cpp
-    Serialization/MemoryWriter.cpp
-    Serialization/Token.h
-    Serialization/XmlIArchive.cpp
-    Serialization/XmlIArchive.h
-    Serialization/XmlOArchive.cpp
-    Serialization/XmlOArchive.h
-    HMDCVars.h
-    HMDCVars.cpp
     StreamEngine/StreamAsyncFileRequest.cpp
     StreamEngine/StreamAsyncFileRequest_Jobs.cpp
     StreamEngine/StreamEngine.cpp
@@ -210,13 +158,9 @@ set(FILES
     StreamEngine/StreamIOThread.h
     StreamEngine/StreamReadStream.h
     StreamEngine/AZRequestReadStream.h
-    VisRegTest.cpp
-    VisRegTest.h
     CrashHandler.rc
     CrySystem_precompiled.cpp
     CPUDetect.cpp
     CPUDetect.h
-    CrySizerImpl.cpp
-    CrySizerImpl.h
     WindowsErrorReporting.cpp
 )

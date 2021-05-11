@@ -101,25 +101,6 @@ void CView::Update(float frameTime, bool isActive)
         const float farPlane = (m_viewParams.farplane > 0.f) ? m_viewParams.farplane : DEFAULT_FAR;
         float fov = (m_viewParams.fov < 0.001f) ? DEFAULT_FOV : m_viewParams.fov;
 
-        // [VR] specific
-        // Modify FOV based on the HMD device configuration
-        bool isRenderingToHMD = gEnv->pRenderer ? gEnv->pRenderer->GetIStereoRenderer()->IsRenderingToHMD() : false;
-        if (isRenderingToHMD)
-        {
-            const AZ::VR::HMDDeviceInfo* deviceInfo = nullptr;
-            EBUS_EVENT_RESULT(deviceInfo, AZ::VR::HMDDeviceRequestBus, GetDeviceInfo);
-            if (deviceInfo)
-            {
-                //Add 12 degrees to the FOV here used for culling.
-                //It won't be used for rendering, just to make sure we don't cull
-                //anything out incorrectly.
-                //This value was decided based on experimentation with the HTC Vive
-                //and works perfectly fine for the Oculus Rift
-                const float fovCorrection = 12.0f;
-                fov = deviceInfo->fovV + DEG2RAD(fovCorrection);
-            }   
-        }
-
         m_camera.SetFrustum(pSysCam->GetViewSurfaceX(), pSysCam->GetViewSurfaceZ(), fov, nearPlane, farPlane, pSysCam->GetPixelAspectRatio());
 
         //apply shake & set the view matrix
@@ -139,20 +120,6 @@ void CView::Update(float frameTime, bool isActive)
         Quat q = m_viewParams.rotation;
         Vec3 pos = m_viewParams.position;
         Vec3 p = Vec3(ZERO);
-
-        if (isRenderingToHMD)
-        {
-            //This HMD tracking state is used JUST for use in the visibility system.
-            //RT_SetStereoCamera in D3DRendPipeline will override this info before rendering with the absolute
-            //latest tracking info.
-            const AZ::VR::TrackingState* trackingState = nullptr;
-            EBUS_EVENT_RESULT(trackingState, AZ::VR::HMDDeviceRequestBus, GetTrackingState);
-            if (trackingState && trackingState->CheckStatusFlags(AZ::VR::HMDStatus_IsUsable))
-            {
-                p = q * AZVec3ToLYVec3(trackingState->pose.position);
-                q = q * AZQuaternionToLYQuaternion(trackingState->pose.orientation);
-            }
-        }
 
         Matrix34 viewMtx(q);
         viewMtx.SetTranslation(pos + p);

@@ -12,7 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID :  C28798205
 # Test Case Title : From the White Box Component Card the White Box Mesh can be set to be invisible in Game View
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/28798205
 
 
 # fmt:off
