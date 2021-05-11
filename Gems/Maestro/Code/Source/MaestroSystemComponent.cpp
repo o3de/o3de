@@ -112,7 +112,6 @@ namespace Maestro
         {
             case ESYSTEM_EVENT_LEVEL_POST_UNLOAD:
             {
-                STLALLOCATOR_CLEANUP;
                 CLightAnimWrapper::ReconstructCache();
                 break;
             }

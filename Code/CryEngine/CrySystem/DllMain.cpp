@@ -90,7 +90,6 @@ public:
         case ESYSTEM_EVENT_LEVEL_POST_UNLOAD:
         {
             CryCleanup();
-            STLALLOCATOR_CLEANUP;
             gEnv->pSystem->SetThreadState(ESubsys_Physics, true);
             break;
         }
