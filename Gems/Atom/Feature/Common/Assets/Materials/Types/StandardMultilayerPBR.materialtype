@@ -204,7 +204,7 @@
                     "displayName": "Debug Draw Mode",
                     "description": "Enables various debug view features.",
                     "type": "Enum",
-                    "enumValues": [ "None", "BlendMaskValues", "DepthMaps" ],
+                    "enumValues": [ "None", "BlendSource", "DepthMaps" ],
                     "defaultValue": "None",
                     "connection": {
                         "type": "ShaderOption",
