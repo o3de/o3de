@@ -55,6 +55,7 @@ ENGINE_ROOT_CHECK_FILE = 'engine.json'
 HASH_CHUNK_SIZE = 200000
 
 
+
 class LmbrCmdError(Exception):
     """
     Wrapper class to the general exception class where will absorb and prevent the printing of stack.
@@ -231,6 +232,19 @@ def load_template_file(template_file_path, template_env):
         raise FileNotFoundError(f"Invalid file path. Cannot find template file located at {str(template_file_path)}")
 
 
+# Determine the possible file extensions for executable files based on the host platform
+PLATFORM_EXECUTABLE_EXTENSIONS = [''] # Files without extensions are always considered
+
+if platform.system() == 'Windows':
+    # Windows manages its executable extensions through the %PATHEXT% environment variable
+    path_extensions_str = os.environ.get('PATHEXT', default='.EXE;.COM;.BAT;.CMD')
+    PLATFORM_EXECUTABLE_EXTENSIONS.extend([pathext.lower() for pathext in path_extensions_str.split(';')])
+elif platform.system() == 'Linux':
+    PLATFORM_EXECUTABLE_EXTENSIONS = ['', '.out']
+else:
+    PLATFORM_EXECUTABLE_EXTENSIONS = ['']
+
+
 def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, tool_version_argument, tool_version_regex, min_version, max_version):
     """
     Support method to validate a required system tool needed for the build either through an installed tool in the
@@ -257,12 +271,21 @@ def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, too
             elif not isinstance(override_tool_path, pathlib.Path):
                 raise LmbrCmdError(f"Invalid {tool_name} path argument. '{override_tool_path}' must be a string or Path",
                                    ERROR_CODE_INVALID_PARAMETER)
-            check_tool_path = override_tool_path / tool_filename
 
-            if not check_tool_path.is_file():
-                check_tool_path = pathlib.Path(override_tool_path) / 'bin' / tool_filename
+            file_found = False
+            for executable_path_ext in PLATFORM_EXECUTABLE_EXTENSIONS:
+                check_tool_filename = f'{tool_filename}{executable_path_ext}'
 
-            if not check_tool_path.is_file():
+                check_tool_path = override_tool_path / check_tool_filename
+                if check_tool_path.is_file():
+                    file_found = True
+                    break
+                check_tool_path = override_tool_path / 'bin' / check_tool_filename
+                if check_tool_path.is_file():
+                    file_found = True
+                    break
+
+            if not file_found:
                 raise LmbrCmdError(f"Invalid {tool_name} path argument. '{override_tool_path}' is not a valid {tool_name} path",
                                    ERROR_CODE_INVALID_PARAMETER)
             resolved_override_tool_path = str(check_tool_path.resolve())
@@ -271,7 +294,7 @@ def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, too
         else:
             resolved_override_tool_path = None
             tool_source = tool_name
-            tool_desc = "installed gradle in the system path"
+            tool_desc = f"installed {tool_name} in the system path"
 
         # Extract the version and verify
         version_output = subprocess.check_output([tool_source, tool_version_argument],
@@ -283,10 +306,10 @@ def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, too
         result_version = LooseVersion(str(version_match.group(1)).strip())
 
         if min_version and result_version < min_version:
-            raise LmbrCmdError(f"The {tool_desc} does not meet the minimum version of gradle required ({str(min_version)}).",
+            raise LmbrCmdError(f"The {tool_desc} does not meet the minimum version of {tool_name} required ({str(min_version)}).",
                                ERROR_CODE_ENVIRONMENT_ERROR)
         elif max_version and result_version > max_version:
-            raise LmbrCmdError(f"The {tool_desc} exceeds maximum version of gradle supported ({str(max_version)}).",
+            raise LmbrCmdError(f"The {tool_desc} exceeds maximum version of {tool_name} supported ({str(max_version)}).",
                                ERROR_CODE_ENVIRONMENT_ERROR)
 
         return result_version, resolved_override_tool_path

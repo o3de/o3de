@@ -17,22 +17,40 @@ IF NOT EXIST "%LY_3RDPARTY_PATH%" (
     GOTO :error
 )
 
-IF NOT EXIST "%GRADLE_HOME%" (
-    REM This is the default for developers
-    SET GRADLE_HOME=C:\Gradle\gradle-5.6.4
-)
-IF NOT EXIST "%GRADLE_HOME%" (
-    ECHO [ci_build] FAIL: GRADLE_HOME=%GRADLE_HOME%
-    GOTO :error
-)
 
-IF NOT EXIST "%CMAKE_HOME%" (
-    SET CMAKE_HOME=%LY_3RDPARTY_PATH%/CMake/3.19.1/Windows/
+
+REM Test if gradle is installed on the Path or if it needs to be passed in through the GRADLE_HOME env variable
+call gradle --version
+IF %ERRORLEVEL%==0 GOTO gradle_on_path
+
+IF "%GRADLE_HOME%"=="" (
+    ECHO [ci_build] FAIL: Gradle not installed or set in the GRADLE_HOME environment variable
+    goto :error
 )
-IF NOT EXIST "%CMAKE_HOME%" (
-    ECHO [ci_build] FAIL: CMAKE_HOME=%CMAKE_HOME%
+IF NOT EXIST "%GRADLE_HOME%" (
+    ECHO [ci_build] FAIL: GRADLE_HOME set to a invalid path: !GRADLE_HOME!
     GOTO :error
 )
+SET GRADLE_OVERRIDE_OPTION=--gradle-install-path="%GRADLE_HOME%"
+
+:gradle_on_path
+
+
+REM Test if cmake is installed on the Path or if it needs to be passed in through the CMAKE_HOME env variable
+call cmake --version
+IF %ERRORLEVEL%==0 GOTO cmake_on_path
+
+IF "%CMAKE_HOME%"=="" (
+    ECHO [ci_build] FAIL: CMake not installed or set in the CMAKE_HOME environment variable
+    goto :error
+)
+IF NOT EXIST "%CMAKE_HOME%" (
+    ECHO [ci_build] FAIL: CMAKE_HOME set to a invalid path: !CMAKE_HOME!
+    GOTO :error
+)
+SET CMAKE_OVERRIDE_OPTION=--cmake-install-path="%CMAKE_HOME%"
+
+:cmake_on_path
 
 IF NOT EXIST "%LY_NINJA_PATH%" (
     SET LY_NINJA_PATH=%LY_3RDPARTY_PATH%/ninja/1.10.1/Windows
@@ -58,12 +76,8 @@ IF NOT EXIST "%LY_ANDROID_SDK%" (
     GOTO :error
 )
 
-IF NOT EXIST "%LY_ANDROID_NDK%" (
-    set LY_ANDROID_NDK=!LY_3RDPARTY_PATH!/android-ndk/r21d
-)
-IF NOT EXIST "%LY_ANDROID_NDK%" (
-    ECHO [ci_build] LY_ANDROID_NDK=!LY_ANDROID_NDK!
-    GOTO :error
+IF NOT "%ANDROID_GRADLE_PLUGIN%" == "" (
+    set ANDROID_GRADLE_PLUGIN_OPTION=--gradle-plugin-version=%ANDROID_GRADLE_PLUGIN%
 )
 
 IF NOT EXIST %OUTPUT_DIRECTORY% (
@@ -154,11 +168,11 @@ IF "%GENERATE_SIGNED_APK%"=="true" (
         ECHO Using keystore file at %CI_ANDROID_KEYSTORE_FILE_ABS%
     )
 
-    ECHO [ci_build] %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g %GAME_PROJECT% --gradle-install-path=%GRADLE_HOME% --cmake-install-path=%CMAKE_HOME% --ninja-install-path=%LY_NINJA_PATH% --third-party-path=%LY_3RDPARTY_PATH% --android-ndk-path=%LY_ANDROID_NDK% --android-sdk-path=%LY_ANDROID_SDK% --android-ndk-version=%ANDROID_NDK_PLATFORM% --android-sdk-version=%ANDROID_SDK_PLATFORM% --signconfig-store-file %CI_ANDROID_KEYSTORE_FILE_ABS% --signconfig-store-password %CI_ANDROID_KEYSTORE_PASSWORD% --signconfig-key-alias %CI_ANDROID_KEYSTORE_ALIAS% --signconfig-key-password %CI_ANDROID_KEYSTORE_PASSWORD% %OPTIONAL_TEST_FLAG% %ADDITIONAL_GENERATE_ARGS% --overwrite-existing
-    CALL %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g %GAME_PROJECT% --gradle-install-path=%GRADLE_HOME% --cmake-install-path=%CMAKE_HOME% --ninja-install-path=%LY_NINJA_PATH% --third-party-path=%LY_3RDPARTY_PATH% --android-ndk-path=%LY_ANDROID_NDK% --android-sdk-path=%LY_ANDROID_SDK% --android-ndk-version=%ANDROID_NDK_PLATFORM% --android-sdk-version=%ANDROID_SDK_PLATFORM% --signconfig-store-file %CI_ANDROID_KEYSTORE_FILE_ABS% --signconfig-store-password %CI_ANDROID_KEYSTORE_PASSWORD% --signconfig-key-alias %CI_ANDROID_KEYSTORE_ALIAS% --signconfig-key-password %CI_ANDROID_KEYSTORE_PASSWORD% %ADDITIONAL_GENERATE_ARGS% --overwrite-existing
+    ECHO [ci_build] %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g %GAME_PROJECT% %GRADLE_OVERRIDE_OPTION% --cmake-install-path=%CMAKE_HOME% --ninja-install-path=%LY_NINJA_PATH% --third-party-path=%LY_3RDPARTY_PATH% --android-sdk-path=%LY_ANDROID_SDK% %ANDROID_GRADLE_PLUGIN_OPTION% --android-sdk-platform=%ANDROID_SDK_PLATFORM% --signconfig-store-file %CI_ANDROID_KEYSTORE_FILE_ABS% --signconfig-store-password %CI_ANDROID_KEYSTORE_PASSWORD% --signconfig-key-alias %CI_ANDROID_KEYSTORE_ALIAS% --signconfig-key-password %CI_ANDROID_KEYSTORE_PASSWORD% %ADDITIONAL_GENERATE_ARGS% --overwrite-existing
+    CALL %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g %GAME_PROJECT% %GRADLE_OVERRIDE_OPTION% --cmake-install-path=%CMAKE_HOME% --ninja-install-path=%LY_NINJA_PATH% --third-party-path=%LY_3RDPARTY_PATH% --android-sdk-path=%LY_ANDROID_SDK% %ANDROID_GRADLE_PLUGIN_OPTION% --android-sdk-platform=%ANDROID_SDK_PLATFORM% --signconfig-store-file %CI_ANDROID_KEYSTORE_FILE_ABS% --signconfig-store-password %CI_ANDROID_KEYSTORE_PASSWORD% --signconfig-key-alias %CI_ANDROID_KEYSTORE_ALIAS% --signconfig-key-password %CI_ANDROID_KEYSTORE_PASSWORD% %ADDITIONAL_GENERATE_ARGS% --overwrite-existing
 ) ELSE (
-    ECHO [ci_build] %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g %GAME_PROJECT% --gradle-install-path=%GRADLE_HOME% --cmake-install-path=%CMAKE_HOME% --ninja-install-path=%LY_NINJA_PATH% --third-party-path=%LY_3RDPARTY_PATH% --android-ndk-path=%LY_ANDROID_NDK% --android-sdk-path=%LY_ANDROID_SDK% --android-ndk-version=%ANDROID_NDK_PLATFORM% --android-sdk-version=%ANDROID_SDK_PLATFORM% %ADDITIONAL_GENERATE_ARGS% --overwrite-existing
-    CALL %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g %GAME_PROJECT% --gradle-install-path=%GRADLE_HOME% --cmake-install-path=%CMAKE_HOME% --ninja-install-path=%LY_NINJA_PATH% --third-party-path=%LY_3RDPARTY_PATH% --android-ndk-path=%LY_ANDROID_NDK% --android-sdk-path=%LY_ANDROID_SDK% --android-ndk-version=%ANDROID_NDK_PLATFORM% --android-sdk-version=%ANDROID_SDK_PLATFORM% %ADDITIONAL_GENERATE_ARGS%  --overwrite-existing
+    ECHO [ci_build] %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g %GAME_PROJECT% %GRADLE_OVERRIDE_OPTION% --cmake-install-path=%CMAKE_HOME% --ninja-install-path=%LY_NINJA_PATH%  --third-party-path=%LY_3RDPARTY_PATH% %ANDROID_GRADLE_PLUGIN_OPTION% --android-sdk-path=%LY_ANDROID_SDK% --android-sdk-platform=%ANDROID_SDK_PLATFORM% %ADDITIONAL_GENERATE_ARGS% --overwrite-existing
+    CALL %PYTHON% cmake\Tools\Platform\Android\generate_android_project.py --engine-root=. --build-dir=%OUTPUT_DIRECTORY% -g %GAME_PROJECT% %GRADLE_OVERRIDE_OPTION% --cmake-install-path=%CMAKE_HOME% --ninja-install-path=%LY_NINJA_PATH% --third-party-path=%LY_3RDPARTY_PATH% %ANDROID_GRADLE_PLUGIN_OPTION% --android-sdk-path=%LY_ANDROID_SDK% --android-sdk-platform=%ANDROID_SDK_PLATFORM% %ADDITIONAL_GENERATE_ARGS% --overwrite-existing
 )
 
 REM Validate the android project generation
