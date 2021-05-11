@@ -53,5 +53,6 @@ set(GEM_DEPENDENCIES
     Gem::ImguiAtom
     Gem::Atom_AtomBridge
     Gem::AtomFont
+    Gem::NvCloth
     Gem::Blast
 )
