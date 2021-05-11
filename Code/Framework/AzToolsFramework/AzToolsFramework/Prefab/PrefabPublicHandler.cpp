@@ -295,7 +295,7 @@ namespace AzToolsFramework
 
         void PrefabPublicHandler::CreateLink(
             const EntityList& topLevelEntities, Instance& sourceInstance, TemplateId targetTemplateId,
-            UndoSystem::URSequencePoint* undoBatch, AZ::EntityId commonRootEntityId, const bool IsUndoRedoSupportNeeded)
+            UndoSystem::URSequencePoint* undoBatch, AZ::EntityId commonRootEntityId, const bool isUndoRedoSupportNeeded)
         {
             AZ::EntityId containerEntityId = sourceInstance.GetContainerEntityId();
             AZ::Entity* containerEntity = GetEntityById(containerEntityId);
@@ -322,7 +322,7 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, containerEntityId);
 
             LinkId linkId;
-            if (IsUndoRedoSupportNeeded)
+            if (isUndoRedoSupportNeeded)
             {
                 linkId = PrefabUndoHelpers::CreateLink(
                     sourceInstance.GetTemplateId(), targetTemplateId, AZStd::move(patch), sourceInstance.GetInstanceAlias(), undoBatch);

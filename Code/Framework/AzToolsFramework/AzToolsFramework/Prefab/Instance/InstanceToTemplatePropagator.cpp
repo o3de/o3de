@@ -282,7 +282,7 @@ namespace AzToolsFramework
                 /*
                 If the original allocator the patches were created with gets destroyed, then the patches would become garbage in the
                 linkDom. Since we cannot guarantee the lifecycle of the patch allocators, we are doing a copy of the patches here to
-                associate them with the linkDom's allocator. This is a limitation with rapidjson.
+                associate them with the linkDom's allocator.
                 */
                 PrefabDom patchesCopy;
                 patchesCopy.CopyFrom(patches, linkDom.GetAllocator());
