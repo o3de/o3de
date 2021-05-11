@@ -931,13 +931,14 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
             const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
             const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
             m_auxGeomPtr->DrawCylinder(
                 worldCenter, 
                 worldAxis, 
-                radius, 
-                height, 
+                scale * radius, 
+                scale * height, 
                 m_rendState.m_color, 
                 AZ::RPI::AuxGeomDraw::DrawStyle::Line,
                 m_rendState.m_depthTest,
@@ -957,13 +958,14 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
             const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
             const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
             m_auxGeomPtr->DrawCylinder(
                 worldCenter, 
                 worldAxis, 
-                radius, 
-                height, 
+                scale * radius, 
+                scale * height, 
                 m_rendState.m_color, 
                 drawShaded ? AZ::RPI::AuxGeomDraw::DrawStyle::Shaded : AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
                 m_rendState.m_depthTest,
@@ -1067,10 +1069,10 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
-
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
             m_auxGeomPtr->DrawSphere(
                 ToWorldSpacePosition(pos), 
-                radius, 
+                scale * radius, 
                 m_rendState.m_color, 
                 AZ::RPI::AuxGeomDraw::DrawStyle::Line,
                 m_rendState.m_depthTest,
@@ -1161,12 +1163,13 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
             const AZ::Vector3 worldPos = ToWorldSpacePosition(pos);
             const AZ::Vector3 worldDir = ToWorldSpaceVector(dir);
             m_auxGeomPtr->DrawDisk(
                 worldPos, 
                 worldDir, 
-                radius, 
+                scale * radius, 
                 m_rendState.m_color,
                 AZ::RPI::AuxGeomDraw::DrawStyle::Shaded,
                 m_rendState.m_depthTest,
