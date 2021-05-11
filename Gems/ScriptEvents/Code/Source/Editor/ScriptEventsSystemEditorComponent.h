@@ -90,8 +90,6 @@ namespace ScriptEventsEditor
         void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
 
-        AZStd::vector<AZStd::unique_ptr<AzToolsFramework::PropertyHandlerBase>> m_propertyHandlers;
-
         // Script Event Assets
         AZStd::unordered_map<ScriptEvents::ScriptEventKey, AZStd::intrusive_ptr<ScriptEvents::Internal::ScriptEventRegistration>> m_scriptEvents;
 
