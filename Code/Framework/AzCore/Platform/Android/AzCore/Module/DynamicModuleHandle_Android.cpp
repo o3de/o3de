@@ -28,7 +28,7 @@ namespace AZ
             return dlopen(fileName.c_str(), RTLD_NOW);
         }
 
-        void ConstructModuleFullFileName(AZ::IO::FixedMaxPath& fullPath)
+        void ConstructModuleFullFileName(AZ::IO::FixedMaxPath&)
         {
         }
     }

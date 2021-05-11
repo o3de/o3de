@@ -75,11 +75,9 @@ namespace AZ
                 if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
                 {
                     if(AZ::IO::FixedMaxPath projectModulePath;
-                        settingsRegistry->Get(projectModulePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectBuildPath))
+                        settingsRegistry->Get(projectModulePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectConfigurationBinPath))
                     {
-                        projectModulePath /= "bin";
-                        projectModulePath /= AZ_BUILD_CONFIGURATION_TYPE;
-                        projectModulePath /= AZStd::string_view(fullFilePath);
+                        projectModulePath /= fullFilePath;
                         if (AZ::IO::SystemFile::Exists(projectModulePath.c_str()))
                         {
                             fullFilePath = projectModulePath;

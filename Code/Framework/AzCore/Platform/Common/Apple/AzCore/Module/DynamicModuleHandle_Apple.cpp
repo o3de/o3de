@@ -34,7 +34,7 @@ namespace AZ
             return handle;
         }
 
-        void ConstructModuleFullFileName(AZ::IO::FixedMaxPath& fullPath)
+        void ConstructModuleFullFileName(AZ::IO::FixedMaxPath&)
         {
         }
     }

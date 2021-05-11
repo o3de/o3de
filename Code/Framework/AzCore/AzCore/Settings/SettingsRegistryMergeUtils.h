@@ -57,6 +57,8 @@ namespace AZ::SettingsRegistryMergeUtils
     inline constexpr AZStd::string_view ProjectBuildPath = "/Amazon/Project/Settings/Build/project_build_path";
     //! In-Memory only key which stores an absolute path to the project build directory
     inline constexpr AZStd::string_view FilePathKey_ProjectBuildPath = "/Amazon/AzCore/Runtime/FilePaths/ProjectBuildPath";
+    //! In-Memory only key which stores the configuration directory containing the built binaries
+    inline constexpr AZStd::string_view FilePathKey_ProjectConfigurationBinPath = "/Amazon/AzCore/Runtime/FilePaths/ProjectConfigurationBinPath";
 
     //! Development write storage path may be considered temporary or cache storage on some platforms
     inline static constexpr char FilePathKey_DevWriteStorage[] = "/Amazon/AzCore/Runtime/FilePaths/DevWriteStorage";
