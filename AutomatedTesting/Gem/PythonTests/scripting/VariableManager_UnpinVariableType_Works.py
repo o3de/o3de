@@ -1,7 +1,6 @@
 """
 All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 its licensors.
-
 For complete copyright and license terms please see the LICENSE at the root of this
 distribution (the "License"). All use of this software is governed by the License,
 or, if provided, by the license below or the license accompanying this file. Do not
@@ -19,14 +18,12 @@ class Tests():
 # fmt: on
 
 
-def VariableManager_UnpinVariableType():
+def VariableManager_UnpinVariableType_Works():
     """
     Summary:
      Unpin variable types in create variable menu.
-
     Expected Behavior:
      The variable unpinned in create variable menu remains unpinned after reopening create variable menu.
-
     Test Steps:
      1) Open Script Canvas window (Tools > Script Canvas)
      2) Get the SC window object
@@ -36,12 +33,10 @@ def VariableManager_UnpinVariableType():
      6) Unpin Boolean by clicking the "Pin" icon on its left side
      7) Close and Reopen Create Variable menu and make sure Boolean is unpinned after reopening Create Variable menu
      8) Restore default layout and close SC window
-
     Note:
      - This test file must be called from the Open 3D Engine Editor command terminal
      - Any passed and failed tests are written to the Editor.log file.
         Parsing the file or running a log_monitor are required to observe the test results.
-
     :return: None
     """
 
@@ -94,15 +89,12 @@ def VariableManager_UnpinVariableType():
     table_view = variable_manager.findChild(QtWidgets.QTableView, "variablePalette")
     model_index = pyside_utils.find_child_by_pattern(table_view, "Boolean")
     # Make sure Boolean is pinned
-    result = helper.wait_for_condition(
-        lambda: model_index.siblingAtColumn(0).data(Qt.DecorationRole) is not None, GENERAL_WAIT
-    )
+    is_boolean = model_index.siblingAtColumn(0)
+    result = helper.wait_for_condition(lambda: is_boolean.data(Qt.DecorationRole) is not None, GENERAL_WAIT)
     Report.result(Tests.variable_pinned, result)
     # Unpin Boolean and make sure Boolean is unpinned.
-    pyside_utils.item_view_index_mouse_click(table_view, model_index.siblingAtColumn(0))
-    result = helper.wait_for_condition(
-        lambda: model_index.siblingAtColumn(0).data(Qt.DecorationRole) is None, GENERAL_WAIT
-    )
+    pyside_utils.item_view_index_mouse_click(table_view, is_boolean)
+    result = helper.wait_for_condition(lambda: is_boolean.data(Qt.DecorationRole) is None, GENERAL_WAIT)
     Report.result(Tests.variable_unpinned, result)
 
     # 7) Close and Reopen Create Variable menu and make sure Boolean is unpinned after reopening Create Variable menu
@@ -126,4 +118,4 @@ if __name__ == "__main__":
 
     from utils import Report
 
-    Report.start_test(VariableManager_UnpinVariableType)
+    Report.start_test(VariableManager_UnpinVariableType_Works)

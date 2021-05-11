@@ -183,8 +183,8 @@ class TestAutomation(TestAutomationBase):
         from . import ScriptEvents_SendReceiveSuccessfully as test_module
         self._run_test(request, workspace, editor, test_module)
     
-    def test_VariableManager_UnpinVariableType(self, request, workspace, editor, launcher_platform):
-        from . import VariableManager_UnpinVariableType as test_module
+    def test_VariableManager_UnpinVariableType_Works(self, request, workspace, editor, launcher_platform):
+        from . import VariableManager_UnpinVariableType_Works as test_module
         self._run_test(request, workspace, editor, test_module)
 
 # NOTE: We had to use hydra_test_utils.py, as TestAutomationBase run_test method
