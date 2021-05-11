@@ -82,10 +82,15 @@ namespace AZ
         void CpuProfilerImpl::Init()
         {
             Interface<CpuProfiler>::Register(this);
+            m_initialized = true;
         }
 
         void CpuProfilerImpl::Shutdown()
         {
+            if (!m_initialized)
+            {
+                return;
+            }
             // When this call is made, no more thread profiling calls can be performed anymore
             Interface<CpuProfiler>::Unregister(this);
 
@@ -97,6 +102,7 @@ namespace AZ
             // Cleanup all TLS
             m_registeredThreads.clear();
             m_timeRegionMap.clear();
+            m_initialized = false;
         }
 
         void CpuProfilerImpl::BeginTimeRegion(TimeRegion& timeRegion)

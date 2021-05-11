@@ -11,8 +11,8 @@
 */
 
 #include <Source/NetworkEntity/NetworkEntityAuthorityTracker.h>
-#include <Source/NetworkEntity/INetworkEntityManager.h>
 #include <Source/Components/NetBindComponent.h>
+#include <Include/INetworkEntityManager.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzNetworking/Utilities/NetworkCommon.h>

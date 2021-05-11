@@ -169,5 +169,10 @@ namespace AZ::Utils
     template AZ::Outcome<AZStd::vector<int8_t>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
     template AZ::Outcome<AZStd::vector<uint8_t>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
 
-
+    AZ::IO::FixedMaxPathString GetO3deManifestDirectory()
+    {
+        AZ::IO::FixedMaxPath path = GetHomeDirectory();
+        path /= ".o3de";
+        return path.Native();
+    }
 }

@@ -20,13 +20,9 @@ set(FILES
     ICmdLine.h
     IColorGradingController.h
     IConsole.h
-    ICryMiniGUI.h
-    IDeferredCollisionEvent.h
-    IDefragAllocator.h
     IEngineModule.h
     IEntityRenderState.h
     IEntityRenderState_info.cpp
-    IFileChangeMonitor.h
     IFlares.h
     IFont.h
     IFunctorBase.h
@@ -51,8 +47,6 @@ set(FILES
     IMiniLog.h
     IMovieSystem.h
     INotificationNetwork.h
-    IOverloadSceneManager.h
-    IPerfHud.h
     IPhysics.h
     IPhysicsDebugRenderer.h
     IPostEffectGroup.h
@@ -109,7 +103,6 @@ set(FILES
     FunctorBaseMember.h
     stridedptr.h
     Options.h
-    CREGeomCache.h
     SerializationTypes.h
     CryEndian.h
     CryRandomInternal.h
@@ -205,7 +198,6 @@ set(FILES
     TimeValue_info.h
     TypeInfo_decl.h
     TypeInfo_impl.h
-    TypeLibrary.h
     UnalignedBlit.h
     UnicodeBinding.h
     UnicodeEncoding.h
@@ -222,18 +214,6 @@ set(FILES
     PakLoadDataUtils.cpp
     PakLoadDataUtils.h
     TPool.h
-    CREBaseCloud.h
-    CREFogVolume.h
-    CREGameEffect.h
-    CREImposter.h
-    CREMesh.h
-    CREOcclusionQuery.h
-    CREPostProcess.h
-    CRESky.h
-    CREVolumeObject.h
-    CREWaterOcean.h
-    CREWaterVolume.h
-    RendElement.h
     Cry_Matrix33.h
     Cry_Matrix34.h
     Cry_Matrix44.h
@@ -280,8 +260,6 @@ set(FILES
     Linux_Win32Wrapper.h
     LinuxSpecific.h
     LoadScreenBus.h
-    LoadScreenComponent.cpp
-    LoadScreenComponent.h
     MacSpecific.h
     platform.h
     platform_impl.cpp
@@ -478,7 +456,6 @@ set(FILES
     Terrain/Bus/TerrainRendererBus.h
     Terrain/Bus/HeightmapDataBus.h
     Terrain/Bus/TerrainProviderBus.h
-    CREPrismObject.h
     StaticInstance.h
     Pak/CryPakUtils.h
 )

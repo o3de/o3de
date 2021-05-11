@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Source/NetworkEntity/NetworkEntityHandle.h>
+#include <Include/NetworkEntityHandle.h>
 #include <AzCore/Math/Aabb.h>
 
 namespace Multiplayer

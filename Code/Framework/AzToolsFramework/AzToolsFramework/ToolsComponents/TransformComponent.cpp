@@ -25,6 +25,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzFramework/Visibility/EntityBoundsUnionBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -265,6 +266,13 @@ namespace AzToolsFramework
 
                 AZ::TransformNotificationBus::Event(
                     GetEntityId(), &TransformNotification::OnTransformChanged, localTM, worldTM);
+                m_transformChangedEvent.Signal(localTM, worldTM);
+
+                AzFramework::IEntityBoundsUnion* boundsUnion = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get();
+                if (boundsUnion != nullptr)
+                {
+                    boundsUnion->OnTransformUpdated(GetEntity());
+                }
             }
         }
 
@@ -933,15 +941,14 @@ namespace AzToolsFramework
             {
                 return nullptr;
             }
-
-            AZ::Entity* pEntity = nullptr;
-            EBUS_EVENT_RESULT(pEntity, AZ::ComponentApplicationBus, FindEntity, otherEntityId);
-            if (!pEntity)
+            
+            AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(otherEntityId);
+            if (!entity)
             {
                 return nullptr;
             }
 
-            return pEntity->FindComponent<TransformComponent>();
+            return entity->FindComponent<TransformComponent>();
         }
 
         AZ::TransformInterface* TransformComponent::GetParent()
