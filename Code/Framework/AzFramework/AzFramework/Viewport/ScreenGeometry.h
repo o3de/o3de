@@ -134,9 +134,9 @@ namespace AzFramework
         return !operator==(lhs, rhs);
     }
 
-    inline int ScreenVectorLength(const ScreenVector& screenVector)
+    inline float ScreenVectorLength(const ScreenVector& screenVector)
     {
-        return std::sqrt(screenVector.m_x * screenVector.m_x + screenVector.m_y * screenVector.m_y);
+        return aznumeric_cast<float>(std::sqrt(screenVector.m_x * screenVector.m_x + screenVector.m_y * screenVector.m_y));
     }
 
     inline ScreenPoint ScreenPointFromNDC(const AZ::Vector3& screenNDC, const AZ::Vector2& viewportSize)

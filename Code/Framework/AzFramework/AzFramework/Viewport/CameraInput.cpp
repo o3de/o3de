@@ -36,7 +36,7 @@ namespace AzFramework
     AZ_CVAR(float, ed_cameraSystemPanSpeed, 0.01f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(bool, ed_cameraSystemPanInvertX, true, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(bool, ed_cameraSystemPanInvertY, true, nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(int, ed_cameraSystemLookDeadzone, 2, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(float, ed_cameraSystemLookDeadzone, 2.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
 
     AZ_CVAR(
         AZ::CVarFixedString, ed_cameraSystemTranslateForwardKey, "keyboard_key_alphanumeric_W", nullptr, AZ::ConsoleFunctorFlags::Null, "");
@@ -285,7 +285,7 @@ namespace AzFramework
                 if (input->m_state == InputChannel::State::Began)
                 {
                     m_tryingToBegin = true;
-                    m_moveAccumulator = 0;
+                    m_moveAccumulator = 0.0f;
                 }
                 else if (input->m_state == InputChannel::State::Ended)
                 {

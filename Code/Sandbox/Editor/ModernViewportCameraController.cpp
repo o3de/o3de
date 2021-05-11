@@ -74,7 +74,7 @@ namespace SandboxEditor
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
             auto handleCameraChange = [this, viewportContext](const AZ::Matrix4x4&) {
-                if (!m_updating)
+                if (!m_updatingTransform)
                 {
                     UpdateCameraFromTransform(m_targetCamera, viewportContext->GetCameraTransform());
                     m_camera = m_targetCamera;
@@ -128,7 +128,7 @@ namespace SandboxEditor
     {
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
-            m_updating = true;
+            m_updatingTransform = true;
 
             if (m_cameraMode == CameraMode::Control)
             {
@@ -162,7 +162,7 @@ namespace SandboxEditor
                 viewportContext->SetCameraTransform(current);
             }
 
-            m_updating = false;
+            m_updatingTransform = false;
         }
     }
 

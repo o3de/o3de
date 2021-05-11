@@ -206,7 +206,7 @@ namespace AzFramework
 
     private:
         InputChannelId m_rotateChannelId;
-        int m_moveAccumulator = 0;
+        float m_moveAccumulator = 0.0f;
         bool m_tryingToBegin = false;
     };
 
