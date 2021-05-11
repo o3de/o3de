@@ -16,6 +16,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
@@ -102,9 +103,20 @@ namespace AzToolsFramework
                     // Notify Propagation has begun
                     PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotifications::OnPrefabInstancePropagationBegin);
 
+                    auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+                    AZ_Assert(
+                        prefabEditorEntityOwnershipInterface != nullptr,
+                        "Prefab - InstanceUpdateExecutor::UpdateTemplateInstancesInQueue - "
+                        "Prefab Editor Entity Ownership Interface could not be found. "
+                        "Check that it is being correctly initialized.");
+
+                    TemplateId levelRootInstanceTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabInstanceTemplateId();
+                    PrefabDom& levelRootInstanceTemplateDom =
+                        m_prefabSystemComponentInterface->FindTemplateDom(levelRootInstanceTemplateId);
+                    PrefabDom instanceDomInRootTemplateDoc;
+
                     EntityIdList selectedEntityIds;
                     ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
-                    ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, EntityIdList());
 
                     for (int i = 0; i < instanceCountToUpdateInBatch; ++i)
                     {
@@ -140,20 +152,44 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        Template& currentTemplate = currentTemplateReference->get();
                         Instance::EntityList newEntities;
-                        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, currentTemplate.GetPrefabDom()))
+
+                        PrefabDomValueReference instanceDomInRootTemplate;
+                        if(instanceToUpdate->GetTemplateId() != levelRootInstanceTemplateId)
                         {
-                            AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-                                &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, newEntities);
+                            instanceDomInRootTemplate = PrefabDomUtils::FindPrefabDomValue(
+                                levelRootInstanceTemplateDom, instanceToUpdate->GetAbsoluteInstanceAliasPath());
+                        }
+                        else
+                        {
+                            instanceDomInRootTemplate = levelRootInstanceTemplateDom;
+                        }
+
+                        if (instanceDomInRootTemplate.has_value())
+                        {
+                            instanceDomInRootTemplateDoc.CopyFrom(instanceDomInRootTemplate->get(), instanceDomInRootTemplateDoc.GetAllocator());
+
+                            if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDomInRootTemplateDoc))
+                            {
+                                AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                                    &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, newEntities);
+                            }
+                            else
+                            {
+                                AZ_Error(
+                                    "Prefab", false,
+                                    "InstanceUpdateExecutor::UpdateTemplateInstancesInQueue - "
+                                    "Could not load Instance from Prefab DOM retrieved from the Level DOM.");
+
+                                isUpdateSuccessful = false;
+                            }
                         }
                         else
                         {
                             AZ_Error(
                                 "Prefab", false,
                                 "InstanceUpdateExecutor::UpdateTemplateInstancesInQueue - "
-                                "Could not load Instance from Prefab DOM of Template with Id '%llu' on file path '%s'.",
-                                currentTemplateId, currentTemplate.GetFilePath().c_str());
+                                "Could not retrieve Instance DOM from Level Prefab DOM.");
 
                             isUpdateSuccessful = false;
                         }
@@ -161,16 +197,6 @@ namespace AzToolsFramework
                         m_instancesUpdateQueue.pop();
                     }
 
-                    for (auto entityIdIterator = selectedEntityIds.begin(); entityIdIterator != selectedEntityIds.end(); entityIdIterator++)
-                    {
-                        // Since entities get recreated during propagation, we need to check whether the entities correspoding to the list
-                        // of selected entity ids are present or not.
-                        AZ::Entity* entity = GetEntityById(*entityIdIterator);
-                        if (entity == nullptr)
-                        {
-                            selectedEntityIds.erase(entityIdIterator--);
-                        }
-                    }
                     ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
 
                     // Notify Propagation has ended

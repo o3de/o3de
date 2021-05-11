@@ -155,10 +155,6 @@ namespace AzToolsFramework
                     templateIdToLinkIdsIterator->second.end()));
                 UpdateLinkedInstances(linkIdsToUpdateQueue);
             }
-            else
-            {
-                UpdatePrefabInstances(templateId);
-            }
         }
 
         void PrefabSystemComponent::UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom)
@@ -252,8 +248,6 @@ namespace AzToolsFramework
             if (targetTemplateIdToLinkIdMap[targetTemplateId].first.empty() &&
                 targetTemplateIdToLinkIdMap[targetTemplateId].second)
             {
-                UpdatePrefabInstances(targetTemplateId);
-
                 auto templateToLinkIter = m_templateToLinkIdsMap.find(targetTemplateId);
                 if (templateToLinkIter != m_templateToLinkIdsMap.end())
                 {
