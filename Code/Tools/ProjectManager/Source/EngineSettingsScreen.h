@@ -17,27 +17,20 @@
 
 namespace Ui
 {
-    class FirstTimeUseClass;
+    class EngineSettingsClass;
 }
 
 namespace O3DE::ProjectManager
 {
-    class FirstTimeUse
+    class EngineSettingsScreen
         : public ScreenWidget
     {
     public:
-        explicit FirstTimeUse(ProjectManagerWindow* window);
-        ~FirstTimeUse();
-
-    protected:
-        void ConnectSlotsAndSignals() override;
-
-    protected slots:
-        void HandleNewProjectButton();
-        void HandleOpenProjectButton();
+        explicit EngineSettingsScreen(ProjectManagerWindow* window);
+        ~EngineSettingsScreen();
 
     private:
-        QScopedPointer<Ui::FirstTimeUseClass> m_ui;
+        QScopedPointer<Ui::EngineSettingsClass> m_ui;
     };
 
 } // namespace O3DE::ProjectManager

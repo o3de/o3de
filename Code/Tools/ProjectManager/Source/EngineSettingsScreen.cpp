@@ -10,13 +10,13 @@
  *
  */
 
-#include <EngineSettings.h>
+#include <EngineSettingsScreen.h>
 
-#include <Source/ui_EngineSettings.h>
+#include <Source/ui_EngineSettingsScreen.h>
 
 namespace O3DE::ProjectManager
 {
-    EngineSettings::EngineSettings(ProjectManagerWindow* window)
+    EngineSettingsScreen::EngineSettingsScreen(ProjectManagerWindow* window)
         : ScreenWidget(window)
         , m_ui(new Ui::EngineSettingsClass())
     {
@@ -26,10 +26,4 @@ namespace O3DE::ProjectManager
     EngineSettings::~EngineSettings()
     {
     }
-
-    void EngineSettings::ConnectSlotsAndSignals()
-    {
-        // Do nothing for now
-    }
-
 } // namespace O3DE::ProjectManager

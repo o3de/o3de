@@ -10,36 +10,31 @@
  *
  */
 
-#include <FirstTimeUse.h>
+#include <FirstTimeUseScreen.h>
 
-#include <Source/ui_FirstTimeUse.h>
+#include <Source/ui_FirstTimeUseScreen.h>
 
 namespace O3DE::ProjectManager
 {
-    FirstTimeUse::FirstTimeUse(ProjectManagerWindow* window)
+    FirstTimeUseScreen::FirstTimeUseScreen(ProjectManagerWindow* window)
         : ScreenWidget(window)
         , m_ui(new Ui::FirstTimeUseClass())
     {
         m_ui->setupUi(this);
 
-        ConnectSlotsAndSignals();
-    }
-
-    FirstTimeUse::~FirstTimeUse()
-    {
-    }
-
-    void FirstTimeUse::ConnectSlotsAndSignals()
-    {
         QObject::connect(m_ui->createProjectButton, &QPushButton::pressed, this, &FirstTimeUse::HandleNewProjectButton);
         QObject::connect(m_ui->openProjectButton, &QPushButton::pressed, this, &FirstTimeUse::HandleOpenProjectButton);
     }
 
-    void FirstTimeUse::HandleNewProjectButton()
+    FirstTimeUseScreen::~FirstTimeUseScreen()
+    {
+    }
+
+    void FirstTimeUseScreen::HandleNewProjectButton()
     {
         m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::NewProjectSettings);
     }
-    void FirstTimeUse::HandleOpenProjectButton()
+    void FirstTimeUseScreen::HandleOpenProjectButton()
     {
         m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::ProjectsHome);
     }

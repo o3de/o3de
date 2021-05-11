@@ -10,41 +10,36 @@
  *
  */
 
-#include <ProjectsHome.h>
+#include <ProjectsHomeScreen.h>
 
-#include <Source/ui_ProjectsHome.h>
+#include <Source/ui_ProjectsHomeScreen.h>
 
 namespace O3DE::ProjectManager
 {
-    ProjectsHome::ProjectsHome(ProjectManagerWindow* window)
+    ProjectsHomeScreen::ProjectsHomeScreen(ProjectManagerWindow* window)
         : ScreenWidget(window)
         , m_ui(new Ui::ProjectsHomeClass())
     {
         m_ui->setupUi(this);
 
-        ConnectSlotsAndSignals();
-    }
-
-    ProjectsHome::~ProjectsHome()
-    {
-    }
-
-    void ProjectsHome::ConnectSlotsAndSignals()
-    {
         QObject::connect(m_ui->newProjectButton, &QPushButton::pressed, this, &ProjectsHome::HandleNewProjectButton);
         QObject::connect(m_ui->addProjectButton, &QPushButton::pressed, this, &ProjectsHome::HandleAddProjectButton);
         QObject::connect(m_ui->editProjectButton, &QPushButton::pressed, this, &ProjectsHome::HandleEditProjectButton);
     }
 
-    void ProjectsHome::HandleNewProjectButton()
+    ProjectsHomeScreen::~ProjectsHomeScreen()
+    {
+    }
+
+    void ProjectsHomeScreen::HandleNewProjectButton()
     {
         m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::NewProjectSettings);
     }
-    void ProjectsHome::HandleAddProjectButton()
+    void ProjectsHomeScreen::HandleAddProjectButton()
     {
         //Do nothing for now
     }
-    void ProjectsHome::HandleEditProjectButton()
+    void ProjectsHomeScreen::HandleEditProjectButton()
     {
         m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::ProjectSettings);
     }
