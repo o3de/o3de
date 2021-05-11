@@ -255,6 +255,7 @@ set(FILES
     Physics/ClassConverters.cpp
     Physics/ClassConverters.h
     Physics/MaterialBus.h
+    Physics/WindBus.h
     Process/ProcessCommunicator.cpp
     Process/ProcessCommunicator.h
     Process/ProcessWatcher.cpp
