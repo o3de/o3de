@@ -579,23 +579,13 @@ void CCryEditDoc::SerializeViewSettings(CXmlArchive& xmlAr)
                 view->getAttr(viewerAnglesName.toUtf8().constData(), va);
             }
 
-            CViewport* pVP = GetIEditor()->GetViewManager()->GetView(i);
+            Matrix34 tm = Matrix34::CreateRotationXYZ(va);
+            tm.SetTranslation(vp);
 
-
-            if (pVP)
+            auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+            if (auto viewportContext = viewportContextManager->GetViewportContextById(i))
             {
-                Matrix34 tm = Matrix34::CreateRotationXYZ(va);
-                tm.SetTranslation(vp);
-                pVP->SetViewTM(tm);
-            }
-
-            // Load grid.
-            auto gridName = QString("Grid%1").arg(useOldViewFormat ? "" : QString::number(i));
-            XmlNodeRef gridNode = xmlAr.root->newChild(gridName.toUtf8().constData());
-
-            if (gridNode)
-            {
-                GetIEditor()->GetViewManager()->GetGrid()->Serialize(gridNode, xmlAr.bLoading);
+                viewportContext->SetCameraTransform(LYTransformToAZTransform(tm));
             }
         }
     }
@@ -622,11 +612,6 @@ void CCryEditDoc::SerializeViewSettings(CXmlArchive& xmlAr)
                 auto viewerAnglesName = QString("ViewerAngles%1").arg(i);
                 view->setAttr(viewerAnglesName.toUtf8().constData(), angles);
             }
-
-            // Save grid.
-            auto gridName = QString("Grid%1").arg(i);
-            XmlNodeRef gridNode = xmlAr.root->newChild(gridName.toUtf8().constData());
-            GetIEditor()->GetViewManager()->GetGrid()->Serialize(gridNode, xmlAr.bLoading);
         }
     }
 }

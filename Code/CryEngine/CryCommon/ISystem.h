@@ -91,7 +91,6 @@ struct IAVI_Reader;
 class CPNoise3;
 struct IVisualLog;
 struct ILocalizationManager;
-struct ICryFactoryRegistry;
 struct ISoftCodeMgr;
 struct IZLibCompressor;
 struct IZLibDecompressor;
@@ -99,8 +98,6 @@ struct ILZ4Decompressor;
 class IZStdDecompressor;
 struct IOutputPrintSink;
 struct IThreadManager;
-struct IServiceNetwork;
-struct IRemoteCommandManager;
 struct IWindowMessageHandler;
 struct IImageHandler;
 class IResourceCompilerHelper;
@@ -798,8 +795,6 @@ struct SSystemGlobalEnvironment
     IRenderer*                 pRenderer;
     IMaterialEffects*          pMaterialEffects;
     ISoftCodeMgr*                            pSoftCodeMgr;
-    IServiceNetwork*              pServiceNetwork;
-    IRemoteCommandManager*        pRemoteCommandManager;
     ILyShine*                      pLyShine;
     IResourceCompilerHelper*      pResourceCompilerHelper;
     SharedEnvironmentInstance*      pSharedEnvironment;
@@ -1244,10 +1239,6 @@ struct ISystem
     //   Retrieves access to XML utilities interface.
     virtual IXmlUtils* GetXmlUtils() = 0;
 
-    // Summary:
-    //   Interface to access different implementations of Serialization::IArchive in a centralized way.
-    virtual Serialization::IArchiveHost* GetArchiveHost() const = 0;
-
     virtual void SetViewCamera(CCamera& Camera) = 0;
     virtual CCamera& GetViewCamera() = 0;
 
@@ -1368,10 +1359,6 @@ struct ISystem
     //   Retrieves system update counter.
     virtual uint64 GetUpdateCounter() = 0;
 
-    // Summary:
-    //   Gets access to all registered factories.
-    virtual ICryFactoryRegistry* GetCryFactoryRegistry() const = 0;
-
     //////////////////////////////////////////////////////////////////////////
     // Error callback handling
 
@@ -1490,15 +1477,6 @@ struct ISystem
     virtual bool SteamInit() = 0;
 
     virtual const IImageHandler* GetImageHandler() const = 0;
-
-    // Summary:
-    //      Loads a dynamic library, creates and initializes an instance of the module class
-
-    virtual bool InitializeEngineModule(const char* dllName, const char* moduleClassName, const SSystemInitParams& initParams) = 0;
-
-    // Summary:
-    //      Unloads a dynamic library as well as the corresponding instance of the module class
-    virtual bool UnloadEngineModule(const char* dllName, const char* moduleClassName) = 0;
 
     // Summary:
     //      Gets the root window message handler function

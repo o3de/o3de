@@ -200,6 +200,10 @@ class TestAutomation(TestAutomationBase):
         from . import NodePalette_SearchText_Deletion as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    def test_VariableManager_UnpinVariableType_Works(self, request, workspace, editor, launcher_platform):
+        from . import VariableManager_UnpinVariableType_Works as test_module
+        self._run_test(request, workspace, editor, test_module)
+
 # NOTE: We had to use hydra_test_utils.py, as TestAutomationBase run_test method
 # fails because of pyside_utils import
 @pytest.mark.SUITE_periodic
