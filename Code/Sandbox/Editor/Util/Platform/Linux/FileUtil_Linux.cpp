@@ -51,15 +51,15 @@ namespace Platform
 
     bool CreatePath(const QString& strPath)
     {
-        QString                                 strDriveLetter;
-        QString                                 strDirectory;
-        QString                                 strFilename;
-        QString                                 strExtension;
-        QString                                 strCurrentDirectoryPath;
-        QStringList        cstrDirectoryQueue;
-        size_t                                  nCurrentPathQueue(0);
-        size_t                                  nTotalPathQueueElements(0);
-        BOOL                                        bnLastDirectoryWasCreated(FALSE);
+        QString strDriveLetter;
+        QString strDirectory;
+        QString strFilename;
+        QString strExtension;
+        QString strCurrentDirectoryPath;
+        QStringList cstrDirectoryQueue;
+        size_t nCurrentPathQueue(0);
+        size_t nTotalPathQueueElements(0);
+        BOOL bnLastDirectoryWasCreated(FALSE);
 
         if (Common::PathExists(strPath))
         {
