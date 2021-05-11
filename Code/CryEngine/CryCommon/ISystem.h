@@ -828,9 +828,6 @@ struct ISystem
     virtual void DoWorkDuringOcclusionChecks() = 0;
     virtual bool NeedDoWorkDuringOcclusionChecks() = 0;
 
-    //! Update screen and call some important tick functions during loading.
-    virtual void SynchronousLoadingTick(const char* pFunc, int line) = 0;
-
     // Summary:
     //   Returns the current used memory.
     virtual uint32 GetUsedMemory() = 0;
@@ -1205,11 +1202,6 @@ struct ISystem
     };
     using CrySystemNotificationBus = AZ::EBus<CrySystemNotifications>;
 };
-
-//JAT - this is a very important function for the dedicated server - it lets us run >1000 players per piece of server hardware
-//JAT - this saves us lots of money on the dedicated server hardware
-#define SYNCHRONOUS_LOADING_TICK() do { if (gEnv && gEnv->pSystem) {gEnv->pSystem->SynchronousLoadingTick(__FUNC__, __LINE__); } \
-} while (0)
 
 #if defined(USE_DISK_PROFILER)
 

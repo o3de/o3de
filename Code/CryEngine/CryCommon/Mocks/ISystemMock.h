@@ -35,8 +35,6 @@ public:
         void());
     MOCK_METHOD0(NeedDoWorkDuringOcclusionChecks,
         bool());
-    MOCK_METHOD2(SynchronousLoadingTick,
-        void(const char* pFunc, int line));
     MOCK_METHOD0(RenderStatistics,
         void());
     MOCK_METHOD0(GetUsedMemory,

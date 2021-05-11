@@ -390,12 +390,6 @@ public:
     ISystem* GetCrySystem() override;
     ////////////////////////////////////////////////////////////////////////
 
-    //! Update screen during loading.
-    void UpdateLoadingScreen();
-
-    //! Update screen and call some important tick functions during loading.
-    void SynchronousLoadingTick(const char* pFunc, int line);
-
     uint32 GetUsedMemory();
 
     virtual bool SteamInit();

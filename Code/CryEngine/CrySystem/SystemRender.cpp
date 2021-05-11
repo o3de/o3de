@@ -88,40 +88,6 @@ void CSystem::OnScene3DEnd()
     }
 }
 
-
-//! Update screen and call some important tick functions during loading.
-void CSystem::SynchronousLoadingTick([[maybe_unused]] const char* pFunc, [[maybe_unused]] int line)
-{
-    LOADING_TIME_PROFILE_SECTION;
-    if (gEnv && gEnv->bMultiplayer && !gEnv->IsEditor())
-    {
-        //UpdateLoadingScreen currently contains a couple of tick functions that need to be called regularly during the synchronous level loading,
-        //when the usual engine and game ticks are suspended.
-        UpdateLoadingScreen();
-    }
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-void CSystem::UpdateLoadingScreen()
-{
-    // Do not update the network thread from here - it will cause context corruption - use the NetworkStallTicker thread system
-
-    if (GetCurrentThreadId() != gEnv->mMainThreadId)
-    {
-        return;
-    }
-
-#if defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEMRENDERER_CPP_SECTION_2
-#include AZ_RESTRICTED_FILE(SystemRender_cpp)
-#endif
-
-#if AZ_LOADSCREENCOMPONENT_ENABLED
-    EBUS_EVENT(LoadScreenBus, UpdateAndRender);
-#endif // if AZ_LOADSCREENCOMPONENT_ENABLED
-}
-
 //////////////////////////////////////////////////////////////////////////
 
 void CSystem::DisplayErrorMessage(const char* acMessage,
