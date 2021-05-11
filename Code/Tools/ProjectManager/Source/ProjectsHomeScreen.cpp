@@ -16,24 +16,20 @@
 
 namespace O3DE::ProjectManager
 {
-    ProjectsHomeScreen::ProjectsHomeScreen(ProjectManagerWindow* window)
-        : ScreenWidget(window)
+    ProjectsHomeScreen::ProjectsHomeScreen(QWidget* parent)
+        : ScreenWidget(parent)
         , m_ui(new Ui::ProjectsHomeClass())
     {
         m_ui->setupUi(this);
 
-        QObject::connect(m_ui->newProjectButton, &QPushButton::pressed, this, &ProjectsHome::HandleNewProjectButton);
-        QObject::connect(m_ui->addProjectButton, &QPushButton::pressed, this, &ProjectsHome::HandleAddProjectButton);
-        QObject::connect(m_ui->editProjectButton, &QPushButton::pressed, this, &ProjectsHome::HandleEditProjectButton);
-    }
-
-    ProjectsHomeScreen::~ProjectsHomeScreen()
-    {
+        QObject::connect(m_ui->newProjectButton, &QPushButton::pressed, this, &ProjectsHomeScreen::HandleNewProjectButton);
+        QObject::connect(m_ui->addProjectButton, &QPushButton::pressed, this, &ProjectsHomeScreen::HandleAddProjectButton);
+        QObject::connect(m_ui->editProjectButton, &QPushButton::pressed, this, &ProjectsHomeScreen::HandleEditProjectButton);
     }
 
     void ProjectsHomeScreen::HandleNewProjectButton()
     {
-        m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::NewProjectSettings);
+        emit ChangeScreenRequest(ProjectManagerScreen::NewProjectSettings);
     }
     void ProjectsHomeScreen::HandleAddProjectButton()
     {
@@ -41,7 +37,7 @@ namespace O3DE::ProjectManager
     }
     void ProjectsHomeScreen::HandleEditProjectButton()
     {
-        m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::ProjectSettings);
+        emit ChangeScreenRequest(ProjectManagerScreen::ProjectSettings);
     }
 
 } // namespace O3DE::ProjectManager

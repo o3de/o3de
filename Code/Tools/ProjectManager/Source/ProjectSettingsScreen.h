@@ -26,8 +26,8 @@ namespace O3DE::ProjectManager
         : public ScreenWidget
     {
     public:
-        explicit ProjectSettingsScreen(ProjectManagerWindow* window);
-        ~ProjectSettingsScreen();
+        explicit ProjectSettingsScreen(QWidget* parent);
+        ~ProjectSettingsScreen() = default;
 
     protected slots:
         void HandleGemsButton();

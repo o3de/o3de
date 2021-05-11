@@ -28,7 +28,8 @@ namespace O3DE::ProjectManager
     {
         m_ui->setupUi(this);
 
-        ConnectSlotsAndSignals();
+        QObject::connect(m_ui->projectsMenu, &QMenu::aboutToShow, this, &ProjectManagerWindow::HandleProjectsMenu);
+        QObject::connect(m_ui->engineMenu, &QMenu::aboutToShow, this, &ProjectManagerWindow::HandleEngineMenu);
 
         QDir rootDir = QString::fromUtf8(engineRootPath.Native().data(), aznumeric_cast<int>(engineRootPath.Native().size()));
         const auto pathOnDisk = rootDir.absoluteFilePath("Code/Tools/ProjectManager/Resources");
@@ -84,14 +85,14 @@ namespace O3DE::ProjectManager
         }
 
         // Add new screen
-        QWidget* newScreen = BuildScreen(this, screen);
+        ScreenWidget* newScreen = BuildScreen(this, screen);
         m_ui->stackedScreens->insertWidget(index, newScreen);
+
+        QObject::connect(newScreen, &ScreenWidget::ChangeScreenRequest, this, &ProjectManagerWindow::ChangeToScreen);
     }
 
     void ProjectManagerWindow::ConnectSlotsAndSignals()
     {
-        QObject::connect(m_ui->projectsMenu, &QMenu::aboutToShow, this, &ProjectManagerWindow::HandleProjectsMenu);
-        QObject::connect(m_ui->engineMenu, &QMenu::aboutToShow, this, &ProjectManagerWindow::HandleEngineMenu);
     }
 
     void ProjectManagerWindow::HandleProjectsMenu()

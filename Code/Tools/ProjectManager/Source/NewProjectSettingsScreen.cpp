@@ -16,27 +16,23 @@
 
 namespace O3DE::ProjectManager
 {
-    NewProjectSettingsScreen::NewProjectSettingsScreen(ProjectManagerWindow* window)
-        : ScreenWidget(window)
+    NewProjectSettingsScreen::NewProjectSettingsScreen(QWidget* parent)
+        : ScreenWidget(parent)
         , m_ui(new Ui::NewProjectSettingsClass())
     {
         m_ui->setupUi(this);
 
-        QObject::connect(m_ui->backButton, &QPushButton::pressed, this, &NewProjectSettings::HandleBackButton);
-        QObject::connect(m_ui->nextButton, &QPushButton::pressed, this, &NewProjectSettings::HandleNextButton);
-    }
-
-    NewProjectSettingsScreen::~NewProjectSettingsScreen()
-    {
+        QObject::connect(m_ui->backButton, &QPushButton::pressed, this, &NewProjectSettingsScreen::HandleBackButton);
+        QObject::connect(m_ui->nextButton, &QPushButton::pressed, this, &NewProjectSettingsScreen::HandleNextButton);
     }
 
     void NewProjectSettingsScreen::HandleBackButton()
     {
-        m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::FirstTimeUse);
+        emit ChangeScreenRequest(ProjectManagerScreen::FirstTimeUse);
     }
     void NewProjectSettingsScreen::HandleNextButton()
     {
-        m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::GemCatalog);
+        emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
     }
 
 } // namespace O3DE::ProjectManager

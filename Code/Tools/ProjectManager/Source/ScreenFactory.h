@@ -13,12 +13,10 @@
 
 #include <ScreenDefs.h>
 
-#include <ProjectManagerWindow.h>
-
-#include <QWidget>
+#include <ScreenWidget.h>
 
 
 namespace O3DE::ProjectManager
 {
-    QWidget* BuildScreen(ProjectManagerWindow* window, ProjectManagerScreen screen);
+    ScreenWidget* BuildScreen(QWidget* parent, ProjectManagerScreen screen);
 } // namespace O3DE::ProjectManager

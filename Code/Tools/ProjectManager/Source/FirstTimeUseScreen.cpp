@@ -16,27 +16,23 @@
 
 namespace O3DE::ProjectManager
 {
-    FirstTimeUseScreen::FirstTimeUseScreen(ProjectManagerWindow* window)
-        : ScreenWidget(window)
+    FirstTimeUseScreen::FirstTimeUseScreen(QWidget* parent)
+        : ScreenWidget(parent)
         , m_ui(new Ui::FirstTimeUseClass())
     {
         m_ui->setupUi(this);
 
-        QObject::connect(m_ui->createProjectButton, &QPushButton::pressed, this, &FirstTimeUse::HandleNewProjectButton);
-        QObject::connect(m_ui->openProjectButton, &QPushButton::pressed, this, &FirstTimeUse::HandleOpenProjectButton);
-    }
-
-    FirstTimeUseScreen::~FirstTimeUseScreen()
-    {
+        QObject::connect(m_ui->createProjectButton, &QPushButton::pressed, this, &FirstTimeUseScreen::HandleNewProjectButton);
+        QObject::connect(m_ui->openProjectButton, &QPushButton::pressed, this, &FirstTimeUseScreen::HandleOpenProjectButton);
     }
 
     void FirstTimeUseScreen::HandleNewProjectButton()
     {
-        m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::NewProjectSettings);
+        emit ChangeScreenRequest(ProjectManagerScreen::NewProjectSettings);
     }
     void FirstTimeUseScreen::HandleOpenProjectButton()
     {
-        m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::ProjectsHome);
+        emit ChangeScreenRequest(ProjectManagerScreen::ProjectsHome);
     }
 
 } // namespace O3DE::ProjectManager

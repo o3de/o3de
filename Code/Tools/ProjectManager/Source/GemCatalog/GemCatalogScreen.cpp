@@ -10,7 +10,7 @@
  *
  */
 
-#include <GemCatalog/GemCatalog.h>
+#include <GemCatalog/GemCatalogScreen.h>
 #include <QDialogButtonBox>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -18,8 +18,8 @@
 
 namespace O3DE::ProjectManager
 {
-    GemCatalog::GemCatalog(ProjectManagerWindow* window)
-        : ScreenWidget(window)
+    GemCatalogScreen::GemCatalogScreen(QWidget* parent)
+        : ScreenWidget(parent)
     {
         m_gemModel = new GemModel(this);
 
@@ -46,8 +46,8 @@ namespace O3DE::ProjectManager
 
         QPushButton* tempBackButton = backNextButtons->addButton("Back", QDialogButtonBox::RejectRole);
         QPushButton* tempNextButton = backNextButtons->addButton("Next", QDialogButtonBox::AcceptRole);
-        connect(tempBackButton, &QPushButton::pressed, this, &GemCatalog::HandleBackButton);
-        connect(tempNextButton, &QPushButton::pressed, this, &GemCatalog::HandleConfirmButton);
+        connect(tempBackButton, &QPushButton::pressed, this, &GemCatalogScreen::HandleBackButton);
+        connect(tempNextButton, &QPushButton::pressed, this, &GemCatalogScreen::HandleConfirmButton);
 
         // Start: Temporary gem test data
         {
@@ -90,12 +90,12 @@ namespace O3DE::ProjectManager
         // End: Temporary gem test data
     }
 
-    void GemCatalog::HandleBackButton()
+    void GemCatalogScreen::HandleBackButton()
     {
-        m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::NewProjectSettings);
+        emit ChangeScreenRequest(ProjectManagerScreen::NewProjectSettings);
     }
-    void GemCatalog::HandleConfirmButton()
+    void GemCatalogScreen::HandleConfirmButton()
     {
-        m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::ProjectsHome);
+        emit ChangeScreenRequest(ProjectManagerScreen::ProjectsHome);
     }
 } // namespace O3DE::ProjectManager

@@ -19,12 +19,12 @@
 
 namespace O3DE::ProjectManager
 {
-    class GemCatalog
+    class GemCatalogScreen
         : public ScreenWidget
     {
     public:
-        explicit GemCatalog(ProjectManagerWindow* window);
-        ~GemCatalog() = default;
+        explicit GemCatalogScreen(QWidget* parent);
+        ~GemCatalogScreen() = default;
 
     protected slots:
         void HandleBackButton();

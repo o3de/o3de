@@ -26,8 +26,8 @@ namespace O3DE::ProjectManager
         : public ScreenWidget
     {
     public:
-        explicit NewProjectSettingsScreen(ProjectManagerWindow* window);
-        ~NewProjectSettingsScreen();
+        explicit NewProjectSettingsScreen(QWidget* parent);
+        ~NewProjectSettingsScreen() = default;
 
     protected slots:
         void HandleBackButton();

@@ -27,8 +27,8 @@ namespace O3DE::ProjectManager
     {
 
     public:
-        explicit ProjectsHomeScreen(ProjectManagerWindow* window);
-        ~ProjectsHomeScreen();
+        explicit ProjectsHomeScreen(QWidget* parent);
+        ~ProjectsHomeScreen() = default;
 
     protected slots:
         void HandleNewProjectButton();

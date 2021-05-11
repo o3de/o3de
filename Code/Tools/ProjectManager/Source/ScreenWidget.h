@@ -23,16 +23,14 @@ namespace O3DE::ProjectManager
         : public QWidget
     {
     public:
-        explicit ScreenWidget(ProjectManagerWindow* window)
-            : QWidget(window->GetScreenStack())
-            , m_projectManagerWindow(window)
+        explicit ScreenWidget(QWidget* parent)
+            : QWidget(parent)
         {
         }
+        ~ScreenWidget() = default;
 
-    protected:
-        virtual void ConnectSlotsAndSignals() {}
-
-        ProjectManagerWindow* m_projectManagerWindow;
+    signals:
+        void ChangeScreenRequest(ProjectManagerScreen screen);
     };
 
 } // namespace O3DE::ProjectManager

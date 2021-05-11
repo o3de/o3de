@@ -16,14 +16,10 @@
 
 namespace O3DE::ProjectManager
 {
-    EngineSettingsScreen::EngineSettingsScreen(ProjectManagerWindow* window)
-        : ScreenWidget(window)
+    EngineSettingsScreen::EngineSettingsScreen(QWidget* parent)
+        : ScreenWidget(parent)
         , m_ui(new Ui::EngineSettingsClass())
     {
         m_ui->setupUi(this);
-    }
-
-    EngineSettings::~EngineSettings()
-    {
     }
 } // namespace O3DE::ProjectManager

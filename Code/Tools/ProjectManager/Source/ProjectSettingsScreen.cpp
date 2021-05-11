@@ -16,27 +16,18 @@
 
 namespace O3DE::ProjectManager
 {
-    ProjectSettingsScreen::ProjectSettingsScreen(ProjectManagerWindow* window)
-        : ScreenWidget(window)
+    ProjectSettingsScreen::ProjectSettingsScreen(QWidget* parent)
+        : ScreenWidget(parent)
         , m_ui(new Ui::ProjectSettingsClass())
     {
         m_ui->setupUi(this);
 
-        QObject::connect(m_ui->gemsButton, &QPushButton::pressed, this, &ProjectSettings::HandleGemsButton);
-    }
-
-    ProjectSettingsScreen::~ProjectSettingsScreen()
-    {
-    }
-
-    void ProjectSettingsScreen::ConnectSlotsAndSignals()
-    {
-
+        QObject::connect(m_ui->gemsButton, &QPushButton::pressed, this, &ProjectSettingsScreen::HandleGemsButton);
     }
 
     void ProjectSettingsScreen::HandleGemsButton()
     {
-        m_projectManagerWindow->ChangeToScreen(ProjectManagerScreen::GemCatalog);
+        emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
     }
 
 } // namespace O3DE::ProjectManager
