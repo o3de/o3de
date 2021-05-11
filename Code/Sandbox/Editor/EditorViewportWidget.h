@@ -65,23 +65,6 @@ namespace AzToolsFramework
     class ManipulatorManager;
 }
 
-class EditorViewportWidget;
-
-//! Viewport settings for the EditorViewportWidget
-struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::ViewportSettings
-{
-    explicit EditorViewportSettings(const EditorViewportWidget* editorViewportWidget);
-
-    bool GridSnappingEnabled() const override;
-    float GridSize() const override;
-    bool ShowGrid() const override;
-    bool AngleSnappingEnabled() const override;
-    float AngleStep() const override;
-
-private:
-    const EditorViewportWidget* m_editorViewportWidget = nullptr;
-};
-
 // EditorViewportWidget window
 AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
@@ -606,8 +589,6 @@ private:
     AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;
 
     AZ::Name m_defaultViewportContextName;
-
-    EditorViewportSettings m_editorViewportSettings;
 
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };

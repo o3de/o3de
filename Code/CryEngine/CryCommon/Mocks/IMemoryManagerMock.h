@@ -40,6 +40,4 @@ public:
         IMemoryAddressRange* (size_t capacity, const char* sName));
     MOCK_METHOD2(CreatePageMappingHeap,
         IPageMappingHeap* (size_t addressSpace, const char* sName));
-    MOCK_METHOD0(CreateDefragAllocator,
-        IDefragAllocator*());
 };

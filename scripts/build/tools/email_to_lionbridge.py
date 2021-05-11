@@ -10,7 +10,7 @@
 #
 
 """
-This script will be used in https://jenkins.agscollab.com/view/%7ESandbox/job/PACKAGE_COPY_S3/
+This script will be used in the Sandobx Jenkins job PACKAGE_COPY_S3
 PACKAGE_COPY_S3 is a downstream job of nightly packaging job, it copies the nightly packages from Infra S3 bucket to Lionbridge S3 bucket based on the INCLUDE_FILTER passed from packaging job
 """
 import os

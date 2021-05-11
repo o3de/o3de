@@ -192,6 +192,13 @@ class TestAutomation(TestAutomationBase):
         from . import ScriptEvents_ReturnSetType_Successfully as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    def test_NodeCategory_ExpandOnClick(self, request, workspace, editor, launcher_platform):
+        from . import NodeCategory_ExpandOnClick as test_module
+        self._run_test(request, workspace, editor, test_module)
+    
+    def test_NodePalette_SearchText_Deletion(self, request, workspace, editor, launcher_platform):
+        from . import NodePalette_SearchText_Deletion as test_module
+        self._run_test(request, workspace, editor, test_module)
 
 # NOTE: We had to use hydra_test_utils.py, as TestAutomationBase run_test method
 # fails because of pyside_utils import

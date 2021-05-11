@@ -24,36 +24,31 @@ namespace Multiplayer
         AZ::Interface<INetworkTime>::Unregister(this);
     }
 
-    AZ::TimeMs NetworkTime::ConvertFrameIdToTimeMs([[maybe_unused]] ApplicationFrameId frameId) const
-    {
-        return AZ::TimeMs{0};
-    }
-
-    ApplicationFrameId NetworkTime::ConvertTimeMsToFrameId([[maybe_unused]] AZ::TimeMs timeMs) const
-    {
-        return ApplicationFrameId{0};
-    }
-
-    bool NetworkTime::IsApplicationFrameIdRewound() const
+    bool NetworkTime::IsTimeRewound() const
     {
         return m_rewindingConnectionId != AzNetworking::InvalidConnectionId;
     }
 
-    ApplicationFrameId NetworkTime::GetApplicationFrameId() const
+    HostFrameId NetworkTime::GetHostFrameId() const
     {
-        return m_applicationFrameId;
+        return m_hostFrameId;
     }
 
-    ApplicationFrameId NetworkTime::GetUnalteredApplicationFrameId() const
+    HostFrameId NetworkTime::GetUnalteredHostFrameId() const
     {
         return m_unalteredFrameId;
     }
 
-    void NetworkTime::IncrementApplicationFrameId()
+    void NetworkTime::IncrementHostFrameId()
     {
-        AZ_Assert(!IsApplicationFrameIdRewound(), "Incrementing the global application frameId is unsupported under a rewound time scope");
+        AZ_Assert(!IsTimeRewound(), "Incrementing the global application frameId is unsupported under a rewound time scope");
         ++m_unalteredFrameId;
-        m_applicationFrameId = m_unalteredFrameId;
+        m_hostFrameId = m_unalteredFrameId;
+    }
+
+    AZ::TimeMs NetworkTime::GetHostTimeMs() const
+    {
+        return m_hostTimeMs;
     }
 
     void NetworkTime::SyncRewindableEntityState()
@@ -66,14 +61,15 @@ namespace Multiplayer
         return m_rewindingConnectionId;
     }
 
-    ApplicationFrameId NetworkTime::GetApplicationFrameIdForRewindingConnection(AzNetworking::ConnectionId rewindConnectionId) const
+    HostFrameId NetworkTime::GetHostFrameIdForRewindingConnection(AzNetworking::ConnectionId rewindConnectionId) const
     {
-        return (IsApplicationFrameIdRewound() && (rewindConnectionId == m_rewindingConnectionId)) ? m_unalteredFrameId : m_applicationFrameId;
+        return (IsTimeRewound() && (rewindConnectionId == m_rewindingConnectionId)) ? m_unalteredFrameId : m_hostFrameId;
     }
 
-    void NetworkTime::AlterApplicationFrameId(ApplicationFrameId frameId, AzNetworking::ConnectionId rewindConnectionId)
+    void NetworkTime::AlterTime(HostFrameId frameId, AZ::TimeMs timeMs, AzNetworking::ConnectionId rewindConnectionId)
     {
-        m_applicationFrameId = frameId;
+        m_hostFrameId = frameId;
+        m_hostTimeMs = timeMs;
         m_rewindingConnectionId = rewindConnectionId;
     }
 }
