@@ -407,7 +407,7 @@ namespace AtomToolsFramework
         return m_viewportSettings ? m_viewportSettings->AngleStep() : 0.0f;
     }
 
-    void RenderViewportWidget::SetViewportSettings(AzToolsFramework::ViewportInteraction::ViewportSettings* viewportSettings)
+    void RenderViewportWidget::SetViewportSettings(const AzToolsFramework::ViewportInteraction::ViewportSettings* viewportSettings)
     {
         m_viewportSettings = viewportSettings;
     }

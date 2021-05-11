@@ -13,7 +13,7 @@
 #pragma once
 
 #include <Include/MultiplayerTypes.h>
-#include <Source/NetworkEntity/NetworkEntityHandle.h>
+#include <Include/NetworkEntityHandle.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/Component/Entity.h>
 

@@ -336,7 +336,7 @@ case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ Upp
             if (m_controller)
             {
                 AZ_Assert(GetNetBindComponent()->GetNetEntityRole() == Multiplayer::NetEntityRole::Authority, "Entity proxy does not have authority");
-                m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(rpcParamList) }});
+                m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection, {{ ', '.join(rpcParamList) }});
             }
 {% if Property.attrib['IsReliable']|booleanTrue %}
 {# if the rpc is not reliable we can simply drop it, also note message reliability type is default reliable in EntityRpcMessage #}
@@ -350,7 +350,7 @@ case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ Upp
             if (m_controller)
             {
                 AZ_Assert(GetNetBindComponent()->GetNetEntityRole() == Multiplayer::NetEntityRole::Autonomous, "Entity proxy does not have autonomy");
-                m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(rpcParamList) }});
+                m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection, {{ ', '.join(rpcParamList) }});
             }
 {% else %}
             Handle{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(rpcParamList) }});
@@ -1291,7 +1291,12 @@ namespace {{ Component.attrib['Namespace'] }}
 
 #pragma warning(push)
 #pragma warning(disable: 4065) // switch statement contains 'default' but no 'case' labels 
-    bool {{ ComponentBaseName }}::HandleRpcMessage([[maybe_unused]] Multiplayer::NetEntityRole remoteRole, Multiplayer::NetworkEntityRpcMessage& message)
+    bool {{ ComponentBaseName }}::HandleRpcMessage
+    (
+        [[maybe_unused]] AzNetworking::IConnection* invokingConnection, 
+        [[maybe_unused]] Multiplayer::NetEntityRole remoteRole, 
+        Multiplayer::NetworkEntityRpcMessage& message
+    )
     {
         const {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure rpcType = static_cast<{{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure>(message.GetRpcIndex());
         switch (rpcType)

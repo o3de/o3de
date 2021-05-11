@@ -55,7 +55,7 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RoleCreator).toString();
     }
 
-    int GemModel::GetPlatforms(const QModelIndex& modelIndex) const
+    GemInfo::Platforms GemModel::GetPlatforms(const QModelIndex& modelIndex) const
     {
         return static_cast<GemInfo::Platforms>(modelIndex.data(RolePlatforms).toInt());
     }

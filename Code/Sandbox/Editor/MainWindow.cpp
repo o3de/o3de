@@ -66,7 +66,6 @@ AZ_POP_DISABLE_WARNING
 #include "AssetImporter/AssetImporterManager/AssetImporterDragAndDropHandler.h"
 #include "CryEdit.h"
 #include "Controls/ConsoleSCB.h"
-#include "Grid.h"
 #include "ViewManager.h"
 #include "CryEditDoc.h"
 #include "ToolBox.h"
@@ -78,6 +77,7 @@ AZ_POP_DISABLE_WARNING
 #include "Core/QtEditorApplication.h"
 #include "UndoDropDown.h"
 #include "CVarMenu.h"
+#include "EditorViewportSettings.h"
 
 #include "KeyboardCustomizationSettings.h"
 #include "CustomizeKeyboardDialog.h"
@@ -96,7 +96,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "AzAssetBrowser/AzAssetBrowserWindow.h"
 #include "AssetEditor/AssetEditorWindow.h"
-#include "GridSettingsDialog.h"
 #include "ActionManager.h"
 
 // uncomment this to show thumbnail demo widget
@@ -121,12 +120,6 @@ static const char* g_viewPaneAttributeName = "ViewPaneName"; //Name of the curre
 static const char* g_openLocationAttributeName = "OpenLocation"; //Indicates where the current view pane is opened from
 
 static const char* g_assetImporterName = "AssetImporter";
-
-static const char* g_snapToGridEnabled = "mainwindow/snapGridEnabled";
-static const char* g_snapToGridSize = "mainwindow/snapGridSize";
-static const char* g_snapAngleEnabled = "mainwindow/snapAngleEnabled";
-static const char* g_snapAngle = "mainwindow/snapAngle";
-static const char* g_terrainFollow = "mainwindow/terrainFollow";
 
 class CEditorOpenViewCommand
     : public _i_reference_target_t
@@ -307,10 +300,8 @@ namespace
 
 class SnapToWidget
     : public QWidget
-    , public CGridSettingsDialog::NotificationBus::Handler
 {
 public:
-
     typedef AZStd::function<void(double)> SetValueCallback;
     typedef AZStd::function<double()> GetValueCallback;
 
@@ -334,25 +325,18 @@ public:
         m_spinBox->setEnabled(defaultAction->isChecked());
         m_spinBox->setMinimum(1e-2f);
 
-        OnGridValuesUpdated();
+        {
+            QSignalBlocker signalBlocker(m_spinBox);
+            m_spinBox->setValue(m_getValueCallback());
+        }
 
         QObject::connect(m_spinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this, &SnapToWidget::OnValueChanged);
         QObject::connect(defaultAction, &QAction::changed, this, &SnapToWidget::OnActionChanged);
-
-        CGridSettingsDialog::NotificationBus::Handler::BusConnect();
     }
 
     void SetIcon(QIcon icon)
     {
         m_toolButton->setIcon(icon);
-    }
-
-    void OnGridValuesUpdated() override
-    {
-        // Blocking signals to not trigger the valueChanged callback when we set the value on the spin box.
-        QSignalBlocker signalBlocker(m_spinBox);
-        double value = m_getValueCallback();
-        m_spinBox->setValue(value);
     }
 
 protected:
@@ -542,7 +526,6 @@ void MainWindow::Initialize()
     RegisterStdViewClasses();
     InitCentralWidget();
 
-    LoadConfig();
     InitActions();
 
     // load toolbars ("shelves") and macros
@@ -672,31 +655,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
     QMainWindow::closeEvent(event);
 }
 
-void MainWindow::LoadConfig()
-{
-    CGrid* grid = gSettings.pGrid;
-    Q_ASSERT(grid);
-    bool terrainValue;
-
-    ReadConfigValue(g_snapAngleEnabled, grid->bAngleSnapEnabled);
-    ReadConfigValue(g_snapAngle, grid->angleSnap);
-    ReadConfigValue(g_snapToGridEnabled, grid->bEnabled);
-    ReadConfigValue(g_snapToGridSize, grid->size);
-    ReadConfigValue(g_terrainFollow, terrainValue);
-    GetIEditor()->SetTerrainAxisIgnoreObjects(terrainValue);
-}
-
 void MainWindow::SaveConfig()
 {
-    CGrid* grid = gSettings.pGrid;
-    Q_ASSERT(grid);
-
-    m_settings.setValue(g_snapAngleEnabled, grid->bAngleSnapEnabled);
-    m_settings.setValue(g_snapAngle, grid->angleSnap);
-    m_settings.setValue(g_snapToGridEnabled, grid->bEnabled);
-    m_settings.setValue(g_snapToGridSize, grid->size);
-    m_settings.setValue(g_terrainFollow, GetIEditor()->IsTerrainAxisIgnoreObjects());
-
     m_settings.setValue("mainWindowState", saveState());
     QtViewPaneManager::instance()->SaveLayout();
     if (m_pLayoutWnd)
@@ -915,13 +875,22 @@ void MainWindow::InitActions()
         .SetToolTip(tr("Snap to grid (G)"))
         .SetStatusTip(tr("Toggles snap to grid"))
         .SetCheckable(true)
-        .RegisterUpdateCallback(this, &MainWindow::OnUpdateSnapToGrid);
+        .RegisterUpdateCallback([](QAction* action) {
+            Q_ASSERT(action->isCheckable());
+            action->setChecked(Editor::GridSnappingEnabled());
+        })
+        .Connect(&QAction::triggered, []() { Editor::SetGridSnapping(!Editor::GridSnappingEnabled()); });
+
     am->AddAction(ID_SNAPANGLE, tr("Snap angle"))
         .SetIcon(Style::icon("Angle"))
         .SetApplyHoverEffect()
         .SetStatusTip(tr("Snap angle"))
         .SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSnapangle);
+        .RegisterUpdateCallback([](QAction* action) {
+            Q_ASSERT(action->isCheckable());
+            action->setChecked(Editor::AngleSnappingEnabled());
+        })
+        .Connect(&QAction::triggered, []() { Editor::SetAngleSnapping(!Editor::AngleSnappingEnabled()); });
 
     // Display actions
     am->AddAction(ID_WIREFRAME, tr("&Wireframe"))
@@ -931,7 +900,6 @@ void MainWindow::InitActions()
         .SetStatusTip(tr("Render in Wireframe Mode."))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateWireframe);
 
-    am->AddAction(ID_VIEW_GRIDSETTINGS, tr("Grid Settings..."));
     am->AddAction(ID_SWITCHCAMERA_DEFAULTCAMERA, tr("Default Camera")).SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSwitchToDefaultCamera);
     am->AddAction(ID_SWITCHCAMERA_SEQUENCECAMERA, tr("Sequence Camera")).SetCheckable(true)
@@ -1075,8 +1043,6 @@ void MainWindow::InitActions()
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected);
 
     // Tools actions
-    am->AddAction(ID_RELOAD_TEXTURES, tr("Reload Textures/Shaders"))
-        .SetStatusTip(tr("Reload all textures."));
     am->AddAction(ID_TOOLS_ENABLEFILECHANGEMONITORING, tr("Enable File Change Monitoring"));
     am->AddAction(ID_CLEAR_REGISTRY, tr("Clear Registry Data"))
         .SetStatusTip(tr("Clear Registry Data"));
@@ -1434,12 +1400,12 @@ QWidget* MainWindow::CreateSnapToGridWidget()
 {
     SnapToWidget::SetValueCallback setCallback = [](double snapStep)
     {
-        GetIEditor()->GetViewManager()->GetGrid()->size = snapStep;
+        Editor::SetGridSnappingSize(snapStep);
     };
 
     SnapToWidget::GetValueCallback getCallback = []()
     {
-        return GetIEditor()->GetViewManager()->GetGrid()->size;
+        return Editor::GridSnappingSize();
     };
 
     return new SnapToWidget(m_actionManager->GetAction(ID_SNAP_TO_GRID), setCallback, getCallback);
@@ -1449,12 +1415,12 @@ QWidget* MainWindow::CreateSnapToAngleWidget()
 {
     SnapToWidget::SetValueCallback setCallback = [](double snapAngle)
     {
-        GetIEditor()->GetViewManager()->GetGrid()->angleSnap = snapAngle;
+        Editor::SetAngleSnappingSize(snapAngle);
     };
 
     SnapToWidget::GetValueCallback getCallback = []()
     {
-        return GetIEditor()->GetViewManager()->GetGrid()->angleSnap;
+        return Editor::AngleSnappingSize();
     };
 
     return new SnapToWidget(m_actionManager->GetAction(ID_SNAPANGLE), setCallback, getCallback);
@@ -1469,15 +1435,6 @@ MainStatusBar* MainWindow::StatusBar() const
 {
     assert(statusBar()->inherits("MainStatusBar"));
     return static_cast<MainStatusBar*>(statusBar());
-}
-
-void MainWindow::OnUpdateSnapToGrid(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    bool bEnabled = gSettings.pGrid->IsEnabled();
-    action->setChecked(bEnabled);
-
-    action->setText(QObject::tr("Snap To Grid"));
 }
 
 KeyboardCustomizationSettings* MainWindow::GetShortcutManager() const
