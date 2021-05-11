@@ -392,7 +392,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         TEST_SUITE smoke
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/smoke
-        TIMEOUT 3600
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             AZ::PythonBindingsExample
