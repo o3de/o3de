@@ -61,32 +61,6 @@ namespace AZ
             {
             }
 
-            void HairSkinningComputePass::OnBuildAttachmentsFinishedInternal()
-            {
-                ComputePass::OnBuildAttachmentsFinishedInternal();
-
-                if (!m_featureProcessor)
-                {
-                    return;
-                }
-
-                if (!m_shaderResourceGroup)
-                {
-                    AZ_Error("Hair Gem", false, "HairSkinningComputePass::OnBuildAttachmentsFinishedInternal: m_shaderResourceGroup not ready yet");
-                    return;
-                }
-
-                // Shared buffer binding
-                {
-                    Name sharedBufferName = Name("m_skinnedHairSharedBuffer");
-                    RHI::ShaderInputBufferIndex indexHandle = m_shaderResourceGroup->FindShaderInputBufferIndex(sharedBufferName);
-                    if (!m_shaderResourceGroup->SetBufferView(indexHandle, m_featureProcessor->GetSharedBuffer()->GetBufferView()))
-                    {
-                        AZ_Error("Hair Gem", false, "Failed to bind buffer view for [%s]", sharedBufferName.GetCStr());
-                    }
-                }
-            }
-
             void HairSkinningComputePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
             {
                 ComputePass::SetupFrameGraphDependencies(frameGraph);
@@ -131,15 +105,6 @@ namespace AZ
                     return;
                 }
 
-/*
-                Name sharedBufferName = Name("m_skinnedHairSharedBuffer");
-                RHI::ShaderInputBufferIndex indexHandle = m_shaderResourceGroup->FindShaderInputBufferIndex(sharedBufferName);
-                if (!m_shaderResourceGroup->SetBufferView(indexHandle, SharedBufferInterface::Get()->GetBuffer()->GetBufferView()))
-                {
-                    AZ_Error("Hair Gem", false, "HairSkinningComputePass: Failed to bind buffer view for [%s]", sharedBufferName.GetCStr());
-                    return;
-                }
-*/
                 // DON'T call the ComputePass:CompileResources as it will try to compile perDraw srg
                 // under the assumption that this is a single dispatch compute.  Here we have dispatch
                 // per hair object and each has its own perDraw srg.
@@ -182,8 +147,7 @@ namespace AZ
                 // over each one separately is much better for improving simulation stability
                 // with minimal amount of steps.
                 // This will also allow us to avoid doing it to the simple follow hair copy at the end.
-                static bool allowIterations = true;
-                uint32_t iterations = allowIterations ? AZ::GetMax(hairObject->GetCPULocalShapeIterations(), 1) : 1;
+                uint32_t iterations = m_allowSimIterations ? AZ::GetMax(hairObject->GetCPULocalShapeIterations(), 1) : 1;
                 AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
 
                 for (int j = 0; j < iterations; ++j)

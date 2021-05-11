@@ -340,7 +340,7 @@ namespace AZ
                 resultSuccess &= InitComputePass(GlobalShapeConstraintsPass);
                 resultSuccess &= InitComputePass(CalculateStrandDataPass);
                 resultSuccess &= InitComputePass(VelocityShockPropagationPass);
-                resultSuccess &= InitComputePass(LocalShapeConstraintsPass);
+                resultSuccess &= InitComputePass(LocalShapeConstraintsPass, true);  // restore shape over several iterations
                 resultSuccess &= InitComputePass(LengthConstriantsWindAndCollisionPass);
                 resultSuccess &= InitComputePass(UpdateFollowHairPass);
 
@@ -411,7 +411,7 @@ namespace AZ
             }
 
             // Adi: is this required? if data driven via the MainPipeline.pass the answer is probably no?!
-            bool HairFeatureProcessor::InitComputePass(const Name& passName)
+            bool HairFeatureProcessor::InitComputePass(const Name& passName, bool allowIterations)
             {
                 m_computePasses[passName] = nullptr;
 
@@ -423,6 +423,7 @@ namespace AZ
                     {
                         m_computePasses[passName] = static_cast<HairSkinningComputePass*>(desiredPasses[0]);
                         m_computePasses[passName]->SetFeatureProcessor(this);
+                        m_computePasses[passName]->SetAllowIterations(allowIterations);
                     }
                     else
                     {

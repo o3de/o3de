@@ -16,7 +16,7 @@
                         "StoreAction": "Store"
                     }
                 },
-                {   // Used to get the transform from screen space to world space.
+                { // Used to get the transform from screen space to world space.
                     // If DepthLinear is not availbale - connect to another viewport (non MSAA) image.
                     "Name": "DepthLinear",
                     "SlotType": "Input",
@@ -35,7 +35,7 @@
                 {
                     "Name": "PerPixelListHead",
                     "ShaderInputName": "m_fragmentListHead",
-                    "SlotType": "Input",
+                    "SlotType": "InputOutput", // Read/Write since we reset the pixels in the shader
                     "ScopeAttachmentUsage": "Shader",
                     "LoadStoreAction": {
                         "LoadAction": "Load",
@@ -46,6 +46,7 @@
                     "Name": "PerPixelLinkedList",
                     "ShaderInputName": "m_linkedListNodes",
                     "SlotType": "Input",
+                    //                    "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "Shader",
                     "LoadStoreAction": {
                         "LoadAction": "Load",
@@ -63,3 +64,4 @@
         }
     }
 }
+

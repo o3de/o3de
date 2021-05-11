@@ -17,7 +17,7 @@
                 // the hair depth 
                 {
                     "Name": "Depth",
-                    "SlotType": "Input",
+                    "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "DepthStencil"
                 },
                 // Keep DepthLinear as input - used to set the size of the Head PPLL image buffer.

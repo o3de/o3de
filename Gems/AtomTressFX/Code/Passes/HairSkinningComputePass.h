@@ -63,7 +63,6 @@ namespace AZ
 
                 // Pass behavior overrides
                 void CompileResources(const RHI::FrameGraphCompileContext& context) override;
-                void OnBuildAttachmentsFinishedInternal() override;
 
                 virtual bool IsEnabled() const override;
                 //! returns the shader held by the ComputePass
@@ -73,6 +72,10 @@ namespace AZ
                 void SetFeatureProcessor(HairFeatureProcessor* featureProcessor)
                 {
                     m_featureProcessor = featureProcessor;
+                }
+                void SetAllowIterations(bool allowIterations)
+                {
+                    m_allowSimIterations = allowIterations;
                 }
 
             protected:
@@ -92,7 +95,8 @@ namespace AZ
 
             private:
                 HairFeatureProcessor* m_featureProcessor = nullptr;
-                RHI::Size  m_attachmentSize = RHI::Size(1,1,0);    // for buffer set.
+
+                bool m_allowSimIterations = false;   
 
                 AZStd::mutex m_mutex;
 

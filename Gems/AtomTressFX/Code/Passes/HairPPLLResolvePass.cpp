@@ -61,19 +61,6 @@ namespace AZ
                 {
                     return;
                 }
-
-                // PPLL nodes buffer
-                {
-                    SrgBufferDescriptor descriptor = SrgBufferDescriptor(
-                        RPI::CommonBufferPoolType::ReadWrite, RHI::Format::Unknown,
-                        PPLL_NODE_SIZE, RESERVED_PIXELS_FOR_OIT,
-                        Name{ "LinkedListNodesPPLL" }, Name{ "m_linkedListNodes" }, 0, 0
-                    );
-                    if (!UtilityClass::BindBufferToSrg("Hair Gem", m_featureProcessor->GetPerPixelListBuffer(), descriptor, m_shaderResourceGroup))
-                    {
-                        AZ_Error("Hair Gem", false, "HairPPLLResolvePass: PPLL list data could not be bound.");
-                    }
-                }
             }
 
             //---------------------------------------------------------------------
@@ -108,7 +95,7 @@ namespace AZ
 
                 AZ_Error("Hair Gem", m_shaderResourceGroup && m_featureProcessor,
                     "HairPPLLResolvePass::SetupFrameGraphDependencies - m_shaderResourceGroup or Feature processor not initialized");
-
+                
                 {
                     SrgBufferDescriptor descriptor = SrgBufferDescriptor(
                         RPI::CommonBufferPoolType::ReadWrite, RHI::Format::Unknown,
