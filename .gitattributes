@@ -115,5 +115,4 @@
 *.wav filter=lfs diff=lfs merge=lfs -text
 *.webm filter=lfs diff=lfs merge=lfs -text
 *.wem filter=lfs diff=lfs merge=lfs -text
-*.wxs filter=lfs diff=lfs merge=lfs -text
 *.zip filter=lfs diff=lfs merge=lfs -text
