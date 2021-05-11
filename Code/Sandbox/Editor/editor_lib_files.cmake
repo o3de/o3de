@@ -357,8 +357,6 @@ set(FILES
     Controls/ConsoleSCB.h
     Controls/ConsoleSCB.ui
     Controls/ConsoleSCB.qrc
-    Controls/CurveEditorCtrl.cpp
-    Controls/CurveEditorCtrl.h
     Controls/FolderTreeCtrl.cpp
     Controls/FolderTreeCtrl.h
     Controls/HotTrackingTreeCtrl.cpp
@@ -437,9 +435,6 @@ set(FILES
     GotoPositionDlg.cpp
     GotoPositionDlg.h
     GotoPositionDlg.ui
-    GridSettingsDialog.cpp
-    GridSettingsDialog.h
-    GridSettingsDialog.ui
     InfoBar.cpp
     InfoBar.qrc
     InfoBar.h
@@ -465,9 +460,6 @@ set(FILES
     SelectLightAnimationDialog.h
     SelectSequenceDialog.cpp
     SelectSequenceDialog.h
-    ShadersDialog.cpp
-    ShadersDialog.h
-    ShadersDialog.ui
     StartupLogoDialog.cpp
     StartupLogoDialog.h
     StartupLogoDialog.ui
@@ -581,11 +573,6 @@ set(FILES
     QtUI/WaitCursor.cpp
     RenderHelpers/AxisHelper.cpp
     RenderHelpers/AxisHelper.h
-    Serialization.h
-    Serialization/VariableOArchive.cpp
-    Serialization/VariableOArchive.h
-    Serialization/VariableIArchive.cpp
-    Serialization/VariableIArchive.h
     CustomizeKeyboardDialog.h
     CustomizeKeyboardDialog.cpp
     CustomizeKeyboardDialog.ui
@@ -659,10 +646,6 @@ set(FILES
     ProcessInfo.cpp
     ProcessInfo.h
     Report.h
-    ShaderCache.cpp
-    ShaderCache.h
-    ShaderEnum.cpp
-    ShaderEnum.h
     SurfaceTypeValidator.cpp
     SurfaceTypeValidator.h
     TrackView/AtomOutputFrameCapture.cpp
@@ -748,18 +731,12 @@ set(FILES
     TrackView/TrackViewEventNode.h
     ConfigGroup.cpp
     ConfigGroup.h
-    SettingsBlock.cpp
-    SettingsBlock.h
     Util/AffineParts.h
-    Util/ArcBall.cpp
-    Util/ArcBall.h
     Util/AutoLogTime.cpp
     Util/AutoLogTime.h
     Util/AutoDirectoryRestoreFileDialog.h
     Util/AutoDirectoryRestoreFileDialog.cpp
     Util/CryMemFile.h
-    Util/CubemapUtils.cpp
-    Util/CubemapUtils.h
     Util/DynamicArray2D.cpp
     Util/DynamicArray2D.h
     Util/EditorAutoLevelLoadTest.cpp
@@ -833,17 +810,11 @@ set(FILES
     Util/ImageASC.h
     Util/ImageBT.cpp
     Util/ImageBT.h
-    Util/Image_DXTC.cpp
-    Util/Image_DXTC.h
     Util/ImageGif.cpp
     Util/ImageGif.h
     Util/ImageTIF.cpp
     Util/ImageTIF.h
     Util/Math.h
-    Util/Ruler.cpp
-    Util/RulerPoint.cpp
-    Util/Ruler.h
-    Util/RulerPoint.h
     Util/UIEnumerations.cpp
     Util/UIEnumerations.h
     WelcomeScreen/WelcomeScreenDialog.h
@@ -852,8 +823,6 @@ set(FILES
     WelcomeScreen/WelcomeScreenDialog.qrc
     2DViewport.cpp
     2DViewport.h
-    Grid.cpp
-    Grid.h
     LayoutWnd.cpp
     LayoutWnd.h
     EditorViewportWidget.cpp

@@ -17,7 +17,7 @@
 #include <QMainWindow>
 #include <QStackedWidget>
 
-#include <AzCore/IO/Path/Path_fwd.h>
+#include <PythonBindings.h>
 #endif
 
 namespace Ui
@@ -52,6 +52,7 @@ namespace O3DE::ProjectManager
 
     private:
         QScopedPointer<Ui::ProjectManagerWindowClass> m_ui;
+        AZStd::unique_ptr<PythonBindings> m_pythonBindings;
     };
 
 } // namespace O3DE::ProjectManager

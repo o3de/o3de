@@ -28,6 +28,8 @@ namespace O3DE::ProjectManager
     {
         m_ui->setupUi(this);
 
+        m_pythonBindings = AZStd::make_unique<PythonBindings>(engineRootPath);
+
         ConnectSlotsAndSignals();
 
         QDir rootDir = QString::fromUtf8(engineRootPath.Native().data(), aznumeric_cast<int>(engineRootPath.Native().size()));
@@ -44,6 +46,7 @@ namespace O3DE::ProjectManager
 
     ProjectManagerWindow::~ProjectManagerWindow()
     {
+        m_pythonBindings.reset();
     }
 
     void ProjectManagerWindow::BuildScreens()

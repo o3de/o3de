@@ -18,7 +18,6 @@
 #include <AzCore/std/containers/map.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
-#include <QViewportSettings.h>
 
 #include <LyShine/Bus/UiEditorCanvasBus.h>
 #include <LyShine/Draw2d.h>

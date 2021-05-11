@@ -14,7 +14,7 @@
 
 namespace AZ::Utils
 {
-    AZ::IO::FixedMaxPathString GetO3deManifestDirectory()
+    AZ::IO::FixedMaxPathString GetHomeDirectory()
     {
         return {};
     }

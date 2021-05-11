@@ -95,8 +95,6 @@ CViewportTitleDlg::~CViewportTitleDlg()
 {
     GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
     GetIEditor()->UnregisterNotifyListener(this);
-    ICVar*  pDisplayInfo(gEnv->pConsole->GetCVar("r_displayInfo"));
-    pDisplayInfo->RemoveOnChangeFunctor(m_displayInfoCallbackIndex);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -158,8 +156,6 @@ void CViewportTitleDlg::OnToggleHelpers()
 //////////////////////////////////////////////////////////////////////////
 void CViewportTitleDlg::OnToggleDisplayInfo()
 {
-    int currentDisplayInfo = gEnv->pConsole->GetCVar("r_displayInfo")->GetIVal();
-    gEnv->pConsole->GetCVar("r_displayInfo")->Set(currentDisplayInfo >= 3 ? 0 : currentDisplayInfo + 1);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -548,12 +544,8 @@ void CViewportTitleDlg::UpdateCustomPresets(const QString& text, QStringList& cu
     }
 }
 
-void CViewportTitleDlg::OnChangedDisplayInfo([[maybe_unused]] ICVar* pDisplayInfo, QAbstractButton* pDisplayInfoButton)
+void CViewportTitleDlg::OnChangedDisplayInfo([[maybe_unused]] ICVar* pDisplayInfo, [[maybe_unused]] QAbstractButton* pDisplayInfoButton)
 {
-    if (pDisplayInfoButton)
-    {
-        pDisplayInfoButton->setChecked(gEnv->pConsole->GetCVar("r_displayInfo")->GetIVal());
-    }
 }
 
 bool CViewportTitleDlg::eventFilter(QObject* object, QEvent* event)
