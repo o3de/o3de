@@ -7,27 +7,23 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test case ID: T92562993
-Test Case Title: Clicking the X button on the Search Box clears the currently entered string
 """
 
 
 # fmt: off
 class Tests():
     set_search_string     = ("Search string is set",              "Search string is not set")
-    search_string_cleared = ("Search string cleared as expected", "Search string not cleared")
+    search_string_deleted = ("Search string deleted as expected", "Search string not deleted")
 # fmt: on
 
 
-def NodePalette_ClearSelection():
+def NodePalette_SearchText_Deletion():
     """
     Summary:
-     We enter some string in the Node Palette Search box, and click on the X button to verify if the
-     search string got cleared.
+     We enter some string in the Node Palette Search box, select that text and delete it.
 
     Expected Behavior:
-     Clicking the X button on the Search Box clears the currently entered string
+     After RightClick->Delete the text in the Searchbox should be deleted.
 
     Test Steps:
      1) Open Script Canvas window (Tools > Script Canvas)
@@ -35,7 +31,7 @@ def NodePalette_ClearSelection():
      3) Open Node Manager if not opened already
      4) Set some string in the Search box
      5) Verify if the test string is set
-     6) Clear search string and verify if it is cleared
+     6) Delete search string using right click and verify if it is cleared
 
     Note:
      - This test file must be called from the Open 3D Engine Editor command terminal
@@ -45,7 +41,7 @@ def NodePalette_ClearSelection():
     :return: None
     """
 
-    from PySide2 import QtWidgets
+    from PySide2 import QtWidgets, QtTest, QtCore
 
     from utils import TestHelper as helper
 
@@ -53,7 +49,7 @@ def NodePalette_ClearSelection():
 
     import pyside_utils
 
-    TEST_STRING = "Test String"
+    TEST_STRING = "TestString"
 
     # 1) Open Script Canvas window (Tools > Script Canvas)
     general.idle_enable(True)
@@ -76,12 +72,14 @@ def NodePalette_ClearSelection():
     search_box.setText(TEST_STRING)
 
     # 5) Verify if the test string is set
-    Report.result(Tests.set_search_string, search_box.text() == TEST_STRING)
+    result = helper.wait_for_condition(lambda: search_box.text() == TEST_STRING, 1.0)
+    Report.result(Tests.set_search_string, result)
 
-    # 6) Clear search string and verify if it is cleared
-    clear_text_button = search_frame.findChild(QtWidgets.QToolButton, "ClearToolButton")
-    clear_text_button.click()
-    Report.result(Tests.search_string_cleared, search_box.text() == "")
+    # 6) Delete search string using right click and verify if it is cleared
+    QtTest.QTest.keyClick(search_box, QtCore.Qt.Key_A, QtCore.Qt.ControlModifier)
+    pyside_utils.trigger_context_menu_entry(search_box, "Delete")
+    result = helper.wait_for_condition(lambda: search_box.text() == "", 2.0)
+    Report.result(Tests.search_string_deleted, result)
 
 
 if __name__ == "__main__":
@@ -90,4 +88,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(NodePalette_ClearSelection)
+    Report.start_test(NodePalette_SearchText_Deletion)

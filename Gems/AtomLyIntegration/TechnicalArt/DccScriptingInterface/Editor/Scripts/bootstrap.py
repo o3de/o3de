@@ -16,7 +16,7 @@ with Lumberyard. Note: this boostrap is only designed fo be py3 compatible.
 If you need DCCsi access in py27 (Autodesk Maya for instance) you may need
 to implement your own boostrapper module. Currently this is boostrapped
 from add_dccsi.py, as a temporty measure related to this Jira:
-https://jira.agscollab.com/browse/SPEC-2581"""
+SPEC-2581"""
 # standard imports
 import sys
 import os

@@ -11,7 +11,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C18977329
 # Test Case Title : Add cloth simulation to a Mesh
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/18977329
 
 # fmt: off
 class Tests:
