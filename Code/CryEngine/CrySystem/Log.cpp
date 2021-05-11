@@ -1442,8 +1442,6 @@ void CLog::UpdateLoadingScreen(const char* szFormat, ...)
 
     if (CryGetCurrentThreadId() == m_nMainThreadId)
     {
-        ((CSystem*)m_pSystem)->UpdateLoadingScreen();
-
 #ifndef LINUX
         // Take this opportunity to update streaming engine.
         if (IStreamEngine* pStreamEngine = GetISystem()->GetStreamEngine())
