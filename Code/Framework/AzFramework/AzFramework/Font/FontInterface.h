@@ -44,6 +44,7 @@ namespace AzFramework
         AZ::Vector3 m_position; //! world space position for 3d draws, screen space x,y,depth for 2d.
         AZ::Color   m_color = AZ::Colors::White; //! Color to draw the text
         AZ::Vector2 m_scale = AZ::Vector2(1.0f); //! font scale
+        float       m_lineSpacing; //! Spacing between new lines, as a percentage of m_scale.
         TextHorizontalAlignment m_hAlign = TextHorizontalAlignment::Left; //! Horizontal text alignment
         TextVerticalAlignment m_vAlign = TextVerticalAlignment::Top; //! Vertical text alignment
         bool m_monospace = false; //! disable character proportional spacing
@@ -65,6 +66,9 @@ namespace AzFramework
             const TextDrawParameters& params,
             const AZStd::string_view& string) = 0;
         virtual void DrawScreenAlignedText3d(
+            const TextDrawParameters& params,
+            const AZStd::string_view& string) = 0;
+        virtual AZ::Vector2 GetTextSize(
             const TextDrawParameters& params,
             const AZStd::string_view& string) = 0;
     };

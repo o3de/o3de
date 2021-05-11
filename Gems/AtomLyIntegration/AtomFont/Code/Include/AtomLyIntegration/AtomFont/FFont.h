@@ -213,6 +213,10 @@ namespace AZ
             const AzFramework::TextDrawParameters& params,
             const AZStd::string_view& string) override;
 
+        AZ::Vector2 GetTextSize(
+            const AzFramework::TextDrawParameters& params,
+            const AZStd::string_view& string) override;
+
     public:
         FFont(AtomFont* atomFont, const char* fontName);
 
@@ -281,6 +285,16 @@ namespace AZ
 
         RPI::WindowContextSharedPtr GetDefaultWindowContext() const;
         RPI::ViewportContextPtr GetDefaultViewportContext() const;
+
+        struct DrawParameters
+        {
+            TextDrawContext m_ctx;
+            AZ::Vector2 m_position;
+            AZ::Vector2 m_size;
+            AZ::RPI::ViewportContext* m_viewportContext;
+            const AZ::RHI::Viewport* m_viewport;
+        };
+        DrawParameters ExtractDrawParameters(const AzFramework::TextDrawParameters& params, const AZStd::string_view& string, bool forceCalculateSize);
 
     private:
         static constexpr uint32_t NumBuffers = 2;
