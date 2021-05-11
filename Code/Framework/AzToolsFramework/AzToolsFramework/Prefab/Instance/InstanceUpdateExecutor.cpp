@@ -106,7 +106,6 @@ namespace AzToolsFramework
                     auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
                     AZ_Assert(
                         prefabEditorEntityOwnershipInterface != nullptr,
-                        "Prefab - InstanceUpdateExecutor::UpdateTemplateInstancesInQueue - "
                         "Prefab Editor Entity Ownership Interface could not be found. "
                         "Check that it is being correctly initialized.");
 

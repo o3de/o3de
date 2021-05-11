@@ -59,7 +59,7 @@ namespace AzToolsFramework
 
                 PrefabDomValueReference value = parentValue;
 
-                for (AZ::IO::PathView pathElement : valuePath)
+                for (auto pathElement : valuePath)
                 {
                     if (!value->get().IsObject())
                     {
