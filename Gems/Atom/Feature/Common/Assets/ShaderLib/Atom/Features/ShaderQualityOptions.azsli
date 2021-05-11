@@ -18,7 +18,8 @@
 
 #ifdef QUALITY_LOW_END
 
-#define UNIFIED_FORWARD_OUTPUT 1
+#define UNIFIED_FORWARD_OUTPUT          1
+#define FORCE_IBL_IN_FORWARD_PASS       1
 
 #endif
 
