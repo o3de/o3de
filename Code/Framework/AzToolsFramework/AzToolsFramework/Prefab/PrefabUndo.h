@@ -80,6 +80,7 @@ namespace AzToolsFramework
         private:
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             EntityAlias m_entityAlias;
+            InstanceOptionalReference m_instanceReference;
         };
 
         //! handles link changes on instances

@@ -70,10 +70,10 @@ namespace AzToolsFramework
             const AZ::EntityId& entityId)
         {
             //get the entity alias for future undo/redo
-            InstanceOptionalReference instanceOptionalReference = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
-            AZ_Error("Prefab", instanceOptionalReference,
+            m_instanceReference = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+            AZ_Error("Prefab", m_instanceReference,
                 "Failed to find an owning instance for the entity with id %llu.", static_cast<AZ::u64>(entityId));
-            Instance& instance = instanceOptionalReference->get();
+            Instance& instance = m_instanceReference->get();
             m_templateId = instance.GetTemplateId();
             m_entityAlias = (instance.GetEntityAlias(entityId)).value();
 
@@ -87,7 +87,7 @@ namespace AzToolsFramework
         void PrefabUndoEntityUpdate::Undo()
         {
             [[maybe_unused]] bool isPatchApplicationSuccessful =
-                m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId);
+                m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId, m_instanceReference);
 
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
@@ -98,7 +98,7 @@ namespace AzToolsFramework
         void PrefabUndoEntityUpdate::Redo()
         {
             [[maybe_unused]] bool isPatchApplicationSuccessful =
-                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId);
+                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, m_instanceReference);
 
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
