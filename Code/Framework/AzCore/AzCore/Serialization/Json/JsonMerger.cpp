@@ -109,8 +109,7 @@ namespace AZ
             }
             else
             {
-                AZ::OSString message = AZ::OSString::format(R"(Unknown operation "%.*s".)",
-                    aznumeric_cast<int>(operationName.length()), operationName.data());
+                auto message = ReporterString::format(R"(Unknown operation "%.*s".)", AZ_STRING_ARG(operationName));
                 return settings.m_reporting(message.c_str(), ResultCode(Tasks::Merge, Outcomes::Unknown), element);
             }
 
@@ -187,8 +186,7 @@ namespace AZ
 
                         target.RemoveMember(targetField);
                         result.Combine(settings.m_reporting(ReporterString::format(
-                            R"(Successfully removed member from "%.*s" using JSON Merge Patch)", aznumeric_cast<int>(jsonPath.size()),
-                            jsonPath.data()),
+                            R"(Successfully removed member from "%.*s" using JSON Merge Patch)", AZ_STRING_ARG(jsonPath)),
                             ResultCode(Tasks::Merge, Outcomes::Success), element));
                     }
                 }
@@ -201,8 +199,7 @@ namespace AZ
                         ScopedStackedString fieldNameScope{ element, AZStd::string_view(field.name.GetString(), field.name.GetStringLength()) };
                         AZStd::string_view jsonPath = element.Get();
                         result.Combine(settings.m_reporting(ReporterString::format(
-                            R"(Successfully updated JSON field "%.*s" using JSON Merge Patch)", aznumeric_cast<int>(jsonPath.size()),
-                            jsonPath.data()),
+                            R"(Successfully updated JSON field "%.*s" using JSON Merge Patch)", AZ_STRING_ARG(jsonPath)),
                             ResultCode(Tasks::Merge, Outcomes::Success), element));
                     }
                     else
@@ -216,8 +213,7 @@ namespace AZ
                         ScopedStackedString fieldNameScope{ element, AZStd::string_view(field.name.GetString(), field.name.GetStringLength()) };
                         AZStd::string_view jsonPath = element.Get();
                         result.Combine(settings.m_reporting(ReporterString::format(
-                            R"(Successfully added JSON field "%.*s" using JSON Merge Patch)", aznumeric_cast<int>(jsonPath.size()),
-                            jsonPath.data()),
+                            R"(Successfully added JSON field "%.*s" using JSON Merge Patch)", AZ_STRING_ARG(jsonPath)),
                             ResultCode(Tasks::Merge, Outcomes::Success), element));
                     }
                 }
