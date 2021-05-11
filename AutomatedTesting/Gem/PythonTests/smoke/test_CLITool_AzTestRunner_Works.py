@@ -10,8 +10,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
 """
-LY-124064 : CLI tool - PythonBindingsExample
-Launch PythonBindingsExample and Verify the help message
+CLI tool - AzTestRunner
+Launch AzTestRunner and Verify the help message
 """
 
 import os
@@ -23,23 +23,23 @@ import ly_test_tools.environment.process_utils as process_utils
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.usefixtures("automatic_process_killer")
 @pytest.mark.SUITE_smoke
-class TestPythonBindingsExample(object):
+class TestCLIToolAzTestRunnerWorks(object):
     @pytest.fixture(autouse=True)
     def setup_teardown(self, request):
         def teardown():
-            process_utils.kill_processes_named("PythonBindingsExample", True)
+            process_utils.kill_processes_named("AzTestRunner", True)
 
         request.addfinalizer(teardown)
 
-    @pytest.mark.test_case_id("LY-124064")
-    def test_PythonBindingsExample(self, request, editor, build_directory):
-        file_path = os.path.join(build_directory, "PythonBindingsExample")
-        help_message = "--help Prints the help text"
-        # Launch PythonBindingsExample
-        output = subprocess.run([file_path, "-help"], capture_output=True)
+    def test_CLITool_AzTestRunner_Works(self, request, editor, build_directory):
+        file_path = os.path.join(build_directory, "AzTestRunner")
+        help_message = "OKAY Symbol found: AzRunUnitTests"
+        # Launch AzTestRunner
+        output = subprocess.run(
+            [file_path, "AzTestRunner.Tests", "AzRunUnitTests", "--gtest_list_tests"], capture_output=True
+        )
         assert (
-            len(output.stderr) == 0 and output.returncode == 1
+            len(output.stderr) == 0 and output.returncode == 0
         ), f"Error occurred while launching {file_path}: {output.stderr}"
         # Verify help message
         assert help_message in str(output.stdout), f"Help Message: {help_message} is not present"
-        

@@ -24,11 +24,13 @@ import ly_test_tools.environment.file_system as file_system
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("level", ["temp_level"])
 class TestAutomation(TestAutomationBase):
-    def test_Editor_NewExistingLevels(self, request, workspace, editor, level, project, launcher_platform):
+    def test_Editor_NewExistingLevels_Works(self, request, workspace, editor, level, project, launcher_platform):
         def teardown():
             file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
+
         request.addfinalizer(teardown)
         file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
-        from . import Editor_NewExistingLevels as test_module
+        from . import Editor_NewExistingLevels_Works as test_module
+
         self._run_test(request, workspace, editor, test_module)

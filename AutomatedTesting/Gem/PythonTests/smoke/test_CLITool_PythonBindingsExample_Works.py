@@ -10,8 +10,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
 """
-LY-124066 : CLI tool - SerializeContextTools
-Launch SerializeContextTools and Verify the help message
+CLI tool - PythonBindingsExample
+Launch PythonBindingsExample and Verify the help message
 """
 
 import os
@@ -23,22 +23,21 @@ import ly_test_tools.environment.process_utils as process_utils
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.usefixtures("automatic_process_killer")
 @pytest.mark.SUITE_smoke
-class TestSerializeContextTools(object):
+class TestCLIToolPythonBindingsExampleWorks(object):
     @pytest.fixture(autouse=True)
     def setup_teardown(self, request):
         def teardown():
-            process_utils.kill_processes_named("SerializeContextTools", True)
+            process_utils.kill_processes_named("PythonBindingsExample", True)
 
         request.addfinalizer(teardown)
 
-    @pytest.mark.test_case_id("LY-124066")
-    def test_SerializeContextTools(self, request, editor, build_directory):
-        file_path = os.path.join(build_directory, "SerializeContextTools")
-        help_message = "Converts a file with an ObjectStream to the new JSON"
-        # Launch SerializeContextTools
+    def test_CLITool_PythonBindingsExample_Works(self, request, editor, build_directory):
+        file_path = os.path.join(build_directory, "PythonBindingsExample")
+        help_message = "--help Prints the help text"
+        # Launch PythonBindingsExample
         output = subprocess.run([file_path, "-help"], capture_output=True)
         assert (
-            len(output.stderr) == 0 and output.returncode == 0
+            len(output.stderr) == 0 and output.returncode == 1
         ), f"Error occurred while launching {file_path}: {output.stderr}"
         # Verify help message
         assert help_message in str(output.stdout), f"Help Message: {help_message} is not present"

@@ -9,9 +9,7 @@ remove or modify any license notices. This file is distributed on an "AS IS" BAS
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 
-Test case ID: LY-123945
 Test Case Title: Create Test for UI apps- Editor
-URL of the test case: https://jira.agscollab.com/browse/LY-123945
 """
 
 
@@ -30,7 +28,7 @@ class Tests():
 # fmt: on
 
 
-def Editor_NewExistingLevels():
+def Editor_NewExistingLevels_Works():
     """
     Summary: Perform the below operations on Editor
 
@@ -69,9 +67,9 @@ def Editor_NewExistingLevels():
     """
 
     import os
-    import hydra_editor_utils as hydra
-    from utils import TestHelper as helper
-    from utils import Report
+    import editor_python_test_tools.hydra_editor_utils as hydra
+    from editor_python_test_tools.utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
     import azlmbr.bus as bus
     import azlmbr.editor as editor
     import azlmbr.legacy.general as general
@@ -146,10 +144,7 @@ def Editor_NewExistingLevels():
 
 
 if __name__ == "__main__":
-    import ImportPathHelper as imports
 
-    imports.init()
+    from editor_python_test_tools.utils import Report
 
-    from utils import Report
-
-    Report.start_test(Editor_NewExistingLevels)
+    Report.start_test(Editor_NewExistingLevels_Works)

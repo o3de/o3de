@@ -10,8 +10,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
 """
-LY-124060 : CLI tool - AssetBundlerBatch
-Launch AssetBundlerBatch and Verify the help message
+CLI tool - SerializeContextTools
+Launch SerializeContextTools and Verify the help message
 """
 
 import os
@@ -23,20 +23,19 @@ import ly_test_tools.environment.process_utils as process_utils
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.usefixtures("automatic_process_killer")
 @pytest.mark.SUITE_smoke
-class TestAssetBundlerBatch(object):
+class TestCLIToolSerializeContextToolsWorks(object):
     @pytest.fixture(autouse=True)
     def setup_teardown(self, request):
         def teardown():
-            process_utils.kill_processes_named("AssetBundlerBatch", True)
+            process_utils.kill_processes_named("SerializeContextTools", True)
 
         request.addfinalizer(teardown)
 
-    @pytest.mark.test_case_id("LY-124060")
-    def test_AssetBundlerBatch(self, request, editor, build_directory):
-        file_path = os.path.join(build_directory, "AssetBundlerBatch")
-        help_message = "Specifies the Seed List file to operate on by path"
-        # Launch AssetBundlerBatch
-        output = subprocess.run([file_path, "--help"], capture_output=True)
+    def test_CLITool_SerializeContextTools_Works(self, request, editor, build_directory):
+        file_path = os.path.join(build_directory, "SerializeContextTools")
+        help_message = "Converts a file with an ObjectStream to the new JSON"
+        # Launch SerializeContextTools
+        output = subprocess.run([file_path, "-help"], capture_output=True)
         assert (
             len(output.stderr) == 0 and output.returncode == 0
         ), f"Error occurred while launching {file_path}: {output.stderr}"

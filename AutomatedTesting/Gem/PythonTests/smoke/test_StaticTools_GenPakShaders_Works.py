@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
 """
-LY-124058: Static tool scripts
+Static tool scripts
 Launch Static tool and Verify the help message
 """
 
@@ -34,9 +34,8 @@ def verify_help_message(static_tool):
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.usefixtures("automatic_process_killer")
 @pytest.mark.SUITE_smoke
-class TestStatictoolScripts(object):
-    @pytest.mark.test_case_id("LY-124058")
-    def test_Statictool_Scripts(self, request, editor):
+class TestStaticToolsGenPakShadersWorks(object):
+    def test_StaticTools_GenPakShaders_Works(self, request, editor):
         static_tools = [
             os.path.join(editor.workspace.paths.engine_root(), "scripts", "bundler", "gen_shaders.py"),
             os.path.join(editor.workspace.paths.engine_root(), "scripts", "bundler", "get_shader_list.py"),

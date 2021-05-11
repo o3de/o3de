@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
 """
-LY-124059 : CLI tool - AssetBuilder
+CLI tool - AssetBuilder
 Launch AssetBuilder and Verify the help message
 """
 
@@ -23,7 +23,7 @@ import ly_test_tools.environment.process_utils as process_utils
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.usefixtures("automatic_process_killer")
 @pytest.mark.SUITE_smoke
-class TestAssetBuilder(object):
+class TestCLIToolAssetBuilderWorks(object):
     @pytest.fixture(autouse=True)
     def setup_teardown(self, request):
         def teardown():
@@ -31,8 +31,7 @@ class TestAssetBuilder(object):
 
         request.addfinalizer(teardown)
 
-    @pytest.mark.test_case_id("LY-124059")
-    def test_AssetBuilder(self, request, editor, build_directory):
+    def test_CLITool_AssetBuilder_Works(self, request, editor, build_directory):
         file_path = os.path.join(build_directory, "AssetBuilder")
         help_message = "AssetBuilder is part of the Asset Processor"
         # Launch AssetBuilder
