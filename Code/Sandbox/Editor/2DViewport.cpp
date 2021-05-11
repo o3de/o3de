@@ -660,9 +660,7 @@ void Q2DViewport::Draw(DisplayContext& dc)
 //////////////////////////////////////////////////////////////////////////
 void Q2DViewport::DrawGrid(DisplayContext& dc, bool bNoXNumbers)
 {
-    CGrid* pGrid = GetIEditor()->GetViewManager()->GetGrid();
-    float gridSize = pGrid->size;
-
+    float gridSize = 1.0f;
     if (gridSize < 0.00001f)
     {
         return;
@@ -693,8 +691,6 @@ void Q2DViewport::DrawGrid(DisplayContext& dc, bool bNoXNumbers)
         pixelsPerGrid = gridSize * fScale;
         while (pixelsPerGrid <= 5 && griditers++ < 20)
         {
-            m_fGridZoom *= pGrid->majorLine;
-            gridSize = gridSize * pGrid->majorLine;
             pixelsPerGrid = gridSize * fScale;
         }
     }
@@ -743,7 +739,7 @@ void Q2DViewport::DrawGrid(DisplayContext& dc, bool bNoXNumbers)
         //////////////////////////////////////////////////////////////////////////
         // Draw Major grid lines.
         //////////////////////////////////////////////////////////////////////////
-        gridSize = gridSize * pGrid->majorLine;
+        gridSize = gridSize * 1.0f;
 
         if (m_bAutoAdjustGrids)
         {

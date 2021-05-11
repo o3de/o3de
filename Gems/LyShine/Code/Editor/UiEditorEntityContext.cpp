@@ -943,7 +943,7 @@ void UiEditorEntityContext::InitializeEntities(const AzFramework::EntityList& en
 
             // Because we automatically add the EditorOnlyEntityComponent if it doesn't exist, we can encounter a situation
             // where an entity has duplicate EditorOnlyEntityComponents if an old canvas is resaved and an old slice it uses
-            // is also resaved. See https://jira.agscollab.com/browse/LY-90580
+            // is also resaved. See LY-90580
             // In the main editor this is handled by disabling the duplicate components, but the UI Editor doesn't use that
             // method (the world editor allows the user to manually add incompatible components and then disable and enable
             // them in the entity, the UI Editor still works how the world editor used to - it doesn't allow users to add

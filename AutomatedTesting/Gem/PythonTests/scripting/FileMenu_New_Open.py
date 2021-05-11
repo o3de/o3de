@@ -11,10 +11,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92569037
 Test Case Title: File > New Script creates a new script
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92569037
 Test case ID: T92569039
 Test Case Title: File > Open opens the Open... dialog
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92569039
 """
 
 import os
