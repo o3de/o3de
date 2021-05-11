@@ -195,6 +195,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
             {
                 DirectionalLightShadow::GetShadowCoords(shadowIndex, IN.m_worldPosition, IN.m_shadowCoords);
             }
+            IN.m_position.w = mul(ViewSrg::m_viewProjectionMatrix, IN.m_worldPosition).z;
         }
     }
     
@@ -303,7 +304,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     LightingData lightingData;
 
     // Light iterator
-    lightingData.tileIterator.Init(IN.m_position.xy, IN.m_position.z, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
     
     // Directional light shadow coordinates
