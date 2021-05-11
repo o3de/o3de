@@ -125,22 +125,22 @@ namespace AzFramework
         {
             if (orientation.GetElement(2, 0) > -1.0f)
             {
-                x = std::atan2(orientation.GetElement(2, 1), orientation.GetElement(2, 2));
-                y = std::asin(-orientation.GetElement(2, 0));
-                z = std::atan2(orientation.GetElement(1, 0), orientation.GetElement(0, 0));
+                x = AZStd::atan2(orientation.GetElement(2, 1), orientation.GetElement(2, 2));
+                y = AZStd::asin(-orientation.GetElement(2, 0));
+                z = AZStd::atan2(orientation.GetElement(1, 0), orientation.GetElement(0, 0));
             }
             else
             {
                 x = 0.0f;
                 y = AZ::Constants::Pi * 0.5f;
-                z = -std::atan2(-orientation.GetElement(2, 1), orientation.GetElement(1, 1));
+                z = -AZStd::atan2(-orientation.GetElement(2, 1), orientation.GetElement(1, 1));
             }
         }
         else
         {
             x = 0.0f;
             y = -AZ::Constants::Pi * 0.5f;
-            z = std::atan2(-orientation.GetElement(1, 2), orientation.GetElement(1, 1));
+            z = AZStd::atan2(-orientation.GetElement(1, 2), orientation.GetElement(1, 1));
         }
 
         return {x, y, z};
@@ -219,8 +219,8 @@ namespace AzFramework
         {
             auto& cameraInput = m_idleCameraInputs[i];
             const bool canBegin = cameraInput->Beginning() &&
-                std::all_of(m_activeCameraInputs.cbegin(), m_activeCameraInputs.cend(),
-                            [](const auto& input) { return !input->Exclusive(); }) &&
+                AZStd::all_of(m_activeCameraInputs.cbegin(), m_activeCameraInputs.cend(),
+                              [](const auto& input) { return !input->Exclusive(); }) &&
                 (!cameraInput->Exclusive() || (cameraInput->Exclusive() && m_activeCameraInputs.empty()));
 
             if (canBegin)
@@ -275,8 +275,7 @@ namespace AzFramework
         }
     }
 
-    void RotateCameraInput::HandleEvents(
-        const InputEvent& event, const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
+    void RotateCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
     {
         if (const auto& input = AZStd::get_if<DiscreteInputEvent>(&event))
         {
@@ -316,7 +315,7 @@ namespace AzFramework
         nextCamera.m_pitch -= float(cursorDelta.m_y) * ed_cameraSystemRotateSpeed;
         nextCamera.m_yaw -= float(cursorDelta.m_x) * ed_cameraSystemRotateSpeed;
 
-        const auto clampRotation = [](const float angle) { return std::fmod(angle + AZ::Constants::TwoPi, AZ::Constants::TwoPi); };
+        const auto clampRotation = [](const float angle) { return AZStd::fmod(angle + AZ::Constants::TwoPi, AZ::Constants::TwoPi); };
 
         nextCamera.m_yaw = clampRotation(nextCamera.m_yaw);
         // clamp pitch to be +-90 degrees
@@ -635,7 +634,7 @@ namespace AzFramework
 
     Camera SmoothCamera(const Camera& currentCamera, const Camera& targetCamera, const float deltaTime)
     {
-        const auto clamp_rotation = [](const float angle) { return std::fmod(angle + AZ::Constants::TwoPi, AZ::Constants::TwoPi); };
+        const auto clamp_rotation = [](const float angle) { return AZStd::fmod(angle + AZ::Constants::TwoPi, AZ::Constants::TwoPi); };
 
         // keep yaw in 0 - 360 range
         float targetYaw = clamp_rotation(targetCamera.m_yaw);
@@ -646,7 +645,7 @@ namespace AzFramework
 
         // ensure smooth transition when moving across 0 - 360 boundary
         const float yawDelta = targetYaw - currentYaw;
-        if (std::abs(yawDelta) >= AZ::Constants::Pi)
+        if (AZStd::abs(yawDelta) >= AZ::Constants::Pi)
         {
             targetYaw -= AZ::Constants::TwoPi * sign(yawDelta);
         }
@@ -654,12 +653,12 @@ namespace AzFramework
         Camera camera;
         // note: the math for the lerp smoothing implementation for camera rotation and translation was inspired by this excellent
         // article by Scott Lembcke: https://www.gamasutra.com/blogs/ScottLembcke/20180404/316046/Improved_Lerp_Smoothing.php
-        const float lookRate = std::exp2(ed_cameraSystemLookSmoothness);
-        const float lookT = std::exp2(-lookRate * deltaTime);
+        const float lookRate = AZStd::exp2(ed_cameraSystemLookSmoothness);
+        const float lookT = AZStd::exp2(-lookRate * deltaTime);
         camera.m_pitch = AZ::Lerp(targetCamera.m_pitch, currentCamera.m_pitch, lookT);
         camera.m_yaw = AZ::Lerp(targetYaw, currentYaw, lookT);
-        const float moveRate = std::exp2(ed_cameraSystemTranslateSmoothness);
-        const float moveT = std::exp2(-moveRate * deltaTime);
+        const float moveRate = AZStd::exp2(ed_cameraSystemTranslateSmoothness);
+        const float moveT = AZStd::exp2(-moveRate * deltaTime);
         camera.m_lookDist = AZ::Lerp(targetCamera.m_lookDist, currentCamera.m_lookDist, moveT);
         camera.m_lookAt = targetCamera.m_lookAt.Lerp(currentCamera.m_lookAt, moveT);
         return camera;
