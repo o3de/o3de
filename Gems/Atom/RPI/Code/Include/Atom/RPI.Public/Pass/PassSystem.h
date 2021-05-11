@@ -66,7 +66,7 @@ namespace AZ
 
             // PassSystemInterface functions...
             void ProcessQueuedChanges() override;
-            void LoadPassTemplateMappings(const AZStd::string& templateMappingPath) override;
+            bool LoadPassTemplateMappings(const AZStd::string& templateMappingPath) override;
             void WriteTemplateToFile(const PassTemplate& passTemplate, AZStd::string_view assetFilePath) override;
             void DebugPrintPassHierarchy() override;
             bool IsBuilding() const override;

@@ -46,8 +46,6 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
-#include <IEngineModule.h>
-#include <CryExtension/CryCreateClassInstance.h>
 #include <AzCore/IO/SystemFile.h> // for AZ_MAX_PATH_LEN
 #include <AzCore/IO/Streamer/Streamer.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
@@ -113,16 +111,12 @@
 #include "ResourceManager.h"
 #include "MTSafeAllocator.h"
 #include "NotificationNetwork.h"
-#include "ExtensionSystem/CryFactoryRegistryImpl.h"
-#include "ExtensionSystem/TestCases/TestExtensions.h"
 #include "ProfileLogSystem.h"
 #include "SoftCode/SoftCodeMgr.h"
 #include "ZLibCompressor.h"
 #include "ZLibDecompressor.h"
 #include "ZStdDecompressor.h"
 #include "LZ4Decompressor.h"
-#include "ServiceNetwork.h"
-#include "RemoteCommand.h"
 #include "LevelSystem/LevelSystem.h"
 #include "LevelSystem/SpawnableLevelSystem.h"
 #include "ViewSystem/ViewSystem.h"
@@ -852,148 +846,6 @@ bool CSystem::UnloadDLL(const char* dllName)
         isSuccess = hModule->Unload();
         hModule.release();
     }
-
-    return isSuccess;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CSystem::InitializeEngineModule(const char* dllName, const char* moduleClassName, const SSystemInitParams& initParams)
-{
-    bool bResult = false;
-
-    stack_string msg;
-    msg = "Initializing ";
-    AZStd::string dll = dllName;
-
-    // Strip off Cry if the dllname is Cry<something>
-    if (dll.find("Cry") == 0)
-    {
-        msg += dll.substr(3).c_str();
-    }
-    else
-    {
-        msg += dllName;
-    }
-    msg += "...";
-
-    if (m_pUserCallback)
-    {
-        m_pUserCallback->OnInitProgress(msg.c_str());
-    }
-    AZ_TracePrintf(moduleClassName, "%s", msg.c_str());
-
-    IMemoryManager::SProcessMemInfo memStart, memEnd;
-    if (GetIMemoryManager())
-    {
-        GetIMemoryManager()->GetProcessMemInfo(memStart);
-    }
-    else
-    {
-        ZeroStruct(memStart);
-    }
-
-    stack_string dllfile = "";
-
-
-#if defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_16
-#include AZ_RESTRICTED_FILE(SystemInit_cpp)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-
-    dllfile.append(dllName);
-
-#if defined(LINUX)
-    dllfile = "lib" + PathUtil::ReplaceExtension(dllfile, "so");
-#ifndef LINUX
-    dllfile.MakeLower();
-#endif
-#elif defined(AZ_PLATFORM_MAC)
-    dllfile = "lib" + PathUtil::ReplaceExtension(dllfile, "dylib");
-#elif defined(AZ_PLATFORM_IOS)
-    PathUtil::RemoveExtension(dllfile);
-#else
-    dllfile = PathUtil::ReplaceExtension(dllfile, "dll");
-#endif
-
-#endif
-
-#if !defined(AZ_MONOLITHIC_BUILD)
-
-    m_moduleDLLHandles.insert(std::make_pair(dllfile.c_str(), LoadDLL(dllfile.c_str())));
-    if (!m_moduleDLLHandles[dllfile.c_str()])
-    {
-        return bResult;
-    }
-
-#endif // #if !defined(AZ_MONOLITHIC_BUILD)
-
-    AZStd::shared_ptr<IEngineModule> pModule;
-    if (CryCreateClassInstance(moduleClassName, pModule))
-    {
-        bResult = pModule->Initialize(m_env, initParams);
-
-        // After initializing the module, give it a chance to register any AZ console vars
-        // declared within the module.
-        pModule->RegisterConsoleVars();
-    }
-
-    if (GetIMemoryManager())
-    {
-        GetIMemoryManager()->GetProcessMemInfo(memEnd);
-
-#if defined(AZ_ENABLE_TRACING)
-        uint64 memUsed = memEnd.WorkingSetSize - memStart.WorkingSetSize;
-#endif
-        AZ_TracePrintf(AZ_TRACE_SYSTEM_WINDOW, "Initializing %s %s, MemUsage=%uKb", dllName, pModule ? "done" : "failed", uint32(memUsed / 1024));
-    }
-
-    return bResult;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CSystem::UnloadEngineModule(const char* dllName, const char* moduleClassName)
-{
-    bool isSuccess = false;
-
-    // Remove the factory.
-    ICryFactoryRegistryImpl* const pReg = static_cast<ICryFactoryRegistryImpl*>(GetCryFactoryRegistry());
-
-    if (pReg != nullptr)
-    {
-        ICryFactory* pICryFactory = pReg->GetFactory(moduleClassName);
-
-        if (pICryFactory != nullptr)
-        {
-            pReg->UnregisterFactory(pICryFactory);
-        }
-    }
-
-    stack_string msg;
-    msg = "Unloading ";
-    msg += dllName;
-    msg += "...";
-
-    AZ_TracePrintf(AZ_TRACE_SYSTEM_WINDOW, "%s", msg.c_str());
-
-    stack_string dllfile = dllName;
-
-#if defined(LINUX)
-    dllfile = "lib" + PathUtil::ReplaceExtension(dllfile, "so");
-#ifndef LINUX
-    dllfile.MakeLower();
-#endif
-#elif defined(APPLE)
-    dllfile = "lib" + PathUtil::ReplaceExtension(dllfile, "dylib");
-#else
-    dllfile = PathUtil::ReplaceExtension(dllfile, "dll");
-#endif
-
-#if !defined(AZ_MONOLITHIC_BUILD)
-    isSuccess = UnloadDLL(dllfile.c_str());
-#endif // #if !defined(AZ_MONOLITHIC_BUILD)
 
     return isSuccess;
 }
@@ -1872,12 +1724,6 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
 
     AZ_Assert(CryMemory::IsHeapValid(), "Memory heap must be valid before continuing SystemInit.");
 
-#ifdef EXTENSION_SYSTEM_INCLUDE_TESTCASES
-    TestExtensions(&CCryFactoryRegistryImpl::Access());
-#endif
-
-    //_controlfp(0, _EM_INVALID|_EM_ZERODIVIDE | _PC_64 );
-
 #if defined(WIN32) || defined(WIN64)
     // check OS version - we only want to run on XP or higher - talk to Martin Mittring if you want to change this
     {
@@ -2412,29 +2258,11 @@ AZ_POP_DISABLE_WARNING
         }
 
         InlineInitializationProcessing("CSystem::Init InitShine");
-
-        //////////////////////////////////////////////////////////////////////////
         // CONSOLE
         //////////////////////////////////////////////////////////////////////////
         if (!InitConsole())
         {
             return false;
-        }
-
-        //////////////////////////////////////////////////////////////////////////
-        // SERVICE NETWORK
-        //////////////////////////////////////////////////////////////////////////
-        if (!startupParams.bSkipNetwork && !startupParams.bMinimal)
-        {
-            m_env.pServiceNetwork = new CServiceNetwork();
-        }
-
-        //////////////////////////////////////////////////////////////////////////
-        // REMOTE COMMAND SYTSTEM
-        //////////////////////////////////////////////////////////////////////////
-        if (!startupParams.bSkipNetwork && !startupParams.bMinimal)
-        {
-            m_env.pRemoteCommandManager = new CRemoteCommandManager();
         }
 
         if (m_pUserCallback)

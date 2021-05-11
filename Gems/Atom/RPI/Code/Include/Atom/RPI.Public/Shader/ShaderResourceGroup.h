@@ -75,6 +75,9 @@ namespace AZ
             RHI::ShaderInputSamplerIndex   FindShaderInputSamplerIndex(const Name& name) const;
             RHI::ShaderInputConstantIndex  FindShaderInputConstantIndex(const Name& name) const;
 
+            RHI::ShaderInputBufferUnboundedArrayIndex FindShaderInputBufferUnboundedArrayIndex(const Name& name) const;
+            RHI::ShaderInputImageUnboundedArrayIndex  FindShaderInputImageUnboundedArrayIndex(const Name& name) const;
+
             /// Returns the parent shader resource group asset.
             const Data::Asset<ShaderResourceGroupAsset>& GetAsset() const;
 

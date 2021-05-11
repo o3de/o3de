@@ -357,8 +357,6 @@ set(FILES
     Controls/ConsoleSCB.h
     Controls/ConsoleSCB.ui
     Controls/ConsoleSCB.qrc
-    Controls/CurveEditorCtrl.cpp
-    Controls/CurveEditorCtrl.h
     Controls/FolderTreeCtrl.cpp
     Controls/FolderTreeCtrl.h
     Controls/HotTrackingTreeCtrl.cpp
@@ -437,9 +435,6 @@ set(FILES
     GotoPositionDlg.cpp
     GotoPositionDlg.h
     GotoPositionDlg.ui
-    GridSettingsDialog.cpp
-    GridSettingsDialog.h
-    GridSettingsDialog.ui
     InfoBar.cpp
     InfoBar.qrc
     InfoBar.h
@@ -578,11 +573,6 @@ set(FILES
     QtUI/WaitCursor.cpp
     RenderHelpers/AxisHelper.cpp
     RenderHelpers/AxisHelper.h
-    Serialization.h
-    Serialization/VariableOArchive.cpp
-    Serialization/VariableOArchive.h
-    Serialization/VariableIArchive.cpp
-    Serialization/VariableIArchive.h
     CustomizeKeyboardDialog.h
     CustomizeKeyboardDialog.cpp
     CustomizeKeyboardDialog.ui
@@ -741,8 +731,6 @@ set(FILES
     TrackView/TrackViewEventNode.h
     ConfigGroup.cpp
     ConfigGroup.h
-    SettingsBlock.cpp
-    SettingsBlock.h
     Util/AffineParts.h
     Util/AutoLogTime.cpp
     Util/AutoLogTime.h
@@ -835,8 +823,6 @@ set(FILES
     WelcomeScreen/WelcomeScreenDialog.qrc
     2DViewport.cpp
     2DViewport.h
-    Grid.cpp
-    Grid.h
     LayoutWnd.cpp
     LayoutWnd.h
     EditorViewportWidget.cpp
