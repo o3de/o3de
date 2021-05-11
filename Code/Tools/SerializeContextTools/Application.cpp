@@ -16,12 +16,23 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 
+#include <AzToolsFramework/Thumbnails/ThumbnailerNullComponent.h>
+
 namespace AZ
 {
+    // SerializeContextTools is a full ToolsApplication that will load a project's Gem DLLs and initialize the system components.
+    // This level of initialization is required to get all the serialization contexts and asset handlers registered, so that when
+    // data transformations take place, none of the data is dropped due to not being recognized.
+    // However, as a simplification, anything requiring Python or Qt is skipped during initialization:
+    // - The gem_autoload.serializecontexttools.setreg file disables autoload for QtForPython, EditorPythonBindings, and PythonAssetBuilder
+    // - The system component initialization below uses ThumbnailerNullComponent so that other components relying on a ThumbnailService
+    //   can still be started up, but the thumbnail service itself won't do anything.  The real ThumbnailerComponent uses Qt, which is why
+    //   it isn't used.
+
     namespace SerializeContextTools
     {
         Application::Application(int argc, char** argv)
-            : AZ::ComponentApplication(argc, argv)
+            : AzToolsFramework::ToolsApplication(&argc, &argv)
         {
             AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
             if (projectPath.empty())
@@ -51,14 +62,25 @@ namespace AZ
             else
             {
                 AZ::SettingsRegistryInterface::Specializations projectSpecializations{ projectName };
-                AZ::IO::PathView configFilenameStem = m_configFilePath.Stem();
-                if (AZ::StringFunc::Equal(configFilenameStem.Native(),  "Editor"))
+
+                // If a project specialization has been passed in via the command line, use it.
+                if (m_commandLine.HasSwitch("specialization"))
                 {
-                    projectSpecializations.Append("editor");
+                    AZStd::string specialization = m_commandLine.GetSwitchValue("specialization", 0);
+                    projectSpecializations.Append(specialization);
                 }
-                else if (AZ::StringFunc::Equal(configFilenameStem.Native(), "Game"))
+                // Otherwise, if a config file was passed in, auto-set the specialization based on the config file name.
+                else
                 {
-                    projectSpecializations.Append(projectName + "_GameLauncher");
+                    AZ::IO::PathView configFilenameStem = m_configFilePath.Stem();
+                    if (AZ::StringFunc::Equal(configFilenameStem.Native(), "Editor"))
+                    {
+                        projectSpecializations.Append("editor");
+                    }
+                    else if (AZ::StringFunc::Equal(configFilenameStem.Native(), "Game"))
+                    {
+                        projectSpecializations.Append(projectName + "_GameLauncher");
+                    }
                 }
 
                 // Used the project specializations to merge the build dependencies *.setreg files
@@ -77,6 +99,15 @@ namespace AZ
         {
             AZ::ComponentApplication::SetSettingsRegistrySpecializations(specializations);
             specializations.Append("serializecontexttools");
+        }
+
+        AZ::ComponentTypeList Application::GetRequiredSystemComponents() const
+        {
+            // Use all of the default system components, but also add in the ThumbnailerNullComponent so that components requiring
+            // a ThumbnailService can still be started up.
+            AZ::ComponentTypeList components = AzToolsFramework::ToolsApplication::GetRequiredSystemComponents();
+            components.emplace_back(azrtti_typeid<AzToolsFramework::Thumbnailer::ThumbnailerNullComponent>());
+            return components;
         }
     } // namespace SerializeContextTools
 } // namespace AZ
