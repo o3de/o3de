@@ -9,7 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(LY_COMPILE_DEFINITIONS
+set(LY_COMPILE_OPTIONS
     PRIVATE
-        HAVE_ROUND # defined for Windows since http://p-nand-q.com/python/building-python-33-with-vs2013.html
+        -fexceptions # The macro PYBIND11_EMBEDDED_MODULE uses a try catch block
 )
