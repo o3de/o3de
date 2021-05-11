@@ -188,8 +188,11 @@
                     "pattern": ".*\\\\/ArtSource\\\\/.*"
                 },
                 //------------------------------------------------------------------------------
-                // RC params mapping examples
+                // Copying Files Automatically Into the Cache
                 //------------------------------------------------------------------------------
+
+                // The below section is used to register patterns (*.something) to copy into the cache
+                // the "params" block must either be "copy" (copy the file) or "skip" (used for per-platfrom skipping)
 
                 // note that productAssetType is a means of setting the output asset Type (as in AZ::Data::AssetType) of a simple job
                 // and is the recommended way to specify that a certain kind of file (such as '*.myextension') becomes registered as the
@@ -198,88 +201,43 @@
                 // Use a regex for matching files, same params for all platforms
                 // "RC TGAs": {
                 //  "pattern": ".+\\\\.tga$",
-                //  "params": "/tga /texture"
+                //  "params": "copy"
                 //}
 
-                // Use a glob, have special params for es3 platform
+                // Example Use a glob instead of a regex, skip the copy for the "server" platform
                 // "RC TIFFs": {
                 //  "glob": "*.tif",
-                //  "params": "/texture",
-                //  "es3": "/pvrt"
+                //  "params": "copy",
+                //  "server": "skip"
                 //}
 
                 // You can also modify a version to compile all matching files again
                 // By default the version is empty
                 // "RC tif": {
                 //  "glob": "*.tif",
-                //  "params": "\\someparams",
+                //  "params": "copy",
                 //  "version": 1.0
                 //}
-                // This will make the AssetProcessor compile all the .tif files again
+                // This will make the AssetProcessor compile all the .tif files again if version changes.
 
                 // you can also optionally supply a priority.
-                // this is used to sort jobs when no other external circumstance sorts them
-                // for example, copy jobs will be higher in priority than other jobs that are not copy jobs
-                // however if they're both copy jobs or both not, and no other circumstances apply, then priority will be used.
-                // default priority is zero if not specified
-
-                // you can specify an option to skip processing for a file type based on the platform.
-                // for example, if you dont want to process tif files for ios, you can make tif files
-                // process on any platform except for ios:
-                // "RC tif": {
-                //  "glob": "*.tif",
-                //  "params": "\\someparams",
-                //  "ios": "skip"
-                //}
-
-                // you can specify an option to output product dependencies for a copy job.
-                // please note that you only need to set this option when cry code is required to parse the asset.
-                // otherwise product dependencies will be output automatically by the CopyDependencyBuilder.
-                // for example, if you want to output the product dependencies for font assets:
-                // "RC font": {
-                //  "glob": "*.font",
-                //  "params": "copy",
-                //  "outputProductDependencies": true
-                //}
-
-                // you can also specify an option to make all jobs critical that matches some pattern/glob.
-                // for example, if you want to make all png files critical than set critical to true.
-                // Note that by default all copy jobs are critical.
-                // Critical jobs are processed before non critical jobs and also prevent the runtime or editor from starting until they are all complete.
-                // "RC png": {
-                //  "glob": "*.png",
-                //  "params": "\\someparams",
-                //  "critical": true
-                //}
-
-                // you can also specify an option to make all the job store in the asset server cache location if you are running AP in server mode. 
-                // For example, if you want to store all png jobs in the asset server cache location including their logs, you can set checkServer = true.
-                // The client(i.e if you are running AP in non-server mode) will also check for this flag to know which jobs to fetch from the asset server cache location.
-                // if unsucessful, it will process the job locally as usual.
-                // "RC png": {
-                //  "glob": "*.png",
-                //  "params": "\\someparams",
-                //  "critical": true,
-                //  "checkServer": true
-                //}
+                // this is used to sort jobs when no other external circumstance sorts them (higher wins, default is 0)
 
                 // note that the FULL PATH to the file will be used as the match, not the relative path
                 // so ensure start your patterns with .* or as appropriate.
                 // Also, any rules which match will apply - so if you have two rules which both apply to PNG files for example
                 // but you only want one, you might want to use exclusion patterns:
                  
-                //Example: process everything EXCEPT the ones in the libs/ui folder with these params
+                //Example: copy everything EXCEPT the ones in the libs/ui
                 // "RC png-normal": {
                 //  "pattern": "(?!.*libs\\\\/ui\\\\/).*\\.png",
-                //  "params": "/imagecompressor=CTSquish /streaming=0",
-                //  "lockSource": true
+                //  "params": "copy"
                 //}
 
-                //Example:  Process everything in the libs/ui folder with linear color space
+                //Example:  Process everything in the libs/ui folder 
                 // "RC png-ui": {
                 //  "pattern": "(.*libs\\\\/ui\\\\/).*\\.png",
-                //  "params": "/imagecompressor=CTSquish /streaming=0 /colorspace=linear,linear",
-                //  "lockSource": true
+                //  "params": "copy"
                 //}
 
                 // More example Regexes:
@@ -288,20 +246,8 @@
                 // "pattern": "((.*libs\\\\/ui\\\\/)|(.*editor\\\\/).*\\\\.png"
                 // This pattern will only match anything with editor/ or libs/ui/ in it
 
-                // Give every [Section Name] its own unique Name or else they will overwrite each other!
-                "RC i_caf": {
-                    "glob": "*.i_caf",
-                    "params": "/cafAlignTracks=1 /animConfigFolder=Animations /skipdba=1 /refresh=1",
-                    // force server to send the 'pc' platform to RC.EXE so it compiles the same as PC.
-                    "server": "/cafAlignTracks=1 /animConfigFolder=Animations /skipdba=1 /refresh=1 /p=pc",
-                    "priority": 5,
-                    "productAssetType": "{6023CFF8-FCBA-4528-A8BF-6E0E10B9AB9C}"
-                },
-                "RC caf": {
-                    "glob": "*.caf",
-                    "params": "copy",
-                    "productAssetType": "{6023CFF8-FCBA-4528-A8BF-6E0E10B9AB9C}"
-                },
+                // This is a JSON object - every entry must start with "RC" but make sure
+                // to give every entry its own unique Name or else they will overwrite each other:
                 "RC mp4": {
                     "glob": "*.mp4",
                     "params": "copy",
@@ -331,22 +277,6 @@
                     "glob": "*.img",
                     "params": "copy"
                 },
-                "RC dba": {
-                    "glob": "*.dba",
-                    "params": "copy",
-                    "productAssetType": "{511562BE-65A5-4538-A5F1-AC685366243E}",
-                    "version": 2
-                },
-                "RC cgf": {
-                    "glob": "*.cgf",
-                    "params": "/VertexPositionFormat=exporter /VertexIndexFormat=u32",
-                    // on server, feed rc.exe the param /p=pc to force it to compile assets for server platform in pc format.
-                    "server": "/VertexPositionFormat=exporter /VertexIndexFormat=u32 /p=pc",
-                    "lockSource": true,
-                    "priority": 10
-                    // allow CGF files to compile first, so untextured models appear before their textures for faster startup
-                    // other available params: /SplitLODs=1
-                },
                 "RC surfaceTagNameList": {
                     "glob": "*.surfaceTagNameList",
                     "params": "copy",
@@ -356,43 +286,6 @@
                     "glob": "*.gradimagesettings",
                     "params": "copy",
                     "productAssetType": "{B36FEB5C-41B6-4B58-A212-21EF5AEF523C}"
-                },
-                "RC fbx": {
-                    "glob": "*.fbx",
-                    // Priority set to 9 so its "before" things like materials but after things like actors and motions (which build using a proper AssetBuilderSDK builder and thus are not in this file)
-                    "priority": 9,
-                    "version": 5
-                },
-                "RC chr": {
-                    "glob": "*.chr",
-                    "params": "copy",
-                    "productAssetType": "{60161B46-21F0-4396-A4F0-F2CCF0664CDE}",
-                    "version": 2
-                },
-                "RC skin": {
-                    "glob": "*.skin",
-                    "params": "copy"
-                },
-                "RC cfi": {
-                    "glob": "*.cfi",
-                    "params": "copy"
-                },
-                "RC cfx": {
-                    "glob": "*.cfx",
-                    "params": "copy"
-                },
-                "RC cfr": {
-                    "glob": "*.cfr",
-                    "params": "copy"
-                },
-                // Warning: If you change the VertexIndexFormat, make sure you update the vtx_idx typedef in Code\CryEngine\CryCommon\ProjectDefines.h
-                "RC abc": {
-                    "glob": "*.abc",
-                    "params": "/SkipFilesWithoutBuildConfig=0 /VertexIndexFormat=u32",
-                    "console": "/SkipFilesWithoutBuildConfig=0 /VertexIndexFormat=u32",
-                    "mobile": "/SkipFilesWithoutBuildConfig=0 /VertexIndexFormat=u16",
-                    "version": 3,
-                    "server": "skip"
                 },
                 "RC png-entityicon": {
                     "pattern": "(.*EntityIcons\\\\/).*\\\\.png",
@@ -411,11 +304,6 @@
                     "productAssetType": "{C1D209C1-F81A-4586-A34E-1615995F9F3F}",
                     "version": 2
                 },
-                "RC adb": {
-                    "glob": "*.adb",
-                    "params": "copy",
-                    "productAssetType": "{50908273-CA36-4668-9828-15DD5092F973}"
-                },
                 "RC bspace": {
                     "glob": "*.bspace",
                     "params": "copy"
@@ -424,15 +312,6 @@
                     "glob": "*.cdf",
                     "params": "copy",
                     "productAssetType": "{DF036C63-9AE6-4AC3-A6AC-8A1D76126C01}"
-                },
-                // note - this used to be skinnedMeshAsset but its now Character Definition File specific.
-                // .skin has its own type.
-
-                "RC chrparams": {
-                    "glob": "*.chrparams",
-                    "params": "copy",
-                    "productAssetType": "{4BBB785A-6824-4803-A607-F9323E7BEEF1}",
-                    "version": 2
                 },
                 "RC comb": {
                     "glob": "*.comb",

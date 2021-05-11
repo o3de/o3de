@@ -72,6 +72,8 @@
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 
+#include <Atom/RHI/RHIUtils.h>
+
 #include "Animation/UiAnimationSystem.h"
 #include "World/UiCanvasAssetRefComponent.h"
 #include "World/UiCanvasProxyRefComponent.h"
@@ -164,11 +166,6 @@ CLyShine::CLyShine(ISystem* system)
 
     UiAnimationSystem::StaticInitialize();
 
-    if (m_system->GetIRenderer())
-    {
-        m_system->GetIRenderer()->AddRenderDebugListener(this);
-    }
-
     AzFramework::InputChannelEventListener::Connect();
     AzFramework::InputTextEventListener::Connect();
     UiCursorBus::Handler::BusConnect();
@@ -251,11 +248,6 @@ CLyShine::~CLyShine()
     AZ::TickBus::Handler::BusDisconnect();
     AzFramework::InputTextEventListener::Disconnect();
     AzFramework::InputChannelEventListener::Disconnect();
-
-    if (m_system->GetIRenderer())
-    {
-        m_system->GetIRenderer()->RemoveRenderDebugListener(this);
-    }
 
     UiCanvasComponent::Shutdown();
 
@@ -425,11 +417,8 @@ void CLyShine::Render()
 {
     FRAME_PROFILER(__FUNCTION__, gEnv->pSystem, PROFILE_UI);
 
-    // LYSHINE_ATOM_TODO - convert to use Atom interface to check for null renderer
-    if (!gEnv || !gEnv->pRenderer || gEnv->pRenderer->GetRenderType() == ERenderType::eRT_Null)
+    if (AZ::RHI::IsNullRenderer())
     {
-        // if the renderer is not initialized or it is the null renderer (e.g. running as a server)
-        // then do nothing
         return;
     }
 

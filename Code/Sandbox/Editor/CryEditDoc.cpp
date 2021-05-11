@@ -27,7 +27,6 @@
 // AzFramework
 #include <AzFramework/Archive/IArchive.h>
 #include <AzFramework/API/ApplicationAPI.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/Slice/SliceUtilities.h>
@@ -43,7 +42,6 @@
 #include "Settings.h"
 
 #include "PluginManager.h"
-#include "Mission.h"
 #include "ViewManager.h"
 #include "DisplaySettings.h"
 #include "GameEngine.h"
@@ -51,20 +49,19 @@
 #include "CryEdit.h"
 #include "ActionManager.h"
 #include "Include/IObjectManager.h"
-#include "Material/MaterialManager.h"
-#include "LensFlareEditor/LensFlareManager.h"
 #include "ErrorReportDialog.h"
 #include "SurfaceTypeValidator.h"
-#include "ShaderCache.h"
 #include "Util/AutoLogTime.h"
 #include "CheckOutDialog.h"
 #include "GameExporter.h"
 #include "MainWindow.h"
-#include "ITimeOfDay.h"
 #include "LevelFileDialog.h"
 #include "StatObjBus.h"
 
 // LmbrCentral
+#include <ModernViewportCameraController.h>
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 #include <LmbrCentral/Rendering/EditorLightComponentBus.h>              // for LmbrCentral::EditorLightComponentRequestBus
 
 
@@ -123,7 +120,6 @@ CCryEditDoc::CCryEditDoc()
     // The right way would require us to save to the level folder the export status of the
     // level.
     , m_boLevelExported(true)
-    , m_mission(NULL)
     , m_modified(false)
     , m_envProbeHeight(200.0f)
     , m_envProbeSliceRelativePath("EngineAssets/Slices/DefaultLevelSetup.slice")
@@ -146,7 +142,6 @@ CCryEditDoc::CCryEditDoc()
         m_environmentTemplate = XmlHelpers::CreateXmlNode("Environment");
     }
 
-    m_pLevelShaderCache = new CLevelShaderCache;
     m_bDocumentReady = false;
     GetIEditor()->SetDocument(this);
     CLogFile::WriteLine("Document created");
@@ -158,9 +153,6 @@ CCryEditDoc::CCryEditDoc()
 CCryEditDoc::~CCryEditDoc()
 {
     GetIEditor()->SetDocument(nullptr);
-    ClearMissions();
-
-    delete m_pLevelShaderCache;
 
     CLogFile::WriteLine("Document destroyed");
 
@@ -255,17 +247,6 @@ bool CCryEditDoc::Save()
     return OnSaveDocument(GetActivePathName());
 }
 
-void CCryEditDoc::ChangeMission()
-{
-    GetIEditor()->Notify(eNotify_OnMissionChange);
-
-    // Notify listeners.
-    for (std::list<IDocListener*>::iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
-    {
-        (*it)->OnMissionChange();
-    }
-}
-
 void CCryEditDoc::DeleteContents()
 {
     m_hasErrors = false;
@@ -294,10 +275,6 @@ void CCryEditDoc::DeleteContents()
 
     // Delete all objects from Object Manager.
     GetIEditor()->GetObjectManager()->DeleteAllObjects();
-
-    ClearMissions();
-
-    GetIEditor()->GetGameEngine()->ResetResources();
 
     // Load scripts data
     SetModifiedFlag(FALSE);
@@ -341,7 +318,6 @@ void CCryEditDoc::Save(TDocMultiArchive& arrXmlAr)
     if (!isPrefabEnabled)
     {
         CAutoDocNotReady autoDocNotReady;
-        QString currentMissionName;
 
         if (arrXmlAr[DMAS_GENERAL] != NULL)
         {
@@ -356,14 +332,7 @@ void CCryEditDoc::Save(TDocMultiArchive& arrXmlAr)
 
             // Fog settings  ///////////////////////////////////////////////////////
             SerializeFogSettings((*arrXmlAr[DMAS_GENERAL]));
-            // Serialize Missions //////////////////////////////////////////////////
-            SerializeMissions(arrXmlAr, currentMissionName, false);
-            //! Serialize material manager.
-            GetIEditor()->GetMaterialManager()->Serialize((*arrXmlAr[DMAS_GENERAL]).root, (*arrXmlAr[DMAS_GENERAL]).bLoading);
-            //! Serialize LensFlare manager.
-            GetIEditor()->GetLensFlareManager()->Serialize((*arrXmlAr[DMAS_GENERAL]).root, (*arrXmlAr[DMAS_GENERAL]).bLoading);
 
-            SerializeShaderCache((*arrXmlAr[DMAS_GENERAL_NAMED_DATA]));
             SerializeNameSelection((*arrXmlAr[DMAS_GENERAL]));
         }
     }
@@ -408,7 +377,6 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
     HEAP_CHECK
 
     CLogFile::FormatLine("Loading from %s...", szFilename.toUtf8().data());
-    QString currentMissionName;
     QString szLevelPath = Path::GetPath(szFilename);
 
     {
@@ -486,27 +454,9 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
             Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
         }
 
-        HEAP_CHECK
-
-        if (!isPrefabEnabled)
-        {
-            // multiple missions are no longer supported, only load the current mission (last used)
-            SerializeMissions(arrXmlAr, currentMissionName, false);
-        }
-
-        HEAP_CHECK
-
-        if (GetIEditor()->Get3DEngine())
-        {
-            if (!isPrefabEnabled)
-            {
-                GetIEditor()->Get3DEngine()->LoadCompiledOctreeForEditor();
-            }
-        }
-
         {
             CAutoLogTime logtime("Game Engine level load");
-            GetIEditor()->GetGameEngine()->LoadLevel(currentMissionName, true, true);
+            GetIEditor()->GetGameEngine()->LoadLevel(true, true);
         }
 
         if (!isPrefabEnabled)
@@ -515,22 +465,6 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
             // Load water color.
             //////////////////////////////////////////////////////////////////////////
                 (*arrXmlAr[DMAS_GENERAL]).root->getAttr("WaterColor", m_waterColor);
-
-            //////////////////////////////////////////////////////////////////////////
-            // Load materials.
-            //////////////////////////////////////////////////////////////////////////
-            {
-                CAutoLogTime logtime("Load MaterialManager");
-                GetIEditor()->GetMaterialManager()->Serialize((*arrXmlAr[DMAS_GENERAL]).root, (*arrXmlAr[DMAS_GENERAL]).bLoading);
-            }
-
-            //////////////////////////////////////////////////////////////////////////
-            // Load LensFlares.
-            //////////////////////////////////////////////////////////////////////////
-            {
-                CAutoLogTime logtime("Load Flares");
-                GetIEditor()->GetLensFlareManager()->Serialize((*arrXmlAr[DMAS_GENERAL]).root, (*arrXmlAr[DMAS_GENERAL]).bLoading);
-            }
 
             //////////////////////////////////////////////////////////////////////////
             // Load View Settings
@@ -543,32 +477,10 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
             SerializeFogSettings((*arrXmlAr[DMAS_GENERAL]));
         }
 
-        {
-            QByteArray str;
-            str = tr("Activating Mission %1").arg(currentMissionName).toUtf8();
-
-            CAutoLogTime logtime(str.data());
-
-            // Select current mission.
-            m_mission = FindMission(currentMissionName);
-
-            if (m_mission)
-            {
-                SyncCurrentMissionContent(true);
-            }
-            else
-            {
-                GetCurrentMission();
-            }
-        }
-
-        ForceSkyUpdate();
-
         if (!isPrefabEnabled)
         {
             // Serialize Shader Cache.
             CAutoLogTime logtime("Load Level Shader Cache");
-            SerializeShaderCache((*arrXmlAr[DMAS_GENERAL_NAMED_DATA]));
         }
 
         {
@@ -667,22 +579,13 @@ void CCryEditDoc::SerializeViewSettings(CXmlArchive& xmlAr)
                 view->getAttr(viewerAnglesName.toUtf8().constData(), va);
             }
 
-            CViewport* pVP = GetIEditor()->GetViewManager()->GetView(i);
+            Matrix34 tm = Matrix34::CreateRotationXYZ(va);
+            tm.SetTranslation(vp);
 
-            if (pVP)
+            auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+            if (auto viewportContext = viewportContextManager->GetViewportContextById(i))
             {
-                Matrix34 tm = Matrix34::CreateRotationXYZ(va);
-                tm.SetTranslation(vp);
-                pVP->SetViewTM(tm);
-            }
-
-            // Load grid.
-            auto gridName = QString("Grid%1").arg(useOldViewFormat ? "" : QString::number(i));
-            XmlNodeRef gridNode = xmlAr.root->newChild(gridName.toUtf8().constData());
-
-            if (gridNode)
-            {
-                GetIEditor()->GetViewManager()->GetGrid()->Serialize(gridNode, xmlAr.bLoading);
+                viewportContext->SetCameraTransform(LYTransformToAZTransform(tm));
             }
         }
     }
@@ -709,11 +612,6 @@ void CCryEditDoc::SerializeViewSettings(CXmlArchive& xmlAr)
                 auto viewerAnglesName = QString("ViewerAngles%1").arg(i);
                 view->setAttr(viewerAnglesName.toUtf8().constData(), angles);
             }
-
-            // Save grid.
-            auto gridName = QString("Grid%1").arg(i);
-            XmlNodeRef gridNode = xmlAr.root->newChild(gridName.toUtf8().constData());
-            GetIEditor()->GetViewManager()->GetGrid()->Serialize(gridNode, xmlAr.bLoading);
         }
     }
 }
@@ -745,127 +643,6 @@ void CCryEditDoc::SerializeFogSettings(CXmlArchive& xmlAr)
         if (m_fogTemplate)
         {
             CXmlTemplate::SetValues(m_fogTemplate, fog);
-        }
-    }
-}
-
-void CCryEditDoc::SerializeMissions(TDocMultiArchive& arrXmlAr, QString& currentMissionName, bool bPartsInXml)
-{
-    bool bLoading = IsLoadingXmlArArray(arrXmlAr);
-
-    if (bLoading)
-    {
-        // Loading
-        CLogFile::WriteLine("Loading missions...");
-        // Clear old layers
-        ClearMissions();
-        // Load shared objects and layers.
-        XmlNodeRef objectsNode = arrXmlAr[DMAS_GENERAL]->root->findChild("Objects");
-        XmlNodeRef objectLayersNode = arrXmlAr[DMAS_GENERAL]->root->findChild("ObjectLayers");
-        // Load the layer count
-        XmlNodeRef node = arrXmlAr[DMAS_GENERAL]->root->findChild("Missions");
-
-        if (!node)
-        {
-            return;
-        }
-
-        QString current;
-        node->getAttr("Current", current);
-        currentMissionName = current;
-
-        // Read all node
-        for (int i = 0; i < node->getChildCount(); i++)
-        {
-            CXmlArchive ar(*arrXmlAr[DMAS_GENERAL]);
-            ar.root = node->getChild(i);
-            CMission* mission = new CMission(this);
-            mission->Serialize(ar);
-            if (bPartsInXml)
-            {
-                mission->SerializeTimeOfDay(*arrXmlAr[DMAS_TIME_OF_DAY]);
-                mission->SerializeEnvironment(*arrXmlAr[DMAS_ENVIRONMENT]);
-            }
-            else
-            {
-                mission->LoadParts();
-            }
-
-            // Timur[9/11/2002] For backward compatibility with shared objects
-            if (objectsNode)
-            {
-                mission->AddObjectsNode(objectsNode);
-            }
-            if (objectLayersNode)
-            {
-                mission->SetLayersNode(objectLayersNode);
-            }
-
-            AddMission(mission);
-        }
-    }
-    else
-    {
-        // Storing
-        CLogFile::WriteLine("Storing missions...");
-        // Save contents of current mission.
-        SyncCurrentMissionContent(false);
-
-        XmlNodeRef node = arrXmlAr[DMAS_GENERAL]->root->newChild("Missions");
-
-        //! Store current mission name.
-        currentMissionName = GetCurrentMission()->GetName();
-        node->setAttr("Current", currentMissionName.toUtf8().data());
-
-        // Write all surface types.
-        for (int i = 0; i < m_missions.size(); i++)
-        {
-            CXmlArchive ar(*arrXmlAr[DMAS_GENERAL]);
-            ar.root = node->newChild("Mission");
-            m_missions[i]->Serialize(ar, false);
-            if (bPartsInXml)
-            {
-                m_missions[i]->SerializeTimeOfDay(*arrXmlAr[DMAS_TIME_OF_DAY]);
-                m_missions[i]->SerializeEnvironment(*arrXmlAr[DMAS_ENVIRONMENT]);
-            }
-            else
-            {
-                m_missions[i]->SaveParts();
-            }
-        }
-        CLogFile::WriteString("Done");
-    }
-}
-
-void CCryEditDoc::SerializeShaderCache(CXmlArchive& xmlAr)
-{
-    if (xmlAr.bLoading)
-    {
-        void* pData = 0;
-        int nSize = 0;
-
-        if (xmlAr.pNamedData->GetDataBlock("ShaderCache", pData, nSize))
-        {
-            if (nSize <= 0)
-            {
-                return;
-            }
-
-            QByteArray str(nSize + 1, 0);
-            memcpy(str.data(), pData, nSize);
-            str[nSize] = 0;
-            m_pLevelShaderCache->LoadBuffer(str);
-        }
-    }
-    else
-    {
-        QString buf;
-
-        m_pLevelShaderCache->SaveBuffer(buf);
-
-        if (!buf.isEmpty())
-        {
-            xmlAr.pNamedData->AddDataBlock("ShaderCache", buf.toUtf8().data(), buf.toUtf8().count());
         }
     }
 }
@@ -2108,58 +1885,6 @@ void CCryEditDoc::SaveAutoBackup(bool bForce)
     isInProgress = false;
 }
 
-
-CMission*   CCryEditDoc::GetCurrentMission(bool bSkipLoadingAIWhenSyncingContent /* = false */)
-{
-    if (m_mission)
-    {
-        return m_mission;
-    }
-
-    if (!m_missions.empty())
-    {
-        // Choose first available mission.
-        SetCurrentMission(m_missions[0]);
-        return m_mission;
-    }
-
-    // Create initial mission.
-    m_mission = new CMission(this);
-    m_mission->SetName("Mission0");
-    AddMission(m_mission);
-    m_mission->SyncContent(true, false, bSkipLoadingAIWhenSyncingContent);
-    return m_mission;
-}
-
-void CCryEditDoc::SetCurrentMission(CMission* mission)
-{
-    if (mission != m_mission)
-    {
-        QWaitCursor wait;
-
-        if (m_mission)
-        {
-            m_mission->SyncContent(false, false);
-        }
-
-        m_mission = mission;
-        m_mission->SyncContent(true, false);
-
-        GetIEditor()->GetGameEngine()->LoadMission(m_mission->GetName());
-    }
-}
-
-void CCryEditDoc::ClearMissions()
-{
-    for (int i = 0; i < m_missions.size(); i++)
-    {
-        delete m_missions[i];
-    }
-
-    m_missions.clear();
-    m_mission = 0;
-}
-
 bool CCryEditDoc::IsLevelExported() const
 {
     return m_boLevelExported;
@@ -2168,37 +1893,6 @@ bool CCryEditDoc::IsLevelExported() const
 void CCryEditDoc::SetLevelExported(bool boExported)
 {
     m_boLevelExported = boExported;
-}
-
-CMission*   CCryEditDoc::FindMission(const QString& name) const
-{
-    for (int i = 0; i < m_missions.size(); i++)
-    {
-        if (QString::compare(name, m_missions[i]->GetName(), Qt::CaseInsensitive) == 0)
-        {
-            return m_missions[i];
-        }
-    }
-    return 0;
-}
-
-void CCryEditDoc::AddMission(CMission* mission)
-{
-    assert(std::find(m_missions.begin(), m_missions.end(), mission) == m_missions.end());
-    m_missions.push_back(mission);
-    GetIEditor()->Notify(eNotify_OnInvalidateControls);
-}
-
-void CCryEditDoc::RemoveMission(CMission* mission)
-{
-    // if deleting current mission.
-    if (mission == m_mission)
-    {
-        m_mission = 0;
-    }
-
-    m_missions.erase(std::find(m_missions.begin(), m_missions.end(), mission));
-    GetIEditor()->Notify(eNotify_OnInvalidateControls);
 }
 
 void CCryEditDoc::RegisterListener(IDocListener* listener)
@@ -2306,19 +2000,6 @@ void CCryEditDoc::OnStartLevelResourceList()
     gEnv->pCryPak->GetResourceList(AZ::IO::IArchive::RFOM_Level)->Clear();
 }
 
-void CCryEditDoc::ForceSkyUpdate()
-{
-    ITimeOfDay* pTimeOfDay = gEnv->p3DEngine ? gEnv->p3DEngine->GetTimeOfDay() : nullptr;
-    CMission* pCurMission = GetIEditor()->GetDocument()->GetCurrentMission();
-
-    if (pTimeOfDay && pCurMission)
-    {
-        pTimeOfDay->SetTime(pCurMission->GetTime(), gSettings.bForceSkyUpdate);
-        pCurMission->SetTime(pCurMission->GetTime());
-        GetIEditor()->Notify(eNotify_OnTimeOfDayChange);
-    }
-}
-
 BOOL CCryEditDoc::DoFileSave()
 {
     if (GetEditMode() == CCryEditDoc::DocumentEditingMode::LevelEdit)
@@ -2380,27 +2061,11 @@ void CCryEditDoc::InitEmptyLevel(int /*resolution*/, int /*unitSize*/, bool /*bU
     //////////////////////////////////////////////////////////////////////////
     if (!GetIEditor()->IsInPreviewMode())
     {
-        // Make new mission.
         GetIEditor()->ReloadTemplates();
         m_environmentTemplate = GetIEditor()->FindTemplate("Environment");
 
-        GetCurrentMission(true);    // true = skip loading the AI in case the content needs to get synchronized (otherwise it would attempt to load AI stuff from the previously loaded level (!) which might give confusing warnings)
-        GetIEditor()->GetGameEngine()->SetMissionName(GetCurrentMission()->GetName());
         GetIEditor()->GetGameEngine()->SetLevelCreated(true);
-        GetIEditor()->GetGameEngine()->ReloadEnvironment();
         GetIEditor()->GetGameEngine()->SetLevelCreated(false);
-
-        // Default time of day.
-        auto defaultTimeOfDayPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "Assets" / "Editor" / "default_time_of_day.xml";
-        XmlNodeRef root = GetISystem()->LoadXmlFromFile(defaultTimeOfDayPath.c_str());
-        if (root)
-        {
-            ITimeOfDay* pTimeOfDay = gEnv->p3DEngine ? gEnv->p3DEngine->GetTimeOfDay() : nullptr;
-            if (pTimeOfDay)
-            {
-                pTimeOfDay->Serialize(root, true);
-            }
-        }
     }
 
     {
@@ -2426,44 +2091,9 @@ void CCryEditDoc::InitEmptyLevel(int /*resolution*/, int /*unitSize*/, bool /*bU
     GetIEditor()->SetStatusText("Ready");
 }
 
-void CCryEditDoc::CreateDefaultLevelAssets(int resolution, int unitSize)
+void CCryEditDoc::CreateDefaultLevelAssets([[maybe_unused]] int resolution, [[maybe_unused]] int unitSize)
 {
-    if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        AzToolsFramework::EditorLevelNotificationBus::Broadcast(&AzToolsFramework::EditorLevelNotificationBus::Events::OnNewLevelCreated);
-    }
-    else
-    {
-        bool isPrefabSystemEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-        if (!isPrefabSystemEnabled)
-        {
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                m_envProbeSliceAssetId, &AZ::Data::AssetCatalogRequests::GetAssetIdByPath, m_envProbeSliceRelativePath,
-                azrtti_typeid<AZ::SliceAsset>(), false);
-
-            if (m_envProbeSliceAssetId.IsValid())
-            {
-                AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::AssetManager::Instance().FindOrCreateAsset<AZ::SliceAsset>(
-                    m_envProbeSliceAssetId, AZ::Data::AssetLoadBehavior::Default);
-                if (asset)
-                {
-                    m_terrainSize = resolution * unitSize;
-                    const float halfTerrainSize = m_terrainSize / 2.0f;
-
-                    AZ::Transform worldTransform = AZ::Transform::CreateIdentity();
-                    worldTransform = AZ::Transform::CreateTranslation(AZ::Vector3(halfTerrainSize, halfTerrainSize, m_envProbeHeight / 2));
-
-                    AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
-                    GetIEditor()->SuspendUndo();
-                    AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
-                        &AzToolsFramework::SliceEditorEntityOwnershipServiceRequests::InstantiateEditorSlice, asset, worldTransform);
-                }
-            }
-        }
-    }
+    AzToolsFramework::EditorLevelNotificationBus::Broadcast(&AzToolsFramework::EditorLevelNotificationBus::Events::OnNewLevelCreated);
 }
 
 void CCryEditDoc::OnEnvironmentPropertyChanged(IVariable* pVar)
@@ -2523,8 +2153,6 @@ void CCryEditDoc::OnEnvironmentPropertyChanged(IVariable* pVar)
         pVar->Get(value);
         childNode->setAttr("value", value.toUtf8().data());
     }
-
-    GetIEditor()->GetGameEngine()->ReloadEnvironment();
 }
 
 QString CCryEditDoc::GetCryIndexPath(const LPCTSTR levelFilePath)
@@ -2575,12 +2203,6 @@ BOOL CCryEditDoc::LoadXmlArchiveArray(TDocMultiArchive& arrXmlAr, const QString&
 void CCryEditDoc::ReleaseXmlArchiveArray(TDocMultiArchive& arrXmlAr)
 {
     SAFE_DELETE(arrXmlAr[0]);
-}
-
-
-void CCryEditDoc::SyncCurrentMissionContent(bool bRetrieve)
-{
-    GetCurrentMission()->SyncContent(bRetrieve, false);
 }
 
 //////////////////////////////////////////////////////////////////////////

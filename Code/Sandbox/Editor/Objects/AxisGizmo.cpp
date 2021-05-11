@@ -18,11 +18,9 @@
 // Editor
 #include "Viewport.h"
 #include "GizmoManager.h"
-#include "Grid.h"
 #include "ViewManager.h"
 #include "Settings.h"
 #include "RenderHelpers/AxisHelper.h"
-#include "RenderHelpers/AxisHelperExtended.h"
 #include "IObjectManager.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -36,7 +34,6 @@ CAxisGizmo::CAxisGizmo(CBaseObject* object)
     assert(object != 0);
     m_object = object;
     m_pAxisHelper.reset(new CAxisHelper);
-    m_pAxisHelperExtended.reset(new CAxisHelperExtended);
 
     // Set selectable flag.
     SetFlags(EGIZMO_SELECTABLE | EGIZMO_TRANSFORM_MANIPULATOR);
@@ -60,7 +57,6 @@ CAxisGizmo::CAxisGizmo()
     SetFlags(EGIZMO_SELECTABLE);
     m_axisGizmoCount++;
     m_pAxisHelper.reset(new CAxisHelper);
-    m_pAxisHelperExtended.reset(new CAxisHelperExtended);
     m_bDragging = false;
     m_bAlwaysUseLocal = false;
     m_coordSysBackUp = COORDS_VIEW;
@@ -247,7 +243,8 @@ Matrix34 CAxisGizmo::GetTransformation(RefCoordSys coordSys, IDisplayViewport* v
             break;
         case COORDS_USERDEFINED:
         {
-            Matrix34 userTM = GetIEditor()->GetViewManager()->GetGrid()->GetMatrix();
+            Matrix34 userTM;
+            userTM.SetIdentity();
             userTM.SetTranslation(m_object->GetWorldTM().GetTranslation());
             return userTM;
         }

@@ -11,7 +11,6 @@
  */
 #pragma once
 
-#include <AzFramework/Physics/WorldBodyBus.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <PhysX/ColliderComponentBus.h>
 

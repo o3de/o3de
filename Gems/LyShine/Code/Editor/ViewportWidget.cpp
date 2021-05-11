@@ -18,7 +18,6 @@
 #include <AzCore/std/containers/map.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
-#include <QViewportSettings.h>
 
 #include <LyShine/Bus/UiEditorCanvasBus.h>
 #include <LyShine/Draw2d.h>
@@ -907,6 +906,10 @@ QPointF ViewportWidget::WidgetToViewport(const QPointF & point) const
 
 void ViewportWidget::RenderEditMode(float deltaTime)
 {
+    // sort keys for different layers
+    static const int64_t backgroundKey = -0x1000;
+    static const int64_t topLayerKey = 0x1000000;
+
     if (m_fontTextureHasChanged)
     {
         // A font texture has changed since we last rendered. Force a render graph update for each loaded canvas
@@ -927,6 +930,7 @@ void ViewportWidget::RenderEditMode(float deltaTime)
     AZ::Vector2 canvasSize;
     EBUS_EVENT_ID_RESULT(canvasSize, canvasEntityId, UiCanvasBus, GetCanvasSize);
 
+    m_draw2d->SetSortKey(backgroundKey);
     m_viewportBackground->Draw(draw2d,
         canvasSize,
         m_viewportInteraction->GetCanvasToViewportScale(),
@@ -951,6 +955,7 @@ void ViewportWidget::RenderEditMode(float deltaTime)
     // Render this canvas
     EBUS_EVENT_ID(canvasEntityId, UiEditorCanvasBus, RenderCanvasInEditorViewport, false, viewportSize);
 
+    m_draw2d->SetSortKey(topLayerKey);
     // Draw borders around selected and unselected UI elements in the viewport
     // depending on the flags in m_drawElementBordersFlags
     HierarchyItemRawPtrList selectedItems = SelectionHelpers::GetSelectedHierarchyItems(m_editorWindow->GetHierarchy(), selection);

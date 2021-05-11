@@ -16,7 +16,6 @@
 #include <Mocks/ISystemMock.h>
 #include <Mocks/IRendererMock.h>
 #include <Mocks/ITextureMock.h>
-#include <I3DEngine.h> // needed for SRenderingPassInfo
 #include <Sprite.h>
 
 namespace UnitTest

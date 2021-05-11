@@ -86,7 +86,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME AWSCore.ResourceMappintTool MODULE
+        NAME AWSCore.ResourceMappingTool MODULE
         NAMESPACE Gem
         OUTPUT_SUBDIRECTORY AWSCoreEditorQtBin
         FILES_CMAKE
@@ -94,15 +94,11 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         INCLUDE_DIRECTORIES
             PRIVATE
                 Include/Private
-            PUBLIC
-                Include/Public
         BUILD_DEPENDENCIES
             PRIVATE
-                3rdParty::Qt::Core
-                3rdParty::Qt::Widgets
-                AZ::AzToolsFramework
+                Gem::AWSCore.Editor.Static
     )
-    ly_add_dependencies(AWSCore.Editor AWSCore.ResourceMappintTool)
+    ly_add_dependencies(AWSCore.Editor AWSCore.ResourceMappingTool)
 endif()
 
 ################################################################################

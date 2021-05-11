@@ -49,20 +49,16 @@ AZ_POP_DISABLE_WARNING
 #include "Objects/GizmoManager.h"
 #include "Objects/AxisGizmo.h"
 #include "DisplaySettings.h"
-#include "ShaderEnum.h"
 #include "KeyboardCustomizationSettings.h"
 #include "Export/ExportManager.h"
 #include "LevelIndependentFileMan.h"
-#include "Material/MaterialManager.h"
 #include "TrackView/TrackViewSequenceManager.h"
 #include "AnimationContext.h"
 #include "GameEngine.h"
 #include "ToolBox.h"
 #include "MainWindow.h"
 #include "Alembic/AlembicCompiler.h"
-#include "LensFlareEditor/LensFlareManager.h"
 #include "UIEnumsDatabase.h"
-#include "Util/Ruler.h"
 #include "RenderHelpers/AxisHelper.h"
 #include "Settings.h"
 #include "Include/IObjectManager.h"
@@ -73,10 +69,8 @@ AZ_POP_DISABLE_WARNING
 #include "BackgroundTaskManager.h"
 #include "BackgroundScheduleManager.h"
 #include "EditorFileMonitor.h"
-#include "Mission.h"
 #include "MainStatusBar.h"
 
-#include "SettingsBlock.h"
 #include "ResourceSelectorHost.h"
 #include "Util/FileUtil_impl.h"
 #include "Util/ImageUtil_impl.h"
@@ -118,29 +112,6 @@ static CCryEditDoc * theDocument;
 
 #undef GetCommandLine
 
-namespace
-{
-    bool SelectionContainsComponentEntities()
-    {
-        bool result = false;
-        CSelectionGroup* pSelection = GetIEditor()->GetObjectManager()->GetSelection();
-        if (pSelection)
-        {
-            CBaseObject* selectedObj = nullptr;
-            for (int selectionCounter = 0; selectionCounter < pSelection->GetCount(); ++selectionCounter)
-            {
-                selectedObj = pSelection->GetObject(selectionCounter);
-                if (selectedObj->GetType() == OBJTYPE_AZENTITY)
-                {
-                    result = true;
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-}
-
 const char* CEditorImpl::m_crashLogFileName = "SessionStatus/editor_statuses.json";
 
 CEditorImpl::CEditorImpl()
@@ -160,7 +131,6 @@ CEditorImpl::CEditorImpl()
     , m_bUpdates(true)
     , m_bTerrainAxisIgnoreObjects(false)
     , m_pDisplaySettings(nullptr)
-    , m_pShaderEnum(nullptr)
     , m_pIconManager(nullptr)
     , m_bSelectionLocked(true)
     , m_pAxisGizmo(nullptr)
@@ -168,16 +138,13 @@ CEditorImpl::CEditorImpl()
     , m_pAnimationContext(nullptr)
     , m_pSequenceManager(nullptr)
     , m_pToolBoxManager(nullptr)
-    , m_pMaterialManager(nullptr)
     , m_pMusicManager(nullptr)
-    , m_pLensFlareManager(nullptr)
     , m_pErrorReport(nullptr)
     , m_pLasLoadedLevelErrorReport(nullptr)
     , m_pErrorsDlg(nullptr)
     , m_pSourceControl(nullptr)
     , m_pSelectionTreeManager(nullptr)
     , m_pUIEnumsDatabase(nullptr)
-    , m_pRuler(nullptr)
     , m_pConsoleSync(nullptr)
     , m_pSettingsManager(nullptr)
     , m_pLevelIndependentFileMan(nullptr)
@@ -213,7 +180,6 @@ CEditorImpl::CEditorImpl()
     m_pBackgroundScheduleManager.reset(new BackgroundScheduleManager::CScheduleManager);
     m_pUIEnumsDatabase = new CUIEnumsDatabase;
     m_pDisplaySettings = new CDisplaySettings;
-    m_pShaderEnum = new CShaderEnum;
     m_pDisplaySettings->LoadRegistry();
     m_pPluginManager = new CPluginManager;
 
@@ -224,15 +190,12 @@ CEditorImpl::CEditorImpl()
     m_pIconManager = new CIconManager;
     m_pUndoManager = new CUndoManager;
     m_pToolBoxManager = new CToolBoxManager;
-    m_pMaterialManager = new CMaterialManager(regCtx);
     m_pAlembicCompiler = new CAlembicCompiler();
     m_pSequenceManager = new CTrackViewSequenceManager;
     m_pAnimationContext = new CAnimationContext;
 
     m_pImageUtil = new CImageUtil_impl();
-    m_pLensFlareManager = new CLensFlareManager;
     m_pResourceSelectorHost.reset(CreateResourceSelectorHost());
-    m_pRuler = new CRuler;
     m_selectedRegion.min = Vec3(0, 0, 0);
     m_selectedRegion.max = Vec3(0, 0, 0);
     DetectVersion();
@@ -345,7 +308,6 @@ CEditorImpl::~CEditorImpl()
     m_bExiting = true; // Can't save level after this point (while Crash)
     SAFE_RELEASE(m_pSourceControl);
 
-    SAFE_DELETE(m_pMaterialManager)
     SAFE_DELETE(m_pAlembicCompiler)
     SAFE_DELETE(m_pIconManager)
     SAFE_DELETE(m_pViewManager)
@@ -366,8 +328,6 @@ CEditorImpl::~CEditorImpl()
     }
 
     SAFE_DELETE(m_pDisplaySettings)
-    SAFE_DELETE(m_pRuler)
-    SAFE_DELETE(m_pShaderEnum)
     SAFE_DELETE(m_pToolBoxManager)
     SAFE_DELETE(m_pCommandManager)
     SAFE_DELETE(m_pClassFactory)
@@ -415,7 +375,6 @@ void CEditorImpl::SetGameEngine(CGameEngine* ge)
     m_pObjectManager->LoadClassTemplates("Editor");
     m_pObjectManager->RegisterCVars();
 
-    m_pMaterialManager->Set3DEngine();
     m_pAnimationContext->Init();
 }
 
@@ -451,7 +410,6 @@ void CEditorImpl::Update()
     m_bUpdates = false;
 
     FUNCTION_PROFILER(GetSystem(), PROFILE_EDITOR);
-    m_pRuler->Update();
 
     //@FIXME: Restore this latter.
     //if (GetGameEngine() && GetGameEngine()->IsLevelLoaded())
@@ -470,24 +428,6 @@ void CEditorImpl::Update()
 ISystem* CEditorImpl::GetSystem()
 {
     return m_pSystem;
-}
-
-I3DEngine* CEditorImpl::Get3DEngine()
-{
-    if (gEnv)
-    {
-        return gEnv->p3DEngine;
-    }
-    return nullptr;
-}
-
-IRenderer*  CEditorImpl::GetRenderer()
-{
-    if (gEnv)
-    {
-        return gEnv->pRenderer;
-    }
-    return nullptr;
 }
 
 IEditorClassFactory* CEditorImpl::GetClassFactory()
@@ -1003,13 +943,8 @@ void CEditorImpl::CloseView(const GUID& classId)
     }
 }
 
-IDataBaseManager* CEditorImpl::GetDBItemManager(EDataBaseItemType itemType)
+IDataBaseManager* CEditorImpl::GetDBItemManager([[maybe_unused]] EDataBaseItemType itemType)
 {
-    switch (itemType)
-    {
-    case EDB_TYPE_MATERIAL:
-        return m_pMaterialManager;
-    }
     return 0;
 }
 
@@ -1226,11 +1161,6 @@ XmlNodeRef CEditorImpl::FindTemplate(const QString& templateName)
 void CEditorImpl::AddTemplate(const QString& templateName, XmlNodeRef& tmpl)
 {
     m_templateRegistry.AddTemplate(templateName, tmpl);
-}
-
-CShaderEnum* CEditorImpl::GetShaderEnum()
-{
-    return m_pShaderEnum;
 }
 
 bool CEditorImpl::ExecuteConsoleApp(const QString& CommandLine, QString& OutputText, [[maybe_unused]] bool bNoTimeOut, bool bShowWindow)
@@ -1615,7 +1545,6 @@ void CEditorImpl::ReduceMemory()
     GetIEditor()->GetUndoManager()->ClearRedoStack();
     GetIEditor()->GetUndoManager()->ClearUndoStack();
     GetIEditor()->GetObjectManager()->SendEvent(EVENT_FREE_GAME_DATA);
-    gEnv->pRenderer->FreeResources(FRR_TEXTURES);
 
 #if defined(AZ_PLATFORM_WINDOWS)
     HANDLE hHeap = GetProcessHeap();
@@ -1694,8 +1623,6 @@ ESystemConfigPlatform CEditorImpl::GetEditorConfigPlatform() const
 
 void CEditorImpl::InitFinished()
 {
-    SProjectSettingsBlock::Load();
-
     if (!m_bInitialized)
     {
         m_bInitialized = true;
@@ -1752,13 +1679,6 @@ void CEditorImpl::RegisterObjectContextMenuExtension(TContextMenuExtensionFunc f
     m_objectContextMenuExtensions.push_back(func);
 }
 
-void CEditorImpl::SetCurrentMissionTime(float time)
-{
-    if (CMission* pMission = GetIEditor()->GetDocument()->GetCurrentMission())
-    {
-        pMission->SetTime(time);
-    }
-}
 // Vladimir@Conffx
 SSystemGlobalEnvironment* CEditorImpl::GetEnv()
 {
@@ -1775,13 +1695,13 @@ SEditorSettings* CEditorImpl::GetEditorSettings()
 // Vladimir@Conffx
 IBaseLibraryManager* CEditorImpl::GetMaterialManagerLibrary()
 {
-    return m_pMaterialManager;
+    return nullptr;
 }
 
 // Vladimir@Conffx
 IEditorMaterialManager* CEditorImpl::GetIEditorMaterialManager()
 {
-    return m_pMaterialManager;
+    return nullptr;
 }
 
 IImageUtil* CEditorImpl::GetImageUtil()
@@ -1797,11 +1717,6 @@ QMimeData* CEditorImpl::CreateQMimeData() const
 void CEditorImpl::DestroyQMimeData(QMimeData* data) const
 {
     delete data;
-}
-
-bool CEditorImpl::IsNewViewportInteractionModelEnabled() const
-{
-    return m_isNewViewportInteractionModelEnabled;
 }
 
 IEditorPanelUtils* CEditorImpl::GetEditorPanelUtils()

@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C24308873
 # Test Case Title : Check that cylinder shape collider collides with terrain
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/24308873
+
 # A cylinder is suspended slightly over PhysX Terrain to check that it collides when dropped
 
 
@@ -20,7 +20,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 class Tests():
     enter_game_mode        = ("Entered game mode",                "Failed to enter game mode")
     find_cylinder          = ("Cylinder entity found",            "Cylinder entity not found")
-    find_terrain           = ("Terrain found",                    "Terrain not found")
+    create_terrain         = ("Terrain entity created successfully", "Failed to create Terrain Entity")
+    find_terrain           = ("Terrain entity found",            "Terrain entity not found")
+    add_physx_shape_collider = ("Added PhysX Shape Collider",          "Failed to add PhysX Shape Collider")
+    add_box_shape            = ("Added Box Shape",                     "Failed to add Box Shape")
     cylinder_above_terrain = ("Cylinder position above ground",   "Cylinder is not above the ground")
     time_out               = ("No time out occurred",             "A time out occurred, please validate level setup")
     touched_ground         = ("Touched ground before time out",   "Did not touch ground before time out")
@@ -40,11 +43,12 @@ def C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain():
     Once game mode is entered, the cylinder should fall toward and collide with the terrain.
 
     Steps:
-    1) Open level and enter game mode
-    2) Retrieve entities and positions
-    3) Wait for cylinder to collide with terrain OR time out
-    4) Exit game mode
-    5) Close the editor
+    1) Open level and create terrain Entity.
+    2) Enter Game Mode.
+    3) Retrieve entities and positions
+    4) Wait for cylinder to collide with terrain OR time out
+    5) Exit game mode
+    6) Close the editor
 
     :return:
     """
@@ -54,29 +58,48 @@ def C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain():
     import ImportPathHelper as imports
 
     imports.init()
-
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
     import azlmbr.legacy.general as general
     import azlmbr.bus
+    import azlmbr.math as math
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
     # Global time out
     TIME_OUT = 1.0
 
-    # 1) Open level / Enter game mode
+    # 1) Open level 
     helper.init_idle()
     helper.open_level("Physics", "C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain")
+    
+    # Create terrain entity 
+    terrain = EditorEntity.create_editor_entity_at([30.0, 30.0, 33.96], "Terrain")
+    Report.result(Tests.create_terrain, terrain.id.IsValid())
+    
+    terrain.add_component("PhysX Shape Collider")
+    Report.result(Tests.add_physx_shape_collider, terrain.has_component("PhysX Shape Collider"))
+
+    box_shape_component = terrain.add_component("Box Shape")
+    Report.result(Tests.add_box_shape, terrain.has_component("Box Shape"))
+
+    box_shape_component.set_component_property_value("Box Shape|Box Configuration|Dimensions", 
+                                                     math.Vector3(1024.0, 1024.0, 0.01))
+    
+    # 2)Enter game mode
     helper.enter_game_mode(Tests.enter_game_mode)
 
-    # 2) Retrieve entities and positions
+    # 3) Retrieve entities and positions
     cylinder_id = general.find_game_entity("PhysX_Cylinder")
     Report.critical_result(Tests.find_cylinder, cylinder_id.IsValid())
+    
+    
+    terrain_id = general.find_game_entity("Terrain")
+    Report.critical_result(Tests.find_terrain, terrain_id.IsValid())    
 
-    terrain_id = general.find_game_entity("PhysX_Terrain")
-    Report.critical_result(Tests.find_terrain, terrain_id.IsValid())
 
-    cylinder_pos = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTM", cylinder_id).GetPosition()
-    terrain_pos = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTM", terrain_id).GetPosition()
+    cylinder_pos = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", cylinder_id)
+    #Cylinder position is 64,84,35
+    terrain_pos = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", terrain_id)
     Report.info_vector3(cylinder_pos, "Cylinder:")
     Report.info_vector3(terrain_pos, "Terrain:")
     Report.critical_result(
@@ -104,13 +127,13 @@ def C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain():
     handler.connect(cylinder_id)
     handler.add_callback("OnCollisionBegin", on_collision_begin)
 
-    # 3) Wait for the cylinder to hit the ground OR time out
+    # 4) Wait for the cylinder to hit the ground OR time out
     test_completed = helper.wait_for_condition((lambda: TouchGround.value), TIME_OUT)
 
     Report.critical_result(Tests.time_out, test_completed)
     Report.result(Tests.touched_ground, TouchGround.value)
 
-    # 4) Exit game mode
+    # 5) Exit game mode
     helper.exit_game_mode(Tests.exit_game_mode)
 
 

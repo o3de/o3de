@@ -40,8 +40,6 @@
 
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 
-class CGrid;
-
 struct SGizmoSettings
 {
     float axisGizmoSize;
@@ -393,9 +391,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     //! Keeps the editor active even if no focus is set
     int keepEditorActive;
 
-    //! Pointer to currently used grid.
-    CGrid* pGrid;
-
     SGizmoSettings gizmo;
 
     // Settings of the snapping.
@@ -467,8 +462,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     bool bSettingsManagerMode;
 
-    bool bForceSkyUpdate;
-
     bool bAutoSaveTagPoints;
 
     bool bNavigationContinuousUpdate;
@@ -477,7 +470,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     bool bVisualizeNavigationAccessibility;
     int  navigationDebugAgentType;
 
-    bool bIsSearchFilterActive;
     int backgroundUpdatePeriod;
     const char* g_TemporaryLevelName;
 

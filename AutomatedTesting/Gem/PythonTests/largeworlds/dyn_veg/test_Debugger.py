@@ -40,6 +40,7 @@ class TestDebugger(object):
 
     @pytest.mark.test_case_id("C2789148")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_misc
     def test_Debugger_DebugCVarsWork(self, request, editor, level, workspace, launcher_platform):
         cfg_args = [level]
 

@@ -42,7 +42,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Network/SocketConnection.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/Application/Ticker.h>
@@ -67,7 +66,6 @@ AZ_POP_DISABLE_WARNING
 #include "AssetImporter/AssetImporterManager/AssetImporterDragAndDropHandler.h"
 #include "CryEdit.h"
 #include "Controls/ConsoleSCB.h"
-#include "Grid.h"
 #include "ViewManager.h"
 #include "CryEditDoc.h"
 #include "ToolBox.h"
@@ -79,6 +77,7 @@ AZ_POP_DISABLE_WARNING
 #include "Core/QtEditorApplication.h"
 #include "UndoDropDown.h"
 #include "CVarMenu.h"
+#include "EditorViewportSettings.h"
 
 #include "KeyboardCustomizationSettings.h"
 #include "CustomizeKeyboardDialog.h"
@@ -91,17 +90,12 @@ AZ_POP_DISABLE_WARNING
 
 #include "TrackView/TrackViewDialog.h"
 #include "ErrorReportDialog.h"
-#include "LensFlareEditor/LensFlareEditor.h"
-#include "TimeOfDayDialog.h"
 
 #include "Dialogs/PythonScriptsDialog.h"
-#include "Material/MaterialManager.h"
 #include "EngineSettingsManager.h"
 
 #include "AzAssetBrowser/AzAssetBrowserWindow.h"
 #include "AssetEditor/AssetEditorWindow.h"
-#include "GridSettingsDialog.h"
-#include "MaterialSender.h"
 #include "ActionManager.h"
 
 // uncomment this to show thumbnail demo widget
@@ -126,12 +120,6 @@ static const char* g_viewPaneAttributeName = "ViewPaneName"; //Name of the curre
 static const char* g_openLocationAttributeName = "OpenLocation"; //Indicates where the current view pane is opened from
 
 static const char* g_assetImporterName = "AssetImporter";
-
-static const char* g_snapToGridEnabled = "mainwindow/snapGridEnabled";
-static const char* g_snapToGridSize = "mainwindow/snapGridSize";
-static const char* g_snapAngleEnabled = "mainwindow/snapAngleEnabled";
-static const char* g_snapAngle = "mainwindow/snapAngle";
-static const char* g_terrainFollow = "mainwindow/terrainFollow";
 
 class CEditorOpenViewCommand
     : public _i_reference_target_t
@@ -312,10 +300,8 @@ namespace
 
 class SnapToWidget
     : public QWidget
-    , public CGridSettingsDialog::NotificationBus::Handler
 {
 public:
-
     typedef AZStd::function<void(double)> SetValueCallback;
     typedef AZStd::function<double()> GetValueCallback;
 
@@ -339,25 +325,18 @@ public:
         m_spinBox->setEnabled(defaultAction->isChecked());
         m_spinBox->setMinimum(1e-2f);
 
-        OnGridValuesUpdated();
+        {
+            QSignalBlocker signalBlocker(m_spinBox);
+            m_spinBox->setValue(m_getValueCallback());
+        }
 
         QObject::connect(m_spinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this, &SnapToWidget::OnValueChanged);
         QObject::connect(defaultAction, &QAction::changed, this, &SnapToWidget::OnActionChanged);
-
-        CGridSettingsDialog::NotificationBus::Handler::BusConnect();
     }
 
     void SetIcon(QIcon icon)
     {
         m_toolButton->setIcon(icon);
-    }
-
-    void OnGridValuesUpdated() override
-    {
-        // Blocking signals to not trigger the valueChanged callback when we set the value on the spin box.
-        QSignalBlocker signalBlocker(m_spinBox);
-        double value = m_getValueCallback();
-        m_spinBox->setValue(value);
     }
 
 protected:
@@ -547,7 +526,6 @@ void MainWindow::Initialize()
     RegisterStdViewClasses();
     InitCentralWidget();
 
-    LoadConfig();
     InitActions();
 
     // load toolbars ("shelves") and macros
@@ -677,31 +655,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
     QMainWindow::closeEvent(event);
 }
 
-void MainWindow::LoadConfig()
-{
-    CGrid* grid = gSettings.pGrid;
-    Q_ASSERT(grid);
-    bool terrainValue;
-
-    ReadConfigValue(g_snapAngleEnabled, grid->bAngleSnapEnabled);
-    ReadConfigValue(g_snapAngle, grid->angleSnap);
-    ReadConfigValue(g_snapToGridEnabled, grid->bEnabled);
-    ReadConfigValue(g_snapToGridSize, grid->size);
-    ReadConfigValue(g_terrainFollow, terrainValue);
-    GetIEditor()->SetTerrainAxisIgnoreObjects(terrainValue);
-}
-
 void MainWindow::SaveConfig()
 {
-    CGrid* grid = gSettings.pGrid;
-    Q_ASSERT(grid);
-
-    m_settings.setValue(g_snapAngleEnabled, grid->bAngleSnapEnabled);
-    m_settings.setValue(g_snapAngle, grid->angleSnap);
-    m_settings.setValue(g_snapToGridEnabled, grid->bEnabled);
-    m_settings.setValue(g_snapToGridSize, grid->size);
-    m_settings.setValue(g_terrainFollow, GetIEditor()->IsTerrainAxisIgnoreObjects());
-
     m_settings.setValue("mainWindowState", saveState());
     QtViewPaneManager::instance()->SaveLayout();
     if (m_pLayoutWnd)
@@ -878,52 +833,6 @@ void MainWindow::InitActions()
         .SetStatusTip(tr("Redo last undo operation"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateRedo);
 
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        am->AddAction(ID_EDIT_SELECTALL, tr("Select &All"))
-            .SetShortcut(tr("Ctrl+A"))
-            .SetStatusTip(tr("Select all objects"))
-            ->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        am->AddAction(ID_EDIT_SELECTNONE, tr("Deselect All"))
-            .SetShortcut(tr("Ctrl+Shift+D"))
-            .SetStatusTip(tr("Remove selection from all objects"));
-        am->AddAction(ID_EDIT_INVERTSELECTION, tr("&Invert Selection"))
-            .SetShortcut(tr("Ctrl+Shift+I"));
-    }
-
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        am->AddAction(ID_LOCK_SELECTION, tr("Lock Selection"))
-            .SetShortcut(tr("Ctrl+Shift+Space"))
-            .SetToolTip(tr("Lock Selection (Ctrl+Shift+Space)"))
-            .SetStatusTip(tr("Lock Current Selection."));
-    }
-
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        // implemented by EditorTransformComponentSelection when the new Viewport Interaction Model is enabled
-        am->AddAction(ID_EDIT_HIDE, tr("Hide Selection"))
-            .SetShortcut(tr("H"))
-            .SetToolTip(tr("Hide Selection (H)"))
-            .SetStatusTip(tr("Hide selected object(s)."))
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditHide);
-        am->AddAction(ID_EDIT_UNHIDEALL, tr("Unhide All"))
-            .SetShortcut(tr("Ctrl+H"))
-            .SetToolTip(tr("Unhide All (Ctrl+H)"))
-            .SetStatusTip(tr("Unhide all hidden objects."));
-    }
-
-    am->AddAction(ID_EDIT_SHOW_LAST_HIDDEN, tr("Show Last Hidden"))
-        .SetShortcut(tr("Shift+H"))
-        .SetToolTip(tr("Show Last Hidden (Shift+H)"))
-        .SetStatusTip(tr("Show last hidden object."));
-
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        am->AddAction(ID_MODIFY_LINK, tr("Parent"));
-        am->AddAction(ID_MODIFY_UNLINK, tr("Un-Parent"));
-    }
-
     am->AddAction(ID_EDIT_HOLD, tr("&Hold"))
         .SetShortcut(tr("Ctrl+Alt+H"))
         .SetToolTip(tr("&Hold (Ctrl+Alt+H)"))
@@ -933,54 +842,28 @@ void MainWindow::InitActions()
         .SetToolTip(tr("&Fetch (Ctrl+Alt+F)"))
         .SetStatusTip(tr("Restore saved state (Fetch)"));
 
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        // implemented by EditorTransformComponentSelection when the new Viewport Interaction Model is enabled
-        am->AddAction(ID_EDIT_DELETE, tr("&Delete"))
-            .SetShortcut(QKeySequence::Delete)
-            .SetStatusTip(tr("Delete selected objects."))
-            ->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-
-        bool isPrefabSystemEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-        bool prefabWipFeaturesEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-        if (!isPrefabSystemEnabled || (isPrefabSystemEnabled && prefabWipFeaturesEnabled))
-        {
-            am->AddAction(ID_EDIT_CLONE, tr("Duplicate"))
-                .SetShortcut(tr("Ctrl+D"))
-                .SetToolTip(tr("Duplicate (Ctrl+D)"))
-                .SetStatusTip(tr("Duplicate selected objects."));
-        }
-    }
-
     // Modify actions
-    am->AddAction(ID_EDIT_RENAMEOBJECT, tr("Rename Object(s)..."))
-        .SetStatusTip(tr("Rename Object"));
-
     am->AddAction(ID_EDITMODE_MOVE, tr("Move"))
         .SetIcon(Style::icon("Move"))
         .SetApplyHoverEffect()
-        .SetShortcut(GetIEditor()->IsNewViewportInteractionModelEnabled() ? tr("1") : tr("2"))
-        .SetToolTip(GetIEditor()->IsNewViewportInteractionModelEnabled() ? tr("Move (1)") : tr("Move (2)"))
+        .SetShortcut(tr("1"))
+        .SetToolTip(tr("Move (1)"))
         .SetCheckable(true)
         .SetStatusTip(tr("Select and move selected object(s)"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditmodeMove);
     am->AddAction(ID_EDITMODE_ROTATE, tr("Rotate"))
         .SetIcon(Style::icon("Translate"))
         .SetApplyHoverEffect()
-        .SetShortcut(GetIEditor()->IsNewViewportInteractionModelEnabled() ? tr("2") : tr("3"))
-        .SetToolTip(GetIEditor()->IsNewViewportInteractionModelEnabled() ? tr("Rotate (2)") : tr("Rotate (3)"))
+        .SetShortcut(tr("2"))
+        .SetToolTip(tr("Rotate (2)"))
         .SetCheckable(true)
         .SetStatusTip(tr("Select and rotate selected object(s)"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditmodeRotate);
     am->AddAction(ID_EDITMODE_SCALE, tr("Scale"))
         .SetIcon(Style::icon("Scale"))
         .SetApplyHoverEffect()
-        .SetShortcut(GetIEditor()->IsNewViewportInteractionModelEnabled() ? tr("3") : tr("4"))
-        .SetToolTip(GetIEditor()->IsNewViewportInteractionModelEnabled() ? tr("Scale (3)") : tr("Scale (4)"))
+        .SetShortcut(tr("3"))
+        .SetToolTip(tr("Scale (3)"))
         .SetCheckable(true)
         .SetStatusTip(tr("Select and scale selected object(s)"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditmodeScale);
@@ -992,21 +875,22 @@ void MainWindow::InitActions()
         .SetToolTip(tr("Snap to grid (G)"))
         .SetStatusTip(tr("Toggles snap to grid"))
         .SetCheckable(true)
-        .RegisterUpdateCallback(this, &MainWindow::OnUpdateSnapToGrid);
+        .RegisterUpdateCallback([](QAction* action) {
+            Q_ASSERT(action->isCheckable());
+            action->setChecked(Editor::GridSnappingEnabled());
+        })
+        .Connect(&QAction::triggered, []() { Editor::SetGridSnapping(!Editor::GridSnappingEnabled()); });
+
     am->AddAction(ID_SNAPANGLE, tr("Snap angle"))
         .SetIcon(Style::icon("Angle"))
         .SetApplyHoverEffect()
         .SetStatusTip(tr("Snap angle"))
         .SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSnapangle);
-
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        am->AddAction(ID_ROTATESELECTION_XAXIS, tr("Rotate X Axis"));
-        am->AddAction(ID_ROTATESELECTION_YAXIS, tr("Rotate Y Axis"));
-        am->AddAction(ID_ROTATESELECTION_ZAXIS, tr("Rotate Z Axis"));
-        am->AddAction(ID_ROTATESELECTION_ROTATEANGLE, tr("Rotate Angle..."));
-    }
+        .RegisterUpdateCallback([](QAction* action) {
+            Q_ASSERT(action->isCheckable());
+            action->setChecked(Editor::AngleSnappingEnabled());
+        })
+        .Connect(&QAction::triggered, []() { Editor::SetAngleSnapping(!Editor::AngleSnappingEnabled()); });
 
     // Display actions
     am->AddAction(ID_WIREFRAME, tr("&Wireframe"))
@@ -1016,17 +900,6 @@ void MainWindow::InitActions()
         .SetStatusTip(tr("Render in Wireframe Mode."))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateWireframe);
 
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        am->AddAction(ID_RULER, tr("Ruler"))
-            .SetCheckable(true)
-            .SetIcon(Style::icon("Measure"))
-            .SetApplyHoverEffect()
-            .SetStatusTip(tr("Create temporary ruler to measure distance"))
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateRuler);
-    }
-
-    am->AddAction(ID_VIEW_GRIDSETTINGS, tr("Grid Settings..."));
     am->AddAction(ID_SWITCHCAMERA_DEFAULTCAMERA, tr("Default Camera")).SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSwitchToDefaultCamera);
     am->AddAction(ID_SWITCHCAMERA_SEQUENCECAMERA, tr("Sequence Camera")).SetCheckable(true)
@@ -1169,17 +1042,7 @@ void MainWindow::InitActions()
     am->AddAction(ID_PHYSICS_SIMULATEOBJECTS, tr("Simulate Objects"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected);
 
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        am->AddAction(ID_TERRAIN_TIMEOFDAY, tr("Time Of Day"))
-            .SetStatusTip(tr("Open Time of Day Editor"));
-    }
-
     // Tools actions
-    am->AddAction(ID_RELOAD_TEXTURES, tr("Reload Textures/Shaders"))
-        .SetStatusTip(tr("Reload all textures."));
-    am->AddAction(ID_RELOAD_GEOMETRY, tr("Reload Geometry"))
-        .SetStatusTip(tr("Reload all geometries."));
     am->AddAction(ID_TOOLS_ENABLEFILECHANGEMONITORING, tr("Enable File Change Monitoring"));
     am->AddAction(ID_CLEAR_REGISTRY, tr("Clear Registry Data"))
         .SetStatusTip(tr("Clear Registry Data"));
@@ -1189,7 +1052,7 @@ void MainWindow::InitActions()
     QAction* saveLevelStatsAction =
         am->AddAction(ID_TOOLS_LOGMEMORYUSAGE, tr("Save Level Statistics"))
                 .SetStatusTip(tr("Logs Editor memory usage."));
-    if( saveLevelStatsAction && AZ::Interface<AzFramework::AtomActiveInterface>::Get())
+    if( saveLevelStatsAction )
     {
         saveLevelStatsAction->setEnabled(false);
     }
@@ -1280,24 +1143,10 @@ void MainWindow::InitActions()
         });
     }
 
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        am->AddAction(ID_OPEN_TRACKVIEW, tr("TrackView"))
-            .SetToolTip(tr("Open Track View"))
-            .SetApplyHoverEffect();
-    }
-
     am->AddAction(ID_OPEN_AUDIO_CONTROLS_BROWSER, tr("Audio Controls Editor"))
         .SetToolTip(tr("Open Audio Controls Editor"))
         .SetIcon(Style::icon("Audio"))
         .SetApplyHoverEffect();
-
-    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        am->AddAction(ID_TERRAIN_TIMEOFDAYBUTTON, tr("Time of Day Editor"))
-            .SetToolTip(tr("Open Time of Day"))
-            .SetApplyHoverEffect();
-    }
 
     am->AddAction(ID_OPEN_UICANVASEDITOR, tr(LyViewPane::UiEditor))
         .SetToolTip(tr("Open UI Editor"))
@@ -1444,7 +1293,7 @@ QToolButton* MainWindow::CreateDebugModeButton()
 
 QWidget* MainWindow::CreateSpacerRightWidget()
 {
-    QWidget* spacer = new QWidget();
+    QWidget* spacer = new QWidget(this);
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     spacer->setVisible(true);
     return spacer;
@@ -1465,12 +1314,6 @@ void MainWindow::InitEnvironmentModeMenu(CVarMenu* environmentModeMenu)
     environmentModeMenu->AddCVarToggleItem({ "r_TransparentPasses", tr("Hide Transparent Objects"), 0, 1 });
     environmentModeMenu->AddCVarToggleItem({ "r_ssdo", tr("Hide Screen Space Directional Occlusion"), 0, 1 });
     environmentModeMenu->AddCVarToggleItem({ "e_DynamicLights", tr("Hide All Dynamic Lights"), 0, 1 });
-    environmentModeMenu->AddSeparator();
-    environmentModeMenu->AddCVarValuesItem("e_TimeOfDay", tr("Time of Day"),
-        {
-            {tr("Day (1:00 pm)"), 13},
-            {tr("Night (9:00 pm)"), 21}
-        }, 9);
     environmentModeMenu->AddSeparator();
     environmentModeMenu->AddCVarToggleItem({ "e_Entities", tr("Hide Entities"), 0, 1 });
     environmentModeMenu->AddSeparator();
@@ -1557,12 +1400,12 @@ QWidget* MainWindow::CreateSnapToGridWidget()
 {
     SnapToWidget::SetValueCallback setCallback = [](double snapStep)
     {
-        GetIEditor()->GetViewManager()->GetGrid()->size = snapStep;
+        Editor::SetGridSnappingSize(snapStep);
     };
 
     SnapToWidget::GetValueCallback getCallback = []()
     {
-        return GetIEditor()->GetViewManager()->GetGrid()->size;
+        return Editor::GridSnappingSize();
     };
 
     return new SnapToWidget(m_actionManager->GetAction(ID_SNAP_TO_GRID), setCallback, getCallback);
@@ -1572,12 +1415,12 @@ QWidget* MainWindow::CreateSnapToAngleWidget()
 {
     SnapToWidget::SetValueCallback setCallback = [](double snapAngle)
     {
-        GetIEditor()->GetViewManager()->GetGrid()->angleSnap = snapAngle;
+        Editor::SetAngleSnappingSize(snapAngle);
     };
 
     SnapToWidget::GetValueCallback getCallback = []()
     {
-        return GetIEditor()->GetViewManager()->GetGrid()->angleSnap;
+        return Editor::AngleSnappingSize();
     };
 
     return new SnapToWidget(m_actionManager->GetAction(ID_SNAPANGLE), setCallback, getCallback);
@@ -1592,15 +1435,6 @@ MainStatusBar* MainWindow::StatusBar() const
 {
     assert(statusBar()->inherits("MainStatusBar"));
     return static_cast<MainStatusBar*>(statusBar());
-}
-
-void MainWindow::OnUpdateSnapToGrid(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    bool bEnabled = gSettings.pGrid->IsEnabled();
-    action->setChecked(bEnabled);
-
-    action->setText(QObject::tr("Snap To Grid"));
 }
 
 KeyboardCustomizationSettings* MainWindow::GetShortcutManager() const
@@ -1755,11 +1589,6 @@ void MainWindow::RegisterStdViewClasses()
     AzAssetBrowserWindow::RegisterViewClass();
     AssetEditorWindow::RegisterViewClass();
 
-    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        CLensFlareEditor::RegisterViewClass();
-        CTimeOfDayDialog::RegisterViewClass();
-    }
 #ifdef ThumbnailDemo
     ThumbnailsSampleWidget::RegisterViewClass();
 #endif

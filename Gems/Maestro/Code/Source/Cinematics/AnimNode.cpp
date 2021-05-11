@@ -39,7 +39,6 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Component/TickBus.h>
-#include <I3DEngine.h>
 #include <ctime>
 #include "Maestro/Types/AnimValueType.h"
 #include "Maestro/Types/AnimNodeType.h"
