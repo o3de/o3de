@@ -38,7 +38,7 @@ AzToolsFramework--ComponentPaletteWidget > QTreeView
     background-color: #222222;
 }
 
-AzToolsFramework--PropertyRowWidget[isSectionSeparator="true"]  QLabel#Name
+AzToolsFramework--PropertyRowWidget[canBeReordered="true"]  QLabel#Name
 {
     font-weight: bold;
 }
