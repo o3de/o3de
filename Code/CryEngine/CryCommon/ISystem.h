@@ -757,7 +757,7 @@ private:
 
 public:
     SSystemGlobalEnvironment()
-        , bToolMode(false)
+        : bToolMode(false)
     {
     };
 };
