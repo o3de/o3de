@@ -139,7 +139,6 @@ namespace AZ
             float m_minBokehRadiusDivision8 = 0.0f;
 
             // Radial division count of bokeh blur kernel.
-            // See "https://wiki.agscollab.com/display/ATOM/Pencil+Map" for details.
             uint32_t m_sampleRadialDivision2 = 0;
             uint32_t m_sampleRadialDivision4 = 0;
             uint32_t m_sampleRadialDivision8 = 0;

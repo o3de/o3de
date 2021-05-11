@@ -10,7 +10,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92562988
 Test Case Title: Left-click/double click expands and collapses node categories
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92562988
 """
 
 
