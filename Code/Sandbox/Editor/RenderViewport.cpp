@@ -1985,28 +1985,27 @@ AzFramework::CameraState CRenderViewport::GetCameraState()
 
 bool CRenderViewport::GridSnappingEnabled()
 {
-    return GetViewManager()->GetGrid()->IsEnabled();
+    return false;
 }
 
 float CRenderViewport::GridSize()
 {
-    const CGrid* grid = GetViewManager()->GetGrid();
-    return grid->scale * grid->size;
+    return 0.0f;
 }
 
 bool CRenderViewport::ShowGrid()
 {
-    return gSettings.viewports.bShowGridGuide;
+    return false;
 }
 
 bool CRenderViewport::AngleSnappingEnabled()
 {
-    return GetViewManager()->GetGrid()->IsAngleSnapEnabled();
+    return false;
 }
 
 float CRenderViewport::AngleStep()
 {
-    return GetViewManager()->GetGrid()->GetAngleSnap();
+    return 0.0f;
 }
 
 AZ::Vector3 CRenderViewport::PickTerrain(const AzFramework::ScreenPoint& point)
@@ -3882,94 +3881,13 @@ void CRenderViewport::ActivateWindowAndSetFocus()
 //////////////////////////////////////////////////////////////////////////
 void CRenderViewport::RenderConstructionPlane()
 {
-    DisplayContext& dc = m_displayContext;
-
-    int prevState = dc.GetState();
-    dc.DepthWriteOff();
-    // Draw Construction plane.
-
-    CGrid* pGrid = GetViewManager()->GetGrid();
-
-    RefCoordSys coordSys = COORDS_WORLD;
-
-    Vec3 p = m_constructionMatrix[coordSys].GetTranslation();
-    Vec3 n = m_constructionPlane.n;
-
-    Vec3 u = Vec3(1, 0, 0);
-    Vec3 v = Vec3(0, 1, 0);
-
-
-    if (gSettings.snap.bGridUserDefined)
-    {
-        Ang3 angles = Ang3(pGrid->rotationAngles.x * gf_PI / 180.0, pGrid->rotationAngles.y * gf_PI / 180.0, pGrid->rotationAngles.z * gf_PI / 180.0);
-        Matrix34 tm = Matrix33::CreateRotationXYZ(angles);
-
-        u = tm * u;
-        v = tm * v;
-    }
-
-    float step = pGrid->scale * pGrid->size;
-    float size = gSettings.snap.constructPlaneSize;
-
-    dc.SetColor(0, 0, 1, 0.1f);
-
-    float s = size;
-
-    dc.DrawQuad(p - u * s - v * s, p + u * s - v * s, p + u * s + v * s, p - u * s + v * s);
-
-    int nSteps = int(size / step);
-    int i;
-    // Draw X lines.
-    dc.SetColor(1, 0, 0.2f, 0.3f);
-
-    for (i = -nSteps; i <= nSteps; i++)
-    {
-        dc.DrawLine(p - u * size + v * (step * i), p + u * size + v * (step * i));
-    }
-    // Draw Y lines.
-    dc.SetColor(0.2f, 1.0f, 0, 0.3f);
-    for (i = -nSteps; i <= nSteps; i++)
-    {
-        dc.DrawLine(p - v * size + u * (step * i), p + v * size + u * (step * i));
-    }
-
-    // Draw origin lines.
-
-    dc.SetLineWidth(2);
-
-    //X
-    dc.SetColor(1, 0, 0);
-    dc.DrawLine(p - u * s, p + u * s);
-
-    //Y
-    dc.SetColor(0, 1, 0);
-    dc.DrawLine(p - v * s, p + v * s);
-
-    //Z
-    dc.SetColor(0, 0, 1);
-    dc.DrawLine(p - n * s, p + n * s);
-
-    dc.SetLineWidth(0);
-
-    dc.SetState(prevState);
+    // noop
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CRenderViewport::RenderSnappingGrid()
 {
-    // First, Check whether we should draw the grid or not.
-    CGrid* pGrid = GetViewManager()->GetGrid();
-    if (pGrid->IsEnabled() == false && pGrid->IsAngleSnapEnabled() == false)
-    {
-        return;
-    }
-
-    DisplayContext& dc = m_displayContext;
-
-    int prevState = dc.GetState();
-    dc.DepthWriteOff();
-
-    dc.SetState(prevState);
+    // noop
 }
 
 //////////////////////////////////////////////////////////////////////////
