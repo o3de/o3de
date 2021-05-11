@@ -99,8 +99,9 @@ namespace AZ
 
             ScopedContextPath subPath(context, i);
 
-            Flags flags = classElements[i]->m_flags & SerializeContext::ClassElement::Flags::FLG_POINTER ?
-                Flags::ResolvePointer : Flags::None;
+            ContinuationFlags flags = classElements[i]->m_flags & SerializeContext::ClassElement::Flags::FLG_POINTER
+                ? ContinuationFlags::ResolvePointer
+                : ContinuationFlags::None;
 
             JSR::ResultCode result = ContinueStoring(elementValues[i], elementAddress, defaultElementAddress,
                 classElements[i]->m_typeId, context, flags);
@@ -179,8 +180,9 @@ namespace AZ
             void* elementAddress = container->GetElementByIndex(outputValue, nullptr, i);
             AZ_Assert(elementAddress, "Address of AZStd::pair or AZStd::tuple element %zu could not be retrieved.", i);
 
-            Flags flags = classElements[i]->m_flags & SerializeContext::ClassElement::Flags::FLG_POINTER ?
-                Flags::ResolvePointer : Flags::None;
+            ContinuationFlags flags = classElements[i]->m_flags & SerializeContext::ClassElement::Flags::FLG_POINTER
+                ? ContinuationFlags::ResolvePointer
+                : ContinuationFlags::None;
 
             while (arrayIndex < inputValue.Size())
             {

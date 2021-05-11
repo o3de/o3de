@@ -45,7 +45,6 @@ set(FILES
     include/LmbrCentral/Rendering/RenderNodeBus.h
     include/LmbrCentral/Rendering/GiRegistrationBus.h
     include/LmbrCentral/Rendering/RenderBoundsBus.h
-    include/LmbrCentral/Rendering/Utils/MaterialOwnerRequestBusHandlerImpl.h
     include/LmbrCentral/Scripting/EditorTagComponentBus.h
     include/LmbrCentral/Scripting/GameplayNotificationBus.h
     include/LmbrCentral/Scripting/SimpleStateComponentBus.h

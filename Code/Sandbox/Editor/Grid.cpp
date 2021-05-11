@@ -136,31 +136,10 @@ Matrix34 CGrid::GetMatrix() const
         Ang3 angles = Ang3(rotationAngles.x * gf_PI / 180.0, rotationAngles.y * gf_PI / 180.0, rotationAngles.z * gf_PI / 180.0);
 
         tm = Matrix33::CreateRotationXYZ(angles);
-
-        if (gSettings.snap.bGridGetFromSelected)
-        {
-            CSelectionGroup* sel = GetIEditor()->GetSelection();
-            if (sel->GetCount() > 0)
-            {
-                CBaseObject* obj = sel->GetObject(0);
-                tm = obj->GetWorldTM();
-                tm.OrthonormalizeFast();
-                tm.SetTranslation(Vec3(0, 0, 0));
-            }
-        }
     }
     else if (GetIEditor()->GetReferenceCoordSys() == COORDS_LOCAL)
     {
         tm.SetIdentity();
-
-        CSelectionGroup* sel = GetIEditor()->GetSelection();
-        if (sel->GetCount() > 0)
-        {
-            CBaseObject* obj = sel->GetObject(0);
-            tm = obj->GetWorldTM();
-            tm.OrthonormalizeFast();
-            tm.SetTranslation(Vec3(0, 0, 0));
-        }
     }
     else
     {

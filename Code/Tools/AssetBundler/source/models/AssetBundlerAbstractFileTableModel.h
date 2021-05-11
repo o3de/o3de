@@ -30,6 +30,7 @@ namespace AssetBundler
 {
 
     extern const char* DateTimeFormat;
+    extern const char* ReadOnlyFileErrorMessage;
 
     //! Provides an abstract model that can be subclassed to create table models used to store information about files found on-disk.
     class AssetBundlerAbstractFileTableModel
@@ -47,9 +48,15 @@ namespace AssetBundler
 
         //////////////////////////////////////////////////////////////////////////
         // Pure virtual functions
-        virtual AZStd::vector<AZStd::string> CreateNewFiles(const AZStd::string& absoluteFilePath, const AzFramework::PlatformFlags& platforms, const QString& project = QString()) = 0;
+        virtual AZStd::vector<AZStd::string> CreateNewFiles(
+            const AZStd::string& absoluteFilePath,
+            const AzFramework::PlatformFlags& platforms,
+            const QString& project = QString()) = 0;
         virtual bool DeleteFile(const QModelIndex& index) = 0;
-        virtual void LoadFile(const AZStd::string& absoluteFilePath, const AZStd::string& projectName = "", bool isDefaultFile = false) = 0;
+        virtual void LoadFile(
+            const AZStd::string& absoluteFilePath,
+            const AZStd::string& projectName = "",
+            bool isDefaultFile = false) = 0;
         virtual bool WriteToDisk(const AZStd::string& key) = 0;
 
         //! Returns the absolute path of the file at the given index on success, returns an empty string on failure.
@@ -60,9 +67,15 @@ namespace AssetBundler
         //////////////////////////////////////////////////////////////////////////
 
         //! Reload all the data based on the watched folders and files
-        virtual void Reload(const char* fileExtension, const QSet<QString>& watchedFolders, const QSet<QString>& watchedFiles = QSet<QString>(), const AZStd::unordered_map<AZStd::string, AZStd::string>& pathToProjectNameMap = AZStd::unordered_map<AZStd::string, AZStd::string>());
+        virtual void Reload(
+            const char* fileExtension,
+            const QSet<QString>& watchedFolders,
+            const QSet<QString>& watchedFiles = QSet<QString>(),
+            const AZStd::unordered_map<AZStd::string, AZStd::string>& pathToProjectNameMap = AZStd::unordered_map<AZStd::string, AZStd::string>());
 
-        virtual void ReloadFiles(const AZStd::vector<AZStd::string>& absoluteFilePathList, AZStd::unordered_map<AZStd::string, AZStd::string> pathToProjectNameMap = AZStd::unordered_map<AZStd::string, AZStd::string>());
+        virtual void ReloadFiles(
+            const AZStd::vector<AZStd::string>& absoluteFilePathList,
+            AZStd::unordered_map<AZStd::string, AZStd::string> pathToProjectNameMap = AZStd::unordered_map<AZStd::string, AZStd::string>());
 
         bool Save(const QModelIndex& selectedIndex);
 

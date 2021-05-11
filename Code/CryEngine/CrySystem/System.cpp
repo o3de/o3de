@@ -119,8 +119,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include AZ_RESTRICTED_FILE(System_cpp)
 #endif
 
-
-#include <I3DEngine.h>
 #include <IRenderer.h>
 #include <IMovieSystem.h>
 #include <ServiceNetwork.h>
@@ -129,17 +127,13 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include <IProcess.h>
 #include <INotificationNetwork.h>
 #include <ISoftCodeMgr.h>
-#include "VisRegTest.h"
 #include <LyShine/ILyShine.h>
-#include <ITimeOfDay.h>
 
 #include <LoadScreenBus.h>
 
 #include <AzFramework/Archive/Archive.h>
 #include "XConsole.h"
 #include "Log.h"
-#include "CrySizerStats.h"
-#include "CrySizerImpl.h"
 #include "NotificationNetwork.h"
 #include "ProfileLog.h"
 
@@ -154,10 +148,8 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include "Serialization/ArchiveHost.h"
 #include "SystemEventDispatcher.h"
 #include "ServerThrottle.h"
-#include "ILocalMemoryUsage.h"
 #include "ResourceManager.h"
 #include "HMDBus.h"
-#include "OverloadSceneManager/OverloadSceneManager.h"
 #include <IThreadManager.h>
 
 #include "IZLibCompressor.h"
@@ -322,11 +314,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
         m_pSystemEventDispatcher->RegisterListener(this);
     }
 
-#ifdef WIN32
-    m_hInst = NULL;
-    m_hWnd = NULL;
-#endif
-
     //////////////////////////////////////////////////////////////////////////
     // Clear environment.
     //////////////////////////////////////////////////////////////////////////
@@ -361,7 +348,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
 
     m_pIFont = NULL;
     m_pIFontUi = NULL;
-    m_pVisRegTest = NULL;
     m_rWidth = NULL;
     m_rHeight = NULL;
     m_rWidthAndHeightAsFractionOfScreenSize = NULL;
@@ -372,7 +358,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_cvSSInfo = NULL;
     m_rStencilBits = NULL;
     m_rFullscreen = NULL;
-    m_rDriver = NULL;
     m_sysNoUpdate = NULL;
     m_pMemoryManager = NULL;
     m_pProcess = NULL;
@@ -417,7 +402,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_pCpu = NULL;
 
     m_bInitializedSuccessfully = false;
-    m_bShaderCacheGenMode = false;
     m_bRelaunch = false;
     m_iLoadingMode = 0;
     m_bTestMode = false;
@@ -434,9 +418,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_expectingMapCommand = false;
 #endif
 
-    // no mem stats at the moment
-    m_pMemStats = NULL;
-    m_pSizer = NULL;
     m_pCVarQuit = NULL;
 
     m_bForceNonDevMode = false;
@@ -471,9 +452,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_pTextModeConsole = NULL;
 
     InitThreadSystem();
-
-    m_pMiniGUI = NULL;
-    m_pPerfHUD = NULL;
 
     g_pPakHeap = new CMTSafeHeap;
 
@@ -520,7 +498,6 @@ CSystem::~CSystem()
 
     CRY_ASSERT(m_windowMessageHandlers.empty() && "There exists a dangling window message handler somewhere");
 
-    SAFE_DELETE(m_pVisRegTest);
     SAFE_DELETE(m_pXMLUtils);
     SAFE_DELETE(m_pArchiveHost);
     SAFE_DELETE(m_pThreadTaskManager);
@@ -682,15 +659,6 @@ void CSystem::ShutDown()
     // Shutdown any running VR devices.
     EBUS_EVENT(AZ::VR::HMDInitRequestBus, Shutdown);
 
-
-    //////////////////////////////////////////////////////////////////////////
-    // Clear 3D Engine resources.
-    if (m_env.p3DEngine)
-    {
-        m_env.p3DEngine->UnloadLevel();
-    }
-    //////////////////////////////////////////////////////////////////////////
-
     // Shutdown resource manager.
     m_pResourceManager->Shutdown();
 
@@ -706,7 +674,6 @@ void CSystem::ShutDown()
     SAFE_DELETE(m_env.pServiceNetwork);
     SAFE_RELEASE(m_env.pLyShine);
     SAFE_RELEASE(m_env.pCryFont);
-    SAFE_RELEASE(m_env.p3DEngine); // depends on EntitySystem
     if (m_env.pConsole)
     {
         ((CXConsole*)m_env.pConsole)->FreeRenderResources();
@@ -717,13 +684,6 @@ void CSystem::ShutDown()
     SAFE_RELEASE(m_pIZStdDecompressor);
     SAFE_RELEASE(m_pViewSystem);
     SAFE_RELEASE(m_pLevelSystem);
-
-    //Can't kill renderer before we delete CryFont, 3DEngine, etc
-    if (GetIRenderer())
-    {
-        GetIRenderer()->ShutDown();
-        SAFE_RELEASE(m_env.pRenderer);
-    }
 
     if (m_env.pLog)
     {
@@ -745,7 +705,6 @@ void CSystem::ShutDown()
     SAFE_RELEASE(m_cvSSInfo);
     SAFE_RELEASE(m_rStencilBits);
     SAFE_RELEASE(m_rFullscreen);
-    SAFE_RELEASE(m_rDriver);
 
     SAFE_RELEASE(m_sysWarnings);
     SAFE_RELEASE(m_sysKeyboard);
@@ -765,12 +724,8 @@ void CSystem::ShutDown()
     SAFE_RELEASE(m_pNotificationNetwork);
 
     SAFE_DELETE(m_env.pSoftCodeMgr);
-    SAFE_DELETE(m_pMemStats);
-    SAFE_DELETE(m_pSizer);
     SAFE_DELETE(m_pDefaultValidator);
     m_pValidator = nullptr;
-
-    SAFE_DELETE(m_env.pOverloadSceneManager);
 
     SAFE_DELETE(m_pLocalizationManager);
 
@@ -828,11 +783,6 @@ void CSystem::Quit()
     if (m_pUserCallback)
     {
         m_pUserCallback->OnQuit();
-    }
-
-    if (GetIRenderer())
-    {
-        GetIRenderer()->RestoreGamma();
     }
 
     gEnv->pLog->FlushAndClose();
@@ -1231,8 +1181,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
         return false;
     }
 
-    RenderBegin();
-
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
     // do the dedicated sleep earlier than the frame profiler to avoid having it counted
     if (gEnv->IsDedicated())
@@ -1245,8 +1193,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     }
 #endif //EXCLUDE_UPDATE_ON_CONSOLE
 
-    gEnv->pOverloadSceneManager->Update();
-
 #ifdef WIN32
     // enable/disable SSE fp exceptions (#nan and /0)
     // need to do it each frame since sometimes they are being reset
@@ -1258,12 +1204,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
 
     m_nUpdateCounter++;
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
-    if (!m_sDelayedScreeenshot.empty())
-    {
-        gEnv->pRenderer->ScreenShot(m_sDelayedScreeenshot.c_str());
-        m_sDelayedScreeenshot.clear();
-    }
-
     // Check if game needs to be sleeping when not active.
     SleepIfInactive();
 
@@ -1294,32 +1234,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
 #ifdef USE_REMOTE_CONSOLE
     GetIRemoteConsole()->Update();
 #endif
-
-    if (gEnv->pLocalMemoryUsage != NULL)
-    {
-        gEnv->pLocalMemoryUsage->OnUpdate();
-    }
-
-    if (!gEnv->IsEditor() && gEnv->pRenderer)
-    {
-        // If the dimensions of the render target change,
-        // or are different from the camera defaults,
-        // we need to update the camera frustum.
-        CCamera& viewCamera = GetViewCamera();
-        const int renderTargetWidth = m_rWidth->GetIVal();
-        const int renderTargetHeight = m_rHeight->GetIVal();
-
-        if (renderTargetWidth != viewCamera.GetViewSurfaceX() ||
-            renderTargetHeight != viewCamera.GetViewSurfaceZ())
-        {
-            viewCamera.SetFrustum(renderTargetWidth,
-                renderTargetHeight,
-                viewCamera.GetFov(),
-                viewCamera.GetNearPlane(),
-                viewCamera.GetFarPlane(),
-                gEnv->pRenderer->GetPixelAspectRatio());
-        }
-    }
     if (nPauseMode != 0)
     {
         m_bPaused = true;
@@ -1365,53 +1279,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     {
         FRAME_PROFILER("StreamEngine::Update()", this, PROFILE_SYSTEM);
         m_pStreamEngine->Update();
-    }
-
-    if (g_cvars.az_streaming_stats)
-    {
-        SDrawTextInfo ti;
-        ti.flags = eDrawText_FixedSize | eDrawText_2D | eDrawText_Monospace;
-        ti.xscale = ti.yscale = 1.2f;
-
-        const int viewportHeight = GetViewCamera().GetViewSurfaceZ();
-
-#if defined(AZ_RESTRICTED_PLATFORM)
-    #define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_8
-#include AZ_RESTRICTED_FILE(System_cpp)
-#else
-    float y = static_cast<float>(viewportHeight) - 85.0f;
-#endif
-
-        AZStd::vector<AZ::IO::Statistic> stats;
-        AZ::Interface<AZ::IO::IStreamer>::Get()->CollectStatistics(stats);
-
-        for (AZ::IO::Statistic& stat : stats)
-        {
-            switch (stat.GetType())
-            {
-            case AZ::IO::Statistic::Type::FloatingPoint:
-                gEnv->pRenderer->DrawTextQueued(Vec3(10, y, 1.0f), ti,
-                    AZStd::string::format("%s/%s: %.3f", stat.GetOwner().data(), stat.GetName().data(), stat.GetFloatValue()).c_str());
-                break;
-            case AZ::IO::Statistic::Type::Integer:
-                gEnv->pRenderer->DrawTextQueued(Vec3(10, y, 1.0f), ti,
-                    AZStd::string::format("%s/%s: %lli", stat.GetOwner().data(), stat.GetName().data(), stat.GetIntegerValue()).c_str());
-                break;
-            case AZ::IO::Statistic::Type::Percentage:
-                gEnv->pRenderer->DrawTextQueued(Vec3(10, y, 1.0f), ti,
-                    AZStd::string::format("%s/%s: %.2f (percent)", stat.GetOwner().data(), stat.GetName().data(), stat.GetPercentage()).c_str());
-                break;
-            default:
-                gEnv->pRenderer->DrawTextQueued(Vec3(10, y, 1.0f), ti, AZStd::string::format("Unsupported stat type: %i", static_cast<int>(stat.GetType())).c_str());
-                break;
-            }
-            y -= 12.0f;
-            if (y < 0.0f)
-            {
-                //Exit the loop because there's no purpose on rendering text outside of the visible area.
-                break;
-            }
-        }
     }
 
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
@@ -1490,22 +1357,11 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     //update time subsystem
     m_Time.UpdateOnFrameStart();
 
-    if (m_env.p3DEngine)
-    {
-        m_env.p3DEngine->OnFrameStart();
-    }
-
     //////////////////////////////////////////////////////////////////////
     // update rate limiter for dedicated server
     if (m_pServerThrottle.get())
     {
         m_pServerThrottle->Update();
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    if (m_env.pRenderer && m_env.pRenderer->GetIStereoRenderer()->IsRenderingToHMD())
-    {
-        EBUS_EVENT(AZ::VR::HMDDeviceRequestBus, UpdateInternalState);
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -1553,6 +1409,7 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     //////////////////////////////////////////////////////////////////////////
     // Update Threads Task Manager.
     //////////////////////////////////////////////////////////////////////////
+    if (m_pThreadTaskManager)
     {
         FRAME_PROFILER("SysUpdate:ThreadTaskManager", this, PROFILE_SYSTEM);
         m_pThreadTaskManager->OnUpdate();
@@ -1651,7 +1508,7 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
 }
 
 //////////////////////////////////////////////////////////////////////
-bool CSystem::UpdatePostTickBus(int updateFlags, int nPauseMode)
+bool CSystem::UpdatePostTickBus(int updateFlags, int /*nPauseMode*/)
 {
     CTimeValue updateStart = gEnv->pTimer->GetAsyncTime();
 
@@ -1661,44 +1518,6 @@ bool CSystem::UpdatePostTickBus(int updateFlags, int nPauseMode)
         const float fMovieFrameTime = m_Time.GetFrameTime(ITimer::ETIMER_UI);
         FRAME_PROFILER("SysUpdate:UpdateMovieSystem", this, PROFILE_SYSTEM);
         UpdateMovieSystem(updateFlags, fMovieFrameTime, false);
-    }
-
-    //////////////////////////////////////////////////////////////////////
-    //update process (3D engine)
-    if (!(updateFlags & ESYSUPDATE_EDITOR) && !m_bNoUpdate && m_env.p3DEngine)
-    {
-        FRAME_PROFILER("SysUpdate:Update3DEngine", this, PROFILE_SYSTEM);
-
-        if (ITimeOfDay* pTOD = m_env.p3DEngine->GetTimeOfDay())
-        {
-            pTOD->Tick();
-        }
-
-        if (m_env.p3DEngine)
-        {
-            m_env.p3DEngine->Tick();  // clear per frame temp data
-        }
-        if (m_pProcess && (m_pProcess->GetFlags() & PROC_3DENGINE))
-        {
-            if ((nPauseMode != 1))
-            {
-                if (!IsEquivalent(m_ViewCamera.GetPosition(), Vec3(0, 0, 0), VEC_EPSILON))
-                {
-                    if (m_env.p3DEngine)
-                    {
-                        //                  m_env.p3DEngine->SetCamera(m_ViewCamera);
-                        m_pProcess->Update();
-                    }
-                }
-            }
-        }
-        else
-        {
-            if (m_pProcess)
-            {
-                m_pProcess->Update();
-            }
-        }
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -1748,41 +1567,8 @@ bool CSystem::UpdatePostTickBus(int updateFlags, int nPauseMode)
         gEnv->pCryPak->DisableRuntimeFileAccess(true);
     }
 
-    // If it's in editing mode (in editor) the render is done in RenderViewport so we skip rendering here.
-    if (!gEnv->IsEditing() && gEnv->pRenderer && gEnv->p3DEngine)
-    {
-        if (GetIViewSystem())
-        {
-            GetIViewSystem()->Update(min(gEnv->pTimer->GetFrameTime(), 0.1f));
-        }
-
-        // Begin occlusion job after setting the correct camera.
-        gEnv->p3DEngine->PrepareOcclusion(GetViewCamera());
-
-        CrySystemNotificationBus::Broadcast(&CrySystemNotifications::OnPreRender);
-
-        // Also broadcast for anyone else that needs to draw global debug to do so now
-        AzFramework::DebugDisplayEventBus::Broadcast(&AzFramework::DebugDisplayEvents::DrawGlobalDebugInfo);
-
-        Render();
-
-        gEnv->p3DEngine->EndOcclusion();
-
-        CrySystemNotificationBus::Broadcast(&CrySystemNotifications::OnPostRender);
-
-        RenderEnd();
-
-        gEnv->p3DEngine->SyncProcessStreamingUpdate();
-
-        if (NeedDoWorkDuringOcclusionChecks())
-        {
-            DoWorkDuringOcclusionChecks();
-        }
-
-        // Sync the work that must be done in the main thread by the end of frame.
-        gEnv->pRenderer->GetGenerateShadowRendItemJobExecutor()->WaitForCompletion();
-        gEnv->pRenderer->GetGenerateRendItemJobExecutor()->WaitForCompletion();
-    }
+    // Also broadcast for anyone else that needs to draw global debug to do so now
+    AzFramework::DebugDisplayEventBus::Broadcast(&AzFramework::DebugDisplayEvents::DrawGlobalDebugInfo);
 
     return !IsQuitting();
 }
@@ -2098,12 +1884,6 @@ void CSystem::Relaunch(bool bRelaunch)
 }
 
 //////////////////////////////////////////////////////////////////////////
-ICrySizer* CSystem::CreateSizer()
-{
-    return new CrySizerImpl;
-}
-
-//////////////////////////////////////////////////////////////////////////
 uint32 CSystem::GetUsedMemory()
 {
     return CryMemoryGetAllocatedSize();
@@ -2208,11 +1988,6 @@ void CSystem::ExecuteCommandLine(bool deferred)
     }
 
     //gEnv->pConsole->ExecuteString("sys_RestoreSpec test*"); // to get useful debugging information about current spec settings to the log file
-}
-
-void CSystem::DumpMemoryCoverage()
-{
-    m_MemoryFragmentationProfiler.DumpMemoryCoverage();
 }
 
 ITextModeConsole* CSystem::GetITextModeConsole()

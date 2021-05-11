@@ -104,6 +104,11 @@ namespace JsonSerializationTests
             AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
 
+        void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
+        {
+            context->RegisterGenericType<Asset>();
+        }
+
         AZStd::shared_ptr<AZ::BaseJsonSerializer> CreateSerializer() override
         {
             return AZStd::make_shared<AZ::Data::AssetJsonSerializer>();

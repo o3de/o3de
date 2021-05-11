@@ -533,11 +533,6 @@ void CViewSystem::BeginCutScene(IAnimSequence* pSeq, [[maybe_unused]] unsigned l
 {
     m_cutsceneCount++;
 
-    if (m_cutsceneCount == 1)
-    {
-        gEnv->p3DEngine->ResetPostEffects();
-    }
-
     VS_CALL_LISTENERS(OnBeginCutScene(pSeq, bResetFX));
 }
 
@@ -545,11 +540,6 @@ void CViewSystem::BeginCutScene(IAnimSequence* pSeq, [[maybe_unused]] unsigned l
 void CViewSystem::EndCutScene(IAnimSequence* pSeq, [[maybe_unused]] unsigned long dwFlags)
 {
     m_cutsceneCount -= (m_cutsceneCount > 0);
-
-    if (m_cutsceneCount == 0)
-    {
-        gEnv->p3DEngine->ResetPostEffects();
-    }
 
     ClearCutsceneViews();
 
@@ -650,30 +640,6 @@ void CViewSystem::ClearAllViews()
 ////////////////////////////////////////////////////////////////////
 void CViewSystem::DebugDraw()
 {
-    IRenderer* pRenderer = gEnv->pRenderer;
-    if (pRenderer)
-    {
-        float xpos = 20;
-        float ypos = 15;
-        float fColor[4]             = {1.0f, 1.0f, 1.0f, 0.7f};
-        float fColorRed[4]      = {1.0f, 0.0f, 0.0f, 0.7f};
-        float fColorGreen[4]    = {0.0f, 1.0f, 0.0f, 0.7f};
-
-        pRenderer->Draw2dLabel(xpos, 5, 1.35f, fColor, false, "ViewSystem Stats: %" PRISIZE_T " Views ", m_views.size());
-
-        IView* pActiveView = GetActiveView();
-        for (TViewMap::iterator it = m_views.begin(); it != m_views.end(); ++it)
-        {
-            IView* pView = it->second;
-            const CCamera& cam = pView->GetCamera();
-            bool isActive = (pView == pActiveView);
-            Vec3 pos = cam.GetPosition();
-            Ang3 ang = cam.GetAngles();
-            pRenderer->Draw2dLabel(xpos, ypos, 1.35f, isActive ? fColorGreen : fColorRed, false, "View Camera: %p . View Id: %d, pos (%f, %f, %f), ang (%f, %f, %f)", &cam, it->first, pos.x, pos.y, pos.z, ang.x, ang.y, ang.z);
-
-            ypos += 11;
-        }
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -44,7 +44,9 @@ namespace AssetBundler
         AzFramework::PlatformFlags GetPartiallySelectedPlatformFlags();
 
     private:
-        void OnPlatformSelectionChanged(const AzFramework::PlatformFlags& selectedPlatforms, const AzFramework::PlatformFlags& partiallySelectedPlatforms);
+        void OnPlatformSelectionChanged(
+            const AzFramework::PlatformFlags& selectedPlatforms,
+            const AzFramework::PlatformFlags& partiallySelectedPlatforms);
 
         QSharedPointer<Ui::EditSeedDialog> m_ui;
     };

@@ -1,3 +1,4 @@
+// {BEGIN_LICENSE}
 /*
 * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 * its licensors.
@@ -9,6 +10,7 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
+// {END_LICENSE}
 
 #pragma once
 

@@ -52,26 +52,41 @@ namespace AssetBundler
 
         // Bundle Output
         m_ui->outputBundlePathLineEdit->setReadOnly(true);
-        connect(m_ui->outputBundlePathBrowseButton, &QPushButton::clicked, this, &GenerateBundlesModal::OnOutputBundleLocationBrowseButtonPressed);
+        connect(m_ui->outputBundlePathBrowseButton,
+            &QPushButton::clicked,
+            this,
+            &GenerateBundlesModal::OnOutputBundleLocationBrowseButtonPressed);
 
         // Bundle Settings files
         m_ui->bundleSettingsFileLineEdit->setReadOnly(true);
         m_ui->bundleSettingsFileLineEdit->setText(tr(CustomBundleSettingsText));
-        connect(m_ui->bundleSettingsFileBrowseButton, &QPushButton::clicked, this, &GenerateBundlesModal::OnBundleSettingsBrowseButtonPressed);
-        connect(m_ui->bundleSettingsFileSaveButton, &QPushButton::clicked, this, &GenerateBundlesModal::OnBundleSettingsSaveButtonPressed);
+        connect(m_ui->bundleSettingsFileBrowseButton,
+            &QPushButton::clicked,
+            this,
+            &GenerateBundlesModal::OnBundleSettingsBrowseButtonPressed);
+        connect(m_ui->bundleSettingsFileSaveButton,
+            &QPushButton::clicked,
+            this,
+            &GenerateBundlesModal::OnBundleSettingsSaveButtonPressed);
 
         // Max Bundle Size
         m_ui->maxBundleSizeSpinBox->setRange(1, AzToolsFramework::MaxBundleSizeInMB);
         m_ui->maxBundleSizeSpinBox->setValue(AzToolsFramework::MaxBundleSizeInMB);
         m_ui->maxBundleSizeSpinBox->setButtonSymbols(QAbstractSpinBox::ButtonSymbols::NoButtons);
         m_ui->maxBundleSizeSpinBox->setSuffix(" MB");
-        connect(m_ui->maxBundleSizeSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this, &GenerateBundlesModal::OnMaxBundleSizeChanged);
+        connect(m_ui->maxBundleSizeSpinBox,
+            QOverload<int>::of(&QSpinBox::valueChanged),
+            this,
+            &GenerateBundlesModal::OnMaxBundleSizeChanged);
 
         // Bundle Version
         m_ui->bundleVersionSpinBox->setRange(1, AzFramework::AssetBundleManifest::CurrentBundleVersion);
         m_ui->bundleVersionSpinBox->setValue(AzFramework::AssetBundleManifest::CurrentBundleVersion);
         m_ui->bundleVersionSpinBox->setButtonSymbols(QAbstractSpinBox::ButtonSymbols::NoButtons);
-        connect(m_ui->bundleVersionSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this, &GenerateBundlesModal::OnBundleVersionChanged);
+        connect(m_ui->bundleVersionSpinBox,
+            QOverload<int>::of(&QSpinBox::valueChanged),
+            this,
+            &GenerateBundlesModal::OnBundleVersionChanged);
 
         // Cancel and Generate Bundles buttons
         m_ui->generateBundlesButton->setEnabled(false);
@@ -197,9 +212,11 @@ namespace AssetBundler
 
         if (AZ::IO::FileIOBase::GetInstance()->Exists(bundleSettingsAbsolutePath.c_str()))
         {
-            QString messageBoxText = QString(tr("Bundle Settings ( %1 ) already exists on-disk. Saving the current settings will override the existing settings. \n\nDo you wish to continue?")).arg(bundleSettingsAbsolutePath.c_str());
+            QString messageBoxText = QString(tr(
+                "Bundle Settings ( %1 ) already exists on-disk. Saving the current settings will override the existing settings. \n\nDo you wish to continue?")).arg(bundleSettingsAbsolutePath.c_str());
 
-            QMessageBox::StandardButton confirmDeleteFileResult = QMessageBox::question(this, QString(tr("Replace Existing Settings")), messageBoxText);
+            QMessageBox::StandardButton confirmDeleteFileResult =
+                QMessageBox::question(this, QString(tr("Replace Existing Settings")), messageBoxText);
             if (confirmDeleteFileResult != QMessageBox::StandardButton::Yes)
             {
                 // User canceled out of the operation
@@ -237,9 +254,11 @@ namespace AssetBundler
 
         if (AZ::IO::FileIOBase::GetInstance()->Exists(m_bundleSettings.m_bundleFilePath.c_str()))
         {
-            QString messageBoxText = QString(tr("Asset Bundle ( %1 ) already exists on-disk. Generating a new Bundle will override the existing Bundle. \n\nDo you wish to permanently delete the existing Bundle?")).arg(m_bundleSettings.m_bundleFilePath.c_str());
+            QString messageBoxText = QString(tr(
+                "Asset Bundle ( %1 ) already exists on-disk. Generating a new Bundle will override the existing Bundle. \n\nDo you wish to permanently delete the existing Bundle?")).arg(m_bundleSettings.m_bundleFilePath.c_str());
 
-            QMessageBox::StandardButton confirmDeleteFileResult = QMessageBox::question(this, QString(tr("Replace Existing Bundle")), messageBoxText);
+            QMessageBox::StandardButton confirmDeleteFileResult =
+                QMessageBox::question(this, QString(tr("Replace Existing Bundle")), messageBoxText);
             if (confirmDeleteFileResult != QMessageBox::StandardButton::Yes)
             {
                 // User canceled out of the operation
@@ -259,10 +278,14 @@ namespace AssetBundler
 
         if (result)
         {
-            m_assetListTabWidget->AddScanPathToAssetBundlerSettings(AssetBundlingFileType::BundleFileType, m_bundleSettings.m_bundleFilePath);
+            m_assetListTabWidget->AddScanPathToAssetBundlerSettings(
+                AssetBundlingFileType::BundleFileType,
+                m_bundleSettings.m_bundleFilePath);
 
             // The watched files list was updated after the files were created, so we need to force-reload them
-            m_assetListTabWidget->GetGUIApplicationManager()->UpdateFiles(AssetBundlingFileType::BundleFileType, { m_bundleSettings.m_bundleFilePath });
+            m_assetListTabWidget->GetGUIApplicationManager()->UpdateFiles(
+                AssetBundlingFileType::BundleFileType,
+                { m_bundleSettings.m_bundleFilePath });
         }
 
         AZStd::vector<AZStd::string> generatedFilePaths = { m_bundleSettings.m_bundleFilePath };

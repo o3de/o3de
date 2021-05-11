@@ -400,8 +400,6 @@ void    CObjectManager::DeleteObject(CBaseObject* obj)
         CUndo::Record(new CUndoBaseObjectDelete(obj));
     }
 
-    OnObjectModified(obj, true, false);
-
     AABB objAAB;
     obj->GetBoundBox(objAAB);
     GetIEditor()->GetGameEngine()->OnAreaModified(objAAB);
@@ -2475,17 +2473,6 @@ void CObjectManager::GatherUsedResources(CUsedResources& resources)
 IGizmoManager* CObjectManager::GetGizmoManager()
 {
     return m_gizmoManager;
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::OnObjectModified(CBaseObject* pObject, [[maybe_unused]] bool bDelete, [[maybe_unused]] bool boModifiedTransformOnly)
-{
-    if (IRenderNode* pRenderNode = pObject->GetEngineNode())
-    {
-        GetIEditor()->Get3DEngine()->OnObjectModified(pRenderNode, pRenderNode->GetRndFlags());
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

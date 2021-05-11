@@ -167,7 +167,7 @@ namespace ScriptCanvasEditor::Nodes
         return nodeIdPair;
     }
 
-    NodeIdPair CreateObjectMethodNode(AZStd::string_view className, AZStd::string_view methodName, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
+    NodeIdPair CreateObjectMethodNode(AZStd::string_view className, AZStd::string_view methodName, const ScriptCanvas::ScriptCanvasId& scriptCanvasId, ScriptCanvas::PropertyStatus propertyStatus)
     {
         AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
         NodeIdPair nodeIds;
@@ -181,7 +181,7 @@ namespace ScriptCanvasEditor::Nodes
         auto* methodNode = azrtti_cast<ScriptCanvas::Nodes::Core::Method*>(node);
 
         ScriptCanvas::NamespacePath emptyNamespacePath;
-        methodNode->InitializeBehaviorMethod(emptyNamespacePath, className, methodName);
+        methodNode->InitializeBehaviorMethod(emptyNamespacePath, className, methodName, propertyStatus);
 
         AZStd::string_view displayName = methodNode->GetName();
         scriptCanvasEntity->SetName(AZStd::string::format("SC-Node(%.*s)", aznumeric_cast<int>(displayName.size()), displayName.data()));
@@ -208,7 +208,7 @@ namespace ScriptCanvasEditor::Nodes
         auto* methodNode = azrtti_cast<ScriptCanvas::Nodes::Core::MethodOverloaded*>(node);
 
         ScriptCanvas::NamespacePath emptyNamespacePath;
-        methodNode->InitializeBehaviorMethod(emptyNamespacePath, className, methodName);
+        methodNode->InitializeBehaviorMethod(emptyNamespacePath, className, methodName, ScriptCanvas::PropertyStatus::None);
 
         AZStd::string_view displayName = methodNode->GetName();
         scriptCanvasEntity->SetName(AZStd::string::format("SC-Node(%.*s)", aznumeric_cast<int>(displayName.size()), displayName.data()));

@@ -28,8 +28,6 @@
 #include <QDirIterator>
 #include <GradientSignalSystemComponent.h>
 #include <GradientSignal/GradientImageConversion.h>
-#include <ImageProcessing/ImageObject.h>
-#include <ImageProcessing/ImageProcessingBus.h>
 #include <Atom/ImageProcessing/ImageObject.h>
 #include <Atom/ImageProcessing/ImageProcessingBus.h>
 
@@ -257,14 +255,6 @@ namespace GradientSignal
         return AZ::Uuid::CreateString("{7520DF20-16CA-4CF6-A6DB-D96759A09EE4}");
     }
 
-    static ImageProcessing::EPixelFormat AtomPixelFormatToLegacyPixelFormat(ImageProcessingAtom::EPixelFormat atomPixFormat)
-    {
-        // This could be dangerous to do if these enums have differences in the middle.
-        // So far the enumerations correspond 1-to-1. Worst case this could be changed into a massive switch block.
-        int pixelFormatInt = static_cast<int>(atomPixFormat);
-        return static_cast<ImageProcessing::EPixelFormat>(pixelFormatInt);
-    }
-
     static AZStd::unique_ptr<ImageAsset> AtomLoadImageFromPath(const AZStd::string& fullPath)
     {
         ImageProcessingAtom::IImageObjectPtr imageObject;
@@ -286,7 +276,7 @@ namespace GradientSignal
 
         imageAsset->m_imageWidth = imageObject->GetWidth(0);
         imageAsset->m_imageHeight = imageObject->GetHeight(0);
-        imageAsset->m_imageFormat = AtomPixelFormatToLegacyPixelFormat(imageObject->GetPixelFormat());
+        imageAsset->m_imageFormat = imageObject->GetPixelFormat();
 
         AZ::u8* mem = nullptr;
         AZ::u32 pitch = 0;

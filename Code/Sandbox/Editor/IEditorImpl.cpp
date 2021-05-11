@@ -49,7 +49,6 @@ AZ_POP_DISABLE_WARNING
 #include "Objects/GizmoManager.h"
 #include "Objects/AxisGizmo.h"
 #include "DisplaySettings.h"
-#include "ShaderEnum.h"
 #include "KeyboardCustomizationSettings.h"
 #include "Export/ExportManager.h"
 #include "LevelIndependentFileMan.h"
@@ -60,7 +59,6 @@ AZ_POP_DISABLE_WARNING
 #include "MainWindow.h"
 #include "Alembic/AlembicCompiler.h"
 #include "UIEnumsDatabase.h"
-#include "Util/Ruler.h"
 #include "RenderHelpers/AxisHelper.h"
 #include "Settings.h"
 #include "Include/IObjectManager.h"
@@ -71,7 +69,6 @@ AZ_POP_DISABLE_WARNING
 #include "BackgroundTaskManager.h"
 #include "BackgroundScheduleManager.h"
 #include "EditorFileMonitor.h"
-#include "Mission.h"
 #include "MainStatusBar.h"
 
 #include "SettingsBlock.h"
@@ -116,29 +113,6 @@ static CCryEditDoc * theDocument;
 
 #undef GetCommandLine
 
-namespace
-{
-    bool SelectionContainsComponentEntities()
-    {
-        bool result = false;
-        CSelectionGroup* pSelection = GetIEditor()->GetObjectManager()->GetSelection();
-        if (pSelection)
-        {
-            CBaseObject* selectedObj = nullptr;
-            for (int selectionCounter = 0; selectionCounter < pSelection->GetCount(); ++selectionCounter)
-            {
-                selectedObj = pSelection->GetObject(selectionCounter);
-                if (selectedObj->GetType() == OBJTYPE_AZENTITY)
-                {
-                    result = true;
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-}
-
 const char* CEditorImpl::m_crashLogFileName = "SessionStatus/editor_statuses.json";
 
 CEditorImpl::CEditorImpl()
@@ -158,7 +132,6 @@ CEditorImpl::CEditorImpl()
     , m_bUpdates(true)
     , m_bTerrainAxisIgnoreObjects(false)
     , m_pDisplaySettings(nullptr)
-    , m_pShaderEnum(nullptr)
     , m_pIconManager(nullptr)
     , m_bSelectionLocked(true)
     , m_pAxisGizmo(nullptr)
@@ -173,7 +146,6 @@ CEditorImpl::CEditorImpl()
     , m_pSourceControl(nullptr)
     , m_pSelectionTreeManager(nullptr)
     , m_pUIEnumsDatabase(nullptr)
-    , m_pRuler(nullptr)
     , m_pConsoleSync(nullptr)
     , m_pSettingsManager(nullptr)
     , m_pLevelIndependentFileMan(nullptr)
@@ -209,7 +181,6 @@ CEditorImpl::CEditorImpl()
     m_pBackgroundScheduleManager.reset(new BackgroundScheduleManager::CScheduleManager);
     m_pUIEnumsDatabase = new CUIEnumsDatabase;
     m_pDisplaySettings = new CDisplaySettings;
-    m_pShaderEnum = new CShaderEnum;
     m_pDisplaySettings->LoadRegistry();
     m_pPluginManager = new CPluginManager;
 
@@ -226,7 +197,6 @@ CEditorImpl::CEditorImpl()
 
     m_pImageUtil = new CImageUtil_impl();
     m_pResourceSelectorHost.reset(CreateResourceSelectorHost());
-    m_pRuler = new CRuler;
     m_selectedRegion.min = Vec3(0, 0, 0);
     m_selectedRegion.max = Vec3(0, 0, 0);
     DetectVersion();
@@ -359,8 +329,6 @@ CEditorImpl::~CEditorImpl()
     }
 
     SAFE_DELETE(m_pDisplaySettings)
-    SAFE_DELETE(m_pRuler)
-    SAFE_DELETE(m_pShaderEnum)
     SAFE_DELETE(m_pToolBoxManager)
     SAFE_DELETE(m_pCommandManager)
     SAFE_DELETE(m_pClassFactory)
@@ -443,7 +411,6 @@ void CEditorImpl::Update()
     m_bUpdates = false;
 
     FUNCTION_PROFILER(GetSystem(), PROFILE_EDITOR);
-    m_pRuler->Update();
 
     //@FIXME: Restore this latter.
     //if (GetGameEngine() && GetGameEngine()->IsLevelLoaded())
@@ -462,24 +429,6 @@ void CEditorImpl::Update()
 ISystem* CEditorImpl::GetSystem()
 {
     return m_pSystem;
-}
-
-I3DEngine* CEditorImpl::Get3DEngine()
-{
-    if (gEnv)
-    {
-        return gEnv->p3DEngine;
-    }
-    return nullptr;
-}
-
-IRenderer*  CEditorImpl::GetRenderer()
-{
-    if (gEnv)
-    {
-        return gEnv->pRenderer;
-    }
-    return nullptr;
 }
 
 IEditorClassFactory* CEditorImpl::GetClassFactory()
@@ -1215,11 +1164,6 @@ void CEditorImpl::AddTemplate(const QString& templateName, XmlNodeRef& tmpl)
     m_templateRegistry.AddTemplate(templateName, tmpl);
 }
 
-CShaderEnum* CEditorImpl::GetShaderEnum()
-{
-    return m_pShaderEnum;
-}
-
 bool CEditorImpl::ExecuteConsoleApp(const QString& CommandLine, QString& OutputText, [[maybe_unused]] bool bNoTimeOut, bool bShowWindow)
 {
     CLogFile::FormatLine("Executing console application '%s'", CommandLine.toUtf8().data());
@@ -1602,7 +1546,6 @@ void CEditorImpl::ReduceMemory()
     GetIEditor()->GetUndoManager()->ClearRedoStack();
     GetIEditor()->GetUndoManager()->ClearUndoStack();
     GetIEditor()->GetObjectManager()->SendEvent(EVENT_FREE_GAME_DATA);
-    gEnv->pRenderer->FreeResources(FRR_TEXTURES);
 
 #if defined(AZ_PLATFORM_WINDOWS)
     HANDLE hHeap = GetProcessHeap();
@@ -1739,13 +1682,6 @@ void CEditorImpl::RegisterObjectContextMenuExtension(TContextMenuExtensionFunc f
     m_objectContextMenuExtensions.push_back(func);
 }
 
-void CEditorImpl::SetCurrentMissionTime(float time)
-{
-    if (CMission* pMission = GetIEditor()->GetDocument()->GetCurrentMission())
-    {
-        pMission->SetTime(time);
-    }
-}
 // Vladimir@Conffx
 SSystemGlobalEnvironment* CEditorImpl::GetEnv()
 {

@@ -28,7 +28,6 @@ struct SRenderingPassInfo;
 struct SRendParams;
 struct Ray;
 struct IRenderer;
-struct I3DEngine;
 struct SSystemGlobalEnvironment;
 namespace Serialization {
     class IArchive;
@@ -105,7 +104,6 @@ public:
     int Width() const;
     int Height() const;
     void SetSize(const QSize& size);
-    void GetImageOffscreen(CImageEx& image, const QSize& customSize);
 
     // WindowRequestBus::Handler... (handler moved to cpp to resolve link issues in unity builds)
     void SetWindowTitle(const AZStd::string& title);
@@ -120,7 +118,6 @@ public slots:
     void Update();
 protected slots:
     void RenderInternal();
-    void ForceRebuildRenderContext();
 signals:
     void SignalPreRender(const SRenderContext&);
     void SignalRender(const SRenderContext&);
@@ -147,12 +144,6 @@ protected:
 private:
     struct SPrivate;
 
-    bool CreateRenderContext();
-    void DestroyRenderContext();
-    void StorePreviousContext();
-protected:
-    void SetCurrentContext();
-    void RestorePreviousContext();
 private:
     void UpdateBackgroundColor();
 
@@ -199,6 +190,4 @@ private:
     std::vector<QViewportConsumer*> m_consumers;
     AZStd::unique_ptr<QViewportRequests> m_viewportRequests;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    HWND m_lastHwnd = 0;
-    bool m_resizeWindowEvent = false;
 };

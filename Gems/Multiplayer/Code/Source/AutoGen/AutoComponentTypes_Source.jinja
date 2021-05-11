@@ -1,6 +1,6 @@
 #include <AzCore/Component/Component.h>
 #include <Source/Components/MultiplayerComponentRegistry.h>
-#include <Source/NetworkEntity/INetworkEntityManager.h>
+#include <Include/INetworkEntityManager.h>
 {% for Component in dataFiles %}
 {% set ComponentDerived = Component.attrib['OverrideComponent']|booleanTrue %}
 {% set ControllerDerived = Component.attrib['OverrideController']|booleanTrue %}
