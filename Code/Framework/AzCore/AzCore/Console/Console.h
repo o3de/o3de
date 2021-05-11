@@ -32,7 +32,7 @@ namespace AZ
         Console();
         //! Constructor overload which registers a notifier with the Settings Registry that will execute
         //! a console command whenever a key is set under the AZ::IConsole::ConsoleCommandRootKey JSON object
-        Console(AZ::SettingsRegistryInterface& settingsRegistry);
+        explicit Console(AZ::SettingsRegistryInterface& settingsRegistry);
         ~Console() override;
 
         //! IConsole interface
