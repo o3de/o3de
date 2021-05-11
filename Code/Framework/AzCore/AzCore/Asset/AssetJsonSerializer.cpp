@@ -117,10 +117,10 @@ namespace AZ
             {
                 Data::AssetLoadBehavior loadBehavior = instance->GetAutoLoadBehavior();
 
-                result.Combine(
+                result =
                     ContinueLoadingFromJsonObjectField(&loadBehavior,
                         azrtti_typeid<Data::AssetLoadBehavior>(),
-                        inputValue, "loadBehavior", context));
+                        inputValue, "loadBehavior", context);
 
                 instance->SetAutoLoadBehavior(loadBehavior);
             }
