@@ -22,18 +22,14 @@ sys.path.append (os.path.dirname (os.path.abspath (__file__)) + '/../automatedte
 
 from base import TestAutomationBase
 
-
 @pytest.mark.SUITE_main
-@pytest.mark.parametrize ("launcher_platform", ['windows_editor'])
-@pytest.mark.parametrize ("project", ["AutomatedTesting"])
-class TestAutomation (TestAutomationBase):
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+class TestAutomation(TestAutomationBase):
 
-    def _run_prefab_test (self, request, workspace, editor, test_module):
-        self._run_test (request, workspace, editor, test_module,
-                        ["--regset=/Amazon/Preferences/EnablePrefabSystem=true"])
+    def _run_prefab_test(self, request, workspace, editor, test_module):
+        self._run_test(request, workspace, editor, test_module, ["--regset=/Amazon/Preferences/EnablePrefabSystem=true"])
 
-    def test_PrefabLevel_OpensLevelWithEntities (self, request, workspace, editor, launcher_platform):
+    def test_PrefabLevel_OpensLevelWithEntities(self, request, workspace, editor, launcher_platform):
         from . import PrefabLevel_OpensLevelWithEntities as test_module
-
-
-        self._run_prefab_test (request, workspace, editor, test_module)
+        self._run_prefab_test(request, workspace, editor, test_module)
