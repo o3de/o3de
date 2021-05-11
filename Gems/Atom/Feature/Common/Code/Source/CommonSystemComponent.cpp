@@ -66,6 +66,7 @@
 #include <PostProcessing/SMAANeighborhoodBlendingPass.h>
 #include <PostProcessing/SsaoPasses.h>
 #include <PostProcessing/SubsurfaceScatteringPass.h>
+#include <PostProcessing/TaaPass.h>
 #include <PostProcessing/BloomDownsamplePass.h>
 #include <PostProcessing/BloomBlurPass.h>
 #include <PostProcessing/BloomCompositePass.h>
@@ -225,6 +226,9 @@ namespace AZ
 
             // Add Depth Downsample/Upsample passes
             passSystem->AddPassCreator(Name("DepthUpsamplePass"), &DepthUpsamplePass::Create);
+            
+            // Add Taa Pass
+            passSystem->AddPassCreator(Name("TaaPass"), &TaaPass::Create);
 
             // Add DepthOfField pass
             passSystem->AddPassCreator(Name("DepthOfFieldCompositePass"), &DepthOfFieldCompositePass::Create);
