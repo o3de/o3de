@@ -56,26 +56,6 @@
 #include "UiDynamicScrollBoxComponent.h"
 #include "UiNavigationSettings.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-struct CSystemEventListener_UI
-    : public ISystemEventListener
-{
-public:
-    virtual void OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
-    {
-        switch (event)
-        {
-        case ESYSTEM_EVENT_LEVEL_POST_UNLOAD:
-        {
-            STLALLOCATOR_CLEANUP;
-            break;
-        }
-        }
-    }
-};
-static CSystemEventListener_UI g_system_event_listener_ui;
-
-
 namespace LyShine
 {
     const AZStd::list<AZ::ComponentDescriptor*>* LyShineSystemComponent::m_componentDescriptors = nullptr;
@@ -228,11 +208,6 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineSystemComponent::InitializeSystem()
     {
-        // Not sure if this is still required
-        gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(&g_system_event_listener_ui);
-
-        m_pLyShine = new CLyShine(gEnv->pSystem);
-        gEnv->pLyShine = m_pLyShine;
         BroadcastCursorImagePathname();
     }
 
@@ -395,6 +370,25 @@ namespace LyShine
                 }
             }
         }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    void LyShineSystemComponent::OnCrySystemInitialized(ISystem& system, [[maybe_unused]] const SSystemInitParams& startupParams)
+    {
+#if !defined(AZ_MONOLITHIC_BUILD)
+        // When module is linked dynamically, we must set our gEnv pointer.
+        // When module is linked statically, we'll share the application's gEnv pointer.
+        gEnv = system.GetGlobalEnvironment();
+#endif
+        m_pLyShine = new CLyShine(gEnv->pSystem);
+        gEnv->pLyShine = m_pLyShine;
+    }
+
+    void LyShineSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)
+    {
+        gEnv->pLyShine = nullptr;
+        delete m_pLyShine;
+        m_pLyShine = nullptr;       
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

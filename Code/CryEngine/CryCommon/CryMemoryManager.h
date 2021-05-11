@@ -50,10 +50,6 @@
     #include <AzCore/Memory/OSAllocator.h> // memalign
 #endif // defined(APPLE)
 
-#ifndef STLALLOCATOR_CLEANUP
-#define STLALLOCATOR_CLEANUP
-#endif
-
 #define _CRY_DEFAULT_MALLOC_ALIGNMENT 4
 
 #if CRYMEMORYMANAGER_H_TRAIT_INCLUDE_MALLOC_H
