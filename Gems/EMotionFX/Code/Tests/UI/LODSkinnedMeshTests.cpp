@@ -77,7 +77,6 @@ namespace EMotionFX
             m_app.RegisterComponentDescriptor(AzFramework::TransformComponent::CreateDescriptor());
 
             m_envPrev = gEnv;
-            m_env.pRenderer = &m_data.m_renderer;
             m_env.pSystem = &m_data.m_system;
             gEnv = &m_env;
         }
