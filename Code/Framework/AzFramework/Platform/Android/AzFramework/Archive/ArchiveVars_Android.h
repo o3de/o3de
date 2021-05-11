@@ -13,4 +13,3 @@
 #pragma once
 
 #define STREAM_CACHE_DEFAULT 0
-#define FRONTEND_SHADER_CACHE_DEFAULT 0
