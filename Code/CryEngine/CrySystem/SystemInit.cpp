@@ -2033,7 +2033,7 @@ AZ_POP_DISABLE_WARNING
 #if defined(ENABLE_STATS_AGENT)
             if (m_pCmdLine->FindArg(eCLAT_Pre, "useamblecfg"))
             {
-                LoadConfiguration("amble.cfg", pCVarsWhiteListConfigSink);
+                LoadConfiguration("amble.cfg");
             }
 #endif
         }
@@ -2257,8 +2257,6 @@ AZ_POP_DISABLE_WARNING
             }
         }
         EnableFloatExceptions(g_cvars.sys_float_exceptions);
-
-        MarkThisThreadForDebugging("Main");
     }
 
     InlineInitializationProcessing("CSystem::Init End");
