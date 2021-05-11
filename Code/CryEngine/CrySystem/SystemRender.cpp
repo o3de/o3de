@@ -39,8 +39,6 @@
 #include <ILevelSystem.h>
 #include <LyShine/ILyShine.h>
 
-#include "ThreadInfo.h"
-
 #include <LoadScreenBus.h>
 
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -100,10 +98,6 @@ void CSystem::SynchronousLoadingTick([[maybe_unused]] const char* pFunc, [[maybe
         //UpdateLoadingScreen currently contains a couple of tick functions that need to be called regularly during the synchronous level loading,
         //when the usual engine and game ticks are suspended.
         UpdateLoadingScreen();
-
-#if defined(MAP_LOADING_SLICING)
-        GetISystemScheduler()->SliceAndSleep(pFunc, line);
-#endif
     }
 }
 
@@ -126,14 +120,6 @@ void CSystem::UpdateLoadingScreen()
 #if AZ_LOADSCREENCOMPONENT_ENABLED
     EBUS_EVENT(LoadScreenBus, UpdateAndRender);
 #endif // if AZ_LOADSCREENCOMPONENT_ENABLED
-
-    if (!m_bEditor && !IsQuitting())
-    {
-        if (m_pProgressListener)
-        {
-            m_pProgressListener->OnLoadingProgress(0);
-        }
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

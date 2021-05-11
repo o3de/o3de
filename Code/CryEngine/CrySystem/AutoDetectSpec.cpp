@@ -1044,8 +1044,6 @@ void CSystem::AutoDetectSpec(const bool detectResolution)
     unsigned int numSysCores(1), numProcCores(1);
     Win32SysInspect::GetNumCPUCores(numSysCores, numProcCores);
     CryLogAlways("--- Number of available cores: %d (out of %d)", numProcCores, numSysCores);
-    const int numLogicalProcs = gEnv->pi.numLogicalProcessors;
-    CryLogAlways("--- Number of logical processors: %d", numLogicalProcs);
 
     // get CPU rating
     const int cpuRating = numLogicalProcs >= 8 ? 3 : (numLogicalProcs >= 6 ? 2 : 1);

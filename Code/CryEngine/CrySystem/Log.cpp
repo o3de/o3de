@@ -920,13 +920,7 @@ bool CLog::LogToMainThread(const char* szString, ELogType logType, bool bAdd, SL
         msg.bAdd = bAdd;
         msg.destination = destination;
         msg.logType = logType;
-        // don't try to store the log message for later in case of out of memory, since then its very likely that this allocation
-        // also fails and results in a stack overflow. This way we should at least get a out of memory on-screen message instead of
-        // a not obvious crash
-        if ((gEnv) && (gEnv->bIsOutOfMemory == false))
-        {
-            m_threadSafeMsgQueue.push(msg);
-        }
+        m_threadSafeMsgQueue.push(msg);
         return true;
     }
     return false;
