@@ -126,7 +126,7 @@ namespace AzToolsFramework
     {
         QStylePainter p(this);
 
-        if (IsSectionSeparator())
+        if (IsReorderableRow())
         {
             const QPen linePen(QColor(0x3B3E3F));
             p.setPen(linePen);
@@ -1332,7 +1332,7 @@ namespace AzToolsFramework
         return canBeTopLevel(this);
     }
 
-    bool PropertyRowWidget::IsSectionSeparator() const
+    bool PropertyRowWidget::IsReorderableRow() const
     {
         return CanBeReordered();
     }

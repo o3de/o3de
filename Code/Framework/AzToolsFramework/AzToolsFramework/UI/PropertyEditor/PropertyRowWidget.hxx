@@ -83,7 +83,7 @@ namespace AzToolsFramework
         PropertyRowWidget* GetParentRow() const { return m_parentRow; }
         int GetLevel() const;
         bool IsTopLevel() const;
-        bool IsSectionSeparator() const;
+        bool IsReorderableRow() const;
 
         // Remove the default label and append the text to the name label.
         bool GetAppendDefaultLabelToName();
