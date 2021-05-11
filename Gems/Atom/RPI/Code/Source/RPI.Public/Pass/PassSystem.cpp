@@ -100,9 +100,9 @@ namespace AZ
             m_rootPass->m_flags.m_partOfHierarchy = true;
         }
 
-        void PassSystem::LoadPassTemplateMappings(const AZStd::string& templateMappingPath)
+        bool PassSystem::LoadPassTemplateMappings(const AZStd::string& templateMappingPath)
         {
-            m_passLibrary.LoadPassTemplateMappings(templateMappingPath);
+            return m_passLibrary.LoadPassTemplateMappings(templateMappingPath);
         }
 
         void PassSystem::WriteTemplateToFile(const PassTemplate& passTemplate, AZStd::string_view assetFilePath)
