@@ -118,65 +118,76 @@ class AndroidProjectManifestEnvironment(object):
         :param is_test:                     Indicates if theAzTestRunner application should be run
         """
 
-        if is_test:
-            # The AzTestRunner project.json is located under {engine_root}/Code/Tools/AzTestRunner/Platform/Android/android_project.json
-            project_properties_path = engine_root / 'Code' / 'Tools' / 'AzTestRunner' / 'Platform' / 'Android' / 'android_project.json'
-        else:
-            # The project.json file is located under the game name folder
-            project_properties_path = project_path / 'project.json'
-        # Read and parse the project.json file into a dictionary to process the specific attributes needed for the manifest template
-        project_properties_content = project_properties_path.resolve(strict=True)\
-                                                                             .read_text(encoding=common.DEFAULT_TEXT_READ_ENCODING,
-                                                                                        errors=common.ENCODING_ERROR_HANDLINGS)
-        self.project_path = project_path
+        try:
+            if is_test:
+                # The AzTestRunner project.json is located under {engine_root}/Code/Tools/AzTestRunner/Platform/Android/android_project.json
+                project_properties_path = engine_root / 'Code' / 'Tools' / 'AzTestRunner' / 'Platform' / 'Android' / 'android_project.json'
+                assert project_properties_path.is_file(), f'Missing required android settings file {project_properties_path.resolve()}'
+                project_properties_content = project_properties_path.read_text(encoding=common.DEFAULT_TEXT_READ_ENCODING,
+                                                                               errors=common.ENCODING_ERROR_HANDLINGS)
+                project_json = json.loads(project_properties_content)
 
-        # Extract the key attributes we need to process and build up our environment table
-        project_json = json.loads(project_properties_content)
+                android_settings = project_json['android_settings']
 
-        project_name = project_json.get('project_name')
-        if not project_name:
-            raise common.LmbrCmdError(f"Missing required 'project_name' from project.json for project at '{str(project_path)}'")
-        product_name = project_json.get('product_name', project_name)
+            else:
+                # O3DE projects have both a project.json and an android_project.json files (unless its internal)
+                project_properties_path = project_path / 'project.json'
+                assert project_properties_path.is_file(), f'Missing required project settings file {project_properties_path.resolve()}'
+                project_properties_content = project_properties_path.read_text(encoding=common.DEFAULT_TEXT_READ_ENCODING,
+                                                                               errors=common.ENCODING_ERROR_HANDLINGS)
+                project_json = json.loads(project_properties_content)
 
-        game_project_android_settings = project_json['android_settings']
+                android_project_properties_path = project_path / 'Platform' / 'Android' / 'android_project.json'
+                if android_project_properties_path.is_file():
+                    android_project_properties_content = android_project_properties_path.read_text(encoding=common.DEFAULT_TEXT_READ_ENCODING,
+                                                                                                   errors=common.ENCODING_ERROR_HANDLINGS)
+                    android_project_json = json.loads(android_project_properties_content)
+                    android_settings = android_project_json['android_settings']
+                else:
+                    android_settings = project_json['android_settings']
 
-        package_name = game_project_android_settings["package_name"]
+            self.project_path = project_path
 
-        package_path = package_name.replace('.', '/')
+            project_name = project_json['project_name']
+            product_name = project_json.get('product_name', project_name)
+            package_name = android_settings["package_name"]
+            package_path = package_name.replace('.', '/')
 
-        project_activity = f'{TEST_RUNNER_PROJECT}Activity' if is_test else f'{project_name}Activity'
+            project_activity = f'{TEST_RUNNER_PROJECT}Activity' if is_test else f'{project_name}Activity'
 
-        # Multiview options require special processing
-        multi_window_options = AndroidProjectManifestEnvironment.process_android_multi_window_options(game_project_android_settings)
+            # Multiview options require special processing
+            multi_window_options = AndroidProjectManifestEnvironment.process_android_multi_window_options(android_settings)
 
-        self.internal_dict = {
-            'ANDROID_PACKAGE':                  package_name,
-            'ANDROID_PACKAGE_PATH':             package_path,
-            'ANDROID_VERSION_NUMBER':           game_project_android_settings["version_number"],
-            "ANDROID_VERSION_NAME":             game_project_android_settings["version_name"],
-            "ANDROID_SCREEN_ORIENTATION":       game_project_android_settings["orientation"],
-            'ANDROID_APP_NAME':                 TEST_RUNNER_PROJECT if is_test else product_name,       # external facing name
-            'ANDROID_PROJECT_NAME':             TEST_RUNNER_PROJECT if is_test else project_name,     # internal facing name
-            'ANDROID_PROJECT_ACTIVITY':         project_activity,
-            'ANDROID_LAUNCHER_NAME':            TEST_RUNNER_PROJECT if is_test else ANDROID_LAUNCHER_NAME_PATTERN.format(project_name=project_name),
-            'ANDROID_CONFIG_CHANGES':           multi_window_options['ANDROID_CONFIG_CHANGES'],
-            'ANDROID_APP_PUBLIC_KEY':           game_project_android_settings.get('app_public_key', 'NoKey'),
-            'ANDROID_APP_OBFUSCATOR_SALT':      game_project_android_settings.get('app_obfuscator_salt', ''),
-            'ANDROID_USE_MAIN_OBB':             game_project_android_settings.get('use_main_obb', 'false'),
-            'ANDROID_USE_PATCH_OBB':            game_project_android_settings.get('use_patch_obb', 'false'),
-            'ANDROID_ENABLE_KEEP_SCREEN_ON':    game_project_android_settings.get('enable_keep_screen_on', 'false'),
-            'ANDROID_DISABLE_IMMERSIVE_MODE':   game_project_android_settings.get('disable_immersive_mode', 'false'),
-            'ANDROID_TARGET_SDK_VERSION':       android_sdk_version_number,
-            'ICONS':                            game_project_android_settings.get('icons', None),
-            'SPLASH_SCREEN':                    game_project_android_settings.get('splash_screen', None),
+            self.internal_dict = {
+                'ANDROID_PACKAGE':                  package_name,
+                'ANDROID_PACKAGE_PATH':             package_path,
+                'ANDROID_VERSION_NUMBER':           android_settings["version_number"],
+                "ANDROID_VERSION_NAME":             android_settings["version_name"],
+                "ANDROID_SCREEN_ORIENTATION":       android_settings["orientation"],
+                'ANDROID_APP_NAME':                 TEST_RUNNER_PROJECT if is_test else product_name,       # external facing name
+                'ANDROID_PROJECT_NAME':             TEST_RUNNER_PROJECT if is_test else project_name,     # internal facing name
+                'ANDROID_PROJECT_ACTIVITY':         project_activity,
+                'ANDROID_LAUNCHER_NAME':            TEST_RUNNER_PROJECT if is_test else ANDROID_LAUNCHER_NAME_PATTERN.format(project_name=project_name),
+                'ANDROID_CONFIG_CHANGES':           multi_window_options['ANDROID_CONFIG_CHANGES'],
+                'ANDROID_APP_PUBLIC_KEY':           android_settings.get('app_public_key', 'NoKey'),
+                'ANDROID_APP_OBFUSCATOR_SALT':      android_settings.get('app_obfuscator_salt', ''),
+                'ANDROID_USE_MAIN_OBB':             android_settings.get('use_main_obb', 'false'),
+                'ANDROID_USE_PATCH_OBB':            android_settings.get('use_patch_obb', 'false'),
+                'ANDROID_ENABLE_KEEP_SCREEN_ON':    android_settings.get('enable_keep_screen_on', 'false'),
+                'ANDROID_DISABLE_IMMERSIVE_MODE':   android_settings.get('disable_immersive_mode', 'false'),
+                'ANDROID_TARGET_SDK_VERSION':       android_sdk_version_number,
+                'ICONS':                            android_settings.get('icons', None),
+                'SPLASH_SCREEN':                    android_settings.get('splash_screen', None),
 
-            'ANDROID_MULTI_WINDOW':             multi_window_options['ANDROID_MULTI_WINDOW'],
-            'ANDROID_MULTI_WINDOW_PROPERTIES':  multi_window_options['ANDROID_MULTI_WINDOW_PROPERTIES'],
+                'ANDROID_MULTI_WINDOW':             multi_window_options['ANDROID_MULTI_WINDOW'],
+                'ANDROID_MULTI_WINDOW_PROPERTIES':  multi_window_options['ANDROID_MULTI_WINDOW_PROPERTIES'],
 
-            'SAMSUNG_DEX_KEEP_ALIVE':           multi_window_options['SAMSUNG_DEX_KEEP_ALIVE'],
-            'SAMSUNG_DEX_LAUNCH_WIDTH':         multi_window_options['SAMSUNG_DEX_LAUNCH_WIDTH'],
-            'SAMSUNG_DEX_LAUNCH_HEIGHT':        multi_window_options['SAMSUNG_DEX_LAUNCH_HEIGHT']
-        }
+                'SAMSUNG_DEX_KEEP_ALIVE':           multi_window_options['SAMSUNG_DEX_KEEP_ALIVE'],
+                'SAMSUNG_DEX_LAUNCH_WIDTH':         multi_window_options['SAMSUNG_DEX_LAUNCH_WIDTH'],
+                'SAMSUNG_DEX_LAUNCH_HEIGHT':        multi_window_options['SAMSUNG_DEX_LAUNCH_HEIGHT']
+            }
+        except KeyError as e:
+            raise common.LmbrCmdError(f"Missing key from android project settings for project at {project_path}:'{e}' ")
 
     def __getitem__(self, item):
         return self.internal_dict.get(item)
