@@ -272,8 +272,8 @@ namespace AZ
 
             CommandLineArgumentSettings();
 
-            //! Callback function which is invoked to determine how to split a line into the JSON path
-            //! JSON value
+            //! Callback function which is invoked to determine how to split a command line argument
+            //! into a JSON path and a JSON value
             using DelimiterFunc = AZStd::function<JsonPathValue(AZStd::string_view line)>;
             DelimiterFunc m_delimiterFunc;
         };

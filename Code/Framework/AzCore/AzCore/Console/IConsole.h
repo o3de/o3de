@@ -151,9 +151,9 @@ namespace AZ
 
         //! Register a notification event handler with the Settings Registry
         //! That is responsible for updating console commands whenever
-        //! a key underneath "/Amazon/AzCore/Runtime/ConsoleCommands"
-        //! @param reference to Settings Registry to registry Notifier with
-        virtual void RegisterCommandInvokerWithSettingsRegistry(AZ::SettingsRegistryInterface&) = 0;
+        //! a key is found underneath the "/Amazon/AzCore/Runtime/ConsoleCommands" JSON entry
+        //! @param Settings Registry reference to register notifier with
+        virtual void RegisterCommandInvokerWithSettingsRegistry(AZ::SettingsRegistryInterface& settingsRegistry) = 0;
 
         AZ_DISABLE_COPY_MOVE(IConsole);
 
