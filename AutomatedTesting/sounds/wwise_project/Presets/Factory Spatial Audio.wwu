@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<WwiseDocument Type="WorkUnit" ID="{F7AD8DCD-60E6-4873-9A71-65A083815696}" SchemaVersion="97">
+<WwiseDocument Type="WorkUnit" ID="{F7AD8DCD-60E6-4873-9A71-65A083815696}" SchemaVersion="103">
 	<Presets>
 		<WorkUnit Name="Factory Spatial Audio" ID="{F7AD8DCD-60E6-4873-9A71-65A083815696}" PersistMode="Standalone">
 			<ChildrenList>
@@ -17,6 +17,7 @@
 							</Custom>
 						</Reference>
 					</ReferenceList>
+					<ObjectLists/>
 				</AuxBus>
 			</ChildrenList>
 		</WorkUnit>
