@@ -84,7 +84,7 @@ class TestAutomation(TestAutomationBase):
         file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
         from . import OnEntityActivatedDeactivated_PrintMessage as test_module
         self._run_test(request, workspace, editor, test_module)
-    
+
     @pytest.mark.test_case_id("T92562993")
     def test_NodePalette_ClearSelection(self, request, workspace, editor, launcher_platform, project):
         from . import NodePalette_ClearSelection as test_module
@@ -122,7 +122,7 @@ class TestAutomation(TestAutomationBase):
     def test_NodeInspector_RenameVariable(self, request, workspace, editor, launcher_platform, project):
         from . import NodeInspector_RenameVariable as test_module
         self._run_test(request, workspace, editor, test_module)
-        
+
     @pytest.mark.test_case_id("T92569137")
     def test_Debugging_TargetMultipleGraphs(self, request, workspace, editor, launcher_platform, project):
         from . import Debugging_TargetMultipleGraphs as test_module
@@ -195,13 +195,17 @@ class TestAutomation(TestAutomationBase):
     def test_NodeCategory_ExpandOnClick(self, request, workspace, editor, launcher_platform):
         from . import NodeCategory_ExpandOnClick as test_module
         self._run_test(request, workspace, editor, test_module)
-    
+
     def test_NodePalette_SearchText_Deletion(self, request, workspace, editor, launcher_platform):
         from . import NodePalette_SearchText_Deletion as test_module
         self._run_test(request, workspace, editor, test_module)
 
     def test_VariableManager_UnpinVariableType_Works(self, request, workspace, editor, launcher_platform):
         from . import VariableManager_UnpinVariableType_Works as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_Node_HappyPath_DuplicateNode(self, request, workspace, editor, launcher_platform):
+        from . import Node_HappyPath_DuplicateNode as test_module
         self._run_test(request, workspace, editor, test_module)
 
 # NOTE: We had to use hydra_test_utils.py, as TestAutomationBase run_test method
