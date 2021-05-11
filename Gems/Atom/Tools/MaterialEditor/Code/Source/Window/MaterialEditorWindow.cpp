@@ -73,7 +73,7 @@ namespace MaterialEditor
         // set the style sheet for RPE highlighting and other styling
         AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral(":/MaterialEditor.qss"));
 
-        QApplication::setWindowIcon(QIcon(":/Icons/materialtype.svg"));
+        QApplication::setWindowIcon(QIcon(":/Icons/materialeditor.svg"));
 
         AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
         if (!apiName.IsEmpty())
