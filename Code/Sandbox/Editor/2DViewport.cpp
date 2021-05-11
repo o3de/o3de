@@ -661,7 +661,6 @@ void Q2DViewport::Draw(DisplayContext& dc)
 void Q2DViewport::DrawGrid(DisplayContext& dc, bool bNoXNumbers)
 {
     float gridSize = 1.0f;
-
     if (gridSize < 0.00001f)
     {
         return;
@@ -692,8 +691,6 @@ void Q2DViewport::DrawGrid(DisplayContext& dc, bool bNoXNumbers)
         pixelsPerGrid = gridSize * fScale;
         while (pixelsPerGrid <= 5 && griditers++ < 20)
         {
-            m_fGridZoom *= 1.0f;
-            gridSize = gridSize * 1.0f;
             pixelsPerGrid = gridSize * fScale;
         }
     }
