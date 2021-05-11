@@ -41,7 +41,7 @@ namespace AZ
             AZ::IO::FixedMaxPath fullFilePath(AZStd::string_view{m_fileName});
             if (fullFilePath.HasFilename())
             {
-                AZ::IO::FixedMaxPathString fileNamePath = path.Filename();
+                AZ::IO::FixedMaxPathString fileNamePath = fullFilePath.Filename();
                 if (!fileNamePath.starts_with(AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX))
                 {
                     fileNamePath = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX + fileNamePath;
@@ -52,7 +52,7 @@ namespace AZ
                     fileNamePath += AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
                 }
 
-                fullFilePath.ReplaceFilename(fileNamePath);
+                fullFilePath.ReplaceFilename(AZStd::string_view(fileNamePath));
             }
 
             Platform::ConstructModuleFullFileName(fullFilePath);
