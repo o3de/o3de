@@ -18,8 +18,6 @@ namespace AZ
     {
         namespace PencilMap 
         {
-            // Please refer to "https://wiki.agscollab.com/display/ATOM/Pencil+Map" for details.
-
             // PencilMap 35mm Film
             static constexpr unsigned int TextureWidth = 128;
             static constexpr unsigned int TextureHeight = 64;

@@ -42,7 +42,6 @@ namespace AzFramework
 
 struct IConsoleCmdArgs;
 class CServerThrottle;
-struct ICryFactoryRegistryImpl;
 struct IZLibCompressor;
 class CWatchdogThread;
 class CThreadManager;
@@ -486,8 +485,6 @@ public:
     virtual IXmlUtils* GetXmlUtils();
     //////////////////////////////////////////////////////////////////////////
 
-    virtual Serialization::IArchiveHost* GetArchiveHost() const { return m_pArchiveHost; }
-
     void SetViewCamera(CCamera& Camera){ m_ViewCamera = Camera; }
     CCamera& GetViewCamera() { return m_ViewCamera; }
 
@@ -584,15 +581,11 @@ public:
     // static as memReplay needs it before CSystem has been setup - expose a ISystem interface to this function if you need it outside CrySystem
     static  void debug_GetCallStackRaw(void** callstack, uint32& callstackLength);
 
-    virtual ICryFactoryRegistry* GetCryFactoryRegistry() const;
-
 public:
 #if !defined(RELEASE)
     void SetVersionInfo(const char* const szVersion);
 #endif
 
-    virtual bool InitializeEngineModule(const char* dllName, const char* moduleClassName, const SSystemInitParams& initParams) override;
-    virtual bool UnloadEngineModule(const char* dllName, const char* moduleClassName);
     virtual const IImageHandler* GetImageHandler() const override { return m_imageHandler.get(); }
 
     void ShutdownModuleLibraries();
@@ -808,8 +801,6 @@ private: // ------------------------------------------------------
 
     // XML Utils interface.
     class CXmlUtils* m_pXMLUtils;
-
-    Serialization::IArchiveHost* m_pArchiveHost;
 
     int m_iApplicationInstance;
 

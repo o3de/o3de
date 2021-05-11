@@ -19,9 +19,14 @@ set(FILES
     Source/FirstTimeUse.h
     Source/FirstTimeUse.cpp
     Source/FirstTimeUse.ui
+    Source/ProjectInfo.h
+    Source/ProjectInfo.cpp
     Source/ProjectManagerWindow.h
     Source/ProjectManagerWindow.cpp
     Source/ProjectManagerWindow.ui
+    Source/PythonBindings.h
+    Source/PythonBindings.cpp
+    Source/PythonBindingsInterface.h
     Source/NewProjectSettings.h
     Source/NewProjectSettings.cpp
     Source/NewProjectSettings.ui
@@ -34,6 +39,10 @@ set(FILES
     Source/EngineSettings.h
     Source/EngineSettings.cpp
     Source/EngineSettings.ui
+    Source/LinkWidget.h
+    Source/LinkWidget.cpp
+    Source/TagWidget.h
+    Source/TagWidget.cpp
     Source/GemCatalog/GemCatalog.h
     Source/GemCatalog/GemCatalog.cpp
     Source/GemCatalog/GemInfo.h

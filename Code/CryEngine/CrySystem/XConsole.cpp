@@ -28,7 +28,6 @@
 #include <ISystem.h>
 #include <ILog.h>
 #include <IProcess.h>
-#include <IRemoteCommand.h>
 #include <IRenderAuxGeom.h>
 #include "ConsoleHelpGen.h"         // CConsoleHelpGen
 

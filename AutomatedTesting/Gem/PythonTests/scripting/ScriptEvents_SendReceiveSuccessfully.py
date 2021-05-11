@@ -10,7 +10,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: T92567320
 Test Case Title: Script Events: Can send and receive a script event successfully
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92567320
 """
 
 

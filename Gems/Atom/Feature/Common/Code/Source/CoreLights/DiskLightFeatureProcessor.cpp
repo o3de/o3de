@@ -380,7 +380,7 @@ namespace AZ
             const float invRadiusSquared = diskLight.m_invAttenuationRadiusSquared;
             if (invRadiusSquared <= 0.f)
             {
-                AZ_Assert(false, "Attenuation radius have to be set before use the light.");
+                AZ_Assert(false, "Attenuation radius must be set before using the light.");
                 return;
             }
             const float attenuationRadius = sqrtf(1.f / invRadiusSquared);

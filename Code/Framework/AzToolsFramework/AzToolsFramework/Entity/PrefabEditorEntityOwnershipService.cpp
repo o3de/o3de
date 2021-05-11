@@ -13,6 +13,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Script/ScriptSystemBus.h>
+#include <AzCore/Serialization/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
@@ -334,6 +335,65 @@ namespace AzToolsFramework
         m_validateEntitiesCallback = AZStd::move(validateEntitiesCallback);
     }
 
+    void PrefabEditorEntityOwnershipService::LoadReferencedAssets(AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets)
+    {
+        // Start our loads on all assets by calling GetAsset from the AssetManager
+        for (AZ::Data::Asset<AZ::Data::AssetData>& asset : referencedAssets)
+        {
+            if (!asset.GetId().IsValid())
+            {
+                AZ_Error("Prefab", false, "Invalid asset found referenced in scene while entering game mode");
+                continue;
+            }
+
+            const AZ::Data::AssetLoadBehavior loadBehavior = asset.GetAutoLoadBehavior();
+
+            if (loadBehavior == AZ::Data::AssetLoadBehavior::NoLoad)
+            {
+                continue;
+            }
+
+            AZ::Data::AssetId assetId = asset.GetId();
+            AZ::Data::AssetType assetType = asset.GetType();
+
+            asset = AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, loadBehavior);
+
+            if (!asset.GetId().IsValid())
+            {
+                AZ_Error("Prefab", false, "Invalid asset found referenced in scene while entering game mode");
+                continue;
+            }
+        }
+
+        // For all Preload assets we block until they're ready
+        // We do this as a seperate pass so that we don't interrupt queuing up all other asset loads
+        for (AZ::Data::Asset<AZ::Data::AssetData>& asset : referencedAssets)
+        {
+            if (!asset.GetId().IsValid())
+            {
+                AZ_Error("Prefab", false, "Invalid asset found referenced in scene while entering game mode");
+                continue;
+            }
+
+            const AZ::Data::AssetLoadBehavior loadBehavior = asset.GetAutoLoadBehavior();
+
+            if (loadBehavior != AZ::Data::AssetLoadBehavior::PreLoad)
+            {
+                continue;
+            }
+
+            asset.BlockUntilLoadComplete();
+
+            if (asset.IsError())
+            {
+                AZ_Error("Prefab", false, "Asset with id %s failed to preload while entering game mode",
+                    asset.GetId().ToString<AZStd::string>().c_str());
+
+                continue;
+            }
+        }
+    }
+
     void PrefabEditorEntityOwnershipService::StartPlayInEditor()
     {
         // This is a workaround until the replacement for GameEntityContext is done
@@ -373,16 +433,21 @@ namespace AzToolsFramework
                                 rootSpawnableIndex = m_playInEditorData.m_assets.size();
                             }
 
+                            LoadReferencedAssets(product.GetReferencedAssets());
+
                             AZ::Data::AssetInfo info;
                             info.m_assetId = product.GetAsset().GetId();
                             info.m_assetType = product.GetAssetType();
                             info.m_relativePath = product.GetId();
 
                             AZ::Data::AssetCatalogRequestBus::Broadcast(
-                                &AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, product.GetAsset().GetId(), info);
+                                &AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, info.m_assetId, info);
                             m_playInEditorData.m_assets.emplace_back(product.ReleaseAsset().release(), AZ::Data::AssetLoadBehavior::Default);
                         }
 
+                        // make sure that PRE_NOTIFY assets get their notify before we activate, so that we can preserve the order of 
+                        // (load asset) -> (notify) -> (init) -> (activate)
+                        AZ::Data::AssetManager::Instance().DispatchEvents();
 
                         if (rootSpawnableIndex != NoRootSpawnable)
                         {

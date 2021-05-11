@@ -55,13 +55,7 @@ set(FILES
     SystemScheduler.h
     UnixConsole.h
     SystemInit.h
-    Serialization/MemoryReader.h
     XML/ReadWriteXMLSink.h
-    Serialization/ArchiveHost.h
-    Serialization/MemoryWriter.h
-    Serialization/JSONIArchive.h
-    Serialization/JSONOArchive.h
-    Serialization/BinArchive.h
     AZCrySystemInitLogSink.h
     AZCoreLogSink.h
     CmdLine.h
@@ -127,10 +121,6 @@ set(FILES
     ThreadConfigManager.h
     ThreadConfigManager.cpp
     SystemThreading.cpp
-    ExtensionSystem/CryFactoryRegistryImpl.cpp
-    ExtensionSystem/CryFactoryRegistryImpl.h
-    ExtensionSystem/TestCases/TestExtensions.cpp
-    ExtensionSystem/TestCases/TestExtensions.h
     ZLibCompressor.cpp
     ZLibCompressor.h
     SoftCode/SoftCodeMgr.cpp
@@ -141,14 +131,6 @@ set(FILES
     RemoteConsole/RemoteConsole.h
     RemoteConsole/RemoteConsole_impl.inl
     RemoteConsole/RemoteConsole_none.inl
-    ServiceNetwork.cpp
-    ServiceNetwork.h
-    RemoteCommand.cpp
-    RemoteCommand.h
-    RemoteCommandHelpers.cpp
-    RemoteCommandHelpers.h
-    RemoteCommandServer.cpp
-    RemoteCommandClient.cpp
     ZLibDecompressor.h
     ZLibDecompressor.cpp
     LZ4Decompressor.h
@@ -165,17 +147,6 @@ set(FILES
     ViewSystem/ViewSystem.h
     ZStdDecompressor.h
     ZStdDecompressor.cpp
-    Serialization/ArchiveHost.cpp
-    Serialization/BinArchive.cpp
-    Serialization/JSONIArchive.cpp
-    Serialization/JSONOArchive.cpp
-    Serialization/MemoryReader.cpp
-    Serialization/MemoryWriter.cpp
-    Serialization/Token.h
-    Serialization/XmlIArchive.cpp
-    Serialization/XmlIArchive.h
-    Serialization/XmlOArchive.cpp
-    Serialization/XmlOArchive.h
     StreamEngine/StreamAsyncFileRequest.cpp
     StreamEngine/StreamAsyncFileRequest_Jobs.cpp
     StreamEngine/StreamEngine.cpp
