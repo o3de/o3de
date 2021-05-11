@@ -878,6 +878,8 @@ namespace AzFramework
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);
         if (serializeContext)
         {
+            serializeContext->ClassDeprecate("NetBindable", "{80206665-D429-4703-B42E-94434F82F381}");
+
             serializeContext->Class<TransformComponent, AZ::Component>()
                 ->Version(4, &TransformComponentVersionConverter)
                 ->Field("Parent", &TransformComponent::m_parentId)
