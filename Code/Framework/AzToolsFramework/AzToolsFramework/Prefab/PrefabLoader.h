@@ -134,6 +134,8 @@ namespace AzToolsFramework
                 TemplateId targetTemplateId,
                 AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet);
 
+            bool SanitizeLoadedTemplate(PrefabDomReference loadedTemplateDom);
+
             //! Retrieves Dom content and its path from a template id
             AZStd::optional<AZStd::pair<PrefabDom, AZ::IO::Path>> StoreTemplateIntoFileFormat(TemplateId templateId);
 

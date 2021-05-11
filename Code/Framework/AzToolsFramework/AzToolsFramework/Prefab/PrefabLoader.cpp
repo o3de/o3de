@@ -195,6 +195,9 @@ namespace AzToolsFramework
                     }
                 }
             }
+
+            isLoadedWithErrors |= SanitizeLoadedTemplate(newTemplate.GetPrefabDom());
+
             newTemplate.MarkAsLoadedWithErrors(isLoadedWithErrors);
 
             // Un-mark the file as being in progress.
@@ -274,6 +277,29 @@ namespace AzToolsFramework
 
             // Let the new Template carry up the error flag of its nested Prefab.
             return !nestedTemplateReference->get().IsLoadedWithErrors();
+        }
+
+        bool PrefabLoader::SanitizeLoadedTemplate(PrefabDomReference loadedTemplateDom)
+        {
+            Instance loadedPrefabInstance;
+            if (!PrefabDomUtils::LoadInstanceFromPrefabDom(loadedPrefabInstance, loadedTemplateDom->get()))
+            {
+                return false;
+            }
+
+            PrefabDom storedPrefabDom;
+            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, storedPrefabDom))
+            {
+                return false;
+            }
+
+            if (AZ::JsonSerialization::Compare(loadedTemplateDom->get(), storedPrefabDom) !=
+                AZ::JsonSerializerCompareResult::Equal)
+            {
+                loadedTemplateDom->get().CopyFrom(storedPrefabDom, loadedTemplateDom->get().GetAllocator());
+            }
+
+            return true;
         }
 
         bool PrefabLoader::SaveTemplate(TemplateId templateId)
