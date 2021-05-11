@@ -35,7 +35,7 @@ namespace AzToolsFramework
 
             explicit InstanceUpdateExecutor(int instanceCountToUpdateInBatch = 0);
 
-            void AddTemplateInstancesToQueue(TemplateId instanceTemplateId) override;
+            void AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt) override;
             bool UpdateTemplateInstancesInQueue() override;
 
             void RegisterInstanceUpdateExecutorInterface();

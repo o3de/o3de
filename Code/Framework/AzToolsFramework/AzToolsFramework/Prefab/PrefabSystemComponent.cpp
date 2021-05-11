@@ -141,8 +141,10 @@ namespace AzToolsFramework
             return newInstance;
         }
 
-        void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId)
+        void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId, InstanceOptionalReference instanceToExclude)
         {
+            UpdatePrefabInstances(templateId, instanceToExclude);
+
             auto templateIdToLinkIdsIterator = m_templateToLinkIdsMap.find(templateId);
             if (templateIdToLinkIdsIterator != m_templateToLinkIdsMap.end())
             {
@@ -174,9 +176,9 @@ namespace AzToolsFramework
             }
         }
 
-        void PrefabSystemComponent::UpdatePrefabInstances(const TemplateId& templateId)
+        void PrefabSystemComponent::UpdatePrefabInstances(const TemplateId& templateId, InstanceOptionalReference instanceToExclude)
         {
-            m_instanceUpdateExecutor.AddTemplateInstancesToQueue(templateId);
+            m_instanceUpdateExecutor.AddTemplateInstancesToQueue(templateId, instanceToExclude);
         }
 
         void PrefabSystemComponent::UpdateLinkedInstances(AZStd::queue<LinkIds>& linkIdsQueue)
