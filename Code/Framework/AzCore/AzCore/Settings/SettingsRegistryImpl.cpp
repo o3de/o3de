@@ -11,6 +11,7 @@
 */
 
 #include <cctype>
+#include <cerrno>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/JSON/error/en.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
