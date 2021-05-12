@@ -41,7 +41,7 @@ namespace AZ
             AZ::IO::FixedMaxPath fullFilePath(AZStd::string_view{m_fileName});
             if (fullFilePath.HasFilename())
             {
-                AZ::IO::FixedMaxPathString fileNamePath = fullFilePath.Filename();
+                AZ::IO::FixedMaxPathString fileNamePath{fullFilePath.Filename().Native()};
                 if (!fileNamePath.starts_with(AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX))
                 {
                     fileNamePath = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX + fileNamePath;
