@@ -27,8 +27,6 @@
 
 #include "SpriteBorderEditorCommon.h"
 
-#include <IResourceCompilerHelper.h>
-
 #include <LmbrCentral/Rendering/MaterialAsset.h>
 
 #include <QApplication>
