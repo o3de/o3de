@@ -590,7 +590,7 @@ namespace CommandSystem
         }
 
         // add the motion event and check if everything worked fine
-        mMotionEventNr = eventTrack->AddEvent(m_startTime, m_endTime, AZStd::move(m_eventDatas.value_or(EMotionFX::EventDataSet())));
+        mMotionEventNr = eventTrack->AddEvent(m_startTime, m_endTime, EMotionFX::EventDataSet{m_eventDatas});
 
         if (mMotionEventNr == MCORE_INVALIDINDEX32)
         {

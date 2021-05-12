@@ -152,7 +152,7 @@ namespace CommandSystem
     public:
         AZStd::string m_eventTrackName;
         AZStd::optional<AZStd::string> m_serializedEventData;
-        AZStd::optional<EMotionFX::EventDataSet> m_eventDatas;
+        EMotionFX::EventDataSet m_eventDatas;
         float m_startTime = 0.0f;
         float m_endTime = 0.0f;
         size_t mMotionEventNr;
