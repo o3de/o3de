@@ -101,6 +101,20 @@ namespace AzToolsFramework
             };
 
             /**
+             * Gets a set of all the template source paths in the given dom.
+             * @param prefabDom The DOM to get the template source paths from.
+             * @param templateSourcePaths The set of template source paths to populate.
+             */
+            void GetTemplateSourcePaths(const PrefabDomValue& prefabDom, AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths);
+
+            /**
+             * Gets the instances DOM value from the given prefab DOM.
+             * 
+             * @return the instances DOM value or AZStd::nullopt if it instances can't be found.
+             */
+            PrefabDomValueConstReference GetInstancesValue(const PrefabDomValue& prefabDom);
+
+            /**
              * Prints the contents of the given prefab DOM value to the debug output console in a readable format.
              * @param printMessage The message that will be printed before printing the PrefabDomValue
              * @param prefabDomValue The DOM value to be printed. A 'PrefabDom' type can also be passed into this variable.
