@@ -32,7 +32,7 @@ set(CPACK_GENERATOR "WIX")
 # however, they are unique for each run.  instead, let's do the auto generation here and add it to
 # the cache for run persistence.  an additional cache file will be used to store the information on
 # the original generation so we still have the ability to detect if they are still being used.
-set(_guid_cache_file "${CMAKE_BINARY_DIR}/installer/wix_guid_cache.cmake")
+set(_guid_cache_file "${CPACK_BINARY_DIR}/wix_guid_cache.cmake")
 if(NOT EXISTS ${_guid_cache_file})
     set(_wix_guid_namespace "6D43F57A-2917-4AD9-B758-1F13CDB08593")
 
@@ -89,4 +89,8 @@ endif()
 set(CPACK_WIX_PRODUCT_GUID ${LY_WIX_PRODUCT_GUID})
 set(CPACK_WIX_UPGRADE_GUID ${LY_WIX_UPGRADE_GUID})
 
-set(CPACK_WIX_TEMPLATE "${CMAKE_SOURCE_DIR}/cmake/Platform/Windows/PackagingTemplate.wxs.in")
+set(CPACK_WIX_TEMPLATE "${CPACK_SOURCE_DIR}/Platform/Windows/PackagingTemplate.wxs.in")
+
+set(CPACK_POST_BUILD_SCRIPTS
+    ${CPACK_SOURCE_DIR}/Platform/Windows/PackagingPostBuild.cmake
+)

@@ -13,6 +13,30 @@ if(NOT PAL_TRAIT_BUILD_CPACK_SUPPORTED)
     return()
 endif()
 
+# set the common cpack variables first so they are accessible via configure_file
+# when the platforms specific properties are applied below
+set(LY_INSTALLER_DOWNLOAD_URL "" CACHE PATH "URL embded into the installer to download additional artifacts")
+
+set(CPACK_PACKAGE_VENDOR "${PROJECT_NAME}")
+set(CPACK_PACKAGE_VERSION "${LY_VERSION_STRING}")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installation Tool")
+
+string(TOLOWER ${PROJECT_NAME} _project_name_lower)
+set(CPACK_PACKAGE_FILE_NAME "${_project_name_lower}_${LY_VERSION_STRING}_installer")
+
+set(DEFAULT_LICENSE_NAME "Apache-2.0")
+set(DEFAULT_LICENSE_FILE "${CMAKE_SOURCE_DIR}/LICENSE.txt")
+
+set(CPACK_RESOURCE_FILE_LICENSE ${DEFAULT_LICENSE_FILE})
+
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_VENDOR}/${CPACK_PACKAGE_VERSION}")
+
+# custom cpack cache variables for use in pre/post build scripts
+set(CPACK_SOURCE_DIR ${CMAKE_SOURCE_DIR}/cmake)
+set(CPACK_BINARY_DIR ${CMAKE_BINARY_DIR}/installer)
+set(CPACK_DOWNLOAD_URL ${LY_INSTALLER_DOWNLOAD_URL})
+
+# attempt to apply platform specific settings
 ly_get_absolute_pal_filename(pal_dir ${CMAKE_SOURCE_DIR}/cmake/Platform/${PAL_HOST_PLATFORM_NAME})
 include(${pal_dir}/Packaging_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 
@@ -20,20 +44,6 @@ include(${pal_dir}/Packaging_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 if(NOT CPACK_GENERATOR)
     return()
 endif()
-
-set(CPACK_PACKAGE_VENDOR "${PROJECT_NAME}")
-set(CPACK_PACKAGE_VERSION "${LY_VERSION_STRING}")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installation Tool")
-
-string(TOLOWER ${PROJECT_NAME} _project_name_lower)
-set(CPACK_PACKAGE_FILE_NAME "${_project_name_lower}_installer")
-
-set(DEFAULT_LICENSE_NAME "Apache-2.0")
-set(DEFAULT_LICENSE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
-
-set(CPACK_RESOURCE_FILE_LICENSE ${DEFAULT_LICENSE_FILE})
-
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_VENDOR}/${CPACK_PACKAGE_VERSION}")
 
 # IMPORTANT: required to be included AFTER setting all property overrides
 include(CPack REQUIRED)
