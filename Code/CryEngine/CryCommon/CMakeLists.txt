@@ -9,23 +9,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
-ly_get_pal_tool_dirs(pal_tool_dirs ${CMAKE_CURRENT_LIST_DIR}/Platform)
-
 ly_add_target(
     NAME CryCommon STATIC
     NAMESPACE Legacy
     FILES_CMAKE
         crycommon_files.cmake
-        ${pal_dir}/crycommon_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
-    PLATFORM_INCLUDE_FILES
-        ${pal_dir}/crycommon_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             .         # Lots of code without CryCommon/
             ..        # Dangerous since exports CryEngine's path (client code can do CrySystem/ without depending on that target)
-            ${pal_dir}
-            ${pal_tool_dirs}
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore
