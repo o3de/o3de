@@ -76,8 +76,14 @@ class TestAutomation(TestAutomationBase):
         from . import ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage as test_module
         self._run_test(request, workspace, editor, test_module)
 
+<<<<<<< HEAD
     def test_NodePalette_HappyPath_ClearSelection(self, request, workspace, editor, launcher_platform, project):
         from . import NodePalette_HappyPath_ClearSelection as test_module
+=======
+    @pytest.mark.test_case_id("T92562993")
+    def test_NodePalette_ClearSelection(self, request, workspace, editor, launcher_platform, project):
+        from . import NodePalette_ClearSelection as test_module
+>>>>>>> main
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.parametrize("level", ["tmp_level"])
@@ -111,6 +117,11 @@ class TestAutomation(TestAutomationBase):
 
     def test_Debugger_HappyPath_TargetMultipleGraphs(self, request, workspace, editor, launcher_platform, project):
         from . import Debugger_HappyPath_TargetMultipleGraphs as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    @pytest.mark.test_case_id("T92569137")
+    def test_Debugging_TargetMultipleGraphs(self, request, workspace, editor, launcher_platform, project):
+        from . import Debugging_TargetMultipleGraphs as test_module
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.parametrize("level", ["tmp_level"])
@@ -173,13 +184,17 @@ class TestAutomation(TestAutomationBase):
     def test_NodeCategory_ExpandOnClick(self, request, workspace, editor, launcher_platform):
         from . import NodeCategory_ExpandOnClick as test_module
         self._run_test(request, workspace, editor, test_module)
-    
+
     def test_NodePalette_SearchText_Deletion(self, request, workspace, editor, launcher_platform):
         from . import NodePalette_SearchText_Deletion as test_module
         self._run_test(request, workspace, editor, test_module)
 
     def test_VariableManager_UnpinVariableType_Works(self, request, workspace, editor, launcher_platform):
         from . import VariableManager_UnpinVariableType_Works as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_Node_HappyPath_DuplicateNode(self, request, workspace, editor, launcher_platform):
+        from . import Node_HappyPath_DuplicateNode as test_module
         self._run_test(request, workspace, editor, test_module)
 
 # NOTE: We had to use hydra_test_utils.py, as TestAutomationBase run_test method
