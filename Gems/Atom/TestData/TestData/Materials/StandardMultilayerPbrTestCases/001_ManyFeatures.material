@@ -4,6 +4,10 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
+        "blend": {
+            "enableLayer2": true,
+            "enableLayer3": true
+        },
         "layer1_baseColor": {
             "color": [
                 0.3495536744594574,

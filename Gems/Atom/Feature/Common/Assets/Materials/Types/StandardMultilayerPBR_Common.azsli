@@ -95,6 +95,9 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 
 // ------ Shader Options ----------------------------------------
 
+option bool o_layer2_enabled;
+option bool o_layer3_enabled;
+
 enum class DebugDrawMode { None, BlendSource, DepthMaps };
 option DebugDrawMode o_debugDrawMode;
 
@@ -146,14 +149,27 @@ float3 GetBlendSourceValues(float2 uv)
 {
     float3 blendSourceValues = float3(0,0,0);
 
-    switch(GetFinalBlendMaskSource())
+    if(o_layer2_enabled || o_layer3_enabled)
     {
-        case BlendMaskSource::TextureMap:
-            blendSourceValues = MaterialSrg::m_blendMaskTexture.Sample(MaterialSrg::m_sampler, uv).rgb;
-            break;
-        case BlendMaskSource::VertexColors:
-            blendSourceValues = s_blendMaskFromVertexStream;
-            break;
+        switch(GetFinalBlendMaskSource())
+        {
+            case BlendMaskSource::TextureMap:
+                blendSourceValues = MaterialSrg::m_blendMaskTexture.Sample(MaterialSrg::m_sampler, uv).rgb;
+                break;
+            case BlendMaskSource::VertexColors:
+                blendSourceValues = s_blendMaskFromVertexStream;
+                break;
+        }
+
+        if(!o_layer2_enabled)
+        {
+            blendSourceValues.r = 0.0;
+        }
+
+        if(!o_layer3_enabled)
+        {
+            blendSourceValues.g = 0.0;
+        }
     }
 
     return blendSourceValues;
@@ -167,18 +183,26 @@ float3 GetBlendSourceValues(float2 uv)
 //!         layer3 = b
 float3 GetBlendWeights(float2 uv)
 {
-    float3 blendSourceValues = GetBlendSourceValues(uv);
-
-    // Calculate blend weights such that multiplying and adding them with layer data is equivalent
-    // to lerping between each layer.
-    //     final = lerp(final, layer1, blendWeights.r)
-    //     final = lerp(final, layer2, blendWeights.g)
-    //     final = lerp(final, layer3, blendWeights.b)
-
     float3 blendWeights;
-    blendWeights.b = blendSourceValues.g;
-    blendWeights.g = (1.0 - blendSourceValues.g) * blendSourceValues.r;
-    blendWeights.r = (1.0 - blendSourceValues.g) * (1.0 - blendSourceValues.r);
+    
+    if(o_layer2_enabled || o_layer3_enabled)
+    {
+        float3 blendSourceValues = GetBlendSourceValues(uv);
+
+        // Calculate blend weights such that multiplying and adding them with layer data is equivalent
+        // to lerping between each layer.
+        //     final = lerp(final, layer1, blendWeights.r)
+        //     final = lerp(final, layer2, blendWeights.g)
+        //     final = lerp(final, layer3, blendWeights.b)
+
+        blendWeights.b = blendSourceValues.g;
+        blendWeights.g = (1.0 - blendSourceValues.g) * blendSourceValues.r;
+        blendWeights.r = (1.0 - blendSourceValues.g) * (1.0 - blendSourceValues.r);
+    }
+    else
+    {
+        blendWeights = float3(1,0,0);
+    }
 
     return blendWeights;
 }
@@ -230,7 +254,7 @@ DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
         layerDepthValues.r -= MaterialSrg::m_layer1_m_depthOffset;
     }
     
-    if(o_layer2_o_useDepthMap)
+    if(o_layer2_enabled && o_layer2_o_useDepthMap)
     {
         float2 layerUv = uv;
         if(MaterialSrg::m_parallaxUvIndex == 0)
@@ -243,7 +267,7 @@ DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
         layerDepthValues.g -= MaterialSrg::m_layer2_m_depthOffset;
     }
     
-    if(o_layer3_o_useDepthMap)
+    if(o_layer3_enabled && o_layer3_o_useDepthMap)
     {
         float2 layerUv = uv;
         if(MaterialSrg::m_parallaxUvIndex == 0)

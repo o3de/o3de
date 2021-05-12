@@ -387,19 +387,29 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // ----------- Layer 2 -----------
 
     ProcessedMaterialInputs lightingInputLayer2; 
+    if(o_layer2_enabled)
     {
         StandardMaterialInputs inputs;
         FILL_STANDARD_MATERIAL_INPUTS(inputs, MaterialSrg::m_layer2_, o_layer2_, blendWeights.g)
         lightingInputLayer2 = ProcessStandardMaterialInputs(inputs);
     }
+    else
+    {
+        lightingInputLayer2.InitializeToZero();
+    }
     
     // ----------- Layer 3 -----------
 
     ProcessedMaterialInputs lightingInputLayer3;
+    if(o_layer3_enabled)
     {
         StandardMaterialInputs inputs;
         FILL_STANDARD_MATERIAL_INPUTS(inputs, MaterialSrg::m_layer3_, o_layer3_, blendWeights.b)
         lightingInputLayer3 = ProcessStandardMaterialInputs(inputs);
+    }
+    else
+    {
+        lightingInputLayer3.InitializeToZero();
     }
 
     // ------- Combine all layers ---------
@@ -411,8 +421,14 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // ------- Combine Normals ---------
 
     float3 normalTS = lightingInputLayer1.m_normalTS;
-    normalTS = ReorientTangentSpaceNormal(normalTS, lightingInputLayer2.m_normalTS);
-    normalTS = ReorientTangentSpaceNormal(normalTS, lightingInputLayer3.m_normalTS);
+    if(o_layer2_enabled)
+    {
+        normalTS = ReorientTangentSpaceNormal(normalTS, lightingInputLayer2.m_normalTS);
+    }
+    if(o_layer3_enabled)
+    {
+        normalTS = ReorientTangentSpaceNormal(normalTS, lightingInputLayer3.m_normalTS);
+    }
     // [GFX TODO][ATOM-14591]: This will only work if the normal maps all use the same UV stream. We would need to add support for having them in different UV streams.
     surface.normal = normalize(TangentSpaceToWorld(normalTS, IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex]));
         

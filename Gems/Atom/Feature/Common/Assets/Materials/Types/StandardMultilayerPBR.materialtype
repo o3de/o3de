@@ -296,6 +296,28 @@
             ],
             "blend": [
                 {
+                    "id": "enableLayer2",
+                    "displayName": "Enable Layer 2",
+                    "description": "Whether to enable layer 2.",
+                    "type": "Bool",
+                    "defaultValue": false,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_layer2_enabled"
+                    }
+                }, 
+                {
+                    "id": "enableLayer3",
+                    "displayName": "Enable Layer 3",
+                    "description": "Whether to enable layer 3.",
+                    "type": "Bool",
+                    "defaultValue": false,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_layer3_enabled"
+                    }
+                }, 
+                {
                     "id": "blendSource",
                     "displayName": "Blend Source",
                     "description": "The source to use for defining the blend mask. Note VertexColors mode will still use the texture as a fallback if the mesh does not have a COLOR0 stream.",
