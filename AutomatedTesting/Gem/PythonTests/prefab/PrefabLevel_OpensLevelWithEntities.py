@@ -14,7 +14,7 @@ class Tests():
     find_empty_entity = ("Entity: 'EmptyEntity' found", "Entity: 'EmptyEntity' *not* found in level")
     empty_entity_pos = ("'EmptyEntity' position is at the expected position", "'EmptyEntity' position is *not* at the expected position")
     find_pxentity = ("Entity: 'EntityWithPxCollider' found", "Entity: 'EntityWithPxCollider' *not* found in level")
-    pxentity_component = ("Entity: 'EntityWithPxCollider' has a Physx Collider", "Entity: 'EntityWithPxCollider' has *not* a Physx Collider")
+    pxentity_component = ("Entity: 'EntityWithPxCollider' has a Physx Collider", "Entity: 'EntityWithPxCollider' does *not* have a Physx Collider")
 
 # fmt:on
 
@@ -50,17 +50,19 @@ def PrefabLevel_OpensLevelWithEntities():
         if entityIds[0].IsValid():
             return entityIds[0]
         return None
-
+#Checks for an entity called "EmptyEntity"
     helper.wait_for_condition(lambda: find_entity("EmptyEntity").IsValid(), 5.0)
     empty_entity_id = find_entity("EmptyEntity")
     Report.result(Tests.find_empty_entity, empty_entity_id.IsValid())
 
+# Checks if the EmptyEntity is in the correct position and if it fails, it will provide the expected postion and the actual postion of the entity in the Editor log
     empty_entity_pos = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", empty_entity_id)
     is_at_position = empty_entity_pos.IsClose(EXPECTED_EMPTY_ENTITY_POS)
     Report.result(Tests.empty_entity_pos, is_at_position)
     if not is_at_position:
         Report.info(f'Expected position: {EXPECTED_EMPTY_ENTITY_POS.ToString()}, actual position: {empty_entity_pos.ToString()}')
 
+#Checks for an entity called "EntityWithPxCollider" and if it has the PhysX Collider component
     pxentity = find_entity("EntityWithPxCollider")
     Report.result(Tests.find_pxentity, pxentity.IsValid())
 
