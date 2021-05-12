@@ -58,9 +58,9 @@ namespace AzToolsFramework::ViewportUi
     {
     public:
         //! Creates and registers a cluster with the Viewport UI system.
-        virtual const ClusterId CreateCluster(Alignment align) = 0;
+        virtual const ClusterId CreateCluster(const Alignment align) = 0;
         //! Creates and registers a switcher with the Viewport UI system.
-        virtual const SwitcherId CreateSwitcher(Alignment align) = 0;
+        virtual const SwitcherId CreateSwitcher(const Alignment align) = 0;
         //! Sets the active button of the cluster. This is the button which will display as highlighted.
         virtual void SetClusterActiveButton(ClusterId clusterId, ButtonId buttonId) = 0;
         //! Sets the active button of the switcher. This is the button which has a text label.

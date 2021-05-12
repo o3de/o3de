@@ -31,8 +31,8 @@ namespace AzToolsFramework::ViewportUi
         ~ViewportUiManager() = default;
 
         // ViewportUiRequestBus ...
-        const ClusterId CreateCluster(Alignment align) override;
-        const SwitcherId CreateSwitcher(Alignment align) override;
+        const ClusterId CreateCluster(const Alignment align) override;
+        const SwitcherId CreateSwitcher(const Alignment align) override;
         void SetClusterActiveButton(ClusterId clusterId, ButtonId buttonId) override;
         void SetSwitcherActiveButton(SwitcherId switcherId, ButtonId buttonId) override;
         const ButtonId CreateClusterButton(ClusterId clusterId, const AZStd::string& icon) override;
