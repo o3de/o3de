@@ -87,8 +87,8 @@ function(ly_add_target)
     endif()
     if(NOT ly_add_target_IMPORTED AND NOT ly_add_target_HEADERONLY)
         if(NOT ly_add_target_FILES_CMAKE)
-            message(FATAL_ERROR "You must provide a list of _files.cmake files for the target")
-        endif()
+        message(FATAL_ERROR "You must provide a list of _files.cmake files for the target")
+    endif()
     endif()
 
     # If the GEM_MODULE tag is passed set the normal MODULE argument
@@ -114,11 +114,10 @@ function(ly_add_target)
         set(linking_options ${PAL_LINKOPTION_MODULE})
         set(linking_count "${linking_count}1")
     endif()
-
     if(ly_add_target_HEADERONLY)
         set(linking_options INTERFACE)
         set(linking_count "${linking_count}1")
-    endif()
+        endif()
     if(ly_add_target_EXECUTABLE)
         set(linking_options EXECUTABLE)
         set(linking_count "${linking_count}1")
@@ -127,12 +126,11 @@ function(ly_add_target)
         set(linking_options APPLICATION)
         set(linking_count "${linking_count}1")
     endif()
-    if(ly_add_target_IMPORTED)
-        set(linking_options UNKNOWN IMPORTED GLOBAL)
-        set(linking_count "${linking_count}1")
-    endif()
     if(NOT ("${linking_count}" STREQUAL "1"))
-        message(FATAL_ERROR "More than one of the following options [STATIC | SHARED | MODULE | HEADERONLY | EXECUTABLE | APPLICATION | IMPORTED] was specified and they are mutually exclusive")
+        message(FATAL_ERROR "More than one of the following options [STATIC | SHARED | MODULE | HEADERONLY | EXECUTABLE | APPLICATION ] was specified and they are mutually exclusive")
+    endif()
+    if(ly_add_target_IMPORTED)
+        list(APPEND linking_options IMPORTED GLOBAL)
     endif()
 
     if(ly_add_target_NAMESPACE)
@@ -147,20 +145,22 @@ function(ly_add_target)
             ${ALLFILES} ${ly_add_target_GENERATED_FILES}
         )
         ly_apply_platform_properties(${ly_add_target_NAME})
+        if(ly_add_target_IMPORTED)
+            set_target_properties(${ly_add_target_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+        endif()
     elseif(ly_add_target_APPLICATION)
         add_executable(${ly_add_target_NAME}
             ${PAL_EXECUTABLE_APPLICATION_FLAG}
             ${ALLFILES} ${ly_add_target_GENERATED_FILES}
         )
         ly_apply_platform_properties(${ly_add_target_NAME})
+        if(ly_add_target_IMPORTED)
+            set_target_properties(${ly_add_target_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+        endif()
     elseif(ly_add_target_HEADERONLY)
         add_library(${ly_add_target_NAME}
             ${linking_options}
             ${ALLFILES} ${ly_add_target_GENERATED_FILES}
-        )
-    elseif(ly_add_target_IMPORTED)
-        add_library(${ly_add_target_NAME}
-            ${linking_options}
         )
     else()
         add_library(${ly_add_target_NAME}
