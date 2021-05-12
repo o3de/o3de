@@ -1782,27 +1782,24 @@ namespace AzToolsFramework
 
         m_cachedEntityIdUnderCursor = m_editorHelpers->HandleMouseInteraction(cameraState, mouseInteraction);
 
-        const AzFramework::ClickDetector::ClickEvent clickEvent = mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down
-            ? AzFramework::ClickDetector::ClickEvent::Down
-            : mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Up ? AzFramework::ClickDetector::ClickEvent::Up
-                                                                                   : AzFramework::ClickDetector::ClickEvent::Nil;
+        const AzFramework::ClickDetector::ClickEvent selectClickEvent = [&mouseInteraction] {
+            if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
+            {
+                if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down)
+                {
+                    return AzFramework::ClickDetector::ClickEvent::Down;
+                }
+
+                if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Up)
+                {
+                    return AzFramework::ClickDetector::ClickEvent::Up;
+                }
+            }
+            return AzFramework::ClickDetector::ClickEvent::Nil;
+        }();
 
         m_cursorState.SetCurrentPosition(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
-        const auto clickOutcome = m_clickDetector.DetectClick(clickEvent, m_cursorState.CursorDelta());
-
-        static int frame = 0;
-        if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down)
-        {
-            AZ_Printf("viewport", "down %d", frame);
-        }
-        if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::DoubleClick)
-        {
-            AZ_Printf("viewport", "double click %d", frame);
-        }
-        if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Up)
-        {
-            AZ_Printf("viewport", "up %d", frame);
-        }
+        const auto clickOutcome = m_clickDetector.DetectClick(selectClickEvent, m_cursorState.CursorDelta());
 
         // for entities selected with no bounds of their own (just TransformComponent)
         // check selection against the selection indicator aabb
@@ -1851,11 +1848,6 @@ namespace AzToolsFramework
         // double click to deselect all
         if (Input::DeselectAll(mouseInteraction))
         {
-            if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Up)
-            {
-                AZ_Printf("viewport", "double (deselect) %d", frame);
-            }
-
             // note: even if m_selectedEntityIds is technically empty, we
             // may still have an entity selected that was clicked in the
             // entity outliner - we still want to make sure the deselect all
@@ -2051,15 +2043,9 @@ namespace AzToolsFramework
         // standard toggle selection
         if (Input::IndividualSelect(clickOutcome))
         {
-            if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Up)
-            {
-                AZ_Printf("viewport", "click %d", frame);
-            }
-
             SelectDeselect(entityIdUnderCursor);
         }
 
-        frame++;
         return false;
     }
 
