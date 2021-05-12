@@ -32,6 +32,8 @@ class Surface
     float roughnessA;           //!< Actual roughness value ( a.k.a. "alpha roughness") to be used in microfacet calculations
     float roughnessA2;          //!< Alpha roughness ^ 2 (i.e. roughnessA * roughnessA), used in GGX, cached here for perfromance
 
+    void InitializeToZero();
+
     //! Applies specular anti-aliasing to roughnessA2 
     void ApplySpecularAA();
 
@@ -43,6 +45,18 @@ class Surface
 
 };
 
+void Surface::InitializeToZero()
+{
+    clearCoat.InitializeToZero();
+    transmission.InitializeToZero();
+    position = float3(0,0,0);
+    normal = float3(0,0,0);
+    albedo = float3(0,0,0);
+    specularF0 = float3(0,0,0);
+    roughnessLinear = 0.0f;
+    roughnessA = 0.0f;
+    roughnessA2 = 0.0f;
+}
 
 // Specular Anti-Aliasing technique from this paper:
 // http://www.jp.square-enix.com/tech/library/pdf/ImprovedGeometricSpecularAA.pdf

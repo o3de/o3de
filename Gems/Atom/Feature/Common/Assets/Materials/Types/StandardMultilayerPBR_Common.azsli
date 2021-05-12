@@ -91,24 +91,6 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
         MipFilter = Linear;
     };
 
-    // Parameters for subsurface scattering
-    float m_subsurfaceScatteringFactor;
-    float m_subsurfaceScatteringQuality;
-    float3 m_scatterDistance;
-    Texture2D m_subsurfaceScatteringInfluenceMap;
-    uint m_subsurfaceScatteringInfluenceMapUvIndex;
-
-    // Parameters for transmission
-    
-    // Elements of m_transmissionParams:
-    // Thick object mode: (attenuation coefficient, power, distortion, scale)
-    // Thin  object mode:  (float3 scatter distance, scale)
-    float4 m_transmissionParams;
-    
-    // (float3 TintColor, thickness)
-    float4 m_transmissionTintThickness;
-    Texture2D m_transmissionThicknessMap;
-    uint m_transmissionThicknessMapUvIndex;
 }
 
 // ------ Shader Options ----------------------------------------
