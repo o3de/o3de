@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/std/parallel/atomic.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <ReflectionProbe/ReflectionProbeComponent.h>
@@ -29,6 +30,7 @@ namespace AZ
             , public EditorReflectionProbeBus::Handler
             , private AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
             , private AzFramework::EntityDebugDisplayEventBus::Handler
+            , private AZ::TickBus::Handler
         {
         public:
             using BaseClass = EditorRenderComponentAdapter<ReflectionProbeComponentController, ReflectionProbeComponent, ReflectionProbeComponentConfig>;
@@ -45,7 +47,11 @@ namespace AZ
 
             // AzFramework::EntityDebugDisplayEventBus::Handler overrides
             void DisplayEntityViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
+
         private:
+
+            // AZ::TickBus overrides
+            void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
             // validation
             AZ::Outcome<void, AZStd::string> OnUseBakedCubemapValidate(void* newValue, const AZ::Uuid& valueType);

@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Source/EntityDomains/IEntityDomain.h>
+#include <Include/IEntityDomain.h>
 
 namespace Multiplayer 
 {

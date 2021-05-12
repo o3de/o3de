@@ -28,11 +28,14 @@ namespace AzFramework
 
 namespace SandboxEditor
 {
+    class LegacyViewportCameraControllerInstance;
+    using LegacyViewportCameraController = AzFramework::MultiViewportController<LegacyViewportCameraControllerInstance>;
+
     class LegacyViewportCameraControllerInstance final
-        : public AzFramework::MultiViewportControllerInstanceInterface
+        : public AzFramework::MultiViewportControllerInstanceInterface<LegacyViewportCameraController>
     {
     public:
-        explicit LegacyViewportCameraControllerInstance(AzFramework::ViewportId viewport);
+        LegacyViewportCameraControllerInstance(AzFramework::ViewportId viewport, LegacyViewportCameraController* controller);
 
         bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
         void ResetInputChannels() override;
@@ -69,5 +72,4 @@ namespace SandboxEditor
         bool m_capturingCursor = false;
     };
 
-    using LegacyViewportCameraController = AzFramework::MultiViewportController<LegacyViewportCameraControllerInstance>;
 } //namespace SandboxEditor

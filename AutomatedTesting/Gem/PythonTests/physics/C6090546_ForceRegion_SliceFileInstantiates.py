@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C6090546
 # Test Case Title : Check that a force region slice can be saved and instantiated
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/6090546
+
 
 
 # fmt: off

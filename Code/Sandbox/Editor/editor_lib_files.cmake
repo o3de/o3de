@@ -323,11 +323,6 @@ set(FILES
     AzAssetBrowser/AzAssetBrowserWindow.cpp
     AzAssetBrowser/AzAssetBrowserWindow.h
     AzAssetBrowser/AzAssetBrowserWindow.ui
-    AzAssetBrowser/Preview/LegacyPreviewer.cpp
-    AzAssetBrowser/Preview/LegacyPreviewer.h
-    AzAssetBrowser/Preview/LegacyPreviewer.ui
-    AzAssetBrowser/Preview/LegacyPreviewerFactory.cpp
-    AzAssetBrowser/Preview/LegacyPreviewerFactory.h
     AssetDatabase/AssetDatabaseLocationListener.h
     AssetDatabase/AssetDatabaseLocationListener.cpp
     AssetImporter/AssetImporterManager/AssetImporterDragAndDropHandler.cpp
@@ -362,8 +357,6 @@ set(FILES
     Controls/ConsoleSCB.h
     Controls/ConsoleSCB.ui
     Controls/ConsoleSCB.qrc
-    Controls/CurveEditorCtrl.cpp
-    Controls/CurveEditorCtrl.h
     Controls/FolderTreeCtrl.cpp
     Controls/FolderTreeCtrl.h
     Controls/HotTrackingTreeCtrl.cpp
@@ -376,8 +369,7 @@ set(FILES
     Controls/MultiMonHelper.h
     Controls/NumberCtrl.cpp
     Controls/NumberCtrl.h
-    Controls/PreviewModelCtrl.cpp
-    Controls/PreviewModelCtrl.h
+    Controls/NumberCtrl.h
     Controls/SplineCtrl.cpp
     Controls/SplineCtrl.h
     Controls/SplineCtrlEx.cpp
@@ -386,8 +378,6 @@ set(FILES
     Controls/TextEditorCtrl.h
     Controls/TimelineCtrl.cpp
     Controls/TimelineCtrl.h
-    Controls/TimeOfDaySlider.cpp
-    Controls/TimeOfDaySlider.h
     Controls/WndGridHelper.h
     Controls/ReflectedPropertyControl/PropertyAnimationCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyAnimationCtrl.h
@@ -445,9 +435,6 @@ set(FILES
     GotoPositionDlg.cpp
     GotoPositionDlg.h
     GotoPositionDlg.ui
-    GridSettingsDialog.cpp
-    GridSettingsDialog.h
-    GridSettingsDialog.ui
     InfoBar.cpp
     InfoBar.qrc
     InfoBar.h
@@ -460,8 +447,6 @@ set(FILES
     LevelFileDialog.qrc
     LevelFileDialog.h
     LevelFileDialog.ui
-    PanelPreview.cpp
-    PanelPreview.h
     QuickAccessBar.cpp
     QuickAccessBar.h
     QuickAccessBar.ui
@@ -475,9 +460,6 @@ set(FILES
     SelectLightAnimationDialog.h
     SelectSequenceDialog.cpp
     SelectSequenceDialog.h
-    ShadersDialog.cpp
-    ShadersDialog.h
-    ShadersDialog.ui
     StartupLogoDialog.cpp
     StartupLogoDialog.h
     StartupLogoDialog.ui
@@ -495,10 +477,6 @@ set(FILES
     IconListDialog.ui
     UndoDropDown.cpp
     UndoDropDown.h
-    TimeOfDayDialog.cpp
-    TimeOfDayDialog.h
-    TimeOfDayDialog.ui
-    TimeOfDay.qrc
     DimensionsDialog.cpp
     DimensionsDialog.h
     DimensionsDialog.ui
@@ -528,11 +506,7 @@ set(FILES
     GameResourcesExporter.cpp
     GameExporter.h
     GameResourcesExporter.h
-    Geometry/EdGeometry.cpp
-    Geometry/EdMesh.cpp
     Geometry/TriMesh.cpp
-    Geometry/EdGeometry.h
-    Geometry/EdMesh.h
     Geometry/TriMesh.h
     AboutDialog.h
     AboutDialog.ui
@@ -560,8 +534,6 @@ set(FILES
     LevelIndependentFileMan.h
     LogFileImpl.cpp
     LogFileImpl.h
-    Mission.cpp
-    Mission.h
     Objects/ClassDesc.cpp
     Objects/ClassDesc.h
     Objects/IEntityObjectListener.h
@@ -601,11 +573,6 @@ set(FILES
     QtUI/WaitCursor.cpp
     RenderHelpers/AxisHelper.cpp
     RenderHelpers/AxisHelper.h
-    Serialization.h
-    Serialization/VariableOArchive.cpp
-    Serialization/VariableOArchive.h
-    Serialization/VariableIArchive.cpp
-    Serialization/VariableIArchive.h
     CustomizeKeyboardDialog.h
     CustomizeKeyboardDialog.cpp
     CustomizeKeyboardDialog.ui
@@ -654,8 +621,6 @@ set(FILES
     LightmapCompiler/SimpleTriangleRasterizer.cpp
     ResourceSelectorHost.cpp
     ResourceSelectorHost.h
-    ThumbnailGenerator.cpp
-    ThumbnailGenerator.h
     ToolBox.cpp
     TrackViewNewSequenceDialog.cpp
     TrackViewNewSequenceDialog.ui
@@ -681,15 +646,8 @@ set(FILES
     ProcessInfo.cpp
     ProcessInfo.h
     Report.h
-    ShaderCache.cpp
-    ShaderCache.h
-    ShaderEnum.cpp
-    ShaderEnum.h
     SurfaceTypeValidator.cpp
     SurfaceTypeValidator.h
-    EnvironmentPanel.cpp
-    EnvironmentPanel.h
-    EnvironmentPanel.ui
     TrackView/AtomOutputFrameCapture.cpp
     TrackView/AtomOutputFrameCapture.h
     TrackView/TrackViewDialog.qrc
@@ -773,18 +731,12 @@ set(FILES
     TrackView/TrackViewEventNode.h
     ConfigGroup.cpp
     ConfigGroup.h
-    SettingsBlock.cpp
-    SettingsBlock.h
     Util/AffineParts.h
-    Util/ArcBall.cpp
-    Util/ArcBall.h
     Util/AutoLogTime.cpp
     Util/AutoLogTime.h
     Util/AutoDirectoryRestoreFileDialog.h
     Util/AutoDirectoryRestoreFileDialog.cpp
     Util/CryMemFile.h
-    Util/CubemapUtils.cpp
-    Util/CubemapUtils.h
     Util/DynamicArray2D.cpp
     Util/DynamicArray2D.h
     Util/EditorAutoLevelLoadTest.cpp
@@ -858,17 +810,11 @@ set(FILES
     Util/ImageASC.h
     Util/ImageBT.cpp
     Util/ImageBT.h
-    Util/Image_DXTC.cpp
-    Util/Image_DXTC.h
     Util/ImageGif.cpp
     Util/ImageGif.h
     Util/ImageTIF.cpp
     Util/ImageTIF.h
     Util/Math.h
-    Util/Ruler.cpp
-    Util/RulerPoint.cpp
-    Util/Ruler.h
-    Util/RulerPoint.h
     Util/UIEnumerations.cpp
     Util/UIEnumerations.h
     WelcomeScreen/WelcomeScreenDialog.h
@@ -877,13 +823,8 @@ set(FILES
     WelcomeScreen/WelcomeScreenDialog.qrc
     2DViewport.cpp
     2DViewport.h
-    Grid.cpp
-    Grid.h
     LayoutWnd.cpp
     LayoutWnd.h
-    ModelViewport.cpp
-    ModelViewport.h
-    ModelViewportDC.cpp
     EditorViewportWidget.cpp
     EditorViewportWidget.h
     ViewportManipulatorController.cpp

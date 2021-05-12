@@ -148,6 +148,12 @@ namespace AzFramework
         //! Blocks until all operations made on the provided ticket before the barrier call have completed.
         virtual void Barrier(EntitySpawnTicket& ticket, BarrierCallback completionCallback) = 0;
 
+        //! Register a handler for OnSpawned events.
+        virtual void AddOnSpawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>>::Handler& handler) = 0;
+
+        //! Register a handler for OnDespawned events.
+        virtual void AddOnDespawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>>::Handler& handler) = 0;
+
     protected:
         [[nodiscard]] virtual void* CreateTicket(AZ::Data::Asset<Spawnable>&& spawnable) = 0;
         virtual void DestroyTicket(void* ticket) = 0;

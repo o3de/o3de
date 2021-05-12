@@ -190,17 +190,24 @@ public:
     bool ShowGrid() override;
     bool AngleSnappingEnabled() override;
     float AngleStep() override;
-    QPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) override;
-    AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const QPoint&, float) override { return {}; }
-    AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportScreenToWorldRay(const QPoint&) override { return {}; }
+    AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) override;
+    AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const AzFramework::ScreenPoint&, float) override
+    {
+        return {};
+    }
+    AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportScreenToWorldRay(
+        const AzFramework::ScreenPoint&) override
+    {
+        return {};
+    }
 
     // AzToolsFramework::ViewportFreezeRequestBus
     bool IsViewportInputFrozen() override;
     void FreezeViewportInput(bool freeze) override;
 
     // AzToolsFramework::MainEditorViewportInteractionRequestBus
-    AZ::EntityId PickEntity(const QPoint& point) override;
-    AZ::Vector3 PickTerrain(const QPoint& point) override;
+    AZ::EntityId PickEntity(const AzFramework::ScreenPoint& point) override;
+    AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) override;
     float TerrainHeight(const AZ::Vector2& position) override;
     void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntitiesOut) override;
     bool ShowingWorldSpace() override;
@@ -431,7 +438,6 @@ protected:
 
     //! Assigned renderer.
     IRenderer*  m_renderer = nullptr;
-    I3DEngine*  m_engine = nullptr;
     bool m_bRenderContextCreated = false;
     bool m_bInRotateMode = false;
     bool m_bInMoveMode = false;
@@ -517,10 +523,6 @@ protected:
     f32 m_lrGround;
     OBB m_GroundOBB;
     Vec3 m_GroundOBBPos;
-
-    //-------------------------------------------
-    // Render options.
-    bool m_bRenderStats = true;
 
     // Index of camera objects.
     mutable GUID m_cameraObjectId = GUID_NULL;

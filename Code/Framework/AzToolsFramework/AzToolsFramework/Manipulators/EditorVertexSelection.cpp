@@ -127,8 +127,7 @@ namespace AzToolsFramework
         ViewportInteraction::MainEditorViewportInteractionRequestBus::EventResult(
             worldSurfacePosition, viewportId,
             &ViewportInteraction::MainEditorViewportInteractionRequestBus::Events::PickTerrain,
-            ViewportInteraction::QPointFromScreenPoint(
-                mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates));
+            mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
 
         AZ::Transform worldFromLocal;
         AZ::TransformBus::EventResult(worldFromLocal, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
@@ -402,10 +401,10 @@ namespace AzToolsFramework
                     vertexIndex, localVertex);
 
                 const AZ::Vector3 worldVertex = worldFromLocal.TransformPoint(AZ::AdaptVertexOut<Vertex>(localVertex));
-                const QPoint screenPosition = GetScreenPosition(viewportId, worldVertex);
+                const AzFramework::ScreenPoint screenPosition = GetScreenPosition(viewportId, worldVertex);
 
                 // check if a vertex is inside the box select region
-                if (editorBoxSelect.BoxRegion()->contains(screenPosition))
+                if (editorBoxSelect.BoxRegion()->contains(ViewportInteraction::QPointFromScreenPoint(screenPosition)))
                 {
                     // see if vertexIndex is in active selection
                     auto vertexIt = AZStd::find(

@@ -8,3 +8,8 @@
 # remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
+
+set(LY_COMPILE_DEFINITIONS
+    PRIVATE
+        HAVE_ROUND # defined for Windows since http://p-nand-q.com/python/building-python-33-with-vs2013.html
+)

@@ -258,28 +258,6 @@ void IDebugCallStack::WriteLineToLog(const char* format, ...)
     }
 }
 
-void IDebugCallStack::Screenshot(const char* szFileName)
-{
-    WriteLineToLog("Attempting to create error screenshot \"%s\"", szFileName);
-
-    static int g_numScreenshots = 0;
-    if (gEnv->pRenderer && !g_numScreenshots++)
-    {
-        if (gEnv->pRenderer->ScreenShot(szFileName))
-        {
-            WriteLineToLog("Successfully created screenshot.");
-        }
-        else
-        {
-            WriteLineToLog("Error creating screenshot.");
-        }
-    }
-    else
-    {
-        WriteLineToLog("Ignoring multiple calls to Screenshot");
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
 void IDebugCallStack::StartMemLog()
 {

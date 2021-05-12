@@ -284,12 +284,12 @@ namespace Blast
             return m_transform;
         }
 
-        AzPhysics::SimulatedBody* GetWorldBody() override
+        AzPhysics::SimulatedBody* GetSimulatedBody() override
         {
             return m_worldBody.get();
         }
 
-        const AzPhysics::SimulatedBody* GetWorldBody() const override
+        const AzPhysics::SimulatedBody* GetSimulatedBody() const override
         {
             return m_worldBody.get();
         }

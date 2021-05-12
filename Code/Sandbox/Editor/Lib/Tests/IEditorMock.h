@@ -32,8 +32,6 @@ public:
 public:
     MOCK_METHOD0(DeleteThis, void());
     MOCK_METHOD0(GetSystem, ISystem*());
-    MOCK_METHOD0(Get3DEngine, I3DEngine* ());
-    MOCK_METHOD0(GetRenderer, IRenderer* ());
     MOCK_METHOD0(GetClassFactory, IEditorClassFactory* ());
     MOCK_METHOD0(GetCommandManager, CEditorCommandManager*());
     MOCK_METHOD0(GetICommandManager, ICommandManager* ());
@@ -118,7 +116,6 @@ public:
     MOCK_METHOD1(SetMarkerPosition, void(const Vec3&));
     MOCK_METHOD1(SetSelectedRegion, void(const AABB& box));
     MOCK_METHOD1(GetSelectedRegion, void(AABB& box));
-    MOCK_METHOD0(GetRuler, CRuler* ());
     MOCK_METHOD1(SetOperationMode, void(EOperationMode ));
     MOCK_METHOD0(GetOperationMode, EOperationMode());
     MOCK_METHOD1(ShowTransformManipulator, ITransformManipulator* (bool));
@@ -141,7 +138,6 @@ public:
     MOCK_METHOD1(OpenWinWidget, QWidget* (WinWidgetId ));
     MOCK_CONST_METHOD0(GetWinWidgetManager, WinWidget::WinWidgetManager* ());
     MOCK_METHOD2(SelectColor, bool(QColor &, QWidget *));
-    MOCK_METHOD0(GetShaderEnum, class CShaderEnum* ());
     MOCK_METHOD0(GetUndoManager, class CUndoManager* ());
     MOCK_METHOD0(BeginUndo, void());
     MOCK_METHOD1(RestoreUndo, void(bool));
@@ -191,7 +187,6 @@ public:
     MOCK_METHOD0(GetBackgroundScheduleManager, struct IBackgroundScheduleManager* ());
     MOCK_METHOD1(ShowStatusText, void(bool ));
     MOCK_METHOD1(RegisterObjectContextMenuExtension, void(TContextMenuExtensionFunc ));
-    MOCK_METHOD1(SetCurrentMissionTime, void(float ));
     MOCK_METHOD0(GetEnv, SSystemGlobalEnvironment* ());
     MOCK_METHOD0(GetImageUtil, IImageUtil* ());
     MOCK_METHOD0(GetEditorSettings, SEditorSettings* ());

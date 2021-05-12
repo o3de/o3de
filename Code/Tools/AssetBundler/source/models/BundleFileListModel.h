@@ -43,7 +43,10 @@ namespace AssetBundler
         explicit BundleFileListModel();
         virtual ~BundleFileListModel() {}
 
-        AZStd::vector<AZStd::string> CreateNewFiles(const AZStd::string& /*absoluteFilePath*/, const AzFramework::PlatformFlags& /*platforms*/, const QString& /*project*/) override { return {}; }
+        AZStd::vector<AZStd::string> CreateNewFiles(
+            const AZStd::string& /*absoluteFilePath*/,
+            const AzFramework::PlatformFlags& /*platforms*/,
+            const QString& /*project*/) override { return {}; }
         bool DeleteFile(const QModelIndex& index) override;
         void LoadFile(const AZStd::string& absoluteFilePath, const AZStd::string& projectName = "", bool isDefaultFile = false) override;
         bool WriteToDisk(const AZStd::string& /*key*/) override { return true; }

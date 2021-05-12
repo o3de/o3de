@@ -120,13 +120,13 @@ namespace AZ
             {
                 // stencil Srg
                 // Note: the stencil pass uses a slightly reduced inner AABB to avoid seams
-                Vector3 innerExtentsReduced = m_innerExtents * m_transform.GetScale() - Vector3(0.1f, 0.1f, 0.1f);
+                Vector3 innerExtentsReduced = m_innerExtents - Vector3(0.1f, 0.1f, 0.1f);
                 Matrix3x4 modelToWorldStencil = Matrix3x4::CreateFromMatrix3x3AndTranslation(Matrix3x3::CreateIdentity(), m_transform.GetTranslation()) * Matrix3x4::CreateScale(innerExtentsReduced);
                 m_stencilSrg->SetConstant(m_reflectionRenderData->m_modelToWorldStencilConstantIndex, modelToWorldStencil);
                 m_stencilSrg->Compile();
 
                 // blend weight Srg
-                Matrix3x4 modelToWorldOuter = Matrix3x4::CreateFromMatrix3x3AndTranslation(Matrix3x3::CreateIdentity(), m_transform.GetTranslation()) * Matrix3x4::CreateScale(m_outerExtents * m_transform.GetScale());
+                Matrix3x4 modelToWorldOuter = Matrix3x4::CreateFromMatrix3x3AndTranslation(Matrix3x3::CreateIdentity(), m_transform.GetTranslation()) * Matrix3x4::CreateScale(m_outerExtents);
                 m_blendWeightSrg->SetConstant(m_reflectionRenderData->m_modelToWorldRenderConstantIndex, modelToWorldOuter);
                 m_blendWeightSrg->SetConstant(m_reflectionRenderData->m_aabbPosRenderConstantIndex, m_outerAabbWs.GetCenter());
                 m_blendWeightSrg->SetConstant(m_reflectionRenderData->m_outerAabbMinRenderConstantIndex, m_outerAabbWs.GetMin());
@@ -149,7 +149,7 @@ namespace AZ
                 m_renderOuterSrg->Compile();
 
                 // render inner Srg
-                Matrix3x4 modelToWorldInner = Matrix3x4::CreateFromMatrix3x3AndTranslation(Matrix3x3::CreateIdentity(), m_transform.GetTranslation()) * Matrix3x4::CreateScale(m_innerExtents * m_transform.GetScale());
+                Matrix3x4 modelToWorldInner = Matrix3x4::CreateFromMatrix3x3AndTranslation(Matrix3x3::CreateIdentity(), m_transform.GetTranslation()) * Matrix3x4::CreateScale(m_innerExtents);
                 m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_modelToWorldRenderConstantIndex, modelToWorldInner);
                 m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_aabbPosRenderConstantIndex, m_outerAabbWs.GetCenter());
                 m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_outerAabbMinRenderConstantIndex, m_outerAabbWs.GetMin());
@@ -208,6 +208,12 @@ namespace AZ
 
         void ReflectionProbe::SetTransform(const AZ::Transform& transform)
         {
+            // retrieve previous scale and revert the scale on the inner/outer extents
+            AZ::Vector3 previousScale = m_transform.GetScale();
+            m_outerExtents /= previousScale;
+            m_innerExtents /= previousScale;
+
+            // store new transform
             m_transform = transform;
 
             // avoid scaling the visualization sphere
@@ -215,28 +221,33 @@ namespace AZ
             visualizationTransform.ExtractScale();
             m_meshFeatureProcessor->SetTransform(m_visualizationMeshHandle, visualizationTransform);
 
-            m_outerAabbWs = Aabb::CreateCenterHalfExtents(m_transform.GetTranslation(), m_outerExtents * m_transform.GetScale() / 2.0f);
-            m_innerAabbWs = Aabb::CreateCenterHalfExtents(m_transform.GetTranslation(), m_innerExtents * m_transform.GetScale() / 2.0f);
+            // update the inner/outer extents with the new scale
+            m_outerExtents *= m_transform.GetScale();
+            m_innerExtents *= m_transform.GetScale();
+
+            m_outerAabbWs = Aabb::CreateCenterHalfExtents(m_transform.GetTranslation(), m_outerExtents / 2.0f);
+            m_innerAabbWs = Aabb::CreateCenterHalfExtents(m_transform.GetTranslation(), m_innerExtents / 2.0f);
             m_updateSrg = true;
         }
 
         void ReflectionProbe::SetOuterExtents(const AZ::Vector3& outerExtents)
         {
-            m_outerExtents = outerExtents;
-            m_outerAabbWs = Aabb::CreateCenterHalfExtents(m_transform.GetTranslation(), m_outerExtents * m_transform.GetScale() / 2.0f);
+            m_outerExtents = outerExtents * m_transform.GetScale();
+            m_outerAabbWs = Aabb::CreateCenterHalfExtents(m_transform.GetTranslation(), m_outerExtents / 2.0f);
             m_updateSrg = true;
         }
 
         void ReflectionProbe::SetInnerExtents(const AZ::Vector3& innerExtents)
         {
-            m_innerExtents = innerExtents;
-            m_innerAabbWs = Aabb::CreateCenterHalfExtents(m_transform.GetTranslation(), m_innerExtents * m_transform.GetScale() / 2.0f);
+            m_innerExtents = innerExtents * m_transform.GetScale();
+            m_innerAabbWs = Aabb::CreateCenterHalfExtents(m_transform.GetTranslation(), m_innerExtents / 2.0f);
             m_updateSrg = true;
         }
 
-        void ReflectionProbe::SetCubeMapImage(const Data::Instance<RPI::Image>& cubeMapImage)
+        void ReflectionProbe::SetCubeMapImage(const Data::Instance<RPI::Image>& cubeMapImage, const AZStd::string& relativePath)
         {
             m_cubeMapImage = cubeMapImage;
+            m_cubeMapRelativePath = relativePath;
             m_updateSrg = true;
         }
 

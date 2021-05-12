@@ -87,12 +87,15 @@ namespace AssetBundler
         {
             if (AZ::IO::FileIOBase::GetInstance()->IsReadOnly(absolutePath))
             {
+                AZ_Error(AssetBundler::AppWindowName, false, ReadOnlyFileErrorMessage, absolutePath);
                 return false;
             }
 
             auto deleteResult = AZ::IO::FileIOBase::GetInstance()->Remove(absolutePath);
             if (!deleteResult)
             {
+                AZ_Error(AssetBundler::AppWindowName, false,
+                    "Unable to delete (%s). Result code: %u", absolutePath, deleteResult.GetResultCode());
                 return false;
             }
         }
@@ -104,7 +107,10 @@ namespace AssetBundler
         return true;
     }
 
-    void AssetListFileTableModel::LoadFile(const AZStd::string& absoluteFilePath, const AZStd::string& /*projectName*/, bool /*isDefaultFile*/)
+    void AssetListFileTableModel::LoadFile(
+        const AZStd::string& absoluteFilePath,
+        const AZStd::string& /*projectName*/,
+        bool /*isDefaultFile*/)
     {
         AZStd::string fullFileName;
         AzFramework::StringFunc::Path::GetFullFileName(absoluteFilePath.c_str(), fullFileName);

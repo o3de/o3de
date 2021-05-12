@@ -42,7 +42,8 @@ namespace AssetBundler
 
         if (!IsComparisonDataIndexValid())
         {
-            AZ_Error("AssetBundler", false, "ComparisonData index ( %u ) is out of bounds. ComparisonData cannot be displayed.", m_comparisonDataIndex);
+            AZ_Error("AssetBundler", false,
+                "ComparisonData index ( %u ) is out of bounds. ComparisonData cannot be displayed.", m_comparisonDataIndex);
             return;
         }
 
@@ -64,14 +65,26 @@ namespace AssetBundler
         connect(m_ui->nameLineEdit, &QLineEdit::textEdited, this, &ComparisonDataWidget::OnNameLineEditChanged);
 
         m_ui->comparisonTypeComboBox->installEventFilter(mouseWheelEventFilter);
-        connect(m_ui->comparisonTypeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ComparisonDataWidget::OnComparisonTypeComboBoxChanged);
+        connect(m_ui->comparisonTypeComboBox,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            &ComparisonDataWidget::OnComparisonTypeComboBoxChanged);
 
         m_ui->firstInputComboBox->installEventFilter(mouseWheelEventFilter);
-        connect(m_ui->firstInputComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ComparisonDataWidget::OnFirstInputComboBoxChanged);
-        connect(m_ui->firstInputBrowseButton, &QPushButton::pressed, this, &ComparisonDataWidget::OnFirstInputBrowseButtonPressed);
+        connect(m_ui->firstInputComboBox,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            &ComparisonDataWidget::OnFirstInputComboBoxChanged);
+        connect(m_ui->firstInputBrowseButton,
+            &QPushButton::pressed,
+            this,
+            &ComparisonDataWidget::OnFirstInputBrowseButtonPressed);
 
         m_ui->secondInputComboBox->installEventFilter(mouseWheelEventFilter);
-        connect(m_ui->secondInputComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ComparisonDataWidget::OnSecondInputComboBoxChanged);
+        connect(m_ui->secondInputComboBox,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            &ComparisonDataWidget::OnSecondInputComboBoxChanged);
         connect(m_ui->secondInputBrowseButton, &QPushButton::pressed, this, &ComparisonDataWidget::OnSecondInputBrowseButtonPressed);
 
         connect(m_ui->filePatternLineEdit, &QLineEdit::textEdited, this, &ComparisonDataWidget::OnFilePatternLineEditChanged);
@@ -187,7 +200,8 @@ namespace AssetBundler
         m_ui->filePatternLineEdit->setText(comparisonData.m_filePattern.c_str());
     }
 
-    void ComparisonDataWidget::InitComparisonTypeComboBox(const AzToolsFramework::AssetFileInfoListComparison::ComparisonData& comparisonData)
+    void ComparisonDataWidget::InitComparisonTypeComboBox(
+        const AzToolsFramework::AssetFileInfoListComparison::ComparisonData& comparisonData)
     {
         using namespace AzToolsFramework;
 
@@ -225,7 +239,8 @@ namespace AssetBundler
                 initialSelectionIndex = ComparisonTypeIndex::Complement;
                 break;
             default:
-                AZ_Warning("AssetBundler", false, "ComparisonType ( %u ) is not supported in the Asset Bundler", comparisonData.m_comparisonType);
+                AZ_Warning("AssetBundler", false,
+                    "ComparisonType ( %u ) is not supported in the Asset Bundler", comparisonData.m_comparisonType);
             }
         }
 

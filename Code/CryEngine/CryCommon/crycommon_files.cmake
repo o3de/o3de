@@ -14,22 +14,14 @@ set(FILES
     CryCommon.cpp
     Allocator.h
     FinalizingSpline.h
-    Gem.h
-    I3DEngine.h
-    I3DEngine_info.h
     IAudioInterfacesCommonData.h
     IAudioSystem.h
     IChunkFile.h
     ICmdLine.h
     IColorGradingController.h
     IConsole.h
-    ICryMiniGUI.h
-    IDeferredCollisionEvent.h
-    IDefragAllocator.h
-    IEngineModule.h
     IEntityRenderState.h
     IEntityRenderState_info.cpp
-    IFileChangeMonitor.h
     IFlares.h
     IFont.h
     IFunctorBase.h
@@ -54,14 +46,11 @@ set(FILES
     IMiniLog.h
     IMovieSystem.h
     INotificationNetwork.h
-    IOverloadSceneManager.h
-    IPerfHud.h
     IPhysics.h
     IPhysicsDebugRenderer.h
     IPostEffectGroup.h
     IProcess.h
     IReadWriteXMLSink.h
-    IRemoteCommand.h
     IRenderAuxGeom.h
     IRenderer.h
     IRenderMesh.h
@@ -69,7 +58,6 @@ set(FILES
     IResourceCompilerHelper.h
     IResourceManager.h
     ISerialize.h
-    IServiceNetwork.h
     IShader.h
     IShader_info.h
     ISoftCodeMgr.h
@@ -86,7 +74,6 @@ set(FILES
     ITexture.h
     IThreadManager.h
     IThreadTask.h
-    ITimeOfDay.h
     ITimer.h
     IValidator.h
     IVideoRenderer.h
@@ -113,7 +100,6 @@ set(FILES
     FunctorBaseMember.h
     stridedptr.h
     Options.h
-    CREGeomCache.h
     SerializationTypes.h
     CryEndian.h
     CryRandomInternal.h
@@ -131,7 +117,6 @@ set(FILES
     MemoryAccess.h
     Algorithm.h
     AnimKey.h
-    AnimTime.h
     BitFiddling.h
     CGFContent.h
     CGFContent_info.cpp
@@ -143,7 +128,6 @@ set(FILES
     CryAssert.h
     CryCrc32.h
     CryCustomTypes.h
-    CryEngineDecalInfo.h
     CryFile.h
     CryFixedArray.h
     CryFixedString.h
@@ -167,7 +151,6 @@ set(FILES
     CryVersion.h
     CryZlib.h
     FrameProfiler.h
-    GeomCacheFileFormat.h
     HashGrid.h
     HeapAllocator.h
     HeapContainer.h
@@ -210,7 +193,6 @@ set(FILES
     TimeValue_info.h
     TypeInfo_decl.h
     TypeInfo_impl.h
-    TypeLibrary.h
     UnalignedBlit.h
     UnicodeBinding.h
     UnicodeEncoding.h
@@ -220,25 +202,12 @@ set(FILES
     VectorSet.h
     VertexFormats.h
     XMLBinaryHeaders.h
-    Bezier.h
     RenderBus.h
     MainThreadRenderRequestBus.h
     OceanConstants.h
     PakLoadDataUtils.cpp
     PakLoadDataUtils.h
     TPool.h
-    CREBaseCloud.h
-    CREFogVolume.h
-    CREGameEffect.h
-    CREImposter.h
-    CREMesh.h
-    CREOcclusionQuery.h
-    CREPostProcess.h
-    CRESky.h
-    CREVolumeObject.h
-    CREWaterOcean.h
-    CREWaterVolume.h
-    RendElement.h
     Cry_Matrix33.h
     Cry_Matrix34.h
     Cry_Matrix44.h
@@ -285,110 +254,12 @@ set(FILES
     Linux_Win32Wrapper.h
     LinuxSpecific.h
     LoadScreenBus.h
-    LoadScreenComponent.cpp
-    LoadScreenComponent.h
     MacSpecific.h
     platform.h
     platform_impl.cpp
     Win32specific.h
     Win64specific.h
-    WindowsUtils.h
-    CryExtension/CryCreateClassInstance.h
-    CryExtension/CryGUID.h
-    CryExtension/CryTypeID.h
-    CryExtension/ICryFactory.h
-    CryExtension/ICryFactoryRegistry.h
-    CryExtension/ICryUnknown.h
-    CryExtension/Impl/Conversion.h
-    CryExtension/Impl/ClassWeaver.h
-    CryExtension/Impl/CryGUIDHelper.h
-    CryExtension/Impl/ICryFactoryRegistryImpl.h
-    CryExtension/Impl/RegFactoryNode.h
-    CryExtension/Impl/TypeList.h
-    CryPool/Allocator.h
-    CryPool/Container.h
-    CryPool/Defrag.h
-    CryPool/example.h
-    CryPool/Fallback.h
-    CryPool/Inspector.h
-    CryPool/List.h
-    CryPool/Memory.h
-    CryPool/PoolAlloc.h
-    CryPool/STLWrapper.h
-    CryPool/ThreadSafe.h
     stl/STLAlignedAlloc.h
-    ILocalMemoryUsage.h
-    Serialization/Assert.h
-    Serialization/BitVector.h
-    Serialization/BitVectorImpl.h
-    Serialization/BlackBox.h
-    Serialization/BoostSharedPtr.h
-    Serialization/Callback.h
-    Serialization/ClassFactory.h
-    Serialization/ClassFactoryImpl.h
-    Serialization/Color.h
-    Serialization/ColorImpl.h
-    Serialization/CRCRef.h
-    Serialization/CRCRefImpl.h
-    Serialization/CryExtension.h
-    Serialization/CryExtensionImpl.h
-    Serialization/CryName.h
-    Serialization/CryNameImpl.h
-    Serialization/CryStrings.h
-    Serialization/CryStringsImpl.h
-    Serialization/DynArray.h
-    Serialization/DynArrayImpl.h
-    Serialization/Enum.h
-    Serialization/EnumImpl.h
-    Serialization/IArchive.h
-    Serialization/IArchiveHost.h
-    Serialization/IClassFactory.h
-    Serialization/IntrusiveFactory.h
-    Serialization/ITextInputArchive.h
-    Serialization/ITextOutputArchive.h
-    Serialization/KeyValue.h
-    Serialization/Math.h
-    Serialization/MathImpl.h
-    Serialization/NetScriptSerialize.h
-    Serialization/Object.h
-    Serialization/Serializer.h
-    Serialization/SerializerImpl.h
-    Serialization/SmartPtr.h
-    Serialization/SmartPtrImpl.h
-    Serialization/STL.h
-    Serialization/STLImpl.h
-    Serialization/StringList.h
-    Serialization/StringListImpl.h
-    Serialization/Strings.h
-    Serialization/TypeID.h
-    Serialization/TypeInfo.h
-    Serialization/TypeInfoImpl.h
-    Serialization/Decorators/ActionButton.h
-    Serialization/Decorators/BitFlags.h
-    Serialization/Decorators/BitFlagsImpl.h
-    Serialization/Decorators/ColorPicker.h
-    Serialization/Decorators/ColorPickerImpl.h
-    Serialization/Decorators/JointName.h
-    Serialization/Decorators/JointNameImpl.h
-    Serialization/Decorators/LocalFrame.h
-    Serialization/Decorators/LocalFrameImpl.h
-    Serialization/Decorators/OutputFilePath.h
-    Serialization/Decorators/OutputFilePathImpl.h
-    Serialization/Decorators/Range.h
-    Serialization/Decorators/RangeImpl.h
-    Serialization/Decorators/ResourceFilePath.h
-    Serialization/Decorators/ResourceFilePathImpl.h
-    Serialization/Decorators/ResourceFolderPath.h
-    Serialization/Decorators/ResourceFolderPathImpl.h
-    Serialization/Decorators/Resources.h
-    Serialization/Decorators/ResourcesAudio.h
-    Serialization/Decorators/ResourceSelector.h
-    Serialization/Decorators/Slider.h
-    Serialization/Decorators/SliderImpl.h
-    Serialization/Decorators/Sprite.h
-    Serialization/Decorators/SpriteImpl.h
-    Serialization/Decorators/TagList.h
-    Serialization/Decorators/TagListImpl.h
     LyShine/IDraw2d.h
     LyShine/ILyShine.h
     LyShine/ISprite.h
@@ -485,7 +356,6 @@ set(FILES
     Terrain/Bus/TerrainRendererBus.h
     Terrain/Bus/HeightmapDataBus.h
     Terrain/Bus/TerrainProviderBus.h
-    CREPrismObject.h
     StaticInstance.h
     Pak/CryPakUtils.h
 )

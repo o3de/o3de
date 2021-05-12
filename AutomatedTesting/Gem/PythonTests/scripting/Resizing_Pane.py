@@ -10,13 +10,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID: C1702829
 Test Case Title: Resizing pane
-URLs of the test case: https://testrail.agscollab.com/index.php?/cases/view/1702829
 """
 
 
 # fmt: off
 class Tests():
-    open_sc_window = ("Script Canvas window is opened",   "Failed to open Script Canvas window")
     open_pane      = ("Pane opened successfully",         "Failed to open pane")
     resize_pane    = ("Pane window resized successfully", "Failed to resize pane window")
 # fmt: on
@@ -46,11 +44,6 @@ def Resizing_Pane():
     :return: None
     """
 
-    # Helper imports
-    import ImportPathHelper as imports
-
-    imports.init()
-
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     import editor_python_test_tools.pyside_utils as pyside_utils
@@ -76,8 +69,7 @@ def Resizing_Pane():
 
     # 1) Open Script Canvas window (Tools > Script Canvas)
     general.open_pane("Script Canvas")
-    is_sc_visible = helper.wait_for_condition(lambda: general.is_pane_visible("Script Canvas"), 5.0)
-    Report.result(Tests.open_sc_window, is_sc_visible)
+    helper.wait_for_condition(lambda: general.is_pane_visible("Script Canvas"), 5.0)
 
     # 2) Restore default layout
     editor_window = pyside_utils.get_editor_main_window()

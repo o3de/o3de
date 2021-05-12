@@ -77,7 +77,7 @@ namespace PhysX
 
     inline AzPhysics::SimulatedBodyHandle ActorData::GetBodyHandle() const
     {
-        AzPhysics::SimulatedBody* body = GetWorldBody();
+        AzPhysics::SimulatedBody* body = GetSimulatedBody();
         if (body)
         {
             return body->m_bodyHandle;
@@ -125,7 +125,7 @@ namespace PhysX
         m_payload.m_ragdollNode = ragdollNode;
     }
 
-    inline AzPhysics::SimulatedBody* ActorData::GetWorldBody() const
+    inline AzPhysics::SimulatedBody* ActorData::GetSimulatedBody() const
     {
         if (m_payload.m_rigidBody)
         {

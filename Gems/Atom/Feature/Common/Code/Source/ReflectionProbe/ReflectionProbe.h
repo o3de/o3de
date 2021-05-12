@@ -78,17 +78,19 @@ namespace AZ
             const Vector3& GetPosition() const { return m_transform.GetTranslation(); }
             void SetTransform(const AZ::Transform& transform);
 
-            AZ::Vector3 GetOuterExtents() const { return m_outerExtents * m_transform.GetScale(); }
+            const AZ::Vector3& GetOuterExtents() const { return m_outerExtents; }
             void SetOuterExtents(const AZ::Vector3& outerExtents);
 
-            AZ::Vector3 GetInnerExtents() const { return m_innerExtents * m_transform.GetScale(); }
+            const AZ::Vector3& GetInnerExtents() const { return m_innerExtents; }
             void SetInnerExtents(const AZ::Vector3& innerExtents);
 
             const Aabb& GetOuterAabbWs() const { return m_outerAabbWs; }
             const Aabb& GetInnerAabbWs() const { return m_innerAabbWs; }
 
             const Data::Instance<RPI::Image>& GetCubeMapImage() const { return m_cubeMapImage; }
-            void SetCubeMapImage(const Data::Instance<RPI::Image>& cubeMapImage);
+            void SetCubeMapImage(const Data::Instance<RPI::Image>& cubeMapImage, const AZStd::string& relativePath);
+
+            const AZStd::string& GetCubeMapRelativePath() const { return m_cubeMapRelativePath; }
 
             bool GetUseParallaxCorrection() const { return m_useParallaxCorrection; }
             void SetUseParallaxCorrection(bool useParallaxCorrection) { m_useParallaxCorrection = useParallaxCorrection; }
@@ -135,6 +137,7 @@ namespace AZ
 
             // cubemap
             Data::Instance<RPI::Image> m_cubeMapImage;
+            AZStd::string m_cubeMapRelativePath;
             bool m_useParallaxCorrection = false;
 
             // probe visualization
