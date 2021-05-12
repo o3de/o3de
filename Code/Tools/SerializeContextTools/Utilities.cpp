@@ -236,7 +236,6 @@ namespace AZ::SerializeContextTools
         AZ::IO::MemoryStream stream(data.data(), fileLength);
 
         ObjectStream::FilterDescriptor filter;
-        filter.m_flags = ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES;
         // Never load dependencies. That's another file that would need to be processed
         // separately from this one.
         filter.m_assetCB = AZ::Data::AssetFilterNoAssetLoading;
