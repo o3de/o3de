@@ -32,10 +32,15 @@ namespace AZ
             required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
             required.push_back(AZ_CRC("CameraService", 0x1dd1caa4));
         }
-            
+
         void CameraControllerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
             provided.push_back(AZ_CRC("CameraControllerService", 0xc35788f9));
+        }
+
+        void CameraControllerComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+        {
+            incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         void CameraControllerComponent::Enable(TypeId typeId)
