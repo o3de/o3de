@@ -195,7 +195,8 @@ def CheckoutBootstrapScripts(String branchName) {
                 [ $class: 'SparseCheckoutPath', path: 'scripts/build/bootstrap/' ],
                 [ $class: 'SparseCheckoutPath', path: 'scripts/build/Platform' ]
             ]],
-            [$class: 'CloneOption', depth: 1, noTags: false, reference: '', shallow: true]
+            // Shallow checkouts break changelog computation. Do not enable.
+            [$class: 'CloneOption', noTags: false, reference: '', shallow: false]
         ],
         submoduleCfg: [],
         userRemoteConfigs: scm.userRemoteConfigs
