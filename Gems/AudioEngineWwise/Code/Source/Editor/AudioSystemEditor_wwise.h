@@ -35,12 +35,6 @@ namespace AudioControls
 
         bool HasProperties() override { return true; }
 
-        void Serialize(Serialization::IArchive& ar) override
-        {
-            ar(m_mult, "mult", "Multiply");
-            ar(m_shift, "shift", "Shift");
-        }
-
         float m_mult;
         float m_shift;
     };
@@ -60,11 +54,6 @@ namespace AudioControls
         ~CStateToRtpcConnection() override = default;
 
         bool HasProperties() override { return true; }
-
-        void Serialize(Serialization::IArchive& ar) override
-        {
-            ar(m_value, "value", "Value");
-        }
 
         float m_value;
     };

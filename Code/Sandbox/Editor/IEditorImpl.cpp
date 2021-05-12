@@ -71,7 +71,6 @@ AZ_POP_DISABLE_WARNING
 #include "EditorFileMonitor.h"
 #include "MainStatusBar.h"
 
-#include "SettingsBlock.h"
 #include "ResourceSelectorHost.h"
 #include "Util/FileUtil_impl.h"
 #include "Util/ImageUtil_impl.h"
@@ -1624,8 +1623,6 @@ ESystemConfigPlatform CEditorImpl::GetEditorConfigPlatform() const
 
 void CEditorImpl::InitFinished()
 {
-    SProjectSettingsBlock::Load();
-
     if (!m_bInitialized)
     {
         m_bInitialized = true;
