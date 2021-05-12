@@ -237,7 +237,7 @@ namespace AZ
         void Prepare(const char* str, bool updateTexture, const AtomFont::GlyphSize& glyphSize = AtomFont::defaultGlyphSize);
         void DrawStringUInternal(
             const RHI::Viewport& viewport, 
-            RPI::ViewportContext* viewportContext, 
+            RPI::ViewportContextPtr viewportContext, 
             float x, 
             float y, 
             float z, 
@@ -291,7 +291,7 @@ namespace AZ
             TextDrawContext m_ctx;
             AZ::Vector2 m_position;
             AZ::Vector2 m_size;
-            AZ::RPI::ViewportContext* m_viewportContext;
+            AZ::RPI::ViewportContextPtr m_viewportContext;
             const AZ::RHI::Viewport* m_viewport;
         };
         DrawParameters ExtractDrawParameters(const AzFramework::TextDrawParameters& params, const AZStd::string_view& string, bool forceCalculateSize);

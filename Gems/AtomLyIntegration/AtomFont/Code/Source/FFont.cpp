@@ -280,7 +280,7 @@ void AZ::FFont::DrawString(float x, float y, const char* str, const bool asciiMu
         return;
     }
 
-    DrawStringUInternal(GetDefaultWindowContext()->GetViewport(), GetDefaultViewportContext().get(), x, y, 1.0f, str, asciiMultiLine, ctx);
+    DrawStringUInternal(GetDefaultWindowContext()->GetViewport(), GetDefaultViewportContext(), x, y, 1.0f, str, asciiMultiLine, ctx);
 }
 
 void AZ::FFont::DrawString(float x, float y, float z, const char* str, const bool asciiMultiLine, const TextDrawContext& ctx)
@@ -290,12 +290,12 @@ void AZ::FFont::DrawString(float x, float y, float z, const char* str, const boo
         return;
     }
 
-    DrawStringUInternal(GetDefaultWindowContext()->GetViewport(), GetDefaultViewportContext().get(), x, y, z, str, asciiMultiLine, ctx);
+    DrawStringUInternal(GetDefaultWindowContext()->GetViewport(), GetDefaultViewportContext(), x, y, z, str, asciiMultiLine, ctx);
 }
 
 void AZ::FFont::DrawStringUInternal(
     const RHI::Viewport& viewport, 
-    RPI::ViewportContext* viewportContext, 
+    RPI::ViewportContextPtr viewportContext, 
     float x,
     float y, 
     float z, 
@@ -1686,7 +1686,7 @@ AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::Te
     //Code mostly duplicated from CRenderer::Draw2dTextWithDepth
     float posX = params.m_position.GetX();
     float posY = params.m_position.GetY();
-    internalParams.m_viewportContext = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->GetViewportContextById(params.m_drawViewportId).get();
+    internalParams.m_viewportContext = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->GetViewportContextById(params.m_drawViewportId);
     const AZ::RHI::Viewport& viewport = internalParams.m_viewportContext->GetWindowContext()->GetViewport();
     internalParams.m_viewport = &viewport;
     if (params.m_virtual800x600ScreenSize)
