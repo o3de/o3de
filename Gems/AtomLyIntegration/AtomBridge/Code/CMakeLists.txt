@@ -29,6 +29,8 @@ ly_add_target(
             Gem::Atom_RPI.Public
             Gem::Atom_Bootstrap.Headers
             Legacy::CryCommon
+    RUNTIME_DEPENDENCIES
+        Gem::AtomViewportDisplayInfo
 )
 
 ly_add_target(
@@ -68,5 +70,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AssetBuilderSDK
                 Gem::Atom_Utils.Static
                 Gem::Atom_AtomBridge.Static
+        RUNTIME_DEPENDENCIES
+            Gem::AtomViewportDisplayInfo
     )
 endif()
