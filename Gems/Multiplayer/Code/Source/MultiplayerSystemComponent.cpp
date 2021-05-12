@@ -78,6 +78,17 @@ namespace Multiplayer
                 ->Version(1);
         }
 
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<HostId>("HostId");
+            behaviorContext->Class<NetEntityId>("NetEntityId");
+            behaviorContext->Class<NetComponentId>("NetComponentId");
+            behaviorContext->Class<PropertyIndex>("PropertyIndex");
+            behaviorContext->Class<RpcIndex> ("RpcIndex");
+            behaviorContext->Class<ClientInputId> ("ClientInputId");
+            behaviorContext->Class<HostFrameId> ("HostFrameId");
+        }
+
         MultiplayerComponent::Reflect(context);
     }
 

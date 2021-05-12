@@ -707,6 +707,26 @@ enum class NetworkProperties
 
         controller->Set{{ UpperFirst(Property.attrib['Name']) }}({{ LowerFirst(Property.attrib['Name']) }});
     })
+    ->Method("GetOn{{ UpperFirst(Property.attrib['Name']) }}ChangedEvent", [](AZ::EntityId id) -> AZ::Event<{{ Property.attrib['Type'] }}>*
+    {
+        AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
+        if (!entity)
+        {
+            AZ_Warning("Network Property", false, "{{ ClassName }} GetOn{{ UpperFirst(Property.attrib['Name']) }}ChangedEvent failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str())
+            return nullptr;
+        }
+
+        {{ ClassName }}* networkComponent = entity->FindComponent<{{ ClassName }}>();
+        if (!networkComponent)
+        {
+            AZ_Warning("Network Property", false, "{{ ClassName }} Get{{ UpperFirst(Property.attrib['Name']) }} failed. Entity '%s' (id: %s) is missing {{ ClassName }}, be sure to add {{ ClassName }} to this entity.", entity->GetName().c_str(), id.ToString().c_str())
+            return nullptr;
+        }
+
+        return &networkComponent->m_{{ LowerFirst(Property.attrib['Name']) }}Event;
+    })
+        ->Attribute(AZ::Script::Attributes::AzEventDescription, AZ::BehaviorAzEventDescription{ "On {{ UpperFirst(Property.attrib['Name']) }} Changed Event", {"New {{ UpperFirst(Property.attrib['Name']) }}"} })
+
 {% endif %}
 {% endcall -%}
 {% endmacro %}
