@@ -32,7 +32,7 @@ namespace AzToolsFramework
             : QSortFilterProxyModel(parent)
         {
             m_showColumn.insert(static_cast<int>(AssetBrowserEntry::Column::DisplayName));
-            m_showColumn.insert(static_cast<int>(AssetBrowserEntry::Column::Path));
+            //m_showColumn.insert(static_cast<int>(AssetBrowserEntry::Column::Path));
             m_collator.setNumericMode(true);
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
         }
@@ -63,7 +63,6 @@ namespace AzToolsFramework
                 invalidateFilter();
                 m_invalidateFilter = false;
             }
-            Q_EMIT entriesUpdated();
         }
 
         bool AssetBrowserFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const

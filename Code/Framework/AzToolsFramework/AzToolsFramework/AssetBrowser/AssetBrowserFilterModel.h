@@ -53,7 +53,6 @@ namespace AzToolsFramework
 
         Q_SIGNALS:
             void filterChanged();
-            void entriesUpdated();
 
             //////////////////////////////////////////////////////////////////////////
             //QSortFilterProxyModel
