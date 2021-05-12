@@ -43,15 +43,12 @@ class CGameEngine;
 class CExportManager;
 class CErrorsDlg;
 class CIconManager;
-class CBackgroundTaskManager;
 class CTrackViewSequenceManager;
 class CEditorFileMonitor;
 class AzAssetWindow;
 class AzAssetBrowserRequestHandler;
 class AssetEditorRequestsHandler;
 class CAlembicCompiler;
-struct IBackgroundTaskManager;
-struct IBackgroundScheduleManager;
 struct IEditorFileMonitor;
 class CVegetationMap;
 
@@ -59,16 +56,6 @@ class CVegetationMap;
 namespace Editor
 {
     class EditorQtApplication;
-}
-
-namespace BackgroundScheduleManager
-{
-    class CScheduleManager;
-}
-
-namespace BackgroundTaskManager
-{
-    class CTaskManager;
 }
 
 namespace WinWidget
@@ -179,8 +166,6 @@ public:
     IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType);
     CMusicManager* GetMusicManager() { return m_pMusicManager; };
 
-    IBackgroundTaskManager* GetBackgroundTaskManager() override;
-    IBackgroundScheduleManager* GetBackgroundScheduleManager() override;
     IEditorFileMonitor* GetFileMonitor() override;
     void RegisterEventLoopHook(IEventLoopHook* pHook) override;
     void UnregisterEventLoopHook(IEventLoopHook* pHook) override;
@@ -394,8 +379,6 @@ protected:
 
     //! Export manager for exporting objects and a terrain from the game to DCC tools
     CExportManager* m_pExportManager;
-    std::unique_ptr<BackgroundTaskManager::CTaskManager> m_pBackgroundTaskManager;
-    std::unique_ptr<BackgroundScheduleManager::CScheduleManager> m_pBackgroundScheduleManager;
     std::unique_ptr<CEditorFileMonitor> m_pEditorFileMonitor;
     std::unique_ptr<IResourceSelectorHost> m_pResourceSelectorHost;
     QString m_selectFileBuffer;

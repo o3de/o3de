@@ -97,10 +97,6 @@ void CLevelInfo::ValidateObjects()
 
         pObject->Validate(m_pReport);
 
-        CUsedResources rs;
-        pObject->GatherUsedResources(rs);
-        rs.Validate(m_pReport);
-
         m_pReport->SetCurrentValidatorObject(NULL);
     }
 
