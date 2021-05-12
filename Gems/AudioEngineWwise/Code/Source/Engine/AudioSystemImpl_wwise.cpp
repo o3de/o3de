@@ -1757,16 +1757,9 @@ namespace Audio
         memoryInfo.nPrimaryPoolSize = AZ::AllocatorInstance<Audio::AudioImplAllocator>::Get().Capacity();
         memoryInfo.nPrimaryPoolUsedSize = memoryInfo.nPrimaryPoolSize - AZ::AllocatorInstance<Audio::AudioImplAllocator>::Get().GetUnAllocatedMemory();
         memoryInfo.nPrimaryPoolAllocations = 0;
-
-    #if AZ_TRAIT_AUDIOENGINEWWISE_PROVIDE_IMPL_SECONDARY_POOL
-        memoryInfo.nSecondaryPoolSize = g_audioImplMemoryPoolSecondary_wwise.MemSize();
-        memoryInfo.nSecondaryPoolUsedSize = memoryInfo.nSecondaryPoolSize - g_audioImplMemoryPoolSecondary_wwise.MemFree();
-        memoryInfo.nSecondaryPoolAllocations = g_audioImplMemoryPoolSecondary_wwise.FragmentCount();
-    #else
         memoryInfo.nSecondaryPoolSize = 0;
         memoryInfo.nSecondaryPoolUsedSize = 0;
         memoryInfo.nSecondaryPoolAllocations = 0;
-    #endif // AZ_TRAIT_AUDIOENGINEWWISE_PROVIDE_IMPL_SECONDARY_POOL
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -191,9 +191,7 @@ private:
     void InitToolActionHandlers();
     void InitToolBars();
     void InitStatusBar();
-    void OnUpdateSnapToGrid(QAction* action);
     void OnViewPaneCreated(const QtViewPane* pane);
-    void LoadConfig();
 
     template <class TValue>
     void ReadConfigValue(const QString& key, TValue& value)

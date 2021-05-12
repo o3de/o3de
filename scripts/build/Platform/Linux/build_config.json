@@ -29,29 +29,31 @@
   },
   "debug": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_linux.sh",
     "PARAMETERS": {
       "CONFIGURATION": "debug",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4 -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all"
     }
   },
   "profile": {
     "TAGS": [
-        "nightly",
-        "daily-pipeline-metrics",
-        "weekly-build-metrics"
+      "nightly-incremental",
+      "nightly-clean",
+      "daily-pipeline-metrics",
+      "weekly-build-metrics"
     ],
     "COMMAND": "build_linux.sh",
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4 -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all"
     }
@@ -64,7 +66,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4 -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all"
     }
@@ -78,7 +80,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4 -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
       "CTEST_OPTIONS": "-E (Gem::EMotionFX.Editor.Tests|Gem::AWSClientAuth.Tests|Gem::AWSCore.Editor.Tests) -L FRAMEWORK_googletest"
@@ -90,7 +92,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4 -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
       "CTEST_OPTIONS": "-E (Gem::EMotionFX.Editor.Tests|Gem::AWSClientAuth.Tests|Gem::AWSCore.Editor.Tests) -L FRAMEWORK_googletest"
@@ -98,13 +100,15 @@
   },
   "asset_profile": {
     "TAGS": [
-      "weekly-build-metrics"
+      "weekly-build-metrics",
+      "nightly-incremental",
+      "nightly-clean"
     ],
     "COMMAND": "build_asset_linux.sh",
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4 -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "AssetProcessorBatch",
       "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
@@ -118,7 +122,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4 -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "AssetProcessorBatch",
       "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
@@ -126,28 +130,17 @@
       "ASSET_PROCESSOR_PLATFORMS": "pc,server"
     }
   },
-  "asset_clean_profile": {
-    "TAGS": [
-      "nightly"
-    ],
-    "PIPELINE_ENV": {
-      "CLEAN_ASSETS": "1"
-    },
-    "steps": [
-      "clean",
-      "asset_profile"
-    ]
-  },
   "periodic_test_profile": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_linux.sh",
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4 -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_periodic",
       "CTEST_OPTIONS": "-L \"(SUITE_periodic)\""
@@ -155,14 +148,15 @@
   },
   "benchmark_test_profile": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_linux.sh",
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4 -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_benchmark",
       "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\""
@@ -170,28 +164,30 @@
   },
   "release": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_linux.sh",
     "PARAMETERS": {
       "CONFIGURATION": "release",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4 -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all"
     }
   },
   "monolithic_release": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_linux.sh",
     "PARAMETERS": {
       "CONFIGURATION": "release",
       "OUTPUT_DIRECTORY": "build/mono_linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_MONOLITHIC_GAME=TRUE -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_MONOLITHIC_GAME=TRUE -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4 -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all"
     }

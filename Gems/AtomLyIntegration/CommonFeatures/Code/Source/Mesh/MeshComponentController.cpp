@@ -131,6 +131,7 @@ namespace AZ
         void MeshComponentController::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
             dependent.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            dependent.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         void MeshComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -295,8 +296,7 @@ namespace AZ
                 m_configuration.m_modelAsset = modelAsset;
                 MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, m_configuration.m_modelAsset, model);
                 MaterialReceiverNotificationBus::Event(m_entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
-                AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-                    &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, m_entityId);
+                AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(m_entityId);
             }
         }
 

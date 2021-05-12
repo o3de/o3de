@@ -39,14 +39,9 @@
 namespace PhysXDebug
 {
     const float SystemComponent::m_maxCullingBoxSize = 150.0f;
-
-    const ColorB CreateColorFromU32(AZ::u32 color)
+    namespace Internal
     {
-        const AZ::u8 a = static_cast<AZ::u8>((color & 0xFF000000) >> 24);
-        const AZ::u8 b = static_cast<AZ::u8>((color & 0x00FF0000) >> 16);
-        const AZ::u8 g = static_cast<AZ::u8>((color & 0x0000FF00) >> 8);
-        const AZ::u8 r = static_cast<AZ::u8>(color & 0x000000FF);
-        return ColorB(r, g, b, a);
+        const AZ::Crc32 VewportId = 0; // was AzFramework::g_defaultSceneEntityDebugDisplayId but it didn't render to the viewport.
     }
 
     bool UseEditorPhysicsScene()
@@ -338,18 +333,18 @@ namespace PhysXDebug
         }
     }
 
-    void SystemComponent::BuildColorPickingMenuItem(const AZStd::string& label, ColorB& color)
+    void SystemComponent::BuildColorPickingMenuItem(const AZStd::string& label, AZ::Color& color)
     {
-        float col[3] = {color.r / 255.0f, color.g / 255.0f, color.b / 255.0f};
+        float col[3] = {color.GetR(), color.GetG(), color.GetB()};
         if (ImGui::ColorEdit3(label.c_str(), col, ImGuiColorEditFlags_NoAlpha))
         {
-            const float r =  AZ::GetClamp(col[0] * 255.0f, 0.0f, 255.0f);
-            const float g =  AZ::GetClamp(col[1] * 255.0f, 0.0f, 255.0f);
-            const float b =  AZ::GetClamp(col[2] * 255.0f, 0.0f, 255.0f);
+            const float r = AZ::GetClamp(col[0], 0.0f, 1.0f);
+            const float g = AZ::GetClamp(col[1], 0.0f, 1.0f);
+            const float b = AZ::GetClamp(col[2], 0.0f, 1.0f);
 
-            color.r = static_cast<AZ::u8>(r);
-            color.g = static_cast<AZ::u8>(g);
-            color.b = static_cast<AZ::u8>(b);
+            color.SetR(r);
+            color.SetG(g);
+            color.SetB(b);
         }
     }
 #endif // IMGUI_ENABLED
@@ -511,16 +506,34 @@ namespace PhysXDebug
 
     void SystemComponent::RenderBuffers()
     {
-        if (gEnv && gEnv->pRenderer && !m_linePoints.empty())
+        if (!m_linePoints.empty() || !m_trianglePoints.empty())
         {
-            AZ_Assert(m_linePoints.size() == m_lineColors.size(), "Lines: Expected an equal number of points to colors.");
-            gEnv->pRenderer->GetIRenderAuxGeom()->DrawLines(m_linePoints.begin(), m_linePoints.size(), m_lineColors.begin(), 1.0f);
-        }
-
-        if (gEnv && gEnv->pRenderer && !m_trianglePoints.empty())
-        {
-            AZ_Assert(m_trianglePoints.size() == m_triangleColors.size(), "Triangles: Expected an equal number of points to colors.");
-            gEnv->pRenderer->GetIRenderAuxGeom()->DrawTriangles(m_trianglePoints.begin(), m_trianglePoints.size(), m_triangleColors.begin());
+            AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+            AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, Internal::VewportId);
+            AZ_Assert(debugDisplayBus, "Invalid DebugDisplayRequestBus.");
+            AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+            if (debugDisplay)
+            {
+                if (!m_linePoints.empty())
+                {
+                    AZ_Assert(m_linePoints.size() == m_lineColors.size(), "Lines: Expected an equal number of points to colors.");
+                    const size_t minLen = AZ::GetMin(m_linePoints.size(), m_lineColors.size());
+                    for (size_t i = 0; i < minLen; i += 2)
+                    {
+                        debugDisplay->DrawLine(m_linePoints[i], m_linePoints[i + 1], m_lineColors[i].GetAsVector4(), m_lineColors[i + 1].GetAsVector4());
+                    }
+                }
+                if (!m_trianglePoints.empty())
+                {
+                    AZ_Assert(m_trianglePoints.size() == m_triangleColors.size(), "Triangles: Expected an equal number of points to colors.");
+                    const size_t minLen = AZ::GetMin(m_trianglePoints.size(), m_triangleColors.size());
+                    for (size_t i = 0; i < minLen; i += 3)
+                    {
+                        debugDisplay->SetColor(m_triangleColors[i]);
+                        debugDisplay->DrawTri(m_trianglePoints[i], m_trianglePoints[i + 1], m_trianglePoints[i + 2]);
+                    }
+                }
+            }
         }
     }
 
@@ -677,8 +690,8 @@ namespace PhysXDebug
 
         if (!cameraTranslation.IsClose(AZ::Vector3::CreateZero()))
         {
-            physx::PxVec3 min = PxMathConvert(cameraTranslation - AZ::Vector3(m_culling.m_boxSize));
-            physx::PxVec3 max = PxMathConvert(cameraTranslation + AZ::Vector3(m_culling.m_boxSize));
+            const physx::PxVec3 min = PxMathConvert(cameraTranslation - AZ::Vector3(m_culling.m_boxSize));
+            const physx::PxVec3 max = PxMathConvert(cameraTranslation + AZ::Vector3(m_culling.m_boxSize));
             m_cullingBox = physx::PxBounds3(min, max);
 
             if (m_culling.m_boxWireframe)
@@ -813,8 +826,8 @@ namespace PhysXDebug
 
                             for (size_t lineIndex = 0; lineIndex < jointLineBufferSize / 2; lineIndex++)
                             {
-                                m_linePoints.emplace_back(AZVec3ToLYVec3(jointWorldTransform.TransformPoint(m_jointLineBuffer[2 * lineIndex])));
-                                m_linePoints.emplace_back(AZVec3ToLYVec3(jointWorldTransform.TransformPoint(m_jointLineBuffer[2 * lineIndex + 1])));
+                                m_linePoints.emplace_back(jointWorldTransform.TransformPoint(m_jointLineBuffer[2 * lineIndex]));
+                                m_linePoints.emplace_back(jointWorldTransform.TransformPoint(m_jointLineBuffer[2 * lineIndex + 1]));
                                 m_lineColors.emplace_back(m_colorMappings.m_green);
                                 m_lineColors.emplace_back(m_colorMappings.m_green);
                             }
@@ -829,16 +842,21 @@ namespace PhysXDebug
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
 
-        if (gEnv && gEnv->pRenderer && m_settings.m_visualizationEnabled && m_culling.m_boxWireframe)
+        if (m_settings.m_visualizationEnabled && m_culling.m_boxWireframe)
         {
-            ColorB wireframeColor = MapOriginalPhysXColorToUserDefinedValues(1);
-            AABB lyAABB(AZAabbToLyAABB(cullingBoxAabb));
-
-            gEnv->pRenderer->GetIRenderAuxGeom()->DrawAABB(lyAABB, false, wireframeColor, EBoundingBoxDrawStyle::eBBD_Extremes_Color_Encoded);
+            AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+            AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, Internal::VewportId);
+            AZ_Assert(debugDisplayBus, "Invalid DebugDisplayRequestBus.");
+            if (AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus))
+            {
+                const AZ::Color wireframeColor = MapOriginalPhysXColorToUserDefinedValues(1);
+                debugDisplay->SetColor(wireframeColor.GetAsVector4());
+                debugDisplay->DrawWireBox(cullingBoxAabb.GetMin(), cullingBoxAabb.GetMax());
+            }
         }
     }
 
-    ColorB SystemComponent::MapOriginalPhysXColorToUserDefinedValues(const physx::PxU32& originalColor)
+    AZ::Color SystemComponent::MapOriginalPhysXColorToUserDefinedValues(const physx::PxU32& originalColor)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
 
@@ -877,18 +895,18 @@ namespace PhysXDebug
     void SystemComponent::InitPhysXColorMappings()
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
-        m_colorMappings.m_defaultColor = CreateColorFromU32(physx::PxDebugColor::eARGB_GREEN);
-        m_colorMappings.m_black = CreateColorFromU32(physx::PxDebugColor::eARGB_BLACK);
-        m_colorMappings.m_red = CreateColorFromU32(physx::PxDebugColor::eARGB_RED);
-        m_colorMappings.m_green = CreateColorFromU32(physx::PxDebugColor::eARGB_GREEN);
-        m_colorMappings.m_blue = CreateColorFromU32(physx::PxDebugColor::eARGB_BLUE);
-        m_colorMappings.m_yellow = CreateColorFromU32(physx::PxDebugColor::eARGB_YELLOW);
-        m_colorMappings.m_magenta = CreateColorFromU32(physx::PxDebugColor::eARGB_MAGENTA);
-        m_colorMappings.m_cyan = CreateColorFromU32(physx::PxDebugColor::eARGB_CYAN);
-        m_colorMappings.m_white = CreateColorFromU32(physx::PxDebugColor::eARGB_WHITE);
-        m_colorMappings.m_grey = CreateColorFromU32(physx::PxDebugColor::eARGB_GREY);
-        m_colorMappings.m_darkRed = CreateColorFromU32(physx::PxDebugColor::eARGB_DARKRED);
-        m_colorMappings.m_darkGreen = CreateColorFromU32(physx::PxDebugColor::eARGB_DARKGREEN);
-        m_colorMappings.m_darkBlue = CreateColorFromU32(physx::PxDebugColor::eARGB_DARKBLUE);
+        m_colorMappings.m_defaultColor.FromU32(physx::PxDebugColor::eARGB_GREEN);
+        m_colorMappings.m_black.FromU32(physx::PxDebugColor::eARGB_BLACK);
+        m_colorMappings.m_red.FromU32(physx::PxDebugColor::eARGB_RED);
+        m_colorMappings.m_green.FromU32(physx::PxDebugColor::eARGB_GREEN);
+        m_colorMappings.m_blue.FromU32(physx::PxDebugColor::eARGB_BLUE);
+        m_colorMappings.m_yellow.FromU32(physx::PxDebugColor::eARGB_YELLOW);
+        m_colorMappings.m_magenta.FromU32(physx::PxDebugColor::eARGB_MAGENTA);
+        m_colorMappings.m_cyan.FromU32(physx::PxDebugColor::eARGB_CYAN);
+        m_colorMappings.m_white.FromU32(physx::PxDebugColor::eARGB_WHITE);
+        m_colorMappings.m_grey.FromU32(physx::PxDebugColor::eARGB_GREY);
+        m_colorMappings.m_darkRed.FromU32(physx::PxDebugColor::eARGB_DARKRED);
+        m_colorMappings.m_darkGreen.FromU32(physx::PxDebugColor::eARGB_DARKGREEN);
+        m_colorMappings.m_darkBlue.FromU32(physx::PxDebugColor::eARGB_DARKBLUE);
     }
 }

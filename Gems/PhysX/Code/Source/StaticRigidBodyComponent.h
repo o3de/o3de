@@ -13,7 +13,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzFramework/Physics/WorldBodyBus.h>
+#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <PhysX/ComponentTypeIds.h>
 
 namespace AzPhysics
@@ -27,7 +27,7 @@ namespace PhysX
 
     class StaticRigidBodyComponent final
         : public AZ::Component
-        , public Physics::WorldBodyRequestBus::Handler
+        , public AzPhysics::SimulatedBodyComponentRequestsBus::Handler
         , private AZ::TransformNotificationBus::Handler
     {
     public:
@@ -44,14 +44,14 @@ namespace PhysX
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        PhysX::StaticRigidBody* GetStaticRigidBody();
-
-        // WorldBodyRequestBus
+        // AzPhysics::SimulatedBodyComponentRequestsBus::Handler overrides ...
         void EnablePhysics() override;
         void DisablePhysics() override;
         bool IsPhysicsEnabled() const override;
         AZ::Aabb GetAabb() const override;
-        AzPhysics::SimulatedBody* GetWorldBody() override;
+        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
+        AzPhysics::SimulatedBody* GetSimulatedBody() override;
+
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
     private:

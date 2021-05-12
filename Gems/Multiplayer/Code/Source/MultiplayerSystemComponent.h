@@ -84,12 +84,13 @@ namespace Multiplayer
 
         //! IMultiplayer interface
         //! @{
-        MultiplayerAgentType GetAgentType() override;
+        MultiplayerAgentType GetAgentType() const override;
         void InitializeMultiplayer(MultiplayerAgentType state) override;
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
         void AddSessionInitHandler(SessionInitEvent::Handler& handler) override;
         void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
         void SendReadyForEntityUpdates(bool readyForEntityUpdates) override;
+        AZ::TimeMs GetCurrentHostTimeMs() const override;
         const char* GetComponentGemName(NetComponentId netComponentId) const override;
         const char* GetComponentName(NetComponentId netComponentId) const override;
         const char* GetComponentPropertyName(NetComponentId netComponentId, PropertyIndex propertyIndex) const override;
@@ -119,5 +120,8 @@ namespace Multiplayer
         SessionInitEvent m_initEvent;
         SessionShutdownEvent m_shutdownEvent;
         ConnectionAcquiredEvent m_connAcquiredEvent;
+
+        AZ::TimeMs m_lastReplicatedHostTimeMs = AZ::TimeMs{ 0 };
+        HostFrameId m_lastReplicatedHostFrameId = InvalidHostFrameId;
     };
 }
