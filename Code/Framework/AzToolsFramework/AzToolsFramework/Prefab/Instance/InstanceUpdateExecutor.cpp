@@ -16,7 +16,6 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
-#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
@@ -103,19 +102,9 @@ namespace AzToolsFramework
                     // Notify Propagation has begun
                     PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotifications::OnPrefabInstancePropagationBegin);
 
-                    auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
-                    AZ_Assert(
-                        prefabEditorEntityOwnershipInterface != nullptr,
-                        "Prefab Editor Entity Ownership Interface could not be found. "
-                        "Check that it is being correctly initialized.");
-
-                    TemplateId levelRootInstanceTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabInstanceTemplateId();
-                    PrefabDom& levelRootInstanceTemplateDom =
-                        m_prefabSystemComponentInterface->FindTemplateDom(levelRootInstanceTemplateId);
-                    PrefabDom instanceDomInRootTemplateDoc;
-
                     EntityIdList selectedEntityIds;
                     ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
+                    PrefabDom instanceDomFromRootDoc;
 
                     for (int i = 0; i < instanceCountToUpdateInBatch; ++i)
                     {
@@ -153,22 +142,34 @@ namespace AzToolsFramework
 
                         Instance::EntityList newEntities;
 
-                        PrefabDomValueReference instanceDomInRootTemplate;
-                        if(instanceToUpdate->GetTemplateId() != levelRootInstanceTemplateId)
+                        // Climb up to the root of the instance hierarchy from this instance
+                        InstanceOptionalConstReference rootInstance = *instanceToUpdate;
+                        AZStd::vector<InstanceOptionalConstReference> pathOfInstances;
+
+                        while (rootInstance->get().GetParentInstance() != AZStd::nullopt)
                         {
-                            instanceDomInRootTemplate = PrefabDomUtils::FindPrefabDomValue(
-                                levelRootInstanceTemplateDom, instanceToUpdate->GetAbsoluteInstanceAliasPath());
-                        }
-                        else
-                        {
-                            instanceDomInRootTemplate = levelRootInstanceTemplateDom;
+                            pathOfInstances.emplace_back(rootInstance);
+                            rootInstance = rootInstance->get().GetParentInstance();
                         }
 
-                        if (instanceDomInRootTemplate.has_value())
+                        AZStd::string aliasPathResult = "";
+                        for (auto instanceIter = pathOfInstances.rbegin(); instanceIter != pathOfInstances.rend(); ++instanceIter)
                         {
-                            instanceDomInRootTemplateDoc.CopyFrom(instanceDomInRootTemplate->get(), instanceDomInRootTemplateDoc.GetAllocator());
+                            aliasPathResult.append("/Instances/");
+                            aliasPathResult.append((*instanceIter)->get().GetInstanceAlias());
+                        }
 
-                            if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDomInRootTemplateDoc))
+                        PrefabDomPath rootPrefabDomPath(aliasPathResult.c_str());
+
+                        PrefabDom& rootPrefabTemplateDom =
+                            m_prefabSystemComponentInterface->FindTemplateDom(rootInstance->get().GetTemplateId());
+
+                        PrefabDomValueReference instanceDomFromRoot = *(rootPrefabDomPath.Get(rootPrefabTemplateDom));
+
+                        if (instanceDomFromRoot.has_value())
+                        {
+                            instanceDomFromRootDoc.CopyFrom(instanceDomFromRoot->get(), instanceDomFromRootDoc.GetAllocator());
+                            if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDomFromRootDoc))
                             {
                                 AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
                                     &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, newEntities);
