@@ -24,6 +24,9 @@ set(FILES
     Source/ProjectManagerWindow.h
     Source/ProjectManagerWindow.cpp
     Source/ProjectManagerWindow.ui
+    Source/PythonBindings.h
+    Source/PythonBindings.cpp
+    Source/PythonBindingsInterface.h
     Source/NewProjectSettingsScreen.h
     Source/NewProjectSettingsScreen.cpp
     Source/ProjectSettingsCtrl.h
@@ -39,6 +42,10 @@ set(FILES
     Source/EngineSettingsScreen.h
     Source/EngineSettingsScreen.cpp
     Source/EngineSettingsScreen.ui
+    Source/LinkWidget.h
+    Source/LinkWidget.cpp
+    Source/TagWidget.h
+    Source/TagWidget.cpp
     Source/GemCatalog/GemCatalogScreen.h
     Source/GemCatalog/GemCatalogScreen.cpp
     Source/GemCatalog/GemInfo.h

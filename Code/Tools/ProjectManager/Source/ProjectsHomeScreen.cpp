@@ -14,6 +14,8 @@
 
 #include <Source/ui_ProjectsHomeScreen.h>
 
+#include <PythonBindingsInterface.h>
+
 namespace O3DE::ProjectManager
 {
     ProjectsHomeScreen::ProjectsHomeScreen(QWidget* parent)
@@ -25,6 +27,9 @@ namespace O3DE::ProjectManager
         QObject::connect(m_ui->newProjectButton, &QPushButton::pressed, this, &ProjectsHomeScreen::HandleNewProjectButton);
         QObject::connect(m_ui->addProjectButton, &QPushButton::pressed, this, &ProjectsHomeScreen::HandleAddProjectButton);
         QObject::connect(m_ui->editProjectButton, &QPushButton::pressed, this, &ProjectsHomeScreen::HandleEditProjectButton);
+
+        // example of how to get the current project name
+        //ProjectInfo currentProject = PythonBindingsInterface::Get()->GetCurrentProject();
     }
 
     ProjectManagerScreen ProjectsHomeScreen::GetScreenEnum()

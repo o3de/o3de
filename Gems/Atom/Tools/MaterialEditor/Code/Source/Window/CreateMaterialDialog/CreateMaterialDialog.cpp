@@ -21,6 +21,8 @@
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 
+#include <Atom/Document/MaterialDocumentSettings.h>
+
 #include <QFileDialog>
 
 namespace MaterialEditor
@@ -69,8 +71,11 @@ namespace MaterialEditor
         QObject::connect(m_ui->m_materialTypeComboBox, static_cast<void (QComboBox::*)(const int)>(&QComboBox::currentIndexChanged), this, [this]() { UpdateMaterialTypeSelection(); });
         QObject::connect(m_ui->m_materialTypeComboBox, &QComboBox::currentTextChanged, this, [this]() { UpdateMaterialTypeSelection(); });
 
-        // Select StandardPBR by default but we will later data drive this with editor settings
-        const int index = m_ui->m_materialTypeComboBox->findText("StandardPBR");
+        // Select the default material type from settings
+        auto settings =
+            AZ::UserSettings::CreateFind<MaterialDocumentSettings>(AZ::Crc32("MaterialDocumentSettings"), AZ::UserSettings::CT_GLOBAL);
+
+        const int index = m_ui->m_materialTypeComboBox->findText(settings->m_defaultMaterialTypeName.c_str());
         if (index >= 0)
         {
             m_ui->m_materialTypeComboBox->setCurrentIndex(index);

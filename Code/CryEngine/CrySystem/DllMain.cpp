@@ -15,10 +15,6 @@
 #include "System.h"
 #include <AZCrySystemInitLogSink.h>
 #include "DebugCallStack.h"
-#if defined(AZ_MONOLITHIC_BUILD)
-#include <CryCommon/CryExtension/Impl/ICryFactoryRegistryImpl.h>
-#include <CryCommon/CryExtension/Impl/RegFactoryNode.h>
-#endif
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #undef AZ_RESTRICTED_SECTION
@@ -132,10 +128,7 @@ CRYSYSTEM_API ISystem* CreateSystemInterface(const SSystemInitParams& startupPar
 #define AZ_RESTRICTED_SECTION DLLMAIN_CPP_SECTION_2
 #include AZ_RESTRICTED_FILE(DllMain_cpp)
 #endif
-#if defined(AZ_MONOLITHIC_BUILD)
-    ICryFactoryRegistryImpl* pCryFactoryImpl = static_cast<ICryFactoryRegistryImpl*>(pSystem->GetCryFactoryRegistry());
-    pCryFactoryImpl->RegisterFactories(g_pHeadToRegFactories);
-#endif // AZ_MONOLITHIC_BUILD
+
        // the earliest point the system exists - w2e tell the callback
     if (startupParams.pUserCallback)
     {

@@ -342,7 +342,8 @@ void CSelectionGroup::Rotate(const Matrix34& rotateTM, int referenceCoordSys)
 
         if (referenceCoordSys == COORDS_USERDEFINED)
         {
-            Matrix34 userTM = GetIEditor()->GetViewManager()->GetGrid()->GetMatrix();
+            Matrix34 userTM;
+            userTM.SetIdentity();
             Matrix34 invUserTM = userTM.GetInvertedFast();
 
             ToOrigin = invUserTM * ToOrigin;

@@ -223,3 +223,28 @@ class WinEditor(WinLauncher):
         """
         assert self.workspace.project is not None
         return os.path.join(self.workspace.paths.build_directory(), "Editor.exe")
+
+
+class WinGenericLauncher(WinLauncher):
+
+    def __init__(self, build, exe_file_name, args=None):
+        super(WinGenericLauncher, self).__init__(build, args)
+        self.exe_file_name = exe_file_name
+        self.expected_executable_path = os.path.join(
+            self.workspace.paths.build_directory(), f"{self.exe_file_name}.exe")
+
+        if not os.path.exists(self.expected_executable_path):
+            raise ProcessNotStartedError(
+                f"Unable to locate executable '{self.exe_file_name}.exe' "
+                f"in path: '{self.expected_executable_path}'")
+
+    def binary_path(self):
+        """
+        Return full path to the .exe file for this build's configuration and project
+        Relies on the build_directory() in self.workspace.paths to be accurate
+
+        :return: full path to the given exe file
+        """
+        assert self.workspace.project is not None, (
+            'Project cannot be NoneType - please specify a project name string.')
+        return self.expected_executable_path

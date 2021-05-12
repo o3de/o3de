@@ -28,6 +28,8 @@ namespace O3DE::ProjectManager
     {
         m_ui->setupUi(this);
 
+        m_pythonBindings = AZStd::make_unique<PythonBindings>(engineRootPath);
+
         m_screensCtrl = new ScreensCtrl();
         m_ui->verticalLayout->addWidget(m_screensCtrl);
 
@@ -55,6 +57,7 @@ namespace O3DE::ProjectManager
 
     ProjectManagerWindow::~ProjectManagerWindow()
     {
+        m_pythonBindings.reset();
     }
 
     void ProjectManagerWindow::HandleProjectsMenu()
