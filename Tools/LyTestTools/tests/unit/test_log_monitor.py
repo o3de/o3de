@@ -99,6 +99,15 @@ class TestLogMonitor(object):
         assert under_test == expected_line
 
     @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
+    def test_Monitor_UTF8StringsPresentAndExpected_Success(self):
+        # Ålphaßravoçharlie
+        mock_file = io.StringIO(u'größeren prüfung тестування\nÀÈÌÒÙ\nÅlphaßravoçharlie\n')
+        mock_launcher.is_alive.side_effect = [True, True, True, False]
+
+        with mock.patch('ly_test_tools.log.log_monitor.open', return_value=mock_file, create=True):
+            mock_log_monitor().monitor_log_for_lines(['größeren prüfung тестування', 'ÀÈÌÒÙ', 'Ålphaßravoçharlie'])
+
+    @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
     def test_Monitor_AllLinesFound_Success(self):
         mock_file = io.StringIO(u'a\nb\nc\n')
         mock_launcher.is_alive.side_effect = [True, True, True, False]
