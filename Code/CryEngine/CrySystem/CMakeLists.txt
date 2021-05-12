@@ -89,7 +89,6 @@ ly_add_target(
             Legacy::CrySystem.Static
             AZ::AzCore
             Legacy::CryCommon
-            Legacy::CryCommon.EngineSettings.Static
 )
 
 ################################################################################
@@ -109,7 +108,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 Legacy::CryCommon
-                Legacy::CryCommon.EngineSettings.Static
                 Legacy::CrySystem.Static
                 AZ::AzFramework
     )

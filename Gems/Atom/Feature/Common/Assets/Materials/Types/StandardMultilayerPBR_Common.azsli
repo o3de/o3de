@@ -14,6 +14,7 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/PBR/LightingOptions.azsli>
 
 #include "MaterialInputs/BaseColorInput.azsli"
 #include "MaterialInputs/RoughnessInput.azsli"
@@ -25,6 +26,8 @@
 #include "MaterialInputs/EmissiveInput.azsli"
 #include "MaterialInputs/ParallaxInput.azsli"
 #include "MaterialInputs/UvSetCount.azsli"
+
+// ------ ShaderResourceGroup ----------------------------------------
 
 #define DEFINE_LAYER_SRG_INPUTS(prefix) \
 COMMON_SRG_INPUTS_BASE_COLOR(prefix)    \
@@ -57,17 +60,16 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     float4 m_pad3; // [GFX TODO][ATOM-14595] This is a workaround for a data stomping bug. Remove once it's fixed.
     
     uint m_parallaxUvIndex;
-    float m_parallaxMainDepthFactor;
+
+    // These are used to limit the heightmap intersection search range to the narrowest band possible, to give the best quality result.
+    float m_displacementMin; // The lowest displacement value possible from all layers combined
+    float m_displacementMax; // The highest displacement value possible from all layers combined
 
     float3x3 m_uvMatrix;
     float4 m_pad4; // [GFX TODO][ATOM-14595] This is a workaround for a data stomping bug. Remove once it's fixed.
     float3x3 m_uvMatrixInverse;
     float4 m_pad5; // [GFX TODO][ATOM-14595] This is a workaround for a data stomping bug. Remove once it's fixed.
     
-    float m_opacityFactor;
-    Texture2D m_opacityMap;
-    uint m_opacityMapUvIndex;
-
     Sampler m_sampler
     {
         AddressU = Wrap;
@@ -109,6 +111,8 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     uint m_transmissionThicknessMapUvIndex;
 }
 
+// ------ Shader Options ----------------------------------------
+
 enum class DebugDrawMode { None, BlendMaskValues, DepthMaps };
 option DebugDrawMode o_debugDrawMode;
 
@@ -120,6 +124,8 @@ option BlendMaskSource o_blendSource;
 // (search "m_optional_" in ShaderVariantAssetBuilder for details on the naming convention).
 // [GFX TODO][ATOM-14475]: Come up with a more elegant way to associate the isBound flag with the input stream.
 option bool o_blendMask_isBound;
+
+// ------ Blend Utilities ----------------------------------------
 
 //! Returns the BlendMaskSource that will actually be used when rendering (not necessarily the same BlendMaskSource specified by the user)
 BlendMaskSource GetFinalBlendMaskSource()
@@ -181,6 +187,22 @@ float3 BlendLayers(float3 layer1, float3 layer2, float3 layer3, float3 blendMask
     return layer1 * blendMaskValues.r + layer2 * blendMaskValues.g + layer3 * blendMaskValues.b;
 }
 
+// ------ Parallax Utilities ----------------------------------------
+
+bool ShouldHandleParallax()
+{
+    // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scattering is enabled.
+    // Also, all the debug draw modes avoid parallax (they early-return before parallax code actually) so you can see exactly where the various maps appear on the surface UV space.
+    return !o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_debugDrawMode == DebugDrawMode::None;
+}
+
+bool ShouldHandleParallaxInDepthShaders()
+{
+    // The depth pass shaders need to calculate parallax when the result could affect the depth buffer (or when
+    // parallax could affect texel clipping but we don't have alpha/clipping support in multilayer PBR).
+    return ShouldHandleParallax() && o_parallax_enablePixelDepthOffset;
+}
+
 // These static values are used to pass extra data to the GetDepth callback function during the parallax depth search.
 static float3 s_blendMaskFromVertexStream;
 
@@ -192,7 +214,7 @@ void GetDepth_Setup(float3 vertexBlendMask)
 }
 
 // Callback function for ParallaxMapping.azsli
-float GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
+DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
     float3 layerDepthValues = float3(0,0,0);
 
@@ -204,8 +226,9 @@ float GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
             layerUv = mul(MaterialSrg::m_layer1_m_uvMatrix, float3(uv, 1.0)).xy;
         }
 
-        layerDepthValues.r = SampleDepthOrHeightMap(MaterialSrg::m_layer1_m_depthInverted, MaterialSrg::m_layer1_m_depthMap, MaterialSrg::m_sampler, layerUv, uv_ddx, uv_ddy);
+        layerDepthValues.r = SampleDepthOrHeightMap(MaterialSrg::m_layer1_m_depthInverted, MaterialSrg::m_layer1_m_depthMap, MaterialSrg::m_sampler, layerUv, uv_ddx, uv_ddy).m_depth;
         layerDepthValues.r *= MaterialSrg::m_layer1_m_depthFactor;
+        layerDepthValues.r -= MaterialSrg::m_layer1_m_depthOffset;
     }
     
     if(o_layer2_o_useDepthMap)
@@ -216,8 +239,9 @@ float GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
             layerUv = mul(MaterialSrg::m_layer2_m_uvMatrix, float3(uv, 1.0)).xy;
         }
 
-        layerDepthValues.g = SampleDepthOrHeightMap(MaterialSrg::m_layer2_m_depthInverted, MaterialSrg::m_layer2_m_depthMap, MaterialSrg::m_sampler, layerUv, uv_ddx, uv_ddy);
+        layerDepthValues.g = SampleDepthOrHeightMap(MaterialSrg::m_layer2_m_depthInverted, MaterialSrg::m_layer2_m_depthMap, MaterialSrg::m_sampler, layerUv, uv_ddx, uv_ddy).m_depth;
         layerDepthValues.g *= MaterialSrg::m_layer2_m_depthFactor;
+        layerDepthValues.g -= MaterialSrg::m_layer2_m_depthOffset;
     }
     
     if(o_layer3_o_useDepthMap)
@@ -228,8 +252,9 @@ float GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
             layerUv = mul(MaterialSrg::m_layer3_m_uvMatrix, float3(uv, 1.0)).xy;
         }
 
-        layerDepthValues.b = SampleDepthOrHeightMap(MaterialSrg::m_layer3_m_depthInverted, MaterialSrg::m_layer3_m_depthMap, MaterialSrg::m_sampler, layerUv, uv_ddx, uv_ddy);
+        layerDepthValues.b = SampleDepthOrHeightMap(MaterialSrg::m_layer3_m_depthInverted, MaterialSrg::m_layer3_m_depthMap, MaterialSrg::m_sampler, layerUv, uv_ddx, uv_ddy).m_depth;
         layerDepthValues.b *= MaterialSrg::m_layer3_m_depthFactor;
+        layerDepthValues.b -= MaterialSrg::m_layer3_m_depthOffset;
     }
     
     // Note, when the blend source is BlendMaskSource::VertexColors, parallax will not be able to blend correctly between layers. It will end up using the same blend mask values
@@ -237,7 +262,6 @@ float GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
     // you have a small depth factor relative to the size of the blend transition.
     float3 blendMaskValues = GetBlendMaskValues(uv, s_blendMaskFromVertexStream);
 
-    float3 depth = BlendLayers(layerDepthValues.r, layerDepthValues.g, layerDepthValues.b, blendMaskValues);
-
-    return depth;
+    float depth = BlendLayers(layerDepthValues.r, layerDepthValues.g, layerDepthValues.b, blendMaskValues);
+    return DepthResultAbsolute(depth);
 }

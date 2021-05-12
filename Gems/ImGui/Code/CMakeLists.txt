@@ -95,8 +95,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAME ImGui.Editor GEM_MODULE
 
         NAMESPACE Gem
-        AUTOMOC
-        AUTOUIC
         FILES_CMAKE
             imgui_editor_files.cmake
         COMPILE_DEFINITIONS
@@ -112,9 +110,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::ImGui.Static
-                3rdParty::Qt::Widgets
-                AZ::AzToolsFramework
-                Legacy::Editor.Headers
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )

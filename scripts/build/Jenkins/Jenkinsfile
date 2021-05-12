@@ -60,7 +60,7 @@ def palRm(path) {
     } else {
         def win_path = path.replace('/','\\')
         bat label: "Removing ${win_path}",
-            script: "del ${win_path}"
+            script: "del /Q ${win_path}"
     }
 }
 
@@ -354,6 +354,16 @@ def TestMetrics(Map pipelineConfig, String workspace, String branchName, String 
     }
 }
 
+def ExportTestResults(Map options, String platform, String type, String workspace, Map params) {
+    catchError(message: "Error exporting tests results (this won't fail the build)", buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+        def o3deroot = "${workspace}/${ENGINE_REPOSITORY_NAME}"
+        dir("${o3deroot}/${params.OUTPUT_DIRECTORY}") {
+            junit testResults: "Testing/**/*.xml"
+            palRmDir("Testing")
+        }
+    }
+}
+
 def PostBuildCommonSteps(String workspace, boolean mount = true) {
     echo 'Starting post-build common steps...'
 
@@ -392,6 +402,14 @@ def CreateTestMetricsStage(Map pipelineConfig, String branchName, Map environmen
     return {
         stage("${buildJobName}_metrics") {
             TestMetrics(pipelineConfig, environmentVars['WORKSPACE'], branchName, env.DEFAULT_REPOSITORY_NAME, buildJobName, outputDirectory, configuration)
+        }
+    }
+}
+
+def CreateExportTestResultsStage(Map pipelineConfig, String platformName, String jobName, Map environmentVars, Map params) {
+    return {
+        stage("${jobName}_results") {
+            ExportTestResults(pipelineConfig, platformName, jobName, environmentVars['WORKSPACE'], params)
         }
     }
 }
@@ -511,10 +529,14 @@ try {
                                 }
                             }
                             finally {
-                                if (env.MARS_REPO && platform.value.build_types[build_job_name].PARAMETERS.containsKey('TEST_METRICS') && platform.value.build_types[build_job_name].PARAMETERS.TEST_METRICS == 'True') {
-                                    def output_directory = platform.value.build_types[build_job_name].PARAMETERS.OUTPUT_DIRECTORY
-                                    def configuration = platform.value.build_types[build_job_name].PARAMETERS.CONFIGURATION
+                                def params = platform.value.build_types[build_job_name].PARAMETERS
+                                if (env.MARS_REPO && params && params.containsKey('TEST_METRICS') && params.TEST_METRICS == 'True') {
+                                    def output_directory = params.OUTPUT_DIRECTORY
+                                    def configuration = params.CONFIGURATION
                                     CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, output_directory, configuration).call()
+                                }
+                                if (params && params.containsKey('TEST_RESULTS') && params.TEST_RESULTS == 'True') {
+                                    CreateExportTestResultsStage(pipelineConfig,  platform.key, build_job_name, envVars, params).call()
                                 }
                                 CreateTeardownStage(envVars).call()
                             }
@@ -549,15 +571,17 @@ finally {
                 message:"${currentBuild.currentResult}:${BUILD_URL}:${env.RECREATE_VOLUME}:${env.CLEAN_OUTPUT_DIRECTORY}:${env.CLEAN_ASSETS}"
             )
         }
-        step([
-            $class: 'Mailer',
-            notifyEveryUnstableBuild: true,
-            sendToIndividuals: true,
-            recipients: emailextrecipients([
-                [$class: 'CulpritsRecipientProvider'],
-                [$class: 'RequesterRecipientProvider']
+        node('controller') {
+            emailRecipients = [[$class: 'RequesterRecipientProvider']]
+            if (env.WATCHED_BRANCHES.tokenize(',').contains(branchName)) {
+                emailRecipients.add([$class: 'CulpritsRecipientProvider'])
+            }
+            step([
+                $class: 'Mailer', 
+                notifyEveryUnstableBuild: true, 
+                recipients: emailextrecipients(emailRecipients)
             ])
-        ])
+        }
     } catch(Exception e) {
     }
 }

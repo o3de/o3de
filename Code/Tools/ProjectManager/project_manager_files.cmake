@@ -19,15 +19,17 @@ set(FILES
     Source/FirstTimeUse.h
     Source/FirstTimeUse.cpp
     Source/FirstTimeUse.ui
+    Source/ProjectInfo.h
+    Source/ProjectInfo.cpp
     Source/ProjectManagerWindow.h
     Source/ProjectManagerWindow.cpp
     Source/ProjectManagerWindow.ui
+    Source/PythonBindings.h
+    Source/PythonBindings.cpp
+    Source/PythonBindingsInterface.h
     Source/NewProjectSettings.h
     Source/NewProjectSettings.cpp
     Source/NewProjectSettings.ui
-    Source/GemCatalog.h
-    Source/GemCatalog.cpp
-    Source/GemCatalog.ui
     Source/ProjectsHome.h
     Source/ProjectsHome.cpp
     Source/ProjectsHome.ui
@@ -37,6 +39,18 @@ set(FILES
     Source/EngineSettings.h
     Source/EngineSettings.cpp
     Source/EngineSettings.ui
+    Source/LinkWidget.h
+    Source/LinkWidget.cpp
+    Source/TagWidget.h
+    Source/TagWidget.cpp
+    Source/GemCatalog/GemCatalog.h
+    Source/GemCatalog/GemCatalog.cpp
     Source/GemCatalog/GemInfo.h
     Source/GemCatalog/GemInfo.cpp
+    Source/GemCatalog/GemItemDelegate.h
+    Source/GemCatalog/GemItemDelegate.cpp
+    Source/GemCatalog/GemListView.h
+    Source/GemCatalog/GemListView.cpp
+    Source/GemCatalog/GemModel.h
+    Source/GemCatalog/GemModel.cpp
 )

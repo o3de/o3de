@@ -85,7 +85,6 @@ AZ_POP_DISABLE_WARNING
 // Editor
 #include "Settings.h"
 
-#include "Include/IBackgroundScheduleManager.h"
 #include "GameExporter.h"
 #include "GameResourcesExporter.h"
 
@@ -95,7 +94,6 @@ AZ_POP_DISABLE_WARNING
 #include "Core/QtEditorApplication.h"
 #include "StringDlg.h"
 #include "NewLevelDialog.h"
-#include "GridSettingsDialog.h"
 #include "LayoutConfigDialog.h"
 #include "ViewManager.h"
 #include "FileTypeUtils.h"
@@ -132,7 +130,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "Util/AutoDirectoryRestoreFileDialog.h"
 #include "Util/EditorAutoLevelLoadTest.h"
-#include "Util/Ruler.h"
 #include "Util/IndexedFiles.h"
 #include "AboutDialog.h"
 #include <AzToolsFramework/PythonTerminal/ScriptHelpDialog.h>
@@ -390,7 +387,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_PREFERENCES, OnPreferences)
     ON_COMMAND(ID_REDO, OnRedo)
     ON_COMMAND(ID_TOOLBAR_WIDGET_REDO, OnRedo)
-    ON_COMMAND(ID_RELOAD_TEXTURES, OnReloadTextures)
     ON_COMMAND(ID_FILE_OPEN_LEVEL, OnOpenLevel)
 #ifdef ENABLE_SLICE_EDITOR
     ON_COMMAND(ID_FILE_NEW_SLICE, OnCreateSlice)
@@ -400,11 +396,8 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_GAME_SYNCPLAYER, OnSyncPlayer)
     ON_COMMAND(ID_RESOURCES_REDUCEWORKINGSET, OnResourcesReduceworkingset)
 
-    ON_COMMAND(ID_SNAP_TO_GRID, OnSnap)
-
     ON_COMMAND(ID_WIREFRAME, OnWireframe)
 
-    ON_COMMAND(ID_VIEW_GRIDSETTINGS, OnViewGridsettings)
     ON_COMMAND(ID_VIEW_CONFIGURELAYOUT, OnViewConfigureLayout)
 
     ON_COMMAND(IDC_SELECTION, OnDummyCommand)
@@ -444,7 +437,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_VIEW_CYCLE2DVIEWPORT, OnViewCycle2dviewport)
 #endif
     ON_COMMAND(ID_DISPLAY_GOTOPOSITION, OnDisplayGotoPosition)
-    ON_COMMAND(ID_SNAPANGLE, OnSnapangle)
     ON_COMMAND(ID_CHANGEMOVESPEED_INCREASE, OnChangemovespeedIncrease)
     ON_COMMAND(ID_CHANGEMOVESPEED_DECREASE, OnChangemovespeedDecrease)
     ON_COMMAND(ID_CHANGEMOVESPEED_CHANGESTEP, OnChangemovespeedChangestep)
@@ -527,12 +519,6 @@ public:
     bool m_bExportTexture = false;
 
     bool m_bMatEditMode = false;
-    bool m_bPrecacheShaders = false;
-    bool m_bPrecacheShadersLevels = false;
-    bool m_bPrecacheShaderList = false;
-    bool m_bStatsShaders = false;
-    bool m_bStatsShaderList = false;
-    bool m_bMergeShaders = false;
 
     bool m_bConsoleMode = false;
     bool m_bNullRenderer = false;
@@ -574,12 +560,6 @@ public:
             { "exportTexture", m_bExportTexture },
             { "test", m_bTest },
             { "auto_level_load", m_bAutoLoadLevel },
-            { "PrecacheShaders", m_bPrecacheShaders },
-            { "PrecacheShadersLevels", m_bPrecacheShadersLevels },
-            { "PrecacheShaderList", m_bPrecacheShaderList },
-            { "StatsShaders", m_bStatsShaders },
-            { "StatsShaderList", m_bStatsShaderList },
-            { "MergeShaders", m_bMergeShaders },
             { "MatEdit", m_bMatEditMode },
             { "BatchMode", m_bConsoleMode },
             { "NullRenderer", m_bNullRenderer },
@@ -1024,26 +1004,12 @@ void CCryEditApp::OutputStartupMessage(QString str)
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::InitFromCommandLine(CEditCommandLineInfo& cmdInfo)
 {
-    //! Setup flags from command line
-    if (cmdInfo.m_bPrecacheShaders || cmdInfo.m_bPrecacheShadersLevels || cmdInfo.m_bMergeShaders
-        || cmdInfo.m_bPrecacheShaderList || cmdInfo.m_bStatsShaderList || cmdInfo.m_bStatsShaders)
-    {
-        m_bPreviewMode = true;
-        m_bConsoleMode = true;
-        m_bTestMode = true;
-    }
     m_bConsoleMode |= cmdInfo.m_bConsoleMode;
     inEditorBatchMode = AZ::Environment::CreateVariable<bool>("InEditorBatchMode", m_bConsoleMode);
 
     m_bTestMode |= cmdInfo.m_bTest;
 
     m_bSkipWelcomeScreenDialog = cmdInfo.m_bSkipWelcomeScreenDialog || !cmdInfo.m_execFile.isEmpty() || !cmdInfo.m_execLineCmd.isEmpty() || cmdInfo.m_bAutotestMode;
-    m_bPrecacheShaderList = cmdInfo.m_bPrecacheShaderList;
-    m_bStatsShaderList = cmdInfo.m_bStatsShaderList;
-    m_bStatsShaders = cmdInfo.m_bStatsShaders;
-    m_bPrecacheShaders = cmdInfo.m_bPrecacheShaders;
-    m_bPrecacheShadersLevels = cmdInfo.m_bPrecacheShadersLevels;
-    m_bMergeShaders = cmdInfo.m_bMergeShaders;
     m_bExportMode = cmdInfo.m_bExport;
     m_bRunPythonTestScript = cmdInfo.m_bRunPythonTestScript;
     m_bRunPythonScript = cmdInfo.m_bRunPythonScript || cmdInfo.m_bRunPythonTestScript;
@@ -1079,11 +1045,9 @@ void CCryEditApp::InitFromCommandLine(CEditCommandLineInfo& cmdInfo)
 /////////////////////////////////////////////////////////////////////////////
 AZ::Outcome<void, AZStd::string> CCryEditApp::InitGameSystem(HWND hwndForInputSystem)
 {
-    bool bShaderCacheGen = m_bPrecacheShaderList | m_bPrecacheShaders | m_bPrecacheShadersLevels;
-
     CGameEngine* pGameEngine = new CGameEngine;
 
-    AZ::Outcome<void, AZStd::string> initOutcome = pGameEngine->Init(m_bPreviewMode, m_bTestMode, bShaderCacheGen, qApp->arguments().join(" ").toUtf8().data(), g_pInitializeUIInfo, hwndForInputSystem);
+    AZ::Outcome<void, AZStd::string> initOutcome = pGameEngine->Init(m_bPreviewMode, m_bTestMode, qApp->arguments().join(" ").toUtf8().data(), g_pInitializeUIInfo, hwndForInputSystem);
     if (!initOutcome.IsSuccess())
     {
         return initOutcome;
@@ -1124,8 +1088,7 @@ BOOL CCryEditApp::CheckIfAlreadyRunning()
         }
     }
 
-    // Shader pre-caching may start multiple editor copies
-    if (!FirstInstance(bForceNewInstance) && !m_bPrecacheShaderList)
+    if (!FirstInstance(bForceNewInstance))
     {
         return false;
     }
@@ -1347,37 +1310,6 @@ void CCryEditApp::InitLevel(const CEditCommandLineInfo& cmdInfo)
 /////////////////////////////////////////////////////////////////////////////
 BOOL CCryEditApp::InitConsole()
 {
-    if (m_bPrecacheShaderList)
-    {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString("r_PrecacheShaderList");
-        return false;
-    }
-    else if (m_bStatsShaderList)
-    {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString("r_StatsShaderList");
-        return false;
-    }
-    else if (m_bStatsShaders)
-    {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString("r_StatsShaders");
-        return false;
-    }
-    else if (m_bPrecacheShaders)
-    {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString("r_PrecacheShaders");
-        return false;
-    }
-    else if (m_bPrecacheShadersLevels)
-    {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString("r_PrecacheShadersLevels");
-        return false;
-    }
-    else if (m_bMergeShaders)
-    {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString("r_MergeShaders");
-        return false;
-    }
-
     // Execute command from cmdline -exec_line if applicable
     if (!m_execLineCmd.isEmpty())
     {
@@ -2381,15 +2313,6 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
     #endif
     }
 
-    // process the work schedule - regardless if the app is active or not
-    GetIEditor()->GetBackgroundScheduleManager()->Update();
-
-    // if there are active schedules keep updating the application
-    if (GetIEditor()->GetBackgroundScheduleManager()->GetNumSchedules() > 0)
-    {
-        bActive = true;
-    }
-
     m_bPrevActive = bActive;
 
     AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
@@ -2928,14 +2851,6 @@ void CCryEditApp::OnPreferences()
         m_AccelManager.UpdateWndTable();
     }
     */
-}
-
-void CCryEditApp::OnReloadTextures()
-{
-    QWaitCursor wait;
-    CLogFile::WriteLine("Reloading Static objects textures and shaders.");
-    GetIEditor()->GetObjectManager()->SendEvent(EVENT_RELOAD_TEXTURES);
-    GetIEditor()->GetRenderer()->EF_ReloadTextures();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3493,14 +3408,6 @@ void CCryEditApp::OnResourcesReduceworkingset()
 #endif
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnSnap()
-{
-    // Switch current snap to grid state.
-    bool bGridEnabled = gSettings.pGrid->IsEnabled();
-    gSettings.pGrid->Enable(!bGridEnabled);
-}
-
 void CCryEditApp::OnWireframe()
 {
     int             nWireframe(R_SOLID_MODE);
@@ -3538,14 +3445,6 @@ void CCryEditApp::OnUpdateWireframe(QAction* action)
     }
 
     action->setChecked(nWireframe == R_WIREFRAME_MODE);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnViewGridsettings()
-{
-    CGridSettingsDialog dlg;
-    dlg.exec();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3747,19 +3646,6 @@ void CCryEditApp::OnDisplayGotoPosition()
 {
     CGotoPositionDlg dlg;
     dlg.exec();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnSnapangle()
-{
-    gSettings.pGrid->EnableAngleSnap(!gSettings.pGrid->IsAngleSnapEnabled());
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateSnapangle(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    action->setChecked(gSettings.pGrid->IsAngleSnapEnabled());
 }
 
 //////////////////////////////////////////////////////////////////////////

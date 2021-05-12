@@ -164,6 +164,7 @@ namespace AZ
             if (m_featureProcessor)
             {
                 m_featureProcessor->RemoveProbe(m_handle);
+                m_handle = nullptr;
             }
 
             LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
@@ -252,8 +253,7 @@ namespace AZ
             m_configuration.m_outerLength = dimensions.GetY();
             m_configuration.m_outerHeight = dimensions.GetZ();
 
-            AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-                &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, m_entityId);
+            AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(m_entityId);
 
             // clamp the inner extents to the outer extents
             m_configuration.m_innerWidth = AZStd::min(m_configuration.m_innerWidth, m_configuration.m_outerWidth);

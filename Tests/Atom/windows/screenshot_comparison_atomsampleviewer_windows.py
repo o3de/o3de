@@ -86,7 +86,7 @@
     # return final_path
 
 
-# # Commenting out debug due to https://jira.agscollab.com/browse/ATOM-1677
+# # Commenting out debug due to ATOM-1677
 # @pytest.mark.parametrize("platform,configuration,project,spec,sample", [
         # pytest.param("win_x64_vs2017", "profile", "BaseViewer", "all", "RPI/BistroBenchmark",
                      # marks=pytest.mark.skipif(not WINDOWS, reason="Only supported on Windows hosts")),
