@@ -321,7 +321,7 @@ ForwardPassOutputWithDepth StandardPbr_ForwardPassPS(VSOutput IN, bool isFrontFa
 
 #ifdef UNIFIED_FORWARD_OUTPUT
     OUT.m_color.rgb = lightingOutput.m_diffuseColor.rgb + lightingOutput.m_specularColor.rgb;
-    OUT.m_color.a = 1.0f;
+    OUT.m_color.a = lightingOutput.m_diffuseColor.a;
     OUT.m_depth = depth;
 #else
     OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
@@ -344,7 +344,7 @@ ForwardPassOutput StandardPbr_ForwardPassPS_EDS(VSOutput IN, bool isFrontFace : 
 
 #ifdef UNIFIED_FORWARD_OUTPUT
     OUT.m_color.rgb = lightingOutput.m_diffuseColor.rgb + lightingOutput.m_specularColor.rgb;
-    OUT.m_color.a = 1.0f;
+    OUT.m_color.a = lightingOutput.m_diffuseColor.a;
 #else
     OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
     OUT.m_specularColor = lightingOutput.m_specularColor;

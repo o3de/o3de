@@ -12,9 +12,7 @@
 
 #pragma once
 
-// These are a list of quality options to specify as macros (either in azsl or in shader files)
-// 
-// QUALITY_LOW_END
+// This file translates quality option macros like QUALITY_LOW_END to their relevant settings
 
 #ifdef QUALITY_LOW_END
 

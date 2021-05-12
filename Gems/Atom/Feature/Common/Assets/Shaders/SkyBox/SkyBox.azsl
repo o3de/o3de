@@ -10,10 +10,8 @@
 *
 */
 
-// Static Options:
-// 
-// SKYBOX_TWO_OUTPUTS - Allows the skybox to render to two rendertargets instead of one
-
+// --- Static Options Available ---
+// SKYBOX_TWO_OUTPUTS - Skybox renders to two rendertargets instead of one (SkyBox_TwoOutputs.pass writes to specular and reflection targets)
 
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>

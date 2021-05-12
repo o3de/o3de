@@ -12,6 +12,9 @@
 
 #pragma once
 
+// --- Static Options Available ---
+// FORCE_IBL_IN_FORWARD_PASS - forces IBL lighting to be run in the forward pass, used in pipelines that don't have a reflection pass
+
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
 #include <Atom/RPI/Math.azsli>

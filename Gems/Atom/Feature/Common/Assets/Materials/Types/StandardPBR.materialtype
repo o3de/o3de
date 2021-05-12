@@ -78,13 +78,6 @@
         "properties": {
             "general": [
                 {
-                    "id": "useLowEndShader",
-                    "displayName": "Use Low End",
-                    "description": "Whether to use the low end shader.",
-                    "type": "Bool",
-                    "defaultValue": false
-                },
-                {
                     "id": "applySpecularAA",
                     "displayName": "Apply Specular AA",
                     "description": "Whether to apply specular anti-aliasing in the shader.",
