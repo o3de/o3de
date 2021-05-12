@@ -26,16 +26,18 @@ namespace O3DE::ProjectManager
     public:
         enum Platform
         {
-            Android = 0x0,
-            iOS = 0x1,
-            Linux = 0x2,
-            macOS = 0x3,
-            Windows = 0x4
+            Android = 1 << 0,
+            iOS = 1 << 1,
+            Linux = 1 << 2,
+            macOS = 1 << 3,
+            Windows = 1 << 4,
+            NumPlatforms = 5
         };
         Q_DECLARE_FLAGS(Platforms, Platform)
 
         GemInfo(const QString& name, const QString& creator, const QString& summary, Platforms platforms, bool isAdded);
 
+        QString m_path;
         QString m_name;
         QString m_displayName;
         AZ::Uuid m_uuid;

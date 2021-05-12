@@ -21,8 +21,6 @@ namespace O3DE::ProjectManager
     GemCatalog::GemCatalog(ProjectManagerWindow* window)
         : ScreenWidget(window)
     {
-        ConnectSlotsAndSignals();
-
         m_gemModel = new GemModel(this);
 
         QVBoxLayout* vLayout = new QVBoxLayout();
@@ -56,36 +54,36 @@ namespace O3DE::ProjectManager
             m_gemModel->AddGem(GemInfo("EMotion FX",
                 "O3DE Foundation",
                 "EMFX is a real-time character animation system. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                (GemInfo::Android | GemInfo::iOS | GemInfo::Windows | GemInfo::Linux),
+                (GemInfo::Android | GemInfo::iOS | GemInfo::macOS | GemInfo::Windows | GemInfo::Linux),
                 true));
 
             m_gemModel->AddGem(O3DE::ProjectManager::GemInfo("Atom",
                 "O3DE Foundation",
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                GemInfo::Android | GemInfo::Windows | GemInfo::Linux,
+                GemInfo::Android | GemInfo::Windows | GemInfo::Linux | GemInfo::macOS,
                 true));
 
             m_gemModel->AddGem(O3DE::ProjectManager::GemInfo("PhysX",
-                "O3DE Foundation",
+                "O3DE London",
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                GemInfo::Android | GemInfo::Linux,
+                GemInfo::Android | GemInfo::Linux | GemInfo::macOS,
                 false));
 
             m_gemModel->AddGem(O3DE::ProjectManager::GemInfo("Certificate Manager",
-                "O3DE Foundation",
+                "O3DE Irvine",
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                 GemInfo::Windows,
                 false));
 
             m_gemModel->AddGem(O3DE::ProjectManager::GemInfo("Cloud Gem Framework",
-                "O3DE Foundation",
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                "O3DE Seattle",
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                 GemInfo::iOS | GemInfo::Linux,
                 false));
 
             m_gemModel->AddGem(O3DE::ProjectManager::GemInfo("Achievements",
                 "O3DE Foundation",
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
                 GemInfo::Android | GemInfo::Windows | GemInfo::Linux,
                 false));
         }

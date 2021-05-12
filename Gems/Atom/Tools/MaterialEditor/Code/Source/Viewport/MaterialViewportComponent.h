@@ -13,13 +13,12 @@
 #pragma once
 
 #include <ACES/Aces.h>
-
-#include <AzCore/Component/Component.h>
-#include <AzFramework/Asset/AssetCatalogBus.h>
-
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
 #include <Atom/Viewport/MaterialViewportRequestBus.h>
+#include <Atom/Viewport/MaterialViewportSettings.h>
+#include <AzCore/Component/Component.h>
+#include <AzFramework/Asset/AssetCatalogBus.h>
 
 namespace MaterialEditor
 {
@@ -111,10 +110,6 @@ namespace MaterialEditor
         mutable AZStd::map<AZ::Render::LightingPresetPtr, AZStd::string> m_lightingPresetLastSavePathMap;
         mutable AZStd::map<AZ::Render::ModelPresetPtr, AZStd::string> m_modelPresetLastSavePathMap;
 
-        bool m_shadowCatcherEnabled = true;
-        bool m_gridEnabled = true;
-        bool m_alternateSkyboxEnabled = false;
-        float m_fieldOfView = 90.0f;
-        AZ::Render::DisplayMapperOperationType m_displayMapperOperationType = AZ::Render::DisplayMapperOperationType::Aces;
+        AZStd::intrusive_ptr<MaterialViewportSettings> m_viewportSettings;
     };
 }

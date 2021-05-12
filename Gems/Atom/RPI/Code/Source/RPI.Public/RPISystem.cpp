@@ -334,7 +334,6 @@ namespace AZ
 
         void RPISystem::InitializeSystemAssets()
         {
-            AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
             if (m_systemAssetsInitialized)
             {
                 AZ_Warning("RPISystem", false , "InitializeSystemAssets should only be called once'");
@@ -344,34 +343,45 @@ namespace AZ
             //[GFX TODO][ATOM-5867] - Move file loading code within RHI to reduce coupling with RPI
             AZStd::string platformLimitsFilePath = AZStd::string::format("config/platform/%s/%s/platformlimits.azasset", AZ_TRAIT_OS_PLATFORM_NAME, GetRenderApiName().GetCStr());
             AZStd::to_lower(platformLimitsFilePath.begin(), platformLimitsFilePath.end());
-            // Wait for the platformlimits asset to be compiled (if it exists)
-            AzFramework::AssetSystemRequestBus::BroadcastResult(
-                status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, platformLimitsFilePath);
-            Data::Asset<RPI::AnyAsset> platformLimitsAsset = RPI::AssetUtils::LoadAssetByProductPath<RPI::AnyAsset>(platformLimitsFilePath.c_str(), RPI::AssetUtils::TraceLevel::Error); 
-            m_descriptor.m_rhiSystemDescriptor.m_platformLimits = RPI::GetDataFromAnyAsset<RHI::PlatformLimits>(platformLimitsAsset);
+            
+            Data::Asset<AnyAsset> platformLimitsAsset;
+            platformLimitsAsset = RPI::AssetUtils::LoadCriticalAsset<AnyAsset>(platformLimitsFilePath.c_str(), RPI::AssetUtils::TraceLevel::None);
+            // Only read the m_platformLimits if the platformLimitsAsset is ready.
+            // The platformLimitsAsset may not exist for null renderer which is allowed
+            if (platformLimitsAsset.IsReady())
+            {
+                m_descriptor.m_rhiSystemDescriptor.m_platformLimits = RPI::GetDataFromAnyAsset<RHI::PlatformLimits>(platformLimitsAsset);
+            }
+
+            m_viewSrgAsset = AssetUtils::LoadCriticalAsset<ShaderResourceGroupAsset>( m_descriptor.m_viewSrgAssetPath.c_str());
+            if (!m_viewSrgAsset.IsReady())
+            {
+                return;
+            }
+            m_sceneSrgAsset = AssetUtils::LoadCriticalAsset<ShaderResourceGroupAsset>(m_descriptor.m_sceneSrgAssetPath.c_str());
+            if (!m_sceneSrgAsset.IsReady())
+            {
+                return;
+            }
 
             m_rhiSystem.Init(m_descriptor.m_rhiSystemDescriptor);
             m_imageSystem.Init(m_descriptor.m_imageSystemDescriptor);
             m_bufferSystem.Init();
             m_dynamicDraw.Init(m_descriptor.m_dynamicDrawSystemDescriptor);
 
-            // Wait for the assets be compiled
-            AzFramework::AssetSystemRequestBus::BroadcastResult(
-                status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, m_descriptor.m_viewSrgAssetPath);
-            AZ_Error("RPISystem", status == AzFramework::AssetSystem::AssetStatus_Compiled, "Could not compile view SRG at '%s'", m_descriptor.m_viewSrgAssetPath.c_str());
-            AzFramework::AssetSystemRequestBus::BroadcastResult(
-                status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, m_descriptor.m_sceneSrgAssetPath);
-            AZ_Error("RPISystem", status == AzFramework::AssetSystem::AssetStatus_Compiled, "Could not compile scene SRG at '%s'", m_descriptor.m_sceneSrgAssetPath.c_str());
-            AzFramework::AssetSystemRequestBus::BroadcastResult(
-                status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, m_descriptor.m_passTemplatesMappingPath);
-            AZ_Error("RPISystem", status == AzFramework::AssetSystem::AssetStatus_Compiled, "Could not compile pass template mapping at '%s'", m_descriptor.m_passTemplatesMappingPath.c_str());
-
-            m_viewSrgAsset = AssetUtils::LoadAssetByProductPath<ShaderResourceGroupAsset>(m_descriptor.m_viewSrgAssetPath.c_str(), AssetUtils::TraceLevel::Error);
-            m_sceneSrgAsset = AssetUtils::LoadAssetByProductPath<ShaderResourceGroupAsset>(m_descriptor.m_sceneSrgAssetPath.c_str(), AssetUtils::TraceLevel::Error);
-
             // Have pass system load default pass template mapping
-            m_passSystem.LoadPassTemplateMappings(m_descriptor.m_passTemplatesMappingPath);
+            bool passSystemReady = m_passSystem.LoadPassTemplateMappings(m_descriptor.m_passTemplatesMappingPath);
+            if (!passSystemReady)
+            {
+                return;
+            }
+
             m_systemAssetsInitialized = true;
+        }
+
+        bool RPISystem::IsInitialized() const
+        {
+            return m_systemAssetsInitialized;
         }
 
         void RPISystem::InitializeSystemAssetsForTests()

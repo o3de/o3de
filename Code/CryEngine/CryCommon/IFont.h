@@ -33,8 +33,6 @@ struct ICryFont;
 struct IFFont;
 struct FontFamily;
 
-struct IRenderer;
-
 struct SVF_P2F_C4B_T2F_F4B;
 
 extern "C"
@@ -100,9 +98,6 @@ struct ICryFont
     //! \param glyphSizeY   Height (in pixels) of the characters to be rendered at in the font texture.
     virtual void AddCharsToFontTextures(FontFamilyPtr pFontFamily, const char* pChars, int glyphSizeX = defaultGlyphSizeX, int glyphSizeY = defaultGlyphSizeY) = 0;
 
-    // Summary:
-    //   Globally sets common font render properties based on the initialized renderer
-    virtual void SetRendererProperties(IRenderer* pRenderer) = 0;
     // Summary:
     //   Puts the objects used in this module into the sizer interface
     virtual void GetMemoryUsage(ICrySizer* pSizer) const = 0;

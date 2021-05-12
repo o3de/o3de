@@ -26,15 +26,12 @@
 #include "MTSafeAllocator.h"
 #include "CPUDetect.h"
 #include <AzFramework/Archive/ArchiveVars.h>
-#include "MemoryFragmentationProfiler.h"    // CMemoryFragmentationProfiler
-#include "ThreadTask.h"
 #include "RenderBus.h"
 
 #include <LoadScreenBus.h>
 #include <ThermalInfo.h>
 
 #include <AzCore/Module/DynamicModuleHandle.h>
-#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
 namespace AzFramework
 {
@@ -43,16 +40,8 @@ namespace AzFramework
 
 struct IConsoleCmdArgs;
 class CServerThrottle;
-struct ICryFactoryRegistryImpl;
 struct IZLibCompressor;
 class CWatchdogThread;
-class CThreadManager;
-
-struct ICryPerfHUD;
-namespace minigui
-{
-    struct IMiniGUI;
-}
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #undef AZ_RESTRICTED_SECTION
@@ -191,8 +180,6 @@ namespace minigui
     #include "CryLibrary.h"
 #endif
 
-#define NUM_UPDATE_TIMES (128U)
-
 #ifdef WIN32
 typedef void* WIN_HMODULE;
 #else
@@ -214,7 +201,6 @@ namespace Audio
 } // namespace Audio
 struct SDefaultValidator;
 struct IDataProbe;
-class CVisRegTest;
 
 #define PHSYICS_OBJECT_ENTITY 0
 
@@ -227,7 +213,6 @@ extern VTuneFunction VTPause;
 
 struct SSystemCVars
 {
-    int az_streaming_stats;
     int sys_streaming_requests_grouping_time_period;
     int sys_streaming_sleep;
     int sys_streaming_memory_budget;
@@ -251,7 +236,6 @@ struct SSystemCVars
     int sys_WER;
     int sys_dump_type;
     int sys_ai;
-    int sys_physics;
     int sys_entitysystem;
     int sys_trackview;
     int sys_vtune;
@@ -270,15 +254,6 @@ struct SSystemCVars
     int sys_error_debugbreak;
 
     int sys_FilesystemCaseSensitivity;
-    int sys_rendersplashscreen;
-    const char* sys_splashscreen;
-
-    enum SplashScreenScaleMode
-    {
-        SplashScreenScaleMode_Fit = 0,
-        SplashScreenScaleMode_Fill
-    };
-    int sys_splashScreenScaleMode;
 
     int sys_deferAudioUpdateOptim;
 #if USE_STEAM
@@ -361,7 +336,6 @@ class CSystem
     , public IWindowMessageHandler
     , public AZ::RenderNotificationsBus::Handler
     , public CrySystemRequestBus::Handler
-    , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
 {
 public:
 
@@ -416,23 +390,7 @@ public:
     ISystem* GetCrySystem() override;
     ////////////////////////////////////////////////////////////////////////
 
-    //! Update screen during loading.
-    void UpdateLoadingScreen();
-
-    //! Update screen and call some important tick functions during loading.
-    void SynchronousLoadingTick(const char* pFunc, int line);
-
     uint32 GetUsedMemory();
-
-    virtual void DumpMemoryUsageStatistics(bool bUseKB);
-    virtual void DumpMemoryCoverage();
-    void CollectMemInfo(SCryEngineStatsGlobalMemInfo&);
-
-#ifndef _RELEASE
-    virtual void GetCheckpointData(ICheckpointData& data);
-    virtual void IncreaseCheckpointLoadCount();
-    virtual void SetLoadOrigin(LevelLoadOrigin origin);
-#endif
 
     virtual bool SteamInit();
 
@@ -444,22 +402,17 @@ public:
     void Quit();
     bool IsQuitting() const;
     void ShutdownFileSystem(); // used to cleanup any file resources, such as cache handle.
-    bool IsShaderCacheGenMode() const { return m_bShaderCacheGenMode; }
     void SetAffinity();
     virtual const char* GetUserName();
     virtual int GetApplicationInstance();
     int GetApplicationLogInstance(const char* logFilePath) override;
-    virtual sUpdateTimes& GetCurrentUpdateTimeStats();
-    virtual const sUpdateTimes* GetUpdateTimeStats(uint32&, uint32&);
 
-    IRenderer* GetIRenderer(){ return m_env.pRenderer; }
     ITimer* GetITimer(){ return m_env.pTimer; }
     AZ::IO::IArchive* GetIPak() { return m_env.pCryPak; };
     IConsole* GetIConsole() { return m_env.pConsole; };
     IRemoteConsole* GetIRemoteConsole();
     IMovieSystem* GetIMovieSystem() { return m_env.pMovieSystem; };
     IMemoryManager* GetIMemoryManager(){ return m_pMemoryManager; }
-    IThreadManager* GetIThreadManager() override {return m_env.pThreadManager; }
     ICryFont* GetICryFont(){ return m_env.pCryFont; }
     ILog* GetILog(){ return m_env.pLog; }
     ICmdLine* GetICmdLine(){ return m_pCmdLine; }
@@ -469,38 +422,18 @@ public:
     IViewSystem* GetIViewSystem();
     ILevelSystem* GetILevelSystem();
     ISystemEventDispatcher* GetISystemEventDispatcher() { return m_pSystemEventDispatcher; }
-    IThreadTaskManager* GetIThreadTaskManager();
     IResourceManager* GetIResourceManager();
     ITextModeConsole* GetITextModeConsole();
-    IFileChangeMonitor* GetIFileChangeMonitor() { return m_env.pFileChangeMonitor; }
-    IVisualLog* GetIVisualLog() { return m_env.pVisualLog; }
-    INotificationNetwork* GetINotificationNetwork() { return m_pNotificationNetwork; }
     IProfilingSystem* GetIProfilingSystem() { return &m_ProfilingSystem; }
-    ICryPerfHUD* GetPerfHUD() { return m_pPerfHUD; }
     IZLibCompressor* GetIZLibCompressor() { return m_pIZLibCompressor; }
     IZLibDecompressor* GetIZLibDecompressor() { return m_pIZLibDecompressor; }
     ILZ4Decompressor* GetLZ4Decompressor() { return m_pILZ4Decompressor; }
     IZStdDecompressor* GetZStdDecompressor() { return m_pIZStdDecompressor; }
-    WIN_HWND GetHWND(){ return m_hWnd; }
     //////////////////////////////////////////////////////////////////////////
     // retrieves the perlin noise singleton instance
     CPNoise3* GetNoiseGen();
     virtual uint64 GetUpdateCounter() { return m_nUpdateCounter; };
 
-    virtual void SetLoadingProgressListener(ILoadingProgressListener* pLoadingProgressListener)
-    {
-        m_pProgressListener = pLoadingProgressListener;
-    };
-
-    virtual ILoadingProgressListener* GetLoadingProgressListener() const
-    {
-        return m_pProgressListener;
-    };
-
-    void    SetIMaterialEffects(IMaterialEffects* pMaterialEffects) { m_env.pMaterialEffects = pMaterialEffects; }
-    void        SetIOpticsManager(IOpticsManager* pOpticsManager) { m_env.pOpticsManager = pOpticsManager; }
-    void    SetIFileChangeMonitor(IFileChangeMonitor* pFileChangeMonitor) { m_env.pFileChangeMonitor = pFileChangeMonitor; }
-    void    SetIVisualLog(IVisualLog* pVisualLog) { m_env.pVisualLog = pVisualLog; }
     void        DetectGameFolderAccessRights();
 
     virtual void ExecuteCommandLine(bool deferred=true);
@@ -513,8 +446,6 @@ public:
     virtual XmlNodeRef LoadXmlFromBuffer(const char* buffer, size_t size, bool bReuseStrings = false, bool bSuppressWarnings = false);
     virtual IXmlUtils* GetXmlUtils();
     //////////////////////////////////////////////////////////////////////////
-
-    virtual Serialization::IArchiveHost* GetArchiveHost() const { return m_pArchiveHost; }
 
     void SetViewCamera(CCamera& Camera){ m_ViewCamera = Camera; }
     CCamera& GetViewCamera() { return m_ViewCamera; }
@@ -585,12 +516,6 @@ public:
 
     //! Return pointer to user defined callback.
     ISystemUserCallback* GetUserCallback() const { return m_pUserCallback; };
-#if defined(CVARS_WHITELIST)
-    virtual ICVarsWhitelist* GetCVarsWhiteList() const { return m_pCVarsWhitelist; };
-    virtual ILoadConfigurationEntrySink* GetCVarsWhiteListConfigSink() const { return m_pCVarsWhitelistConfigSink; }
-#else
-    virtual ILoadConfigurationEntrySink* GetCVarsWhiteListConfigSink() const { return nullptr; }
-#endif // defined(CVARS_WHITELIST)
 
     //////////////////////////////////////////////////////////////////////////
     virtual void SaveConfiguration();
@@ -602,8 +527,6 @@ public:
     virtual void SetConfigPlatform(ESystemConfigPlatform platform);
     //////////////////////////////////////////////////////////////////////////
 
-    virtual int SetThreadState(ESubsystem subsys, bool bActive);
-    virtual ICrySizer* CreateSizer();
     virtual bool IsPaused() const { return m_bPaused; };
 
     virtual ILocalizationManager* GetLocalizationManager();
@@ -613,27 +536,11 @@ public:
     // static as memReplay needs it before CSystem has been setup - expose a ISystem interface to this function if you need it outside CrySystem
     static  void debug_GetCallStackRaw(void** callstack, uint32& callstackLength);
 
-    virtual ICryFactoryRegistry* GetCryFactoryRegistry() const;
-
 public:
-    // this enumeration describes the purpose for which the statistics is gathered.
-    // if it's gathered to be dumped, then some different rules may be applied
-    enum MemStatsPurposeEnum
-    {
-        nMSP_ForDisplay, nMSP_ForDump, nMSP_ForCrashLog, nMSP_ForBudget
-    };
-    // collects the whole memory statistics into the given sizer object
-    void CollectMemStats (class ICrySizer* pSizer, MemStatsPurposeEnum nPurpose = nMSP_ForDisplay, std::vector<SmallModuleInfo>* pStats = 0);
-    void GetExeSizes (ICrySizer* pSizer, MemStatsPurposeEnum nPurpose = nMSP_ForDisplay);
-    //! refreshes the m_pMemStats if necessary; creates it if it's not created
-    void TickMemStats(MemStatsPurposeEnum nPurpose = nMSP_ForDisplay, IResourceCollector* pResourceCollector = 0);
-
 #if !defined(RELEASE)
     void SetVersionInfo(const char* const szVersion);
 #endif
 
-    virtual bool InitializeEngineModule(const char* dllName, const char* moduleClassName, const SSystemInitParams& initParams) override;
-    virtual bool UnloadEngineModule(const char* dllName, const char* moduleClassName);
     virtual const IImageHandler* GetImageHandler() const override { return m_imageHandler.get(); }
 
     void ShutdownModuleLibraries();
@@ -656,8 +563,6 @@ private:
     // Release all resources.
     void ShutDown();
 
-    void SleepIfInactive();
-
     bool LoadEngineDLLs();
 
     //! @name Initialization routines
@@ -672,15 +577,8 @@ private:
     //@}
 
     //////////////////////////////////////////////////////////////////////////
-    // Threading functions.
-    //////////////////////////////////////////////////////////////////////////
-    void InitThreadSystem();
-    void ShutDownThreadSystem();
-
-    //////////////////////////////////////////////////////////////////////////
     // Helper functions.
     //////////////////////////////////////////////////////////////////////////
-    void CreateRendererVars(const SSystemInitParams& startupParams);
     void CreateSystemVars();
     void CreateAudioVars();
 
@@ -693,9 +591,6 @@ private:
     void LogVersion();
     void LogBuildInfo();
     void SetDevMode(bool bEnable);
-
-    void CreatePhysicsThread();
-    void KillPhysicsThread();
 
 #ifndef _RELEASE
     static void SystemVersionChanged(ICVar* pCVar);
@@ -725,7 +620,6 @@ public:
     virtual bool GetForceNonDevMode() const;
     virtual bool WasInDevMode() const { return m_bWasInDevMode; };
     virtual bool IsDevMode() const { return m_bInDevMode && !GetForceNonDevMode(); }
-    virtual bool IsMinimalMode() const { return m_bMinimal; }
     virtual bool IsMODValid(const char* szMODName) const
     {
         if (!szMODName || strstr(szMODName, ".") || strstr(szMODName, "\\"))
@@ -755,22 +649,8 @@ public:
 
     CCpuFeatures* GetCPUFeatures() { return m_pCpu; };
 
-    string& GetDelayedScreeenshot() {return m_sDelayedScreeenshot; }
-
-    CVisRegTest*& GetVisRegTestPtrRef() {return m_pVisRegTest; }
-
     const CTimeValue& GetLastTickTime(void) const { return m_lastTickTime; }
     const ICVar* GetDedicatedMaxRate(void) const { return m_svDedicatedMaxRate; }
-
-    const char* GetRenderingDriverName(void) const
-    {
-        if(m_rDriver)
-        {
-            return m_rDriver->GetString();
-        }
-        return nullptr;
-    }
-
 
     std::shared_ptr<AZ::IO::FileIOBase> CreateLocalFileIO();
 
@@ -787,11 +667,9 @@ private: // ------------------------------------------------------
     CTimer                              m_Time;                             //!<
     CCamera                             m_ViewCamera;                   //!<
     bool                                    m_bInitializedSuccessfully;     //!< true if the system completed all initialization steps
-    bool                  m_bShaderCacheGenMode;//!< true if the application runs in shader cache generation mode
     bool                                    m_bRelaunch;                    //!< relaunching the app or not (true beforerelaunch)
     int                                     m_iLoadingMode;             //!< Game is loading w/o changing context (0 not, 1 quickloading, 2 full loading)
     bool                                    m_bTestMode;                    //!< If running in testing mode.
-    bool                                    m_bMinimal;                     //!< If running in 'minimal mode'.
     bool                                    m_bEditor;                      //!< If running in Editor.
     bool                                    m_bNoCrashDialog;
     bool                                    m_bNoErrorReportWindow;
@@ -804,19 +682,8 @@ private: // ------------------------------------------------------
     bool                                    m_bInDevMode;                   //!< Set to true if was in dev mode.
     bool                  m_bGameFolderWritable;//!< True when verified that current game folder have write access.
     SDefaultValidator*     m_pDefaultValidator;     //!<
-    string                              m_sDelayedScreeenshot;//!< to delay a screenshot call for a frame
     CCpuFeatures*                m_pCpu;                            //!< CPU features
     int                                     m_ttMemStatSS;              //!< Time to memstat screenshot
-    string                m_szCmdLine;
-
-    int                                     m_iTraceAllocations;
-
-#ifndef _RELEASE
-    int                                     m_checkpointLoadCount;// Total times game has loaded from a checkpoint
-    LevelLoadOrigin             m_loadOrigin;                   // Where the load was initiated from
-    bool                                    m_hasJustResumed;           // Has resume game just been called
-    bool                                    m_expectingMapCommand;
-#endif
     bool                                    m_bDrawConsole;              //!< Set to true if OK to draw the console.
     bool                                    m_bDrawUI;                   //!< Set to true if OK to draw UI.
 
@@ -867,8 +734,6 @@ private: // ------------------------------------------------------
     // XML Utils interface.
     class CXmlUtils* m_pXMLUtils;
 
-    Serialization::IArchiveHost* m_pArchiveHost;
-
     int m_iApplicationInstance;
 
     //! to hold the values stored in system.cfg
@@ -917,7 +782,6 @@ private: // ------------------------------------------------------
     ICVar* m_rFullscreen;
     ICVar* m_rFullscreenWindow;
     ICVar* m_rFullscreenNativeRes;
-    ICVar* m_rDriver;
     ICVar* m_rDisplayInfo;
     ICVar* m_rOverscanBordersDrawDebugView;
     ICVar* m_sysNoUpdate;
@@ -934,8 +798,6 @@ private: // ------------------------------------------------------
     ICVar* m_sys_firstlaunch;
     ICVar* m_sys_asset_processor;
     ICVar* m_sys_load_files_to_memory;
-
-    ICVar* m_sys_physics_CPU;
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEM_H_SECTION_4
@@ -959,26 +821,6 @@ private: // ------------------------------------------------------
     //! User define callback for system events.
     ISystemUserCallback* m_pUserCallback;
 
-#if defined(CVARS_WHITELIST)
-    //////////////////////////////////////////////////////////////////////////
-    //! User define callback for whitelisting cvars
-    ICVarsWhitelist* m_pCVarsWhitelist;
-    ILoadConfigurationEntrySink* m_pCVarsWhitelistConfigSink;
-#endif // defined(CVARS_WHITELIST)
-
-    WIN_HWND        m_hWnd;
-    WIN_HINSTANCE   m_hInst;
-
-    // this is the memory statistics that is retained in memory between frames
-    // in which it's not gathered
-    class CrySizerStats* m_pMemStats;
-    class CrySizerImpl* m_pSizer;
-
-    ICryPerfHUD* m_pPerfHUD;
-    minigui::IMiniGUI* m_pMiniGUI;
-
-    //int m_nCurrentLogVerbosity;
-
     SFileVersion m_fileVersion;
     SFileVersion m_productVersion;
     SFileVersion m_buildVersion;
@@ -989,8 +831,6 @@ private: // ------------------------------------------------------
     // Name table.
     CNameTable m_nameTable;
 
-    IThreadTask* m_PhysThread;
-
     ESystemConfigSpec m_nServerConfigSpec;
     ESystemConfigSpec m_nMaxConfigSpec;
     ESystemConfigPlatform m_ConfigPlatform;
@@ -998,8 +838,6 @@ private: // ------------------------------------------------------
     std::unique_ptr<CServerThrottle> m_pServerThrottle;
 
     CProfilingSystem m_ProfilingSystem;
-    sUpdateTimes m_UpdateTimes[NUM_UPDATE_TIMES];
-    uint32 m_UpdateTimesIdx;
 
     // Pause mode.
     bool m_bPaused;
@@ -1070,34 +908,19 @@ private:
     ESystemGlobalState m_systemGlobalState;
     static const char* GetSystemGlobalStateName(const ESystemGlobalState systemGlobalState);
 
-    ///////////////////////////////////////////////////////////////////////////
-    // AzFramework::Terrain::TerrainDataNotificationBus START
-    void OnTerrainDataCreateBegin() override;
-    void OnTerrainDataDestroyBegin() override;
-    // AzFramework::Terrain::TerrainDataNotificationBus END
-    ///////////////////////////////////////////////////////////////////////////
-
 public:
     void InitLocalization();
-    void UpdateUpdateTimes();
 
 protected: // -------------------------------------------------------------
 
-    ILoadingProgressListener*      m_pProgressListener;
     CCmdLine*                                      m_pCmdLine;
-    CVisRegTest*                 m_pVisRegTest;
-    CThreadManager*           m_pThreadManager;
-    CThreadTaskManager*           m_pThreadTaskManager;
     class CResourceManager*       m_pResourceManager;
     ITextModeConsole*             m_pTextModeConsole;
-    INotificationNetwork* m_pNotificationNetwork;
 
     string  m_currentLanguageAudio;
     string  m_systemConfigName; // computed from system_(hardwareplatform)_(assetsPlatform) - eg, system_android_es3.cfg or system_android_opengl.cfg or system_windows_pc.cfg
 
     std::vector< std::pair<CTimeValue, float> > m_updateTimes;
-
-    CMemoryFragmentationProfiler    m_MemoryFragmentationProfiler;
 
     struct SErrorMessage
     {

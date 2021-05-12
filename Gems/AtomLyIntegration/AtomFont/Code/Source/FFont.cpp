@@ -1233,7 +1233,8 @@ void AZ::FFont::WrapText(string& result, float maxWidth, const char* str, const 
 
     if (ctx.m_sizeIn800x600)
     {
-        maxWidth = gEnv->pRenderer->ScaleCoordX(maxWidth);
+        // ToDo: Update to work with Atom? LYN-3676
+        // maxWidth = ???->ScaleCoordX(maxWidth);
     }
 
     Vec2 strSize = GetTextSize(result.c_str(), true, ctx);

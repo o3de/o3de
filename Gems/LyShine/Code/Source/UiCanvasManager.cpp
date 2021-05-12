@@ -815,7 +815,10 @@ bool UiCanvasManager::HandleInputEventForInWorldCanvases(const AzFramework::Inpu
     // First we need to construct a ray from the either the center of the screen or the mouse position.
     // This requires knowledge of the camera
     // for initial testing we will just use a ray in the center of the viewport
-    const CCamera& cam = GetISystem()->GetIRenderer()->GetCamera();
+
+    // ToDo: Re-implement by getting the camera from Atom. LYN-3680
+    return false;
+    const CCamera cam;
 
     // construct a ray from the camera position in the view direction of the camera
     const float rayLength = 5000.0f;

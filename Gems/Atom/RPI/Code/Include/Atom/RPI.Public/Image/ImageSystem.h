@@ -80,6 +80,8 @@ namespace AZ
             Data::Asset<DefaultStreamingImageControllerAsset> m_defaultStreamingImageControllerAsset;
 
             AZStd::fixed_vector<Data::Instance<Image>, static_cast<uint32_t>(SystemImage::Count)> m_systemImages;
+
+            bool m_initialized = false;
         };
     }
 }
