@@ -236,11 +236,6 @@ namespace PhysX
         }
     }
 
-    AzPhysics::RigidBodyConfiguration EditorRigidBodyConfiguration::CloneToRigidBodyConfig() const
-    {
-        return *(this);
-    }
-
     void EditorRigidBodyComponent::Activate()
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
@@ -373,7 +368,7 @@ namespace PhysX
         AZ::Transform colliderTransform = GetWorldTM();
         colliderTransform.ExtractScale();
 
-        AzPhysics::RigidBodyConfiguration configuration = m_config.CloneToRigidBodyConfig();
+        AzPhysics::RigidBodyConfiguration configuration = m_config;
         configuration.m_orientation = colliderTransform.GetRotation();
         configuration.m_position = colliderTransform.GetTranslation();
         configuration.m_entityId = GetEntityId();

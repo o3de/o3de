@@ -40,8 +40,6 @@ namespace PhysX
 
         // Debug properties.
         bool m_centerOfMassDebugDraw = false;
-
-        AzPhysics::RigidBodyConfiguration CloneToRigidBodyConfig() const;
     };
 
     /// Class for in-editor PhysX Rigid Body Component.
