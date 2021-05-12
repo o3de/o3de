@@ -3244,7 +3244,6 @@ struct PhysicsVars
     int nBodiesLargeGroup;
     int bBreakOnValidation;
     int bLogActiveObjects;
-    int bMultiplayer;
     int bProfileEntities;
     int bProfileFunx;
     int bProfileGroups;
