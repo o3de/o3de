@@ -10,7 +10,14 @@
 *
 */
 
+#include <API/EditorAssetSystemAPI.h>
+#include <AssetProcessor/AssetBuilderSDK/AssetBuilderSDK/AssetBuilderSDK.h>
+#include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzFramework/FileFunc/FileFunc.h>
+#include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Events/CallProcessorBus.h>
@@ -23,10 +30,47 @@ namespace AZ
     {
         namespace FbxSceneImporter
         {
-            const char* FbxImportRequestHandler::s_extension = ".fbx";
+            AssetImporterSettings::AssetImporterSettings()
+            {
+                // Default supported extension in case the settings file isn't found
+                m_supportedFileTypeExtensions.emplace(".fbx");
+            }
+
+            void AssetImporterSettings::Reflect(AZ::ReflectContext* context)
+            {
+                if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext)
+                {
+                    serializeContext->Class<AssetImporterSettings>()
+                                    ->Version(1)
+                                    ->Field("SupportedFileTypeExtensions", &AssetImporterSettings::m_supportedFileTypeExtensions);
+                }
+            }
 
             void FbxImportRequestHandler::Activate()
             {
+                // Attempt to load the Slice Builder Settings file
+                AZ::IO::LocalFileIO localFileIO;
+
+                // This will point to @assets@/SettingsFilename, which loads from the cache
+                // We don't really want this but it works for now
+                // Trying to use AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath at this point
+                // would fail because components seem to activate before the AP has populated its file list
+                AZ::IO::Path sliceBuilderSettingsIoPath(SettingsFilename);
+                auto result = AzFramework::FileFunc::ReadJsonFile(sliceBuilderSettingsIoPath, &localFileIO);
+                if (result.IsSuccess())
+                {
+                    AZ::JsonSerializationResult::ResultCode serializationResult =
+                        AZ::JsonSerialization::Load(m_settings, result.GetValue());
+                    if (serializationResult.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                    {
+                        AZ_Warning("", false, "Error in Asset Importer Settings file.\nUsing default settings.");
+                    }
+                }
+                else
+                {
+                    AZ_Warning("", false, "Failed to load Asset Importer Settings file.\nUsing default settings.");
+                }
+
                 BusConnect();
             }
 
@@ -37,21 +81,29 @@ namespace AZ
 
             void FbxImportRequestHandler::Reflect(ReflectContext* context)
             {
+                AssetImporterSettings::Reflect(context);
+
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<FbxImportRequestHandler, SceneCore::BehaviorComponent>()->Version(1);
+                    serializeContext->Class<FbxImportRequestHandler, SceneCore::BehaviorComponent>()->Version(1)->Attribute(
+                        AZ::Edit::Attributes::SystemComponentTags,
+                        AZStd::vector<AZ::Crc32>({AssetBuilderSDK::ComponentTags::AssetBuilder}));
+                    
                 }
             }
 
             void FbxImportRequestHandler::GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& extensions)
             {
-                extensions.insert(s_extension);
+                extensions.insert(m_settings.m_supportedFileTypeExtensions.begin(), m_settings.m_supportedFileTypeExtensions.end());
             }
 
             Events::LoadingResult FbxImportRequestHandler::LoadAsset(Containers::Scene& scene, const AZStd::string& path, const Uuid& guid, [[maybe_unused]] RequestingApplication requester)
             {
-                if (!AzFramework::StringFunc::Path::IsExtension(path.c_str(), s_extension))
+                AZStd::string extension;
+                AzFramework::StringFunc::Path::GetExtension(path.c_str(), extension);
+                
+                if (!m_settings.m_supportedFileTypeExtensions.contains(extension))
                 {
                     return Events::LoadingResult::Ignored;
                 }
