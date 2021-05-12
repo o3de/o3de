@@ -62,15 +62,15 @@ _LOGGER.debug('Invoking:: {0}.'.format({_MODULENAME}))
 # To Do: move the callback key like 'NewSceneOpened' here (instead of None)
 # ^ this would provide ability to loop through and replace key with CB object
 
-_G_callbacks = Box(box_dots=True)  # global scope container
-_G_masterkey = 'DCCsi_callbacks'
-_G_callbacks[_G_masterkey] = True  # required master key
+_G_CALLBACKS = Box(box_dots=True)  # global scope container
+_G_PRIMEKEY = 'DCCsi_callbacks'
+_G_CALLBACKS[_G_PRIMEKEY] = True  # required prime key
 
 
 # -------------------------------------------------------------------------
-def init_callbacks(_callbacks=_G_callbacks):
+def init_callbacks(_callbacks=_G_CALLBACKS):
     # store as a dict (Box is a fancy dict)
-    _callbacks[_G_masterkey] = True  # required master key
+    _callbacks[_G_PRIMEKEY] = True  # required prime key
     
     # signature dict['callback key'] = ('CallBack'(type), func, callbackObj)
     _callbacks['on_new_file'] = ['NewSceneOpened', set_defaults, None]
@@ -96,24 +96,24 @@ def uninstall_callbacks():
     """Bulk uninstalls hte globally defined set of callbacks:
     _G_callbacks"""
 
-    global _G_callbacks
+    global _G_CALLBACKS
 
     _LOGGER.debug('uninstall_callbacks() fired')
 
-    for key, value in _G_callbacks:
+    for key, value in _G_CALLBACKS:
         if value[2] is not None:  # have a cb
             value[2].uninstall()  # so uninstall it
         else:
             _LOGGER.warning('No callback in: key {0}, value:{1}'
                             ''.format(key, value))
-    _G_callbacks = None
+    _G_CALLBACKS = None
     _LOGGER.info('DCCSI CALLBACKS UNINSTALLED ... EXITING')
-    return _G_callbacks
+    return _G_CALLBACKS
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-def install_callbacks(_callbacks=_G_callbacks):
+def install_callbacks(_callbacks=_G_CALLBACKS):
     """Bulk installs the globally defined set of callbacks:
     _G_callbacks"""
     
@@ -126,15 +126,15 @@ def install_callbacks(_callbacks=_G_callbacks):
         _callbacks.pop('box_dots')
 
     # don't pass anything but carefully considered dict
-    if _G_masterkey in _callbacks:
-        _masterkey = _callbacks.pop(_G_masterkey)
+    if _G_PRIMEKEY in _callbacks:
+        _primekey = _callbacks.pop(_G_PRIMEKEY)
     else:
-        _LOGGER.error('No master key, use a correct dictionary')
+        _LOGGER.error('No prime key, use a correct dictionary')
         #To Do: implement error handling and return codes
         return _callbacks[None]
 
-    for key, value in _G_callbacks.items():
-        # we popped the master key should the rest should be safe
+    for key, value in _G_CALLBACKS.items():
+        # we popped the prime key should the rest should be safe
         if value[0] != 'nodeMessageType':
             # set callback up
             _cb = azEvCbH.EventCallbackHandler(value[0],
@@ -195,10 +195,10 @@ def update_workspace(foo=None):
 # -------------------------------------------------------------------------
 
 # install and init callbacks on an import obj
-_G_callbacks = install_callbacks(_G_callbacks)
+_G_CALLBACKS = install_callbacks(_G_CALLBACKS)
 
 # ==========================================================================
 # Module Tests
 #==========================================================================
 if __name__ == '__main__':
-    _G_callbacks = install_callbacks(_G_callbacks)
+    _G_CALLBACKS = install_callbacks(_G_CALLBACKS)

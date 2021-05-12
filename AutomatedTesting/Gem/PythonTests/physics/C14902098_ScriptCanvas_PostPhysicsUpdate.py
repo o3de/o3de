@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C14902098
 # Test Case Title : Check that force region simulation with Postsimulate works independently from rendering tick
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/14902098
+
 
 
 # fmt: off

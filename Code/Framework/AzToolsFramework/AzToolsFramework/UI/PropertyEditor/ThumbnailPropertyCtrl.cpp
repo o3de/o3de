@@ -114,6 +114,7 @@ namespace AzToolsFramework
             m_thumbnailEnlarged->move(position);
             m_thumbnailEnlarged->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
             m_thumbnailEnlarged->SetThumbnailKey(m_key);
+            m_thumbnailEnlarged->raise();
             m_thumbnailEnlarged->show();
         }
         QWidget::enterEvent(e);

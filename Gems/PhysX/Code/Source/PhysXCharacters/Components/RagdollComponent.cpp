@@ -91,8 +91,8 @@ namespace PhysX
                     "PhysX Ragdoll", "Provides simulation of characters in PhysX.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/PhysXRagdoll.svg")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/PhysXRagdoll.svg")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRagdoll.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/PhysXRagdoll.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RagdollComponent::m_positionIterations, "Position Iteration Count",
@@ -257,9 +257,18 @@ namespace PhysX
         return AZ::Aabb::CreateNull();
     }
 
-    AzPhysics::SimulatedBody* RagdollComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* RagdollComponent::GetSimulatedBody()
     {
         return GetRagdoll();
+    }
+
+    AzPhysics::SimulatedBodyHandle RagdollComponent::GetSimulatedBodyHandle() const
+    {
+        if (m_ragdoll)
+        {
+            return m_ragdoll->m_bodyHandle;
+        }
+        return AzPhysics::InvalidSimulatedBodyHandle;
     }
 
     AzPhysics::SceneQueryHit RagdollComponent::RayCast(const AzPhysics::RayCastRequest& request)
@@ -357,7 +366,7 @@ namespace PhysX
         }
 
         AzFramework::RagdollPhysicsRequestBus::Handler::BusConnect(GetEntityId());
-        Physics::WorldBodyRequestBus::Handler::BusConnect(GetEntityId());
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
 
         AzFramework::RagdollPhysicsNotificationBus::Event(GetEntityId(),
             &AzFramework::RagdollPhysicsNotifications::OnRagdollActivated);
@@ -367,7 +376,6 @@ namespace PhysX
     {
         if (m_ragdoll)
         {
-            Physics::WorldBodyRequestBus::Handler::BusDisconnect();
             AzFramework::RagdollPhysicsRequestBus::Handler::BusDisconnect();
             AzFramework::RagdollPhysicsNotificationBus::Event(GetEntityId(),
                 &AzFramework::RagdollPhysicsNotifications::OnRagdollDeactivated);

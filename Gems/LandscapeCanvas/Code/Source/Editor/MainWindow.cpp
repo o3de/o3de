@@ -206,7 +206,7 @@ namespace LandscapeCanvasEditor
 
         static const QStringList preferredCategories = {
             "Vegetation",
-            "Rendering"
+            "Atom"
         };
 
         // There are a couple of cases where we prefer certain categories of Components

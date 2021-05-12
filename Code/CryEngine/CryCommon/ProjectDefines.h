@@ -163,10 +163,6 @@ typedef uint32 vtx_idx;
 #endif
 
 #if defined(ENABLE_PROFILING_CODE)
-  #define USE_PERFHUD
-#endif
-
-#if defined(ENABLE_PROFILING_CODE)
 #define ENABLE_ART_RT_TIME_ESTIMATE
 #endif
 

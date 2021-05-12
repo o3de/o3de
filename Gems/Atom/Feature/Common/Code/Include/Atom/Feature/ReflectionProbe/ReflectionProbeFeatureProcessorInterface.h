@@ -30,11 +30,11 @@ namespace AZ
 
         enum CubeMapAssetNotificationType
         {
+            None,
             Ready,
             Error,
             Reloaded
         };
-        using NotifyCubeMapAssetReadyCallback = AZStd::function<void(const Data::Asset<RPI::StreamingImageAsset>& cubeMapAsset, CubeMapAssetNotificationType notificationType)>;
 
         // ReflectionProbeFeatureProcessorInterface provides an interface to the feature processor for code outside of Atom
         class ReflectionProbeFeatureProcessorInterface
@@ -47,10 +47,11 @@ namespace AZ
             virtual void RemoveProbe(ReflectionProbeHandle& handle) = 0;
             virtual void SetProbeOuterExtents(const ReflectionProbeHandle& handle, const AZ::Vector3& outerExtents) = 0;
             virtual void SetProbeInnerExtents(const ReflectionProbeHandle& handle, const AZ::Vector3& innerExtents) = 0;
-            virtual void SetProbeCubeMap(const ReflectionProbeHandle& handle, Data::Instance<RPI::Image>& cubeMapImage) = 0;
+            virtual void SetProbeCubeMap(const ReflectionProbeHandle& handle, Data::Instance<RPI::Image>& cubeMapImage, const AZStd::string& relativePath) = 0;
             virtual void SetProbeTransform(const ReflectionProbeHandle& handle, const AZ::Transform& transform) = 0;
-            virtual void BakeProbe(const ReflectionProbeHandle& handle, BuildCubeMapCallback callback) = 0;
-            virtual void NotifyCubeMapAssetReady(const AZStd::string relativePath, NotifyCubeMapAssetReadyCallback callback) = 0;
+            virtual void BakeProbe(const ReflectionProbeHandle& handle, BuildCubeMapCallback callback, const AZStd::string& relativePath) = 0;
+            virtual bool CheckCubeMapAssetNotification(const AZStd::string& relativePath, Data::Asset<RPI::StreamingImageAsset>& outCubeMapAsset, CubeMapAssetNotificationType& outNotificationType) = 0;
+            virtual bool IsCubeMapReferenced(const AZStd::string& relativePath) = 0;
             virtual bool IsValidProbeHandle(const ReflectionProbeHandle& probe) const = 0;
             virtual void ShowProbeVisualization(const ReflectionProbeHandle& probe, bool showVisualization) = 0;
         };

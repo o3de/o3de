@@ -25,7 +25,7 @@ It is highly recommended you check that you have a [credential manager installed
 ### Clone the repository 
 
 ```shell
-> git clone https://github.com/aws/o3de.git
+> git clone https://github.com/aws-lumberyard/o3de.git
 Cloning into 'o3de'...
 
 # initial prompt for credentials to download the repository code

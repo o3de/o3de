@@ -14,10 +14,10 @@
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/Text.h>
 
-#include <QStyle>
-#include <QPainter>
 #include <QApplication>
+#include <QPainter>
 #include <QPixmap>
+#include <QStyle>
 #include <QStyleOptionViewItem>
 
 namespace AtomToolsFramework
@@ -33,15 +33,31 @@ namespace AtomToolsFramework
         setMargin(0);
     }
 
-    void InspectorGroupHeaderWidget::SetExpanded(bool expanded)
+    void InspectorGroupHeaderWidget::SetExpanded(bool expand)
     {
-        m_expanded = expanded;
-        update();
+        if (m_expanded != expand)
+        {
+            m_expanded = expand;
+            if (m_expanded)
+            {
+                emit expanded();
+            }
+            else
+            {
+                emit collapsed();
+            }
+            update();
+        }
     }
 
     bool InspectorGroupHeaderWidget::IsExpanded() const
     {
         return m_expanded;
+    }
+
+    void InspectorGroupHeaderWidget::mousePressEvent(QMouseEvent* event)
+    {
+        emit clicked(event);
     }
 
     void InspectorGroupHeaderWidget::paintEvent([[maybe_unused]] QPaintEvent* event)
@@ -52,19 +68,10 @@ namespace AtomToolsFramework
         auto& icon = m_expanded ? m_iconExpanded : m_iconCollapsed;
 
         const QRect iconRect(5, (geometry().height() / 2) - (iconSize.height() / 2), iconSize.width(), iconSize.height());
-        style->drawItemPixmap(&painter,
-            iconRect,
-            Qt::AlignLeft | Qt::AlignVCenter,
-            icon.scaledToWidth(iconSize.width()));
+        style->drawItemPixmap(&painter, iconRect, Qt::AlignLeft | Qt::AlignVCenter, icon.scaledToWidth(iconSize.width()));
 
         const auto textRect = QRect(25, 0, geometry().width() - 21, geometry().height());
-        style->drawItemText(&painter,
-            textRect,
-            Qt::AlignLeft | Qt::AlignVCenter,
-            QPalette(),
-            true,
-            text(),
-            QPalette::HighlightedText);
+        style->drawItemText(&painter, textRect, Qt::AlignLeft | Qt::AlignVCenter, QPalette(), true, text(), QPalette::HighlightedText);
     }
 } // namespace AtomToolsFramework
 

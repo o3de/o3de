@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C4976197
 # Test Case Title : Verify that when you assign an Initial Angular Velocity to an object,
 #   it moves with that Angular velocity when we switch to game mode
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4976197
+
 
 # fmt: off
 class Tests:

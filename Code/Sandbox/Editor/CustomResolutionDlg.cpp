@@ -27,6 +27,7 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 #define MIN_RES 64
+#define MAX_RES 8192
 
 CCustomResolutionDlg::CCustomResolutionDlg(int w, int h, QWidget* pParent /*=NULL*/)
     : QDialog(pParent)
@@ -46,18 +47,17 @@ CCustomResolutionDlg::~CCustomResolutionDlg()
 
 void CCustomResolutionDlg::OnInitDialog()
 {
-    int maxRes = GetIEditor()->GetRenderer()->GetMaxSquareRasterDimension();
-    m_ui->m_width->setRange(MIN_RES, maxRes);
+    m_ui->m_width->setRange(MIN_RES, MAX_RES);
     m_ui->m_width->setValue(m_wDefault);
 
-    m_ui->m_height->setRange(MIN_RES, maxRes);
+    m_ui->m_height->setRange(MIN_RES, MAX_RES);
     m_ui->m_height->setValue(m_hDefault);
 
     QString maxDimensionString;
     QTextStream(&maxDimensionString) 
-        << "Maximum Dimension: " << maxRes << Qt::endl 
+        << "Maximum Dimension: " << MAX_RES << Qt::endl 
         << Qt::endl
-        << "Note: Dimensions over 4K may be" << Qt::endl
+        << "Note: Dimensions over 8K may be" << Qt::endl
         << "unstable depending on hardware.";
     
     m_ui->m_maxDimension->setText(maxDimensionString);

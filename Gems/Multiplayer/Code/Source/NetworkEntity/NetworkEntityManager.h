@@ -15,11 +15,11 @@
 #include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
-#include <Source/NetworkEntity/INetworkEntityManager.h>
 #include <Source/NetworkEntity/NetworkEntityAuthorityTracker.h>
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
 #include <Source/NetworkEntity/NetworkEntityRpcMessage.h>
-#include <Source/EntityDomains/IEntityDomain.h>
+#include <Include/IEntityDomain.h>
+#include <Include/INetworkEntityManager.h>
 #include <Source/NetworkEntity/NetworkSpawnableLibrary.h>
 #include <Source/Components/MultiplayerComponentRegistry.h>
 
@@ -84,6 +84,9 @@ namespace Multiplayer
 
         NetEntityId NextId();
 
+        void OnSpawned(AZ::Data::Asset<AzFramework::Spawnable> spawnable);
+        void OnDespawned(AZ::Data::Asset<AzFramework::Spawnable> spawnable);
+
         NetworkEntityTracker m_networkEntityTracker;
         NetworkEntityAuthorityTracker m_networkEntityAuthorityTracker;
         MultiplayerComponentRegistry m_multiplayerComponentRegistry;
@@ -111,6 +114,8 @@ namespace Multiplayer
         DeferredRpcMessages m_localDeferredRpcMessages;
 
         NetworkSpawnableLibrary m_networkPrefabLibrary;
-        AZ::Data::Asset<AzFramework::Spawnable> m_rootSpawnableAsset;
+
+        AZ::Event<AZ::Data::Asset<AzFramework::Spawnable>>::Handler m_onSpawnedHandler;
+        AZ::Event<AZ::Data::Asset<AzFramework::Spawnable>>::Handler m_onDespawnedHandler;
     };
 }

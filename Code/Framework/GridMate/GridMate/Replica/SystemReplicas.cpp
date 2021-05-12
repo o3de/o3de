@@ -84,7 +84,7 @@ namespace GridMate
             // on activation of this replica, create our PeerInfo replica
             Replica* peerReplica = Replica::CreateReplica("PeerInfo");
             CreateAndAttachReplicaChunk<PeerReplica>(peerReplica);
-            rc.m_rm->AddMaster(peerReplica);
+            rc.m_rm->AddPrimary(peerReplica);
         }
         //-----------------------------------------------------------------------------
         void SessionInfo::OnReplicaDeactivate(const ReplicaContext& rc)
@@ -132,7 +132,7 @@ namespace GridMate
             (void)rc;
             if (m_pMgr->IsSyncHost())
             {
-                AZ_Assert(IsMaster(), "The host should always own sessionInfo!!!");
+                AZ_Assert(IsPrimary(), "The host should always own sessionInfo!!!");
                 AZ_Assert(m_pendingPeerReports.find(peerId) == m_pendingPeerReports.end(), "We are already waiting for reports for peer 0x%8x!", peerId);
 
                 vector<PeerId> peers;
@@ -205,7 +205,7 @@ namespace GridMate
         //-----------------------------------------------------------------------------
         void PeerReplica::OnReplicaActivate(const ReplicaContext& rc)
         {
-            if (IsMaster())
+            if (IsPrimary())
             {
                 m_peerId.Set(rc.m_rm->GetLocalPeerId());
             }

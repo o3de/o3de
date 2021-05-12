@@ -15,7 +15,6 @@
 #include "System.h"
 #include <time.h>
 
-#include <I3DEngine.h>
 #include <IRenderer.h>
 #include <IMovieSystem.h>
 #include <ILog.h>
@@ -54,8 +53,6 @@
 #endif
 
 #include "XConsole.h"
-#include "CrySizerStats.h"
-#include "CrySizerImpl.h"
 #include "StreamEngine/StreamEngine.h"
 #include "LocalizedStringManager.h"
 #include "XML/XmlUtils.h"
@@ -67,53 +64,8 @@ __pragma(comment(lib, "Winmm.lib"))
 #endif
 
 #if defined(APPLE)
-#include "SystemUtilsApple.h"
+#include <AzFramework/Utils/SystemUtilsApple.h>
 #endif
-
-
-
-static AZStd::vector<AZStd::string> GetModuleNames()
-{
-    AZStd::vector<AZStd::string> moduleNames;
-    if (moduleNames.empty())
-    {
-#   ifdef MODULE_EXTENSION
-#       error MODULE_EXTENSION already defined!
-#   endif
-#   if defined(LINUX)
-#       define MODULE_EXTENSION ".so"
-#   elif defined(APPLE)
-#       define MODULE_EXTENSION ".dylib"
-#   else
-#       define MODULE_EXTENSION ".dll"
-#   endif
-
-        moduleNames.push_back("Cry3DEngine" MODULE_EXTENSION);
-        moduleNames.push_back("CryFont" MODULE_EXTENSION);
-        moduleNames.push_back("CrySystem" MODULE_EXTENSION);
-
-#undef MODULE_EXTENSION
-
-#   if defined(LINUX)
-        moduleNames.push_back("CryRenderNULL.so");
-#   elif defined(APPLE)
-        moduleNames.push_back("CryRenderNULL.dylib");
-#   else
-        moduleNames.push_back("Editor.exe");
-        moduleNames.push_back("CryRenderD3D9.dll");
-        moduleNames.push_back("CryRenderD3D10.dll");
-        moduleNames.push_back("CryRenderNULL.dll");
-        //TODO: launcher?
-#   endif
-    }
-
-    return moduleNames;
-}
-
-static bool QueryModuleMemoryInfo([[maybe_unused]] SCryEngineStatsModuleInfo& moduleInfo, [[maybe_unused]] int index)
-{
-    return false;
-}
 
 // this is the list of modules that can be loaded into the game process
 // Each array element contains 2 strings: the name of the module (case-insensitive)
@@ -159,30 +111,6 @@ void CSystem::SetAffinity()
 #endif
 }
 
-
-
-
-
-//! dumps the memory usage statistics to the log
-//////////////////////////////////////////////////////////////////////////
-void CSystem::DumpMemoryUsageStatistics(bool bUseKB)
-{
-    //  CResourceCollector ResourceCollector;
-
-    //  TickMemStats(nMSP_ForDump,&ResourceCollector);
-    TickMemStats(nMSP_ForDump);
-
-    CrySizerStatsRenderer StatsRenderer (this, m_pMemStats, 10, 0);
-    StatsRenderer.dump(bUseKB);
-
-    // since we've recalculated this mem stats for dumping, we'll want to calculate it anew the next time it's rendered
-    SAFE_DELETE(m_pMemStats);
-}
-
-// collects the whole memory statistics into the given sizer object
-//////////////////////////////////////////////////////////////////////////
-
-
 #if defined(WIN32)
 #pragma pack(push,1)
 struct PEHeader_DLL
@@ -206,179 +134,6 @@ const SmallModuleInfo* FindModuleInfo(std::vector<SmallModuleInfo>& vec, const c
     }
 
     return 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CSystem::CollectMemInfo(SCryEngineStatsGlobalMemInfo& m_stats)
-{
-    m_stats.totalUsedInModules = 0;
-    m_stats.totalCodeAndStatic = 0;
-    m_stats.countedMemoryModules = 0;
-    m_stats.totalAllocatedInModules = 0;
-    m_stats.totalNumAllocsInModules = 0;
-
-    AZStd::vector<AZStd::string> szModules = GetModuleNames();
-    const int numModules = szModules.size();
-
-    //////////////////////////////////////////////////////////////////////////
-    // Hardcoded value for the OS memory allocation.
-    //////////////////////////////////////////////////////////////////////////
-    for (int i = 0; i < numModules; i++)
-    {
-        const char* szModule = szModules[i].c_str();
-
-        SCryEngineStatsModuleInfo moduleInfo;
-        ZeroStruct(moduleInfo.memInfo);
-        moduleInfo.moduleStaticSize = moduleInfo.SizeOfCode = moduleInfo.SizeOfInitializedData = moduleInfo.SizeOfUninitializedData = moduleInfo.usedInModule = 0;
-        moduleInfo.name = szModule;
-
-        if (!QueryModuleMemoryInfo(moduleInfo, i))
-        {
-            continue;
-        }
-
-        m_stats.totalNumAllocsInModules += moduleInfo.memInfo.num_allocations;
-        m_stats.totalAllocatedInModules += moduleInfo.memInfo.allocated;
-        m_stats.totalUsedInModules += moduleInfo.usedInModule;
-        m_stats.countedMemoryModules++;
-        m_stats.totalCodeAndStatic += moduleInfo.moduleStaticSize;
-
-        m_stats.modules.push_back(moduleInfo);
-    }
-}
-
-
-void CSystem::CollectMemStats (ICrySizer* pSizer, MemStatsPurposeEnum nPurpose, std::vector<SmallModuleInfo>* pStats)
-{
-    std::vector<SmallModuleInfo> stats;
-    if (pStats)
-    {
-        pStats->assign(stats.begin(), stats.end());
-    }
-
-    if (nMSP_ForCrashLog == nPurpose || nMSP_ForBudget == nPurpose)
-    {
-        return;
-    }
-
-    {
-        SIZER_COMPONENT_NAME(pSizer, "CrySystem");
-        {
-            pSizer->AddObject(this, sizeof(*this));
-            {
-                //SIZER_COMPONENT_NAME (pSizer, "$Allocations waste");
-                //const SmallModuleInfo* info = FindModuleInfo(stats, "CrySystem.dll");
-                //if (info)
-                //pSizer->AddObject(info, info->memInfo.allocated - info->memInfo.requested );
-            }
-
-            {
-                SIZER_COMPONENT_NAME(pSizer, "VFS");
-                if (m_pStreamEngine)
-                {
-                    SIZER_COMPONENT_NAME(pSizer, "Stream Engine");
-                    m_pStreamEngine->GetMemoryStatistics(pSizer);
-                }
-            }
-            {
-                SIZER_COMPONENT_NAME(pSizer, "Localization Data");
-                m_pLocalizationManager->GetMemoryUsage(pSizer);
-            }
-            {
-                SIZER_COMPONENT_NAME(pSizer, "XML");
-                m_pXMLUtils->GetMemoryUsage(pSizer);
-            }
-            if (m_env.pConsole)
-            {
-                SIZER_COMPONENT_NAME (pSizer, "Console");
-                m_env.pConsole->GetMemoryUsage (pSizer);
-            }
-
-            if (m_env.pLog)
-            {
-                SIZER_COMPONENT_NAME (pSizer, "Log");
-                m_env.pLog->GetMemoryUsage(pSizer);
-            }
-        }
-    }
-
-
-    if (m_env.p3DEngine)
-    {
-        SIZER_COMPONENT_NAME(pSizer, "Cry3DEngine");
-        {
-            m_env.p3DEngine->GetMemoryUsage (pSizer);
-            {
-                SIZER_COMPONENT_NAME (pSizer, "$Allocations waste");
-                const SmallModuleInfo* info = FindModuleInfo(stats, "Cry3DEngine.dll");
-                if (info)
-                {
-                    pSizer->AddObject(info, info->memInfo.allocated - info->memInfo.requested);
-                }
-            }
-        }
-    }
-
-    if (m_env.pRenderer)
-    {
-        SIZER_COMPONENT_NAME(pSizer, "CryRenderer");
-        {
-            {
-                SIZER_COMPONENT_NAME (pSizer, "$Allocations waste D3D9");
-                const SmallModuleInfo* info = FindModuleInfo(stats, "CryRenderD3D9.dll");
-                if (info)
-                {
-                    pSizer->AddObject(info, info->memInfo.allocated - info->memInfo.requested);
-                }
-            }
-            {
-                SIZER_COMPONENT_NAME (pSizer, "$Allocations waste D3D10");
-                const SmallModuleInfo* info = FindModuleInfo(stats, "CryRenderD3D10.dll");
-                if (info)
-                {
-                    pSizer->AddObject(info, info->memInfo.allocated - info->memInfo.requested);
-                }
-            }
-
-            m_env.pRenderer->GetMemoryUsage(pSizer);
-        }
-    }
-
-    if (m_env.pCryFont)
-    {
-        SIZER_COMPONENT_NAME(pSizer, "CryFont");
-        {
-            {
-                SIZER_COMPONENT_NAME (pSizer, "$Allocations waste");
-                const SmallModuleInfo* info = FindModuleInfo(stats, "CryFont.dll");
-                if (info)
-                {
-                    pSizer->AddObject(info, info->memInfo.allocated - info->memInfo.requested);
-                }
-            }
-
-            m_env.pCryFont->GetMemoryUsage(pSizer);
-            // m_pIFont and m_pIFontUi are both counted in pCryFont sizing if they exist.
-            // no need to manually add them here.
-        }
-    }
-
-    {
-        SIZER_COMPONENT_NAME(pSizer, "UserData");
-        if (m_pUserCallback)
-        {
-            m_pUserCallback->GetMemoryUsage(pSizer);
-        }
-    }
-
-#ifdef WIN32
-    {
-        SIZER_COMPONENT_NAME(pSizer, "Code");
-        GetExeSizes (pSizer, nPurpose);
-    }
-#endif
-
-    pSizer->End();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -477,52 +232,6 @@ int CSystem::GetApplicationLogInstance([[maybe_unused]] const char* logFilePath)
     return 0;
 #endif
 }
-
-
-// refreshes the m_pMemStats if necessary; creates it if it's not created
-//////////////////////////////////////////////////////////////////////////
-void CSystem::TickMemStats(MemStatsPurposeEnum nPurpose, IResourceCollector* pResourceCollector)
-{
-    // gather the statistics, if required
-    // if there's  no object, or if it's time to recalculate, or if it's for dump, then recalculate it
-    if (!m_pMemStats || (m_env.pRenderer->GetFrameID(false) % m_cvMemStats->GetIVal()) == 0 || nPurpose == nMSP_ForDump)
-    {
-        if (!m_pMemStats)
-        {
-            if (m_cvMemStats->GetIVal() < 4 && m_cvMemStats->GetIVal())
-            {
-                GetILog()->LogToConsole("memstats is too small (%d). Performance impact can be significant. Please set to a greater value.", m_cvMemStats->GetIVal());
-            }
-            m_pMemStats = new CrySizerStats();
-        }
-
-        if (!m_pSizer)
-        {
-            m_pSizer = new CrySizerImpl();
-        }
-
-        m_pSizer->SetResourceCollector(pResourceCollector);
-
-        m_pMemStats->startTimer(0, GetITimer());
-        CollectMemStats (m_pSizer, nPurpose);
-        m_pMemStats->stopTimer(0, GetITimer());
-
-        m_pMemStats->startTimer(1, GetITimer());
-        CrySizerStatsBuilder builder (m_pSizer);
-        builder.build (m_pMemStats);
-        m_pMemStats->stopTimer(1, GetITimer());
-
-        m_pMemStats->startTimer(2, GetITimer());
-        m_pSizer->clear();
-        m_pMemStats->stopTimer(2, GetITimer());
-    }
-    else
-    {
-        m_pMemStats->incAgeFrames();
-    }
-}
-
-//#define __HASXP
 
 // these 2 functions are duplicated in System.cpp in editor
 //////////////////////////////////////////////////////////////////////////
@@ -857,51 +566,6 @@ const char* GetModuleGroup (const char* szString)
     return "Other";
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CSystem::GetExeSizes (ICrySizer* pSizer, MemStatsPurposeEnum nPurpose)
-{
-    HANDLE hSnapshot;
-    hSnapshot = CreateToolhelp32Snapshot (TH32CS_SNAPMODULE, 0);
-    if (hSnapshot == INVALID_HANDLE_VALUE)
-    {
-        CryLogAlways ("Cannot get the module snapshot, error code %d", GetLastError());
-        return;
-    }
-
-    DWORD dwProcessID = GetCurrentProcessId();
-
-    MODULEENTRY32 me;
-    memset (&me, 0, sizeof(me));
-    me.dwSize = sizeof(me);
-
-    if (Module32First (hSnapshot, &me))
-    {
-        // the sizes of each module group
-        StringToSizeMap mapGroupSize;
-        do
-        {
-            dwProcessID = me.th32ProcessID;
-            const char* szGroup = GetModuleGroup (me.szModule);
-            SIZER_COMPONENT_NAME(pSizer, szGroup);
-            if (nPurpose == nMSP_ForDump)
-            {
-                SIZER_COMPONENT_NAME(pSizer, me.szModule);
-                pSizer->AddObject(me.modBaseAddr, me.modBaseSize);
-            }
-            else
-            {
-                pSizer->AddObject(me.modBaseAddr, me.modBaseSize);
-            }
-        } while (Module32Next(hSnapshot, &me));
-    }
-    else
-    {
-        CryLogAlways ("No modules to dump");
-    }
-
-    CloseHandle (hSnapshot);
-}
-
 #endif
 
 //////////////////////////////////////////////////////////////////////////
@@ -1079,18 +743,11 @@ void CSystem::FatalError(const char* format, ...)
 
     LogSystemInfo();
 
-    CollectMemStats(0, nMSP_ForCrashLog);
-
     OutputDebugString(szBuffer);
 #ifdef WIN32
     OnFatalError(szBuffer);
     if (!g_cvars.sys_no_crash_dialog)
     {
-        ICVar* pFullscreen = (gEnv && gEnv->pConsole) ? gEnv->pConsole->GetCVar("r_Fullscreen") : 0;
-        if (pFullscreen && pFullscreen->GetIVal() != 0 && gEnv->pRenderer && gEnv->pRenderer->GetHWND())
-        {
-            ::ShowWindow((HWND)gEnv->pRenderer->GetHWND(), SW_MINIMIZE);
-        }
         ::MessageBox(NULL, szBuffer, "Open 3D Engine Error", MB_OK | MB_ICONERROR | MB_SYSTEMMODAL);
     }
 
@@ -1187,12 +844,6 @@ void CSystem::debug_LogCallStack(int nMaxFuncs, [[maybe_unused]] int nFlags)
     // Print call stack for each find.
     const char* funcs[32];
     int nCount = nMaxFuncs;
-    int nCurFrame = 0;
-    if (m_env.pRenderer)
-    {
-        nCurFrame = (int)m_env.pRenderer->GetFrameID(false);
-    }
-    CryLogAlways("    ----- CallStack (Frame: %d) -----", nCurFrame);
     GetISystem()->debug_GetCallStack(funcs, nCount);
     for (int i = 1; i < nCount; i++) // start from 1 to skip this function.
     {

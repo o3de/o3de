@@ -60,6 +60,9 @@ namespace AzFramework
 
         void Barrier(EntitySpawnTicket& spawnInfo, BarrierCallback completionCallback) override;
 
+        void AddOnSpawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>>::Handler& handler) override;
+        void AddOnDespawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>>::Handler& handler) override;
+
         //
         // The following function is thread safe but intended to be run from the main thread.
         //
@@ -156,5 +159,8 @@ namespace AzFramework
         AZStd::deque<Requests> m_delayedQueue; //!< Requests that were processed before, but couldn't be completed.
         AZStd::queue<Requests> m_pendingRequestQueue;
         AZStd::mutex m_pendingRequestQueueMutex;
+
+        AZ::Event<AZ::Data::Asset<Spawnable>> m_onSpawnedEvent;
+        AZ::Event<AZ::Data::Asset<Spawnable>> m_onDespawnedEvent;
     };
 } // namespace AzFramework

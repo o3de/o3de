@@ -16,7 +16,6 @@
 
 // AzCore
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzCore/Interface/Interface.h>
 
 // Qt
@@ -595,11 +594,6 @@ AmazonToolbar ToolbarManager::GetEditModeToolbar() const
     t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_TOOLBAR_WIDGET_SNAP_GRID, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_TOOLBAR_WIDGET_SNAP_ANGLE, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_RULER, ORIGINAL_TOOLBAR_VERSION);
-
-    t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_TOOLBAR_WIDGET_ENVIRONMENT_MODE, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_TOOLBAR_WIDGET_DEBUG_MODE, ORIGINAL_TOOLBAR_VERSION);
 
     return t;
 }
@@ -609,14 +603,6 @@ AmazonToolbar ToolbarManager::GetObjectToolbar() const
     AmazonToolbar t = AmazonToolbar("Object", QObject::tr("Object Toolbar"));
     t.SetMainToolbar(true);
     t.AddAction(ID_GOTO_SELECTED, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_OBJECTMODIFY_SETHEIGHT, ORIGINAL_TOOLBAR_VERSION);
-
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
-        t.AddAction(ID_EDIT_FREEZE, ORIGINAL_TOOLBAR_VERSION);
-        t.AddAction(ID_EDIT_UNFREEZEALL, ORIGINAL_TOOLBAR_VERSION);
-    }
 
     return t;
 }
@@ -636,18 +622,8 @@ AmazonToolbar ToolbarManager::GetPlayConsoleToolbar() const
 AmazonToolbar ToolbarManager::GetEditorsToolbar() const
 {
     AmazonToolbar t = AmazonToolbar("Editors", QObject::tr("Editors Toolbar"));
-    if( !AZ::Interface<AzFramework::AtomActiveInterface>::Get() && !GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        t.AddAction(ID_OPEN_MATERIAL_EDITOR, ORIGINAL_TOOLBAR_VERSION);
-    }
 
     t.AddAction(ID_OPEN_AUDIO_CONTROLS_BROWSER, ORIGINAL_TOOLBAR_VERSION);
-
-    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        t.AddAction(ID_PARTICLE_EDITOR, ORIGINAL_TOOLBAR_VERSION);
-        t.AddAction(ID_GENERATORS_LIGHTING, ORIGINAL_TOOLBAR_VERSION);
-    }
 
     return t;
 }

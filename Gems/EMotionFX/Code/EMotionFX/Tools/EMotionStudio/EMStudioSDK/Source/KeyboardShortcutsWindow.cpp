@@ -116,14 +116,6 @@ namespace EMStudio
     }
 
 
-    void KeyboardShortcutsWindow::hideEvent(QHideEvent* event)
-    {
-        MCORE_UNUSED(event);
-        //if (mShortcutReceiverDialog)
-        //  mShortcutReceiverDialog->reject();
-    }
-
-
     // reconstruct the whole interface
     void KeyboardShortcutsWindow::ReInit()
     {
@@ -138,11 +130,11 @@ namespace EMStudio
 
         // add the groups to the left list widget
         MysticQt::KeyboardShortcutManager* shortcutManager = GetMainWindow()->GetShortcutManager();
-        const uint32 numGroups = shortcutManager->GetNumGroups();
+        const size_t numGroups = shortcutManager->GetNumGroups();
         for (uint32 i = 0; i < numGroups; ++i)
         {
             MysticQt::KeyboardShortcutManager::Group* group = shortcutManager->GetGroup(i);
-            mListWidget->addItem(group->GetName());
+            mListWidget->addItem(FromStdString(group->GetName()));
         }
 
         mTableWidget->blockSignals(false);
@@ -183,10 +175,10 @@ namespace EMStudio
         // get access to the shortcut group and some data
         MysticQt::KeyboardShortcutManager*          shortcutManager = GetMainWindow()->GetShortcutManager();
         MysticQt::KeyboardShortcutManager::Group*   group           = shortcutManager->GetGroup(mSelectedGroup);
-        const uint32                                numActions      = group->GetNumActions();
+        const size_t                                numActions      = group->GetNumActions();
 
         // set the row count
-        mTableWidget->setRowCount(numActions);
+        mTableWidget->setRowCount(aznumeric_caster(numActions));
 
         // fill the table with the media root folders
         for (uint32 i = 0; i < numActions; ++i)
@@ -195,11 +187,11 @@ namespace EMStudio
             MysticQt::KeyboardShortcutManager::Action* action = group->GetAction(i);
 
             // add the item to the table and set the row height
-            QTableWidgetItem* item = new QTableWidgetItem(action->mName.c_str());
+            QTableWidgetItem* item = new QTableWidgetItem(action->m_qaction->text());
             item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
             mTableWidget->setItem(i, 0, item);
 
-            const QString keyText = ConstructStringFromShortcut(action->mKey, action->mCtrl, action->mAlt);
+            const QString keyText = ConstructStringFromShortcut(action->m_qaction->shortcut());
 
             item = new QTableWidgetItem(keyText);
             item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
@@ -255,18 +247,14 @@ namespace EMStudio
             // handle conflicts
             if (shortcutWindow.mConflictDetected)
             {
-                shortcutWindow.mConflictAction->mKey    = -1;
-                shortcutWindow.mConflictAction->mCtrl   = false;
-                shortcutWindow.mConflictAction->mAlt    = false;
+                shortcutWindow.mConflictAction->m_qaction->setShortcut({});
             }
 
             // adjust the shortcut action
-            action->mKey    = shortcutWindow.mKey;
-            action->mAlt    = shortcutWindow.mAlt;
-            action->mCtrl   = shortcutWindow.mCtrl;
+            action->m_qaction->setShortcut(shortcutWindow.mKey);
 
             // save the new shortcuts
-            QSettings settings(AZStd::string(GetManager()->GetAppDataFolder() + "EMStudioKeyboardShortcuts.cfg").c_str(), QSettings::IniFormat, this);
+            QSettings settings(FromStdString(AZStd::string(GetManager()->GetAppDataFolder() + "EMStudioKeyboardShortcuts.cfg")), QSettings::IniFormat, this);
             shortcutManager->Save(&settings);
 
             // reinit the window
@@ -277,31 +265,14 @@ namespace EMStudio
 
 
     // construct a text version of a shortcut
-    QString KeyboardShortcutsWindow::ConstructStringFromShortcut(int key, bool ctrl, bool alt)
+    QString KeyboardShortcutsWindow::ConstructStringFromShortcut(QKeySequence key)
     {
-        if (key == -1)
+        if (key.isEmpty())
         {
             return "not set";
         }
 
-        QString keyText;
-
-        if (ctrl)
-        {
-            #if AZ_TRAIT_OS_PLATFORM_APPLE
-                keyText += "COMMAND + ";
-            #else
-                keyText += "CTRL + ";
-            #endif  
-        }
-        if (alt)
-        {
-            keyText += "ALT + ";
-        }
-
-        keyText += QKeySequence(key).toString(QKeySequence::NativeText);
-
-        return keyText;
+        return key.toString(QKeySequence::NativeText);
     }
 
 
@@ -313,9 +284,7 @@ namespace EMStudio
             return;
         }
 
-        mContextMenuAction->mKey    = mContextMenuAction->mDefaultKey;
-        mContextMenuAction->mCtrl   = mContextMenuAction->mDefaultCtrl;
-        mContextMenuAction->mAlt    = mContextMenuAction->mDefaultAlt;
+        mContextMenuAction->m_qaction->setShortcut(mContextMenuAction->m_defaultKeySequence);
 
         ReInit();
     }
@@ -378,19 +347,14 @@ namespace EMStudio
         setWindowTitle(" ");
         layout->addWidget(new QLabel("Press the new shortcut on the keyboard:"));
 
-        // find the initial shortcut
-        //MysticQt::KeyboardShortcutManager* shortcutManager = GetMainWindow()->GetShortcutManager();
-
         mOrgAction          = action;
         mOrgGroup           = group;
 
         mConflictAction     = nullptr;
         mConflictDetected   = false;
-        mKey                = action->mKey;
-        mCtrl               = action->mCtrl;
-        mAlt                = action->mAlt;
+        mKey                = action->m_qaction->shortcut();
 
-        QString keyText = KeyboardShortcutsWindow::ConstructStringFromShortcut(mKey, mCtrl, mAlt);
+        QString keyText = KeyboardShortcutsWindow::ConstructStringFromShortcut(mKey);
 
         mLabel = new QLabel(keyText);
         mLabel->setAlignment(Qt::AlignHCenter);
@@ -431,9 +395,7 @@ namespace EMStudio
     // reset the shortcut to its default value
     void ShortcutReceiverDialog::ResetToDefault()
     {
-        mKey    = mOrgAction->mDefaultKey;
-        mCtrl   = mOrgAction->mDefaultCtrl;
-        mAlt    = mOrgAction->mDefaultAlt;
+        mKey    = mOrgAction->m_defaultKeySequence;
 
         UpdateInterface();
     }
@@ -444,10 +406,8 @@ namespace EMStudio
     {
         MysticQt::KeyboardShortcutManager* shortcutManager = GetMainWindow()->GetShortcutManager();
 
-        QString keyText = KeyboardShortcutsWindow::ConstructStringFromShortcut(mKey, mCtrl, mAlt);
-
         // check if the currently assigned shortcut is already taken by another shortcut
-        mConflictAction = shortcutManager->FindShortcut(mKey, mCtrl, mAlt, mOrgGroup);
+        mConflictAction = shortcutManager->FindShortcut(mKey, mOrgGroup);
         if (mConflictAction == nullptr || mConflictAction == mOrgAction)
         {
             mOKButton->setToolTip("");
@@ -465,38 +425,24 @@ namespace EMStudio
 
             if (mConflictAction)
             {
-                AZStd::string tempString;
-
-                tempString = AZStd::string::format("Assigning new shortcut will unassign '%s' automatically.", mConflictAction->mName.c_str());
-                mOKButton->setToolTip(tempString.c_str());
+                mOKButton->setToolTip(QString("Assigning new shortcut will unassign '%1' automatically.").arg(mConflictAction->m_qaction->text()));
 
                 MysticQt::KeyboardShortcutManager::Group* conflictGroup = shortcutManager->FindGroupForShortcut(mConflictAction);
                 if (conflictGroup)
                 {
-                    tempString = AZStd::string::format("Conflicts with: %s -> %s", conflictGroup->GetName(), mConflictAction->mName.c_str());
+                    mConflictKeyLabel->setText(QString("Conflicts with: %1 -> %2").arg(FromStdString(conflictGroup->GetName())).arg(mConflictAction->m_qaction->text()));
                 }
                 else
                 {
-                    tempString = AZStd::string::format("Conflicts with: %s", mConflictAction->mName.c_str());
+                    mConflictKeyLabel->setText(QString("Conflicts with: %1").arg(mConflictAction->m_qaction->text()));
                 }
-
-                mConflictKeyLabel->setText(tempString.c_str());
             }
         }
 
         // adjust the label text to the new shortcut
+        const QString keyText = KeyboardShortcutsWindow::ConstructStringFromShortcut(mKey);
         mLabel->setText(keyText);
     }
-
-
-    // close dialog as soon as it lost focus
-    void ShortcutReceiverDialog::focusOutEvent(QFocusEvent* event)
-    {
-        MCORE_UNUSED(event);
-        //  if (event->reason() == Qt::ActiveWindowFocusReason)
-        //      reject();
-    }
-
 
     // called when the user pressed a new shortcut
     void ShortcutReceiverDialog::keyPressEvent(QKeyEvent* event)
@@ -513,18 +459,12 @@ namespace EMStudio
 
         if (event->key() == Qt::Key_Escape)
         {
-            //mKey      = mOrgAction->mKey;
-            //mCtrl     = mOrgAction->mCtrl;
-            //mAlt      = mOrgAction->mAlt;
-
             // close the dialog when pressing ESC
             reject();
         }
         else
         {
-            mKey    = event->key();
-            mCtrl   = event->modifiers() & Qt::ControlModifier;
-            mAlt    = event->modifiers() & Qt::AltModifier;
+            mKey = event->key() | event->modifiers();
         }
 
         UpdateInterface();

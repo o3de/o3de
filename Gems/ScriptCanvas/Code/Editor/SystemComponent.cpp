@@ -134,7 +134,7 @@ namespace ScriptCanvasEditor
 
         PopulateEditorCreatableTypes();
 
-        m_propertyHandlers.emplace_back(AzToolsFramework::RegisterGenericComboBoxHandler<ScriptCanvas::VariableId>());
+        AzToolsFramework::RegisterGenericComboBoxHandler<ScriptCanvas::VariableId>();
 
         SystemRequestBus::Handler::BusConnect();
         ScriptCanvasExecutionBus::Handler::BusConnect();
@@ -176,12 +176,6 @@ namespace ScriptCanvasEditor
         ScriptCanvasExecutionBus::Handler::BusDisconnect();
         SystemRequestBus::Handler::BusDisconnect();
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
-
-        for (auto&& propertyHandler : m_propertyHandlers)
-        {
-            AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(&AzToolsFramework::PropertyTypeRegistrationMessages::UnregisterPropertyType, propertyHandler.get());
-        }
-        m_propertyHandlers.clear();
 
         m_jobContext.reset();
         m_jobManager.reset();
@@ -320,7 +314,7 @@ namespace ScriptCanvasEditor
     {
         if (AZStd::wildcard_match("*.scriptcanvas", fullSourceFileName))
         {
-            return AzToolsFramework::AssetBrowser::SourceFileDetails("Editor/Icons/AssetBrowser/ScriptCanvas_16.png");
+            return AzToolsFramework::AssetBrowser::SourceFileDetails("Icons/AssetBrowser/ScriptCanvas_16.png");
         }
 
         // not one of our types.

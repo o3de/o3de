@@ -73,12 +73,12 @@ public:
     static const char* GetChunkName() { return "RPCChunk"; }
 
     RPCChunk()
-        : m_fromMasterBroadcast(0)
-        , m_fromMasterNotBroadcast(0)
+        : m_fromPrimaryBroadcast(0)
+        , m_fromPrimaryNotBroadcast(0)
         , m_fromProxyBroadcast(0)
         , m_fromProxyNotBroadcast(0)
-        , FromMasterBroadcast("FromMasterBroadcast")
-        , FromMasterNotBroadcast("FromMasterNotBroadcast")
+        , FromPrimaryBroadcast("FromPrimaryBroadcast")
+        , FromPrimaryNotBroadcast("FromPrimaryNotBroadcast")
         , FromProxyBroadcast("FromProxyBroadcast")
         , FromProxyNotBroadcast("FromProxyNotBroadcast")
         , BroadcastInt("BroadcastInt")
@@ -86,30 +86,30 @@ public:
 
     bool IsReplicaMigratable() override { return false; }
 
-    bool FromMasterBroadcastFn(const RpcContext&)
+    bool FromPrimaryBroadcastFn(const RpcContext&)
     {
-        AZ_TracePrintf("GridMate", "Executed FromMasterBroadcast %d %s\n", GetReplicaId(), GetReplica()->IsMaster() ? "master" : "proxy");
-        m_fromMasterBroadcast++;
+        AZ_TracePrintf("GridMate", "Executed FromPrimaryBroadcast %d %s\n", GetReplicaId(), GetReplica()->IsPrimary() ? "primary" : "proxy");
+        m_fromPrimaryBroadcast++;
         return true;
     }
 
-    bool FromMasterNotBroadcastFn(const RpcContext&)
+    bool FromPrimaryNotBroadcastFn(const RpcContext&)
     {
-        AZ_TracePrintf("GridMate", "Executed FromMasterNotBroadcast %d %s\n", GetReplicaId(), GetReplica()->IsMaster() ? "master" : "proxy");
-        m_fromMasterNotBroadcast++;
+        AZ_TracePrintf("GridMate", "Executed FromPrimaryNotBroadcast %d %s\n", GetReplicaId(), GetReplica()->IsPrimary() ? "primary" : "proxy");
+        m_fromPrimaryNotBroadcast++;
         return false;
     }
 
     bool FromProxyBroadcastFn(const RpcContext&)
     {
-        AZ_TracePrintf("GridMate", "Executed FromProxyBroadcast %d %s\n", GetReplicaId(), GetReplica()->IsMaster() ? "master" : "proxy");
+        AZ_TracePrintf("GridMate", "Executed FromProxyBroadcast %d %s\n", GetReplicaId(), GetReplica()->IsPrimary() ? "primary" : "proxy");
         m_fromProxyBroadcast++;
         return true;
     }
 
     bool FromProxyNotBroadcastFn(const RpcContext&)
     {
-        AZ_TracePrintf("GridMate", "Executed FromProxyNotBroadcast %d %s\n", GetReplicaId(), GetReplica()->IsMaster() ? "master" : "proxy");
+        AZ_TracePrintf("GridMate", "Executed FromProxyNotBroadcast %d %s\n", GetReplicaId(), GetReplica()->IsPrimary() ? "primary" : "proxy");
         m_fromProxyNotBroadcast++;
         return false;
     }
@@ -120,14 +120,14 @@ public:
         return true;
     }
 
-    int m_fromMasterBroadcast;
-    int m_fromMasterNotBroadcast;
+    int m_fromPrimaryBroadcast;
+    int m_fromPrimaryNotBroadcast;
     int m_fromProxyBroadcast;
     int m_fromProxyNotBroadcast;
     AZStd::vector<int> m_sentData;
 
-    Rpc<>::BindInterface<RPCChunk, & RPCChunk::FromMasterBroadcastFn> FromMasterBroadcast;
-    Rpc<>::BindInterface<RPCChunk, & RPCChunk::FromMasterNotBroadcastFn> FromMasterNotBroadcast;
+    Rpc<>::BindInterface<RPCChunk, & RPCChunk::FromPrimaryBroadcastFn> FromPrimaryBroadcast;
+    Rpc<>::BindInterface<RPCChunk, & RPCChunk::FromPrimaryNotBroadcastFn> FromPrimaryNotBroadcast;
     Rpc<>::BindInterface<RPCChunk, & RPCChunk::FromProxyBroadcastFn> FromProxyBroadcast;
     Rpc<>::BindInterface<RPCChunk, & RPCChunk::FromProxyNotBroadcastFn> FromProxyNotBroadcast;
     Rpc<RpcArg<int> >::BindInterface<RPCChunk, & RPCChunk::BroadcastIntFn> BroadcastInt;
@@ -158,21 +158,21 @@ public:
 
     bool Zero(const RpcContext&)
     {
-        auto& list = (IsMaster() ? m_sentData : m_receivedData)[0];
+        auto& list = (IsPrimary() ? m_sentData : m_receivedData)[0];
         (void) list;
         return true;
     }
 
     bool One(AZ::u32 t1, const RpcContext&)
     {
-        auto& list = (IsMaster() ? m_sentData : m_receivedData)[1];
+        auto& list = (IsPrimary() ? m_sentData : m_receivedData)[1];
         list.push_back(t1);
         return true;
     }
 
     bool Two(AZ::u32 t1, AZ::u32 t2, const RpcContext&)
     {
-        auto& list = (IsMaster() ? m_sentData : m_receivedData)[2];
+        auto& list = (IsPrimary() ? m_sentData : m_receivedData)[2];
         list.push_back(t1);
         list.push_back(t2);
         return true;
@@ -180,7 +180,7 @@ public:
 
     bool Three(AZ::u32 t1, AZ::u32 t2, AZ::u32 t3, const RpcContext&)
     {
-        auto& list = (IsMaster() ? m_sentData : m_receivedData)[3];
+        auto& list = (IsPrimary() ? m_sentData : m_receivedData)[3];
         list.push_back(t1);
         list.push_back(t2);
         list.push_back(t3);
@@ -189,7 +189,7 @@ public:
 
     bool Four(AZ::u32 t1, AZ::u32 t2, AZ::u32 t3, AZ::u32 t4, const RpcContext&)
     {
-        auto& list = (IsMaster() ? m_sentData : m_receivedData)[4];
+        auto& list = (IsPrimary() ? m_sentData : m_receivedData)[4];
         list.push_back(t1);
         list.push_back(t2);
         list.push_back(t3);
@@ -199,7 +199,7 @@ public:
 
     bool Five(AZ::u32 t1, AZ::u32 t2, AZ::u32 t3, AZ::u32 t4, AZ::u32 t5, const RpcContext&)
     {
-        auto& list = (IsMaster() ? m_sentData : m_receivedData)[5];
+        auto& list = (IsPrimary() ? m_sentData : m_receivedData)[5];
         list.push_back(t1);
         list.push_back(t2);
         list.push_back(t3);
@@ -210,7 +210,7 @@ public:
 
     bool Six(AZ::u32 t1, AZ::u32 t2, AZ::u32 t3, AZ::u32 t4, AZ::u32 t5, AZ::u32 t6, const RpcContext&)
     {
-        auto& list = (IsMaster() ? m_sentData : m_receivedData)[6];
+        auto& list = (IsPrimary() ? m_sentData : m_receivedData)[6];
         list.push_back(t1);
         list.push_back(t2);
         list.push_back(t3);
@@ -222,7 +222,7 @@ public:
 
     bool Seven(AZ::u32 t1, AZ::u32 t2, AZ::u32 t3, AZ::u32 t4, AZ::u32 t5, AZ::u32 t6, AZ::u32 t7, const RpcContext&)
     {
-        auto& list = (IsMaster() ? m_sentData : m_receivedData)[7];
+        auto& list = (IsPrimary() ? m_sentData : m_receivedData)[7];
         list.push_back(t1);
         list.push_back(t2);
         list.push_back(t3);
@@ -235,7 +235,7 @@ public:
 
     bool Eight(AZ::u32 t1, AZ::u32 t2, AZ::u32 t3, AZ::u32 t4, AZ::u32 t5, AZ::u32 t6, AZ::u32 t7, AZ::u32 t8, const RpcContext&)
     {
-        auto& list = (IsMaster() ? m_sentData : m_receivedData)[8];
+        auto& list = (IsPrimary() ? m_sentData : m_receivedData)[8];
         list.push_back(t1);
         list.push_back(t2);
         list.push_back(t3);
@@ -249,7 +249,7 @@ public:
 
     bool Nine(AZ::u32 t1, AZ::u32 t2, AZ::u32 t3, AZ::u32 t4, AZ::u32 t5, AZ::u32 t6, AZ::u32 t7, AZ::u32 t8, AZ::u32 t9, const RpcContext&)
     {
-        auto& list = (IsMaster() ? m_sentData : m_receivedData)[9];
+        auto& list = (IsPrimary() ? m_sentData : m_receivedData)[9];
         list.push_back(t1);
         list.push_back(t2);
         list.push_back(t3);
@@ -890,7 +890,7 @@ public:
         // put something on s1 to get it going
         auto replica = Replica::CreateReplica(nullptr);
         m_chunk = CreateAndAttachReplicaChunk<RPCChunk>(replica);
-        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
     }
 
     RPCChunk::Ptr m_chunk;
@@ -905,11 +905,11 @@ TEST_F(Integ_ReplicaChunkRPCExec, ReplicaChunkRPCExec)
         switch (tick)
         {
         case 10:
-            m_chunk->FromMasterBroadcast();
+            m_chunk->FromPrimaryBroadcast();
             break;
 
         case 20:
-            m_chunk->FromMasterNotBroadcast();
+            m_chunk->FromPrimaryNotBroadcast();
             break;
 
         case 30:
@@ -932,13 +932,13 @@ TEST_F(Integ_ReplicaChunkRPCExec, ReplicaChunkRPCExec)
             auto s2proxy = m_sessions[s2].GetReplicaMgr().FindReplica(m_replicaId)->FindReplicaChunk<RPCChunk>();
             auto s3proxy = m_sessions[s3].GetReplicaMgr().FindReplica(m_replicaId)->FindReplicaChunk<RPCChunk>();
 
-            AZ_TEST_ASSERT(s1host->m_fromMasterBroadcast == 1);
-            AZ_TEST_ASSERT(s2proxy->m_fromMasterBroadcast == 1);
-            AZ_TEST_ASSERT(s3proxy->m_fromMasterBroadcast == 1);
+            AZ_TEST_ASSERT(s1host->m_fromPrimaryBroadcast == 1);
+            AZ_TEST_ASSERT(s2proxy->m_fromPrimaryBroadcast == 1);
+            AZ_TEST_ASSERT(s3proxy->m_fromPrimaryBroadcast == 1);
 
-            AZ_TEST_ASSERT(s1host->m_fromMasterNotBroadcast == 1);
-            AZ_TEST_ASSERT(s2proxy->m_fromMasterNotBroadcast == 0);
-            AZ_TEST_ASSERT(s3proxy->m_fromMasterNotBroadcast == 0);
+            AZ_TEST_ASSERT(s1host->m_fromPrimaryNotBroadcast == 1);
+            AZ_TEST_ASSERT(s2proxy->m_fromPrimaryNotBroadcast == 0);
+            AZ_TEST_ASSERT(s3proxy->m_fromPrimaryNotBroadcast == 0);
 
             AZ_TEST_ASSERT(s1host->m_fromProxyBroadcast == 1);
             AZ_TEST_ASSERT(s2proxy->m_fromProxyBroadcast == 1);
@@ -965,12 +965,12 @@ public:
     GM_CLASS_ALLOCATOR(DestroyRPCChunk);
 
     DestroyRPCChunk()
-        : DestroyFromMaster("DestroyFromMaster")
+        : DestroyFromPrimary("DestroyFromPrimary")
         , DestroyFromProxy("DestroyFromProxy")
         , BeforeDestroyFromProxy("BeforeDestroyFromProxy")
         , AfterDestroyFromProxy("AfterDestroyFromProxy")
-        , BeforeDestroyFromMaster("BeforeDestroyFromMaster")
-        , AfterDestroyFromMaster("AfterDestroyFromMaster")
+        , BeforeDestroyFromPrimary("BeforeDestroyFromPrimary")
+        , AfterDestroyFromPrimary("AfterDestroyFromPrimary")
     {
     }
 
@@ -979,11 +979,11 @@ public:
 
     bool IsReplicaMigratable() override { return false; }
 
-    bool DestroyFromMasterFn(const RpcContext&)
+    bool DestroyFromPrimaryFn(const RpcContext&)
     {
-        AZ_TracePrintf("GridMate", "Executed DestroyFromMaster %d %s\n", GetReplicaId(), GetReplica()->IsMaster() ? "master" : "proxy");
-        ++s_destroyFromMasterCalls;
-        if (GetReplica()->IsMaster())
+        AZ_TracePrintf("GridMate", "Executed DestroyFromPrimary %d %s\n", GetReplicaId(), GetReplica()->IsPrimary() ? "primary" : "proxy");
+        ++s_destroyFromPrimaryCalls;
+        if (GetReplica()->IsPrimary())
         {
             GetReplica()->Destroy();
         }
@@ -992,9 +992,9 @@ public:
 
     bool DestroyFromProxyFn(const RpcContext&)
     {
-        AZ_TracePrintf("GridMate", "Executed DestroyFromProxy %d %s\n", GetReplicaId(), GetReplica()->IsMaster() ? "master" : "proxy");
+        AZ_TracePrintf("GridMate", "Executed DestroyFromProxy %d %s\n", GetReplicaId(), GetReplica()->IsPrimary() ? "primary" : "proxy");
         ++s_destroyFromProxyCalls;
-        if (GetReplica()->IsMaster())
+        if (GetReplica()->IsPrimary())
         {
             GetReplica()->Destroy();
         }
@@ -1003,53 +1003,53 @@ public:
 
     bool BeforeDestroyFromProxyFn(const RpcContext&)
     {
-        AZ_TracePrintf("GridMate", "Executed BeforeDestroyFromProxy %d %s\n", GetReplicaId(), GetReplica()->IsMaster() ? "master" : "proxy");
+        AZ_TracePrintf("GridMate", "Executed BeforeDestroyFromProxy %d %s\n", GetReplicaId(), GetReplica()->IsPrimary() ? "primary" : "proxy");
         ++s_beforeDestroyFromProxyCalls;
         return true;
     }
 
     bool AfterDestroyFromProxyFn(const RpcContext&)
     {
-        AZ_TracePrintf("GridMate", "Executed AfterDestroyFromProxy %d %s\n", GetReplicaId(), GetReplica()->IsMaster() ? "master" : "proxy");
+        AZ_TracePrintf("GridMate", "Executed AfterDestroyFromProxy %d %s\n", GetReplicaId(), GetReplica()->IsPrimary() ? "primary" : "proxy");
         ++s_afterDestroyFromProxyCalls;
         return true;
     }
 
-    bool BeforeDestroyFromMasterFn(const RpcContext&)
+    bool BeforeDestroyFromPrimaryFn(const RpcContext&)
     {
-        AZ_TracePrintf("GridMate", "Executed BeforeDestroyFromMaster %d %s\n", GetReplicaId(), GetReplica()->IsMaster() ? "master" : "proxy");
-        ++s_beforeDestroyFromMasterCalls;
+        AZ_TracePrintf("GridMate", "Executed BeforeDestroyFromPrimary %d %s\n", GetReplicaId(), GetReplica()->IsPrimary() ? "primary" : "proxy");
+        ++s_beforeDestroyFromPrimaryCalls;
         return true;
     }
 
-    bool AfterDestroyFromMasterFn(const RpcContext&)
+    bool AfterDestroyFromPrimaryFn(const RpcContext&)
     {
-        AZ_TracePrintf("GridMate", "Executed AfterDestroyFromMaster %d %s\n", GetReplicaId(), GetReplica()->IsMaster() ? "master" : "proxy");
-        ++s_afterDestroyFromMasterCalls;
+        AZ_TracePrintf("GridMate", "Executed AfterDestroyFromPrimary %d %s\n", GetReplicaId(), GetReplica()->IsPrimary() ? "primary" : "proxy");
+        ++s_afterDestroyFromPrimaryCalls;
         return true;
     }
 
-    Rpc<>::BindInterface<DestroyRPCChunk, & DestroyRPCChunk::DestroyFromMasterFn> DestroyFromMaster;
+    Rpc<>::BindInterface<DestroyRPCChunk, & DestroyRPCChunk::DestroyFromPrimaryFn> DestroyFromPrimary;
     Rpc<>::BindInterface<DestroyRPCChunk, & DestroyRPCChunk::DestroyFromProxyFn> DestroyFromProxy;
     Rpc<>::BindInterface<DestroyRPCChunk, & DestroyRPCChunk::BeforeDestroyFromProxyFn> BeforeDestroyFromProxy;
     Rpc<>::BindInterface<DestroyRPCChunk, & DestroyRPCChunk::AfterDestroyFromProxyFn> AfterDestroyFromProxy;
-    Rpc<>::BindInterface<DestroyRPCChunk, & DestroyRPCChunk::BeforeDestroyFromMasterFn> BeforeDestroyFromMaster;
-    Rpc<>::BindInterface<DestroyRPCChunk, & DestroyRPCChunk::AfterDestroyFromMasterFn> AfterDestroyFromMaster;
+    Rpc<>::BindInterface<DestroyRPCChunk, & DestroyRPCChunk::BeforeDestroyFromPrimaryFn> BeforeDestroyFromPrimary;
+    Rpc<>::BindInterface<DestroyRPCChunk, & DestroyRPCChunk::AfterDestroyFromPrimaryFn> AfterDestroyFromPrimary;
 
-    static int s_destroyFromMasterCalls;
-    static int s_beforeDestroyFromMasterCalls;
-    static int s_afterDestroyFromMasterCalls;
+    static int s_destroyFromPrimaryCalls;
+    static int s_beforeDestroyFromPrimaryCalls;
+    static int s_afterDestroyFromPrimaryCalls;
     static int s_destroyFromProxyCalls;
     static int s_beforeDestroyFromProxyCalls;
     static int s_afterDestroyFromProxyCalls;
 };
 
 int DestroyRPCChunk::s_destroyFromProxyCalls = 0;
-int DestroyRPCChunk::s_destroyFromMasterCalls = 0;
+int DestroyRPCChunk::s_destroyFromPrimaryCalls = 0;
 int DestroyRPCChunk::s_beforeDestroyFromProxyCalls = 0;
 int DestroyRPCChunk::s_afterDestroyFromProxyCalls = 0;
-int DestroyRPCChunk::s_beforeDestroyFromMasterCalls = 0;
-int DestroyRPCChunk::s_afterDestroyFromMasterCalls = 0;
+int DestroyRPCChunk::s_beforeDestroyFromPrimaryCalls = 0;
+int DestroyRPCChunk::s_afterDestroyFromPrimaryCalls = 0;
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -1077,7 +1077,7 @@ public:
         {
             auto replica = Replica::CreateReplica(nullptr);
             CreateAndAttachReplicaChunk<DestroyRPCChunk>(replica);
-            m_repId[i] = m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+            m_repId[i] = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
     }
 
@@ -1092,12 +1092,12 @@ TEST_F(Integ_ReplicaDestroyedInRPC, ReplicaDestroyedInRPC)
         {
         case 10:
         {
-            // calling destroy on master
-            auto master = m_sessions[sHost].GetReplicaMgr().FindReplica(m_repId[0]);
-            auto masterChunk = master->FindReplicaChunk<DestroyRPCChunk>();
-            masterChunk->BeforeDestroyFromMaster();
-            masterChunk->DestroyFromMaster();
-            masterChunk->AfterDestroyFromMaster();
+            // calling destroy on primary
+            auto primary = m_sessions[sHost].GetReplicaMgr().FindReplica(m_repId[0]);
+            auto primaryChunk = primary->FindReplicaChunk<DestroyRPCChunk>();
+            primaryChunk->BeforeDestroyFromPrimary();
+            primaryChunk->DestroyFromPrimary();
+            primaryChunk->AfterDestroyFromPrimary();
 
             // calling destroy on proxy
             auto proxy = m_sessions[s2].GetReplicaMgr().FindReplica(m_repId[1]);
@@ -1113,15 +1113,15 @@ TEST_F(Integ_ReplicaDestroyedInRPC, ReplicaDestroyedInRPC)
         {
             // checking if before destroy RPC was called on every peer
             AZ_TEST_ASSERT(DestroyRPCChunk::s_beforeDestroyFromProxyCalls == nSessions);
-            AZ_TEST_ASSERT(DestroyRPCChunk::s_beforeDestroyFromMasterCalls == nSessions);
+            AZ_TEST_ASSERT(DestroyRPCChunk::s_beforeDestroyFromPrimaryCalls == nSessions);
 
             // checking if destroy itself was called on every peer
             AZ_TEST_ASSERT(DestroyRPCChunk::s_destroyFromProxyCalls == nSessions);
-            AZ_TEST_ASSERT(DestroyRPCChunk::s_destroyFromMasterCalls == nSessions);
+            AZ_TEST_ASSERT(DestroyRPCChunk::s_destroyFromPrimaryCalls == nSessions);
 
             // checking if after destroy RPC was never called
             AZ_TEST_ASSERT(DestroyRPCChunk::s_afterDestroyFromProxyCalls == 0);     // RPCs that arrive via the network after deactivation should be dropped.
-            AZ_TEST_ASSERT(DestroyRPCChunk::s_afterDestroyFromMasterCalls == 1);     // RPCs explicitly called on an inactive replica should still be executed.
+            AZ_TEST_ASSERT(DestroyRPCChunk::s_afterDestroyFromPrimaryCalls == 1);     // RPCs explicitly called on an inactive replica should still be executed.
 
             return TestStatus::Completed;
         }
@@ -1157,7 +1157,7 @@ public:
     {
         // put something on s1 to get it going
         m_replica = Replica::CreateReplica(nullptr);
-        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(m_replica);
+        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(m_replica);
     }
 
     ReplicaPtr m_replica;
@@ -1232,7 +1232,7 @@ public:
         // put something on s1 to get it going
         m_replica = Replica::CreateReplica(nullptr);
         m_chunk = CreateAndAttachReplicaChunk<RPCChunk>(m_replica);
-        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(m_replica);
+        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(m_replica);
     }
 
     ReplicaPtr m_replica;
@@ -1286,7 +1286,7 @@ public:
         // put something on s1 to get it going
         m_replica = Replica::CreateReplica(nullptr);
         m_chunk = CreateAndAttachReplicaChunk<FullRPCChunk>(m_replica);
-        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(m_replica);
+        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(m_replica);
     }
 
     ReplicaPtr m_replica;
@@ -1391,7 +1391,7 @@ public:
     {
         // put something on s1 to get it going
         m_replica = Replica::CreateReplica(nullptr);
-        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(m_replica);
+        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(m_replica);
     }
 
 
@@ -1453,7 +1453,7 @@ public:
     {
         ReplicaPtr replica = Replica::CreateReplica(nullptr);
         m_chunk = CreateAndAttachReplicaChunk<AllEventChunk>(replica);
-        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
 
         AZ_TEST_ASSERT(m_chunk->m_attaches == 1);
         AZ_TEST_ASSERT(m_chunk->m_activates == 1);
@@ -1531,7 +1531,7 @@ public:
             auto chunk = CreateAndAttachReplicaChunk<AllEventChunk>(replica);
             AZ_TEST_ASSERT(chunk);
         }
-        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
 
         auto numChunks = replica->GetNumChunks();
         AZ_TEST_ASSERT(numChunks == GM_MAX_CHUNKS_PER_REPLICA);
@@ -1594,7 +1594,7 @@ public:
     {
         m_replica = Replica::CreateReplica(nullptr);
         m_chunk = CreateAndAttachReplicaChunk<AllEventChunk>(m_replica);
-        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(m_replica);
+        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(m_replica);
 
         AZ_TEST_ASSERT(m_chunk->m_attaches == 1);
         AZ_TEST_ASSERT(m_chunk->m_activates == 1);
@@ -1820,16 +1820,16 @@ public:
             ++m_numRequestChangeOwnership;
         }
 
-        void OnReplicaChangeOwnership(Replica* replica, bool wasMaster) override
+        void OnReplicaChangeOwnership(Replica* replica, bool wasPrimary) override
         {
             AZ_TEST_ASSERT(replica);
             switch (m_numChangedOwnership)
             {
             case 0: // host loses ownership
-                AZ_TEST_ASSERT(replica->IsProxy() && wasMaster == true);
+                AZ_TEST_ASSERT(replica->IsProxy() && wasPrimary == true);
                 break;
             case 1: // peer acquires ownership
-                AZ_TEST_ASSERT(replica->IsMaster() && wasMaster == false);
+                AZ_TEST_ASSERT(replica->IsPrimary() && wasPrimary == false);
                 break;
             default:
                 AZ_TEST_ASSERT(0);
@@ -2008,7 +2008,7 @@ public:
 
         ReplicaPtr replica = Replica::CreateReplica(nullptr);
         CreateAndAttachReplicaChunk<DrillerTestChunk>(replica);
-        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
     }
 
     ~Integ_ReplicaDriller()
@@ -2038,7 +2038,7 @@ TEST_F(Integ_ReplicaDriller, ReplicaDriller)
         {
             auto rep = m_sessions[s2].GetReplicaMgr().FindReplica(m_replicaId);
             AZ_TEST_ASSERT(rep);
-            AZ_TEST_ASSERT(rep->IsMaster());
+            AZ_TEST_ASSERT(rep->IsPrimary());
             rep->Destroy();
             break;
         }
@@ -2110,7 +2110,7 @@ public:
     {
         m_replica = Replica::CreateReplica(nullptr);
         m_chunk = CreateAndAttachReplicaChunk<DataSetChunk>(m_replica);
-        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(m_replica);
+        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(m_replica);
     }
 
 
@@ -2172,16 +2172,16 @@ public:
     {
         m_replica = Replica::CreateReplica(nullptr);
         m_chunk = CreateAndAttachReplicaChunk<CustomHandlerChunk>(m_replica);
-        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(m_replica);
-        m_masterHandler.reset(aznew CustomHandler());
+        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(m_replica);
+        m_primaryHandler.reset(aznew CustomHandler());
         m_proxyHandler.reset(aznew CustomHandler());
-        m_chunk->SetHandler(m_masterHandler.get());
+        m_chunk->SetHandler(m_primaryHandler.get());
     }
 
     ReplicaPtr m_replica;
     ReplicaId m_replicaId;
     CustomHandlerChunk::Ptr m_chunk;
-    AZStd::scoped_ptr<CustomHandler> m_masterHandler;
+    AZStd::scoped_ptr<CustomHandler> m_primaryHandler;
     AZStd::scoped_ptr<CustomHandler> m_proxyHandler;
 };
 
@@ -2262,7 +2262,7 @@ public:
     {
         m_replica = Replica::CreateReplica(nullptr);
         m_chunk = CreateAndAttachReplicaChunk<NonConstMarshalerChunk>(m_replica);
-        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(m_replica);
+        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(m_replica);
     }
 
     ReplicaPtr m_replica;
@@ -2338,7 +2338,7 @@ public:
     {
         m_replica = Replica::CreateReplica(nullptr);
         m_chunk = CreateAndAttachReplicaChunk<SourcePeerChunk>(m_replica);
-        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(m_replica);
+        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(m_replica);
     }
 
     ReplicaPtr m_replica;
@@ -2488,7 +2488,7 @@ public:
             m_chunks[i] = CreateAndAttachReplicaChunk<PriorityChunk>(replica);
             m_chunks[i]->m_value.Set(i + 1); // setting dataset values to 1..kNumReplicas
             m_chunks[i]->SetPriority(k_replicaPriorityNormal + static_cast<ReplicaPriority>(i)); // the later created - the higher priorities, so should be sent in reverse order
-            m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+            m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
     }
 
@@ -2594,7 +2594,7 @@ public:
 
         ReplicaPtr replica = Replica::CreateReplica(nullptr);
         m_chunk = CreateAndAttachReplicaChunk<SuspendUpdatesChunk>(replica);
-        m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+        m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
     }
 
     SuspendUpdatesChunk::Ptr m_chunk = nullptr;
@@ -2684,9 +2684,9 @@ public:
 
         void OnReplicaActivate(const GridMate::ReplicaContext&) override
         {
-            if (IsMaster())
+            if (IsPrimary())
             {
-                nMasterActivations++;
+                nPrimaryActivations++;
             }
             else
             {
@@ -2694,11 +2694,11 @@ public:
             }
         }
 
-        static int nMasterActivations;
+        static int nPrimaryActivations;
         static int nProxyActivations;
     };
 };
-int Integ_BasicHostChunkDescriptorTest::HostChunk::nMasterActivations = 0;
+int Integ_BasicHostChunkDescriptorTest::HostChunk::nPrimaryActivations = 0;
 int Integ_BasicHostChunkDescriptorTest::HostChunk::nProxyActivations = 0;
 
 TEST_F(Integ_BasicHostChunkDescriptorTest, BasicHostChunkDescriptorTest)
@@ -2744,25 +2744,25 @@ TEST_F(Integ_BasicHostChunkDescriptorTest, BasicHostChunkDescriptorTest)
         {
             hostReplica = Replica::CreateReplica("HostReplica");
             hostReplica->AttachReplicaChunk(CreateReplicaChunk<HostChunk>());
-            nodes[Host].GetReplicaMgr().AddMaster(hostReplica);
+            nodes[Host].GetReplicaMgr().AddPrimary(hostReplica);
         }
 
         if (tick == 300)
         {
-            AZ_TEST_ASSERT(HostChunk::nMasterActivations == 1);
+            AZ_TEST_ASSERT(HostChunk::nPrimaryActivations == 1);
             AZ_TEST_ASSERT(HostChunk::nProxyActivations == 1);
             AZ_TEST_ASSERT(nodes[Client].GetReplicaMgr().FindReplica(hostReplica->GetRepId())->FindReplicaChunk<HostChunk>());
 
             AZ_TEST_START_TRACE_SUPPRESSION;
             clientReplica = Replica::CreateReplica("ClientReplica");
             clientReplica->AttachReplicaChunk(CreateReplicaChunk<HostChunk>());
-            nodes[Client].GetReplicaMgr().AddMaster(clientReplica);
+            nodes[Client].GetReplicaMgr().AddPrimary(clientReplica);
         }
 
         if (tick == 400)
         {
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-            AZ_TEST_ASSERT(HostChunk::nMasterActivations == 2);
+            AZ_TEST_ASSERT(HostChunk::nPrimaryActivations == 2);
             AZ_TEST_ASSERT(HostChunk::nProxyActivations == 1);
             AZ_TEST_ASSERT(!nodes[Host].GetReplicaMgr().FindReplica(clientReplica->GetRepId())->FindReplicaChunk<HostChunk>());
         }
@@ -2792,10 +2792,10 @@ TEST_F(Integ_BasicHostChunkDescriptorTest, BasicHostChunkDescriptorTest)
 }
 
 /*
- * Create and immedietly destroy master replica
+ * Create and immedietly destroy primary replica
  * Test that it does not result in any network sync
 */
-class Integ_CreateDestroyMaster
+class Integ_CreateDestroyPrimary
     : public Integ_SimpleTest
     , public Debug::ReplicaDrillerBus::Handler
 {
@@ -2831,7 +2831,7 @@ public:
     }
 };
 
-TEST_F(Integ_CreateDestroyMaster, CreateDestroyMaster)
+TEST_F(Integ_CreateDestroyPrimary, CreateDestroyPrimary)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -2843,7 +2843,7 @@ TEST_F(Integ_CreateDestroyMaster, CreateDestroyMaster)
             ConnectDriller();
             auto replica = Replica::CreateReplica(nullptr);
             CreateAndAttachReplicaChunk<DataSetChunk>(replica);
-            m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+            m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
 
             // Destroying replica right away
             replica->Destroy();
@@ -2894,7 +2894,7 @@ public:
         LargeChunkWithDefaultsMedium* chunk = CreateAndAttachReplicaChunk<LargeChunkWithDefaultsMedium>(replica);
         AZ_TEST_ASSERT(chunk);
 
-        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+        m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
     }
 
     ~ReplicaACKfeedbackTestFixture()

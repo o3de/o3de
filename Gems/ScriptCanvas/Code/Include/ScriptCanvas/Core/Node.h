@@ -394,6 +394,7 @@ namespace ScriptCanvas
         AZ::Uuid m_type = AZ::Uuid::CreateNull();
         AZStd::string m_className;
         AZStd::string m_methodName;
+        PropertyStatus m_propertyStatus = PropertyStatus::None;
 
         bool IsValid()
         {

@@ -12,12 +12,10 @@
  
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
-#include <Atom/Features/PBR/AlphaUtils.azsli>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/Features/ParallaxMapping.azsli>
 #include <Atom/Features/MatrixUtility.azsli>
 
-#include "MaterialInputs/AlphaInput.azsli"
 #include "MaterialInputs/ParallaxInput.azsli"
 
 #include "MaterialInputs/ParallaxInput.azsli"
@@ -71,7 +69,7 @@ VertexOutput MainVS(VertexInput IN)
     OUT.m_uv[0] = mul(MaterialSrg::m_uvMatrix, float3(IN.m_uv0, 1.0)).xy;
     OUT.m_uv[1] = IN.m_uv1;
 
-    if(o_parallax_feature_enabled && o_parallax_enablePixelDepthOffset)
+    if(ShouldHandleParallaxInDepthShaders())
     {
         OUT.m_worldPosition = worldPosition.xyz;
 
@@ -100,18 +98,9 @@ PSDepthOutput MainPS(VertexOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
     PSDepthOutput OUT;
 
-    // Alpha
-    float2 layer1_baseColorUV = IN.m_uv[MaterialSrg::m_layer1_m_baseColorMapUvIndex];
-    float2 layer2_baseColorUV = IN.m_uv[MaterialSrg::m_layer2_m_baseColorMapUvIndex];
-    float2 opacityUV = IN.m_uv[MaterialSrg::m_opacityMapUvIndex];
-    // [GFX TODO][ATOM-14589] Figure out how to deal with opacity, instead of just hard-coding to layer1
-    float alpha = SampleAlpha(MaterialSrg::m_layer1_m_baseColorMap, MaterialSrg::m_opacityMap, layer1_baseColorUV, opacityUV, MaterialSrg::m_sampler, o_opacity_source);
-
-    CheckClipping(alpha, MaterialSrg::m_opacityFactor);
-
     OUT.m_depth = IN.m_position.z;
 
-    if(o_debugDrawMode == DebugDrawMode::None && o_parallax_feature_enabled && o_parallax_enablePixelDepthOffset)
+    if(ShouldHandleParallaxInDepthShaders())
     {
         // We support two UV streams, but only a single stream of tangent/bitangent. So for UV[1+] we generated the tangent/bitangent in screen-space.
         float3 tangents[UvSetCount] = { IN.m_tangent.xyz, float3(0, 0, 0) };
@@ -120,17 +109,19 @@ PSDepthOutput MainPS(VertexOutput IN, bool isFrontFace : SV_IsFrontFace)
              
         GetDepth_Setup(IN.m_blendMask);
         
-        float depth;
+        float depthNDC;
 
         float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
         float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
-
-        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_parallaxMainDepthFactor, 
+        
+        float parallaxOverallOffset = MaterialSrg::m_displacementMax;
+        float parallaxOverallFactor = MaterialSrg::m_displacementMax - MaterialSrg::m_displacementMin;
+        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], parallaxOverallFactor, parallaxOverallOffset, 
                          ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
-                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depth);
+                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depthNDC);
 
-        OUT.m_depth = depth;
+        OUT.m_depth = depthNDC;
     }
-
+    
     return OUT;
 }

@@ -628,7 +628,7 @@ namespace Multiplayer
         return result;
     }
 
-    bool EntityReplicator::HandleRpcMessage(NetworkEntityRpcMessage& entityRpcMessage)
+    bool EntityReplicator::HandleRpcMessage(AzNetworking::IConnection* invokingConnection, NetworkEntityRpcMessage& entityRpcMessage)
     {
         // Received rpc metrics, log rpc received, time spent, number of bytes, and the componentId/rpcId for bandwidth metrics
         MultiplayerStats& stats = AZ::Interface<IMultiplayer>::Get()->GetStats();
@@ -676,7 +676,7 @@ namespace Multiplayer
         switch (result)
         {
         case RpcValidationResult::HandleRpc:
-            return m_netBindComponent->HandleRpcMessage(GetRemoteNetworkRole(), entityRpcMessage);
+            return m_netBindComponent->HandleRpcMessage(invokingConnection, GetRemoteNetworkRole(), entityRpcMessage);
         case RpcValidationResult::DropRpc:
             return true;
         case RpcValidationResult::DropRpcAndDisconnect:
@@ -703,7 +703,7 @@ namespace Multiplayer
             break;
         }
 
-        AZ_Assert(false, "Unhandled ERpcValidationResult %d", result);
+        AZ_Assert(false, "Unhandled RpcValidationResult %d", result);
         return false;
     }
 }

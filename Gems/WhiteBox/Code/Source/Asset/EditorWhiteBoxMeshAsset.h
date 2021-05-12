@@ -16,6 +16,7 @@
 #include "Asset/WhiteBoxMeshAssetBus.h"
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Component/TickBus.h>
 #include <IEditor.h>
 
 namespace WhiteBox
@@ -26,6 +27,7 @@ namespace WhiteBox
         : private AZ::Data::AssetBus::Handler
         , private WhiteBoxMeshAssetNotificationBus::Handler
         , private IEditorNotifyListener
+        , private AZ::TickBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -92,6 +94,9 @@ namespace WhiteBox
 
         //! Disconnect from buses/listeners before either releasing or destroying the asset.
         void Disconnect();
+
+        // AZ::TickBus overrides ...
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         // Listeners for legacy editor events when the level is saved.
         void RegisterForEditorEvents();

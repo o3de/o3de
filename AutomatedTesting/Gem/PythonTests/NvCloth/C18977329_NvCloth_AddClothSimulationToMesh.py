@@ -11,7 +11,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C18977329
 # Test Case Title : Add cloth simulation to a Mesh
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/18977329
 
 # fmt: off
 class Tests:
@@ -20,7 +19,7 @@ class Tests:
     exit_game_mode               = ("Exited game mode",               "Failed to exit game mode")
 # fmt: on
 
-def run():
+def C18977329_NvCloth_AddClothSimulationToMesh():
     """
     Summary:
     Load level with Entity having Mesh and Cloth components already setup. Verify that editor remains stable in Game mode.
@@ -89,4 +88,7 @@ def run():
     helper.close_editor()
 
 if __name__ == "__main__":
-    run()
+    import ImportPathHelper as imports
+    imports.init()
+    from editor_python_test_tools.utils import Report
+    Report.start_test(C18977329_NvCloth_AddClothSimulationToMesh)

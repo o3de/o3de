@@ -27,7 +27,6 @@
 #include <LyShine/Bus/UiCanvasManagerBus.h>
 
 #include <ILevelSystem.h>
-#include <I3DEngine.h>
 #include <ISystem.h>
 #include <IConsole.h>
 
@@ -59,10 +58,6 @@ namespace GameStateSamples
         {
             // Unload the currently loaded level
             levelSystem->UnloadLevel();
-            if (iSystem->GetI3DEngine())
-            {
-                iSystem->GetI3DEngine()->LoadEmptyLevel();
-            }
         }
     }
 

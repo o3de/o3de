@@ -69,7 +69,6 @@ void CShadowsSetupNode::Animate(SAnimContext& ac)
     {
         bool val(false);
         pGsmCache->GetValue(ac.time, val);
-        gEnv->p3DEngine->SetShadowsGSMCache(val);
     }
 }
 
@@ -82,7 +81,6 @@ void CShadowsSetupNode::CreateDefaultTracks()
 //-----------------------------------------------------------------------------
 void CShadowsSetupNode::OnReset()
 {
-    gEnv->p3DEngine->SetShadowsGSMCache(false);
 }
 
 //-----------------------------------------------------------------------------

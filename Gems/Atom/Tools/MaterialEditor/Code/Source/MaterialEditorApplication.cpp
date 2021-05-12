@@ -45,6 +45,7 @@
 
 #include <Atom/Window/MaterialEditorWindowModule.h>
 #include <Atom/Window/MaterialEditorWindowFactoryRequestBus.h>
+#include <Atom/Window/MaterialEditorWindowRequestBus.h>
 #include <AzCore/Utils/Utils.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
@@ -88,6 +89,14 @@ namespace MaterialEditor
             this->PumpSystemEventLoopUntilEmpty();
             this->Tick();
         });
+    }
+
+    MaterialEditorApplication::~MaterialEditorApplication()
+    {
+        AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
+        AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
+        MaterialEditorWindowNotificationBus::Handler::BusDisconnect();
+        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
     }
 
     void MaterialEditorApplication::CreateReflectionManager()
@@ -275,7 +284,7 @@ namespace MaterialEditor
             AZ_Assert(context, "No serialize context");
 
             char resolvedPath[AZ_MAX_PATH_LEN] = "";
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@user@/EditorUserSettings.xml", resolvedPath, AZ_ARRAY_SIZE(resolvedPath));
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@user@/MaterialEditorUserSettings.xml", resolvedPath, AZ_ARRAY_SIZE(resolvedPath));
             m_localUserSettings.Save(resolvedPath, context);
         }
     }
@@ -299,12 +308,19 @@ namespace MaterialEditor
         return false;
     }
 
-    void MaterialEditorApplication::ProcessCommandLine()
+    void MaterialEditorApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
     {
-        const AZStd::string timeoputSwitchName = "timeout";
-        if (m_commandLine.HasSwitch(timeoputSwitchName))
+        const AZStd::string activateWindowSwitchName = "activatewindow";
+        if (commandLine.HasSwitch(activateWindowSwitchName))
         {
-            const AZStd::string& timeoutValue = m_commandLine.GetSwitchValue(timeoputSwitchName, 0);
+            MaterialEditor::MaterialEditorWindowRequestBus::Broadcast(
+                &MaterialEditor::MaterialEditorWindowRequestBus::Handler::ActivateWindow);
+        }
+
+        const AZStd::string timeoputSwitchName = "timeout";
+        if (commandLine.HasSwitch(timeoputSwitchName))
+        {
+            const AZStd::string& timeoutValue = commandLine.GetSwitchValue(timeoputSwitchName, 0);
             const uint32_t timeoutInMs = atoi(timeoutValue.c_str());
             AZ_Printf("MaterialEditor", "Timeout scheduled, shutting down in %u ms", timeoutInMs);
             QTimer::singleShot(timeoutInMs, [this] {
@@ -315,10 +331,10 @@ namespace MaterialEditor
 
         // Process command line options for running one or more python scripts on startup
         const AZStd::string runPythonScriptSwitchName = "runpython";
-        size_t runPythonScriptCount = m_commandLine.GetNumSwitchValues(runPythonScriptSwitchName);
+        size_t runPythonScriptCount = commandLine.GetNumSwitchValues(runPythonScriptSwitchName);
         for (size_t runPythonScriptIndex = 0; runPythonScriptIndex < runPythonScriptCount; ++runPythonScriptIndex)
         {
-            const AZStd::string runPythonScriptPath = m_commandLine.GetSwitchValue(runPythonScriptSwitchName, runPythonScriptIndex);
+            const AZStd::string runPythonScriptPath = commandLine.GetSwitchValue(runPythonScriptSwitchName, runPythonScriptIndex);
             AZStd::vector<AZStd::string_view> runPythonArgs;
 
             AZ_Printf("MaterialEditor", "Launching script: %s", runPythonScriptPath.c_str());
@@ -329,17 +345,17 @@ namespace MaterialEditor
         }
 
         // Process command line options for opening one or more material documents on startup
-        size_t openDocumentCount = m_commandLine.GetNumMiscValues();
+        size_t openDocumentCount = commandLine.GetNumMiscValues();
         for (size_t openDocumentIndex = 0; openDocumentIndex < openDocumentCount; ++openDocumentIndex)
         {
-            const AZStd::string openDocumentPath = m_commandLine.GetMiscValue(openDocumentIndex);
+            const AZStd::string openDocumentPath = commandLine.GetMiscValue(openDocumentIndex);
 
             AZ_Printf("MaterialEditor", "Opening document: %s", openDocumentPath.c_str());
             MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::OpenDocument, openDocumentPath);
         }
 
         const AZStd::string exitAfterCommandsSwitchName = "exitaftercommands";
-        if (m_commandLine.HasSwitch(exitAfterCommandsSwitchName))
+        if (commandLine.HasSwitch(exitAfterCommandsSwitchName))
         {
             ExitMainLoop();
         }
@@ -409,9 +425,56 @@ namespace MaterialEditor
 
     bool MaterialEditorApplication::LaunchDiscoveryService()
     {
-        const QStringList arguments = { "-fail_silently" };
+        // Determine if this is the first launch of the tool by attempting to connect to a running server
+        if (m_socket.Connect(QApplication::applicationName()))
+        {
+            // If the server was located, the application is already running.
+            // Forward commandline options to other application instance.
+            QByteArray buffer;
+            buffer.append("ProcessCommandLine:");
 
-        return AtomToolsFramework::LaunchTool("GridHub", AZ_TRAIT_MATERIALEDITOR_EXT, arguments);
+            // Add the command line options from this process to the message, skipping the executable path
+            for (int argi = 1; argi < m_argC; ++argi)
+            {
+                buffer.append(QString(m_argV[argi]).append("\n").toUtf8());
+            }
+
+            // Inject command line option to always bring the main window to the foreground
+            buffer.append("--activatewindow\n");
+
+            m_socket.Send(buffer);
+            m_socket.Disconnect();
+            return false;
+        }
+
+        // Setup server to handle basic commands
+        m_server.SetReadHandler([this](const QByteArray& buffer) {
+            // Handle commmand line params from connected socket
+            if (buffer.startsWith("ProcessCommandLine:"))
+            {
+                // Remove header and parse commands
+                AZStd::string params(buffer.data(), buffer.size());
+                params = params.substr(strlen("ProcessCommandLine:"));
+
+                AZStd::vector<AZStd::string> tokens;
+                AZ::StringFunc::Tokenize(params, tokens, "\n");
+
+                if (!tokens.empty())
+                {
+                    AZ::CommandLine commandLine;
+                    commandLine.Parse(tokens);
+                    ProcessCommandLine(commandLine);
+                }
+            }
+        });
+
+        // Launch local server
+        if (!m_server.Connect(QApplication::applicationName()))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     void MaterialEditorApplication::StartInternal()
@@ -421,9 +484,13 @@ namespace MaterialEditor
             return;
         }
 
-        //[GFX TODO][ATOM-415] Try to factor out some of this stuff with AtomSampleViewerApplication
-
         WriteStartupLog();
+
+        if (!LaunchDiscoveryService())
+        {
+            ExitMainLoop();
+            return;
+        }
 
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusConnect();
         AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(&AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications::OnDatabaseInitialized);
@@ -433,8 +500,6 @@ namespace MaterialEditor
         AZ::RPI::RPISystemInterface::Get()->InitializeSystemAssets();
 
         LoadSettings();
-
-        LaunchDiscoveryService();
 
         MaterialEditorWindowNotificationBus::Handler::BusConnect();
 
@@ -450,7 +515,7 @@ namespace MaterialEditor
         }
 
         // Delay execution of commands and scripts post initialization
-        QTimer::singleShot(0, [this]() { ProcessCommandLine(); });
+        QTimer::singleShot(0, [this]() { ProcessCommandLine(m_commandLine); });
     }
 
     bool MaterialEditorApplication::GetAssetDatabaseLocation(AZStd::string& result)
@@ -481,6 +546,9 @@ namespace MaterialEditor
 
     void MaterialEditorApplication::Stop()
     {
+        MaterialEditor::MaterialEditorWindowFactoryRequestBus::Broadcast(
+            &MaterialEditor::MaterialEditorWindowFactoryRequestBus::Handler::DestroyMaterialEditorWindow);
+
         UnloadSettings();
         AzFramework::Application::Stop();
     }

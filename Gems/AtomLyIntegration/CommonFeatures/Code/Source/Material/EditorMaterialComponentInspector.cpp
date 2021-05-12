@@ -213,7 +213,11 @@ namespace AZ
                 }
 
                 // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-                auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(&group, &group, group.TYPEINFO_Uuid(), this, this,
+                const AZ::Crc32 saveStateKey(AZStd::string::format(
+                    "MaterialPropertyInspector::PropertyGroup::%s::%s", m_materialAssetId.ToString<AZStd::string>().c_str(),
+                    groupNameId.c_str()));
+                auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
+                    &group, &group, group.TYPEINFO_Uuid(), this, this, saveStateKey,
                     [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
                         AZ_UNUSED(source);
                         const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
@@ -245,11 +249,15 @@ namespace AZ
                         for (const auto& propertyDefinition : propertyListItr->second)
                         {
                             AtomToolsFramework::DynamicPropertyConfig propertyConfig;
+
+                            // Assign id before conversion so it can be used in dynamic description
+                            propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupNameId, propertyDefinition.m_nameId).GetFullName();
+
                             AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, propertyDefinition);
 
-                            propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupNameId, propertyDefinition.m_nameId).GetFullName();
                             propertyConfig.m_groupName = groupDisplayName;
                             const auto& propertyIndex = m_editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
+                            propertyConfig.m_showThumbnail = true;
                             propertyConfig.m_defaultValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
                             propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
                             propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
@@ -258,7 +266,11 @@ namespace AZ
                     }
 
                     // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-                    auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(&group, &group, group.TYPEINFO_Uuid(), this, this,
+                    const AZ::Crc32 saveStateKey(AZStd::string::format(
+                        "MaterialPropertyInspector::PropertyGroup::%s::%s", m_materialAssetId.ToString<AZStd::string>().c_str(),
+                        groupNameId.c_str()));
+                    auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
+                        &group, &group, group.TYPEINFO_Uuid(), this, this, saveStateKey,
                         [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
                             AZ_UNUSED(source);
                             const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);

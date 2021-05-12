@@ -46,7 +46,6 @@ namespace Multiplayer
         const AZ::Name name = AZ::Name(relativePath);
         m_spawnables[name] = id;
         m_spawnablesReverseLookup[id] = name;
-
     }
 
     void NetworkSpawnableLibrary::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)

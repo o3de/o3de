@@ -78,8 +78,6 @@ private:
     void UpdateMRUFiles();
 
     void ClearAll();
-    void ToggleSelection(bool hide);
-    void ShowLastHidden();
     void OnUpdateOpenRecent();
 
     void OnUpdateMacrosMenu();

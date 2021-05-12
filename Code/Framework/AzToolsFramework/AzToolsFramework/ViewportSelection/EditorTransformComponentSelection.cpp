@@ -13,6 +13,9 @@
 #include "EditorTransformComponentSelection.h"
 
 #include <AzCore/std/algorithm.h>
+#include <AzCore/Math/Matrix3x3.h>
+#include <AzCore/Math/Matrix3x4.h>
+#include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/VectorConversions.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Viewport/CameraState.h>
@@ -316,14 +319,14 @@ namespace AzToolsFramework
 
     template<typename EntitySelectFuncType, typename EntityIdContainer, typename Compare>
     static void BoxSelectAddRemoveToEntitySelection(
-        const AZStd::optional<QRect>& boxSelect, const QPoint& screenPosition, const AZ::EntityId visibleEntityId,
+        const AZStd::optional<QRect>& boxSelect, const AzFramework::ScreenPoint& screenPosition, const AZ::EntityId visibleEntityId,
         const EntityIdContainer& incomingEntityIds, EntityIdContainer& outgoingEntityIds,
         EditorTransformComponentSelection& entityTransformComponentSelection,
         EntitySelectFuncType selectFunc1, EntitySelectFuncType selectFunc2, Compare outgoingCheck)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-        if (boxSelect->contains(screenPosition))
+        if (boxSelect->contains(ViewportInteraction::QPointFromScreenPoint(screenPosition)))
         {
             const auto entityIt = incomingEntityIds.find(visibleEntityId);
 
@@ -389,7 +392,7 @@ namespace AzToolsFramework
                 const AZ::EntityId entityId = entityDataCache.GetVisibleEntityId(entityCacheIndex);
                 const AZ::Vector3& entityPosition = entityDataCache.GetVisibleEntityPosition(entityCacheIndex);
 
-                const QPoint screenPosition = GetScreenPosition(viewportId, entityPosition);
+                const AzFramework::ScreenPoint screenPosition = GetScreenPosition(viewportId, entityPosition);
 
                 if (currentKeyboardModifiers.Ctrl())
                 {
@@ -441,7 +444,7 @@ namespace AzToolsFramework
             clusterId);
     }
 
-    static void SetViewportUiClusterVisible(ViewportUi::ClusterId clusterId, bool visible)
+    static void SetViewportUiClusterVisible(const ViewportUi::ClusterId clusterId, const bool visible)
     {
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId,
@@ -449,7 +452,7 @@ namespace AzToolsFramework
             clusterId, visible);
     }
 
-    static void SetViewportUiClusterActiveButton(ViewportUi::ClusterId clusterId, ViewportUi::ButtonId buttonId)
+    static void SetViewportUiClusterActiveButton(const ViewportUi::ClusterId clusterId, const ViewportUi::ButtonId buttonId)
     {
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId,
@@ -457,7 +460,7 @@ namespace AzToolsFramework
             clusterId, buttonId);
     }
 
-    static ViewportUi::ButtonId RegisterClusterButton(ViewportUi::ClusterId clusterId, const char* iconName)
+    static ViewportUi::ButtonId RegisterClusterButton(const ViewportUi::ClusterId clusterId, const char* iconName)
     {
         ViewportUi::ButtonId buttonId;
         ViewportUi::ViewportUiRequestBus::EventResult(
@@ -927,7 +930,7 @@ namespace AzToolsFramework
         ViewportInteraction::MainEditorViewportInteractionRequestBus::EventResult(
             worldSurfacePosition, viewportId,
             &ViewportInteraction::MainEditorViewportInteractionRequestBus::Events::PickTerrain,
-            ViewportInteraction::QPointFromScreenPoint(mouseInteraction.m_mousePick.m_screenCoordinates));
+            mouseInteraction.m_mousePick.m_screenCoordinates);
 
         // convert to local space - snap if enabled
         const GridSnapParameters gridSnapParams = GridSnapSettings(viewportId);
@@ -3494,7 +3497,7 @@ namespace AzToolsFramework
 
         DrawAxisGizmo(viewportInfo, debugDisplay);
 
-        m_boxSelect.Display2d(debugDisplay);
+        m_boxSelect.Display2d(viewportInfo, debugDisplay);
     }
 
     void EditorTransformComponentSelection::RefreshSelectedEntityIds()

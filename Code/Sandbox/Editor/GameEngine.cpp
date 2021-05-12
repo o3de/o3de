@@ -34,15 +34,10 @@
 // Editor
 #include "IEditorImpl.h"
 #include "CryEditDoc.h"
-#include "Geometry/EdMesh.h"
-#include "Mission.h"
 #include "Settings.h"
 
 // CryCommon
-#include <CryCommon/I3DEngine.h>
 #include <CryCommon/INavigationSystem.h>
-#include <CryCommon/IDeferredCollisionEvent.h>
-#include <CryCommon/ITimeOfDay.h>
 #include <CryCommon/LyShine/ILyShine.h>
 #include <CryCommon/MainThreadRenderRequestBus.h>
 
@@ -50,7 +45,6 @@
 #include "CryEdit.h"
 
 #include "ViewManager.h"
-#include "Util/Ruler.h"
 #include "AnimationContext.h"
 #include "UndoViewPosition.h"
 #include "UndoViewRotation.h"
@@ -283,7 +277,6 @@ AZ_POP_DISABLE_WARNING
     AZ::Interface<IEditorCameraController>::Unregister(this);
     GetIEditor()->UnregisterNotifyListener(this);
     m_pISystem->GetIMovieSystem()->SetCallback(NULL);
-    CEdMesh::ReleaseAll();
 
     if (m_gameDll)
     {
@@ -391,7 +384,6 @@ void CGameEngine::SetCurrentViewRotation(const AZ::Vector3& rotation)
 AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     bool bPreviewMode,
     bool bTestMode,
-    bool bShaderCacheGen,
     const char* sInCmdLine,
     IInitializeUIInfo* logo,
     HWND hwndForInputSystem)
@@ -449,10 +441,6 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
         m_modalWindowDismisser = AZStd::make_unique<ModalWindowDismisser>();
     }
 
-    if (bShaderCacheGen)
-    {
-        sip.bSkipFont = true;
-    }
     AssetProcessConnectionStatus apConnectionStatus;
 
     m_pISystem = pfnCreateSystemInterface(sip);
@@ -492,13 +480,6 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     }
 
     SetEditorCoreEnvironment(gEnv);
-
-    if (gEnv
-        && gEnv->p3DEngine
-        && gEnv->p3DEngine->GetTimeOfDay())
-    {
-        gEnv->p3DEngine->GetTimeOfDay()->BeginEditMode();
-    }
 
     if (gEnv && gEnv->pMovieSystem)
     {
@@ -549,26 +530,14 @@ void CGameEngine::SetLevelPath(const QString& path)
     {
         m_levelExtension = defaultExtension;
     }
-
-    if (gEnv->p3DEngine)
-    {
-        gEnv->p3DEngine->SetLevelPath(m_levelPath.toUtf8().data());
-    }
-}
-
-void CGameEngine::SetMissionName(const QString& mission)
-{
-    m_missionName = mission;
 }
 
 bool CGameEngine::LoadLevel(
-    const QString& mission,
     [[maybe_unused]] bool bDeleteAIGraph,
     bool bReleaseResources)
 {
     LOADING_TIME_PROFILE_SECTION(GetIEditor()->GetSystem());
     m_bLevelLoaded = false;
-    m_missionName = mission;
     CLogFile::FormatLine("Loading map '%s' into engine...", m_levelPath.toUtf8().data());
     // Switch the current directory back to the Primary CD folder first.
     // The engine might have trouble to find some files when the current
@@ -607,92 +576,26 @@ bool CGameEngine::LoadLevel(
 
     }
 
-    // Load level in 3d engine.
-    if (gEnv->p3DEngine && !gEnv->p3DEngine->InitLevelForEditor(m_levelPath.toUtf8().data(), m_missionName.toUtf8().data()))
-    {
-        CLogFile::WriteLine("ERROR: Can't load level !");
-        QMessageBox::critical(QApplication::activeWindow(), QString(), QObject::tr("ERROR: Can't load level !"));
-        return false;
-    }
-
     // Audio: notify audio of level loading start?
     GetIEditor()->GetObjectManager()->SendEvent(EVENT_REFRESH);
 
     m_bLevelLoaded = true;
-
-    if (!bReleaseResources)
-    {
-        ReloadEnvironment();
-    }
 
     return true;
 }
 
 bool CGameEngine::ReloadLevel()
 {
-    if (!LoadLevel(GetMissionName(), false, false))
+    if (!LoadLevel(false, false))
     {
         return false;
     }
-
-    return true;
-}
-
-bool CGameEngine::LoadMission(const QString& mission)
-{
-    if (!IsLevelLoaded())
-    {
-        return false;
-    }
-
-    if (mission != m_missionName)
-    {
-        m_missionName = mission;
-        gEnv->p3DEngine->LoadMissionDataFromXMLNode(m_missionName.toUtf8().data());
-    }
-
-    return true;
-}
-
-bool CGameEngine::ReloadEnvironment()
-{
-    if (!gEnv->p3DEngine)
-    {
-        return false;
-    }
-
-    if (!IsLevelLoaded() && !m_bJustCreated)
-    {
-        return false;
-    }
-
-    if (!GetIEditor()->GetDocument())
-    {
-        return false;
-    }
-
-    XmlNodeRef env = XmlHelpers::CreateXmlNode("Environment");
-    CXmlTemplate::SetValues(GetIEditor()->GetDocument()->GetEnvironmentTemplate(), env);
-
-    // Notify mission that environment may be changed.
-    GetIEditor()->GetDocument()->GetCurrentMission()->OnEnvironmentChange();
-
-    QString xmlStr = QString::fromLatin1(env->getXML());
-
-    // Reload level data in engine.
-    gEnv->p3DEngine->LoadEnvironmentSettingsFromXML(env);
 
     return true;
 }
 
 void CGameEngine::SwitchToInGame()
 {
-    if (gEnv->p3DEngine)
-    {
-        gEnv->p3DEngine->DisablePostEffects();
-        gEnv->p3DEngine->ResetPostEffects();
-    }
-
     auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
     if (streamer)
     {
@@ -707,24 +610,9 @@ void CGameEngine::SwitchToInGame()
 
     m_pISystem->SetThreadState(ESubsys_Physics, false);
 
-    if (gEnv->p3DEngine)
-    {
-        gEnv->p3DEngine->ResetParticlesAndDecals();
-    }
-
     m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(true);
     m_bInGameMode = true;
 
-    CRuler* pRuler = GetIEditor()->GetRuler();
-    if (pRuler)
-    {
-        pRuler->SetActive(false);
-    }
-
-    if (gEnv->p3DEngine)
-    {
-        gEnv->p3DEngine->GetTimeOfDay()->EndEditMode();
-    }
     gEnv->pSystem->GetViewCamera().SetMatrix(m_playerViewTM);
 
     // Disable accelerators.
@@ -760,24 +648,9 @@ void CGameEngine::SwitchToInEditor()
 
     m_pISystem->SetThreadState(ESubsys_Physics, false);
 
-    if (gEnv->p3DEngine)
-    {
-        // Reset 3d engine effects
-        gEnv->p3DEngine->DisablePostEffects();
-        gEnv->p3DEngine->ResetPostEffects();
-        gEnv->p3DEngine->ResetParticlesAndDecals();
-    }
-
     CViewport* pGameViewport = GetIEditor()->GetViewManager()->GetGameViewport();
 
     m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(m_bSimulationMode);
-    if (gEnv->p3DEngine)
-    {
-        gEnv->p3DEngine->GetTimeOfDay()->BeginEditMode();
-
-        // this has to be done before the RemoveSink() call, or else some entities may not be removed
-        gEnv->p3DEngine->GetDeferredPhysicsEventManager()->ClearDeferredEvents();
-    }
 
     // Enable accelerators.
     GetIEditor()->EnableAcceleratos(true);
@@ -865,7 +738,6 @@ void CGameEngine::SetGameMode(bool bInGame)
 
     // Ignore updates while changing in and out of game mode
     m_bIgnoreUpdates = true;
-    LockResources();
 
     // Switching modes will destroy the current AzFramework::EntityConext which may contain
     // data the queued events hold on to, so execute all queued events before switching.
@@ -891,7 +763,6 @@ void CGameEngine::SetGameMode(bool bInGame)
 
     GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_EDITOR_GAME_MODE_CHANGED, bInGame, 0);
 
-    UnlockResources();
     m_bIgnoreUpdates = false;
 
     GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_GAME_MODE_SWITCH_END, bInGame, 0);
@@ -906,19 +777,8 @@ void CGameEngine::SetSimulationMode(bool enabled, bool bOnlyPhysics)
 
     m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(enabled);
 
-    if (!bOnlyPhysics)
-    {
-        LockResources();
-    }
-
     if (enabled)
     {
-        CRuler* pRuler = GetIEditor()->GetRuler();
-        if (pRuler)
-        {
-            pRuler->SetActive(false);
-        }
-
         GetIEditor()->Notify(eNotify_OnBeginSimulationMode);
     }
     else
@@ -935,35 +795,12 @@ void CGameEngine::SetSimulationMode(bool enabled, bool bOnlyPhysics)
 
     if (m_bSimulationMode)
     {
-        if (!bOnlyPhysics)
-        {
-            if (m_pISystem->GetI3DEngine())
-            {
-                m_pISystem->GetI3DEngine()->ResetPostEffects();
-            }
-
-            GetIEditor()->SetConsoleVar("ai_ignoreplayer", 1);
-            //GetIEditor()->SetConsoleVar( "ai_soundperception",0 );
-        }
-
         // [Anton] the order of the next 3 calls changed, since, EVENT_INGAME loads physics state (if any),
         // and Reset should be called before it
         GetIEditor()->GetObjectManager()->SendEvent(EVENT_INGAME);
     }
     else
     {
-        if (!bOnlyPhysics)
-        {
-            GetIEditor()->SetConsoleVar("ai_ignoreplayer", 0);
-            //GetIEditor()->SetConsoleVar( "ai_soundperception",1 );
-
-            if (m_pISystem->GetI3DEngine())
-            {
-                m_pISystem->GetI3DEngine()->ResetPostEffects();
-            }
-        }
-
-
         GetIEditor()->GetObjectManager()->SendEvent(EVENT_OUTOFGAME);
     }
 
@@ -983,21 +820,7 @@ void CGameEngine::SetSimulationMode(bool enabled, bool bOnlyPhysics)
         AzToolsFramework::EditorEntityContextRequestBus::Broadcast(&AzToolsFramework::EditorEntityContextRequestBus::Events::StartPlayInEditor);
     }
 
-    if (!bOnlyPhysics)
-    {
-        UnlockResources();
-    }
-
     AzFramework::InputChannelRequestBus::Broadcast(&AzFramework::InputChannelRequests::ResetState);
-}
-
-void CGameEngine::ResetResources()
-{
-    if (gEnv->p3DEngine)
-    {
-        gEnv->p3DEngine->UnloadLevel();
-    }
-
 }
 
 void CGameEngine::SetPlayerViewMatrix(const Matrix34& tm, [[maybe_unused]] bool bEyePos)
@@ -1081,9 +904,6 @@ void CGameEngine::Update()
         // but if in game mode, 'cos is already done in the above call to game->update()
         unsigned int updateFlags = ESYSUPDATE_EDITOR;
 
-        CRuler* pRuler = GetIEditor()->GetRuler();
-        const bool bRulerNeedsUpdate = (pRuler && pRuler->HasQueuedPaths());
-
         if (!m_bSimulationMode)
         {
             updateFlags |= ESYSUPDATE_IGNORE_PHYSICS;
@@ -1107,24 +927,6 @@ void CGameEngine::OnEditorNotifyEvent(EEditorNotifyEvent event)
 {
     switch (event)
     {
-    case eNotify_OnBeginNewScene:
-    case eNotify_OnBeginSceneOpen:
-    {
-        ResetResources();
-    }
-    break;
-    case eNotify_OnEndSceneOpen:
-    case eNotify_OnEndTerrainRebuild:
-    {
-    }
-    case eNotify_OnEndNewScene: // intentional fall-through?
-    {
-        if (gEnv->p3DEngine)
-        {
-            gEnv->p3DEngine->PostLoadLevel();
-        }
-    }
-    break;
     case eNotify_OnSplashScreenDestroyed:
     {
         if (m_pSystemUserCallback != NULL)
@@ -1133,22 +935,6 @@ void CGameEngine::OnEditorNotifyEvent(EEditorNotifyEvent event)
         }
     }
     break;
-    }
-}
-
-void CGameEngine::LockResources()
-{
-    if (gEnv->p3DEngine)
-    {
-        gEnv->p3DEngine->LockCGFResources();
-    }
-}
-
-void CGameEngine::UnlockResources()
-{
-    if (gEnv->p3DEngine)
-    {
-        gEnv->p3DEngine->UnlockCGFResources();
     }
 }
 
