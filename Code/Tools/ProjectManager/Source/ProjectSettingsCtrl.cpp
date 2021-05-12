@@ -34,8 +34,8 @@ namespace O3DE::ProjectManager
         m_backButton = backNextButtons->addButton("Back", QDialogButtonBox::RejectRole);
         m_nextButton = backNextButtons->addButton("Next", QDialogButtonBox::ApplyRole);
 
-        QObject::connect(m_backButton, &QPushButton::pressed, this, &ProjectSettingsCtrl::HandleBackButton);
-        QObject::connect(m_nextButton, &QPushButton::pressed, this, &ProjectSettingsCtrl::HandleNextButton);
+        connect(m_backButton, &QPushButton::pressed, this, &ProjectSettingsCtrl::HandleBackButton);
+        connect(m_nextButton, &QPushButton::pressed, this, &ProjectSettingsCtrl::HandleNextButton);
 
         m_screensOrder =
         {

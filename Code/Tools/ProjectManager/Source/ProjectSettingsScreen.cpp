@@ -22,7 +22,7 @@ namespace O3DE::ProjectManager
     {
         m_ui->setupUi(this);
 
-        QObject::connect(m_ui->gemsButton, &QPushButton::pressed, this, &ProjectSettingsScreen::HandleGemsButton);
+        connect(m_ui->gemsButton, &QPushButton::pressed, this, &ProjectSettingsScreen::HandleGemsButton);
     }
 
     ProjectManagerScreen ProjectSettingsScreen::GetScreenEnum()

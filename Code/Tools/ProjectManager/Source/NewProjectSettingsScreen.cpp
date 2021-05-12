@@ -51,7 +51,7 @@ namespace O3DE::ProjectManager
         vLayout->addItem(templateLayout);
 
         QRadioButton* projectTemplateStandardRadioButton = new QRadioButton(this);
-        projectTemplateStandardRadioButton->setText("Standard(Recommened)");
+        projectTemplateStandardRadioButton->setText("Standard (Recommened)");
         projectTemplateStandardRadioButton->setChecked(true);
         templateLayout->addWidget(projectTemplateStandardRadioButton);
 
