@@ -160,7 +160,6 @@ class LogMonitor(object):
         expected_lines_to_remove = []
 
         for expected_line in expected_lines:
-            print ('expected_line ' + expected_line)
             searched_line = check_exact_match(line, expected_line)
             if expected_line == searched_line:
                 logger.debug("Found expected line: {} from line: {}".format(expected_line, line))
@@ -276,7 +275,6 @@ class LogMonitor(object):
         # by returning the previous alive state
         process_runing = self.launcher.is_alive() 
         for line in log:
-            print ('log line is ' + line)
             line = line[:-1]  # remove /n
             process_line(line)
 
