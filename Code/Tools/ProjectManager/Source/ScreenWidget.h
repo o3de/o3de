@@ -12,7 +12,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <ProjectManagerWindow.h>
+#include <ScreenDefs.h>
 
 #include <QWidget>
 #endif
@@ -31,14 +31,23 @@ namespace O3DE::ProjectManager
         }
         ~ScreenWidget() = default;
 
+        virtual ProjectManagerScreen GetScreenEnum()
+        {
+            return ProjectManagerScreen::Empty;
+        }
         virtual bool IsReadyForNextScreen()
         {
             return true;
         }
+        virtual QString GetNextButtonText()
+        {
+            return "Next";
+        }
 
     signals:
         void ChangeScreenRequest(ProjectManagerScreen screen);
-        void GoBackScreenRequest();
+        void GotoPreviousScreenRequest();
+        void ResetScreenRequest(ProjectManagerScreen screen);
     };
 
 } // namespace O3DE::ProjectManager

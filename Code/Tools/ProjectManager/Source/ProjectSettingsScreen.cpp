@@ -25,6 +25,11 @@ namespace O3DE::ProjectManager
         QObject::connect(m_ui->gemsButton, &QPushButton::pressed, this, &ProjectSettingsScreen::HandleGemsButton);
     }
 
+    ProjectManagerScreen ProjectSettingsScreen::GetScreenEnum()
+    {
+        return ProjectManagerScreen::ProjectSettings;
+    }
+
     void ProjectSettingsScreen::HandleGemsButton()
     {
         emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);

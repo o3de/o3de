@@ -26,9 +26,15 @@ namespace O3DE::ProjectManager
         QObject::connect(m_ui->openProjectButton, &QPushButton::pressed, this, &FirstTimeUseScreen::HandleOpenProjectButton);
     }
 
+    ProjectManagerScreen FirstTimeUseScreen::GetScreenEnum()
+    {
+        return ProjectManagerScreen::FirstTimeUse;
+    }
+
     void FirstTimeUseScreen::HandleNewProjectButton()
     {
-        emit ChangeScreenRequest(ProjectManagerScreen::NewProjectSettings);
+        emit ResetScreenRequest(ProjectManagerScreen::NewProjectSettingsCore);
+        emit ChangeScreenRequest(ProjectManagerScreen::NewProjectSettingsCore);
     }
     void FirstTimeUseScreen::HandleOpenProjectButton()
     {

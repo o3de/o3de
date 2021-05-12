@@ -18,6 +18,7 @@ namespace O3DE::ProjectManager
         Invalid = -1,
         Empty,
         FirstTimeUse,
+        NewProjectSettingsCore,
         NewProjectSettings,
         GemCatalog,
         ProjectsHome,

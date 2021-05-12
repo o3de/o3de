@@ -28,6 +28,7 @@ namespace O3DE::ProjectManager
     public:
         explicit EngineSettingsScreen(QWidget* parent = nullptr);
         ~EngineSettingsScreen() = default;
+        ProjectManagerScreen GetScreenEnum() override;
 
     private:
         QScopedPointer<Ui::EngineSettingsClass> m_ui;

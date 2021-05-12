@@ -12,6 +12,7 @@
 #include <ScreenFactory.h>
 
 #include <FirstTimeUseScreen.h>
+#include <ProjectSettingsCtrl.h>
 #include <NewProjectSettingsScreen.h>
 #include <GemCatalog/GemCatalogScreen.h>
 #include <ProjectsHomeScreen.h>
@@ -28,6 +29,9 @@ namespace O3DE::ProjectManager
         {
         case (ProjectManagerScreen::FirstTimeUse):
             newScreen = new FirstTimeUseScreen(parent);
+            break;
+        case (ProjectManagerScreen::NewProjectSettingsCore):
+            newScreen = new ProjectSettingsCtrl(parent);
             break;
         case (ProjectManagerScreen::NewProjectSettings):
             newScreen = new NewProjectSettingsScreen(parent);

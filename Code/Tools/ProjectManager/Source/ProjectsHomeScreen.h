@@ -29,6 +29,7 @@ namespace O3DE::ProjectManager
     public:
         explicit ProjectsHomeScreen(QWidget* parent = nullptr);
         ~ProjectsHomeScreen() = default;
+        ProjectManagerScreen GetScreenEnum() override;
 
     protected slots:
         void HandleNewProjectButton();

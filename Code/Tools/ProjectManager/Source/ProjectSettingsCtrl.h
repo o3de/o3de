@@ -13,28 +13,33 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
-#endif
 
-namespace Ui
-{
-    class ProjectSettingsClass;
-}
+#include <ScreensCtrl.h>
+
+#include <QPushButton>
+#endif
 
 namespace O3DE::ProjectManager
 {
-    class ProjectSettingsScreen
+    class ProjectSettingsCtrl
         : public ScreenWidget
     {
     public:
-        explicit ProjectSettingsScreen(QWidget* parent = nullptr);
-        ~ProjectSettingsScreen() = default;
+        explicit ProjectSettingsCtrl(QWidget* parent = nullptr);
+        ~ProjectSettingsCtrl() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
     protected slots:
-        void HandleGemsButton();
+        void HandleBackButton();
+        void HandleNextButton();
 
     private:
-        QScopedPointer<Ui::ProjectSettingsClass> m_ui;
+        void UpdateNextButtonText();
+
+        ScreensCtrl* m_screensCtrl;
+        QPushButton* m_backButton;
+        QPushButton* m_nextButton;
+        QVector<ProjectManagerScreen> m_screensOrder;
     };
 
 } // namespace O3DE::ProjectManager

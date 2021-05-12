@@ -28,6 +28,7 @@ namespace O3DE::ProjectManager
     public:
         explicit FirstTimeUseScreen(QWidget* parent = nullptr);
         ~FirstTimeUseScreen() = default;
+        ProjectManagerScreen GetScreenEnum() override;
 
     protected slots:
         void HandleNewProjectButton();

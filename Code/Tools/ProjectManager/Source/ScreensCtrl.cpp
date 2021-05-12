@@ -52,19 +52,25 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void ScreensCtrl::ChangeToScreen(ProjectManagerScreen screen)
+    ScreenWidget* ScreensCtrl::GetCurrentScreen()
+    {
+        return reinterpret_cast<ScreenWidget*>(m_screenStack->currentWidget());
+    }
+
+    bool ScreensCtrl::ChangeToScreen(ProjectManagerScreen screen)
     {
         if (m_screenStack->currentWidget())
         {
             ScreenWidget* currentScreenWidget = reinterpret_cast<ScreenWidget*>(m_screenStack->currentWidget());
             if (currentScreenWidget->IsReadyForNextScreen())
             {
-                ForceChangeToScreen(screen);
+                return ForceChangeToScreen(screen);
             }
         }
+        return false;
     }
 
-    void ScreensCtrl::ForceChangeToScreen(ProjectManagerScreen screen)
+    bool ScreensCtrl::ForceChangeToScreen(ProjectManagerScreen screen)
     {
         const auto iterator = m_screenMap.find(screen);
         if (iterator != m_screenMap.end())
@@ -73,18 +79,22 @@ namespace O3DE::ProjectManager
             {
                 m_screenVisitOrder.push(screen);
                 m_screenStack->setCurrentWidget(iterator.value());
+                return true;
             }
         }
+
+        return false;
     }
 
-    void ScreensCtrl::GotoPreviousScreen()
+    bool ScreensCtrl::GotoPreviousScreen()
     {
         // Don't go back if we are on the first set screen
         if (m_screenVisitOrder.top() != ProjectManagerScreen::Invalid)
         {
             // We do not check with screen if we can go back, we should always be able to go back
-            ForceChangeToScreen(m_screenVisitOrder.pop());
+            return ForceChangeToScreen(m_screenVisitOrder.pop());
         }
+        return false;
     }
 
     void ScreensCtrl::ResetScreen(ProjectManagerScreen screen)
@@ -98,6 +108,8 @@ namespace O3DE::ProjectManager
         m_screenMap.insert(screen, newScreen);
 
         QObject::connect(newScreen, &ScreenWidget::ChangeScreenRequest, this, &ScreensCtrl::ChangeToScreen);
+        QObject::connect(newScreen, &ScreenWidget::GotoPreviousScreenRequest, this, &ScreensCtrl::GotoPreviousScreen);
+        QObject::connect(newScreen, &ScreenWidget::ResetScreenRequest, this, &ScreensCtrl::ResetScreen);
     }
 
     void ScreensCtrl::ResetAllScreens()

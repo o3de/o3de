@@ -40,15 +40,6 @@ namespace O3DE::ProjectManager
         inspectorPlaceholderWidget->setFixedWidth(250);
         hLayout->addWidget(inspectorPlaceholderWidget);
 
-        // Temporary back and next buttons until they are centralized and shared.
-        QDialogButtonBox* backNextButtons = new QDialogButtonBox();
-        vLayout->addWidget(backNextButtons);
-
-        QPushButton* tempBackButton = backNextButtons->addButton("Back", QDialogButtonBox::RejectRole);
-        QPushButton* tempNextButton = backNextButtons->addButton("Next", QDialogButtonBox::AcceptRole);
-        connect(tempBackButton, &QPushButton::pressed, this, &GemCatalogScreen::HandleBackButton);
-        connect(tempNextButton, &QPushButton::pressed, this, &GemCatalogScreen::HandleConfirmButton);
-
         // Start: Temporary gem test data
         {
             m_gemModel->AddGem(GemInfo("EMotion FX",
@@ -90,12 +81,13 @@ namespace O3DE::ProjectManager
         // End: Temporary gem test data
     }
 
-    void GemCatalogScreen::HandleBackButton()
+    ProjectManagerScreen GemCatalogScreen::GetScreenEnum()
     {
-        emit ChangeScreenRequest(ProjectManagerScreen::NewProjectSettings);
+        return ProjectManagerScreen::GemCatalog;
     }
-    void GemCatalogScreen::HandleConfirmButton()
+
+    QString GemCatalogScreen::GetNextButtonText()
     {
-        emit ChangeScreenRequest(ProjectManagerScreen::ProjectsHome);
+        return "Create Project";
     }
 } // namespace O3DE::ProjectManager

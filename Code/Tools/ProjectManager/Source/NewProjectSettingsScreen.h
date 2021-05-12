@@ -28,10 +28,8 @@ namespace O3DE::ProjectManager
     public:
         explicit NewProjectSettingsScreen(QWidget* parent = nullptr);
         ~NewProjectSettingsScreen() = default;
-
-    protected slots:
-        void HandleBackButton();
-        void HandleNextButton();
+        ProjectManagerScreen GetScreenEnum() override;
+        QString GetNextButtonText() override;
 
     private:
         QScopedPointer<Ui::NewProjectSettingsClass> m_ui;

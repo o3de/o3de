@@ -21,18 +21,16 @@ namespace O3DE::ProjectManager
         , m_ui(new Ui::NewProjectSettingsClass())
     {
         m_ui->setupUi(this);
-
-        QObject::connect(m_ui->backButton, &QPushButton::pressed, this, &NewProjectSettingsScreen::HandleBackButton);
-        QObject::connect(m_ui->nextButton, &QPushButton::pressed, this, &NewProjectSettingsScreen::HandleNextButton);
     }
 
-    void NewProjectSettingsScreen::HandleBackButton()
+    ProjectManagerScreen NewProjectSettingsScreen::GetScreenEnum()
     {
-        emit ChangeScreenRequest(ProjectManagerScreen::FirstTimeUse);
+        return ProjectManagerScreen::NewProjectSettings;
     }
-    void NewProjectSettingsScreen::HandleNextButton()
+
+    QString NewProjectSettingsScreen::GetNextButtonText()
     {
-        emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
+        return "Create Project";
     }
 
 } // namespace O3DE::ProjectManager

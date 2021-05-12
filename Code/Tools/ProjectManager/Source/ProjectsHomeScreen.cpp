@@ -27,9 +27,15 @@ namespace O3DE::ProjectManager
         QObject::connect(m_ui->editProjectButton, &QPushButton::pressed, this, &ProjectsHomeScreen::HandleEditProjectButton);
     }
 
+    ProjectManagerScreen ProjectsHomeScreen::GetScreenEnum()
+    {
+        return ProjectManagerScreen::ProjectsHome;
+    }
+
     void ProjectsHomeScreen::HandleNewProjectButton()
     {
-        emit ChangeScreenRequest(ProjectManagerScreen::NewProjectSettings);
+        emit ResetScreenRequest(ProjectManagerScreen::NewProjectSettingsCore);
+        emit ChangeScreenRequest(ProjectManagerScreen::NewProjectSettingsCore);
     }
     void ProjectsHomeScreen::HandleAddProjectButton()
     {

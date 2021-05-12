@@ -33,11 +33,12 @@ namespace O3DE::ProjectManager
 
         void BuildScreens(QVector<ProjectManagerScreen> screens);
         ScreenWidget* GetScreen(ProjectManagerScreen screen);
+        ScreenWidget* GetCurrentScreen();
 
     public slots:
-        void ChangeToScreen(ProjectManagerScreen screen);
-        void ForceChangeToScreen(ProjectManagerScreen screen);
-        void GotoPreviousScreen();
+        bool ChangeToScreen(ProjectManagerScreen screen);
+        bool ForceChangeToScreen(ProjectManagerScreen screen);
+        bool GotoPreviousScreen();
         void ResetScreen(ProjectManagerScreen screen);
         void ResetAllScreens();
         void DeleteScreen(ProjectManagerScreen screen);

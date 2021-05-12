@@ -25,10 +25,8 @@ namespace O3DE::ProjectManager
     public:
         explicit GemCatalogScreen(QWidget* parent = nullptr);
         ~GemCatalogScreen() = default;
-
-    protected slots:
-        void HandleBackButton();
-        void HandleConfirmButton();
+        ProjectManagerScreen GetScreenEnum() override;
+        QString GetNextButtonText() override;
 
     private:
         GemListView* m_gemListView = nullptr;

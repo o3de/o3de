@@ -22,4 +22,9 @@ namespace O3DE::ProjectManager
     {
         m_ui->setupUi(this);
     }
+
+    ProjectManagerScreen EngineSettingsScreen::GetScreenEnum()
+    {
+        return ProjectManagerScreen::EngineSettings;
+    }
 } // namespace O3DE::ProjectManager
