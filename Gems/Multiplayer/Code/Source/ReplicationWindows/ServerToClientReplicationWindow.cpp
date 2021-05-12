@@ -65,7 +65,7 @@ namespace Multiplayer
     {
         AZ::Entity* entity = m_controlledEntity.GetEntity();
         AZ_Assert(entity, "Invalid controlled entity provided to replication window");
-        m_controlledEntityTransform = entity->GetTransform();
+        m_controlledEntityTransform = entity ? entity->GetTransform() : nullptr;
         AZ_Assert(m_controlledEntityTransform, "Controlled player entity must have a transform");
 
         //// this one is optional

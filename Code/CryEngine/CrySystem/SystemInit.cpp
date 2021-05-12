@@ -1247,7 +1247,7 @@ bool CSystem::InitShine([[maybe_unused]] const SSystemInitParams& initParams)
 
     if (!m_env.pLyShine)
     {
-        AZ_Error(AZ_TRACE_SYSTEM_WINDOW, false, "LYShine System did not initialize correctly. Please check that the LyShine gem is enabled for this project in ProjectConfigurator.");
+        AZ_Error(AZ_TRACE_SYSTEM_WINDOW, false, "LYShine System did not initialize correctly. Please check that the LyShine gem is enabled for this project in *_dependencies.cmake.");
         return false;
     }
     return true;

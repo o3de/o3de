@@ -824,7 +824,7 @@ namespace Multiplayer
     {
         if (entityReplicator == nullptr)
         {
-            IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
+            IMultiplayer* multiplayer = GetMultiplayer();
             AZLOG_INFO
             (
                 "EntityReplicationManager: Dropping remote RPC message for component %s of rpc index %s, entityId %u has already been deleted",

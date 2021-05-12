@@ -47,10 +47,20 @@ namespace Multiplayer
         ConstNetworkEntityHandle GetEntity(NetEntityId netEntityId) const override;
 
         EntityList CreateEntitiesImmediate(const AzFramework::Spawnable& spawnable, NetEntityRole netEntityRole);
-
-        EntityList CreateEntitiesImmediate(
-            const PrefabEntityId& prefabEntryId, NetEntityId netEntityId, NetEntityRole netEntityRole,
-            AutoActivate autoActivate, const AZ::Transform& transform) override;
+        EntityList CreateEntitiesImmediate
+        (
+            const PrefabEntityId& prefabEntryId,
+            NetEntityRole netEntityRole,
+            const AZ::Transform& transform
+        ) override;
+        EntityList CreateEntitiesImmediate
+        (
+            const PrefabEntityId& prefabEntryId,
+            NetEntityId netEntityId,
+            NetEntityRole netEntityRole,
+            AutoActivate autoActivate,
+            const AZ::Transform& transform
+        ) override;
 
         uint32_t GetEntityCount() const override;
         NetworkEntityHandle AddEntityToEntityMap(NetEntityId netEntityId, AZ::Entity* entity) override;
@@ -81,7 +91,6 @@ namespace Multiplayer
 
     private:
         void RemoveEntities();
-
         NetEntityId NextId();
 
         void OnSpawned(AZ::Data::Asset<AzFramework::Spawnable> spawnable);

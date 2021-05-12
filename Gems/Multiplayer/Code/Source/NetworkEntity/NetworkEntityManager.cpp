@@ -38,7 +38,6 @@ namespace Multiplayer
         , m_onSpawnedHandler([this](AZ::Data::Asset<AzFramework::Spawnable> spawnable) { this->OnSpawned(spawnable); })
         , m_onDespawnedHandler([this](AZ::Data::Asset<AzFramework::Spawnable> spawnable) { this->OnDespawned(spawnable); })
     {
-        AZ::Interface<INetworkEntityManager>::Register(this);
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
 
         AzFramework::SpawnableEntitiesInterface::Get()->AddOnSpawnedHandler(m_onSpawnedHandler);
@@ -48,7 +47,6 @@ namespace Multiplayer
     NetworkEntityManager::~NetworkEntityManager()
     {
         AzFramework::RootSpawnableNotificationBus::Handler::BusDisconnect();
-        AZ::Interface<INetworkEntityManager>::Unregister(this);
     }
 
     void NetworkEntityManager::Initialize(HostId hostId, AZStd::unique_ptr<IEntityDomain> entityDomain)
@@ -365,9 +363,24 @@ namespace Multiplayer
         return returnList;
     }
 
-    INetworkEntityManager::EntityList NetworkEntityManager::CreateEntitiesImmediate(
-        const PrefabEntityId& prefabEntryId, NetEntityId netEntityId, NetEntityRole netEntityRole,
-        AutoActivate autoActivate, const AZ::Transform& transform)
+    INetworkEntityManager::EntityList NetworkEntityManager::CreateEntitiesImmediate
+    (
+        const PrefabEntityId& prefabEntryId,
+        NetEntityRole netEntityRole,
+        const AZ::Transform& transform
+    )
+    {
+        return CreateEntitiesImmediate(prefabEntryId, NextId(), netEntityRole, AutoActivate::Activate, transform);
+    }
+
+    INetworkEntityManager::EntityList NetworkEntityManager::CreateEntitiesImmediate
+    (
+        const PrefabEntityId& prefabEntryId,
+        NetEntityId netEntityId,
+        NetEntityRole netEntityRole,
+        AutoActivate autoActivate,
+        const AZ::Transform& transform
+    )
     {
         INetworkEntityManager::EntityList returnList;
 
@@ -436,7 +449,7 @@ namespace Multiplayer
     void NetworkEntityManager::OnRootSpawnableAssigned(
         [[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
     {
-        auto* multiplayer = AZ::Interface<IMultiplayer>::Get();
+        auto* multiplayer = GetMultiplayer();
         const auto agentType = multiplayer->GetAgentType();
 
         if (agentType == MultiplayerAgentType::Client)
@@ -448,7 +461,7 @@ namespace Multiplayer
     void NetworkEntityManager::OnRootSpawnableReleased([[maybe_unused]] uint32_t generation)
     {
         // TODO: Do we need to clear all entities here?
-        auto* multiplayer = AZ::Interface<IMultiplayer>::Get();
+        auto* multiplayer = GetMultiplayer();
         const auto agentType = multiplayer->GetAgentType();
 
         if (agentType == MultiplayerAgentType::Client)
@@ -494,7 +507,7 @@ namespace Multiplayer
             return;
         }
 
-        auto* multiplayer = AZ::Interface<IMultiplayer>::Get();
+        auto* multiplayer = GetMultiplayer();
 
         const auto agentType = multiplayer->GetAgentType();
         const bool spawnImmediately =

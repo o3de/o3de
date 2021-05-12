@@ -47,9 +47,6 @@ namespace Multiplayer
         //! @return the hosts current timeMs
         virtual AZ::TimeMs GetHostTimeMs() const = 0;
 
-        //! Synchronizes rewindable entity state for the current application time.
-        virtual void SyncRewindableEntityState() = 0;
-
         //! Get the controlling connection that may be currently altering global game time.
         //! Note this abstraction is required at a relatively high level to allow for 'don't rewind the shooter' semantics
         //! @return the ConnectionId of the connection requesting the rewind operation
@@ -67,6 +64,13 @@ namespace Multiplayer
         //! @param rewindConnectionId the rewinding ConnectionId 
         virtual void AlterTime(HostFrameId frameId, AZ::TimeMs timeMs, AzNetworking::ConnectionId rewindConnectionId) = 0;
 
+        //! Syncs all entities contained within a volume to the current rewind state.
+        //! @param rewindVolume the volume to rewind entities within (needed for physics entities)
+        virtual void SyncEntitiesToRewindState(const AZ::Aabb& rewindVolume) = 0;
+
+        //! Restores all rewound entities to the current application time.
+        virtual void ClearRewoundEntities() = 0;
+
         AZ_DISABLE_COPY_MOVE(INetworkTime);
     };
 
@@ -79,28 +83,4 @@ namespace Multiplayer
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
     };
     using INetworkTimeRequestBus = AZ::EBus<INetworkTime, INetworkTimeRequests>;
-
-    //! @class ScopedAlterTime
-    //! @brief This is a wrapper that temporarily adjusts global program time for backward reconciliation purposes.
-    class ScopedAlterTime final
-    {
-    public:
-        inline ScopedAlterTime(HostFrameId frameId, AZ::TimeMs timeMs, AzNetworking::ConnectionId connectionId)
-        {
-            INetworkTime* time = AZ::Interface<INetworkTime>::Get();
-            m_previousHostFrameId = time->GetHostFrameId();
-            m_previousHostTimeMs = time->GetHostTimeMs();
-            m_previousRewindConnectionId = time->GetRewindingConnectionId();
-            time->AlterTime(frameId, timeMs, connectionId);
-        }
-        inline ~ScopedAlterTime()
-        {
-            INetworkTime* time = AZ::Interface<INetworkTime>::Get();
-            time->AlterTime(m_previousHostFrameId, m_previousHostTimeMs, m_previousRewindConnectionId);
-        }
-    private:
-        HostFrameId m_previousHostFrameId = InvalidHostFrameId;
-        AZ::TimeMs m_previousHostTimeMs = AZ::TimeMs{ 0 };
-        AzNetworking::ConnectionId m_previousRewindConnectionId = AzNetworking::InvalidConnectionId;
-    };
 }

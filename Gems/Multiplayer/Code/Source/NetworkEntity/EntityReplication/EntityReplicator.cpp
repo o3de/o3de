@@ -448,7 +448,7 @@ namespace Multiplayer
     void EntityReplicator::DeferRpcMessage(NetworkEntityRpcMessage& entityRpcMessage)
     {
         // Received rpc metrics, log rpc sent, number of bytes, and the componentId/rpcId for bandwidth metrics
-        MultiplayerStats& stats = AZ::Interface<IMultiplayer>::Get()->GetStats();
+        MultiplayerStats& stats = GetMultiplayer()->GetStats();
         stats.RecordRpcSent(entityRpcMessage.GetComponentId(), entityRpcMessage.GetRpcIndex(), entityRpcMessage.GetEstimatedSerializeSize());
 
         m_replicationManager.AddDeferredRpcMessage(entityRpcMessage);
@@ -631,7 +631,7 @@ namespace Multiplayer
     bool EntityReplicator::HandleRpcMessage(AzNetworking::IConnection* invokingConnection, NetworkEntityRpcMessage& entityRpcMessage)
     {
         // Received rpc metrics, log rpc received, time spent, number of bytes, and the componentId/rpcId for bandwidth metrics
-        MultiplayerStats& stats = AZ::Interface<IMultiplayer>::Get()->GetStats();
+        MultiplayerStats& stats = GetMultiplayer()->GetStats();
         stats.RecordRpcReceived(entityRpcMessage.GetComponentId(), entityRpcMessage.GetRpcIndex(), entityRpcMessage.GetEstimatedSerializeSize());
 
         if (!m_netBindComponent)

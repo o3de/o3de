@@ -59,9 +59,24 @@ namespace Multiplayer
 
         //! Creates new entities of the given archetype
         //! @param prefabEntryId the name of the spawnable to spawn
-        virtual EntityList CreateEntitiesImmediate(
-            const PrefabEntityId& prefabEntryId, NetEntityId netEntityId, NetEntityRole netEntityRole, AutoActivate autoActivate,
-            const AZ::Transform& transform) = 0;
+        virtual EntityList CreateEntitiesImmediate
+        (
+            const PrefabEntityId& prefabEntryId,
+            NetEntityRole netEntityRole,
+            const AZ::Transform& transform
+        ) = 0;
+
+        //! Creates new entities of the given archetype
+        //! This interface is internally used to spawn replicated entities
+        //! @param prefabEntryId the name of the spawnable to spawn
+        virtual EntityList CreateEntitiesImmediate
+        (
+            const PrefabEntityId& prefabEntryId,
+            NetEntityId netEntityId,
+            NetEntityRole netEntityRole,
+            AutoActivate autoActivate,
+            const AZ::Transform& transform
+        ) = 0;
 
         //! Returns an ConstEntityPtr for the provided entityId.
         //! @param netEntityId the netEntityId to get an ConstEntityPtr for
@@ -134,25 +149,4 @@ namespace Multiplayer
         //! @param entityRpcMessage the local rpc message to handle
         virtual void HandleLocalRpcMessage(NetworkEntityRpcMessage& message) = 0;
     };
-
-    // Convenience helpers
-    inline INetworkEntityManager* GetNetworkEntityManager()
-    {
-        return AZ::Interface<INetworkEntityManager>::Get();
-    }
-
-    inline NetworkEntityTracker* GetNetworkEntityTracker()
-    {
-        return GetNetworkEntityManager()->GetNetworkEntityTracker();
-    }
-
-    inline NetworkEntityAuthorityTracker* GetNetworkEntityAuthorityTracker()
-    {
-        return GetNetworkEntityManager()->GetNetworkEntityAuthorityTracker();
-    }
-
-    inline MultiplayerComponentRegistry* GetMultiplayerComponentRegistry()
-    {
-        return GetNetworkEntityManager()->GetMultiplayerComponentRegistry();
-    }
 }

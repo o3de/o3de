@@ -23,8 +23,8 @@ namespace Multiplayer
         : public INetworkTime
     {
     public:
-        NetworkTime();
-        virtual ~NetworkTime();
+        NetworkTime() = default;
+        virtual ~NetworkTime() = default;
 
         //! INetworkTime overrides.
         //! @{
@@ -33,10 +33,11 @@ namespace Multiplayer
         HostFrameId GetUnalteredHostFrameId() const override;
         void IncrementHostFrameId() override;
         AZ::TimeMs GetHostTimeMs() const override;
-        void SyncRewindableEntityState() override;
         AzNetworking::ConnectionId GetRewindingConnectionId() const override;
         HostFrameId GetHostFrameIdForRewindingConnection(AzNetworking::ConnectionId rewindConnectionId) const override;
         void AlterTime(HostFrameId frameId, AZ::TimeMs timeMs, AzNetworking::ConnectionId rewindConnectionId) override;
+        void SyncEntitiesToRewindState(const AZ::Aabb& rewindVolume) override;
+        void ClearRewoundEntities() override;
         //! @}
 
     private:

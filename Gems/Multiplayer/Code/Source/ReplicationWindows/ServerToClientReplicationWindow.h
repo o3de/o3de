@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Include/INetworkEntityManager.h>
+#include <Include/IMultiplayer.h>
 #include <Include/IReplicationWindow.h>
 #include <Include/NetworkEntityHandle.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>

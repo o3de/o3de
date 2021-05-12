@@ -476,7 +476,7 @@ bool {{ ClassName }}::Serialize{{ AutoComponentMacros.GetNetPropertiesSetName(Re
 {%-      if networkPropertyCount.update({'value': networkPropertyCount.value + 1}) %}{% endif -%} 
 {% endcall %}
 {% if networkPropertyCount.value > 0 %}
-    MultiplayerStats& stats = AZ::Interface<IMultiplayer>::Get()->GetStats();
+    MultiplayerStats& stats = GetMultiplayer()->GetStats();
     // We modify the record if we are writing an update so that we don't notify for a change that really didn't change the value (just a duplicated send from the server)
     [[maybe_unused]] bool modifyRecord = serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject;
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
@@ -1141,16 +1141,23 @@ namespace {{ Component.attrib['Namespace'] }}
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<{{ ComponentName }}>("{{ ComponentName }}", "{{ Component.attrib['Description'] }}")
+                editContext->Class<{{ ComponentBaseName }}>("{{ ComponentBaseName }}", "{{ Component.attrib['Description'] }}")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Multiplayer")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    {{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Authority', ComponentName)|indent(20) -}}
-{{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Server', ComponentName)|indent(20) -}}
-{{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Client', ComponentName)|indent(20) -}}
-{{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Autonomous', ComponentName)|indent(20) -}}
-{{ DefineNetworkPropertyEditReflection(Component, 'Autonomous', 'Authority', ComponentName)|indent(20) }}
-                    {{ DefineArchetypePropertyEditReflection(Component, ComponentName)|indent(20) }};
+                    {{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Authority', ComponentBaseName)|indent(20) -}}
+{{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Server', ComponentBaseName)|indent(20) -}}
+{{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Client', ComponentBaseName)|indent(20) -}}
+{{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Autonomous', ComponentBaseName)|indent(20) -}}
+{{ DefineNetworkPropertyEditReflection(Component, 'Autonomous', 'Authority', ComponentBaseName)|indent(20) }}
+                    {{ DefineArchetypePropertyEditReflection(Component, ComponentBaseName)|indent(20) }};
+{% if ComponentDerived %}
+
+                editContext->Class<{{ ComponentName }}>("{{ ComponentName }}", "{{ Component.attrib['Description'] }}")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::Category, "Multiplayer")
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
+{% endif %}
             }
         }
     }
