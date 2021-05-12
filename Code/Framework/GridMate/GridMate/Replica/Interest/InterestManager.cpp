@@ -206,7 +206,7 @@ namespace GridMate
             return false;
         }
 
-        if (replica->IsMaster()) // own the replica?
+        if (replica->IsPrimary()) // own the replica?
         {
             return true;
         }
