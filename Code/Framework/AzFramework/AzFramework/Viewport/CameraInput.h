@@ -17,6 +17,8 @@
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/optional.h>
 #include <AzFramework/Input/Channels/InputChannel.h>
+#include <AzFramework/Viewport/ClickDetector.h>
+#include <AzFramework/Viewport/CursorState.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Viewport/ViewportId.h>
 
@@ -188,9 +190,8 @@ namespace AzFramework
         Cameras m_cameras;
 
     private:
+        CursorState m_cursorState;
         float m_scrollDelta = 0.0f;
-        AZStd::optional<ScreenPoint> m_lastCursorPosition;
-        AZStd::optional<ScreenPoint> m_currentCursorPosition;
     };
 
     class RotateCameraInput : public CameraInput
@@ -206,8 +207,7 @@ namespace AzFramework
 
     private:
         InputChannelId m_rotateChannelId;
-        float m_moveAccumulator = 0.0f;
-        bool m_tryingToBegin = false;
+        ClickDetector m_clickDetector;
     };
 
     struct PanAxes
@@ -364,7 +364,9 @@ namespace AzFramework
     {
     public:
         explicit OrbitDollyCursorMoveCameraInput(const InputChannelId dollyChannelId)
-            : m_dollyChannelId(dollyChannelId) {}
+            : m_dollyChannelId(dollyChannelId)
+        {
+        }
 
         void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;

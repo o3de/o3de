@@ -17,6 +17,8 @@
 #include <AzCore/std/optional.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Components/CameraBus.h>
+#include <AzFramework/Viewport/ClickDetector.h>
+#include <AzFramework/Viewport/CursorState.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
@@ -281,6 +283,8 @@ namespace AzToolsFramework
         ViewportUi::ButtonId m_rotateButtonId; ///< Id of the Viewport UI button for rotate mode.
         ViewportUi::ButtonId m_scaleButtonId; ///< Id of the Viewport UI button for scale mode.
         AZ::Event<ViewportUi::ButtonId>::Handler m_transformModeSelectionHandler; ///< Event handler for the Viewport UI cluster.
+        AzFramework::ClickDetector m_clickDetector; ///< Detect different types of mouse click.
+        AzFramework::CursorState m_cursorState; ///< Track the mouse position and delta movement each frame.
     };
 
     /// The ETCS (EntityTransformComponentSelection) namespace contains functions and data used exclusively by
