@@ -96,7 +96,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_assetBrowserTreeViewWidget->UpdateAfterFilter(hasFilter, selectFirstFilteredIndex);
     });
 
-    connect(m_filterModel.data(), &AssetBrowserFilterModel::filterChanged, m_tableModel.data(), &AssetBrowserTableModel::UpdateMap);
+    connect(m_filterModel.data(), &AssetBrowserFilterModel::filterChanged, m_tableModel.data(), &AssetBrowserTableModel::UpdateTableModelMaps);
 
     connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::selectionChangedSignal,
         this, &AzAssetBrowserWindow::SelectionChangedSlot);
