@@ -12,9 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # fmt: off
 class Tests():
-    open_sc_window  = ("Script Canvas window is opened",   "Failed to open Script Canvas window")
-    node_added      = ("Successfully added node to graph", "Failed to add node to graph")
-    node_duplicated = ("Successfully duplicated node",     "Failed to duplicate the node")
+    node_duplicated = ("Successfully duplicated node", "Failed to duplicate the node")
 # fmt: on
 
 
@@ -30,9 +28,8 @@ def Node_HappyPath_DuplicateNode():
      1) Open Script Canvas window (Tools > Script Canvas)
      2) Open a new graph
      3) Add node to graph
-     4) Select node in graph to verify existence
-     5) Mock Ctrl+D to duplicate node
-     6) Verify the node was duplicated
+     4) Duplicate node
+     5) Verify the node was duplicated6) Verify the node was duplicated
 
     Note:
      - This test file must be called from the Open 3D Engine Editor command terminal
@@ -68,11 +65,9 @@ def Node_HappyPath_DuplicateNode():
     def grab_title_text():
         scroll_area = node_inspector.findChild(QtWidgets.QScrollArea, "")
         QtTest.QTest.keyClick(graph, "a", Qt.ControlModifier, WAIT_FRAMES)
-        general.idle_wait(1.0)
         background = scroll_area.findChild(QtWidgets.QFrame, "Background")
         title = background.findChild(QtWidgets.QLabel, "Title")
         text = title.findChild(QtWidgets.QLabel, "Title")
-        print(text.text())
         return text.text()
 
     # 1) Open Script Canvas window (Tools > Script Canvas)
@@ -80,29 +75,35 @@ def Node_HappyPath_DuplicateNode():
     general.open_pane("Script Canvas")
     helper.wait_for_condition(lambda: general.is_pane_visible("Script Canvas"), 5.0)
 
-    # # 2) Open a new graph
+    # 2) Open a new graph
     editor_window = pyside_utils.get_editor_main_window()
     sc = editor_window.findChild(QtWidgets.QDockWidget, "Script Canvas")
     sc_main = sc.findChild(QtWidgets.QMainWindow)
     create_new_graph = pyside_utils.find_child_by_pattern(
         sc_main, {"objectName": "action_New_Script", "type": QtWidgets.QAction}
     )
+    if sc.findChild(QtWidgets.QDockWidget, "NodeInspector") is None:
+        action = pyside_utils.find_child_by_pattern(sc, {"text": "Node Inspector", "type": QtWidgets.QAction})
+        action.trigger()
     node_inspector = sc.findChild(QtWidgets.QDockWidget, "NodeInspector")
     create_new_graph.trigger()
 
     # 3) Add node
     command_line_input("add_node Print")
 
-    # 4) Select node in graph to verify existence
+    # 4) Duplicate node
     graph_view = sc.findChild(QtWidgets.QFrame, "graphicsViewFrame")
     graph = graph_view.findChild(QtWidgets.QWidget, "")
-
-    # 5) Duplicate node
+    # There are currently no utilities available to directly duplicate the node,
+    # therefore the node is selected using CTRL+A on the graph to select
+    # it and then CTRL+D to duplicate
     sc_main.activateWindow()
     QtTest.QTest.keyClick(graph, "a", Qt.ControlModifier, WAIT_FRAMES)
     QtTest.QTest.keyClick(graph, "d", Qt.ControlModifier, WAIT_FRAMES)
 
-    # 6) Verify the node was duplicated
+    # 5) Verify the node was duplicated
+    # As direct interaction with node is not available the text on the label
+    # inside the Node Inspector is validated showing two nodes exist
     after_dup = grab_title_text()
     Report.result(Tests.node_duplicated, after_dup == EXPECTED_STRING)
 
