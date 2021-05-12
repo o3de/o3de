@@ -613,7 +613,7 @@ AmazonToolbar ToolbarManager::GetObjectToolbar() const
 
 AmazonToolbar ToolbarManager::GetPlayConsoleToolbar() const
 {
-    AmazonToolbar t = AmazonToolbar("PlayConsole", QObject::tr("Play Console"));
+    AmazonToolbar t = AmazonToolbar("PlayConsole", QObject::tr("Play Controls"));
     t.SetMainToolbar(true);
 
     t.AddAction(ID_TOOLBAR_WIDGET_SPACER_RIGHT, ORIGINAL_TOOLBAR_VERSION); 
