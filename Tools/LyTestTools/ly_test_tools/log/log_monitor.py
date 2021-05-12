@@ -44,7 +44,7 @@ def check_exact_match(line, expected_line):
 
     # Look for either start of line or whitespace, then the expected_line, then either end of the line or whitespace.
     # This way we don't partial match inside of a string.  So for example, 'foo' matches 'foo bar' but not 'foobar'
-    regex_pattern = re.compile("(^|\\s){}($|\\s)".format(re.escape(expected_line)))
+    regex_pattern = re.compile("(^|\\s){}($|\\s)".format(re.escape(expected_line)), re.UNICODE)
     if regex_pattern.search(line) is not None:
         return expected_line
 
@@ -160,6 +160,7 @@ class LogMonitor(object):
         expected_lines_to_remove = []
 
         for expected_line in expected_lines:
+            print ('expected_line ' + expected_line)
             searched_line = check_exact_match(line, expected_line)
             if expected_line == searched_line:
                 logger.debug("Found expected line: {} from line: {}".format(expected_line, line))
@@ -275,6 +276,7 @@ class LogMonitor(object):
         # by returning the previous alive state
         process_runing = self.launcher.is_alive() 
         for line in log:
+            print ('log line is ' + line)
             line = line[:-1]  # remove /n
             process_line(line)
 

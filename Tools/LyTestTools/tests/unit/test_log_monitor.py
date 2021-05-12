@@ -100,12 +100,13 @@ class TestLogMonitor(object):
 
     @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
     def test_Monitor_UTF8StringsPresentAndExpected_Success(self):
-        # Ålphaßravoçharlie
-        mock_file = io.StringIO(u'größeren prüfung тестування\nÀÈÌÒÙ\nÅlphaßravoçharlie\n')
+        mock_file = io.StringIO('gr\xc3\xb6\xc3\x9feren pr\xc3\xbcfung \xd1\x82\xd0\xb5\xd1\x81\xd1\x82\xd1\x83\xd0\xb2\xd0\xb0\xd0\xbd\xd0\xbd\xd1\x8f\n\xc3\x80\xc3\x88\xc3\x8c\xc3\x92\xc3\x99\n\xc3\x85lpha\xc3\x9fravo\xc3\xa7harlie\n')
         mock_launcher.is_alive.side_effect = [True, True, True, False]
 
         with mock.patch('ly_test_tools.log.log_monitor.open', return_value=mock_file, create=True):
-            mock_log_monitor().monitor_log_for_lines(['größeren prüfung тестування', 'ÀÈÌÒÙ', 'Ålphaßravoçharlie'])
+            mock_log_monitor().monitor_log_for_lines(['gr\xc3\xb6\xc3\x9feren pr\xc3\xbcfung \xd1\x82\xd0\xb5\xd1\x81\xd1\x82\xd1\x83\xd0\xb2\xd0\xb0\xd0\xbd\xd0\xbd\xd1\x8f',
+                                                      '\xc3\x80\xc3\x88\xc3\x8c\xc3\x92\xc3\x99',
+                                                      '\xc3\x85lpha\xc3\x9fravo\xc3\xa7harlie'])
 
     @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
     def test_Monitor_AllLinesFound_Success(self):
