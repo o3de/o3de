@@ -10,15 +10,7 @@
 #
 
 set(FILES
-    Editor/ImGuiEditorWindowBus.h
     Editor/ImGuiEditorWindowModule.cpp
-    Editor/ImGuiEditorWindowSystemComponent.cpp
-    Editor/ImGuiEditorWindowSystemComponent.h
-    Editor/ImGuiMainWindow.h
-    Editor/ImGuiMainWindow.cpp
-    Editor/ImGuiMainwindow.ui
-    Editor/ImGuiViewport.h
-    Editor/ImGuiViewport.cpp
     Source/ImGuiGem.h
     Source/ImGuiGem.cpp
 )

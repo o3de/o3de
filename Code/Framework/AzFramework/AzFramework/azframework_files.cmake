@@ -161,26 +161,6 @@ set(FILES
     Metrics/MetricsPlainTextNameRegistration.h
     Network/AssetProcessorConnection.cpp
     Network/AssetProcessorConnection.h
-    Network/DynamicSerializableFieldMarshaler.h
-    Network/EntityIdMarshaler.h
-    Network/InterestManagerComponent.h
-    Network/InterestManagerComponent.cpp
-    Network/NetBindable.h
-    Network/NetBindable.cpp
-    Network/NetBindingEventsBus.h
-    Network/NetBindingHandlerBus.h
-    Network/NetBindingSystemBus.h
-    Network/NetBindingComponent.h
-    Network/NetBindingComponent.cpp
-    Network/NetBindingComponentChunk.h
-    Network/NetBindingComponentChunk.cpp
-    Network/NetBindingSystemImpl.h
-    Network/NetBindingSystemImpl.cpp
-    Network/NetBindingSystemComponent.h
-    Network/NetBindingSystemComponent.cpp
-    Network/NetworkContext.h
-    Network/NetworkContext.cpp
-    Network/NetSystemBus.h
     Network/SocketConnection.cpp
     Network/SocketConnection.h
     Logging/LogFile.cpp
@@ -203,10 +183,6 @@ set(FILES
     Script/ScriptDebugAgentBus.h
     Script/ScriptDebugMsgReflection.cpp
     Script/ScriptDebugMsgReflection.h
-    Script/ScriptMarshal.h
-    Script/ScriptMarshal.cpp
-    Script/ScriptNetBindings.h
-    Script/ScriptNetBindings.cpp
     Script/ScriptRemoteDebugging.cpp
     Script/ScriptRemoteDebugging.h
     StreamingInstall/StreamingInstall.h
@@ -279,6 +255,7 @@ set(FILES
     Physics/ClassConverters.cpp
     Physics/ClassConverters.h
     Physics/MaterialBus.h
+    Physics/WindBus.h
     Process/ProcessCommunicator.cpp
     Process/ProcessCommunicator.h
     Process/ProcessWatcher.cpp

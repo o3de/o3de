@@ -52,8 +52,8 @@ def HeliosProjectFixture(request):
     # These tests are run on Jenkins after other tests, to minimize time spent on Jenkins jobs.
     # Verify that the correct project has been set before this test starts.
 
-    # Temporarily disabling while https://jira.agscollab.com/browse/LY-103017 is not in Helios branch
-    # Creating a task to revert this change later: https://jira.agscollab.com/browse/LY-103334
+    # Temporarily disabling while LY-103017 is not in Helios branch
+    # Creating a task to revert this change later: LY-103334
 
     # Run asset processor once to process all assets, so the tests themselves can run at consistent speeds.
     SubprocessUtils.SubprocessWithTimeout([buildInfo.assetProcessorBatch], engineRoot, 120)

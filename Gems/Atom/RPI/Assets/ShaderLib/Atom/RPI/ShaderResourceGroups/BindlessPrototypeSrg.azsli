@@ -31,10 +31,6 @@ ShaderResourceGroupSemantic FloatBufferSemanticId
 
 ShaderResourceGroup ImageSrg : FrequencyPerScene
 {
-    // Array of textures
-    // NOTE: The size of the texture array has to match the number of textures in the example
-    Texture2D m_textureArray[8];
-
     Sampler m_sampler
     {
         MaxAnisotropy = 16;
@@ -42,6 +38,9 @@ ShaderResourceGroup ImageSrg : FrequencyPerScene
         AddressV = Wrap;
         AddressW = Wrap;
     };
+
+    // Array of textures
+    Texture2D m_textureArray[];
 }
 
 ShaderResourceGroup FloatBufferSrg : FloatBufferSemanticId

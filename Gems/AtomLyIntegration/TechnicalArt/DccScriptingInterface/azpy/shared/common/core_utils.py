@@ -40,7 +40,7 @@ Module Documentation:
     <to do: further document this module>
     
     To Do:
-        https://jira.agscollab.com/browse/ATOM-5859
+        ATOM-5859
 '''
 # -------------------------------------------------------------------------
 

@@ -26,6 +26,7 @@ namespace AZ
             , m_windowContext(AZStd::make_shared<WindowContext>())
             , m_manager(manager)
             , m_name(name)
+            , m_viewportSize(1, 1)
         {
             m_windowContext->Initialize(device, nativeWindow);
             AzFramework::WindowRequestBus::EventResult(
@@ -204,6 +205,7 @@ namespace AZ
         {
             const auto view = GetDefaultView();
             view->SetCameraTransform(AZ::Matrix3x4::CreateFromTransform(transform.GetOrthogonalized()));
+            m_viewMatrixChangedEvent.Signal(view->GetWorldToViewMatrix());
         }
 
         void ViewportContext::SetDefaultView(ViewPtr view)
