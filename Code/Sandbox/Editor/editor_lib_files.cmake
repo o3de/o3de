@@ -280,8 +280,6 @@ set(FILES
     Include/IAnimationCompressionManager.h
     Include/IAssetItem.h
     Include/IAssetItemDatabase.h
-    Include/IBackgroundScheduleManager.h
-    Include/IBackgroundTaskManager.h
     Include/ICommandManager.h
     Include/IConsoleConnectivity.h
     Include/IDataBaseItem.h
@@ -343,10 +341,6 @@ set(FILES
     AssetEditor/AssetEditorWindow.cpp
     AssetEditor/AssetEditorWindow.h
     AssetEditor/AssetEditorWindow.ui
-    BackgroundTaskManager.cpp
-    BackgroundScheduleManager.cpp
-    BackgroundTaskManager.h
-    BackgroundScheduleManager.h
     Commands/CommandManager.cpp
     Commands/CommandManager.h
     Controls/BitmapToolTip.cpp

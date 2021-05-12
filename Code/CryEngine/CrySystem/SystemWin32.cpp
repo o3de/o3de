@@ -46,8 +46,6 @@
 #include <shlobj.h>
 #endif
 
-#include "IDebugCallStack.h"
-
 #if defined(APPLE) || defined(LINUX)
 #include <pwd.h>
 #endif
@@ -753,13 +751,6 @@ void CSystem::FatalError(const char* format, ...)
 
     // Dump callstack.
 #endif
-#if defined (WIN32)
-    //Triggers a fatal error, so the DebugCallstack can create the error.log and terminate the application
-    IDebugCallStack::instance()->FatalError(szBuffer);
-#elif defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEMWIN32_CPP_SECTION_1
-#include AZ_RESTRICTED_FILE(SystemWin32_cpp)
-#endif
 
     CryDebugBreak();
 
@@ -800,8 +791,6 @@ void CSystem::ReportBug([[maybe_unused]] const char* format, ...)
     va_start(ArgList, format);
     azvsnprintf(szBuffer + strlen(sPrefix), MAX_WARNING_LENGTH - strlen(sPrefix), format, ArgList);
     va_end(ArgList);
-
-    IDebugCallStack::instance()->ReportBug(szBuffer);
 #endif
 }
 
@@ -909,10 +898,6 @@ void CSystem::LogSystemInfo()
     DEVMODE DisplayConfig;
     OSVERSIONINFO OSVerInfo;
     OSVerInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-
-    // log Windows type
-    Win32SysInspect::GetOS(m_env.pi.winVer, m_env.pi.win64Bit, szBuffer, sizeof(szBuffer));
-    CryLogAlways(szBuffer);
 
     // log system language
     GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, LOCALE_SENGLANGUAGE, szLanguageBuffer, sizeof(szLanguageBuffer));

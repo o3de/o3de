@@ -407,11 +407,6 @@ namespace AzFramework
         {
             if (input->m_state == InputChannel::State::Began)
             {
-                if (input->m_state == InputChannel::State::Updated)
-                {
-                    return;
-                }
-
                 m_translation |= translationFromKey(input->m_channelId);
                 if (m_translation != TranslationType::Nil)
                 {

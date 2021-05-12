@@ -92,7 +92,6 @@ AZ_POP_DISABLE_WARNING
 #include "ErrorReportDialog.h"
 
 #include "Dialogs/PythonScriptsDialog.h"
-#include "EngineSettingsManager.h"
 
 #include "AzAssetBrowser/AzAssetBrowserWindow.h"
 #include "AssetEditor/AssetEditorWindow.h"
@@ -695,8 +694,6 @@ void MainWindow::InitActions()
     am->AddAction(ID_TOOLBAR_WIDGET_REDO, QString());
     am->AddAction(ID_TOOLBAR_WIDGET_SNAP_ANGLE, QString());
     am->AddAction(ID_TOOLBAR_WIDGET_SNAP_GRID, QString());
-    am->AddAction(ID_TOOLBAR_WIDGET_ENVIRONMENT_MODE, QString());
-    am->AddAction(ID_TOOLBAR_WIDGET_DEBUG_MODE, QString());
     am->AddAction(ID_TOOLBAR_WIDGET_SPACER_RIGHT, QString());
 
     // File actions
@@ -1253,137 +1250,12 @@ QToolButton* MainWindow::CreateUndoRedoButton(int command)
     return button;
 }
 
-QToolButton* MainWindow::CreateEnvironmentModeButton()
-{
-    QToolButton* environmentModeButton = new QToolButton(this);
-    environmentModeButton->setAutoRaise(true);
-    environmentModeButton->setPopupMode(QToolButton::InstantPopup);
-    environmentModeButton->setIcon(Style::icon("Environment"));
-    environmentModeButton->setStatusTip(tr("Select from a variety of environment mode options"));
-    environmentModeButton->setToolTip(tr("Environment modes"));
-
-    CVarMenu* environmentModeMenu = new CVarMenu(this);
-    connect(environmentModeMenu, &QMenu::aboutToShow, [this, environmentModeMenu]()
-        {
-            InitEnvironmentModeMenu(environmentModeMenu);
-        });
-    environmentModeButton->setMenu(environmentModeMenu);
-
-    return environmentModeButton;
-}
-
-QToolButton* MainWindow::CreateDebugModeButton()
-{
-    QToolButton* debugModeButton = new QToolButton(this);
-    debugModeButton->setAutoRaise(true);
-    debugModeButton->setPopupMode(QToolButton::InstantPopup);
-    debugModeButton->setIcon(Style::icon("Debugging"));
-    debugModeButton->setStatusTip(tr("Select from a variety of debug/view mode options"));
-    debugModeButton->setToolTip(tr("Debug modes"));
-
-    CVarMenu* debugModeMenu = new CVarMenu(this);
-    connect(debugModeMenu, &QMenu::aboutToShow, [this, debugModeMenu]()
-        {
-            InitDebugModeMenu(debugModeMenu);
-        });
-    debugModeButton->setMenu(debugModeMenu);
-
-    return debugModeButton;
-}
-
 QWidget* MainWindow::CreateSpacerRightWidget()
 {
     QWidget* spacer = new QWidget(this);
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     spacer->setVisible(true);
     return spacer;
-}
-
-void MainWindow::InitEnvironmentModeMenu(CVarMenu* environmentModeMenu)
-{
-    environmentModeMenu->clear();
-    environmentModeMenu->AddCVarToggleItem({ "e_Fog", tr("Hide Global Fog"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "r_FogVolumes", tr("Hide Fog Volumes"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "e_Clouds", tr("Hide Clouds"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "e_Wind", tr("Hide Wind"), 0, 1 });
-    environmentModeMenu->AddSeparator();
-    environmentModeMenu->AddCVarToggleItem({ "e_Sun", tr("Hide Sun"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "e_Skybox", tr("Hide Skybox"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "r_SSReflections", tr("Hide Screen Space Reflection"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "e_Shadows", tr("Hide Shadows"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "r_TransparentPasses", tr("Hide Transparent Objects"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "r_ssdo", tr("Hide Screen Space Directional Occlusion"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "e_DynamicLights", tr("Hide All Dynamic Lights"), 0, 1 });
-    environmentModeMenu->AddSeparator();
-    environmentModeMenu->AddCVarToggleItem({ "e_Entities", tr("Hide Entities"), 0, 1 });
-    environmentModeMenu->AddSeparator();
-    environmentModeMenu->AddCVarToggleItem({ "e_Vegetation", tr("Hide Vegetation"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "e_Terrain", tr("Hide Terrain"), 0, 1 });
-    environmentModeMenu->AddSeparator();
-    environmentModeMenu->AddCVarToggleItem({ "e_Particles", tr("Hide Particles"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "e_Flares", tr("Hide Flares"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "e_Decals", tr("Hide Decals"), 0, 1 });
-    environmentModeMenu->AddSeparator();
-    environmentModeMenu->AddCVarToggleItem({ "e_WaterOcean", tr("Hide Ocean Water (for legacy)"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "e_WaterVolumes", tr("Hide Water Volumes"), 0, 1 });
-    environmentModeMenu->AddSeparator();
-    environmentModeMenu->AddCVarToggleItem({ "e_BBoxes", tr("Hide BBoxes"), 0, 1 });
-    environmentModeMenu->AddSeparator();
-    environmentModeMenu->AddResetCVarsItem();
-}
-
-void MainWindow::InitDebugModeMenu(CVarMenu* debugModeMenu)
-{
-    debugModeMenu->clear();
-    debugModeMenu->AddCVarValuesItem("r_DebugGBuffer", tr("GBuffers"),
-        {
-            {tr("Full Shading Mode (Default)"), 0},
-            {tr("Normal Visualization"), 1},
-            {tr("Smoothness"), 2},
-            {tr("Reflectance"), 3},
-            {tr("Albedo"), 4},
-            {tr("Lighting Model"), 5},
-            {tr("Translucency"), 6},
-            {tr("Sun Self Shadowing"), 7},
-            {tr("Subsurface Scattering"), 8},
-            {tr("Specular Validation Overlay"), 9}
-        }, 0);
-    debugModeMenu->AddSeparator();
-    debugModeMenu->AddCVarValuesItem("r_Stats", tr("Profiling"),
-        {
-            {tr("Frame Timing"), 1},
-            {tr("Object Timing"), 3},
-            {tr("Instance Draw Calls"), 6},
-        }, 0);
-    debugModeMenu->AddSeparator();
-    debugModeMenu->AddUniqueCVarsItem(tr("Wireframe"),
-        {
-            {"r_wireframe", tr("Wireframe Rendering Mode"), 1, 0},
-            {"r_showlines", tr("Wireframe Overlay"), 1, 0}
-        }),
-    debugModeMenu->AddCVarValuesItem("e_debugdraw", tr("Art Info"),
-        {
-            {tr("Texture Memory Usage"), 4},
-            {tr("Renderable Material Count"), 5},
-            {tr("LOD Vertex Count"), 22}
-        }, 0);
-
-    debugModeMenu->AddSeparator();
-    debugModeMenu->AddCVarValuesItem("e_defaultmaterial", tr("Default Material on all Objects"),
-        {
-            {tr("Gray Material with Normal Maps"), 1},
-        }, 0);
-
-    debugModeMenu->AddCVarValuesItem("r_DeferredShadingTiledDebugAlbedo", tr("Debug Visualization of Deferred Lighting"),
-        {
-            {tr("White Albedo"), 1},
-        }, 0);
-
-    debugModeMenu->AddCVarToggleItem({ "r_ShowTangents", tr("Show Tangents"), 1, 0 });
-    debugModeMenu->AddCVarToggleItem({ "p_draw_helpers", tr("Show Collision Shapes (Proxy)"), 1, 0 });
-
-    debugModeMenu->AddSeparator();
-    debugModeMenu->AddResetCVarsItem();
 }
 
 UndoRedoToolButton::UndoRedoToolButton(QWidget* parent)
@@ -2068,12 +1940,6 @@ void MainWindow::ConnectivityStateChanged(const AzToolsFramework::SourceControlS
         }
     }
 
-#if defined(CRY_ENABLE_RC_HELPER)
-    CEngineSettingsManager settingsManager;
-    settingsManager.SetModuleSpecificBoolEntry("RC_EnableSourceControl", connected);
-    settingsManager.StoreData();
-#endif
-
     gSettings.enableSourceControl = connected;
     gSettings.SaveEnableSourceControlFlag(false);
 }
@@ -2149,12 +2015,6 @@ QWidget* MainWindow::CreateToolbarWidget(int actionId)
         break;
     case ID_TOOLBAR_WIDGET_SNAP_ANGLE:
         w = CreateSnapToAngleWidget();
-        break;
-    case ID_TOOLBAR_WIDGET_ENVIRONMENT_MODE:
-        w = CreateEnvironmentModeButton();
-        break;
-    case ID_TOOLBAR_WIDGET_DEBUG_MODE:
-        w = CreateDebugModeButton();
         break;
     case ID_TOOLBAR_WIDGET_SPACER_RIGHT:
         w = CreateSpacerRightWidget();
