@@ -64,10 +64,12 @@ namespace AZ
                 AZ::SettingsRegistryInterface::Specializations projectSpecializations{ projectName };
 
                 // If a project specialization has been passed in via the command line, use it.
-                if (m_commandLine.HasSwitch("specialization"))
+                if (size_t specializationCount = m_commandLine.GetNumSwitchValues("specializations"); specializationCount > 0)
                 {
-                    AZStd::string specialization = m_commandLine.GetSwitchValue("specialization", 0);
-                    projectSpecializations.Append(specialization);
+                    for (size_t specializationIndex = 0; specializationIndex < specializationCount; ++specializationIndex)
+                    {
+                        projectSpecializations.Append(m_commandLine.GetSwitchValue("specializations", specializationIndex));
+                    }
                 }
                 // Otherwise, if a config file was passed in, auto-set the specialization based on the config file name.
                 else
