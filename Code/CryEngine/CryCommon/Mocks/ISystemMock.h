@@ -164,8 +164,6 @@ public:
         XmlNodeRef(const char*, bool));
     MOCK_METHOD0(GetXmlUtils,
         IXmlUtils * ());
-    MOCK_CONST_METHOD0(GetArchiveHost,
-        Serialization::IArchiveHost * ());
     MOCK_METHOD1(SetViewCamera,
         void(CCamera & Camera));
     MOCK_METHOD0(GetViewCamera,
@@ -223,8 +221,6 @@ public:
         CPNoise3 * ());
     MOCK_METHOD0(GetUpdateCounter,
         uint64());
-    MOCK_CONST_METHOD0(GetCryFactoryRegistry,
-        ICryFactoryRegistry * ());
     MOCK_METHOD1(RegisterErrorObserver,
         bool(IErrorObserver * errorObserver));
     MOCK_METHOD1(UnregisterErrorObserver,
@@ -287,10 +283,6 @@ public:
         bool());
     MOCK_CONST_METHOD0(GetImageHandler,
         const IImageHandler * ());
-    MOCK_METHOD3(InitializeEngineModule,
-        bool(const char* dllName, const char* moduleClassName, const SSystemInitParams&initParams));
-    MOCK_METHOD2(UnloadEngineModule,
-        bool(const char* dllName, const char* moduleClassName));
     MOCK_METHOD0(GetRootWindowMessageHandler,
         void*());
     MOCK_METHOD1(RegisterWindowMessageHandler,

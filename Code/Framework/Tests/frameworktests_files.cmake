@@ -26,8 +26,6 @@ set(FILES
     GenAppDescriptors.cpp
     GenericComponentWrapperTest.cpp
     InstanceDataHierarchy.cpp
-    NetBinding.cpp
-    NetworkContext.cpp
     OctreePerformanceTests.cpp
     OctreeTests.cpp
     Slices.cpp
@@ -35,12 +33,8 @@ set(FILES
     Script/ScriptEntityTests.cpp
     AssetCatalog.cpp
     AssetProcessorConnection.cpp
-    NetBindingSystemImplTest.cpp
-    NetBindingMocks.h
     NativeWindow.cpp
     TransformComponent.cpp
-    GridMocks.h
-    InterestManagerComponentTests.cpp
     SQLiteConnectionTests.cpp
     ProcessLaunchParseTests.cpp
     Application.cpp

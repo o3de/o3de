@@ -79,7 +79,6 @@
 #define ID_EDIT_HIDE                               32898
 #define ID_EDIT_UNHIDEALL                          32899
 #define ID_RELOAD_TERRAIN                          32902
-#define ID_VIEW_GRIDSETTINGS                       32904
 #define ID_VIEW_CONFIGURELAYOUT                    32906
 #define ID_TOOLS_LOGMEMORYUSAGE                    32908
 #define ID_TERRAIN_EXPORTBLOCK                     32909
