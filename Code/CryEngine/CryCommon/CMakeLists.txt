@@ -18,6 +18,8 @@ ly_add_target(
         PUBLIC
             .         # Lots of code without CryCommon/
             ..        # Dangerous since exports CryEngine's path (client code can do CrySystem/ without depending on that target)
+    )
+
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_target(
