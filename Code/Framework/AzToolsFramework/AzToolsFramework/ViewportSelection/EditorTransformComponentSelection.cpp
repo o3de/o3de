@@ -2523,7 +2523,7 @@ namespace AzToolsFramework
         // create the cluster for changing transform mode
         ViewportUi::ViewportUiRequestBus::EventResult(
             m_transformModeClusterId, ViewportUi::DefaultViewportId,
-            &ViewportUi::ViewportUiRequestBus::Events::CreateCluster);
+            &ViewportUi::ViewportUiRequestBus::Events::CreateCluster, ViewportUi::Alignment::TopLeft);
 
         // create and register the buttons (strings correspond to icons even if the values appear different)
         m_translateButtonId = RegisterClusterButton(m_transformModeClusterId, "Move");

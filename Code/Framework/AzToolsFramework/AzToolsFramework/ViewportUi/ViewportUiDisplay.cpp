@@ -41,6 +41,27 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 
+    static Qt::Alignment GetAlignment(Alignment align)
+    {
+        switch (align)
+        {
+        case Alignment::TopRight:
+            return Qt::AlignTop | Qt::AlignRight;
+        case Alignment::TopLeft:
+            return Qt::AlignTop | Qt::AlignLeft;
+        case Alignment::BottomRight:
+            return Qt::AlignBottom | Qt::AlignRight;
+        case Alignment::BottomLeft:
+            return Qt::AlignBottom | Qt::AlignLeft;
+        case Alignment::Top:
+            return Qt::AlignTop;
+        case Alignment::Bottom:
+            return Qt::AlignBottom;
+        default:
+            return Qt::AlignTop;
+        }
+    }
+
     ViewportUiDisplay::ViewportUiDisplay(QWidget* parent, QWidget* renderOverlay)
         : m_renderOverlay(renderOverlay)
         , m_uiMainWindow(parent)
@@ -56,7 +77,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         UnparentWidgets(m_viewportUiElements);
     }
 
-    void ViewportUiDisplay::AddCluster(AZStd::shared_ptr<ButtonGroup> buttonGroup)
+    void ViewportUiDisplay::AddCluster(AZStd::shared_ptr<ButtonGroup> buttonGroup, Alignment align)
     {
         if (!buttonGroup.get())
         {
@@ -66,7 +87,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         auto viewportUiCluster = AZStd::make_shared<ViewportUiCluster>(buttonGroup);
         auto id = AddViewportUiElement(viewportUiCluster);
         buttonGroup->SetViewportUiElementId(id);
-        PositionViewportUiElementAnchored(id, Qt::AlignTop | Qt::AlignLeft);
+        PositionViewportUiElementAnchored(id, GetAlignment(align));
     }
 
     void ViewportUiDisplay::AddClusterButton(
@@ -94,7 +115,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 
-    void ViewportUiDisplay::AddSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup)
+    void ViewportUiDisplay::AddSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup, Alignment align)
     {
         if (!buttonGroup.get())
         {
@@ -104,7 +125,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         auto viewportUiSwitcher = AZStd::make_shared<ViewportUiSwitcher>(buttonGroup);
         auto id = AddViewportUiElement(viewportUiSwitcher);
         buttonGroup->SetViewportUiElementId(id);
-        PositionViewportUiElementAnchored(id, Qt::AlignTop | Qt::AlignLeft);
+        PositionViewportUiElementAnchored(id, GetAlignment(align));
     }
 
     void ViewportUiDisplay::AddSwitcherButton(const ViewportUiElementId clusterId, Button* button)
