@@ -1749,7 +1749,7 @@ namespace SettingsRegistryTests
         m_testFolder->push_back(AZ_CORRECT_DATABASE_SEPARATOR);
         *m_testFolder += AZ::SettingsRegistryInterface::RegistryFolder;
         bool result = m_registry->MergeSettingsFolder(*m_testFolder, { "editor", "test" }, {}, nullptr);
-        AZ_TEST_STOP_TRACE_SUPPRESSION(2);
+        EXPECT_GT(::UnitTest::TestRunner::Instance().StopAssertTests(), 0);
         EXPECT_FALSE(result);
 
         EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Object, m_registry->GetType(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/0")); // Folder and specialization settings.
@@ -1759,11 +1759,5 @@ namespace SettingsRegistryTests
         EXPECT_EQ(AZ::SettingsRegistryInterface::Type::String, m_registry->GetType(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/1/Path"));
         EXPECT_EQ(AZ::SettingsRegistryInterface::Type::String, m_registry->GetType(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/1/File1"));
         EXPECT_EQ(AZ::SettingsRegistryInterface::Type::String, m_registry->GetType(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/1/File2"));
-
-        EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Object, m_registry->GetType(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/2"));
-        EXPECT_EQ(AZ::SettingsRegistryInterface::Type::String, m_registry->GetType(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/2/Error"));
-        EXPECT_EQ(AZ::SettingsRegistryInterface::Type::String, m_registry->GetType(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/2/Path"));
-        EXPECT_EQ(AZ::SettingsRegistryInterface::Type::String, m_registry->GetType(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/2/File1"));
-        EXPECT_EQ(AZ::SettingsRegistryInterface::Type::String, m_registry->GetType(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/2/File2"));
     }
 } // namespace SettingsRegistryTests
