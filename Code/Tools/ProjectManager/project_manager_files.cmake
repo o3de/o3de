@@ -42,6 +42,8 @@ set(FILES
     Source/GemCatalog/GemCatalog.cpp
     Source/GemCatalog/GemInfo.h
     Source/GemCatalog/GemInfo.cpp
+    Source/GemCatalog/GemInspector.h
+    Source/GemCatalog/GemInspector.cpp
     Source/GemCatalog/GemItemDelegate.h
     Source/GemCatalog/GemItemDelegate.cpp
     Source/GemCatalog/GemListView.h
