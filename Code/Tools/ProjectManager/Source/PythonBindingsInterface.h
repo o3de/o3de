@@ -31,8 +31,8 @@ namespace O3DE::ProjectManager
         IPythonBindings() = default;
         virtual ~IPythonBindings() = default;
 
-        //! Get the current project 
-        virtual ProjectInfo GetCurrentProject() = 0;
+        //! Get the global project 
+        virtual ProjectInfo GetGlobalProject() = 0;
     };
 
     using PythonBindingsInterface = AZ::Interface<IPythonBindings>;
