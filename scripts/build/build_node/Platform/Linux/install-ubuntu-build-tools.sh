@@ -121,9 +121,10 @@ PACKAGE_FILE_LIST=package-list.ubuntu-$UBUNTU_DISTRO.txt
 echo Reading package list $PACKAGE_FILE_LIST
 
 # Read each line (strip out comment tags)
-for LINE in `cat $PACKAGE_FILE_LIST | sed 's/#.*$//g'`
+for PREPROC_LINE in `cat $PACKAGE_FILE_LIST | sed 's/#.*$//g'`
 do
-    PACKAGE=`echo $LINE | awk -F / '{print $1}'`
+    LINE=`echo $PREPROC_LINE | tr -d '\r\n'`
+    PACKAGE=`echo $LINE | awk -F / '{$1=$1;print $1}'`
     if [ "$PACKAGE" != "" ]  # Skip blank lines
     then
         PACKAGE_VER=`echo $LINE | awk -F / '{print $2}'`
@@ -144,7 +145,7 @@ do
             INSTALLED_COUNT=`apt list --installed 2>/dev/null | grep ^$PACKAGE/ | wc -l`
             if [ $INSTALLED_COUNT -eq 0 ]
             then
-                echo Installing $PACKAGE \( $PACKAGE_VER \)
+                echo Installing \'$PACKAGE\' \( $PACKAGE_VER \)
                 apt-get install $PACKAGE=$PACKAGE_VER -y
             else
                 INSTALLED_VERSION=`apt list --installed 2>/dev/null | grep ^$PACKAGE/ | awk '{print $2}'`
