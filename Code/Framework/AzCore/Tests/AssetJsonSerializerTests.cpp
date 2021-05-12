@@ -135,6 +135,7 @@ namespace JsonSerializationTests
             auto instance = AZStd::make_shared<Asset>();
             instance->Create(id, false);
             instance->SetHint("TestFile");
+            instance->SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
             return instance;
         }
 
@@ -158,6 +159,7 @@ namespace JsonSerializationTests
                         "guid": "{BBEAC89F-8BAD-4A9D-BF6E-D0DF84A8DFD6}",
                         "subId": 1
                     },
+                    "loadBehavior": "PreLoad",
                     "assetHint": "TestFile"
                 })";
         }

@@ -11,7 +11,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 Test case ID: T92562986
 Test Case Title: Changing the assigned Script Canvas Asset on an entity properly updates
 level functionality
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92562986
 """
 
 

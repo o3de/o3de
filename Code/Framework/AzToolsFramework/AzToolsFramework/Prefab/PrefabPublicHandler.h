@@ -77,10 +77,11 @@ namespace AzToolsFramework
              * \param targetInstance The id of the target template.
              * \param undoBatch The undo batch to set as parent for this create link action.
              * \param commonRootEntityId The id of the entity that the source instance should be parented under.
+             * \param isUndoRedoSupportNeeded The flag indicating whether the link should be created with undo/redo support or not.
              */
             void CreateLink(
                 const EntityList& topLevelEntities, Instance& sourceInstance, TemplateId targetTemplateId,
-                UndoSystem::URSequencePoint* undoBatch, AZ::EntityId commonRootEntityId);
+                UndoSystem::URSequencePoint* undoBatch, AZ::EntityId commonRootEntityId, const bool isUndoRedoSupportNeeded = true);
 
             /**
              * Removes the link between template of the sourceInstance and the template corresponding to targetTemplateId.

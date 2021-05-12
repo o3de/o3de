@@ -19,14 +19,11 @@ set(FILES
     ConsoleBatchFile.cpp
     ConsoleHelpGen.cpp
     CryAsyncMemcpy.cpp
-    DebugCallStack.cpp
     GeneralMemoryHeap.cpp
     HandlerBase.cpp
-    IDebugCallStack.cpp
     AsyncPakManager.cpp
     Log.cpp
     SystemRender.cpp
-    NotificationNetwork.cpp
     PhysRenderer.cpp
     ResourceManager.cpp
     ServerHandler.cpp
@@ -36,7 +33,6 @@ set(FILES
     SystemCFG.cpp
     SystemEventDispatcher.cpp
     SystemInit.cpp
-    SystemScheduler.cpp
     SystemWin32.cpp
     Timer.cpp
     UnixConsole.cpp
@@ -52,16 +48,9 @@ set(FILES
     ServerHandler.h
     ServerThrottle.h
     SyncLock.h
-    SystemScheduler.h
     UnixConsole.h
     SystemInit.h
-    Serialization/MemoryReader.h
     XML/ReadWriteXMLSink.h
-    Serialization/ArchiveHost.h
-    Serialization/MemoryWriter.h
-    Serialization/JSONIArchive.h
-    Serialization/JSONOArchive.h
-    Serialization/BinArchive.h
     AZCrySystemInitLogSink.h
     AZCoreLogSink.h
     CmdLine.h
@@ -69,12 +58,8 @@ set(FILES
     ConsoleBatchFile.h
     ConsoleHelpGen.h
     CryWaterMark.h
-    DebugCallStack.h
     GeneralMemoryHeap.h
-    IDebugCallStack.h
-    IThreadConfigManager.h
     Log.h
-    NotificationNetwork.h
     resource.h
     SimpleStringPool.h
     CrySystem_precompiled.h
@@ -113,42 +98,18 @@ set(FILES
     XML/WriteXMLSource.cpp
     ZipFile.h
     ZipFileFormat_info.h
-    ProfileLogSystem.cpp
     Sampler.cpp
-    ProfileLogSystem.h
     Sampler.h
     LocalizedStringManager.cpp
     LocalizedStringManager.h
-    CryThreadUtil_win32_thread.h
-    ThreadInfo.cpp
-    ThreadInfo.h
-    ThreadTask.h
-    ThreadTask.cpp
-    ThreadConfigManager.h
-    ThreadConfigManager.cpp
-    SystemThreading.cpp
-    ExtensionSystem/CryFactoryRegistryImpl.cpp
-    ExtensionSystem/CryFactoryRegistryImpl.h
-    ExtensionSystem/TestCases/TestExtensions.cpp
-    ExtensionSystem/TestCases/TestExtensions.h
     ZLibCompressor.cpp
     ZLibCompressor.h
-    SoftCode/SoftCodeMgr.cpp
-    SoftCode/SoftCodeMgr.h
     Huffman.cpp
     Huffman.h
     RemoteConsole/RemoteConsole.cpp
     RemoteConsole/RemoteConsole.h
     RemoteConsole/RemoteConsole_impl.inl
     RemoteConsole/RemoteConsole_none.inl
-    ServiceNetwork.cpp
-    ServiceNetwork.h
-    RemoteCommand.cpp
-    RemoteCommand.h
-    RemoteCommandHelpers.cpp
-    RemoteCommandHelpers.h
-    RemoteCommandServer.cpp
-    RemoteCommandClient.cpp
     ZLibDecompressor.h
     ZLibDecompressor.cpp
     LZ4Decompressor.h
@@ -165,17 +126,6 @@ set(FILES
     ViewSystem/ViewSystem.h
     ZStdDecompressor.h
     ZStdDecompressor.cpp
-    Serialization/ArchiveHost.cpp
-    Serialization/BinArchive.cpp
-    Serialization/JSONIArchive.cpp
-    Serialization/JSONOArchive.cpp
-    Serialization/MemoryReader.cpp
-    Serialization/MemoryWriter.cpp
-    Serialization/Token.h
-    Serialization/XmlIArchive.cpp
-    Serialization/XmlIArchive.h
-    Serialization/XmlOArchive.cpp
-    Serialization/XmlOArchive.h
     StreamEngine/StreamAsyncFileRequest.cpp
     StreamEngine/StreamAsyncFileRequest_Jobs.cpp
     StreamEngine/StreamEngine.cpp
