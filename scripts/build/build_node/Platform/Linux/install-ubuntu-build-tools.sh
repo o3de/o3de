@@ -134,7 +134,7 @@ do
             INSTALLED_COUNT=$(apt list --installed 2>/dev/null | grep ^$PACKAGE/ | wc -l)
             if [ $INSTALLED_COUNT -eq 0 ]
             then
-                echo apt-get install $PACKAGE -y
+                echo Installing $PACKAGE
                 apt-get install $PACKAGE -y
             else
                 INSTALLED_VERSION=$(apt list --installed 2>/dev/null | grep ^$PACKAGE/ | awk '{print $2}')
@@ -145,7 +145,7 @@ do
             INSTALLED_COUNT=$(apt list --installed 2>/dev/null | grep ^$PACKAGE/ | wc -l)
             if [ $INSTALLED_COUNT -eq 0 ]
             then
-                echo Installing \'$PACKAGE\' \( $PACKAGE_VER \)
+                echo Installing $PACKAGE \( $PACKAGE_VER \)
                 apt-get install $PACKAGE=$PACKAGE_VER -y
             else
                 INSTALLED_VERSION=$(apt list --installed 2>/dev/null | grep ^$PACKAGE/ | awk '{print $2}')
