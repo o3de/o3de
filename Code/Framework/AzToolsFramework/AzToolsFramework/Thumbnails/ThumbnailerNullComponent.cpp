@@ -12,16 +12,16 @@
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include "ThumbnailerNullComponent.h"
+#include <AzToolsFramework/Thumbnails/ThumbnailerNullComponent.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 #include <AzToolsFramework/Thumbnails/MissingThumbnail.h>
 
-namespace LUAEditor
+namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
         ThumbnailerNullComponent::ThumbnailerNullComponent() :
-            m_nullThumbnail(new AzToolsFramework::Thumbnailer::MissingThumbnail())
+            m_nullThumbnail()
         {
         }
 
