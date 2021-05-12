@@ -120,7 +120,7 @@ namespace UnitTest
 
         //create an undo node to apply the patch and prep for undo
         PrefabUndoInstanceLink undoInstanceLinkNode("Undo Link Patch");
-        undoInstanceLinkNode.Capture(rootTemplateId, nestedTemplateId, aliases[0], patch, InvalidLinkId);
+        undoInstanceLinkNode.Capture(rootTemplateId, nestedTemplateId, aliases[0], AZStd::move(patch), InvalidLinkId);
         undoInstanceLinkNode.Redo();
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
@@ -196,7 +196,7 @@ namespace UnitTest
 
         //create an undo node to apply the patch and prep for undo
         PrefabUndoInstanceLink undoInstanceLinkNode("Undo Link Patch");
-        undoInstanceLinkNode.Capture(rootTemplateId, nestedTemplateId, aliases[0], linkPatch, InvalidLinkId);
+        undoInstanceLinkNode.Capture(rootTemplateId, nestedTemplateId, aliases[0], AZStd::move(linkPatch), InvalidLinkId);
         undoInstanceLinkNode.Redo();
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 

@@ -27,38 +27,3 @@ void CUsedResources::Add(const char* pResourceFileName)
         files.insert(pResourceFileName);
     }
 }
-
-void CUsedResources::Validate(IErrorReport* pReport)
-{
-    auto pPak = gEnv->pCryPak;
-
-    for (TResourceFiles::iterator it = files.begin(); it != files.end(); ++it)
-    {
-        const QString& filename = *it;
-
-        bool fileExists = pPak->IsFileExist(filename.toUtf8().data());
-
-        if (!fileExists)
-        {
-            for (int i = 0; !fileExists && i < IResourceCompilerHelper::GetNumEngineImageFormats(); ++i)
-            {
-                fileExists = gEnv->pCryPak->IsFileExist(PathUtil::ReplaceExtension(filename.toUtf8().data(), IResourceCompilerHelper::GetEngineImageFormat(i, true)).c_str());
-            }
-            for (int i = 0; !fileExists && i < IResourceCompilerHelper::GetNumSourceImageFormats(); ++i)
-            {
-                fileExists = gEnv->pCryPak->IsFileExist(PathUtil::ReplaceExtension(filename.toUtf8().data(), IResourceCompilerHelper::GetSourceImageFormat(i, true)).c_str());
-            }
-        }
-
-
-        if (!fileExists)
-        {
-            CErrorRecord err;
-
-            err.error = QObject::tr("Resource File %1 not found,").arg(filename);
-            err.severity = CErrorRecord::ESEVERITY_ERROR;
-            err.flags |= CErrorRecord::FLAG_NOFILE;
-            pReport->ReportError(err);
-        }
-    }
-}
