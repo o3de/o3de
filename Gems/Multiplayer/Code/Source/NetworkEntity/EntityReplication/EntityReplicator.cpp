@@ -16,11 +16,11 @@
 #include <Source/NetworkEntity/EntityReplication/PropertySubscriber.h>
 #include <Source/NetworkEntity/NetworkEntityAuthorityTracker.h>
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
-#include <Source/NetworkEntity/NetworkEntityRpcMessage.h>
-#include <Source/Components/NetBindComponent.h>
 #include <Source/Components/NetworkTransformComponent.h>
 #include <Source/AutoGen/Multiplayer.AutoPackets.h>
-#include <Include/IMultiplayer.h>
+#include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/NetworkEntityRpcMessage.h>
+#include <Multiplayer/NetBindComponent.h>
 
 #include <AzNetworking/PacketLayer/IPacket.h>
 #include <AzNetworking/Serialization/ISerializer.h>

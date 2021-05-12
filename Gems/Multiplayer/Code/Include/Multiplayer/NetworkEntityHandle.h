@@ -13,7 +13,7 @@
 #pragma once
 
 #include <AzCore/Component/Entity.h>
-#include <Include/MultiplayerTypes.h>
+#include <Multiplayer/MultiplayerTypes.h>
 
 namespace Multiplayer
 {
@@ -138,4 +138,4 @@ namespace Multiplayer
     };
 }
 
-#include <Include/NetworkEntityHandle.inl>
+#include <Multiplayer/NetworkEntityHandle.inl>

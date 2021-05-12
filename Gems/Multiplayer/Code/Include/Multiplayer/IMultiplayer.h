@@ -15,9 +15,9 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
-#include <Include/INetworkEntityManager.h>
-#include <Include/INetworkTime.h>
-#include <Include/MultiplayerStats.h>
+#include <Multiplayer/INetworkEntityManager.h>
+#include <Multiplayer/INetworkTime.h>
+#include <Multiplayer/MultiplayerStats.h>
 
 namespace AzNetworking
 {

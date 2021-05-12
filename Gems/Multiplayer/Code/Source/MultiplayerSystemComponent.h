@@ -19,7 +19,7 @@
 #include <AzCore/Threading/ThreadSafeDeque.h>
 #include <AzCore/std/string/string.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
-#include <Include/IMultiplayer.h>
+#include <Multiplayer/IMultiplayer.h>
 #include <Source/NetworkTime/NetworkTime.h>
 #include <Source/NetworkEntity/NetworkEntityManager.h>
 #include <Source/AutoGen/Multiplayer.AutoPacketDispatcher.h>

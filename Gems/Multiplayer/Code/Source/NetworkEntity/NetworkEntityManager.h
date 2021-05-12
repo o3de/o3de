@@ -17,11 +17,11 @@
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
 #include <Source/NetworkEntity/NetworkEntityAuthorityTracker.h>
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
-#include <Source/NetworkEntity/NetworkEntityRpcMessage.h>
-#include <Include/IEntityDomain.h>
-#include <Include/INetworkEntityManager.h>
 #include <Source/NetworkEntity/NetworkSpawnableLibrary.h>
-#include <Source/Components/MultiplayerComponentRegistry.h>
+#include <Multiplayer/IEntityDomain.h>
+#include <Multiplayer/INetworkEntityManager.h>
+#include <Multiplayer/MultiplayerComponentRegistry.h>
+#include <Multiplayer/NetworkEntityRpcMessage.h>
 
 namespace Multiplayer
 {

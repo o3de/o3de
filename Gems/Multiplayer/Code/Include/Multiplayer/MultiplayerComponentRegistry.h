@@ -14,7 +14,7 @@
 
 #include <AzCore/Name/Name.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <Source/Components/MultiplayerComponent.h>
+#include <Multiplayer/MultiplayerComponent.h>
 
 namespace Multiplayer
 {

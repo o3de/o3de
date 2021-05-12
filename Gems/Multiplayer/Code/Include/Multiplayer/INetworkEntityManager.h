@@ -12,8 +12,8 @@
 
 #pragma once
 
-#include <Include/MultiplayerTypes.h>
-#include <Include/NetworkEntityHandle.h>
+#include <Multiplayer/MultiplayerTypes.h>
+#include <Multiplayer/NetworkEntityHandle.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/EBus/Event.h>
 #include <AzCore/Asset/AssetCommon.h>

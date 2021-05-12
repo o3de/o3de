@@ -14,7 +14,7 @@
 
 #include <AzCore/Time/ITime.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
-#include <Include/MultiplayerTypes.h>
+#include <Multiplayer/MultiplayerTypes.h>
 
 namespace Multiplayer
 {

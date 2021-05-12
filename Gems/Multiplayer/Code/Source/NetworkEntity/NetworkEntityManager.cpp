@@ -11,7 +11,6 @@
  */
 
 #include <Source/NetworkEntity/NetworkEntityManager.h>
-
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
@@ -22,9 +21,9 @@
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
-#include <Include/IMultiplayer.h>
+#include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/NetBindComponent.h>
 #include <Pipeline/NetworkSpawnableHolderComponent.h>
-#include <Source/Components/NetBindComponent.h>
 
 namespace Multiplayer
 {

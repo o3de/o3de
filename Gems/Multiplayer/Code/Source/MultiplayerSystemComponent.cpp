@@ -11,13 +11,13 @@
  */
 
 #include <Source/MultiplayerSystemComponent.h>
-#include <Source/Components/MultiplayerComponent.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
 #include <Source/ConnectionData/ClientToServerConnectionData.h>
 #include <Source/ConnectionData/ServerToClientConnectionData.h>
 #include <Source/ReplicationWindows/NullReplicationWindow.h>
 #include <Source/ReplicationWindows/ServerToClientReplicationWindow.h>
 #include <Source/EntityDomains/FullOwnershipEntityDomain.h>
+#include <Multiplayer/MultiplayerComponent.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Interface/Interface.h>

@@ -10,8 +10,8 @@
 *
 */
 
-#include <Source/Components/MultiplayerComponent.h>
-#include <Source/Components/NetBindComponent.h>
+#include <Multiplayer/MultiplayerComponent.h>
+#include <Multiplayer/NetBindComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace Multiplayer
