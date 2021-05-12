@@ -22,7 +22,7 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
-    )
+)
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
