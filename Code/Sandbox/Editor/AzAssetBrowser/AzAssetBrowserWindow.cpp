@@ -102,7 +102,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         this, &AzAssetBrowserWindow::SelectionChangedSlot);
     connect(m_ui->m_assetBrowserTreeViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
 
-    connect(m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
+    connect(m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItemTableModel);
 
 
     connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::ClearStringFilter, m_ui->m_searchWidget, &SearchWidget::ClearStringFilter);
@@ -240,6 +240,43 @@ void AzAssetBrowserWindow::DoubleClickedItem([[maybe_unused]] const QModelIndex&
         }
     }
 
+}
+
+void AzAssetBrowserWindow::DoubleClickedItemTableModel([[maybe_unused]] const QModelIndex& element)
+{
+    using namespace AzToolsFramework;
+    using namespace AzToolsFramework::AssetBrowser;
+    // assumption: Double clicking an item selects it before telling us we double clicked it.
+    auto selectedAssets = m_ui->m_assetBrowserTableViewWidget->GetSelectedAssets();
+    for (const AssetBrowserEntry* entry : selectedAssets)
+    {
+        AZ::Data::AssetId assetIdToOpen;
+        AZStd::string fullFilePath;
+
+        if (const ProductAssetBrowserEntry* productEntry = azrtti_cast<const ProductAssetBrowserEntry*>(entry))
+        {
+            assetIdToOpen = productEntry->GetAssetId();
+            fullFilePath = entry->GetFullPath();
+        }
+        else if (const SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry))
+        {
+            // manufacture an empty AssetID with the source's UUID
+            assetIdToOpen = AZ::Data::AssetId(sourceEntry->GetSourceUuid(), 0);
+            fullFilePath = entry->GetFullPath();
+        }
+
+        bool handledBySomeone = false;
+        if (assetIdToOpen.IsValid())
+        {
+            AssetBrowserInteractionNotificationBus::Broadcast(
+                &AssetBrowserInteractionNotifications::OpenAssetInAssociatedEditor, assetIdToOpen, handledBySomeone);
+        }
+
+        if (!handledBySomeone && !fullFilePath.empty())
+        {
+            AzAssetBrowserRequestHandler::OpenWithOS(fullFilePath);
+        }
+    }
 }
 
 void AzAssetBrowserWindow::SwitchDisplayView(const int state)

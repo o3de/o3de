@@ -63,12 +63,9 @@ namespace AzToolsFramework
 
         private:
             QString m_name;
-            QPointer<AssetBrowserTableModel> m_filterModel = nullptr;
-            QPointer<AssetBrowserFilterModel> m_sourceModel = nullptr;
+            QPointer<AssetBrowserTableModel> m_tableModel = nullptr;
+            QPointer<AssetBrowserFilterModel> m_sourceFilterModel = nullptr;
             EntryDelegate* m_delegate = nullptr;
-
-            QTimer* m_scTimer = nullptr;
-            const int m_scUpdateInterval = 100;
 
         private Q_SLOTS:
             void OnContextMenu(const QPoint& point);

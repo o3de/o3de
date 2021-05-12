@@ -47,7 +47,7 @@ namespace AzToolsFramework
             setMouseTracking(true);
 
             connect(this, &QTableView::customContextMenuRequested, this, &AssetBrowserTableView::OnContextMenu);
-            connect(m_scTimer, &QTimer::timeout, this, &AssetBrowserTableView::OnUpdateSCThumbnailsList);
+            //connect(m_scTimer, &QTimer::timeout, this, &AssetBrowserTableView::OnUpdateSCThumbnailsList);
 
             AssetBrowserViewRequestBus::Handler::BusConnect();
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
@@ -59,9 +59,9 @@ namespace AzToolsFramework
         }
         void AssetBrowserTableView::setModel(QAbstractItemModel* model)
         {
-            m_filterModel = qobject_cast<AssetBrowserTableModel*>(model);
-            AZ_Assert(m_filterModel, "Expecting AssetBrowserTableModel");
-            m_sourceModel = qobject_cast<AssetBrowserFilterModel*>(m_filterModel->sourceModel());
+            m_tableModel = qobject_cast<AssetBrowserTableModel*>(model);
+            AZ_Assert(m_tableModel, "Expecting AssetBrowserTableModel");
+            m_sourceFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_tableModel->sourceModel());
             QTableView::setModel(model);
         }
         void AssetBrowserTableView::SetName(const QString& name)
@@ -76,14 +76,14 @@ namespace AzToolsFramework
         }
         AZStd::vector<AssetBrowserEntry*> AssetBrowserTableView::GetSelectedAssets() const
         {
-            QModelIndexList sourceIndexes{};
-            //for (const auto& index : selectedIndexes())
-            //{
-            //    sourceIndexes.push_back(m_sourceModel->mapToSource(index));
-            //}
+            QModelIndexList sourceIndexes;
+            for (const auto& index : selectedIndexes())
+            {
+                sourceIndexes.push_back(m_sourceFilterModel->mapToSource(m_tableModel->mapToSource(index)));
+            }
 
             AZStd::vector<AssetBrowserEntry*> entries;
-            //AssetBrowserModel::SourceIndexesToAssetDatabaseEntries(sourceIndexes, entries);
+            AssetBrowserModel::SourceIndexesToAssetDatabaseEntries(sourceIndexes, entries);
             return entries;
         }
         void AssetBrowserTableView::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
@@ -124,7 +124,7 @@ namespace AzToolsFramework
         {
             emit ClearStringFilter();
             emit ClearTypeFilter();
-            m_sourceModel->FilterUpdatedSlotImmediate();
+            m_sourceFilterModel->FilterUpdatedSlotImmediate();
         }
 
         void AssetBrowserTableView::Update()
