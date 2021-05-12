@@ -50,7 +50,6 @@ include_filter = [
 { target = "LmbrCentral.Editor.Tests", policy = "test_interleaved" },
 { target = "EditorLib.Tests", policy = "test_interleaved" },
 { target = "PhysX.Tests", policy = "test_interleaved" },
-{ target = "ImageProcessing.Tests", policy = "test_interleaved" },
 { target = "Atom_RPI.Tests", policy = "test_interleaved" },
 { target = "Atom_RHI.Tests", policy = "test_interleaved" },
 { target = "AzManipulatorFramework.Tests", policy = "test_interleaved" },

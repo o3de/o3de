@@ -112,7 +112,6 @@ ly_add_target(
             3rdParty::zlib
             3rdParty::AWSNativeSDK::STS
             Legacy::CryCommon
-            Legacy::CryCommon.EngineSettings.Static
             Legacy::EditorCommon
             AZ::AzCore
             AZ::AzToolsFramework

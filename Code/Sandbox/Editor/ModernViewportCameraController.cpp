@@ -19,6 +19,7 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
@@ -64,17 +65,20 @@ namespace SandboxEditor
         }
     }
 
-    ModernViewportCameraControllerInstance::ModernViewportCameraControllerInstance(const AzFramework::ViewportId viewportId, ModernViewportCameraController* controller)
+    ModernViewportCameraControllerInstance::ModernViewportCameraControllerInstance(
+        const AzFramework::ViewportId viewportId, ModernViewportCameraController* controller)
         : MultiViewportControllerInstanceInterface<ModernViewportCameraController>(viewportId, controller)
     {
         controller->SetupCameras(m_cameraSystem.m_cameras);
 
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
-            auto handleCameraChange = [this](const AZ::Matrix4x4& matrix) {
-                UpdateCameraFromTransform(
-                    m_targetCamera,
-                    AZ::Transform::CreateFromMatrix3x3AndTranslation(AZ::Matrix3x3::CreateFromMatrix4x4(matrix), matrix.GetTranslation()));
+            auto handleCameraChange = [this, viewportContext](const AZ::Matrix4x4&) {
+                if (!m_updatingTransform)
+                {
+                    UpdateCameraFromTransform(m_targetCamera, viewportContext->GetCameraTransform());
+                    m_camera = m_targetCamera;
+                }
             };
 
             m_cameraViewMatrixChangeHandler = AZ::RPI::ViewportContext::MatrixChangedEvent::Handler(handleCameraChange);
@@ -124,6 +128,8 @@ namespace SandboxEditor
     {
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
+            m_updatingTransform = true;
+
             if (m_cameraMode == CameraMode::Control)
             {
                 m_targetCamera = m_cameraSystem.StepCamera(m_targetCamera, event.m_deltaTime.count());
@@ -155,6 +161,8 @@ namespace SandboxEditor
 
                 viewportContext->SetCameraTransform(current);
             }
+
+            m_updatingTransform = false;
         }
     }
 

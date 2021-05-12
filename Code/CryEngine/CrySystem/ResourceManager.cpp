@@ -699,7 +699,7 @@ void CResourceManager::OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_P
         if (g_cvars.archiveVars.nLoadCache)
         {
             //Load the frontend common mode switch pak, this can considerably reduce the time spent switching especially from disc
-            if (!gEnv->bMultiplayer && LoadMenuCommonPak(FRONTEND_COMMON_PAK_FILENAME_SP) == false)
+            if (LoadMenuCommonPak(FRONTEND_COMMON_PAK_FILENAME_SP) == false)
             {
                 CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Could not load %s during init. This file can significantly reduce frontend loading times.\n", FRONTEND_COMMON_PAK_FILENAME_SP);
             }
@@ -710,14 +710,7 @@ void CResourceManager::OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_P
 
     case ESYSTEM_EVENT_LEVEL_LOAD_PREPARE:
     {
-        if (!gEnv->bMultiplayer)
-        {
-            UnloadMenuCommonPak(FRONTEND_COMMON_PAK_FILENAME_SP, FRONTEND_COMMON_LIST_FILENAME "_sp");
-        }
-        else
-        {
-            UnloadMenuCommonPak(FRONTEND_COMMON_PAK_FILENAME_MP, FRONTEND_COMMON_LIST_FILENAME "_mp");
-        }
+        UnloadMenuCommonPak(FRONTEND_COMMON_PAK_FILENAME_SP, FRONTEND_COMMON_LIST_FILENAME "_sp");
 
         m_bLevelTransitioning = !m_sLevelName.empty();
 

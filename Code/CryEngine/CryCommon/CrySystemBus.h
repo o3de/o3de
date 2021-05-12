@@ -49,12 +49,6 @@ public:
     //! ISystem has shut down.
     virtual void OnCrySystemPostShutdown() {}
 
-    //! Engine pre physics update.
-    virtual void OnCrySystemPrePhysicsUpdate() {}
-
-    //! Engine post physics update.
-    virtual void OnCrySystemPostPhysicsUpdate() {}
-
     //! Sent when a new level is being created.
     virtual void OnCryEditorBeginCreate() {}
 
