@@ -1023,10 +1023,13 @@ void MainWindow::InitActions()
     am->AddAction(ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL, tr("Play Controls"))
         .SetText(tr("Play Controls"));
     am->AddAction(ID_SWITCH_PHYSICS, tr("Simulate"))
+        .SetIcon(QIcon(":/stylesheet/img/UI20/toolbar/Simulate_Physics.svg"))
         .SetShortcut(tr("Ctrl+P"))
         .SetToolTip(tr("Simulate (Ctrl+P)"))
         .SetCheckable(true)
         .SetStatusTip(tr("Enable processing of Physics and AI."))
+        .SetApplyHoverEffect()
+        .SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnSwitchPhysicsUpdate);
     am->AddAction(ID_GAME_SYNCPLAYER, tr("Move Player and Camera Separately")).SetCheckable(true)
         .SetStatusTip(tr("Move Player and Camera Separately"))
