@@ -93,7 +93,6 @@
             "GraphCanvas": "#include",
             "GraphModel": "#include",
             "HttpRequestor": "#include",
-            "ImageProcessing": "#include",
             "ImGui": "#include",
             "InAppPurchases": "#include",
             "LandscapeCanvas": "#include",
