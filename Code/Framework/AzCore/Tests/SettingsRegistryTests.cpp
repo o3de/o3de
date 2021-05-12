@@ -1378,7 +1378,7 @@ namespace SettingsRegistryTests
     TEST_F(SettingsRegistryTest, MergeSettingsFile_PathAsSubStringThatsTooLong_ReturnsFalse)
     {
         constexpr AZStd::fixed_string<AZ::IO::MaxPathLength + 1> path(AZ::IO::MaxPathLength + 1, '1');
-        constexpr AZStd::string_view subPath(path);
+        const AZStd::string_view subPath(path);
 
         AZ_TEST_START_TRACE_SUPPRESSION;
         bool result = m_registry->MergeSettingsFile(subPath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, {}, nullptr);
