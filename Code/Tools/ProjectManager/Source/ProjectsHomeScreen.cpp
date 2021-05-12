@@ -44,7 +44,7 @@ namespace O3DE::ProjectManager
     }
     void ProjectsHomeScreen::HandleAddProjectButton()
     {
-        //Do nothing for now
+        // Do nothing for now
     }
     void ProjectsHomeScreen::HandleEditProjectButton()
     {

@@ -43,7 +43,7 @@ namespace O3DE::ProjectManager
             ProjectManagerScreen::GemCatalog
         };
         m_screensCtrl->BuildScreens(m_screensOrder);
-        m_screensCtrl->ForceChangeToScreen(ProjectManagerScreen::NewProjectSettings);
+        m_screensCtrl->ForceChangeToScreen(ProjectManagerScreen::NewProjectSettings, false);
         UpdateNextButtonText();
 
         m_screensCtrl->GetScreen(ProjectManagerScreen::NewProjectSettings);

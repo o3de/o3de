@@ -52,7 +52,7 @@ namespace O3DE::ProjectManager
             ProjectManagerScreen::EngineSettings
         };
         m_screensCtrl->BuildScreens(screenEnums);
-        m_screensCtrl->ForceChangeToScreen(ProjectManagerScreen::FirstTimeUse);
+        m_screensCtrl->ForceChangeToScreen(ProjectManagerScreen::FirstTimeUse, false);
     }
 
     ProjectManagerWindow::~ProjectManagerWindow()

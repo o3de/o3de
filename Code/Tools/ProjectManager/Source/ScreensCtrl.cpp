@@ -61,7 +61,7 @@ namespace O3DE::ProjectManager
     {
         if (m_screenStack->currentWidget())
         {
-            ScreenWidget* currentScreenWidget = reinterpret_cast<ScreenWidget*>(m_screenStack->currentWidget());
+            ScreenWidget* currentScreenWidget = GetCurrentScreen();
             if (currentScreenWidget->IsReadyForNextScreen())
             {
                 return ForceChangeToScreen(screen);
@@ -70,14 +70,18 @@ namespace O3DE::ProjectManager
         return false;
     }
 
-    bool ScreensCtrl::ForceChangeToScreen(ProjectManagerScreen screen)
+    bool ScreensCtrl::ForceChangeToScreen(ProjectManagerScreen screen, bool addVisit)
     {
         const auto iterator = m_screenMap.find(screen);
         if (iterator != m_screenMap.end())
         {
-            if (m_screenStack->currentWidget() != iterator.value())
+            ScreenWidget* currentScreen = GetCurrentScreen();
+            if (currentScreen != iterator.value())
             {
-                m_screenVisitOrder.push(screen);
+                if (addVisit)
+                {
+                    m_screenVisitOrder.push(currentScreen->GetScreenEnum());
+                }
                 m_screenStack->setCurrentWidget(iterator.value());
                 return true;
             }
@@ -92,7 +96,7 @@ namespace O3DE::ProjectManager
         if (m_screenVisitOrder.top() != ProjectManagerScreen::Invalid)
         {
             // We do not check with screen if we can go back, we should always be able to go back
-            return ForceChangeToScreen(m_screenVisitOrder.pop());
+            return ForceChangeToScreen(m_screenVisitOrder.pop(), false);
         }
         return false;
     }
