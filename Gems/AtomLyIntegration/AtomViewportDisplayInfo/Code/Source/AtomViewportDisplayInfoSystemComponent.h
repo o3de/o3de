@@ -19,8 +19,7 @@
 #include <AzFramework/Font/FontInterface.h>
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
-
-struct ICVar;
+#include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
 
 namespace AZ
 {
@@ -31,7 +30,7 @@ namespace AZ
         class AtomViewportDisplayInfoSystemComponent
             : public AZ::Component
             , public AZ::RPI::ViewportContextNotificationBus::Handler
-            , public CrySystemEventBus::Handler
+            , public AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Handler
         {
         public:
             AZ_COMPONENT(AtomViewportDisplayInfoSystemComponent, "{AC32F173-E7E2-4943-8E6C-7C3091978221}");
@@ -51,9 +50,9 @@ namespace AZ
             // AZ::RPI::ViewportContextNotificationBus::Handler overrides...
             void OnRenderTick() override;
 
-            // CrySystemEventBus::Handler overrides...
-            void OnCrySystemInitialized(ISystem& system, const SSystemInitParams& initParams) override;
-            void OnCrySystemShutdown(ISystem& system) override;
+            // AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Handler overrides...
+            AtomBridge::ViewportInfoDisplayState GetDisplayState() const override;
+            void SetDisplayState(AtomBridge::ViewportInfoDisplayState state) override;
 
         private:
             AZ::RPI::ViewportContextPtr GetViewportContext() const;
@@ -63,6 +62,7 @@ namespace AZ
 
             void DrawRendererInfo();
             void DrawCameraInfo();
+            void DrawPassInfo();
             void DrawMemoryInfo();
             void DrawFramerate();
 
@@ -73,7 +73,7 @@ namespace AZ
             AZStd::deque<AZ::ScriptTimePoint> m_fpsHistory;
             AZStd::optional<AZStd::chrono::system_clock::time_point> m_lastMemoryUpdate;
             AZ::TickRequests* m_tickRequests = nullptr;
-            ICVar* m_displayInfoCVar = nullptr;
+            bool m_updateRootPassQuery = true;
         };
     } // namespace Render
 } // namespace AZ

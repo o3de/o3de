@@ -21,21 +21,30 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RHI/Factory.h>
 
 #include <CrySystem/MemoryManager.h>
 #include <CryCommon/ISystem.h>
 #include <CryCommon/IConsole.h>
 
-AZ_CVAR(float, r_fpsInterval, 1.0f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
-    "The time period over which to calculate the framerate for r_displayInfo");
-
 namespace AZ::Render
 {
-    static constexpr int DisplayInfoLevelNone = 0;
-    static constexpr int DisplayInfoLevelNormal = 1;
-    static constexpr int DisplayInfoLevelFull = 2;
-    static constexpr int DisplayInfoLevelCompact = 3;
+    AZ_CVAR(int, r_displayInfo, 1, [](const int& newDisplayInfoVal)->void
+        {
+            // Forward this event to the system component so it can update accordingly.
+            // This callback only gets triggered by console commands, so this will not recurse.
+            AtomBridge::AtomViewportInfoDisplayRequestBus::Broadcast(
+                &AtomBridge::AtomViewportInfoDisplayRequestBus::Events::SetDisplayState,
+                static_cast<AtomBridge::ViewportInfoDisplayState>(newDisplayInfoVal)
+            );
+        }, AZ::ConsoleFunctorFlags::DontReplicate,
+        "Toggles debugging information display.\n"
+        "Usage: r_displayInfo [0=off/1=show/2=enhanced/3=compact]"
+    );
+    AZ_CVAR(float, r_fpsCalcInterval, 1.0f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "The time period over which to calculate the framerate for r_displayInfo."
+    );
 
     void AtomViewportDisplayInfoSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -47,7 +56,7 @@ namespace AZ::Render
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<AtomViewportDisplayInfoSystemComponent>("Viewport Display Info", "Manages debug viewport information through r_DisplayInfo")
+                ec->Class<AtomViewportDisplayInfoSystemComponent>("Viewport Display Info", "Manages debug viewport information through r_displayInfo")
                     ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
@@ -83,15 +92,15 @@ namespace AZ::Render
             m_rendererDescription = AZStd::string::format("Atom using %s RHI", apiName.GetCStr());
         }
 
-        CrySystemEventBus::Handler::BusConnect();
         AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(
             AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContextName());
+        AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Handler::BusConnect();
     }
 
     void AtomViewportDisplayInfoSystemComponent::Deactivate()
     {
+        AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Handler::BusDisconnect();
         AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
-        CrySystemEventBus::Handler::BusDisconnect();
     }
 
     AZ::RPI::ViewportContextPtr AtomViewportDisplayInfoSystemComponent::GetViewportContext() const
@@ -111,8 +120,13 @@ namespace AZ::Render
 
     void AtomViewportDisplayInfoSystemComponent::OnRenderTick()
     {
+        auto fontQueryInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get();
+        if (!fontQueryInterface)
+        {
+            return;
+        }
         AzFramework::FontDrawInterface* fontDrawInterface =
-            AZ::Interface<AzFramework::FontQueryInterface>::Get()->GetDefaultFontDrawInterface();
+            fontQueryInterface->GetDefaultFontDrawInterface();
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
 
         if (!fontDrawInterface || !viewportContext || !viewportContext->GetRenderScene())
@@ -120,18 +134,23 @@ namespace AZ::Render
             return;
         }
 
-        m_fpsInterval = AZStd::chrono::seconds(r_fpsInterval);
+        m_fpsInterval = AZStd::chrono::seconds(r_fpsCalcInterval);
 
         UpdateFramerate();
 
-        if (!m_displayInfoCVar)
+        const AtomBridge::ViewportInfoDisplayState displayLevel = GetDisplayState();
+        if (displayLevel == AtomBridge::ViewportInfoDisplayState::NoInfo)
         {
             return;
         }
-        int displayLevel = m_displayInfoCVar->GetIVal();
-        if (displayLevel == DisplayInfoLevelNone)
+
+        if (m_updateRootPassQuery)
         {
-            return;
+            if (auto rootPass = AZ::RPI::PassSystemInterface::Get()->GetRootPass())
+            {
+                rootPass->SetPipelineStatisticsQueryEnabled(displayLevel == AtomBridge::ViewportInfoDisplayState::FullInfo);
+                m_updateRootPassQuery = false;
+            }
         }
 
         m_drawParams.m_drawViewportId = viewportContext->GetId();
@@ -152,22 +171,30 @@ namespace AZ::Render
         m_lineSpacing = lineHeight * m_drawParams.m_lineSpacing;
 
         DrawRendererInfo();
-        if (displayLevel != DisplayInfoLevelCompact)
+        if (displayLevel == AtomBridge::ViewportInfoDisplayState::FullInfo)
         {
             DrawCameraInfo();
+            DrawPassInfo();
+        }
+        if (displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo)
+        {
             DrawMemoryInfo();
         }
         DrawFramerate();
     }
 
-    void AtomViewportDisplayInfoSystemComponent::OnCrySystemInitialized(ISystem& system, [[maybe_unused]]const SSystemInitParams& initParams)
+    AtomBridge::ViewportInfoDisplayState AtomViewportDisplayInfoSystemComponent::GetDisplayState() const
     {
-        m_displayInfoCVar = system.GetGlobalEnvironment()->pConsole->GetCVar("r_DisplayInfo");
+        return static_cast<AtomBridge::ViewportInfoDisplayState>(r_displayInfo.operator int());
     }
 
-    void AtomViewportDisplayInfoSystemComponent::OnCrySystemShutdown([[maybe_unused]]ISystem& system)
+    void AtomViewportDisplayInfoSystemComponent::SetDisplayState(AtomBridge::ViewportInfoDisplayState state)
     {
-        m_displayInfoCVar = nullptr;
+        r_displayInfo = static_cast<int>(state);
+        AtomBridge::AtomViewportInfoDisplayNotificationBus::Broadcast(
+            &AtomBridge::AtomViewportInfoDisplayNotificationBus::Events::OnViewportInfoDisplayStateChanged,
+            state);
+        m_updateRootPassQuery = true;
     }
 
     void AtomViewportDisplayInfoSystemComponent::DrawRendererInfo()
@@ -195,6 +222,31 @@ namespace AZ::Render
             translation.GetX(), translation.GetY(), translation.GetZ(),
             rotation.GetX(), rotation.GetY(), rotation.GetZ(),
             cameraState.m_nearClip, cameraState.m_farClip
+        ));
+    }
+
+    void AtomViewportDisplayInfoSystemComponent::DrawPassInfo()
+    {
+        auto rootPass = AZ::RPI::PassSystemInterface::Get()->GetRootPass();
+        const RPI::PipelineStatisticsResult stats = rootPass->GetLatestPipelineStatisticsResult();
+        AZStd::function<int(const AZ::RPI::Ptr<AZ::RPI::Pass>)> containingPassCount = [&containingPassCount](const AZ::RPI::Ptr<AZ::RPI::Pass> pass)
+        {
+            int count = 1;
+            if (auto passAsParent = pass->AsParent())
+            {
+                for (const auto child : passAsParent->GetChildren())
+                {
+                    count += containingPassCount(child);
+                }
+            }
+            return count;
+        };
+        const int numPasses = containingPassCount(rootPass);
+        DrawLine(AZStd::string::format(
+            "Total Passes: %d Vertex Count: %d Primitive Count: %d",
+            numPasses,
+            stats.m_vertexCount,
+            stats.m_primitiveCount
         ));
     }
 
@@ -236,11 +288,16 @@ namespace AZ::Render
 
         AZ::ScriptTimePoint currentTime = m_tickRequests->GetTimeAtCurrentTick();
         // Only keep as much sampling data is is required by our FPS history.
-        while (!m_fpsHistory.empty() && (currentTime.Get() - m_fpsHistory.front().Get() > m_fpsInterval))
+        while (!m_fpsHistory.empty() && (currentTime.Get() - m_fpsHistory.front().Get()) > m_fpsInterval)
         {
             m_fpsHistory.pop_front();
         }
-        m_fpsHistory.push_back(currentTime);
+
+        // Discard entries with a zero time-delta (can happen when we don't have window focus).
+        if (m_fpsHistory.empty() || (currentTime.Get() - m_fpsHistory.back().Get()) != AZStd::chrono::seconds(0))
+        {
+            m_fpsHistory.push_back(currentTime);
+        }
     }
 
     void AtomViewportDisplayInfoSystemComponent::DrawFramerate()
@@ -254,10 +311,6 @@ namespace AZ::Render
             if (lastTime.has_value())
             {
                 AZStd::chrono::duration<double> deltaTime = time.Get() - lastTime.value().Get();
-                if (deltaTime.count() == 0.0)
-                {
-                    continue;
-                }
                 double fps = AZStd::chrono::seconds(1) / deltaTime;
                 if (!minFPS.has_value())
                 {
