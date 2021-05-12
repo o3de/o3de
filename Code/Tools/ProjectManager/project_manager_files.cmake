@@ -26,9 +26,10 @@ set(FILES
     Source/ProjectManagerWindow.ui
     Source/NewProjectSettingsScreen.h
     Source/NewProjectSettingsScreen.cpp
-    Source/NewProjectSettingsScreen.ui
     Source/ProjectSettingsCtrl.h
     Source/ProjectSettingsCtrl.cpp
+    Source/ProjectSettingsModel.h
+    Source/ProjectSettingsModel.cpp
     Source/ProjectsHomeScreen.h
     Source/ProjectsHomeScreen.cpp
     Source/ProjectsHomeScreen.ui

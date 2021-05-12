@@ -45,6 +45,8 @@ namespace O3DE::ProjectManager
         m_screensCtrl->BuildScreens(m_screensOrder);
         m_screensCtrl->ForceChangeToScreen(ProjectManagerScreen::NewProjectSettings);
         UpdateNextButtonText();
+
+        m_screensCtrl->GetScreen(ProjectManagerScreen::NewProjectSettings);
     }
 
     ProjectManagerScreen ProjectSettingsCtrl::GetScreenEnum()

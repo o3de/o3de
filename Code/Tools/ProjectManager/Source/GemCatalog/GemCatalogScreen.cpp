@@ -11,7 +11,6 @@
  */
 
 #include <GemCatalog/GemCatalogScreen.h>
-#include <QDialogButtonBox>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>

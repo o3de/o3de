@@ -9,22 +9,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  */
-#pragma once
 
-#if !defined(Q_MOC_RUN)
-#include <ScreenWidget.h>
-#endif
+#include "ProjectSettingsModel.h"
 
 namespace O3DE::ProjectManager
 {
-    class NewProjectSettingsScreen
-        : public ScreenWidget
+    ProjectSettingsModel::ProjectSettingsModel(
+        const QString& projectName, const QString& projectLocation, const QString& imageLocation, const QString& backgroundImageLocation,
+        bool isNew)
+        : m_projectName(projectName)
+        , m_projectLocation(projectLocation)
+        , m_imageLocation(imageLocation)
+        , m_backgroundImageLocation(backgroundImageLocation)
+        , m_isNew(isNew)
     {
-    public:
-        explicit NewProjectSettingsScreen(QWidget* parent = nullptr);
-        ~NewProjectSettingsScreen() = default;
-        ProjectManagerScreen GetScreenEnum() override;
-        QString GetNextButtonText() override;
-    };
-
+    }
 } // namespace O3DE::ProjectManager
