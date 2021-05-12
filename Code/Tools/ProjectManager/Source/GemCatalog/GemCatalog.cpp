@@ -15,9 +15,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
-#include <QCheckBox>
 #include <QTimer>
-#include <QLineEdit>
 
 namespace O3DE::ProjectManager
 {
