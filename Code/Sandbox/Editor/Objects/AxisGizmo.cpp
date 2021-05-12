@@ -18,7 +18,6 @@
 // Editor
 #include "Viewport.h"
 #include "GizmoManager.h"
-#include "Grid.h"
 #include "ViewManager.h"
 #include "Settings.h"
 #include "RenderHelpers/AxisHelper.h"
@@ -244,7 +243,8 @@ Matrix34 CAxisGizmo::GetTransformation(RefCoordSys coordSys, IDisplayViewport* v
             break;
         case COORDS_USERDEFINED:
         {
-            Matrix34 userTM = GetIEditor()->GetViewManager()->GetGrid()->GetMatrix();
+            Matrix34 userTM;
+            userTM.SetIdentity();
             userTM.SetTranslation(m_object->GetWorldTM().GetTranslation());
             return userTM;
         }

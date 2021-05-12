@@ -348,34 +348,6 @@ bool CAnimScreenFaderNode::GetParamInfoFromType(const CAnimParamType& paramId, S
 //-----------------------------------------------------------------------------
 void CAnimScreenFaderNode::Render()
 {
-    if (!m_bActive)
-    {
-        return;
-    }
-
-    if (gEnv->pRenderer)
-    {
-        size_t const paramCount = m_tracks.size();
-        for (size_t paramIndex = 0; paramIndex < paramCount; ++paramIndex)
-        {
-            CScreenFaderTrack* pTrack = static_cast<CScreenFaderTrack*>(GetTrackForParameter(AnimParamType::ScreenFader, paramIndex));
-
-            if (!pTrack)
-            {
-                continue;
-            }
-
-            int textureId = -1;
-            if (pTrack->IsTextureVisible())
-            {
-                textureId = (pTrack->GetActiveTexture() != 0) ? pTrack->GetActiveTexture()->GetTextureID() : -1;
-            }
-
-            gEnv->pRenderer->SetState(GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA | GS_NODEPTHTEST);
-            gEnv->pRenderer->Draw2dImage(0, 0, m_screenWidth, m_screenHeight, textureId, 0.0f, 1.0f, 1.0f, 0.0f, 0.f,
-                pTrack->GetDrawColor().x, pTrack->GetDrawColor().y, pTrack->GetDrawColor().z, pTrack->GetDrawColor().w, 0.f);
-        }
-    }
 }
 
 bool CAnimScreenFaderNode::IsAnyTextureVisible() const

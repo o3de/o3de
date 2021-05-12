@@ -121,13 +121,11 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 #include <IRenderer.h>
 #include <IMovieSystem.h>
-#include <ServiceNetwork.h>
 #include <ILog.h>
 #include <IAudioSystem.h>
 #include <IProcess.h>
 #include <INotificationNetwork.h>
 #include <ISoftCodeMgr.h>
-#include "VisRegTest.h"
 #include <LyShine/ILyShine.h>
 
 #include <LoadScreenBus.h>
@@ -135,8 +133,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include <AzFramework/Archive/Archive.h>
 #include "XConsole.h"
 #include "Log.h"
-#include "CrySizerStats.h"
-#include "CrySizerImpl.h"
 #include "NotificationNetwork.h"
 #include "ProfileLog.h"
 
@@ -148,12 +144,10 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 #include "LocalizedStringManager.h"
 #include "XML/XmlUtils.h"
-#include "Serialization/ArchiveHost.h"
 #include "SystemEventDispatcher.h"
 #include "ServerThrottle.h"
 #include "ResourceManager.h"
 #include "HMDBus.h"
-#include "OverloadSceneManager/OverloadSceneManager.h"
 #include <IThreadManager.h>
 
 #include "IZLibCompressor.h"
@@ -318,11 +312,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
         m_pSystemEventDispatcher->RegisterListener(this);
     }
 
-#ifdef WIN32
-    m_hInst = NULL;
-    m_hWnd = NULL;
-#endif
-
     //////////////////////////////////////////////////////////////////////////
     // Clear environment.
     //////////////////////////////////////////////////////////////////////////
@@ -357,7 +346,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
 
     m_pIFont = NULL;
     m_pIFontUi = NULL;
-    m_pVisRegTest = NULL;
     m_rWidth = NULL;
     m_rHeight = NULL;
     m_rWidthAndHeightAsFractionOfScreenSize = NULL;
@@ -368,7 +356,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_cvSSInfo = NULL;
     m_rStencilBits = NULL;
     m_rFullscreen = NULL;
-    m_rDriver = NULL;
     m_sysNoUpdate = NULL;
     m_pMemoryManager = NULL;
     m_pProcess = NULL;
@@ -413,7 +400,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_pCpu = NULL;
 
     m_bInitializedSuccessfully = false;
-    m_bShaderCacheGenMode = false;
     m_bRelaunch = false;
     m_iLoadingMode = 0;
     m_bTestMode = false;
@@ -430,9 +416,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_expectingMapCommand = false;
 #endif
 
-    // no mem stats at the moment
-    m_pMemStats = NULL;
-    m_pSizer = NULL;
     m_pCVarQuit = NULL;
 
     m_bForceNonDevMode = false;
@@ -460,16 +443,12 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
 
 
     m_pXMLUtils = new CXmlUtils(this);
-    m_pArchiveHost = Serialization::CreateArchiveHost();
     m_pMemoryManager = CryGetIMemoryManager();
     m_pThreadTaskManager = new CThreadTaskManager;
     m_pResourceManager = new CResourceManager;
     m_pTextModeConsole = NULL;
 
     InitThreadSystem();
-
-    m_pMiniGUI = NULL;
-    m_pPerfHUD = NULL;
 
     g_pPakHeap = new CMTSafeHeap;
 
@@ -516,9 +495,7 @@ CSystem::~CSystem()
 
     CRY_ASSERT(m_windowMessageHandlers.empty() && "There exists a dangling window message handler somewhere");
 
-    SAFE_DELETE(m_pVisRegTest);
     SAFE_DELETE(m_pXMLUtils);
-    SAFE_DELETE(m_pArchiveHost);
     SAFE_DELETE(m_pThreadTaskManager);
     SAFE_DELETE(m_pResourceManager);
     SAFE_DELETE(m_pSystemEventDispatcher);
@@ -690,7 +667,6 @@ void CSystem::ShutDown()
     SAFE_DELETE(m_env.pResourceCompilerHelper);
 
     SAFE_RELEASE(m_env.pMovieSystem);
-    SAFE_DELETE(m_env.pServiceNetwork);
     SAFE_RELEASE(m_env.pLyShine);
     SAFE_RELEASE(m_env.pCryFont);
     if (m_env.pConsole)
@@ -703,13 +679,6 @@ void CSystem::ShutDown()
     SAFE_RELEASE(m_pIZStdDecompressor);
     SAFE_RELEASE(m_pViewSystem);
     SAFE_RELEASE(m_pLevelSystem);
-
-    //Can't kill renderer before we delete CryFont, 3DEngine, etc
-    if (GetIRenderer())
-    {
-        GetIRenderer()->ShutDown();
-        SAFE_RELEASE(m_env.pRenderer);
-    }
 
     if (m_env.pLog)
     {
@@ -731,7 +700,6 @@ void CSystem::ShutDown()
     SAFE_RELEASE(m_cvSSInfo);
     SAFE_RELEASE(m_rStencilBits);
     SAFE_RELEASE(m_rFullscreen);
-    SAFE_RELEASE(m_rDriver);
 
     SAFE_RELEASE(m_sysWarnings);
     SAFE_RELEASE(m_sysKeyboard);
@@ -751,12 +719,8 @@ void CSystem::ShutDown()
     SAFE_RELEASE(m_pNotificationNetwork);
 
     SAFE_DELETE(m_env.pSoftCodeMgr);
-    SAFE_DELETE(m_pMemStats);
-    SAFE_DELETE(m_pSizer);
     SAFE_DELETE(m_pDefaultValidator);
     m_pValidator = nullptr;
-
-    SAFE_DELETE(m_env.pOverloadSceneManager);
 
     SAFE_DELETE(m_pLocalizationManager);
 
@@ -814,11 +778,6 @@ void CSystem::Quit()
     if (m_pUserCallback)
     {
         m_pUserCallback->OnQuit();
-    }
-
-    if (GetIRenderer())
-    {
-        GetIRenderer()->RestoreGamma();
     }
 
     gEnv->pLog->FlushAndClose();
@@ -1229,8 +1188,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     }
 #endif //EXCLUDE_UPDATE_ON_CONSOLE
 
-    gEnv->pOverloadSceneManager->Update();
-
 #ifdef WIN32
     // enable/disable SSE fp exceptions (#nan and /0)
     // need to do it each frame since sometimes they are being reset
@@ -1242,12 +1199,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
 
     m_nUpdateCounter++;
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
-    if (!m_sDelayedScreeenshot.empty())
-    {
-        gEnv->pRenderer->ScreenShot(m_sDelayedScreeenshot.c_str());
-        m_sDelayedScreeenshot.clear();
-    }
-
     // Check if game needs to be sleeping when not active.
     SleepIfInactive();
 
@@ -1278,27 +1229,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
 #ifdef USE_REMOTE_CONSOLE
     GetIRemoteConsole()->Update();
 #endif
-
-    if (!gEnv->IsEditor() && gEnv->pRenderer)
-    {
-        // If the dimensions of the render target change,
-        // or are different from the camera defaults,
-        // we need to update the camera frustum.
-        CCamera& viewCamera = GetViewCamera();
-        const int renderTargetWidth = m_rWidth->GetIVal();
-        const int renderTargetHeight = m_rHeight->GetIVal();
-
-        if (renderTargetWidth != viewCamera.GetViewSurfaceX() ||
-            renderTargetHeight != viewCamera.GetViewSurfaceZ())
-        {
-            viewCamera.SetFrustum(renderTargetWidth,
-                renderTargetHeight,
-                viewCamera.GetFov(),
-                viewCamera.GetNearPlane(),
-                viewCamera.GetFarPlane(),
-                gEnv->pRenderer->GetPixelAspectRatio());
-        }
-    }
     if (nPauseMode != 0)
     {
         m_bPaused = true;
@@ -1344,53 +1274,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     {
         FRAME_PROFILER("StreamEngine::Update()", this, PROFILE_SYSTEM);
         m_pStreamEngine->Update();
-    }
-
-    if (g_cvars.az_streaming_stats)
-    {
-        SDrawTextInfo ti;
-        ti.flags = eDrawText_FixedSize | eDrawText_2D | eDrawText_Monospace;
-        ti.xscale = ti.yscale = 1.2f;
-
-        const int viewportHeight = GetViewCamera().GetViewSurfaceZ();
-
-#if defined(AZ_RESTRICTED_PLATFORM)
-    #define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_8
-#include AZ_RESTRICTED_FILE(System_cpp)
-#else
-    float y = static_cast<float>(viewportHeight) - 85.0f;
-#endif
-
-        AZStd::vector<AZ::IO::Statistic> stats;
-        AZ::Interface<AZ::IO::IStreamer>::Get()->CollectStatistics(stats);
-
-        for (AZ::IO::Statistic& stat : stats)
-        {
-            switch (stat.GetType())
-            {
-            case AZ::IO::Statistic::Type::FloatingPoint:
-                gEnv->pRenderer->DrawTextQueued(Vec3(10, y, 1.0f), ti,
-                    AZStd::string::format("%s/%s: %.3f", stat.GetOwner().data(), stat.GetName().data(), stat.GetFloatValue()).c_str());
-                break;
-            case AZ::IO::Statistic::Type::Integer:
-                gEnv->pRenderer->DrawTextQueued(Vec3(10, y, 1.0f), ti,
-                    AZStd::string::format("%s/%s: %lli", stat.GetOwner().data(), stat.GetName().data(), stat.GetIntegerValue()).c_str());
-                break;
-            case AZ::IO::Statistic::Type::Percentage:
-                gEnv->pRenderer->DrawTextQueued(Vec3(10, y, 1.0f), ti,
-                    AZStd::string::format("%s/%s: %.2f (percent)", stat.GetOwner().data(), stat.GetName().data(), stat.GetPercentage()).c_str());
-                break;
-            default:
-                gEnv->pRenderer->DrawTextQueued(Vec3(10, y, 1.0f), ti, AZStd::string::format("Unsupported stat type: %i", static_cast<int>(stat.GetType())).c_str());
-                break;
-            }
-            y -= 12.0f;
-            if (y < 0.0f)
-            {
-                //Exit the loop because there's no purpose on rendering text outside of the visible area.
-                break;
-            }
-        }
     }
 
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
@@ -1476,12 +1359,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
         m_pServerThrottle->Update();
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    if (m_env.pRenderer && m_env.pRenderer->GetIStereoRenderer()->IsRenderingToHMD())
-    {
-        EBUS_EVENT(AZ::VR::HMDDeviceRequestBus, UpdateInternalState);
-    }
-
     //////////////////////////////////////////////////////////////////////
     //update console system
     if (m_env.pConsole)
@@ -1527,6 +1404,7 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     //////////////////////////////////////////////////////////////////////////
     // Update Threads Task Manager.
     //////////////////////////////////////////////////////////////////////////
+    if (m_pThreadTaskManager)
     {
         FRAME_PROFILER("SysUpdate:ThreadTaskManager", this, PROFILE_SYSTEM);
         m_pThreadTaskManager->OnUpdate();
@@ -2001,12 +1879,6 @@ void CSystem::Relaunch(bool bRelaunch)
 }
 
 //////////////////////////////////////////////////////////////////////////
-ICrySizer* CSystem::CreateSizer()
-{
-    return new CrySizerImpl;
-}
-
-//////////////////////////////////////////////////////////////////////////
 uint32 CSystem::GetUsedMemory()
 {
     return CryMemoryGetAllocatedSize();
@@ -2111,11 +1983,6 @@ void CSystem::ExecuteCommandLine(bool deferred)
     }
 
     //gEnv->pConsole->ExecuteString("sys_RestoreSpec test*"); // to get useful debugging information about current spec settings to the log file
-}
-
-void CSystem::DumpMemoryCoverage()
-{
-    m_MemoryFragmentationProfiler.DumpMemoryCoverage();
 }
 
 ITextModeConsole* CSystem::GetITextModeConsole()

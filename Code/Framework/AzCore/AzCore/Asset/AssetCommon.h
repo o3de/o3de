@@ -18,6 +18,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Math/Uuid.h>
+#include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/std/containers/bitset.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
@@ -216,16 +217,14 @@ namespace AZ
         /**
          * Setting for each reference (Asset<T>) to control loading of referenced assets during serialization.
          */
-        enum class AssetLoadBehavior : u8
-        {
-            PreLoad     = 0,        ///< Serializer will "Pre load" dependencies, asset containers may load in parallel but will not signal AssetReady
-            QueueLoad   = 1,        ///< Serializer will queue an asynchronous load of the referenced asset and return the object to the user. User code should use the \ref AZ::Data::AssetBus to monitor for when it's ready.
-            NoLoad      = 2,        ///< Serializer will load reference information, but asset loading will be left to the user. User code should call Asset<T>::QueueLoad and use the \ref AZ::Data::AssetBus to monitor for when it's ready.
-                                    ///< AssetContainers will skip NoLoad dependencies
-            
+        AZ_ENUM_WITH_UNDERLYING_TYPE(AssetLoadBehavior, u8,
+            (PreLoad, 0),          ///< Serializer will "Pre load" dependencies, asset containers may load in parallel but will not signal AssetReady
+            (QueueLoad, 1),        ///< Serializer will queue an asynchronous load of the referenced asset and return the object to the user. User code should use the \ref AZ::Data::AssetBus to monitor for when it's ready.
+            (NoLoad, 2),           ///< Serializer will load reference information, but asset loading will be left to the user. User code should call Asset<T>::QueueLoad and use the \ref AZ::Data::AssetBus to monitor for when it's ready.
+                                   ///< AssetContainers will skip NoLoad dependencies
             Count,
-            Default = QueueLoad,
-        };
+            (Default, QueueLoad)
+        );
 
         struct AssetFilterInfo
         {
@@ -1222,6 +1221,7 @@ namespace AZ
         } // namespace ProductDependencyInfo
     }  // namespace Data
 
+    AZ_TYPE_INFO_SPECIALIZE(Data::AssetLoadBehavior, "{DAF9ECED-FEF3-4D7A-A220-8CFD6A5E6DA1}");
     AZ_TYPE_INFO_TEMPLATE_WITH_NAME(AZ::Data::Asset, "Asset", "{C891BF19-B60C-45E2-BFD0-027D15DDC939}", AZ_TYPE_INFO_CLASS);
 
 }   // namespace AZ

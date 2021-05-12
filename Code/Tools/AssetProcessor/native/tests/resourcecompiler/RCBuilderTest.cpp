@@ -43,19 +43,6 @@ TEST_F(RCBuilderTest, Shutdown_NormalShutdown_Requested)
 }
 
 
-TEST_F(RCBuilderTest, Initialize_StandardInitialization_Fail)
-{
-    MockRCCompiler*                     mockRC = new MockRCCompiler();
-    TestInternalRecognizerBasedBuilder  test(mockRC);
-
-    MockRecognizerConfiguration     configuration;
-
-    mockRC->SetResultInitialize(false);
-    bool initialization_result = test.Initialize(configuration);
-    ASSERT_FALSE(initialization_result);
-}
-
-
 TEST_F(RCBuilderTest, Initialize_StandardInitializationWithDuplicateAndInvalidRecognizers_Valid)
 {
     MockRCCompiler*                     mockRC = new MockRCCompiler();

@@ -109,7 +109,7 @@ struct NavigationBlocker
         , costMultMod(0)
         , radialDecay(false) {AZ_Assert(false, "Should never get called"); }
 
-    Sphere sphere;
+    ::Sphere sphere;
     bool radialDecay;
     bool directional;
 

@@ -72,16 +72,6 @@ public:
         return "";
     }
 
-    Serialization::TypeID ResourceContextType(const char* typeName) const override
-    {
-        TTypeMap::const_iterator it = m_typeMap.find(typeName);
-        if (it != m_typeMap.end())
-        {
-            return it->second->contextType;
-        }
-        return Serialization::TypeID();
-    }
-
     void RegisterResourceSelector(const SStaticResourceSelectorEntry* entry) override
     {
         m_typeMap[entry->typeName] = entry;
