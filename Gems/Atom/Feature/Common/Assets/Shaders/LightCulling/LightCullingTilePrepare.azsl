@@ -181,7 +181,7 @@ void WriteTileLightDataToMainMemory(uint groupIndex, uint3 groupID, float2 minma
         
         // Note that Nvidia Light Culling framework has some additional code to better calculate this ratio
         // See cb_perFrame.fRangeThreshold in their framework. This code might be something we want to port over.
-        // https://jira.agscollab.com/browse/ATOM-5554
+        // ATOM-5554
         float ratio = tileZ / 1.0f;         
         float logMaxBins = clamp(log2(ratio), 0.0, LOG_MAX_BINS);
         uint ulogMaxBins = uint(logMaxBins + 0.5);

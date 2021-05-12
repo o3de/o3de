@@ -13,6 +13,9 @@
 #include "EditorTransformComponentSelection.h"
 
 #include <AzCore/std/algorithm.h>
+#include <AzCore/Math/Matrix3x3.h>
+#include <AzCore/Math/Matrix3x4.h>
+#include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/VectorConversions.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Viewport/CameraState.h>

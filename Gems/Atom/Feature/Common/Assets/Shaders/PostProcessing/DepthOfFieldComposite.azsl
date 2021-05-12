@@ -77,7 +77,6 @@ PSOutput MainPS(VSOutput IN)
     float3 colorSum = (float3)0;
 
     // Combine from the back buffer to the front.
-    // Please refer to https://wiki.agscollab.com/pages/viewpage.action?spaceKey=ATOM&title=Dof+factor+and+Buffer+composition for details
 
     ////////////////////////////////////////////////////////////////////////
     // Background

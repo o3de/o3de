@@ -26,7 +26,6 @@
 #include <CryCommon/ILocalizationManager.h>
 
 // Editor
-#include "ShadersDialog.h"
 #include "SelectLightAnimationDialog.h"
 #include "SelectSequenceDialog.h"
 #include "SelectEAXPresetDlg.h"
@@ -76,16 +75,6 @@ void GenericPopupPropertyEditor::SetValue(const QString &value, bool notify)
 void GenericPopupPropertyEditor::SetPropertyType(PropertyType type)
 {
     m_propertyType = type;
-}
-
-void ShaderPropertyEditor::onEditClicked()
-{
-    CShadersDialog cShaders(GetValue());
-    if (cShaders.exec() == QDialog::Accepted)
-    {
-        SetValue(cShaders.GetSelection());
-    }
-
 }
 
 void ReverbPresetPropertyEditor::onEditClicked()
