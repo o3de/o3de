@@ -149,6 +149,7 @@ namespace AzToolsFramework
                         undoBatch.GetUndoBatch(), containerEntityId, false);
                 });
 
+                // Create a link between the templates of the newly created instance and the instance it's being parented under.
                 CreateLink(
                     topLevelEntities, instanceToCreate->get(), commonRootEntityOwningInstance->get().GetTemplateId(),
                     undoBatch.GetUndoBatch(), commonRootEntityId);
