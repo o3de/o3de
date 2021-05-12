@@ -9,11 +9,17 @@
 # remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
+# This script must be run as root
+if [[ $EUID -ne 0 ]]
+then
+    echo "This script must be run as root (sudo)"
+    exit 1
+fi
 
 echo Installing packages and tools for O3DE development
 
 # Install awscli
-sudo ./install-ubuntu-awscli.sh
+./install-ubuntu-awscli.sh
 if [ $? -ne 0 ]
 then
     echo Error installing AWSCLI
@@ -22,7 +28,7 @@ fi
 
 
 # Install git
-sudo ./install-ubuntu-git.sh
+./install-ubuntu-git.sh
 if [ $? -ne 0 ]
 then
     echo Error installing Git
@@ -30,7 +36,7 @@ then
 fi
 
 # Install the necessary build tools
-sudo ./install-ubuntu-build-tools.sh
+./install-ubuntu-build-tools.sh
 if [ $? -ne 0 ]
 then
     echo Error installing ubuntu tools
