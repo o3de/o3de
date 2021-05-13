@@ -92,7 +92,6 @@ AZ_POP_DISABLE_WARNING
 #include "ErrorReportDialog.h"
 
 #include "Dialogs/PythonScriptsDialog.h"
-#include "EngineSettingsManager.h"
 
 #include "AzAssetBrowser/AzAssetBrowserWindow.h"
 #include "AssetEditor/AssetEditorWindow.h"
@@ -1943,12 +1942,6 @@ void MainWindow::ConnectivityStateChanged(const AzToolsFramework::SourceControlS
             connected = true;
         }
     }
-
-#if defined(CRY_ENABLE_RC_HELPER)
-    CEngineSettingsManager settingsManager;
-    settingsManager.SetModuleSpecificBoolEntry("RC_EnableSourceControl", connected);
-    settingsManager.StoreData();
-#endif
 
     gSettings.enableSourceControl = connected;
     gSettings.SaveEnableSourceControlFlag(false);

@@ -33,7 +33,7 @@
 #define PLATFORM_IMPL_H_SECTION_VIRTUAL_ALLOCATORS 7
 #endif
 
-SC_API struct SSystemGlobalEnvironment* gEnv = nullptr;
+struct SSystemGlobalEnvironment* gEnv = nullptr;
 
 // Traits
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -147,7 +147,6 @@ void* GetDetachEnvironmentSymbol()
 #endif // !defined(SOFTCODE)
 
 bool g_bProfilerEnabled = false;
-int g_iTraceAllocations = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // global random number generator used by cry_random functions
