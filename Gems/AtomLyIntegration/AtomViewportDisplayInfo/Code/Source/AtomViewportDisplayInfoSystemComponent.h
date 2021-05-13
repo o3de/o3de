@@ -68,6 +68,7 @@ namespace AZ
 
             AZStd::string m_rendererDescription;
             AzFramework::TextDrawParameters m_drawParams;
+            AzFramework::FontDrawInterface* m_fontDrawInterface = nullptr;
             float m_lineSpacing;
             AZStd::chrono::duration<double> m_fpsInterval = AZStd::chrono::seconds(1);
             AZStd::deque<AZ::ScriptTimePoint> m_fpsHistory;

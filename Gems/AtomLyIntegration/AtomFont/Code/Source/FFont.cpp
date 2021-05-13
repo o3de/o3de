@@ -1684,7 +1684,6 @@ AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::Te
         return internalParams;
     }
 
-    //Code mostly duplicated from CRenderer::Draw2dTextWithDepth
     float posX = params.m_position.GetX();
     float posY = params.m_position.GetY();
     internalParams.m_viewportContext = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->GetViewportContextById(params.m_drawViewportId);

@@ -111,25 +111,26 @@ namespace AZ::Render
     void AtomViewportDisplayInfoSystemComponent::DrawLine(AZStd::string_view line, AZ::Color color)
     {
         m_drawParams.m_color = color;
-        AzFramework::FontDrawInterface* fontDrawInterface =
-            AZ::Interface<AzFramework::FontQueryInterface>::Get()->GetDefaultFontDrawInterface();
-        AZ::Vector2 textSize = fontDrawInterface->GetTextSize(m_drawParams, line);
-        fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, line);
+        AZ::Vector2 textSize = m_fontDrawInterface->GetTextSize(m_drawParams, line);
+        m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, line);
         m_drawParams.m_position.SetY(m_drawParams.m_position.GetY() + textSize.GetY() + m_lineSpacing);
     }
 
     void AtomViewportDisplayInfoSystemComponent::OnRenderTick()
     {
-        auto fontQueryInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get();
-        if (!fontQueryInterface)
+        if (!m_fontDrawInterface)
         {
-            return;
+            auto fontQueryInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get();
+            if (!fontQueryInterface)
+            {
+                return;
+            }
+            m_fontDrawInterface =
+                fontQueryInterface->GetDefaultFontDrawInterface();
         }
-        AzFramework::FontDrawInterface* fontDrawInterface =
-            fontQueryInterface->GetDefaultFontDrawInterface();
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
 
-        if (!fontDrawInterface || !viewportContext || !viewportContext->GetRenderScene())
+        if (!m_fontDrawInterface || !viewportContext || !viewportContext->GetRenderScene())
         {
             return;
         }
@@ -167,7 +168,7 @@ namespace AZ::Render
         m_drawParams.m_lineSpacing = 0.5f;
 
         // Calculate line spacing based on the font's actual line height
-        const float lineHeight = fontDrawInterface->GetTextSize(m_drawParams, " ").GetY();
+        const float lineHeight = m_fontDrawInterface->GetTextSize(m_drawParams, " ").GetY();
         m_lineSpacing = lineHeight * m_drawParams.m_lineSpacing;
 
         DrawRendererInfo();
@@ -234,7 +235,7 @@ namespace AZ::Render
             int count = 1;
             if (auto passAsParent = pass->AsParent())
             {
-                for (const auto child : passAsParent->GetChildren())
+                for (const auto& child : passAsParent->GetChildren())
                 {
                     count += containingPassCount(child);
                 }
@@ -243,10 +244,10 @@ namespace AZ::Render
         };
         const int numPasses = containingPassCount(rootPass);
         DrawLine(AZStd::string::format(
-            "Total Passes: %d Vertex Count: %d Primitive Count: %d",
+            "Total Passes: %d Vertex Count: %lld Primitive Count: %lld",
             numPasses,
-            stats.m_vertexCount,
-            stats.m_primitiveCount
+            aznumeric_cast<long long>(stats.m_vertexCount),
+            aznumeric_cast<long long>(stats.m_primitiveCount)
         ));
     }
 
@@ -268,7 +269,6 @@ namespace AZ::Render
             }
         }
         m_lastMemoryUpdate = currentTime;
-
 
         int peakUsageMB = aznumeric_cast<int>(processMemInfo.PeakPagefileUsage >> 20);
         int currentUsageMB = aznumeric_cast<int>(processMemInfo.PagefileUsage >> 20);
