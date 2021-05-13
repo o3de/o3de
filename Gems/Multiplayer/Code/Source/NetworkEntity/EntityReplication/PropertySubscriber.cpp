@@ -12,7 +12,7 @@
 
 #include <Source/NetworkEntity/EntityReplication/PropertySubscriber.h>
 #include <Source/NetworkEntity/EntityReplication/EntityReplicationManager.h>
-#include <Source/Components/NetBindComponent.h>
+#include <Multiplayer/NetBindComponent.h>
 
 namespace Multiplayer
 {

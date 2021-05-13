@@ -62,8 +62,6 @@ namespace PhysX
 
     void StaticRigidBodyComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        // Not compatible with cry engine colliders
-        incompatible.push_back(AZ_CRC("ColliderService", 0x902d4e93));
         // There can be only one StaticRigidBodyComponent per entity
         incompatible.push_back(AZ_CRC("PhysXStaticRigidBodyService", 0xaae8973b));
         // Cannot have both StaticRigidBodyComponent and RigidBodyComponent
@@ -73,11 +71,6 @@ namespace PhysX
     void StaticRigidBodyComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
         dependent.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
-    }
-
-    PhysX::StaticRigidBody* StaticRigidBodyComponent::GetStaticRigidBody()
-    {
-        return m_staticRigidBody;
     }
 
     void StaticRigidBodyComponent::InitStaticRigidBody()
@@ -107,7 +100,6 @@ namespace PhysX
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             m_staticRigidBodyHandle = sceneInterface->AddSimulatedBody(m_attachedSceneHandle, &configuration);
-            m_staticRigidBody = azdynamic_cast<PhysX::StaticRigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_attachedSceneHandle, m_staticRigidBodyHandle));
         }
     }
 
@@ -117,8 +109,7 @@ namespace PhysX
 
         InitStaticRigidBody();
 
-        Physics::WorldBodyRequestBus::Handler::BusConnect(GetEntityId());
-        Physics::WorldBodyNotificationBus::Event(GetEntityId(), &Physics::WorldBodyNotifications::OnPhysicsEnabled);
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 
     void StaticRigidBodyComponent::Deactivate()
@@ -126,17 +117,18 @@ namespace PhysX
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             sceneInterface->RemoveSimulatedBody(m_attachedSceneHandle, m_staticRigidBodyHandle);
-            m_staticRigidBodyHandle = AzPhysics::InvalidSceneHandle;
-            m_staticRigidBody = nullptr;
         }
 
-        Physics::WorldBodyRequestBus::Handler::BusDisconnect();
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
     }
 
-    void StaticRigidBodyComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
+    void StaticRigidBodyComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
     {
-        m_staticRigidBody->SetTransform(world);
+        if (AzPhysics::SimulatedBody* body = GetSimulatedBody())
+        {
+            body->SetTransform(world);
+        }
     }
 
     void StaticRigidBodyComponent::EnablePhysics()
@@ -149,8 +141,6 @@ namespace PhysX
         {
             sceneInterface->EnableSimulationOfBody(m_attachedSceneHandle, m_staticRigidBodyHandle);
         }
-
-        Physics::WorldBodyNotificationBus::Event(GetEntityId(), &Physics::WorldBodyNotifications::OnPhysicsEnabled);
     }
 
     void StaticRigidBodyComponent::DisablePhysics()
@@ -159,30 +149,56 @@ namespace PhysX
         {
             sceneInterface->DisableSimulationOfBody(m_attachedSceneHandle, m_staticRigidBodyHandle);
         }
-
-        Physics::WorldBodyNotificationBus::Event(GetEntityId(), &Physics::WorldBodyNotifications::OnPhysicsDisabled);
     }
 
     bool StaticRigidBodyComponent::IsPhysicsEnabled() const
     {
-        return m_staticRigidBody != nullptr && m_staticRigidBody->m_simulating;
+        if (m_staticRigidBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
+        {
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+                sceneInterface != nullptr &&
+                sceneInterface->IsEnabled(m_attachedSceneHandle))//check if the scene is enabled
+            {
+                if (AzPhysics::SimulatedBody* body = sceneInterface->GetSimulatedBodyFromHandle(m_attachedSceneHandle, m_staticRigidBodyHandle))
+                {
+                    return body->m_simulating;
+                }
+            }
+        }
+        return false;
     }
 
     AZ::Aabb StaticRigidBodyComponent::GetAabb() const
     {
-        return m_staticRigidBody->GetAabb();
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            if (AzPhysics::SimulatedBody* body = sceneInterface->GetSimulatedBodyFromHandle(m_attachedSceneHandle, m_staticRigidBodyHandle))
+            {
+                return body->GetAabb();
+            }
+        }
+        return AZ::Aabb::CreateNull();
     }
 
-    AzPhysics::SimulatedBody* StaticRigidBodyComponent::GetWorldBody()
+    AzPhysics::SimulatedBodyHandle StaticRigidBodyComponent::GetSimulatedBodyHandle() const
     {
-        return m_staticRigidBody;
+        return m_staticRigidBodyHandle;
+    }
+
+    AzPhysics::SimulatedBody* StaticRigidBodyComponent::GetSimulatedBody()
+    {
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            return sceneInterface->GetSimulatedBodyFromHandle(m_attachedSceneHandle, m_staticRigidBodyHandle);
+        }
+        return nullptr;
     }
 
     AzPhysics::SceneQueryHit StaticRigidBodyComponent::RayCast(const AzPhysics::RayCastRequest& request)
     {
-        if (m_staticRigidBody)
+        if (auto* body = azdynamic_cast<PhysX::StaticRigidBody*>(GetSimulatedBody()))
         {
-            return m_staticRigidBody->RayCast(request);
+            return body->RayCast(request);
         }
         return AzPhysics::SceneQueryHit();
     }

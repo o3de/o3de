@@ -10,7 +10,8 @@
 *
 */
 
-#include <Source/NetworkTime/RewindableObject.h>
+#include <Multiplayer/RewindableObject.h>
+#include <Multiplayer/IMultiplayer.h>
 #include <Source/NetworkTime/NetworkTime.h>
 #include <AzCore/Console/LoggerSystemComponent.h>
 #include <AzCore/Time/TimeSystemComponent.h>
@@ -37,12 +38,12 @@ namespace UnitTest
         {
             test = i;
             EXPECT_EQ(i, test);
-            AZ::Interface<Multiplayer::INetworkTime>::Get()->IncrementApplicationFrameId();
+            Multiplayer::GetNetworkTime()->IncrementHostFrameId();
         }
 
         for (uint32_t i = 0; i < 16; ++i)
         {
-            Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::ApplicationFrameId>(i), AzNetworking::InvalidConnectionId);
+            Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::HostFrameId>(i), AZ::TimeMs{ 0 }, AzNetworking::InvalidConnectionId);
             EXPECT_EQ(i, test);
         }
 
@@ -50,12 +51,12 @@ namespace UnitTest
         {
             test = i;
             EXPECT_EQ(i, test);
-            AZ::Interface<Multiplayer::INetworkTime>::Get()->IncrementApplicationFrameId();
+            Multiplayer::GetNetworkTime()->IncrementHostFrameId();
         }
 
         for (uint32_t i = 16; i < 48; ++i)
         {
-            Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::ApplicationFrameId>(i), AzNetworking::InvalidConnectionId);
+            Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::HostFrameId>(i), AZ::TimeMs{ 0 }, AzNetworking::InvalidConnectionId);
             EXPECT_EQ(i, test);
         }
     }
@@ -68,12 +69,12 @@ namespace UnitTest
         {
             test = i;
             EXPECT_EQ(i, test);
-            AZ::Interface<Multiplayer::INetworkTime>::Get()->IncrementApplicationFrameId();
+            Multiplayer::GetNetworkTime()->IncrementHostFrameId();
         }
 
         {
             // Note that we didn't actually set any value for time rewindableBufferFrames, so we're testing fetching a value past the last time set
-            Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::ApplicationFrameId>(RewindableBufferFrames), AzNetworking::InvalidConnectionId);
+            Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::HostFrameId>(RewindableBufferFrames), AZ::TimeMs{ 0 }, AzNetworking::InvalidConnectionId);
             EXPECT_EQ(RewindableBufferFrames - 1, test);
         }
     }
@@ -91,12 +92,12 @@ namespace UnitTest
         {
             Object& value = test.Modify();
             value.value = i;
-            AZ::Interface<Multiplayer::INetworkTime>::Get()->IncrementApplicationFrameId();
+            AZ::Interface<Multiplayer::INetworkTime>::Get()->IncrementHostFrameId();
         }
 
         for (uint32_t i = 0; i < RewindableBufferFrames; ++i)
         {
-            Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::ApplicationFrameId>(i), AzNetworking::InvalidConnectionId);
+            Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::HostFrameId>(i), AZ::TimeMs{ 0 }, AzNetworking::InvalidConnectionId);
             const Object& value = test;
             EXPECT_EQ(value.value, i);
         }
@@ -105,19 +106,19 @@ namespace UnitTest
     TEST_F(RewindableObjectTests, TestBackfillOnLargeTimestep)
     {
         Multiplayer::RewindableObject<uint32_t, RewindableBufferFrames> test(0);
-        Multiplayer::ScopedAlterTime time1(static_cast<Multiplayer::ApplicationFrameId>(0), AzNetworking::InvalidConnectionId);
+        Multiplayer::ScopedAlterTime time1(static_cast<Multiplayer::HostFrameId>(0), AZ::TimeMs{ 0 }, AzNetworking::InvalidConnectionId);
         test = 1;
 
-        Multiplayer::ScopedAlterTime time2(static_cast<Multiplayer::ApplicationFrameId>(31), AzNetworking::InvalidConnectionId);
+        Multiplayer::ScopedAlterTime time2(static_cast<Multiplayer::HostFrameId>(31), AZ::TimeMs{ 0 }, AzNetworking::InvalidConnectionId);
         test = 2;
 
         for (uint32_t i = 0; i < 31; ++i)
         {
-            Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::ApplicationFrameId>(i), AzNetworking::InvalidConnectionId);
+            Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::HostFrameId>(i), AZ::TimeMs{ 0 }, AzNetworking::InvalidConnectionId);
             EXPECT_EQ(1, test);
         }
 
-        Multiplayer::ScopedAlterTime time3(static_cast<Multiplayer::ApplicationFrameId>(31), AzNetworking::InvalidConnectionId);
+        Multiplayer::ScopedAlterTime time3(static_cast<Multiplayer::HostFrameId>(31), AZ::TimeMs{ 0 }, AzNetworking::InvalidConnectionId);
         EXPECT_EQ(2, test);
     }
 
@@ -127,13 +128,13 @@ namespace UnitTest
 
         for (uint32_t i = 0; i < 1000; ++i)
         {
-            AZ::Interface<Multiplayer::INetworkTime>::Get()->IncrementApplicationFrameId();
+            AZ::Interface<Multiplayer::INetworkTime>::Get()->IncrementHostFrameId();
         }
         test = 1000;
 
         for (uint32_t i = 0; i < 1000; ++i)
         {
-            Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::ApplicationFrameId>(1000 - i), AzNetworking::InvalidConnectionId);
+            Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::HostFrameId>(1000 - i), AZ::TimeMs{ 0 }, AzNetworking::InvalidConnectionId);
             EXPECT_EQ(1000, test);
         }
     }

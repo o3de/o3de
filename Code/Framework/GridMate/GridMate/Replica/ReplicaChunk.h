@@ -45,17 +45,17 @@ namespace GridMate
     /** A single unit of network functionality
         A ReplicaChunk is a user extendable network object. One or more ReplicaChunks can be
         owned by a Replica, which is both a container and manager for them. A replica is owned
-        by a Master, and is propagated to other network nodes, who interact with is as a Proxy.
+        by a Primary, and is propagated to other network nodes, who interact with is as a Proxy.
         The data a ReplicaChunk contains should generally be related to the other data stored
         within it. Since multiple chunks can be attached to a Replica, unrelated data can simply
         be stored in other chunks on the same Replica.
 
         A ReplicaChunk has two primary ways to interact with it: DataSets and Remote Procedure
         Calls (RPCs).
-        DataSets store arbitrary data, which only the Master is able to modify. Any changes are
+        DataSets store arbitrary data, which only the Primary is able to modify. Any changes are
         propagated to the Proxy ReplicaChunks on the other nodes.
         RPCs are methods that can be executed on a remote node. They are first invoked on the
-        Master, who then decides if the invocation should be propagated to the Proxies.
+        Primary, who then decides if the invocation should be propagated to the Proxies.
 
         ReplicaChunks can be created by inheriting from the class and registered by calling
         ReplicaChunkDescriptorTable::RegisterChunkType() to create the factory required by
@@ -107,7 +107,7 @@ namespace GridMate
         PeerId GetPeerId() const;
         virtual ReplicaManager* GetReplicaManager();
         bool IsActive() const;
-        bool IsMaster() const;
+        bool IsPrimary() const;
         bool IsProxy() const;
 
         virtual void OnAttachedToReplica(Replica* replica) { (void) replica; }
@@ -191,7 +191,7 @@ namespace GridMate
 
         void AddDataSetEvent(DataSetBase* dataset); // Called to enqueue a user event handler for a modified DataSet on a proxy node
 
-        void SignalDataSetChanged(const DataSetBase& dataset); // Called when the DataSet changes on the master node
+        void SignalDataSetChanged(const DataSetBase& dataset); // Called when the DataSet changes on the primary node
 
         void EnqueueMarshalTask();
 

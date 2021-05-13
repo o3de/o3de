@@ -10,7 +10,7 @@
 *
 */
 
-#include <Source/Components/MultiplayerComponentRegistry.h>
+#include <Multiplayer/MultiplayerComponentRegistry.h>
 
 namespace Multiplayer
 {

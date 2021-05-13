@@ -111,7 +111,7 @@ namespace ScriptCanvasEditor
                 }
                 else if (auto methodNodeModelInformation = azrtti_cast<const MethodNodeModelInformation*>(modelInformation))
                 {
-                    createdItem = parentItem->CreateChildNode<ScriptCanvasEditor::ClassMethodEventPaletteTreeItem>(methodNodeModelInformation->m_classMethod, methodNodeModelInformation->m_methodName, methodNodeModelInformation->m_isOverload);
+                    createdItem = parentItem->CreateChildNode<ScriptCanvasEditor::ClassMethodEventPaletteTreeItem>(methodNodeModelInformation->m_classMethod, methodNodeModelInformation->m_methodName, methodNodeModelInformation->m_isOverload, methodNodeModelInformation->m_propertyStatus);
                 }
                 else if (auto globalMethodNodeModelInformation = azrtti_cast<const GlobalMethodNodeModelInformation*>(modelInformation);
                     globalMethodNodeModelInformation != nullptr)
@@ -130,7 +130,7 @@ namespace ScriptCanvasEditor
                 {
                     if (!azrtti_istypeof<const ScriptEventSenderNodeModelInformation*>(ebusSenderNodeModelInformation))
                     {
-                        createdItem = parentItem->CreateChildNode<ScriptCanvasEditor::EBusSendEventPaletteTreeItem>(ebusSenderNodeModelInformation->m_busName, ebusSenderNodeModelInformation->m_eventName, ebusSenderNodeModelInformation->m_busId, ebusSenderNodeModelInformation->m_eventId, ebusSenderNodeModelInformation->m_isOverload);
+                        createdItem = parentItem->CreateChildNode<ScriptCanvasEditor::EBusSendEventPaletteTreeItem>(ebusSenderNodeModelInformation->m_busName, ebusSenderNodeModelInformation->m_eventName, ebusSenderNodeModelInformation->m_busId, ebusSenderNodeModelInformation->m_eventId, ebusSenderNodeModelInformation->m_isOverload, ebusSenderNodeModelInformation->m_propertyStatus);
                     }
                 }
 

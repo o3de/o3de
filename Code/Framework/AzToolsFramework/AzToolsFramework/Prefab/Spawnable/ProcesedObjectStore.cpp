@@ -56,6 +56,16 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return *m_asset;
     }
 
+    AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& ProcessedObjectStore::GetReferencedAssets()
+    {
+        return m_referencedAssets;
+    }
+
+    const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& ProcessedObjectStore::GetReferencedAssets() const
+    {
+        return m_referencedAssets;
+    }
+
     AZStd::unique_ptr<AZ::Data::AssetData> ProcessedObjectStore::ReleaseAsset()
     {
         return AZStd::move(m_asset);

@@ -189,13 +189,7 @@ public:
     virtual void OnStartPlayInEditor();
     virtual void OnStopPlayInEditor();
 
-    // AzToolsFramework::ViewportInteractionRequestBus
     AzFramework::CameraState GetCameraState();
-    bool GridSnappingEnabled();
-    float GridSize();
-    bool ShowGrid();
-    bool AngleSnappingEnabled();
-    float AngleStep();
     AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition);
 
     // AzToolsFramework::ViewportFreezeRequestBus

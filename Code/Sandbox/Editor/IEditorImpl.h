@@ -43,33 +43,19 @@ class CGameEngine;
 class CExportManager;
 class CErrorsDlg;
 class CIconManager;
-class CBackgroundTaskManager;
 class CTrackViewSequenceManager;
 class CEditorFileMonitor;
 class AzAssetWindow;
 class AzAssetBrowserRequestHandler;
 class AssetEditorRequestsHandler;
 class CAlembicCompiler;
-struct IBackgroundTaskManager;
-struct IBackgroundScheduleManager;
 struct IEditorFileMonitor;
-class CShaderEnum;
 class CVegetationMap;
 
 
 namespace Editor
 {
     class EditorQtApplication;
-}
-
-namespace BackgroundScheduleManager
-{
-    class CScheduleManager;
-}
-
-namespace BackgroundTaskManager
-{
-    class CTaskManager;
 }
 
 namespace WinWidget
@@ -116,7 +102,6 @@ public:
     bool IsInitialized() const{ return m_bInitialized; }
     bool SaveDocument();
     ISystem*    GetSystem();
-    IRenderer*  GetRenderer();
     void WriteToConsole(const char* string) { CLogFile::WriteLine(string); };
     void WriteToConsole(const QString& string) { CLogFile::WriteLine(string); };
     // Change the message in the status bar
@@ -181,8 +166,6 @@ public:
     IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType);
     CMusicManager* GetMusicManager() { return m_pMusicManager; };
 
-    IBackgroundTaskManager* GetBackgroundTaskManager() override;
-    IBackgroundScheduleManager* GetBackgroundScheduleManager() override;
     IEditorFileMonitor* GetFileMonitor() override;
     void RegisterEventLoopHook(IEventLoopHook* pHook) override;
     void UnregisterEventLoopHook(IEventLoopHook* pHook) override;
@@ -215,7 +198,6 @@ public:
     void SetMarkerPosition(const Vec3& pos) { m_marker = pos; };
     void    SetSelectedRegion(const AABB& box);
     void    GetSelectedRegion(AABB& box);
-    CRuler* GetRuler() { return m_pRuler; }
     bool AddToolbarItem(uint8 iId, IUIEvent* pIHandler);
     void SetDataModified();
     void SetOperationMode(EOperationMode mode);
@@ -256,7 +238,6 @@ public:
     SFileVersion GetFileVersion() { return m_fileVersion; };
     SFileVersion GetProductVersion() { return m_productVersion; };
     //! Get shader enumerator.
-    CShaderEnum* GetShaderEnum();
     CUndoManager* GetUndoManager() { return m_pUndoManager; };
     void BeginUndo();
     void RestoreUndo(bool undo);
@@ -365,7 +346,6 @@ protected:
     SFileVersion m_productVersion;
     CXmlTemplateRegistry m_templateRegistry;
     CDisplaySettings* m_pDisplaySettings;
-    CShaderEnum* m_pShaderEnum;
     CIconManager* m_pIconManager;
     std::unique_ptr<SGizmoParameters> m_pGizmoParameters;
     QString m_primaryCDFolder;
@@ -390,8 +370,6 @@ protected:
     CSelectionTreeManager* m_pSelectionTreeManager;
 
     CUIEnumsDatabase* m_pUIEnumsDatabase;
-    //! Currently used ruler
-    CRuler* m_pRuler;
     //! CConsole Synchronization
     CConsoleSynchronization* m_pConsoleSync;
     //! Editor Settings Manager
@@ -401,8 +379,6 @@ protected:
 
     //! Export manager for exporting objects and a terrain from the game to DCC tools
     CExportManager* m_pExportManager;
-    std::unique_ptr<BackgroundTaskManager::CTaskManager> m_pBackgroundTaskManager;
-    std::unique_ptr<BackgroundScheduleManager::CScheduleManager> m_pBackgroundScheduleManager;
     std::unique_ptr<CEditorFileMonitor> m_pEditorFileMonitor;
     std::unique_ptr<IResourceSelectorHost> m_pResourceSelectorHost;
     QString m_selectFileBuffer;
