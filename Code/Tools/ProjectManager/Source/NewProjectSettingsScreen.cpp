@@ -27,7 +27,7 @@ namespace O3DE::ProjectManager
         QHBoxLayout* hLayout = new QHBoxLayout();
         this->setLayout(hLayout);
 
-        QVBoxLayout* vLayout = new QVBoxLayout();
+        QVBoxLayout* vLayout = new QVBoxLayout(this);
 
         QLabel* projectNameLabel = new QLabel(this);
         projectNameLabel->setText("Project Name");
@@ -47,7 +47,7 @@ namespace O3DE::ProjectManager
         projectTemplateLabel->setText("Project Template");
         vLayout->addWidget(projectTemplateLabel);
 
-        QHBoxLayout* templateLayout = new QHBoxLayout();
+        QHBoxLayout* templateLayout = new QHBoxLayout(this);
         vLayout->addItem(templateLayout);
 
         QRadioButton* projectTemplateStandardRadioButton = new QRadioButton(this);

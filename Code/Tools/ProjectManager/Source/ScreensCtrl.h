@@ -32,7 +32,7 @@ namespace O3DE::ProjectManager
         ~ScreensCtrl() = default;
 
         void BuildScreens(QVector<ProjectManagerScreen> screens);
-        ScreenWidget* GetScreen(ProjectManagerScreen screen);
+        ScreenWidget* FindScreen(ProjectManagerScreen screen);
         ScreenWidget* GetCurrentScreen();
 
     public slots:

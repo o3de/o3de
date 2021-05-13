@@ -39,7 +39,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    ScreenWidget* ScreensCtrl::GetScreen(ProjectManagerScreen screen)
+    ScreenWidget* ScreensCtrl::FindScreen(ProjectManagerScreen screen)
     {
         const auto iterator = m_screenMap.find(screen);
         if (iterator != m_screenMap.end())

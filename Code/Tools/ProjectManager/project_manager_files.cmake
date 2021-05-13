@@ -27,12 +27,12 @@ set(FILES
     Source/PythonBindings.h
     Source/PythonBindings.cpp
     Source/PythonBindingsInterface.h
+    Source/ProjectInfo.h
+    Source/ProjectInfo.cpp
     Source/NewProjectSettingsScreen.h
     Source/NewProjectSettingsScreen.cpp
     Source/ProjectSettingsCtrl.h
     Source/ProjectSettingsCtrl.cpp
-    Source/ProjectSettingsModel.h
-    Source/ProjectSettingsModel.cpp
     Source/ProjectsHomeScreen.h
     Source/ProjectsHomeScreen.cpp
     Source/ProjectsHomeScreen.ui

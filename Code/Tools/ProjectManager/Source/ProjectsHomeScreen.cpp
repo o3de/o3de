@@ -27,9 +27,6 @@ namespace O3DE::ProjectManager
         connect(m_ui->newProjectButton, &QPushButton::pressed, this, &ProjectsHomeScreen::HandleNewProjectButton);
         connect(m_ui->addProjectButton, &QPushButton::pressed, this, &ProjectsHomeScreen::HandleAddProjectButton);
         connect(m_ui->editProjectButton, &QPushButton::pressed, this, &ProjectsHomeScreen::HandleEditProjectButton);
-
-        // example of how to get the current project name
-        //ProjectInfo currentProject = PythonBindingsInterface::Get()->GetCurrentProject();
     }
 
     ProjectManagerScreen ProjectsHomeScreen::GetScreenEnum()
