@@ -19,20 +19,6 @@
 #include <IAudioSystem.h>
 #include <AudioEngineWwise_Traits_Platform.h>
 
-
-#if AZ_TRAIT_AUDIOENGINEWWISE_PROVIDE_IMPL_SECONDARY_POOL
-    #include <platform.h>
-    #include <CryPool/PoolAlloc.h>
-
-    using TMemoryPoolReferenced = NCryPoolAlloc::CThreadSafe<NCryPoolAlloc::CBestFit<NCryPoolAlloc::CReferenced<NCryPoolAlloc::CMemoryDynamic, 4 * 1024, true>, NCryPoolAlloc::CListItemReference>>;
-
-    namespace Audio
-    {
-        extern TMemoryPoolReferenced g_audioImplMemoryPoolSecondary_wwise;
-    }
-#endif // AZ_TRAIT_AUDIOENGINEWWISE_PROVIDE_IMPL_SECONDARY_POOL
-
-
 #define WWISE_IMPL_VERSION_STRING   "Wwise " AK_WWISESDK_VERSIONNAME
 
 #define ASSERT_WWISE_OK(x) (AKASSERT((x) == AK_Success))
@@ -105,8 +91,9 @@ namespace Audio
         // See AkMemoryMgr.h
         inline static const char* MemoryManagerCategories[]
         {
-            "Object", "Event", "Structure", "Media", "GameObject", "Processing", "ProcessingPlugin", "Streaming", "StreamingIO", "SpatialAudio",
-            "SpatialAudioGeometry", "SpatialAudioPaths", "GameSim", "MonitorQueue", "Profiler", "FilePackage", "SoundEngine"
+            "Object", "Event", "Structure", "Media", "GameObject", "Processing", "ProcessingPlugin", "Streaming", "StreamingIO",
+            "SpatialAudio", "SpatialAudioGeometry", "SpatialAudioPaths", "GameSim", "MonitorQueue", "Profiler", "FilePackage",
+            "SoundEngine", "Integration"
         };
 
         static_assert(AZ_ARRAY_SIZE(MemoryManagerCategories) == AkMemID_NUM,

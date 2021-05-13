@@ -32,7 +32,7 @@ option bool prefix##o_useDepthMap;
 
 void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float depthFactor, float depthOffset,
                       float4x4 objectWorldMatrix, float3x3 uvMatrix, float3x3 uvMatrixInverse,
-                      inout float2 uv, inout float3 worldPosition, inout float depth, out bool isClipped)
+                      inout float2 uv, inout float3 worldPosition, inout float depthNDC, inout float depthCS, out bool isClipped)
 {
     if(o_parallax_feature_enabled)
     {
@@ -72,7 +72,8 @@ void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float dep
                                                         objectWorldMatrix,
                                                         ViewSrg::m_viewProjectionMatrix);
 
-            depth = pdo.m_depth;
+            depthCS = pdo.m_depthCS;
+            depthNDC = pdo.m_depthNDC;
 
             worldPosition = pdo.m_worldPosition;
         }
@@ -82,9 +83,17 @@ void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float dep
 
 void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float depthFactor, float depthOffset,
                       float4x4 objectWorldMatrix, float3x3 uvMatrix, float3x3 uvMatrixInverse,
-                      inout float2 uv, inout float3 worldPosition, inout float depth)
+                      inout float2 uv, inout float3 worldPosition, inout float depthNDC, inout float depthCS)
 {
     bool isClipped;
-    GetParallaxInput(normal, tangent, bitangent, depthFactor, depthOffset, objectWorldMatrix, uvMatrix, uvMatrixInverse, uv, worldPosition, depth, isClipped);
+    GetParallaxInput(normal, tangent, bitangent, depthFactor, depthOffset, objectWorldMatrix, uvMatrix, uvMatrixInverse, uv, worldPosition, depthNDC, depthCS, isClipped);
+}
+
+void GetParallaxInput(float3 normal, float3 tangent, float3 bitangent, float depthFactor, float depthOffset,
+    float4x4 objectWorldMatrix, float3x3 uvMatrix, float3x3 uvMatrixInverse,
+    inout float2 uv, inout float3 worldPosition, inout float depthNDC)
+{
+    float depthCS;
+    GetParallaxInput(normal, tangent, bitangent, depthFactor, depthOffset, objectWorldMatrix, uvMatrix, uvMatrixInverse, uv, worldPosition, depthNDC, depthCS);
 }
 

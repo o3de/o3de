@@ -1042,11 +1042,7 @@ namespace UnitTest
 
 
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetJobsFloodTest, DISABLED_ContainerCoreTest_BasicDependencyManagement_Success)
-#else
-    TEST_F(AssetJobsFloodTest, ContainerCoreTest_BasicDependencyManagement_Success)
-#endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
         // Setup has already created/destroyed assets

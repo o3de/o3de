@@ -39,7 +39,6 @@ namespace AtomToolsFramework
         m_layout = new QVBoxLayout(m_ui->m_propertyContent);
         m_layout->setContentsMargins(0, 0, 0, 0);
         m_layout->setSpacing(0);
-        m_headers.clear();
         m_groups.clear();
     }
 
@@ -70,16 +69,27 @@ namespace AtomToolsFramework
         groupHeader->setText(groupDisplayName.c_str());
         groupHeader->setToolTip(groupDescription.c_str());
         m_layout->addWidget(groupHeader);
-        m_headers.push_back(groupHeader);
 
         groupWidget->setObjectName(groupNameId.c_str());
         groupWidget->setParent(m_ui->m_propertyContent);
         m_layout->addWidget(groupWidget);
-        m_groups.push_back(groupWidget);
 
-        connect(groupHeader, &InspectorGroupHeaderWidget::clicked, this, [this, groupHeader, groupWidget](QMouseEvent* event) {
-            OnHeaderClicked(event, groupHeader, groupWidget);
+        m_groups[groupNameId] = AZStd::make_pair(groupHeader, groupWidget);
+
+        connect(groupHeader, &InspectorGroupHeaderWidget::clicked, this, [this, groupNameId](QMouseEvent* event) {
+            OnHeaderClicked(groupNameId, event);
         });
+        connect(groupHeader, &InspectorGroupHeaderWidget::expanded, this, [this, groupNameId]() { OnGroupExpanded(groupNameId); });
+        connect(groupHeader, &InspectorGroupHeaderWidget::collapsed, this, [this, groupNameId]() { OnGroupCollapsed(groupNameId); });
+
+        if (ShouldGroupAutoExpanded(groupNameId))
+        {
+            ExpandGroup(groupNameId);
+        }
+        else
+        {
+            CollapseGroup(groupNameId);
+        }
     }
 
     void InspectorWidget::RefreshGroup(const AZStd::string& groupNameId)
@@ -114,50 +124,86 @@ namespace AtomToolsFramework
         }
     }
 
+    void InspectorWidget::ExpandGroup(const AZStd::string& groupNameId)
+    {
+        auto groupItr = m_groups.find(groupNameId);
+        if (groupItr != m_groups.end())
+        {
+            groupItr->second.first->SetExpanded(true);
+            groupItr->second.second->setVisible(true);
+        }
+    }
+
+    void InspectorWidget::CollapseGroup(const AZStd::string& groupNameId)
+    {
+        auto groupItr = m_groups.find(groupNameId);
+        if (groupItr != m_groups.end())
+        {
+            groupItr->second.first->SetExpanded(false);
+            groupItr->second.second->setVisible(false);
+        }
+    }
+
+    bool InspectorWidget::IsGroupExpanded(const AZStd::string& groupNameId) const
+    {
+        auto groupItr = m_groups.find(groupNameId);
+        return groupItr != m_groups.end() ? groupItr->second.first->IsExpanded() : false;
+    }
+
     void InspectorWidget::ExpandAll()
     {
-        for (auto headerWidget : m_headers)
+        for (auto& groupPair : m_groups)
         {
-            headerWidget->SetExpanded(true);
-        }
-        for (auto groupWidget : m_groups)
-        {
-            groupWidget->setVisible(true);
+            groupPair.second.first->SetExpanded(true);
+            groupPair.second.second->setVisible(true);
         }
     }
 
     void InspectorWidget::CollapseAll()
     {
-        for (auto headerWidget : m_headers)
+        for (auto& groupPair : m_groups)
         {
-            headerWidget->SetExpanded(false);
-        }
-        for (auto groupWidget : m_groups)
-        {
-            groupWidget->setVisible(false);
+            groupPair.second.first->SetExpanded(false);
+            groupPair.second.second->setVisible(false);
         }
     }
 
-    void InspectorWidget::OnHeaderClicked(QMouseEvent* event, InspectorGroupHeaderWidget* groupHeader, QWidget* groupWidget)
+    bool InspectorWidget::ShouldGroupAutoExpanded(const AZStd::string& groupNameId) const
+    {
+        AZ_UNUSED(groupNameId);
+        return true;
+    }
+
+    void InspectorWidget::OnGroupExpanded(const AZStd::string& groupNameId)
+    {
+        AZ_UNUSED(groupNameId);
+    }
+
+    void InspectorWidget::OnGroupCollapsed(const AZStd::string& groupNameId)
+    {
+        AZ_UNUSED(groupNameId);
+    }
+
+    void InspectorWidget::OnHeaderClicked(const AZStd::string& groupNameId, QMouseEvent* event)
     {
         if (event->button() == Qt::MouseButton::LeftButton)
         {
-            groupHeader->SetExpanded(!groupHeader->IsExpanded());
-            groupWidget->setVisible(groupHeader->IsExpanded());
+            if (!IsGroupExpanded(groupNameId))
+            {
+                ExpandGroup(groupNameId);
+            }
+            else
+            {
+                CollapseGroup(groupNameId);
+            }
             return;
         }
 
         if (event->button() == Qt::MouseButton::RightButton)
         {
             QMenu menu;
-            menu.addAction("Expand", [groupHeader, groupWidget]() {
-                groupHeader->SetExpanded(true);
-                groupWidget->setVisible(true);
-            })->setEnabled(!groupHeader->IsExpanded());
-            menu.addAction("Collapse", [groupHeader, groupWidget]() {
-                groupHeader->SetExpanded(false);
-                groupWidget->setVisible(false);
-            })->setEnabled(groupHeader->IsExpanded());
+            menu.addAction("Expand", [this, groupNameId]() { ExpandGroup(groupNameId); })->setEnabled(!IsGroupExpanded(groupNameId));
+            menu.addAction("Collapse", [this, groupNameId]() { CollapseGroup(groupNameId); })->setEnabled(IsGroupExpanded(groupNameId));
             menu.addAction("Expand All", [this]() { ExpandAll(); });
             menu.addAction("Collapse All", [this]() { CollapseAll(); });
             menu.exec(event->globalPos());

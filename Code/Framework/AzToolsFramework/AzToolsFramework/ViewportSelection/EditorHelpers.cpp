@@ -68,6 +68,7 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
+        const AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
         AzFramework::EntityDebugDisplayEventBus::Event(
             entityId, &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
             viewportInfo, debugDisplay);
@@ -84,10 +85,9 @@ namespace AzToolsFramework
 
         if (ed_visibility_showAggregateEntityTransformedLocalBounds)
         {
-            AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
-            AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
+            AZ::Transform worldFromLocal = entity->GetTransform()->GetWorldTM();
 
-            if (const AZ::Aabb localAabb = AzFramework::CalculateEntityLocalBoundsUnion(entityId); localAabb.IsValid())
+            if (const AZ::Aabb localAabb = AzFramework::CalculateEntityLocalBoundsUnion(entity); localAabb.IsValid())
             {
                 const AZ::Aabb worldAabb = localAabb.GetTransformedAabb(worldFromLocal);
                 debugDisplay.SetColor(AZ::Colors::Turquoise);
@@ -97,7 +97,7 @@ namespace AzToolsFramework
 
         if (ed_visibility_showAggregateEntityWorldBounds)
         {
-            if (const AZ::Aabb worldAabb = AzFramework::CalculateEntityWorldBoundsUnion(entityId); worldAabb.IsValid())
+            if (const AZ::Aabb worldAabb = AzFramework::CalculateEntityWorldBoundsUnion(entity); worldAabb.IsValid())
             {
                 debugDisplay.SetColor(AZ::Colors::Magenta);
                 debugDisplay.DrawWireBox(worldAabb.GetMin(), worldAabb.GetMax());

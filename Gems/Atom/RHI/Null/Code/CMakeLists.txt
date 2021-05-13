@@ -89,7 +89,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
    ly_add_target(
-        NAME Atom_RHI_Null.Builders MODULE
+        NAME Atom_RHI_Null.Builders GEM_MODULE
         NAMESPACE Gem
         FILES_CMAKE
             atom_rhi_null_builders_shared_files.cmake
