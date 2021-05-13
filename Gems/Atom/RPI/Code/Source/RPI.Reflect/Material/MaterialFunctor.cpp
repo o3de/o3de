@@ -181,11 +181,9 @@ namespace AZ
                 return false;
             }
 
-            MaterialPropertyGroupVisibility originValue = metadata->m_visibility;
-            metadata->m_visibility = visibility;
-
-            if (originValue != visibility)
+            if (metadata->m_visibility != visibility)
             {
+                metadata->m_visibility = visibility;
                 m_updatedPropertyGroupsOut.insert(propertyGroupName);
             }
 
@@ -200,11 +198,9 @@ namespace AZ
                 return false;
             }
 
-            MaterialPropertyVisibility originValue = metadata->m_visibility;
-            metadata->m_visibility = visibility;
-
-            if (originValue != visibility)
+            if (metadata->m_visibility != visibility)
             {
+                metadata->m_visibility = visibility;
                 m_updatedPropertiesOut.insert(propertyName);
             }
 
@@ -225,11 +221,9 @@ namespace AZ
                 return false;
             }
 
-            AZStd::string origin = metadata->m_description;
-            metadata->m_description = description;
-
-            if (origin != description)
+            if (metadata->m_description != description)
             {
+                metadata->m_description = description;
                 m_updatedPropertiesOut.insert(propertyName);
             }
 
@@ -250,11 +244,9 @@ namespace AZ
                 return false;
             }
 
-            MaterialPropertyValue origin = metadata->m_propertyRange.m_min;
-            metadata->m_propertyRange.m_min = min;
-
-            if(origin != min)
+            if(metadata->m_propertyRange.m_min != min)
             {
+                metadata->m_propertyRange.m_min = min;
                 m_updatedPropertiesOut.insert(propertyName);
             }
 
@@ -275,11 +267,9 @@ namespace AZ
                 return false;
             }
 
-            MaterialPropertyValue origin = metadata->m_propertyRange.m_max;
-            metadata->m_propertyRange.m_max = max;
-
-            if (origin != max)
+            if (metadata->m_propertyRange.m_max != max)
             {
+                metadata->m_propertyRange.m_max = max;
                 m_updatedPropertiesOut.insert(propertyName);
             }
 
@@ -300,11 +290,9 @@ namespace AZ
                 return false;
             }
 
-            MaterialPropertyValue origin = metadata->m_propertyRange.m_softMin;
-            metadata->m_propertyRange.m_softMin = min;
-
-            if (origin != min)
+            if (metadata->m_propertyRange.m_softMin != min)
             {
+                metadata->m_propertyRange.m_softMin = min;
                 m_updatedPropertiesOut.insert(propertyName);
             }
 
@@ -325,11 +313,9 @@ namespace AZ
                 return false;
             }
 
-            MaterialPropertyValue origin = metadata->m_propertyRange.m_softMax;
-            metadata->m_propertyRange.m_softMax = max;
-
-            if (origin != max)
+            if (metadata->m_propertyRange.m_softMax != max)
             {
+                metadata->m_propertyRange.m_softMax = max;
                 m_updatedPropertiesOut.insert(propertyName);
             }
 
