@@ -64,31 +64,39 @@ namespace UnitTest
 
         AZStd::vector<AZ::Entity*> entities;
 
+        // Create test entities: 1 networked and 1 static
         const AZStd::string staticEntityName = "static_floor";
         entities.emplace_back(CreateSourceEntity(staticEntityName.c_str(), false, AZ::Transform::CreateIdentity()));
 
         const AZStd::string netEntityName = "networked_entity";
         entities.emplace_back(CreateSourceEntity(netEntityName.c_str(), true, AZ::Transform::CreateIdentity()));
 
+        // Convert the entities into prefab. Note: This will transfer the ownership of AZ::Entity* into Prefab
         AzToolsFramework::Prefab::PrefabDom prefabDom;
         ConvertEntitiesToPrefab(entities, prefabDom);
 
+        // Add the prefab into the Prefab Processor Context
         const AZStd::string prefabName = "testPrefab";
         PrefabProcessorContext prefabProcessorContext{AZ::Uuid::CreateRandom()};
         prefabProcessorContext.AddPrefab(prefabName, AZStd::move(prefabDom));
 
+        // Request NetworkPrefabProcessor to process the prefab
         Multiplayer::NetworkPrefabProcessor processor;
         processor.Process(prefabProcessorContext);
 
+        // Validate results
         EXPECT_TRUE(prefabProcessorContext.HasCompletedSuccessfully());
 
+        // Should be 1 networked spawnable
         const auto& processedObjects = prefabProcessorContext.GetProcessedObjects();
         EXPECT_EQ(processedObjects.size(), 1);
 
+        // Verify the name and the type of the spawnable asset 
         const AZ::Data::AssetData& spawnableAsset = processedObjects[0].GetAsset();
         EXPECT_EQ(prefabName + ".network.spawnable", processedObjects[0].GetId());
         EXPECT_EQ(spawnableAsset.GetType(), azrtti_typeid<AzFramework::Spawnable>());
 
+        // Verify we have only the networked entity in the network spawnable and not the static one
         const AzFramework::Spawnable* netSpawnable = azrtti_cast<const AzFramework::Spawnable*>(&spawnableAsset);
         const AzFramework::Spawnable::EntityList& entityList = netSpawnable->GetEntities();
         auto countEntityCallback = [](const auto& name)
