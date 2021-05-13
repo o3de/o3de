@@ -7,30 +7,27 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-
-Test case ID: T92568940
-Test Case Title: Categories and Nodes can be selected
 """
 
 
 # fmt: off
 class Tests():
-    category_selected  = ("Category can be selected",  "Category cannot be selected")
-    node_selected      = ("Node can be selected",      "Node cannot be selected")
+    category_selected = ("Category can be selected", "Category cannot be selected")
+    node_selected     = ("Node can be selected",     "Node cannot be selected")
 # fmt: on
 
 
 GENERAL_WAIT = 0.5  # seconds
 
 
-def NodePalette_SelectNode():
+def NodePalette_HappyPath_CanSelectNode():
     """
     Summary:
      Categories and Nodes can be selected
 
     Expected Behavior:
-     When clicked on Node Palette, nodes and categories can be selected.
+     A category can be selected inside the Node Palette
+     A Node can be selected inside the Node Palette
 
     Test Steps:
      1) Open Script Canvas window (Tools > Script Canvas)
@@ -53,10 +50,11 @@ def NodePalette_SelectNode():
     NODE = "Find Path To Entity"
 
     from PySide2 import QtWidgets
-    import azlmbr.legacy.general as general
 
     import pyside_utils
     from utils import TestHelper as helper
+
+    import azlmbr.legacy.general as general
 
     # 1) Open Script Canvas window (Tools > Script Canvas)
     general.idle_enable(True)
@@ -97,7 +95,6 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
 
     imports.init()
-
     from utils import Report
 
-    Report.start_test(NodePalette_SelectNode)
+    Report.start_test(NodePalette_HappyPath_CanSelectNode)

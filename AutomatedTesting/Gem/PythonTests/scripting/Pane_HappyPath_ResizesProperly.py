@@ -7,36 +7,31 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test case ID: C1702834 // C1702823
-Test Case Title: Opening pane // Closing pane
 """
 
 
 # fmt: off
 class Tests():
-    default_visible = ("All the panes visible by default",  "One or more panes do not visible by default")
-    open_panes      = ("All the Panes opened successfully", "Failed to open one or more panes")
-    close_pane      = ("All the Panes closed successfully", "Failed to close one or more panes")
+    open_pane      = ("Pane opened successfully",         "Failed to open pane")
+    resize_pane    = ("Pane window resized successfully", "Failed to resize pane window")
 # fmt: on
 
 
-def Opening_Closing_Pane():
+def Pane_HappyPath_ResizesProperly():
     """
     Summary:
-     The Script Canvas window is opened to verify if Script canvas panes can be opened and closed.
+     The Script Canvas window is opened to verify if Script Canvas panes can be resized and scaled
 
     Expected Behavior:
-     The pane opens and closes successfully.
+     The pane is resized and scaled appropriately.
 
     Test Steps:
      1) Open Script Canvas window (Tools > Script Canvas)
      2) Restore default layout
-     3) Verify if panes were opened by default
-     4) Close the opened panes
-     5) Open Script Canvas panes (Tools > <pane>)
-     6) Restore default layout
-     7) Close Script Canvas window
+     3) Make sure pane is opened
+     4) Resize pane and verify change
+     5) Restore default layout
+     6) Close Script Canvas window
 
     Note:
      - This test file must be called from the Open 3D Engine Editor command terminal
@@ -46,17 +41,17 @@ def Opening_Closing_Pane():
     :return: None
     """
 
+    from PySide2 import QtWidgets
+
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     import editor_python_test_tools.pyside_utils as pyside_utils
 
-    # Open 3D Engine Imports
+    # Open 3D Engine imports
     import azlmbr.legacy.general as general
 
-    # Pyside imports
-    from PySide2 import QtWidgets
-
-    PANE_WIDGETS = ("NodePalette", "VariableManager")
+    PANE_WIDGET = "NodePalette"
+    SCALE_INT = 10
 
     def click_menu_option(window, option_text):
         action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtWidgets.QAction})
@@ -64,10 +59,6 @@ def Opening_Closing_Pane():
 
     def find_pane(window, pane_name):
         return window.findChild(QtWidgets.QDockWidget, pane_name)
-
-    def is_pane_visible(window, pane_name):
-        pane = find_pane(window, pane_name)
-        return pane.isVisible()
 
     # Test starts here
     general.idle_enable(True)
@@ -81,31 +72,30 @@ def Opening_Closing_Pane():
     sc = editor_window.findChild(QtWidgets.QDockWidget, "Script Canvas")
     click_menu_option(sc, "Restore Default Layout")
 
-    # 3) Verify if panes were opened by default
-    PANES_VISIBLE = all(is_pane_visible(sc, pane) for pane in PANE_WIDGETS)
-    Report.critical_result(Tests.default_visible, PANES_VISIBLE)
+    # 3) Make sure pane is opened
+    editor_window = pyside_utils.get_editor_main_window()
+    sc = editor_window.findChild(QtWidgets.QDockWidget, "Script Canvas")
+    pane = find_pane(sc, PANE_WIDGET)
+    if not pane.isVisible():
+        click_menu_option(sc, "Node Palette")
+        pane = find_pane(sc, PANE_WIDGET)  # New reference
 
-    # 4) Close the opened panes
-    for item in PANE_WIDGETS:
-        pane = sc.findChild(QtWidgets.QDockWidget, item)
-        pane.close()
-        if pane.isVisible():
-            Report.info(f"Failed to close pane : {item}")
+    Report.result(Tests.open_pane, pane.isVisible())
 
-    PANES_VISIBLE = any(is_pane_visible(sc, pane) for pane in PANE_WIDGETS)
-    Report.result(Tests.close_pane, not PANES_VISIBLE)
+    # 4) Resize pane and verify change
+    initial_size = pane.frameSize()
+    pane.resize(initial_size.width() + SCALE_INT, initial_size.height() + SCALE_INT)
+    new_size = pane.frameSize()
+    test_success = (
+        abs(initial_size.width() - new_size.width()) == abs(initial_size.height() - new_size.height()) == SCALE_INT
+    )
+    Report.result(Tests.resize_pane, test_success)
 
-    # 5) Open Script Canvas panes (Tools > <pane>)
-    click_menu_option(sc, "Node Palette")
-    click_menu_option(sc, "Variable Manager")
-    PANES_VISIBLE = helper.wait_for_condition(lambda: all(is_pane_visible(sc, pane) for pane in PANE_WIDGETS), 2.0)
-    Report.result(Tests.open_panes, PANES_VISIBLE)
-
-    # 6) Restore default layout
+    # 5) Restore default layout
     # Needed this step to restore to default in case of test failure
     click_menu_option(sc, "Restore Default Layout")
 
-    # 7) Close Script Canvas window
+    # 6) Close Script Canvas window
     sc.close()
 
 
@@ -113,7 +103,6 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
 
     imports.init()
-
     from editor_python_test_tools.utils import Report
 
-    Report.start_test(Opening_Closing_Pane)
+    Report.start_test(Pane_HappyPath_ResizesProperly)

@@ -7,10 +7,6 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test case ID: T92562986
-Test Case Title: Changing the assigned Script Canvas Asset on an entity properly updates
-level functionality
 """
 
 
@@ -24,7 +20,7 @@ class Tests():
 # fmt: on
 
 
-def ScriptCanvas_ChangingAssets():
+def ScriptCanvas_ChangingAssets_ComponentStable():
     """
     Summary:
      Changing the assigned Script Canvas Asset on an entity properly updates level functionality
@@ -57,7 +53,6 @@ def ScriptCanvas_ChangingAssets():
     import azlmbr.math as math
     import azlmbr.asset as asset
     import azlmbr.bus as bus
-    import azlmbr.paths as paths
 
     LEVEL_NAME = "tmp_level"
     ASSET_1 = os.path.join("scriptcanvas", "ScriptCanvas_TwoComponents0.scriptcanvas")
@@ -82,7 +77,6 @@ def ScriptCanvas_ChangingAssets():
         helper.wait_for_condition(lambda: find_expected_line(EXP_LINE), WAIT_TIME)
         Report.result(Tests.found_lines, find_expected_line(EXP_LINE))
         helper.exit_game_mode(Tests.game_mode_exited)
-
 
     # 1) Create temp level
     general.idle_enable(True)
@@ -112,4 +106,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(ScriptCanvas_ChangingAssets)
+    Report.start_test(ScriptCanvas_ChangingAssets_ComponentStable)

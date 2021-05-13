@@ -7,12 +7,6 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test case ID: C92569165, C92569167, C92569168, C92569170
-Test Case Title: Tools > Node Palette toggles the Node Palette
-                 Tools > Node Inspector toggles the Node Inspector
-                 Tools > Bookmarks toggles the Bookmarks
-                 Tools > Variable Manager toggles the Variable Manager
 """
 
 
@@ -33,7 +27,7 @@ class Tests():
 # fmt: on
 
 
-def Toggle_ScriptCanvasTools():
+def ScriptCanvasTools_Toggle_OpenCloseSuccess():
     """
     Summary:
      Toggle Node Palette, Node Inspector, Bookmarks and Variable Manager in Script Canvas.
@@ -58,15 +52,14 @@ def Toggle_ScriptCanvasTools():
     :return: None
     """
 
+    from PySide2 import QtWidgets
+
     from utils import Report
     from utils import TestHelper as helper
     import pyside_utils
 
     # Open 3D Engine imports
     import azlmbr.legacy.general as general
-
-    # Pyside imports
-    from PySide2 import QtWidgets
 
     def click_menu_option(window, option_text):
         action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtWidgets.QAction})
@@ -126,7 +119,6 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
 
     imports.init()
-
     from utils import Report
 
-    Report.start_test(Toggle_ScriptCanvasTools)
+    Report.start_test(ScriptCanvasTools_Toggle_OpenCloseSuccess)
