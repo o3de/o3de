@@ -19,3 +19,4 @@ _savebackup/
 TestResults/**
 *.swatches
 /imgui.ini
+.github/
