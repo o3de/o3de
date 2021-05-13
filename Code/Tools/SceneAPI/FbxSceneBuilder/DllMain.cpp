@@ -41,13 +41,6 @@ namespace AZ
             static AZ::SceneAPI::FbxSceneImporter::FbxImportRequestHandler* g_fbxImporter = nullptr;
             static AZStd::vector<AZ::ComponentDescriptor*> g_componentDescriptors;
 
-            void Initialize()
-            {
-                // Currently it's still needed to explicitly create an instance of this instead of letting
-                //      it be a normal component. This is because ResourceCompilerScene needs to return
-                //      the list of available extensions before it can start the application.
-            }
-
             void Reflect(AZ::SerializeContext* /*context*/)
             {
                 // Descriptor registration is done in Reflect instead of Initialize because the ResourceCompilerScene initializes the libraries before

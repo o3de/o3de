@@ -10,19 +10,16 @@
 *
 */
 
-#include <API/EditorAssetSystemAPI.h>
 #include <AssetProcessor/AssetBuilderSDK/AssetBuilderSDK/AssetBuilderSDK.h>
-#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
-#include <AzFramework/FileFunc/FileFunc.h>
-#include <AzFramework/IO/LocalFileIO.h>
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/StringFunc/StringFunc.h>
+#include <SceneAPI/FbxSceneBuilder/FbxImportRequestHandler.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Events/CallProcessorBus.h>
 #include <SceneAPI/SceneCore/Events/ImportEventContext.h>
-#include <SceneAPI/FbxSceneBuilder/FbxImportRequestHandler.h>
 
 namespace AZ
 {
@@ -79,7 +76,7 @@ namespace AZ
             Events::LoadingResult FbxImportRequestHandler::LoadAsset(Containers::Scene& scene, const AZStd::string& path, const Uuid& guid, [[maybe_unused]] RequestingApplication requester)
             {
                 AZStd::string extension;
-                AzFramework::StringFunc::Path::GetExtension(path.c_str(), extension);
+                StringFunc::Path::GetExtension(path.c_str(), extension);
                 
                 if (!m_settings.m_supportedFileTypeExtensions.contains(extension))
                 {
