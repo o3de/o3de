@@ -17,23 +17,27 @@
 
 namespace Ui
 {
-    class EngineSettingsClass;
+    class ProjectsHomeClass;
 }
 
 namespace O3DE::ProjectManager
 {
-    class EngineSettings
+    class ProjectsHomeScreen
         : public ScreenWidget
     {
-    public:
-        explicit EngineSettings(ProjectManagerWindow* window);
-        ~EngineSettings();
 
-    protected:
-        void ConnectSlotsAndSignals() override;
+    public:
+        explicit ProjectsHomeScreen(QWidget* parent = nullptr);
+        ~ProjectsHomeScreen() = default;
+        ProjectManagerScreen GetScreenEnum() override;
+
+    protected slots:
+        void HandleNewProjectButton();
+        void HandleAddProjectButton();
+        void HandleEditProjectButton();
 
     private:
-        QScopedPointer<Ui::EngineSettingsClass> m_ui;
+        QScopedPointer<Ui::ProjectsHomeClass> m_ui;
     };
 
 } // namespace O3DE::ProjectManager

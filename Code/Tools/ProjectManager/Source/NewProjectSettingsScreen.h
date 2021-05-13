@@ -9,27 +9,22 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  */
+#pragma once
 
-#include <EngineSettings.h>
-
-#include <Source/ui_EngineSettings.h>
+#if !defined(Q_MOC_RUN)
+#include <ScreenWidget.h>
+#endif
 
 namespace O3DE::ProjectManager
 {
-    EngineSettings::EngineSettings(ProjectManagerWindow* window)
-        : ScreenWidget(window)
-        , m_ui(new Ui::EngineSettingsClass())
+    class NewProjectSettingsScreen
+        : public ScreenWidget
     {
-        m_ui->setupUi(this);
-    }
-
-    EngineSettings::~EngineSettings()
-    {
-    }
-
-    void EngineSettings::ConnectSlotsAndSignals()
-    {
-        // Do nothing for now
-    }
+    public:
+        explicit NewProjectSettingsScreen(QWidget* parent = nullptr);
+        ~NewProjectSettingsScreen() = default;
+        ProjectManagerScreen GetScreenEnum() override;
+        QString GetNextButtonText() override;
+    };
 
 } // namespace O3DE::ProjectManager
