@@ -10,6 +10,7 @@
 *
 */
  
+#include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/Features/ParallaxMapping.azsli>
@@ -17,15 +18,14 @@
 
 #include "MaterialInputs/ParallaxInput.azsli"
 
-
 #include "MaterialInputs/ParallaxInput.azsli"
 COMMON_OPTIONS_PARALLAX(o_layer1_)
 COMMON_OPTIONS_PARALLAX(o_layer2_)
 COMMON_OPTIONS_PARALLAX(o_layer3_)
 
-#include "./StandardMultilayerPBR_Common.azsli"
+#include "StandardMultilayerPBR_Common.azsli"
 
-struct VSInput
+struct VertexInput
 {
     float3 m_position : POSITION;
     float2 m_uv0 : UV0;
@@ -42,8 +42,8 @@ struct VSInput
     // [GFX TODO][ATOM-14475]: Come up with a more elegant way to associate the isBound flag with the input stream.
     float4 m_optional_blendMask : COLOR0;
 };
- 
-struct VSDepthOutput
+
+struct VertexOutput
 {
     float4 m_position : SV_Position;
     float2 m_uv[UvSetCount] : UV1;
@@ -53,17 +53,16 @@ struct VSDepthOutput
     float3 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 
     float3 m_worldPosition : UV0;
-    float3 m_blendMask : UV3;
+    float3 m_blendWeights : UV3;
 };
 
-VSDepthOutput MainVS(VSInput IN)
+VertexOutput MainVS(VertexInput IN)
 {
-    VSDepthOutput OUT;
- 
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float4 worldPosition = mul(objectToWorld, float4(IN.m_position, 1.0));
-
-    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+    const float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    VertexOutput OUT;
+    
+    const float3 worldPosition = mul(objectToWorld, float4(IN.m_position, 1.0)).xyz;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
 
     // By design, only UV0 is allowed to apply transforms.
     // Note there are additional UV transforms that happen for each layer, but we defer that step to the pixel shader to avoid bloating the vertex output buffer.
@@ -77,14 +76,14 @@ VSDepthOutput MainVS(VSInput IN)
         float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
         ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
     }
-        
+    
     if(o_blendMask_isBound)
     {
-        OUT.m_blendMask = IN.m_optional_blendMask.rgb;
+        OUT.m_blendWeights = IN.m_optional_blendMask.rgb;
     }
     else
     {
-        OUT.m_blendMask = float3(0,0,0);
+        OUT.m_blendWeights = float3(1,1,1);
     }
 
     return OUT;
@@ -95,12 +94,12 @@ struct PSDepthOutput
     float m_depth : SV_Depth;
 };
 
-PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
+PSDepthOutput MainPS(VertexOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
     PSDepthOutput OUT;
 
     OUT.m_depth = IN.m_position.z;
-    
+
     if(ShouldHandleParallaxInDepthShaders())
     {
         // We support two UV streams, but only a single stream of tangent/bitangent. So for UV[1+] we generated the tangent/bitangent in screen-space.
@@ -108,21 +107,25 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
         float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, float3(0, 0, 0) };
         PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents, 1);
              
+<<<<<<< HEAD
         s_blendMaskFromVertexStream = IN.m_blendMask;
+=======
+        GetDepth_Setup(IN.m_blendWeights);
+>>>>>>> Atom/santorac/MultilayerPbrImprovements
         
-        float depth;
+        float depthNDC;
 
         float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
         float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
-
+        
         float parallaxOverallOffset = MaterialSrg::m_displacementMax;
         float parallaxOverallFactor = MaterialSrg::m_displacementMax - MaterialSrg::m_displacementMin;
         GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], parallaxOverallFactor, parallaxOverallOffset, 
                          ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
-                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depth);
+                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depthNDC);
 
-        OUT.m_depth = depth;
+        OUT.m_depth = depthNDC;
     }
-
+    
     return OUT;
 }

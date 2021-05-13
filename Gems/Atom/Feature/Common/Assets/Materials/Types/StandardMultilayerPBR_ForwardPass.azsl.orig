@@ -94,7 +94,7 @@ struct VSOutput
     // Extended fields (only referenced in this azsl file)...
     float2 m_uv[UvSetCount] : UV1;
     
-    float3 m_blendMask : UV7;
+    float3 m_blendWeights : UV7;
 };
 
 #include <Atom/Features/Vertex/VertexHelper.azsli>
@@ -112,11 +112,11 @@ VSOutput ForwardPassVS(VSInput IN)
 
     if(o_blendMask_isBound)
     {
-        OUT.m_blendMask = IN.m_optional_blendMask.rgb;
+        OUT.m_blendWeights = IN.m_optional_blendMask.rgb;
     }
     else
     {
-        OUT.m_blendMask = float3(0,0,0);
+        OUT.m_blendWeights = float3(1,1,1);
     }
     
     // Shadow coords will be calculated in the pixel shader in this case
@@ -310,8 +310,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     s_blendMaskFromVertexStream = IN.m_blendMask;
 
-    LayerBlendSource blendSource = GetFinalLayerBlendSource();
-
     // ------- Tangents & Bitangets -------
 
     // We support two UV streams, but only a single stream of tangent/bitangent. So for UV[1+] we generated the tangent/bitangent in screen-space.
@@ -334,22 +332,27 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     
     // ------- Debug Modes -------
 
-    if(o_debugDrawMode == DebugDrawMode::BlendMask)
+<<<<<<< HEAD
+    if(o_debugDrawMode == DebugDrawMode::BlendSource)
     {
-        float3 blendMaskValues = GetApplicableBlendMaskValues(blendSource, IN.m_uv[MaterialSrg::m_blendMaskUvIndex], IN.m_blendMask);
-        return DebugOutput(blendMaskValues);
+        float3 blendSource = GetBlendSourceValues(IN.m_uv[MaterialSrg::m_blendMaskUvIndex]);
+        return DebugOutput(blendSource);
+=======
+    if(o_debugDrawMode == DebugDrawMode::BlendWeights)
+    {
+        float3 blendWeights = GetBlendWeights(IN.m_uv[MaterialSrg::m_blendMaskUvIndex], IN.m_blendWeights);
+        return DebugOutput(blendWeights);
+>>>>>>> Atom/santorac/MultilayerPbrImprovements
     }
     
-    if(o_debugDrawMode == DebugDrawMode::Displacement)
+    if(o_debugDrawMode == DebugDrawMode::DisplacementMaps)
     {
+<<<<<<< HEAD
+=======
+        GetDepth_Setup(IN.m_blendWeights);
+>>>>>>> Atom/santorac/MultilayerPbrImprovements
         float depth = GetNormalizedDepth(-MaterialSrg::m_displacementMax, -MaterialSrg::m_displacementMin, IN.m_uv[MaterialSrg::m_parallaxUvIndex], float2(0,0), float2(0,0));
         return DebugOutput(float3(depth,depth,depth));
-    }
-    
-    if(o_debugDrawMode == DebugDrawMode::FinalBlendWeights)
-    {
-        float3 blendWeights = GetBlendWeights(blendSource, IN.m_uv[MaterialSrg::m_blendMaskUvIndex], IN.m_blendMask);
-        return DebugOutput(blendWeights);
     }
 
     // ------- Parallax -------
@@ -358,6 +361,11 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     if(ShouldHandleParallax())
     {
+<<<<<<< HEAD
+=======
+        GetDepth_Setup(IN.m_blendWeights);
+
+>>>>>>> Atom/santorac/MultilayerPbrImprovements
         float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
         float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
         
@@ -381,11 +389,48 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // ------- Calculate Layer Blend Mask Values -------
     
     // Now that any parallax has been calculated, we calculate the blend factors for any layers that are impacted by the parallax.
-    float3 blendWeights = GetBlendWeights(blendSource, IN.m_uv[MaterialSrg::m_blendMaskUvIndex], IN.m_blendMask);
+<<<<<<< HEAD
+    float3 blendWeights = GetBlendWeights(IN.m_uv[MaterialSrg::m_blendMaskUvIndex]);
 
     // ------- Layer 1 (base layer) -----------
 
     ProcessedMaterialInputs lightingInputLayer1;
+=======
+    float3 blendWeights = GetBlendWeights(IN.m_uv[MaterialSrg::m_blendMaskUvIndex], IN.m_blendWeights);
+
+    // ------- Normal -------
+    
+    float3 layer1_normalFactor = MaterialSrg::m_layer1_m_normalFactor * blendWeights.r;
+    float3 layer2_normalFactor = MaterialSrg::m_layer2_m_normalFactor * blendWeights.g;
+    float3 layer3_normalFactor = MaterialSrg::m_layer3_m_normalFactor * blendWeights.b;
+    float3x3 layer1_uvMatrix = MaterialSrg::m_layer1_m_normalMapUvIndex == 0 ? MaterialSrg::m_layer1_m_uvMatrix : CreateIdentity3x3();
+    float3x3 layer2_uvMatrix = MaterialSrg::m_layer2_m_normalMapUvIndex == 0 ? MaterialSrg::m_layer2_m_uvMatrix : CreateIdentity3x3();
+    float3x3 layer3_uvMatrix = MaterialSrg::m_layer3_m_normalMapUvIndex == 0 ? MaterialSrg::m_layer3_m_uvMatrix : CreateIdentity3x3();
+    float3 layer1_normalTS = GetNormalInputTS(MaterialSrg::m_layer1_m_normalMap, MaterialSrg::m_sampler, uvLayer1[MaterialSrg::m_layer1_m_normalMapUvIndex], MaterialSrg::m_layer1_m_flipNormalX, MaterialSrg::m_layer1_m_flipNormalY, layer1_uvMatrix, o_layer1_o_normal_useTexture, layer1_normalFactor);
+    float3 layer2_normalTS = GetNormalInputTS(MaterialSrg::m_layer2_m_normalMap, MaterialSrg::m_sampler, uvLayer2[MaterialSrg::m_layer2_m_normalMapUvIndex], MaterialSrg::m_layer2_m_flipNormalX, MaterialSrg::m_layer2_m_flipNormalY, layer2_uvMatrix, o_layer2_o_normal_useTexture, layer2_normalFactor);
+    float3 layer3_normalTS = GetNormalInputTS(MaterialSrg::m_layer3_m_normalMap, MaterialSrg::m_sampler, uvLayer3[MaterialSrg::m_layer3_m_normalMapUvIndex], MaterialSrg::m_layer3_m_flipNormalX, MaterialSrg::m_layer3_m_flipNormalY, layer3_uvMatrix, o_layer3_o_normal_useTexture, layer3_normalFactor);
+    
+    float3 normalTS = ReorientTangentSpaceNormal(layer1_normalTS, layer2_normalTS);
+    normalTS = ReorientTangentSpaceNormal(normalTS, layer3_normalTS);
+    // [GFX TODO][ATOM-14591]: This will only work if the normal maps all use the same UV stream. We would need to add support for having them in different UV streams.
+    surface.normal = normalize(TangentSpaceToWorld(normalTS, IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex]));
+    
+    // ------- Base Color -------
+    
+    float2 layer1_baseColorUv = uvLayer1[MaterialSrg::m_layer1_m_baseColorMapUvIndex];
+    float2 layer2_baseColorUv = uvLayer2[MaterialSrg::m_layer2_m_baseColorMapUvIndex];
+    float2 layer3_baseColorUv = uvLayer3[MaterialSrg::m_layer3_m_baseColorMapUvIndex];
+
+    float3 layer1_sampledColor = GetBaseColorInput(MaterialSrg::m_layer1_m_baseColorMap, MaterialSrg::m_sampler, layer1_baseColorUv, MaterialSrg::m_layer1_m_baseColor.rgb, o_layer1_o_baseColor_useTexture);
+    float3 layer2_sampledColor = GetBaseColorInput(MaterialSrg::m_layer2_m_baseColorMap, MaterialSrg::m_sampler, layer2_baseColorUv, MaterialSrg::m_layer2_m_baseColor.rgb, o_layer2_o_baseColor_useTexture);
+    float3 layer3_sampledColor = GetBaseColorInput(MaterialSrg::m_layer3_m_baseColorMap, MaterialSrg::m_sampler, layer3_baseColorUv, MaterialSrg::m_layer3_m_baseColor.rgb, o_layer3_o_baseColor_useTexture);
+    float3 layer1_baseColor = BlendBaseColor(layer1_sampledColor, MaterialSrg::m_layer1_m_baseColor.rgb, MaterialSrg::m_layer1_m_baseColorFactor, o_layer1_o_baseColorTextureBlendMode, o_layer1_o_baseColor_useTexture);
+    float3 layer2_baseColor = BlendBaseColor(layer2_sampledColor, MaterialSrg::m_layer2_m_baseColor.rgb, MaterialSrg::m_layer2_m_baseColorFactor, o_layer2_o_baseColorTextureBlendMode, o_layer2_o_baseColor_useTexture);
+    float3 layer3_baseColor = BlendBaseColor(layer3_sampledColor, MaterialSrg::m_layer3_m_baseColor.rgb, MaterialSrg::m_layer3_m_baseColorFactor, o_layer3_o_baseColorTextureBlendMode, o_layer3_o_baseColor_useTexture);
+    float3 baseColor = BlendLayers(layer1_baseColor, layer2_baseColor, layer3_baseColor, blendWeights);
+    
+    if(o_parallax_highlightClipping && displacementIsClipped)
+>>>>>>> Atom/santorac/MultilayerPbrImprovements
     {
         StandardMaterialInputs inputs;
         FILL_STANDARD_MATERIAL_INPUTS(inputs, MaterialSrg::m_layer1_, o_layer1_, blendWeights.r)
@@ -397,6 +442,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     ProcessedMaterialInputs lightingInputLayer2; 
     if(o_layer2_enabled)
     {
+<<<<<<< HEAD
         StandardMaterialInputs inputs;
         FILL_STANDARD_MATERIAL_INPUTS(inputs, MaterialSrg::m_layer2_, o_layer2_, blendWeights.g)
         lightingInputLayer2 = ProcessStandardMaterialInputs(inputs);
@@ -407,6 +453,22 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     }
     
     // ----------- Layer 3 -----------
+=======
+        float layer1_metallic = GetMetallicInput(MaterialSrg::m_layer1_m_metallicMap, MaterialSrg::m_sampler, uvLayer1[MaterialSrg::m_layer1_m_metallicMapUvIndex], MaterialSrg::m_layer1_m_metallicFactor, o_layer1_o_metallic_useTexture);
+        float layer2_metallic = GetMetallicInput(MaterialSrg::m_layer2_m_metallicMap, MaterialSrg::m_sampler, uvLayer2[MaterialSrg::m_layer2_m_metallicMapUvIndex], MaterialSrg::m_layer2_m_metallicFactor, o_layer2_o_metallic_useTexture);
+        float layer3_metallic = GetMetallicInput(MaterialSrg::m_layer3_m_metallicMap, MaterialSrg::m_sampler, uvLayer3[MaterialSrg::m_layer3_m_metallicMapUvIndex], MaterialSrg::m_layer3_m_metallicFactor, o_layer3_o_metallic_useTexture);
+        metallic = BlendLayers(layer1_metallic, layer2_metallic, layer3_metallic, blendWeights);
+    }
+    
+    // ------- Specular -------
+
+    float layer1_specularF0Factor = GetSpecularInput(MaterialSrg::m_layer1_m_specularF0Map, MaterialSrg::m_sampler, uvLayer1[MaterialSrg::m_layer1_m_specularF0MapUvIndex], MaterialSrg::m_layer1_m_specularF0Factor, o_layer1_o_specularF0_useTexture);
+    float layer2_specularF0Factor = GetSpecularInput(MaterialSrg::m_layer2_m_specularF0Map, MaterialSrg::m_sampler, uvLayer2[MaterialSrg::m_layer2_m_specularF0MapUvIndex], MaterialSrg::m_layer2_m_specularF0Factor, o_layer2_o_specularF0_useTexture);
+    float layer3_specularF0Factor = GetSpecularInput(MaterialSrg::m_layer3_m_specularF0Map, MaterialSrg::m_sampler, uvLayer3[MaterialSrg::m_layer3_m_specularF0MapUvIndex], MaterialSrg::m_layer3_m_specularF0Factor, o_layer3_o_specularF0_useTexture);
+    float specularF0Factor = BlendLayers(layer1_specularF0Factor, layer2_specularF0Factor, layer3_specularF0Factor, blendWeights);
+
+    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
+>>>>>>> Atom/santorac/MultilayerPbrImprovements
 
     ProcessedMaterialInputs lightingInputLayer3;
     if(o_layer3_enabled)
@@ -420,11 +482,18 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         lightingInputLayer3.InitializeToZero();
     }
 
+<<<<<<< HEAD
     // ------- Combine all layers ---------
     
     Surface surface;
     surface.position = IN.m_worldPosition;
     surface.transmission.InitializeToZero();
+=======
+    float layer1_roughness = GetRoughnessInput(MaterialSrg::m_layer1_m_roughnessMap, MaterialSrg::m_sampler, uvLayer1[MaterialSrg::m_layer1_m_roughnessMapUvIndex], MaterialSrg::m_layer1_m_roughnessFactor, MaterialSrg::m_layer1_m_roughnessLowerBound, MaterialSrg::m_layer1_m_roughnessUpperBound, o_layer1_o_roughness_useTexture);
+    float layer2_roughness = GetRoughnessInput(MaterialSrg::m_layer2_m_roughnessMap, MaterialSrg::m_sampler, uvLayer2[MaterialSrg::m_layer2_m_roughnessMapUvIndex], MaterialSrg::m_layer2_m_roughnessFactor, MaterialSrg::m_layer2_m_roughnessLowerBound, MaterialSrg::m_layer2_m_roughnessUpperBound, o_layer2_o_roughness_useTexture);
+    float layer3_roughness = GetRoughnessInput(MaterialSrg::m_layer3_m_roughnessMap, MaterialSrg::m_sampler, uvLayer3[MaterialSrg::m_layer3_m_roughnessMapUvIndex], MaterialSrg::m_layer3_m_roughnessFactor, MaterialSrg::m_layer3_m_roughnessLowerBound, MaterialSrg::m_layer3_m_roughnessUpperBound, o_layer3_o_roughness_useTexture);
+    surface.roughnessLinear = BlendLayers(layer1_roughness, layer2_roughness, layer3_roughness, blendWeights);
+>>>>>>> Atom/santorac/MultilayerPbrImprovements
 
     // ------- Combine Normals ---------
 
@@ -467,21 +536,101 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // Directional light shadow coordinates
     lightingData.shadowCoords = IN.m_shadowCoords;
     
+<<<<<<< HEAD
     lightingData.emissiveLighting = BlendLayers(lightingInputLayer1.m_emissiveLighting, lightingInputLayer2.m_emissiveLighting, lightingInputLayer3.m_emissiveLighting, blendWeights);
     lightingData.specularOcclusion = BlendLayers(lightingInputLayer1.m_specularOcclusion, lightingInputLayer2.m_specularOcclusion, lightingInputLayer3.m_specularOcclusion, blendWeights);
     lightingData.diffuseAmbientOcclusion = BlendLayers(lightingInputLayer1.m_diffuseAmbientOcclusion, lightingInputLayer2.m_diffuseAmbientOcclusion, lightingInputLayer3.m_diffuseAmbientOcclusion, blendWeights);
 
     lightingData.CalculateMultiscatterCompensation(surface.specularF0, o_specularF0_enableMultiScatterCompensation);
+=======
+    float3 layer1_emissive = GetEmissiveInput(MaterialSrg::m_layer1_m_emissiveMap, MaterialSrg::m_sampler, uvLayer1[MaterialSrg::m_layer1_m_emissiveMapUvIndex], MaterialSrg::m_layer1_m_emissiveIntensity, MaterialSrg::m_layer1_m_emissiveColor.rgb, o_layer1_o_emissiveEnabled, o_layer1_o_emissive_useTexture);
+    float3 layer2_emissive = GetEmissiveInput(MaterialSrg::m_layer2_m_emissiveMap, MaterialSrg::m_sampler, uvLayer2[MaterialSrg::m_layer2_m_emissiveMapUvIndex], MaterialSrg::m_layer2_m_emissiveIntensity, MaterialSrg::m_layer2_m_emissiveColor.rgb, o_layer2_o_emissiveEnabled, o_layer2_o_emissive_useTexture);
+    float3 layer3_emissive = GetEmissiveInput(MaterialSrg::m_layer3_m_emissiveMap, MaterialSrg::m_sampler, uvLayer3[MaterialSrg::m_layer3_m_emissiveMapUvIndex], MaterialSrg::m_layer3_m_emissiveIntensity, MaterialSrg::m_layer3_m_emissiveColor.rgb, o_layer3_o_emissiveEnabled, o_layer3_o_emissive_useTexture);
+    lightingData.emissiveLighting = BlendLayers(layer1_emissive, layer2_emissive, layer3_emissive, blendWeights);
+
+    // ------- Occlusion -------
+    
+    float layer1_diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_layer1_m_diffuseOcclusionMap, MaterialSrg::m_sampler, uvLayer1[MaterialSrg::m_layer1_m_diffuseOcclusionMapUvIndex], MaterialSrg::m_layer1_m_diffuseOcclusionFactor, o_layer1_o_diffuseOcclusion_useTexture);
+    float layer2_diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_layer2_m_diffuseOcclusionMap, MaterialSrg::m_sampler, uvLayer2[MaterialSrg::m_layer2_m_diffuseOcclusionMapUvIndex], MaterialSrg::m_layer2_m_diffuseOcclusionFactor, o_layer2_o_diffuseOcclusion_useTexture);
+    float layer3_diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_layer3_m_diffuseOcclusionMap, MaterialSrg::m_sampler, uvLayer3[MaterialSrg::m_layer3_m_diffuseOcclusionMapUvIndex], MaterialSrg::m_layer3_m_diffuseOcclusionFactor, o_layer3_o_diffuseOcclusion_useTexture);
+    lightingData.diffuseAmbientOcclusion = BlendLayers(layer1_diffuseAmbientOcclusion, layer2_diffuseAmbientOcclusion, layer3_diffuseAmbientOcclusion, blendWeights);
+
+    float layer1_specularOcclusion = GetOcclusionInput(MaterialSrg::m_layer1_m_specularOcclusionMap, MaterialSrg::m_sampler, uvLayer1[MaterialSrg::m_layer1_m_specularOcclusionMapUvIndex], MaterialSrg::m_layer1_m_specularOcclusionFactor, o_layer1_o_specularOcclusion_useTexture);
+    float layer2_specularOcclusion = GetOcclusionInput(MaterialSrg::m_layer2_m_specularOcclusionMap, MaterialSrg::m_sampler, uvLayer2[MaterialSrg::m_layer2_m_specularOcclusionMapUvIndex], MaterialSrg::m_layer2_m_specularOcclusionFactor, o_layer2_o_specularOcclusion_useTexture);
+    float layer3_specularOcclusion = GetOcclusionInput(MaterialSrg::m_layer3_m_specularOcclusionMap, MaterialSrg::m_sampler, uvLayer3[MaterialSrg::m_layer3_m_specularOcclusionMapUvIndex], MaterialSrg::m_layer3_m_specularOcclusionFactor, o_layer3_o_specularOcclusion_useTexture);
+    lightingData.specularOcclusion = BlendLayers(layer1_specularOcclusion, layer2_specularOcclusion, layer3_specularOcclusion, blendWeights);
+>>>>>>> Atom/santorac/MultilayerPbrImprovements
 
     // ------- Combine Clearcoat -------
     
     if(o_clearCoat_feature_enabled)
     {
+<<<<<<< HEAD
         surface.clearCoat.factor = BlendLayers(lightingInputLayer1.m_clearCoat.factor, lightingInputLayer2.m_clearCoat.factor, lightingInputLayer3.m_clearCoat.factor, blendWeights);
         surface.clearCoat.roughness = BlendLayers(lightingInputLayer1.m_clearCoat.roughness, lightingInputLayer2.m_clearCoat.roughness, lightingInputLayer3.m_clearCoat.roughness, blendWeights);
 
         // [GFX TODO][ATOM-14592] This is not the right way to blend the normals. We need to use ReorientTangentSpaceNormal(), and that requires GetClearCoatInputs() to return the normal in TS instead of WS.
         surface.clearCoat.normal = BlendLayers(lightingInputLayer1.m_clearCoat.normal, lightingInputLayer2.m_clearCoat.normal, lightingInputLayer3.m_clearCoat.normal, blendWeights);
+=======
+        // --- Layer 1 ---
+
+        float layer1_clearCoatFactor = 0.0f;
+        float layer1_clearCoatRoughness = 0.0f;
+        float3 layer1_clearCoatNormal = float3(0.0, 0.0, 0.0);
+        if(o_layer1_o_clearCoat_enabled)
+        {
+            float3x3 layer1_uvMatrix = MaterialSrg::m_layer1_m_clearCoatNormalMapUvIndex == 0 ? MaterialSrg::m_layer1_m_uvMatrix : CreateIdentity3x3();
+
+            GetClearCoatInputs(MaterialSrg::m_layer1_m_clearCoatInfluenceMap, uvLayer1[MaterialSrg::m_layer1_m_clearCoatInfluenceMapUvIndex], MaterialSrg::m_layer1_m_clearCoatFactor, o_layer1_o_clearCoat_factor_useTexture,
+                               MaterialSrg::m_layer1_m_clearCoatRoughnessMap, uvLayer1[MaterialSrg::m_layer1_m_clearCoatRoughnessMapUvIndex], MaterialSrg::m_layer1_m_clearCoatRoughness, o_layer1_o_clearCoat_roughness_useTexture,
+                               MaterialSrg::m_layer1_m_clearCoatNormalMap,    uvLayer1[MaterialSrg::m_layer1_m_clearCoatNormalMapUvIndex], IN.m_normal, o_layer1_o_clearCoat_normal_useTexture, MaterialSrg::m_layer1_m_clearCoatNormalStrength,
+                               layer1_uvMatrix, tangents[MaterialSrg::m_layer1_m_clearCoatNormalMapUvIndex], bitangents[MaterialSrg::m_layer1_m_clearCoatNormalMapUvIndex],
+                               MaterialSrg::m_sampler, isFrontFace,
+                               layer1_clearCoatFactor, layer1_clearCoatRoughness, layer1_clearCoatNormal);
+        }
+        
+        // --- Layer 2 ---
+
+        float layer2_clearCoatFactor = 0.0f;
+        float layer2_clearCoatRoughness = 0.0f;
+        float3 layer2_clearCoatNormal = float3(0.0, 0.0, 0.0);
+        if(o_layer2_o_clearCoat_enabled)
+        {
+            float3x3 layer2_uvMatrix = MaterialSrg::m_layer2_m_clearCoatNormalMapUvIndex == 0 ? MaterialSrg::m_layer2_m_uvMatrix : CreateIdentity3x3();
+
+            GetClearCoatInputs(MaterialSrg::m_layer2_m_clearCoatInfluenceMap, uvLayer2[MaterialSrg::m_layer2_m_clearCoatInfluenceMapUvIndex], MaterialSrg::m_layer2_m_clearCoatFactor, o_layer2_o_clearCoat_factor_useTexture,
+                               MaterialSrg::m_layer2_m_clearCoatRoughnessMap, uvLayer2[MaterialSrg::m_layer2_m_clearCoatRoughnessMapUvIndex], MaterialSrg::m_layer2_m_clearCoatRoughness, o_layer2_o_clearCoat_roughness_useTexture,
+                               MaterialSrg::m_layer2_m_clearCoatNormalMap,    uvLayer2[MaterialSrg::m_layer2_m_clearCoatNormalMapUvIndex], IN.m_normal, o_layer2_o_clearCoat_normal_useTexture, MaterialSrg::m_layer2_m_clearCoatNormalStrength,
+                               layer2_uvMatrix, tangents[MaterialSrg::m_layer2_m_clearCoatNormalMapUvIndex], bitangents[MaterialSrg::m_layer2_m_clearCoatNormalMapUvIndex],
+                               MaterialSrg::m_sampler, isFrontFace,
+                               layer2_clearCoatFactor, layer2_clearCoatRoughness, layer2_clearCoatNormal);
+        }
+                           
+        // --- Layer 3 ---
+
+        float layer3_clearCoatFactor = 0.0f;
+        float layer3_clearCoatRoughness = 0.0f;
+        float3 layer3_clearCoatNormal = float3(0.0, 0.0, 0.0);
+        if(o_layer3_o_clearCoat_enabled)
+        {
+            float3x3 layer3_uvMatrix = MaterialSrg::m_layer3_m_clearCoatNormalMapUvIndex == 0 ? MaterialSrg::m_layer3_m_uvMatrix : CreateIdentity3x3();
+
+            GetClearCoatInputs(MaterialSrg::m_layer3_m_clearCoatInfluenceMap, uvLayer3[MaterialSrg::m_layer3_m_clearCoatInfluenceMapUvIndex], MaterialSrg::m_layer3_m_clearCoatFactor, o_layer3_o_clearCoat_factor_useTexture,
+                               MaterialSrg::m_layer3_m_clearCoatRoughnessMap, uvLayer3[MaterialSrg::m_layer3_m_clearCoatRoughnessMapUvIndex], MaterialSrg::m_layer3_m_clearCoatRoughness, o_layer3_o_clearCoat_roughness_useTexture,
+                               MaterialSrg::m_layer3_m_clearCoatNormalMap,    uvLayer3[MaterialSrg::m_layer3_m_clearCoatNormalMapUvIndex], IN.m_normal, o_layer3_o_clearCoat_normal_useTexture, MaterialSrg::m_layer3_m_clearCoatNormalStrength,
+                               layer3_uvMatrix, tangents[MaterialSrg::m_layer3_m_clearCoatNormalMapUvIndex], bitangents[MaterialSrg::m_layer3_m_clearCoatNormalMapUvIndex],
+                               MaterialSrg::m_sampler, isFrontFace,
+                               layer3_clearCoatFactor, layer3_clearCoatRoughness, layer3_clearCoatNormal);
+        }
+                               
+        // --- Blend Layers ---
+
+        surface.clearCoat.factor = BlendLayers(layer1_clearCoatFactor, layer2_clearCoatFactor, layer3_clearCoatFactor, blendWeights);
+        surface.clearCoat.roughness = BlendLayers(layer1_clearCoatRoughness, layer2_clearCoatRoughness, layer3_clearCoatRoughness, blendWeights);
+
+        // [GFX TODO][ATOM-14592] This is not the right way to blend the normals. We need to use ReorientTangentSpaceNormal(), and that requires GetClearCoatInputs() to return the normal in TS instead of WS.
+        surface.clearCoat.normal = BlendLayers(layer1_clearCoatNormal, layer2_clearCoatNormal, layer3_clearCoatNormal, blendWeights);
+>>>>>>> Atom/santorac/MultilayerPbrImprovements
         surface.clearCoat.normal = normalize(surface.clearCoat.normal);
 
         // manipulate base layer f0 if clear coat is enabled

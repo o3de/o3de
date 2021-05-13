@@ -199,7 +199,11 @@
                     "displayName": "Debug Draw Mode",
                     "description": "Enables various debug view features.",
                     "type": "Enum",
-                    "enumValues": [ "None", "BlendMask", "Displacement", "FinalBlendWeights" ],
+<<<<<<< HEAD
+                    "enumValues": [ "None", "BlendSource", "DepthMaps" ],
+=======
+                    "enumValues": [ "None", "BlendWeights", "DisplacementMaps" ],
+>>>>>>> Atom/santorac/MultilayerPbrImprovements
                     "defaultValue": "None",
                     "connection": {
                         "type": "ShaderOption",
@@ -331,7 +335,7 @@
                 },
                 {
                     "id": "textureMap",
-                    "displayName": "Blend Mask Texture",
+                    "displayName": "Blend Mask",
                     "description": "RGB image where each channel is the blend mask for one of the three available layers.",
                     "type": "Image",
                     "defaultValue": "Textures/DefaultBlendMask_layers.png",

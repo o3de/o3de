@@ -5,7 +5,9 @@
     "propertyLayoutVersion": 3,
     "properties": {
         "blend": {
-            "blendSource": "Displacement"
+            "blendSource": "Displacement",
+            "enableLayer2": true,
+            "enableLayer3": true
         },
         "layer1_baseColor": {
             "textureMap": "TestData/Textures/cc0/Rock030_2K_Color.jpg"
