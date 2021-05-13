@@ -63,8 +63,6 @@ namespace Multiplayer
     static const AZStd::string_view s_networkEditorInterfaceName("MultiplayerEditorNetworkInterface");
     static constexpr uint16_t DefaultServerPort = 30090;
     static constexpr uint16_t DefaultServerEditorPort = 30091;
-    //static AZStd::vector<uint8_t> buffer;
-    //static AZ::IO::ByteContainerStream<AZStd::vector<uint8_t>> s_byteStream(&buffer);
 
     AZ_CVAR(uint16_t, cl_clientport, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port to bind to for game traffic when connecting to a remote host, a value of 0 will select any available port");
     AZ_CVAR(AZ::CVarFixedString, cl_serveraddr, "127.0.0.1", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The address of the remote server or host to connect to");
