@@ -110,7 +110,7 @@ namespace AZ
 
         bool MaterialAssignmentId::operator!=(const MaterialAssignmentId& rhs) const
         {
-            return m_lodIndex != rhs.m_lodIndex || m_materialAssetId.m_subId != rhs.m_materialAssetId.m_subId;
+            return !(*this == rhs);
         }
     } // namespace Render
 } // namespace AZ
