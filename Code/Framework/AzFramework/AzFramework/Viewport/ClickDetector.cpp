@@ -43,7 +43,7 @@ namespace AzFramework
                 }
                 if (detectionState == DetectionState::Moved)
                 {
-                    ClickOutcome::Release;
+                    return ClickOutcome::Release;
                 }
                 return ClickOutcome::Nil;
             }();
