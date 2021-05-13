@@ -47,7 +47,7 @@ namespace Multiplayer
     template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
     inline RewindableObject<BASE_TYPE, REWIND_SIZE> &RewindableObject<BASE_TYPE, REWIND_SIZE>::operator =(const RewindableObject<BASE_TYPE, REWIND_SIZE>& rhs)
     {
-        INetworkTime* networkTime = GetNetworkTime();
+        INetworkTime* networkTime = Multiplayer::GetNetworkTime();
         SetValueForTime(rhs.GetValueForTime(networkTime->GetHostFrameId()), GetCurrentTimeForProperty());
         return *this;
     }
@@ -115,7 +115,7 @@ namespace Multiplayer
     template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
     inline HostFrameId RewindableObject<BASE_TYPE, REWIND_SIZE>::GetCurrentTimeForProperty() const
     {
-        INetworkTime* networkTime = GetNetworkTime();
+        INetworkTime* networkTime = Multiplayer::GetNetworkTime();
         return networkTime->GetHostFrameIdForRewindingConnection(m_owningConnectionId);
     }
 

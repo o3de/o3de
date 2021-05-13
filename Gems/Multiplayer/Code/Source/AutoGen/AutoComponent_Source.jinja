@@ -1143,7 +1143,7 @@ namespace {{ Component.attrib['Namespace'] }}
             {
                 editContext->Class<{{ ComponentBaseName }}>("{{ ComponentBaseName }}", "{{ Component.attrib['Description'] }}")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Category, "Multiplayer")
+                    ->Attribute(AZ::Edit::Attributes::Category, "{{ Component.attrib['Namespace'] }}")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     {{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Authority', ComponentBaseName)|indent(20) -}}
 {{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Server', ComponentBaseName)|indent(20) -}}
@@ -1155,7 +1155,7 @@ namespace {{ Component.attrib['Namespace'] }}
 
                 editContext->Class<{{ ComponentName }}>("{{ ComponentName }}", "{{ Component.attrib['Description'] }}")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Category, "Multiplayer")
+                    ->Attribute(AZ::Edit::Attributes::Category, "{{ Component.attrib['Namespace'] }}")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
 {% endif %}
             }

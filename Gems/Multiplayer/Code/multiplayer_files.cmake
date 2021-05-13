@@ -24,12 +24,12 @@ set(FILES
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
     Include/Multiplayer/NetBindComponent.h
-	Include/Multiplayer/NetworkEntityRpcMessage.h
+    Include/Multiplayer/NetworkEntityRpcMessage.h
     Include/Multiplayer/NetworkEntityUpdateMessage.h
     Include/Multiplayer/NetworkEntityHandle.h
     Include/Multiplayer/NetworkEntityHandle.inl
     Include/Multiplayer/NetworkInput.h
-	Include/Multiplayer/ReplicationRecord.h
+    Include/Multiplayer/ReplicationRecord.h
     Include/Multiplayer/RewindableObject.h
     Include/Multiplayer/RewindableObject.inl
     Source/Multiplayer_precompiled.cpp
@@ -48,7 +48,7 @@ set(FILES
     Source/Components/LocalPredictionPlayerInputComponent.h
     Source/Components/MultiplayerComponent.cpp
     Source/Components/MultiplayerController.cpp
-	Source/Components/MultiplayerComponentRegistry.cpp
+    Source/Components/MultiplayerComponentRegistry.cpp
     Source/Components/NetBindComponent.cpp
     Source/Components/NetworkTransformComponent.cpp
     Source/Components/NetworkTransformComponent.h
