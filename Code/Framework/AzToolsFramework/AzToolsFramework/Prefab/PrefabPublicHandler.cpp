@@ -732,7 +732,7 @@ namespace AzToolsFramework
 
                 Prefab::PrefabDom instanceDomAfter;
                 m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfter, commonOwningInstance->get());
-                
+
                 PrefabUndoInstance* command = aznew PrefabUndoInstance("Instance deletion");
                 command->Capture(instanceDomBefore, instanceDomAfter, commonOwningInstance->get().GetTemplateId());
                 command->SetParent(selCommand);
