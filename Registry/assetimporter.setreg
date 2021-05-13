@@ -1,0 +1,17 @@
+{
+	"O3DE":
+	{
+		"SceneAPI":
+		{
+			"AssetImporter":
+			{
+				"SupportedFileTypeExtensions":
+				[
+					".fbx",
+					".stl",
+					".stp"
+				]
+			}
+		}
+	}
+}

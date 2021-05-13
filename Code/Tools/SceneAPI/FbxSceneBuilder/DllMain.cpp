@@ -46,11 +46,6 @@ namespace AZ
                 // Currently it's still needed to explicitly create an instance of this instead of letting
                 //      it be a normal component. This is because ResourceCompilerScene needs to return
                 //      the list of available extensions before it can start the application.
-                if (!g_fbxImporter)
-                {
-                    g_fbxImporter = aznew AZ::SceneAPI::FbxSceneImporter::FbxImportRequestHandler();
-                    g_fbxImporter->Activate();
-                }
             }
 
             void Reflect(AZ::SerializeContext* /*context*/)
@@ -64,6 +59,7 @@ namespace AZ
                 {
                     // Global importer and behavior
                     g_componentDescriptors.push_back(FbxSceneBuilder::FbxImporter::CreateDescriptor());
+                    g_componentDescriptors.push_back(FbxSceneImporter::FbxImportRequestHandler::CreateDescriptor());
 
                     // Node and attribute importers
                     g_componentDescriptors.push_back(AssImpBitangentStreamImporter::CreateDescriptor());

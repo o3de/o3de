@@ -30,12 +30,6 @@ namespace AZ
     {
         namespace FbxSceneImporter
         {
-            AssetImporterSettings::AssetImporterSettings()
-            {
-                // Default supported extension in case the settings file isn't found
-                m_supportedFileTypeExtensions.emplace(".fbx");
-            }
-
             void AssetImporterSettings::Reflect(AZ::ReflectContext* context)
             {
                 if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext)
@@ -48,27 +42,11 @@ namespace AZ
 
             void FbxImportRequestHandler::Activate()
             {
-                // Attempt to load the Slice Builder Settings file
-                AZ::IO::LocalFileIO localFileIO;
-
-                // This will point to @assets@/SettingsFilename, which loads from the cache
-                // We don't really want this but it works for now
-                // Trying to use AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath at this point
-                // would fail because components seem to activate before the AP has populated its file list
-                AZ::IO::Path sliceBuilderSettingsIoPath(SettingsFilename);
-                auto result = AzFramework::FileFunc::ReadJsonFile(sliceBuilderSettingsIoPath, &localFileIO);
-                if (result.IsSuccess())
+                auto settingsRegistry = AZ::SettingsRegistry::Get();
+                
+                if (settingsRegistry)
                 {
-                    AZ::JsonSerializationResult::ResultCode serializationResult =
-                        AZ::JsonSerialization::Load(m_settings, result.GetValue());
-                    if (serializationResult.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
-                    {
-                        AZ_Warning("", false, "Error in Asset Importer Settings file.\nUsing default settings.");
-                    }
-                }
-                else
-                {
-                    AZ_Warning("", false, "Failed to load Asset Importer Settings file.\nUsing default settings.");
+                    settingsRegistry->GetObject(m_settings, "/O3DE/SceneAPI/AssetImporter");
                 }
 
                 BusConnect();
@@ -124,6 +102,11 @@ namespace AZ
                 {
                     return Events::LoadingResult::AssetFailure;
                 }
+            }
+
+            void FbxImportRequestHandler::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
+            {
+                provided.emplace_back(AZ_CRC_CE("AssetImportRequestHandler"));
             }
         } // namespace Import
     } // namespace SceneAPI

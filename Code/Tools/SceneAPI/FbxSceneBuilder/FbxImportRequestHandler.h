@@ -24,9 +24,7 @@ namespace AZ
             struct AssetImporterSettings
             {
                 AZ_TYPE_INFO(AssetImporterSettings, "{8BB6C7AD-BF99-44DC-9DA1-E7AD3F03DC10}");
-
-                AssetImporterSettings();
-
+                
                 static void Reflect(AZ::ReflectContext* context);
 
                 AZStd::unordered_set<AZStd::string> m_supportedFileTypeExtensions;
@@ -48,6 +46,8 @@ namespace AZ
                 void GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& extensions) override;
                 Events::LoadingResult LoadAsset(Containers::Scene& scene, const AZStd::string& path, const Uuid& guid,
                     RequestingApplication requester) override;
+
+                static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided);
 
             private:
 
