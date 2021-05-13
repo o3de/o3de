@@ -102,7 +102,8 @@
 #undef CreateDirectory
 #endif
 
-AZ_CVAR_EXTERNED(bool, ed_useNewCameraSystem);
+// note: Also defined in EditorViewportWidget.cpp (separate project).
+AZ_CVAR(bool, ed_useNewCameraSystem, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Editor camera system");
 
 //////////////////////////////////////////////////////////////////////////
 // Gathers all selected entities, culling any that have an ancestor in the selection.

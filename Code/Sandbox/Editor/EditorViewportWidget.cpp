@@ -102,8 +102,9 @@
 #include <IStatObj.h>
 
 AZ_CVAR(
-    bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "Output the timing of the new IVisibilitySystem query");
+    bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
+// note: Also defined in SandboxIntegration.cpp (separate project).
+AZ_CVAR(bool, ed_useNewCameraSystem, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Editor camera system");
 
 EditorViewportWidget* EditorViewportWidget::m_pPrimaryViewport = nullptr;
 
@@ -123,10 +124,6 @@ void StartFixedCursorMode(QObject *viewport);
 
 #define RENDER_MESH_TEST_DISTANCE (0.2f)
 #define CURSOR_FONT_HEIGHT  8.0f
-
-AZ_CVAR(
-    bool, ed_useNewCameraSystem, false, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "Use the new Editor camera system (the Atom-native Editor viewport (experimental) must also be enabled)");
 
 //! Viewport settings for the EditorViewportWidget
 struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::ViewportSettings
