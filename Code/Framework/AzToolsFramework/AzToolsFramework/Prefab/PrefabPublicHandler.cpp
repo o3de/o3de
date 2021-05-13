@@ -642,7 +642,8 @@ namespace AzToolsFramework
             AZ::EntityId firstEntityIdToDelete = entityIds[0];
             InstanceOptionalReference commonOwningInstance = GetOwnerInstanceByEntityId(firstEntityIdToDelete);
 
-            // If the first entity id is that of an instance, we need to delete that instance from it's parent.
+            // If the first entity id is a container entity id, then we need to mark its parent as the common owning instance because you
+            // cannot detete an instance from itself.
             if (commonOwningInstance->get().GetContainerEntityId() == firstEntityIdToDelete &&
                 !IsLevelInstanceContainerEntity(firstEntityIdToDelete))
             {
