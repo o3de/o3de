@@ -10,45 +10,6 @@
 #
 
 set(FILES
-    PakSystem.cpp
-    TempFilePakExtraction.cpp
-    IPakSystem.h
-    PakSystem.h
-    PakXmlFileBufferSource.h
-    TempFilePakExtraction.h
-    FileUtil.cpp
-    PathHelpers.cpp
     StringHelpers.cpp
-    FileUtil.h
-    MathHelpers.h
-    PathHelpers.h
-    PropertyHelpers.h
-    PropertyHelpers.cpp
-    SimpleStringPool.h
-    StealingThreadPool.cpp
-    StealingThreadPool.h
     StringHelpers.h
-    ThreadUtils.cpp
-    ZipDir/ZipDirCache.cpp
-    ZipDir/ZipDirCacheFactory.cpp
-    ZipDir/ZipDirCacheRW.cpp
-    ZipDir/ZipDirFind.cpp
-    ZipDir/ZipDirFindRW.cpp
-    ZipDir/ZipDirList.cpp
-    ZipDir/ZipDirStructures.cpp
-    ZipDir/ZipDirTree.cpp
-    ThreadUtils.h
-    ZipDir/ZipDir.h
-    ZipDir/ZipDirCache.h
-    ZipDir/ZipDirCacheFactory.h
-    ZipDir/ZipDirCacheRW.h
-    ZipDir/ZipDirFind.h
-    ZipDir/ZipDirFindRW.h
-    ZipDir/ZipDirList.h
-    ZipDir/zipdirstructures.h
-    ZipDir/ZipDirTree.h
-    ZipDir/ZipFile.h
-    ZipDir/ZipFileFormat.h
-    ZipDir/ZipFileFormat_info.h
-    SuffixUtil.h
 )
