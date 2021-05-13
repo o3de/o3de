@@ -78,9 +78,6 @@ typedef uint32 vtx_idx;
 
 #if defined(WIN32) || defined(WIN64) || LOG_CONST_CVAR_ACCESS
 #define RELEASE_LOGGING
-//#if defined(_RELEASE)
-//#define CVARS_WHITELIST
-//#endif // defined(_RELEASE)
 #endif
 
 #if defined(_RELEASE) && !defined(RELEASE_LOGGING)
@@ -181,32 +178,6 @@ typedef uint32 vtx_idx;
 #define SHADER_REFLECT_TEXTURE_SLOTS 0
 #endif
 
-#if (defined(WIN32) || defined(WIN64) || defined(AZ_PLATFORM_MAC)) && (!defined(AZ_MONOLITHIC_BUILD) || defined(RESOURCE_COMPILER))
-#define CRY_ENABLE_RC_HELPER 1
-#endif
-
-#if !defined(_RELEASE) && PROJECTDEFINES_H_TRAIT_ENABLE_SOFTCODE_SYSTEM
-    #define SOFTCODE_SYSTEM_ENABLED
-#endif
-
-// Is SoftCoding enabled for this module? Usually set by the SoftCode AddIn in conjunction with a SoftCode.props file.
-#ifdef SOFTCODE_ENABLED
-
-// Is this current compilation unit part of a SOFTCODE build?
-    #ifdef SOFTCODE
-// Import any SC functions from the host module
-        #define SC_API __declspec(dllimport)
-    #else
-// Export any SC functions from the host module
-        #define SC_API __declspec(dllexport)
-    #endif
-
-#else   // SoftCode disabled
-
-    #define SC_API
-
-#endif
-
 // these enable and disable certain net features to give compatibility between PCs and consoles / profile and performance builds
 #define PC_CONSOLE_NET_COMPATIBLE 0
 #define PROFILE_PERFORMANCE_NET_COMPATIBLE 0
@@ -290,10 +261,6 @@ typedef uint32 vtx_idx;
 #if defined(ENABLE_PROFILING_CODE)
 #   define USE_DISK_PROFILER
 #   define ENABLE_LOADING_PROFILER  // requires AZ_PROFILE_TELEMETRY to also be defined
-#endif
-
-#if defined(SOFTCODE_ENABLED)
-    #error "SoftCode currently relies on CryMemoryManager being enabled. Either build without SoftCode support, or enable CryMemoryManager."
 #endif
 
 #if PROJECTDEFINES_H_TRAIT_USE_GPU_PARTICLES && !defined(NULL_RENDERER)

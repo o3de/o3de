@@ -16,32 +16,33 @@ then
     exit 1
 fi
 
-#
-# Install curl if its not installed
-#
-curl --version >/dev/null 2>&1
-if [ $? -ne 0 ]
-then
-    echo "Installing curl"
-    apt-get install curl -y
-fi
+echo Installing packages and tools for O3DE development
 
-#
-# Setup AWS CLI if needed
-#
-aws --version >/dev/null 2>&1
+# Install awscli
+./install-ubuntu-awscli.sh
 if [ $? -ne 0 ]
 then
-    echo Setting up AWS CLI
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-    unzip awscliv2.zip
-    ./aws/install
-    rm -rf ./aws
-else
-    AWS_CLI_VERSION=$(aws --version | awk '{print $1}' | awk -F/ '{print $2}')
-    echo AWS CLI \(version $AWS_CLI_VERSION\) already installed
+    echo Error installing AWSCLI
+    exit 1
 fi
 
 
+# Install git
+./install-ubuntu-git.sh
+if [ $? -ne 0 ]
+then
+    echo Error installing Git
+    exit 1
+fi
+
+# Install the necessary build tools
+./install-ubuntu-build-tools.sh
+if [ $? -ne 0 ]
+then
+    echo Error installing ubuntu tools
+    exit 1
+fi
 
 
+echo Packages and tools for O3DE setup complete
+exit 0
