@@ -253,12 +253,7 @@ namespace MaterialEditor
     
     void MaterialInspector::OnDocumentPropertyGroupVisibilityChanged(const AZ::Uuid&, const AZ::Name& groupId, bool visible)
     {
-        auto groupIter = m_groups.find(groupId.GetStringView());
-        
-        if(groupIter != m_groups.end())
-        {
-            SetGroupVisible(groupIter->first, visible);
-        }
+        SetGroupVisible(groupId.GetStringView(), visible);
     }
 
     void MaterialInspector::BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode)

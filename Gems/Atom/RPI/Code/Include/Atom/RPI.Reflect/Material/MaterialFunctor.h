@@ -198,8 +198,8 @@ namespace AZ
                 );
 
             private:
-                AZStd::list_iterator<AZStd::pair<AZ::Name, AZ::RPI::MaterialPropertyDynamicMetadata>> QueryMaterialPropertyMetadata(const Name& propertyName) const;
-                AZStd::list_iterator<AZStd::pair<AZ::Name, AZ::RPI::MaterialPropertyGroupDynamicMetadata>> QueryMaterialPropertyGroupMetadata(const Name& propertyGroupName) const;
+                MaterialPropertyDynamicMetadata* QueryMaterialPropertyMetadata(const Name& propertyName) const;
+                MaterialPropertyGroupDynamicMetadata* QueryMaterialPropertyGroupMetadata(const Name& propertyGroupName) const;
 
                 const AZStd::vector<MaterialPropertyValue>& m_materialPropertyValues;
                 RHI::ConstPtr<MaterialPropertiesLayout> m_materialPropertiesLayout;

@@ -68,7 +68,6 @@ namespace AtomToolsFramework
         InspectorGroupHeaderWidget* groupHeader = new InspectorGroupHeaderWidget(m_ui->m_propertyContent);
         groupHeader->setText(groupDisplayName.c_str());
         groupHeader->setToolTip(groupDescription.c_str());
-        groupHeader->setObjectName(groupNameId.c_str());
         m_layout->addWidget(groupHeader);
 
         groupWidget->setObjectName(groupNameId.c_str());
