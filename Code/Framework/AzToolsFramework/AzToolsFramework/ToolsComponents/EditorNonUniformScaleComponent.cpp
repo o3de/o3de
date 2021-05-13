@@ -16,6 +16,8 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/ToString.h>
 
+#include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
+
 namespace AzToolsFramework
 {
     namespace Components
@@ -32,6 +34,7 @@ namespace AzToolsFramework
                 serializeContext->Class<EditorNonUniformScaleComponent, EditorComponentBase>()
                     ->Version(1)
                     ->Field("NonUniformScale", &EditorNonUniformScaleComponent::m_scale)
+                    ->Field("ComponentMode", &EditorNonUniformScaleComponent::m_componentModeDelegate)
                     ;
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -50,6 +53,9 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::Max, AZ::MaxTransformScale)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorNonUniformScaleComponent::OnScaleChanged)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorNonUniformScaleComponent::m_componentModeDelegate,
+                            "Component Mode", "Non-uniform Scale Component Mode")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
                 }
             }
@@ -74,10 +80,17 @@ namespace AzToolsFramework
         void EditorNonUniformScaleComponent::Activate()
         {
             AZ::NonUniformScaleRequestBus::Handler::BusConnect(GetEntityId());
+
+            // ComponentMode
+            m_componentModeDelegate.ConnectWithSingleComponentMode<
+                EditorNonUniformScaleComponent, NonUniformScaleComponentMode>(
+                    AZ::EntityComponentIdPair(GetEntityId(), GetId()), this);
         }
 
         void EditorNonUniformScaleComponent::Deactivate()
         {
+            m_componentModeDelegate.Disconnect();
+
             AZ::NonUniformScaleRequestBus::Handler::BusDisconnect();
         }
 

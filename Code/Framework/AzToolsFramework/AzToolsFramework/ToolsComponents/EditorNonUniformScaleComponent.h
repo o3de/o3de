@@ -13,6 +13,9 @@
 #pragma once
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+#include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponentMode.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
+#include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 
 namespace AzToolsFramework
@@ -23,6 +26,9 @@ namespace AzToolsFramework
         class EditorNonUniformScaleComponent
             : public AzToolsFramework::Components::EditorComponentBase
             , public AZ::NonUniformScaleRequestBus::Handler
+            , public AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
+            , public AzToolsFramework::EditorComponentSelectionNotificationsBus::Handler
+            , private NonUniformScaleManipulatorRequestBus::Handler
         {
         public:
             AZ_EDITOR_COMPONENT(EditorNonUniformScaleComponent, "{2933FB4F-B3DA-4CD1-8106-F37300730777}", EditorComponentBase);
@@ -40,6 +46,18 @@ namespace AzToolsFramework
             void SetScale(const AZ::Vector3& scale) override;
             void RegisterScaleChangedEvent(AZ::NonUniformScaleChangedEvent::Handler& handler);
 
+        protected:
+            // EditorComponentSelectionRequestsBus overrides ...
+            AZ::Aabb GetEditorSelectionBoundsViewport(
+                [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo) override { return AZ::Aabb::CreateNull(); };
+            bool EditorSelectionIntersectRayViewport(
+                [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
+                [[maybe_unused]] const AZ::Vector3& src, [[maybe_unused]] const AZ::Vector3& dir, [[maybe_unused]] float& distance) override { return false; };
+            bool SupportsEditorRayIntersect() override { return true; }
+
+            // EditorComponentSelectionNotificationsBus overrides ... 
+            void OnAccentTypeChanged([[maybe_unused]] AzToolsFramework::EntityAccentType accent) override {};
+
         private:
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
@@ -52,6 +70,9 @@ namespace AzToolsFramework
 
             AZ::Vector3 m_scale = AZ::Vector3::CreateOne();
             AZ::NonUniformScaleChangedEvent m_scaleChangedEvent;
+
+            //! Responsible for detecting ComponentMode activation and creating a concrete ComponentMode.
+            AzToolsFramework::ComponentModeFramework::ComponentModeDelegate m_componentModeDelegate;
         };
     } // namespace Components
 } // namespace AzToolsFramework
