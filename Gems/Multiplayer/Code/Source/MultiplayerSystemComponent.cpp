@@ -112,7 +112,7 @@ namespace Multiplayer
             AZ::ConsoleInvokedFrom invokedFrom
         ) { OnConsoleCommandInvoked(command, args, flags, invokedFrom); })
     {
-
+        ;
     }
 
     void MultiplayerSystemComponent::Activate()
