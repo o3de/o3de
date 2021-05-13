@@ -19,14 +19,11 @@ set(FILES
     ConsoleBatchFile.cpp
     ConsoleHelpGen.cpp
     CryAsyncMemcpy.cpp
-    DebugCallStack.cpp
     GeneralMemoryHeap.cpp
     HandlerBase.cpp
-    IDebugCallStack.cpp
     AsyncPakManager.cpp
     Log.cpp
     SystemRender.cpp
-    NotificationNetwork.cpp
     PhysRenderer.cpp
     ResourceManager.cpp
     ServerHandler.cpp
@@ -36,7 +33,6 @@ set(FILES
     SystemCFG.cpp
     SystemEventDispatcher.cpp
     SystemInit.cpp
-    SystemScheduler.cpp
     SystemWin32.cpp
     Timer.cpp
     UnixConsole.cpp
@@ -52,7 +48,6 @@ set(FILES
     ServerHandler.h
     ServerThrottle.h
     SyncLock.h
-    SystemScheduler.h
     UnixConsole.h
     SystemInit.h
     XML/ReadWriteXMLSink.h
@@ -63,12 +58,8 @@ set(FILES
     ConsoleBatchFile.h
     ConsoleHelpGen.h
     CryWaterMark.h
-    DebugCallStack.h
     GeneralMemoryHeap.h
-    IDebugCallStack.h
-    IThreadConfigManager.h
     Log.h
-    NotificationNetwork.h
     resource.h
     SimpleStringPool.h
     CrySystem_precompiled.h
@@ -107,24 +98,12 @@ set(FILES
     XML/WriteXMLSource.cpp
     ZipFile.h
     ZipFileFormat_info.h
-    ProfileLogSystem.cpp
     Sampler.cpp
-    ProfileLogSystem.h
     Sampler.h
     LocalizedStringManager.cpp
     LocalizedStringManager.h
-    CryThreadUtil_win32_thread.h
-    ThreadInfo.cpp
-    ThreadInfo.h
-    ThreadTask.h
-    ThreadTask.cpp
-    ThreadConfigManager.h
-    ThreadConfigManager.cpp
-    SystemThreading.cpp
     ZLibCompressor.cpp
     ZLibCompressor.h
-    SoftCode/SoftCodeMgr.cpp
-    SoftCode/SoftCodeMgr.h
     Huffman.cpp
     Huffman.h
     RemoteConsole/RemoteConsole.cpp

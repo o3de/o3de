@@ -32,41 +32,6 @@ ly_add_target(
             AZ::AzFramework
 )
 
-ly_add_target(
-    NAME CryCommon.EngineSettings.Static STATIC
-    NAMESPACE Legacy
-    FILES_CMAKE
-        crycommon_enginesettings_files.cmake
-        ${pal_dir}/crycommon_enginesettings_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
-    INCLUDE_DIRECTORIES
-        PUBLIC
-            .
-            ${pal_dir}
-    BUILD_DEPENDENCIES
-        PUBLIC
-            AZ::AzCore
-            AZ::AzFramework
-)
-
-ly_add_target(
-    NAME CryCommon.EngineSettings.RC.Static STATIC
-    NAMESPACE Legacy
-    FILES_CMAKE
-        crycommon_enginesettings_files.cmake
-        ${pal_dir}/crycommon_enginesettings_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
-    INCLUDE_DIRECTORIES
-        PUBLIC
-            .
-            ${pal_dir}
-    COMPILE_DEFINITIONS
-        PRIVATE
-            RESOURCE_COMPILER
-    BUILD_DEPENDENCIES
-        PUBLIC
-            AZ::AzCore
-            AZ::AzFramework
-)
-
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_target(
