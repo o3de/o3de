@@ -66,6 +66,10 @@ ly_add_target(
         Gem::AtomViewportDisplayInfo
 )
 
+# Any 'runtime-like' applications should use Gem::Atom_AtomBridge:
+ly_create_alias(NAME Atom_AtomBridge.Clients NAMESPACE Gem TARGETS Gem::Atom_AtomBridge)
+ly_create_alias(NAME Atom_AtomBridge.Servers NAMESPACE Gem TARGETS Gem::Atom_AtomBridge)
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME Atom_AtomBridge.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
@@ -107,4 +111,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::AtomToolsFramework.Editor
             Gem::AtomViewportDisplayInfo
     )
+
+
+    # Any 'tool' and 'builder' type applications should use Gem::Atom_AtomBridge.Editor:
+    ly_create_alias(NAME Atom_AtomBridge.Builders NAMESPACE Gem TARGETS Gem::Atom_AtomBridge.Editor)
+    ly_create_alias(NAME Atom_AtomBridge.Tools    NAMESPACE Gem TARGETS Gem::Atom_AtomBridge.Editor)
 endif()

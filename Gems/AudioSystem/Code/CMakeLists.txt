@@ -217,8 +217,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     # use the above "Editor" target in tools and builders:
-    ly_create_alias(NAME AssetMemoryAnalyzer.Tools    NAMESPACE Gem TARGETS Gem::AudioSystem.Editor)
-    ly_create_alias(NAME AssetMemoryAnalyzer.Builders NAMESPACE Gem TARGETS Gem::AudioSystem.Editor)
+    ly_create_alias(NAME AudioSystem.Tools    NAMESPACE Gem TARGETS Gem::AudioSystem.Editor)
+    ly_create_alias(NAME AudioSystem.Builders NAMESPACE Gem TARGETS Gem::AudioSystem.Editor)
 
     if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         ly_add_target(

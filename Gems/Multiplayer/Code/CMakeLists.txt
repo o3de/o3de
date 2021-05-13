@@ -154,7 +154,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     # use the Multiplayer.Editor module in tools and builders.  Tools also get the visual debug view
     ly_create_alias(NAME Multiplayer.Tools     NAMESPACE Gem TARGETS Gem::Multiplayer.Editor Gem::Multiplayer.Debug Gem::Multiplayer.PrefabProcessor)
     ly_create_alias(NAME Multiplayer.Builders  NAMESPACE Gem TARGETS Gem::Multiplayer.Editor Gem::Multiplayer.PrefabProcessor)
-
 endif()
 
 if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
