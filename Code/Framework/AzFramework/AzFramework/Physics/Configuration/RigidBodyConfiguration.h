@@ -57,7 +57,6 @@ namespace AzPhysics
         bool m_startAsleep = false;
         bool m_interpolateMotion = false;
         bool m_gravityEnabled = true;
-        bool m_simulated = true;
         bool m_kinematic = false;
         bool m_ccdEnabled = false; //!< Whether continuous collision detection is enabled.
         float m_ccdMinAdvanceCoefficient = 0.15f; //!< Coefficient affecting how granularly time is subdivided in CCD.
