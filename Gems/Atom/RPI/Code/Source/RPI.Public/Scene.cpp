@@ -99,6 +99,8 @@ namespace AZ
         {
             WaitAndCleanCompletionJob(m_simulationCompletion);
             SceneRequestBus::Handler::BusDisconnect();
+
+            Deactivate();
             DisableAllFeatureProcessors();
 
             // Remove all the render pipelines. Need to process queued changes with pass system before and after remove render pipelines
@@ -138,11 +140,9 @@ namespace AZ
 
         void Scene::Deactivate()
         {
-            AZ_Assert(m_activated, "Not activated");
-
-            for (auto& fp : m_featureProcessors)
+            if (!m_activated)
             {
-                fp->Deactivate();
+                return;
             }
 
             m_cullingScene->Deactivate();
@@ -240,7 +240,6 @@ namespace AZ
                 fp->Deactivate();
             }
             m_featureProcessors.clear();
-            m_pipelineStatesLookup.clear();
         }
         
         FeatureProcessor* Scene::GetFeatureProcessor(const FeatureProcessorId& featureProcessorId) const
