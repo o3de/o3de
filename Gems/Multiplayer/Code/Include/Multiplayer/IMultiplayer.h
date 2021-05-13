@@ -139,27 +139,31 @@ namespace Multiplayer
 
     inline INetworkTime* GetNetworkTime()
     {
-        return GetMultiplayer()->GetNetworkTime();
+        return AZ::Interface<INetworkTime>::Get();
     }
 
     inline INetworkEntityManager* GetNetworkEntityManager()
     {
-        return GetMultiplayer()->GetNetworkEntityManager();
+        IMultiplayer* multiplayer = GetMultiplayer();
+        return (multiplayer != nullptr) ? multiplayer->GetNetworkEntityManager() : nullptr;
     }
 
     inline NetworkEntityTracker* GetNetworkEntityTracker()
     {
-        return GetNetworkEntityManager()->GetNetworkEntityTracker();
+        INetworkEntityManager* networkEntityManager = GetNetworkEntityManager();
+        return (networkEntityManager != nullptr) ? networkEntityManager->GetNetworkEntityTracker() : nullptr;
     }
 
     inline NetworkEntityAuthorityTracker* GetNetworkEntityAuthorityTracker()
     {
-        return GetNetworkEntityManager()->GetNetworkEntityAuthorityTracker();
+        INetworkEntityManager* networkEntityManager = GetNetworkEntityManager();
+        return (networkEntityManager != nullptr) ? networkEntityManager->GetNetworkEntityAuthorityTracker() : nullptr;
     }
 
     inline MultiplayerComponentRegistry* GetMultiplayerComponentRegistry()
     {
-        return GetNetworkEntityManager()->GetMultiplayerComponentRegistry();
+        INetworkEntityManager* networkEntityManager = GetNetworkEntityManager();
+        return (networkEntityManager != nullptr) ? networkEntityManager->GetMultiplayerComponentRegistry() : nullptr;
     }
 
     //! @class ScopedAlterTime

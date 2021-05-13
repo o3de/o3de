@@ -17,6 +17,16 @@
 
 namespace Multiplayer
 {
+    NetworkTime::NetworkTime()
+    {
+        AZ::Interface<INetworkTime>::Register(this);
+    }
+
+    NetworkTime::~NetworkTime()
+    {
+        AZ::Interface<INetworkTime>::Unregister(this);
+    }
+
     bool NetworkTime::IsTimeRewound() const
     {
         return m_rewindingConnectionId != AzNetworking::InvalidConnectionId;

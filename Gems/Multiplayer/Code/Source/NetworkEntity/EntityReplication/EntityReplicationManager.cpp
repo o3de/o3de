@@ -60,7 +60,11 @@ namespace Multiplayer
         // Start window update events
         m_updateWindow.Enqueue(AZ::TimeMs{ 0 }, true);
 
-        GetNetworkEntityManager()->AddEntityExitDomainHandler(m_entityExitDomainEventHandler);
+        INetworkEntityManager* networkEntityManager = GetNetworkEntityManager();
+        if (networkEntityManager != nullptr)
+        {
+            networkEntityManager->AddEntityExitDomainHandler(m_entityExitDomainEventHandler);
+        }
     }
 
     void EntityReplicationManager::SetRemoteHostId(HostId hostId)

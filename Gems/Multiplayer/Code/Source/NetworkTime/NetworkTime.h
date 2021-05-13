@@ -23,8 +23,8 @@ namespace Multiplayer
         : public INetworkTime
     {
     public:
-        NetworkTime() = default;
-        virtual ~NetworkTime() = default;
+        NetworkTime();
+        virtual ~NetworkTime();
 
         //! INetworkTime overrides.
         //! @{
