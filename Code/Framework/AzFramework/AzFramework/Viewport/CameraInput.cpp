@@ -266,6 +266,11 @@ namespace AzFramework
         }
     }
 
+    RotateCameraInput::RotateCameraInput(const InputChannelId rotateChannelId)
+        : m_rotateChannelId(rotateChannelId)
+    {
+    }
+
     void RotateCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
     {
         const ClickDetector::ClickEvent clickEvent = [&event, this] {
@@ -316,6 +321,12 @@ namespace AzFramework
         nextCamera.m_pitch = AZ::GetClamp(nextCamera.m_pitch, -AZ::Constants::HalfPi, AZ::Constants::HalfPi);
 
         return nextCamera;
+    }
+
+    PanCameraInput::PanCameraInput(const InputChannelId panChannelId, PanAxesFn panAxesFn)
+        : m_panAxesFn(AZStd::move(panAxesFn))
+        , m_panChannelId(panChannelId)
+    {
     }
 
     void PanCameraInput::HandleEvents(
@@ -392,6 +403,11 @@ namespace AzFramework
         }
 
         return TranslationType::Nil;
+    }
+
+    TranslateCameraInput::TranslateCameraInput(TranslationAxesFn translationAxesFn)
+        : m_translationAxesFn(AZStd::move(translationAxesFn))
+    {
     }
 
     void TranslateCameraInput::HandleEvents(
@@ -566,6 +582,11 @@ namespace AzFramework
         nextCamera.m_lookDist = AZ::GetMin(nextCamera.m_lookDist + scrollDelta * ed_cameraSystemOrbitDollyScrollSpeed, 0.0f);
         EndActivation();
         return nextCamera;
+    }
+
+    OrbitDollyCursorMoveCameraInput::OrbitDollyCursorMoveCameraInput(const InputChannelId dollyChannelId)
+        : m_dollyChannelId(dollyChannelId)
+    {
     }
 
     void OrbitDollyCursorMoveCameraInput::HandleEvents(

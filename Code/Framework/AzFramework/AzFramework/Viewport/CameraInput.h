@@ -197,10 +197,7 @@ namespace AzFramework
     class RotateCameraInput : public CameraInput
     {
     public:
-        explicit RotateCameraInput(const InputChannelId rotateChannelId)
-            : m_rotateChannelId(rotateChannelId)
-        {
-        }
+        explicit RotateCameraInput(InputChannelId rotateChannelId);
 
         void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
@@ -240,11 +237,8 @@ namespace AzFramework
     class PanCameraInput : public CameraInput
     {
     public:
-        PanCameraInput(const InputChannelId panChannelId, PanAxesFn panAxesFn)
-            : m_panAxesFn(AZStd::move(panAxesFn))
-            , m_panChannelId(panChannelId)
-        {
-        }
+        PanCameraInput(InputChannelId panChannelId, PanAxesFn panAxesFn);
+
         void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
@@ -283,10 +277,8 @@ namespace AzFramework
     class TranslateCameraInput : public CameraInput
     {
     public:
-        explicit TranslateCameraInput(TranslationAxesFn translationAxesFn)
-            : m_translationAxesFn(AZStd::move(translationAxesFn))
-        {
-        }
+        explicit TranslateCameraInput(TranslationAxesFn translationAxesFn);
+
         void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
         void ResetImpl() override;
@@ -363,10 +355,7 @@ namespace AzFramework
     class OrbitDollyCursorMoveCameraInput : public CameraInput
     {
     public:
-        explicit OrbitDollyCursorMoveCameraInput(const InputChannelId dollyChannelId)
-            : m_dollyChannelId(dollyChannelId)
-        {
-        }
+        explicit OrbitDollyCursorMoveCameraInput(InputChannelId dollyChannelId);
 
         void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;

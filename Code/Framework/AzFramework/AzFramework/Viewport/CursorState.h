@@ -22,10 +22,10 @@ namespace AzFramework
     struct CursorState
     {
         //! Returns the delta between the current and last cursor position.
-        ScreenVector CursorDelta() const;
+        [[nodiscard]] ScreenVector CursorDelta() const;
         //! Call this in a 'handle event' call to update the most recent cursor position.
         void SetCurrentPosition(const ScreenPoint& currentPosition);
-        //! Call this in an 'update' call to move the current cursor position to the last
+        //! Call this in an 'update' call to copy the current cursor position to the last
         //! cursor position.
         void Update();
 
