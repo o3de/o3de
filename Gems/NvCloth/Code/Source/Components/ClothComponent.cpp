@@ -47,6 +47,11 @@ namespace NvCloth
         required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
     }
 
+    void ClothComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+    }
+
     void ClothComponent::Activate()
     {
         // Cloth components do not run on dedicated servers.

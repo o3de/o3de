@@ -11,7 +11,6 @@
 
 set(FILES
     Components/MathConversionTests.cpp
-    Serialization/Test_ArchiveHost.cpp
     Tests/Test_CLog.cpp
     Tests/Test_CommandRegistration.cpp
     Tests/Test_CryPrimitives.cpp
@@ -19,7 +18,5 @@ set(FILES
     Tests/Test_Localization.cpp
     Tests/test_Main.cpp
     Tests/test_MaterialUtils.cpp
-    UnitTests/CryMathTests.cpp
-    UnitTests/CryPakUnitTests.cpp
     DllMain.cpp
 )

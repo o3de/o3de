@@ -14,14 +14,14 @@
 #include <Source/NetworkEntity/EntityReplication/EntityReplicator.h>
 #include <Source/NetworkEntity/EntityReplication/PropertyPublisher.h>
 #include <Source/NetworkEntity/EntityReplication/PropertySubscriber.h>
-#include <Source/NetworkEntity/NetworkEntityUpdateMessage.h>
-#include <Source/NetworkEntity/NetworkEntityRpcMessage.h>
-#include <Source/Components/NetBindComponent.h>
 #include <Source/AutoGen/Multiplayer.AutoPackets.h>
-#include <Include/IEntityDomain.h>
-#include <Include/IMultiplayer.h>
-#include <Include/INetworkEntityManager.h>
-#include <Include/IReplicationWindow.h>
+#include <Multiplayer/NetworkEntityUpdateMessage.h>
+#include <Multiplayer/NetworkEntityRpcMessage.h>
+#include <Multiplayer/NetBindComponent.h>
+#include <Multiplayer/IEntityDomain.h>
+#include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/INetworkEntityManager.h>
+#include <Multiplayer/IReplicationWindow.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 #include <AzNetworking/PacketLayer/IPacketHeader.h>
@@ -60,7 +60,11 @@ namespace Multiplayer
         // Start window update events
         m_updateWindow.Enqueue(AZ::TimeMs{ 0 }, true);
 
-        GetNetworkEntityManager()->AddEntityExitDomainHandler(m_entityExitDomainEventHandler);
+        INetworkEntityManager* networkEntityManager = GetNetworkEntityManager();
+        if (networkEntityManager != nullptr)
+        {
+            networkEntityManager->AddEntityExitDomainHandler(m_entityExitDomainEventHandler);
+        }
     }
 
     void EntityReplicationManager::SetRemoteHostId(HostId hostId)
@@ -824,7 +828,7 @@ namespace Multiplayer
     {
         if (entityReplicator == nullptr)
         {
-            IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
+            IMultiplayer* multiplayer = GetMultiplayer();
             AZLOG_INFO
             (
                 "EntityReplicationManager: Dropping remote RPC message for component %s of rpc index %s, entityId %u has already been deleted",

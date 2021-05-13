@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Include/IConnectionData.h>
+#include <Multiplayer/IConnectionData.h>
 #include <Source/NetworkEntity/EntityReplication/EntityReplicationManager.h>
 
 namespace Multiplayer

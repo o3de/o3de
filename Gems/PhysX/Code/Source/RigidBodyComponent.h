@@ -153,11 +153,12 @@ namespace PhysX
         void InitPhysicsTickHandler();
         void PostPhysicsTick(float fixedDeltaTime);
 
+        const AzPhysics::RigidBody* GetRigidBodyConst() const;
+
         std::unique_ptr<TransformForwardTimeInterpolator> m_interpolator;
 
         AzPhysics::RigidBodyConfiguration m_configuration;
         AzPhysics::SimulatedBodyHandle m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
-        AzPhysics::RigidBody* m_rigidBody = nullptr;
         AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
 
         AZ::Vector3 m_initialScale = AZ::Vector3::CreateOne();

@@ -13,16 +13,8 @@ set(FILES
     EditorCommon.h
     EditorCommon.cpp
     EditorCommon.rc
-    EditorCommon.qrc
     EditorCommonAPI.h
-    moc.cpp
-    QViewportConsumer.h
-    TimelineContent.h
     EditorCommon_precompiled.h
-    CurveEditorControl.cpp
-    CurveEditorControl.h
-    DisplayViewportAdapter.cpp
-    DisplayViewportAdapter.h
     ActionOutput.h
     ActionOutput.cpp
     UiEditorDLLBus.h
@@ -30,140 +22,16 @@ set(FILES
     DockTitleBarWidget.h
     SaveUtilities/AsyncSaveRunner.h
     SaveUtilities/AsyncSaveRunner.cpp
-    Events/EventManager.cpp
-    Events/EventManager.h
     AxisHelper.cpp
     DisplayContext.cpp
-    QPropertyTree/PropertyRowSlider.cpp
-    BatchFileDialog.cpp
-    BatchFileDialog.h
     DeepFilterProxyModel.cpp
     DeepFilterProxyModel.h
-    QAbstractQVariantTreeDataModel.h
-    QAbstractQVariantTreeDataModel.cpp
-    UnsavedChangesDialog.h
-    UnsavedChangesDialog.cpp
     Resource.h
     DrawingPrimitives/Ruler.cpp
     DrawingPrimitives/Ruler.h
     DrawingPrimitives/TimeSlider.cpp
     DrawingPrimitives/TimeSlider.h
-    Timeline.cpp
-    Timeline.h
-    CurveEditor.cpp
-    CurveEditor.h
-    CurveEditorContent.h
     WinWidget/WinWidget.h
     WinWidget/WinWidgetManager.h
     WinWidget/WinWidgetManager.cpp
-    QPropertyTree/Color.cpp
-    QPropertyTree/Color.h
-    QPropertyTree/ConstStringList.cpp
-    QPropertyTree/ConstStringList.h
-    QPropertyTree/Factory.h
-    QPropertyTree/MathUtils.h
-    QPropertyTree/PropertyDrawContext.cpp
-    QPropertyTree/PropertyDrawContext.h
-    QPropertyTree/PropertyIArchive.cpp
-    QPropertyTree/PropertyIArchive.h
-    QPropertyTree/PropertyOArchive.cpp
-    QPropertyTree/PropertyOArchive.h
-    QPropertyTree/PropertyRow.cpp
-    QPropertyTree/PropertyRow.h
-    QPropertyTree/PropertyRowActionButton.cpp
-    QPropertyTree/PropertyRowBool.cpp
-    QPropertyTree/PropertyRowBool.h
-    QPropertyTree/PropertyRowColor.cpp
-    QPropertyTree/PropertyRowColor.h
-    QPropertyTree/PropertyRowColorPicker.cpp
-    QPropertyTree/PropertyRowColorPicker.h
-    QPropertyTree/PropertyRowContainer.cpp
-    QPropertyTree/PropertyRowContainer.h
-    QPropertyTree/PropertyRowField.cpp
-    QPropertyTree/PropertyRowField.h
-    QPropertyTree/PropertyRowIconXPM.cpp
-    QPropertyTree/PropertyRowImpl.h
-    QPropertyTree/PropertyRowLocalFrame.cpp
-    QPropertyTree/PropertyRowLocalFrame.h
-    QPropertyTree/PropertyRowNumber.cpp
-    QPropertyTree/PropertyRowNumber.h
-    QPropertyTree/PropertyRowNumberField.cpp
-    QPropertyTree/PropertyRowNumberField.h
-    QPropertyTree/PropertyRowObject.cpp
-    QPropertyTree/PropertyRowObject.h
-    QPropertyTree/PropertyRowPointer.cpp
-    QPropertyTree/PropertyRowPointer.h
-    QPropertyTree/PropertyRowSprite.cpp
-    QPropertyTree/PropertyRowSprite.h
-    QPropertyTree/PropertyRowString.h
-    QPropertyTree/PropertyRowString.cpp
-    QPropertyTree/PropertyRowStringListValue.cpp
-    QPropertyTree/PropertyRowStringListValue.h
-    QPropertyTree/PropertyRowTagList.cpp
-    QPropertyTree/PropertyRowTagList.h
-    QPropertyTree/PropertyRowToggleButton.cpp
-    QPropertyTree/PropertyTreeMenuHandler.h
-    QPropertyTree/PropertyTreeModel.cpp
-    QPropertyTree/PropertyTreeModel.h
-    QPropertyTree/PropertyTreeOperator.cpp
-    QPropertyTree/PropertyTreeOperator.h
-    QPropertyTree/QPropertyTree.cpp
-    QPropertyTree/QPropertyTree.h
-    QPropertyTree/QPropertyTreeStyle.h
-    QPropertyTree/Serialization.h
-    QPropertyTree/Strings.h
-    QPropertyTree/Unicode.h
-    QPropertyTree/ContextList.h
-    QPropertyTree/file_open.xpm
-    QPropertyTree/file_save.xpm
-    QPropertyTree/SlicerEdit.cpp
-    QPropertyTree/SlicerEdit.h
-    QPropertyTree/SlicerManipulator.cpp
-    QPropertyTree/SlicerManipulator.h
-    QPropertyTree/SlicerView.cpp
-    QPropertyTree/SlicerView.h
-    QPropertyTree/SpriteBorderEditor.cpp
-    QPropertyTree/SpriteBorderEditor.h
-    QPropertyTree/SpriteBorderEditorCommon.cpp
-    QPropertyTree/SpriteBorderEditorCommon.h
-    QPropertyTree/ValidatorBlock.h
-    ListSelectionDialog.cpp
-    ListSelectionDialog.h
-    QViewport.cpp
-    QViewport.h
-    QViewportEvents.h
-    QViewportSettings.h
-    QPropertyTree/PropertyRowResourceFilePath.cpp
-    QPropertyTree/PropertyRowResourceFilePath.h
-    QPropertyTree/PropertyRowResourceFolderPath.cpp
-    QPropertyTree/PropertyRowResourceFolderPath.h
-    QPropertyTree/PropertyRowResourceSelector.cpp
-    QPropertyTree/PropertyRowResourceSelector.h
-    QPropertyTree/PropertyRowOutputFilePath.cpp
-    QPropertyTree/PropertyRowOutputFilePath.h
-    QPropertyTree/QPropertyDialog.cpp
-    QPropertyTree/QPropertyDialog.h
-    Serialization.cpp
-    Serialization.h
-    Serialization/BinArchive.cpp
-    Serialization/BinArchive.h
-    Serialization/JSONIArchive.cpp
-    Serialization/JSONIArchive.h
-    Serialization/JSONOArchive.cpp
-    Serialization/JSONOArchive.h
-    Serialization/MemoryReader.cpp
-    Serialization/MemoryReader.h
-    Serialization/MemoryWriter.cpp
-    Serialization/MemoryWriter.h
-    Serialization/Pointers.h
-    Serialization/PointersImpl.h
-    Serialization/Qt.cpp
-    Serialization/Qt.h
-    Serialization/QtImpl.h
-    Serialization/Token.h
-    Serialization/Decorators/ToggleButton.h
-    Serialization/Decorators/ToggleButtonImpl.h
-    Serialization/Decorators/IGizmoSink.h
-    Serialization/Decorators/IconXPM.h
-    Serialization/Decorators/INavigationProvider.h
 )

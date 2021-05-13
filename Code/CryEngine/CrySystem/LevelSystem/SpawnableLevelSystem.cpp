@@ -247,8 +247,6 @@ namespace LegacyLevelSystem
 
             auto pPak = gEnv->pCryPak;
 
-            m_pSystem->SetThreadState(ESubsys_Physics, false);
-
             ICVar* pSpamDelay = gEnv->pConsole->GetCVar("log_SpamDelay");
             float spamDelay = 0.0f;
             if (pSpamDelay)
@@ -342,8 +340,6 @@ namespace LegacyLevelSystem
         }
 
         gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_PRECACHE_START, 0, 0);
-
-        m_pSystem->SetThreadState(ESubsys_Physics, true);
 
         return true;
     }

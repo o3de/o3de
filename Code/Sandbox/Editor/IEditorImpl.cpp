@@ -66,12 +66,9 @@ AZ_POP_DISABLE_WARNING
 #include "Objects/SelectionGroup.h"
 #include "Objects/ObjectManager.h"
 
-#include "BackgroundTaskManager.h"
-#include "BackgroundScheduleManager.h"
 #include "EditorFileMonitor.h"
 #include "MainStatusBar.h"
 
-#include "SettingsBlock.h"
 #include "ResourceSelectorHost.h"
 #include "Util/FileUtil_impl.h"
 #include "Util/ImageUtil_impl.h"
@@ -177,8 +174,6 @@ CEditorImpl::CEditorImpl()
     regCtx.pCommandManager = m_pCommandManager;
     regCtx.pClassFactory = m_pClassFactory;
     m_pEditorFileMonitor.reset(new CEditorFileMonitor());
-    m_pBackgroundTaskManager.reset(new BackgroundTaskManager::CTaskManager);
-    m_pBackgroundScheduleManager.reset(new BackgroundScheduleManager::CScheduleManager);
     m_pUIEnumsDatabase = new CUIEnumsDatabase;
     m_pDisplaySettings = new CDisplaySettings;
     m_pDisplaySettings->LoadRegistry();
@@ -842,16 +837,6 @@ void CEditorImpl::ResetViews()
 IIconManager* CEditorImpl::GetIconManager()
 {
     return m_pIconManager;
-}
-
-IBackgroundTaskManager* CEditorImpl::GetBackgroundTaskManager()
-{
-    return m_pBackgroundTaskManager.get();
-}
-
-IBackgroundScheduleManager* CEditorImpl::GetBackgroundScheduleManager()
-{
-    return m_pBackgroundScheduleManager.get();
 }
 
 IEditorFileMonitor* CEditorImpl::GetFileMonitor()
@@ -1624,8 +1609,6 @@ ESystemConfigPlatform CEditorImpl::GetEditorConfigPlatform() const
 
 void CEditorImpl::InitFinished()
 {
-    SProjectSettingsBlock::Load();
-
     if (!m_bInitialized)
     {
         m_bInitialized = true;

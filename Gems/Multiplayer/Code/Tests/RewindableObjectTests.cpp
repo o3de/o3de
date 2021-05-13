@@ -10,7 +10,8 @@
 *
 */
 
-#include <Source/NetworkTime/RewindableObject.h>
+#include <Multiplayer/RewindableObject.h>
+#include <Multiplayer/IMultiplayer.h>
 #include <Source/NetworkTime/NetworkTime.h>
 #include <AzCore/Console/LoggerSystemComponent.h>
 #include <AzCore/Time/TimeSystemComponent.h>
@@ -37,7 +38,7 @@ namespace UnitTest
         {
             test = i;
             EXPECT_EQ(i, test);
-            AZ::Interface<Multiplayer::INetworkTime>::Get()->IncrementHostFrameId();
+            Multiplayer::GetNetworkTime()->IncrementHostFrameId();
         }
 
         for (uint32_t i = 0; i < 16; ++i)
@@ -50,7 +51,7 @@ namespace UnitTest
         {
             test = i;
             EXPECT_EQ(i, test);
-            AZ::Interface<Multiplayer::INetworkTime>::Get()->IncrementHostFrameId();
+            Multiplayer::GetNetworkTime()->IncrementHostFrameId();
         }
 
         for (uint32_t i = 16; i < 48; ++i)
@@ -68,7 +69,7 @@ namespace UnitTest
         {
             test = i;
             EXPECT_EQ(i, test);
-            AZ::Interface<Multiplayer::INetworkTime>::Get()->IncrementHostFrameId();
+            Multiplayer::GetNetworkTime()->IncrementHostFrameId();
         }
 
         {
