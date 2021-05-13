@@ -15,6 +15,7 @@ set(FILES
     Include/Multiplayer/IMultiplayer.h
     Include/Multiplayer/IMultiplayerComponentInput.h
     Include/Multiplayer/INetworkEntityManager.h
+    Include/Multiplayer/INetworkPlayerSpawner.h
     Include/Multiplayer/INetworkTime.h
     Include/Multiplayer/IReplicationWindow.h
     Include/Multiplayer/MultiplayerComponent.h

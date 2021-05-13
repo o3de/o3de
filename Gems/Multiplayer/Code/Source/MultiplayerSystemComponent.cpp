@@ -433,7 +433,7 @@ namespace Multiplayer
 
         if (m_onConnectFunctor)
         {
-            // Default OnConnect behaviour has been overridden, 
+            // Default OnConnect behaviour has been overridden
             m_onConnectFunctor(connection, datum);
         }
         else
