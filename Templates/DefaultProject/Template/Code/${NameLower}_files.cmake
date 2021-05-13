@@ -13,7 +13,5 @@ set(FILES
     Include/${Name}/${Name}Bus.h
     Source/${Name}SystemComponent.cpp
     Source/${Name}SystemComponent.h
-    runtime_dependencies.cmake
-    tool_dependencies.cmake
-    server_dependencies.cmake
+    enabled_gems.cmake
 )

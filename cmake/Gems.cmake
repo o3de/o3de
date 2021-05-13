@@ -84,6 +84,7 @@ endfunction()
 # note that it can't do this immediately, so it saves the data for later processing.
 # Note: If you don't supply a project name, it will apply it across the board to all projects.
 # this is useful in the case of "ly_add_gems being called for so called 'mandatory gems' inside the engine.
+# if you specify a gem name with a namespace, it will be used, otherwise it will assume Gem::
 function(ly_enable_gems)
     set(options)
     set(oneValueArgs PROJECT_NAME GEM_FILE)
@@ -176,19 +177,24 @@ function(ly_enable_gems_delayed)
 
         # apply the list of gem targets.  Adding a gem really just means adding the appropriate dependency.
         foreach(gem_name ${gem_dependencies})
+            # the gem name may already have a namespace.  If it does, we use that one
+            ly_strip_target_namespace(TARGET ${gem_name} OUTPUT_VARIABLE unaliased_gem_name)
+            if (${unaliased_gem_name} STREQUAL ${gem_name})
+                # if stripping a namespace had no effect, it had no namespace
+                # and we supply the default Gem:: namespace.
+                set(gem_name_with_namespace Gem::${gem_name})
+            else()
+                # if stripping the namespace had an effect then we use the original
+                # with the namespace, instead of assuming Gem::
+                set(gem_name_with_namespace ${gem_name})
+            endif()
             
-            if (TARGET Gem::${gem_name}.${variant})
+            # if the target exists, add it.
+            if (TARGET ${gem_name_with_namespace}.${variant})
                 ly_add_target_dependencies(
                     ${PREFIX_CLAUSE}
                     TARGETS ${target}
-                    DEPENDENT_TARGETS Gem::${gem_name}.${variant}
-                )
-            elseif(${variant} STREQUAL "Client" AND TARGET Gem::${gem_name})
-                # Client can also be 'empty' for backward compatibility
-                ly_add_target_dependencies(
-                    ${PREFIX_CLAUSE}
-                    TARGETS ${target}
-                    DEPENDENT_TARGETS Gem::${gem_name}
+                    DEPENDENT_TARGETS ${gem_name_with_namespace}.${variant}
                 )
             endif()
         endforeach()

@@ -9,6 +9,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # {END_LICENSE}
 
-set(GEM_DEPENDENCIES
+set(ENABLED_GEMS
+    Project::${Name}
+    Atom_AtomBridge
+    Camera
+    CameraFramework
+    EditorPythonBindings
+    EMotionFX
+    GradientSignal
+    ImGui
+    LmbrCentral
+    LyShine
+    Maestro
+    NvCloth
+    SceneProcessing
+    TextureAtlas
+    WhiteBox
 )
-
