@@ -58,9 +58,6 @@ namespace AzToolsFramework
             void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
             void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
 
-            //! Get all visible source entries and place them in a queue to update their source control status
-            //void OnUpdateSCThumbnailsList();
-
         private:
             QString m_name;
             QPointer<AssetBrowserTableModel> m_tableModel = nullptr;
@@ -69,8 +66,6 @@ namespace AzToolsFramework
 
         private Q_SLOTS:
             void OnContextMenu(const QPoint& point);
-            //! Get all visible source entries and place them in a queue to update their source control status
-            void OnUpdateSCThumbnailsList();
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

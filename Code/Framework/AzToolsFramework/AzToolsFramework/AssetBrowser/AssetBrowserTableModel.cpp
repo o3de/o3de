@@ -1,4 +1,3 @@
-
 #include <AssetBrowser/AssetBrowserTableModel.h>
 #include <AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>

@@ -1,7 +1,5 @@
 #include <API/EditorAssetSystemAPI.h>
 
-#include <AzCore/Asset/AssetManagerBus.h>
-#include <AzCore/Math/Crc.h>
 #include <AzCore/std/containers/vector.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -14,8 +12,6 @@
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h>
 #include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
-#include <AzToolsFramework/Thumbnails/SourceControlThumbnail.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 
 AZ_PUSH_DISABLE_WARNING(
     4244 4251 4800, "-Wunknown-warning-option") // conversion from 'int' to 'float', possible loss of data, needs to have dll-interface to
@@ -37,17 +33,16 @@ namespace AzToolsFramework
         AssetBrowserTableView::AssetBrowserTableView(QWidget* parent)
             : QTableView(parent)
             , m_delegate(new EntryDelegate(this))
-
         {
             setSortingEnabled(true);
             setItemDelegate(m_delegate);
-            //header()->hide();
+            verticalHeader()->hide();
             setContextMenuPolicy(Qt::CustomContextMenu);
 
             setMouseTracking(true);
+            setSortingEnabled(false);
 
             connect(this, &QTableView::customContextMenuRequested, this, &AssetBrowserTableView::OnContextMenu);
-            //connect(m_scTimer, &QTimer::timeout, this, &AssetBrowserTableView::OnUpdateSCThumbnailsList);
 
             AssetBrowserViewRequestBus::Handler::BusConnect();
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
@@ -63,6 +58,8 @@ namespace AzToolsFramework
             AZ_Assert(m_tableModel, "Expecting AssetBrowserTableModel");
             m_sourceFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_tableModel->sourceModel());
             QTableView::setModel(model);
+            horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeMode::Stretch);
+            horizontalHeader()->setSectionResizeMode(1,QHeaderView::ResizeMode::Stretch);
         }
         void AssetBrowserTableView::SetName(const QString& name)
         {
@@ -105,10 +102,6 @@ namespace AzToolsFramework
                 }
             }
             QTableView::rowsAboutToBeRemoved(parent, start, end);
-        }
-        void AssetBrowserTableView::OnUpdateSCThumbnailsList()
-        {
-
         }
         void AssetBrowserTableView::SelectProduct(AZ::Data::AssetId assetID)
         {
