@@ -98,7 +98,7 @@ namespace LyShineExamples
         {
             // if there is no texture we will just use a white texture
             // TODO:  Get a default atom texture here when possible
-            //texture = gEnv->pRenderer->EF_GetTextureByID(gEnv->pRenderer->GetWhiteTextureId());
+            //texture = ???->EF_GetTextureByID(???->GetWhiteTextureId());
         }
 
         if (m_isRenderCacheDirty)

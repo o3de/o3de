@@ -99,6 +99,9 @@ namespace AtomToolsFramework
         AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportScreenToWorldRay(
             const AzFramework::ScreenPoint& screenPosition) override;
 
+        //! Set interface for providing viewport specific settings (e.g. snapping properties).
+        void SetViewportSettings(const AzToolsFramework::ViewportInteraction::ViewportSettings* viewportSettings);
+
         // AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler ...
         void BeginCursorCapture() override;
         void EndCursorCapture() override;
@@ -156,5 +159,7 @@ namespace AtomToolsFramework
         bool m_capturingCursor = false;
         // The last known position of the mouse cursor, if one is available.
         AZStd::optional<QPoint> m_lastCursorPosition;
+        // The viewport settings (e.g. grid snapping, grid size) for this viewport.
+        const AzToolsFramework::ViewportInteraction::ViewportSettings* m_viewportSettings = nullptr;
     };
 } //namespace AtomToolsFramework

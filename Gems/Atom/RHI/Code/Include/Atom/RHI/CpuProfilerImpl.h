@@ -124,6 +124,8 @@ namespace AZ
 
             // This lock will only be contested when the CpuProfiler's Shutdown() method has been called
             AZStd::shared_mutex m_shutdownMutex;
+
+            bool m_initialized = false;
         };
 
     }; // namespace RPI

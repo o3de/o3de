@@ -88,6 +88,9 @@ namespace AZ
         //! Retrieves the project name from the settings registry
         AZ::SettingsRegistryInterface::FixedValueString GetProjectName();
 
+        //! Retrieves the full directory to the Home directory, i.e. "<userhome> or overrideHomeDirectory"
+        AZ::IO::FixedMaxPathString GetHomeDirectory();
+
         //! Retrieves the full directory to the O3DE manifest directory, i.e. "<userhome>/.o3de"
         AZ::IO::FixedMaxPathString GetO3deManifestDirectory();
 

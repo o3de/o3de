@@ -178,6 +178,24 @@ namespace AzToolsFramework
             ~ViewportInteractionRequests() = default;
         };
 
+        /// Interface to return only viewport specific settings (e.g. snapping).
+        class ViewportSettings
+        {
+        public:
+            virtual ~ViewportSettings() = default;
+
+            /// Return if grid snapping is enabled.
+            virtual bool GridSnappingEnabled() const = 0;
+            /// Return the grid snapping size.
+            virtual float GridSize() const = 0;
+            /// Does the grid currently want to be displayed.
+            virtual bool ShowGrid() const = 0;
+            /// Return if angle snapping is enabled.
+            virtual bool AngleSnappingEnabled() const = 0;
+            /// Return the angle snapping/step size.
+            virtual float AngleStep() const = 0;
+        };
+
         /// Type to inherit to implement ViewportInteractionRequests.
         using ViewportInteractionRequestBus = AZ::EBus<ViewportInteractionRequests, ViewportEBusTraits>;
 

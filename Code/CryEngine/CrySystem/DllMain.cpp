@@ -14,11 +14,6 @@
 #include "CrySystem_precompiled.h"
 #include "System.h"
 #include <AZCrySystemInitLogSink.h>
-#include "DebugCallStack.h"
-#if defined(AZ_MONOLITHIC_BUILD)
-#include <CryCommon/CryExtension/Impl/ICryFactoryRegistryImpl.h>
-#include <CryCommon/CryExtension/Impl/RegFactoryNode.h>
-#endif
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #undef AZ_RESTRICTED_SECTION
@@ -76,10 +71,6 @@ public:
     {
         switch (event)
         {
-        case ESYSTEM_EVENT_LEVEL_UNLOAD:
-            gEnv->pSystem->SetThreadState(ESubsys_Physics, false);
-            break;
-
         case ESYSTEM_EVENT_LEVEL_LOAD_START:
         case ESYSTEM_EVENT_LEVEL_LOAD_END:
         {
@@ -91,7 +82,6 @@ public:
         {
             CryCleanup();
             STLALLOCATOR_CLEANUP;
-            gEnv->pSystem->SetThreadState(ESubsys_Physics, true);
             break;
         }
         }
@@ -132,29 +122,11 @@ CRYSYSTEM_API ISystem* CreateSystemInterface(const SSystemInitParams& startupPar
 #define AZ_RESTRICTED_SECTION DLLMAIN_CPP_SECTION_2
 #include AZ_RESTRICTED_FILE(DllMain_cpp)
 #endif
-#if defined(AZ_MONOLITHIC_BUILD)
-    ICryFactoryRegistryImpl* pCryFactoryImpl = static_cast<ICryFactoryRegistryImpl*>(pSystem->GetCryFactoryRegistry());
-    pCryFactoryImpl->RegisterFactories(g_pHeadToRegFactories);
-#endif // AZ_MONOLITHIC_BUILD
+
        // the earliest point the system exists - w2e tell the callback
     if (startupParams.pUserCallback)
     {
         startupParams.pUserCallback->OnSystemConnect(pSystem);
-    }
-
-    // Environment Variable to signal we don't want to override our exception handler - our crash report system will set this
-    auto envVar = AZ::Environment::FindVariable<bool>("ExceptionHandlerIsSet");
-    bool handlerIsSet = (envVar && *envVar);
-
-    if (!startupParams.bMinimal && !handlerIsSet)     // in minimal mode, we want to crash when we crash!
-    {
-#if defined(WIN32)
-        // Install exception handler in Release modes.
-        ((DebugCallStack*)IDebugCallStack::instance())->installErrorHandler(pSystem);
-#elif defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION DLLMAIN_CPP_SECTION_3
-#include AZ_RESTRICTED_FILE(DllMain_cpp)
-#endif
     }
 
     bool retVal = false;
@@ -178,20 +150,5 @@ CRYSYSTEM_API ISystem* CreateSystemInterface(const SSystemInitParams& startupPar
 
     return pSystem;
 }
-
-CRYSYSTEM_API void WINAPI CryInstallUnhandledExceptionHandler()
-{
-#if defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION DLLMAIN_CPP_SECTION_4
-#include AZ_RESTRICTED_FILE(DllMain_cpp)
-#endif
-}
-
-#if defined(ENABLE_PROFILING_CODE) && !defined(LINUX) && !defined(APPLE)
-CRYSYSTEM_API void CryInstallPostExceptionHandler(void (* PostExceptionHandlerCallback)())
-{
-    return IDebugCallStack::instance()->FileCreationCallback(PostExceptionHandlerCallback);
-}
-#endif
 };
 

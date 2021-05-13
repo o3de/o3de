@@ -306,7 +306,7 @@ namespace AZ
             for (const RPI::ViewPtr& view : packet.m_views)
             {
                 if (m_renderPipelineIdsForPersistentView.find(view.get()) != m_renderPipelineIdsForPersistentView.end() &&
-                    (view->GetUsageFlags() & RPI::View::UsageCamera))
+                    (RHI::CheckBitsAny(view->GetUsageFlags(), RPI::View::UsageCamera | RPI::View::UsageReflectiveCubeMap)))
                 {
                     RPI::ShaderResourceGroup* viewSrg = view->GetShaderResourceGroup().get();
 
@@ -1487,7 +1487,6 @@ namespace AZ
             float depthNear,
             float depthFar) const
         {
-            // For calculation, refer https://wiki.agscollab.com/display/ATOM/Cascaded+Shadowmaps
             // This calculates the center of bounding sphere for a camera view frustum.
             // By this, on the camera view (2D), the bounding sphere's center
             // shifts to the remarkable point.

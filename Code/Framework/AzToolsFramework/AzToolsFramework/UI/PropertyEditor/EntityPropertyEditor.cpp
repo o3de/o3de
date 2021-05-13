@@ -63,6 +63,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponent.h>
+#include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 #include <AzToolsFramework/ToolsMessaging/EntityHighlightBus.h>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteWidget.hxx>
@@ -334,6 +335,7 @@ namespace AzToolsFramework
         m_gui->m_entityDetailsLabel->setObjectName("LabelEntityDetails");
         m_gui->m_entitySearchBox->setReadOnly(false);
         m_gui->m_entitySearchBox->setContextMenuPolicy(Qt::CustomContextMenu);
+        m_gui->m_entitySearchBox->setClearButtonEnabled(true);
         AzQtComponents::LineEdit::applySearchStyle(m_gui->m_entitySearchBox);
 
         AzFramework::ApplicationRequests::Bus::BroadcastResult(
@@ -492,6 +494,11 @@ namespace AzToolsFramework
         {
             ToolsApplicationRequests::Bus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
         }
+    }
+
+    void EntityPropertyEditor::SetNewComponentId(AZ::ComponentId componentId)
+    {
+        m_newComponentId = componentId;
     }
 
     void EntityPropertyEditor::SetOverrideEntityIds(const AzToolsFramework::EntityIdSet& entities)
@@ -1039,15 +1046,23 @@ namespace AzToolsFramework
             sortedComponents.end(),
             [=](const OrderedSortComponentEntry& component1, const OrderedSortComponentEntry& component2)
             {
-                // Transform component must be first, always
-                // If component 1 is a transform component, it is sorted earlier
-                if (component1.m_component->RTTI_IsTypeOf(AZ::EditorTransformComponentTypeId))
+                AZStd::optional<int> fixedComponentListIndex1 = GetFixedComponentListIndex(component1.m_component);
+                AZStd::optional<int> fixedComponentListIndex2 = GetFixedComponentListIndex(component2.m_component);
+
+                // If both components have fixed list indices, sort based on those indices
+                if (fixedComponentListIndex1.has_value() && fixedComponentListIndex2.has_value())
+                {
+                    return fixedComponentListIndex1.value() < fixedComponentListIndex2.value();
+                }
+
+                // If component 1 has a fixed list index, sort it first
+                if (fixedComponentListIndex1.has_value())
                 {
                     return true;
                 }
 
-                // If component 2 is a transform component, component 1 is never sorted earlier
-                if (component2.m_component->RTTI_IsTypeOf(AZ::EditorTransformComponentTypeId))
+                // If component 2 has a fixed list index, component 1 should not be sorted before it
+                if (fixedComponentListIndex2.has_value())
                 {
                     return false;
                 }
@@ -1128,10 +1143,7 @@ namespace AzToolsFramework
                 {
                     if (auto attributeData = azdynamic_cast<AZ::Edit::AttributeData<bool>*>(attribute))
                     {
-                        if (!attributeData->Get(nullptr))
-                        {
-                            return false;
-                        }
+                        return attributeData->Get(nullptr);
                     }
                 }
             }
@@ -1164,6 +1176,36 @@ namespace AzToolsFramework
             }
         }
         return true;
+    }
+
+    AZStd::optional<int> EntityPropertyEditor::GetFixedComponentListIndex(const AZ::Component* component)
+    {
+        auto componentClassData = component ? GetComponentClassData(component) : nullptr;
+        if (componentClassData && componentClassData->m_editData)
+        {
+            if (auto editorDataElement = componentClassData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData))
+            {
+                if (auto attribute = editorDataElement->FindAttribute(AZ::Edit::Attributes::FixedComponentListIndex))
+                {
+                    if (auto attributeData = azdynamic_cast<AZ::Edit::AttributeData<int>*>(attribute))
+                    {
+                        return { attributeData->Get(nullptr) };
+                    }
+                }
+            }
+        }
+        return {};
+    }
+
+    bool EntityPropertyEditor::IsComponentDraggable(const AZ::Component* component)
+    {
+        return !GetFixedComponentListIndex(component).has_value();
+    }
+
+    bool EntityPropertyEditor::AreComponentsDraggable(const AZ::Entity::ComponentArrayType& components) const
+    {
+        return AZStd::all_of(
+            components.begin(), components.end(), [](AZ::Component* component) { return IsComponentDraggable(component); });
     }
 
     bool EntityPropertyEditor::AreComponentsCopyable(const AZ::Entity::ComponentArrayType& components) const
@@ -3367,7 +3409,9 @@ namespace AzToolsFramework
             sourceComponents.size() == m_selectedEntityIds.size() &&
             targetComponents.size() == m_selectedEntityIds.size() &&
             AreComponentsRemovable(sourceComponents) &&
-            AreComponentsRemovable(targetComponents);
+            AreComponentsRemovable(targetComponents) &&
+            AreComponentsDraggable(sourceComponents) &&
+            AreComponentsDraggable(targetComponents);
     }
 
     bool EntityPropertyEditor::IsMoveComponentsUpAllowed() const
@@ -3681,14 +3725,38 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::ScrollToNewComponent()
     {
-        //force new components to be visible, assuming they are added to the end of the list and layout
-        auto componentEditor = GetComponentEditorsFromIndex(m_componentEditorsUsed - 1);
+        // force new components to be visible
+        // if no component has been explicitly set at the most recently added,
+        // assume new components are added to the end of the list and layout
+        AZ::s32 newComponentIndex = m_componentEditorsUsed - 1;
+
+        // if there is a component id explicitly set as the most recently added, try to find it and make sure it is visible
+        if (m_newComponentId.has_value() && m_newComponentId.value() != AZ::InvalidComponentId)
+        {
+            AZ::ComponentId newComponentId = m_newComponentId.value();
+            for (AZ::s32 componentIndex = 0; componentIndex < m_componentEditorsUsed; ++componentIndex)
+            {
+                if (m_componentEditors[componentIndex])
+                {
+                    for (const auto component : m_componentEditors[componentIndex]->GetComponents())
+                    {
+                        if (component->GetId() == newComponentId)
+                        {
+                            newComponentIndex = componentIndex;
+                        }
+                    }
+                }
+            }
+        }
+
+        auto componentEditor = GetComponentEditorsFromIndex(newComponentIndex);
         if (componentEditor)
         {
             m_gui->m_componentList->ensureWidgetVisible(componentEditor);
         }
         m_shouldScrollToNewComponents = false;
         m_shouldScrollToNewComponentsQueued = false;
+        m_newComponentId.reset();
     }
 
     void EntityPropertyEditor::QueueScrollToNewComponent()
@@ -4073,7 +4141,8 @@ namespace AzToolsFramework
         {
             if (!componentEditor ||
                 !componentEditor->isVisible() ||
-                !AreComponentsRemovable(componentEditor->GetComponents()))
+                !AreComponentsRemovable(componentEditor->GetComponents()) ||
+                !AreComponentsDraggable(componentEditor->GetComponents()))
             {
                 return false;
             }
@@ -4223,6 +4292,7 @@ namespace AzToolsFramework
         while (targetComponentEditor
             && (targetComponentEditor->IsDragged()
                 || !AreComponentsRemovable(targetComponentEditor->GetComponents())
+                || !AreComponentsDraggable(targetComponentEditor->GetComponents())
                 || (globalRect.center().y() > GetWidgetGlobalRect(targetComponentEditor).center().y())))
         {
             if (targetItr == m_componentEditors.end() || targetComponentEditor == m_componentEditors.back() || !targetComponentEditor->isVisible())

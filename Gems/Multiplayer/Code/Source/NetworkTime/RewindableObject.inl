@@ -48,7 +48,7 @@ namespace Multiplayer
     inline RewindableObject<BASE_TYPE, REWIND_SIZE> &RewindableObject<BASE_TYPE, REWIND_SIZE>::operator =(const RewindableObject<BASE_TYPE, REWIND_SIZE>& rhs)
     {
         INetworkTime* networkTime = AZ::Interface<INetworkTime>::Get();
-        SetValueForTime(rhs.GetValueForTime(networkTime->GetApplicationFrameId()), GetCurrentTimeForProperty());
+        SetValueForTime(rhs.GetValueForTime(networkTime->GetHostFrameId()), GetCurrentTimeForProperty());
         return *this;
     }
 
@@ -73,7 +73,7 @@ namespace Multiplayer
     template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
     inline BASE_TYPE& RewindableObject<BASE_TYPE, REWIND_SIZE>::Modify()
     {
-        const ApplicationFrameId frameTime = GetCurrentTimeForProperty();
+        const HostFrameId frameTime = GetCurrentTimeForProperty();
         if (frameTime < m_headTime)
         {
             AZ_Assert(false, "Trying to mutate a rewindable in the past");
@@ -103,7 +103,7 @@ namespace Multiplayer
     template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
     inline bool RewindableObject<BASE_TYPE, REWIND_SIZE>::Serialize(AzNetworking::ISerializer& serializer)
     {
-        const ApplicationFrameId frameTime = GetCurrentTimeForProperty();
+        const HostFrameId frameTime = GetCurrentTimeForProperty();
         BASE_TYPE value = GetValueForTime(frameTime);
         if (serializer.Serialize(value, "Element") && (serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject))
         {
@@ -113,14 +113,14 @@ namespace Multiplayer
     }
 
     template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
-    inline ApplicationFrameId RewindableObject<BASE_TYPE, REWIND_SIZE>::GetCurrentTimeForProperty() const
+    inline HostFrameId RewindableObject<BASE_TYPE, REWIND_SIZE>::GetCurrentTimeForProperty() const
     {
         INetworkTime* networkTime = AZ::Interface<INetworkTime>::Get();
-        return networkTime->GetApplicationFrameIdForRewindingConnection(m_owningConnectionId);
+        return networkTime->GetHostFrameIdForRewindingConnection(m_owningConnectionId);
     }
 
     template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
-    inline void RewindableObject<BASE_TYPE, REWIND_SIZE>::SetValueForTime(const BASE_TYPE& value, ApplicationFrameId frameTime)
+    inline void RewindableObject<BASE_TYPE, REWIND_SIZE>::SetValueForTime(const BASE_TYPE& value, HostFrameId frameTime)
     {
         if (frameTime < m_headTime)
         {
@@ -155,7 +155,7 @@ namespace Multiplayer
     }
 
     template <typename BASE_TYPE, AZStd::size_t REWIND_SIZE>
-    inline const BASE_TYPE &RewindableObject<BASE_TYPE, REWIND_SIZE>::GetValueForTime(ApplicationFrameId frameTime) const
+    inline const BASE_TYPE &RewindableObject<BASE_TYPE, REWIND_SIZE>::GetValueForTime(HostFrameId frameTime) const
     {
         if (frameTime > m_headTime)
         {
