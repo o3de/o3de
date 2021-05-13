@@ -526,6 +526,11 @@ namespace AZ
         // are destroyed
         m_commandLine = {};
 
+        m_entityAddedEvent.DisconnectAllHandlers();
+        m_entityRemovedEvent.DisconnectAllHandlers();
+        m_entityActivatedEvent.DisconnectAllHandlers();
+        m_entityDeactivatedEvent.DisconnectAllHandlers();
+
         DestroyAllocator();
     }
 
@@ -980,6 +985,26 @@ namespace AZ
         handler.Connect(m_entityRemovedEvent);
     }
 
+    void ComponentApplication::RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler& handler)
+    {
+        handler.Connect(m_entityActivatedEvent);
+    }
+
+    void ComponentApplication::RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler& handler)
+    {
+        handler.Connect(m_entityDeactivatedEvent);
+    }
+
+    void ComponentApplication::SignalEntityActivated(AZ::Entity* entity)
+    {
+        m_entityActivatedEvent.Signal(entity);
+    }
+
+    void ComponentApplication::SignalEntityDeactivated(AZ::Entity* entity)
+    {
+        m_entityDeactivatedEvent.Signal(entity);
+    }
+
     //=========================================================================
     // AddEntity
     // [5/30/2012]
@@ -1279,7 +1304,7 @@ namespace AZ
                 // Add all auto loadable non-asset gems to the list of gem modules to load
                 if (!moduleLoadData.m_autoLoad)
                 {
-                    break;
+                    continue;
                 }
                 for (AZ::OSString& dynamicLibraryPath : moduleLoadData.m_dynamicLibraryPaths)
                 {

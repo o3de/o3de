@@ -112,7 +112,7 @@ namespace AZ
 
         bool AreaLightComponentConfig::SupportsShadows() const
         {
-            return m_shapeType == AZ_CRC_CE("DiskShape");
+            return m_lightType == LightType::SpotDisk || m_lightType == LightType::Sphere;
         }
         
         bool AreaLightComponentConfig::ShadowsDisabled() const

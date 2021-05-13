@@ -643,7 +643,7 @@ void CSequenceBatchRenderDialog::OnResolutionSelected()
         CCustomResolutionDlg resDlg(defaultW, defaultH, this);
         if (resDlg.exec() == QDialog::Accepted)
         {
-            const int maxRes = GetIEditor()->GetRenderer()->GetMaxSquareRasterDimension();
+            const int maxRes = 8192;
             m_customResW = min(resDlg.GetWidth(), maxRes);
             m_customResH = min(resDlg.GetHeight(), maxRes);
             const QString resText = QString(customResFormat).arg(m_customResW).arg(m_customResH);

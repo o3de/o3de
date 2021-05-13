@@ -304,9 +304,9 @@ ProcessedMaterialInputs ProcessStandardMaterialInputs(StandardMaterialInputs inp
 
 // ---------- Pixel Shader ----------
 
-PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depth)
+PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depthNDC)
 {
-    depth = IN.m_position.z;
+    depthNDC = IN.m_position.z;
 
     s_blendMaskFromVertexStream = IN.m_blendMask;
 
@@ -357,7 +357,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         float parallaxOverallFactor = MaterialSrg::m_displacementMax - MaterialSrg::m_displacementMin;
         GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], parallaxOverallFactor, parallaxOverallOffset, 
                          ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
-                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depth, displacementIsClipped);
+                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depthNDC, IN.m_position.w, displacementIsClipped);
 
         // Adjust directional light shadow coorinates for parallax correction
         if(o_parallax_enablePixelDepthOffset)

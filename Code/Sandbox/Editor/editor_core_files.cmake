@@ -22,6 +22,8 @@ set(FILES
     Include/IEditorMaterial.h
     Include/IEditorMaterialManager.h
     Include/IImageUtil.h
+    EditorViewportSettings.cpp
+    EditorViewportSettings.h
     Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.qrc
     Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.cpp
     Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.h

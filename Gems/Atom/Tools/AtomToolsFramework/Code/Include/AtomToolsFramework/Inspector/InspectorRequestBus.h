@@ -62,6 +62,15 @@ namespace AtomToolsFramework
         //! Calls Rebuild for all InspectorGroupWidget, allowing for destructive UI changes
         virtual void RebuildAll() = 0;
 
+        //! Expands a specific group
+        virtual void ExpandGroup(const AZStd::string& groupNameId) = 0;
+
+        //! Collapses a specific group
+        virtual void CollapseGroup(const AZStd::string& groupNameId) = 0;
+
+        //! Checks the expansion state of a specific group
+        virtual bool IsGroupExpanded(const AZStd::string& groupNameId) const = 0;
+
         //! Expands all groups and headers
         virtual void ExpandAll() = 0;
 

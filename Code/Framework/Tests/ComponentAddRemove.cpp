@@ -1100,6 +1100,10 @@ namespace UnitTest
         void UnregisterComponentDescriptor(const ComponentDescriptor*) override {}
         void RegisterEntityAddedEventHandler(EntityAddedEvent::Handler&) override {}
         void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler&) override {}
+        void RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler&) override {}
+        void RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler&) override {}
+        void SignalEntityActivated(Entity*) override {}
+        void SignalEntityDeactivated(Entity*) override {}
         bool AddEntity(Entity*) override { return true; }
         bool RemoveEntity(Entity*) override { return true; }
         bool DeleteEntity(const EntityId&) override { return true; }
@@ -1125,6 +1129,7 @@ namespace UnitTest
             AllocatorsFixture::SetUp();
 
             ComponentApplicationBus::Handler::BusConnect();
+            AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
             m_serializeContext.reset(aznew AZ::SerializeContext(true, true));
 
             Entity::Reflect(m_serializeContext.get());
@@ -1139,6 +1144,7 @@ namespace UnitTest
             m_descriptors.set_capacity(0);
 
             m_serializeContext.reset();
+            AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
             ComponentApplicationBus::Handler::BusDisconnect();
 
             AllocatorsFixture::TearDown();

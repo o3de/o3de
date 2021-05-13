@@ -72,6 +72,8 @@ namespace AZ
 
     using EntityAddedEvent = AZ::Event<AZ::Entity*>;
     using EntityRemovedEvent = AZ::Event<AZ::Entity*>;
+    using EntityActivatedEvent = AZ::Event<AZ::Entity*>;
+    using EntityDeactivatedEvent = AZ::Event<AZ::Entity*>;
 
     //! Interface that components can use to make requests of the main application.
     class ComponentApplicationRequests
@@ -101,6 +103,22 @@ namespace AZ
         //! Registers an event handler that will be signalled whenever an entity is removed.
         //! @param handler the event handler to signal.
         virtual void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler& handler) = 0;
+
+        //! Registers an event handler that will be signalled whenever an entity is added.
+        //! @param handler the event handler to signal.
+        virtual void RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler& handler) = 0;
+
+        //! Registers an event handler that will be signalled whenever an entity is removed.
+        //! @param handler the event handler to signal.
+        virtual void RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler& handler) = 0;
+
+        //! Signals that the provided entity has been activated.
+        //! @param entity the entity being activated.
+        virtual void SignalEntityActivated(AZ::Entity* entity) = 0;
+
+        //! Signals that the provided entity has been deactivated.
+        //! @param entity the entity being deactivated.
+        virtual void SignalEntityDeactivated(AZ::Entity* entity) = 0;
 
         //! Adds an entity to the application's registry.
         //! Calling Init() on an entity automatically performs this operation.
