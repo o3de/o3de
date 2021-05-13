@@ -9,25 +9,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 import boto3
 import pytest
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class AwsUtils:
 
-    def __init__(self, arn: str, session_name: str):
+    def __init__(self, arn: str, session_name: str, region_name: str):
         local_session = boto3.Session(profile_name='default')
         local_sts_client = local_session.client('sts')
-        local_account_id = local_sts_client.get_caller_identity()["Account"]
-        print(local_account_id)
+        self._local_account_id = local_sts_client.get_caller_identity()["Account"]
+        logger.info(f'Local Account Id: {self._local_account_id}')
 
         response = local_sts_client.assume_role(RoleArn=arn, RoleSessionName=session_name)
 
         self._assume_session = boto3.Session(aws_access_key_id=response['Credentials']['AccessKeyId'],
                                              aws_secret_access_key=response['Credentials']['SecretAccessKey'],
-                                             aws_session_token=response['Credentials']['SessionToken'])
+                                             aws_session_token=response['Credentials']['SessionToken'],
+                                             region_name=region_name)
 
         assume_sts_client = self._assume_session.client('sts')
         assume_account_id = assume_sts_client.get_caller_identity()["Account"]
-        print(assume_account_id)
+        logger.info(f'Assume Account Id: {assume_account_id}')
         self._assume_account_id = assume_account_id
 
     def client(self, service: str):
@@ -39,6 +43,9 @@ class AwsUtils:
 
     def assume_session(self):
         return self._assume_session
+
+    def local_account_id(self):
+        return self._local_account_id
 
     def assume_account_id(self):
         return self._assume_account_id
@@ -54,16 +61,18 @@ class AwsUtils:
 def aws_utils(
         request: pytest.fixture,
         assume_role_arn: str,
-        session_name: str):
+        session_name: str,
+        region_name: str):
     """
     Fixture for setting up a Cdk
     :param request: _pytest.fixtures.SubRequest class that handles getting
         a pytest fixture from a pytest function/fixture.
     :param assume_role_arn: Role used to fetch temporary aws credentials, configure service clients with obtained credentials.
-    :param session_name: AWS account to deploy cdk resources in.
+    :param session_name: Session name to set.
+    :param region_name: AWS account region to set for session.
     :return AWSUtils class object.
     """
-    aws_utils_obj = AwsUtils(assume_role_arn, session_name)
+    aws_utils_obj = AwsUtils(assume_role_arn, session_name, region_name)
 
     def teardown():
         aws_utils_obj.destroy()

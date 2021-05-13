@@ -82,9 +82,9 @@ class ResourceMappings:
         with open(self._resource_mapping_file_path, 'w') as file_content:
             json.dump(resource_mappings, file_content, indent=4)
 
-    def destroy(self) -> None:
+    def clear_output_keys(self) -> None:
         """
-        Resets resource mappings file
+        Clears values of all resource mapping keys. Sets region to default to us-west-2
         """
         with open(self._resource_mapping_file_path) as file_content:
             resource_mappings = json.load(file_content)
@@ -119,7 +119,7 @@ def resource_mappings(
     :param project: Project to find resource mapping file.
     :param feature_name: AWS Gem name that is prepended to resource mapping keys.
     :param resource_mappings_filename: Name of resource mapping file.
-    :param workspace: Region for deploying the CDK application.
+    :param workspace: ly_test_tools workspace fixture.
     :param aws_utils: AWS utils fixture.
     :return: ResourceMappings class object.
     """
@@ -130,7 +130,7 @@ def resource_mappings(
                                              aws_utils.client('cloudformation'))
 
     def teardown():
-        resource_mappings_obj.destroy()
+        resource_mappings_obj.clear_output_keys()
 
     request.addfinalizer(teardown)
 
