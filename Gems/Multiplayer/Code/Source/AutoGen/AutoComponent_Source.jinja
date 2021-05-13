@@ -725,7 +725,7 @@ enum class NetworkProperties
 
         return &networkComponent->m_{{ LowerFirst(Property.attrib['Name']) }}Event;
     })
-        ->Attribute(AZ::Script::Attributes::AzEventDescription, AZ::BehaviorAzEventDescription{ "On {{ UpperFirst(Property.attrib['Name']) }} Changed Event", {"New {{ UpperFirst(Property.attrib['Name']) }}"} })
+        ->Attribute(AZ::Script::Attributes::AzEventDescription, AZ::BehaviorAzEventDescription{ "On {{ UpperFirst(Property.attrib['Name']) }} Changed Event", {"New {{ Property.attrib['Type'] }}"} })
 
 {% endif %}
 {% endcall -%}
@@ -1217,6 +1217,8 @@ namespace {{ Component.attrib['Namespace'] }}
         if (behaviorContext)
         {
             behaviorContext->Class<{{ ComponentName }}>("{{ ComponentName }}")
+                ->Attribute(AZ::Script::Attributes::Module, "{{ LowerFirst(Component.attrib['Namespace']) }}")
+                ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }}")
                 {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Authority', ComponentName)|indent(16) -}}
 {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Server', ComponentName)|indent(16) -}}
 {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Client', ComponentName)|indent(16) -}}

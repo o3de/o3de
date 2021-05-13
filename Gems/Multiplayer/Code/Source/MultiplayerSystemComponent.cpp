@@ -80,13 +80,13 @@ namespace Multiplayer
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Class<HostId>("HostId");
-            behaviorContext->Class<NetEntityId>("NetEntityId");
-            behaviorContext->Class<NetComponentId>("NetComponentId");
-            behaviorContext->Class<PropertyIndex>("PropertyIndex");
-            behaviorContext->Class<RpcIndex> ("RpcIndex");
-            behaviorContext->Class<ClientInputId> ("ClientInputId");
-            behaviorContext->Class<HostFrameId> ("HostFrameId");
+            behaviorContext->Class<HostId>();
+            behaviorContext->Class<NetEntityId>();
+            behaviorContext->Class<NetComponentId>();
+            behaviorContext->Class<PropertyIndex>();
+            behaviorContext->Class<RpcIndex>();
+            behaviorContext->Class<ClientInputId>();
+            behaviorContext->Class<HostFrameId>();
         }
 
         MultiplayerComponent::Reflect(context);
