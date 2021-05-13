@@ -103,7 +103,6 @@
 
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
-// note: Also defined in SandboxIntegration.cpp (separate project).
 AZ_CVAR(bool, ed_useNewCameraSystem, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Editor camera system");
 
 EditorViewportWidget* EditorViewportWidget::m_pPrimaryViewport = nullptr;
@@ -115,7 +114,7 @@ namespace AzFramework
     extern InputChannelId CameraOrbitLookButton;
     extern InputChannelId CameraOrbitDollyButton;
     extern InputChannelId CameraOrbitPanButton;
-}
+} // namespace AzFramework
 
 #if AZ_TRAIT_OS_PLATFORM_APPLE
 void StopFixedCursorMode();

@@ -102,8 +102,7 @@
 #undef CreateDirectory
 #endif
 
-// note: Also defined in EditorViewportWidget.cpp (separate project).
-AZ_CVAR(bool, ed_useNewCameraSystem, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Editor camera system");
+AZ_CVAR(bool, ed_useNewCameraSystemGoto, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Editor camera system go to behavior");
 
 //////////////////////////////////////////////////////////////////////////
 // Gathers all selected entities, culling any that have an ancestor in the selection.
@@ -1692,7 +1691,7 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
         return;
     }
 
-    if (ed_useNewCameraSystem)
+    if (ed_useNewCameraSystemGoto)
     {
         const AZ::Aabb aabb = AZStd::accumulate(
             AZStd::begin(entityIds), AZStd::end(entityIds), AZ::Aabb::CreateNull(), [](AZ::Aabb acc, const AZ::EntityId entityId) {

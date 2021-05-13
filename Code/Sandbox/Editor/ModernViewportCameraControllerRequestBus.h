@@ -23,8 +23,7 @@ namespace Editor
 {
     //! Provides an interface to control the modern viewport camera controller from the Editor.
     //! @note The bus is addressed by viewport id.
-    class ModernViewportCameraControllerRequests
-        : public AZ::EBusTraits
+    class ModernViewportCameraControllerRequests : public AZ::EBusTraits
     {
     public:
         using BusIdType = AzFramework::ViewportId;
