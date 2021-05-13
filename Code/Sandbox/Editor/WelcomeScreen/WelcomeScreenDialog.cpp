@@ -80,11 +80,11 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     ui->setupUi(this);
 
     // Make our welcome screen checkboxes appear as toggle switches
-    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->autoLoadLevel);
-    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->showOnStartup);
+//    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->autoLoadLevel);
+//    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->showOnStartup);
 
-    ui->autoLoadLevel->setChecked(gSettings.bAutoloadLastLevelAtStartup);
-    ui->showOnStartup->setChecked(!gSettings.bShowDashboardAtStartup);
+//    ui->autoLoadLevel->setChecked(gSettings.bAutoloadLastLevelAtStartup);
+//    ui->showOnStartup->setChecked(!gSettings.bShowDashboardAtStartup);
 
     ui->recentLevelList->setModel(m_pRecentListModel);
     ui->recentLevelList->setMouseTracking(true);
@@ -98,8 +98,8 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     ui->currentProjectButton->adjustSize();
     ui->currentProjectButton->setMinimumWidth(ui->currentProjectButton->width() + 40);
 
-    ui->documentationLink->setCursor(Qt::PointingHandCursor);
-    ui->documentationLink->installEventFilter(this);
+//    ui->documentationLink->setCursor(Qt::PointingHandCursor);
+//    ui->documentationLink->installEventFilter(this);
 
     connect(ui->recentLevelList, &QWidget::customContextMenuRequested, this, &WelcomeScreenDialog::OnShowContextMenu);
 
@@ -112,9 +112,9 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     connect(ui->newSliceButton, &QPushButton::clicked, this, &WelcomeScreenDialog::OnNewSliceBtnClicked);
     connect(ui->openSliceButton, &QPushButton::clicked, this, &WelcomeScreenDialog::OnOpenSliceBtnClicked);
 
-    connect(ui->documentationButton, &QPushButton::clicked, this, &WelcomeScreenDialog::OnDocumentationBtnClicked);
-    connect(ui->showOnStartup, &QCheckBox::clicked, this, &WelcomeScreenDialog::OnShowOnStartupBtnClicked);
-    connect(ui->autoLoadLevel, &QCheckBox::clicked, this, &WelcomeScreenDialog::OnAutoLoadLevelBtnClicked);
+//    connect(ui->documentationButton, &QPushButton::clicked, this, &WelcomeScreenDialog::OnDocumentationBtnClicked);
+//    connect(ui->showOnStartup, &QCheckBox::clicked, this, &WelcomeScreenDialog::OnShowOnStartupBtnClicked);
+//    connect(ui->autoLoadLevel, &QCheckBox::clicked, this, &WelcomeScreenDialog::OnAutoLoadLevelBtnClicked);
 
     m_manifest = new News::ResourceManifest(
             std::bind(&WelcomeScreenDialog::SyncSuccess, this),
@@ -173,6 +173,7 @@ const QString& WelcomeScreenDialog::GetLevelPath()
 
 bool WelcomeScreenDialog::eventFilter(QObject *watched, QEvent *event)
 {
+#if 0
     if (watched == ui->documentationLink)
     {
         if (event->type() == QEvent::MouseButtonRelease)
@@ -181,7 +182,7 @@ bool WelcomeScreenDialog::eventFilter(QObject *watched, QEvent *event)
             return true;
         }
     }
-
+#endif
     return QDialog::eventFilter(watched, event);
 }
 
