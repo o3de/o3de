@@ -34,6 +34,7 @@
 #include <string>
 
 #include <AzCore/Asset/AssetDataStream.h>
+#include <AzCore/Math/Aabb.h>
 
 #pragma optimize("", off)
 namespace AMD
@@ -237,6 +238,16 @@ namespace AMD
                 m_positions[indexVertex] = m_positions[indexLastVertex];
             }
         }
+
+        // Calculate bounding box and check if it exported in meters.
+        AZ::Aabb bbox = AZ::Aabb::CreateNull();
+        for (AMD::int32 i = 0; i < m_numTotalVertices; ++i)
+        {
+            bbox.AddPoint(AZ::Vector3(m_positions[i].x, m_positions[i].y, m_positions[i].z));
+        }
+        AZ_Error("TressFXAsset", bbox.GetXExtent() < s_hairBoundingBoxMaxExtent &&
+            bbox.GetYExtent() < s_hairBoundingBoxMaxExtent && bbox.GetZExtent() < s_hairBoundingBoxMaxExtent,
+            "Hair units seem to be in cm, creating extremely large hair - please export again using meters");
 
         // Read strand UVs
         stream->Seek(header.offsetStrandUV + sizeof(TressFXCombinedHairFileHeader), AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
