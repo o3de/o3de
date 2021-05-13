@@ -8,8 +8,7 @@
 				"SupportedFileTypeExtensions":
 				[
 					".fbx",
-					".stl",
-					".stp"
+					".stl"
 				]
 			}
 		}
