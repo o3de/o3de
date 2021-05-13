@@ -145,6 +145,7 @@ namespace AzToolsFramework
             }
             BuildTableModelMap(sourceModel());
             emit layoutChanged();
+            
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

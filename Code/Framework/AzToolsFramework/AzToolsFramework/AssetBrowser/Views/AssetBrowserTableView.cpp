@@ -58,6 +58,8 @@ namespace AzToolsFramework
             AZ_Assert(m_tableModel, "Expecting AssetBrowserTableModel");
             m_sourceFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_tableModel->sourceModel());
             QTableView::setModel(model);
+            connect(m_tableModel, &AssetBrowserTableModel::layoutChanged, this, &AssetBrowserTableView::layoutChangedSlot);
+
             horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeMode::Stretch);
             horizontalHeader()->setSectionResizeMode(1,QHeaderView::ResizeMode::Stretch);
         }
@@ -102,6 +104,13 @@ namespace AzToolsFramework
                 }
             }
             QTableView::rowsAboutToBeRemoved(parent, start, end);
+        }
+        void AssetBrowserTableView::layoutChangedSlot(const QList<QPersistentModelIndex>& parents, QAbstractItemModel::LayoutChangeHint hint)
+        {
+            AZ_UNUSED(parents);
+            AZ_UNUSED(hint);
+
+            scrollToTop();
         }
         void AssetBrowserTableView::SelectProduct(AZ::Data::AssetId assetID)
         {
