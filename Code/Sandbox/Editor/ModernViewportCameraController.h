@@ -12,12 +12,14 @@
 
 #pragma once
 
+#include <ModernViewportCameraControllerRequestBus.h>
+
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Viewport/MultiViewportController.h>
 
-namespace SandboxEditor
+namespace Editor
 {
     class ModernViewportCameraControllerInstance;
     class ModernViewportCameraController : public AzFramework::MultiViewportController<ModernViewportCameraControllerInstance>
@@ -36,6 +38,7 @@ namespace SandboxEditor
 
     class ModernViewportCameraControllerInstance final
         : public AzFramework::MultiViewportControllerInstanceInterface<ModernViewportCameraController>,
+          public ModernViewportCameraControllerRequestBus::Handler,
           private AzFramework::ViewportDebugDisplayEventBus::Handler
     {
     public:
@@ -46,10 +49,13 @@ namespace SandboxEditor
         bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
         void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
 
+        // ModernViewportCameraControllerRequestBus overrides ...
+        void InterpolateToTransform(const AZ::Transform& worldFromLocal) override;
+
+    private:
         // AzFramework::ViewportDebugDisplayEventBus overrides ...
         void DisplayViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
 
-    private:
         enum class CameraMode
         {
             Control,
@@ -68,4 +74,4 @@ namespace SandboxEditor
 
         AZ::RPI::ViewportContext::MatrixChangedEvent::Handler m_cameraViewMatrixChangeHandler;
     };
-} // namespace SandboxEditor
+} // namespace Editor

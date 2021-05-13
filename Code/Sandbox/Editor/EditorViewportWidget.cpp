@@ -1215,7 +1215,7 @@ void EditorViewportWidget::SetViewportId(int id)
     {
         AzFramework::ReloadCameraKeyBindings();
 
-        auto controller = AZStd::make_shared<SandboxEditor::ModernViewportCameraController>();
+        auto controller = AZStd::make_shared<Editor::ModernViewportCameraController>();
         controller->SetCameraListBuilderCallback([](AzFramework::Cameras& cameras)
         {
             auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraFreeLookButton);

@@ -16,12 +16,15 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/numeric.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Interface/Interface.h>
@@ -30,6 +33,7 @@
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Physics/Material.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzFramework/Visibility/BoundsBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -56,7 +60,13 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
 #include <AzToolsFramework/UI/Layer/NameConflictWarning.hxx>
+#include <AzToolsFramework/ViewportSelection/EditorHelpers.h>
 #include <MathConversion.h>
+
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+
+#include <ModernViewportCameraControllerRequestBus.h>
 
 #include "Objects/ComponentEntityObject.h"
 #include "ISourceControl.h"
@@ -91,6 +101,8 @@
 #ifdef CreateDirectory
 #undef CreateDirectory
 #endif
+
+AZ_CVAR_EXTERNED(bool, ed_useNewCameraSystem);
 
 //////////////////////////////////////////////////////////////////////////
 // Gathers all selected entities, culling any that have an ancestor in the selection.
@@ -1674,32 +1686,90 @@ bool CollectEntityBoundingBoxesForZoom(const AZ::EntityId& entityId, AABB& selec
 //////////////////////////////////////////////////////////////////////////
 void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::EntityIdList& entityIds)
 {
-    if (entityIds.size() == 0)
+    if (entityIds.empty())
     {
         return;
     }
 
-    AABB selectionBounds;
-    selectionBounds.Reset();
-    bool entitiesAvailableForGoTo = false;
-
-    for (const AZ::EntityId& entityId : entityIds)
+    if (ed_useNewCameraSystem)
     {
-        if(CollectEntityBoundingBoxesForZoom(entityId, selectionBounds))
+        const AZ::Aabb aabb = AZStd::accumulate(
+            AZStd::begin(entityIds), AZStd::end(entityIds), AZ::Aabb::CreateNull(), [](AZ::Aabb acc, const AZ::EntityId entityId) {
+                const AZ::Aabb aabb = AzFramework::CalculateEntityWorldBoundsUnion(AzToolsFramework::GetEntityById(entityId));
+                acc.AddAabb(aabb);
+                return acc;
+            });
+
+        float radius;
+        AZ::Vector3 center;
+        aabb.GetAsSphere(center, radius);
+
+        // minimum center size is 40cm
+        const float minSelectionRadius = 0.4f;
+        const float selectionSize = AZ::GetMax(minSelectionRadius, radius);
+
+        auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+
+        const int viewCount = GetIEditor()->GetViewManager()->GetViewCount(); // legacy call
+        for (int viewIndex = 0; viewIndex < viewCount; ++viewIndex)
         {
-            entitiesAvailableForGoTo = true;
+            if (auto viewportContext = viewportContextManager->GetViewportContextById(0))
+            {
+                const auto cameraTransform = viewportContext->GetCameraTransform();
+
+                const float fov = AZ::DegToRad(60.0f);
+                const float fovScale = (1.0f / AZStd::tan(fov * 0.5f));
+
+                const AZ::Vector3 forward = (center - cameraTransform.GetTranslation()).GetNormalized();
+
+                const AZ::Vector3 across = [forward] {
+                    AZ::Vector3 across = forward.Cross(AZ::Vector3::CreateAxisZ());
+                    if (across.IsClose(AZ::Vector3::CreateZero()))
+                    {
+                        across = forward.Cross(AZ::Vector3::CreateAxisX());
+                    }
+                    return across;
+                }();
+
+                const AZ::Vector3 up = across.Cross(forward);
+
+                // move camera 25% further back than required
+                const float centerScale = 1.25f;
+                // compute new camera transform
+                const float distanceToTarget = selectionSize * fovScale * centerScale;
+                const AZ::Transform nextCameraTransform = AZ::Transform::CreateFromMatrix3x3AndTranslation(
+                    AZ::Matrix3x3::CreateFromColumns(across, forward, up), aabb.GetCenter() - (forward * distanceToTarget));
+
+                Editor::ModernViewportCameraControllerRequestBus::Event(
+                    viewportContext->GetId(), &Editor::ModernViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+                    nextCameraTransform);
+            }
         }
     }
-
-    if (entitiesAvailableForGoTo)
+    else
     {
-        int numViews = GetIEditor()->GetViewManager()->GetViewCount();
-        for (int viewIndex = 0; viewIndex < numViews; ++viewIndex)
+        AABB selectionBounds;
+        selectionBounds.Reset();
+        bool entitiesAvailableForGoTo = false;
+
+        for (const AZ::EntityId& entityId : entityIds)
         {
-            CViewport* viewport = GetIEditor()->GetViewManager()->GetView(viewIndex);
-            if (viewport)
+            if (CollectEntityBoundingBoxesForZoom(entityId, selectionBounds))
             {
-                viewport->CenterOnAABB(selectionBounds);
+                entitiesAvailableForGoTo = true;
+            }
+        }
+
+        if (entitiesAvailableForGoTo)
+        {
+            int numViews = GetIEditor()->GetViewManager()->GetViewCount();
+            for (int viewIndex = 0; viewIndex < numViews; ++viewIndex)
+            {
+                CViewport* viewport = GetIEditor()->GetViewManager()->GetView(viewIndex);
+                if (viewport)
+                {
+                    viewport->CenterOnAABB(selectionBounds);
+                }
             }
         }
     }
