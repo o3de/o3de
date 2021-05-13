@@ -1,0 +1,1377 @@
+/*
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
+
+#include <TestImpactCommandLineOptionsException.h>
+#include <TestImpactCommandLineOptions.h>
+
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/AzTest.h>
+
+namespace UnitTest
+{
+    class CommandLineOptionsTestFixture
+        : public AllocatorsTestFixture
+    {
+    public:
+        void SetUp() override
+        {
+            AllocatorsTestFixture::SetUp();
+            m_args.push_back("program.exe");
+        }
+    protected:
+        void InitOptions();
+
+        AZStd::unique_ptr<TestImpact::CommandLineOptions> m_options;
+        AZStd::vector<const char*> m_args;
+    };
+
+    void CommandLineOptionsTestFixture::InitOptions()
+    {
+        m_options = AZStd::make_unique<TestImpact::CommandLineOptions>(m_args.size(), const_cast<char**>(m_args.data()));
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, CheckEmptyArgs_ExpectDefaultValues)
+    {
+        InitOptions();
+        EXPECT_EQ(m_options->GetConfigurationFile(), LY_TEST_IMPACT_DEFAULT_CONFIG_FILE);
+        EXPECT_EQ(m_options->GetExecutionFailureDraftingPolicy(), TestImpact::ExecutionFailureDraftingPolicy::Always);
+        EXPECT_EQ(m_options->GetExecutionFailurePolicy(), TestImpact::ExecutionFailurePolicy::Continue);
+        EXPECT_FALSE(m_options->GetGlobalTimeout().has_value());
+        EXPECT_FALSE(m_options->GetTestTargetTimeout().has_value());
+        EXPECT_FALSE(m_options->GetMaxConcurrency().has_value());
+        EXPECT_FALSE(m_options->HasOutputChangeList());
+        EXPECT_FALSE(m_options->GetOutputChangeList().has_value());
+        EXPECT_EQ(m_options->GetTargetOutputCapture(), TestImpact::TargetOutputCapture::None);
+        EXPECT_EQ(m_options->GetTestFailurePolicy(), TestImpact::TestFailurePolicy::Abort);
+        EXPECT_EQ(m_options->GetTestPrioritizationPolicy(), TestImpact::TestPrioritizationPolicy::None);
+        EXPECT_FALSE(m_options->HasTestSequence());
+        EXPECT_FALSE(m_options->GetTestSequenceType().has_value());
+        EXPECT_EQ(m_options->GetTestShardingPolicy(), TestImpact::TestShardingPolicy::Never);
+        EXPECT_FALSE(m_options->HasUnifiedDiffFile());
+        EXPECT_FALSE(m_options->GetUnifiedDiffFile().has_value());
+        EXPECT_FALSE(m_options->HasSafeMode());
+        EXPECT_TRUE(m_options->GetSuitesFilter().empty());
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, ConfigurationFileHasEmptyPath_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-config");
+        
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, ConfigurationFileHasSpecifiedPath_ExpectPath)
+    {
+        m_args.push_back("-config");
+        m_args.push_back("Foo\\Bar");
+        InitOptions();
+        EXPECT_STREQ(m_options->GetConfigurationFile().c_str(), "Foo\\Bar");
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, ConfigurationFileHasMultiplePaths_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-config");
+        m_args.push_back("value1,value2");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    //
+
+    TEST_F(CommandLineOptionsTestFixture, UnifiedDiffFileHasEmptyPath_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-unidiff");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, UnifiedDiffFileHasSpecifiedPath_ExpectPath)
+    {
+        m_args.push_back("-unidiff");
+        m_args.push_back("Foo\\Bar");
+        InitOptions();
+        EXPECT_TRUE(m_options->HasUnifiedDiffFile());
+        EXPECT_STREQ(m_options->GetUnifiedDiffFile()->c_str(), "Foo\\Bar");
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, UnifiedDiffFileHasMultiplePaths_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-unidiff");
+        m_args.push_back("value1,value2");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    //
+
+    TEST_F(CommandLineOptionsTestFixture, OutputChangeListHasEmptyOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-ochangelist");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, OutputChangeListHasStdOut_ExpectStdOut)
+    {
+        m_args.push_back("-ochangelist");
+        m_args.push_back("stdout");
+        InitOptions();
+        EXPECT_TRUE(m_options->GetOutputChangeList().has_value());
+        EXPECT_TRUE(m_options->GetOutputChangeList()->m_stdOut);
+        EXPECT_FALSE(m_options->GetOutputChangeList()->m_file.has_value());
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, OutputChangeListHasSpecifiedPath_ExpectPath)
+    {
+        m_args.push_back("-ochangelist");
+        m_args.push_back("Foo\\Bar");
+        InitOptions();
+        EXPECT_TRUE(m_options->GetOutputChangeList().has_value());
+        EXPECT_TRUE(m_options->GetOutputChangeList()->m_file.has_value());
+        EXPECT_STREQ(m_options->GetOutputChangeList()->m_file->c_str(), "Foo\\Bar");
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, OutputChangeListHasStdOutAndSpecifiedPath_StdOutAndExpectPath)
+    {
+        m_args.push_back("-ochangelist");
+        m_args.push_back("Foo\\Bar");
+        InitOptions();
+        EXPECT_TRUE(m_options->GetOutputChangeList().has_value());
+        EXPECT_TRUE(m_options->GetOutputChangeList()->m_stdOut);
+        EXPECT_TRUE(m_options->GetOutputChangeList()->m_file.has_value());
+        EXPECT_STREQ(m_options->GetOutputChangeList()->m_file->c_str(), "Foo\\Bar");
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, OutputChangeListHasMultipleValues_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-ochangelist");
+        m_args.push_back("value1,value2,value3");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    //
+
+    TEST_F(CommandLineOptionsTestFixture, TestSequenceTypeHasEmptyOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-sequence");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestSequenceTypeHasNoneOption_ExpectNoneTestSequenceType)
+    {
+        m_args.push_back("-sequence");
+        m_args.push_back("none");
+        InitOptions();
+        EXPECT_FALSE(m_options->HasTestSequence());
+        EXPECT_FALSE(m_options->GetTestSequenceType().has_value());
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestSequenceTypeHasSeedOption_ExpectSeedTestSequenceType)
+    {
+        m_args.push_back("-sequence");
+        m_args.push_back("seed");
+        InitOptions();
+        EXPECT_TRUE(m_options->HasTestSequence());
+        EXPECT_TRUE(m_options->GetTestSequenceType().has_value());
+        EXPECT_EQ(m_options->GetTestSequenceType().value(), TestImpact::TestSequenceType::Seed);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestSequenceTypeHasRegularOption_ExpectRegularTestSequenceType)
+    {
+        m_args.push_back("-sequence");
+        m_args.push_back("regular");
+        InitOptions();
+        EXPECT_TRUE(m_options->HasTestSequence());
+        EXPECT_TRUE(m_options->GetTestSequenceType().has_value());
+        EXPECT_EQ(m_options->GetTestSequenceType().value(), TestImpact::TestSequenceType::Regular);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestSequenceTypeHasImpactAnalysisOption_ExpectImpactAnalysisTestSequenceType)
+    {
+        m_args.push_back("-sequence");
+        m_args.push_back("tia");
+        InitOptions();
+        EXPECT_TRUE(m_options->HasTestSequence());
+        EXPECT_TRUE(m_options->GetTestSequenceType().has_value());
+        EXPECT_EQ(m_options->GetTestSequenceType().value(), TestImpact::TestSequenceType::ImpactAnalysis);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestSequenceTypeHasSafeImpactAnalysisOption_ExpectSafeImpactAnalysisTestSequenceType)
+    {
+        m_args.push_back("-sequence");
+        m_args.push_back("tiaorseed");
+        InitOptions();
+        EXPECT_TRUE(m_options->HasTestSequence());
+        EXPECT_TRUE(m_options->GetTestSequenceType().has_value());
+        EXPECT_EQ(m_options->GetTestSequenceType().value(), TestImpact::TestSequenceType::ImpactAnalysisOrSeed);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestSequenceTypeHasInvalidOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-sequence");
+        m_args.push_back("foo");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestSequenceTypeHasMultipleValues_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-sequence");
+        m_args.push_back("seed,tia");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    //
+
+    TEST_F(CommandLineOptionsTestFixture, TestPrioritizationPolicyHasEmptyOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-ppolicy");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestPrioritizationPolicyHasNoneOption_ExpectNoneTestPrioritizationPolicy)
+    {
+        m_args.push_back("-ppolicy");
+        m_args.push_back("none");
+        InitOptions();
+        EXPECT_EQ(m_options->GetTestPrioritizationPolicy(), TestImpact::TestPrioritizationPolicy::None);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestPrioritizationPolicyHasDependencyLocalityOption_ExpectDependencyLocalityTestPrioritizationPolicy)
+    {
+        m_args.push_back("-ppolicy");
+        m_args.push_back("locality");
+        InitOptions();
+        EXPECT_EQ(m_options->GetTestPrioritizationPolicy(), TestImpact::TestPrioritizationPolicy::DependencyLocality);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestPrioritizationPolicyInvalidOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-ppolicy");
+        m_args.push_back("none,locality");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    //
+
+    TEST_F(CommandLineOptionsTestFixture, ExecutionFailurePolicyHasEmptyOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-ppolicy");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, ExecutionFailurePolicyHasAbortOption_ExpectAbortExecutionFailurePolicy)
+    {
+        m_args.push_back("-epolicy");
+        m_args.push_back("abort");
+        InitOptions();
+        EXPECT_EQ(m_options->GetExecutionFailurePolicy(), TestImpact::ExecutionFailurePolicy::Abort);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, ExecutionFailurePolicyHasContinueOption_ExpectContinueExecutionFailurePolicy)
+    {
+        m_args.push_back("-epolicy");
+        m_args.push_back("continue");
+        InitOptions();
+        EXPECT_EQ(m_options->GetExecutionFailurePolicy(), TestImpact::ExecutionFailurePolicy::Continue);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, ExecutionFailurePolicyHasIgnoreOption_ExpectIgnoreExecutionFailurePolicy)
+    {
+        m_args.push_back("-epolicy");
+        m_args.push_back("ignore");
+        InitOptions();
+        EXPECT_EQ(m_options->GetExecutionFailurePolicy(), TestImpact::ExecutionFailurePolicy::Ignore);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, ExecutionFailurePolicyHasInvalidOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-epolicy");
+        m_args.push_back("foo");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, ExecutionFailurePolicyHasMultipleValues_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-epolicy");
+        m_args.push_back("abort,ingore");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    //
+
+    TEST_F(CommandLineOptionsTestFixture, ExecutionFailureDraftingPolicyHasEmptyOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-rexecfailures");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, ExecutionFailureDraftingPolicyHasOnOption_ExpectOnExecutionFailureDraftingPolicy)
+    {
+        m_args.push_back("-rexecfailures");
+        m_args.push_back("on");
+        InitOptions();
+        EXPECT_EQ(m_options->GetExecutionFailureDraftingPolicy(), TestImpact::ExecutionFailureDraftingPolicy::Always);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, ExecutionFailureDraftingPolicyHasOffOption_ExpectOffExecutionFailureDraftingPolicy)
+    {
+        m_args.push_back("-rexecfailures");
+        m_args.push_back("off");
+        InitOptions();
+        EXPECT_EQ(m_options->GetExecutionFailureDraftingPolicy(), TestImpact::ExecutionFailureDraftingPolicy::Never);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, ExecutionFailureDraftingPolicyInvalidOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-rexecfailures");
+        m_args.push_back("foo");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, ExecutionFailureDraftingPolicyHasMultipleValues_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-rexecfailures");
+        m_args.push_back("on,off");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    //
+
+    TEST_F(CommandLineOptionsTestFixture, TestFailurePolicyHasEmptyOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-fpolicy");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestFailurePolicyHasAbortOption_ExpectAbortTestFailurePolicy)
+    {
+        m_args.push_back("-fpolicy");
+        m_args.push_back("abort");
+        InitOptions();
+        EXPECT_EQ(m_options->GetTestFailurePolicy(), TestImpact::TestFailurePolicy::Abort);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestFailurePolicyHasContinueOption_ExpectContinueTestFailurePolicy)
+    {
+        m_args.push_back("-fpolicy");
+        m_args.push_back("continue");
+        InitOptions();
+        EXPECT_EQ(m_options->GetTestFailurePolicy(), TestImpact::TestFailurePolicy::Continue);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestFailurePolicyInvalidOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-fpolicy");
+        m_args.push_back("foo");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestFailurePolicyHasMultipeValues_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-fpolicy");
+        m_args.push_back("abort,continue");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    //
+
+    TEST_F(CommandLineOptionsTestFixture, TestShardingHasEmptyOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-shard");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestShardingHasOnOption_ExpectOnTestSharding)
+    {
+        m_args.push_back("-shard");
+        m_args.push_back("on");
+        InitOptions();
+        EXPECT_EQ(m_options->GetTestShardingPolicy(), TestImpact::TestShardingPolicy::Always);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestShardingHasOffOption_ExpectOffTestSharding)
+    {
+        m_args.push_back("-shard");
+        m_args.push_back("off");
+        InitOptions();
+        EXPECT_EQ(m_options->GetTestShardingPolicy(), TestImpact::TestShardingPolicy::Never);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestShardingInvalidOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-shard");
+        m_args.push_back("foo");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestShardingHasMultipeValues_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-shard");
+        m_args.push_back("on,off");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    //
+
+    TEST_F(CommandLineOptionsTestFixture, TargetOutputCaptureHasEmptyOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-targetout");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TargetOutputCaptureHasStdOutOption_ExpectStdOutTargetOutputCapture)
+    {
+        m_args.push_back("-targetout");
+        m_args.push_back("stdout");
+        InitOptions();
+        EXPECT_EQ(m_options->GetTargetOutputCapture(), TestImpact::TargetOutputCapture::StdOut);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TargetOutputCaptureHasFileOption_ExpectFileTargetOutputCapture)
+    {
+        m_args.push_back("-targetout");
+        m_args.push_back("file");
+        InitOptions();
+        EXPECT_EQ(m_options->GetTargetOutputCapture(), TestImpact::TargetOutputCapture::File);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TargetOutputCaptureHasStdOutAndFileOption_ExpectStdOutAndFileTargetOutputCapture)
+    {
+        m_args.push_back("-targetout");
+        m_args.push_back("stdout,file");
+        InitOptions();
+        EXPECT_EQ(m_options->GetTargetOutputCapture(), TestImpact::TargetOutputCapture::StdOutAndFile);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TargetOutputCaptureInvalidOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-targetout");
+        m_args.push_back("foo");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TargetOutputCaptureHasExcessValues_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-targetout");
+        m_args.push_back("stdout,file,stdout");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    //
+
+    TEST_F(CommandLineOptionsTestFixture, MaxConcurrencyHasEmptyOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-maxconcurrency");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, MaxConcurrencyHasInRangeOptions_ExpectInRangeMaxConcurrency)
+    {
+        m_args.push_back("-maxconcurrency");
+        m_args.push_back("10");
+        InitOptions();
+        EXPECT_EQ(m_options->GetMaxConcurrency(), 10);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, MaxConcurrencyHasOutOfRangeOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-maxconcurrency");
+        m_args.push_back("-1");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, MaxConcurrencyInvalidOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-maxconcurrency");
+        m_args.push_back("foo");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, MaxConcurrencyHasMultipeValues_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-maxconcurrency");
+        m_args.push_back("10,20");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    //
+
+    TEST_F(CommandLineOptionsTestFixture, TestTargetTimeoutHasEmptyOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-ttimeout");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestTargetTimeoutHasInRangeOptions_ExpectInRangeTestTargetTimeout)
+    {
+        m_args.push_back("-ttimeout");
+        m_args.push_back("10");
+        InitOptions();
+        EXPECT_EQ(m_options->GetTestTargetTimeout(), AZStd::chrono::milliseconds(10));
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestTargetTimeoutHasOutOfRangeOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-ttimeout");
+        m_args.push_back("-1");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestTargetTimeoutInvalidOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-ttimeout");
+        m_args.push_back("foo");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, TestTargetTimeoutHasMultipeValues_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-ttimeout");
+        m_args.push_back("10,20");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    //
+
+    TEST_F(CommandLineOptionsTestFixture, GlobalTimeoutHasEmptyOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-gtimeout");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, GlobalTimeoutHasInRangeOptions_ExpectInRangeGlobalTimeout)
+    {
+        m_args.push_back("-gtimeout");
+        m_args.push_back("10");
+        InitOptions();
+        EXPECT_EQ(m_options->GetGlobalTimeout(), AZStd::chrono::milliseconds(10));
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, GlobalTimeoutHasOutOfRangeOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-gtimeout");
+        m_args.push_back("-1");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, GlobalTimeoutInvalidOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-gtimeout");
+        m_args.push_back("foo");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, GlobalTimeoutHasMultipeValues_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-gtimeout");
+        m_args.push_back("10,20");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    //
+
+    TEST_F(CommandLineOptionsTestFixture, SafeModeHasEmptyOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-safemode");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, SafeModeHasOnOption_ExpectOnSafeMode)
+    {
+        m_args.push_back("-safemode");
+        m_args.push_back("on");
+        InitOptions();
+        EXPECT_TRUE(m_options->HasSafeMode());
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, SafeModeHasOffOption_ExpectOffSafeMode)
+    {
+        m_args.push_back("-safemode");
+        m_args.push_back("off");
+        InitOptions();
+        EXPECT_FALSE(m_options->HasSafeMode());
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, SafeModeInvalidOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-safemode");
+        m_args.push_back("foo");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, SafeModeHasMultipeValues_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-safemode");
+        m_args.push_back("on,off");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, SuitesFilterEmptyOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-suites");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, SuitesFilterMultipleOptions_ExpectMultipleSuitesFilter)
+    {
+        m_args.push_back("-suites");
+        m_args.push_back("periodic,smoke");
+        InitOptions();
+        EXPECT_FALSE(m_options->GetSuitesFilter().empty());
+        EXPECT_EQ(m_options->GetSuitesFilter().size(), 2);
+        EXPECT_NE(m_options->GetSuitesFilter().find("periodic"), m_options->GetSuitesFilter().end());
+        EXPECT_NE(m_options->GetSuitesFilter().find("smoke"), m_options->GetSuitesFilter().end());
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, SuitesFilterAllOption_ExpectNoSuitesFilter)
+    {
+        m_args.push_back("-suites");
+        m_args.push_back("*");
+        InitOptions();
+        EXPECT_TRUE(m_options->GetSuitesFilter().empty());
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, SuitesFilterMultipleOptionsAndAll_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-suites");
+        m_args.push_back("periodic,*");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+}

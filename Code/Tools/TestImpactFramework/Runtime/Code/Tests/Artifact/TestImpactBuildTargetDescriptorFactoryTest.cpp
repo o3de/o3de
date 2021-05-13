@@ -24,8 +24,8 @@ namespace UnitTest
         : public AllocatorsTestFixture
     {
     protected:
-        const AZStd::vector<AZStd::string> m_staticExclude = {".cmake"};
-        const AZStd::vector<AZStd::string> m_inputExclude = {".jinja"};
+        const AZStd::vector<AZStd::string> m_staticInclude = {".h", ".hpp", ".hxx", ".inl", ".c", ".cpp", ".cxx"};
+        const AZStd::vector<AZStd::string> m_inputInclude = {".xml"};
         const AZStd::string m_autogenMatcher = {"(.*)\\..*"};
 
         const AZStd::vector<AZStd::string> m_autogenInputs =
@@ -97,7 +97,7 @@ namespace UnitTest
         {
             // When attempting to construct the build target descriptor
             const TestImpact::BuildTargetDescriptor buildTarget =
-                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticExclude, m_inputExclude, m_autogenMatcher);
+                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -123,7 +123,7 @@ namespace UnitTest
         {
             // When attempting to construct the build target descriptor
             const TestImpact::BuildTargetDescriptor buildTarget =
-                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticExclude, m_inputExclude, m_autogenMatcher);
+                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -150,7 +150,7 @@ namespace UnitTest
         {
             // When attempting to construct the build target descriptor with an empty autogen matcher
             const TestImpact::BuildTargetDescriptor buildTarget =
-                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticExclude, m_inputExclude, "");
+                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, "");
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -177,7 +177,7 @@ namespace UnitTest
         {
             // When attempting to construct the build target descriptor
             const TestImpact::BuildTargetDescriptor buildTarget =
-                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticExclude, m_inputExclude, m_autogenMatcher);
+                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -204,7 +204,7 @@ namespace UnitTest
         {
             // When attempting to construct the build target descriptor
             const TestImpact::BuildTargetDescriptor buildTarget =
-                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticExclude, m_inputExclude, m_autogenMatcher);
+                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -231,7 +231,7 @@ namespace UnitTest
         {
             // When attempting to construct the build target descriptor
             const TestImpact::BuildTargetDescriptor buildTarget =
-                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticExclude, m_inputExclude, m_autogenMatcher);
+                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -259,7 +259,7 @@ namespace UnitTest
 
         // When attempting to construct the build target descriptor
         const TestImpact::BuildTargetDescriptor buildTarget =
-            TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, {}, m_inputExclude, m_autogenMatcher);
+            TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, {}, m_inputInclude, m_autogenMatcher);
 
         // Expect the constructed build target descriptor to match the specified descriptor
         EXPECT_TRUE(buildTarget == expectedBuiltTarget);
@@ -276,7 +276,7 @@ namespace UnitTest
 
         // When attempting to construct the build target descriptor
         const TestImpact::BuildTargetDescriptor buildTarget =
-            TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticExclude, m_inputExclude, m_autogenMatcher);
+            TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
 
         // Expect the constructed build target descriptor to match the specified descriptor
         EXPECT_TRUE(buildTarget == expectedBuiltTarget);
@@ -291,7 +291,7 @@ namespace UnitTest
 
         // When attempting to construct the build target descriptor
         const TestImpact::BuildTargetDescriptor buildTarget =
-            TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticExclude, m_inputExclude, m_autogenMatcher);
+            TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
 
         // Expect the constructed build target descriptor to match the specified descriptor
         EXPECT_TRUE(buildTarget == expectedBuiltTarget);
@@ -307,7 +307,7 @@ namespace UnitTest
         {
             // When attempting to construct the build target descriptor
             const TestImpact::BuildTargetDescriptor buildTarget =
-                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticExclude, m_inputExclude, m_autogenMatcher);
+                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -334,7 +334,7 @@ namespace UnitTest
         {
             // When attempting to construct the build target descriptor
             const TestImpact::BuildTargetDescriptor buildTarget =
-                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticExclude, m_inputExclude, m_autogenMatcher);
+                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -362,7 +362,7 @@ namespace UnitTest
 
         // When attempting to construct the build target descriptor
         const TestImpact::BuildTargetDescriptor buildTarget =
-            TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticExclude, m_inputExclude, m_autogenMatcher);
+            TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, m_staticInclude, m_inputInclude, m_autogenMatcher);
 
         // Expect the constructed build target descriptor to match the specified descriptor
         EXPECT_TRUE(buildTarget == expectedBuiltTarget);

@@ -13,7 +13,6 @@
 #pragma once
 
 #include <Process/Scheduler/TestImpactProcessScheduler.h>
-#include <TestImpactFramework/TestImpactCallback.h>
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
@@ -27,7 +26,7 @@ namespace TestImpact
     //! @param meta The meta-data about the job run.
     //! @param std The standard output and standard error of the process running the job.
     template<typename Job>
-    using JobCallback = AZStd::function<CallbackResult(const typename Job::Info& jobInfo, const JobMeta& meta, StdContent&& std)>;
+    using JobCallback = AZStd::function<ProcessCallbackResult(const typename Job::Info& jobInfo, const JobMeta& meta, StdContent&& std)>;
 
     //! The payloads produced by the job-specific payload producer in the form of a map associating each job id with the job's payload.
     template<typename Job>
@@ -134,7 +133,7 @@ namespace TestImpact
             else
             {
                 meta.m_startTime = createTime;
-                return CallbackResult::Continue;
+                return ProcessCallbackResult::Continue;
             }
         };
 

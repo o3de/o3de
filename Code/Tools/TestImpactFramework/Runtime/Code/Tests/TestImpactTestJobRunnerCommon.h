@@ -153,7 +153,7 @@ namespace UnitTest
                 AZ::IO::SystemFile::Delete(AZStd::string::format("%s/%s", path.c_str(), file).c_str());
             }
 
-                return true;
-            });
-    };
+            return true;
+        });
+    }
 } // namespace UnitTest

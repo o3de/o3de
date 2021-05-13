@@ -10,7 +10,7 @@
  *
  */
 
-#include <TestImpactFramework/TestImpactFrameworkPath.h>
+#include <TestImpactFrameworkPath.h>
 
 namespace TestImpact
 {

@@ -19,38 +19,35 @@
 
 namespace TestImpact
 {
-    namespace
-    {
-        // Keys for pertinent XML node and attribute names
-        constexpr const char* Keys[] =
-        {
-            "testsuites",
-            "testsuite",
-            "name",
-            "testcase",
-            "status",
-            "run",
-            "notrun",
-            "time"
-        };
-
-        enum
-        {
-            TestSuitesKey,
-            TestSuiteKey,
-            NameKey,
-            TestCaseKey,
-            StatusKey,
-            RunKey,
-            NotRunKey,
-            DurationKey
-        };
-    } // namespace
-
     namespace GTest
     {
         AZStd::vector<TestRunSuite> TestRunSuitesFactory(const AZStd::string& testEnumerationData)
         {
+            // Keys for pertinent XML node and attribute names
+            constexpr const char* Keys[] =
+            {
+                "testsuites",
+                "testsuite",
+                "name",
+                "testcase",
+                "status",
+                "run",
+                "notrun",
+                "time"
+            };
+
+            enum
+            {
+                TestSuitesKey,
+                TestSuiteKey,
+                NameKey,
+                TestCaseKey,
+                StatusKey,
+                RunKey,
+                NotRunKey,
+                DurationKey
+            };
+
             AZ_TestImpact_Eval(!testEnumerationData.empty(), ArtifactException, "Cannot parse test run, string is empty");
             AZStd::vector<TestRunSuite> testSuites;
             AZStd::vector<char> rawData(testEnumerationData.begin(), testEnumerationData.end());
@@ -71,7 +68,7 @@ namespace TestImpact
                         return !name.starts_with("DISABLED_") && name.find("/DISABLED_") == AZStd::string::npos;
                     };
 
-                    const auto getDuration = [](const AZ::rapidxml::xml_node<>* node)
+                    const auto getDuration = [&Keys](const AZ::rapidxml::xml_node<>* node)
                     {
                         const AZStd::string duration = node->first_attribute(Keys[DurationKey])->value();
                         return AZStd::chrono::milliseconds(AZStd::stof(duration) * 1000.f);
@@ -85,7 +82,7 @@ namespace TestImpact
                     for (auto testcase_node = testsuite_node->first_node(Keys[TestCaseKey]); testcase_node;
                          testcase_node = testcase_node->next_sibling())
                     {
-                        const auto getStatus = [](const AZ::rapidxml::xml_node<>* node)
+                        const auto getStatus = [&Keys](const AZ::rapidxml::xml_node<>* node)
                         {
                             const AZStd::string status = node->first_attribute(Keys[StatusKey])->value();
                             if (status == Keys[RunKey])

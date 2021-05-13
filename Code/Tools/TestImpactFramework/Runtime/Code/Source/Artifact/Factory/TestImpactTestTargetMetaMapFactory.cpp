@@ -19,7 +19,7 @@
 
 namespace TestImpact
 {
-    namespace
+    TestTargetMetaMap TestTargetMetaMapFactory(const AZStd::string& masterTestListData)
     {
         // Keys for pertinent JSON node and attribute names
         constexpr const char* Keys[] =
@@ -45,16 +45,15 @@ namespace TestImpact
             StandAloneKey,
             NameKey
         };
-    } // namespace
 
-    TestTargetMetaMap TestTargetMetaMapFactory(const AZStd::string& masterTestListData)
-    {
+        AZ_TestImpact_Eval(!masterTestListData.empty(), ArtifactException, "test meta-data cannot be empty");
+
         TestTargetMetaMap testMetas;
         rapidjson::Document masterTestList;
 
         if (masterTestList.Parse(masterTestListData.c_str()).HasParseError())
         {
-            throw TestImpact::ArtifactException("Could not parse test meta-data file");
+            throw TestImpact::ArtifactException("Could not parse test meta-data");
         }
 
         const auto tests = masterTestList[Keys[GoogleKey]][Keys[TestKey]][Keys[TestsKey]].GetArray();

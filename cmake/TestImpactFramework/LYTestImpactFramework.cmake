@@ -15,6 +15,9 @@ option(LY_TEST_IMPACT_ACTIVE "Enable test impact framework" OFF)
 # Path to test instrumentation binary
 option(LY_TEST_IMPACT_INSTRUMENTATION_BIN "Path to test impact framework instrumentation binary" OFF)
 
+# Name of test impact framework console static library target
+set(LY_TEST_IMPACT_CONSOLE_STATIC_TARGET "TestImpact.Frontend.Console.Static")
+
 # Name of test impact framework console target
 set(LY_TEST_IMPACT_CONSOLE_TARGET "TestImpact.Frontend.Console")
 
@@ -33,11 +36,8 @@ set(LY_TEST_IMPACT_SOURCE_TARGET_MAPPING_DIR "${LY_TEST_IMPACT_ARTIFACT_DIR}/Map
 # Directory for build target dependency/depender graphs
 set(LY_TEST_IMPACT_TARGET_DEPENDENCY_DIR "${LY_TEST_IMPACT_ARTIFACT_DIR}/Dependency")
 
-# Directory for test type enumeration files
-set(LY_TEST_IMPACT_TEST_TYPE_DIR "${LY_TEST_IMPACT_ARTIFACT_DIR}/TestType")
-
 # Master test enumeration file for all test types
-set(LY_TEST_IMPACT_TEST_TYPE_FILE "${LY_TEST_IMPACT_TEST_TYPE_DIR}/All.tests")
+set(LY_TEST_IMPACT_TEST_TYPE_FILE "${LY_TEST_IMPACT_ARTIFACT_DIR}/TestType/All.tests")
 
 #! ly_test_impact_rebase_file_to_repo_root: rebases the relative and/or absolute path to be relative to repo root directory and places the resulting path in quotes.
 #
@@ -271,75 +271,55 @@ endfunction()
 # 
 # \arg:CONFIG_TEMPLATE_FILE path to the runtime configuration template file
 # \arg:PERSISTENT_DATA_DIR path to the test impact framework persistent data directory
-# \arg:RUNTIME_BIN_DIR path to repo binary ourput directory
-function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE PERSISTENT_DATA_DIR RUNTIME_BIN_DIR)
-    set(repo_dir ${LY_ROOT_FOLDER})
+# \arg:BIN_DIR path to repo binary output directory
+function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE PERSISTENT_DATA_DIR BIN_DIR)
+    # Platform this config file is being generated for
+    set(platform ${PAL_PLATFORM_NAME})
 
-    # SparTIA instrumentation binary
+    # Config file version
+    set(version "0.0.1")
+
+    # Timestamp this config file was generated at
+    string(TIMESTAMP timestamp "%Y-%m-%d %H:%M:%S")
+
+    # Instrumentation binary
     if(NOT LY_TEST_IMPACT_INSTRUMENTATION_BIN)
         message(FATAL_ERROR "No test impact framework instrumentation binary was specified, please provide the path with option LY_TEST_IMPACT_INSTRUMENTATION_BIN")
     endif()
     file(TO_CMAKE_PATH ${LY_TEST_IMPACT_INSTRUMENTATION_BIN} instrumentation_bin)
-    
-    # test impact framework working dir
-    ly_test_impact_rebase_file_to_repo_root(
-        ${LY_TEST_IMPACT_WORKING_DIR}
-        working_dir
-        ${LY_ROOT_FOLDER}
-    )
-    
-    # test impact framework console binary dir
-    ly_test_impact_rebase_file_to_repo_root(
-        ${RUNTIME_BIN_DIR}
-        runtime_bin_dir
-        ${LY_ROOT_FOLDER}
-    )
 
-    # Test dir
-    ly_test_impact_rebase_file_to_repo_root(
-        "${PERSISTENT_DATA_DIR}/Tests"
-        tests_dir
-        ${LY_ROOT_FOLDER}
-    )
+    # Testrunner binary
+    set(test_runner_bin $<TARGET_FILE:AzTestRunner>)
+
+    # Repository root
+    set(repo_dir ${LY_ROOT_FOLDER})
+    
+    # Test impact framework output binary dir
+    set(bin_dir ${BIN_DIR})
     
     # Temp dir
-    ly_test_impact_rebase_file_to_repo_root(
-        "${LY_TEST_IMPACT_TEMP_DIR}"
-        temp_dir
-        ${LY_ROOT_FOLDER}
-    )
+    set(temp_dir "${LY_TEST_IMPACT_TEMP_DIR}")
+
+    # Test impact data file
+    set(test_impact_data_file "${PERSISTENT_DATA_DIR}/TestImpactData.spartia")
     
     # Source to target mappings dir
-    ly_test_impact_rebase_file_to_repo_root(
-        "${LY_TEST_IMPACT_SOURCE_TARGET_MAPPING_DIR}"
-        source_target_mapping_dir
-        ${LY_ROOT_FOLDER}
-    )
+    set(source_target_mapping_dir "${LY_TEST_IMPACT_SOURCE_TARGET_MAPPING_DIR}")
     
-    # Test type artifact dir
-    ly_test_impact_rebase_file_to_repo_root(
-        "${LY_TEST_IMPACT_TEST_TYPE_DIR}"
-        test_type_dir
-        ${LY_ROOT_FOLDER}
-    )
+    # Test type artifact file
+    set(test_target_type_file "${LY_TEST_IMPACT_TEST_TYPE_FILE}")
     
     # Build dependency artifact dir
-    ly_test_impact_rebase_file_to_repo_root(
-        "${LY_TEST_IMPACT_TARGET_DEPENDENCY_DIR}"
-        target_dependency_dir
-        ${LY_ROOT_FOLDER}
-    )
+    set(target_dependency_dir "${LY_TEST_IMPACT_TARGET_DEPENDENCY_DIR}")
     
     # Substitute config file template with above vars
     file(READ "${CONFIG_TEMPLATE_FILE}" config_file)
     string(CONFIGURE ${config_file} config_file)
     
     # Write out entire config contents to a file in the build directory of the test impact framework console target
-    string(TIMESTAMP timestamp "%Y-%m-%d %H:%M:%S")
-    set(header "# Test Impact Framework configuration file for Lumberyard\n# Platform: ${CMAKE_SYSTEM_NAME}\n# Build: $<CONFIG>\n# ${timestamp}")
     file(GENERATE
-        OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/$<TARGET_FILE_BASE_NAME:${LY_TEST_IMPACT_CONSOLE_TARGET}>.$<CONFIG>.cfg" 
-        CONTENT "${header}\n\n${config_file}"
+        OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/$<TARGET_FILE_BASE_NAME:${LY_TEST_IMPACT_CONSOLE_TARGET}>.$<CONFIG>.json" 
+        CONTENT ${config_file}
     )
 endfunction()
 
@@ -353,7 +333,7 @@ function(ly_test_impact_post_step)
     set(persistent_data_dir "${LY_ROOT_FOLDER}/Tests/test_impact_framework/${CMAKE_SYSTEM_NAME}/$<CONFIG>")
 
     # Directory for binaries built for this profile
-    set(runtime_bin_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
+    set(bin_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
 
     # Erase any existing non-persistent data to avoid getting test impact framework out of sync with current repo state
     file(REMOVE_RECURSE "${LY_TEST_IMPACT_WORKING_DIR}")
@@ -372,7 +352,7 @@ function(ly_test_impact_post_step)
     ly_test_impact_write_config_file(
         "cmake/TestImpactFramework/ConsoleFrontendConfig.in"
         ${persistent_data_dir}
-        ${runtime_bin_dir}
+        ${bin_dir}
     )
     
     # Copy over the graphviz options file for the build dependency graphs
@@ -380,6 +360,6 @@ function(ly_test_impact_post_step)
     file(COPY "cmake/TestImpactFramework/CMakeGraphVizOptions.cmake" DESTINATION ${CMAKE_BINARY_DIR})
 
     # Set the above config file as the default config file to use for the test impact framework console target
-    target_compile_definitions(${LY_TEST_IMPACT_CONSOLE_TARGET} PRIVATE "LY_TEST_IMPACT_DEFAULT_CONFIG_FILE=\"$<TARGET_FILE_BASE_NAME:${LY_TEST_IMPACT_CONSOLE_TARGET}>.$<CONFIG>.cfg\"")
+    target_compile_definitions(${LY_TEST_IMPACT_CONSOLE_STATIC_TARGET} PUBLIC "LY_TEST_IMPACT_DEFAULT_CONFIG_FILE=\"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/$<TARGET_FILE_BASE_NAME:${LY_TEST_IMPACT_CONSOLE_TARGET}>.$<CONFIG>.json\"")
     message(DEBUG "Test impact framework post steps complete")
 endfunction()

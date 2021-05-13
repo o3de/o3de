@@ -115,7 +115,7 @@ namespace UnitTest
         {
             m_processResults[pid].m_launchResult = launchResult;
             m_processResults[pid].m_createTime.emplace(createTime);
-            return TestImpact::CallbackResult::Continue;
+            return TestImpact::ProcessCallbackResult::Continue;
         };
 
         m_processExitCallback = [this](
@@ -131,7 +131,7 @@ namespace UnitTest
             m_processResults[pid].m_exitTime = exitTime;
             m_processResults[pid].m_duration =
                 AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(exitTime - *m_processResults[pid].m_createTime);
-            return TestImpact::CallbackResult::Continue;
+            return TestImpact::ProcessCallbackResult::Continue;
         };
 
         m_processResults.resize(m_numProcessesToLaunch);
@@ -227,8 +227,6 @@ namespace UnitTest
     // Expects the process to have exited gracefully of its own accord (i.e. not terminated for any reason by the scheduler)
     void ProcessSchedulerTestFixtureWithParams::ExpectGracefulExit(TestImpact::ProcessId pid)
     {
-        const auto& [launchResult, exitStatus, createTime, exitTime, duration, returnCode, std] = m_processResults[pid];
-
         ExpectSuccessfulLaunch(pid);
         ExpectExitCondition(pid, TestImpact::ExitCondition::Gracefull);
     }
@@ -236,8 +234,6 @@ namespace UnitTest
     // Expects the process to have been terminated by the client or scheduler
     void ProcessSchedulerTestFixtureWithParams::ExpectTerminatedProcess(TestImpact::ProcessId pid)
     {
-        const auto& [launchResult, exitStatus, createTime, exitTime, duration, returnCode, std] = m_processResults[pid];
-
         ExpectSuccessfulLaunch(pid);
         ExpectExitCondition(pid, TestImpact::ExitCondition::Terminated);
     }
@@ -245,8 +241,6 @@ namespace UnitTest
     // Expects the process to have been terminated by the scheduler due to the process or scheduler timing out
     void ProcessSchedulerTestFixtureWithParams::ExpectTimeoutProcess(TestImpact::ProcessId pid)
     {
-        const auto& [launchResult, exitStatus, createTime, exitTime, duration, returnCode, std] = m_processResults[pid];
-
         ExpectSuccessfulLaunch(pid);
         ExpectExitCondition(pid, TestImpact::ExitCondition::Timeout);
     }
@@ -474,11 +468,11 @@ namespace UnitTest
 
             if (pid == processToAbort)
             {
-                return TestImpact::CallbackResult::Abort;
+                return TestImpact::ProcessCallbackResult::Abort;
             }
             else
             {
-                return TestImpact::CallbackResult::Continue;
+                return TestImpact::ProcessCallbackResult::Continue;
             }
         };
 
@@ -537,11 +531,11 @@ namespace UnitTest
 
             if (pid == processToAbort)
             {
-                return TestImpact::CallbackResult::Abort;
+                return TestImpact::ProcessCallbackResult::Abort;
             }
             else
             {
-                return TestImpact::CallbackResult::Continue;
+                return TestImpact::ProcessCallbackResult::Continue;
             }
         };
 

@@ -13,26 +13,33 @@ set(FILES
     Tests/Artifact/TestImpactTargetDescriptorCompilerTest.cpp
     Tests/Artifact/TestImpactBuildTargetDescriptorFactoryTest.cpp
     Tests/Artifact/TestImpactModuleCoverageFactoryTest.cpp
-    Tests/Artifact/TestImpactChangeListFactoryTest.cpp
     Tests/Artifact/TestImpactTestEnumerationSuiteFactoryTest.cpp
     Tests/Artifact/TestImpactTestRunSuiteFactoryTest.cpp
     Tests/Artifact/TestImpactTestTargetMetaMapFactoryTest.cpp
-
+    Tests/Artifact/TestImpactDependencyGraphDataFactoryTest.cpp
     Tests/Process/TestImpactProcessSchedulerTest.cpp
-
+    Tests/Dependency/TestImpactDynamicDependencyMapTest.cpp
+    Tests/Dependency/TestImpactSourceDependencyTest.cpp
+    Tests/Dependency/TestImpactSourceCoveringTestsListTest.cpp
+    Tests/Dependency/TestImpactSourceCoveringTestsSerializerTest.cpp
+    Tests/Dependency/TestImpactTestSelectorAndPrioritizerTest.cpp
     Tests/Process/TestImpactProcessTest.cpp
     Tests/Target/TestImpactBuildTargetTest.cpp
     Tests/TestImpactExceptionTest.cpp
     Tests/TestImpactFrameworkPathTest.cpp
-    Tests/Test/TestImpactTestEnumeratorTest.cpp
-    Tests/Test/TestImpactTestEumerationSerializerTest.cpp
-    Tests/Test/TestImpactTestRunSerializerTest.cpp
-    Tests/Test/TestImpactTestRunnerTest.cpp
-    Tests/Test/TestImpactInstrumentedTestRunnerTest.cpp
-    Tests/Test/TestImpactTestCoverageTest.cpp
+    Tests/TestEngine/TestImpactTestEnumeratorTest.cpp
+    Tests/TestEngine/TestImpactTestEumerationSerializerTest.cpp
+    Tests/TestEngine/TestImpactTestRunSerializerTest.cpp
+    Tests/TestEngine/TestImpactTestRunnerTest.cpp
+    Tests/TestEngine/TestImpactInstrumentedTestRunnerTest.cpp
+    Tests/TestEngine/TestImpactTestCoverageTest.cpp
+    Tests/TestEngine/TestImpactTestEngineTest.cpp
     Tests/TestImpactTestJobRunnerCommon.h
-    Tests/TestImpactTestMain.cpp
+    Tests/TestImpactRuntimeTestMain.cpp
     Tests/TestImpactTestUtils.cpp
     Tests/TestImpactTestUtils.h
-
+    Tests/TestImpactMicroRepo.cpp
+    Tests/TestImpactMicroRepo.h
+    Tests/TestImpactRuntimeTest.cpp
+    Tests/TestImpactChangeListSerializerTest.cpp
 )

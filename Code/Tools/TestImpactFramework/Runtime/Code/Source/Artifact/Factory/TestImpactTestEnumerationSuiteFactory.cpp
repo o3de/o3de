@@ -18,30 +18,27 @@
 
 namespace TestImpact
 {
-    namespace
-    {
-        // Keys for pertinent XML node and attribute names
-        constexpr const char* Keys[] =
-        {
-            "testsuites",
-            "testsuite",
-            "name",
-            "testcase"
-        };
-
-        enum
-        {
-            TestSuitesKey,
-            TestSuiteKey,
-            NameKey,
-            TestCaseKey
-        };
-    } // namespace
-
     namespace GTest
     {
         AZStd::vector<TestEnumerationSuite> TestEnumerationSuitesFactory(const AZStd::string& testEnumerationData)
         {
+            // Keys for pertinent XML node and attribute names
+            constexpr const char* Keys[] =
+            {
+                "testsuites",
+                "testsuite",
+                "name",
+                "testcase"
+            };
+
+            enum
+            {
+                TestSuitesKey,
+                TestSuiteKey,
+                NameKey,
+                TestCaseKey
+            };
+
             AZ_TestImpact_Eval(!testEnumerationData.empty(), ArtifactException, "Cannot parse enumeration, string is empty");
             AZStd::vector<TestEnumerationSuite> testSuites;
             AZStd::vector<char> rawData(testEnumerationData.begin(), testEnumerationData.end());

@@ -19,35 +19,6 @@
 
 namespace TestImpact
 {
-    namespace
-    {
-        // Keys for pertinent JSON node and attribute names
-        constexpr const char* Keys[] =
-        {
-            "target",
-            "name",
-            "output_name",
-            "path",
-            "sources",
-            "static",
-            "input",
-            "output"
-        };
-
-        enum
-        {
-            TargetKey,
-            NameKey,
-            OutputNameKey,
-            PathKey,
-            SourcesKey,
-            StaticKey,
-            InputKey,
-            OutputKey
-        };
-
-    } // namespace
-
     AutogenSources PairAutogenSources(
         const AZStd::vector<AZ::IO::Path>& inputSources,
         const AZStd::vector<AZ::IO::Path>& outputSources,
@@ -94,10 +65,35 @@ namespace TestImpact
 
     BuildTargetDescriptor BuildTargetDescriptorFactory(
         const AZStd::string& buildTargetData,
-        const AZStd::vector<AZStd::string>& staticSourceExtensionExcludes,
-        const AZStd::vector<AZStd::string>& autogenInputExtensionExcludes,
+        const AZStd::vector<AZStd::string>& staticSourceExtensionIncludes,
+        const AZStd::vector<AZStd::string>& autogenInputExtensionIncludes,
         const AZStd::string& autogenMatcher)
     {
+        // Keys for pertinent JSON node and attribute names
+        constexpr const char* Keys[] =
+        {
+            "target",
+            "name",
+            "output_name",
+            "path",
+            "sources",
+            "static",
+            "input",
+            "output"
+        };
+
+        enum
+        {
+            TargetKey,
+            NameKey,
+            OutputNameKey,
+            PathKey,
+            SourcesKey,
+            StaticKey,
+            InputKey,
+            OutputKey
+        };
+
         AZ_TestImpact_Eval(!autogenMatcher.empty(), ArtifactException, "Autogen matcher cannot be empty");
 
         BuildTargetDescriptor buildTargetDescriptor;
@@ -128,8 +124,8 @@ namespace TestImpact
             {
                 const AZ::IO::Path sourcePath = AZ::IO::Path(source.GetString());
                 if (AZStd::find(
-                        staticSourceExtensionExcludes.begin(), staticSourceExtensionExcludes.end(), sourcePath.Extension().Native()) ==
-                    staticSourceExtensionExcludes.end())
+                        staticSourceExtensionIncludes.begin(), staticSourceExtensionIncludes.end(), sourcePath.Extension().Native()) !=
+                    staticSourceExtensionIncludes.end())
                 {
                     buildTargetDescriptor.m_sources.m_staticSources.emplace_back(AZStd::move(sourcePath));
                 }
@@ -152,8 +148,8 @@ namespace TestImpact
             {
                 const AZ::IO::Path sourcePath = AZ::IO::Path(source.GetString());
                 if (AZStd::find(
-                        autogenInputExtensionExcludes.begin(), autogenInputExtensionExcludes.end(), sourcePath.Extension().Native()) ==
-                    autogenInputExtensionExcludes.end())
+                        autogenInputExtensionIncludes.begin(), autogenInputExtensionIncludes.end(), sourcePath.Extension().Native()) !=
+                    autogenInputExtensionIncludes.end())
                 {
                     inputPaths.emplace_back(AZStd::move(sourcePath));
                 }

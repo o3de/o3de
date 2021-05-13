@@ -12,7 +12,8 @@
 
 #pragma once
 
-#include <Artifact/Dynamic/TestImpactChangeList.h>
+#include <TestImpactFramework/TestImpactChangeList.h>
+
 #include <Artifact/Static/TestImpactProductionTargetDescriptor.h>
 #include <Artifact/Static/TestImpactTestTargetDescriptor.h>
 #include <Dependency/TestImpactSourceCoveringTestsList.h>

@@ -494,6 +494,7 @@ try {
         platform.value.build_types.each { build_job ->
             if (IsJobEnabled(branchName, build_job, pipelineName, platform.key)) {   // User can filter jobs, jobs are tagged by pipeline
                 def envVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, build_job.value.PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
+                envVars['BRANCH_NAME'] = "${branchName}" // Branch name is required for test impact analysis
                 envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
                 def nodeLabel = envVars['NODE_LABEL']
                 someBuildHappened = true

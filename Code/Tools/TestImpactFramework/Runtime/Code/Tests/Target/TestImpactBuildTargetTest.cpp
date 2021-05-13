@@ -332,7 +332,7 @@ namespace UnitTest
             try
             {
                 // When attempting to find a target that does not exist
-                auto target = targetList.GetTargetOrThrow(GenerateBuildTargetName(i + targetList.GetNumTargets()));
+                targetList.GetTargetOrThrow(GenerateBuildTargetName(i + targetList.GetNumTargets()));
 
                 // Do not expect the target list construction to succeed
                 FAIL();

@@ -84,8 +84,8 @@
     ],
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
-      "SCRIPT_PATH": "scripts/build/TestAnalysis/TIAF.py",
-      "SCRIPT_PARAMETERS": "--help"
+      "SCRIPT_PATH": "scripts/build/TestAnalysis/test_impact_analysis.py",
+      "SCRIPT_PARAMETERS": "--currentbranch \"!BRANCH_NAME!\" --sourceoftruthbranch \"main\" --bin \"build\\windows_vs2019\\bin\\debug\\tiaf.exe\" --persistentdir \"Tests\\test_impact_framework\\Windows\\debug\" --tempdir \"build\\windows_vs2019\\bin\\TestImpactFramework\\Temp\""
     }
   },
   "debug_vs2019": {
@@ -96,7 +96,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "debug",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG=FALSE -DLY_TEST_IMPACT_ACTIVE=1",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG=FALSE -DLY_TEST_IMPACT_ACTIVE=1 -DLY_TEST_IMPACT_INSTRUMENTATION_BIN=\"somepath.exe\"",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"

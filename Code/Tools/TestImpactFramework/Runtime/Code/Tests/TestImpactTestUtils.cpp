@@ -1071,11 +1071,12 @@ namespace UnitTest
         AZStd::vector<TestImpact::ModuleCoverage> moduleCoverages;
 
         TestImpact::ModuleCoverage moduleCoverage;
-        moduleCoverage.m_path = "C:\\Lumberyard\\windows_vs2019\\bin\\debug\\TestImpact.TestTargetA.Tests.dll";
+        moduleCoverage.m_path = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_A_BIN).MakePreferred().c_str();
 
         TestImpact::SourceCoverage sourceCoverage;
         sourceCoverage.m_path =
-            "C:\\Lumberyard\\Code\\Tools\\TestImpactFramework\\Runtime\\Code\\Tests\\TestTargetA\\Code\\Tests\\TestImpactTestTargetA.cpp";
+            AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+                / "Tests\\TestTargetA\\Code\\Tests\\TestImpactTestTargetA.cpp").MakePreferred().c_str();
 
         moduleCoverage.m_sources.push_back(AZStd::move(sourceCoverage));
         moduleCoverages.push_back(AZStd::move(moduleCoverage));
@@ -1087,11 +1088,12 @@ namespace UnitTest
         AZStd::vector<TestImpact::ModuleCoverage> moduleCoverages;
 
         TestImpact::ModuleCoverage moduleCoverage;
-        moduleCoverage.m_path = "C:\\Lumberyard\\windows_vs2019\\bin\\debug\\TestImpact.TestTargetB.Tests.dll";
+        moduleCoverage.m_path = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_B_BIN).MakePreferred().c_str();
 
         TestImpact::SourceCoverage sourceCoverage;
         sourceCoverage.m_path =
-            "C:\\Lumberyard\\Code\\Tools\\TestImpactFramework\\Runtime\\Code\\Tests\\TestTargetB\\Code\\Tests\\TestImpactTestTargetB.cpp";
+            AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+                / "Tests\\TestTargetB\\Code\\Tests\\TestImpactTestTargetB.cpp").MakePreferred().c_str();
 
         moduleCoverage.m_sources.push_back(AZStd::move(sourceCoverage));
         moduleCoverages.push_back(AZStd::move(moduleCoverage));
@@ -1103,11 +1105,12 @@ namespace UnitTest
         AZStd::vector<TestImpact::ModuleCoverage> moduleCoverages;
 
         TestImpact::ModuleCoverage moduleCoverage;
-        moduleCoverage.m_path = "C:\\Lumberyard\\windows_vs2019\\bin\\debug\\TestImpact.TestTargetC.Tests.dll";
+        moduleCoverage.m_path = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_C_BIN).MakePreferred().c_str();
 
         TestImpact::SourceCoverage sourceCoverage;
         sourceCoverage.m_path =
-            "C:\\Lumberyard\\Code\\Tools\\TestImpactFramework\\Runtime\\Code\\Tests\\TestTargetC\\Code\\Tests\\TestImpactTestTargetC.cpp";
+            AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+                / "Tests\\TestTargetC\\Code\\Tests\\TestImpactTestTargetC.cpp").MakePreferred().c_str();
 
         moduleCoverage.m_sources.push_back(AZStd::move(sourceCoverage));
         moduleCoverages.push_back(AZStd::move(moduleCoverage));
@@ -1119,11 +1122,12 @@ namespace UnitTest
         AZStd::vector<TestImpact::ModuleCoverage> moduleCoverages;
 
         TestImpact::ModuleCoverage moduleCoverage;
-        moduleCoverage.m_path = "C:\\Lumberyard\\windows_vs2019\\bin\\debug\\TestImpact.TestTargetD.Tests.dll";
+        moduleCoverage.m_path = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_D_BIN).MakePreferred().c_str();
 
         TestImpact::SourceCoverage sourceCoverage;
         sourceCoverage.m_path =
-            "C:\\Lumberyard\\Code\\Tools\\TestImpactFramework\\Runtime\\Code\\Tests\\TestTargetD\\Code\\Tests\\TestImpactTestTargetD.cpp";
+            AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+                / "Tests\\TestTargetD\\Code\\Tests\\TestImpactTestTargetD.cpp").MakePreferred().c_str();
 
         moduleCoverage.m_sources.push_back(AZStd::move(sourceCoverage));
         moduleCoverages.push_back(AZStd::move(moduleCoverage));
@@ -1135,14 +1139,15 @@ namespace UnitTest
         AZStd::vector<TestImpact::ModuleCoverage> moduleCoverages;
 
         TestImpact::ModuleCoverage moduleCoverage;
-        moduleCoverage.m_path = "C:\\Lumberyard\\windows_vs2019\\bin\\debug\\TestImpact.TestTargetA.Tests.dll";
+        moduleCoverage.m_path = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_A_BIN).MakePreferred().c_str();
 
         TestImpact::SourceCoverage sourceCoverage;
         sourceCoverage.m_path =
-            "C:\\Lumberyard\\Code\\Tools\\TestImpactFramework\\Runtime\\Code\\Tests\\TestTargetA\\Code\\Tests\\TestImpactTestTargetA.cpp";
+            AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+                / "Tests\\TestTargetA\\Code\\Tests\\TestImpactTestTargetA.cpp").MakePreferred().c_str();
         sourceCoverage.m_coverage = AZStd::vector<TestImpact::LineCoverage>();
 
-        auto& lines = sourceCoverage.m_coverage.value();
+        auto& lines = sourceCoverage.m_coverage;
         lines.push_back(TestImpact::LineCoverage{22, 1});
         lines.push_back(TestImpact::LineCoverage{23, 1});
         lines.push_back(TestImpact::LineCoverage{24, 1});
@@ -1195,14 +1200,15 @@ namespace UnitTest
         AZStd::vector<TestImpact::ModuleCoverage> moduleCoverages;
 
         TestImpact::ModuleCoverage moduleCoverage;
-        moduleCoverage.m_path = "C:\\Lumberyard\\windows_vs2019\\bin\\debug\\TestImpact.TestTargetB.Tests.dll";
+        moduleCoverage.m_path = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_B_BIN).MakePreferred().c_str();
 
         TestImpact::SourceCoverage sourceCoverage;
         sourceCoverage.m_path =
-            "C:\\Lumberyard\\Code\\Tools\\TestImpactFramework\\Runtime\\Code\\Tests\\TestTargetB\\Code\\Tests\\TestImpactTestTargetB.cpp";
+            AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+                / "Tests\\TestTargetB\\Code\\Tests\\TestImpactTestTargetB.cpp").MakePreferred().c_str();
         sourceCoverage.m_coverage = AZStd::vector<TestImpact::LineCoverage>();
 
-        auto& lines = sourceCoverage.m_coverage.value();
+        auto& lines = sourceCoverage.m_coverage;
         lines.push_back(TestImpact::LineCoverage{29, 1});
         lines.push_back(TestImpact::LineCoverage{30, 1});
         lines.push_back(TestImpact::LineCoverage{31, 1});
@@ -1243,14 +1249,15 @@ namespace UnitTest
         AZStd::vector<TestImpact::ModuleCoverage> moduleCoverages;
 
         TestImpact::ModuleCoverage moduleCoverage;
-        moduleCoverage.m_path = "C:\\Lumberyard\\windows_vs2019\\bin\\debug\\TestImpact.TestTargetC.Tests.dll";
+        moduleCoverage.m_path = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_C_BIN).MakePreferred().c_str();
 
         TestImpact::SourceCoverage sourceCoverage;
         sourceCoverage.m_path =
-            "C:\\Lumberyard\\Code\\Tools\\TestImpactFramework\\Runtime\\Code\\Tests\\TestTargetC\\Code\\Tests\\TestImpactTestTargetC.cpp";
+            AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+                / "Tests\\TestTargetC\\Code\\Tests\\TestImpactTestTargetC.cpp").MakePreferred().c_str();
         sourceCoverage.m_coverage = AZStd::vector<TestImpact::LineCoverage>();
 
-        auto& lines = sourceCoverage.m_coverage.value();
+        auto& lines = sourceCoverage.m_coverage;
         lines.push_back(TestImpact::LineCoverage{32, 1});
         lines.push_back(TestImpact::LineCoverage{33, 1});
         lines.push_back(TestImpact::LineCoverage{34, 1});
@@ -1287,14 +1294,15 @@ namespace UnitTest
         AZStd::vector<TestImpact::ModuleCoverage> moduleCoverages;
 
         TestImpact::ModuleCoverage moduleCoverage;
-        moduleCoverage.m_path = "C:\\Lumberyard\\windows_vs2019\\bin\\debug\\TestImpact.TestTargetD.Tests.dll";
+        moduleCoverage.m_path = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_D_BIN).MakePreferred().c_str();
 
         TestImpact::SourceCoverage sourceCoverage;
         sourceCoverage.m_path =
-            "C:\\Lumberyard\\Code\\Tools\\TestImpactFramework\\Runtime\\Code\\Tests\\TestTargetD\\Code\\Tests\\TestImpactTestTargetD.cpp";
+            AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+                / "Tests\\TestTargetD\\Code\\Tests\\TestImpactTestTargetD.cpp").MakePreferred().c_str();
         sourceCoverage.m_coverage = AZStd::vector<TestImpact::LineCoverage>();
 
-        auto& lines = sourceCoverage.m_coverage.value();
+        auto& lines = sourceCoverage.m_coverage;
         lines.push_back(TestImpact::LineCoverage{56, 1});
         lines.push_back(TestImpact::LineCoverage{57, 1});
         lines.push_back(TestImpact::LineCoverage{58, 1});
@@ -1762,18 +1770,18 @@ namespace UnitTest
             return false;
         }
 
-        if (lhs.m_coverage.has_value() != rhs.m_coverage.has_value())
+        if (lhs.m_coverage.empty() != rhs.m_coverage.empty())
         {
             AZ_Error(
-                "LineCoverage ==", false, "lhs.m_coverage.has_value(): %u, rhs.m_coverage.has_value(): %u", lhs.m_coverage.has_value(),
-                rhs.m_coverage.has_value());
+                "LineCoverage ==", false, "lhs.m_coverage.empty(): %u, rhs.m_coverage.empty(): %u", lhs.m_coverage.empty(),
+                rhs.m_coverage.empty());
             return false;
         }
 
-        if (lhs.m_coverage.has_value())
+        if (!lhs.m_coverage.empty())
         {
             return AZStd::equal(
-                lhs.m_coverage.value().begin(), lhs.m_coverage.value().end(), rhs.m_coverage.value().begin(),
+                lhs.m_coverage.begin(), lhs.m_coverage.end(), rhs.m_coverage.begin(),
                 [](const TestImpact::LineCoverage& left, const TestImpact::LineCoverage& right) {
                     return left == right;
                 });
@@ -1839,5 +1847,43 @@ namespace UnitTest
         }
 
         return true;
+    }
+
+    bool operator==(const TestImpact::SourceCoveringTests& lhs, const TestImpact::SourceCoveringTests& rhs)
+    {
+        if (lhs.GetPath() != rhs.GetPath())
+        {
+            return false;
+        }
+
+        if (lhs.GetNumCoveringTestTargets() != rhs.GetNumCoveringTestTargets())
+        {
+            return false;
+        }
+
+        for (const auto& coveringTestTarget : lhs.GetCoveringTestTargets())
+        {
+            if (AZStd::find(rhs.GetCoveringTestTargets().begin(), rhs.GetCoveringTestTargets().end(), coveringTestTarget)
+                == rhs.GetCoveringTestTargets().end())
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool operator==(const AZStd::vector<TestImpact::SourceCoveringTests>& lhs, const AZStd::vector<TestImpact::SourceCoveringTests>& rhs)
+    {
+        if (lhs.size() != rhs.size())
+        {
+            AZ_Error("SourceCoveringTestsList ==", false, "lhs.size(): %u, rhs.size(): %u", lhs.size(), rhs.size());
+            return false;
+        }
+
+        return AZStd::equal(
+            lhs.begin(), lhs.end(), rhs.begin(), [](const TestImpact::SourceCoveringTests& left, const TestImpact::SourceCoveringTests& right) {
+            return left == right;
+        });
     }
 } // namespace UnitTest

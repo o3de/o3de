@@ -10,5 +10,5 @@
 #
 
 set(FILES
-    Source/TestImpactConsole.cpp
+    Executable/Source/TestImpactConsole.cpp
 )

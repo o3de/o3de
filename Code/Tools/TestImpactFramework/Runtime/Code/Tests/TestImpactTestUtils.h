@@ -19,6 +19,7 @@
 #include <Artifact/Static/TestImpactProductionTargetDescriptor.h>
 #include <Artifact/Static/TestImpactTestTargetDescriptor.h>
 #include <Artifact/Static/TestImpacttestTargetMeta.h>
+#include <Dependency/TestImpactSourceCoveringTestsList.h>
 #include <Process/TestImpactProcess.h>
 #include <Test/Enumeration/TestImpactTestEnumeration.h>
 #include <Test/Run/TestImpactTestCoverage.h>
@@ -217,4 +218,7 @@ namespace UnitTest
     bool operator==(const TestImpact::ModuleCoverage& lhs, const TestImpact::ModuleCoverage& rhs);
     bool operator==(const AZStd::vector<TestImpact::ModuleCoverage>& lhs, const AZStd::vector<TestImpact::ModuleCoverage>& rhs);
     bool operator==(const TestImpact::TestCoverage& lhs, const TestImpact::TestCoverage& rhs);
+
+    bool operator==(const TestImpact::SourceCoveringTests& lhs, const TestImpact::SourceCoveringTests& rhs);
+    bool operator==(const AZStd::vector<TestImpact::SourceCoveringTests>& lhs, const AZStd::vector<TestImpact::SourceCoveringTests>& rhs);
 } // namespace UnitTest
