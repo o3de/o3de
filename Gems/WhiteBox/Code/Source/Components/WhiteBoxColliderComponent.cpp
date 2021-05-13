@@ -132,7 +132,6 @@ namespace WhiteBox
                 sceneInterface->RemoveSimulatedBody(defaultScene, m_simulatedBodyHandle);
             }
         }
-        m_simulatedBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
     }
 
     void WhiteBoxColliderComponent::OnTransformChanged(
