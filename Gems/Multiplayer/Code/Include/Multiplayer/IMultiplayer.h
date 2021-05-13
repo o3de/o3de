@@ -137,11 +137,6 @@ namespace Multiplayer
         return AZ::Interface<IMultiplayer>::Get();
     }
 
-    inline INetworkTime* GetNetworkTime()
-    {
-        return AZ::Interface<INetworkTime>::Get();
-    }
-
     inline INetworkEntityManager* GetNetworkEntityManager()
     {
         IMultiplayer* multiplayer = GetMultiplayer();

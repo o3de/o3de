@@ -83,4 +83,10 @@ namespace Multiplayer
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
     };
     using INetworkTimeRequestBus = AZ::EBus<INetworkTime, INetworkTimeRequests>;
+
+    // Convenience helpers
+    inline INetworkTime* GetNetworkTime()
+    {
+        return AZ::Interface<INetworkTime>::Get();
+    }
 }
