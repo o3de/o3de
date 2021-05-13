@@ -41,6 +41,7 @@ namespace AzToolsFramework
 
             setMouseTracking(true);
             setSortingEnabled(false);
+            setSelectionMode(QAbstractItemView::SingleSelection);
 
             connect(this, &QTableView::customContextMenuRequested, this, &AssetBrowserTableView::OnContextMenu);
 
@@ -61,7 +62,7 @@ namespace AzToolsFramework
             connect(m_tableModel, &AssetBrowserTableModel::layoutChanged, this, &AssetBrowserTableView::layoutChangedSlot);
 
             horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeMode::Stretch);
-            horizontalHeader()->setSectionResizeMode(1,QHeaderView::ResizeMode::Stretch);
+            horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeMode::Stretch);
         }
         void AssetBrowserTableView::SetName(const QString& name)
         {
@@ -78,7 +79,10 @@ namespace AzToolsFramework
             QModelIndexList sourceIndexes;
             for (const auto& index : selectedIndexes())
             {
-                sourceIndexes.push_back(m_sourceFilterModel->mapToSource(m_tableModel->mapToSource(index)));
+                if (index.column() == 0)
+                {
+                    sourceIndexes.push_back(m_sourceFilterModel->mapToSource(m_tableModel->mapToSource(index)));
+                }
             }
 
             AZStd::vector<AssetBrowserEntry*> entries;
@@ -87,8 +91,8 @@ namespace AzToolsFramework
         }
         void AssetBrowserTableView::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
         {
-            AZ_UNUSED(selected);
-            AZ_UNUSED(deselected);
+            QTableView::selectionChanged(selected, deselected);
+            Q_EMIT selectionChangedSignal(selected, deselected);
         }
         void AssetBrowserTableView::rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end)
         {

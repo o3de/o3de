@@ -101,7 +101,10 @@ namespace AzToolsFramework
             QModelIndexList sourceIndexes;
             for (const auto& index : selectedIndexes())
             {
-                sourceIndexes.push_back(m_assetBrowserSortFilterProxyModel->mapToSource(index));
+                if (index.column() == 0)
+                {
+                    sourceIndexes.push_back(m_assetBrowserSortFilterProxyModel->mapToSource(index));
+                }
             }
 
             AZStd::vector<AssetBrowserEntry*> entries;

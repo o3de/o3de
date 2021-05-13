@@ -27,15 +27,6 @@ namespace AzToolsFramework
             }
             return m_indexMap[proxyIndex.row()];
         }
-        QModelIndex AssetBrowserTableModel::mapFromSource(const QModelIndex& sourceIndex) const
-        {
-            Q_ASSERT(!sourceIndex.isValid() || sourceIndex.model() == sourceModel());
-            if (!sourceIndex.isValid())
-            {
-                return QModelIndex();
-            }
-            return createIndex(m_rowMap[sourceIndex], sourceIndex.column(), sourceIndex.internalPointer());
-        }
 
         QVariant AssetBrowserTableModel::headerData(int section, Qt::Orientation orientation, int role) const
         {
@@ -94,7 +85,7 @@ namespace AzToolsFramework
 
         int AssetBrowserTableModel::rowCount(const QModelIndex& parent) const
         {
-            return !parent.isValid() ? m_rowMap.size() : 0;
+            return !parent.isValid() ? m_indexMap.size() : 0;
         }
 
         int AssetBrowserTableModel::BuildTableModelMap(const QAbstractItemModel* model, const QModelIndex& parent /*= QModelIndex()*/, int row /*= 0*/)
@@ -106,7 +97,6 @@ namespace AzToolsFramework
                 if (model->hasChildren(index) == false)
                 {
                     beginInsertRows(parent, row, row);
-                    m_rowMap[index] = row;
                     m_indexMap[row] = index;
                     endInsertRows();
 
@@ -139,7 +129,6 @@ namespace AzToolsFramework
             if (m_indexMap.size() > 0)
             {
                 beginRemoveRows(m_indexMap.first(), m_indexMap.first().row(), m_indexMap.last().row());
-                m_rowMap.clear();
                 m_indexMap.clear();
                 endRemoveRows();
             }
