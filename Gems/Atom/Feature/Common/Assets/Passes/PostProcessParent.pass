@@ -16,6 +16,10 @@
                     "Name": "Depth",
                     "SlotType": "Input"
                 },
+                {
+                    "Name": "MotionVectors",
+                    "SlotType": "Input"
+                },
                 // SwapChain here is only used to reference the frame height and format
                 {
                     "Name": "SwapChainOutput",
@@ -81,6 +85,33 @@
                     ]
                 },
                 {
+                    "Name": "TaaPass",
+                    "TemplateName": "TaaTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputColor",
+                            "AttachmentRef": {
+                                "Pass": "SMAA1xApplyLinearHDRColorPass",
+                                "Attachment": "OutputColor"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "MotionVectors",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "MotionVectors"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "DepthOfFieldPass",
                     "TemplateName": "DepthOfFieldTemplate",
                     "Enabled": true,
@@ -88,7 +119,7 @@
                         {
                             "LocalSlot": "DoFColorInput",
                             "AttachmentRef": {
-                                "Pass": "SMAA1xApplyLinearHDRColorPass",
+                                "Pass": "TaaPass",
                                 "Attachment": "OutputColor"
                             }
                         },

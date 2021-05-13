@@ -52,7 +52,8 @@ namespace AZ
             const RHI::TransientBufferDescriptor GetTransientBufferDescriptor() const;
 
             //! Updates the size and format of this attachment using the sources below if specified
-            void Update();
+            //! @param forceUpdate - Imported attchments will only update if updateImportedAttachments is true.
+            void Update(bool updateImportedAttachments = false);
 
             //! Sets all formats to nearest device supported formats and warns if changes where made
             void ValidateDeviceFormats(const AZStd::vector<RHI::Format>& formatFallbacks, RHI::FormatCapabilities capabilities = RHI::FormatCapabilities::None);

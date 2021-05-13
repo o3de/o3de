@@ -29,6 +29,11 @@ namespace AZ::Render
         /// Creates a TaaPass
         static RPI::Ptr<TaaPass> Create(const RPI::PassDescriptor& descriptor);
         
+        static Name GetTaaPassTemplateName()
+        {
+            return Name("TaaTemplate");
+        }
+
     private:
 
         TaaPass(const RPI::PassDescriptor& descriptor);
@@ -38,8 +43,21 @@ namespace AZ::Render
         void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
         
         // Pass behavior overrides...
+        void FrameBeginInternal(FramePrepareParams params) override;
         void ResetInternal()override;
         void BuildAttachmentsInternal() override;
+
+        void UpdateAttachmentImage(RPI::Ptr<RPI::PassAttachment>& attachment);
+
+        RHI::ShaderInputNameIndex m_outputIndex = Name("m_output");
+        RHI::ShaderInputNameIndex m_lastFrameAccumulationIndex = Name("m_lastFrameAccumulation");
+
+        Data::Instance<RPI::PassAttachment> m_accumulationAttachments[2];
+        
+        RPI::PassAttachmentBinding* m_lastFrameAccumulationBinding = nullptr;
+        RPI::PassAttachmentBinding* m_outputColorBinding = nullptr;
+
+        uint8_t m_accumulationOuptutIndex = 0;
 
     };
 } // namespace AZ::Render

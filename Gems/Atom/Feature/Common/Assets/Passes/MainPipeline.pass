@@ -335,6 +335,13 @@
                             }
                         },
                         {
+                            "LocalSlot": "MotionVectors",
+                            "AttachmentRef": {
+                                "Pass": "MotionVectorPass",
+                                "Attachment": "CameraMotionVectorOutput"
+                            }
+                        },
+                        {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
                                 "Pass": "Parent",

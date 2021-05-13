@@ -281,6 +281,10 @@
                 "Path": "Passes/SMAA1xApplyPerceptualColor.pass"
             },
             {
+                "Name": "TaaTemplate",
+                "Path": "Passes/Taa.pass"
+            },
+            {
                 "Name": "SsaoParentTemplate",
                 "Path": "Passes/SsaoParent.pass"
             },

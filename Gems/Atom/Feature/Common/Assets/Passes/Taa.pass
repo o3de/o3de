@@ -1,0 +1,102 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "TaaTemplate",
+            "PassClass": "TaaPass",
+            "Slots": [
+                {
+                    "Name": "InputColor",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_inputColor",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "InputDepth",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_inputDepth",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "MotionVectors",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_motionVectors",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "LastFrameAccumulation",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_lastFrameAccumulation",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "OutputColor",
+                    "SlotType": "Output",
+                    "ShaderInputName": "m_outputColor",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "Accumulation1",
+                    "Lifetime": "Imported",
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "InputColor"
+                    },
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "InputColor"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT",
+                        "SharedQueueMask": "2"
+                    }
+                },
+                {
+                    "Name": "Accumulation2",
+                    "Lifetime": "Imported",
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "InputColor"
+                    },
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "InputColor"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT",
+                        "SharedQueueMask": "2"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input": "InputColor",
+                    "Output": "OutputColor"
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/Postprocessing/Taa.shader"
+                },
+                "Make Fullscreen Pass": true,
+                "ShaderDataMappings": {
+                    "FloatMappings": [
+                        {
+                            "Name": "m_minContribution",
+                            "Value": 0.1
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
