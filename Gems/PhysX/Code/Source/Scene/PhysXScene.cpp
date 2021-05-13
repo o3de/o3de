@@ -189,6 +189,22 @@ namespace PhysX
             return newBody;
         }
 
+        AzPhysics::SimulatedBody* CreateRigidBody(const AzPhysics::RigidBodyConfiguration* configuration, AZ::Crc32& crc)
+        {
+            RigidBody* newBody = aznew RigidBody(*configuration);
+            if (!AZStd::holds_alternative<AZStd::monostate>(configuration->m_colliderAndShapeData))
+            {
+                const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
+                AZ_Warning("PhysXScene", shapeAdded, "No Collider or Shape information found when creating Rigid body [%s]", configuration->m_debugName.c_str());
+            }
+            const AzPhysics::MassComputeFlags& flags = configuration->GetMassComputeFlags();
+            newBody->UpdateMassProperties(flags, &configuration->m_centerOfMassOffset,
+                &configuration->m_inertiaTensor, &configuration->m_mass);
+
+            crc = AZ::Crc32(newBody, sizeof(*newBody));
+            return newBody;
+        }
+
         AzPhysics::SimulatedBody* CreateCharacterBody(PhysXScene* scene,
             const Physics::CharacterConfiguration* characterConfig)
         {
@@ -617,7 +633,7 @@ namespace PhysX
         AZ::Crc32 newBodyCrc;
         if (azrtti_istypeof<AzPhysics::RigidBodyConfiguration>(simulatedBodyConfig))
         {
-            newBody = Internal::CreateSimulatedBody<RigidBody, AzPhysics::RigidBodyConfiguration>(
+            newBody = Internal::CreateRigidBody(
                 azdynamic_cast<const AzPhysics::RigidBodyConfiguration*>(simulatedBodyConfig), newBodyCrc);
         }
         else if (azrtti_istypeof<AzPhysics::StaticRigidBodyConfiguration>(simulatedBodyConfig))

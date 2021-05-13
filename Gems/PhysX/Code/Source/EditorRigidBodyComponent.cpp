@@ -282,9 +282,8 @@ namespace PhysX
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
-            sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_rigidBodyHandle);
-            m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
-            m_editorBody = nullptr;
+            sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorRigidBodyHandle);
+            m_editorRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
     }
 
@@ -342,12 +341,15 @@ namespace PhysX
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
         AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        if (m_editorBody && m_config.m_centerOfMassDebugDraw)
+        if (m_config.m_centerOfMassDebugDraw)
         {
-            debugDisplay.DepthTestOff();
-            debugDisplay.SetColor(m_centerOfMassDebugColor);
-            debugDisplay.DrawBall(m_editorBody->GetCenterOfMassWorld(), m_centerOfMassDebugSize);
-            debugDisplay.DepthTestOn();
+            if (const AzPhysics::RigidBody* body = GetRigidBody())
+            {
+                debugDisplay.DepthTestOff();
+                debugDisplay.SetColor(m_centerOfMassDebugColor);
+                debugDisplay.DrawBall(body->GetCenterOfMassWorld(), m_centerOfMassDebugSize);
+                debugDisplay.DepthTestOn();
+            }
         }
     }
 
@@ -366,29 +368,30 @@ namespace PhysX
         AZ::Transform colliderTransform = GetWorldTM();
         colliderTransform.ExtractScale();
 
-        AzPhysics::RigidBodyConfiguration configuration;
+        AzPhysics::RigidBodyConfiguration configuration = m_config;
         configuration.m_orientation = colliderTransform.GetRotation();
         configuration.m_position = colliderTransform.GetTranslation();
         configuration.m_entityId = GetEntityId();
         configuration.m_debugName = GetEntity()->GetName();
-        configuration.m_centerOfMassOffset = m_config.m_centerOfMassOffset;
-        configuration.m_computeCenterOfMass = m_config.m_computeCenterOfMass;
-        configuration.m_computeInertiaTensor = m_config.m_computeInertiaTensor;
-        configuration.m_inertiaTensor = m_config.m_inertiaTensor;
-        configuration.m_simulated = false;
-        configuration.m_kinematic = m_config.m_kinematic;
+        configuration.m_startSimulationEnabled = false;
         configuration.m_colliderAndShapeData = Internal::GetCollisionShapes(GetEntity());
 
+        
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
-            m_rigidBodyHandle = sceneInterface->AddSimulatedBody(m_editorSceneHandle, &configuration);
-            m_editorBody = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_rigidBodyHandle));
+            m_editorRigidBodyHandle = sceneInterface->AddSimulatedBody(m_editorSceneHandle, &configuration);
+            if (auto* body = azdynamic_cast<AzPhysics::RigidBody*>(
+                sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_editorRigidBodyHandle)
+                ))
+            {
+                // AddSimulatedBody may update mass / CoM / Inertia tensor based on the config, so grab the updated values.
+                m_config.m_mass = body->GetMass();
+                m_config.m_centerOfMassOffset = body->GetCenterOfMassLocal();
+                m_config.m_inertiaTensor = body->GetInverseInertiaLocal();
+            }
         }
-
-        m_editorBody->UpdateMassProperties(m_config.GetMassComputeFlags(), &m_config.m_centerOfMassOffset, &m_config.m_inertiaTensor, &m_config.m_mass);
-        m_config.m_mass = m_editorBody->GetMass();
-        m_config.m_centerOfMassOffset = m_editorBody->GetCenterOfMassLocal();
-        m_config.m_inertiaTensor = m_editorBody->GetInverseInertiaLocal();
+        AZ_Error("EditorRigidBodyComponent",
+            m_editorRigidBodyHandle != AzPhysics::InvalidSimulatedBodyHandle, "Failed to create editor rigid body");
     }
 
     void EditorRigidBodyComponent::OnColliderChanged()
@@ -424,9 +427,8 @@ namespace PhysX
         {
             if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
             {
-                sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_rigidBodyHandle);
-                m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
-                m_editorBody = nullptr;
+                sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorRigidBodyHandle);
+                m_editorRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
 
                 CreateEditorWorldRigidBody();
             }
@@ -436,46 +438,65 @@ namespace PhysX
 
     void EditorRigidBodyComponent::EnablePhysics()
     {
-        if (!IsPhysicsEnabled())
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
-            m_editorBody->SetSimulationEnabled(true);
+            sceneInterface->EnableSimulationOfBody(m_editorSceneHandle, m_editorRigidBodyHandle);
         }
     }
 
     void EditorRigidBodyComponent::DisablePhysics()
     {
-        m_editorBody->SetSimulationEnabled(false);
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            sceneInterface->DisableSimulationOfBody(m_editorSceneHandle, m_editorRigidBodyHandle);
+        }
     }
 
     bool EditorRigidBodyComponent::IsPhysicsEnabled() const
     {
-        return m_editorBody && m_editorBody->m_simulating;
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            if (AzPhysics::SimulatedBody* body =
+                sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_editorRigidBodyHandle))
+            {
+                return body->m_simulating;
+            }
+        }
+        return false;
     }
 
     AZ::Aabb EditorRigidBodyComponent::GetAabb() const
     {
-        if (m_editorBody)
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
-            return m_editorBody->GetAabb();
+            if (AzPhysics::SimulatedBody* body =
+                sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_editorRigidBodyHandle))
+            {
+                return body->GetAabb();
+            }
         }
         return AZ::Aabb::CreateNull();
     }
 
     AzPhysics::SimulatedBody* EditorRigidBodyComponent::GetSimulatedBody()
     {
-        return m_editorBody;
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            return sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_editorRigidBodyHandle);
+        }
+        return nullptr;
     }
 
     AzPhysics::SimulatedBodyHandle EditorRigidBodyComponent::GetSimulatedBodyHandle() const
     {
-        return m_rigidBodyHandle;
+        return m_editorRigidBodyHandle;
     }
 
     AzPhysics::SceneQueryHit EditorRigidBodyComponent::RayCast(const AzPhysics::RayCastRequest& request)
     {
-        if (m_editorBody)
+        if (AzPhysics::SimulatedBody* body = GetSimulatedBody())
         {
-            return m_editorBody->RayCast(request);
+            return body->RayCast(request);
         }
         return AzPhysics::SceneQueryHit();
     }
@@ -488,7 +509,12 @@ namespace PhysX
 
     const AzPhysics::RigidBody* EditorRigidBodyComponent::GetRigidBody() const
     {
-        return m_editorBody;
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            return azdynamic_cast<AzPhysics::RigidBody*>(
+                sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_editorRigidBodyHandle));
+        }
+        return nullptr;
     }
 
     void EditorRigidBodyComponent::SetShouldBeRecreated()
