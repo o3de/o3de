@@ -241,8 +241,8 @@ namespace AZ
                 VkResult result = vkAllocateDescriptorSets(descriptor.m_device->GetNativeDevice(), &allocInfo, &m_nativeDescriptorSet);
                 if (result == VK_ERROR_FRAGMENTED_POOL)
                 {
-                    // fragmented pool will be re-created subsequently, so warning only 
-                    AZ_Warning("Vulkan RHI", false, "Fragmented pool");
+                    // fragmented pool will be re-created subsequently in DescriptorSetAllocator, so warning only 
+                    AZ_Warning("Vulkan RHI", false, "Fragmented pool, will be recreated in DescriptorSetAllocator afterward");
                 }
                 else 
                 {
