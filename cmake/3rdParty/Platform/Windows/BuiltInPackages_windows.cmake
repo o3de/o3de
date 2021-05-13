@@ -1,4 +1,4 @@
-﻿#
+#
 # All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 # its licensors.
 #
@@ -28,8 +28,8 @@ ly_associate_package(PACKAGE_NAME expat-2.1.0-multiplatform                     
 ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform                                TARGETS zstd                       PACKAGE_HASH 45d466c435f1095898578eedde85acf1fd27190e7ea99aeaa9acfd2f09e12665)
 ly_associate_package(PACKAGE_NAME SQLite-3.32.2-rev3-multiplatform                       TARGETS SQLite                     PACKAGE_HASH dd4d3de6cbb4ce3d15fc504ba0ae0587e515dc89a25228037035fc0aef4831f4)
 ly_associate_package(PACKAGE_NAME SPIRVCross-2020.04.20-rev1-multiplatform               TARGETS SPIRVCross                 PACKAGE_HASH 7c8c0eaa0166c26745c62d2238525af7e27ac058a5db3defdbaec1878e8798dd)
-ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-2020.08.07-rev1-multiplatform TARGETS DirectXShaderCompilerDxc   PACKAGE_HASH 04a6850ce03d4c16e19ed206f7093d885276dfb74047e6aa99f0a834c8b7cc73)
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxcAz-5.0.0_az-rev1-multiplatform TARGETS DirectXShaderCompilerDxcAz PACKAGE_HASH 94f24989a7a371d840b513aa5ffaff02747b3d19b119bc1f899427e29978f753)
+ly_associate_package(PACKAGE_NAME DirectXShaderCompiler-2021.05.05-rev1-windows TARGETS DirectXShaderCompilerDxc   PACKAGE_HASH b2e34c4a19b8a996c1e488aeb83233abe1985b6502ef644516ef692029b98f6d)
 ly_associate_package(PACKAGE_NAME azslc-1.7.20-rev1-multiplatform                        TARGETS azslc                      PACKAGE_HASH 45d55f28bea2ef823ed3204f60df52e5e329f42923923d4555fdbdf3bea0af60)
 ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform                     TARGETS glad                       PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
 ly_associate_package(PACKAGE_NAME lux_core-2.2-rev5-multiplatform                        TARGETS lux_core                   PACKAGE_HASH c8c13cf7bc351643e1abd294d0841b24dee60e51647dff13db7aec396ad1e0b5)
