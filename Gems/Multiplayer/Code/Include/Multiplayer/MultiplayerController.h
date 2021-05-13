@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Include/NetworkEntityHandle.h>
+#include <Multiplayer/NetworkEntityHandle.h>
 #include <AzCore/Math/Aabb.h>
 
 namespace Multiplayer
@@ -83,12 +83,6 @@ namespace Multiplayer
 
         //! Returns the input priority ordering for determining the order of ProcessInput or CreateInput functions.
         virtual InputPriorityOrder GetInputOrder() const = 0;
-
-        //! Queries the rewind system to determine what volume is relevent for a given input, this is very important for performance at scale.
-        //! @param networkInput input structure to process
-        //! @param deltaTime    amount of time the provided input would be integrated over
-        //! @return a world-space aabb representing the volume relevent to the provided input
-        virtual AZ::Aabb GetRewindBoundsForInput(const NetworkInput& networkInput, float deltaTime) const = 0;
 
         //! Base execution for ProcessInput packet, do not call directly.
         //! @param networkInput input structure to process

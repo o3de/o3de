@@ -15,8 +15,9 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
-#include <Include/INetworkTime.h>
-#include <Include/MultiplayerStats.h>
+#include <Multiplayer/INetworkEntityManager.h>
+#include <Multiplayer/INetworkTime.h>
+#include <Multiplayer/MultiplayerStats.h>
 
 namespace AzNetworking
 {
@@ -46,6 +47,7 @@ namespace Multiplayer
     using ConnectionAcquiredEvent = AZ::Event<MultiplayerAgentDatum>;
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using SessionShutdownEvent = AZ::Event<AzNetworking::INetworkInterface*>;
+    using OnConnectFunctor = AZStd::function<NetworkEntityHandle(AzNetworking::IConnection*, MultiplayerAgentDatum)>;
 
     //! IMultiplayer provides insight into the Multiplayer session and its Agents
     class IMultiplayer
@@ -55,25 +57,29 @@ namespace Multiplayer
 
         virtual ~IMultiplayer() = default;
 
-        //! Gets the type of Agent this IMultiplayer impl represents
+        //! Gets the type of Agent this IMultiplayer impl represents.
         //! @return The type of agents represented
         virtual MultiplayerAgentType GetAgentType() const = 0;
 
-        //! Sets the type of this Multiplayer connection and calls any related callback
+        //! Sets the type of this Multiplayer connection and calls any related callback.
         //! @param state The state of this connection
         virtual void InitializeMultiplayer(MultiplayerAgentType state) = 0;
 
-        //! Adds a ConnectionAcquiredEvent Handler which is invoked when a new endpoint connects to the session
+        //! Adds a ConnectionAcquiredEvent Handler which is invoked when a new endpoint connects to the session.
         //! @param handler The SessionInitEvent Handler to add
         virtual void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) = 0;
 
-        //! Adds a SessionInitEvent Handler which is invoked when a new network session starts
+        //! Adds a SessionInitEvent Handler which is invoked when a new network session starts.
         //! @param handler The SessionInitEvent Handler to add
         virtual void AddSessionInitHandler(SessionInitEvent::Handler& handler) = 0;
 
-        //! Adds a SessionShutdownEvent Handler which is invoked when the current network session ends
+        //! Adds a SessionShutdownEvent Handler which is invoked when the current network session ends.
         //! @param handler The SessionShutdownEvent handler to add
         virtual void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) = 0;
+
+        //! Overrides the default connect behaviour with the provided functor.
+        //! @param functor the function to invoke during a new connection event
+        virtual void SetOnConnectFunctor(const OnConnectFunctor& functor) = 0;
 
         //! Sends a packet telling if entity update messages can be sent
         //! @param readyForEntityUpdates Ready for entity updates or not
@@ -86,6 +92,14 @@ namespace Multiplayer
         //!   3. On the client, this will return the most recently replicated server time in ms.
         //! @return the current server time in milliseconds
         virtual AZ::TimeMs GetCurrentHostTimeMs() const = 0;
+
+        //! Returns the network time instance bound to this multiplayer instance.
+        //! @return pointer to the network time instance bound to this multiplayer instance
+        virtual INetworkTime* GetNetworkTime() = 0;
+
+        //! Returns the network entity manager instance bound to this multiplayer instance.
+        //! @return pointer to the network entity manager instance bound to this multiplayer instance
+        virtual INetworkEntityManager* GetNetworkEntityManager() = 0;
 
         //! Returns the gem name associated with the provided component index.
         //! @param  netComponentId the componentId to return the gem name of
@@ -115,6 +129,60 @@ namespace Multiplayer
 
     private:
         MultiplayerStats m_stats;
+    };
+
+    // Convenience helpers
+    inline IMultiplayer* GetMultiplayer()
+    {
+        return AZ::Interface<IMultiplayer>::Get();
+    }
+
+    inline INetworkEntityManager* GetNetworkEntityManager()
+    {
+        IMultiplayer* multiplayer = GetMultiplayer();
+        return (multiplayer != nullptr) ? multiplayer->GetNetworkEntityManager() : nullptr;
+    }
+
+    inline NetworkEntityTracker* GetNetworkEntityTracker()
+    {
+        INetworkEntityManager* networkEntityManager = GetNetworkEntityManager();
+        return (networkEntityManager != nullptr) ? networkEntityManager->GetNetworkEntityTracker() : nullptr;
+    }
+
+    inline NetworkEntityAuthorityTracker* GetNetworkEntityAuthorityTracker()
+    {
+        INetworkEntityManager* networkEntityManager = GetNetworkEntityManager();
+        return (networkEntityManager != nullptr) ? networkEntityManager->GetNetworkEntityAuthorityTracker() : nullptr;
+    }
+
+    inline MultiplayerComponentRegistry* GetMultiplayerComponentRegistry()
+    {
+        INetworkEntityManager* networkEntityManager = GetNetworkEntityManager();
+        return (networkEntityManager != nullptr) ? networkEntityManager->GetMultiplayerComponentRegistry() : nullptr;
+    }
+
+    //! @class ScopedAlterTime
+    //! @brief This is a wrapper that temporarily adjusts global program time for backward reconciliation purposes.
+    class ScopedAlterTime final
+    {
+    public:
+        inline ScopedAlterTime(HostFrameId frameId, AZ::TimeMs timeMs, AzNetworking::ConnectionId connectionId)
+        {
+            INetworkTime* time = GetNetworkTime();
+            m_previousHostFrameId = time->GetHostFrameId();
+            m_previousHostTimeMs = time->GetHostTimeMs();
+            m_previousRewindConnectionId = time->GetRewindingConnectionId();
+            time->AlterTime(frameId, timeMs, connectionId);
+        }
+        inline ~ScopedAlterTime()
+        {
+            INetworkTime* time = GetNetworkTime();
+            time->AlterTime(m_previousHostFrameId, m_previousHostTimeMs, m_previousRewindConnectionId);
+        }
+    private:
+        HostFrameId m_previousHostFrameId = InvalidHostFrameId;
+        AZ::TimeMs m_previousHostTimeMs = AZ::TimeMs{ 0 };
+        AzNetworking::ConnectionId m_previousRewindConnectionId = AzNetworking::InvalidConnectionId;
     };
 
     inline const char* GetEnumString(MultiplayerAgentType value)

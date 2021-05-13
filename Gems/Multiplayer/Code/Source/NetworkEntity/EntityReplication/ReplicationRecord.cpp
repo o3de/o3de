@@ -10,7 +10,7 @@
 *
 */
 
-#include <Source/NetworkEntity/EntityReplication/ReplicationRecord.h>
+#include <Multiplayer/ReplicationRecord.h>
 
 namespace Multiplayer
 {

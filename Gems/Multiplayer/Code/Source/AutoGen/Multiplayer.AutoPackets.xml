@@ -2,10 +2,10 @@
 
 <PacketGroup Name="MultiplayerPackets" PacketStart="CorePackets::PacketType::MAX">
     <Include File="AzNetworking/AutoGen/CorePackets.AutoPackets.h" />
-    <Include File="Include/MultiplayerTypes.h" />
-    <Include File="Include/INetworkTime.h" />
-    <Include File="Source/NetworkEntity/NetworkEntityRpcMessage.h" />
-    <Include File="Source/NetworkEntity/NetworkEntityUpdateMessage.h" />
+    <Include File="Multiplayer/MultiplayerTypes.h" />
+    <Include File="Multiplayer/INetworkTime.h" />
+    <Include File="Multiplayer/NetworkEntityRpcMessage.h" />
+    <Include File="Multiplayer/NetworkEntityUpdateMessage.h" />
 
     <Packet Name="Connect" Desc="Client connection packet, on success the server will reply with an Accept">
         <Member Type="uint16_t" Name="networkProtocolVersion" Init="0" />

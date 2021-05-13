@@ -20,11 +20,11 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
-#include <Source/NetworkEntity/EntityReplication/ReplicationRecord.h>
-#include <Include/NetworkEntityHandle.h>
-#include <Include/IMultiplayerComponentInput.h>
-#include <Include/INetworkTime.h>
-#include <Include/MultiplayerTypes.h>
+#include <Multiplayer/ReplicationRecord.h>
+#include <Multiplayer/NetworkEntityHandle.h>
+#include <Multiplayer/IMultiplayerComponentInput.h>
+#include <Multiplayer/INetworkTime.h>
+#include <Multiplayer/MultiplayerTypes.h>
 #include <AzCore/EBus/Event.h>
 
 namespace Multiplayer
@@ -73,7 +73,6 @@ namespace Multiplayer
         bool IsProcessingInput() const;
         void CreateInput(NetworkInput& networkInput, float deltaTime);
         void ProcessInput(NetworkInput& networkInput, float deltaTime);
-        AZ::Aabb GetRewindBoundsForInput(const NetworkInput& networkInput, float deltaTime) const;
 
         bool HandleRpcMessage(AzNetworking::IConnection* invokingConnection, NetEntityRole remoteRole, NetworkEntityRpcMessage& message);
         bool HandlePropertyChangeMessage(AzNetworking::ISerializer& serializer, bool notifyChanges = true);

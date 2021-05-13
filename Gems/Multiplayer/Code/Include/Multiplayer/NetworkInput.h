@@ -12,9 +12,9 @@
 
 #pragma once
 
-#include <Include/IMultiplayerComponentInput.h>
-#include <Include/INetworkTime.h>
-#include <Include/NetworkEntityHandle.h>
+#include <Multiplayer/IMultiplayerComponentInput.h>
+#include <Multiplayer/INetworkTime.h>
+#include <Multiplayer/NetworkEntityHandle.h>
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 
 namespace Multiplayer

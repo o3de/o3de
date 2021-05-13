@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Source/NetworkInput/NetworkInput.h>
+#include <Multiplayer/NetworkInput.h>
 
 namespace Multiplayer
 {
