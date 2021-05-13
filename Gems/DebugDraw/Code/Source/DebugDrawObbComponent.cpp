@@ -71,7 +71,7 @@ namespace DebugDraw
 
     void DebugDrawObbComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        (void)incompatible;
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void DebugDrawObbComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

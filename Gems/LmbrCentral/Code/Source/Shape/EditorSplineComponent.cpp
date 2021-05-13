@@ -44,6 +44,7 @@ namespace LmbrCentral
     {
         incompatible.push_back(AZ_CRC("VariableVertexContainerService", 0x70c58740));
         incompatible.push_back(AZ_CRC("FixedVertexContainerService", 0x83f1bbf2));
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void EditorSplineComponent::Reflect(AZ::ReflectContext* context)

@@ -15,7 +15,7 @@
 #include <AzCore/Time/ITime.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/array.h>
-#include <Include/MultiplayerTypes.h>
+#include <Multiplayer/MultiplayerTypes.h>
 
 namespace AzNetworking
 {

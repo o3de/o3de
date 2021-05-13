@@ -14,7 +14,7 @@
 
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
-#include <Include/MultiplayerTypes.h>
+#include <Multiplayer/MultiplayerTypes.h>
 
 namespace Multiplayer
 {
