@@ -76,9 +76,23 @@ namespace Multiplayer
         {
             serializeContext->Class<MultiplayerSystemComponent, AZ::Component>()
                 ->Version(1);
-        }
 
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            serializeContext->Class<HostId>()
+                ->Version(1);
+            serializeContext->Class<NetEntityId>()
+                ->Version(1);
+            serializeContext->Class<NetComponentId>()
+                ->Version(1);
+            serializeContext->Class<PropertyIndex>()
+                ->Version(1);
+            serializeContext->Class<RpcIndex>()
+                ->Version(1);
+            serializeContext->Class<ClientInputId>()
+                ->Version(1);
+            serializeContext->Class<HostFrameId>()
+                ->Version(1);
+        }
+        else if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<HostId>();
             behaviorContext->Class<NetEntityId>();
