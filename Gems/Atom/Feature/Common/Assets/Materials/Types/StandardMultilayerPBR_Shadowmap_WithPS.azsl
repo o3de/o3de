@@ -53,7 +53,7 @@ struct VertexOutput
     float3 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 
     float3 m_worldPosition : UV0;
-    float3 m_blendMask : UV3;
+    float3 m_blendWeights : UV3;
 };
 
 VertexOutput MainVS(VertexInput IN)
@@ -79,11 +79,11 @@ VertexOutput MainVS(VertexInput IN)
     
     if(o_blendMask_isBound)
     {
-        OUT.m_blendMask = IN.m_optional_blendMask.rgb;
+        OUT.m_blendWeights = IN.m_optional_blendMask.rgb;
     }
     else
     {
-        OUT.m_blendMask = float3(1,1,1);
+        OUT.m_blendWeights = float3(1,1,1);
     }
 
     return OUT;

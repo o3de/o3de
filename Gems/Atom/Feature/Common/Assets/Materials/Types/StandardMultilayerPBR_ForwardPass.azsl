@@ -94,7 +94,7 @@ struct VSOutput
     // Extended fields (only referenced in this azsl file)...
     float2 m_uv[UvSetCount] : UV1;
     
-    float3 m_blendMask : UV7;
+    float3 m_blendWeights : UV7;
 };
 
 #include <Atom/Features/Vertex/VertexHelper.azsli>
@@ -112,11 +112,11 @@ VSOutput ForwardPassVS(VSInput IN)
 
     if(o_blendMask_isBound)
     {
-        OUT.m_blendMask = IN.m_optional_blendMask.rgb;
+        OUT.m_blendWeights = IN.m_optional_blendMask.rgb;
     }
     else
     {
-        OUT.m_blendMask = float3(1,1,1);
+        OUT.m_blendWeights = float3(1,1,1);
     }
     
     // Shadow coords will be calculated in the pixel shader in this case
@@ -332,13 +332,13 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     
     // ------- Debug Modes -------
 
-    if(o_debugDrawMode == DebugDrawMode::BlendSource)
+    if(o_debugDrawMode == DebugDrawMode::BlendMaskValues)
     {
-        float3 blendSource = GetBlendSourceValues(IN.m_uv[MaterialSrg::m_blendMaskUvIndex]);
-        return DebugOutput(blendSource);
+        float3 blendMaskValues = GetBlendMaskValues(IN.m_uv[MaterialSrg::m_blendMaskUvIndex]);
+        return DebugOutput(blendMaskValues);
     }
     
-    if(o_debugDrawMode == DebugDrawMode::DepthMaps)
+    if(o_debugDrawMode == DebugDrawMode::DisplacementMaps)
     {
         float depth = GetNormalizedDepth(-MaterialSrg::m_displacementMax, -MaterialSrg::m_displacementMin, IN.m_uv[MaterialSrg::m_parallaxUvIndex], float2(0,0), float2(0,0));
         return DebugOutput(float3(depth,depth,depth));
@@ -434,7 +434,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         
     // ------- Combine Albedo, roughness, specular, roughness ---------
 
-    float3 baseColor = BlendLayers(lightingInputLayer1.m_baseColor, lightingInputLayer2.m_baseColor, lightingInputLayer3.m_baseColor, blendWeights);
+    float3 baseColor = BlendLayers(layer1_baseColor, layer2_baseColor, layer3_baseColor, blendMaskValues);
     float3 specularF0Factor = BlendLayers(lightingInputLayer1.m_specularF0Factor, lightingInputLayer2.m_specularF0Factor, lightingInputLayer3.m_specularF0Factor, blendWeights);
     float3 metallic = BlendLayers(lightingInputLayer1.m_metallic, lightingInputLayer2.m_metallic, lightingInputLayer3.m_metallic, blendWeights);
     
