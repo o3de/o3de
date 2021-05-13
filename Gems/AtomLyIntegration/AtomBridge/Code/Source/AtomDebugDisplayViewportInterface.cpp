@@ -244,9 +244,6 @@ namespace AZ::AtomBridge
     }
     ////////////////////////////////////////////////////////////////////////
 
-    // Partial implementation of the DebugDisplayRequestBus on Atom. 
-    // Commented out function prototypes are waiting to be implemented.
-    // work tracked in [ATOM-3459]
     AtomDebugDisplayViewportInterface::AtomDebugDisplayViewportInterface(AZ::RPI::ViewportContextPtr viewportContextPtr)
     {
         ResetRenderState();
@@ -272,9 +269,8 @@ namespace AZ::AtomBridge
         InitInternal(scene, nullptr);
     }
 
-    void AtomDebugDisplayViewportInterface::InitInternal(RPI::Scene* scene, AZ::RPI::ViewportContextPtr viewportContextPtr)
+    void AtomDebugDisplayViewportInterface::UpdateAuxGeom(RPI::Scene* scene, AZ::RPI::View* view)
     {
-        AzFramework::DebugDisplayRequestBus::Handler::BusDisconnect(m_viewportId);
         if (!scene)
         {
             m_auxGeomPtr = nullptr;
@@ -286,20 +282,46 @@ namespace AZ::AtomBridge
             m_auxGeomPtr = nullptr;
             return;
         }
-        if (m_defaultInstance)
+        // default instance draws to all viewports in the default scene
+        if (m_defaultInstance || !view)
         {
             m_auxGeomPtr = auxGeomFP->GetDrawQueue();
         }
         else
         {
-            m_auxGeomPtr = auxGeomFP->GetOrCreateDrawQueueForView(viewportContextPtr->GetDefaultView().get());
+            // cache the aux geom draw interface for the current view (aka camera)
+            m_auxGeomPtr = auxGeomFP->GetOrCreateDrawQueueForView(view);
         }
+    }
+
+    void AtomDebugDisplayViewportInterface::InitInternal(RPI::Scene* scene, AZ::RPI::ViewportContextPtr viewportContextPtr)
+    {
+        AzFramework::DebugDisplayRequestBus::Handler::BusDisconnect(m_viewportId);
+        UpdateAuxGeom(scene, viewportContextPtr ? viewportContextPtr->GetDefaultView().get() : nullptr);
         AzFramework::DebugDisplayRequestBus::Handler::BusConnect(m_viewportId);
+        if (!m_defaultInstance) // only the per viewport instances need to listen for viewport changes
+        {
+            AZ::RPI::ViewportContextIdNotificationBus::Handler::BusConnect(viewportContextPtr->GetId());
+        }
+    }
+
+
+    void AtomDebugDisplayViewportInterface::OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view)
+    {
+        ResetRenderState();
+        if (!m_defaultInstance)
+        {
+            // handle viewport update (view change, scene change, etc
+            auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+            AZ::RPI::ViewportContextPtr viewportContextPtr = viewportContextManager->GetViewportContextById(m_viewportId);
+            UpdateAuxGeom(viewportContextPtr->GetRenderScene().get(), viewportContextPtr->GetDefaultView().get());
+        }
     }
 
     AtomDebugDisplayViewportInterface::~AtomDebugDisplayViewportInterface()
     {
         AzFramework::DebugDisplayRequestBus::Handler::BusDisconnect(m_viewportId);
+        AZ::RPI::ViewportContextIdNotificationBus::Handler::BusDisconnect();
         m_viewportId = AzFramework::InvalidViewportId;
         m_auxGeomPtr = nullptr;
     }
@@ -484,9 +506,10 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            AZStd::vector<AZ::Vector3> transformedVertices = ToWorldSpacePosition(vertices);
             AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
-            drawArgs.m_verts = vertices.data();
-            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(vertices.size());
+            drawArgs.m_verts = transformedVertices.data();
+            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(transformedVertices.size());
             drawArgs.m_colors = &color;
             drawArgs.m_colorCount = 1;
             drawArgs.m_opacityType = m_rendState.m_opacityType;
@@ -504,9 +527,10 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            AZStd::vector<AZ::Vector3> transformedVertices = ToWorldSpacePosition(vertices);
             AZ::RPI::AuxGeomDraw::AuxGeomDynamicIndexedDrawArguments drawArgs;
-            drawArgs.m_verts = vertices.data();
-            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(vertices.size());
+            drawArgs.m_verts = transformedVertices.data();
+            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(transformedVertices.size());
             drawArgs.m_indices = indices.data();
             drawArgs.m_indexCount = aznumeric_cast<uint32_t>(indices.size());
             drawArgs.m_colors = &color;
@@ -637,9 +661,10 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            AZStd::vector<AZ::Vector3> transformedLines = ToWorldSpacePosition(lines);
             AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
-            drawArgs.m_verts = lines.data();
-            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(lines.size());
+            drawArgs.m_verts = transformedLines.data();
+            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(transformedLines.size());
             drawArgs.m_colors = &color;
             drawArgs.m_colorCount = 1;
             drawArgs.m_size = m_rendState.m_lineWidth;
@@ -906,13 +931,14 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
             const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
             const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
             m_auxGeomPtr->DrawCylinder(
                 worldCenter, 
                 worldAxis, 
-                radius, 
-                height, 
+                scale * radius, 
+                scale * height, 
                 m_rendState.m_color, 
                 AZ::RPI::AuxGeomDraw::DrawStyle::Line,
                 m_rendState.m_depthTest,
@@ -932,13 +958,14 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
             const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
             const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
             m_auxGeomPtr->DrawCylinder(
                 worldCenter, 
                 worldAxis, 
-                radius, 
-                height, 
+                scale * radius, 
+                scale * height, 
                 m_rendState.m_color, 
                 drawShaded ? AZ::RPI::AuxGeomDraw::DrawStyle::Shaded : AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
                 m_rendState.m_depthTest,
@@ -1042,10 +1069,10 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
-
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
             m_auxGeomPtr->DrawSphere(
                 ToWorldSpacePosition(pos), 
-                radius, 
+                scale * radius, 
                 m_rendState.m_color, 
                 AZ::RPI::AuxGeomDraw::DrawStyle::Line,
                 m_rendState.m_depthTest,
@@ -1136,12 +1163,13 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
             const AZ::Vector3 worldPos = ToWorldSpacePosition(pos);
             const AZ::Vector3 worldDir = ToWorldSpaceVector(dir);
             m_auxGeomPtr->DrawDisk(
                 worldPos, 
                 worldDir, 
-                radius, 
+                scale * radius, 
                 m_rendState.m_color,
                 AZ::RPI::AuxGeomDraw::DrawStyle::Shaded,
                 m_rendState.m_depthTest,
@@ -1234,8 +1262,15 @@ namespace AZ::AtomBridge
         int srcOffsetX [[maybe_unused]], 
         int srcOffsetY [[maybe_unused]])
     {
+        // abort draw if draw is invalid or font query interface is missing.
+        if (!text || size == 0.0f || !AZ::Interface<AzFramework::FontQueryInterface>::Get())
+        {
+            return;
+        }
+
         AzFramework::FontDrawInterface* fontDrawInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get()->GetDefaultFontDrawInterface();
-        if (!fontDrawInterface || !text || size == 0.0f)
+        // abort draw if font draw interface is missing
+        if (!fontDrawInterface)
         {
             return;
         }
@@ -1263,13 +1298,15 @@ namespace AZ::AtomBridge
         const char* text, 
         bool center)
     {
-        auto fontQueryInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get();
-        if (!fontQueryInterface)
+        // abort draw if draw is invalid or font query interface is missing.
+        if (!text || size == 0.0f || !AZ::Interface<AzFramework::FontQueryInterface>::Get())
         {
             return;
         }
-        AzFramework::FontDrawInterface* fontDrawInterface = fontQueryInterface->GetDefaultFontDrawInterface();
-        if (!fontDrawInterface || !text || size == 0.0f)
+
+        AzFramework::FontDrawInterface* fontDrawInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get()->GetDefaultFontDrawInterface();
+        // abort draw if font draw interface is missing
+        if (!fontDrawInterface)
         {
             return;
         }
@@ -1480,6 +1517,26 @@ namespace AZ::AtomBridge
     const AZ::Matrix3x4& AtomDebugDisplayViewportInterface::GetCurrentTransform() const
     {
         return m_rendState.m_transformStack[m_rendState.m_currentTransform];
+    }
+
+    AZStd::vector<AZ::Vector3> AtomDebugDisplayViewportInterface::ToWorldSpacePosition(const AZStd::vector<AZ::Vector3>& positions) const
+    {
+        AZStd::vector<AZ::Vector3> transformedPositions;
+        transformedPositions.resize_no_construct(positions.size());
+        AZStd::transform(positions.begin(), positions.end(), transformedPositions.begin(), [this](const AZ::Vector3& position) {
+            return ToWorldSpacePosition(position);
+        });
+        return transformedPositions;
+    }
+
+    AZStd::vector<AZ::Vector3> AtomDebugDisplayViewportInterface::ToWorldSpaceVector(const AZStd::vector<AZ::Vector3>& vectors) const
+    {
+        AZStd::vector<AZ::Vector3> transformedVectors;
+        transformedVectors.resize_no_construct(vectors.size());
+        AZStd::transform(vectors.begin(), vectors.end(), transformedVectors.begin(), [this](const AZ::Vector3& vector) {
+            return ToWorldSpaceVector(vector);
+        });
+        return transformedVectors;
     }
 
     AZ::RPI::ViewportContextPtr AtomDebugDisplayViewportInterface::GetViewportContext() const

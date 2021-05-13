@@ -23,6 +23,8 @@ void PrintHelp()
     AZ_Printf("Help", "Serialize Context Tool\n");
     AZ_Printf("Help", "  <action> [-config] <action arguments>*\n");
     AZ_Printf("Help", "  [opt] -config=<path>: optional path to application's config file. Default is 'config/editor.xml'.\n");
+    AZ_Printf("Help", "  [opt] -specializations=<prefix>: <comma or semicolon>-separated list of optional Registry project\n");
+    AZ_Printf("Help", "         specializations, such as 'editor' or 'game' or 'editor;test'.  Default is none. \n");
     AZ_Printf("Help", "\n");
     AZ_Printf("Help", "  'help': Print this help\n");
     AZ_Printf("Help", "    example: 'help'\n");
@@ -81,11 +83,7 @@ int main(int argc, char** argv)
     bool result = false;
     Application application(argc, argv);
     AZ::ComponentApplication::StartupParameters startupParameters;
-    startupParameters.m_loadDynamicModules = false;
-    application.Create({}, startupParameters);
-    // Load the DynamicModules after the Application starts to prevent Gem System Components
-    // from activating
-    application.LoadDynamicModules();
+    application.Start({}, startupParameters);
 
     const AZ::CommandLine* commandLine = application.GetAzCommandLine();
     if (commandLine->GetNumMiscValues() < 1)

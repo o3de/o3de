@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C100000
 # Test Case Title : Check that Gravity works
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/100000
+
 
 
 # fmt:off

@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID : C4982802
 Test Case Title : Verify that the shape capsule can be selected from drop downlist and the value for its height and radius can be set after that
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4982802
+
 """
 
 

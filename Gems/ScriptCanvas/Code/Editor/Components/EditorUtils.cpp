@@ -58,7 +58,7 @@ namespace ScriptCanvasEditor
             }
             else
             {
-                resultHash = ScriptCanvas::NodeUtils::ConstructMethodNodeIdentifier(classMethodTreeItem->GetClassMethodName(), classMethodTreeItem->GetMethodName());
+                resultHash = ScriptCanvas::NodeUtils::ConstructMethodNodeIdentifier(classMethodTreeItem->GetClassMethodName(), classMethodTreeItem->GetMethodName(), classMethodTreeItem->GetPropertyStatus());
             }
         }
         else if (auto globalMethodTreeItem = azrtti_cast<const GlobalMethodEventPaletteTreeItem*>(treeItem); globalMethodTreeItem != nullptr)

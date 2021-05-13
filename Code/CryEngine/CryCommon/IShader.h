@@ -24,7 +24,9 @@
 #endif
 
 #include "smartptr.h"
-#include <IFlares.h> // <> required for Interfuscator
+#include <IFuncVariable.h> // <> required for Interfuscator
+#include <IXml.h> // <> required for Interfuscator
+#include "smartptr.h"
 #include "VertexFormats.h"
 #include <Vertex.h>
 #include <AzCore/Casting/numeric_cast.h>
@@ -2828,7 +2830,6 @@ struct SRenderLight
         m_ObjMatrix.SetIdentity();
         m_BaseObjMatrix.SetIdentity();
         m_sName = "";
-        m_pSoftOccQuery = NULL;
         m_pLightAnim = NULL;
         m_fAreaWidth = 1;
         m_fAreaHeight = 1;
@@ -2884,11 +2885,6 @@ struct SRenderLight
         return m_pLightImage ? m_pLightImage : NULL;
     }
 
-    IOpticsElementBase* GetLensOpticsElement() const
-    {
-        return m_pLensOpticsElement;
-    }
-
     void SetOpticsParams(const SOpticsInstanceParameters& params)
     {
         m_opticsParams = params;
@@ -2897,24 +2893,6 @@ struct SRenderLight
     const SOpticsInstanceParameters& GetOpticsParams() const
     {
         return m_opticsParams;
-    }
-
-    void SetLensOpticsElement(IOpticsElementBase* pOptics)
-    {
-        if (m_pLensOpticsElement == pOptics)
-        {
-            return;
-        }
-        if (pOptics && pOptics->GetType() != eFT_Root)
-        {
-            return;
-        }
-        SAFE_RELEASE(m_pLensOpticsElement);
-        m_pLensOpticsElement = pOptics;
-        if (m_pLensOpticsElement)
-        {
-            m_pLensOpticsElement->AddRef();
-        }
     }
 
     void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const { /*LATER*/}
@@ -2937,14 +2915,6 @@ struct SRenderLight
         {
             m_pSpecularCubemap->AddRef();
         }
-        if (m_pLensOpticsElement)
-        {
-            m_pLensOpticsElement->AddRef();
-        }
-        if (m_pSoftOccQuery)
-        {
-            m_pSoftOccQuery->AddRef();
-        }
         if (m_pLightAnim)
         {
             m_pLightAnim->AddRef();
@@ -2961,8 +2931,6 @@ struct SRenderLight
         SAFE_RELEASE(m_pLightImage);
         SAFE_RELEASE(m_pDiffuseCubemap);
         SAFE_RELEASE(m_pSpecularCubemap);
-        SAFE_RELEASE(m_pLensOpticsElement);
-        SAFE_RELEASE(m_pSoftOccQuery);
         SAFE_RELEASE(m_pLightAnim);
         SAFE_RELEASE(m_pLightAttenMap);
     }
@@ -3046,8 +3014,6 @@ struct SRenderLight
     const char* m_sName;                            // Optional name of the light source.
     SShaderItem m_Shader;                           // Shader item
     CRenderObject* m_pObject[MAX_RECURSION_LEVELS]; // Object for light coronas and light flares.
-    IOpticsElementBase* m_pLensOpticsElement;       // Optics element for this shader instance
-    ISoftOcclusionQuery* m_pSoftOccQuery;
     ILightAnimWrapper* m_pLightAnim;
 
     Matrix34 m_BaseObjMatrix;
@@ -3146,9 +3112,7 @@ public:
         m_fShadowSlopeBias = dl.m_fShadowSlopeBias;
         m_fShadowResolutionScale = dl.m_fShadowResolutionScale;
         m_fHDRDynamic = dl.m_fHDRDynamic;
-        m_pLensOpticsElement = dl.m_pLensOpticsElement;
         m_LensOpticsFrustumAngle = dl.m_LensOpticsFrustumAngle;
-        m_pSoftOccQuery = dl.m_pSoftOccQuery;
         m_fLightFrustumAngle = dl.m_fLightFrustumAngle;
         m_fProjectorNearPlane = dl.m_fProjectorNearPlane;
         m_Flags = dl.m_Flags;
@@ -3413,6 +3377,6 @@ struct SShaderGraphBlock
 typedef std::vector<SShaderGraphBlock*> FXShaderGraphBlocks;
 typedef FXShaderGraphBlocks::iterator FXShaderGraphBlocksItor;
 
-#include "RendElement.h"
+#include <CryCommon/StaticInstance.h>
 
 #endif // CRYINCLUDE_CRYCOMMON_ISHADER_H

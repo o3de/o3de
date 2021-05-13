@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C18243593
 # Test Case Title : Check that fixed/hinge/ball joints allow constraints to global frame
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/18243593
+
 
 # fmt: off
 class Tests:

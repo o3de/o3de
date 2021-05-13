@@ -172,6 +172,13 @@ public:
             return *this;
         }
 
+        template<typename Fn>
+        ActionWrapper& RegisterUpdateCallback(Fn&& fn)
+        {
+            m_actionManager->RegisterUpdateCallback(m_action->data().toInt(), AZStd::forward<Fn>(fn));
+            return *this;
+        }
+
     private:
         friend ActionManager;
         friend DynamicMenu;
@@ -321,7 +328,14 @@ public:
     void DetachOverride() override;
 
     template<typename T>
-    void RegisterUpdateCallback(int id, T* object, void (T::* method)(QAction*))
+    void RegisterUpdateCallback(int id, T* object, void (T::*method)(QAction*))
+    {
+        Q_ASSERT(m_actions.contains(id));
+        m_updateCallbacks[id] = [action = m_actions.value(id), object, method] { AZStd::invoke(method, object, action); };
+    }
+
+    template<typename Fn>
+    void RegisterUpdateCallback(int id, Fn&& fn)
     {
         unsigned size = m_shortcutDispatcher->m_all_actions.size();
         for (unsigned i = 0; i < size; i++)
@@ -334,9 +348,13 @@ public:
         }
 
         Q_ASSERT(m_actions.contains(id));
+<<<<<<< HEAD
 
         return;
 
+=======
+        m_updateCallbacks[id] = [action = m_actions.value(id), fn] { fn(action); };
+>>>>>>> 112f0d3448c2d8aa2fcf6097b11b0080abd6ac1f
     }
 
     template<typename T>

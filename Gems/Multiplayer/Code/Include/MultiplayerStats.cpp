@@ -14,6 +14,12 @@
 
 namespace Multiplayer
 {
+    MultiplayerStats::Metric::Metric()
+    {
+        AZStd::uninitialized_fill_n(m_callHistory.data(), RingbufferSamples, 0);
+        AZStd::uninitialized_fill_n(m_byteHistory.data(), RingbufferSamples, 0);
+    }
+
     void MultiplayerStats::ReserveComponentStats(NetComponentId netComponentId, uint16_t propertyCount, uint16_t rpcCount)
     {
         const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
@@ -71,6 +77,29 @@ namespace Multiplayer
     {
         m_totalHistoryTimeMs = metricFrameTimeMs * static_cast<AZ::TimeMs>(RingbufferSamples);
         m_recordMetricIndex = ++m_recordMetricIndex % RingbufferSamples;
+        for (ComponentStats& componentStats : m_componentStats)
+        {
+            for (Metric& metric : componentStats.m_propertyUpdatesSent)
+            {
+                metric.m_callHistory[m_recordMetricIndex] = 0;
+                metric.m_byteHistory[m_recordMetricIndex] = 0;
+            }
+            for (Metric& metric : componentStats.m_propertyUpdatesRecv)
+            {
+                metric.m_callHistory[m_recordMetricIndex] = 0;
+                metric.m_byteHistory[m_recordMetricIndex] = 0;
+            }
+            for (Metric& metric : componentStats.m_rpcsSent)
+            {
+                metric.m_callHistory[m_recordMetricIndex] = 0;
+                metric.m_byteHistory[m_recordMetricIndex] = 0;
+            }
+            for (Metric& metric : componentStats.m_rpcsRecv)
+            {
+                metric.m_callHistory[m_recordMetricIndex] = 0;
+                metric.m_byteHistory[m_recordMetricIndex] = 0;
+            }
+        }
     }
 
     static void CombineMetrics(MultiplayerStats::Metric& outArg1, const MultiplayerStats::Metric& arg2)

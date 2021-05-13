@@ -13,6 +13,9 @@
 #include "EditorTransformComponentSelection.h"
 
 #include <AzCore/std/algorithm.h>
+#include <AzCore/Math/Matrix3x3.h>
+#include <AzCore/Math/Matrix3x4.h>
+#include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/VectorConversions.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Viewport/CameraState.h>
@@ -316,14 +319,14 @@ namespace AzToolsFramework
 
     template<typename EntitySelectFuncType, typename EntityIdContainer, typename Compare>
     static void BoxSelectAddRemoveToEntitySelection(
-        const AZStd::optional<QRect>& boxSelect, const QPoint& screenPosition, const AZ::EntityId visibleEntityId,
+        const AZStd::optional<QRect>& boxSelect, const AzFramework::ScreenPoint& screenPosition, const AZ::EntityId visibleEntityId,
         const EntityIdContainer& incomingEntityIds, EntityIdContainer& outgoingEntityIds,
         EditorTransformComponentSelection& entityTransformComponentSelection,
         EntitySelectFuncType selectFunc1, EntitySelectFuncType selectFunc2, Compare outgoingCheck)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-        if (boxSelect->contains(screenPosition))
+        if (boxSelect->contains(ViewportInteraction::QPointFromScreenPoint(screenPosition)))
         {
             const auto entityIt = incomingEntityIds.find(visibleEntityId);
 
@@ -389,7 +392,7 @@ namespace AzToolsFramework
                 const AZ::EntityId entityId = entityDataCache.GetVisibleEntityId(entityCacheIndex);
                 const AZ::Vector3& entityPosition = entityDataCache.GetVisibleEntityPosition(entityCacheIndex);
 
-                const QPoint screenPosition = GetScreenPosition(viewportId, entityPosition);
+                const AzFramework::ScreenPoint screenPosition = GetScreenPosition(viewportId, entityPosition);
 
                 if (currentKeyboardModifiers.Ctrl())
                 {
@@ -927,7 +930,7 @@ namespace AzToolsFramework
         ViewportInteraction::MainEditorViewportInteractionRequestBus::EventResult(
             worldSurfacePosition, viewportId,
             &ViewportInteraction::MainEditorViewportInteractionRequestBus::Events::PickTerrain,
-            ViewportInteraction::QPointFromScreenPoint(mouseInteraction.m_mousePick.m_screenCoordinates));
+            mouseInteraction.m_mousePick.m_screenCoordinates);
 
         // convert to local space - snap if enabled
         const GridSnapParameters gridSnapParams = GridSnapSettings(viewportId);

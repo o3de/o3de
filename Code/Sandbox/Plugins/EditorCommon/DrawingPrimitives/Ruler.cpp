@@ -101,7 +101,7 @@ namespace DrawingPrimitives
 
     void DrawTicks(const std::vector<STick>& ticks, QPainter& painter, const QPalette& palette, const STickOptions& options)
     {
-        QColor midDark = Interpolate(palette.color(QPalette::Dark), palette.color(QPalette::Button), 0.5f);
+        QColor midDark = DrawingPrimitives::Interpolate(palette.color(QPalette::Dark), palette.color(QPalette::Button), 0.5f);
         painter.setPen(QPen(midDark));
 
         const int height = options.m_rect.height();
@@ -149,13 +149,13 @@ namespace DrawingPrimitives
             painter.fillRect(shadowRect, upperBrush);
         }
 
-        painter.fillRect(options.m_rect, Interpolate(palette.color(QPalette::Button), palette.color(QPalette::Midlight), 0.25f));
+        painter.fillRect(options.m_rect, DrawingPrimitives::Interpolate(palette.color(QPalette::Button), palette.color(QPalette::Midlight), 0.25f));
         if (options.m_drawBackgroundCallback)
         {
             options.m_drawBackgroundCallback();
         }
 
-        QColor midDark = Interpolate(palette.color(QPalette::Dark), palette.color(QPalette::Button), 0.5f);
+        QColor midDark = DrawingPrimitives::Interpolate(palette.color(QPalette::Dark), palette.color(QPalette::Button), 0.5f);
         painter.setPen(QPen(midDark));
 
         QFont font;

@@ -42,7 +42,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Network/SocketConnection.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/Application/Ticker.h>
@@ -67,7 +66,6 @@ AZ_POP_DISABLE_WARNING
 #include "AssetImporter/AssetImporterManager/AssetImporterDragAndDropHandler.h"
 #include "CryEdit.h"
 #include "Controls/ConsoleSCB.h"
-#include "Grid.h"
 #include "ViewManager.h"
 #include "CryEditDoc.h"
 #include "ToolBox.h"
@@ -79,6 +77,7 @@ AZ_POP_DISABLE_WARNING
 #include "Core/QtEditorApplication.h"
 #include "UndoDropDown.h"
 #include "CVarMenu.h"
+#include "EditorViewportSettings.h"
 
 #include "KeyboardCustomizationSettings.h"
 #include "CustomizeKeyboardDialog.h"
@@ -91,14 +90,11 @@ AZ_POP_DISABLE_WARNING
 
 #include "TrackView/TrackViewDialog.h"
 #include "ErrorReportDialog.h"
-#include "TimeOfDayDialog.h"
 
 #include "Dialogs/PythonScriptsDialog.h"
-#include "EngineSettingsManager.h"
 
 #include "AzAssetBrowser/AzAssetBrowserWindow.h"
 #include "AssetEditor/AssetEditorWindow.h"
-#include "GridSettingsDialog.h"
 #include "ActionManager.h"
 
 // uncomment this to show thumbnail demo widget
@@ -123,12 +119,6 @@ static const char* g_viewPaneAttributeName = "ViewPaneName"; //Name of the curre
 static const char* g_openLocationAttributeName = "OpenLocation"; //Indicates where the current view pane is opened from
 
 static const char* g_assetImporterName = "AssetImporter";
-
-static const char* g_snapToGridEnabled = "mainwindow/snapGridEnabled";
-static const char* g_snapToGridSize = "mainwindow/snapGridSize";
-static const char* g_snapAngleEnabled = "mainwindow/snapAngleEnabled";
-static const char* g_snapAngle = "mainwindow/snapAngle";
-static const char* g_terrainFollow = "mainwindow/terrainFollow";
 
 class CEditorOpenViewCommand
     : public _i_reference_target_t
@@ -309,10 +299,8 @@ namespace
 
 class SnapToWidget
     : public QWidget
-    , public CGridSettingsDialog::NotificationBus::Handler
 {
 public:
-
     typedef AZStd::function<void(double)> SetValueCallback;
     typedef AZStd::function<double()> GetValueCallback;
 
@@ -336,25 +324,18 @@ public:
         m_spinBox->setEnabled(defaultAction->isChecked());
         m_spinBox->setMinimum(1e-2f);
 
-        OnGridValuesUpdated();
+        {
+            QSignalBlocker signalBlocker(m_spinBox);
+            m_spinBox->setValue(m_getValueCallback());
+        }
 
         QObject::connect(m_spinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this, &SnapToWidget::OnValueChanged);
         QObject::connect(defaultAction, &QAction::changed, this, &SnapToWidget::OnActionChanged);
-
-        CGridSettingsDialog::NotificationBus::Handler::BusConnect();
     }
 
     void SetIcon(QIcon icon)
     {
         m_toolButton->setIcon(icon);
-    }
-
-    void OnGridValuesUpdated() override
-    {
-        // Blocking signals to not trigger the valueChanged callback when we set the value on the spin box.
-        QSignalBlocker signalBlocker(m_spinBox);
-        double value = m_getValueCallback();
-        m_spinBox->setValue(value);
     }
 
 protected:
@@ -544,7 +525,6 @@ void MainWindow::Initialize()
     RegisterStdViewClasses();
     InitCentralWidget();
 
-    LoadConfig();
     InitActions();
 
     // load toolbars ("shelves") and macros
@@ -674,31 +654,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
     QMainWindow::closeEvent(event);
 }
 
-void MainWindow::LoadConfig()
-{
-    CGrid* grid = gSettings.pGrid;
-    Q_ASSERT(grid);
-    bool terrainValue;
-
-    ReadConfigValue(g_snapAngleEnabled, grid->bAngleSnapEnabled);
-    ReadConfigValue(g_snapAngle, grid->angleSnap);
-    ReadConfigValue(g_snapToGridEnabled, grid->bEnabled);
-    ReadConfigValue(g_snapToGridSize, grid->size);
-    ReadConfigValue(g_terrainFollow, terrainValue);
-    GetIEditor()->SetTerrainAxisIgnoreObjects(terrainValue);
-}
-
 void MainWindow::SaveConfig()
 {
-    CGrid* grid = gSettings.pGrid;
-    Q_ASSERT(grid);
-
-    m_settings.setValue(g_snapAngleEnabled, grid->bAngleSnapEnabled);
-    m_settings.setValue(g_snapAngle, grid->angleSnap);
-    m_settings.setValue(g_snapToGridEnabled, grid->bEnabled);
-    m_settings.setValue(g_snapToGridSize, grid->size);
-    m_settings.setValue(g_terrainFollow, GetIEditor()->IsTerrainAxisIgnoreObjects());
-
     m_settings.setValue("mainWindowState", saveState());
     QtViewPaneManager::instance()->SaveLayout();
     if (m_pLayoutWnd)
@@ -731,6 +688,7 @@ void MainWindow::InitActions()
     auto cryEdit = CCryEditApp::instance();
     cryEdit->RegisterActionHandlers();
 
+<<<<<<< HEAD
     am->AddAction(ID_TOOLBAR_SEPARATOR, QString())
         .SetParent(this);
     am->AddAction(ID_TOOLBAR_WIDGET_UNDO, QString())
@@ -747,6 +705,15 @@ void MainWindow::InitActions()
         .SetParent(this);
     am->AddAction(ID_TOOLBAR_WIDGET_SPACER_RIGHT, QString())
         .SetParent(this);
+=======
+    am->AddAction(ID_TOOLBAR_SEPARATOR, QString());
+
+    am->AddAction(ID_TOOLBAR_WIDGET_UNDO, QString());
+    am->AddAction(ID_TOOLBAR_WIDGET_REDO, QString());
+    am->AddAction(ID_TOOLBAR_WIDGET_SNAP_ANGLE, QString());
+    am->AddAction(ID_TOOLBAR_WIDGET_SNAP_GRID, QString());
+    am->AddAction(ID_TOOLBAR_WIDGET_SPACER_RIGHT, QString());
+>>>>>>> 112f0d3448c2d8aa2fcf6097b11b0080abd6ac1f
 
     // File actions
         am->AddAction(ID_FILE_NEW, tr("New Level"))
@@ -962,9 +929,12 @@ void MainWindow::InitActions()
         .SetParent(this);
 
     // Modify actions
+<<<<<<< HEAD
     am->AddAction(ID_EDIT_RENAMEOBJECT, tr("Rename Object(s)..."))
         .SetStatusTip(tr("Rename Object"))
         .SetParent(this);
+=======
+>>>>>>> 112f0d3448c2d8aa2fcf6097b11b0080abd6ac1f
     am->AddAction(ID_EDITMODE_MOVE, tr("Move"))
         .SetIcon(Style::icon("Move"))
         .SetApplyHoverEffect()
@@ -999,15 +969,33 @@ void MainWindow::InitActions()
         .SetToolTip(tr("Snap to grid (G)"))
         .SetStatusTip(tr("Toggles snap to grid"))
         .SetCheckable(true)
+<<<<<<< HEAD
         .RegisterUpdateCallback(this, &MainWindow::OnUpdateSnapToGrid)
         .SetParent(this);
+=======
+        .RegisterUpdateCallback([](QAction* action) {
+            Q_ASSERT(action->isCheckable());
+            action->setChecked(Editor::GridSnappingEnabled());
+        })
+        .Connect(&QAction::triggered, []() { Editor::SetGridSnapping(!Editor::GridSnappingEnabled()); });
+
+>>>>>>> 112f0d3448c2d8aa2fcf6097b11b0080abd6ac1f
     am->AddAction(ID_SNAPANGLE, tr("Snap angle"))
         .SetIcon(Style::icon("Angle"))
         .SetApplyHoverEffect()
         .SetStatusTip(tr("Snap angle"))
         .SetCheckable(true)
+<<<<<<< HEAD
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSnapangle)
         .SetParent(this);
+=======
+        .RegisterUpdateCallback([](QAction* action) {
+            Q_ASSERT(action->isCheckable());
+            action->setChecked(Editor::AngleSnappingEnabled());
+        })
+        .Connect(&QAction::triggered, []() { Editor::SetAngleSnapping(!Editor::AngleSnappingEnabled()); });
+
+>>>>>>> 112f0d3448c2d8aa2fcf6097b11b0080abd6ac1f
     // Display actions
     am->AddAction(ID_WIREFRAME, tr("&Wireframe"))
         .SetShortcut(tr("F3"))
@@ -1214,6 +1202,7 @@ void MainWindow::InitActions()
         .SetParent(this);
 
     // Tools actions
+<<<<<<< HEAD
     am->AddAction(ID_RELOAD_TEXTURES, tr("Reload Textures/Shaders"))
         .SetStatusTip(tr("Reload all textures."))
         .SetParent(this);
@@ -1225,6 +1214,9 @@ void MainWindow::InitActions()
     am->AddAction(ID_TOOLS_ENABLEFILECHANGEMONITORING, tr("Enable File Change Monitoring"))
         .SetParent(this);
 
+=======
+    am->AddAction(ID_TOOLS_ENABLEFILECHANGEMONITORING, tr("Enable File Change Monitoring"));
+>>>>>>> 112f0d3448c2d8aa2fcf6097b11b0080abd6ac1f
     am->AddAction(ID_CLEAR_REGISTRY, tr("Clear Registry Data"))
         .SetStatusTip(tr("Clear Registry Data"))
         .SetParent(this);
@@ -1237,9 +1229,14 @@ void MainWindow::InitActions()
 
     QAction* saveLevelStatsAction =
         am->AddAction(ID_TOOLS_LOGMEMORYUSAGE, tr("Save Level Statistics"))
+<<<<<<< HEAD
                 .SetStatusTip(tr("Logs Editor memory usage."))
                 .SetParent(this);
     if( saveLevelStatsAction && AZ::Interface<AzFramework::AtomActiveInterface>::Get())
+=======
+                .SetStatusTip(tr("Logs Editor memory usage."));
+    if( saveLevelStatsAction )
+>>>>>>> 112f0d3448c2d8aa2fcf6097b11b0080abd6ac1f
     {
         saveLevelStatsAction->setEnabled(false);
     }
@@ -1381,6 +1378,7 @@ void MainWindow::InitActions()
         .SetApplyHoverEffect()
         .SetParent(this);
 
+<<<<<<< HEAD
     if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
     {
         am->AddAction(ID_TERRAIN_TIMEOFDAYBUTTON, tr("Time of Day Editor"))
@@ -1389,6 +1387,8 @@ void MainWindow::InitActions()
             .SetParent(this);
     }
 
+=======
+>>>>>>> 112f0d3448c2d8aa2fcf6097b11b0080abd6ac1f
     am->AddAction(ID_OPEN_UICANVASEDITOR, tr(LyViewPane::UiEditor))
         .SetToolTip(tr("Open UI Editor"))
         .SetApplyHoverEffect()
@@ -1499,143 +1499,12 @@ QToolButton* MainWindow::CreateUndoRedoButton(int command)
     return button;
 }
 
-QToolButton* MainWindow::CreateEnvironmentModeButton()
-{
-    QToolButton* environmentModeButton = new QToolButton(this);
-    environmentModeButton->setAutoRaise(true);
-    environmentModeButton->setPopupMode(QToolButton::InstantPopup);
-    environmentModeButton->setIcon(Style::icon("Environment"));
-    environmentModeButton->setStatusTip(tr("Select from a variety of environment mode options"));
-    environmentModeButton->setToolTip(tr("Environment modes"));
-
-    CVarMenu* environmentModeMenu = new CVarMenu(this);
-    connect(environmentModeMenu, &QMenu::aboutToShow, [this, environmentModeMenu]()
-        {
-            InitEnvironmentModeMenu(environmentModeMenu);
-        });
-    environmentModeButton->setMenu(environmentModeMenu);
-
-    return environmentModeButton;
-}
-
-QToolButton* MainWindow::CreateDebugModeButton()
-{
-    QToolButton* debugModeButton = new QToolButton(this);
-    debugModeButton->setAutoRaise(true);
-    debugModeButton->setPopupMode(QToolButton::InstantPopup);
-    debugModeButton->setIcon(Style::icon("Debugging"));
-    debugModeButton->setStatusTip(tr("Select from a variety of debug/view mode options"));
-    debugModeButton->setToolTip(tr("Debug modes"));
-
-    CVarMenu* debugModeMenu = new CVarMenu(this);
-    connect(debugModeMenu, &QMenu::aboutToShow, [this, debugModeMenu]()
-        {
-            InitDebugModeMenu(debugModeMenu);
-        });
-    debugModeButton->setMenu(debugModeMenu);
-
-    return debugModeButton;
-}
-
 QWidget* MainWindow::CreateSpacerRightWidget()
 {
-    QWidget* spacer = new QWidget();
+    QWidget* spacer = new QWidget(this);
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     spacer->setVisible(true);
     return spacer;
-}
-
-void MainWindow::InitEnvironmentModeMenu(CVarMenu* environmentModeMenu)
-{
-    environmentModeMenu->clear();
-    environmentModeMenu->AddCVarToggleItem({ "e_Fog", tr("Hide Global Fog"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "r_FogVolumes", tr("Hide Fog Volumes"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "e_Clouds", tr("Hide Clouds"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "e_Wind", tr("Hide Wind"), 0, 1 });
-    environmentModeMenu->AddSeparator();
-    environmentModeMenu->AddCVarToggleItem({ "e_Sun", tr("Hide Sun"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "e_Skybox", tr("Hide Skybox"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "r_SSReflections", tr("Hide Screen Space Reflection"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "e_Shadows", tr("Hide Shadows"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "r_TransparentPasses", tr("Hide Transparent Objects"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "r_ssdo", tr("Hide Screen Space Directional Occlusion"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "e_DynamicLights", tr("Hide All Dynamic Lights"), 0, 1 });
-    environmentModeMenu->AddSeparator();
-    environmentModeMenu->AddCVarValuesItem("e_TimeOfDay", tr("Time of Day"),
-        {
-            {tr("Day (1:00 pm)"), 13},
-            {tr("Night (9:00 pm)"), 21}
-        }, 9);
-    environmentModeMenu->AddSeparator();
-    environmentModeMenu->AddCVarToggleItem({ "e_Entities", tr("Hide Entities"), 0, 1 });
-    environmentModeMenu->AddSeparator();
-    environmentModeMenu->AddCVarToggleItem({ "e_Vegetation", tr("Hide Vegetation"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "e_Terrain", tr("Hide Terrain"), 0, 1 });
-    environmentModeMenu->AddSeparator();
-    environmentModeMenu->AddCVarToggleItem({ "e_Particles", tr("Hide Particles"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "e_Flares", tr("Hide Flares"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "e_Decals", tr("Hide Decals"), 0, 1 });
-    environmentModeMenu->AddSeparator();
-    environmentModeMenu->AddCVarToggleItem({ "e_WaterOcean", tr("Hide Ocean Water (for legacy)"), 0, 1 });
-    environmentModeMenu->AddCVarToggleItem({ "e_WaterVolumes", tr("Hide Water Volumes"), 0, 1 });
-    environmentModeMenu->AddSeparator();
-    environmentModeMenu->AddCVarToggleItem({ "e_BBoxes", tr("Hide BBoxes"), 0, 1 });
-    environmentModeMenu->AddSeparator();
-    environmentModeMenu->AddResetCVarsItem();
-}
-
-void MainWindow::InitDebugModeMenu(CVarMenu* debugModeMenu)
-{
-    debugModeMenu->clear();
-    debugModeMenu->AddCVarValuesItem("r_DebugGBuffer", tr("GBuffers"),
-        {
-            {tr("Full Shading Mode (Default)"), 0},
-            {tr("Normal Visualization"), 1},
-            {tr("Smoothness"), 2},
-            {tr("Reflectance"), 3},
-            {tr("Albedo"), 4},
-            {tr("Lighting Model"), 5},
-            {tr("Translucency"), 6},
-            {tr("Sun Self Shadowing"), 7},
-            {tr("Subsurface Scattering"), 8},
-            {tr("Specular Validation Overlay"), 9}
-        }, 0);
-    debugModeMenu->AddSeparator();
-    debugModeMenu->AddCVarValuesItem("r_Stats", tr("Profiling"),
-        {
-            {tr("Frame Timing"), 1},
-            {tr("Object Timing"), 3},
-            {tr("Instance Draw Calls"), 6},
-        }, 0);
-    debugModeMenu->AddSeparator();
-    debugModeMenu->AddUniqueCVarsItem(tr("Wireframe"),
-        {
-            {"r_wireframe", tr("Wireframe Rendering Mode"), 1, 0},
-            {"r_showlines", tr("Wireframe Overlay"), 1, 0}
-        }),
-    debugModeMenu->AddCVarValuesItem("e_debugdraw", tr("Art Info"),
-        {
-            {tr("Texture Memory Usage"), 4},
-            {tr("Renderable Material Count"), 5},
-            {tr("LOD Vertex Count"), 22}
-        }, 0);
-
-    debugModeMenu->AddSeparator();
-    debugModeMenu->AddCVarValuesItem("e_defaultmaterial", tr("Default Material on all Objects"),
-        {
-            {tr("Gray Material with Normal Maps"), 1},
-        }, 0);
-
-    debugModeMenu->AddCVarValuesItem("r_DeferredShadingTiledDebugAlbedo", tr("Debug Visualization of Deferred Lighting"),
-        {
-            {tr("White Albedo"), 1},
-        }, 0);
-
-    debugModeMenu->AddCVarToggleItem({ "r_ShowTangents", tr("Show Tangents"), 1, 0 });
-    debugModeMenu->AddCVarToggleItem({ "p_draw_helpers", tr("Show Collision Shapes (Proxy)"), 1, 0 });
-
-    debugModeMenu->AddSeparator();
-    debugModeMenu->AddResetCVarsItem();
 }
 
 UndoRedoToolButton::UndoRedoToolButton(QWidget* parent)
@@ -1652,12 +1521,12 @@ QWidget* MainWindow::CreateSnapToGridWidget()
 {
     SnapToWidget::SetValueCallback setCallback = [](double snapStep)
     {
-        GetIEditor()->GetViewManager()->GetGrid()->size = snapStep;
+        Editor::SetGridSnappingSize(snapStep);
     };
 
     SnapToWidget::GetValueCallback getCallback = []()
     {
-        return GetIEditor()->GetViewManager()->GetGrid()->size;
+        return Editor::GridSnappingSize();
     };
 
     return new SnapToWidget(m_actionManager->GetAction(ID_SNAP_TO_GRID), setCallback, getCallback);
@@ -1667,12 +1536,12 @@ QWidget* MainWindow::CreateSnapToAngleWidget()
 {
     SnapToWidget::SetValueCallback setCallback = [](double snapAngle)
     {
-        GetIEditor()->GetViewManager()->GetGrid()->angleSnap = snapAngle;
+        Editor::SetAngleSnappingSize(snapAngle);
     };
 
     SnapToWidget::GetValueCallback getCallback = []()
     {
-        return GetIEditor()->GetViewManager()->GetGrid()->angleSnap;
+        return Editor::AngleSnappingSize();
     };
 
     return new SnapToWidget(m_actionManager->GetAction(ID_SNAPANGLE), setCallback, getCallback);
@@ -1687,15 +1556,6 @@ MainStatusBar* MainWindow::StatusBar() const
 {
     assert(statusBar()->inherits("MainStatusBar"));
     return static_cast<MainStatusBar*>(statusBar());
-}
-
-void MainWindow::OnUpdateSnapToGrid(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-    bool bEnabled = gSettings.pGrid->IsEnabled();
-    action->setChecked(bEnabled);
-
-    action->setText(QObject::tr("Snap To Grid"));
 }
 
 KeyboardCustomizationSettings* MainWindow::GetShortcutManager() const
@@ -1850,10 +1710,6 @@ void MainWindow::RegisterStdViewClasses()
     AzAssetBrowserWindow::RegisterViewClass();
     AssetEditorWindow::RegisterViewClass();
 
-    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        CTimeOfDayDialog::RegisterViewClass();
-    }
 #ifdef ThumbnailDemo
     ThumbnailsSampleWidget::RegisterViewClass();
 #endif
@@ -2333,12 +2189,6 @@ void MainWindow::ConnectivityStateChanged(const AzToolsFramework::SourceControlS
         }
     }
 
-#if defined(CRY_ENABLE_RC_HELPER)
-    CEngineSettingsManager settingsManager;
-    settingsManager.SetModuleSpecificBoolEntry("RC_EnableSourceControl", connected);
-    settingsManager.StoreData();
-#endif
-
     gSettings.enableSourceControl = connected;
     gSettings.SaveEnableSourceControlFlag(false);
 }
@@ -2414,12 +2264,6 @@ QWidget* MainWindow::CreateToolbarWidget(int actionId)
         break;
     case ID_TOOLBAR_WIDGET_SNAP_ANGLE:
         w = CreateSnapToAngleWidget();
-        break;
-    case ID_TOOLBAR_WIDGET_ENVIRONMENT_MODE:
-        w = CreateEnvironmentModeButton();
-        break;
-    case ID_TOOLBAR_WIDGET_DEBUG_MODE:
-        w = CreateDebugModeButton();
         break;
     case ID_TOOLBAR_WIDGET_SPACER_RIGHT:
         w = CreateSpacerRightWidget();

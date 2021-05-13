@@ -35,7 +35,6 @@ class CUndoBaseObject;
 class CObjectManager;
 class CGizmo;
 class CObjectArchive;
-class CEdGeometry;
 struct SSubObjSelectionModifyContext;
 struct SRayHitInfo;
 class ISubObjectSelectionReferenceFrameCalculator;
@@ -580,10 +579,6 @@ public:
     virtual void ModifySubObjSelection([[maybe_unused]] SSubObjSelectionModifyContext& modCtx) {};
     virtual void AcceptSubObjectModify() {};
 
-    // Request a geometry pointer from the object.
-    // Return NULL if geometry can not be retrieved or object does not support geometries.
-    virtual CEdGeometry* GetGeometry() { return 0; };
-
     //! In This function variables of the object must be initialized.
     virtual void InitVariables() {};
 
@@ -608,9 +603,6 @@ public:
     bool IsSkipSelectionHelper() const;
 
     virtual IStatObj* GetIStatObj() {   return NULL; }
-
-    //! Display length of each axis.
-    void DrawDimensionsImpl(DisplayContext& dc, const AABB& localBoundBox, AABB* pMergedBoundBox = NULL);
 
     // Invalidates cached transformation matrix.
     // nWhyFlags - Flags that indicate the reason for matrix invalidation.
@@ -683,8 +675,6 @@ protected:
     virtual void DrawTextureIcon(DisplayContext& dc, const Vec3& pos, float alpha = 1.0f);
     //! Draw warning icons
     virtual void DrawWarningIcons(DisplayContext& dc, const Vec3& pos);
-    //! Display text with a 3d world coordinate.
-    void DrawTextOn2DBox(DisplayContext& dc, const Vec3& pos, const char* text, float textScale, const ColorF& TextColor, const ColorF& TextBackColor);
     //! Check if dimension's figures can be displayed before draw them.
     virtual void DrawDimensions(DisplayContext& dc, AABB* pMergedBoundBox = NULL);
 

@@ -77,10 +77,21 @@ namespace AzToolsFramework
              * \param targetInstance The id of the target template.
              * \param undoBatch The undo batch to set as parent for this create link action.
              * \param commonRootEntityId The id of the entity that the source instance should be parented under.
+             * \param isUndoRedoSupportNeeded The flag indicating whether the link should be created with undo/redo support or not.
              */
             void CreateLink(
                 const EntityList& topLevelEntities, Instance& sourceInstance, TemplateId targetTemplateId,
-                UndoSystem::URSequencePoint* undoBatch, AZ::EntityId commonRootEntityId);
+                UndoSystem::URSequencePoint* undoBatch, AZ::EntityId commonRootEntityId, const bool isUndoRedoSupportNeeded = true);
+
+            /**
+             * Removes the link between template of the sourceInstance and the template corresponding to targetTemplateId.
+             *
+             * \param sourceInstance The instance corresponding to the source template of the link to be removed.
+             * \param targetTemplateId The id of the target template of the link to be removed.
+             * \param undoBatch The undo batch to set as parent for this remove link action.
+             */
+            void RemoveLink(
+                AZStd::unique_ptr<Instance>& sourceInstance, TemplateId targetTemplateId, UndoSystem::URSequencePoint* undoBatch);
 
             /**
              * Given a list of entityIds, finds the prefab instance that owns the common root entity of the entityIds.
@@ -95,6 +106,14 @@ namespace AzToolsFramework
             PrefabOperationResult FindCommonRootOwningInstance(
                 const AZStd::vector<AZ::EntityId>& entityIds, EntityList& inputEntityList, EntityList& topLevelEntities,
                 AZ::EntityId& commonRootEntityId, InstanceOptionalReference& commonRootEntityOwningInstance);
+
+            /* Detects whether an instance of prefabTemplateId is present in the hierarchy of ancestors of instance.
+             *
+             * \param prefabTemplateId The template id to test for
+             * \param instance The instance whose ancestor hierarchy prefabTemplateId will be tested against.
+             * \return true if an instance of the template of id prefabTemplateId could be found in the ancestor hierarchy of instance, false otherwise.
+             */
+            bool IsPrefabInInstanceAncestorHierarchy(TemplateId prefabTemplateId, InstanceOptionalConstReference instance);
 
             static Instance* GetParentInstance(Instance* instance);
             static Instance* GetAncestorOfInstanceThatIsChildOfRoot(const Instance* ancestor, Instance* descendant);

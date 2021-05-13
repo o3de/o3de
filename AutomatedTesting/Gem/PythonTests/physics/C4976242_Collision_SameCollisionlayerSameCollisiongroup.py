@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C4976242
 # Test Case Title : Assign same collision layer and same collision group to two entities and
 # verify that they collide or not
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4976242
+
 
 # fmt: off
 class Tests():

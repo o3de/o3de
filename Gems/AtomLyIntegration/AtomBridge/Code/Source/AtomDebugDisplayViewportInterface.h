@@ -25,6 +25,7 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
 #include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 
 namespace AZ::AtomBridge
 {
@@ -121,6 +122,7 @@ namespace AZ::AtomBridge
 
     class AtomDebugDisplayViewportInterface final
         : public AzFramework::DebugDisplayRequestBus::Handler
+        , public AZ::RPI::ViewportContextIdNotificationBus::Handler
     {
     public:
         AZ_RTTI(AtomDebugDisplayViewportInterface, "{09AF6A46-0100-4FBF-8F94-E6B221322D14}", AzFramework::DebugDisplayRequestBus::Handler);
@@ -198,6 +200,12 @@ namespace AZ::AtomBridge
         void PopMatrix() override;
 
     private:
+
+        // ViewportContextIdNotificationBus handlers
+        void OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view) override;
+
+
+        // internal helper functions
         using LineSegmentFilterFunc = AZStd::function<bool(const AZ::Vector3& lineStart, const AZ::Vector3& lineEnd, int segmentIndex)>;
         enum CircleAxis
         {
@@ -241,10 +249,17 @@ namespace AZ::AtomBridge
         //! Convert direction to world space (translation is not considered)
         AZ::Vector3 ToWorldSpaceVector(const AZ::Vector3& v) const { return m_rendState.m_transformStack[m_rendState.m_currentTransform].Multiply3x3(v); }
 
+        //! Convert positions to world space.
+        AZStd::vector<AZ::Vector3> ToWorldSpacePosition(const AZStd::vector<AZ::Vector3>& positions) const;
+
+        //! Convert directions to world space (translation is not considered)
+        AZStd::vector<AZ::Vector3> ToWorldSpaceVector(const AZStd::vector<AZ::Vector3>& vectors) const;
+
         void CalcBasisVectors(const AZ::Vector3& n, AZ::Vector3& b1, AZ::Vector3& b2) const;
         
         const AZ::Matrix3x4& GetCurrentTransform() const;
 
+        void UpdateAuxGeom(RPI::Scene* scene, AZ::RPI::View* view);
         void InitInternal(RPI::Scene* scene, AZ::RPI::ViewportContextPtr viewportContextPtr);
 
         AZ::RPI::ViewportContextPtr GetViewportContext() const;
@@ -254,10 +269,12 @@ namespace AZ::AtomBridge
         RenderState m_rendState;
 
         AZ::RPI::AuxGeomDrawPtr m_auxGeomPtr;
-        bool                    m_defaultInstance = false; // only true for drawing to a particular viewport. What would 2D drawing mean in a scene with several windows?
+
+        // m_defaultInstance is true for the instance that multicasts the debug draws to all viewports
+        // (with an AuxGeom render pass) in the default scene.
+        bool                    m_defaultInstance = false;
         AzFramework::ViewportId m_viewportId = AzFramework::InvalidViewportId; // Address this instance answers on.
-        AZ::RPI::ViewportContext::SceneChangedEvent::Handler
-                                m_sceneChangeHandler;
+        AZ::RPI::ViewportContext::SceneChangedEvent::Handler m_sceneChangeHandler;
     };
 
     // this is duplicated from Cry_Math.h, GetBasisVectors.

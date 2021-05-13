@@ -91,14 +91,10 @@ private:
     void ExportLevelData(const QString& path, bool bExportMission = true);
     void ExportLevelInfo(const QString& path);
 
-    void ExportVisAreas(const char* pszGamePath, EEndian eExportEndian);
     void ExportOcclusionMesh(const char* pszGamePath);
-    void ExportMapInfo(XmlNodeRef& node);
 
     void ExportLevelResourceList(const QString& path);
     void ExportLevelUsedResourceList(const QString& path);
-    void ExportLevelShaderCache(const QString& path);
-    void ExportGameData(const QString& path);
     void ExportFileList(const QString& path, const QString& levelName);
 
     void Error(const QString& error);

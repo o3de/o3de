@@ -1505,12 +1505,6 @@ void CTrackViewDialog::OnEditorNotifyEvent(EEditorNotifyEvent event)
         m_bIgnoreUpdates = false;
         OnGameOrSimModeLock(false);
         break;
-    case eNotify_OnMissionChange:
-        if (!m_bIgnoreUpdates)
-        {
-            ReloadSequences();
-        }
-        break;
     case eNotify_OnReloadTrackView:
         if (!m_bIgnoreUpdates)
         {

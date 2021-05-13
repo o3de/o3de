@@ -35,7 +35,6 @@
 
 class CEntityObject;
 class QMenu;
-class IOpticsElementBase;
 
 /*!
  *  CEntityEventTarget is an Entity event target and type.
@@ -214,8 +213,6 @@ public:
     QString GetLightAnimation() const;
 
     IVariable* GetLightVariable(const char* name) const;
-    IOpticsElementBasePtr GetOpticsElement();
-    void SetOpticsName(const QString& opticsFullName);
 
     void PreInitLightProperty();
     void UpdateLightProperty();
@@ -229,8 +226,6 @@ public:
 
     void RegisterListener(IEntityObjectListener* pListener);
     void UnregisterListener(IEntityObjectListener* pListener);
-
-    CDLight* GetLightProperty() const;
 
 protected:
     template <typename T>
