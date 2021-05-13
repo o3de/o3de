@@ -22,6 +22,7 @@ namespace AtomToolsFramework
         const AZ::Uuid& instanceClassId,
         AzToolsFramework::IPropertyEditorNotify* instanceNotificationHandler,
         QWidget* parent,
+        const AZ::u32 saveStateKey,
         const AzToolsFramework::InstanceDataHierarchy::ValueComparisonFunction& valueComparisonFunction)
         : InspectorGroupWidget(parent)
     {
@@ -37,6 +38,7 @@ namespace AtomToolsFramework
         m_propertyEditor->SetHideRootProperties(true);
         m_propertyEditor->SetAutoResizeLabels(true);
         m_propertyEditor->SetValueComparisonFunction(valueComparisonFunction);
+        m_propertyEditor->SetSavedStateKey(saveStateKey);
         m_propertyEditor->Setup(context, instanceNotificationHandler, false);
         m_propertyEditor->AddInstance(instance, instanceClassId, nullptr, instanceToCompare);
         m_propertyEditor->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);

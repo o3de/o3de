@@ -14,11 +14,11 @@ set(FILES
     Include/Atom/Document/MaterialDocumentSystemRequestBus.h
     Include/Atom/Document/MaterialDocumentNotificationBus.h
     Include/Atom/Document/MaterialDocumentRequestBus.h
-    Include/Atom/Document/MaterialEditorSettingsBus.h
+    Include/Atom/Document/MaterialDocumentSettings.h
+    Source/Document/MaterialDocumentModule.cpp
     Source/Document/MaterialDocumentSystemComponent.cpp
     Source/Document/MaterialDocumentSystemComponent.h
     Source/Document/MaterialDocument.cpp
     Source/Document/MaterialDocument.h
-    Source/Document/MaterialEditorSettings.cpp
-    Source/Document/MaterialEditorSettings.h
+    Source/Document/MaterialDocumentSettings.cpp
 )
