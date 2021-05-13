@@ -55,7 +55,6 @@ DEFINE_LAYER_OPTIONS(o_layer1_)
 DEFINE_LAYER_OPTIONS(o_layer2_)
 DEFINE_LAYER_OPTIONS(o_layer3_)
 
-#include "MaterialInputs/AlphaInput.azsli"
 #include "MaterialInputs/SubsurfaceInput.azsli"
 #include "MaterialInputs/TransmissionInput.azsli"
 #include "StandardMultilayerPBR_Common.azsli"
@@ -121,9 +120,8 @@ VSOutput ForwardPassVS(VSInput IN)
         OUT.m_blendMask = float3(1,1,1);
     }
     
-    // We can skip per-vertex shadow coords when parallax is enabled because we need to calculate per-pixel shadow coords anyway.
-    // We cannot skip shadow coords when o_debugDrawMode is on because some debug draw modes return before parallax.
-    bool skipShadowCoords = o_debugDrawMode == DebugDrawMode::None && o_parallax_feature_enabled && o_parallax_enablePixelDepthOffset;
+    // Shadow coords will be calculated in the pixel shader in this case
+    bool skipShadowCoords = ShouldHandleParallax() && o_parallax_enablePixelDepthOffset;
     VertexHelper(IN, OUT, worldPosition, skipShadowCoords);
 
     return OUT;
@@ -132,9 +130,9 @@ VSOutput ForwardPassVS(VSInput IN)
 
 // ---------- Pixel Shader ----------
 
-PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depth)
+PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depthNDC)
 {
-    depth = IN.m_position.z;
+    depthNDC = IN.m_position.z;
 
     // ------- Tangents & Bitangets -------
 
@@ -167,23 +165,27 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     if(o_debugDrawMode == DebugDrawMode::DepthMaps)
     {
         GetDepth_Setup(IN.m_blendMask);
-        float depth = GetDepth(IN.m_uv[MaterialSrg::m_parallaxUvIndex], float2(0,0), float2(0,0));
+        float depth = GetNormalizedDepth(-MaterialSrg::m_displacementMax, -MaterialSrg::m_displacementMin, IN.m_uv[MaterialSrg::m_parallaxUvIndex], float2(0,0), float2(0,0));
         return DebugOutput(float3(depth,depth,depth));
     }
 
     // ------- Parallax -------
     
+    bool displacementIsClipped = false;
+
     // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scatteirng is enabled
-    if(!o_enableSubsurfaceScattering && o_parallax_feature_enabled)
+    if(ShouldHandleParallax())
     {
         GetDepth_Setup(IN.m_blendMask);
 
         float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
         float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
-
-        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_parallaxMainDepthFactor, 
+        
+        float parallaxOverallOffset = MaterialSrg::m_displacementMax;
+        float parallaxOverallFactor = MaterialSrg::m_displacementMax - MaterialSrg::m_displacementMin;
+        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], parallaxOverallFactor, parallaxOverallOffset, 
                          ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
-                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depth);
+                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depthNDC, IN.m_position.w, displacementIsClipped);
 
         // Adjust directional light shadow coorinates for parallax correction
         if(o_parallax_enablePixelDepthOffset)
@@ -218,15 +220,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // Now that any parallax has been calculated, we calculate the blend factors for any layers that are impacted by the parallax.
     float3 blendMaskValues = GetBlendMaskValues(IN.m_uv[MaterialSrg::m_blendMaskUvIndex], IN.m_blendMask);
 
-    // ------- Alpha & Clip -------
-
-    float2 layer1_baseColorUv = uvLayer1[MaterialSrg::m_layer1_m_baseColorMapUvIndex];
-    float2 layer2_baseColorUv = uvLayer2[MaterialSrg::m_layer2_m_baseColorMapUvIndex];
-    float2 layer3_baseColorUv = uvLayer3[MaterialSrg::m_layer3_m_baseColorMapUvIndex];
-    float2 opacityUv = IN.m_uv[MaterialSrg::m_opacityMapUvIndex];
-    // [GFX TODO][ATOM-14589] Figure out how to deal with opacity, instead of just hard-coding to layer1
-    float alpha = GetAlphaInputAndClip(MaterialSrg::m_layer1_m_baseColorMap, MaterialSrg::m_opacityMap, layer1_baseColorUv, opacityUv, MaterialSrg::m_sampler, MaterialSrg::m_opacityFactor, o_opacity_source);
-
     // ------- Normal -------
     
     float3 layer1_normalFactor = MaterialSrg::m_layer1_m_normalFactor * blendMaskValues.r;
@@ -245,6 +238,10 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     surface.normal = normalize(TangentSpaceToWorld(normalTS, IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex]));
     
     // ------- Base Color -------
+    
+    float2 layer1_baseColorUv = uvLayer1[MaterialSrg::m_layer1_m_baseColorMapUvIndex];
+    float2 layer2_baseColorUv = uvLayer2[MaterialSrg::m_layer2_m_baseColorMapUvIndex];
+    float2 layer3_baseColorUv = uvLayer3[MaterialSrg::m_layer3_m_baseColorMapUvIndex];
 
     float3 layer1_sampledColor = GetBaseColorInput(MaterialSrg::m_layer1_m_baseColorMap, MaterialSrg::m_sampler, layer1_baseColorUv, MaterialSrg::m_layer1_m_baseColor.rgb, o_layer1_o_baseColor_useTexture);
     float3 layer2_sampledColor = GetBaseColorInput(MaterialSrg::m_layer2_m_baseColorMap, MaterialSrg::m_sampler, layer2_baseColorUv, MaterialSrg::m_layer2_m_baseColor.rgb, o_layer2_o_baseColor_useTexture);
@@ -253,6 +250,11 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     float3 layer2_baseColor = BlendBaseColor(layer2_sampledColor, MaterialSrg::m_layer2_m_baseColor.rgb, MaterialSrg::m_layer2_m_baseColorFactor, o_layer2_o_baseColorTextureBlendMode, o_layer2_o_baseColor_useTexture);
     float3 layer3_baseColor = BlendBaseColor(layer3_sampledColor, MaterialSrg::m_layer3_m_baseColor.rgb, MaterialSrg::m_layer3_m_baseColorFactor, o_layer3_o_baseColorTextureBlendMode, o_layer3_o_baseColor_useTexture);
     float3 baseColor = BlendLayers(layer1_baseColor, layer2_baseColor, layer3_baseColor, blendMaskValues);
+    
+    if(o_parallax_highlightClipping && displacementIsClipped)
+    {
+        ApplyParallaxClippingHighlight(baseColor);
+    }
 
     // ------- Metallic -------
 
@@ -427,32 +429,13 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     lightingData.FinalizeLighting(surface.transmission.tint);
 
 
-    if (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent)
-    {
-        alpha = FresnelSchlickWithRoughness(lightingData.NdotV, alpha, surface.roughnessLinear).x; // Increase opacity at grazing angles.
-    }
+    const float alpha = 1.0;
 
     PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
 
-    // ------- Opacity -------
-
-    if (o_opacity_mode == OpacityMode::Blended)
-    {
-        // [GFX_TODO ATOM-13187] PbrLighting shouldn't be writing directly to render targets. It's confusing when
-        // specular is being added to diffuse just because we're calling render target 0 "diffuse".
-
-        // For blended mode, we do (dest * alpha) + (source * 1.0). This allows the specular
-        // to be added on top of the diffuse, but then the diffuse must be pre-multiplied.
-        // It's done this way because surface transparency doesn't really change specular response (eg, glass).
-        lightingOutput.m_diffuseColor.rgb *= lightingOutput.m_diffuseColor.w; // pre-multiply diffuse
-        lightingOutput.m_diffuseColor.rgb += lightingOutput.m_specularColor.rgb; // add specular
-    }
-    else
-    {
-        // Pack factor and quality, drawback: because of precision limit of float16 cannot represent exact 1, maximum representable value is 0.9961
-        uint factorAndQuality = dot(round(float2(saturate(surfaceScatteringFactor), MaterialSrg::m_subsurfaceScatteringQuality) * 255), float2(256, 1));
-        lightingOutput.m_diffuseColor.w = factorAndQuality * (o_enableSubsurfaceScattering ? 1.0 : -1.0);
-    }
+    // Pack factor and quality, drawback: because of precision limit of float16 cannot represent exact 1, maximum representable value is 0.9961
+    uint factorAndQuality = dot(round(float2(saturate(surfaceScatteringFactor), MaterialSrg::m_subsurfaceScatteringQuality) * 255), float2(256, 1));
+    lightingOutput.m_diffuseColor.w = factorAndQuality * (o_enableSubsurfaceScattering ? 1.0 : -1.0);
     
 
     return lightingOutput;

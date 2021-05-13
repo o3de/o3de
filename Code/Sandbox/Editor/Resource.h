@@ -75,12 +75,10 @@
 #define IDC_PLATFORM_SALEM                         2759
 #define IDC_GROUPBOX_GLOBALTAGS                    2916
 #define IDC_GROUPBOX_FRAGMENTTAGS                  2917
-#define ID_RESOURCES_GENERATECGFTHUMBNAILS         32894
 #define ID_RESOURCES_REDUCEWORKINGSET              32896
 #define ID_EDIT_HIDE                               32898
 #define ID_EDIT_UNHIDEALL                          32899
 #define ID_RELOAD_TERRAIN                          32902
-#define ID_VIEW_GRIDSETTINGS                       32904
 #define ID_VIEW_CONFIGURELAYOUT                    32906
 #define ID_TOOLS_LOGMEMORYUSAGE                    32908
 #define ID_TERRAIN_EXPORTBLOCK                     32909
@@ -91,7 +89,6 @@
 #define ID_EXPORT_INDOORS                          32915
 #define ID_VIEW_CYCLE2DVIEWPORT                    32916
 #define ID_SNAPANGLE                               32917
-#define ID_EDIT_RENAMEOBJECT                       32925
 #define ID_CHANGEMOVESPEED_INCREASE                32928
 #define ID_CHANGEMOVESPEED_DECREASE                32929
 #define ID_CHANGEMOVESPEED_CHANGESTEP              32930
@@ -101,7 +98,6 @@
 #define ID_FILE_SAVELEVELRESOURCES                 32942
 #define ID_VALIDATELEVEL                           32943
 #define ID_TERRAIN_RESIZE                          32944
-#define ID_RELOAD_TEXTURES                         32952
 #define ID_TERRAIN_COLLISION                       32960
 #define ID_TOOL_FIRST                              32972
 #define ID_EDIT_UNFREEZE                           32973
@@ -134,7 +130,6 @@
 #define ID_FILE_EDITEDITORINI                      33543
 #define ID_FILE_EDITLOGFILE                        33544
 #define ID_PREFERENCES                             33546
-#define ID_RELOAD_GEOMETRY                         33549
 #define ID_REDO                                    33550
 #define ID_SWITCH_PHYSICS                          33555
 #define ID_REF_COORDS_SYS                          33556

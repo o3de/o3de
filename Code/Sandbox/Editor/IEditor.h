@@ -66,7 +66,6 @@ class CDialog;
 #if defined(AZ_PLATFORM_WINDOWS)
 class C3DConnexionDriver;
 #endif
-class CRuler;
 class CSettingsManager;
 struct IExportManager;
 class CDisplaySettings;
@@ -85,7 +84,6 @@ namespace WinWidget
 }
 
 struct ISystem;
-struct I3DEngine;
 struct IRenderer;
 struct AABB;
 struct IEventLoopHook;
@@ -137,7 +135,6 @@ enum EEditorNotifyEvent
     eNotify_OnEndLayerExport,          // Sent after a layer have been exported.
     eNotify_OnCloseScene,              // Send when the document is about to close.
     eNotify_OnSceneClosed,             // Send when the document is closed.
-    eNotify_OnMissionChange,           // Send when the current mission changes.
     eNotify_OnBeginLoad,               // Sent when the document is start to load.
     eNotify_OnEndLoad,                 // Sent when the document loading is finished
 
@@ -179,8 +176,6 @@ enum EEditorNotifyEvent
     eNotify_OnVegetationPanelUpdate,   // When vegetation objects selection change.
 
     eNotify_OnDisplayRenderUpdate,     // Sent when editor finish terrain texture generation.
-
-    eNotify_OnTimeOfDayChange,         // Time of day parameters where modified.
 
     eNotify_OnDataBaseUpdate,          // DataBase Library was modified.
 
@@ -241,8 +236,6 @@ struct IDocListener
     virtual void OnLoadDocument() = 0;
     //! Called when document is being closed.
     virtual void OnCloseDocument() = 0;
-    //! Called when mission changes.
-    virtual void OnMissionChange() = 0;
 };
 
 //! Derive from this class if you want to register for getting global editor notifications.
@@ -431,8 +424,6 @@ struct IEditor
     virtual void DeleteThis() = 0;
     //! Access to Editor ISystem interface.
     virtual ISystem* GetSystem() = 0;
-    virtual I3DEngine* Get3DEngine() = 0;
-    virtual IRenderer* GetRenderer() = 0;
     //! Access to class factory.
     virtual IEditorClassFactory* GetClassFactory() = 0;
     //! Access to commands manager.
@@ -559,7 +550,6 @@ struct IEditor
     virtual class CViewManager* GetViewManager() = 0;
     virtual class CViewport* GetActiveView() = 0;
     virtual void SetActiveView(CViewport* viewport) = 0;
-    virtual struct IBackgroundTaskManager* GetBackgroundTaskManager() = 0;
     virtual struct IEditorFileMonitor* GetFileMonitor() = 0;
 
     // These are needed for Qt integration:
@@ -596,8 +586,6 @@ struct IEditor
     virtual void    SetSelectedRegion(const AABB& box) = 0;
     //! Get currently selected region.
     virtual void    GetSelectedRegion(AABB& box) = 0;
-    //! Get current ruler
-    virtual CRuler* GetRuler() = 0;
 
     virtual void SetOperationMode(EOperationMode mode) = 0;
     virtual EOperationMode GetOperationMode() = 0;
@@ -642,7 +630,6 @@ struct IEditor
     //! Returns true if selection is made and false if selection is canceled.
     virtual bool SelectColor(QColor& color, QWidget* parent = 0) = 0;
     //! Get shader enumerator.
-    virtual class CShaderEnum* GetShaderEnum() = 0;
     virtual class CUndoManager* GetUndoManager() = 0;
     //! Begin operation requiring undo
     //! Undo manager enters holding state.
@@ -732,14 +719,11 @@ struct IEditor
     virtual ESystemConfigPlatform GetEditorConfigPlatform() const = 0;
     virtual void ReloadTemplates() = 0;
     virtual IResourceSelectorHost* GetResourceSelectorHost() = 0;
-    virtual struct IBackgroundScheduleManager* GetBackgroundScheduleManager() = 0;
     virtual void ShowStatusText(bool bEnable) = 0;
 
     // Provides a way to extend the context menu of an object. The function gets called every time the menu is opened.
     typedef AZStd::function<void(QMenu*, const CBaseObject*)> TContextMenuExtensionFunc;
     virtual void RegisterObjectContextMenuExtension(TContextMenuExtensionFunc func) = 0;
-
-    virtual void SetCurrentMissionTime(float time) = 0;
 
     virtual SSystemGlobalEnvironment* GetEnv() = 0;
     virtual IImageUtil* GetImageUtil() = 0;  // Vladimir@conffx

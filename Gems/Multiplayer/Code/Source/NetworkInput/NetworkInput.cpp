@@ -10,8 +10,8 @@
 *
 */
 
-#include <Source/NetworkInput/NetworkInput.h>
-#include <Source/Components/NetBindComponent.h>
+#include <Multiplayer/NetworkInput.h>
+#include <Multiplayer/NetBindComponent.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 
@@ -48,19 +48,34 @@ namespace Multiplayer
         return m_inputId;
     }
 
-    void NetworkInput::SetServerTimeMs(AZ::TimeMs serverTimeMs)
+    void NetworkInput::SetHostFrameId(HostFrameId hostFrameId)
     {
-        m_serverTimeMs = serverTimeMs;
+        m_hostFrameId = hostFrameId;
     }
 
-    AZ::TimeMs NetworkInput::GetServerTimeMs() const
+    HostFrameId NetworkInput::GetHostFrameId() const
     {
-        return m_serverTimeMs;
+        return m_hostFrameId;
     }
 
-    AZ::TimeMs& NetworkInput::ModifyServerTimeMs()
+    HostFrameId& NetworkInput::ModifyHostFrameId()
     {
-        return m_serverTimeMs;
+        return m_hostFrameId;
+    }
+
+    void NetworkInput::SetHostTimeMs(AZ::TimeMs hostTimeMs)
+    {
+        m_hostTimeMs = hostTimeMs;
+    }
+
+    AZ::TimeMs NetworkInput::GetHostTimeMs() const
+    {
+        return m_hostTimeMs;
+    }
+
+    AZ::TimeMs& NetworkInput::ModifyHostTimeMs()
+    {
+        return m_hostTimeMs;
     }
 
     void NetworkInput::AttachNetBindComponent(NetBindComponent* netBindComponent)
@@ -76,17 +91,19 @@ namespace Multiplayer
 
     bool NetworkInput::Serialize(AzNetworking::ISerializer& serializer)
     {
-        if (!serializer.Serialize(m_inputId, "InputId"))
+        if (!serializer.Serialize(m_inputId, "InputId")
+         || !serializer.Serialize(m_hostTimeMs, "HostTimeMs")
+         || !serializer.Serialize(m_hostFrameId, "HostFrameId"))
         {
             return false;
         }
 
-        uint8_t componentInputCount = static_cast<uint8_t>(m_componentInputs.size());
+        uint16_t componentInputCount = static_cast<uint16_t>(m_componentInputs.size());
         serializer.Serialize(componentInputCount, "ComponentInputCount");
         m_componentInputs.resize(componentInputCount);
         if (serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject)
         {
-            for (uint8_t i = 0; i < componentInputCount; ++i)
+            for (uint16_t i = 0; i < componentInputCount; ++i)
             {
                 // We need to do a little extra work here, the delta serializer won't actually write out values if they were the same as the parent.
                 // We need to make sure we don't lose state that is intrinsic to the underlying type
@@ -148,7 +165,7 @@ namespace Multiplayer
     void NetworkInput::CopyInternal(const NetworkInput& rhs)
     {
         m_inputId = rhs.m_inputId;
-        m_serverTimeMs = rhs.m_serverTimeMs;
+        m_hostTimeMs = rhs.m_hostTimeMs;
         m_componentInputs.resize(rhs.m_componentInputs.size());
         for (int32_t i = 0; i < rhs.m_componentInputs.size(); ++i)
         {

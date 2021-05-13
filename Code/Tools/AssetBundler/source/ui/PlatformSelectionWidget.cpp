@@ -66,7 +66,9 @@ namespace AssetBundler
         }
     }
 
-    void PlatformSelectionWidget::SetSelectedPlatforms(const AzFramework::PlatformFlags& selectedPlatforms, const AzFramework::PlatformFlags& partiallySelectedPlatforms)
+    void PlatformSelectionWidget::SetSelectedPlatforms(
+        const AzFramework::PlatformFlags& selectedPlatforms,
+        const AzFramework::PlatformFlags& partiallySelectedPlatforms)
     {
         m_selectedPlatforms = AzFramework::PlatformFlags::Platform_NONE;
         m_partiallySelectedPlatforms = AzFramework::PlatformFlags::Platform_NONE;

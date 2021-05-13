@@ -15,7 +15,7 @@
 #include <PhysXCharacters/API/Ragdoll.h>
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Physics/CharacterPhysicsDataBus.h>
-#include <AzFramework/Physics/WorldBodyBus.h>
+#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 
 namespace AzPhysics
 {
@@ -28,7 +28,7 @@ namespace PhysX
     class RagdollComponent
         : public AZ::Component
         , public AzFramework::RagdollPhysicsRequestBus::Handler
-        , public Physics::WorldBodyRequestBus::Handler
+        , public AzPhysics::SimulatedBodyComponentRequestsBus::Handler
         , public AzFramework::CharacterPhysicsDataNotificationBus::Handler
     {
     public:
@@ -49,6 +49,7 @@ namespace PhysX
         {
             incompatible.push_back(AZ_CRC("PhysXRagdollService", 0x6d889c70));
             incompatible.push_back(AZ_CRC("LegacyCryPhysicsService", 0xbb370351));
+            incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -81,12 +82,13 @@ namespace PhysX
         void SetNodeState(size_t nodeIndex, const Physics::RagdollNodeState& nodeState) override;
         Physics::RagdollNode* GetNode(size_t nodeIndex) const override;
 
-        // WorldBodyRequestBus
+        // AzPhysics::SimulatedBodyComponentRequestsBus::Handler overrides ...
         void EnablePhysics() override;
         void DisablePhysics() override;
         bool IsPhysicsEnabled() const override;
         AZ::Aabb GetAabb() const override;
-        AzPhysics::SimulatedBody* GetWorldBody() override;
+        AzPhysics::SimulatedBody* GetSimulatedBody() override;
+        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
         // CharacterPhysicsDataNotificationBus

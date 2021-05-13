@@ -13,7 +13,7 @@
 #include <Source/Debug/MultiplayerDebugSystemComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Interface/Interface.h>
-#include <Include/IMultiplayer.h>
+#include <Multiplayer/IMultiplayer.h>
 
 namespace Multiplayer
 {
@@ -235,7 +235,7 @@ namespace Multiplayer
 
         if (m_displayMultiplayerStats)
         {
-            if (ImGui::Begin("Multiplayer Stats", &m_displayMultiplayerStats, ImGuiWindowFlags_HorizontalScrollbar))
+            if (ImGui::Begin("Multiplayer Stats", &m_displayMultiplayerStats, ImGuiWindowFlags_None))
             {
                 IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
                 const Multiplayer::MultiplayerStats& stats = multiplayer->GetStats();
@@ -254,7 +254,7 @@ namespace Multiplayer
                 if (ImGui::BeginTable("", 5, flags))
                 {
                     // The first column will use the default _WidthStretch when ScrollX is Off and _WidthFixed when ScrollX is On
-                    ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_NoHide, TEXT_BASE_WIDTH * 36.0f);
+                    ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
                     ImGui::TableSetupColumn("Total Calls", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 12.0f);
                     ImGui::TableSetupColumn("Total Bytes", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 12.0f);
                     ImGui::TableSetupColumn("Calls/Sec", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 12.0f);

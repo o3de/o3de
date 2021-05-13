@@ -22,6 +22,8 @@ set(FILES
     Include/IEditorMaterial.h
     Include/IEditorMaterialManager.h
     Include/IImageUtil.h
+    EditorViewportSettings.cpp
+    EditorViewportSettings.h
     Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.qrc
     Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.cpp
     Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.h
@@ -54,13 +56,11 @@ set(FILES
     Util/MemoryBlock.cpp
     Util/Variable.cpp
     Util/UndoUtil.cpp
-    Util/VariableTypeInfo.cpp
     Util/VariablePropertyType.cpp
     Clipboard.h
     Util/MemoryBlock.h
     Util/Variable.h
     Util/UndoUtil.h
-    Util/VariableTypeInfo.h
     Util/VariablePropertyType.h
     Util/RefCountBase.h
     Util/PathUtil.h

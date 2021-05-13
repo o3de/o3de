@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C15556261
 # Test Case Title : Check that the material assignment works with Character Controller
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/15556261
+
 
 
 # fmt: off

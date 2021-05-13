@@ -48,15 +48,21 @@ namespace AzFramework
     };
 
     //! The interface used by MultiViewportController to manage individual instances.
+    template <class TController>
     class MultiViewportControllerInstanceInterface
     {
     public:
-        explicit MultiViewportControllerInstanceInterface(ViewportId viewport)
+        using ControllerType = TController;
+
+        MultiViewportControllerInstanceInterface(ViewportId viewport, ControllerType* controller)
             : m_viewportId(viewport)
+            , m_controller(controller)
         {
         }
 
         ViewportId GetViewportId() const { return m_viewportId; }
+        ControllerType* GetController() { return m_controller; }
+        const ControllerType* GetController() const { return m_controller; }
 
         virtual bool HandleInputChannelEvent([[maybe_unused]]const ViewportControllerInputEvent& event) { return false; }
         virtual void ResetInputChannels() {}
@@ -64,6 +70,7 @@ namespace AzFramework
 
     private:
         ViewportId m_viewportId;
+        ControllerType* m_controller;
     };
 } //namespace AzFramework
 

@@ -268,7 +268,6 @@ void ReflectedPropertyItem::SetVariable(IVariable *var)
     case ePropertyUser:
         m_reflectedVarAdapter = new ReflectedVarUserAdapter;
         break;
-    case ePropertyShader:
     case ePropertyEquip:
     case ePropertyReverbPreset:
     case ePropertyGameToken:

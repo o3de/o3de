@@ -583,7 +583,7 @@ namespace AzToolsFramework
             const TemplateId& linkTargetId,
             const TemplateId& linkSourceId,
             const InstanceAlias& instanceAlias,
-            const PrefabDomReference linkPatch,
+            const PrefabDomConstReference linkPatches,
             const LinkId& linkId)
         {
             if (linkTargetId == InvalidTemplateId)
@@ -667,9 +667,9 @@ namespace AzToolsFramework
                 rapidjson::StringRef(PrefabDomUtils::SourceName), rapidjson::StringRef(sourceTemplate.GetFilePath().c_str()),
                 newLink.GetLinkDom().GetAllocator());
 
-            if (linkPatch && linkPatch->get().IsArray() && !(linkPatch->get().Empty()))
+            if (linkPatches && linkPatches->get().IsArray() && !(linkPatches->get().Empty()))
             {
-                m_instanceToTemplatePropagator.AddPatchesToLink(linkPatch.value(), newLink);
+                m_instanceToTemplatePropagator.AddPatchesToLink(linkPatches.value(), newLink);
             }
 
             //update the target template dom to have the proper values for the source template dom
@@ -721,6 +721,8 @@ namespace AzToolsFramework
 
         TemplateId PrefabSystemComponent::GetTemplateIdFromFilePath(AZ::IO::PathView filePath) const
         {
+            AZ_Assert(!filePath.IsAbsolute(), "Prefab - GetTemplateIdFromFilePath was passed an absolute path. Prefabs use paths relative to the project folder.");
+
             auto found = m_templateFilePathToIdMap.find(filePath);
             if (found != m_templateFilePathToIdMap.end())
             {

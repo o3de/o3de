@@ -11,11 +11,49 @@
 
 set(FILES
     project_manager.qrc
-    source/main.cpp
-    Qt/FirstTimeUse.h
-    Qt/FirstTimeUse.cpp
-    Qt/FirstTimeUse.ui
-    Qt/ProjectManagerWindow.h
-    Qt/ProjectManagerWindow.cpp
-    Qt/ProjectManagerWindow.ui
+    Source/main.cpp
+    Source/ScreenDefs.h
+    Source/ScreenFactory.h
+    Source/ScreenFactory.cpp
+    Source/ScreensCtrl.h
+    Source/ScreensCtrl.cpp
+    Source/ScreenWidget.h
+    Source/FirstTimeUseScreen.h
+    Source/FirstTimeUseScreen.cpp
+    Source/FirstTimeUseScreen.ui
+    Source/ProjectManagerWindow.h
+    Source/ProjectManagerWindow.cpp
+    Source/ProjectManagerWindow.ui
+    Source/PythonBindings.h
+    Source/PythonBindings.cpp
+    Source/PythonBindingsInterface.h
+    Source/ProjectInfo.h
+    Source/ProjectInfo.cpp
+    Source/NewProjectSettingsScreen.h
+    Source/NewProjectSettingsScreen.cpp
+    Source/ProjectSettingsCtrl.h
+    Source/ProjectSettingsCtrl.cpp
+    Source/ProjectsHomeScreen.h
+    Source/ProjectsHomeScreen.cpp
+    Source/ProjectsHomeScreen.ui
+    Source/ProjectSettingsScreen.h
+    Source/ProjectSettingsScreen.cpp
+    Source/ProjectSettingsScreen.ui
+    Source/EngineSettingsScreen.h
+    Source/EngineSettingsScreen.cpp
+    Source/EngineSettingsScreen.ui
+    Source/LinkWidget.h
+    Source/LinkWidget.cpp
+    Source/TagWidget.h
+    Source/TagWidget.cpp
+    Source/GemCatalog/GemCatalogScreen.h
+    Source/GemCatalog/GemCatalogScreen.cpp
+    Source/GemCatalog/GemInfo.h
+    Source/GemCatalog/GemInfo.cpp
+    Source/GemCatalog/GemItemDelegate.h
+    Source/GemCatalog/GemItemDelegate.cpp
+    Source/GemCatalog/GemListView.h
+    Source/GemCatalog/GemListView.cpp
+    Source/GemCatalog/GemModel.h
+    Source/GemCatalog/GemModel.cpp
 )

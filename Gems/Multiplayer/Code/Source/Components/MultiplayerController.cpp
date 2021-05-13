@@ -10,9 +10,9 @@
 *
 */
 
-#include <Source/Components/MultiplayerController.h>
-#include <Source/Components/MultiplayerComponent.h>
-#include <Source/Components/NetBindComponent.h>
+#include <Multiplayer/MultiplayerController.h>
+#include <Multiplayer/MultiplayerComponent.h>
+#include <Multiplayer/NetBindComponent.h>
 
 namespace Multiplayer
 {

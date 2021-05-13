@@ -14,14 +14,14 @@
 #include <Source/NetworkEntity/EntityReplication/EntityReplicator.h>
 #include <Source/NetworkEntity/EntityReplication/PropertyPublisher.h>
 #include <Source/NetworkEntity/EntityReplication/PropertySubscriber.h>
-#include <Source/ReplicationWindows/IReplicationWindow.h>
-#include <Source/EntityDomains/IEntityDomain.h>
-#include <Source/NetworkEntity/NetworkEntityUpdateMessage.h>
-#include <Source/NetworkEntity/NetworkEntityRpcMessage.h>
-#include <Source/NetworkEntity/INetworkEntityManager.h>
-#include <Source/Components/NetBindComponent.h>
 #include <Source/AutoGen/Multiplayer.AutoPackets.h>
-#include <Include/IMultiplayer.h>
+#include <Multiplayer/NetworkEntityUpdateMessage.h>
+#include <Multiplayer/NetworkEntityRpcMessage.h>
+#include <Multiplayer/NetBindComponent.h>
+#include <Multiplayer/IEntityDomain.h>
+#include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/INetworkEntityManager.h>
+#include <Multiplayer/IReplicationWindow.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 #include <AzNetworking/PacketLayer/IPacketHeader.h>
@@ -60,7 +60,11 @@ namespace Multiplayer
         // Start window update events
         m_updateWindow.Enqueue(AZ::TimeMs{ 0 }, true);
 
-        GetNetworkEntityManager()->AddEntityExitDomainHandler(m_entityExitDomainEventHandler);
+        INetworkEntityManager* networkEntityManager = GetNetworkEntityManager();
+        if (networkEntityManager != nullptr)
+        {
+            networkEntityManager->AddEntityExitDomainHandler(m_entityExitDomainEventHandler);
+        }
     }
 
     void EntityReplicationManager::SetRemoteHostId(HostId hostId)
@@ -93,10 +97,10 @@ namespace Multiplayer
         }
     }
 
-    void EntityReplicationManager::SendUpdates(AZ::TimeMs serverGameTimeMs)
+    void EntityReplicationManager::SendUpdates(AZ::TimeMs hostTimeMs)
     {
         m_frameTimeMs = AZ::GetElapsedTimeMs();
-        SendEntityUpdates(serverGameTimeMs);
+        SendEntityUpdates(hostTimeMs);
 
         SendEntityRpcs(m_deferredRpcMessagesReliable, true);
         SendEntityRpcs(m_deferredRpcMessagesUnreliable, false);
@@ -118,7 +122,7 @@ namespace Multiplayer
 
     void EntityReplicationManager::SendEntityUpdatesPacketHelper
     (
-        AZ::TimeMs serverGameTimeMs,
+        AZ::TimeMs hostTimeMs,
         EntityReplicatorList& toSendList,
         uint32_t maxPayloadSize,
         AzNetworking::IConnection& connection
@@ -127,7 +131,8 @@ namespace Multiplayer
         uint32_t pendingPacketSize = 0;
         EntityReplicatorList replicatorUpdatedList;
         MultiplayerPackets::EntityUpdates entityUpdatePacket;
-        entityUpdatePacket.SetHostTimeMs(serverGameTimeMs);
+        entityUpdatePacket.SetHostTimeMs(hostTimeMs);
+        entityUpdatePacket.SetHostFrameId(InvalidHostFrameId);
         // Serialize everything
         while (!toSendList.empty())
         {
@@ -249,7 +254,7 @@ namespace Multiplayer
         return toSendList;
     }
 
-    void EntityReplicationManager::SendEntityUpdates(AZ::TimeMs serverGameTimeMs)
+    void EntityReplicationManager::SendEntityUpdates(AZ::TimeMs hostTimeMs)
     {
         EntityReplicatorList toSendList = GenerateEntityUpdateList();
     
@@ -264,7 +269,7 @@ namespace Multiplayer
         // While our to send list is not empty, build up another packet to send
         do
         {
-            SendEntityUpdatesPacketHelper(serverGameTimeMs, toSendList, m_maxPayloadSize, m_connection);
+            SendEntityUpdatesPacketHelper(hostTimeMs, toSendList, m_maxPayloadSize, m_connection);
         } while (!toSendList.empty());
     }
 
@@ -747,7 +752,7 @@ namespace Multiplayer
 
     bool EntityReplicationManager::HandleEntityUpdateMessage
     (
-        [[maybe_unused]] AzNetworking::IConnection* connection,
+        [[maybe_unused]] AzNetworking::IConnection* invokingConnection,
         const AzNetworking::IPacketHeader& packetHeader,
         const NetworkEntityUpdateMessage& updateMessage
     )
@@ -803,7 +808,7 @@ namespace Multiplayer
         return handled;
     }
 
-    bool EntityReplicationManager::HandleEntityRpcMessage([[maybe_unused]] AzNetworking::IConnection* connection, NetworkEntityRpcMessage& message)
+    bool EntityReplicationManager::HandleEntityRpcMessage(AzNetworking::IConnection* invokingConnection, NetworkEntityRpcMessage& message)
     {
         EntityReplicator* entityReplicator = GetEntityReplicator(message.GetEntityId());
         const bool isReplicatorValid = (entityReplicator != nullptr) && !entityReplicator->IsMarkedForRemoval();
@@ -815,7 +820,7 @@ namespace Multiplayer
         }
         else
         {
-            return entityReplicator->HandleRpcMessage(message);
+            return entityReplicator->HandleRpcMessage(invokingConnection, message);
         }
     }
 
@@ -823,7 +828,7 @@ namespace Multiplayer
     {
         if (entityReplicator == nullptr)
         {
-            IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
+            IMultiplayer* multiplayer = GetMultiplayer();
             AZLOG_INFO
             (
                 "EntityReplicationManager: Dropping remote RPC message for component %s of rpc index %s, entityId %u has already been deleted",
@@ -833,8 +838,7 @@ namespace Multiplayer
             );
             return false;
         }
-
-        return entityReplicator->HandleRpcMessage(message);
+        return entityReplicator->HandleRpcMessage(nullptr, message);
     }
 
     AZ::TimeMs EntityReplicationManager::GetResendTimeoutTimeMs() const
@@ -877,7 +881,6 @@ namespace Multiplayer
     AzNetworking::TimeoutResult EntityReplicationManager::OrphanedEntityRpcs::HandleTimeout(AzNetworking::TimeoutQueue::TimeoutItem& item)
     {
         NetEntityId timedOutEntityId = aznumeric_cast<NetEntityId>(item.m_userData);
-
         auto entityRpcsIter = m_entityRpcMap.find(timedOutEntityId);
         if (entityRpcsIter != m_entityRpcMap.end())
         {
@@ -887,7 +890,6 @@ namespace Multiplayer
             }
             m_entityRpcMap.erase(entityRpcsIter);
         }
-
         return AzNetworking::TimeoutResult::Delete;
     }
 
@@ -1089,7 +1091,7 @@ namespace Multiplayer
 
             if (m_updateMode == EntityReplicationManager::Mode::LocalServerToRemoteServer)
             {
-                netBindComponent->NotifyMigration(GetRemoteHostId(), GetConnection().GetConnectionId());
+                netBindComponent->NotifyServerMigration(GetRemoteHostId(), GetConnection().GetConnectionId());
             }
 
             bool didSucceed = true;
@@ -1127,7 +1129,7 @@ namespace Multiplayer
         }
     }
 
-    bool EntityReplicationManager::HandleMessage([[maybe_unused]] AzNetworking::IConnection* connection, MultiplayerPackets::EntityMigration& message)
+    bool EntityReplicationManager::HandleMessage([[maybe_unused]] AzNetworking::IConnection* invokingConnection, MultiplayerPackets::EntityMigration& message)
     {
         EntityReplicator* replicator = GetEntityReplicator(message.GetEntityId());
         {

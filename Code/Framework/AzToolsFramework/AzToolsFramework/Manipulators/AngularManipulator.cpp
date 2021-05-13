@@ -85,14 +85,14 @@ namespace AzToolsFramework
 
         // if we're snapping, only increment current radians when we know
         // preSnapRadians is greater than the angleStep
-        if (snapping)
+        if (snapping && AZStd::abs(angleStepDegrees) > 0.0f)
         {
             actionInternal.m_current.m_preSnapRadians += rotationAngleRad * rotateSign;
 
             const float angleStepRad = AZ::DegToRad(angleStepDegrees);
             const float preSnapRotateSign = Sign(actionInternal.m_current.m_preSnapRadians);
             // if we move more than angleStep in a frame, make sure we catch up
-            while (fabsf(actionInternal.m_current.m_preSnapRadians) >= angleStepRad)
+            while (AZStd::abs(actionInternal.m_current.m_preSnapRadians) >= angleStepRad)
             {
                 actionInternal.m_current.m_radians += angleStepRad * preSnapRotateSign;
                 actionInternal.m_current.m_preSnapRadians -= angleStepRad * preSnapRotateSign;

@@ -19,11 +19,14 @@
 
 namespace SandboxEditor
 {
+    class ViewportManipulatorControllerInstance;
+    using ViewportManipulatorController = AzFramework::MultiViewportController<ViewportManipulatorControllerInstance, AzFramework::ViewportControllerPriority::DispatchToAllPriorities>;
+
     class ViewportManipulatorControllerInstance final
-        : public AzFramework::MultiViewportControllerInstanceInterface
+        : public AzFramework::MultiViewportControllerInstanceInterface<ViewportManipulatorController>
     {
     public:
-        explicit ViewportManipulatorControllerInstance(AzFramework::ViewportId viewport);
+        explicit ViewportManipulatorControllerInstance(AzFramework::ViewportId viewport, ViewportManipulatorController* controller);
 
         bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
         void ResetInputChannels() override;
@@ -36,10 +39,8 @@ namespace SandboxEditor
         static bool IsMouseMove(const AzFramework::InputChannel& inputChannel);
         static AzToolsFramework::ViewportInteraction::KeyboardModifier GetKeyboardModifier(const AzFramework::InputChannel& inputChannel);
 
-        AzToolsFramework::ViewportInteraction::MouseInteraction m_state;
+        AzToolsFramework::ViewportInteraction::MouseInteraction m_mouseInteraction;
         AZStd::unordered_map<AzToolsFramework::ViewportInteraction::MouseButton, AZ::ScriptTimePoint> m_pendingDoubleClicks;
         AZ::ScriptTimePoint m_curTime;
     };
-
-    using ViewportManipulatorController = AzFramework::MultiViewportController<ViewportManipulatorControllerInstance, AzFramework::ViewportControllerPriority::DispatchToAllPriorities>;
 } //namespace SandboxEditor

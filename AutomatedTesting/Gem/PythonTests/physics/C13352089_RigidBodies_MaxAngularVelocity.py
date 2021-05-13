@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C13352089
 # Test Case Title : Verify that maximum angular velocity interacts correctly with initial angular velocity
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/13352089
+
 
 
 # fmt: off
