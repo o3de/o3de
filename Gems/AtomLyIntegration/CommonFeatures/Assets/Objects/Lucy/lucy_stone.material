@@ -5,8 +5,8 @@
     "propertyLayoutVersion": 3,
     "properties": {
         "occlusion": {
-            "textureMap": "Objects/Lucy/Lucy_ao.tif"
-            "textureMapUv": "Unwrapped"
+            "diffuseTextureMap": "Objects/Lucy/Lucy_ao.tif",
+            "diffuseTextureMapUv": "Unwrapped"
         },
         "baseColor": {
             "color": [
