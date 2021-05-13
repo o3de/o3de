@@ -1304,7 +1304,7 @@ namespace AZ
                 // Add all auto loadable non-asset gems to the list of gem modules to load
                 if (!moduleLoadData.m_autoLoad)
                 {
-                    break;
+                    continue;
                 }
                 for (AZ::OSString& dynamicLibraryPath : moduleLoadData.m_dynamicLibraryPaths)
                 {

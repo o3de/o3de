@@ -10,8 +10,8 @@
 *
 */
 
-#include <Source/NetworkInput/NetworkInput.h>
-#include <Source/Components/NetBindComponent.h>
+#include <Multiplayer/NetworkInput.h>
+#include <Multiplayer/NetBindComponent.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 

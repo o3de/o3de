@@ -22,7 +22,6 @@ set(FILES
     IConsole.h
     IEntityRenderState.h
     IEntityRenderState_info.cpp
-    IFlares.h
     IFont.h
     IFunctorBase.h
     IFuncVariable.h
@@ -40,12 +39,10 @@ set(FILES
     ILog.h
     ILZ4Decompressor.h
     IMaterial.h
-    IMaterialEffects.h
     IMemory.h
     IMeshBaking.h
     IMiniLog.h
     IMovieSystem.h
-    INotificationNetwork.h
     IPhysics.h
     IPhysicsDebugRenderer.h
     IPostEffectGroup.h
@@ -55,12 +52,10 @@ set(FILES
     IRenderer.h
     IRenderMesh.h
     IResourceCollector.h
-    IResourceCompilerHelper.h
     IResourceManager.h
     ISerialize.h
     IShader.h
     IShader_info.h
-    ISoftCodeMgr.h
     ISplines.h
     IStatObj.h
     StatObjBus.h
@@ -69,11 +64,8 @@ set(FILES
     IStreamEngineDefs.h
     ISurfaceType.h
     ISystem.h
-    ISystemScheduler.h
     ITextModeConsole.h
     ITexture.h
-    IThreadManager.h
-    IThreadTask.h
     ITimer.h
     IValidator.h
     IVideoRenderer.h
@@ -108,7 +100,6 @@ set(FILES
     MaterialUtils.h
     MTPseudoRandom.cpp
     CryTypeInfo.cpp
-    IResourceCompilerHelper.cpp
     BaseTypes.h
     CompileTimeAssert.h
     CryThreadSafeWorkerContainer.h
@@ -170,7 +161,6 @@ set(FILES
     PoolAllocator.h
     primitives.h
     primitives_info.h
-    ProfileLog.h
     ProjectDefines.h
     Range.h
     RenderContextConfig.h
@@ -259,7 +249,6 @@ set(FILES
     platform_impl.cpp
     Win32specific.h
     Win64specific.h
-    stl/STLAlignedAlloc.h
     LyShine/IDraw2d.h
     LyShine/ILyShine.h
     LyShine/ISprite.h
@@ -351,11 +340,7 @@ set(FILES
     Maestro/Types/AssetBlendKey.h
     Maestro/Types/AssetBlends.h
     Maestro/Types/SequenceType.h
-    Terrain/Bus/WorldMaterialRequestsBus.h
-    Terrain/Bus/TerrainBus.h
-    Terrain/Bus/TerrainRendererBus.h
-    Terrain/Bus/HeightmapDataBus.h
-    Terrain/Bus/TerrainProviderBus.h
     StaticInstance.h
     Pak/CryPakUtils.h
+    WinBase.cpp
 )

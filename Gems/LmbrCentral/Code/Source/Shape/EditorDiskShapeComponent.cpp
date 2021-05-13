@@ -55,6 +55,12 @@ namespace LmbrCentral
         provided.push_back(AZ_CRC("DiskShapeService", 0xd90c482b));
     }
 
+    void EditorDiskShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        EditorBaseShapeComponent::GetIncompatibleServices(incompatible);
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+    }
+
     void EditorDiskShapeComponent::Init()
     {
         EditorBaseShapeComponent::Init();

@@ -13,11 +13,11 @@
 #pragma once
 
 #include <Source/NetworkEntity/EntityReplication/EntityReplicator.h>
-#include <Source/Components/NetBindComponent.h>
-#include <Include/INetworkEntityManager.h>
-#include <Include/IReplicationWindow.h>
-#include <Include/IEntityDomain.h>
-#include <Include/NetworkEntityHandle.h>
+#include <Multiplayer/NetBindComponent.h>
+#include <Multiplayer/INetworkEntityManager.h>
+#include <Multiplayer/IReplicationWindow.h>
+#include <Multiplayer/IEntityDomain.h>
+#include <Multiplayer/NetworkEntityHandle.h>
 #include <AzNetworking/DataStructures/TimeoutQueue.h>
 #include <AzNetworking/PacketLayer/IPacketHeader.h>
 #include <AzCore/std/containers/map.h>
