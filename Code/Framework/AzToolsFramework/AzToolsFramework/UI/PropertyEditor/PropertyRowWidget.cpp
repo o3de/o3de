@@ -126,7 +126,7 @@ namespace AzToolsFramework
     {
         QStylePainter p(this);
 
-        if (IsReorderableRow())
+        if (CanBeReordered())
         {
             const QPen linePen(QColor(0x3B3E3F));
             p.setPen(linePen);
@@ -1330,11 +1330,6 @@ namespace AzToolsFramework
             }
         }
         return canBeTopLevel(this);
-    }
-
-    bool PropertyRowWidget::IsReorderableRow() const
-    {
-        return CanBeReordered();
     }
 
     bool PropertyRowWidget::GetAppendDefaultLabelToName()
