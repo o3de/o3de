@@ -107,8 +107,8 @@ namespace AZ
                     ->Field("m_rowCount", &ImageSubresourceLayout::m_rowCount)
                     ->Field("m_bytesPerRow", &ImageSubresourceLayout::m_bytesPerRow)
                     ->Field("m_bytesPerImage", &ImageSubresourceLayout::m_bytesPerImage)
-                    ->Field("m_numBlocksWidth", &ImageSubresourceLayout::m_numBlocksWidth)
-                    ->Field("m_numBlocksHeight", &ImageSubresourceLayout::m_numBlocksHeight)
+                    ->Field("m_blockElementWidth", &ImageSubresourceLayout::m_blockElementWidth)
+                    ->Field("m_blockElementHeight", &ImageSubresourceLayout::m_blockElementHeight)
                     ;
             }
         }
@@ -118,14 +118,14 @@ namespace AZ
             uint32_t rowCount,
             uint32_t bytesPerRow,
             uint32_t bytesPerImage,
-            uint32_t numBlocksWidth,
-            uint32_t numBlocksHeight)
+            uint32_t blockElementWidth,
+            uint32_t blockElementHeight)
             : m_size{size}
             , m_rowCount{rowCount}
             , m_bytesPerRow{bytesPerRow}
             , m_bytesPerImage{bytesPerImage}
-            , m_numBlocksWidth{numBlocksWidth}
-            , m_numBlocksHeight{numBlocksHeight}
+            , m_blockElementWidth{blockElementWidth}
+            , m_blockElementHeight{blockElementHeight}
         {}
 
         ImageSubresourceLayoutPlaced::ImageSubresourceLayoutPlaced(const ImageSubresourceLayout& subresourceLayout, size_t offset)
@@ -322,8 +322,8 @@ namespace AZ
                 subresourceLayout.m_rowCount = numBlocksHigh;
                 subresourceLayout.m_size.m_width = imageSize.m_width;
                 subresourceLayout.m_size.m_height = imageSize.m_height;
-                subresourceLayout.m_numBlocksWidth = numBlocks;
-                subresourceLayout.m_numBlocksHeight = numBlocks;
+                subresourceLayout.m_blockElementWidth = numBlocks;
+                subresourceLayout.m_blockElementHeight = numBlocks;
             }
             else if (isPacked)
             {

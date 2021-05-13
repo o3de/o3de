@@ -267,7 +267,7 @@ namespace AZ
                     // Staging sizes
                     uint32_t stagingRowPitch = RHI::AlignUp(subresourceLayout.m_bytesPerRow, DX12_TEXTURE_DATA_PITCH_ALIGNMENT);
                     uint32_t stagingSlicePitch = RHI::AlignUp(subresourceLayout.m_rowCount*stagingRowPitch, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
-                    const uint32_t compressedTexelBlockSizeHeight = subresourceLayout.m_numBlocksHeight;
+                    const uint32_t compressedTexelBlockSizeHeight = subresourceLayout.m_blockElementHeight;
 
                     // ImageHeight must be bigger than or equal to the Image's row count. Images with a RowCount that is less than the ImageHeight indicates a block compression.
                     // Images with a RowCount which is higher than the ImageHeight indicates a planar image, which is not supported for streaming images.

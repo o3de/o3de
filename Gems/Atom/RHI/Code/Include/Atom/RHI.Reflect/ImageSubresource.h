@@ -118,10 +118,10 @@ namespace AZ
             uint32_t m_bytesPerImage = 0;
             
             /// The number of blocks in width based on the texture fomat
-            uint32_t m_numBlocksWidth = 1;
+            uint32_t m_blockElementWidth = 1;
             
             /// The number of blocks in height based on the texture fomat
-            uint32_t m_numBlocksHeight = 1;
+            uint32_t m_blockElementHeight = 1;
             
         };
 

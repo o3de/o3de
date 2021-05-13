@@ -214,7 +214,7 @@ namespace AZ
                     const uint32_t stagingRowPitch = RHI::AlignUp(subresourceLayout.m_bytesPerRow, bufferOffsetAlign);
                     const uint32_t stagingSlicePitch = subresourceLayout.m_rowCount * stagingRowPitch;
                     const uint32_t rowsPerSplit = static_cast<uint32_t>(m_descriptor.m_stagingSizeInBytes) / stagingRowPitch;
-                    const uint32_t compressedTexelBlockSizeHeight = subresourceLayout.m_numBlocksHeight;
+                    const uint32_t compressedTexelBlockSizeHeight = subresourceLayout.m_blockElementHeight;
 
                     // ImageHeight must be bigger than or equal to the Image's row count. Images with a RowCount that is less than the ImageHeight indicates a block compression.
                     // Images with a RowCount which is higher than the ImageHeight indicates a planar image, which is not supported for streaming images.
