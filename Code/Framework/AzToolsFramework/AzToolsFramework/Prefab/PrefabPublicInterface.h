@@ -28,9 +28,9 @@ namespace AzToolsFramework
 
     namespace Prefab
     {
-        typedef AZ::Outcome<void, AZStd::string> PrefabOperationResult;
-        typedef AZ::Outcome<bool, AZStd::string> PrefabRequestResult;
-        typedef AZ::Outcome<AZ::EntityId, AZStd::string> PrefabEntityResult;
+        using PrefabOperationResult = AZ::Outcome<void, AZStd::string>;
+        using PrefabRequestResult = AZ::Outcome<bool, AZStd::string>;
+        using PrefabEntityResult = AZ::Outcome<AZ::EntityId, AZStd::string>;
 
         /*!
          * PrefabPublicInterface

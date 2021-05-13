@@ -636,14 +636,22 @@ namespace AzToolsFramework
 
             if (!EntitiesBelongToSameInstance(entityIds))
             {
-                return AZ::Failure(AZStd::string("DeleteEntitiesAndAllDescendantsInInstance - Deletion Error. Cannot delete multiple "
-                                                 "entities belonging to different instances with one operation."));
+                return AZ::Failure(AZStd::string("Cannot delete multiple entities belonging to different instances with one operation."));
             }
-
-            InstanceOptionalReference instance = GetOwnerInstanceByEntityId(entityIds[0]);
 
             // Retrieve entityList from entityIds
             EntityList inputEntityList = EntityIdListToEntityList(entityIds);
+
+            EntityList topLevelEntities;
+            AZ::EntityId commonRootEntityId;
+            InstanceOptionalReference commonRootEntityOwningInstance;
+            PrefabOperationResult findCommonRootOutcome = FindCommonRootOwningInstance(
+                entityIds, inputEntityList, topLevelEntities, commonRootEntityId, commonRootEntityOwningInstance);
+
+            if (!findCommonRootOutcome.IsSuccess())
+            {
+                return findCommonRootOutcome;
+            }
 
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -680,14 +688,15 @@ namespace AzToolsFramework
                 AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "Internal::DeleteEntities:UndoCaptureAndPurgeEntities");
 
                 Prefab::PrefabDom instanceDomBefore;
-                m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBefore, instance->get());
+                m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBefore, commonRootEntityOwningInstance->get());
 
                 if (deleteDescendants)
                 {
                     AZStd::vector<AZ::Entity*> entities;
                     AZStd::vector<AZStd::unique_ptr<Instance>> instances;
 
-                    bool success = RetrieveAndSortPrefabEntitiesAndInstances(inputEntityList, instance->get(), entities, instances);
+                    bool success = RetrieveAndSortPrefabEntitiesAndInstances(
+                        inputEntityList, commonRootEntityOwningInstance->get(), entities, instances);
 
                     if (!success)
                     {
@@ -712,22 +721,23 @@ namespace AzToolsFramework
                         // If this is the container entity, it actually represents the instance so get its owner
                         if (owningInstance->get().GetContainerEntityId() == entityId)
                         {
-                            auto instancePtr = instance->get().DetachNestedInstance(owningInstance->get().GetInstanceAlias());
+                            auto instancePtr =
+                                commonRootEntityOwningInstance->get().DetachNestedInstance(owningInstance->get().GetInstanceAlias());
                             instancePtr.reset();
                         }
                         else
                         {
-                            instance->get().DetachEntity(entityId);
+                            commonRootEntityOwningInstance->get().DetachEntity(entityId);
                             AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, entityId);
                         }
                     }
                 }
 
                 Prefab::PrefabDom instanceDomAfter;
-                m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfter, instance->get());
-
+                m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfter, commonRootEntityOwningInstance->get());
+                
                 PrefabUndoInstance* command = aznew PrefabUndoInstance("Instance deletion");
-                command->Capture(instanceDomBefore, instanceDomAfter, instance->get().GetTemplateId());
+                command->Capture(instanceDomBefore, instanceDomAfter, commonRootEntityOwningInstance->get().GetTemplateId());
                 command->SetParent(selCommand);
             }
 
