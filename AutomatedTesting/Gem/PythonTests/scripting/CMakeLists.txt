@@ -27,7 +27,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         NAME AutomatedTesting::ScriptCanvasTests_Sandbox
         TEST_SUITE sandbox
         TEST_SERIAL
-        PATH ${CMAKE_CURRENT_LIST_DIR}/scripting/TestSuite_Sandbox.py
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Sandbox.py
         TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
