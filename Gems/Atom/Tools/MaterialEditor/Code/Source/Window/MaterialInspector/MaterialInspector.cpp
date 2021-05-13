@@ -198,6 +198,11 @@ namespace MaterialEditor
                 &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupNameId),
                 [this](const auto source, const auto target) { return CompareInstanceNodeProperties(source, target); });
             AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
+            
+            bool isGroupVisible = false;
+            MaterialDocumentRequestBus::EventResult(
+                isGroupVisible, m_documentId, &MaterialDocumentRequestBus::Events::IsPropertyGroupVisible, AZ::Name{groupNameId});
+            SetGroupVisible(groupNameId, isGroupVisible);
         }
     }
 

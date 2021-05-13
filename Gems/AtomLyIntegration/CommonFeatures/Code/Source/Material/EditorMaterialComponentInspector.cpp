@@ -305,8 +305,11 @@ namespace AZ
                 {
                     AZ::RPI::MaterialPropertyGroupDynamicMetadata& metadata = propertyGroupDynamicMetadata[AZ::Name{groupPair.first}];
 
-                    metadata.m_visibility = IsGroupVisible(groupPair.first) ?
-                        AZ::RPI::MaterialPropertyGroupVisibility::Enabled : AZ::RPI::MaterialPropertyGroupVisibility::Hidden;
+                    // It's significant that we check IsGroupHidden rather than IsGroupVisisble, because it follows the same rules as QWidget::isHidden().
+                    // We don't care whether the widget and all its parents are visible, we only care about whether the group was hidden within the context
+                    // of the material property inspector.
+                    metadata.m_visibility = IsGroupHidden(groupPair.first) ?
+                        AZ::RPI::MaterialPropertyGroupVisibility::Hidden : AZ::RPI::MaterialPropertyGroupVisibility::Enabled;
                 }
 
                 for (AZ::RPI::Ptr<AZ::RPI::MaterialFunctor>& functor : m_editorFunctors)

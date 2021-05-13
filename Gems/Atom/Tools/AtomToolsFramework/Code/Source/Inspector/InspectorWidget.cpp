@@ -75,7 +75,7 @@ namespace AtomToolsFramework
         groupWidget->setParent(m_ui->m_propertyContent);
         m_layout->addWidget(groupWidget);
 
-        m_groups[groupNameId] = AZStd::make_pair(groupHeader, groupWidget);
+        m_groups[groupNameId] = {groupHeader, groupWidget};
 
         connect(groupHeader, &InspectorGroupHeaderWidget::clicked, this, [this, groupNameId](QMouseEvent* event) {
             OnHeaderClicked(groupNameId, event);
@@ -95,25 +95,31 @@ namespace AtomToolsFramework
     
     void InspectorWidget::SetGroupVisible(const AZStd::string& groupNameId, bool visible)
     {
-        for (size_t i = 0; i < m_groups.size(); ++i)
+        auto groupItr = m_groups.find(groupNameId);
+        if (groupItr != m_groups.end())
         {
-            if (m_groups[i]->objectName() == groupNameId.c_str())
-            {
-                m_headers[i]->setVisible(visible);
-                m_groups[i]->setVisible(visible && m_headers[i]->IsExpanded());
-                break;
-            }
+            groupItr->second.m_header->setVisible(visible);
+            groupItr->second.m_panel->setVisible(visible && groupItr->second.m_header->IsExpanded());
         }
     }
     
     bool InspectorWidget::IsGroupVisible(const AZStd::string& groupNameId) const
     {
-        for (auto& header : m_headers)
+        auto groupItr = m_groups.find(groupNameId);
+        if (groupItr != m_groups.end())
         {
-            if (header->objectName() == groupNameId.c_str())
-            {
-                return header->isVisible();
-            }
+            return groupItr->second.m_header->isVisible();
+        }
+
+        return false;
+    }
+    
+    bool InspectorWidget::IsGroupHidden(const AZStd::string& groupNameId) const
+    {
+        auto groupItr = m_groups.find(groupNameId);
+        if (groupItr != m_groups.end())
+        {
+            return groupItr->second.m_header->isHidden();
         }
 
         return false;
@@ -156,8 +162,8 @@ namespace AtomToolsFramework
         auto groupItr = m_groups.find(groupNameId);
         if (groupItr != m_groups.end())
         {
-            groupItr->second.first->SetExpanded(true);
-            groupItr->second.second->setVisible(true);
+            groupItr->second.m_header->SetExpanded(true);
+            groupItr->second.m_panel->setVisible(true);
         }
     }
 
@@ -166,23 +172,23 @@ namespace AtomToolsFramework
         auto groupItr = m_groups.find(groupNameId);
         if (groupItr != m_groups.end())
         {
-            groupItr->second.first->SetExpanded(false);
-            groupItr->second.second->setVisible(false);
+            groupItr->second.m_header->SetExpanded(false);
+            groupItr->second.m_panel->setVisible(false);
         }
     }
 
     bool InspectorWidget::IsGroupExpanded(const AZStd::string& groupNameId) const
     {
         auto groupItr = m_groups.find(groupNameId);
-        return groupItr != m_groups.end() ? groupItr->second.first->IsExpanded() : false;
+        return groupItr != m_groups.end() ? groupItr->second.m_header->IsExpanded() : false;
     }
 
     void InspectorWidget::ExpandAll()
     {
         for (auto& groupPair : m_groups)
         {
-            groupPair.second.first->SetExpanded(true);
-            groupPair.second.second->setVisible(true);
+            groupPair.second.m_header->SetExpanded(true);
+            groupPair.second.m_panel->setVisible(true);
         }
     }
 
@@ -190,8 +196,8 @@ namespace AtomToolsFramework
     {
         for (auto& groupPair : m_groups)
         {
-            groupPair.second.first->SetExpanded(false);
-            groupPair.second.second->setVisible(false);
+            groupPair.second.m_header->SetExpanded(false);
+            groupPair.second.m_panel->setVisible(false);
         }
     }
 
