@@ -23,6 +23,9 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/Utils/Utils.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/Utils.h>
 
 namespace AZ::ConsoleTypeHelpers
 {
@@ -60,6 +63,8 @@ namespace Multiplayer
     static const AZStd::string_view s_networkEditorInterfaceName("MultiplayerEditorNetworkInterface");
     static constexpr uint16_t DefaultServerPort = 30090;
     static constexpr uint16_t DefaultServerEditorPort = 30091;
+    //static AZStd::vector<uint8_t> buffer;
+    //static AZ::IO::ByteContainerStream<AZStd::vector<uint8_t>> s_byteStream(&buffer);
 
     AZ_CVAR(uint16_t, cl_clientport, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port to bind to for game traffic when connecting to a remote host, a value of 0 will select any available port");
     AZ_CVAR(AZ::CVarFixedString, cl_serveraddr, "127.0.0.1", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The address of the remote server or host to connect to");
@@ -107,7 +112,7 @@ namespace Multiplayer
             AZ::ConsoleInvokedFrom invokedFrom
         ) { OnConsoleCommandInvoked(command, args, flags, invokedFrom); })
     {
-        ;
+
     }
 
     void MultiplayerSystemComponent::Activate()
@@ -401,19 +406,6 @@ namespace Multiplayer
         return false;
     }
 
-        bool MultiplayerSystemComponent::HandleRequest
-    (
-        [[maybe_unused]] AzNetworking::IConnection* connection,
-        [[maybe_unused]] const IPacketHeader& packetHeader,
-        [[maybe_unused]] MultiplayerPackets::EditorServerInit& packet
-    )
-    {
-#if !defined(_RELEASE)
-        // Support Editor Server Init for all non-release targets
-#endif
-        return true;
-    }
-
     ConnectResult MultiplayerSystemComponent::ValidateConnect
     (
         [[maybe_unused]] const IpAddress& remoteAddress,
@@ -447,13 +439,19 @@ namespace Multiplayer
             // TODO: This needs to be set to the players autonomous proxy ------------v
             NetworkEntityHandle controlledEntity = GetNetworkEntityTracker()->Get(NetEntityId{ 0 });
 
-            if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
+            if (controlledEntity.GetEntity() != nullptr)
             {
-                connection->SetUserData(new ServerToClientConnectionData(connection, *this, controlledEntity));
-            }
+                if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
+                {
+                    connection->SetUserData(new ServerToClientConnectionData(connection, *this, controlledEntity));
+                }
 
-            AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<ServerToClientReplicationWindow>(controlledEntity, connection);
-            reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
+                AZStd::unique_ptr<IReplicationWindow> window =
+                    AZStd::make_unique<ServerToClientReplicationWindow>(controlledEntity, connection);
+                reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())
+                    ->GetReplicationManager()
+                    .SetReplicationWindow(AZStd::move(window));
+            }
         }
         else
         {
@@ -509,12 +507,6 @@ namespace Multiplayer
         {
             if (multiplayerType == MultiplayerAgentType::ClientServer || multiplayerType == MultiplayerAgentType::DedicatedServer)
             {
-#if !defined(_RELEASE)
-                m_networkEditorInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(
-                    AZ::Name(s_networkEditorInterfaceName), ProtocolType::Tcp, TrustZone::ExternalClientToServer, *this);
-                m_networkEditorInterface->Listen(DefaultServerEditorPort);
-#endif
-
                 m_initEvent.Signal(m_networkInterface);
 
                 const AZ::Aabb worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-16384.0f), AZ::Vector3(16384.0f));

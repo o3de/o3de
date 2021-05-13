@@ -14,6 +14,8 @@
 
 #include <IEditor.h>
 
+#include <Source/Editor/MultiplayerEditorConnection.h>
+
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/IConsole.h>
@@ -34,7 +36,6 @@ namespace Multiplayer
     //! Multiplayer system component wraps the bridging logic between the game and transport layer.
     class MultiplayerEditorSystemComponent final
         : public AZ::Component
-        , private AZ::TickBus::Handler
         , private AzFramework::GameEntityContextEventBus::Handler
         , private AzToolsFramework::EditorEvents::Bus::Handler
         , private IEditorNotifyListener
@@ -61,14 +62,7 @@ namespace Multiplayer
         void NotifyRegisterViews() override;
         //! @}
 
-    private:
-
-        //! AZ::TickBus::Handler overrides.
-        //! @{
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        int GetTickOrder() override;
-        //! @}
-        
+    private:    
         //! EditorEvents::Handler overrides
         //! @{
         void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
@@ -82,6 +76,5 @@ namespace Multiplayer
         IEditor* m_editor = nullptr;
         AzFramework::ProcessWatcher* m_serverProcess = nullptr;
         AzNetworking::ConnectionId m_editorConnId;
-        AzNetworking::INetworkInterface* m_editorNetworkInterface = nullptr;
     };
 }

@@ -33,6 +33,7 @@ set(FILES
     Source/AutoGen/AutoComponentTypes_Source.jinja
     Source/AutoGen/LocalPredictionPlayerInputComponent.AutoComponent.xml
     Source/AutoGen/Multiplayer.AutoPackets.xml
+    Source/AutoGen/MultiplayerEditor.AutoPackets.xml
     Source/AutoGen/NetworkTransformComponent.AutoComponent.xml
     Source/Components/LocalPredictionPlayerInputComponent.cpp
     Source/Components/LocalPredictionPlayerInputComponent.h
@@ -52,6 +53,8 @@ set(FILES
     Source/ConnectionData/ServerToClientConnectionData.cpp
     Source/ConnectionData/ServerToClientConnectionData.h
     Source/ConnectionData/ServerToClientConnectionData.inl
+    Source/Editor/MultiplayerEditorConnection.cpp
+    Source/Editor/MultiplayerEditorConnection.h
     Source/EntityDomains/FullOwnershipEntityDomain.cpp
     Source/EntityDomains/FullOwnershipEntityDomain.h
     Source/NetworkEntity/EntityReplication/EntityReplicationManager.cpp

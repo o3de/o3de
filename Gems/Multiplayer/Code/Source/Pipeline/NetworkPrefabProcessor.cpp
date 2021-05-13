@@ -35,6 +35,10 @@ namespace Multiplayer
         context.ListPrefabs([&context](AZStd::string_view prefabName, PrefabDom& prefab) {
             ProcessPrefab(context, prefabName, prefab);
         });
+        if (context.GetProcessedObjects().size() > 0)
+        {
+            mpTools->SetDidProcessNetworkPrefabs(true);
+        }
     }
 
     void NetworkPrefabProcessor::Reflect(AZ::ReflectContext* context)

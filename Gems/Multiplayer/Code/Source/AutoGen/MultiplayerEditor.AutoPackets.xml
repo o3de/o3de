@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PacketGroup Name="MultiplayerEditorPackets" PacketStart="CorePackets::PacketType::MAX">
+    <Include File="AzNetworking/AutoGen/CorePackets.AutoPackets.h" />
+    <Include File="Include/MultiplayerTypes.h" />
+    <Include File="Include/INetworkTime.h" />
+  
+    <Packet Name="EditorServerInit" Desc="A packet that initializes a local server launched from the editor">
+        <Member Type="bool" Name="lastUpdate" Init="false"/>
+        <Member Type="AzNetworking::TcpPacketEncodingBuffer" Name="assetData"/>
+    </Packet>
+
+    <Packet Name="EditorServerReady" Desc="A response packet the local server should send when ready for traffic"/>
+</PacketGroup>

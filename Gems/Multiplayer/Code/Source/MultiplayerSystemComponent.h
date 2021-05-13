@@ -16,10 +16,12 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Threading/ThreadSafeDeque.h>
 #include <AzCore/std/string/string.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 #include <Include/IMultiplayer.h>
+#include <Source/Editor/MultiplayerEditorConnection.h>
 #include <Source/NetworkTime/NetworkTime.h>
 #include <Source/NetworkEntity/NetworkEntityManager.h>
 #include <Source/AutoGen/Multiplayer.AutoPacketDispatcher.h>
@@ -72,7 +74,7 @@ namespace Multiplayer
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::NotifyClientMigration& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::EntityMigration& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::ReadyForEntityUpdates& packet);
-        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::EditorServerInit& packet);
+        //bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::EditorServerInit& packet);
         
         //! IConnectionListener interface
         //! @{
@@ -125,5 +127,9 @@ namespace Multiplayer
 
         AZ::TimeMs m_lastReplicatedHostTimeMs = AZ::TimeMs{ 0 };
         HostFrameId m_lastReplicatedHostFrameId = InvalidHostFrameId;
+
+#if !defined(_RELEASE)
+        MultiplayerEditorConnection m_editorConnectionListener;
+#endif
     };
 }

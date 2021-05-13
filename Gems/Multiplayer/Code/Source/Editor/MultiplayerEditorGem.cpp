@@ -13,7 +13,7 @@
 #include <Source/Multiplayer_precompiled.h>
 #include <Source/MultiplayerGem.h>
 #include <Source/MultiplayerSystemComponent.h>
-#include <Source/MultiplayerEditorGem.h>
+#include <Source/Editor/MultiplayerEditorGem.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 
 #include <Source/Editor/MultiplayerEditorSystemComponent.h>

@@ -176,7 +176,7 @@ namespace AzNetworking
             if (::bind(aznumeric_cast<int32_t>(m_socketFd), (const sockaddr*)&hints, sizeof(hints)) != 0)
             {
                 const int32_t error = GetLastNetworkError();
-                AZLOG_ERROR("Failed to bind socket (%d:%s)", error, GetNetworkErrorDesc(error));
+                AZLOG_ERROR("Failed to bind TCP socket to port %u (%d:%s)", uint32_t(port), error, GetNetworkErrorDesc(error));
                 return false;
             }
 
