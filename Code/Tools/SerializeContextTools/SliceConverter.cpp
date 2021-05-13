@@ -25,7 +25,6 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Archive/IArchive.h>
-#include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -83,6 +82,12 @@ namespace AZ
 
             auto archiveInterface = AZ::Interface<AZ::IO::IArchive>::Get();
 
+            // Find the Prefab System Component for use in creating and saving the prefab
+            AZ::Entity* systemEntity = application.FindEntity(AZ::SystemEntityId);
+            AZ_Assert(systemEntity != nullptr, "System entity doesn't exist.");
+            auto prefabSystemComponent = systemEntity->FindComponent<AzToolsFramework::Prefab::PrefabSystemComponent>();
+            AZ_Assert(prefabSystemComponent != nullptr, "Prefab System component doesn't exist");
+
             bool result = true;
             rapidjson::StringBuffer scratchBuffer;
 
@@ -117,119 +122,17 @@ namespace AZ
                         "  Warning: Only .ly and .slice files are supported, conversion of '.%s' may not work.\n", fileExtension.c_str());
                 }
 
-                auto callback = [&result, &application, outputPath, isDryRun]
+                auto callback = [prefabSystemComponent, outputPath, isDryRun]
                     (void* classPtr, const Uuid& classId, [[maybe_unused]] SerializeContext* context)
                 {
                     if (classId != azrtti_typeid<AZ::Entity>())
                     {
                         AZ_Printf("Convert-Slice", "  File not converted: Slice root is not an entity.\n");
-                        result = false;
-                        return result;
+                        return false;
                     }
 
-                    // Find the slice from the root entity.
                     AZ::Entity* rootEntity = reinterpret_cast<AZ::Entity*>(classPtr);
-                    SliceComponent* sliceComponent = AZ::EntityUtils::FindFirstDerivedComponent<SliceComponent>(rootEntity);
-                    if (sliceComponent == nullptr)
-                    {
-                        AZ_Printf("Convert-Slice", "  File not converted: Root entity did not contain a slice component.\n");
-                        result = false;
-                        return result;
-                    }
-
-                    // Get all of the entities from the slice.
-                    SliceComponent::EntityList sliceEntities;
-                    bool getEntitiesResult = sliceComponent->GetEntities(sliceEntities);
-                    if ((!getEntitiesResult) || (sliceEntities.empty()))
-                    {
-                        AZ_Printf("Convert-Slice", "  File not converted: Slice entities could not be retrieved.\n");
-                        result = false;
-                        return result;
-                    }
-
-                    // Find the Prefab System Component for use in creating and saving the prefab
-                    AZ::Entity* systemEntity = application.FindEntity(AZ::SystemEntityId);
-                    AZ_Assert(systemEntity != nullptr, "System entity doesn't exist.");
-                    auto prefabSystemComponent = systemEntity->FindComponent<AzToolsFramework::Prefab::PrefabSystemComponent>();
-                    AZ_Assert(prefabSystemComponent != nullptr, "Prefab System component doesn't exist");
-
-                    // Create the Prefab with the entities from the slice
-                    AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> sourceInstance(prefabSystemComponent->CreatePrefab(
-                        sliceEntities, {}, AZ::IO::PathView(outputPath)));
-
-                    // Dispatch events here, because prefab creation might trigger asset loads in rare circumstances.
-                    AZ::Data::AssetManager::Instance().DispatchEvents();
-
-                    // Set up the Prefab container entity to be a proper Editor entity.  (This logic is normally triggered
-                    // via an EditorRequests EBus in CreatePrefab, but the subsystem that listens for it isn't present in this tool.)
-                    AzToolsFramework::Prefab::EntityOptionalReference container = sourceInstance->GetContainerEntity();
-                    AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-                        &AzToolsFramework::EditorEntityContextRequestBus::Events::AddRequiredComponents, container->get());
-                    container->get().AddComponent(aznew AzToolsFramework::Prefab::EditorPrefabComponent());
-
-                    // Reparent any root-level slice entities to the container entity.
-                    for (auto entity : sliceEntities)
-                    {
-                        AzToolsFramework::Components::TransformComponent* transformComponent =
-                            entity->FindComponent<AzToolsFramework::Components::TransformComponent>();
-                        if (transformComponent)
-                        {
-                            if (!transformComponent->GetParentId().IsValid())
-                            {
-                                transformComponent->SetParent(container->get().GetId());
-                            }
-                        }
-                    }
-
-                    auto templateId = sourceInstance->GetTemplateId();
-
-                    if (templateId == AzToolsFramework::Prefab::InvalidTemplateId)
-                    {
-                        AZ_Printf("Convert-Slice", "  Path error. Path could be invalid, or the prefab may not be loaded in this level.\n");
-                        result = false;
-                        return result;
-                    }
-
-                    // Update the prefab template with the fixed-up data in our prefab instance.
-                    AzToolsFramework::Prefab::PrefabDom prefabDom;
-                    bool storeResult = AzToolsFramework::Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(*sourceInstance, prefabDom);
-                    if (storeResult == false)
-                    {
-                        AZ_Printf("Convert-Slice", "  Failed to convert prefab instance data to a PrefabDom.\n");
-                        result = false;
-                        return result;
-                    }
-                    prefabSystemComponent->UpdatePrefabTemplate(templateId, prefabDom);
-
-                    // Dispatch events here, because prefab serialization might trigger asset loads in rare circumstances.
-                    AZ::Data::AssetManager::Instance().DispatchEvents();
-
-                    // Finally, either print or save the created prefab template.
-                    if (isDryRun)
-                    {
-                        rapidjson::StringBuffer prefabBuffer;
-                        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(prefabBuffer);
-                        prefabDom.Accept(writer);
-
-                        AZ_Printf("Convert-Slice", "JSON for %s:\n", sourceInstance->GetTemplateSourcePath().c_str());
-
-                        // We use Output() to print out the JSON because AZ_Printf has a 4096-character limit.
-                        AZ::Debug::Trace::Instance().Output("", prefabBuffer.GetString());
-                        AZ::Debug::Trace::Instance().Output("", "\n");
-                    }
-                    else
-                    {
-                        auto prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
-
-                        if (!prefabLoaderInterface->SaveTemplate(templateId))
-                        {
-                            AZ_Printf("Convert-Slice", "  Could not save prefab - internal error (Json write operation failure).\n");
-                            result = false;
-                            return result;
-                        }
-                    }
-
-                    return true;
+                    return ConvertSliceFile(prefabSystemComponent, outputPath, isDryRun, rootEntity);
                 };
 
                 if (!Utilities::InspectSerializedFile(inputFile, convertSettings.m_serializeContext, callback))
@@ -249,6 +152,112 @@ namespace AZ
             }
 
             return result;
+        }
+
+        bool SliceConverter::ConvertSliceFile(
+            AzToolsFramework::Prefab::PrefabSystemComponent* prefabSystemComponent, AZStd::string_view outputPath, bool isDryRun,
+            AZ::Entity* rootEntity)
+        {
+            // Find the slice from the root entity.
+            SliceComponent* sliceComponent = AZ::EntityUtils::FindFirstDerivedComponent<SliceComponent>(rootEntity);
+            if (sliceComponent == nullptr)
+            {
+                AZ_Printf("Convert-Slice", "  File not converted: Root entity did not contain a slice component.\n");
+                return false;
+            }
+
+            // Get all of the entities from the slice.
+            SliceComponent::EntityList sliceEntities;
+            bool getEntitiesResult = sliceComponent->GetEntities(sliceEntities);
+            if ((!getEntitiesResult) || (sliceEntities.empty()))
+            {
+                AZ_Printf("Convert-Slice", "  File not converted: Slice entities could not be retrieved.\n");
+                return false;
+            }
+
+            // Create the Prefab with the entities from the slice
+            AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> sourceInstance(
+                prefabSystemComponent->CreatePrefab(sliceEntities, {}, AZ::IO::PathView(outputPath)));
+
+            // Dispatch events here, because prefab creation might trigger asset loads in rare circumstances.
+            AZ::Data::AssetManager::Instance().DispatchEvents();
+
+            // Set up the Prefab container entity to be a proper Editor entity.  (This logic is normally triggered
+            // via an EditorRequests EBus in CreatePrefab, but the subsystem that listens for it isn't present in this tool.)
+            AzToolsFramework::Prefab::EntityOptionalReference container = sourceInstance->GetContainerEntity();
+            AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                &AzToolsFramework::EditorEntityContextRequestBus::Events::AddRequiredComponents, container->get());
+            container->get().AddComponent(aznew AzToolsFramework::Prefab::EditorPrefabComponent());
+
+            // Reparent any root-level slice entities to the container entity.
+            for (auto entity : sliceEntities)
+            {
+                AzToolsFramework::Components::TransformComponent* transformComponent =
+                    entity->FindComponent<AzToolsFramework::Components::TransformComponent>();
+                if (transformComponent)
+                {
+                    if (!transformComponent->GetParentId().IsValid())
+                    {
+                        transformComponent->SetParent(container->get().GetId());
+                    }
+                }
+            }
+
+            auto templateId = sourceInstance->GetTemplateId();
+
+            if (templateId == AzToolsFramework::Prefab::InvalidTemplateId)
+            {
+                AZ_Printf("Convert-Slice", "  Path error. Path could be invalid, or the prefab may not be loaded in this level.\n");
+                return false;
+            }
+
+            // Update the prefab template with the fixed-up data in our prefab instance.
+            AzToolsFramework::Prefab::PrefabDom prefabDom;
+            bool storeResult = AzToolsFramework::Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(*sourceInstance, prefabDom);
+            if (storeResult == false)
+            {
+                AZ_Printf("Convert-Slice", "  Failed to convert prefab instance data to a PrefabDom.\n");
+                return false;
+            }
+            prefabSystemComponent->UpdatePrefabTemplate(templateId, prefabDom);
+
+            // Dispatch events here, because prefab serialization might trigger asset loads in rare circumstances.
+            AZ::Data::AssetManager::Instance().DispatchEvents();
+
+            if (isDryRun)
+            {
+                PrintPrefab(prefabDom, sourceInstance->GetTemplateSourcePath());
+                return true;
+            }
+            else
+            {
+                return SavePrefab(templateId);
+            }
+        }
+
+        void SliceConverter::PrintPrefab(const AzToolsFramework::Prefab::PrefabDom& prefabDom, const AZ::IO::Path& templatePath)
+        {
+            rapidjson::StringBuffer prefabBuffer;
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(prefabBuffer);
+            prefabDom.Accept(writer);
+            AZ_Printf("Convert-Slice", "JSON for %s:\n", templatePath.c_str());
+
+            // We use Output() to print out the JSON because AZ_Printf has a 4096-character limit.
+            AZ::Debug::Trace::Instance().Output("", prefabBuffer.GetString());
+            AZ::Debug::Trace::Instance().Output("", "\n");
+        }
+
+        bool SliceConverter::SavePrefab(AzToolsFramework::Prefab::TemplateId templateId)
+        {
+            auto prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
+
+            if (!prefabLoaderInterface->SaveTemplate(templateId))
+            {
+                AZ_Printf("Convert-Slice", "  Could not save prefab - internal error (Json write operation failure).\n");
+                return false;
+            }
+
+            return true;
         }
 
     } // namespace SerializeContextTools

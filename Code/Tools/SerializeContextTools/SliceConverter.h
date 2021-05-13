@@ -20,6 +20,8 @@
 #include <AzCore/std/utils.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
+
 #include <Converter.h>
 
 namespace AZ
@@ -38,6 +40,14 @@ namespace AZ
         {
         public:
             static bool ConvertSliceFiles(Application& application);
+
+        private:
+
+            static bool ConvertSliceFile(AzToolsFramework::Prefab::PrefabSystemComponent* prefabSystemComponent,
+                AZStd::string_view outputPath, bool isDryRun, AZ::Entity* rootEntity);
+
+            static void PrintPrefab(const AzToolsFramework::Prefab::PrefabDom& prefabDom, const AZ::IO::Path& templatePath);
+            static bool SavePrefab(AzToolsFramework::Prefab::TemplateId templateId);
         };
     } // namespace SerializeContextTools
 } // namespace AZ
