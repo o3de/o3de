@@ -585,8 +585,6 @@ public:
         SDepthTexture * (int, int, bool));
     MOCK_METHOD1(DestroyDepthSurface,
         void(SDepthTexture * pDepthSurf));
-    MOCK_CONST_METHOD1(CreateOptics,
-        IOpticsElementBase * (EFlareType type));
     MOCK_METHOD1(PauseTimer,
         void(bool bPause));
     MOCK_METHOD0(CreateShaderPublicParams,

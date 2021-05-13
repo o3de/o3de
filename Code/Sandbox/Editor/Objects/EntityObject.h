@@ -35,7 +35,6 @@
 
 class CEntityObject;
 class QMenu;
-class IOpticsElementBase;
 
 /*!
  *  CEntityEventTarget is an Entity event target and type.
