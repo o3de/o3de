@@ -36,9 +36,18 @@ namespace AzFramework
         }
         else if (clickEvent == ClickEvent::Up)
         {
-            const auto clickOutcome = m_detectionState == DetectionState::WaitingForMove ? ClickOutcome::Click
-                : m_detectionState == DetectionState::Moved                              ? ClickOutcome::Release
-                                                                                         : ClickOutcome::Nil;
+            const auto clickOutcome = [detectionState = m_detectionState] {
+                if (detectionState == DetectionState::WaitingForMove)
+                {
+                    return ClickOutcome::Click;
+                }
+                if (detectionState == DetectionState::Moved)
+                {
+                    ClickOutcome::Release;
+                }
+                return ClickOutcome::Nil;
+            }();
+
             m_detectionState = DetectionState::Nil;
             return clickOutcome;
         }
