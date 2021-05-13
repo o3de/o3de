@@ -7,18 +7,13 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test case ID: T92564789
-Test Case Title: Each Variable type can be created
-Test case ID: T92568873
-Test Case Title: Each Variable type can be deleted
 """
 
 
-def VariableManager_CreateDeleteVars():
+def VariableManager_Default_CreateDeleteVars():
     """
     Summary:
-     Each variable type can be created and deleted in variable manager.
+     Creating and deleting each type of variable in the Variable Manager pane
 
     Expected Behavior:
      Each variable type can be created and deleted in variable manager.
@@ -41,14 +36,12 @@ def VariableManager_CreateDeleteVars():
     """
 
     from PySide2 import QtWidgets, QtCore, QtTest
-
     from PySide2.QtCore import Qt
 
     from utils import TestHelper as helper
+    import pyside_utils
 
     import azlmbr.legacy.general as general
-
-    import pyside_utils
 
     def generate_test_tuple(var_type, action):
         return (f"{var_type} variable is {action}d", f"{var_type} variable is not {action}d")
@@ -118,4 +111,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(VariableManager_CreateDeleteVars)
+    Report.start_test(VariableManager_Default_CreateDeleteVars)

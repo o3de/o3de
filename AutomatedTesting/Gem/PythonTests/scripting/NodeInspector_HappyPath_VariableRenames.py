@@ -7,9 +7,6 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test case ID: T92568982
-Test Case Title: Renaming variables in the Node Inspector
 """
 
 
@@ -24,7 +21,7 @@ class Tests():
 GENERAL_WAIT = 0.5  # seconds
 
 
-def NodeInspector_RenameVariable():
+def NodeInspector_HappyPath_VariableRenames():
     """
     Summary:
      Renaming variables in the Node Inspector, renames the actual variable.
@@ -50,15 +47,15 @@ def NodeInspector_RenameVariable():
 
     :return: None
     """
-
-    TEST_NAME = "test name"
-
     from PySide2 import QtWidgets, QtCore, QtTest
     from PySide2.QtCore import Qt
-    import azlmbr.legacy.general as general
 
     import pyside_utils
     from utils import TestHelper as helper
+
+    import azlmbr.legacy.general as general
+
+    TEST_NAME = "test name"
 
     def open_tool(sc, dock_widget_name, pane_name):
         if sc.findChild(QtWidgets.QDockWidget, dock_widget_name) is None:
@@ -120,12 +117,10 @@ def NodeInspector_RenameVariable():
     general.close_pane("Script Canvas")
 
 
-
 if __name__ == "__main__":
     import ImportPathHelper as imports
 
     imports.init()
-
     from utils import Report
 
-    Report.start_test(NodeInspector_RenameVariable)
+    Report.start_test(NodeInspector_HappyPath_VariableRenames)

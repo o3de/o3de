@@ -7,10 +7,6 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-
-Test case ID: T92568856
-Test Case Title: Multiple Entities can be targeted in the Debugger tool
 """
 
 
@@ -25,20 +21,20 @@ class Tests():
 GENERAL_WAIT = 0.5  # seconds
 
 
-def Debugging_TargetMultipleEntities():
+def Debugger_HappyPath_TargetMultipleEntities():
     """
     Summary:
      Multiple Entities can be targeted in the Debugger tool
 
     Expected Behavior:
-     Selected files can be checked for logging.
+     Multiple selected files can be checked for logging.
      Upon checking, checkboxes of the parent folders change to either full or partial check.
 
     Test Steps:
      1) Create temp level
      2) Create two entities with scriptcanvas components
      3) Set values for scriptcanvas
-     4) Open Script Canvas window and get sc opbject
+     4) Open Script Canvas window and get sc object
      5) Open Debugging(Logging) window
      6) Click on Entities tab in logging window
      7) Verify if the scriptcanvas exist under entities
@@ -53,7 +49,6 @@ def Debugging_TargetMultipleEntities():
 
     :return: None
     """
-
     from PySide2 import QtWidgets
     from PySide2.QtCore import Qt
     import azlmbr.legacy.general as general
@@ -140,4 +135,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(Debugging_TargetMultipleEntities)
+    Report.start_test(Debugger_HappyPath_TargetMultipleEntities)

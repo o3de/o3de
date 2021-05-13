@@ -7,29 +7,25 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-
-Test case ID: T92569137
-Test Case Title: Multiple Graphs can be targeted in the Debugger tool
 """
 
 
 # fmt: off
 class Tests():
-    select_multiple_targets = ("Multiple targets are selected",  "Multiple targets are not selected")
+    select_multiple_targets = ("Multiple targets are selected", "Multiple targets are not selected")
 # fmt: on
 
 
 GENERAL_WAIT = 0.5  # seconds
 
 
-def Debugging_TargetMultipleGraphs():
+def Debugger_HappyPath_TargetMultipleGraphs():
     """
     Summary:
      Multiple Graphs can be targeted in the Debugger tool
 
     Expected Behavior:
-     Selected files can be checked for logging.
+     Multiple elected files can be checked for logging.
      Upon checking, checkboxes of the parent folders change to either full or partial check.
 
     Test Steps:
@@ -49,7 +45,6 @@ def Debugging_TargetMultipleGraphs():
 
     :return: None
     """
-
     from PySide2 import QtWidgets
     from PySide2.QtCore import Qt
     import azlmbr.legacy.general as general
@@ -106,7 +101,6 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
 
     imports.init()
-
     from utils import Report
 
-    Report.start_test(Debugging_TargetMultipleGraphs)
+    Report.start_test(Debugger_HappyPath_TargetMultipleGraphs)

@@ -7,26 +7,23 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test case ID: T92563191
-Test Case Title: Two Entities can use the same Graph asset successfully at RunTime
 """
 
 
 # fmt: off
 class Tests():
-    level_created     = ("New level created",              "New level not created")
+    level_created     = ("New level created successfully", "New level failed to create")
     game_mode_entered = ("Game Mode successfully entered", "Game mode failed to enter")
     game_mode_exited  = ("Game Mode successfully exited",  "Game mode failed to exited")
     found_lines       = ("Expected log lines were found",  "Expected log lines were not found")
 # fmt: on
 
 
-def ScriptCanvas_TwoEntities():
+def ScriptCanvas_TwoEntities_UseSimultaneously():
     """
     Summary:
      Two Entities can use the same Graph asset successfully at RunTime. The script canvas asset
-     attached to the enties will print the respective entity names.
+     attached to the entities will print the respective entity names.
 
     Expected Behavior:
      When game mode is entered, respective strings of different entities should be printed.
@@ -48,9 +45,10 @@ def ScriptCanvas_TwoEntities():
 
     import os
 
+    import hydra_editor_utils as hydra
     from utils import TestHelper as helper
     from utils import Tracer
-    import hydra_editor_utils as hydra
+
     import azlmbr.legacy.general as general
     import azlmbr.math as math
     import azlmbr.asset as asset
@@ -103,4 +101,4 @@ if __name__ == "__main__":
     imports.init()
     from utils import Report
 
-    Report.start_test(ScriptCanvas_TwoEntities)
+    Report.start_test(ScriptCanvas_TwoEntities_UseSimultaneously)

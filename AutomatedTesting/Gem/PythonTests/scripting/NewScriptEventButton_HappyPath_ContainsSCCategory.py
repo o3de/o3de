@@ -7,11 +7,6 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-
-Test case ID: T92568942
-Test Case Title: Clicking the "+" button and selecting "New Script Event" opens the
-Asset Editor with a new Script Event asset
 """
 
 from PySide2 import QtWidgets
@@ -35,11 +30,10 @@ GENERAL_WAIT = 0.5  # seconds
 class TestAssetEditor_NewScriptEvent:
     """
     Summary:
-     Clicking the "+" button in Node Palette and creating New Script Event opens Asset Editor
+     Verifying logic flow of the "+" button on the Script Canvas pane's Node Palette is as expected
 
     Expected Behavior:
-     Clicking the "+" button and selecting "New Script Event" opens the Asset Editor with a
-     new Script Event asset
+     Clicking the "+" button and selecting "New Script Event" opens the Asset Editor with a new Script Event asset
 
     Test Steps:
      1) Open Script Canvas window (Tools > Script Canvas)
