@@ -163,7 +163,6 @@ namespace PhysX
                 sceneInterface->RemoveSimulatedBody(m_sceneOwner, m_rigidBodyHandle);
             }
             m_rigidBody = nullptr;
-            m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
             m_sceneOwner = AzPhysics::InvalidSceneHandle;
         }
     }

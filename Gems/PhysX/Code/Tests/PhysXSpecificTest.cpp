@@ -882,7 +882,6 @@ namespace PhysX
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             sceneInterface->RemoveSimulatedBody(m_testSceneHandle, rigidBodyHandle);
-            rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
         rigidBody = nullptr;
     }
