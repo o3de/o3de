@@ -112,7 +112,7 @@ namespace O3DE::ProjectManager
             return result == 0 && !PyErr_Occurred();
         } catch ([[maybe_unused]] const std::exception& e)
         {
-            AZ_Warning("python", false, "Py_Initialize() failed with %s", e.what());
+            AZ_Warning("ProjectManagerWindow", false, "Py_Initialize() failed with %s", e.what());
             return false;
         }
     }
@@ -125,7 +125,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            AZ_Warning("python", false, "Did not finalize since Py_IsInitialized() was false");
+            AZ_Warning("ProjectManagerWindow", false, "Did not finalize since Py_IsInitialized() was false");
         }
         return !PyErr_Occurred();
     }
@@ -138,16 +138,27 @@ namespace O3DE::ProjectManager
         executionCallback();
     }
 
-    ProjectInfo PythonBindings::GetCurrentProject()
+    ProjectInfo PythonBindings::GetGlobalProject()
     {
         ProjectInfo project;
 
         ExecuteWithLock([&] {
-            auto currentProjectTool = pybind11::module::import("cmake.Tools.current_project");
-            auto getCurrentProject = currentProjectTool.attr("get_current_project");
-            auto currentProject = getCurrentProject(m_enginePath.c_str());
+            try
+            {
+                auto globalProjectTool = pybind11::module::import("cmake.Tools.global_project");
+                auto getGlobalProject = globalProjectTool.attr("get_global_project");
+                auto globalProjectPath = getGlobalProject();
 
-            project.m_path = currentProject.cast<std::string>().c_str();
+                if (!globalProjectPath.is_none())
+                {
+                    auto globalProjectPathAsPosix = globalProjectPath.attr("as_posix");
+                    project.m_path = globalProjectPathAsPosix().cast<std::string>().c_str();
+                }
+            }
+            catch ([[maybe_unused]] const std::exception& e)
+            {
+                AZ_Warning("ProjectManagerWindow", false, "GetGlobalProject exception %s", e.what());
+            }
         });
 
         return project; 
