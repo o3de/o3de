@@ -123,8 +123,8 @@ private:
 
     QWidget* FindParentScopeRoot(QWidget* w);
     bool IsAContainerForB(QWidget* a, QWidget* b);
-    QList<QAction*> FindCandidateActions(QObject* scopeRoot, const QKeySequence& sequence, QSet<QObject*>& previouslyVisited, bool checkVisibility = true);
-    bool FindCandidateActionAndFire(QObject* focusWidget, QShortcutEvent* shortcutEvent, QList<QAction*>& candidates, QSet<QObject*>& previouslyVisited);
+    //QList<QAction*> FindCandidateActions(QObject* scopeRoot, const QKeySequence& sequence, QSet<QObject*>& previouslyVisited, bool checkVisibility = true);
+    bool FindCandidateActionAndFire(QShortcutEvent* shortcutEvent);
 
     static bool IsShortcutSearchBreak(QWidget* widget);
 

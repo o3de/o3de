@@ -731,15 +731,22 @@ void MainWindow::InitActions()
     auto cryEdit = CCryEditApp::instance();
     cryEdit->RegisterActionHandlers();
 
-    am->AddAction(ID_TOOLBAR_SEPARATOR, QString());
-
-    am->AddAction(ID_TOOLBAR_WIDGET_UNDO, QString());
-    am->AddAction(ID_TOOLBAR_WIDGET_REDO, QString());
-    am->AddAction(ID_TOOLBAR_WIDGET_SNAP_ANGLE, QString());
-    am->AddAction(ID_TOOLBAR_WIDGET_SNAP_GRID, QString());
-    am->AddAction(ID_TOOLBAR_WIDGET_ENVIRONMENT_MODE, QString());
-    am->AddAction(ID_TOOLBAR_WIDGET_DEBUG_MODE, QString());
-    am->AddAction(ID_TOOLBAR_WIDGET_SPACER_RIGHT, QString());
+    am->AddAction(ID_TOOLBAR_SEPARATOR, QString())
+        .SetParent(this);
+    am->AddAction(ID_TOOLBAR_WIDGET_UNDO, QString())
+        .SetParent(this);
+    am->AddAction(ID_TOOLBAR_WIDGET_REDO, QString())
+        .SetParent(this);
+    am->AddAction(ID_TOOLBAR_WIDGET_SNAP_ANGLE, QString())
+        .SetParent(this);
+    am->AddAction(ID_TOOLBAR_WIDGET_SNAP_GRID, QString())
+        .SetParent(this);
+    am->AddAction(ID_TOOLBAR_WIDGET_ENVIRONMENT_MODE, QString())
+        .SetParent(this);
+    am->AddAction(ID_TOOLBAR_WIDGET_DEBUG_MODE, QString())
+        .SetParent(this);
+    am->AddAction(ID_TOOLBAR_WIDGET_SPACER_RIGHT, QString())
+        .SetParent(this);
 
     // File actions
         am->AddAction(ID_FILE_NEW, tr("New Level"))
@@ -748,7 +755,8 @@ void MainWindow::InitActions()
         {
             cryEdit->OnCreateLevel();
         })
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateNewLevel);
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateNewLevel)
+        .SetParent(this);
 
         static const AZ::Crc32 s_newlevel = AZ_CRC("com.amazon.action.common.newLevel");
         am->AddAction(s_newlevel,tr("New Level Test"))
@@ -757,39 +765,48 @@ void MainWindow::InitActions()
         {
              cryEdit->OnCreateLevel();
         })
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateNewLevel);
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateNewLevel)
+        .SetParent(this);
 
 
     am->AddAction(ID_FILE_OPEN_LEVEL, tr("Open Level..."))
         .SetShortcut(tr("Ctrl+O"))
         .SetStatusTip(tr("Open an existing level"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateFileOpen);
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateFileOpen)
+        .SetParent(this);
 #ifdef ENABLE_SLICE_EDITOR
     am->AddAction(ID_FILE_NEW_SLICE, tr("New Slice"))
-        .SetStatusTip(tr("Create a new slice"));
+        .SetStatusTip(tr("Create a new slice"))
+        .SetParent(this);
     am->AddAction(ID_FILE_OPEN_SLICE, tr("Open Slice..."))
-        .SetStatusTip(tr("Open an existing slice"));
+        .SetStatusTip(tr("Open an existing slice"))
+        .SetParent(this);
 #endif
     am->AddAction(ID_FILE_SAVE_SELECTED_SLICE, tr("Save selected slice")).SetShortcut(tr("Alt+S"))
-        .SetStatusTip(tr("Save the selected slice to the first level root"));
+        .SetStatusTip(tr("Save the selected slice to the first level root"))
+        .SetParent(this);
     am->AddAction(ID_FILE_SAVE_SLICE_TO_ROOT, tr("Save Slice to root")).SetShortcut(tr("Ctrl+Alt+S"))
-        .SetStatusTip(tr("Save the selected slice to the top level root"));
-    
+        .SetStatusTip(tr("Save the selected slice to the top level root"))
+        .SetParent(this);
     am->AddAction(ID_FILE_SAVE_LEVEL, tr("&Save"))
         .SetShortcut(tr("Ctrl+S"))
         .SetReserved()
         .SetStatusTip(tr("Save the current level"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateDocumentReady);
-
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateDocumentReady)
+        .SetParent(this);
     am->AddAction(ID_FILE_SAVE_AS, tr("Save &As..."))
         .SetShortcut(tr("Ctrl+Shift+S"))
         .SetReserved()
         .SetStatusTip(tr("Save the active document with a new name"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateDocumentReady);
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateDocumentReady)
+        .SetParent(this);
     am->AddAction(ID_FILE_SAVELEVELRESOURCES, tr("Save Level Resources..."))
         .SetStatusTip(tr("Save Resources"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateDocumentReady);
-    am->AddAction(ID_IMPORT_ASSET, tr("Import &FBX..."));
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateDocumentReady)
+        .SetParent(this);
+
+    am->AddAction(ID_IMPORT_ASSET, tr("Import &FBX..."))
+        .SetParent(this);
 
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
@@ -798,46 +815,83 @@ void MainWindow::InitActions()
     {
         am->AddAction(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE, tr("&Export to Engine"))
             .SetShortcut(tr("Ctrl+E"))
-            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateDocumentReady);
+            .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateDocumentReady)
+            .SetParent(this);
     }
 
     am->AddAction(ID_FILE_EXPORT_SELECTEDOBJECTS, tr("Export Selected &Objects"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected);
-    am->AddAction(ID_FILE_EXPORTOCCLUSIONMESH, tr("Export Occlusion Mesh"));
-    am->AddAction(ID_FILE_EDITLOGFILE, tr("Show Log File"));
-    am->AddAction(ID_FILE_RESAVESLICES, tr("Resave All Slices"));
-    am->AddAction(ID_GAME_PC_ENABLEVERYHIGHSPEC, tr("Very High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_PC_ENABLEHIGHSPEC, tr("High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_PC_ENABLEMEDIUMSPEC, tr("Medium")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_PC_ENABLELOWSPEC, tr("Low")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_OSXMETAL_ENABLEVERYHIGHSPEC, tr("Very High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_OSXMETAL_ENABLEHIGHSPEC, tr("High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_OSXMETAL_ENABLEMEDIUMSPEC, tr("Medium")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_OSXMETAL_ENABLELOWSPEC, tr("Low")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_ANDROID_ENABLEVERYHIGHSPEC, tr("Very High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_ANDROID_ENABLEHIGHSPEC, tr("High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_ANDROID_ENABLEMEDIUMSPEC, tr("Medium")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_ANDROID_ENABLELOWSPEC, tr("Low")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_IOS_ENABLEVERYHIGHSPEC, tr("Very High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_IOS_ENABLEHIGHSPEC, tr("High")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_IOS_ENABLEMEDIUMSPEC, tr("Medium")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
-    am->AddAction(ID_GAME_IOS_ENABLELOWSPEC, tr("Low")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected)
+        .SetParent(this);
+    am->AddAction(ID_FILE_EXPORTOCCLUSIONMESH, tr("Export Occlusion Mesh"))
+        .SetParent(this);
+    am->AddAction(ID_FILE_EDITLOGFILE, tr("Show Log File"))
+        .SetParent(this);
+    am->AddAction(ID_FILE_RESAVESLICES, tr("Resave All Slices"))
+        .SetParent(this);
+    am->AddAction(ID_GAME_PC_ENABLEVERYHIGHSPEC, tr("Very High"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec)
+        .SetParent(this);
+    am->AddAction(ID_GAME_PC_ENABLEHIGHSPEC, tr("High"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec)
+        .SetParent(this);
+    am->AddAction(ID_GAME_PC_ENABLEMEDIUMSPEC, tr("Medium"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec)
+        .SetParent(this);
+    am->AddAction(ID_GAME_PC_ENABLELOWSPEC, tr("Low"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec)
+        .SetParent(this);
+    am->AddAction(ID_GAME_OSXMETAL_ENABLEVERYHIGHSPEC, tr("Very High"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec)
+        .SetParent(this);
+    am->AddAction(ID_GAME_OSXMETAL_ENABLEHIGHSPEC, tr("High"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec)
+        .SetParent(this);
+    am->AddAction(ID_GAME_OSXMETAL_ENABLEMEDIUMSPEC, tr("Medium"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec)
+        .SetParent(this);
+    am->AddAction(ID_GAME_OSXMETAL_ENABLELOWSPEC, tr("Low"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec)
+        .SetParent(this);
+    am->AddAction(ID_GAME_ANDROID_ENABLEVERYHIGHSPEC, tr("Very High"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec)
+        .SetParent(this);
+    am->AddAction(ID_GAME_ANDROID_ENABLEHIGHSPEC, tr("High"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec)
+        .SetParent(this);
+    am->AddAction(ID_GAME_ANDROID_ENABLEMEDIUMSPEC, tr("Medium"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec)
+        .SetParent(this);
+    am->AddAction(ID_GAME_ANDROID_ENABLELOWSPEC, tr("Low"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec)
+        .SetParent(this);
+    am->AddAction(ID_GAME_IOS_ENABLEVERYHIGHSPEC, tr("Very High"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec)
+        .SetParent(this);
+    am->AddAction(ID_GAME_IOS_ENABLEHIGHSPEC, tr("High"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec)
+        .SetParent(this);
+    am->AddAction(ID_GAME_IOS_ENABLEMEDIUMSPEC, tr("Medium"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec)
+        .SetParent(this);
+    am->AddAction(ID_GAME_IOS_ENABLELOWSPEC, tr("Low"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec)
+        .SetParent(this);
 #if defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
 #if defined(TOOLS_SUPPORT_JASPER)
 #include AZ_RESTRICTED_FILE_EXPLICIT(MainWindow_cpp, jasper)
@@ -850,17 +904,23 @@ void MainWindow::InitActions()
 #endif
 #endif
     am->AddAction(ID_TOOLS_CUSTOMIZEKEYBOARD, tr("Customize &Keyboard..."))
-        .Connect(&QAction::triggered, this, &MainWindow::ShowKeyboardCustomization);
+        .Connect(&QAction::triggered, this, &MainWindow::ShowKeyboardCustomization)
+        .SetParent(this);
     am->AddAction(ID_TOOLS_EXPORT_SHORTCUTS, tr("&Export Keyboard Settings..."))
-        .Connect(&QAction::triggered, this, &MainWindow::ExportKeyboardShortcuts);
+        .Connect(&QAction::triggered, this, &MainWindow::ExportKeyboardShortcuts)
+        .SetParent(this);
     am->AddAction(ID_TOOLS_IMPORT_SHORTCUTS, tr("&Import Keyboard Settings..."))
-        .Connect(&QAction::triggered, this, &MainWindow::ImportKeyboardShortcuts);
-    am->AddAction(ID_TOOLS_PREFERENCES, tr("Global Preferences..."));
-    am->AddAction(ID_GRAPHICS_SETTINGS, tr("&Graphics Settings..."));
+        .Connect(&QAction::triggered, this, &MainWindow::ImportKeyboardShortcuts)
+        .SetParent(this);
+    am->AddAction(ID_TOOLS_PREFERENCES, tr("Global Preferences..."))
+        .SetParent(this);
+    am->AddAction(ID_GRAPHICS_SETTINGS, tr("&Graphics Settings..."))
+        .SetParent(this);
 
     for (int i = ID_FILE_MRU_FIRST; i <= ID_FILE_MRU_LAST; ++i)
     {
-        am->AddAction(i, QString());
+        am->AddAction(i, QString())
+            .SetParent(this);
     }
 
 #if AZ_TRAIT_OS_PLATFORM_APPLE
@@ -870,7 +930,8 @@ void MainWindow::InitActions()
 #endif
 
     am->AddAction(ID_APP_EXIT, appExitText)
-        .SetReserved();
+        .SetReserved()
+        .SetParent(this);
 
     // Edit actions
     am->AddAction(ID_UNDO, tr("&Undo"))
@@ -879,28 +940,31 @@ void MainWindow::InitActions()
         .SetStatusTip(tr("Undo last operation"))
         //.SetMenu(new QMenu("FIXME"))
         .SetApplyHoverEffect()
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateUndo);
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateUndo)
+        .SetParent(this);
     am->AddAction(ID_REDO, tr("&Redo"))
         .SetShortcut(AzQtComponents::RedoKeySequence)
         .SetReserved()
         //.SetMenu(new QMenu("FIXME"))
         .SetApplyHoverEffect()
         .SetStatusTip(tr("Redo last undo operation"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateRedo);
-
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateRedo)
+        .SetParent(this);
     am->AddAction(ID_EDIT_HOLD, tr("&Hold"))
         .SetShortcut(tr("Ctrl+Alt+H"))
         .SetToolTip(tr("&Hold (Ctrl+Alt+H)"))
-        .SetStatusTip(tr("Save the current state(Hold)"));
+        .SetStatusTip(tr("Save the current state(Hold)"))
+        .SetParent(this);
     am->AddAction(ID_EDIT_FETCH, tr("&Fetch"))
         .SetShortcut(tr("Ctrl+Alt+F"))
         .SetToolTip(tr("&Fetch (Ctrl+Alt+F)"))
-        .SetStatusTip(tr("Restore saved state (Fetch)"));
+        .SetStatusTip(tr("Restore saved state (Fetch)"))
+        .SetParent(this);
 
     // Modify actions
     am->AddAction(ID_EDIT_RENAMEOBJECT, tr("Rename Object(s)..."))
-        .SetStatusTip(tr("Rename Object"));
-
+        .SetStatusTip(tr("Rename Object"))
+        .SetParent(this);
     am->AddAction(ID_EDITMODE_MOVE, tr("Move"))
         .SetIcon(Style::icon("Move"))
         .SetApplyHoverEffect()
@@ -908,7 +972,8 @@ void MainWindow::InitActions()
         .SetToolTip(tr("Move (1)"))
         .SetCheckable(true)
         .SetStatusTip(tr("Select and move selected object(s)"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditmodeMove);
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditmodeMove)
+        .SetParent(this);
     am->AddAction(ID_EDITMODE_ROTATE, tr("Rotate"))
         .SetIcon(Style::icon("Translate"))
         .SetApplyHoverEffect()
@@ -916,7 +981,8 @@ void MainWindow::InitActions()
         .SetToolTip(tr("Rotate (2)"))
         .SetCheckable(true)
         .SetStatusTip(tr("Select and rotate selected object(s)"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditmodeRotate);
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditmodeRotate)
+        .SetParent(this);
     am->AddAction(ID_EDITMODE_SCALE, tr("Scale"))
         .SetIcon(Style::icon("Scale"))
         .SetApplyHoverEffect()
@@ -924,8 +990,8 @@ void MainWindow::InitActions()
         .SetToolTip(tr("Scale (3)"))
         .SetCheckable(true)
         .SetStatusTip(tr("Select and scale selected object(s)"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditmodeScale);
-
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditmodeScale)
+        .SetParent(this);
     am->AddAction(ID_SNAP_TO_GRID, tr("Snap to grid"))
         .SetIcon(Style::icon("Grid"))
         .SetApplyHoverEffect()
@@ -933,118 +999,158 @@ void MainWindow::InitActions()
         .SetToolTip(tr("Snap to grid (G)"))
         .SetStatusTip(tr("Toggles snap to grid"))
         .SetCheckable(true)
-        .RegisterUpdateCallback(this, &MainWindow::OnUpdateSnapToGrid);
+        .RegisterUpdateCallback(this, &MainWindow::OnUpdateSnapToGrid)
+        .SetParent(this);
     am->AddAction(ID_SNAPANGLE, tr("Snap angle"))
         .SetIcon(Style::icon("Angle"))
         .SetApplyHoverEffect()
         .SetStatusTip(tr("Snap angle"))
         .SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSnapangle);
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSnapangle)
+        .SetParent(this);
     // Display actions
     am->AddAction(ID_WIREFRAME, tr("&Wireframe"))
         .SetShortcut(tr("F3"))
         .SetToolTip(tr("Wireframe (F3)"))
         .SetCheckable(true)
         .SetStatusTip(tr("Render in Wireframe Mode."))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateWireframe);
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateWireframe)
+        .SetParent(this);
 
-    am->AddAction(ID_VIEW_GRIDSETTINGS, tr("Grid Settings..."));
+    am->AddAction(ID_VIEW_GRIDSETTINGS, tr("Grid Settings...")).SetParent(this);
+
     am->AddAction(ID_SWITCHCAMERA_DEFAULTCAMERA, tr("Default Camera")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSwitchToDefaultCamera);
-    am->AddAction(ID_SWITCHCAMERA_SEQUENCECAMERA, tr("Sequence Camera")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSwitchToSequenceCamera);
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSwitchToDefaultCamera)
+        .SetParent(this);
+    am->AddAction(ID_SWITCHCAMERA_SEQUENCECAMERA, tr("Sequence Camera"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSwitchToSequenceCamera)
+        .SetParent(this);
     am->AddAction(ID_SWITCHCAMERA_SELECTEDCAMERA, tr("Selected Camera Object")).SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSwitchToSelectedCamera);
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSwitchToSelectedCamera)
+        .SetParent(this);
     am->AddAction(ID_SWITCHCAMERA_NEXT, tr("Cycle Camera"))
         .SetShortcut(tr("Ctrl+`"))
-        .SetToolTip(tr("Cycle Camera (Ctrl+`)"));
+        .SetToolTip(tr("Cycle Camera (Ctrl+`)"))
+        .SetParent(this);
     am->AddAction(ID_CHANGEMOVESPEED_INCREASE, tr("Increase"))
-        .SetStatusTip(tr("Increase Flycam Movement Speed"));
+        .SetStatusTip(tr("Increase Flycam Movement Speed"))
+        .SetParent(this);
     am->AddAction(ID_CHANGEMOVESPEED_DECREASE, tr("Decrease"))
-        .SetStatusTip(tr("Decrease Flycam Movement Speed"));
+        .SetStatusTip(tr("Decrease Flycam Movement Speed"))
+        .SetParent(this);
     am->AddAction(ID_CHANGEMOVESPEED_CHANGESTEP, tr("Change Step"))
-        .SetStatusTip(tr("Change Flycam Movement Step"));
-    am->AddAction(ID_DISPLAY_GOTOPOSITION, tr("Go to Position..."));
+        .SetStatusTip(tr("Change Flycam Movement Step"))
+        .SetParent(this);
+
+    am->AddAction(ID_DISPLAY_GOTOPOSITION, tr("Go to Position..."))
+        .SetParent(this);
     am->AddAction(ID_MODIFY_GOTO_SELECTION, tr("Center on Selection"))
         .SetShortcut(tr("Z"))
         .SetToolTip(tr("Center on Selection (Z)"))
-        .Connect(&QAction::triggered, this, &MainWindow::OnGotoSelected);
+        .Connect(&QAction::triggered, this, &MainWindow::OnGotoSelected)
+        .SetParent(this);
     am->AddAction(ID_GOTO_LOC1, tr("Location 1"))
         .SetShortcut(tr("Shift+F1"))
-        .SetToolTip(tr("Location 1 (Shift+F1)"));
+        .SetToolTip(tr("Location 1 (Shift+F1)"))
+        .SetParent(this);
     am->AddAction(ID_GOTO_LOC2, tr("Location 2"))
         .SetShortcut(tr("Shift+F2"))
-        .SetToolTip(tr("Location 2 (Shift+F2)"));
+        .SetToolTip(tr("Location 2 (Shift+F2)"))
+        .SetParent(this);
     am->AddAction(ID_GOTO_LOC3, tr("Location 3"))
         .SetShortcut(tr("Shift+F3"))
-        .SetToolTip(tr("Location 3 (Shift+F3)"));
+        .SetToolTip(tr("Location 3 (Shift+F3)"))
+        .SetParent(this);
     am->AddAction(ID_GOTO_LOC4, tr("Location 4"))
         .SetShortcut(tr("Shift+F4"))
-        .SetToolTip(tr("Location 4 (Shift+F4)"));
+        .SetToolTip(tr("Location 4 (Shift+F4)"))
+        .SetParent(this);
     am->AddAction(ID_GOTO_LOC5, tr("Location 5"))
         .SetShortcut(tr("Shift+F5"))
-        .SetToolTip(tr("Location 5 (Shift+F5)"));
+        .SetToolTip(tr("Location 5 (Shift+F5)"))
+        .SetParent(this);
     am->AddAction(ID_GOTO_LOC6, tr("Location 6"))
         .SetShortcut(tr("Shift+F6"))
-        .SetToolTip(tr("Location 6 (Shift+F6)"));
+        .SetToolTip(tr("Location 6 (Shift+F6)"))
+        .SetParent(this);
     am->AddAction(ID_GOTO_LOC7, tr("Location 7"))
         .SetShortcut(tr("Shift+F7"))
-        .SetToolTip(tr("Location 7 (Shift+F7)"));
+        .SetToolTip(tr("Location 7 (Shift+F7)"))
+        .SetParent(this);
     am->AddAction(ID_GOTO_LOC8, tr("Location 8"))
         .SetShortcut(tr("Shift+F8"))
-        .SetToolTip(tr("Location 8 (Shift+F8)"));
+        .SetToolTip(tr("Location 8 (Shift+F8)"))
+        .SetParent(this);
     am->AddAction(ID_GOTO_LOC9, tr("Location 9"))
         .SetShortcut(tr("Shift+F9"))
-        .SetToolTip(tr("Location 9 (Shift+F9)"));
+        .SetToolTip(tr("Location 9 (Shift+F9)"))
+        .SetParent(this);
     am->AddAction(ID_GOTO_LOC10, tr("Location 10"))
         .SetShortcut(tr("Shift+F10"))
-        .SetToolTip(tr("Location 10 (Shift+F10)"));
+        .SetToolTip(tr("Location 10 (Shift+F10)"))
+        .SetParent(this);
     am->AddAction(ID_GOTO_LOC11, tr("Location 11"))
         .SetShortcut(tr("Shift+F11"))
-        .SetToolTip(tr("Location 11 (Shift+F11)"));
+        .SetToolTip(tr("Location 11 (Shift+F11)"))
+        .SetParent(this);
     am->AddAction(ID_GOTO_LOC12, tr("Location 12"))
         .SetShortcut(tr("Shift+F12"))
-        .SetToolTip(tr("Location 12 (Shift+F12)"));
+        .SetToolTip(tr("Location 12 (Shift+F12)"))
+        .SetParent(this);
     am->AddAction(ID_TAG_LOC1, tr("Location 1"))
         .SetShortcut(tr("Ctrl+F1"))
-        .SetToolTip(tr("Location 1 (Ctrl+F1)"));
+        .SetToolTip(tr("Location 1 (Ctrl+F1)"))
+        .SetParent(this);
     am->AddAction(ID_TAG_LOC2, tr("Location 2"))
         .SetShortcut(tr("Ctrl+F2"))
-        .SetToolTip(tr("Location 2 (Ctrl+F2)"));
+        .SetToolTip(tr("Location 2 (Ctrl+F2)"))
+        .SetParent(this);
     am->AddAction(ID_TAG_LOC3, tr("Location 3"))
         .SetShortcut(tr("Ctrl+F3"))
-        .SetToolTip(tr("Location 3 (Ctrl+F3)"));
+        .SetToolTip(tr("Location 3 (Ctrl+F3)"))
+        .SetParent(this);
     am->AddAction(ID_TAG_LOC4, tr("Location 4"))
         .SetShortcut(tr("Ctrl+F4"))
-        .SetToolTip(tr("Location 4 (Ctrl+F4)"));
+        .SetToolTip(tr("Location 4 (Ctrl+F4)"))
+        .SetParent(this);
     am->AddAction(ID_TAG_LOC5, tr("Location 5"))
         .SetShortcut(tr("Ctrl+F5"))
-        .SetToolTip(tr("Location 5 (Ctrl+F5)"));
+        .SetToolTip(tr("Location 5 (Ctrl+F5)"))
+        .SetParent(this);
     am->AddAction(ID_TAG_LOC6, tr("Location 6"))
         .SetShortcut(tr("Ctrl+F6"))
-        .SetToolTip(tr("Location 6 (Ctrl+F6)"));
+        .SetToolTip(tr("Location 6 (Ctrl+F6)"))
+        .SetParent(this);
     am->AddAction(ID_TAG_LOC7, tr("Location 7"))
         .SetShortcut(tr("Ctrl+F7"))
-        .SetToolTip(tr("Location 7 (Ctrl+F7)"));
+        .SetToolTip(tr("Location 7 (Ctrl+F7)"))
+        .SetParent(this);
     am->AddAction(ID_TAG_LOC8, tr("Location 8"))
         .SetShortcut(tr("Ctrl+F8"))
-        .SetToolTip(tr("Location 8 (Ctrl+F8)"));
+        .SetToolTip(tr("Location 8 (Ctrl+F8)"))
+        .SetParent(this);
     am->AddAction(ID_TAG_LOC9, tr("Location 9"))
         .SetShortcut(tr("Ctrl+F9"))
-        .SetToolTip(tr("Location 9 (Ctrl+F9)"));
+        .SetToolTip(tr("Location 9 (Ctrl+F9)"))
+        .SetParent(this);
     am->AddAction(ID_TAG_LOC10, tr("Location 10"))
         .SetShortcut(tr("Ctrl+F10"))
-        .SetToolTip(tr("Location 10 (Ctrl+F10)"));
+        .SetToolTip(tr("Location 10 (Ctrl+F10)"))
+        .SetParent(this);
     am->AddAction(ID_TAG_LOC11, tr("Location 11"))
         .SetShortcut(tr("Ctrl+F11"))
-        .SetToolTip(tr("Location 11 (Ctrl+F11)"));
+        .SetToolTip(tr("Location 11 (Ctrl+F11)"))
+        .SetParent(this);
     am->AddAction(ID_TAG_LOC12, tr("Location 12"))
         .SetShortcut(tr("Ctrl+F12"))
-        .SetToolTip(tr("Location 12 (Ctrl+F12)"));
+        .SetToolTip(tr("Location 12 (Ctrl+F12)"))
+        .SetParent(this);
 
     if (CViewManager::IsMultiViewportEnabled())
     {
-        am->AddAction(ID_VIEW_CONFIGURELAYOUT, tr("Configure Layout..."));
+        am->AddAction(ID_VIEW_CONFIGURELAYOUT, tr("Configure Layout..."))
+            .SetParent(this);
     }
 #ifdef FEATURE_ORTHOGRAPHIC_VIEW
     am->AddAction(ID_VIEW_CYCLE2DVIEWPORT, tr("Cycle Viewports"))
@@ -1054,13 +1160,17 @@ void MainWindow::InitActions()
 #endif
     am->AddAction(ID_DISPLAY_SHOWHELPERS, tr("Show/Hide Helpers"))
         .SetShortcut(tr("Shift+Space"))
-        .SetToolTip(tr("Show/Hide Helpers (Shift+Space)"));
+        .SetToolTip(tr("Show/Hide Helpers (Shift+Space)"))
+        .SetParent(this);
 
     // Audio actions
     am->AddAction(ID_SOUND_STOPALLSOUNDS, tr("Stop All Sounds"))
-        .Connect(&QAction::triggered, this, &MainWindow::OnStopAllSounds);
+        .Connect(&QAction::triggered, this, &MainWindow::OnStopAllSounds)
+        .SetParent(this);
+
     am->AddAction(ID_AUDIO_REFRESH_AUDIO_SYSTEM, tr("Refresh Audio"))
-        .Connect(&QAction::triggered, this, &MainWindow::OnRefreshAudioSystem);
+        .Connect(&QAction::triggered, this, &MainWindow::OnRefreshAudioSystem)
+        .SetParent(this);
 
     // Game actions
     am->AddAction(ID_VIEW_SWITCHTOGAME, tr("Play &Game"))
@@ -1070,116 +1180,183 @@ void MainWindow::InitActions()
         .SetStatusTip(tr("Activate the game input mode"))
         .SetApplyHoverEffect()
         .SetCheckable(true)
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdatePlayGame);
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdatePlayGame)
+        .SetParent(this);
+
     am->AddAction(ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL, tr("Play Console"))
-        .SetText(tr("Play Console"));
+        .SetText(tr("Play Console"))
+        .SetParent(this);
+
     am->AddAction(ID_SWITCH_PHYSICS, tr("Simulate"))
         .SetShortcut(tr("Ctrl+P"))
         .SetToolTip(tr("Simulate (Ctrl+P)"))
         .SetCheckable(true)
         .SetStatusTip(tr("Enable processing of Physics and AI."))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnSwitchPhysicsUpdate);
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnSwitchPhysicsUpdate)
+        .SetParent(this);
+
     am->AddAction(ID_GAME_SYNCPLAYER, tr("Move Player and Camera Separately")).SetCheckable(true)
         .SetStatusTip(tr("Move Player and Camera Separately"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnSyncPlayerUpdate);
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnSyncPlayerUpdate)
+        .SetParent(this);
 
     // Physics actions
     am->AddAction(ID_PHYSICS_GETPHYSICSSTATE, tr("Get Physics State"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected);
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected)
+        .SetParent(this);
+
     am->AddAction(ID_PHYSICS_RESETPHYSICSSTATE, tr("Reset Physics State"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected);
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected)
+        .SetParent(this);
+
     am->AddAction(ID_PHYSICS_SIMULATEOBJECTS, tr("Simulate Objects"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected);
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected)
+        .SetParent(this);
 
     // Tools actions
     am->AddAction(ID_RELOAD_TEXTURES, tr("Reload Textures/Shaders"))
-        .SetStatusTip(tr("Reload all textures."));
+        .SetStatusTip(tr("Reload all textures."))
+        .SetParent(this);
+
     am->AddAction(ID_RELOAD_GEOMETRY, tr("Reload Geometry"))
-        .SetStatusTip(tr("Reload all geometries."));
-    am->AddAction(ID_TOOLS_ENABLEFILECHANGEMONITORING, tr("Enable File Change Monitoring"));
+        .SetStatusTip(tr("Reload all geometries."))
+        .SetParent(this);
+
+    am->AddAction(ID_TOOLS_ENABLEFILECHANGEMONITORING, tr("Enable File Change Monitoring"))
+        .SetParent(this);
+
     am->AddAction(ID_CLEAR_REGISTRY, tr("Clear Registry Data"))
-        .SetStatusTip(tr("Clear Registry Data"));
+        .SetStatusTip(tr("Clear Registry Data"))
+        .SetParent(this);
+
     am->AddAction(ID_VALIDATELEVEL, tr("&Check Level for Errors"))
-        .SetStatusTip(tr("Validate Level"));
-    am->AddAction(ID_TOOLS_VALIDATEOBJECTPOSITIONS, tr("Check Object Positions"));
+        .SetStatusTip(tr("Validate Level"))
+        .SetParent(this);
+    am->AddAction(ID_TOOLS_VALIDATEOBJECTPOSITIONS, tr("Check Object Positions"))
+        .SetParent(this);
+
     QAction* saveLevelStatsAction =
         am->AddAction(ID_TOOLS_LOGMEMORYUSAGE, tr("Save Level Statistics"))
-                .SetStatusTip(tr("Logs Editor memory usage."));
+                .SetStatusTip(tr("Logs Editor memory usage."))
+                .SetParent(this);
     if( saveLevelStatsAction && AZ::Interface<AzFramework::AtomActiveInterface>::Get())
     {
         saveLevelStatsAction->setEnabled(false);
     }
     am->AddAction(ID_RESOURCES_REDUCEWORKINGSET, tr("Reduce Working Set"))
-        .SetStatusTip(tr("Reduce Physical RAM Working Set."));
-    am->AddAction(ID_TOOLS_UPDATEPROCEDURALVEGETATION, tr("Update Procedural Vegetation"));
-    am->AddAction(ID_TOOLS_CONFIGURETOOLS, tr("Configure ToolBox Macros..."));
-    am->AddAction(ID_TOOLS_SCRIPTHELP, tr("Script Help"));
-    am->AddAction(ID_TOOLS_LUA_EDITOR, tr("Lua Editor"));
+        .SetStatusTip(tr("Reduce Physical RAM Working Set."))
+        .SetParent(this);
+
+    am->AddAction(ID_TOOLS_UPDATEPROCEDURALVEGETATION, tr("Update Procedural Vegetation"))
+        .SetParent(this);
+
+    am->AddAction(ID_TOOLS_CONFIGURETOOLS, tr("Configure ToolBox Macros..."))
+        .SetParent(this);
+
+    am->AddAction(ID_TOOLS_SCRIPTHELP, tr("Script Help"))
+        .SetParent(this);
+
+    am->AddAction(ID_TOOLS_LUA_EDITOR, tr("Lua Editor"))
+        .SetParent(this);
 
     // View actions
-    am->AddAction(ID_VIEW_OPENVIEWPANE, tr("Open View Pane"));
+    am->AddAction(ID_VIEW_OPENVIEWPANE, tr("Open View Pane"))
+        .SetParent(this);
+
     am->AddAction(ID_VIEW_CONSOLEWINDOW, tr(LyViewPane::ConsoleMenuName))
         .SetShortcut(tr("^"))
         .SetReserved()
         .SetStatusTip(tr("Show or hide the console window"))
         .SetCheckable(true)
-        .Connect(&QAction::triggered, this, &MainWindow::ToggleConsole);
+        .Connect(&QAction::triggered, this, &MainWindow::ToggleConsole)
+        .SetParent(this);
+
     am->AddAction(ID_OPEN_QUICK_ACCESS_BAR, tr("Show &Quick Access Bar"))
         .SetShortcut(tr("Ctrl+Alt+Space"))
-        .SetToolTip(tr("Show &Quick Access Bar (Ctrl+Alt+Space)"));
+        .SetToolTip(tr("Show &Quick Access Bar (Ctrl+Alt+Space)"))
+        .SetParent(this);
 
     // Disable layouts menu
     if (CViewManager::IsMultiViewportEnabled())
     {
-        am->AddAction(ID_VIEW_LAYOUTS, tr("Layouts"));
+        am->AddAction(ID_VIEW_LAYOUTS, tr("Layouts"))
+            .SetParent(this);
 
         am->AddAction(ID_VIEW_SAVELAYOUT, tr("Save Layout..."))
-            .Connect(&QAction::triggered, this, &MainWindow::SaveLayout);
+            .Connect(&QAction::triggered, this, &MainWindow::SaveLayout)
+            .SetParent(this);
+
         am->AddAction(ID_VIEW_LAYOUT_LOAD_DEFAULT, tr("Restore Default Layout"))
-            .Connect(&QAction::triggered, [this]() { m_viewPaneManager->RestoreDefaultLayout(true); });
+            .Connect(&QAction::triggered, [this]() { m_viewPaneManager->RestoreDefaultLayout(true); })
+            .SetParent(this);
+
     }
 
     am->AddAction(ID_SKINS_REFRESH, tr("Refresh Style"))
         .SetToolTip(tr("Refreshes the editor stylesheet"))
-        .Connect(&QAction::triggered, this, &MainWindow::RefreshStyle);
+        .Connect(&QAction::triggered, this, &MainWindow::RefreshStyle)
+        .SetParent(this);
 
     // Help actions
     am->AddAction(ID_DOCUMENTATION_GETTINGSTARTEDGUIDE, tr("Getting Started"))
-        .SetReserved();
+        .SetReserved()
+        .SetParent(this);
+
     am->AddAction(ID_DOCUMENTATION_TUTORIALS, tr("Tutorials"))
-        .SetReserved();
+        .SetReserved()
+        .SetParent(this);
 
     am->AddAction(ID_DOCUMENTATION_GLOSSARY, tr("Glossary"))
-        .SetReserved();
+        .SetReserved()
+        .SetParent(this);
+
     am->AddAction(ID_DOCUMENTATION_O3DE, tr("Open 3D Engine Documentation"))
-        .SetReserved();
+        .SetReserved()
+        .SetParent(this);
+
     am->AddAction(ID_DOCUMENTATION_GAMELIFT, tr("GameLift Documentation"))
-        .SetReserved();
+        .SetReserved()
+        .SetParent(this);
+
     am->AddAction(ID_DOCUMENTATION_RELEASENOTES, tr("Release Notes"))
-        .SetReserved();
+        .SetReserved()
+        .SetParent(this);
 
     am->AddAction(ID_DOCUMENTATION_GAMEDEVBLOG, tr("GameDev Blog"))
-        .SetReserved();
+        .SetReserved()
+        .SetParent(this);
+
     am->AddAction(ID_DOCUMENTATION_TWITCHCHANNEL, tr("GameDev Twitch Channel"))
-        .SetReserved();
+        .SetReserved()
+        .SetParent(this);
+
     am->AddAction(ID_DOCUMENTATION_FORUMS, tr("Forums"))
-        .SetReserved();
+        .SetReserved()
+        .SetParent(this);
+
     am->AddAction(ID_DOCUMENTATION_AWSSUPPORT, tr("AWS Support"))
-        .SetReserved();
+        .SetReserved()
+        .SetParent(this);
 
     am->AddAction(ID_DOCUMENTATION_FEEDBACK, tr("Give Us Feedback"))
-        .SetReserved();
+        .SetReserved()
+        .SetParent(this);
+
     am->AddAction(ID_APP_ABOUT, tr("&About Open 3D Engine"))
         .SetStatusTip(tr("Display program information, version number and copyright"))
-        .SetReserved();
+        .SetReserved()
+        .SetParent(this);
+
     am->AddAction(ID_APP_SHOW_WELCOME, tr("&Welcome"))
         .SetStatusTip(tr("Show the Welcome to Open 3D Engine dialog box"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateShowWelcomeScreen);
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateShowWelcomeScreen)
+        .SetParent(this);
 
     // Editors Toolbar actions
     am->AddAction(ID_OPEN_ASSET_BROWSER, tr("Asset browser"))
         .SetToolTip(tr("Open Asset Browser"))
-        .SetApplyHoverEffect();
+        .SetApplyHoverEffect()
+        .SetParent(this);
 
     AZ::EBusReduceResult<bool, AZStd::logical_or<bool>> emfxEnabled(false);
     using AnimationRequestBus = AzToolsFramework::EditorAnimationSystemRequestsBus;
@@ -1190,7 +1367,9 @@ void MainWindow::InitActions()
         QAction* action = am->AddAction(ID_OPEN_EMOTIONFX_EDITOR, tr("Animation Editor"))
             .SetToolTip(tr("Open Animation Editor (PREVIEW)"))
             .SetIcon(QIcon(":/EMotionFX/EMFX_icon_32x32.png"))
-            .SetApplyHoverEffect();
+            .SetApplyHoverEffect()
+            .SetParent(this);
+
         QObject::connect(action, &QAction::triggered, this, []() {
             QtViewPaneManager::instance()->OpenPane(LyViewPane::AnimationEditor);
         });
@@ -1199,36 +1378,43 @@ void MainWindow::InitActions()
     am->AddAction(ID_OPEN_AUDIO_CONTROLS_BROWSER, tr("Audio Controls Editor"))
         .SetToolTip(tr("Open Audio Controls Editor"))
         .SetIcon(Style::icon("Audio"))
-        .SetApplyHoverEffect();
+        .SetApplyHoverEffect()
+        .SetParent(this);
 
     if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
     {
         am->AddAction(ID_TERRAIN_TIMEOFDAYBUTTON, tr("Time of Day Editor"))
             .SetToolTip(tr("Open Time of Day"))
-            .SetApplyHoverEffect();
+            .SetApplyHoverEffect()
+            .SetParent(this);
     }
 
     am->AddAction(ID_OPEN_UICANVASEDITOR, tr(LyViewPane::UiEditor))
         .SetToolTip(tr("Open UI Editor"))
-        .SetApplyHoverEffect();
+        .SetApplyHoverEffect()
+        .SetParent(this);
 
     // Edit Mode Toolbar Actions
-    am->AddAction(IDC_SELECTION_MASK, tr("Selected Object Types"));
+    am->AddAction(IDC_SELECTION_MASK, tr("Selected Object Types"))
+        .SetParent(this);
     am->AddAction(ID_REF_COORDS_SYS, tr("Reference coordinate system"))
         .SetShortcut(tr("Ctrl+W"))
         .SetToolTip(tr("Reference coordinate system (Ctrl+W)"))
-        .Connect(&QAction::triggered, this, &MainWindow::ToggleRefCoordSys);
-    am->AddAction(IDC_SELECTION, tr("Named Selections"));
+        .Connect(&QAction::triggered, this, &MainWindow::ToggleRefCoordSys)
+        .SetParent(this);
+    am->AddAction(IDC_SELECTION, tr("Named Selections")).SetParent(this);
 
     // Object Toolbar Actions
     am->AddAction(ID_GOTO_SELECTED, tr("Go to selected object"))
         .SetIcon(Style::icon("select_object"))
         .SetApplyHoverEffect()
-        .Connect(&QAction::triggered, this, &MainWindow::OnGotoSelected);
+        .Connect(&QAction::triggered, this, &MainWindow::OnGotoSelected)
+        .SetParent(this);
 
     // Misc Toolbar Actions
     am->AddAction(ID_OPEN_SUBSTANCE_EDITOR, tr("Open Substance Editor"))
-        .SetApplyHoverEffect();
+        .SetApplyHoverEffect()
+        .SetParent(this);
 }
 
 void MainWindow::InitToolActionHandlers()

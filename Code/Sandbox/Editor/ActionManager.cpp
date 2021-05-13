@@ -461,12 +461,10 @@ ActionManager::ActionWrapper ActionManager::AddAction(int id, const QString& nam
     connect(action, SIGNAL(triggered()), m_actionMapper, SLOT(map()));
     m_actionMapper->setMapping(action, id);
 
-    auto widget = qobject_cast<QWidget*>(parent());
-
+    QWidget* widget = qobject_cast<QWidget*>(parent());
     if (widget)
     {
         widget->addAction(action);
-        action->setParent(widget);
     }
 
     m_shortcutDispatcher->AddNewAction(action);
@@ -487,12 +485,11 @@ ActionManager::ActionWrapper ActionManager::AddAction(AZ::Crc32 id, const QStrin
     connect(action, SIGNAL(triggered()), m_actionMapper, SLOT(map()));
     m_actionMapper->setMapping(action, new_id);
 
-    auto widget = qobject_cast<QWidget*>(parent());
+    QWidget* widget = qobject_cast<QWidget*>(parent());
 
     if (widget)
     {
         widget->addAction(action);
-        action->setParent(widget);
     }
 
     m_shortcutDispatcher->AddNewAction(action);
