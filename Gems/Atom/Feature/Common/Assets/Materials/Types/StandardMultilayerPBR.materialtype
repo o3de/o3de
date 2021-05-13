@@ -2687,6 +2687,12 @@
         {
             "type": "Lua",
             "args": {
+                "file": "StandardMultilayerPBR_LayerEnable.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
                 "file": "StandardMultilayerPBR_ClearCoatEnableFeature.lua"
             }
         },

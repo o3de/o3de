@@ -50,6 +50,7 @@ namespace MaterialEditor
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
         void OnDocumentPropertyValueModified(const AZ::Uuid& documentId, const AtomToolsFramework::DynamicProperty& property) override;
         void OnDocumentPropertyConfigModified(const AZ::Uuid& documentId, const AtomToolsFramework::DynamicProperty& property) override;
+        void OnDocumentPropertyGroupVisibilityChanged(const AZ::Uuid& documentId, const AZ::Name& groupId, bool visible) override;
 
         // AzToolsFramework::IPropertyEditorNotify overrides...
         void BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode) override;

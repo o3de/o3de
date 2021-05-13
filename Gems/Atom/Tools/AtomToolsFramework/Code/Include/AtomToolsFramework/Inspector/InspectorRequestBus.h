@@ -44,6 +44,12 @@ namespace AtomToolsFramework
             const AZStd::string& groupDescription,
             QWidget* groupWidget) = 0;
 
+        //! Sets the visibility of a specific property group. This impacts both the header and the widget.
+        virtual void SetGroupVisible(const AZStd::string& groupNameId, bool visible) = 0;
+        
+        //! Returns the visibility of a specific property group.
+        virtual bool IsGroupVisible(const AZStd::string& groupNameId) const = 0;
+
         //! Calls Refresh for a specific InspectorGroupWidget, allowing for non-destructive UI changes
         virtual void RefreshGroup(const AZStd::string& groupNameId) = 0;
 

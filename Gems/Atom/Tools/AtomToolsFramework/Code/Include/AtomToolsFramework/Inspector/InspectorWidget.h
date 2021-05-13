@@ -57,6 +57,9 @@ namespace AtomToolsFramework
             const AZStd::string& groupDescription,
             QWidget* groupWidget) override;
 
+        void SetGroupVisible(const AZStd::string& groupNameId, bool visible) override;
+        bool IsGroupVisible(const AZStd::string& groupNameId) const override;
+
         void RefreshGroup(const AZStd::string& groupNameId) override;
         void RebuildGroup(const AZStd::string& groupNameId) override;
 

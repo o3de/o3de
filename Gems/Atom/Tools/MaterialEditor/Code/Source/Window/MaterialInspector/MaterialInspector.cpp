@@ -185,7 +185,7 @@ namespace MaterialEditor
         }
     }
 
-    void MaterialInspector::OnDocumentPropertyConfigModified(const AZ::Uuid& documentId, const AtomToolsFramework::DynamicProperty& property)
+    void MaterialInspector::OnDocumentPropertyConfigModified(const AZ::Uuid&, const AtomToolsFramework::DynamicProperty& property)
     {
         for (auto& groupPair : m_groups)
         {
@@ -197,16 +197,26 @@ namespace MaterialEditor
                     if (reflectedProperty.GetVisibility() != property.GetVisibility())
                     {
                         reflectedProperty.SetConfig(property.GetConfig());
-                        AtomToolsFramework::InspectorRequestBus::Event(documentId, &AtomToolsFramework::InspectorRequestBus::Events::RebuildGroup, groupPair.first);
+                        RebuildGroup(groupPair.first);
                     }
                     else
                     {
                         reflectedProperty.SetConfig(property.GetConfig());
-                        AtomToolsFramework::InspectorRequestBus::Event(documentId, &AtomToolsFramework::InspectorRequestBus::Events::RefreshGroup, groupPair.first);
+                        RefreshGroup(groupPair.first);
                     }
                     return;
                 }
             }
+        }
+    }
+    
+    void MaterialInspector::OnDocumentPropertyGroupVisibilityChanged(const AZ::Uuid&, const AZ::Name& groupId, bool visible)
+    {
+        auto groupIter = m_groups.find(groupId.GetStringView());
+        
+        if(groupIter != m_groups.end())
+        {
+            SetGroupVisible(groupIter->first, visible);
         }
     }
 

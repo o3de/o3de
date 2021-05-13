@@ -69,6 +69,7 @@ namespace AtomToolsFramework
         InspectorGroupHeaderWidget* groupHeader = new InspectorGroupHeaderWidget(m_ui->m_propertyContent);
         groupHeader->setText(groupDisplayName.c_str());
         groupHeader->setToolTip(groupDescription.c_str());
+        groupHeader->setObjectName(groupNameId.c_str());
         m_layout->addWidget(groupHeader);
         m_headers.push_back(groupHeader);
 
@@ -80,6 +81,32 @@ namespace AtomToolsFramework
         connect(groupHeader, &InspectorGroupHeaderWidget::clicked, this, [this, groupHeader, groupWidget](QMouseEvent* event) {
             OnHeaderClicked(event, groupHeader, groupWidget);
         });
+    }
+    
+    void InspectorWidget::SetGroupVisible(const AZStd::string& groupNameId, bool visible)
+    {
+        for (size_t i = 0; i < m_groups.size(); ++i)
+        {
+            if (m_groups[i]->objectName() == groupNameId.c_str())
+            {
+                m_headers[i]->setVisible(visible);
+                m_groups[i]->setVisible(visible && m_headers[i]->IsExpanded());
+                break;
+            }
+        }
+    }
+    
+    bool InspectorWidget::IsGroupVisible(const AZStd::string& groupNameId) const
+    {
+        for (auto& header : m_headers)
+        {
+            if (header->objectName() == groupNameId.c_str())
+            {
+                return header->isVisible();
+            }
+        }
+
+        return false;
     }
 
     void InspectorWidget::RefreshGroup(const AZStd::string& groupNameId)
