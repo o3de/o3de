@@ -114,7 +114,6 @@ namespace AZ
 extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env)
 {
     AZ::Environment::Attach(static_cast<AZ::EnvironmentInstance>(env));
-    AZ::SceneAPI::FbxSceneBuilder::Initialize();
 }
 extern "C" AZ_DLL_EXPORT void Reflect(AZ::SerializeContext* context)
 {
