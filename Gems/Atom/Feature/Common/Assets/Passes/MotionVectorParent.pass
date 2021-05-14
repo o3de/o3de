@@ -30,6 +30,22 @@
                     "SlotType": "Output"
                 }
             ],
+            "Connections": [
+                {
+                    "LocalSlot": "CameraMotionVectorOutput",
+                    "AttachmentRef": {
+                        "Pass": "CameraMotionVectorPass",
+                        "Attachment": "Output"
+                    }
+                },
+                {
+                    "LocalSlot": "MeshMotionVectorOutput",
+                    "AttachmentRef": {
+                        "Pass": "MeshMotionVectorPass",
+                        "Attachment": "Output"
+                    }
+                }
+            ],
             "PassRequests": [
                 {
                     "Name": "CameraMotionVectorPass",
@@ -40,13 +56,6 @@
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "Depth"
-                            }
-                        },
-                        {
-                            "LocalSlot": "Output",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "CameraMotionVectorOutput"
                             }
                         }
                     ],
@@ -64,13 +73,6 @@
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "SkinnedMeshes"
-                            }
-                        },
-                        {
-                            "LocalSlot": "Output",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "MeshMotionVectorOutput"
                             }
                         }
                     ],

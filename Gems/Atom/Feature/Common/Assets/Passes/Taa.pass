@@ -54,7 +54,8 @@
                     },
                     "ImageDescriptor": {
                         "Format": "R16G16B16A16_FLOAT",
-                        "SharedQueueMask": "2"
+                        "BindFlags": "3",
+                        "SharedQueueMask": "1"
                     }
                 },
                 {
@@ -72,7 +73,8 @@
                     },
                     "ImageDescriptor": {
                         "Format": "R16G16B16A16_FLOAT",
-                        "SharedQueueMask": "2"
+                        "BindFlags": "3",
+                        "SharedQueueMask": "1"
                     }
                 }
             ],

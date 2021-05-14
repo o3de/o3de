@@ -23,7 +23,23 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Texture2D<float2> m_motionVectors;
     Texture2D<float4> m_lastFrameAccumulation;
 
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
     float m_minContribution;
+
+    struct Constants
+    {
+        uint2 m_size;
+    };
+    Constants m_constantData;
 }
 
 // Do fancy LDS stuff after initial implementation works.
@@ -38,5 +54,28 @@ void MainCS(
     uint3 groupID : SV_GroupID, 
     uint groupIndex : SV_GroupIndex)
 {
-    PassSrg::m_outputColor[dispatchThreadID.xy] = PassSrg::m_inputColor[dispatchThreadID.xy] * PassSrg::m_minContribution;
+    uint2 pixelCoord = dispatchThreadID.xy;
+
+    uint2 size = PassSrg::m_constantData.m_size;
+    float2 previousPosition = -PassSrg::m_motionVectors[pixelCoord];
+
+    float2 uvCoord = pixelCoord / float2(size);
+    float2 uvOld = float2(uvCoord) + previousPosition;
+
+    float3 color = PassSrg::m_inputColor[pixelCoord].rgb;
+    float depth = PassSrg::m_inputDepth[pixelCoord].r;
+
+    float4 lastFrameColorDepth = PassSrg::m_lastFrameAccumulation.SampleLevel(PassSrg::LinearSampler, uvOld, 0.0);
+
+    float weight = PassSrg::m_minContribution;
+
+    if (abs(depth - lastFrameColorDepth.a) > 0.01)
+    {
+        weight = 1.0f;
+    }
+
+    float invWeight = 1.0 - weight;
+
+    PassSrg::m_outputColor[pixelCoord].rgb = lastFrameColorDepth.rgb * invWeight + color * weight;
+    PassSrg::m_outputColor[pixelCoord].a = depth;
 }

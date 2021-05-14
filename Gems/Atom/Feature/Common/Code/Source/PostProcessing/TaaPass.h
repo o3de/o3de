@@ -49,11 +49,13 @@ namespace AZ::Render
 
         void UpdateAttachmentImage(RPI::Ptr<RPI::PassAttachment>& attachment);
 
-        RHI::ShaderInputNameIndex m_outputIndex = Name("m_output");
-        RHI::ShaderInputNameIndex m_lastFrameAccumulationIndex = Name("m_lastFrameAccumulation");
+        RHI::ShaderInputNameIndex m_outputIndex = "m_output";
+        RHI::ShaderInputNameIndex m_lastFrameAccumulationIndex = "m_lastFrameAccumulation";
+        RHI::ShaderInputNameIndex m_constantDataIndex = "m_constantData";
 
         Data::Instance<RPI::PassAttachment> m_accumulationAttachments[2];
-        
+
+        RPI::PassAttachmentBinding* m_inputColorBinding = nullptr;
         RPI::PassAttachmentBinding* m_lastFrameAccumulationBinding = nullptr;
         RPI::PassAttachmentBinding* m_outputColorBinding = nullptr;
 
