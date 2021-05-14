@@ -160,6 +160,17 @@ namespace Camera
         incompatible.push_back(AZ_CRC("CameraService", 0x1dd1caa4));
     }
 
+    void CameraComponentController::Init()
+    {
+        m_onViewMatrixChanged = AZ::Event<const AZ::Matrix4x4&>::Handler([this](const AZ::Matrix4x4&)
+        {
+            if (!m_updatingTransformFromEntity)
+            {
+                AZ::TransformBus::Event(m_entityId, &AZ::TransformInterface::SetWorldTM, m_atomCamera->GetCameraTransform());
+            }
+        });
+    }
+
     void CameraComponentController::Activate(AZ::EntityId entityId)
     {
         m_entityId = entityId;
@@ -218,6 +229,8 @@ namespace Camera
                 }
             }
             AZ::RPI::ViewProviderBus::Handler::BusConnect(m_entityId);
+
+            m_atomCamera->ConnectWorldToViewMatrixChangedHandler(m_onViewMatrixChanged);
         }
 
         UpdateCamera();
@@ -258,6 +271,7 @@ namespace Camera
         if (atomViewportRequests)
         {
             AZ::RPI::ViewProviderBus::Handler::BusDisconnect(m_entityId);
+            m_onViewMatrixChanged.Disconnect();
         }
 
         DeactivateAtomView();
@@ -376,7 +390,9 @@ namespace Camera
 
         if (m_atomCamera)
         {
+            m_updatingTransformFromEntity = true;
             m_atomCamera->SetCameraTransform(AZ::Matrix3x4::CreateFromTransform(world.GetOrthogonalized()));
+            m_updatingTransformFromEntity = false;
         }
     }
 
@@ -425,7 +441,9 @@ namespace Camera
                 m_config.m_nearClipDistance,
                 m_config.m_farClipDistance,
                 true);
+            m_updatingTransformFromEntity = true;
             m_atomCamera->SetViewToClipMatrix(viewToClipMatrix);
+            m_updatingTransformFromEntity = false;
         }
     }
 
