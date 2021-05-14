@@ -105,11 +105,15 @@ If you have the Git credential manager core installed, you should not be prompte
     ```
     <Repo path>\scripts\o3de.bat create-project --project-path <New project path>
     ```
-2.  Once you're ready to build the project, run the same set of commands to configure and build:
+2. Register the engine to the project
     ```
-    cmake -B <your build location> -S <source-dir> -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH=%LY_3RDPARTY_PATH% -DLY_PROJECTS=<New project name> -DLY_MONOLITHIC_GAME=1
+    <Repo path>\scripts\o3de.bat register --project-path <New project path>
+    ```
+4.  Once you're ready to build the project, run the same set of commands to configure and build:
+    ```
+    cmake -B <your build location in the project> -S <New project path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=%LY_3RDPARTY_PATH%
 
-    cmake --build <your build location> --target <New Project Name> --config profile -- /m
+    cmake --build <your build location in the project> --target <New Project Name> --config profile -- /m
     ```
 
 ## License
