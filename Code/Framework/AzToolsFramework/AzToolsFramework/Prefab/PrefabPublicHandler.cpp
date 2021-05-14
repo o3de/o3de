@@ -358,7 +358,7 @@ namespace AzToolsFramework
             sourceInstance.SetLinkId(linkId);
 
             // Update the cache - this prevents these changes from being stored in the regular undo/redo nodes
-            m_prefabUndoCache.Store(containerEntityId, AZStd::move(containerEntityDomAfter));
+            m_prefabUndoCache.Store(containerEntityId, AZStd::move(containerEntityDomAfter), commonRootEntityId);
         }
 
         void PrefabPublicHandler::RemoveLink(
@@ -477,54 +477,109 @@ namespace AzToolsFramework
         {
             // Create Undo node on entities if they belong to an instance
             InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
-
-            if (owningInstance.has_value())
+            if (!owningInstance.has_value())
             {
-                PrefabDom afterState;
-                AZ::Entity* entity = GetEntityById(entityId);
-                if (entity)
+                return;
+            }
+
+            AZ::Entity* entity = GetEntityById(entityId);
+            if (!entity)
+            {
+                m_prefabUndoCache.PurgeCache(entityId);
+                return;
+            }
+
+            PrefabDom beforeState;
+            AZ::EntityId beforeParentId;
+            m_prefabUndoCache.Retrieve(entityId, beforeState, beforeParentId);
+
+            PrefabDom afterState;
+            AZ::EntityId afterParentId;
+            AZ::TransformBus::EventResult(afterParentId, entityId, &AZ::TransformBus::Events::GetParentId);
+
+            m_instanceToTemplateInterface->GenerateDomForEntity(afterState, *entity);
+
+            PrefabDom patch;
+            m_instanceToTemplateInterface->GeneratePatch(patch, beforeState, afterState);
+
+            if (patch.IsArray() && !patch.Empty() && beforeState.IsObject())
+            {
+                if (IsInstanceContainerEntity(entityId) && !IsLevelInstanceContainerEntity(entityId))
                 {
-                    PrefabDom beforeState;
-                    m_prefabUndoCache.Retrieve(entityId, beforeState);
-
-                    m_instanceToTemplateInterface->GenerateDomForEntity(afterState, *entity);
-
-                    PrefabDom patch;
-                    m_instanceToTemplateInterface->GeneratePatch(patch, beforeState, afterState);
-
-                    if (patch.IsArray() && !patch.Empty() && beforeState.IsObject())
-                    {
-                        if (IsInstanceContainerEntity(entityId) && !IsLevelInstanceContainerEntity(entityId))
-                        {
-                            m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, entityId);
-
-                            // Save these changes as patches to the link
-                            PrefabUndoLinkUpdate* linkUpdate =
-                                aznew PrefabUndoLinkUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
-                            linkUpdate->SetParent(parentUndoBatch);
-                            linkUpdate->Capture(patch, owningInstance->get().GetLinkId());
-
-                            linkUpdate->Redo();
-                        }
-                        else
-                        {
-                            // Update the state of the entity
-                            PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
-                            state->SetParent(parentUndoBatch);
-                            state->Capture(beforeState, afterState, entityId);
-
-                            state->Redo();
-                        }
-                    }
-
-                    // Update the cache
-                    m_prefabUndoCache.Store(entityId, AZStd::move(afterState));
+                    m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, entityId);
+                    GenerateUndoNodeForContainerOverride(parentUndoBatch, entityId, patch, owningInstance->get().GetLinkId());
                 }
                 else
                 {
-                    m_prefabUndoCache.PurgeCache(entityId);
+                    GenerateUndoNodeForEntityChange(parentUndoBatch, entityId, beforeState, afterState);
                 }
             }
+
+            InstanceOptionalReference beforeOwningInstance;
+            if (beforeParentId != afterParentId)
+            {
+                // If the entity parent changed, verify if the owning instance changed too
+                beforeOwningInstance = m_instanceEntityMapperInterface->FindOwningInstance(beforeParentId);
+                InstanceOptionalReference afterOwningInstance = m_instanceEntityMapperInterface->FindOwningInstance(afterParentId);
+
+                // TODO - See if we need to error out / do something special if either instance can't be found.
+                if (beforeOwningInstance.has_value() && afterOwningInstance.has_value() &&
+                    (&beforeOwningInstance->get() != &afterOwningInstance->get()))
+                {
+                    // TODO - potentially move this to its own function?
+
+                    // Get the previous state of the old instance for undo/redo purposes
+                    PrefabDom beforeInstanceDomBeforeRemoval;
+                    m_instanceToTemplateInterface->GenerateDomForInstance(beforeInstanceDomBeforeRemoval, beforeOwningInstance->get());
+
+                    // Retrieve all descendants of this entity, be them entities of container entities
+                    // Note that this will detach entities and instances from beforeInstance
+                    EntityList entities;
+                    AZStd::vector<AZStd::unique_ptr<Instance>> instances;
+
+                    RetrieveAndSortPrefabEntitiesAndInstances({entity}, beforeOwningInstance->get(), entities, instances);
+                    /*
+                    // When we move instances bet a prefab with other prefab instances, we have to remove the existing links between the
+                    // source and target templates of the other instances.
+                    for (auto& nestedInstance : instances)
+                    {
+                        RemoveLink(nestedInstance, commonRootEntityOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch());
+                    }
+
+                    PrefabUndoHelpers::UpdatePrefabInstance(
+                        commonRootEntityOwningInstance->get(), "Update prefab instance", commonRootInstanceDomBeforeCreate,
+                        undoBatch.GetUndoBatch());
+                    */
+                    // Add them to the new one (undo/redo support)
+
+                    // For every container, move the link
+                }
+            }
+
+            // Update the cache
+            m_prefabUndoCache.Store(entityId, AZStd::move(afterState), afterParentId);
+        }
+
+        void PrefabPublicHandler::GenerateUndoNodeForContainerOverride(
+            UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch, const LinkId linkId)
+        {
+            // Save these changes as patches to the link
+            PrefabUndoLinkUpdate* linkUpdate = aznew PrefabUndoLinkUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
+            linkUpdate->SetParent(undoBatch);
+            linkUpdate->Capture(patch, linkId);
+
+            linkUpdate->Redo();
+        }
+
+        void PrefabPublicHandler::GenerateUndoNodeForEntityChange(
+            UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState, PrefabDom& afterState)
+        {
+            // Update the state of the entity
+            PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
+            state->SetParent(undoBatch);
+            state->Capture(beforeState, afterState, entityId);
+
+            state->Redo();
         }
 
         bool PrefabPublicHandler::IsInstanceContainerEntity(AZ::EntityId entityId) const

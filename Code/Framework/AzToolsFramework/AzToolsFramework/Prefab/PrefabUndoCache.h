@@ -46,13 +46,18 @@ namespace AzToolsFramework
             void Validate(const AZ::EntityId& entityId) override;
 
             // Retrieve the last known state for an entity
-            bool Retrieve(const AZ::EntityId& entityId, PrefabDom& outDom);
+            bool Retrieve(const AZ::EntityId& entityId, PrefabDom& outDom, AZ::EntityId& parentId);
 
             // Store dom as the cached state of entityId
-            void Store(const AZ::EntityId& entityId, PrefabDom&& dom);
+            void Store(const AZ::EntityId& entityId, PrefabDom&& dom, const AZ::EntityId& parentId);
 
         private:
-            typedef AZStd::unordered_map<AZ::EntityId, PrefabDom> EntityDomMap;
+            struct PrefabUndoCacheItem
+            {
+                PrefabDom dom;
+                AZ::EntityId parentId;
+            };
+            typedef AZStd::unordered_map<AZ::EntityId, PrefabUndoCacheItem> EntityDomMap;
             EntityDomMap m_entitySavedStates;
 
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
