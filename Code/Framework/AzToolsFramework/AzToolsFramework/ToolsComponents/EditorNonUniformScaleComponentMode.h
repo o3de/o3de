@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
+#include <AzToolsFramework/Manipulators/ScaleManipulators.h>
 
 namespace AzToolsFramework
 {
@@ -24,12 +25,17 @@ namespace AzToolsFramework
             : public AZ::EntityComponentBus
         {
         public:
+            //! Gets the non-uniform scale.
+            virtual AZ::Vector3 GetScale() const = 0;
+
+            //! Sets the non-uniform scale.
+            virtual void SetScale(const AZ::Vector3& scale) = 0;
 
         protected:
             ~NonUniformScaleManipulatorRequests() = default;
         };
 
-        //! Type to inherit to implement NonUniformScaleManipulatorRequests
+        //! Type to inherit to implement NonUniformScaleManipulatorRequests.
         using NonUniformScaleManipulatorRequestBus = AZ::EBus<NonUniformScaleManipulatorRequests>;
 
         class NonUniformScaleComponentMode
@@ -47,6 +53,11 @@ namespace AzToolsFramework
 
             // EditorBaseComponentMode
             void Refresh() override;
+
+        private:
+            AZ::EntityComponentIdPair m_entityComponentIdPair;
+            AZStd::unique_ptr<ScaleManipulators> m_manipulators;
+            AZ::Vector3 m_initialScale;
         };
     } // namespace Components
 } // namespace AzToolsFramework

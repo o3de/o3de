@@ -42,6 +42,7 @@ namespace AzToolsFramework
         ~LinearManipulator() = default;
 
         /// A Manipulator must only be created and managed through a shared_ptr.
+        /// @note worldFromLocal should not contain scale.
         static AZStd::shared_ptr<LinearManipulator> MakeShared(const AZ::Transform& worldFromLocal);
 
         /// Unchanging data set once for the linear manipulator.

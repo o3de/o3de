@@ -82,14 +82,16 @@ namespace AzToolsFramework
             AZ::NonUniformScaleRequestBus::Handler::BusConnect(GetEntityId());
 
             // ComponentMode
+            AZ::EntityComponentIdPair entityComponentIdPair(GetEntityId(), GetId());
+            NonUniformScaleManipulatorRequestBus::Handler::BusConnect(entityComponentIdPair);
             m_componentModeDelegate.ConnectWithSingleComponentMode<
-                EditorNonUniformScaleComponent, NonUniformScaleComponentMode>(
-                    AZ::EntityComponentIdPair(GetEntityId(), GetId()), this);
+                EditorNonUniformScaleComponent, NonUniformScaleComponentMode>(entityComponentIdPair, this);
         }
 
         void EditorNonUniformScaleComponent::Deactivate()
         {
             m_componentModeDelegate.Disconnect();
+            NonUniformScaleManipulatorRequestBus::Handler::BusDisconnect();
 
             AZ::NonUniformScaleRequestBus::Handler::BusDisconnect();
         }
