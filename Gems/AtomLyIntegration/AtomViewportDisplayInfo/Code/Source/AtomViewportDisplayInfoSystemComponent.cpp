@@ -24,7 +24,6 @@
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RHI/Factory.h>
 
-#include <CrySystem/MemoryManager.h>
 #include <CryCommon/ISystem.h>
 #include <CryCommon/IConsole.h>
 
@@ -149,7 +148,7 @@ namespace AZ::Render
         {
             if (auto rootPass = AZ::RPI::PassSystemInterface::Get()->GetRootPass())
             {
-                rootPass->SetPipelineStatisticsQueryEnabled(displayLevel == AtomBridge::ViewportInfoDisplayState::FullInfo);
+                rootPass->SetPipelineStatisticsQueryEnabled(displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo);
                 m_updateRootPassQuery = false;
             }
         }
@@ -175,11 +174,10 @@ namespace AZ::Render
         if (displayLevel == AtomBridge::ViewportInfoDisplayState::FullInfo)
         {
             DrawCameraInfo();
-            DrawPassInfo();
         }
         if (displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo)
         {
-            DrawMemoryInfo();
+            DrawPassInfo();
         }
         DrawFramerate();
     }
@@ -251,30 +249,6 @@ namespace AZ::Render
         ));
     }
 
-    void AtomViewportDisplayInfoSystemComponent::DrawMemoryInfo()
-    {
-        static IMemoryManager::SProcessMemInfo processMemInfo;
-
-        // Throttle memory usage updates to avoid potentially expensive memory usage API calls every tick.
-        constexpr AZStd::chrono::duration<double> memoryUpdateInterval = AZStd::chrono::seconds(0.5);
-        AZStd::chrono::time_point currentTime = m_fpsHistory.back().Get();
-        if (m_lastMemoryUpdate.has_value())
-        {
-            if (currentTime - m_lastMemoryUpdate.value() > memoryUpdateInterval)
-            {
-                if (auto memoryManager = GetISystem()->GetIMemoryManager())
-                {
-                    memoryManager->GetProcessMemInfo(processMemInfo);
-                }
-            }
-        }
-        m_lastMemoryUpdate = currentTime;
-
-        int peakUsageMB = aznumeric_cast<int>(processMemInfo.PeakPagefileUsage >> 20);
-        int currentUsageMB = aznumeric_cast<int>(processMemInfo.PagefileUsage >> 20);
-        DrawLine(AZStd::string::format("Mem=%d Peak=%d", currentUsageMB, peakUsageMB));
-    }
-
     void AtomViewportDisplayInfoSystemComponent::UpdateFramerate()
     {
         if (!m_tickRequests)
@@ -287,7 +261,7 @@ namespace AZ::Render
         }
 
         AZ::ScriptTimePoint currentTime = m_tickRequests->GetTimeAtCurrentTick();
-        // Only keep as much sampling data is is required by our FPS history.
+        // Only keep as much sampling data as is required by our FPS history.
         while (!m_fpsHistory.empty() && (currentTime.Get() - m_fpsHistory.front().Get()) > m_fpsInterval)
         {
             m_fpsHistory.pop_front();

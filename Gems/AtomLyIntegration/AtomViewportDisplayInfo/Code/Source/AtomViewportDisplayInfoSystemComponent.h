@@ -63,7 +63,6 @@ namespace AZ
             void DrawRendererInfo();
             void DrawCameraInfo();
             void DrawPassInfo();
-            void DrawMemoryInfo();
             void DrawFramerate();
 
             AZStd::string m_rendererDescription;
