@@ -282,7 +282,7 @@ namespace AzToolsFramework
         }
 
         bool PrefabPublicHandler::IsCyclicalDependencyFound(
-            InstanceOptionalConstReference instance, AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths)
+            InstanceOptionalConstReference instance, const AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths)
         {
             InstanceOptionalConstReference currentInstance = instance;
 

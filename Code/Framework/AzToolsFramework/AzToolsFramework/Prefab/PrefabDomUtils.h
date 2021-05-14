@@ -103,7 +103,7 @@ namespace AzToolsFramework
             /**
              * Gets a set of all the template source paths in the given dom.
              * @param prefabDom The DOM to get the template source paths from.
-             * @param templateSourcePaths The set of template source paths to populate.
+             * @param[out] templateSourcePaths The set of template source paths to populate.
              */
             void GetTemplateSourcePaths(const PrefabDomValue& prefabDom, AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths);
 

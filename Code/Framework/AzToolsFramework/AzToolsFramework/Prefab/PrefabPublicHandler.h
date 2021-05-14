@@ -114,7 +114,7 @@ namespace AzToolsFramework
              * \return true if any of the template source paths could be found in the ancestor hierarchy of instance, false otherwise.
              */
             bool IsCyclicalDependencyFound(
-                InstanceOptionalConstReference instance, AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths);
+                InstanceOptionalConstReference instance, const AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths);
 
             static Instance* GetParentInstance(Instance* instance);
             static Instance* GetAncestorOfInstanceThatIsChildOfRoot(const Instance* ancestor, Instance* descendant);
