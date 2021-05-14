@@ -430,11 +430,11 @@ namespace NvCloth
     AZStd::unique_ptr<ActorClothSkinning> ActorClothSkinning::Create(
         AZ::EntityId entityId, 
         const MeshNodeInfo& meshNodeInfo,
-        const MeshClothInfo& meshClothInfo,
+        const AZStd::vector<SimParticleFormat>& originalMeshParticles,
         const size_t numSimulatedVertices,
         const AZStd::vector<int>& meshRemappedVertices)
     {
-        const size_t numVertices = meshClothInfo.m_particles.size();
+        const size_t numVertices = originalMeshParticles.size();
 
         AZStd::vector<SkinningInfluence> skinningInfluences;
         if (!Internal::ObtainSkinningInfluences(entityId, meshNodeInfo, numVertices, skinningInfluences))
@@ -489,7 +489,7 @@ namespace NvCloth
             }
 
             if (remappedIndex < 0 ||
-                meshClothInfo.m_particles[vertexIndex].GetW() == 0.0f)
+                originalMeshParticles[vertexIndex].GetW() == 0.0f)
             {
                 actorClothSkinning->m_nonSimulatedVertices.emplace_back(vertexIndex);
             }

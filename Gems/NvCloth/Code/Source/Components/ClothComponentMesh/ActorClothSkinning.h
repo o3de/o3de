@@ -43,7 +43,7 @@ namespace NvCloth
         static AZStd::unique_ptr<ActorClothSkinning> Create(
             AZ::EntityId entityId, 
             const MeshNodeInfo& meshNodeInfo,
-            const MeshClothInfo& meshClothInfo,
+            const AZStd::vector<SimParticleFormat>& originalMeshParticles,
             const size_t numSimulatedVertices,
             const AZStd::vector<int>& meshRemappedVertices);
 

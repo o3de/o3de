@@ -187,7 +187,7 @@ namespace NvCloth
         m_actorClothSkinning = ActorClothSkinning::Create(
             m_entityId,
             m_meshNodeInfo,
-            m_meshClothInfo,
+            m_meshClothInfo.m_particles,
             m_cloth->GetParticles().size(),
             m_meshRemappedVertices);
         m_numberOfClothSkinningUpdates = 0;
