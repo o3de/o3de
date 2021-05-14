@@ -13,25 +13,33 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
-#include <GemCatalog/GemListView.h>
-#include <GemCatalog/GemModel.h>
+
+#include <ScreensCtrl.h>
+
+#include <QPushButton>
 #endif
 
 namespace O3DE::ProjectManager
 {
-    class GemCatalog
+    class ProjectSettingsCtrl
         : public ScreenWidget
     {
     public:
-        explicit GemCatalog(ProjectManagerWindow* window);
-        ~GemCatalog() = default;
+        explicit ProjectSettingsCtrl(QWidget* parent = nullptr);
+        ~ProjectSettingsCtrl() = default;
+        ProjectManagerScreen GetScreenEnum() override;
 
     protected slots:
         void HandleBackButton();
-        void HandleConfirmButton();
+        void HandleNextButton();
 
     private:
-        GemListView* m_gemListView = nullptr;
-        GemModel* m_gemModel = nullptr;
+        void UpdateNextButtonText();
+
+        ScreensCtrl* m_screensCtrl;
+        QPushButton* m_backButton;
+        QPushButton* m_nextButton;
+        QVector<ProjectManagerScreen> m_screensOrder;
     };
+
 } // namespace O3DE::ProjectManager

@@ -11,18 +11,25 @@
  */
 #pragma once
 
+#if !defined(Q_MOC_RUN)
+#include <ScreenWidget.h>
+#include <GemCatalog/GemListView.h>
+#include <GemCatalog/GemModel.h>
+#endif
+
 namespace O3DE::ProjectManager
 {
-    enum ProjectManagerScreen
+    class GemCatalogScreen
+        : public ScreenWidget
     {
-        Invalid = -1,
-        Empty,
-        FirstTimeUse,
-        NewProjectSettingsCore,
-        NewProjectSettings,
-        GemCatalog,
-        ProjectsHome,
-        ProjectSettings,
-        EngineSettings
+    public:
+        explicit GemCatalogScreen(QWidget* parent = nullptr);
+        ~GemCatalogScreen() = default;
+        ProjectManagerScreen GetScreenEnum() override;
+        QString GetNextButtonText() override;
+
+    private:
+        GemListView* m_gemListView = nullptr;
+        GemModel* m_gemModel = nullptr;
     };
 } // namespace O3DE::ProjectManager

@@ -9,37 +9,22 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  */
-#pragma once
 
-#if !defined(Q_MOC_RUN)
-#include <ScreenWidget.h>
-#endif
+#include <EngineSettingsScreen.h>
 
-namespace Ui
-{
-    class ProjectsHomeClass;
-}
+#include <Source/ui_EngineSettingsScreen.h>
 
 namespace O3DE::ProjectManager
 {
-    class ProjectsHome
-        : public ScreenWidget
+    EngineSettingsScreen::EngineSettingsScreen(QWidget* parent)
+        : ScreenWidget(parent)
+        , m_ui(new Ui::EngineSettingsClass())
     {
+        m_ui->setupUi(this);
+    }
 
-    public:
-        explicit ProjectsHome(ProjectManagerWindow* window);
-        ~ProjectsHome();
-
-    protected:
-        void ConnectSlotsAndSignals() override;
-
-    protected slots:
-        void HandleNewProjectButton();
-        void HandleAddProjectButton();
-        void HandleEditProjectButton();
-
-    private:
-        QScopedPointer<Ui::ProjectsHomeClass> m_ui;
-    };
-
+    ProjectManagerScreen EngineSettingsScreen::GetScreenEnum()
+    {
+        return ProjectManagerScreen::EngineSettings;
+    }
 } // namespace O3DE::ProjectManager

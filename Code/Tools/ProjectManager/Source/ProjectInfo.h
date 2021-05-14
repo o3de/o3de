@@ -23,14 +23,22 @@ namespace O3DE::ProjectManager
     {
     public:
         ProjectInfo() = default;
-        ProjectInfo(const QString& path, const QString& projectName, const QString& productName, const AZ::Uuid projectId);
+        ProjectInfo(const QString& path, const QString& projectName, const QString& productName, const AZ::Uuid projectId,
+            const QString& imagePath, const QString& backgroundImagePath, bool isNew);
 
-        // from o3de_manifest.json and o3de_projects.json
+        // From o3de_manifest.json and o3de_projects.json
         QString m_path;
 
-        // from project.json
+        // From project.json
         QString m_projectName;
         QString m_productName;
         AZ::Uuid m_projectId;
+
+        // Used on projects home screen
+        QString m_imagePath;
+        QString m_backgroundImagePath;
+
+        // Used in project creation
+        bool m_isNew = false; //! Is this a new project or existing
     };
 } // namespace O3DE::ProjectManager

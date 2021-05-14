@@ -17,26 +17,25 @@
 
 namespace Ui
 {
-    class ProjectSettingsClass;
+    class FirstTimeUseClass;
 }
 
 namespace O3DE::ProjectManager
 {
-    class ProjectSettings
+    class FirstTimeUseScreen
         : public ScreenWidget
     {
     public:
-        explicit ProjectSettings(ProjectManagerWindow* window);
-        ~ProjectSettings();
-
-    protected:
-        void ConnectSlotsAndSignals() override;
+        explicit FirstTimeUseScreen(QWidget* parent = nullptr);
+        ~FirstTimeUseScreen() = default;
+        ProjectManagerScreen GetScreenEnum() override;
 
     protected slots:
-        void HandleGemsButton();
+        void HandleNewProjectButton();
+        void HandleOpenProjectButton();
 
     private:
-        QScopedPointer<Ui::ProjectSettingsClass> m_ui;
+        QScopedPointer<Ui::FirstTimeUseClass> m_ui;
     };
 
 } // namespace O3DE::ProjectManager
