@@ -1714,19 +1714,8 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
         {
             if (auto viewportContext = viewportContextManager->GetViewportContextById(viewIndex))
             {
-                const auto cameraTransform = viewportContext->GetCameraTransform();
-
+                const AZ::Transform cameraTransform = viewportContext->GetCameraTransform();
                 const AZ::Vector3 forward = (center - cameraTransform.GetTranslation()).GetNormalized();
-                const AZ::Vector3 across = [forward] {
-                    AZ::Vector3 across = forward.Cross(AZ::Vector3::CreateAxisZ());
-                    if (across.IsClose(AZ::Vector3::CreateZero()))
-                    {
-                        across = forward.Cross(AZ::Vector3::CreateAxisX());
-                    }
-                    return across;
-                }();
-
-                const AZ::Vector3 up = across.Cross(forward);
 
                 // move camera 25% further back than required
                 const float centerScale = 1.25f;
@@ -1734,11 +1723,11 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
                 const float fov = AzFramework::RetrieveFov(viewportContext->GetCameraProjectionMatrix());
                 const float fovScale = (1.0f / AZStd::tan(fov * 0.5f));
                 const float distanceToTarget = selectionSize * fovScale * centerScale;
-                const AZ::Transform nextCameraTransform = AZ::Transform::CreateFromMatrix3x3AndTranslation(
-                    AZ::Matrix3x3::CreateFromColumns(across, forward, up), aabb.GetCenter() - (forward * distanceToTarget));
+                const AZ::Transform nextCameraTransform =
+                    AZ::Transform::CreateLookAt(aabb.GetCenter() - (forward * distanceToTarget), aabb.GetCenter());
 
-                Editor::ModernViewportCameraControllerRequestBus::Event(
-                    viewportContext->GetId(), &Editor::ModernViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+                EditorViewport::ModernViewportCameraControllerRequestBus::Event(
+                    viewportContext->GetId(), &EditorViewport::ModernViewportCameraControllerRequestBus::Events::InterpolateToTransform,
                     nextCameraTransform);
             }
         }
