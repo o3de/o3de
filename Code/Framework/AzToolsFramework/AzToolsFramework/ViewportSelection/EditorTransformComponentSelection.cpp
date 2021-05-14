@@ -2327,7 +2327,11 @@ namespace AzToolsFramework
         AzFramework::ApplicationRequests::Bus::BroadcastResult(
             isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
-        if (!isPrefabSystemEnabled)
+        bool prefabWipFeaturesEnabled = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
+
+        if (!isPrefabSystemEnabled || (isPrefabSystemEnabled && prefabWipFeaturesEnabled))
         {
             // duplicate selection
             AddAction(
