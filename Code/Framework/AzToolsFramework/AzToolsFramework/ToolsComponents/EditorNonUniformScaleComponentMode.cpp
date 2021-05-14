@@ -10,6 +10,7 @@
  *
  */
 
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
@@ -42,13 +43,14 @@ namespace AzToolsFramework
 
             m_manipulators->InstallAxisLeftMouseDownCallback([this](const LinearManipulator::Action& action) {
                 AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
-                NonUniformScaleManipulatorRequestBus::EventResult(
-                    nonUniformScale, m_entityComponentIdPair, &NonUniformScaleManipulatorRequests::GetScale);
+
+                AZ::NonUniformScaleRequestBus::EventResult(
+                    nonUniformScale, m_entityComponentIdPair.GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
 
                 m_initialScale = nonUniformScale + action.m_start.m_scaleSnapOffset;
 
-                NonUniformScaleManipulatorRequestBus::Event(
-                    m_entityComponentIdPair, &NonUniformScaleManipulatorRequests::SetScale, m_initialScale);
+                AZ::NonUniformScaleRequestBus::Event(
+                    m_entityComponentIdPair.GetEntityId(), &AZ::NonUniformScaleRequests::SetScale, m_initialScale);
             });
 
             m_manipulators->InstallAxisMouseMoveCallback([this](const LinearManipulator::Action& action) {
@@ -56,8 +58,8 @@ namespace AzToolsFramework
                     (AZ::Vector3::CreateOne() + ((action.LocalScaleOffset() * action.m_start.m_sign) / m_initialScale))
                         .GetMax(AZ::Vector3(AZ::MinTransformScale));
 
-                NonUniformScaleManipulatorRequestBus::Event(
-                    m_entityComponentIdPair, &NonUniformScaleManipulatorRequests::SetScale, scale * m_initialScale);
+                AZ::NonUniformScaleRequestBus::Event(
+                    m_entityComponentIdPair.GetEntityId(), &AZ::NonUniformScaleRequests::SetScale, scale * m_initialScale);
             });
         }
 
