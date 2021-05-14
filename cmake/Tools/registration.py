@@ -259,8 +259,6 @@ def register_shipped_engine_o3de_objects() -> int:
         ret_val = error_code
 
     starting_external_subdirectories = [
-        f'{engine_path}/Gems/Atom',
-        f'{engine_path}/Gems/AtomLyIntegration'
     ]
     for external_subdir in sorted(starting_external_subdirectories, reverse=True):
         error_code = add_external_subdirectory(engine_path=engine_path, external_subdir=external_subdir)
