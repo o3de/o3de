@@ -32,35 +32,7 @@
 #include <HairUtilities.azsli>
 #include <HairRenderingSrgs.azsli>
 
-#include <Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli>
 //#include <Atom/Features/PBR/LightingModel.azsli>
-
-// Given the depth buffer depth of the current pixel and the fragment XY position, 
-// reconstruct the world space position
-// screenCoords - from 0.. dimension of the screen of the current pixel
-// screenTexture - screen buffer texture representing the same resolution we work in
-// sDepth - the depth buffer depth at the fragment location
-float3 WorldPositionFromScreenTexture( 
-    Texture2D<float> screenTexture, float zDepth, float2 screenCoords,
-    inout float3 screenNormalizedCoords )
-{ 
-    uint2 dimensions;
-    screenTexture.GetDimensions(dimensions.x, dimensions.y);
-    float2 UV = saturate(screenCoords / dimensions.xy);
-
-    float x = UV.x * 2.0f - 1.0f;
-    float y = (1.0f - UV.y) * 2.0f - 1.0f;
-    screenNormalizedCoords = float3(x, y, zDepth);
-    float4 projectedPos = float4(x, y, zDepth, 1.0f);    // warped projected space [0..1]
-
-    float4 positionVS = mul(ViewSrg::m_projectionMatrixInverse, projectedPos);
-
-    positionVS /= positionVS.w; // notice the normalization factor - crucial!
-    float4 positionWS = mul(ViewSrg::m_viewMatrixInverse, positionVS);
-
-    return positionWS.xyz;
-}
-
 
 //------------------------------------------------------------------------------
 struct HairShadeParams
@@ -337,11 +309,11 @@ float3 AccumulateHairLight(float3 vTangent, float3 vPositionWS, float3 vViewDirW
 
     float3 lightPosWSVec[2] = {
         float3(4, -1, 2),
-        g_vEye.xyz
+        g_vEye.xyz // + float3(0,0,0.2)    // camera light located a bit above the camera.
     };
-    // Needed for each light calculation
-//    float3 lightPosWS = float3(4, -1, 2);
 
+    // Right now we fake two lights - one is fixed and the other one 
+    // is at to the camera and moving with it.
     for (int l = 0; l < 2; l++)
     {
         float3 lightPosWS = lightPosWSVec[l];
@@ -427,7 +399,7 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
  //   float3 vNDC = ScreenPosToNDC(float3(pixelCoord, depth), g_vViewport);
 
     float3 vNDC;    // normalized device / screen coordinates: [-1..1, -1..1, 0..1]
-    float3 vPositionWS = WorldPositionFromScreenTexture( PassSrg::m_linearDepth, depth, pixelCoord, vNDC);
+    float3 vPositionWS = ScreenPosToWorldPos(PassSrg::m_linearDepth, pixelCoord, depth, vNDC);
 
     // [To Do] Adi: adibugbug - the following is a horrible hack because we don'e have the viewport 
     // dimensions, inverse and ofset - how come this was never done / requested?

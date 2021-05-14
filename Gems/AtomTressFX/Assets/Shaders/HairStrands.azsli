@@ -68,9 +68,8 @@ TressFXVertex GetExpandedTressFXVert(uint vertexId, float3 eye, float2 winSize, 
     // Get hair strand thickness
     uint indexInStrand = index % NumVerticesPerStrand;
     float fractionOfStrand = (float)indexInStrand / (NumVerticesPerStrand - 1);
-//    float ratio = (EnableThinTip > 0) ? lerp(1.0, FiberRatio, fractionOfStrand) : 1.0;  //need length of full strand vs the length of this point on the strand. 	
-    float ratio = lerp(1.0, FiberRatio, fractionOfStrand);  //need length of full strand vs the length of this point on the strand. 	
-
+    float ratio = (EnableThinTip > 0) ? lerp(1.0, FiberRatio, fractionOfStrand) : 1.0;  //need length of full strand vs the length of this point on the strand. 	
+ 
     // Calculate right and projected right vectors
     float3 right = Safe_normalize(cross(t, Safe_normalize(v - eye)));
     float2 proj_right = Safe_normalize(MatrixMult(viewProj, float4(right, 0)).xy);
@@ -93,7 +92,10 @@ TressFXVertex GetExpandedTressFXVert(uint vertexId, float3 eye, float2 winSize, 
     // Write output data
     TressFXVertex Output = (TressFXVertex)0;
     float fDirIndex = (vertexId & 0x01) ? -1.0 : 1.0;
-    Output.Position = ((vertexId & 0x01) ? hairEdgePositions[0] : hairEdgePositions[1]) + CM_TO_METERS_RENDER * fDirIndex * float4(proj_right * expandPixels / winSize.y, 0.0f, 0.0f) * ((vertexId & 0x01) ? hairEdgePositions[0].w : hairEdgePositions[1].w);
+    Output.Position = ((vertexId & 0x01) ? hairEdgePositions[0] : hairEdgePositions[1]) 
+        // [To Do] Adi: remove the scale + why was x not applied / compensated for?
+        + CM_TO_METERS_RENDER * fDirIndex * float4(proj_right * expandPixels / winSize.y, 0.0f, 0.0f) 
+        * ((vertexId & 0x01) ? hairEdgePositions[0].w : hairEdgePositions[1].w);
     Output.Tangent = float4(t, strandUV.x);
     Output.p0p1 = float4(hairEdgePositions[0].xy / max(hairEdgePositions[0].w, TRESSFX_FLOAT_EPSILON), hairEdgePositions[1].xy / max(hairEdgePositions[1].w, TRESSFX_FLOAT_EPSILON));
     Output.StrandColor = float4(GetStrandColor(index, fractionOfStrand), strandUV.y);

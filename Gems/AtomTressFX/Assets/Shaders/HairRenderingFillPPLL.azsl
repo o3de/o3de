@@ -38,14 +38,14 @@ struct PS_INPUT_HAIR
 //! Hair Render VS 
 PS_INPUT_HAIR RenderHairVS(uint vertexId : SV_VertexID)
 {
+//    uint2  scrSize;
+//    PassSrg::m_linearDepth.GetDimensions(scrSize.x, scrSize.y);
+//    TressFXVertex tressfxVert = GetExpandedTressFXVert(vertexId, g_vEye.xyz, float2(scrSize), g_mVP);
+
+    // [To Do] Adi: the above code should replace the existing - verify that the input
+    // is valid - this might not be the case right now.  g_vViewport is really useless!
     TressFXVertex tressfxVert = GetExpandedTressFXVert(vertexId, g_vEye.xyz, g_vViewport.zw, g_mVP);
 
-//    tressfxVert.Position = float4(
-//        (vertexId / 3) * 0.1 + (vertexId % 2) * 0.1,
-//        ((vertexId / 2) % 2) * 0.1,
-//        saturate((vertexId / 3) * 0.01),
-//        1.0
-//    );
 
     PS_INPUT_HAIR Output;
 
@@ -124,18 +124,17 @@ void PPLLFillPS(PS_INPUT_HAIR input)
         strandColor.rgb *= StrandAlbedoTexture.Sample(LinearWrapSampler, strandUV).rgb;
     }
 
-    float3 vNDC = ScreenPosToNDC(input.Position.xyz, g_vViewport);
-
     //////////////////////////////////////////////////////////////////////
+    // [To Do] Adi: requires debugging - seems too aggressive
+    float3 vNDC = ScreenPosToNDC(PassSrg::m_linearDepth, input.Position.xy, input.Position.z);
+    uint2  dimensions;
+    PassSrg::m_linearDepth.GetDimensions(dimensions.x, dimensions.y);
+//    float coverage = ComputeCoverage(input.p0p1.xy, input.p0p1.zw, vNDC.xy, float2(dimensions.x, dimensions.y));
+    /////////////////////////////////////////////////////////////////////
     float coverage = 1.0;  
-    // [To Do] Adi: adibugbug - put back once View CB calc checks out   ComputeCoverage(input.p0p1.xy, input.p0p1.zw, vNDC.xy, g_vViewport.zw - g_vViewport.xy);
-//    float coverage = ComputeCoverage(input.p0p1.xy, input.p0p1.zw, vNDC.xy, float2(1600,1600));
-//    float coverage = ComputeCoverage(input.p0p1.xy, input.p0p1.zw, vNDC.xy, g_vViewport.zw - g_vViewport.xy);
-    /// //////////////////////////////////////////////////////////////////
-    float alpha = coverage;
 
     // Update the alpha to have proper value (accounting for coverage, base alpha, and strand alpha)
-    alpha *= strandColor.w;
+    float alpha = coverage * strandColor.w;
 
     // Early out
     if (alpha < 1.f / 255.f)
