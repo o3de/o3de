@@ -166,13 +166,15 @@ namespace AZ
             }
 
             // Get all of the entities from the slice.
-            SliceComponent::EntityList sliceEntities;
-            bool getEntitiesResult = sliceComponent->GetEntities(sliceEntities);
-            if ((!getEntitiesResult) || (sliceEntities.empty()))
+            SliceComponent::EntityList sliceEntities = sliceComponent->GetNewEntities();
+            if (sliceEntities.empty())
             {
                 AZ_Printf("Convert-Slice", "  File not converted: Slice entities could not be retrieved.\n");
                 return false;
             }
+
+            const SliceComponent::SliceList& sliceList = sliceComponent->GetSlices();
+            AZ_Warning("Convert-Slice", sliceList.empty(), "  Slice depends on other slices, this conversion will lose data.\n");
 
             // Create the Prefab with the entities from the slice
             AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> sourceInstance(
