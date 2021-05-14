@@ -209,19 +209,19 @@ namespace AZ::SerializeContextTools
         return result;
     }
 
-    bool Utilities::InspectSerializedFile(const AZStd::string& filePath, SerializeContext* sc, const ObjectStream::ClassReadyCB& classCallback)
+    bool Utilities::InspectSerializedFile(const char* filePath, SerializeContext* sc, const ObjectStream::ClassReadyCB& classCallback)
     {
-        if (!AZ::IO::FileIOBase::GetInstance()->Exists(filePath.c_str()))
+        if (!AZ::IO::FileIOBase::GetInstance()->Exists(filePath))
         {
-            AZ_Error("Verify", false, "Unable to open file '%s' as it doesn't exist.", filePath.c_str());
+            AZ_Error("Verify", false, "Unable to open file '%s' as it doesn't exist.", filePath);
             return false;
         }
 
         AZ::IO::HandleType fileHandle;
-        auto openResult = AZ::IO::FileIOBase::GetInstance()->Open(filePath.c_str(), AZ::IO::OpenMode::ModeRead, fileHandle);
+        auto openResult = AZ::IO::FileIOBase::GetInstance()->Open(filePath, AZ::IO::OpenMode::ModeRead, fileHandle);
         if (!openResult)
         {
-            AZ_Error("Verify", false, "File '%s' could not be opened.", filePath.c_str());
+            AZ_Error("Verify", false, "File '%s' could not be opened.", filePath);
             return false;
         }
 
@@ -229,7 +229,7 @@ namespace AZ::SerializeContextTools
         auto sizeResult = AZ::IO::FileIOBase::GetInstance()->Size(fileHandle, fileLength);
         if (!sizeResult || (fileLength == 0))
         {
-            AZ_Error("Verify", false, "File '%s' doesn't have content.", filePath.c_str());
+            AZ_Error("Verify", false, "File '%s' doesn't have content.", filePath);
             return false;
         }
 
@@ -239,7 +239,7 @@ namespace AZ::SerializeContextTools
         auto readResult = AZ::IO::FileIOBase::GetInstance()->Read(fileHandle, data.data(), fileLength, true, &bytesRead);
         if (!readResult || (bytesRead != fileLength))
         {
-            AZ_Error("Verify", false, "Unable to read file '%s'.", filePath.c_str());
+            AZ_Error("Verify", false, "Unable to read file '%s'.", filePath);
             return false;
         }
 
@@ -253,7 +253,7 @@ namespace AZ::SerializeContextTools
         filter.m_assetCB = AZ::Data::AssetFilterNoAssetLoading;
         if (!ObjectStream::LoadBlocking(&stream, *sc, classCallback, filter))
         {
-            AZ_Printf("Verify", "Failed to deserialize '%s'\n", filePath.c_str());
+            AZ_Printf("Verify", "Failed to deserialize '%s'\n", filePath);
             return false;
         }
         return true;

@@ -44,7 +44,7 @@ namespace AZ
         private:
 
             static bool ConvertSliceFile(AzToolsFramework::Prefab::PrefabSystemComponent* prefabSystemComponent,
-                AZStd::string_view outputPath, bool isDryRun, AZ::Entity* rootEntity);
+                AZ::IO::PathView outputPath, bool isDryRun, AZ::Entity* rootEntity);
 
             static void PrintPrefab(const AzToolsFramework::Prefab::PrefabDom& prefabDom, const AZ::IO::Path& templatePath);
             static bool SavePrefab(AzToolsFramework::Prefab::TemplateId templateId);

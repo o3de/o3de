@@ -95,34 +95,33 @@ namespace AZ
             for (AZStd::string& filePath : fileList)
             {
                 bool packOpened = false;
-                AZStd::string inputFile = filePath;
-                AZStd::string outputPath = filePath;
-                AZ::StringFunc::Path::ReplaceExtension(outputPath, "prefab");
+
+                AZ::IO::Path outputPath = filePath;
+                outputPath.ReplaceExtension("prefab");
 
                 AZ_Printf("Convert-Slice", "------------------------------------------------------------------------------------------\n");
                 AZ_Printf("Convert-Slice", "Converting '%s' to '%s'\n", filePath.c_str(), outputPath.c_str());
 
-                AZStd::string fileExtension;
-                constexpr bool includeDot = false;
-                AZ::StringFunc::Path::GetExtension(filePath.c_str(), fileExtension, includeDot);
-                if (fileExtension == "ly")
+                AZ::IO::Path inputPath = filePath;
+                auto fileExtension = inputPath.Extension();
+                if (fileExtension == ".ly")
                 {
                     // Special case:  for level files, we need to open the .ly zip file and convert the levelentities.editor_xml file
                     // inside of it.  All the other files can be ignored as they are deprecated legacy system files that are no longer
                     // loaded with prefab-based levels.
                     packOpened = archiveInterface->OpenPack(filePath);
-                    AZ::StringFunc::Path::ReplaceFullName(inputFile, "levelentities", "editor_xml");
-
+                    inputPath.ReplaceFilename("levelentities.editor_xml");
                     AZ_Warning("Convert-Slice", packOpened, "  '%s' could not be opened as a pack file.\n", filePath.c_str());
                 }
                 else
                 {
                     AZ_Warning(
-                        "Convert-Slice", (fileExtension == "slice"),
-                        "  Warning: Only .ly and .slice files are supported, conversion of '.%s' may not work.\n", fileExtension.c_str());
+                        "Convert-Slice", (fileExtension == ".slice"),
+                        "  Warning: Only .ly and .slice files are supported, conversion of '%.*s' may not work.\n",
+                        AZ_STRING_ARG(fileExtension.Native()));
                 }
 
-                auto callback = [prefabSystemComponent, outputPath, isDryRun]
+                auto callback = [prefabSystemComponent, &outputPath, isDryRun]
                     (void* classPtr, const Uuid& classId, [[maybe_unused]] SerializeContext* context)
                 {
                     if (classId != azrtti_typeid<AZ::Entity>())
@@ -135,9 +134,9 @@ namespace AZ
                     return ConvertSliceFile(prefabSystemComponent, outputPath, isDryRun, rootEntity);
                 };
 
-                if (!Utilities::InspectSerializedFile(inputFile, convertSettings.m_serializeContext, callback))
+                if (!Utilities::InspectSerializedFile(inputPath.c_str(), convertSettings.m_serializeContext, callback))
                 {
-                    AZ_Warning("Convert-Slice", false, "Failed to load '%s'. File may not contain an object stream.", inputFile.c_str());
+                    AZ_Warning("Convert-Slice", false, "Failed to load '%s'. File may not contain an object stream.", inputPath.c_str());
                     result = false;
                 }
 
@@ -155,7 +154,7 @@ namespace AZ
         }
 
         bool SliceConverter::ConvertSliceFile(
-            AzToolsFramework::Prefab::PrefabSystemComponent* prefabSystemComponent, AZStd::string_view outputPath, bool isDryRun,
+            AzToolsFramework::Prefab::PrefabSystemComponent* prefabSystemComponent, AZ::IO::PathView outputPath, bool isDryRun,
             AZ::Entity* rootEntity)
         {
             // Find the slice from the root entity.
@@ -177,7 +176,7 @@ namespace AZ
 
             // Create the Prefab with the entities from the slice
             AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> sourceInstance(
-                prefabSystemComponent->CreatePrefab(sliceEntities, {}, AZ::IO::PathView(outputPath)));
+                prefabSystemComponent->CreatePrefab(sliceEntities, {}, outputPath));
 
             // Dispatch events here, because prefab creation might trigger asset loads in rare circumstances.
             AZ::Data::AssetManager::Instance().DispatchEvents();
