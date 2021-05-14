@@ -11,7 +11,7 @@
 */
 
 #if !defined(AZ_RELEASE_BUILD) 
-#include "ThermalInfoAndroid.h"
+#include "ThermalInfo_Android.h"
 #include <AzCore/std/string/string.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 

@@ -10,41 +10,20 @@
 #
 
 set(FILES
-    AutoDetectSpec.cpp
     AZCrySystemInitLogSink.cpp
-    ClientHandler.cpp
     CmdLine.cpp
     CmdLineArg.cpp
-    CompressedFile.cpp
     ConsoleBatchFile.cpp
     ConsoleHelpGen.cpp
-    CryAsyncMemcpy.cpp
-    HandlerBase.cpp
     Log.cpp
-    SystemRender.cpp
-    PhysRenderer.cpp
-    ServerHandler.cpp
-    ServerThrottle.cpp
-    SyncLock.cpp
     System.cpp
     SystemCFG.cpp
     SystemEventDispatcher.cpp
     SystemInit.cpp
     SystemWin32.cpp
     Timer.cpp
-    UnixConsole.cpp
-    WindowsConsole.cpp
     XConsole.cpp
     XConsoleVariable.cpp
-    AutoDetectSpec.h
-    ClientHandler.h
-    HandlerBase.h
-    PhysRenderer.h
-    ServerHandler.h
-    ServerThrottle.h
-    SyncLock.h
-    UnixConsole.h
-    SystemInit.h
     XML/ReadWriteXMLSink.h
     AZCrySystemInitLogSink.h
     AZCoreLogSink.h
@@ -52,17 +31,13 @@ set(FILES
     CmdLineArg.h
     ConsoleBatchFile.h
     ConsoleHelpGen.h
-    CryWaterMark.h
     Log.h
-    resource.h
     SimpleStringPool.h
     CrySystem_precompiled.h
     System.h
     SystemCFG.h
     SystemEventDispatcher.h
     Timer.h
-    Validator.h
-    WindowsConsole.h
     XConsole.h
     XConsoleVariable.h
     XML/SerializeXMLReader.cpp
@@ -78,24 +53,14 @@ set(FILES
     XML/XmlUtils.h
     XML/ReadXMLSink.cpp
     XML/WriteXMLSource.cpp
-    ZipFile.h
-    ZipFileFormat_info.h
-    Sampler.cpp
-    Sampler.h
     LocalizedStringManager.cpp
     LocalizedStringManager.h
-    ZLibCompressor.cpp
-    ZLibCompressor.h
     Huffman.cpp
     Huffman.h
     RemoteConsole/RemoteConsole.cpp
     RemoteConsole/RemoteConsole.h
     RemoteConsole/RemoteConsole_impl.inl
     RemoteConsole/RemoteConsole_none.inl
-    ZLibDecompressor.h
-    ZLibDecompressor.cpp
-    LZ4Decompressor.h
-    LZ4Decompressor.cpp
     LevelSystem/LevelSystem.cpp
     LevelSystem/LevelSystem.h
     LevelSystem/SpawnableLevelSystem.cpp
@@ -106,10 +71,5 @@ set(FILES
     ViewSystem/View.h
     ViewSystem/ViewSystem.cpp
     ViewSystem/ViewSystem.h
-    ZStdDecompressor.h
-    ZStdDecompressor.cpp
     CrySystem_precompiled.cpp
-    CPUDetect.cpp
-    CPUDetect.h
-    WindowsErrorReporting.cpp
 )
