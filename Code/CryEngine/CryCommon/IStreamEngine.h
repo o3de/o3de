@@ -34,7 +34,6 @@
 
 #include <list>
 #include "smartptr.h"
-#include <IThreadTask.h> // <> required for Interfuscator
 #include "CryThread.h"
 
 #include "IStreamEngineDefs.h"

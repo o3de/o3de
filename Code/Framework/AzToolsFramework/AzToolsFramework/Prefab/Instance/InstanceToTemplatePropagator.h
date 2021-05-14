@@ -41,7 +41,7 @@ namespace AzToolsFramework
 
             void ApplyPatchesToInstance(const AZ::EntityId& entityId, PrefabDom& patches, const Instance& instanceToAddPatches) override;
 
-            void AddPatchesToLink(PrefabDom& patches, Link& link);
+            void AddPatchesToLink(const PrefabDom& patches, Link& link);
 
         private:
 

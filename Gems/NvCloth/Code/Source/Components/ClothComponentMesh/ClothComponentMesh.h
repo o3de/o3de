@@ -14,6 +14,7 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Math/Aabb.h>
 
 #include <AzFramework/Physics/WindBus.h>
 

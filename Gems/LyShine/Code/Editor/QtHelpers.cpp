@@ -13,6 +13,8 @@
 
 #include "EditorCommon.h"
 
+#include <QtGui/private/qhighdpiscaling_p.h>
+
 namespace QtHelpers
 {
     AZ::Vector2 QPointFToVector2(const QPointF& point)
@@ -32,6 +34,20 @@ namespace QtHelpers
         const QSize& size = widget->size();
         bool inWidget = (localPos.x() >= 0 && localPos.x() < size.width() && localPos.y() >= 0 && localPos.y() < size.height());
         return inWidget;
+    }
+
+    float GetHighDpiScaleFactor(const QWidget& widget)
+    {
+        float dpiScale = QHighDpiScaling::factor(widget.windowHandle()->screen());
+        return dpiScale;
+    }
+
+    QSize GetDpiScaledViewportSize(const QWidget& widget)
+    {
+        float dpiScale = GetHighDpiScaleFactor(widget);
+        float width = ceilf(widget.size().width() * dpiScale);
+        float height = ceilf(widget.size().height() * dpiScale);
+        return QSize(width, height);        
     }
 
 }   // namespace QtHelpers

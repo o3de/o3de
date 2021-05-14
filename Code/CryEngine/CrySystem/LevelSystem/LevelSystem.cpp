@@ -17,7 +17,6 @@
 #include "LevelSystem.h"
 #include <IAudioSystem.h>
 #include "IMovieSystem.h"
-#include "IMaterialEffects.h"
 #include <IResourceManager.h>
 #include <ILocalizationManager.h>
 #include "CryPath.h"
@@ -648,20 +647,6 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
 
         AZStd::string levelPath(pLevelInfo->GetPath());
 
-        /*
-        ICVar *pFileCache = gEnv->pConsole->GetCVar("sys_FileCache");       CRY_ASSERT(pFileCache);
-
-        if(pFileCache->GetIVal())
-        {
-        if(pPak->OpenPack("",pLevelInfo->GetPath()+string("/FileCache.dat")))
-        gEnv->pLog->Log("FileCache.dat loaded");
-        else
-        gEnv->pLog->Log("FileCache.dat not loaded");
-        }
-        */
-
-        m_pSystem->SetThreadState(ESubsys_Physics, false);
-
         ICVar* pSpamDelay = gEnv->pConsole->GetCVar("log_SpamDelay");
         float spamDelay = 0.0f;
         if (pSpamDelay)
@@ -767,8 +752,6 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
     }
 
     gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_PRECACHE_START, 0, 0);
-
-    m_pSystem->SetThreadState(ESubsys_Physics, true);
 
     return m_pCurrentLevel;
 }

@@ -10,13 +10,13 @@
  *
  */
 
-#include <Source/Components/NetBindComponent.h>
-#include <Source/Components/MultiplayerComponent.h>
-#include <Source/Components/MultiplayerController.h>
-#include <Source/NetworkEntity/NetworkEntityRpcMessage.h>
-#include <Source/NetworkEntity/NetworkEntityUpdateMessage.h>
-#include <Source/NetworkInput/NetworkInput.h>
-#include <Include/INetworkEntityManager.h>
+#include <Multiplayer/NetBindComponent.h>
+#include <Multiplayer/NetworkEntityRpcMessage.h>
+#include <Multiplayer/NetworkEntityUpdateMessage.h>
+#include <Multiplayer/NetworkInput.h>
+#include <Multiplayer/INetworkEntityManager.h>
+#include <Multiplayer/MultiplayerComponent.h>
+#include <Multiplayer/MultiplayerController.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Interface/Interface.h>
@@ -175,21 +175,6 @@ namespace Multiplayer
         {
             multiplayerComponent->GetController()->ProcessInput(networkInput, deltaTime);
         }
-    }
-
-    AZ::Aabb NetBindComponent::GetRewindBoundsForInput(const NetworkInput& networkInput, float deltaTime) const
-    {
-        AZ_Assert(m_netEntityRole == NetEntityRole::Authority, "Incorrect network role for computing rewind bounds");
-        AZ::Aabb bounds = AZ::Aabb::CreateNull();
-        for (MultiplayerComponent* multiplayerComponent : m_multiplayerInputComponentVector)
-        {
-            const AZ::Aabb componentBounds = multiplayerComponent->GetController()->GetRewindBoundsForInput(networkInput, deltaTime);
-            if (componentBounds.IsValid())
-            {
-                bounds.AddAabb(componentBounds);
-            }
-        }
-        return bounds;
     }
 
     bool NetBindComponent::HandleRpcMessage(AzNetworking::IConnection* invokingConnection, NetEntityRole remoteRole, NetworkEntityRpcMessage& message)

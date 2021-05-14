@@ -573,11 +573,6 @@ namespace O3DELauncher
         systemInitParams.hWnd = mainInfo.m_window;
         systemInitParams.pPrintSync = mainInfo.m_printSink;
 
-        if (strstr(mainInfo.m_commandLine, "-norandom"))
-        {
-            systemInitParams.bNoRandom = true;
-        }
-
         systemInitParams.bDedicatedServer = IsDedicatedServer();
         if (IsDedicatedServer())
         {
