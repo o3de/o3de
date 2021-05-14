@@ -282,14 +282,14 @@ namespace {{ Component.attrib['Namespace'] }}
     void {{ ControllerName }}::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
     }
-{% if NetworkInputCount > 0 %}
+{%     if NetworkInputCount > 0 %}
 
     void {{ ControllerName }}::ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
     {
     }
+{%     endif %}
 {% endif %}
 }
-{% endif %}
 */
 {% else %}
 // NOTE:
