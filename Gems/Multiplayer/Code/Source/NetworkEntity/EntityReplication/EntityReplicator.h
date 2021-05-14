@@ -18,8 +18,8 @@
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/containers/ring_buffer.h>
-#include <Source/Components/NetBindComponent.h>
-#include <Source/NetworkEntity/NetworkEntityUpdateMessage.h>
+#include <Multiplayer/NetBindComponent.h>
+#include <Multiplayer/NetworkEntityUpdateMessage.h>
 
 namespace AzNetworking
 {
@@ -75,8 +75,8 @@ namespace Multiplayer
         const PropertyPublisher* GetPropertyPublisher() const;
         PropertySubscriber* GetPropertySubscriber();
 
-        // Handlers for messages
-        bool HandleRpcMessage(NetworkEntityRpcMessage& entityRpcMessage);
+        // Handlers for Rpc messages
+        bool HandleRpcMessage(AzNetworking::IConnection* invokingConnection, NetworkEntityRpcMessage& entityRpcMessage);
 
         //! AZ::EntityBus overrides
         //! @{

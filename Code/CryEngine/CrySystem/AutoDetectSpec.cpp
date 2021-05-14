@@ -711,31 +711,6 @@ static Win32SysInspect::DXFeatureLevel GetFeatureLevel(D3D_FEATURE_LEVEL feature
     }
 }
 
-
-static int GetDXGIAdapterOverride()
-{
-#if defined(WIN32) || defined(WIN64)
-    ICVar* pCVar = gEnv->pConsole ? gEnv->pConsole->GetCVar("r_overrideDXGIAdapter") : 0;
-    return pCVar ? pCVar->GetIVal() : -1;
-#else
-    return -1;
-#endif
-}
-
-
-static void LogDeviceInfo(unsigned int adapterIdx, const DXGI_ADAPTER_DESC1& ad, Win32SysInspect::DXFeatureLevel fl, bool displaysConnected)
-{
-    const bool suitableDevice = fl >= Win32SysInspect::DXFL_11_0 && displaysConnected;
-
-    CryLogAlways("- %s (vendor = 0x%.4x, device = 0x%.4x)", CryStringUtils::WStrToUTF8(ad.Description).c_str(), ad.VendorId, ad.DeviceId);
-    CryLogAlways("  - Adapter index: %d", adapterIdx);
-    CryLogAlways("  - Dedicated video memory: %d MB", ad.DedicatedVideoMemory >> 20);
-    CryLogAlways("  - Feature level: %s", GetFeatureLevelAsString(fl));
-    CryLogAlways("  - Displays connected: %s", displaysConnected ? "yes" : "no");
-    CryLogAlways("  - Suitable rendering device: %s", suitableDevice ? "yes" : "no");
-}
-
-
 static bool FindGPU(DXGI_ADAPTER_DESC1& adapterDesc, Win32SysInspect::DXFeatureLevel& featureLevel)
 {
     memset(&adapterDesc, 0, sizeof(adapterDesc));
@@ -757,15 +732,7 @@ static bool FindGPU(DXGI_ADAPTER_DESC1& adapterDesc, Win32SysInspect::DXFeatureL
 
         if (pD3D11CD)
         {
-            const int r_overrideDXGIAdapter = GetDXGIAdapterOverride();
-            const bool logDeviceInfo = !gEnv->pRenderer && r_overrideDXGIAdapter < 0;
-
-            if (logDeviceInfo)
-            {
-                CryLogAlways("Logging video adapters:");
-            }
-
-            unsigned int nAdapter = r_overrideDXGIAdapter >= 0 ? r_overrideDXGIAdapter : 0;
+            unsigned int nAdapter = 0;
             IDXGIAdapter1* pAdapter = 0;
             while (pFactory->EnumAdapters1(nAdapter, &pAdapter) != DXGI_ERROR_NOT_FOUND)
             {
@@ -786,28 +753,15 @@ static bool FindGPU(DXGI_ADAPTER_DESC1& adapterDesc, Win32SysInspect::DXFeatureL
 
                         const Win32SysInspect::DXFeatureLevel fl = GetFeatureLevel(deviceFeatureLevel);
 
-                        if (logDeviceInfo)
-                        {
-                            LogDeviceInfo(nAdapter, ad, fl, displaysConnected);
-                        }
-
                         if (featureLevel < fl && displaysConnected)
                         {
                             adapterDesc = ad;
                             featureLevel = fl;
                         }
-                        else if (r_overrideDXGIAdapter >= 0)
-                        {
-                            CryLogAlways("No display connected to DXGI adapter override %d. Adapter cannot be used for rendering.", r_overrideDXGIAdapter);
-                        }
                     }
 
                     SAFE_RELEASE(pDevice);
                     SAFE_RELEASE(pAdapter);
-                }
-                if (r_overrideDXGIAdapter >= 0)
-                {
-                    break;
                 }
                 ++nAdapter;
             }
@@ -1090,11 +1044,9 @@ void CSystem::AutoDetectSpec(const bool detectResolution)
     unsigned int numSysCores(1), numProcCores(1);
     Win32SysInspect::GetNumCPUCores(numSysCores, numProcCores);
     CryLogAlways("--- Number of available cores: %d (out of %d)", numProcCores, numSysCores);
-    const int numLogicalProcs = gEnv->pi.numLogicalProcessors;
-    CryLogAlways("--- Number of logical processors: %d", numLogicalProcs);
 
     // get CPU rating
-    const int cpuRating = numLogicalProcs >= 8 ? 3 : (numLogicalProcs >= 6 ? 2 : 1);
+    const int cpuRating = numProcCores >= 4 ? 3 : (numProcCores >= 3 ? 2 : 1);
 
     // get GPU info
     unsigned int gpuVendorId(0), gpuDeviceId(0), totVidMem(0);

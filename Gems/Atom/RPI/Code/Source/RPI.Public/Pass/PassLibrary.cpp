@@ -327,14 +327,15 @@ namespace AZ
             }
         }
 
-        void PassLibrary::LoadPassTemplateMappings(const AZStd::string& templateMappingPath)
+        bool PassLibrary::LoadPassTemplateMappings(const AZStd::string& templateMappingPath)
         {
-            Data::Asset<AnyAsset> mappingAsset = AssetUtils::LoadAssetByProductPath<AnyAsset>(templateMappingPath.c_str(), AssetUtils::TraceLevel::Error);
+            Data::Asset<AnyAsset> mappingAsset = AssetUtils::LoadCriticalAsset<AnyAsset>(templateMappingPath.c_str(), AssetUtils::TraceLevel::Error);
             bool success = LoadPassTemplateMappings(mappingAsset);
             if (success)
             {
                 Data::AssetBus::MultiHandler::BusConnect(mappingAsset->GetId());
             }
+            return success;
         }
 
         bool PassLibrary::LoadPassTemplateMappings(Data::Asset<AnyAsset> mappingAsset)

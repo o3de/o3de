@@ -184,3 +184,31 @@ class TestDedicatedWinLauncher(object):
         launcher.workspace.build(dedicated=True)
 
         mock_workspace.build.assert_called_once_with(dedicated=True)
+
+
+class TestWinGenericLauncher(object):
+
+    @mock.patch('ly_test_tools.launchers.platforms.win.launcher.os.path.exists')
+    def test_BinaryPath_DummyPathExeExists_AddPathToExe(self, mock_os_path_exists):
+        dummy_path = "dummy_workspace_path"
+        dummy_executable = 'SomeCustomLauncher.exe'
+        mock_os_path_exists.return_value = True
+        mock_workspace = mock.MagicMock()
+        mock_workspace.paths.build_directory.return_value = dummy_path
+        launcher = ly_test_tools.launchers.WinGenericLauncher(mock_workspace, dummy_executable, ["some_args"])
+
+        under_test = launcher.binary_path()
+
+        assert dummy_executable in under_test, f"executable named {dummy_executable} not found"
+        assert dummy_path in under_test, "workspace path unexpectedly missing "
+
+    @mock.patch('ly_test_tools.launchers.platforms.win.launcher.os.path.exists')
+    def test_BinaryPath_DummyPathExeDoesNotExist_RaiseProcessNotStartedError(self, mock_os_path_exists):
+        dummy_path = "dummy_workspace_path"
+        dummy_executable = 'SomeCustomLauncher.exe'
+        mock_os_path_exists.return_value = False
+        mock_workspace = mock.MagicMock()
+        mock_workspace.paths.build_directory.return_value = dummy_path
+
+        with pytest.raises(ly_test_tools.launchers.exceptions.ProcessNotStartedError):
+            ly_test_tools.launchers.WinGenericLauncher(mock_workspace, dummy_executable, ["some_args"])

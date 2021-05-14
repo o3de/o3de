@@ -12,7 +12,8 @@
 
 #pragma once
 
-#include <Source/ConnectionData/IConnectionData.h>
+#include <Multiplayer/IConnectionData.h>
+#include <Source/NetworkEntity/EntityReplication/EntityReplicationManager.h>
 
 namespace Multiplayer
 {
@@ -33,7 +34,7 @@ namespace Multiplayer
         ConnectionDataType GetConnectionDataType() const override;
         AzNetworking::IConnection* GetConnection() const override;
         EntityReplicationManager& GetReplicationManager() override;
-        void Update(AZ::TimeMs serverGameTimeMs) override;
+        void Update(AZ::TimeMs hostTimeMs) override;
         bool CanSendUpdates() const override;
         void SetCanSendUpdates(bool canSendUpdates) override;
         //! @}
@@ -49,7 +50,7 @@ namespace Multiplayer
         EntityReplicationManager m_entityReplicationManager;
         NetworkEntityHandle m_controlledEntity;
         EntityStopEvent::Handler m_controlledEntityRemovedHandler;
-        EntityMigrationEvent::Handler m_controlledEntityMigrationHandler;
+        EntityServerMigrationEvent::Handler m_controlledEntityMigrationHandler;
         AzNetworking::IConnection* m_connection = nullptr;
         bool m_canSendUpdates = false;
     };

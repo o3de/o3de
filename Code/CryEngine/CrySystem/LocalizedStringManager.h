@@ -96,10 +96,6 @@ public:
     void GetLoadedTags(TLocalizationTagVec& tagVec);
     void FreeLocalizationData();
 
-#if !defined(_RELEASE)
-    static void LocalizationDumpLoadedInfo(IConsoleCmdArgs* pArgs);
-#endif //#if !defined(_RELEASE)
-
 private:
     void SetAvailableLocalizationsBitfield(const ILocalizationManager::TLocalizationBitfield availableLocalizations);
 

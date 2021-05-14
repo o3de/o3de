@@ -90,12 +90,16 @@ namespace AZ
 
         void AsyncUploadQueue::Shutdown()
         {
-            m_copyQueue->Shutdown();
+            if (m_copyQueue)
+            {
+                m_copyQueue->Shutdown();
+                m_copyQueue = nullptr;
+            }
             m_commandList = nullptr;
 
-            for (size_t i = 0; i < m_descriptor.m_frameCount; ++i)
+            for (auto& framePacket : m_framePackets)
             {
-                m_framePackets[i].m_fence.Shutdown();
+                framePacket.m_fence.Shutdown();
             }
             m_framePackets.clear();
             m_uploadFence.Shutdown();

@@ -11,6 +11,9 @@
  */
 
 #include <Source/NetworkTime/NetworkTime.h>
+#include <Multiplayer/NetBindComponent.h>
+#include <Multiplayer/IMultiplayer.h>
+#include <AzFramework/Visibility/IVisibilitySystem.h>
 
 namespace Multiplayer
 {
@@ -24,41 +27,31 @@ namespace Multiplayer
         AZ::Interface<INetworkTime>::Unregister(this);
     }
 
-    AZ::TimeMs NetworkTime::ConvertFrameIdToTimeMs([[maybe_unused]] ApplicationFrameId frameId) const
-    {
-        return AZ::TimeMs{0};
-    }
-
-    ApplicationFrameId NetworkTime::ConvertTimeMsToFrameId([[maybe_unused]] AZ::TimeMs timeMs) const
-    {
-        return ApplicationFrameId{0};
-    }
-
-    bool NetworkTime::IsApplicationFrameIdRewound() const
+    bool NetworkTime::IsTimeRewound() const
     {
         return m_rewindingConnectionId != AzNetworking::InvalidConnectionId;
     }
 
-    ApplicationFrameId NetworkTime::GetApplicationFrameId() const
+    HostFrameId NetworkTime::GetHostFrameId() const
     {
-        return m_applicationFrameId;
+        return m_hostFrameId;
     }
 
-    ApplicationFrameId NetworkTime::GetUnalteredApplicationFrameId() const
+    HostFrameId NetworkTime::GetUnalteredHostFrameId() const
     {
         return m_unalteredFrameId;
     }
 
-    void NetworkTime::IncrementApplicationFrameId()
+    void NetworkTime::IncrementHostFrameId()
     {
-        AZ_Assert(!IsApplicationFrameIdRewound(), "Incrementing the global application frameId is unsupported under a rewound time scope");
+        AZ_Assert(!IsTimeRewound(), "Incrementing the global application frameId is unsupported under a rewound time scope");
         ++m_unalteredFrameId;
-        m_applicationFrameId = m_unalteredFrameId;
+        m_hostFrameId = m_unalteredFrameId;
     }
 
-    void NetworkTime::SyncRewindableEntityState()
+    AZ::TimeMs NetworkTime::GetHostTimeMs() const
     {
-
+        return m_hostTimeMs;
     }
 
     AzNetworking::ConnectionId NetworkTime::GetRewindingConnectionId() const
@@ -66,14 +59,49 @@ namespace Multiplayer
         return m_rewindingConnectionId;
     }
 
-    ApplicationFrameId NetworkTime::GetApplicationFrameIdForRewindingConnection(AzNetworking::ConnectionId rewindConnectionId) const
+    HostFrameId NetworkTime::GetHostFrameIdForRewindingConnection(AzNetworking::ConnectionId rewindConnectionId) const
     {
-        return (IsApplicationFrameIdRewound() && (rewindConnectionId == m_rewindingConnectionId)) ? m_unalteredFrameId : m_applicationFrameId;
+        return (IsTimeRewound() && (rewindConnectionId == m_rewindingConnectionId)) ? m_unalteredFrameId : m_hostFrameId;
     }
 
-    void NetworkTime::AlterApplicationFrameId(ApplicationFrameId frameId, AzNetworking::ConnectionId rewindConnectionId)
+    void NetworkTime::AlterTime(HostFrameId frameId, AZ::TimeMs timeMs, AzNetworking::ConnectionId rewindConnectionId)
     {
-        m_applicationFrameId = frameId;
+        m_hostFrameId = frameId;
+        m_hostTimeMs = timeMs;
         m_rewindingConnectionId = rewindConnectionId;
+    }
+
+    void NetworkTime::SyncEntitiesToRewindState(const AZ::Aabb& rewindVolume)
+    {
+        // TODO: extrude rewind volume for initial gather
+        AZStd::vector<AzFramework::VisibilityEntry*> gatheredEntries;
+        AZ::Interface<AzFramework::IVisibilitySystem>::Get()->GetDefaultVisibilityScene()->Enumerate(rewindVolume, [&gatheredEntries](const AzFramework::IVisibilityScene::NodeData& nodeData)
+        {
+            gatheredEntries.reserve(gatheredEntries.size() + nodeData.m_entries.size());
+            for (AzFramework::VisibilityEntry* visEntry : nodeData.m_entries)
+            {
+                if (visEntry->m_typeFlags & AzFramework::VisibilityEntry::TypeFlags::TYPE_Entity)
+                {
+                    // TODO: offset aabb for exact rewound position and check against the non-extruded rewind volume
+                    gatheredEntries.push_back(visEntry);
+                }
+            }
+        });
+
+        for (AzFramework::VisibilityEntry* visEntry : gatheredEntries)
+        {
+            AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
+            [[maybe_unused]] NetBindComponent* entryNetBindComponent = entity->template FindComponent<NetBindComponent>();
+            if (entryNetBindComponent != nullptr)
+            {
+                // TODO: invoke the sync to rewind event on the netBindComponent and add the entity to the rewound entity set
+            }
+        }
+    }
+
+    void NetworkTime::ClearRewoundEntities()
+    {
+        AZ_Assert(!IsTimeRewound(), "Cannot clear rewound entity state while still within scoped rewind");
+        // TODO: iterate all rewound entities, signal them to sync rewind state, and clear the rewound entity set
     }
 }

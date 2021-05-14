@@ -52,8 +52,6 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/IO/RemoteStorageDrive.h>
-#include <AzFramework/Network/NetBindingComponent.h>
-#include <AzFramework/Network/NetBindingSystemComponent.h>
 #include <AzFramework/Physics/Utils.h>
 #include <AzFramework/Render/GameIntersectorComponent.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
@@ -66,7 +64,6 @@
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Driller/RemoteDrillerInterface.h>
-#include <AzFramework/Network/NetworkContext.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
@@ -197,7 +194,6 @@ namespace AzFramework
 
         ApplicationRequests::Bus::Handler::BusConnect();
         AZ::UserSettingsFileLocatorBus::Handler::BusConnect();
-        NetSystemRequestBus::Handler::BusConnect();
     }
 
     Application::~Application()
@@ -207,7 +203,6 @@ namespace AzFramework
             Stop();
         }
 
-        NetSystemRequestBus::Handler::BusDisconnect();
         AZ::UserSettingsFileLocatorBus::Handler::BusDisconnect();
         ApplicationRequests::Bus::Handler::BusDisconnect();
 
@@ -285,13 +280,6 @@ namespace AzFramework
 
             m_pimpl.reset();
 
-            /* The following line of code is a temporary fix.
-             * GridMate's ReplicaChunkDescriptor is stored in a global environment variable 'm_globalDescriptorTable'
-             * which does not get cleared when Application shuts down. We need to un-reflect here to clear ReplicaChunkDescriptor
-             * so that ReplicaChunkDescriptor::m_vdt doesn't get flooded when we repeatedly instantiate Application in unit tests.
-             */
-            AZ::ReflectionEnvironment::GetReflectionManager()->RemoveReflectContext<NetworkContext>();
-
             // Free any memory owned by the command line container.
             m_commandLine = CommandLine();
 
@@ -320,8 +308,6 @@ namespace AzFramework
             azrtti_typeid<AzFramework::AssetCatalogComponent>(),
             azrtti_typeid<AzFramework::CustomAssetTypeComponent>(),
             azrtti_typeid<AzFramework::FileTag::ExcludeFileComponent>(),
-            azrtti_typeid<AzFramework::NetBindingComponent>(),
-            azrtti_typeid<AzFramework::NetBindingSystemComponent>(),
             azrtti_typeid<AzFramework::TransformComponent>(),
             azrtti_typeid<AzFramework::SceneSystemComponent>(),
             azrtti_typeid<AzFramework::AzFrameworkConfigurationSystemComponent>(),
@@ -457,9 +443,6 @@ namespace AzFramework
     void Application::CreateReflectionManager()
     {
         ComponentApplication::CreateReflectionManager();
-
-        // Setup NetworkContext
-        AZ::ReflectionEnvironment::GetReflectionManager()->AddReflectContext<NetworkContext>();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -477,19 +460,6 @@ namespace AzFramework
             }
         }
         return uuid;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    NetworkContext* Application::GetNetworkContext()
-    {
-        NetworkContext* result = nullptr;
-
-        if (auto reflectionManager = AZ::ReflectionEnvironment::GetReflectionManager())
-        {
-            result = reflectionManager->GetReflectContext<NetworkContext>();
-        }
-
-        return result;
     }
 
     void Application::ResolveEnginePath(AZStd::string& engineRelativePath) const

@@ -577,6 +577,10 @@ namespace AWSClientAuthUnitTest
         void UnregisterComponentDescriptor(const AZ::ComponentDescriptor*) override { }
         void RegisterEntityAddedEventHandler(AZ::EntityAddedEvent::Handler&) override { }
         void RegisterEntityRemovedEventHandler(AZ::EntityRemovedEvent::Handler&) override { }
+        void RegisterEntityActivatedEventHandler(AZ::EntityActivatedEvent::Handler&) override { }
+        void RegisterEntityDeactivatedEventHandler(AZ::EntityDeactivatedEvent::Handler&) override { }
+        void SignalEntityActivated(AZ::Entity*) override { }
+        void SignalEntityDeactivated(AZ::Entity*) override { }
         bool AddEntity(AZ::Entity*) override { return true; }
         bool RemoveEntity(AZ::Entity*) override { return true; }
         bool DeleteEntity(const AZ::EntityId&) override { return true; }

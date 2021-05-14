@@ -80,6 +80,7 @@ namespace AZ
         void ReflectionProbeComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC("ReflectionProbeService", 0xa5b919ce));
+            incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         void ReflectionProbeComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -253,8 +254,7 @@ namespace AZ
             m_configuration.m_outerLength = dimensions.GetY();
             m_configuration.m_outerHeight = dimensions.GetZ();
 
-            AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-                &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, m_entityId);
+            AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(m_entityId);
 
             // clamp the inner extents to the outer extents
             m_configuration.m_innerWidth = AZStd::min(m_configuration.m_innerWidth, m_configuration.m_outerWidth);

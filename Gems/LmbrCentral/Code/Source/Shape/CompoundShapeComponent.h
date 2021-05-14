@@ -76,6 +76,7 @@ namespace LmbrCentral
         {
             incompatible.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
             incompatible.push_back(AZ_CRC("CompoundShapeService", 0x4f7c640a));
+            incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         static void Reflect(AZ::ReflectContext* context);
