@@ -90,10 +90,10 @@ namespace ScriptCanvasPhysicsTests
             [[maybe_unused]] bool enable) override {}
         void RemoveSimulatedBody(
             [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
-            [[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle) override {}
+            [[maybe_unused]] AzPhysics::SimulatedBodyHandle& bodyHandle) override {}
         void RemoveSimulatedBodies(
             [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
-            [[maybe_unused]] const AzPhysics::SimulatedBodyHandleList& bodyHandles) override {}
+            [[maybe_unused]] AzPhysics::SimulatedBodyHandleList& bodyHandles) override {}
         void EnableSimulationOfBody(
             [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
             [[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle) override {}

@@ -41,6 +41,7 @@ namespace WhiteBox
 
     private:
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         // AZ::Component ...
         void Activate() override;

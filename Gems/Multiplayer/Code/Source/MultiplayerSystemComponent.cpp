@@ -11,18 +11,21 @@
  */
 
 #include <Source/MultiplayerSystemComponent.h>
-#include <Source/Components/MultiplayerComponent.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
 #include <Source/ConnectionData/ClientToServerConnectionData.h>
 #include <Source/ConnectionData/ServerToClientConnectionData.h>
 #include <Source/ReplicationWindows/NullReplicationWindow.h>
 #include <Source/ReplicationWindows/ServerToClientReplicationWindow.h>
 #include <Source/EntityDomains/FullOwnershipEntityDomain.h>
+#include <Multiplayer/MultiplayerComponent.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetManagerBus.h>
+#include <AzFramework/Spawnable/Spawnable.h>
 
 namespace AZ::ConsoleTypeHelpers
 {
@@ -69,6 +72,7 @@ namespace Multiplayer
     AZ_CVAR(ProtocolType, sv_protocol, ProtocolType::Udp, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "This flag controls whether we use TCP or UDP for game networking");
     AZ_CVAR(bool, sv_isDedicated, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether the host command creates an independent or client hosted server");
     AZ_CVAR(AZ::TimeMs, cl_defaultNetworkEntityActivationTimeSliceMs, AZ::TimeMs{ 0 }, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Max Ms to use to activate entities coming from the network, 0 means instantiate everything");
+    AZ_CVAR(AZ::CVarFixedString, sv_defaultPlayerSpawnAsset, "prefabs/player.network.spawnable", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The default spawnable to use when a new player connects");
 
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -436,6 +440,11 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::OnConnect(AzNetworking::IConnection* connection)
     {
+        MultiplayerAgentDatum datum;
+        datum.m_id = connection->GetConnectionId();
+        datum.m_isInvited = false;
+        datum.m_agentType = MultiplayerAgentType::Client;
+
         if (connection->GetConnectionRole() == ConnectionRole::Connector)
         {
             AZLOG_INFO("New outgoing connection to remote address: %s", connection->GetRemoteAddress().GetString().c_str());
@@ -444,36 +453,46 @@ namespace Multiplayer
         else
         {
             AZLOG_INFO("New incoming connection from remote address: %s", connection->GetRemoteAddress().GetString().c_str());
-            MultiplayerAgentDatum datum;
-            datum.m_id = connection->GetConnectionId();
-            datum.m_isInvited = false;
-            datum.m_agentType = MultiplayerAgentType::Client;
             m_connAcquiredEvent.Signal(datum);
         }
 
-        if (GetAgentType() == MultiplayerAgentType::ClientServer
-         || GetAgentType() == MultiplayerAgentType::DedicatedServer)
+        if (m_onConnectFunctor)
         {
-            // TODO: This needs to be set to the players autonomous proxy ------------v
-            NetworkEntityHandle controlledEntity = GetNetworkEntityTracker()->Get(NetEntityId{ 0 });
-
-            if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
-            {
-                connection->SetUserData(new ServerToClientConnectionData(connection, *this, controlledEntity));
-            }
-
-            AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<ServerToClientReplicationWindow>(controlledEntity, connection);
-            reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
+            // Default OnConnect behaviour has been overridden
+            m_onConnectFunctor(connection, datum);
         }
         else
         {
-            if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
+            if (GetAgentType() == MultiplayerAgentType::ClientServer
+             || GetAgentType() == MultiplayerAgentType::DedicatedServer)
             {
-                connection->SetUserData(new ClientToServerConnectionData(connection, *this));
-            }
+                PrefabEntityId playerPrefabEntityId(AZ::Name(static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str()), 1);
+                INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, AZ::Transform::CreateIdentity());
 
-            AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<NullReplicationWindow>();
-            reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->GetReplicationManager().SetEntityActivationTimeSliceMs(cl_defaultNetworkEntityActivationTimeSliceMs);
+                NetworkEntityHandle controlledEntity;
+                if (entityList.size() > 0)
+                {
+                    controlledEntity = entityList[0];
+                }
+
+                if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
+                {
+                    connection->SetUserData(new ServerToClientConnectionData(connection, *this, controlledEntity));
+                }
+
+                AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<ServerToClientReplicationWindow>(controlledEntity, connection);
+                reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
+            }
+            else
+            {
+                if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
+                {
+                    connection->SetUserData(new ClientToServerConnectionData(connection, *this));
+                }
+
+                AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<NullReplicationWindow>();
+                reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->GetReplicationManager().SetEntityActivationTimeSliceMs(cl_defaultNetworkEntityActivationTimeSliceMs);
+            }
         }
     }
 
@@ -546,6 +565,11 @@ namespace Multiplayer
         handler.Connect(m_shutdownEvent);
     }
 
+    void MultiplayerSystemComponent::SetOnConnectFunctor(const OnConnectFunctor& functor)
+    {
+        m_onConnectFunctor = functor;
+    }
+
     void MultiplayerSystemComponent::SendReadyForEntityUpdates(bool readyForEntityUpdates)
     {
         IConnectionSet& connectionSet = m_networkInterface->GetConnectionSet();
@@ -565,6 +589,16 @@ namespace Multiplayer
         {
             return m_networkTime.GetHostTimeMs();
         }
+    }
+
+    INetworkTime* MultiplayerSystemComponent::GetNetworkTime()
+    {
+        return &m_networkTime;
+    }
+
+    INetworkEntityManager* MultiplayerSystemComponent::GetNetworkEntityManager()
+    {
+        return &m_networkEntityManager;
     }
 
     const char* MultiplayerSystemComponent::GetComponentGemName(NetComponentId netComponentId) const

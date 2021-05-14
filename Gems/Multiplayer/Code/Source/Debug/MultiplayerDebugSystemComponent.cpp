@@ -13,7 +13,7 @@
 #include <Source/Debug/MultiplayerDebugSystemComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Interface/Interface.h>
-#include <Include/IMultiplayer.h>
+#include <Multiplayer/IMultiplayer.h>
 
 namespace Multiplayer
 {

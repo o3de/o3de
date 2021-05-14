@@ -249,7 +249,6 @@ set(FILES
     platform_impl.cpp
     Win32specific.h
     Win64specific.h
-    stl/STLAlignedAlloc.h
     LyShine/IDraw2d.h
     LyShine/ILyShine.h
     LyShine/ISprite.h
@@ -341,11 +340,7 @@ set(FILES
     Maestro/Types/AssetBlendKey.h
     Maestro/Types/AssetBlends.h
     Maestro/Types/SequenceType.h
-    Terrain/Bus/WorldMaterialRequestsBus.h
-    Terrain/Bus/TerrainBus.h
-    Terrain/Bus/TerrainRendererBus.h
-    Terrain/Bus/HeightmapDataBus.h
-    Terrain/Bus/TerrainProviderBus.h
     StaticInstance.h
     Pak/CryPakUtils.h
+    WinBase.cpp
 )

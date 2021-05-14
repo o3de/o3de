@@ -72,7 +72,7 @@ namespace UnitTest
     TEST_F(ViewportUiDisplayTestFixture, RemoveViewportUiElementRemovesElementFromViewportUi)
     {
         ViewportUiDisplay viewportUi(m_parentWidget, m_mockRenderOverlay);
-        viewportUi.AddCluster(m_buttonGroup);
+        viewportUi.AddCluster(m_buttonGroup, AzToolsFramework::ViewportUi::Alignment::TopLeft);
         auto widget = viewportUi.GetViewportUiElement(m_buttonGroup->GetViewportUiElementId());
 
         EXPECT_TRUE(widget.get() != nullptr);
@@ -89,7 +89,7 @@ namespace UnitTest
 
         ViewportUiDisplay viewportUi(m_parentWidget, m_mockRenderOverlay);
         viewportUi.InitializeUiOverlay();
-        viewportUi.AddCluster(m_buttonGroup);
+        viewportUi.AddCluster(m_buttonGroup, AzToolsFramework::ViewportUi::Alignment::TopLeft);
         viewportUi.Update();
         viewportUi.ShowViewportUiElement(m_buttonGroup->GetViewportUiElementId());
 
@@ -102,7 +102,7 @@ namespace UnitTest
 
         ViewportUiDisplay viewportUi(m_parentWidget, m_mockRenderOverlay);
         viewportUi.InitializeUiOverlay();
-        viewportUi.AddCluster(m_buttonGroup);
+        viewportUi.AddCluster(m_buttonGroup, AzToolsFramework::ViewportUi::Alignment::TopLeft);
         viewportUi.HideViewportUiElement(m_buttonGroup->GetViewportUiElementId());
 
         EXPECT_FALSE(viewportUi.IsViewportUiElementVisible(m_buttonGroup->GetViewportUiElementId()));
@@ -112,7 +112,7 @@ namespace UnitTest
     {
         ViewportUiDisplay viewportUi(m_parentWidget, m_mockRenderOverlay);
         viewportUi.InitializeUiOverlay();
-        viewportUi.AddCluster(m_buttonGroup);
+        viewportUi.AddCluster(m_buttonGroup, AzToolsFramework::ViewportUi::Alignment::TopLeft);
 
         viewportUi.Update();
         auto widget = viewportUi.GetViewportUiElement(m_buttonGroup->GetViewportUiElementId());
@@ -129,7 +129,7 @@ namespace UnitTest
 
         auto buttonGroup = AZStd::make_shared<ButtonGroup>();
         buttonGroup->AddButton("");
-        viewportUi.AddCluster(buttonGroup);
+        viewportUi.AddCluster(buttonGroup, AzToolsFramework::ViewportUi::Alignment::TopLeft);
         viewportUi.Update();
 
         EXPECT_TRUE(viewportUi.GetUiMainWindow()->isVisible());
