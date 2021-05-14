@@ -1584,7 +1584,7 @@ void CEditorImpl::AddUIEnums()
     m_pUIEnumsDatabase->SetEnumStrings("ShadowMinResPercent", types);
 }
 
-void CEditorImpl::SetEditorConfigSpec(ESystemConfigSpec spec, ESystemConfigPlatform platform)
+void CEditorImpl::SetEditorConfigSpec(ESystemConfigSpec spec, [[maybe_unused]]ESystemConfigPlatform platform)
 {
     gSettings.editorConfigSpec = spec;
 }
