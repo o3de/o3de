@@ -130,6 +130,9 @@ namespace AzToolsFramework
             if (compFilter)
             {
                 auto& subFilters = compFilter->GetSubFilters();
+                //bool bNoFilters = false;
+
+                
                 auto it = AZStd::find_if(subFilters.begin(), subFilters.end(), [subFilters](FilterConstType filter) -> bool
                 {
                     auto assetTypeFilter = qobject_cast<QSharedPointer<const CompositeFilter> >(filter);
@@ -147,8 +150,11 @@ namespace AzToolsFramework
                 if (it != subFilters.end())
                 {
                     m_stringFilter = qobject_cast<QSharedPointer<const StringFilter> >(*it);
+                    emit switchFilterView(m_stringFilter.toStrongRef()->IsEmpty());
                 }
             }
+
+
             invalidateFilter();
             Q_EMIT filterChanged();
         }

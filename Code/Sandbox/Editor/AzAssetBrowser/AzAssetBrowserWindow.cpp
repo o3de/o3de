@@ -82,7 +82,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_tableModel->setSourceModel(m_filterModel.data());
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
-    m_ui->m_assetBrowserTreeViewWidget->hideColumn(static_cast<int>(AssetBrowserEntry::Column::Path));
+    //m_ui->m_assetBrowserTreeViewWidget->hideColumn(static_cast<int>(AssetBrowserEntry::Column::Path));
 
     m_ui->m_assetBrowserTableViewWidget->setModel(m_tableModel.data());
     m_ui->m_assetBrowserTableViewWidget->setVisible(false);
@@ -97,9 +97,14 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     });
 
     connect(m_filterModel.data(), &AssetBrowserFilterModel::filterChanged, m_tableModel.data(), &AssetBrowserTableModel::UpdateTableModelMaps);
+    connect(m_filterModel.data(), &AssetBrowserFilterModel::switchFilterView, this, &AzAssetBrowserWindow::SwitchDisplayView);
 
     connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::selectionChangedSignal,
         this, &AzAssetBrowserWindow::SelectionChangedSlot);
+
+    connect(m_ui->m_assetBrowserTableViewWidget, &AssetBrowserTableView::selectionChangedSignal,
+        this, &AzAssetBrowserWindow::SelectionChangedSlot);
+
     connect(m_ui->m_assetBrowserTreeViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
 
     connect(m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItemTableModel);
@@ -279,7 +284,7 @@ void AzAssetBrowserWindow::DoubleClickedItemTableModel([[maybe_unused]] const QM
     }
 }
 
-void AzAssetBrowserWindow::SwitchDisplayView(const int state)
+void AzAssetBrowserWindow::SwitchDisplayView(bool state)
 {
     m_ui->m_assetBrowserTableViewWidget->setVisible(state);
     m_ui->m_assetBrowserTreeViewWidget->setVisible(!state);

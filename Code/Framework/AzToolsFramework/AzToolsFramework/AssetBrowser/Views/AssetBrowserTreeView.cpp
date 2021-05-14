@@ -52,6 +52,7 @@ namespace AzToolsFramework
             setSortingEnabled(true);
             setItemDelegate(m_delegate);
             header()->hide();
+
             setContextMenuPolicy(Qt::CustomContextMenu);
 
             setMouseTracking(true);
@@ -174,6 +175,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::OnAssetBrowserComponentReady()
         {
+            hideColumn(static_cast<int>(AssetBrowserEntry::Column::Path));
             if (!m_name.isEmpty())
             {
                 auto crc = AZ::Crc32(m_name.toUtf8().data());

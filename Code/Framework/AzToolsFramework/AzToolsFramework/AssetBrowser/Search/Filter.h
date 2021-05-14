@@ -110,7 +110,7 @@ namespace AzToolsFramework
             ~StringFilter() override = default;
 
             void SetFilterString(const QString& filterString);
-
+            bool IsEmpty() const;
         protected:
             QString GetNameInternal() const override;
             bool MatchInternal(const AssetBrowserEntry* entry) const override;
