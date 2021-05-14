@@ -177,7 +177,6 @@ namespace AzToolsFramework
             }
 
             menu->addSeparator();
-            
 
             bool itemWasShown = false;
 
