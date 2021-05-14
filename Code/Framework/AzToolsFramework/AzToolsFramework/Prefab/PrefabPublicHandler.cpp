@@ -528,31 +528,65 @@ namespace AzToolsFramework
                 {
                     // TODO - potentially move this to its own function?
 
-                    // Get the previous state of the old instance for undo/redo purposes
-                    PrefabDom beforeInstanceDomBeforeRemoval;
-                    m_instanceToTemplateInterface->GenerateDomForInstance(beforeInstanceDomBeforeRemoval, beforeOwningInstance->get());
-
-                    // Retrieve all descendants of this entity, be them entities of container entities
-                    // Note that this will detach entities and instances from beforeInstance
                     EntityList entities;
                     AZStd::vector<AZStd::unique_ptr<Instance>> instances;
+                    AZStd::vector<LinkId> links;
 
-                    RetrieveAndSortPrefabEntitiesAndInstances({entity}, beforeOwningInstance->get(), entities, instances);
-                    /*
-                    // When we move instances bet a prefab with other prefab instances, we have to remove the existing links between the
-                    // source and target templates of the other instances.
-                    for (auto& nestedInstance : instances)
+                    // --- HANDLE PREVIOUS INSTANCE ---
                     {
-                        RemoveLink(nestedInstance, commonRootEntityOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch());
+                        // Get the previous state of the old instance for undo/redo purposes
+                        PrefabDom beforeInstanceDomBeforeRemoval;
+                        m_instanceToTemplateInterface->GenerateDomForInstance(beforeInstanceDomBeforeRemoval, beforeOwningInstance->get());
+
+                        // Retrieve all descendants of this entity, be them entities of container entities
+                        // Note that this will detach entities and instances from beforeInstance
+                        RetrieveAndSortPrefabEntitiesAndInstances({entity}, beforeOwningInstance->get(), entities, instances);
+
+                        // Create the Update node
+                        PrefabUndoHelpers::UpdatePrefabInstance(
+                            beforeOwningInstance->get(), "Update prior prefab instance", beforeInstanceDomBeforeRemoval, parentUndoBatch);
                     }
 
-                    PrefabUndoHelpers::UpdatePrefabInstance(
-                        commonRootEntityOwningInstance->get(), "Update prefab instance", commonRootInstanceDomBeforeCreate,
-                        undoBatch.GetUndoBatch());
-                    */
-                    // Add them to the new one (undo/redo support)
+                    // --- HANDLE NEW INSTANCE ---
+                    {
+                        // Get the previous state of the old instance for undo/redo purposes
+                        PrefabDom afterInstanceDomBeforeAdd;
+                        m_instanceToTemplateInterface->GenerateDomForInstance(afterInstanceDomBeforeAdd, afterOwningInstance->get());
 
-                    // For every container, move the link
+                        // Add all entities
+                        for (AZ::Entity* entity : entities)
+                        {
+                            afterOwningInstance->get().AddEntity(*entity);
+                        }
+
+                        // Add all instances, and recreate the links
+                        for (AZStd::unique_ptr<Instance>& instance : instances)
+                        {
+                            afterOwningInstance->get().AddInstance(AZStd::move(instance));
+
+                            // Retrieve Link reference
+                            auto linkRef = m_prefabSystemComponentInterface->FindLink(afterOwningInstance->get().GetLinkId());
+                            if (!linkRef.has_value())
+                            {
+                                // TODO - is this a problem?
+                                continue;
+                            }
+                            
+                            // Store link dom
+                            PrefabDom linkDom;
+                            linkDom.CopyFrom(linkRef->get().GetLinkDom(), linkDom.GetAllocator());
+
+                            // Remove old link
+                            RemoveLink(instance, beforeOwningInstance->get().GetTemplateId(), parentUndoBatch);
+
+                            // Add a new link with the old dom
+                            // TODO - needs a change to CreateLink, will address that separately and merge it here...
+                        }
+
+                        // Create the Update node
+                        PrefabUndoHelpers::UpdatePrefabInstance(
+                            afterOwningInstance->get(), "Update new prefab instance", afterInstanceDomBeforeAdd, parentUndoBatch);
+                    }
                 }
             }
 
