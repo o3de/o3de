@@ -84,6 +84,7 @@ namespace AzFramework
     namespace ApplicationInternal
     {
         static constexpr const char s_prefabSystemKey[] = "/Amazon/Preferences/EnablePrefabSystem";
+        static constexpr const char s_prefabWipSystemKey[] = "/Amazon/Preferences/EnablePrefabSystemWipFeatures";
         static constexpr const char s_legacySlicesAssertKey[] = "/Amazon/Preferences/ShouldAssertForLegacySlicesUsage";
 
         // A Helper function that can load an app descriptor from file.
@@ -733,6 +734,16 @@ namespace AzFramework
         if (auto* registry = AZ::SettingsRegistry::Get())
         {
             registry->Get(value, ApplicationInternal::s_prefabSystemKey);
+        }
+        return value;
+    }
+
+    bool Application::ArePrefabWipFeaturesEnabled() const
+    {
+        bool value = false;
+        if (auto* registry = AZ::SettingsRegistry::Get())
+        {
+            registry->Get(value, ApplicationInternal::s_prefabWipSystemKey);
         }
         return value;
     }

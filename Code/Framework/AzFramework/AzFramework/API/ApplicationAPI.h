@@ -117,6 +117,9 @@ namespace AzFramework
         /// Returns true if Prefab System is enabled, false if Legacy Slice System is enabled
         virtual bool IsPrefabSystemEnabled() const { return true; }
 
+        /// Returns true if the additional work in progress Prefab features are enabled, false otherwise
+        virtual bool ArePrefabWipFeaturesEnabled() const { return false; }
+
         /// Sets whether or not the Prefab System should be enabled.  The application will need to be restarted when this changes
         virtual void SetPrefabSystemEnabled([[maybe_unused]] bool enable) {}
 
