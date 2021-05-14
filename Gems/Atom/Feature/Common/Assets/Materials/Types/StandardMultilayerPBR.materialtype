@@ -351,7 +351,22 @@
                         "type": "ShaderInput",
                         "id": "m_blendMaskUvIndex"
                     }
+                },
+                {
+                    "id": "displacementBlendFactor",
+                    "displayName": "Blend Factor",
+                    "description": "Adjusts how smoothly to transition between layers when displacement blending is enabled.",
+                    "type": "Float",
+                    "defaultValue": 0.0,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "step": 0.001,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_displacementBlendFactor"
+                    }
                 }
+
             ],
             "parallax": [
                 {
@@ -2699,7 +2714,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardMultilayerPBR_Parallax.lua"
+                "file": "StandardMultilayerPBR_Displacement.lua"
             }
         },
         //##############################################################################################

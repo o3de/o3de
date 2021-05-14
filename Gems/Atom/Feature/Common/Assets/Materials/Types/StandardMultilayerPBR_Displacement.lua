@@ -58,6 +58,14 @@ LayerBlendSource_Displacement = 2
 LayerBlendSource_Displacement_With_BlendMaskTexture = 3
 LayerBlendSource_Displacement_With_BlendMaskVertexColors = 4
 
+function BlendSourceUsesDisplacement(context)
+    local blendSource = context:GetMaterialPropertyValue_enum("blend.blendSource")
+    local blendSourceIncludesDisplacement = (blendSource == LayerBlendSource_Displacement or 
+                                             blendSource ==LayerBlendSource_Displacement_With_BlendMaskTexture or 
+                                             blendSource == LayerBlendSource_Displacement_With_BlendMaskVertexColors)
+    return blendSourceIncludesDisplacement
+end
+
 function Process(context)
     local enableParallax = context:GetMaterialPropertyValue_bool("parallax.enable")
     local enable1 = context:GetMaterialPropertyValue_bool("layer1_parallax.enable")
@@ -66,12 +74,7 @@ function Process(context)
     enableParallax = enableParallax and (enable1 or enable2 or enable3)
     context:SetShaderOptionValue_bool("o_parallax_feature_enabled", enableParallax)
     
-    blendSource = context:GetMaterialPropertyValue_enum("blend.blendSource")
-    blendSourceIncludesDisplacement = (blendSource == LayerBlendSource_Displacement or 
-                                       blendSource ==LayerBlendSource_Displacement_With_BlendMaskTexture or 
-                                       blendSource == LayerBlendSource_Displacement_With_BlendMaskVertexColors)
-
-    if(enableParallax or blendSourceIncludesDisplacement) then
+    if(enableParallax or BlendSourceUsesDisplacement(context)) then
         local factorLayer1 = context:GetMaterialPropertyValue_float("layer1_parallax.factor")
         local factorLayer2 = context:GetMaterialPropertyValue_float("layer2_parallax.factor")
         local factorLayer3 = context:GetMaterialPropertyValue_float("layer3_parallax.factor")
@@ -107,4 +110,11 @@ function ProcessEditor(context)
     context:SetMaterialPropertyVisibility("parallax.quality", visibility)
     context:SetMaterialPropertyVisibility("parallax.pdo", visibility)
     context:SetMaterialPropertyVisibility("parallax.showClipping", visibility)
+    
+    if BlendSourceUsesDisplacement(context) then
+        context:SetMaterialPropertyVisibility("blend.displacementBlendFactor", MaterialPropertyVisibility_Enabled)
+    else
+        context:SetMaterialPropertyVisibility("blend.displacementBlendFactor", MaterialPropertyVisibility_Hidden)
+    end
+
 end
