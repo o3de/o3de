@@ -636,11 +636,18 @@ namespace AzToolsFramework
 
             if (!EntitiesBelongToSameInstance(entityIds))
             {
-                return AZ::Failure(AZStd::string("DeleteEntitiesAndAllDescendantsInInstance - Deletion Error. Cannot delete multiple "
-                                                 "entities belonging to different instances with one operation."));
+                return AZ::Failure(AZStd::string("Cannot delete multiple entities belonging to different instances with one operation."));
             }
 
-            InstanceOptionalReference instance = GetOwnerInstanceByEntityId(entityIds[0]);
+            AZ::EntityId firstEntityIdToDelete = entityIds[0];
+            InstanceOptionalReference commonOwningInstance = GetOwnerInstanceByEntityId(firstEntityIdToDelete);
+
+            // If the first entity id is a container entity id, then we need to mark its parent as the common owning instance because you
+            // cannot delete an instance from itself.
+            if (commonOwningInstance->get().GetContainerEntityId() == firstEntityIdToDelete)
+            {
+                commonOwningInstance = commonOwningInstance->get().GetParentInstance();
+            }
 
             // Retrieve entityList from entityIds
             EntityList inputEntityList = EntityIdListToEntityList(entityIds);
@@ -680,14 +687,14 @@ namespace AzToolsFramework
                 AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "Internal::DeleteEntities:UndoCaptureAndPurgeEntities");
 
                 Prefab::PrefabDom instanceDomBefore;
-                m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBefore, instance->get());
+                m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBefore, commonOwningInstance->get());
 
                 if (deleteDescendants)
                 {
                     AZStd::vector<AZ::Entity*> entities;
                     AZStd::vector<AZStd::unique_ptr<Instance>> instances;
 
-                    bool success = RetrieveAndSortPrefabEntitiesAndInstances(inputEntityList, instance->get(), entities, instances);
+                    bool success = RetrieveAndSortPrefabEntitiesAndInstances(inputEntityList, commonOwningInstance->get(), entities, instances);
 
                     if (!success)
                     {
@@ -701,6 +708,7 @@ namespace AzToolsFramework
 
                     for (auto& nestedInstance : instances)
                     {
+                        RemoveLink(nestedInstance, commonOwningInstance->get().GetTemplateId(), currentUndoBatch);
                         nestedInstance.reset();
                     }
                 }
@@ -712,22 +720,22 @@ namespace AzToolsFramework
                         // If this is the container entity, it actually represents the instance so get its owner
                         if (owningInstance->get().GetContainerEntityId() == entityId)
                         {
-                            auto instancePtr = instance->get().DetachNestedInstance(owningInstance->get().GetInstanceAlias());
-                            instancePtr.reset();
+                            auto instancePtr = commonOwningInstance->get().DetachNestedInstance(owningInstance->get().GetInstanceAlias());
+                            RemoveLink(instancePtr, commonOwningInstance->get().GetTemplateId(), currentUndoBatch);
                         }
                         else
                         {
-                            instance->get().DetachEntity(entityId);
+                            commonOwningInstance->get().DetachEntity(entityId);
                             AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, entityId);
                         }
                     }
                 }
 
                 Prefab::PrefabDom instanceDomAfter;
-                m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfter, instance->get());
+                m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfter, commonOwningInstance->get());
 
                 PrefabUndoInstance* command = aznew PrefabUndoInstance("Instance deletion");
-                command->Capture(instanceDomBefore, instanceDomAfter, instance->get().GetTemplateId());
+                command->Capture(instanceDomBefore, instanceDomAfter, commonOwningInstance->get().GetTemplateId());
                 command->SetParent(selCommand);
             }
 
