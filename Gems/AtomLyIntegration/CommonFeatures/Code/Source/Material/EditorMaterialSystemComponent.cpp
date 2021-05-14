@@ -23,6 +23,8 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 
+#include <Atom/RHI/Factory.h>
+
 #include <AtomToolsFramework/Util/Util.h>
 
 #include <Material/MaterialThumbnail.h>
@@ -93,24 +95,24 @@ namespace AZ
 
         void EditorMaterialSystemComponent::Activate()
         {
-            AzFramework::TargetManagerClient::Bus::Handler::BusConnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusConnect();
             AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusConnect();
 
             SetupThumbnails();
+            m_materialBrowserInteractions.reset(aznew MaterialBrowserInteractions);
         }
 
         void EditorMaterialSystemComponent::Deactivate()
         {
-            AzFramework::TargetManagerClient::Bus::Handler::BusDisconnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusDisconnect();
             AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusDisconnect();
 
             TeardownThumbnails();
+            m_materialBrowserInteractions.reset();
 
             if (m_openMaterialEditorAction)
             {
@@ -121,36 +123,19 @@ namespace AZ
 
         void EditorMaterialSystemComponent::OpenInMaterialEditor(const AZStd::string& sourcePath)
         {
-            if (m_materialEditorTarget.IsValid())
-            {
-                AzFramework::TmMsg openDocumentMsg(AZ_CRC("OpenInMaterialEditor", 0x9f92aac8));
-                openDocumentMsg.AddCustomBlob(sourcePath.c_str(), sourcePath.size() + 1);
-                AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_materialEditorTarget, openDocumentMsg);
-            }
-            else
-            {
-                AZ_TracePrintf("MaterialComponent", "Launching Material Editor");
+            AZ_TracePrintf("MaterialComponent", "Launching Material Editor");
 
-                QStringList arguments;
-                    arguments.append(sourcePath.c_str());
-                AtomToolsFramework::LaunchTool("MaterialEditor", ".exe", arguments);
-            }
-        }
+            QStringList arguments;
+            arguments.append(sourcePath.c_str());
 
-        void EditorMaterialSystemComponent::TargetJoinedNetwork(AzFramework::TargetInfo info)
-        {
-            if (AZ::StringFunc::Equal(info.GetDisplayName(), "MaterialEditor"))
+            // Use the same RHI as the main editor
+            AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
+            if (!apiName.IsEmpty())
             {
-                m_materialEditorTarget = info;
+                arguments.append(QString("--rhi=%1").arg(apiName.GetCStr()));
             }
-        }
 
-        void EditorMaterialSystemComponent::TargetLeftNetwork(AzFramework::TargetInfo info)
-        {
-            if (AZ::StringFunc::Equal(info.GetDisplayName(), "MaterialEditor"))
-            {
-                m_materialEditorTarget = {};
-            }
+            AtomToolsFramework::LaunchTool("MaterialEditor", ".exe", arguments);
         }
 
         void EditorMaterialSystemComponent::OnApplicationAboutToStop()
@@ -164,7 +149,10 @@ namespace AZ
             {
                 m_openMaterialEditorAction = new QAction("Material Editor");
                 m_openMaterialEditorAction->setShortcut(QKeySequence(Qt::Key_M));
-                QObject::connect(m_openMaterialEditorAction, &QAction::triggered, m_openMaterialEditorAction, [this]()
+                m_openMaterialEditorAction->setCheckable(false);
+                m_openMaterialEditorAction->setChecked(false);
+                QObject::connect(
+                    m_openMaterialEditorAction, &QAction::triggered, m_openMaterialEditorAction, [this]()
                     {
                         OpenInMaterialEditor("");
                     }

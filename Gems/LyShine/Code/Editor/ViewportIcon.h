@@ -11,6 +11,8 @@
 */
 #pragma once
 
+#include <Atom/RPI.Reflect/Image/Image.h>
+
 class ViewportIcon
 {
 public:
@@ -47,7 +49,21 @@ public:
     // width of the border (but the texture can have alpha at edges to make it thinner).
     void DrawElementRectOutline(Draw2dHelper& draw2d, AZ::EntityId entityId, AZ::Color color);
 
-private:
+    // Set whether to apply high resolution dpi scaling to the icon size
+    void SetApplyDpiScaleFactorToSize(bool apply) { m_applyDpiScaleFactorToSize = apply; }
 
-    ITexture* m_texture;
+    // Get whether to apply high resolution dpi scaling to the icon size
+    bool GetApplyDpiScaleFactorToSize() { return m_applyDpiScaleFactorToSize; }
+
+    // Set scale factor
+    static void SetDpiScaleFactor(float scale) { m_dpiScaleFactor = scale; }
+
+    // Get scale factor
+    static float GetDpiScaleFactor() { return m_dpiScaleFactor; }
+
+private:
+    AZ::Data::Instance<AZ::RPI::Image> m_image;
+    bool m_applyDpiScaleFactorToSize = true;
+
+    static float m_dpiScaleFactor;
 };

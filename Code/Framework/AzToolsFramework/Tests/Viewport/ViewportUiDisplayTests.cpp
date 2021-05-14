@@ -23,10 +23,10 @@ namespace UnitTest
 {
     using ViewportUiDisplay = AzToolsFramework::ViewportUi::Internal::ViewportUiDisplay;
     using ViewportUiElementId = AzToolsFramework::ViewportUi::ViewportUiElementId;
-    using Cluster = AzToolsFramework::ViewportUi::Internal::Cluster;
+    using ButtonGroup = AzToolsFramework::ViewportUi::Internal::ButtonGroup;
 
     // sets up a parent widget and render overlay to attach the Viewport UI to
-    // as well as a cluster with one button
+    // as well as a button group with one button
     class ViewportUiDisplayTestFixture : public ::testing::Test
     {
     public:
@@ -34,22 +34,22 @@ namespace UnitTest
 
         void SetUp()
         {
-            m_cluster = AZStd::make_shared<Cluster>();
-            m_cluster->AddButton("");
+            m_buttonGroup = AZStd::make_shared<ButtonGroup>();
+            m_buttonGroup->AddButton("");
             m_parentWidget = new QWidget();
             m_mockRenderOverlay = new QWidget();
         }
 
         void TearDown()
         {
-            m_cluster.reset();
+            m_buttonGroup.reset();
             delete m_parentWidget;
             delete m_mockRenderOverlay;
         }
 
         QWidget* m_parentWidget = nullptr;
         QWidget* m_mockRenderOverlay = nullptr;
-        AZStd::shared_ptr<Cluster> m_cluster = nullptr;
+        AZStd::shared_ptr<ButtonGroup> m_buttonGroup = nullptr;
     };
 
     TEST_F(ViewportUiDisplayTestFixture, ViewportUiInitializationReturnsProperlyParentedWidgets)
@@ -72,13 +72,13 @@ namespace UnitTest
     TEST_F(ViewportUiDisplayTestFixture, RemoveViewportUiElementRemovesElementFromViewportUi)
     {
         ViewportUiDisplay viewportUi(m_parentWidget, m_mockRenderOverlay);
-        viewportUi.AddCluster(m_cluster);
-        auto widget = viewportUi.GetViewportUiElement(m_cluster->GetViewportUiElementId());
+        viewportUi.AddCluster(m_buttonGroup, AzToolsFramework::ViewportUi::Alignment::TopLeft);
+        auto widget = viewportUi.GetViewportUiElement(m_buttonGroup->GetViewportUiElementId());
 
         EXPECT_TRUE(widget.get() != nullptr);
 
-        viewportUi.RemoveViewportUiElement(m_cluster->GetViewportUiElementId());
-        widget = viewportUi.GetViewportUiElement(m_cluster->GetViewportUiElementId());
+        viewportUi.RemoveViewportUiElement(m_buttonGroup->GetViewportUiElementId());
+        widget = viewportUi.GetViewportUiElement(m_buttonGroup->GetViewportUiElementId());
 
         EXPECT_TRUE(widget.get() == nullptr);
     }
@@ -89,11 +89,11 @@ namespace UnitTest
 
         ViewportUiDisplay viewportUi(m_parentWidget, m_mockRenderOverlay);
         viewportUi.InitializeUiOverlay();
-        viewportUi.AddCluster(m_cluster);
+        viewportUi.AddCluster(m_buttonGroup, AzToolsFramework::ViewportUi::Alignment::TopLeft);
         viewportUi.Update();
-        viewportUi.ShowViewportUiElement(m_cluster->GetViewportUiElementId());
+        viewportUi.ShowViewportUiElement(m_buttonGroup->GetViewportUiElementId());
 
-        EXPECT_TRUE(viewportUi.IsViewportUiElementVisible(m_cluster->GetViewportUiElementId()));
+        EXPECT_TRUE(viewportUi.IsViewportUiElementVisible(m_buttonGroup->GetViewportUiElementId()));
     }
 
     TEST_F(ViewportUiDisplayTestFixture, HideViewportUiElementSetsWidgetVisibilityToFalse)
@@ -102,20 +102,20 @@ namespace UnitTest
 
         ViewportUiDisplay viewportUi(m_parentWidget, m_mockRenderOverlay);
         viewportUi.InitializeUiOverlay();
-        viewportUi.AddCluster(m_cluster);
-        viewportUi.HideViewportUiElement(m_cluster->GetViewportUiElementId());
+        viewportUi.AddCluster(m_buttonGroup, AzToolsFramework::ViewportUi::Alignment::TopLeft);
+        viewportUi.HideViewportUiElement(m_buttonGroup->GetViewportUiElementId());
 
-        EXPECT_FALSE(viewportUi.IsViewportUiElementVisible(m_cluster->GetViewportUiElementId()));
+        EXPECT_FALSE(viewportUi.IsViewportUiElementVisible(m_buttonGroup->GetViewportUiElementId()));
     }
 
     TEST_F(ViewportUiDisplayTestFixture, UpdateUiOverlayGeometryChangesGeometryToMatchViewportUiElements)
     {
         ViewportUiDisplay viewportUi(m_parentWidget, m_mockRenderOverlay);
         viewportUi.InitializeUiOverlay();
-        viewportUi.AddCluster(m_cluster);
+        viewportUi.AddCluster(m_buttonGroup, AzToolsFramework::ViewportUi::Alignment::TopLeft);
 
         viewportUi.Update();
-        auto widget = viewportUi.GetViewportUiElement(m_cluster->GetViewportUiElementId());
+        auto widget = viewportUi.GetViewportUiElement(m_buttonGroup->GetViewportUiElementId());
 
         EXPECT_EQ(viewportUi.GetUiMainWindow()->mask(), widget->geometry());
     }
@@ -127,14 +127,14 @@ namespace UnitTest
         ViewportUiDisplay viewportUi(m_parentWidget, m_mockRenderOverlay);
         viewportUi.InitializeUiOverlay();
 
-        auto cluster = AZStd::make_shared<Cluster>();
-        cluster->AddButton("");
-        viewportUi.AddCluster(cluster);
+        auto buttonGroup = AZStd::make_shared<ButtonGroup>();
+        buttonGroup->AddButton("");
+        viewportUi.AddCluster(buttonGroup, AzToolsFramework::ViewportUi::Alignment::TopLeft);
         viewportUi.Update();
 
         EXPECT_TRUE(viewportUi.GetUiMainWindow()->isVisible());
 
-        viewportUi.RemoveViewportUiElement(cluster->GetViewportUiElementId());
+        viewportUi.RemoveViewportUiElement(buttonGroup->GetViewportUiElementId());
         viewportUi.Update();
         EXPECT_FALSE(viewportUi.GetUiMainWindow()->isVisible());
     }

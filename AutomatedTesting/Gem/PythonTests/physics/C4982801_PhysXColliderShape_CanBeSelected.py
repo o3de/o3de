@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID : C4982801
 Test Case Title : Verify that the shape Box can be selected from drop downlist and the value for its dimensions in x,y,z can be set after that
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4982801
+
 """
 
 
@@ -50,9 +50,9 @@ def C4982801_PhysXColliderShape_CanBeSelected():
     import ImportPathHelper as imports
 
     imports.init()
-    from utils import Report
-    from utils import TestHelper as helper
-    from editor_entity_utils import EditorEntity as Entity
+    from editor_python_test_tools.editor_entity_utils import EditorEntity as Entity
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     # Open 3D Engine Imports
     import azlmbr.math as math
@@ -110,5 +110,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C4982801_PhysXColliderShape_CanBeSelected)

@@ -88,33 +88,33 @@ namespace PhysX
                 editContext->Class<EditorProxyShapeConfig>(
                     "EditorProxyShapeConfig", "PhysX Base shape collider")
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorProxyShapeConfig::m_shapeType, "Shape", "The shape of the collider")
-                    ->EnumAttribute(Physics::ShapeType::Sphere, "Sphere")
-                    ->EnumAttribute(Physics::ShapeType::Box, "Box")
-                    ->EnumAttribute(Physics::ShapeType::Capsule, "Capsule")
-                    ->EnumAttribute(Physics::ShapeType::PhysicsAsset, "PhysicsAsset")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    // note: we do not want the user to be able to change shape types while in ComponentMode (there will
-                    // potentially be different ComponentModes for different shape types)
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzToolsFramework::ComponentModeFramework::InComponentMode)
+                        ->EnumAttribute(Physics::ShapeType::Sphere, "Sphere")
+                        ->EnumAttribute(Physics::ShapeType::Box, "Box")
+                        ->EnumAttribute(Physics::ShapeType::Capsule, "Capsule")
+                        ->EnumAttribute(Physics::ShapeType::PhysicsAsset, "PhysicsAsset")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        // note: we do not want the user to be able to change shape types while in ComponentMode (there will
+                        // potentially be different ComponentModes for different shape types)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzToolsFramework::ComponentModeFramework::InComponentMode)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_sphere, "Sphere", "Configuration of sphere shape")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsSphereConfig)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsSphereConfig)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_box, "Box", "Configuration of box shape")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsBoxConfig)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsBoxConfig)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_capsule, "Capsule", "Configuration of capsule shape")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsCapsuleConfig)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsCapsuleConfig)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_physicsAsset, "Asset", "Configuration of asset shape")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsAssetConfig)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsAssetConfig)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_subdivisionLevel, "Subdivision level",
                         "The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling")
-                    ->Attribute(AZ::Edit::Attributes::Min, Utils::MinCapsuleSubdivisionLevel)
-                    ->Attribute(AZ::Edit::Attributes::Max, Utils::MaxCapsuleSubdivisionLevel)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::ShowingSubdivisionLevel)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
+                        ->Attribute(AZ::Edit::Attributes::Min, Utils::MinCapsuleSubdivisionLevel)
+                        ->Attribute(AZ::Edit::Attributes::Max, Utils::MaxCapsuleSubdivisionLevel)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::ShowingSubdivisionLevel)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
                     ;
             }
         }
@@ -189,8 +189,8 @@ namespace PhysX
                     "PhysX Collider", "PhysX shape collider")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/PhysXCollider.svg")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/PhysXCollider.svg")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/PhysXCollider.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "http://docs.aws.amazon.com/console/lumberyard/component/physx/collider")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -345,7 +345,6 @@ namespace PhysX
         AzToolsFramework::BoxManipulatorRequestBus::Handler::BusConnect(
             AZ::EntityComponentIdPair(GetEntityId(), GetId()));
         ColliderShapeRequestBus::Handler::BusConnect(GetEntityId());
-        LmbrCentral::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
         AZ::Render::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
         EditorColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
         m_nonUniformScaleChangedHandler = AZ::NonUniformScaleChangedEvent::Handler(
@@ -388,13 +387,12 @@ namespace PhysX
 
     void EditorColliderComponent::Deactivate()
     {
-        Physics::WorldBodyRequestBus::Handler::BusDisconnect();
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         m_colliderDebugDraw.Disconnect();
         AZ::Data::AssetBus::MultiHandler::BusDisconnect();
         m_nonUniformScaleChangedHandler.Disconnect();
         EditorColliderComponentRequestBus::Handler::BusDisconnect();
         AZ::Render::MeshComponentNotificationBus::Handler::BusDisconnect();
-        LmbrCentral::MeshComponentNotificationBus::Handler::BusDisconnect();
         ColliderShapeRequestBus::Handler::BusDisconnect();
         AzToolsFramework::BoxManipulatorRequestBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
@@ -407,7 +405,6 @@ namespace PhysX
         if (m_sceneInterface)
         {
             m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-            m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
     }
 
@@ -581,7 +578,6 @@ namespace PhysX
             if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
             {
                 m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-                m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
             }
             return;
         }
@@ -636,7 +632,6 @@ namespace PhysX
             if (m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
             {
                 m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-                m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
             }
             
             m_editorBodyHandle = m_sceneInterface->AddSimulatedBody(m_editorSceneHandle, &configuration);
@@ -644,7 +639,7 @@ namespace PhysX
 
         m_colliderDebugDraw.ClearCachedGeometry();
 
-        Physics::WorldBodyRequestBus::Handler::BusConnect(GetEntityId());
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 
     AZ::Data::Asset<Pipeline::MeshAsset> EditorColliderComponent::GetMeshAsset() const
@@ -1053,13 +1048,19 @@ namespace PhysX
         if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
             m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-            m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
     }
 
     bool EditorColliderComponent::IsPhysicsEnabled() const
     {
-        return m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle;
+        if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
+        {
+            if (auto* body = m_sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_editorBodyHandle))
+            {
+                return body->m_simulating;
+            }
+        }
+        return false;
     }
 
     AZ::Aabb EditorColliderComponent::GetAabb() const
@@ -1074,7 +1075,7 @@ namespace PhysX
         return AZ::Aabb::CreateNull();
     }
 
-    AzPhysics::SimulatedBody* EditorColliderComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* EditorColliderComponent::GetSimulatedBody()
     {
         if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
@@ -1084,6 +1085,11 @@ namespace PhysX
             }
         }
         return nullptr;
+    }
+
+    AzPhysics::SimulatedBodyHandle EditorColliderComponent::GetSimulatedBodyHandle() const
+    {
+        return m_editorBodyHandle;
     }
 
     AzPhysics::SceneQueryHit EditorColliderComponent::RayCast(const AzPhysics::RayCastRequest& request)
@@ -1179,17 +1185,7 @@ namespace PhysX
         AZ::Render::MeshComponentRequestBus::EventResult(atomMeshAsset, GetEntityId(),
             &AZ::Render::MeshComponentRequestBus::Events::GetModelAsset);
 
-        if (atomMeshAsset.GetId().IsValid())
-        {
-            return atomMeshAsset;
-        }
-
-        // Try legacy render MeshComponent
-        AZ::Data::Asset<AZ::Data::AssetData> legacyMeshAsset;
-        LmbrCentral::MeshComponentRequestBus::EventResult(legacyMeshAsset,
-            GetEntityId(), &LmbrCentral::MeshComponentRequests::GetMeshAsset);
-
-        return legacyMeshAsset;
+        return atomMeshAsset;
     }
 
     void EditorColliderComponent::SetCollisionMeshFromRender()
@@ -1262,14 +1258,6 @@ namespace PhysX
                 GetEntity()->GetName().c_str(), 
                 renderMeshAsset.GetId().m_guid.ToString<AZStd::string>().c_str(),
                 renderMeshAsset.GetHint().c_str());
-        }
-    }
-    
-    void EditorColliderComponent::OnMeshCreated([[maybe_unused]] const AZ::Data::Asset<AZ::Data::AssetData>& asset)
-    {
-        if (ShouldUpdateCollisionMeshFromRender())
-        {
-            SetCollisionMeshFromRender();
         }
     }
 

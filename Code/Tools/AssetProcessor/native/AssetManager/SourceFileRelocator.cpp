@@ -156,7 +156,7 @@ Please note that only those seed files will get updated that are active for your
         else
         {
             QString relativePathQString;
-            if (!PlatformConfiguration::ConvertToRelativePath(normalizedSource.c_str(), scanFolderInfo, relativePathQString, false))
+            if (!PlatformConfiguration::ConvertToRelativePath(normalizedSource.c_str(), scanFolderInfo, relativePathQString))
             {
                 return AZ::Failure(AZStd::string::format("Failed to convert path to relative path. %s\n", normalizedSource.c_str()));
             }
@@ -165,16 +165,6 @@ Please note that only those seed files will get updated that are active for your
         }
 
         return AZ::Success();
-    }
-
-    AZStd::string SourceFileRelocator::RemoveDatabasePrefix(const ScanFolderInfo* scanFolder, AZStd::string sourceName)
-    {
-        if (!scanFolder->GetOutputPrefix().isEmpty())
-        {
-            return sourceName.substr(scanFolder->GetOutputPrefix().size() + 1); //+1 to remove the slash after the prefix
-        }
-
-        return sourceName;
     }
 
     QHash<QString, int> SourceFileRelocator::GetSources(QStringList pathMatches, const ScanFolderInfo* scanFolderInfo,
@@ -188,7 +178,7 @@ Please note that only those seed files will get updated that are active for your
             PlatformConfiguration::ConvertToRelativePath(file, scanFolderInfo, databaseSourceName);
             m_stateData->QuerySourceBySourceNameScanFolderID(databaseSourceName.toUtf8().constData(), scanFolderInfo->ScanFolderID(), [this, &sources, &scanFolderInfo, &sourceIndexMap, &databaseSourceName](const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
                 {
-                    sources.emplace_back(entry, GetProductMapForSource(entry.m_sourceID), RemoveDatabasePrefix(scanFolderInfo, entry.m_sourceName), scanFolderInfo);
+                    sources.emplace_back(entry, GetProductMapForSource(entry.m_sourceID), entry.m_sourceName, scanFolderInfo);
                     sourceIndexMap[databaseSourceName] = aznumeric_cast<int> (sources.size() - 1);
                     return true;
                 });
@@ -200,9 +190,8 @@ Please note that only those seed files will get updated that are active for your
     void SourceFileRelocator::HandleMetaDataFiles(QStringList pathMatches, QHash<QString, int>& sourceIndexMap, const ScanFolderInfo* scanFolderInfo, SourceFileRelocationContainer& metadataFiles, bool excludeMetaDataFiles) const
     {
         QSet<QString> metaDataFileEntries;
-        for (QStringList::Iterator fileIter = pathMatches.begin(); fileIter != pathMatches.end();)
+        for (QString file : pathMatches)
         {
-            QString file = *fileIter;
             for (int idx = 0; idx < m_platformConfig->MetaDataFileTypesCount(); idx++)
             {
                 QPair<QString, QString> metaInfo = m_platformConfig->GetMetaDataFileTypeAt(idx);
@@ -213,8 +202,7 @@ Please note that only those seed files will get updated that are active for your
                     {
                         AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Metadata file %s will be ignored because --excludeMetadataFiles was specified in the command line.\n",
                             file.toUtf8().constData());
-                        fileIter = pathMatches.erase(fileIter);
-                        continue;
+                        break; // don't check it against other metafile entries, we've already ascertained its a metafile.
                     }
                     else
                     {
@@ -273,8 +261,6 @@ Please note that only those seed files will get updated that are active for your
                     }
                 }
             }
-
-            fileIter++;
         }
     }
 
@@ -356,12 +342,6 @@ Please note that only those seed files will get updated that are active for your
                     }
 
                     QString relativeFileName(normalizedSource.c_str());
-
-                    //if relative path starts with the output prefix than remove it first
-                    if (!scanFolderInfo->GetOutputPrefix().isEmpty() && relativeFileName.startsWith(scanFolderInfo->GetOutputPrefix(), Qt::CaseInsensitive))
-                    {
-                        relativeFileName = relativeFileName.right(relativeFileName.length() - (scanFolderInfo->GetOutputPrefix().length() + 1)); // adding 1 for slash
-                    }
 
                     QDir rooted(scanFolderInfo->ScanPath());
                     QString absolutePath = rooted.absoluteFilePath(relativeFileName);
@@ -620,7 +600,7 @@ Please note that only those seed files will get updated that are active for your
             {
                 QString relativePath;
                 QString scanFolderName;
-                m_platformConfig->ConvertToRelativePath(newDestinationPath.c_str(), relativePath, scanFolderName, false);
+                m_platformConfig->ConvertToRelativePath(newDestinationPath.c_str(), relativePath, scanFolderName);
 
                 relocationInfo.m_newAbsolutePath = newDestinationPath;
                 relocationInfo.m_newRelativePath = relativePath.toUtf8().constData();

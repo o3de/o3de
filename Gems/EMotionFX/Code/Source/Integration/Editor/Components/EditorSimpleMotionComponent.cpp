@@ -47,9 +47,9 @@ namespace EMotionFX
                         "Simple Motion", "The Simple Motion component assigns a single motion to the associated Actor in lieu of an Anim Graph component")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Animation")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/SimpleMotion.svg")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/SimpleMotion.svg")
                         ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, azrtti_typeid<MotionAsset>())
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Mannequin.png")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Mannequin.png")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(0, &EditorSimpleMotionComponent::m_previewInEditor, "Preview In Editor", "Plays motion in Editor")
@@ -170,7 +170,7 @@ namespace EMotionFX
                 // The Editor allows scrubbing back and forth on animation blending transitions, so don't delete 
                 // motion instances if it's blend weight is zero.
                 // The Editor preview should preview the motion in place to prevent off center movement.
-                m_motionInstance = SimpleMotionComponent::PlayMotionInternal(m_actorInstance, m_configuration, /*deleteOnZeroWeight*/false, /*inPlace*/true);
+                m_motionInstance = SimpleMotionComponent::PlayMotionInternal(m_actorInstance, m_configuration, /*deleteOnZeroWeight*/false);
             }
         }
 

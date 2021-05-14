@@ -128,11 +128,6 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <extends>QWidget</extends>
-   <header>Controls/PreviewModelCtrl.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>AzToolsFramework::AspectRatioAwarePixmapWidget</class>
    <extends>QWidget</extends>
    <header>AzToolsFramework/UI/UICore/AspectRatioAwarePixmapWidget.hxx</header>

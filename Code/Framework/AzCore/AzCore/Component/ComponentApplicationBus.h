@@ -72,6 +72,8 @@ namespace AZ
 
     using EntityAddedEvent = AZ::Event<AZ::Entity*>;
     using EntityRemovedEvent = AZ::Event<AZ::Entity*>;
+    using EntityActivatedEvent = AZ::Event<AZ::Entity*>;
+    using EntityDeactivatedEvent = AZ::Event<AZ::Entity*>;
 
     //! Interface that components can use to make requests of the main application.
     class ComponentApplicationRequests
@@ -102,6 +104,22 @@ namespace AZ
         //! @param handler the event handler to signal.
         virtual void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler& handler) = 0;
 
+        //! Registers an event handler that will be signalled whenever an entity is added.
+        //! @param handler the event handler to signal.
+        virtual void RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler& handler) = 0;
+
+        //! Registers an event handler that will be signalled whenever an entity is removed.
+        //! @param handler the event handler to signal.
+        virtual void RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler& handler) = 0;
+
+        //! Signals that the provided entity has been activated.
+        //! @param entity the entity being activated.
+        virtual void SignalEntityActivated(AZ::Entity* entity) = 0;
+
+        //! Signals that the provided entity has been deactivated.
+        //! @param entity the entity being deactivated.
+        virtual void SignalEntityDeactivated(AZ::Entity* entity) = 0;
+
         //! Adds an entity to the application's registry.
         //! Calling Init() on an entity automatically performs this operation.
         //! @param entity A pointer to the entity to add to the application's registry.
@@ -130,7 +148,13 @@ namespace AZ
         //! @param entity A reference to the entity whose name you are seeking.
         //! @return The name of the entity with the specified entity ID. 
         //! If no entity is found for the specified ID, it returns an empty string. 
-        virtual AZStd::string GetEntityName(const EntityId& id) { (void)id; return AZStd::string(); };
+        virtual AZStd::string GetEntityName(const EntityId& id) { (void)id; return AZStd::string(); }
+
+        //! Sets the name of the entity that has the specified entity ID.
+        //! Entity names are not enforced to be unique.
+        //! @param entityId A reference to the entity whose name you want to change.
+        //! @return True if the name was changed successfully, false if it wasn't.
+        virtual bool SetEntityName([[maybe_unused]] const EntityId& id, [[maybe_unused]] const AZStd::string_view name) { return false; }
 
         //! The type that AZ::ComponentApplicationRequests::EnumerateEntities uses to
         //! pass entity callbacks to the application for enumeration.

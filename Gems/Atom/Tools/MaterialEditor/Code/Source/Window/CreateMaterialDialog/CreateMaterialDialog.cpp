@@ -21,13 +21,21 @@
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 
+#include <Atom/Document/MaterialDocumentSettings.h>
+
 #include <QFileDialog>
 
 namespace MaterialEditor
 {
     CreateMaterialDialog::CreateMaterialDialog(QWidget* parent)
+        : CreateMaterialDialog(QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) + AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials", parent)
+    {
+    }
+
+    CreateMaterialDialog::CreateMaterialDialog(const QString& path, QWidget* parent)
         : QDialog(parent)
         , m_ui(new Ui::CreateMaterialDialog)
+        , m_path(path)
     {
         m_ui->setupUi(this);
 
@@ -63,8 +71,11 @@ namespace MaterialEditor
         QObject::connect(m_ui->m_materialTypeComboBox, static_cast<void (QComboBox::*)(const int)>(&QComboBox::currentIndexChanged), this, [this]() { UpdateMaterialTypeSelection(); });
         QObject::connect(m_ui->m_materialTypeComboBox, &QComboBox::currentTextChanged, this, [this]() { UpdateMaterialTypeSelection(); });
 
-        // Select StandardPBR by default but we will later data drive this with editor settings
-        const int index = m_ui->m_materialTypeComboBox->findText("StandardPBR");
+        // Select the default material type from settings
+        auto settings =
+            AZ::UserSettings::CreateFind<MaterialDocumentSettings>(AZ::Crc32("MaterialDocumentSettings"), AZ::UserSettings::CT_GLOBAL);
+
+        const int index = m_ui->m_materialTypeComboBox->findText(settings->m_defaultMaterialTypeName.c_str());
         if (index >= 0)
         {
             m_ui->m_materialTypeComboBox->setCurrentIndex(index);
@@ -77,8 +88,7 @@ namespace MaterialEditor
     {
         //Select a default location and unique name for the new material
         m_materialFileInfo = AtomToolsFramework::GetUniqueFileInfo(
-            QString(AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@")) +
-            AZ_CORRECT_FILESYSTEM_SEPARATOR + "Materials" +
+            m_path +
             AZ_CORRECT_FILESYSTEM_SEPARATOR + "untitled." +
             AZ::RPI::MaterialSourceData::Extension).absoluteFilePath();
 

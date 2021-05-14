@@ -16,7 +16,7 @@ import logging
 # Bail on the test if ly_test_tools doesn't exist.
 pytest.importorskip('ly_test_tools')
 import ly_test_tools.environment.file_system as file_system
-import automatedtesting_shared.hydra_test_utils as hydra
+import editor_python_test_tools.hydra_test_utils as hydra
 
 logger = logging.getLogger(__name__)
 test_directory = os.path.join(os.path.dirname(__file__), 'EditorScripts')
@@ -38,6 +38,7 @@ class TestDistanceBetweenFilter(object):
 
     @pytest.mark.test_case_id("C4851066")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_filter
     def test_DistanceBetweenFilter_InstancesPlantAtSpecifiedRadius(self, request, editor, level, launcher_platform):
 
         expected_lines = [
@@ -58,6 +59,7 @@ class TestDistanceBetweenFilter(object):
 
     @pytest.mark.test_case_id("C4814458")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_filter
     def test_DistanceBetweenFilterOverrides_InstancesPlantAtSpecifiedRadius(self, request, editor, level,
                                                                             launcher_platform):
 

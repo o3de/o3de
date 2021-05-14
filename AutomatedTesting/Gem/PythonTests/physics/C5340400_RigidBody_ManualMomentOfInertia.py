@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C5340400
 # Test Case Title : Verify that when Compute inertia is disabled, the user gets to set the moment of inertia
 #                   and physX engine work accordingly
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5340400
+
 
 
 # fmt: off
@@ -76,11 +76,10 @@ def C5340400_RigidBody_ManualMomentOfInertia():
 
     imports.init()
 
-
     import azlmbr.legacy.general as general
     import azlmbr.bus
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     # Specific wait time in seconds
     TIME_OUT = 3.0
@@ -168,5 +167,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C5340400_RigidBody_ManualMomentOfInertia)

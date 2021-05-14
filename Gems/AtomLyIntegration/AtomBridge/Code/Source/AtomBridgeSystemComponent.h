@@ -17,7 +17,6 @@
 
 #include <AzCore/Component/Component.h>
 
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzFramework/Render/RenderSystemBus.h>
 #include <AzFramework/Components/DeprecatedComponentsBus.h>
 
@@ -37,7 +36,6 @@ namespace AZ
 
         class AtomBridgeSystemComponent
             : public Component
-            , public AzFramework::AtomActiveInterface
             , public AzFramework::Render::RenderSystemRequestBus::Handler
             , public AzFramework::Components::DeprecatedComponentsRequestBus::Handler
             , public Render::Bootstrap::NotificationBus::Handler

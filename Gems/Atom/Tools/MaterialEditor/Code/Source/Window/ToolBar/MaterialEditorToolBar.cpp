@@ -10,13 +10,13 @@
  *
  */
 
-#include <Atom/Document/MaterialEditorSettingsBus.h>
 #include <Atom/Viewport/MaterialViewportNotificationBus.h>
 #include <Atom/Viewport/MaterialViewportRequestBus.h>
+#include <Atom/Viewport/MaterialViewportSettings.h>
 #include <AzCore/std/containers/vector.h>
-#include <Source/Window/ToolBar/LightingPresetComboBox.h>
-#include <Source/Window/ToolBar/MaterialEditorToolBar.h>
-#include <Source/Window/ToolBar/ModelPresetComboBox.h>
+#include <Window/ToolBar/LightingPresetComboBox.h>
+#include <Window/ToolBar/MaterialEditorToolBar.h>
+#include <Window/ToolBar/ModelPresetComboBox.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
@@ -33,15 +33,16 @@ namespace MaterialEditor
     {
         AzQtComponents::ToolBar::addMainToolBarStyle(this);
 
+        AZStd::intrusive_ptr<MaterialViewportSettings> viewportSettings =
+            AZ::UserSettings::CreateFind<MaterialViewportSettings>(AZ::Crc32("MaterialViewportSettings"), AZ::UserSettings::CT_GLOBAL);
+
         // Add toggle grid button
         m_toggleGrid = addAction(QIcon(":/Icons/grid.svg"), "Toggle Grid");
         m_toggleGrid->setCheckable(true);
         connect(m_toggleGrid, &QAction::triggered, [this]() {
             MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SetGridEnabled, m_toggleGrid->isChecked());
         });
-        bool enableGrid = false;
-        MaterialViewportRequestBus::BroadcastResult(enableGrid, &MaterialViewportRequestBus::Events::GetGridEnabled);
-        m_toggleGrid->setChecked(enableGrid);
+        m_toggleGrid->setChecked(viewportSettings->m_enableGrid);
 
         // Add toggle shadow catcher button
         m_toggleShadowCatcher = addAction(QIcon(":/Icons/shadow.svg"), "Toggle Shadow Catcher");
@@ -50,30 +51,36 @@ namespace MaterialEditor
             MaterialViewportRequestBus::Broadcast(
                 &MaterialViewportRequestBus::Events::SetShadowCatcherEnabled, m_toggleShadowCatcher->isChecked());
         });
-        bool enableShadowCatcher = false;
-        MaterialViewportRequestBus::BroadcastResult(enableShadowCatcher, &MaterialViewportRequestBus::Events::GetShadowCatcherEnabled);
-        m_toggleShadowCatcher->setChecked(enableShadowCatcher);
+        m_toggleShadowCatcher->setChecked(viewportSettings->m_enableShadowCatcher);
 
         // Add mapping selection button
-        //[GFX TODO][ATOM-3992]
+
         QToolButton* toneMappingButton = new QToolButton(this);
         QMenu* toneMappingMenu = new QMenu(toneMappingButton);
-        toneMappingMenu->addAction("None", [this]() {
-            MaterialEditorSettingsRequestBus::Broadcast(&MaterialEditorSettingsRequests::SetStringProperty, "toneMapping", "None");
-        });
-        toneMappingMenu->addAction("Gamma2.2", [this]() {
-            MaterialEditorSettingsRequestBus::Broadcast(&MaterialEditorSettingsRequests::SetStringProperty, "toneMapping", "Gamma2.2");
-        });
-        toneMappingMenu->addAction("ACES", [this]() {
-            MaterialEditorSettingsRequestBus::Broadcast(&MaterialEditorSettingsRequests::SetStringProperty, "toneMapping", "ACES");
-        });
+
+        m_operationNames = {
+            {AZ::Render::DisplayMapperOperationType::Reinhard, "Reinhard"},
+            {AZ::Render::DisplayMapperOperationType::GammaSRGB, "GammaSRGB"},
+            {AZ::Render::DisplayMapperOperationType::Passthrough, "Passthrough"},
+            {AZ::Render::DisplayMapperOperationType::AcesLut, "AcesLut"},
+            {AZ::Render::DisplayMapperOperationType::Aces, "Aces"}};
+
+        for (auto operationNamePair : m_operationNames)
+        {
+            m_operationActions[operationNamePair.first] = toneMappingMenu->addAction(operationNamePair.second, [operationNamePair]() {
+                MaterialViewportRequestBus::Broadcast(
+                    &MaterialViewportRequestBus::Events::SetDisplayMapperOperationType, operationNamePair.first);
+            });
+            m_operationActions[operationNamePair.first]->setCheckable(true);
+            m_operationActions[operationNamePair.first]->setChecked(
+                operationNamePair.first == viewportSettings->m_displayMapperOperationType);
+        }
+
         toneMappingButton->setMenu(toneMappingMenu);
         toneMappingButton->setText("Tone Mapping");
         toneMappingButton->setIcon(QIcon(":/Icons/toneMapping.svg"));
         toneMappingButton->setPopupMode(QToolButton::InstantPopup);
-
-        // hiding button until DisplayMapper supports changing settings at run time
-        toneMappingButton->setVisible(false);
+        toneMappingButton->setVisible(true);
         addWidget(toneMappingButton);
 
         // Add model combo box
@@ -99,6 +106,14 @@ namespace MaterialEditor
         m_toggleGrid->setChecked(enable);
     }
 
+    void MaterialEditorToolBar::OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType)
+    {
+        for (auto operationActionPair : m_operationActions)
+        {
+            operationActionPair.second->setChecked(operationActionPair.first == operationType);
+        }
+    }
+
     void MaterialEditorToolBar::OnShadowCatcherEnabledChanged(bool enable)
     {
         m_toggleShadowCatcher->setChecked(enable);
@@ -106,4 +121,4 @@ namespace MaterialEditor
 
 } // namespace MaterialEditor
 
-#include <Source/Window/ToolBar/moc_MaterialEditorToolBar.cpp>
+#include <Window/ToolBar/moc_MaterialEditorToolBar.cpp>

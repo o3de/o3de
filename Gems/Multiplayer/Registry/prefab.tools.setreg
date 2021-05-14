@@ -1,0 +1,29 @@
+{
+    "Amazon":
+    {
+        "Tools":
+        {
+            "Prefab":
+            {
+                "Processing":
+                {
+                    "Stack":
+                    {
+                        "PlayInEditor":
+                        [
+                            { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover" },
+                            { "$type": "Multiplayer::NetworkPrefabProcessor" },
+                            { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor" }
+                        ],
+                        "GameObjectCreation":
+                        [
+                            { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover" },
+                            { "$type": "Multiplayer::NetworkPrefabProcessor" },
+                            { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor" }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

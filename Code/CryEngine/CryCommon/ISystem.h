@@ -49,65 +49,43 @@
 #include <ILog.h> // <> required for Interfuscator
 #include "CryVersion.h"
 #include "smartptr.h"
-#include <ISystemScheduler.h> // <> required for Interfuscator
 #include <memory> // shared_ptr
 #include <CrySystemBus.h>
 
 struct ISystem;
 struct ILog;
-struct IProfileLogSystem;
 namespace AZ::IO
 {
     struct IArchive;
 }
-struct IKeyboard;
-struct IMouse;
 struct IConsole;
 struct IRemoteConsole;
 struct IRenderer;
 struct IProcess;
-struct I3DEngine;
 struct ITimer;
 struct ICryFont;
 struct IMovieSystem;
-struct IMemoryManager;
 namespace Audio
 {
     struct IAudioSystem;
 } // namespace Audio
-struct IStreamEngine;
 struct SFileVersion;
 struct INameTable;
 struct ILevelSystem;
 struct IViewSystem;
-struct IMaterialEffects;
-class IOpticsManager;
 class ICrySizer;
 class IXMLBinarySerializer;
 struct IReadWriteXMLSink;
-struct IThreadTaskManager;
-struct IResourceManager;
 struct ITextModeConsole;
 struct IAVI_Reader;
 class CPNoise3;
-struct IFileChangeMonitor;
-struct IVisualLog;
 struct ILocalizationManager;
-struct ICryFactoryRegistry;
-struct ISoftCodeMgr;
 struct IZLibCompressor;
 struct IZLibDecompressor;
 struct ILZ4Decompressor;
 class IZStdDecompressor;
 struct IOutputPrintSink;
-struct IOverloadSceneManager;
-struct IThreadManager;
-struct IServiceNetwork;
-struct IRemoteCommandManager;
 struct IWindowMessageHandler;
-struct IImageHandler;
-class IResourceCompilerHelper;
-class ILmbrAWS;
 
 namespace AZ
 {
@@ -117,14 +95,6 @@ namespace AZ
     }
 }
 
-class IResourceCompilerHelper;
-
-namespace Serialization {
-    struct IArchiveHost;
-}
-
-struct ILocalMemoryUsage;
-
 typedef void* WIN_HWND;
 
 class CCamera;
@@ -132,40 +102,13 @@ struct CLoadingTimeProfiler;
 
 class ICmdLine;
 
-struct INotificationNetwork;
-struct ICryPerfHUD;
 class ILyShine;
-
-namespace JobManager {
-    struct IJobManager;
-}
-
-#define PROC_MENU       1
-#define PROC_3DENGINE   2
-
-// Summary:
-//   IDs for script userdata typing.
-// Remarks:
-//   Maybe they should be moved into the game.dll .
-//##@{
-#define USER_DATA_SOUND         1
-#define USER_DATA_TEXTURE       2
-#define USER_DATA_OBJECT        3
-#define USER_DATA_LIGHT         4
-#define USER_DATA_BONEHANDLER   5
-#define USER_DATA_POINTER       6
-//##@}
 
 enum ESystemUpdateFlags
 {
-    ESYSUPDATE_IGNORE_PHYSICS = 0x0002,
     // Summary:
     //   Special update mode for editor.
-    ESYSUPDATE_EDITOR = 0x0004,
-    ESYSUPDATE_MULTIPLAYER = 0x0008,
-    ESYSUPDATE_EDITOR_AI_PHYSICS = 0x0010,
-    ESYSUPDATE_EDITOR_ONLY = 0x0020,
-    ESYSUPDATE_UPDATE_VIEW_ONLY = 0x0040
+    ESYSUPDATE_EDITOR = 0x0004
 };
 
 // Description:
@@ -196,29 +139,6 @@ enum ESystemConfigPlatform
     CONFIG_JASPER = 9,
 
     END_CONFIG_PLATFORM_ENUM, // MUST BE LAST VALUE. USED FOR ERROR CHECKING.
-};
-
-enum ESubsystem
-{
-    ESubsys_3DEngine = 0,
-    ESubsys_AI = 1,
-    ESubsys_Physics = 2,
-    ESubsys_Renderer = 3,
-    ESubsys_Script = 4
-};
-
-// Summary:
-//   Collates cycles taken per update.
-struct sUpdateTimes
-{
-    uint32 PhysYields;
-    uint64 SysUpdateTime;
-    uint64 PhysStepTime;
-    uint64 RenderTime;
-    //extended yimes info
-    uint64 physWaitTime;
-    uint64 streamingWaitTime;
-    uint64 animationWaitTime;
 };
 
 enum ESystemGlobalState
@@ -577,33 +497,6 @@ struct IErrorObserver
     // </interfuscator:shuffle>
 };
 
-enum ESystemProtectedFunctions
-{
-    eProtectedFunc_Save = 0,
-    eProtectedFunc_Load = 1,
-    eProtectedFuncsLast = 10,
-};
-
-struct SCvarsDefault
-{
-    SCvarsDefault()
-    {
-        sz_r_DriverDef = NULL;
-    }
-
-    const char* sz_r_DriverDef;
-};
-
-#if defined(CVARS_WHITELIST)
-struct ICVarsWhitelist
-{
-    // <interfuscator:shuffle>
-    virtual ~ICVarsWhitelist() {};
-    virtual bool IsWhiteListed(const string& command, bool silent) = 0;
-    // </interfuscator:shuffle>
-};
-#endif // defined(CVARS_WHITELIST)
-
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION ISYSTEM_H_SECTION_3
     #include AZ_RESTRICTED_FILE(ISystem_h)
@@ -625,9 +518,6 @@ struct SSystemInitParams
 {
     void* hInstance;                                //
     void* hWnd;                                     //
-    void* hWndForInputSystem;                       // the HWND for the input devices, distinct from the hWnd, which the rendering system overrides anyways
-
-    bool remoteResourceCompiler;
 
     ILog* pLog;                                     // You can specify your own ILog to be used by System.
     ILogCallback* pLogCallback;                     // You can specify your own ILogCallback to be added on log creation (used by Editor).
@@ -642,34 +532,13 @@ struct SSystemInitParams
     bool bPreview;                                  // When running in Preview mode (Minimal initialization).
     bool bTestMode;                                 // When running in Automated testing mode.
     bool bDedicatedServer;                          // When running a dedicated server.
-    bool bExecuteCommandLine;                       // can be switched of to suppress the feature or do it later during the initialization.
-    bool bSkipFont;                                     // Don't load CryFont.dll
-    bool bSkipRenderer;                                 // Don't load Renderer
     bool bSkipConsole;                                  // Don't create console
-    bool bSkipNetwork;                                  // Don't create Network
-    bool bSkipWebsocketServer;      // Don't create the WebSocket server
-    bool bMinimal;                              // Don't load banks
-    bool bTesting;                              // CryUnit
-    bool bNoRandom;                             //use fixed generator init/seed
-    bool bShaderCacheGen;                   // When running in shadercache gen mode
     bool bUnattendedMode;                           // When running as part of a build on build-machines: Prevent popping up of any dialog
     bool bSkipMovie;            // Don't load movie
-    bool bSkipAnimation;        // Don't load animation
 
     bool bToolMode;                                 // System is running inside a tool. Will not create USER directory or anything else that the game needs to do
 
-    bool bSkipPhysics; // Don't initialize CryPhysics.
-
     ISystem* pSystem;                                           // Pointer to existing ISystem interface, it will be reused if not NULL.
-
-    typedef void* (*ProtectedFunction)(void* param1, void* param2);
-    ProtectedFunction pProtectedFunctions[eProtectedFuncsLast];         // Protected functions.
-
-    SCvarsDefault* pCvarsDefault;               // to override the default value of some cvar
-
-#if defined(CVARS_WHITELIST)
-    ICVarsWhitelist* pCVarsWhitelist;       // CVars whitelist callback
-#endif // defined(CVARS_WHITELIST)
 
     SharedEnvironmentInstance* pSharedEnvironment;
 
@@ -679,16 +548,10 @@ struct SSystemInitParams
     {
         hInstance = NULL;
         hWnd = NULL;
-        hWndForInputSystem = NULL;
-
-        remoteResourceCompiler = false;
 
         pLog = NULL;
         pLogCallback = NULL;
         pUserCallback = NULL;
-#if defined(CVARS_WHITELIST)
-        pCVarsWhitelist = NULL;
-#endif // defined(CVARS_WHITELIST)
         sLogFileName = NULL;
         autoBackupLogs = true;
         pValidator = NULL;
@@ -699,33 +562,12 @@ struct SSystemInitParams
         bPreview = false;
         bTestMode = false;
         bDedicatedServer = false;
-        bExecuteCommandLine = true;
-        bExecuteCommandLine = true;
-        bSkipFont = false;
-        bSkipRenderer = false;
         bSkipConsole = false;
-        bSkipNetwork = false;
-#if defined(WIN32) || defined(WIN64)
-        // create websocket server by default. bear in mind that USE_HTTP_WEBSOCKETS is not defined in release.
-        bSkipWebsocketServer = false;
-#else
-        // CTCPStreamSocket only seems to fully support Win32 and 64
-        bSkipWebsocketServer = true;
-#endif
-        bMinimal = false;
-        bTesting = false;
-        bNoRandom = false;
-        bShaderCacheGen = false;
         bUnattendedMode = false;
         bSkipMovie = false;
-        bSkipAnimation = false;
         bToolMode = false;
-        bSkipPhysics = false;
 
         pSystem = NULL;
-
-        memset(pProtectedFunctions, 0, sizeof(pProtectedFunctions));
-        pCvarsDefault = NULL;
 
         pSharedEnvironment = nullptr;
     }
@@ -793,97 +635,35 @@ struct SSystemUpdateStats
 //   ISystem
 struct SSystemGlobalEnvironment
 {
-    I3DEngine*                 p3DEngine;
     AZ::IO::IArchive*          pCryPak;
     AZ::IO::FileIOBase*        pFileIO;
-    IFileChangeMonitor*        pFileChangeMonitor;
-    IProfileLogSystem*         pProfileLogSystem;
-    IOpticsManager*                      pOpticsManager;
     ITimer*                    pTimer;
     ICryFont*                  pCryFont;
-    ILocalMemoryUsage*     pLocalMemoryUsage;
     ::IConsole*                  pConsole;
     ISystem*                   pSystem = nullptr;
     ILog*                      pLog;
     IMovieSystem*              pMovieSystem;
     INameTable*                pNameTable;
-    IVisualLog*                pVisualLog;
     IRenderer*                 pRenderer;
-    IMaterialEffects*          pMaterialEffects;
-    ISoftCodeMgr*                            pSoftCodeMgr;
-    IOverloadSceneManager*       pOverloadSceneManager;
-    IServiceNetwork*              pServiceNetwork;
-    IRemoteCommandManager*        pRemoteCommandManager;
     ILyShine*                      pLyShine;
-    IResourceCompilerHelper*      pResourceCompilerHelper;
     SharedEnvironmentInstance*      pSharedEnvironment;
-    IThreadManager*               pThreadManager;
 
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION ISYSTEM_H_SECTION_4
     #include AZ_RESTRICTED_FILE(ISystem_h)
 #endif
 
-    ISystemScheduler*          pSystemScheduler;
-
     threadID                                 mMainThreadId;     //The main thread ID is used in multiple systems so should be stored globally
-
-                                                                //////////////////////////////////////////////////////////////////////////
-    uint32                     nMainFrameID;
-
-    //////////////////////////////////////////////////////////////////////////
-    const char*                szCmdLine;  // Startup command line.
-
-                                           //////////////////////////////////////////////////////////////////////////
-                                           // Generic debug string which can be easily updated by any system and output by the debug handler
-    enum
-    {
-        MAX_DEBUG_STRING_LENGTH = 128
-    };
-    char                                            szDebugStatus[MAX_DEBUG_STRING_LENGTH];
-
-    //////////////////////////////////////////////////////////////////////////
-    // Used to tell if this is a server/multiplayer instance
-    bool                       bServer;
-    bool                                             bMultiplayer;
-    bool                       bHostMigrating;
-    //////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////
-    // Indicate Editor status.
-    //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
     // Used by CRY_ASSERT
     bool                                            bIgnoreAllAsserts;
     bool                                            bNoAssertDialog;
-    bool                                            bTesting;
     //////////////////////////////////////////////////////////////////////////
-
-    bool                                            bNoRandomSeed;
-
-    SPlatformInfo pi;
-
-    // Protected functions.
-    SSystemInitParams::ProtectedFunction pProtectedFunctions[eProtectedFuncsLast];  // Protected functions.
-
-                                                                                    //////////////////////////////////////////////////////////////////////////
-                                                                                    // Flag to able to print out of memory conditon
-    bool                                            bIsOutOfMemory;
-    bool                                            bIsOutOfVideoMemory;
 
     bool                                            bToolMode;
 
     int                                             retCode = 0;
-
-    ILINE const bool IsClient() const
-    {
-#if defined(CONSOLE)
-        return true;
-#else
-        return bClient;
-#endif
-    }
 
     ILINE const bool IsDedicated() const
     {
@@ -913,11 +693,6 @@ struct SSystemGlobalEnvironment
     ILINE void SetIsDedicated(bool isDedicated)
     {
         bDedicated = isDedicated;
-    }
-
-    ILINE void SetIsClient(bool isClient)
-    {
-        bClient = isClient;
     }
 #endif
 
@@ -958,26 +733,6 @@ struct SSystemGlobalEnvironment
 #endif
     }
 
-    ILINE const bool IsFMVPlaying() const
-    {
-        return m_isFMVPlaying;
-    }
-
-    ILINE void SetFMVIsPlaying(const bool isPlaying)
-    {
-        m_isFMVPlaying = isPlaying;
-    }
-
-    ILINE const bool IsCutscenePlaying() const
-    {
-        return m_isCutscenePlaying;
-    }
-
-    ILINE void SetCutsceneIsPlaying(const bool isPlaying)
-    {
-        m_isCutscenePlaying = isPlaying;
-    }
-
     ILINE bool IsInToolMode() const
     {
         return bToolMode;
@@ -988,35 +743,17 @@ struct SSystemGlobalEnvironment
         bToolMode = bNewToolMode;
     }
 
-    ILINE void SetDynamicMergedMeshGenerationEnabled(bool mmgenEnable)
-    {
-        m_bDynamicMergedMeshGenerationEnabled = mmgenEnable;
-    }
-
-    ILINE const bool IsDynamicMergedMeshGenerationEnabled() const
-    {
-        return m_bDynamicMergedMeshGenerationEnabled;
-    }
-
 #if !defined(CONSOLE)
 private:
-    bool bClient;
     bool bEditor;          // Engine is running under editor.
     bool bEditorGameMode;  // Engine is in editor game mode.
     bool bEditorSimulationMode;  // Engine is in editor simulation mode.
     bool bDedicated;             // Engine is in dedicated
 #endif
 
-    bool m_isFMVPlaying;
-    bool m_isCutscenePlaying;
-    bool m_bDynamicMergedMeshGenerationEnabled;
-
 public:
     SSystemGlobalEnvironment()
-        : pSystemScheduler(nullptr)
-        , szCmdLine("")
-        , bToolMode(false)
-        , m_bDynamicMergedMeshGenerationEnabled(false)
+        : bToolMode(false)
     {
     };
 };
@@ -1054,37 +791,11 @@ struct IProfilingSystem
 //   Initialize and dispatch all engine's subsystems.
 struct ISystem
 {
-    struct ILoadingProgressListener
-    {
-        // <interfuscator:shuffle>
-        virtual ~ILoadingProgressListener() {}
-        virtual void OnLoadingProgress(int steps) = 0;
-        // </interfuscator:shuffle>
-    };
-
-#ifndef _RELEASE
-    enum LevelLoadOrigin
-    {
-        eLLO_Unknown,
-        eLLO_NewLevel,
-        eLLO_Level2Level,
-        eLLO_Resumed,
-        eLLO_MapCmd,
-    };
-
-    struct ICheckpointData
-    {
-        int                         m_totalLoads;
-        LevelLoadOrigin m_loadOrigin;
-    };
-#endif
-
     // <interfuscator:shuffle>
     virtual ~ISystem() {}
     // Summary:
     //   Releases ISystem.
     virtual void Release() = 0;
-    virtual ILoadConfigurationEntrySink* GetCVarsWhiteListConfigSink() const = 0; // will return NULL if no whitelisting
 
                                                                                   // Summary:
                                                                                   //   Returns pointer to the global environment structure.
@@ -1114,29 +825,6 @@ struct ISystem
     virtual bool NeedDoWorkDuringOcclusionChecks() = 0;
 
     // Summary:
-    //   Renders subsystems.
-    virtual void    Render() = 0;
-    // Summary:
-    //   Begins rendering frame.
-    virtual void    RenderBegin() = 0;
-    // Summary:
-    //   Ends rendering frame and swap back buffer.
-    virtual void    RenderEnd(bool bRenderStats = true, bool bMainWindow = true) = 0;
-
-    //! Update screen and call some important tick functions during loading.
-    virtual void SynchronousLoadingTick(const char* pFunc, int line) = 0;
-
-    // Description:
-    //   Renders the statistics; this is called from RenderEnd, but if the
-    //   Host application (Editor) doesn't employ the Render cycle in ISystem,
-    //   it may call this method to render the essential statistics.
-    virtual void RenderStatistics() = 0;
-
-    // Summary:
-    //   Returns the current used memory.
-    virtual uint32 GetUsedMemory() = 0;
-
-    // Summary:
     //   Retrieve the name of the user currently logged in to the computer.
     virtual const char* GetUserName() = 0;
 
@@ -1149,14 +837,6 @@ struct ISystem
     virtual int GetLogicalCPUCount() = 0;
 
     // Summary:
-    //   Return the rendering driver name. GL or Metal
-    virtual const char* GetRenderingDriverName() const = 0;
-
-    // Summary:
-    //   Dumps the memory usage statistics to the logging default MB. (can be KB)
-    virtual void DumpMemoryUsageStatistics(bool bUseKB = false) = 0;
-
-    // Summary:
     //   Quits the application.
     virtual void    Quit() = 0;
     // Summary:
@@ -1165,9 +845,6 @@ struct ISystem
     // Summary:
     //   Returns true if the application is in the shutdown phase.
     virtual bool    IsQuitting() const = 0;
-    // Summary:
-    //   Returns true if the application was initialized to generate the shader cache.
-    virtual bool    IsShaderCacheGenMode() const = 0;
     // Summary:
     //   Tells the system in which way we are using the serialization system.
     virtual void  SerializingFile(int mode) = 0;
@@ -1216,54 +893,21 @@ struct ISystem
     virtual IZLibDecompressor* GetIZLibDecompressor() = 0;
     virtual ILZ4Decompressor* GetLZ4Decompressor() = 0;
     virtual IZStdDecompressor* GetZStdDecompressor() = 0;
-    virtual ICryPerfHUD* GetPerfHUD() = 0;
-    virtual INotificationNetwork* GetINotificationNetwork() = 0;
     virtual IViewSystem* GetIViewSystem() = 0;
     virtual ILevelSystem* GetILevelSystem() = 0;
     virtual INameTable* GetINameTable() = 0;
     virtual IValidator* GetIValidator() = 0;
-    virtual IStreamEngine* GetStreamEngine() = 0;
     virtual ICmdLine* GetICmdLine() = 0;
     virtual ILog* GetILog() = 0;
     virtual AZ::IO::IArchive* GetIPak() = 0;
     virtual ICryFont* GetICryFont() = 0;
-    virtual IMemoryManager* GetIMemoryManager() = 0;
     virtual IMovieSystem* GetIMovieSystem() = 0;
-    virtual I3DEngine* GetI3DEngine() = 0;
     virtual ::IConsole* GetIConsole() = 0;
     virtual IRemoteConsole* GetIRemoteConsole() = 0;
-    // Returns:
-    //   Can be NULL, because it only exists when running through the editor, not in pure game mode.
-    virtual IResourceManager* GetIResourceManager() = 0;
-    virtual IThreadTaskManager* GetIThreadTaskManager() = 0;
     virtual IProfilingSystem* GetIProfilingSystem() = 0;
     virtual ISystemEventDispatcher* GetISystemEventDispatcher() = 0;
-    virtual IVisualLog* GetIVisualLog() = 0;
-    virtual IFileChangeMonitor* GetIFileChangeMonitor() = 0;
 
-    virtual WIN_HWND GetHWND() = 0;
-
-    virtual IRenderer* GetIRenderer() = 0;
     virtual ITimer* GetITimer() = 0;
-    virtual IThreadManager* GetIThreadManager() = 0;
-
-    //irtual IThreadManager* GetIThreadManager() = 0;
-
-    virtual void SetLoadingProgressListener(ILoadingProgressListener* pListener) = 0;
-    virtual ISystem::ILoadingProgressListener* GetLoadingProgressListener() const = 0;
-
-    // Summary:
-    //   Game is created after System init, so has to be set explicitly.
-    virtual void SetIMaterialEffects(IMaterialEffects* pMaterialEffects) = 0;
-    virtual void SetIOpticsManager(IOpticsManager* pOpticsManager) = 0;
-    virtual void SetIFileChangeMonitor(IFileChangeMonitor* pFileChangeMonitor) = 0;
-    virtual void SetIVisualLog(IVisualLog* pVisualLog) = 0;
-
-    //virtual   const char          *GetGamePath()=0;
-
-    virtual void DebugStats(bool checkpoint, bool leaks) = 0;
-    virtual void DumpWinHeaps() = 0;
-    virtual int DumpMMStats(bool log) = 0;
 
     // Arguments:
     //   bValue - Set to true when running on a cheat protected server or a client that is connected to it (not used in singleplayer).
@@ -1274,7 +918,6 @@ struct ISystem
     virtual bool WasInDevMode() const = 0;
     virtual bool IsDevMode() const = 0;
     virtual bool IsMODValid(const char* szMODName) const = 0;
-    virtual bool IsMinimalMode() const = 0;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
@@ -1293,10 +936,6 @@ struct ISystem
     // Summary:
     //   Retrieves access to XML utilities interface.
     virtual IXmlUtils* GetXmlUtils() = 0;
-
-    // Summary:
-    //   Interface to access different implementations of Serialization::IArchive in a centralized way.
-    virtual Serialization::IArchiveHost* GetArchiveHost() const = 0;
 
     virtual void SetViewCamera(CCamera& Camera) = 0;
     virtual CCamera& GetViewCamera() = 0;
@@ -1394,16 +1033,6 @@ struct ISystem
     virtual void AutoDetectSpec(bool detectResolution) = 0;
 
     // Summary:
-    //   Thread management for subsystems
-    // Return Value:
-    //   Non-0 if the state was indeed changed, 0 if already in that state.
-    virtual int SetThreadState(ESubsystem subsys, bool bActive) = 0;
-
-    // Summary:
-    //   Creates and returns a usable object implementing ICrySizer interface.
-    virtual ICrySizer* CreateSizer() = 0;
-
-    // Summary:
     //   Query if system is now paused.
     //   Pause flag is set when calling system update with pause mode.
     virtual bool IsPaused() const = 0;
@@ -1421,10 +1050,6 @@ struct ISystem
     // Summary:
     //   Retrieves system update counter.
     virtual uint64 GetUpdateCounter() = 0;
-
-    // Summary:
-    //   Gets access to all registered factories.
-    virtual ICryFactoryRegistry* GetCryFactoryRegistry() const = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Error callback handling
@@ -1474,14 +1099,6 @@ struct ISystem
     virtual int GetApplicationLogInstance(const char* logFilePath) = 0;
 
     // Summary:
-    //      Retrieves the current stats for systems to update the respective time taken
-    virtual sUpdateTimes& GetCurrentUpdateTimeStats() = 0;
-
-    // Summary:
-    //      Retrieves the array of update times and the number of entries
-    virtual const sUpdateTimes* GetUpdateTimeStats(uint32&, uint32&) = 0;
-
-    // Summary:
     //      Clear all currently logged and drawn on screen error messages
     virtual void ClearErrorMessages() = 0;
     //////////////////////////////////////////////////////////////////////////
@@ -1513,11 +1130,6 @@ struct ISystem
     //  returns zeroes if no updates happened yet
     virtual void GetUpdateStats(SSystemUpdateStats& stats) = 0;
 
-    // Description:
-    //   Useful to investigate memory fragmentation.
-    //   Every time you call this from the console: #System.DumpMemoryCoverage()
-    //   it adds a line to "MemoryCoverage.bmp" (generated the first time, there is a max line count).
-    virtual void DumpMemoryCoverage() = 0;
     virtual ESystemGlobalState  GetSystemGlobalState(void) = 0;
     virtual void SetSystemGlobalState(ESystemGlobalState systemGlobalState) = 0;
 
@@ -1530,34 +1142,12 @@ struct ISystem
     virtual void AsyncMemcpy(void* dst, const void* src, size_t size, int nFlags, volatile int* sync) = 0;
     // </interfuscator:shuffle>
 
-
-#if defined(CVARS_WHITELIST)
-    virtual ICVarsWhitelist* GetCVarsWhiteList() const = 0;
-#endif // defined(CVARS_WHITELIST)
-
-#ifndef _RELEASE
-    virtual void GetCheckpointData(ICheckpointData& data) = 0;
-    virtual void IncreaseCheckpointLoadCount() = 0;
-    virtual void SetLoadOrigin(LevelLoadOrigin origin) = 0;
-#endif
-
 #if !defined(_RELEASE)
     virtual bool IsSavingResourceList() const = 0;
 #endif
 
     // Initializes Steam if needed and returns if it was successful
     virtual bool SteamInit() = 0;
-
-    virtual const IImageHandler* GetImageHandler() const = 0;
-
-    // Summary:
-    //      Loads a dynamic library, creates and initializes an instance of the module class
-
-    virtual bool InitializeEngineModule(const char* dllName, const char* moduleClassName, const SSystemInitParams& initParams) = 0;
-
-    // Summary:
-    //      Unloads a dynamic library as well as the corresponding instance of the module class
-    virtual bool UnloadEngineModule(const char* dllName, const char* moduleClassName) = 0;
 
     // Summary:
     //      Gets the root window message handler function
@@ -1593,11 +1183,6 @@ struct ISystem
     };
     using CrySystemNotificationBus = AZ::EBus<CrySystemNotifications>;
 };
-
-//JAT - this is a very important function for the dedicated server - it lets us run >1000 players per piece of server hardware
-//JAT - this saves us lots of money on the dedicated server hardware
-#define SYNCHRONOUS_LOADING_TICK() do { if (gEnv && gEnv->pSystem) {gEnv->pSystem->SynchronousLoadingTick(__FUNC__, __LINE__); } \
-} while (0)
 
 #if defined(USE_DISK_PROFILER)
 
@@ -1675,7 +1260,7 @@ typedef ISystem* (*PFNCREATESYSTEMINTERFACE)(SSystemInitParams& initParams);
 //////////////////////////////////////////////////////////////////////////
 // Global environment variable.
 //////////////////////////////////////////////////////////////////////////
-extern SC_API SSystemGlobalEnvironment* gEnv;
+extern SSystemGlobalEnvironment* gEnv;
 
 
 // Summary:
@@ -1693,11 +1278,6 @@ inline ISystem* GetISystem()
         CrySystemRequestBus::BroadcastResult(systemInterface, &CrySystemRequests::GetCrySystem);
     }
     return systemInterface;
-};
-
-inline ISystemScheduler* GetISystemScheduler(void)
-{
-    return gEnv->pSystemScheduler;
 };
 //////////////////////////////////////////////////////////////////////////
 
@@ -1721,7 +1301,6 @@ void* GetDetachEnvironmentSymbol();
 
 
 extern bool g_bProfilerEnabled;
-extern int g_iTraceAllocations;
 
 // Summary:
 //   Interface of the DLL.

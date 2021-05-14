@@ -12,8 +12,8 @@
 
 #pragma once
 
-#include <Source/MultiplayerTypes.h>
-#include <Source/NetworkEntity/NetworkEntityHandle.h>
+#include <Multiplayer/MultiplayerTypes.h>
+#include <Multiplayer/NetworkEntityHandle.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/Component/Entity.h>
 

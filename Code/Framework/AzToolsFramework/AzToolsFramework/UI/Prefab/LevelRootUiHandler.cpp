@@ -50,7 +50,27 @@ namespace AzToolsFramework
         return QPixmap(m_levelRootIconPath);
     }
 
+    QString LevelRootUiHandler::GenerateItemInfoString(AZ::EntityId entityId) const
+    {
+        QString infoString;
+
+        AZ::IO::Path path = m_prefabPublicInterface->GetOwningInstancePrefabPath(entityId);
+
+        if (!path.empty())
+        {
+            infoString =
+                QObject::tr("<span style=\"font-style: italic; font-weight: 400;\">(%1)</span>").arg(path.Filename().Native().data());
+        }
+
+        return infoString;
+    }
+
     bool LevelRootUiHandler::CanToggleLockVisibility(AZ::EntityId /*entityId*/) const
+    {
+        return false;
+    }
+
+    bool LevelRootUiHandler::CanRename(AZ::EntityId /*entityId*/) const
     {
         return false;
     }

@@ -993,9 +993,6 @@ void CMovieSystem::ShowPlayedSequencesDebug()
             continue;
         }
 
-        const char* fullname = playingSequence.sequence->GetName();
-        gEnv->pRenderer->Draw2dLabel(1.0f, y, 1.3f, green, false, "Sequence %s : %f (x %f)", fullname, playingSequence.currentTime, playingSequence.currentSpeed);
-
         y += 16.0f;
 
         for (int i = 0; i < playingSequence.sequence->GetNodeCount(); ++i)
@@ -1017,8 +1014,6 @@ void CMovieSystem::ShowPlayedSequencesDebug()
             {
                 names.push_back(name);
             }
-
-            gEnv->pRenderer->Draw2dLabel((21.0f + 100.0f * i), ((i % 2) ? (y + 8.0f) : y), 1.0f, alreadyThere ? white : purple, false, "%s", name);
         }
 
         y += 32.0f;
@@ -1196,13 +1191,16 @@ void CMovieSystem::Callback(IMovieCallback::ECallbackReason reason, IAnimNode* p
 }
 
 //////////////////////////////////////////////////////////////////////////
-/*static*/ void CMovieSystem::Reflect(AZ::SerializeContext* serializeContext)
+void CMovieSystem::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CMovieSystem>()
-        ->Version(1)
-        ->Field("Sequences", &CMovieSystem::m_sequences);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CMovieSystem>()
+            ->Version(1)
+            ->Field("Sequences", &CMovieSystem::m_sequences);
+    }
 
-    AnimSerializer::ReflectAnimTypes(serializeContext);
+    AnimSerializer::ReflectAnimTypes(context);
 }
 
 //////////////////////////////////////////////////////////////////////////

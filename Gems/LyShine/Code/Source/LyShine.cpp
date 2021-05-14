@@ -13,8 +13,6 @@
 
 #include "LyShine.h"
 
-#include "Draw2d.h"
-
 #include "UiCanvasComponent.h"
 #include "UiCanvasManager.h"
 #include "LyShineDebug.h"
@@ -55,6 +53,7 @@
 #include <LyShine/Bus/UiCursorBus.h>
 #include <LyShine/Bus/UiDraggableBus.h>
 #include <LyShine/Bus/UiDropTargetBus.h>
+#include <LyShine/Draw2d.h>
 
 #if defined(LYSHINE_INTERNAL_UNIT_TEST)
 #include "TextMarkup.h"
@@ -72,6 +71,8 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
+
+#include <Atom/RHI/RHIUtils.h>
 
 #include "Animation/UiAnimationSystem.h"
 #include "World/UiCanvasAssetRefComponent.h"
@@ -136,7 +137,6 @@ CLyShine::CLyShine(ISystem* system)
     , m_draw2d(new CDraw2d)
     , m_uiRenderer(new UiRenderer)
     , m_uiCanvasManager(new UiCanvasManager)
-    , m_uiCursorTexture(nullptr)
     , m_uiCursorVisibleCounter(0)
 {
     // Reflect the Deprecated Lua buses using the behavior context.
@@ -165,15 +165,11 @@ CLyShine::CLyShine(ISystem* system)
 
     UiAnimationSystem::StaticInitialize();
 
-    if (m_system->GetIRenderer())
-    {
-        m_system->GetIRenderer()->AddRenderDebugListener(this);
-    }
-
     AzFramework::InputChannelEventListener::Connect();
     AzFramework::InputTextEventListener::Connect();
     UiCursorBus::Handler::BusConnect();
     AZ::TickBus::Handler::BusConnect();
+    AZ::Render::Bootstrap::NotificationBus::Handler::BusConnect();
 
     // These are internal Amazon components, so register them so that we can send back their names to our metrics collection
     // IF YOU ARE A THIRDPARTY WRITING A GEM, DO NOT REGISTER YOUR COMPONENTS WITH EditorMetricsComponentRegistrationBus
@@ -252,22 +248,12 @@ CLyShine::~CLyShine()
     AZ::TickBus::Handler::BusDisconnect();
     AzFramework::InputTextEventListener::Disconnect();
     AzFramework::InputChannelEventListener::Disconnect();
-
-    if (m_system->GetIRenderer())
-    {
-        m_system->GetIRenderer()->RemoveRenderDebugListener(this);
-    }
+    AZ::Render::Bootstrap::NotificationBus::Handler::BusDisconnect();
 
     UiCanvasComponent::Shutdown();
 
     // must be done after UiCanvasComponent::Shutdown
     CSprite::Shutdown();
-
-    if (m_uiCursorTexture)
-    {
-        m_uiCursorTexture->Release();
-        m_uiCursorTexture = nullptr;
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -426,11 +412,8 @@ void CLyShine::Render()
 {
     FRAME_PROFILER(__FUNCTION__, gEnv->pSystem, PROFILE_UI);
 
-    // LYSHINE_ATOM_TODO - convert to use Atom interface to check for null renderer
-    if (!gEnv || !gEnv->pRenderer || gEnv->pRenderer->GetRenderType() == ERenderType::eRT_Null)
+    if (AZ::RHI::IsNullRenderer())
     {
-        // if the renderer is not initialized or it is the null renderer (e.g. running as a server)
-        // then do nothing
         return;
     }
 
@@ -455,7 +438,9 @@ void CLyShine::Render()
     // Render all the canvases loaded in game
     m_uiCanvasManager->RenderLoadedCanvases();
 
-#ifdef LYSHINE_ATOM_TODO // convert cursor support to use Atom
+    // Set sort key for draw2d layer to ensure it renders in front of the canvases
+    static const int64_t topLayerKey = 0x1000000;
+    m_draw2d->SetSortKey(topLayerKey);
     m_draw2d->RenderDeferredPrimitives();
 
     // Don't render the UI cursor when in edit mode. For example during UI Preview mode a script could turn on the
@@ -466,7 +451,6 @@ void CLyShine::Render()
     {
         RenderUiCursor();
     }
-#endif
 
     GetUiRenderer()->EndUiFrameRender();
 
@@ -572,18 +556,20 @@ bool CLyShine::IsUiCursorVisible()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CLyShine::SetUiCursor(const char* cursorImagePath)
 {
-    if (m_uiCursorTexture)
-    {
-        m_uiCursorTexture->Release();
-        m_uiCursorTexture = nullptr;
-    }
+    m_uiCursorTexture.reset();
+    m_cursorImagePathToLoad.clear();
 
-    if (cursorImagePath && *cursorImagePath && gEnv && gEnv->pRenderer)
+    if (cursorImagePath && *cursorImagePath)
     {
-        m_uiCursorTexture = gEnv->pRenderer->EF_LoadTexture(cursorImagePath, FT_DONT_RELEASE | FT_DONT_STREAM);
-        if (m_uiCursorTexture)
+        m_cursorImagePathToLoad = cursorImagePath;
+        // The cursor image can only be loaded after the RPI has been initialized.
+        // Note: this check could be avoided if LyShineSystemComponent included the RPISystem
+        // as a required service. However, LyShineSystempComponent is currently activated for
+        // tools as well as game and RPIService is not available with all tools such as AP. An
+        // enhancement would be to break LyShineSystemComponent into a  game only component
+        if (m_uiRenderer->IsReady())
         {
-            m_uiCursorTexture->SetClamp(true);
+            LoadUiCursor();
         }
     }
 }
@@ -595,8 +581,11 @@ AZ::Vector2 CLyShine::GetUiCursorPosition()
     AzFramework::InputSystemCursorRequestBus::EventResult(systemCursorPositionNormalized,
         AzFramework::InputDeviceMouse::Id,
         &AzFramework::InputSystemCursorRequests::GetSystemCursorPositionNormalized);
-    return AZ::Vector2(systemCursorPositionNormalized.GetX() * static_cast<float>(gEnv->pRenderer->GetOverlayWidth()),
-        systemCursorPositionNormalized.GetY() * static_cast<float>(gEnv->pRenderer->GetOverlayHeight()));
+
+    AZ::Vector2 viewportSize = m_uiRenderer->GetViewportSize();
+
+    return AZ::Vector2(systemCursorPositionNormalized.GetX() * viewportSize.GetX(),
+        systemCursorPositionNormalized.GetY() * viewportSize.GetY());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -656,6 +645,7 @@ bool CLyShine::OnInputTextEventFiltered(const AZStd::string& textUTF8)
     return result;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void CLyShine::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
 {
     // Update the loaded UI canvases
@@ -665,15 +655,33 @@ void CLyShine::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time
     Render();
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 int CLyShine::GetTickOrder()
 {
     return AZ::TICK_UI;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+void CLyShine::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapScene)
+{
+    // Load cursor if its path was set before RPI was initialized
+    LoadUiCursor();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void CLyShine::LoadUiCursor()
+{
+    if (!m_cursorImagePathToLoad.empty())
+    {
+        m_uiCursorTexture = CDraw2d::LoadTexture(m_cursorImagePathToLoad); // LYSHINE_ATOM_TODO - add clamp option to draw2d and set cursor to clamp
+        m_cursorImagePathToLoad.clear();
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void CLyShine::RenderUiCursor()
 {
-    if (!gEnv || !gEnv->pRenderer || !m_uiCursorTexture || !IsUiCursorVisible())
+    if (!m_uiCursorTexture || !IsUiCursorVisible())
     {
         return;
     }
@@ -685,11 +693,10 @@ void CLyShine::RenderUiCursor()
     }
 
     const AZ::Vector2 position = GetUiCursorPosition();
-    const AZ::Vector2 dimensions(static_cast<float>(m_uiCursorTexture->GetWidth()), static_cast<float>(m_uiCursorTexture->GetHeight()));
+    AZ::RHI::Size cursorSize = m_uiCursorTexture->GetDescriptor().m_size;
+    const AZ::Vector2 dimensions(aznumeric_cast<float>(cursorSize.m_width), aznumeric_cast<float>(cursorSize.m_height));
 
-    m_draw2d->BeginDraw2d();
-    m_draw2d->DrawImage(m_uiCursorTexture->GetTextureID(), position, dimensions);
-    m_draw2d->EndDraw2d();
+    m_draw2d->DrawImage(m_uiCursorTexture, position, dimensions);
 }
 
 #ifndef _RELEASE

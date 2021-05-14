@@ -272,7 +272,6 @@ void CXmlUtils::OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_PTR wpar
     case ESYSTEM_EVENT_LEVEL_POST_UNLOAD:
     case ESYSTEM_EVENT_LEVEL_LOAD_END:
         g_pCXmlNode_PoolAlloc->FreeMemoryIfEmpty();
-        STLALLOCATOR_CLEANUP;
         break;
     }
 }

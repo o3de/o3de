@@ -11,14 +11,16 @@
 
 set(FILES
     Include/Atom/Window/MaterialEditorWindowModule.h
+    Include/Atom/Window/MaterialEditorWindowSettings.h
     Include/Atom/Window/MaterialEditorWindowNotificationBus.h
     Include/Atom/Window/MaterialEditorWindowRequestBus.h
     Include/Atom/Window/MaterialEditorWindowFactoryRequestBus.h
-    Source/Window/MaterialBrowserInteractions.h
-    Source/Window/MaterialBrowserInteractions.cpp
+    Source/Window/MaterialEditorBrowserInteractions.h
+    Source/Window/MaterialEditorBrowserInteractions.cpp
     Source/Window/MaterialEditorWindow.h
     Source/Window/MaterialEditorWindow.cpp
     Source/Window/MaterialEditorWindowModule.cpp
+    Source/Window/MaterialEditorWindowSettings.cpp
     Source/Window/MaterialBrowserWidget.h
     Source/Window/MaterialBrowserWidget.cpp
     Source/Window/MaterialBrowserWidget.ui
@@ -26,6 +28,10 @@ set(FILES
     Source/Window/MaterialEditor.qss
     Source/Window/MaterialEditorWindowComponent.h
     Source/Window/MaterialEditorWindowComponent.cpp
+    Source/Window/SettingsDialog/SettingsDialog.cpp
+    Source/Window/SettingsDialog/SettingsDialog.h
+    Source/Window/SettingsDialog/SettingsWidget.cpp
+    Source/Window/SettingsDialog/SettingsWidget.h
     Source/Window/CreateMaterialDialog/CreateMaterialDialog.cpp
     Source/Window/CreateMaterialDialog/CreateMaterialDialog.h
     Source/Window/CreateMaterialDialog/CreateMaterialDialog.ui

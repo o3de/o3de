@@ -98,7 +98,7 @@ namespace Blast
         // ActorRenderManager::OnActorCreated
         {
             EXPECT_CALL(
-                *m_mockMeshFeatureProcessor, AcquireMesh(_, testing::A<const AZ::Render::MaterialAssignmentMap&>(), _, _))
+                *m_mockMeshFeatureProcessor, AcquireMesh(_, testing::A<const AZ::Render::MaterialAssignmentMap&>(), _, _, _))
                 .Times(aznumeric_cast<int>(m_actorFactory->m_mockActors[0]->GetChunkIndices().size()))
                 .WillOnce(Return(testing::ByMove(AZ::Render::MeshFeatureProcessorInterface::MeshHandle())))
                 .WillOnce(Return(testing::ByMove(AZ::Render::MeshFeatureProcessorInterface::MeshHandle())));
@@ -114,7 +114,7 @@ namespace Blast
 
         // ActorRenderManager::SyncMeshes
         {
-            EXPECT_CALL(*m_mockMeshFeatureProcessor, SetTransform(_, _))
+            EXPECT_CALL(*m_mockMeshFeatureProcessor, SetTransform(_, _, _))
                 .Times(aznumeric_cast<int>(m_actorFactory->m_mockActors[0]->GetChunkIndices().size()));
             actorRenderManager->SyncMeshes();
         }

@@ -31,9 +31,7 @@
 #include "CommentNode.h"
 #include "AnimPostFXNode.h"
 #include "AnimScreenFaderNode.h"
-#include "I3DEngine.h"
 #include "ShadowsSetupNode.h"
-#include "AnimEnvironmentNode.h"
 #include "SequenceTrack.h"
 #include "AnimNodeGroup.h"
 #include <Maestro/Types/AnimNodeType.h>
@@ -327,9 +325,6 @@ IAnimNode* CAnimSequence::CreateNodeInternal(AnimNodeType nodeType, uint32 nNode
             break;
         case AnimNodeType::ScreenFader:
             animNode = aznew CAnimScreenFaderNode(nNodeId);
-            break;
-        case AnimNodeType::Environment:
-            animNode = aznew CAnimEnvironmentNode(nNodeId);
             break;
         default:     
             m_pMovieSystem->LogUserNotificationMsg("AnimNode cannot be added because it is an unsupported object type.");
@@ -837,9 +832,7 @@ static bool AnimSequenceVersionConverter(
 
 void CAnimSequence::Reflect(AZ::ReflectContext* context)
 {
-    IAnimSequence::Reflect(context);
-
-    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
     {
         serializeContext->Class<CAnimSequence, IAnimSequence>()
             ->Version(IAnimSequence::kSequenceVersion, &AnimSequenceVersionConverter)

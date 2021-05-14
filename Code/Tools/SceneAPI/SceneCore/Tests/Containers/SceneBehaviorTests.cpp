@@ -20,6 +20,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
+#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
@@ -363,6 +364,10 @@ namespace AZ
                 MOCK_METHOD1(UnregisterComponentDescriptor, void(const AZ::ComponentDescriptor*));
                 MOCK_METHOD1(RegisterEntityAddedEventHandler, void(AZ::EntityAddedEvent::Handler&));
                 MOCK_METHOD1(RegisterEntityRemovedEventHandler, void(AZ::EntityRemovedEvent::Handler&));
+                MOCK_METHOD1(RegisterEntityActivatedEventHandler, void(AZ::EntityActivatedEvent::Handler&));
+                MOCK_METHOD1(RegisterEntityDeactivatedEventHandler, void(AZ::EntityDeactivatedEvent::Handler&));
+                MOCK_METHOD1(SignalEntityActivated, void(AZ::Entity*));
+                MOCK_METHOD1(SignalEntityDeactivated, void(AZ::Entity*));
                 MOCK_METHOD1(RemoveEntity, bool(AZ::Entity*));
                 MOCK_METHOD1(DeleteEntity, bool(const AZ::EntityId&));
                 MOCK_METHOD1(GetEntityName, AZStd::string(const AZ::EntityId&));
@@ -378,6 +383,25 @@ namespace AZ
                 MOCK_CONST_METHOD1(QueryApplicationType, void(AZ::ApplicationTypeQuery&));
             };
 
+            class MockEditorPythonConsoleInterface final
+                : public AzToolsFramework::EditorPythonConsoleInterface
+            {
+            public:
+                MockEditorPythonConsoleInterface()
+                {
+                    AZ::Interface<AzToolsFramework::EditorPythonConsoleInterface>::Register(this);
+                }
+
+                ~MockEditorPythonConsoleInterface()
+                {
+                    AZ::Interface<AzToolsFramework::EditorPythonConsoleInterface>::Unregister(this);
+                }
+
+                MOCK_CONST_METHOD1(GetModuleList, void(AZStd::vector<AZStd::string_view>&));
+                MOCK_CONST_METHOD1(GetGlobalFunctionList, void(GlobalFunctionCollection&));
+                MOCK_METHOD1(FetchPythonTypeName, AZStd::string(const AZ::BehaviorParameter&));
+            };
+
             //
             // SceneGraphBehaviorScriptTest
             //
@@ -386,6 +410,7 @@ namespace AZ
             {
             public:
                 AZStd::unique_ptr<MockSceneComponentApplication> m_componentApplication;
+                AZStd::unique_ptr<MockEditorPythonConsoleInterface> m_editorPythonConsoleInterface;
                 AZStd::unique_ptr<AZ::ScriptContext> m_scriptContext;
                 AZStd::unique_ptr<AZ::BehaviorContext> m_behaviorContext;
                 AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
@@ -454,6 +479,15 @@ namespace AZ
                             {
                                 return this->m_serializeContext.get();
                             }));
+
+                    m_editorPythonConsoleInterface = AZStd::make_unique<MockEditorPythonConsoleInterface>();
+                }
+
+                void SetupEditorPythonConsoleInterface()
+                {
+                    EXPECT_CALL(*m_editorPythonConsoleInterface, FetchPythonTypeName(::testing::_))
+                        .Times(4)
+                        .WillRepeatedly(::testing::Invoke([](const AZ::BehaviorParameter&) {return "int"; }));
                 }
 
                 void TearDown() override
@@ -560,6 +594,38 @@ namespace AZ
                 ExpectExecute("proxy:Invoke('AddAndSet', addArgs)");
                 ExpectExecute("value = proxy:Invoke('GetId', vector_any())");
                 ExpectExecute("TestExpectEquals(value, 17)");
+            }
+
+            TEST_F(SceneGraphBehaviorScriptTest, GraphObjectProxy_GetClassInfo_Loads)
+            {
+                SetupEditorPythonConsoleInterface();
+
+                ExpectExecute("builder = MockBuilder()");
+                ExpectExecute("builder:BuildSceneGraph()");
+                ExpectExecute("scene = builder:GetScene()");
+                ExpectExecute("nodeG = scene.graph:FindWithPath('A.C.E.G')");
+                ExpectExecute("proxy = scene.graph:GetNodeContent(nodeG)");
+                ExpectExecute("TestExpectTrue(proxy:CastWithTypeName('MockIGraphObject'))");
+                ExpectExecute("info = proxy:GetClassInfo()");
+                ExpectExecute("TestExpectTrue(info ~= nil)");
+            }
+
+            TEST_F(SceneGraphBehaviorScriptTest, GraphObjectProxy_GetClassInfo_CorrectFormats)
+            {
+                SetupEditorPythonConsoleInterface();
+
+                ExpectExecute("builder = MockBuilder()");
+                ExpectExecute("builder:BuildSceneGraph()");
+                ExpectExecute("scene = builder:GetScene()");
+                ExpectExecute("nodeG = scene.graph:FindWithPath('A.C.E.G')");
+                ExpectExecute("proxy = scene.graph:GetNodeContent(nodeG)");
+                ExpectExecute("TestExpectTrue(proxy:CastWithTypeName('MockIGraphObject'))");
+                ExpectExecute("info = proxy:GetClassInfo()");
+                ExpectExecute("TestExpectTrue(info.className == 'MockIGraphObject')");
+                ExpectExecute("TestExpectTrue(info.classUuid == '{66A082CC-851D-4E1F-ABBD-45B58A216CFA}')");
+                ExpectExecute("TestExpectTrue(info.methodList[1] == 'def GetId(self) -> int')");
+                ExpectExecute("TestExpectTrue(info.methodList[2] == 'def SetId(self, arg1: int) -> None')");
+                ExpectExecute("TestExpectTrue(info.methodList[3] == 'def AddAndSet(self, arg1: int, arg2: int) -> None')");
             }
 
             //

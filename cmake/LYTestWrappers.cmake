@@ -24,8 +24,8 @@ ly_set(LY_PYTEST_EXECUTABLE ${LY_PYTHON_CMD} -B -m pytest -v --tb=short --show-c
 ly_set(LY_TEST_GLOBAL_KNOWN_SUITE_NAMES "smoke" "main" "periodic" "benchmark" "sandbox")
 ly_set(LY_TEST_GLOBAL_KNOWN_REQUIREMENTS "gpu")
 
-# Set default to 20 minutes
-ly_set(LY_TEST_DEFAULT_TIMEOUT 1200)
+# Set default test aborts to 25 minutes, avoids hitting the CI pipeline inactivity timeout usually set to 30 minutes
+ly_set(LY_TEST_DEFAULT_TIMEOUT 1500)
 
 # Add the CMake Test targets for each suite if testing is supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
@@ -115,6 +115,8 @@ function(ly_add_test)
     # Set default test module timeout
     if(NOT ly_add_test_TIMEOUT)
         set(ly_add_test_TIMEOUT ${LY_TEST_DEFAULT_TIMEOUT})
+    elseif(ly_add_test_TIMEOUT GREATER LY_TEST_DEFAULT_TIMEOUT)
+        message(WARNING "TIMEOUT for test ${ly_add_test_NAME} set at ${ly_add_test_TIMEOUT} seconds which is longer than the default of ${LY_TEST_DEFAULT_TIMEOUT}. Allowing a single module to run exceedingly long creates problems in a CI pipeline.")
     endif()
 
     if(NOT ly_add_test_TEST_COMMAND)
@@ -337,22 +339,23 @@ function(ly_add_editor_python_test)
         message(FATAL_ERROR "Must supply a value for TEST_SUITE")
     endif()
 
+    file(REAL_PATH ${ly_add_editor_python_test_TEST_PROJECT} project_real_path BASE_DIRECTORY ${LY_ROOT_FOLDER})
+
     # Run test via the run_epbtest.cmake script.
     # Parameters used are explained in run_epbtest.cmake.
     ly_add_test(
         NAME ${ly_add_editor_python_test_NAME}
         TEST_REQUIRES ${ly_add_editor_python_test_TEST_REQUIRES}
         TEST_COMMAND ${CMAKE_COMMAND}
-            -DCMD_ARG_TEST_PROJECT=${ly_add_editor_python_test_TEST_PROJECT} 
+            -DCMD_ARG_TEST_PROJECT=${project_real_path} 
             -DCMD_ARG_EDITOR=$<TARGET_FILE:Legacy::Editor> 
             -DCMD_ARG_PYTHON_SCRIPT=${ly_add_editor_python_test_PATH}
             -DPLATFORM=${PAL_PLATFORM_NAME}
             -P ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/run_epbtest.cmake
         RUNTIME_DEPENDENCIES
-        ${ly_add_editor_python_test_RUNTIME_DEPENDENCIES}
-        Gem::EditorPythonBindings.Editor
-        Legacy::CryRenderNULL
-        Legacy::Editor
+            ${ly_add_editor_python_test_RUNTIME_DEPENDENCIES}
+            Gem::EditorPythonBindings.Editor
+            Legacy::Editor
         TEST_SUITE ${ly_add_editor_python_test_TEST_SUITE}
         LABELS FRAMEWORK_pytest
         TEST_LIBRARY pytest_editor
@@ -360,7 +363,7 @@ function(ly_add_editor_python_test)
         COMPONENT ${ly_add_editor_python_test_COMPONENT}
     )
 
-    set_tests_properties(${LY_ADDED_TEST_NAME} PROPERTIES RUN_SERIAL "${ly_add_pytest_TEST_SERIAL}")
+    set_tests_properties(${LY_ADDED_TEST_NAME} PROPERTIES RUN_SERIAL "${ly_add_editor_python_test_TEST_SERIAL}")
     set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${LY_ADDED_TEST_NAME}_SCRIPT_PATH ${ly_add_editor_python_test_PATH})
 endfunction()
 

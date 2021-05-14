@@ -239,8 +239,13 @@ namespace AZ
                 return;
             }
 
-            CheckReady();
             m_initComplete = true;
+
+            // *After* setting initComplete to true, check to see if the assets are already ready.
+            // This check needs to wait until after setting initComplete because if they *are* ready, we want the final call to
+            // RemoveWaitingAsset to trigger the OnAssetContainerReady/Canceled event.  If we call CheckReady() *before* setting
+            // initComplete, if all the assets are ready, the event will never get triggered.
+            CheckReady();
         }
 
         bool AssetContainer::IsReady() const
@@ -255,7 +260,7 @@ namespace AZ
 
         bool AssetContainer::IsValid() const
         {
-            return (m_containerAssetId.IsValid() && m_initComplete);
+            return (m_containerAssetId.IsValid() && m_initComplete && m_rootAsset);
         }
 
         void AssetContainer::CheckReady()
@@ -264,13 +269,13 @@ namespace AZ
             {
                 for (auto& [assetId, dependentAsset] : m_dependencies)
                 {
-                    if (dependentAsset->IsReady())
+                    if (dependentAsset->IsReady() || dependentAsset->IsError())
                     {
                         HandleReadyAsset(dependentAsset);
                     }
                 }
             }
-            if (auto asset = m_rootAsset.GetStrongReference(); asset.IsReady())
+            if (auto asset = m_rootAsset.GetStrongReference(); asset.IsReady() || asset.IsError())
             {
                 HandleReadyAsset(asset);
             }
@@ -341,6 +346,7 @@ namespace AZ
 
         void AssetContainer::OnAssetError(Asset<AssetData> asset)
         {
+            AZ_Warning("AssetContainer", false, "Error loading asset %s", asset->GetId().ToString<AZStd::string>().c_str());
             HandleReadyAsset(asset);
         }
 
@@ -366,7 +372,10 @@ namespace AZ
                 auto remainingPreloadIter = m_preloadList.find(waiterId);
                 if (remainingPreloadIter == m_preloadList.end())
                 {
-                    AZ_Warning("AssetContainer", !m_initComplete, "Couldn't find waiting list for %s", waiterId.ToString<AZStd::string>().c_str());
+                    // If we got here without an entry on the preload list, it probably means this asset was triggered to load multiple
+                    // times, some with dependencies and some without.  To ensure that we don't disturb the loads that expect the
+                    // dependencies, just silently return and don't treat the asset as finished loading.  We'll rely on the other load
+                    // to send an OnAssetReady() whenever its expected dependencies are met.
                     return;
                 }
                 if (!remainingPreloadIter->second.erase(preloadID))
@@ -487,10 +496,10 @@ namespace AZ
                         m_waitingCount -= 1;
                         disconnectEbus = true;
 
-                        if (m_waitingAssets.empty())
-                        {
-                            allReady = true;
-                        }
+                    }
+                    if (m_waitingAssets.empty())
+                    {
+                        allReady = true;
                     }
                 }
 
@@ -501,8 +510,15 @@ namespace AZ
                 }
             }
 
-            if (allReady && m_initComplete)
+            // If there are no assets left to be loaded, trigger the final AssetContainer notification (ready or canceled).
+            // We guard against prematurely sending it (m_initComplete) because it's possible for assets to get removed from our waiting
+            // list *while* we're still building up the list, so the list would appear to be empty too soon.
+            // We also guard against sending it multiple times (m_finalNotificationSent), because in some error conditions, it may be
+            // possible to try to remove the same asset multiple times, which if it's the last asset, it could trigger multiple
+            // notifications.
+            if (allReady && m_initComplete && !m_finalNotificationSent)
             {
+                m_finalNotificationSent = true;
                 if (m_rootAsset)
                 {
                     AssetManagerBus::Broadcast(&AssetManagerBus::Events::OnAssetContainerReady, this);
@@ -610,7 +626,12 @@ namespace AZ
                 }
                 for(auto& thisList : preloadList)
                 {
-                    m_preloadList[thisList.first].insert(thisList.second.begin(), thisList.second.end());
+                    // Only save the entry to the final preload list if it has at least one dependent asset still remaining after
+                    // the checks above.
+                    if (!thisList.second.empty())
+                    {
+                        m_preloadList[thisList.first].insert(thisList.second.begin(), thisList.second.end());
+                    }
                 }
             }
         }

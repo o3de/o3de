@@ -60,8 +60,6 @@ ly_add_target(
             Legacy::CrySystem.XMLBinary
             Legacy::RemoteConsoleCore
             AZ::AzFramework
-    RUNTIME_DEPENDENCIES
-        Legacy::Cry3DEngine
 )
 
 ly_add_source_properties(
@@ -91,9 +89,6 @@ ly_add_target(
             Legacy::CrySystem.Static
             AZ::AzCore
             Legacy::CryCommon
-            Legacy::CryCommon.EngineSettings.Static
-    RUNTIME_DEPENDENCIES
-        Legacy::CryFont
 )
 
 ################################################################################
@@ -113,7 +108,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 Legacy::CryCommon
-                Legacy::CryCommon.EngineSettings.Static
                 Legacy::CrySystem.Static
                 AZ::AzFramework
     )

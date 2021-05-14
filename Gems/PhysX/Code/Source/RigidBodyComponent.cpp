@@ -184,12 +184,10 @@ namespace PhysX
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             sceneInterface->RemoveSimulatedBody(m_attachedSceneHandle, m_rigidBodyHandle);
-            m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
-            m_rigidBody = nullptr;
         }
 
         Physics::RigidBodyRequestBus::Handler::BusDisconnect();
-        Physics::WorldBodyRequestBus::Handler::BusDisconnect();
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
         m_sceneFinishSimHandler.Disconnect();
         AZ::TickBus::Handler::BusDisconnect();
@@ -232,20 +230,33 @@ namespace PhysX
         //    User sets kinematic Target ---> Update transform
         //    User sets transform        ---> Update kinematic target
 
-        if (!IsPhysicsEnabled() || (m_rigidBody->IsKinematic() && !m_isLastMovementFromKinematicSource))
+        if (!IsPhysicsEnabled() || (IsKinematic() && !m_isLastMovementFromKinematicSource))
         {
             return;
         }
 
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        if (sceneInterface == nullptr)
+        {
+            AZ_Error("RigidBodyComponent", false, "PostPhysicsTick, SceneInterface is null");
+            return;
+        }
+
+        AzPhysics::SimulatedBody* rigidBody =
+            sceneInterface->GetSimulatedBodyFromHandle(m_attachedSceneHandle, m_rigidBodyHandle);
+        if (rigidBody == nullptr)
+        {
+            AZ_Error("RigidBodyComponent", false, "Unable to retrieve simulated rigid body");
+            return;
+        }
+        
+        AZ::Transform transform = rigidBody->GetTransform();
         if (m_configuration.m_interpolateMotion)
         {
-            AZ::Transform transform = m_rigidBody->GetTransform();
-            m_interpolator->SetTarget(transform.GetTranslation(), m_rigidBody->GetOrientation(), fixedDeltaTime);
+            m_interpolator->SetTarget(transform.GetTranslation(), rigidBody->GetOrientation(), fixedDeltaTime);
         }
         else
         {
-            AZ::Transform transform = m_rigidBody->GetTransform();
-
             // Maintain scale (this must be precise).
             AZ::Transform entityTransform = AZ::Transform::Identity();
             AZ::TransformBus::EventResult(entityTransform, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
@@ -261,13 +272,17 @@ namespace PhysX
         // Note: OnTransformChanged is not safe at the moment due to TransformComponent design flaw.
         // It is called when the parent entity is activated after the children causing rigid body
         // to move through the level instantly.
-        if (IsPhysicsEnabled() && (m_rigidBody->IsKinematic() && !m_isLastMovementFromKinematicSource))
+        if (AzPhysics::RigidBody* body = GetRigidBody())
         {
-            m_rigidBody->SetKinematicTarget(world);
-        }
-        else if (!IsPhysicsEnabled())
-        {
-            m_rigidBodyTransformNeedsUpdateOnPhysReEnable = true;
+            if (body->m_simulating &&
+                (body->IsKinematic() && !m_isLastMovementFromKinematicSource))
+            {
+                body->SetKinematicTarget(world);
+            }
+            else if (!body->m_simulating)
+            {
+                m_rigidBodyTransformNeedsUpdateOnPhysReEnable = true;
+            }
         }
     }
 
@@ -290,16 +305,9 @@ namespace PhysX
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         if (sceneInterface != nullptr)
         {
+            m_configuration.m_startSimulationEnabled = false; //enable physics will enable this when called.
             m_rigidBodyHandle = sceneInterface->AddSimulatedBody(m_attachedSceneHandle, &m_configuration);
-            m_rigidBody = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_attachedSceneHandle, m_rigidBodyHandle));
-            //disable simulating the body until EnablePhysics is called.
-            sceneInterface->DisableSimulationOfBody(m_attachedSceneHandle, m_rigidBodyHandle);
         }
-        m_rigidBody->SetKinematic(m_configuration.m_kinematic);
-
-        AzPhysics::MassComputeFlags flags = m_configuration.GetMassComputeFlags();
-        m_rigidBody->UpdateMassProperties(flags, &m_configuration.m_centerOfMassOffset, &m_configuration.m_inertiaTensor,
-            &m_configuration.m_mass);
 
         // Listen to the PhysX system for events concerning this entity.
         if (sceneInterface != nullptr)
@@ -309,7 +317,7 @@ namespace PhysX
         AZ::TickBus::Handler::BusConnect();
         AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
         Physics::RigidBodyRequestBus::Handler::BusConnect(GetEntityId());
-        Physics::WorldBodyRequestBus::Handler::BusConnect(GetEntityId());
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 
     void RigidBodyComponent::EnablePhysics()
@@ -319,16 +327,23 @@ namespace PhysX
             return;
         }
 
-        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        if (sceneInterface == nullptr)
         {
-            sceneInterface->EnableSimulationOfBody(m_attachedSceneHandle, m_rigidBodyHandle);
+            AZ_Error("RigidBodyComponent", false, "Unable to enable physics, SceneInterface is null");
+            return;
         }
+        SetSimulationEnabled(true);
 
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
         if (m_rigidBodyTransformNeedsUpdateOnPhysReEnable)
         {
-            m_rigidBody->SetTransform(transform);
+            if (AzPhysics::SimulatedBody* body =
+                sceneInterface->GetSimulatedBodyFromHandle(m_attachedSceneHandle, m_rigidBodyHandle))
+            {
+                body->SetTransform(transform);
+            }
             m_rigidBodyTransformNeedsUpdateOnPhysReEnable = false;
         }
 
@@ -341,201 +356,338 @@ namespace PhysX
         m_initialScale = transform.ExtractScale();
 
         Physics::RigidBodyNotificationBus::Event(GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsEnabled);
-        Physics::WorldBodyNotificationBus::Event(GetEntityId(), &Physics::WorldBodyNotifications::OnPhysicsEnabled);
     }
 
     void RigidBodyComponent::DisablePhysics()
     {
-        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
-        {
-            sceneInterface->DisableSimulationOfBody(m_attachedSceneHandle, m_rigidBodyHandle);
-        }
+        SetSimulationEnabled(false);
 
         Physics::RigidBodyNotificationBus::Event(GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsDisabled);
-        Physics::WorldBodyNotificationBus::Event(GetEntityId(), &Physics::WorldBodyNotifications::OnPhysicsDisabled);
     }
 
     bool RigidBodyComponent::IsPhysicsEnabled() const
     {
-        return m_rigidBody != nullptr && m_rigidBody->m_simulating;
+        if (const AzPhysics::RigidBody* body = GetRigidBodyConst())
+        {
+            return body->m_simulating;
+        }
+        return false;
     }
 
     void RigidBodyComponent::ApplyLinearImpulse(const AZ::Vector3& impulse)
     {
-        m_rigidBody->ApplyLinearImpulse(impulse);
+        if (AzPhysics::RigidBody* body = GetRigidBody())
+        {
+            body->ApplyLinearImpulse(impulse);
+        }
     }
 
     void RigidBodyComponent::ApplyLinearImpulseAtWorldPoint(const AZ::Vector3& impulse, const AZ::Vector3& worldSpacePoint)
     {
-        m_rigidBody->ApplyLinearImpulseAtWorldPoint(impulse, worldSpacePoint);
+        if (AzPhysics::RigidBody* body = GetRigidBody())
+        {
+            body->ApplyLinearImpulseAtWorldPoint(impulse, worldSpacePoint);
+        }
     }
 
     void RigidBodyComponent::ApplyAngularImpulse(const AZ::Vector3& impulse)
     {
-        m_rigidBody->ApplyAngularImpulse(impulse);
+        if (AzPhysics::RigidBody* body = GetRigidBody())
+        {
+            body->ApplyAngularImpulse(impulse);
+        }
     }
 
     AZ::Vector3 RigidBodyComponent::GetLinearVelocity() const
     {
-        return m_rigidBody->GetLinearVelocity();
+        if (const AzPhysics::RigidBody* body = GetRigidBodyConst())
+        {
+            return body->GetLinearVelocity();
+        }
+        return AZ::Vector3::CreateZero();
     }
 
     void RigidBodyComponent::SetLinearVelocity(const AZ::Vector3& velocity)
     {
-        m_rigidBody->SetLinearVelocity(velocity);
+        if (AzPhysics::RigidBody* body = GetRigidBody())
+        {
+            body->SetLinearVelocity(velocity);
+        }
     }
 
     AZ::Vector3 RigidBodyComponent::GetAngularVelocity() const
     {
-        return m_rigidBody->GetAngularVelocity();
+        if (const AzPhysics::RigidBody* body = GetRigidBodyConst())
+        {
+            return body->GetAngularVelocity();
+        }
+        return AZ::Vector3::CreateZero();
     }
 
     void RigidBodyComponent::SetAngularVelocity(const AZ::Vector3& angularVelocity)
     {
-        m_rigidBody->SetAngularVelocity(angularVelocity);
+        if (AzPhysics::RigidBody* body = GetRigidBody())
+        {
+            body->SetAngularVelocity(angularVelocity);
+        }
     }
 
     AZ::Vector3 RigidBodyComponent::GetLinearVelocityAtWorldPoint(const AZ::Vector3& worldPoint) const
     {
-        return m_rigidBody->GetLinearVelocityAtWorldPoint(worldPoint);
+        if (const AzPhysics::RigidBody* body = GetRigidBodyConst())
+        {
+            return body->GetLinearVelocityAtWorldPoint(worldPoint);
+        }
+        return AZ::Vector3::CreateZero();
     }
 
     AZ::Vector3 RigidBodyComponent::GetCenterOfMassWorld() const
     {
-        return m_rigidBody->GetCenterOfMassWorld();
+        if (const AzPhysics::RigidBody* body = GetRigidBodyConst())
+        {
+            return body->GetCenterOfMassWorld();
+        }
+        return AZ::Vector3::CreateZero();
     }
 
     AZ::Vector3 RigidBodyComponent::GetCenterOfMassLocal() const
     {
-        return m_rigidBody->GetCenterOfMassLocal();
+        if (const AzPhysics::RigidBody* body = GetRigidBodyConst())
+        {
+            return body->GetCenterOfMassLocal();
+        }
+        return AZ::Vector3::CreateZero();
     }
 
     AZ::Matrix3x3 RigidBodyComponent::GetInverseInertiaWorld() const
     {
-        return m_rigidBody->GetInverseInertiaWorld();
+        if (const AzPhysics::RigidBody* body = GetRigidBodyConst())
+        {
+            return body->GetInverseInertiaWorld();
+        }
+        return AZ::Matrix3x3::CreateZero();
     }
 
     AZ::Matrix3x3 RigidBodyComponent::GetInverseInertiaLocal() const
     {
-        return m_rigidBody->GetInverseInertiaLocal();
+        if (const AzPhysics::RigidBody* body = GetRigidBodyConst())
+        {
+            return body->GetInverseInertiaLocal();
+        }
+        return AZ::Matrix3x3::CreateZero();
     }
 
     float RigidBodyComponent::GetMass() const
     {
-        return m_rigidBody->GetMass();
+        if (const AzPhysics::RigidBody* body = GetRigidBodyConst())
+        {
+            return body->GetMass();
+        }
+        return 0.0f;
     }
 
     float RigidBodyComponent::GetInverseMass() const
     {
-        return m_rigidBody->GetInverseMass();
+        if (const AzPhysics::RigidBody* body = GetRigidBodyConst())
+        {
+            return body->GetInverseMass();
+        }
+        return 0.0f;
     }
 
     void RigidBodyComponent::SetMass(float mass)
     {
-        m_rigidBody->SetMass(mass);
+        if (AzPhysics::RigidBody* body = GetRigidBody())
+        {
+            body->SetMass(mass);
+        }
     }
 
     void RigidBodyComponent::SetCenterOfMassOffset(const AZ::Vector3& comOffset)
     {
-        m_rigidBody->SetCenterOfMassOffset(comOffset);
+        if (AzPhysics::RigidBody* body = GetRigidBody())
+        {
+            body->SetCenterOfMassOffset(comOffset);
+        }
     }
 
     float RigidBodyComponent::GetLinearDamping() const
     {
-        return m_rigidBody->GetLinearDamping();
+        if (const AzPhysics::RigidBody* body = GetRigidBodyConst())
+        {
+            return body->GetLinearDamping();
+        }
+        return 0.0f;
     }
 
     void RigidBodyComponent::SetLinearDamping(float damping)
     {
-        m_rigidBody->SetLinearDamping(damping);
+        if (AzPhysics::RigidBody* body = GetRigidBody())
+        {
+            body->SetLinearDamping(damping);
+        }
     }
 
     float RigidBodyComponent::GetAngularDamping() const
     {
-        return m_rigidBody->GetAngularDamping();
+        if (const AzPhysics::RigidBody* body = GetRigidBodyConst())
+        {
+            return body->GetAngularDamping();
+        }
+        return 0.0f;
     }
 
     void RigidBodyComponent::SetAngularDamping(float damping)
     {
-        m_rigidBody->SetAngularDamping(damping);
+        if (AzPhysics::RigidBody* body = GetRigidBody())
+        {
+            body->SetAngularDamping(damping);
+        }
     }
 
     bool RigidBodyComponent::IsAwake() const
     {
-        return m_rigidBody->IsAwake();
+        if (const AzPhysics::RigidBody* body = GetRigidBodyConst())
+        {
+            return body->IsAwake();
+        }
+        return false;
     }
 
     void RigidBodyComponent::ForceAsleep()
     {
-        m_rigidBody->ForceAsleep();
+        if (AzPhysics::RigidBody* body = GetRigidBody())
+        {
+            body->ForceAsleep();
+        }
     }
 
     void RigidBodyComponent::ForceAwake()
     {
-        m_rigidBody->ForceAwake();
+        if (AzPhysics::RigidBody* body = GetRigidBody())
+        {
+            body->ForceAwake();
+        }
     }
 
     bool RigidBodyComponent::IsKinematic() const
     {
-        return m_rigidBody->IsKinematic();
+        if (const AzPhysics::RigidBody* body = GetRigidBodyConst())
+        {
+            return body->IsKinematic();
+        }
+        return false;
     }
 
     void RigidBodyComponent::SetKinematic(bool kinematic)
     {
-        m_rigidBody->SetKinematic(kinematic);
+        if (AzPhysics::RigidBody* body = GetRigidBody())
+        {
+            body->SetKinematic(kinematic);
+        }
     }
 
     void RigidBodyComponent::SetKinematicTarget(const AZ::Transform& targetPosition)
     {
         m_isLastMovementFromKinematicSource = true;
-        m_rigidBody->SetKinematicTarget(targetPosition);
+        if (AzPhysics::RigidBody* body = GetRigidBody())
+        {
+            body->SetKinematicTarget(targetPosition);
+        }
     }
 
     bool RigidBodyComponent::IsGravityEnabled() const
     {
-        return m_rigidBody->IsGravityEnabled();
+        if (const AzPhysics::RigidBody* body = GetRigidBodyConst())
+        {
+            return body->IsGravityEnabled();
+        }
+        return false;
     }
 
     void RigidBodyComponent::SetGravityEnabled(bool enabled)
     {
-        m_rigidBody->SetGravityEnabled(enabled);
+        if (AzPhysics::RigidBody* body = GetRigidBody())
+        {
+            body->SetGravityEnabled(enabled);
+        }
     }
 
     void RigidBodyComponent::SetSimulationEnabled(bool enabled)
     {
-        m_rigidBody->SetSimulationEnabled(enabled);
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            if (enabled)
+            {
+                sceneInterface->EnableSimulationOfBody(m_attachedSceneHandle, m_rigidBodyHandle);
+            }
+            else
+            {
+                sceneInterface->DisableSimulationOfBody(m_attachedSceneHandle, m_rigidBodyHandle);
+            }
+        }
     }
 
     float RigidBodyComponent::GetSleepThreshold() const
     {
-        return m_rigidBody->GetSleepThreshold();
+        if (const AzPhysics::RigidBody* body = GetRigidBodyConst())
+        {
+            return body->GetSleepThreshold();
+        }
+        return 0.0f;
     }
 
     void RigidBodyComponent::SetSleepThreshold(float threshold)
     {
-        m_rigidBody->SetSleepThreshold(threshold);
+        if (AzPhysics::RigidBody* body = GetRigidBody())
+        {
+            body->SetSleepThreshold(threshold);
+        }
     }
 
     AZ::Aabb RigidBodyComponent::GetAabb() const
     {
-        return m_rigidBody->GetAabb();
+        if (const AzPhysics::RigidBody* body = GetRigidBodyConst())
+        {
+            return body->GetAabb();
+        }
+        return  AZ::Aabb::CreateNull();
     }
 
     AzPhysics::RigidBody* RigidBodyComponent::GetRigidBody()
     {
-        return m_rigidBody;
+        return azdynamic_cast<AzPhysics::RigidBody*>(GetSimulatedBody());
     }
 
-    AzPhysics::SimulatedBody* RigidBodyComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* RigidBodyComponent::GetSimulatedBody()
     {
-        return m_rigidBody;
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            return sceneInterface->GetSimulatedBodyFromHandle(m_attachedSceneHandle, m_rigidBodyHandle);
+        }
+        return nullptr;
+    }
+
+    const AzPhysics::RigidBody* RigidBodyComponent::GetRigidBodyConst() const
+    {
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            return azdynamic_cast<AzPhysics::RigidBody*>(
+                sceneInterface->GetSimulatedBodyFromHandle(m_attachedSceneHandle, m_rigidBodyHandle));
+        }
+        return nullptr;
+    }
+
+    AzPhysics::SimulatedBodyHandle RigidBodyComponent::GetSimulatedBodyHandle() const
+    {
+        return m_rigidBodyHandle;
     }
 
     AzPhysics::SceneQueryHit RigidBodyComponent::RayCast(const AzPhysics::RayCastRequest& request)
     {
-        if (m_rigidBody)
+        if (AzPhysics::RigidBody* body = GetRigidBody())
         {
-            return m_rigidBody->RayCast(request);
+            return body->RayCast(request);
         }
         return AzPhysics::SceneQueryHit();
     }

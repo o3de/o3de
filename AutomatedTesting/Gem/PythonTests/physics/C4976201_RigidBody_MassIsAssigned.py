@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C4976201
 # Test Case Title : Verify that the value assigned to the Mass of the object, gets actually assigned to the object
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4976201
+
 
 # fmt: off
 class Tests:
@@ -110,13 +110,12 @@ def C4976201_RigidBody_MassIsAssigned():
 
     imports.init()
 
-
     import azlmbr.legacy.general as general
     import azlmbr.bus
     import azlmbr
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     MOVEMENT_TIMEOUT = 7.0
     COLLISION_TIMEOUT = 2.0
@@ -381,5 +380,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C4976201_RigidBody_MassIsAssigned)

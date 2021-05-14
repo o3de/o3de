@@ -10,7 +10,7 @@
 *
 */
 
-#include <Source/NetworkEntity/NetworkEntityRpcMessage.h>
+#include <Multiplayer/NetworkEntityRpcMessage.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
 #include <AzCore/Console/ILogger.h>
@@ -21,7 +21,7 @@ namespace Multiplayer
         : m_rpcDeliveryType(rhs.m_rpcDeliveryType)
         , m_entityId(rhs.m_entityId)
         , m_componentId(rhs.m_componentId)
-        , m_rpcMessageType(rhs.m_rpcMessageType)
+        , m_rpcIndex(rhs.m_rpcIndex)
         , m_data(AZStd::move(rhs.m_data))
         , m_isReliable(rhs.m_isReliable)
     {
@@ -32,7 +32,7 @@ namespace Multiplayer
         : m_rpcDeliveryType(rhs.m_rpcDeliveryType)
         , m_entityId(rhs.m_entityId)
         , m_componentId(rhs.m_componentId)
-        , m_rpcMessageType(rhs.m_rpcMessageType)
+        , m_rpcIndex(rhs.m_rpcIndex)
         , m_isReliable(rhs.m_isReliable)
     {
         if (rhs.m_data != nullptr)
@@ -42,11 +42,11 @@ namespace Multiplayer
         }
     }
 
-    NetworkEntityRpcMessage::NetworkEntityRpcMessage(RpcDeliveryType rpcDeliveryType, NetEntityId entityId, NetComponentId componentId, uint8_t rpcMessageType, ReliabilityType isReliable)
+    NetworkEntityRpcMessage::NetworkEntityRpcMessage(RpcDeliveryType rpcDeliveryType, NetEntityId entityId, NetComponentId componentId, RpcIndex rpcIndex, ReliabilityType isReliable)
         : m_rpcDeliveryType(rpcDeliveryType)
         , m_entityId(entityId)
         , m_componentId(componentId)
-        , m_rpcMessageType(rpcMessageType)
+        , m_rpcIndex(rpcIndex)
         , m_isReliable(isReliable)
     {
         ;
@@ -57,7 +57,7 @@ namespace Multiplayer
         m_rpcDeliveryType = rhs.m_rpcDeliveryType;
         m_entityId = rhs.m_entityId;
         m_componentId = rhs.m_componentId;
-        m_rpcMessageType = rhs.m_rpcMessageType;
+        m_rpcIndex = rhs.m_rpcIndex;
         m_isReliable = rhs.m_isReliable;
         m_data = AZStd::move(rhs.m_data);
         return *this;
@@ -68,7 +68,7 @@ namespace Multiplayer
         m_rpcDeliveryType = rhs.m_rpcDeliveryType;
         m_entityId = rhs.m_entityId;
         m_componentId = rhs.m_componentId;
-        m_rpcMessageType = rhs.m_rpcMessageType;
+        m_rpcIndex = rhs.m_rpcIndex;
         m_isReliable = rhs.m_isReliable;
         if (rhs.m_data != nullptr)
         {
@@ -85,7 +85,7 @@ namespace Multiplayer
         return ((m_rpcDeliveryType == rhs.m_rpcDeliveryType)
              && (m_entityId == rhs.m_entityId)
              && (m_componentId == rhs.m_componentId)
-             && (m_rpcMessageType == rhs.m_rpcMessageType));
+             && (m_rpcIndex == rhs.m_rpcIndex));
     }
 
     bool NetworkEntityRpcMessage::operator !=(const NetworkEntityRpcMessage& rhs) const
@@ -98,7 +98,7 @@ namespace Multiplayer
         static constexpr uint32_t sizeOfFields = sizeof(RpcDeliveryType)
             + sizeof(NetEntityId)
             + sizeof(NetComponentId)
-            + sizeof(uint8_t);
+            + sizeof(RpcIndex);
 
         // 2-byte size header + the actual blob payload itself
         const uint32_t sizeOfBlob = (m_data != nullptr) ? sizeof(uint16_t) + m_data->GetSize() : 0;
@@ -127,9 +127,9 @@ namespace Multiplayer
         return m_componentId;
     }
 
-    uint8_t NetworkEntityRpcMessage::GetRpcMessageType() const
+    RpcIndex NetworkEntityRpcMessage::GetRpcIndex() const
     {
-        return m_rpcMessageType;
+        return m_rpcIndex;
     }
 
     bool NetworkEntityRpcMessage::SetRpcParams(IRpcParamStruct& params)
@@ -167,7 +167,7 @@ namespace Multiplayer
         serializer.Serialize(m_rpcDeliveryType, "RpcDeliveryType");
         serializer.Serialize(m_entityId, "EntityId");
         serializer.Serialize(m_componentId, "ComponentId");
-        serializer.Serialize(m_rpcMessageType, "RpcMessageType");
+        serializer.Serialize(m_rpcIndex, "RpcIndex");
 
         // m_data should never be nullptr, it contains serialized data for our Rpc params struct
         if (m_data == nullptr)

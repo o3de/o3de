@@ -28,6 +28,8 @@
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Memory/MallocSchema.h>
 
+#include <AzCore/NativeUI/NativeUIRequests.h>
+
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/Utils.h>
@@ -341,6 +343,16 @@ namespace AZ
                     ;
             }
         }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<ComponentApplicationBus>("ComponentApplicationBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Components")
+
+                ->Event("GetEntityName", &ComponentApplicationBus::Events::GetEntityName)
+                ->Event("SetEntityName", &ComponentApplicationBus::Events::SetEntityName);
+        }
     }
 
     //=========================================================================
@@ -414,7 +426,7 @@ namespace AZ
 
         // Now that the Allocators are initialized, the Command Line parameters can be parsed
         m_commandLine.Parse(m_argC, m_argV);
-        ParseCommandLine(m_commandLine);
+        SettingsRegistryMergeUtils::ParseCommandLine(m_commandLine);
 
         // Create the settings registry and register it with the AZ interface system
         // This is done after the AppRoot has been calculated so that the Bootstrap.cfg
@@ -514,12 +526,49 @@ namespace AZ
         // are destroyed
         m_commandLine = {};
 
+        m_entityAddedEvent.DisconnectAllHandlers();
+        m_entityRemovedEvent.DisconnectAllHandlers();
+        m_entityActivatedEvent.DisconnectAllHandlers();
+        m_entityDeactivatedEvent.DisconnectAllHandlers();
+
         DestroyAllocator();
     }
+
+
+    void ReportBadEngineRoot()
+    {
+        AZStd::string errorMessage = {"Unable to determine a valid path to the engine.\n"
+                                      "Check parameters such as --project-path and --engine-path and make sure they are valid.\n"};
+        if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
+        {
+            AZ::SettingsRegistryInterface::FixedValueString filePathErrorStr;
+            if (registry->Get(filePathErrorStr, AZ::SettingsRegistryMergeUtils::FilePathKey_ErrorText); !filePathErrorStr.empty())
+            {
+                errorMessage += "Additional Info:\n";
+                errorMessage += filePathErrorStr.c_str();
+            }
+        }
+
+        if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
+        {
+            nativeUI->DisplayOkDialog("O3DE Fatal Error", errorMessage.c_str(), false);
+        }
+        else
+        {
+            AZ_Error("ComponentApplication", false, "O3DE Fatal Error: %s\n", errorMessage.c_str());
+        }
+    }
+
 
     Entity* ComponentApplication::Create(const Descriptor& descriptor, const StartupParameters& startupParameters)
     {
         AZ_Assert(!m_isStarted, "Component application already started!");
+
+        if (m_engineRoot.empty())
+        {
+            ReportBadEngineRoot();
+            return nullptr;
+        }
 
         m_startupParameters = startupParameters;
 
@@ -861,73 +910,55 @@ namespace AZ
         }
     }
 
-    void ComponentApplication::ParseCommandLine(const AZ::CommandLine& commandLine)
-    {
-        struct OptionKeyToRegsetKey
-        {
-            AZStd::string_view m_optionKey;
-            AZStd::string m_regsetKey;
-        };
-
-        // Provide overrides for the engine root, the project root and the project cache root
-        AZStd::array commandOptions = {
-            OptionKeyToRegsetKey{ "engine-path", AZStd::string::format("%s/engine_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) },
-            OptionKeyToRegsetKey{ "project-path", AZStd::string::format("%s/project_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) },
-            OptionKeyToRegsetKey{ "project-cache-path", AZStd::string::format("%s/project_cache_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) }
-        };
-
-        AZStd::fixed_vector<AZStd::string, commandOptions.size()> overrideArgs;
-
-        for (auto&& [optionKey, regsetKey] : commandOptions)
-        {
-            if (size_t optionCount = commandLine.GetNumSwitchValues(optionKey); optionCount > 0)
-            {
-                // Use the last supplied command option value to override previous values
-                auto overrideArg = AZStd::string::format(R"(--regset="%s=%s")", regsetKey.c_str(),
-                    commandLine.GetSwitchValue(optionKey, optionCount - 1).c_str());
-                overrideArgs.emplace_back(AZStd::move(overrideArg));
-            }
-        }
-
-        if (!overrideArgs.empty())
-        {
-            // Dump the input command line, add the additional option overrides
-            // and Parse the new command line into the Component Application command line
-            AZ::CommandLine::ParamContainer commandLineArgs;
-            commandLine.Dump(commandLineArgs);
-            commandLineArgs.insert(commandLineArgs.end(), AZStd::make_move_iterator(overrideArgs.begin()),
-                AZStd::make_move_iterator(overrideArgs.end()));
-            m_commandLine.Parse(commandLineArgs);
-        }
-    }
-
     void ComponentApplication::MergeSettingsToRegistry(SettingsRegistryInterface& registry)
     {
         SettingsRegistryInterface::Specializations specializations;
         SetSettingsRegistrySpecializations(specializations);
 
         AZStd::vector<char> scratchBuffer;
-        // Retrieves the list gem module build targets that the active project depends on
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_TargetBuildDependencyRegistry(registry,
-            AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
 #if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
         // In development builds apply the o3de registry and the command line to allow early overrides. This will
         // allow developers to override things like default paths or Asset Processor connection settings. Any additional
         // values will be replaced by later loads, so this step will happen again at the end of loading.
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
+        // Project User Registry is merged after the command line here to allow make sure the any command line override of the project path
+        // is used for merging the project's user registry
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
 #endif
+        //! Retrieves the list gem targets that the project has load dependencies on
+        //! This populates the /Amazon/Gems/<GemName>/SourcePaths array entries which is required
+        //! by the MergeSettingsToRegistry_GemRegistry() function below to locate the gem's root folder
+        //! and merge in the gem's registry files.
+        //! But when running from a pre-built app from the O3DE SDK(Editor/AssetProcessor), the projects binary
+        //! directory is needed in order to located the load dependency registry files
+        //! That project binary folder is generated with the <ProjectRoot>/user/Registry when CMake is configured
+        //! for the project
+        //! Therefore the order of merging must be as follows
+        //! 1. MergeSettingsToRegistry_ProjectUserRegistry - Populates the /Amazon/Project/Settings/Build/project_build_path
+        //!    which contains the path to the project binary directory
+        //! 2. MergeSettingsToRegistry_TargetBuildDependencyRegistry - Loads the cmake_dependencies.<project_name>.<application_name>.setreg
+        //!    file from the locations in order of
+        //!    1. <executable_directory>/Registry
+        //!    2. <cache_root>/Registry
+        //!    3. <project_build_path>/bin/$<CONFIG>/Registry
+        //! 3. MergeSettingsToRegistry_GemRegistries - Merges the settings registry files from each gem's <GemRoot>/Registry directory
+
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_TargetBuildDependencyRegistry(registry,
+            AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
 #if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, true);
 #endif
         // Update the Runtime file paths in case the "{BootstrapSettingsRootKey}/assets" key was overriden by a setting registry
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
     }
 
     void ComponentApplication::SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations)
@@ -974,6 +1005,26 @@ namespace AZ
     void ComponentApplication::RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler& handler)
     {
         handler.Connect(m_entityRemovedEvent);
+    }
+
+    void ComponentApplication::RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler& handler)
+    {
+        handler.Connect(m_entityActivatedEvent);
+    }
+
+    void ComponentApplication::RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler& handler)
+    {
+        handler.Connect(m_entityDeactivatedEvent);
+    }
+
+    void ComponentApplication::SignalEntityActivated(AZ::Entity* entity)
+    {
+        m_entityActivatedEvent.Signal(entity);
+    }
+
+    void ComponentApplication::SignalEntityDeactivated(AZ::Entity* entity)
+    {
+        m_entityDeactivatedEvent.Signal(entity);
     }
 
     //=========================================================================
@@ -1048,6 +1099,20 @@ namespace AZ
             return entity->GetName();
         }
         return AZStd::string();
+    }
+
+    //=========================================================================
+    // SetEntityName
+    //=========================================================================
+    bool ComponentApplication::SetEntityName(const EntityId& id, const AZStd::string_view name)
+    {
+        Entity* entity = FindEntity(id);
+        if (entity)
+        {
+            entity->SetName(name);
+            return true;
+        }
+        return false;
     }
 
     //=========================================================================
@@ -1261,7 +1326,7 @@ namespace AZ
                 // Add all auto loadable non-asset gems to the list of gem modules to load
                 if (!moduleLoadData.m_autoLoad)
                 {
-                    break;
+                    continue;
                 }
                 for (AZ::OSString& dynamicLibraryPath : moduleLoadData.m_dynamicLibraryPaths)
                 {

@@ -12,12 +12,13 @@
 
 #pragma once
 
-#include <AzCore/Component/Component.h>
-#include <AzFramework/Asset/AssetCatalogBus.h>
-
+#include <ACES/Aces.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
 #include <Atom/Viewport/MaterialViewportRequestBus.h>
+#include <Atom/Viewport/MaterialViewportSettings.h>
+#include <AzCore/Component/Component.h>
+#include <AzFramework/Asset/AssetCatalogBus.h>
 
 namespace MaterialEditor
 {
@@ -85,6 +86,8 @@ namespace MaterialEditor
         bool GetAlternateSkyboxEnabled() const override;
         void SetFieldOfView(float fieldOfView) override;
         float GetFieldOfView() const override;
+        void SetDisplayMapperOperationType(AZ::Render::DisplayMapperOperationType operationType) override;
+        AZ::Render::DisplayMapperOperationType GetDisplayMapperOperationType() const override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -107,9 +110,6 @@ namespace MaterialEditor
         mutable AZStd::map<AZ::Render::LightingPresetPtr, AZStd::string> m_lightingPresetLastSavePathMap;
         mutable AZStd::map<AZ::Render::ModelPresetPtr, AZStd::string> m_modelPresetLastSavePathMap;
 
-        bool m_shadowCatcherEnabled = true;
-        bool m_gridEnabled = true;
-        bool m_alternateSkyboxEnabled = false;
-        float m_fieldOfView = 90.0f;
+        AZStd::intrusive_ptr<MaterialViewportSettings> m_viewportSettings;
     };
 }

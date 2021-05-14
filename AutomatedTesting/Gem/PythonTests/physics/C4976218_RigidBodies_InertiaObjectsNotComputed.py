@@ -9,7 +9,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 # Test case ID : C4976218
 # Test Case Title: Verify that when compute inertia is checked, the physX engine does compute the inertia of the objects
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4976218
+
 # fmt: off
 
 class Tests():
@@ -47,13 +47,13 @@ def C4976218_RigidBodies_InertiaObjectsNotComputed():
 
     imports.init()
 
-
     import azlmbr.legacy.general as general
     import azlmbr.bus as bus
     import azlmbr.components
     import azlmbr.physics
 
-    from utils import Report, TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     class UpperBox:
         def __init__(self, name):
@@ -167,5 +167,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C4976218_RigidBodies_InertiaObjectsNotComputed)

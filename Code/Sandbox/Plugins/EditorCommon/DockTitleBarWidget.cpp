@@ -16,13 +16,16 @@
 #include <QStyleOptionToolButton>
 #include <AzCore/Casting/numeric_cast.h>
 
-static QColor Interpolate(const QColor& a, const QColor& b, float k)
+namespace DockTitleBarInterpolate
 {
-    float mk = 1.0f - k;
-    return QColor(aznumeric_cast<int>(a.red() * mk  + b.red() * k),
-        aznumeric_cast<int>(a.green() * mk + b.green() * k),
-        aznumeric_cast<int>(a.blue() * mk + b.blue() * k),
-        aznumeric_cast<int>(a.alpha() * mk + b.alpha() * k));
+    static QColor Interpolate(const QColor& a, const QColor& b, float k)
+    {
+        float mk = 1.0f - k;
+        return QColor(aznumeric_cast<int>(a.red() * mk + b.red() * k),
+            aznumeric_cast<int>(a.green() * mk + b.green() * k),
+            aznumeric_cast<int>(a.blue() * mk + b.blue() * k),
+            aznumeric_cast<int>(a.alpha() * mk + b.alpha() * k));
+    }
 }
 
 class CDockWidgetTitleButton
@@ -60,7 +63,7 @@ public:
         p.setRenderHint(QPainter::Antialiasing, true);
         QRect r = rect().adjusted(2, 2, -3, -3);
         p.translate(0.5f, 0.5f);
-        QColor color = Interpolate(palette().color(QPalette::Window), palette().color(QPalette::Shadow), 0.2f);
+        QColor color = DockTitleBarInterpolate::Interpolate(palette().color(QPalette::Window), palette().color(QPalette::Shadow), 0.2f);
         p.setBrush(QBrush(color));
         p.setPen(Qt::NoPen);
         p.drawRoundedRect(r, 4, 4, Qt::AbsoluteSize);
@@ -175,7 +178,7 @@ CDockTitleBarWidget::CDockTitleBarWidget(QDockWidget* dockWidget)
     m_layout->addLayout(m_buttonLayout, 0);
 
     m_floatButton = new CDockWidgetTitleButton(dockWidget);
-    m_floatButton->setIcon(QIcon("Editor/Icons/float.png"));
+    m_floatButton->setIcon(QIcon("Icons/float.png"));
     m_floatButton->setVisible(opt.floatable);
     m_floatButton->setToolTip("Toggle Floating");
     connect(m_floatButton, SIGNAL(clicked()), SLOT(OnFloatButtonPressed()));
@@ -185,7 +188,7 @@ CDockTitleBarWidget::CDockTitleBarWidget(QDockWidget* dockWidget)
     // close.png is a standard icon that looks similar to one in Fusion theme but
     // uses alpha so it can be used on dark theme as well.
     // style()->standardIcon(QStyle::SP_TitleBarCloseButton, &opt, dockWidget)
-    QIcon closeIcon("Editor/Icons/close.png");
+    QIcon closeIcon("Icons/close.png");
     m_closeButton->setIcon(closeIcon);
     m_closeButton->setVisible(opt.closable);
     m_closeButton->setToolTip("Close");

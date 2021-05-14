@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID : C19536277
 Test Case Title : Verify that when a group is modified using ToggleCollisionLayer node such that the new group is not in the pre-existing groups, GetCollisionGroupName node prints no value
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/19536277
+
 """
 
 
@@ -50,9 +50,9 @@ def run():
     import ImportPathHelper as imports
 
     imports.init()
-    from utils import Report
-    from utils import TestHelper as helper
-    from editor_entity_utils import EditorEntity as Entity
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.editor_entity_utils import EditorEntity as Entity
+    from editor_python_test_tools.utils import TestHelper as helper
 
     ACTIVE_STATUS = azlmbr.globals.property.EditorEntityStartStatus_StartActive
 

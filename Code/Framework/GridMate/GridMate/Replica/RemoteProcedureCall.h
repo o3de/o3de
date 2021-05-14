@@ -370,8 +370,8 @@ namespace GridMate
                 PeerId sourcePeerId = GetSourcePeerId();
                 bool shouldQueue = true;
                 bool processed = false;
-                bool isMaster = m_replicaChunk->IsMaster();
-                if (isMaster)
+                bool isPrimary = m_replicaChunk->IsPrimary();
+                if (isPrimary)
                 {
                     // We are authoritative so execute the RPC immediately, forwarding the args along
                     RpcRequest localRequest(this, rc.m_realTime, rc.m_realTime, rc.m_localTime);
@@ -385,7 +385,7 @@ namespace GridMate
                 if (shouldQueue)
                 {
                     TypeTuple* storage = aznew TypeTuple(this, RpcContext(rc.m_realTime, rc.m_realTime, rc.m_localTime, sourcePeerId), AZStd::forward<LocalArgs>(args) ...);
-                    storage->m_authoritative = isMaster;
+                    storage->m_authoritative = isPrimary;
                     storage->m_processed = processed;
                     storage->m_reliable = Traits::s_isReliable;
                     OnRpcRequest(storage);

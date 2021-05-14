@@ -286,7 +286,6 @@ struct IRenderNode
     //   Physicalizes node.
     virtual void Physicalize([[maybe_unused]] bool bInstant = false) {}
 
-    // Make sure I3DEngine::FreeRenderNodeState(this) is called in destructor of derived class.
     virtual ~IRenderNode() { assert(!m_pRNTmpData); };
 
     // Summary:
@@ -573,7 +572,6 @@ struct IVoxelObject
     : public IRenderNode
 {
     // <interfuscator:shuffle>
-    virtual struct IMemoryBlock* GetCompiledData(EEndian eEndian) = 0;
     virtual void SetCompiledData(void* pData, int nSize, uint8 ucChildId, EEndian eEndian) = 0;
     virtual void SetObjectName(const char* pName) = 0;
     virtual void SetMatrix(const Matrix34& mat) = 0;
@@ -731,8 +729,8 @@ struct IWaterVolumeRenderNode
     virtual void SetAuxPhysParams(pe_params_area*) = 0;
 
     virtual void CreateOcean(uint64 volumeID, /* TBD */ bool keepSerializationParams = false) = 0;
-    virtual void CreateArea(uint64 volumeID, const Vec3* pVertices, unsigned int numVertices, const Vec2& surfUVScale, const Plane& fogPlane, bool keepSerializationParams = false, int nSID = -1) = 0;
-    virtual void CreateRiver(uint64 volumeID, const Vec3* pVertices, unsigned int numVertices, float uTexCoordBegin, float uTexCoordEnd, const Vec2& surfUVScale, const Plane& fogPlane, bool keepSerializationParams = false, int nSID = -1) = 0;
+    virtual void CreateArea(uint64 volumeID, const Vec3* pVertices, unsigned int numVertices, const Vec2& surfUVScale, const Plane_tpl<f32>& fogPlane, bool keepSerializationParams = false, int nSID = -1) = 0;
+    virtual void CreateRiver(uint64 volumeID, const Vec3* pVertices, unsigned int numVertices, float uTexCoordBegin, float uTexCoordEnd, const Vec2& surfUVScale, const Plane_tpl<f32>& fogPlane, bool keepSerializationParams = false, int nSID = -1) = 0;
     virtual void CreateRiver(uint64 volumeID, const AZStd::vector<AZ::Vector3>& verticies, const AZ::Transform& transform, float uTexCoordBegin, float uTexCoordEnd, const AZ::Vector2& surfUVScale, const AZ::Plane& fogPlane, bool keepSerializationParams = false, int nSID = -1) = 0;
 
     virtual void SetAreaPhysicsArea(const Vec3* pVertices, unsigned int numVertices, bool keepSerializationParams = false) = 0;

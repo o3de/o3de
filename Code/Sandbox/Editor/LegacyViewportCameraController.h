@@ -28,13 +28,17 @@ namespace AzFramework
 
 namespace SandboxEditor
 {
+    class LegacyViewportCameraControllerInstance;
+    using LegacyViewportCameraController = AzFramework::MultiViewportController<LegacyViewportCameraControllerInstance>;
+
     class LegacyViewportCameraControllerInstance final
-        : public AzFramework::MultiViewportControllerInstanceInterface
+        : public AzFramework::MultiViewportControllerInstanceInterface<LegacyViewportCameraController>
     {
     public:
-        explicit LegacyViewportCameraControllerInstance(AzFramework::ViewportId viewport);
+        LegacyViewportCameraControllerInstance(AzFramework::ViewportId viewport, LegacyViewportCameraController* controller);
 
         bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
+        void ResetInputChannels() override;
         void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
 
     private:
@@ -53,6 +57,7 @@ namespace SandboxEditor
         bool HandleMouseMove(const AzFramework::ScreenPoint& currentMousePos, const AzFramework::ScreenPoint& previousMousePos);
         bool HandleMouseWheel(float zDelta);
         bool IsKeyDown(Qt::Key key) const;
+        void UpdateCursorCapture(bool shouldCaptureCursor);
 
         bool m_inRotateMode = false;
         bool m_inMoveMode = false;
@@ -67,5 +72,4 @@ namespace SandboxEditor
         bool m_capturingCursor = false;
     };
 
-    using LegacyViewportCameraController = AzFramework::MultiViewportController<LegacyViewportCameraControllerInstance>;
 } //namespace SandboxEditor

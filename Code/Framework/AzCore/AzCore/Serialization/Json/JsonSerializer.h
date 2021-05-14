@@ -80,6 +80,9 @@ namespace AZ
         static JsonSerializationResult::ResultCode StoreTypeName(rapidjson::Value& output,
             const Uuid& typeId, JsonSerializerContext& context);
 
+        static JsonSerializationResult::ResultCode InsertTypeId(
+            rapidjson::Value& output, const SerializeContext::ClassData& classData, JsonSerializerContext& context);
+
         static rapidjson::Value GetExplicitDefault();
     };
 } // namespace AZ

@@ -221,13 +221,14 @@ AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }
 #include <AzCore/EBus/Event.h>
 #include <AzCore/EBus/ScheduledEvent.h>
 #include <AzNetworking/DataStructures/FixedSizeBitsetView.h>
-#include <Source/NetworkEntity/NetworkEntityHandle.h>
-#include <Source/NetworkEntity/EntityReplication/ReplicationRecord.h>
-#include <Source/Components/MultiplayerComponent.h>
-#include <Source/Components/MultiplayerController.h>
-#include <Source/NetworkInput/IMultiplayerComponentInput.h>
-#include <Source/NetworkTime/RewindableObject.h>
-#include <Source/MultiplayerTypes.h>
+#include <Multiplayer/IMultiplayerComponentInput.h>
+#include <Multiplayer/NetworkEntityHandle.h>
+#include <Multiplayer/MultiplayerComponent.h>
+#include <Multiplayer/MultiplayerController.h>
+#include <Multiplayer/NetworkInput.h>
+#include <Multiplayer/ReplicationRecord.h>
+#include <Multiplayer/RewindableObject.h>
+#include <Multiplayer/MultiplayerTypes.h>
 {% call(Include) AutoComponentMacros.ParseIncludes(Component) %}
 #include <{{ Include.attrib['File'] }}>
 {% endcall %}
@@ -250,9 +251,6 @@ namespace {{ Component.attrib['Namespace'] }}
     //! Forward declarations
     class {{ ComponentName }};
     class {{ ControllerName }};
-
-    //! Returns a human readable name for the provided remoteProcedureId.
-    const char* GetRemoteProcedureName(uint16_t remoteProcedureId);
 
 {% set RecordName = ComponentName + "Record" %}
     //! @class {{RecordName }}
@@ -329,7 +327,6 @@ namespace {{ Component.attrib['Namespace'] }}
         : public Multiplayer::IMultiplayerComponentInput
     {
     public:
-        static const Multiplayer::NetComponentId s_componentId = static_cast<Multiplayer::NetComponentId>({{ Component.attrib['Namespace'] }}::ComponentTypes::{{ Component.attrib['Name'] }});
         Multiplayer::NetComponentId GetComponentId() const override;
         INetworkInput& operator=(const INetworkInput& rhs) override;
         bool Serialize(AzNetworking::ISerializer& serializer);
@@ -363,7 +360,6 @@ namespace {{ Component.attrib['Namespace'] }}
         //! MultiplayerController interface
         //! @{
         Multiplayer::MultiplayerController::InputPriorityOrder GetInputOrder() const override { return Multiplayer::MultiplayerController::InputPriorityOrder::Default; }
-        AZ::Aabb GetRewindBoundsForInput([[maybe_unused]] const NetworkInput& networkInput, [[maybe_unused]] float deltaTime) const override { return AZ::Aabb::CreateNull(); }
         void CreateInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override {}
         void ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override {}
         //! @}
@@ -412,8 +408,6 @@ namespace {{ Component.attrib['Namespace'] }}
         AZ_MULTIPLAYER_COMPONENT({{ Component.attrib['Namespace'] }}::{{ ComponentBaseName }}, s_{{ LowerFirst(ComponentName) }}ConcreteUuid, Multiplayer::MultiplayerComponent);
 {% endif %}
 
-        static const Multiplayer::NetComponentId s_componentId = static_cast<Multiplayer::NetComponentId>({{ Component.attrib['Namespace'] }}::ComponentTypes::{{ Component.attrib['Name'] }});
-
         static void Reflect(AZ::ReflectContext* context);
         static void ReflectToEditContext(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
@@ -440,12 +434,12 @@ namespace {{ Component.attrib['Namespace'] }}
 
         //! MultiplayerComponent interface
         //! @{
-        NetComponentId GetNetComponentId() const override;
-        bool HandleRpcMessage(Multiplayer::NetEntityRole remoteRole, Multiplayer::NetworkEntityRpcMessage& rpcMessage) override;
+        Multiplayer::NetComponentId GetNetComponentId() const override;
+        bool HandleRpcMessage(AzNetworking::IConnection* invokingConnection, Multiplayer::NetEntityRole remoteRole, Multiplayer::NetworkEntityRpcMessage& rpcMessage) override;
         bool SerializeStateDeltaMessage(Multiplayer::ReplicationRecord& replicationRecord, AzNetworking::ISerializer& serializer) override;
         void NotifyStateDeltaChanges(Multiplayer::ReplicationRecord& replicationRecord) override;
         bool HasController() const override;
-        MultiplayerController* GetController() override;
+        Multiplayer::MultiplayerController* GetController() override;
 
     protected:
         void ConstructController() override;
@@ -489,6 +483,10 @@ namespace {{ Component.attrib['Namespace'] }}
         bool SerializeAutonomousToAuthorityProperties({{ RecordName }}& replicationRecord, AzNetworking::ISerializer& serializer);
         void NotifyChangesAutonomousToAuthorityProperties(const {{ RecordName }}& replicationRecord) const;
 
+        //! Debug name helpers
+        static const char* GetNetworkPropertyName(Multiplayer::PropertyIndex propertyIndex);
+        static const char* GetRpcName(Multiplayer::RpcIndex rpcIndex);
+
         AZStd::unique_ptr<{{ RecordName }}> m_currentRecord;
         AZStd::unique_ptr<{{ ControllerName }}> m_controller;
 
@@ -518,6 +516,9 @@ namespace {{ Component.attrib['Namespace'] }}
 {% call(Type, Name) AutoComponentMacros.ParseComponentServiceTypeAndName(Component) %}
 	    {{ Type }}* {{ Name }} = nullptr;
 {% endcall %}
+
+        static Multiplayer::NetComponentId s_netComponentId;
+        friend void RegisterMultiplayerComponents();
     };
 }
 {% endfor %}

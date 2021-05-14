@@ -24,7 +24,6 @@
 #include <AzFramework/Visibility/BoundsBus.h>
 
 #include <LmbrCentral/Animation/AttachmentComponentBus.h>
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
 
 #include <Integration/Components/ActorComponent.h>
 #include <Integration/Rendering/RenderBackendManager.h>
@@ -414,9 +413,6 @@ namespace EMotionFX
 
             CheckAttachToEntity();
 
-            // Send general mesh creation notification to interested parties.
-            LmbrCentral::MeshComponentNotificationBus::Event(entityId, &LmbrCentral::MeshComponentNotifications::OnMeshCreated, m_configuration.m_actorAsset);
-
             Physics::RagdollConfiguration ragdollConfiguration;
             [[maybe_unused]] bool ragdollConfigValid = GetRagdollConfiguration(ragdollConfiguration);
             AZ_Assert(ragdollConfigValid, "Ragdoll Configuration is not valid");
@@ -459,11 +455,6 @@ namespace EMotionFX
                 DetachFromEntity();
 
                 m_attachmentTargetActor = nullptr;
-
-                // Send general mesh destruction notification to interested parties.
-                LmbrCentral::MeshComponentNotificationBus::Event(
-                    GetEntityId(), 
-                    &LmbrCentral::MeshComponentNotifications::OnMeshDestroyed);
 
                 ActorComponentNotificationBus::Event(
                     GetEntityId(),
@@ -513,8 +504,7 @@ namespace EMotionFX
             {
                 m_renderActorInstance->OnTick(deltaTime);
                 m_renderActorInstance->UpdateBounds();
-                AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-                    &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());
+                AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(GetEntityId());
 
                 // Optimization: Set the actor instance invisible when character is out of camera view. This will stop the joint transforms update, except the root joint.
                 // Calling it after the bounds on the render actor updated.

@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C6090555
 # Test Case Title : Check that force region exerts spline follow force on rigid bodies(negative test)
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/6090555
+
 
 
 # fmt: off
@@ -74,9 +74,8 @@ def C6090555_ForceRegion_SplineFollowOnRigidBodies():
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr
     import azlmbr.legacy.general as general
@@ -184,5 +183,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C6090555_ForceRegion_SplineFollowOnRigidBodies)

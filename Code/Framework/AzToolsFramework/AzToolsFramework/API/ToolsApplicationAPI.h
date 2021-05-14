@@ -349,6 +349,11 @@ namespace AzToolsFramework
         virtual bool AreAnyEntitiesSelected() = 0;
 
         /*!
+         * Returns the number of selected entities.
+         */
+        virtual int GetSelectedEntitiesCount() = 0;
+
+        /*!
          * Retrieves the set of selected entities.
          * \return a list of entity Ids.
          */
@@ -756,16 +761,6 @@ namespace AzToolsFramework
         /// If the view pane was not registered with the ViewPaneOptions.isDeletable set to true, the view pane will be hidden instead.
         virtual void CloseViewPane(const char* /*paneName*/) {}
 
-        /// Request generation of all level cubemaps.
-        virtual void GenerateAllCubemaps() {}
-
-        /// Regenerate cubemap for a particular entity.
-        /// \param entityId ID of the entity that the cubemap is for
-        /// \param cubemapOutputPath path to a image file to generate
-        /// \param hideEntity Indicates whether the entity should be hidden during cubemap generation. Controls whether the entity's current cubemap output is baked into the new cubemap.
-        virtual void GenerateCubemapForEntity(AZ::EntityId /*entityId*/, AZStd::string* /*cubemapOutputPath*/, bool /*hideEntity*/) {}
-        virtual void GenerateCubemapWithIDForEntity(AZ::EntityId /*entityId*/, AZ::Uuid /*cubemapId*/, AZStd::string* /*cubemapOutputPath*/, bool /*hideEntity*/, bool /*hasCubemapId*/) {}
-
         //! Spawn asset browser for the appropriate asset types.
         virtual void BrowseForAssets(AssetBrowser::AssetSelectionModel& /*selection*/) = 0;
 
@@ -814,8 +809,6 @@ namespace AzToolsFramework
 
         /// Hide or show the circular dependency error when saving slices
         virtual void SetShowCircularDependencyError(const bool& /*showCircularDependencyError*/) {}
-
-        virtual void SetEditTool(const char* /*tool*/) {}
 
         /// Launches the Lua editor and opens the specified (space separated) files.
         virtual void LaunchLuaEditor(const char* /*files*/) {}

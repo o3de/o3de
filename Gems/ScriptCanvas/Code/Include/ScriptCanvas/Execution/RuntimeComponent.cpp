@@ -19,11 +19,9 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzFramework/Entity/EntityContextBus.h>
-#include <AzFramework/Network/NetBindingHandlerBus.h>
 #include <ScriptCanvas/Execution/ExecutionBus.h>
 #include <ScriptCanvas/Execution/ExecutionContext.h>
 #include <ScriptCanvas/Execution/ExecutionState.h>
-#include <ScriptCanvas/Variable/GraphVariableNetBindings.h>
 
 #if !defined(_RELEASE) && !defined(PERFORMANCE_BUILD)
 #define SCRIPT_CANVAS_RUNTIME_ASSET_CHECK
@@ -70,7 +68,7 @@ namespace ScriptCanvas
 
     void RuntimeComponent::Execute()
     {
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::ScriptCanvas, "RuntimeComponent::InitializeExecution (%s)", m_runtimeAsset.GetId().ToString<AZStd::string>().c_str());
+        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::ScriptCanvas, "RuntimeComponent::Execute (%s)", m_runtimeAsset.GetId().ToString<AZStd::string>().c_str());
         AZ_Assert(m_executionState, "RuntimeComponent::Execute called without an execution state");
         SC_EXECUTION_TRACE_GRAPH_ACTIVATED(CreateActivationInfo());
         SCRIPT_CANVAS_PERFORMANCE_SCOPE_EXECUTION(m_executionState->GetScriptCanvasId(), m_runtimeAsset.GetId());
@@ -163,8 +161,6 @@ namespace ScriptCanvas
                 ->Field("m_variableOverrides", &RuntimeComponent::m_variableOverrides)
                 ;
         }
-
-        GraphVariableNetBindingTable::Reflect(context);
     }
 
     void RuntimeComponent::SetVariableOverrides(const VariableData& overrideData)

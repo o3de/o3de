@@ -39,8 +39,8 @@ namespace Blast
                       "Blast Family", "Used to add a Blast family for destruction that will spawn Blast actors")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Destruction")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Box.png")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Box.png")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Box.png")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Box.png")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(
                         AZ::Edit::Attributes::HelpPageURL,

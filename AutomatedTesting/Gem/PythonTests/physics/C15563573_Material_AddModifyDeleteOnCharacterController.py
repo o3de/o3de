@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test Case ID    : C15563573
 # Test Case Title : Check that any change (Add/Delete/Modify) made to the material surface in the material library reflects immediately in the PhysX Character Controller
-# Test Case URL   : https://testrail.agscollab.com/index.php?/cases/view/15563573
+
 
 
 # fmt: off
@@ -116,14 +116,13 @@ def C15563573_Material_AddModifyDeleteOnCharacterController():
 
     imports.init()
 
-
     import azlmbr.legacy.general as general
     import azlmbr.math as lymath
 
     from Physmaterial_Editor import Physmaterial_Editor
-    from utils import Report
-    from utils import TestHelper as helper
     from AddModifyDelete_Utils import Box
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     FORCE_IMPULSE = lymath.Vector3(5.0, 0.0, 0.0)
     TIMEOUT = 3.0
@@ -205,5 +204,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C15563573_Material_AddModifyDeleteOnCharacterController)

@@ -253,24 +253,10 @@ namespace AZ
                 }
             }
 
-            // If there is cloth data, set all the blend weights to zero to indicate
-            // the vertices will be updated by cpu.
-            //
-            // [TODO ATOM-14478]
-            // At the moment blend weights is a shared buffer and therefore all
-            // instances of the actor asset will be affected by it. In the future
-            // this buffer will be unique per instance and modified by cloth component
-            // when necessary.
-            //
-            // [TODO LYN-1890]
-            // At the moment, if there is cloth data it is assumed that every vertex in the
-            // submesh will be simulated by cloth in cpu, so all the weights are set to zero.
-            // But once the blend weights buffer can be modified per instance, it will be set by
-            // the cloth component, which decides whether to control the whole submesh or
-            // to apply an additional simplification pass to remove static triangles from simulation.
-            // Static triangles are the ones that all its vertices won't move during simulation and
-            // therefore its weights won't be altered so they are controlled by GPU.
-            // This additional simplification has been disabled in ClothComponentMesh.cpp for now.
+            // [TODO ATOM-15288]
+            // Temporary workaround. If there is cloth data, set all the blend weights to zero to indicate
+            // the vertices will be updated by cpu. When meshes with cloth data are not dispatched for skinning
+            // this can be hasClothData can be removed.
 
             // If there is no skinning info, default to 0 weights and display an error
             if (hasClothData || !sourceSkinningInfo)
@@ -370,14 +356,6 @@ namespace AZ
                 AZ_Assert(modelLodAsset->GetMeshes().size() > 0, "ModelLod '%d' for model '%s' has 0 meshes", lodIndex, fullFileName.c_str());
                 const RPI::ModelLodAsset::Mesh& mesh0 = modelLodAsset->GetMeshes()[0];
 
-                // Get the amount of vertices and indices
-                // Get the meshes to process
-                bool hasUVs = false;
-                bool hasUVs2 = false;
-                bool hasTangents = false;
-                bool hasBitangents = false;
-                bool hasClothData = false;
-
                 // Do a pass over the lod to find the number of sub-meshes, the offset and size of each sub-mesh, and total number of vertices in the lod.
                 // These will be combined into one input buffer for the source actor, but these offsets and sizes will be used to create multiple sub-meshes for the target skinned actor
                 uint32_t lodVertexCount = 0;
@@ -416,17 +394,17 @@ namespace AZ
                     const AZ::Vector4* sourceTangents = static_cast<const AZ::Vector4*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_TANGENTS));
                     const AZ::Vector3* sourceBitangents = static_cast<const AZ::Vector3*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_BITANGENTS));
                     const AZ::Vector2* sourceUVs = static_cast<const AZ::Vector2*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_UVCOORDS, 0));
-                    const AZ::Vector2* sourceUVs2 = static_cast<const AZ::Vector2*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_UVCOORDS, 1));
-                    const uint32_t* sourceClothData = static_cast<uint32_t*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_CLOTH_DATA));
 
-                    hasUVs = (sourceUVs != nullptr);
-                    hasUVs2 = (sourceUVs2 != nullptr);
-                    hasTangents = (sourceTangents != nullptr);
-                    hasBitangents = (sourceBitangents != nullptr);
-                    hasClothData = (sourceClothData != nullptr);
+                    const bool hasUVs = (sourceUVs != nullptr);
+                    const bool hasTangents = (sourceTangents != nullptr);
+                    const bool hasBitangents = (sourceBitangents != nullptr);
 
                     // For each sub-mesh within each mesh, we want to create a separate sub-piece.
                     const size_t numSubMeshes = mesh->GetNumSubMeshes();
+
+                    AZ_Assert(numSubMeshes == modelLodAsset->GetMeshes().size(),
+                        "Number of submeshes (%d) in EMotionFX mesh (lod %d and joint index %d) doesn't match the number of meshes (%d) in model lod asset",
+                        numSubMeshes, lodIndex, jointIndex, modelLodAsset->GetMeshes().size());
 
                     for (size_t subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
                     {
@@ -465,6 +443,9 @@ namespace AZ
                                     GenerateBitangentsForSubmesh(vertexCount, vertexBufferOffset, vertexStart, sourceNormals, sourceTangents, bitangentBufferData);
                                 }
                             }
+
+                            // Check if the model mesh asset has cloth data. One ModelLodAsset::Mesh corresponds to one EMotionFX::SubMesh.
+                            const bool hasClothData = modelLodAsset->GetMeshes()[subMeshIndex].GetSemanticBufferAssetView(AZ::Name("CLOTH_DATA")) != nullptr;
 
                             ProcessSkinInfluences(mesh, subMesh, vertexBufferOffset, blendIndexBufferData, blendWeightBufferData, hasClothData);
 
@@ -505,10 +486,14 @@ namespace AZ
                     AZ_Assert(jointIndicesBufferAsset->GetBufferDescriptor().m_byteCount == remappedJointIndexBufferSizeInBytes, "Joint indices data from EMotionFX is not the same size as the buffer from the model in '%s', lod '%d'", fullFileName.c_str(), lodIndex);
                     AZ_Assert(skinWeightsBufferAsset->GetBufferDescriptor().m_byteCount == remappedSkinWeightsBufferSizeInBytes, "Skin weights data from EMotionFX is not the same size as the buffer from the model in '%s', lod '%d'", fullFileName.c_str(), lodIndex);
 
-                    Data::Instance<RPI::Buffer> jointIndicesBuffer = RPI::Buffer::FindOrCreate(jointIndicesBufferAsset);
-                    jointIndicesBuffer->UpdateData(blendIndexBufferData.data(), remappedJointIndexBufferSizeInBytes);
-                    Data::Instance<RPI::Buffer> skinWeightsBuffer = RPI::Buffer::FindOrCreate(skinWeightsBufferAsset);
-                    skinWeightsBuffer->UpdateData(blendWeightBufferData.data(), remappedSkinWeightsBufferSizeInBytes);
+                    if (Data::Instance<RPI::Buffer> jointIndicesBuffer = RPI::Buffer::FindOrCreate(jointIndicesBufferAsset))
+                    {
+                        jointIndicesBuffer->UpdateData(blendIndexBufferData.data(), remappedJointIndexBufferSizeInBytes);
+                    }
+                    if (Data::Instance<RPI::Buffer> skinWeightsBuffer = RPI::Buffer::FindOrCreate(skinWeightsBufferAsset))
+                    {
+                        skinWeightsBuffer->UpdateData(blendWeightBufferData.data(), remappedSkinWeightsBufferSizeInBytes);
+                    }
                 }
 
                 // Create read-only input assembly buffers that are not modified during skinning and shared across all instances

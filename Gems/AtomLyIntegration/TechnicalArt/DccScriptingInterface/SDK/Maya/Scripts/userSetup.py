@@ -25,7 +25,7 @@ the provided env and launcher bat files.
 If you are developing for the DCCsi you can use this launcher to start Maya:
 DccScriptingInterface\Launchers\Windows\Launch_Maya_2020.bat"
 
-To Do: https://jira.agscollab.com/browse/ATOM-5861
+To Do: ATOM-5861
 """
 __project__ = 'DccScriptingInterface'
 
@@ -262,9 +262,9 @@ def post_startup():
 
     # callbacks, To Do: these should also be moved to the bootstrapping config
     # Defered startup after the Ui is running.
-    _G_callbacks = Box(box_dots=True)  # this just ensures a global scope container
+    _G_CALLBACKS = Box(box_dots=True)  # this just ensures a global scope container
     if _G_LOAD_CALLBACKS:
-        from set_callbacks import _G_callbacks
+        from set_callbacks import _G_CALLBACKS
         # ^ need to hold on to this as the install repopulate set
 
     # this ensures the fixPaths callback is loaded

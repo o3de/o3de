@@ -16,7 +16,7 @@
 
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
-#include <AzFramework/Physics/WorldBodyBus.h>
+#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 
@@ -33,8 +33,8 @@ namespace PhysX
     struct EditorRigidBodyConfiguration
         : public AzPhysics::RigidBodyConfiguration
     {
-        AZ_CLASS_ALLOCATOR(EditorRigidBodyConfiguration, AZ::SystemAllocator, 0);
-        AZ_RTTI(EditorRigidBodyConfiguration, "{27297024-5A99-4C58-8614-4EF18137CE69}", AzPhysics::RigidBodyConfiguration);
+        AZ_CLASS_ALLOCATOR(PhysX::EditorRigidBodyConfiguration, AZ::SystemAllocator, 0);
+        AZ_RTTI(PhysX::EditorRigidBodyConfiguration, "{27297024-5A99-4C58-8614-4EF18137CE69}", AzPhysics::RigidBodyConfiguration);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -49,7 +49,7 @@ namespace PhysX
         , protected AzFramework::EntityDebugDisplayEventBus::Handler
         , private AZ::TransformNotificationBus::Handler
         , private Physics::ColliderComponentEventBus::Handler
-        , private Physics::WorldBodyRequestBus::Handler
+        , private AzPhysics::SimulatedBodyComponentRequestsBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(EditorRigidBodyComponent, "{F2478E6B-001A-4006-9D7E-DCB5A6B041DD}", AzToolsFramework::Components::EditorComponentBase);
@@ -107,12 +107,13 @@ namespace PhysX
         // Physics::ColliderComponentEventBus
         void OnColliderChanged() override;
 
-        // WorldBodyRequestBus
+        // AzPhysics::SimulatedBodyComponentRequestsBus::Handler overrides ...
         void EnablePhysics() override;
         void DisablePhysics() override;
         bool IsPhysicsEnabled() const override;
         AZ::Aabb GetAabb() const override;
-        AzPhysics::SimulatedBody* GetWorldBody() override;
+        AzPhysics::SimulatedBody* GetSimulatedBody() override;
+        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
         void CreateEditorWorldRigidBody();
@@ -126,8 +127,7 @@ namespace PhysX
         Debug::DebugDisplayDataChangedEvent::Handler m_debugDisplayDataChangeHandler;
 
         EditorRigidBodyConfiguration m_config;
-        AzPhysics::SimulatedBodyHandle m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
-        AzPhysics::RigidBody* m_editorBody = nullptr;
+        AzPhysics::SimulatedBodyHandle m_editorRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         AzPhysics::SceneHandle m_editorSceneHandle = AzPhysics::InvalidSceneHandle;
 
         AZ::Color m_centerOfMassDebugColor = AZ::Colors::White;

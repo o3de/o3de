@@ -70,6 +70,7 @@ namespace AZ
     static const char* logVerbosityUID = "sys_LogLevel";
     static const int assertLevel_log = 1;
     static const int assertLevel_nativeUI = 2;
+    static const int assertLevel_crash = 3;
     static const int logLevel_errorWarning = 1;
     static const int logLevel_full = 2;
     static AZ::EnvironmentVariable<AZStd::unordered_set<size_t>> g_ignoredAsserts;
@@ -289,8 +290,8 @@ namespace AZ
             }
             
 #if AZ_ENABLE_TRACE_ASSERTS
-            //display native UI dialogs at verbosity level 2 or higher
-            if (currentLevel >= assertLevel_nativeUI)
+            //display native UI dialogs at verbosity level 2
+            if (currentLevel == assertLevel_nativeUI)
             {
                 AZ::NativeUI::AssertAction buttonResult;
                 EBUS_EVENT_RESULT(buttonResult, AZ::NativeUI::NativeUIRequestBus, DisplayAssertDialog, dialogBoxText);
@@ -314,7 +315,13 @@ namespace AZ
                     break;
                 }
             }
+            else
 #endif //AZ_ENABLE_TRACE_ASSERTS
+            // Crash the application directly at assert level 3
+            if (currentLevel >= assertLevel_crash)
+            {
+                AZ_Crash();
+            }
         }
         g_alreadyHandlingAssertOrFatal = false;
     }

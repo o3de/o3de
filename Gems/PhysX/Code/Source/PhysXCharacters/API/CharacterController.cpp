@@ -311,7 +311,10 @@ namespace PhysX
         CreateShadowBody(configuration);
         SetTag(configuration.m_colliderTag);
 
-        m_simulating = true;
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            sceneInterface->EnableSimulationOfBody(m_sceneOwner, m_bodyHandle);
+        }
     }
 
     void CharacterController::DisablePhysics()
@@ -323,7 +326,11 @@ namespace PhysX
 
         DestroyShadowBody();
         RemoveControllerFromScene();
-        m_simulating = false;
+
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            sceneInterface->DisableSimulationOfBody(m_sceneOwner, m_bodyHandle);
+        }
     }
 
     void CharacterController::DestroyShadowBody()
@@ -336,7 +343,6 @@ namespace PhysX
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             sceneInterface->RemoveSimulatedBody(m_sceneOwner, m_shadowBodyHandle);
-            m_shadowBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
             m_shadowBody = nullptr;
         }
     }

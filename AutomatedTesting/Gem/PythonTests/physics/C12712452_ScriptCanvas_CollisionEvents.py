@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test Case ID    : C12712452
 # Test Case Title : Verify ScriptCanvas Collision Events
-# Test Case URL   : https://testrail.agscollab.com/index.php?/cases/view/12712452
+
 
 
 # fmt: off
@@ -76,14 +76,13 @@ def C12712452_ScriptCanvas_CollisionEvents():
 
     imports.init()
 
-
     import azlmbr.legacy.general as general
     import azlmbr.bus
     import azlmbr.components
     import azlmbr.entity
     import azlmbr.physics
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     # Constants
     TIME_OUT_SECONDS = 3.0
@@ -209,5 +208,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C12712452_ScriptCanvas_CollisionEvents)

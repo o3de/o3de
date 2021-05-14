@@ -10,25 +10,24 @@
 *
 */
 
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
+#include <Atom/Window/MaterialEditorWindowFactoryRequestBus.h>
+#include <Atom/Window/MaterialEditorWindowSettings.h>
 #include <AzCore/RTTI/BehaviorContext.h>
-
-#include <AzToolsFramework/API/ViewPaneOptions.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
-
-#include <Atom/Window/MaterialEditorWindowFactoryRequestBus.h>
-#include <Source/Window/MaterialEditorWindowComponent.h>
-#include <Source/Window/MaterialEditorWindow.h>
-#include <Source/Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
+#include <Window/MaterialEditorWindow.h>
+#include <Window/MaterialEditorWindowComponent.h>
+#include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
 
 namespace MaterialEditor
 {
     void MaterialEditorWindowComponent::Reflect(AZ::ReflectContext* context)
     {
-        GeneralViewportSettings::Reflect(context);
+        MaterialEditorWindowSettings::Reflect(context);
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -50,6 +49,7 @@ namespace MaterialEditor
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "materialeditor")
+                ->Event("ActivateWindow", &MaterialEditorWindowRequestBus::Events::ActivateWindow)
                 ->Event("SetDockWidgetVisible", &MaterialEditorWindowRequestBus::Events::SetDockWidgetVisible)
                 ->Event("IsDockWidgetVisible", &MaterialEditorWindowRequestBus::Events::IsDockWidgetVisible)
                 ->Event("GetDockWidgetNames", &MaterialEditorWindowRequestBus::Events::GetDockWidgetNames)
@@ -98,10 +98,9 @@ namespace MaterialEditor
 
     void MaterialEditorWindowComponent::CreateMaterialEditorWindow()
     {
-        m_materialBrowserInteractions.reset(aznew MaterialBrowserInteractions);
+        m_materialEditorBrowserInteractions.reset(aznew MaterialEditorBrowserInteractions);
 
         m_window.reset(aznew MaterialEditorWindow);
-        m_window->show();
     }
 
     void MaterialEditorWindowComponent::DestroyMaterialEditorWindow()

@@ -82,8 +82,7 @@ namespace AZ
             // Update RenderActorInstance local bounding box
             m_localAABB = AZ::Aabb::CreateFromMinMax(m_actorInstance->GetStaticBasedAABB().GetMin(), m_actorInstance->GetStaticBasedAABB().GetMax());
 
-            AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-                &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, m_entityId);
+            AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(m_entityId);
         }
 
         AZ::Aabb AtomActorInstance:: GetWorldBounds()
@@ -212,19 +211,26 @@ namespace AZ
 
         void AtomActorInstance::SetModelAsset([[maybe_unused]] Data::Asset<RPI::ModelAsset> modelAsset)
         {
-            // Atom Actor Instance is not based on an actual Model Asset yet,
-            // it's created at runtime from an Actor Asset.
+            // Changing model asset is not supported by Atom Actor Instance.
+            // The model asset is obtained from the Actor inside the ActorAsset,
+            // which is passed to the constructor. To set a different model asset
+            // this instance should use a different Actor.
+            AZ_Assert(false, "AtomActorInstance::SetModelAsset not supported");
         }
 
-        const Data::Asset<RPI::ModelAsset>& AtomActorInstance::GetModelAsset() const
+        Data::Asset<const RPI::ModelAsset> AtomActorInstance::GetModelAsset() const
         {
-            return m_skinnedMeshInstance->m_model->GetModelAsset();
+            AZ_Assert(GetActor(), "Expecting a Atom Actor Instance having a valid Actor.");
+            return GetActor()->GetMeshAsset();
         }
 
         void AtomActorInstance::SetModelAssetId([[maybe_unused]] Data::AssetId modelAssetId)
         {
-            // Atom Actor Instance is not based on an actual Model Asset yet,
-            // it's created at runtime from an Actor Asset.
+            // Changing model asset is not supported by Atom Actor Instance.
+            // The model asset is obtained from the Actor inside the ActorAsset,
+            // which is passed to the constructor. To set a different model asset
+            // this instance should use a different Actor.
+            AZ_Assert(false, "AtomActorInstance::SetModelAssetId not supported");
         }
 
         Data::AssetId AtomActorInstance::GetModelAssetId() const
@@ -234,8 +240,11 @@ namespace AZ
 
         void AtomActorInstance::SetModelAssetPath([[maybe_unused]] const AZStd::string& modelAssetPath)
         {
-            // Atom Actor Instance is not based on an actual Model Asset yet,
-            // it's created at runtime from an Actor Asset.
+            // Changing model asset is not supported by Atom Actor Instance.
+            // The model asset is obtained from the Actor inside the ActorAsset,
+            // which is passed to the constructor. To set a different model asset
+            // this instance should use a different Actor.
+            AZ_Assert(false, "AtomActorInstance::SetModelAssetPath not supported");
         }
 
         AZStd::string AtomActorInstance::GetModelAssetPath() const
@@ -243,7 +252,7 @@ namespace AZ
             return GetModelAsset().GetHint();
         }
 
-        const AZ::Data::Instance<RPI::Model> AtomActorInstance::GetModel() const
+        AZ::Data::Instance<RPI::Model> AtomActorInstance::GetModel() const
         {
             return m_skinnedMeshInstance->m_model;
         }
@@ -276,28 +285,6 @@ namespace AZ
         bool AtomActorInstance::GetVisibility() const
         {
             return IsVisible();
-        }
-
-        void AtomActorInstance::SetMeshAsset(const AZ::Data::AssetId& id)
-        {
-            AZ::Data::Asset<EMotionFX::Integration::ActorAsset> asset =
-                AZ::Data::AssetManager::Instance().GetAsset<EMotionFX::Integration::ActorAsset>(
-                    id, m_actorAsset.GetAutoLoadBehavior());
-            if (asset)
-            {
-                m_actorAsset = asset;
-                Create();
-            }
-        }
-
-        AZ::Data::Asset<AZ::Data::AssetData> AtomActorInstance::GetMeshAsset()
-        {
-            return m_actorAsset;
-        }
-
-        bool AtomActorInstance::GetVisibility()
-        {
-            return static_cast<const AtomActorInstance&>(*this).GetVisibility();
         }
 
         AZ::u32 AtomActorInstance::GetJointCount()
@@ -469,17 +456,15 @@ namespace AZ
             TransformNotificationBus::Handler::BusConnect(m_entityId);
             MaterialComponentNotificationBus::Handler::BusConnect(m_entityId);
             MeshComponentRequestBus::Handler::BusConnect(m_entityId);
-            LmbrCentral::MeshComponentRequestBus::Handler::BusConnect(m_entityId);
 
             const Data::Instance<RPI::Model> model = m_meshFeatureProcessor->GetModel(*m_meshHandle);
-            MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, model->GetModelAsset(), model);
+            MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, GetModelAsset(), model);
         }
 
         void AtomActorInstance::UnregisterActor()
         {
             MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelPreDestroy);
 
-            LmbrCentral::MeshComponentRequestBus::Handler::BusDisconnect();
             MeshComponentRequestBus::Handler::BusDisconnect();
             MaterialComponentNotificationBus::Handler::BusDisconnect();
             TransformNotificationBus::Handler::BusDisconnect();
@@ -499,7 +484,7 @@ namespace AZ
             {
                 // Last boolean parameter indicates if motion vector is enabled
                 m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
-                    m_meshFeatureProcessor->AcquireMesh(m_skinnedMeshInstance->m_model->GetModelAsset(), materials, true));
+                    m_meshFeatureProcessor->AcquireMesh(m_skinnedMeshInstance->m_model->GetModelAsset(), materials, /*skinnedMeshWithMotion=*/true));
             }
 
             // If render proxies already exist, they will be auto-freed
@@ -526,10 +511,9 @@ namespace AZ
                 MaterialReceiverNotificationBus::Event(m_entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
                 RegisterActor();
 
-                // [TODO ATOM-14478, LYN-1890]
+                // [TODO ATOM-15288]
                 // Temporary workaround for cloth to make sure the output skinned buffers are filled at least once.
-                // When the blend weights buffer can be unique per instance and updated by cloth component,
-                // FillSkinnedMeshInstanceBuffers can be removed.
+                // When meshes with cloth data are not dispatched for skinning FillSkinnedMeshInstanceBuffers can be removed.
                 FillSkinnedMeshInstanceBuffers();
             }
             else

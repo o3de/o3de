@@ -10,12 +10,13 @@
 *
 */
 
+#include <QMenu>
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QSizePolicy>
 
-#include <AtomToolsFramework/Inspector/InspectorGroupWidget.h>
 #include <AtomToolsFramework/Inspector/InspectorGroupHeaderWidget.h>
+#include <AtomToolsFramework/Inspector/InspectorGroupWidget.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <Source/Inspector/ui_InspectorWidget.h>
 
@@ -38,6 +39,7 @@ namespace AtomToolsFramework
         m_layout = new QVBoxLayout(m_ui->m_propertyContent);
         m_layout->setContentsMargins(0, 0, 0, 0);
         m_layout->setSpacing(0);
+        m_groups.clear();
     }
 
     void InspectorWidget::AddGroupsBegin()
@@ -52,8 +54,7 @@ namespace AtomToolsFramework
         m_layout->addStretch();
 
         // Scroll to top whenever there is new content
-        m_ui->m_propertyScrollArea->verticalScrollBar()->setValue(
-            m_ui->m_propertyScrollArea->verticalScrollBar()->minimum());
+        m_ui->m_propertyScrollArea->verticalScrollBar()->setValue(m_ui->m_propertyScrollArea->verticalScrollBar()->minimum());
 
         setUpdatesEnabled(true);
     }
@@ -73,11 +74,22 @@ namespace AtomToolsFramework
         groupWidget->setParent(m_ui->m_propertyContent);
         m_layout->addWidget(groupWidget);
 
-        connect(groupHeader, &AzQtComponents::ExtendedLabel::clicked, this, [groupHeader, groupWidget]()
-        {
-            groupHeader->SetExpanded(!groupHeader->IsExpanded());
-            groupWidget->setVisible(groupHeader->IsExpanded());
+        m_groups[groupNameId] = AZStd::make_pair(groupHeader, groupWidget);
+
+        connect(groupHeader, &InspectorGroupHeaderWidget::clicked, this, [this, groupNameId](QMouseEvent* event) {
+            OnHeaderClicked(groupNameId, event);
         });
+        connect(groupHeader, &InspectorGroupHeaderWidget::expanded, this, [this, groupNameId]() { OnGroupExpanded(groupNameId); });
+        connect(groupHeader, &InspectorGroupHeaderWidget::collapsed, this, [this, groupNameId]() { OnGroupCollapsed(groupNameId); });
+
+        if (ShouldGroupAutoExpanded(groupNameId))
+        {
+            ExpandGroup(groupNameId);
+        }
+        else
+        {
+            CollapseGroup(groupNameId);
+        }
     }
 
     void InspectorWidget::RefreshGroup(const AZStd::string& groupNameId)
@@ -109,6 +121,93 @@ namespace AtomToolsFramework
         for (auto groupWidget : m_ui->m_propertyContent->findChildren<InspectorGroupWidget*>())
         {
             groupWidget->Rebuild();
+        }
+    }
+
+    void InspectorWidget::ExpandGroup(const AZStd::string& groupNameId)
+    {
+        auto groupItr = m_groups.find(groupNameId);
+        if (groupItr != m_groups.end())
+        {
+            groupItr->second.first->SetExpanded(true);
+            groupItr->second.second->setVisible(true);
+        }
+    }
+
+    void InspectorWidget::CollapseGroup(const AZStd::string& groupNameId)
+    {
+        auto groupItr = m_groups.find(groupNameId);
+        if (groupItr != m_groups.end())
+        {
+            groupItr->second.first->SetExpanded(false);
+            groupItr->second.second->setVisible(false);
+        }
+    }
+
+    bool InspectorWidget::IsGroupExpanded(const AZStd::string& groupNameId) const
+    {
+        auto groupItr = m_groups.find(groupNameId);
+        return groupItr != m_groups.end() ? groupItr->second.first->IsExpanded() : false;
+    }
+
+    void InspectorWidget::ExpandAll()
+    {
+        for (auto& groupPair : m_groups)
+        {
+            groupPair.second.first->SetExpanded(true);
+            groupPair.second.second->setVisible(true);
+        }
+    }
+
+    void InspectorWidget::CollapseAll()
+    {
+        for (auto& groupPair : m_groups)
+        {
+            groupPair.second.first->SetExpanded(false);
+            groupPair.second.second->setVisible(false);
+        }
+    }
+
+    bool InspectorWidget::ShouldGroupAutoExpanded(const AZStd::string& groupNameId) const
+    {
+        AZ_UNUSED(groupNameId);
+        return true;
+    }
+
+    void InspectorWidget::OnGroupExpanded(const AZStd::string& groupNameId)
+    {
+        AZ_UNUSED(groupNameId);
+    }
+
+    void InspectorWidget::OnGroupCollapsed(const AZStd::string& groupNameId)
+    {
+        AZ_UNUSED(groupNameId);
+    }
+
+    void InspectorWidget::OnHeaderClicked(const AZStd::string& groupNameId, QMouseEvent* event)
+    {
+        if (event->button() == Qt::MouseButton::LeftButton)
+        {
+            if (!IsGroupExpanded(groupNameId))
+            {
+                ExpandGroup(groupNameId);
+            }
+            else
+            {
+                CollapseGroup(groupNameId);
+            }
+            return;
+        }
+
+        if (event->button() == Qt::MouseButton::RightButton)
+        {
+            QMenu menu;
+            menu.addAction("Expand", [this, groupNameId]() { ExpandGroup(groupNameId); })->setEnabled(!IsGroupExpanded(groupNameId));
+            menu.addAction("Collapse", [this, groupNameId]() { CollapseGroup(groupNameId); })->setEnabled(IsGroupExpanded(groupNameId));
+            menu.addAction("Expand All", [this]() { ExpandAll(); });
+            menu.addAction("Collapse All", [this]() { CollapseAll(); });
+            menu.exec(event->globalPos());
+            return;
         }
     }
 } // namespace AtomToolsFramework

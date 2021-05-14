@@ -10,12 +10,13 @@
 #
 
 set(FILES
-    ../External/ImGui/v1.70/imgui/imconfig.h
-    ../External/ImGui/v1.70/imgui/imgui.cpp
-    ../External/ImGui/v1.70/imgui/imgui.h
-    ../External/ImGui/v1.70/imgui/imgui_draw.cpp
-    ../External/ImGui/v1.70/imgui/imgui_internal.h
-    ../External/ImGui/v1.70/imgui/imgui_user.h
-    ../External/ImGui/v1.70/imgui/imgui_user.inl
-    ../External/ImGui/v1.70/imgui/imgui_widgets.cpp
+    ../External/ImGui/v1.82/imgui/imconfig.h
+    ../External/ImGui/v1.82/imgui/imgui.cpp
+    ../External/ImGui/v1.82/imgui/imgui.h
+    ../External/ImGui/v1.82/imgui/imgui_draw.cpp
+    ../External/ImGui/v1.82/imgui/imgui_internal.h
+    ../External/ImGui/v1.82/imgui/imgui_tables.cpp
+    ../External/ImGui/v1.82/imgui/imgui_user.h
+    ../External/ImGui/v1.82/imgui/imgui_user.inl
+    ../External/ImGui/v1.82/imgui/imgui_widgets.cpp
 )

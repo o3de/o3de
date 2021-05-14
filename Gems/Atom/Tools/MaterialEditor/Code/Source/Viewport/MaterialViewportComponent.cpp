@@ -24,6 +24,7 @@
 
 #include <Viewport/MaterialViewportComponent.h>
 #include <Atom/Viewport/MaterialViewportNotificationBus.h>
+#include <Atom/Viewport/MaterialViewportSettings.h>
 
 #include <Atom/ImageProcessing/ImageObject.h>
 #include <Atom/ImageProcessing/ImageProcessingBus.h>
@@ -70,6 +71,8 @@ namespace MaterialEditor
 
     void MaterialViewportComponent::Reflect(AZ::ReflectContext* context)
     {
+        MaterialViewportSettings::Reflect(context);
+
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<MaterialViewportComponent, AZ::Component>()
@@ -160,6 +163,9 @@ namespace MaterialEditor
 
     void MaterialViewportComponent::Activate()
     {
+        m_viewportSettings =
+            AZ::UserSettings::CreateFind<MaterialViewportSettings>(AZ::Crc32("MaterialViewportSettings"), AZ::UserSettings::CT_GLOBAL);
+
         m_lightingPresetPreviewImageDefault = QImage(180, 90, QImage::Format::Format_RGBA8888);
         m_lightingPresetPreviewImageDefault.fill(Qt::GlobalColor::black);
 
@@ -192,12 +198,13 @@ namespace MaterialEditor
 
         MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnBeginReloadContent);
 
-        const AZStd::string prevLightingPresetSelectionName = m_lightingPresetSelection ? m_lightingPresetSelection->m_displayName : "";
-        const AZStd::string prevModelPresetSelectionName = m_modelPresetSelection ? m_modelPresetSelection->m_displayName : "";
+        const AZStd::string selectedLightingPresetNameOld = m_viewportSettings->m_selectedLightingPresetName;
 
         m_lightingPresetVector.clear();
         m_lightingPresetLastSavePathMap.clear();
         m_lightingPresetSelection.reset();
+
+        const AZStd::string selectedModelPresetNameOld = m_viewportSettings->m_selectedModelPresetName;
 
         m_modelPresetVector.clear();
         m_modelPresetLastSavePathMap.clear();
@@ -263,8 +270,8 @@ namespace MaterialEditor
 
         // If there was a prior selection, this will keep the same configuration selected.
         // Otherwise, these strings are empty and the operation will be ignored.
-        SelectLightingPresetByName(prevLightingPresetSelectionName);
-        SelectModelPresetByName(prevModelPresetSelectionName);
+        SelectLightingPresetByName(selectedLightingPresetNameOld);
+        SelectModelPresetByName(selectedModelPresetNameOld);
 
         MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnEndReloadContent);
 
@@ -278,7 +285,7 @@ namespace MaterialEditor
 
         MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnLightingPresetAdded, presetPtr);
 
-        if (preset.m_autoSelect || m_lightingPresetVector.size() == 1)
+        if (m_lightingPresetVector.size() == 1)
         {
             SelectLightingPreset(presetPtr);
         }
@@ -327,6 +334,7 @@ namespace MaterialEditor
         if (preset)
         {
             m_lightingPresetSelection = preset;
+            m_viewportSettings->m_selectedLightingPresetName = preset->m_displayName;
             MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnLightingPresetSelected, m_lightingPresetSelection);
         }
     }
@@ -373,7 +381,7 @@ namespace MaterialEditor
 
         MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnModelPresetAdded, presetPtr);
 
-        if (preset.m_autoSelect || m_modelPresetVector.size() == 1)
+        if (m_modelPresetVector.size() == 1)
         {
             SelectModelPreset(presetPtr);
         }
@@ -422,6 +430,7 @@ namespace MaterialEditor
         if (preset)
         {
             m_modelPresetSelection = preset;
+            m_viewportSettings->m_selectedModelPresetName = preset->m_displayName;
             MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnModelPresetSelected, m_modelPresetSelection);
         }
     }
@@ -463,53 +472,66 @@ namespace MaterialEditor
 
     void MaterialViewportComponent::SetShadowCatcherEnabled(bool enable)
     {
-        m_shadowCatcherEnabled = enable;
+        m_viewportSettings->m_enableShadowCatcher = enable;
         MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnShadowCatcherEnabledChanged, enable);
     }
 
     bool MaterialViewportComponent::GetShadowCatcherEnabled() const
     {
-        return m_shadowCatcherEnabled;
+        return m_viewportSettings->m_enableShadowCatcher;
     }
 
     void MaterialViewportComponent::SetGridEnabled(bool enable)
     {
-        m_gridEnabled = enable;
+        m_viewportSettings->m_enableGrid = enable;
         MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnGridEnabledChanged, enable);
     }
 
 
     bool MaterialViewportComponent::GetGridEnabled() const
     {
-        return m_gridEnabled;
+        return m_viewportSettings->m_enableGrid;
     }
 
     void MaterialViewportComponent::SetAlternateSkyboxEnabled(bool enable)
     {
-        m_alternateSkyboxEnabled = enable;
+        m_viewportSettings->m_enableAlternateSkybox = enable;
         MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnAlternateSkyboxEnabledChanged, enable);
     }
 
 
     bool MaterialViewportComponent::GetAlternateSkyboxEnabled() const
     {
-        return m_alternateSkyboxEnabled;
+        return m_viewportSettings->m_enableAlternateSkybox;
     }
 
     void MaterialViewportComponent::SetFieldOfView(float fieldOfView)
     {
-        m_fieldOfView = fieldOfView;
+        m_viewportSettings->m_fieldOfView = fieldOfView;
         MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnFieldOfViewChanged, fieldOfView);
     }
 
 
     float MaterialViewportComponent::GetFieldOfView() const
     {
-        return m_fieldOfView;
+        return m_viewportSettings->m_fieldOfView;
+    }
+
+    void MaterialViewportComponent::SetDisplayMapperOperationType(AZ::Render::DisplayMapperOperationType operationType)
+    {
+        m_viewportSettings->m_displayMapperOperationType = operationType;
+        MaterialViewportNotificationBus::Broadcast(&MaterialViewportNotificationBus::Events::OnDisplayMapperOperationTypeChanged, operationType);
+    }
+
+    AZ::Render::DisplayMapperOperationType MaterialViewportComponent::GetDisplayMapperOperationType() const
+    {
+        return m_viewportSettings->m_displayMapperOperationType;
     }
 
     void MaterialViewportComponent::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
     {
-        AZ::TickBus::QueueFunction([this]() { ReloadContent(); });
+        AZ::TickBus::QueueFunction([this]() {
+            ReloadContent();
+        });
     }
 }

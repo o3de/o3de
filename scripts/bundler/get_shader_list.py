@@ -55,7 +55,7 @@ def get_shader_list(project_path, asset_platform, shader_type, shader_platform, 
 
 parser = argparse.ArgumentParser(description='Gets the shader list for a specific platform from the current shader compiler server')
 
-parser.add_argument('-g', 'project-path', type=pathlib.Path, required=True, help="Path to the project")
+parser.add_argument('-g', '--project-path', type=pathlib.Path, required=True, help="Path to the project")
 parser.add_argument('asset-platform', type=str, help="The asset cache sub folder to use for shader generation")
 parser.add_argument('shader-type', type=str, help="The shader type to use")
 parser.add_argument('-p', '--shader_platform', type=str, required=False, default='', help="The target platform to generate shaders for.")

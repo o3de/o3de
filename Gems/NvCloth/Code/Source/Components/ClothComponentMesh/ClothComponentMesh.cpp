@@ -166,6 +166,13 @@ namespace NvCloth
 
         // Initialize render data
         m_renderDataBufferIndex = 0;
+        {
+            auto& renderData = GetRenderData();
+            renderData.m_particles = m_meshClothInfo.m_particles;
+            renderData.m_tangents = m_meshClothInfo.m_tangents;
+            renderData.m_bitangents = m_meshClothInfo.m_bitangents;
+            renderData.m_normals = m_meshClothInfo.m_normals;
+        }
         UpdateRenderData(m_cloth->GetParticles());
         // Copy the first initialized element to the rest of the buffer
         for (AZ::u32 i = 1; i < RenderDataBufferSize; ++i)
@@ -177,7 +184,12 @@ namespace NvCloth
         m_actorClothColliders = ActorClothColliders::Create(m_entityId);
 
         // It will return a valid instance if it's an actor with skinning data.
-        m_actorClothSkinning = ActorClothSkinning::Create(m_entityId, m_config.m_meshNode, m_cloth->GetParticles().size(), m_meshRemappedVertices);
+        m_actorClothSkinning = ActorClothSkinning::Create(
+            m_entityId,
+            m_meshNodeInfo,
+            m_meshClothInfo.m_particles.size(),
+            m_cloth->GetParticles().size(),
+            m_meshRemappedVertices);
         m_numberOfClothSkinningUpdates = 0;
 
         m_clothConstraints = ClothConstraints::Create(
@@ -392,6 +404,14 @@ namespace NvCloth
             return;
         }
 
+        auto& renderData = GetRenderData();
+
+        if (m_config.m_removeStaticTriangles && m_actorClothSkinning)
+        {
+            // Apply skinning to the non-simulated part of the mesh.
+            m_actorClothSkinning->ApplySkinningOnNonSimulatedVertices(m_meshClothInfo, renderData);
+        }
+
         // Calculate normals of the cloth particles (simplified mesh).
         AZStd::vector<AZ::Vector3> normals;
         [[maybe_unused]] bool normalsCalculated =
@@ -401,19 +421,10 @@ namespace NvCloth
         // Copy particles and normals to render data.
         // Since cloth's vertices were welded together,
         // the full mesh will result in smooth normals.
-        auto& renderData = GetRenderData();
-        renderData.m_particles.resize_no_construct(m_meshRemappedVertices.size());
-        renderData.m_normals.resize_no_construct(m_meshRemappedVertices.size());
         for (size_t index = 0; index < m_meshRemappedVertices.size(); ++index)
         {
             const int remappedIndex = m_meshRemappedVertices[index];
-            if (remappedIndex < 0)
-            {
-                // Removed particle. Assign initial values to have something valid during tangents and bitangents calculation.
-                renderData.m_particles[index] = m_meshClothInfo.m_particles[index];
-                renderData.m_normals[index] = AZ::Vector3::CreateAxisZ();
-            }
-            else
+            if (remappedIndex >= 0)
             {
                 renderData.m_particles[index] = particles[remappedIndex];
                 renderData.m_normals[index] = normals[remappedIndex];
@@ -448,9 +459,18 @@ namespace NvCloth
         const auto& renderTangents = renderData.m_tangents;
         const auto& renderBitangents = renderData.m_bitangents;
 
-        AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
-        AZ::Render::MeshComponentRequestBus::EventResult(
-            modelAsset, m_entityId, &AZ::Render::MeshComponentRequestBus::Events::GetModelAsset);
+        // Since Atom has a 1:1 relation with between ModelAsset buffers and Model buffers,
+        // internally it created a new asset for the model instance. So it's important to
+        // get the asset from the model when we want to write to them, instead of getting the
+        // ModelAsset directly from the bus (which returns the original asset shared by all entities).
+        AZ::Data::Instance<AZ::RPI::Model> model;
+        AZ::Render::MeshComponentRequestBus::EventResult(model, m_entityId, &AZ::Render::MeshComponentRequestBus::Events::GetModel);
+        if (!model)
+        {
+            return;
+        }
+
+        AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset = model->GetModelAsset();
         if (!modelAsset.IsReady())
         {
             return;
@@ -496,8 +516,8 @@ namespace NvCloth
             }
             const AZ::RPI::ModelLodAsset::Mesh& subMesh = modelLodAsset->GetMeshes()[subMeshInfo.m_primitiveIndex];
 
-            int numVertices = subMeshInfo.m_numVertices;
-            int firstVertex = subMeshInfo.m_verticesFirstIndex;
+            const int numVertices = subMeshInfo.m_numVertices;
+            const int firstVertex = subMeshInfo.m_verticesFirstIndex;
             if (subMesh.GetVertexCount() != numVertices)
             {
                 AZ_Error("ClothComponentMesh", false,
@@ -530,12 +550,6 @@ namespace NvCloth
             for (size_t index = 0; index < numVertices; ++index)
             {
                 const int renderVertexIndex = firstVertex + index;
-
-                if (m_meshRemappedVertices[renderVertexIndex] < 0)
-                {
-                    // Removed particle from simulation
-                    continue;
-                }
 
                 const SimParticleFormat& renderParticle = renderParticles[renderVertexIndex];
                 destVerticesBuffer[index].Set(
@@ -595,10 +609,7 @@ namespace NvCloth
             m_meshClothInfo.m_particles, m_meshClothInfo.m_indices,
             meshSimplifiedParticles, meshSimplifiedIndices,
             m_meshRemappedVertices,
-            // [TODO LYN-1890]
-            // Since blend weights cannot be controlled per instance with Atom,
-            // this additional mesh optimization is not possible at the moment.
-            false /*m_config.m_removeStaticTriangles*/);
+            m_config.m_removeStaticTriangles);
         if (meshSimplifiedParticles.empty() ||
             meshSimplifiedIndices.empty())
         {

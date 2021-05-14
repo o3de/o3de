@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C14654881
 # Test Case Title : Switching levels from a level containing a character controller component
 # should not lead to a crash
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/14654881
+
 
 
 # fmt: off
@@ -62,8 +62,8 @@ def C14654881_CharacterController_SwitchLevels():
 
     imports.init()
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
     import azlmbr.legacy.general as general
     import azlmbr.bus
 
@@ -100,5 +100,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C14654881_CharacterController_SwitchLevels)

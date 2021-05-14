@@ -55,10 +55,10 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         // ProductThumbnail
         //////////////////////////////////////////////////////////////////////////
-        static const char* DEFAULT_PRODUCT_ICON_PATH = "Editor/Icons/AssetBrowser/DefaultProduct_16.svg";
+        static const char* DEFAULT_PRODUCT_ICON_PATH = "Icons/AssetBrowser/DefaultProduct_16.svg";
 
-        ProductThumbnail::ProductThumbnail(Thumbnailer::SharedThumbnailKey key, int thumbnailSize)
-            : Thumbnail(key, thumbnailSize)
+        ProductThumbnail::ProductThumbnail(Thumbnailer::SharedThumbnailKey key)
+            : Thumbnail(key)
         {}
 
         void ProductThumbnail::LoadThread() 
@@ -96,12 +96,8 @@ namespace AzToolsFramework
                 iconPath = QString::fromUtf8(DEFAULT_PRODUCT_ICON_PATH);
             }
 
-            m_icon = QIcon(iconPath);
-
-            if (m_icon.isNull())
-            {
-                m_state = State::Failed;
-            }
+            m_pixmap.load(iconPath);
+            m_state = m_pixmap.isNull() ? State::Failed : State::Ready;
         }
 
         //////////////////////////////////////////////////////////////////////////

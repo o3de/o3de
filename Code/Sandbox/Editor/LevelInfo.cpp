@@ -20,7 +20,6 @@
 
 // Editor
 #include "Util/fastlib.h"
-#include "Material/MaterialManager.h"   // for CMaterialManager
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
@@ -67,7 +66,6 @@ void CLevelInfo::Validate()
 
     // Validate level.
     ValidateObjects();
-    ValidateMaterials();
 
     if (m_pReport->GetErrorCount() == 0)
     {
@@ -98,10 +96,6 @@ void CLevelInfo::ValidateObjects()
         m_pReport->SetCurrentValidatorObject(pObject);
 
         pObject->Validate(m_pReport);
-
-        CUsedResources rs;
-        pObject->GatherUsedResources(rs);
-        rs.Validate(m_pReport);
 
         m_pReport->SetCurrentValidatorObject(NULL);
     }
@@ -185,12 +179,4 @@ void CLevelInfo::ValidateObjects()
             }
         }
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CLevelInfo::ValidateMaterials()
-{
-    // Validate all objects
-    CBaseObjectsArray objects;
-    GetIEditor()->GetMaterialManager()->Validate();
 }

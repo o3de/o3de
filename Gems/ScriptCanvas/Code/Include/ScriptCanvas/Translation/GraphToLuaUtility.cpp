@@ -26,6 +26,39 @@
 
 #include "GraphToLua.h"
 
+namespace GraphToLuaUtilityCpp
+{
+    AZStd::string EqualSigns(size_t numEqualSignsRequired)
+    {
+        AZStd::string equalSigns = "";
+        while (numEqualSignsRequired--)
+        {
+            equalSigns += "=";
+        }
+
+        return equalSigns;
+    }
+
+    AZStd::string MakeLongBracketString(const AZStd::string& formattedString)
+    {
+        size_t numEqualSignsRequired = 0;
+
+        for (;;)
+        {
+            auto candidate = AZStd::string::format("]%s]", EqualSigns(numEqualSignsRequired).c_str());
+
+            if (formattedString.find(candidate) == AZStd::string::npos)
+            {
+                break;
+            }
+
+            ++numEqualSignsRequired;
+        }
+
+        return EqualSigns(numEqualSignsRequired);
+    }
+}
+
 namespace ScriptCanvas
 {
     namespace Translation
@@ -352,7 +385,11 @@ namespace ScriptCanvas
             }
 
             case Data::eType::String:
-                return AZStd::string::format("\"%s\"", datum.GetAs<Data::StringType>()->data());
+            {
+                const AZStd::string& formattedString = *datum.GetAs<Data::StringType>();
+                const AZStd::string bracketString = GraphToLuaUtilityCpp::MakeLongBracketString(formattedString);
+                return AZStd::string::format("[%s[%s]%s]", bracketString.c_str(), formattedString.c_str(), bracketString.c_str());
+            }
 
             case Data::eType::EntityID:
                 return EntityIdValueToString(*datum.GetAs<Data::EntityIDType>(), config);

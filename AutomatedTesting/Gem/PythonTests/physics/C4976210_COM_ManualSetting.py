@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C4976210
 # Test Case Title : Verify that when Compute COM is disabled, the user gets an option to add the co-ordinates of
 #                       the COM and the COM gets implemented at those co-ordinates.
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4976210
+
 
 
 import os
@@ -77,8 +77,8 @@ def C4976210_COM_ManualSetting():
 
     imports.init()
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
     import azlmbr.legacy.general as general
     import azlmbr.bus
     import azlmbr
@@ -305,5 +305,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C4976210_COM_ManualSetting)

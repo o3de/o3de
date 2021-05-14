@@ -167,8 +167,8 @@ ViewportInteraction::ViewportInteraction(EditorWindow* editorWindow)
     : QObject()
     , m_editorWindow(editorWindow)
     , m_activeElementId()
-    , m_anchorWhole(new ViewportIcon("Editor/Plugins/UiCanvasEditor/CanvasIcons/Anchor_Whole.tif"))
-    , m_pivotIcon(new ViewportIcon("Editor/Plugins/UiCanvasEditor/CanvasIcons/Pivot.tif"))
+    , m_anchorWhole(new ViewportIcon("Editor/Icons/Viewport/Anchor_Whole.tif"))
+    , m_pivotIcon(new ViewportIcon("Editor/Icons/Viewport/Pivot.tif"))
     , m_interactionMode(PersistentGetInteractionMode())
     , m_interactionType(InteractionType::NONE)
     , m_coordinateSystem(PersistentGetCoordinateSystem())
@@ -186,13 +186,13 @@ ViewportInteraction::ViewportInteraction(EditorWindow* editorWindow)
     , m_startAnchors(UiTransform2dInterface::Anchors())
     , m_grabbedAnchors(ViewportHelpers::SelectedAnchors())
     , m_grabbedGizmoParts(ViewportHelpers::GizmoParts())
-    , m_lineTriangleX(new ViewportIcon("Editor/Plugins/UiCanvasEditor/CanvasIcons/Transform_Gizmo_Line_Triangle_X.tif"))
-    , m_lineTriangleY(new ViewportIcon("Editor/Plugins/UiCanvasEditor/CanvasIcons/Transform_Gizmo_Line_Triangle_Y.tif"))
-    , m_circle(new ViewportIcon("Editor/Plugins/UiCanvasEditor/CanvasIcons/Transform_Gizmo_Circle.tif"))
-    , m_lineSquareX(new ViewportIcon("Editor/Plugins/UiCanvasEditor/CanvasIcons/Transform_Gizmo_Line_Square_X.tif"))
-    , m_lineSquareY(new ViewportIcon("Editor/Plugins/UiCanvasEditor/CanvasIcons/Transform_Gizmo_Line_Square_Y.tif"))
-    , m_centerSquare(new ViewportIcon("Editor/Plugins/UiCanvasEditor/CanvasIcons/Transform_Gizmo_Center_Square.tif"))
-    , m_dottedLine(new ViewportIcon("Editor/Plugins/UiCanvasEditor/CanvasIcons/DottedLine.tif"))
+    , m_lineTriangleX(new ViewportIcon("Editor/Icons/Viewport/Transform_Gizmo_Line_Triangle_X.tif"))
+    , m_lineTriangleY(new ViewportIcon("Editor/Icons/Viewport/Transform_Gizmo_Line_Triangle_Y.tif"))
+    , m_circle(new ViewportIcon("Editor/Icons/Viewport/Transform_Gizmo_Circle.tif"))
+    , m_lineSquareX(new ViewportIcon("Editor/Icons/Viewport/Transform_Gizmo_Line_Square_X.tif"))
+    , m_lineSquareY(new ViewportIcon("Editor/Icons/Viewport/Transform_Gizmo_Line_Square_Y.tif"))
+    , m_centerSquare(new ViewportIcon("Editor/Icons/Viewport/Transform_Gizmo_Center_Square.tif"))
+    , m_dottedLine(new ViewportIcon("Editor/Icons/Viewport/DottedLine.tif"))
     , m_dragInteraction(nullptr)
     , m_expanderWatcher(new ViewportInteractionExpanderWatcher(this))
 {
@@ -908,8 +908,9 @@ void ViewportInteraction::GetScaleToFitTransformProps(const AZ::Vector2* newCanv
         EBUS_EVENT_ID_RESULT(canvasSize, m_editorWindow->GetCanvas(), UiCanvasBus, GetCanvasSize);
     }
 
-    const int viewportWidth = m_editorWindow->GetViewport()->size().width();
-    const int viewportHeight = m_editorWindow->GetViewport()->size().height();
+    QSize viewportSize = QtHelpers::GetDpiScaledViewportSize(*m_editorWindow->GetViewport());
+    const int viewportWidth = viewportSize.width();
+    const int viewportHeight = viewportSize.height();
 
     // We pad the edges of the viewport to allow the user to easily see the borders of
     // the canvas edges, which is especially helpful if there are anchors sitting on

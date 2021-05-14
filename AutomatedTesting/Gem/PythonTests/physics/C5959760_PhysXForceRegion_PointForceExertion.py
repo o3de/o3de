@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C5959760
 # Test Case Title : Check that force region (capsule) exerts point force
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5959760
+
 
 
 # fmt: off
@@ -72,8 +72,8 @@ def C5959760_PhysXForceRegion_PointForceExertion():
 
     imports.init()
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -230,5 +230,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C5959760_PhysXForceRegion_PointForceExertion)

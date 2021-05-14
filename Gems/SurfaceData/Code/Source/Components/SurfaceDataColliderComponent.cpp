@@ -19,8 +19,8 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/IntersectSegment.h>
 
-#include <AzFramework/Physics/WorldBodyBus.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
+#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
@@ -221,7 +221,7 @@ namespace SurfaceData
         }
 
         AzPhysics::SceneQueryHit result;
-        Physics::WorldBodyRequestBus::EventResult(result, GetEntityId(), &Physics::WorldBodyRequestBus::Events::RayCast, request);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(result, GetEntityId(), &AzPhysics::SimulatedBodyComponentRequestsBus::Events::RayCast, request);
 
         if (result)
         {
@@ -319,7 +319,7 @@ namespace SurfaceData
             colliderValidBeforeUpdate = m_colliderBounds.IsValid();
 
             m_colliderBounds = AZ::Aabb::CreateNull();
-            Physics::WorldBodyRequestBus::EventResult(m_colliderBounds, GetEntityId(), &Physics::WorldBodyRequestBus::Events::GetAabb);
+            AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(m_colliderBounds, GetEntityId(), &AzPhysics::SimulatedBodyComponentRequestsBus::Events::GetAabb);
 
             colliderValidAfterUpdate = m_colliderBounds.IsValid();
         }

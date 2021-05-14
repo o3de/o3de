@@ -104,7 +104,6 @@ class SandboxIntegrationManager
     , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
     , private AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
     , private IUndoManagerListener
-    , private AzToolsFramework::NewViewportInteractionModelEnabledRequestBus::Handler
     , private AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler
 {
 public:
@@ -144,9 +143,6 @@ private:
     QDockWidget* InstanceViewPane(const char* paneName) override;
     void CloseViewPane(const char* paneName) override;
     void BrowseForAssets(AzToolsFramework::AssetBrowser::AssetSelectionModel& selection) override;
-    void GenerateAllCubemaps() override;
-    void GenerateCubemapForEntity(AZ::EntityId entityId, AZStd::string* cubemapOutputPath, bool hideEntity) override;
-    void GenerateCubemapWithIDForEntity(AZ::EntityId entityId, AZ::Uuid cubemapId, AZStd::string* cubemapOutputPath, bool hideEntity, bool hasCubemapId) override;
     void HandleObjectModeSelection(const AZ::Vector2& point, int flags, bool& handled) override;
     void UpdateObjectModeCursor(AZ::u32& cursorId, AZStd::string& cursorStr) override;
     void CreateEditorRepresentation(AZ::Entity* entity) override;
@@ -162,7 +158,6 @@ private:
     bool GetUndoSliceOverrideSaveValue() override;
     bool GetShowCircularDependencyError() override;
     void SetShowCircularDependencyError(const bool& showCircularDependencyError) override;
-    void SetEditTool(const char* tool) override;
     void LaunchLuaEditor(const char* files) override;
     bool IsLevelDocumentOpen() override;
     AZStd::string GetLevelName() override;
@@ -251,7 +246,6 @@ private:
     void DrawArrow(const AZ::Vector3& src, const AZ::Vector3& trg, float fHeadScale, bool b2SidedArrow) override;
     void DrawTextLabel(const AZ::Vector3& pos, float size, const char* text, const bool bCenter, int srcOffsetX, int scrOffsetY) override;
     void Draw2dTextLabel(float x, float y, float size, const char* text, bool bCenter) override;
-    void DrawTextOn2DBox(const AZ::Vector3& pos, const char* text, float textScale, const AZ::Vector4& TextColor, const AZ::Vector4& TextBackColor) override;
     void DrawTextureLabel(ITexture* texture, const AZ::Vector3& pos, float sizeX, float sizeY, int texIconFlags) override;
     void DrawTextureLabel(int textureId, const AZ::Vector3& pos, float sizeX, float sizeY, int texIconFlags) override;
     void SetLineWidth(float width) override;
@@ -275,9 +269,6 @@ private:
     // AzFramework::DisplayContextRequestBus
     void SetDC(DisplayContext* dc) override;
     DisplayContext* GetDC() override;
-
-    // NewViewportInteractionModelEnabledRequestBus
-    bool IsNewViewportInteractionModelEnabled() override;
 
     // Context menu handlers.
     void ContextMenu_NewEntity();
@@ -328,12 +319,10 @@ private:
     void OnLayerComponentDeactivated(AZ::EntityId entityId) override;
 
 private:
-    void SetupFileExtensionMap();
     // Right click context menu when a layer is included in the selection.
     void SetupLayerContextMenu(QMenu* menu);
     void SetupSliceContextMenu(QMenu* menu);
     void SetupSliceContextMenu_Modify(QMenu* menu, const AzToolsFramework::EntityIdList& selectedEntities, const AZ::u32 numEntitiesInSlices);
-    void SetupScriptCanvasContextMenu(QMenu* menu);
     void SaveSlice(const bool& QuickPushToFirstLevel);
     void GetEntitiesInSlices(const AzToolsFramework::EntityIdList& selectedEntities, AZ::u32& entitiesInSlices, AZStd::vector<AZ::SliceComponent::SliceInstanceAddress>& sliceInstances);
 
@@ -357,9 +346,6 @@ private:
     };
 
 private:
-    typedef AZStd::unordered_map<AZ::u32, IFileUtil::ECustomFileType> ExtensionMap;
-    ExtensionMap m_extensionToFileType;
-
     AZ::Vector2 m_contextMenuViewPoint;
     AZ::Vector3 m_sliceWorldPos;
 
@@ -370,16 +356,14 @@ private:
 
     DisplayContext* m_dc;
 
-    AZStd::unique_ptr<class ComponentEntityDebugPrinter> m_entityDebugPrinter;
-
     AZStd::vector<SliceAssetDeletionErrorInfo> m_sliceAssetDeletionErrorRestoreInfos;
 
     // Tracks new entities that have not yet been saved.
     AZStd::unordered_set<AZ::EntityId> m_unsavedEntities;
 
-    const AZStd::string m_defaultComponentIconLocation = "Editor/Icons/Components/Component_Placeholder.svg";
-    const AZStd::string m_defaultComponentViewportIconLocation = "Editor/Icons/Components/Viewport/Component_Placeholder.png";
-    const AZStd::string m_defaultEntityIconLocation = "Editor/Icons/Components/Viewport/Transform.png";
+    const AZStd::string m_defaultComponentIconLocation = "Icons/Components/Component_Placeholder.svg";
+    const AZStd::string m_defaultComponentViewportIconLocation = "Icons/Components/Viewport/Component_Placeholder.png";
+    const AZStd::string m_defaultEntityIconLocation = "Icons/Components/Viewport/Transform.png";
 
     bool m_debugDisplayBusImplementationActive = false;
 

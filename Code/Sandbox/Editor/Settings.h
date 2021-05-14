@@ -40,8 +40,6 @@
 
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 
-class CGrid;
-
 struct SGizmoSettings
 {
     float axisGizmoSize;
@@ -117,18 +115,6 @@ struct SDeepSelectionSettings
     //! If this value is 0.f, then deep selection mode won't work.
     float fRange;
     bool bStickDuplicate;
-};
-
-//////////////////////////////////////////////////////////////////////////
-// Settings for vertex snapping.
-//////////////////////////////////////////////////////////////////////////
-struct SVertexSnappingSettings
-{
-    SVertexSnappingSettings()
-        : vertexCubeSize(0.01f)
-        , bRenderPenetratedBoundBox(false) {}
-    float vertexCubeSize;
-    bool bRenderPenetratedBoundBox;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -405,9 +391,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     //! Keeps the editor active even if no focus is set
     int keepEditorActive;
 
-    //! Pointer to currently used grid.
-    CGrid* pGrid;
-
     SGizmoSettings gizmo;
 
     // Settings of the snapping.
@@ -431,7 +414,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     // This directory is related to the editor root.
     QString strStandardTempDirectory;
-    QString strEditorEnv;
 
     SGUI_Settings gui;
 
@@ -474,16 +456,11 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     // Object Highlight Settings
     SObjectColors objectColorSettings;
-
-    // Vertex Snapping Settings
-    SVertexSnappingSettings vertexSnappingSettings;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     SSmartOpenDialogSettings smartOpenSettings;
 
     bool bSettingsManagerMode;
-
-    bool bForceSkyUpdate;
 
     bool bAutoSaveTagPoints;
 
@@ -493,7 +470,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     bool bVisualizeNavigationAccessibility;
     int  navigationDebugAgentType;
 
-    bool bIsSearchFilterActive;
     int backgroundUpdatePeriod;
     const char* g_TemporaryLevelName;
 
