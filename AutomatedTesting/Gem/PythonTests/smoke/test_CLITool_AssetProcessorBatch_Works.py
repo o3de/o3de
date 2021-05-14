@@ -7,9 +7,8 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-"""
 
-"""
+
 CLI tool - AssetProcessorBatch
 Launch AssetProcessorBatch and Shutdown AssetProcessorBatch without any crash
 """
@@ -21,7 +20,7 @@ from ly_test_tools.o3de.asset_processor import AssetProcessor
 
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
-@pytest.mark.usefixtures("automatic_process_killer")
+@pytest.mark.timeout(10)
 @pytest.mark.SUITE_smoke
 class TestsCLIToolAssetProcessorBatchWorks(object):
     def test_CLITool_AssetProcessorBatch_Works(self, workspace):

@@ -7,9 +7,8 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-"""
 
-"""
+
 Static tool scripts
 Launch Static tool and Verify the help message
 """
@@ -32,10 +31,9 @@ def verify_help_message(static_tool):
 
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
-@pytest.mark.usefixtures("automatic_process_killer")
 @pytest.mark.SUITE_smoke
 class TestStaticToolsGenPakShadersWorks(object):
-    def test_StaticTools_GenPakShaders_Works(self, request, editor):
+    def test_StaticTools_GenPakShaders_Works(self, editor):
         static_tools = [
             os.path.join(editor.workspace.paths.engine_root(), "scripts", "bundler", "gen_shaders.py"),
             os.path.join(editor.workspace.paths.engine_root(), "scripts", "bundler", "get_shader_list.py"),

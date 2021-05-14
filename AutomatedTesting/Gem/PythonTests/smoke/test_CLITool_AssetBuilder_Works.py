@@ -7,9 +7,8 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-"""
 
-"""
+
 CLI tool - AssetBuilder
 Launch AssetBuilder and Verify the help message
 """
@@ -17,21 +16,12 @@ Launch AssetBuilder and Verify the help message
 import os
 import pytest
 import subprocess
-import ly_test_tools.environment.process_utils as process_utils
 
 
-@pytest.mark.parametrize("project", ["AutomatedTesting"])
-@pytest.mark.usefixtures("automatic_process_killer")
+@pytest.mark.timeout(10)
 @pytest.mark.SUITE_smoke
 class TestCLIToolAssetBuilderWorks(object):
-    @pytest.fixture(autouse=True)
-    def setup_teardown(self, request):
-        def teardown():
-            process_utils.kill_processes_named("AssetBuilder", True)
-
-        request.addfinalizer(teardown)
-
-    def test_CLITool_AssetBuilder_Works(self, request, editor, build_directory):
+    def test_CLITool_AssetBuilder_Works(self, build_directory):
         file_path = os.path.join(build_directory, "AssetBuilder")
         help_message = "AssetBuilder is part of the Asset Processor"
         # Launch AssetBuilder

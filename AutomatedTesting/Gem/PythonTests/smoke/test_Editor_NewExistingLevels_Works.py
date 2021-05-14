@@ -11,10 +11,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import pytest
 import os
-import sys
-
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../automatedtesting_shared")
-
 from automatedtesting_shared.base import TestAutomationBase
 import ly_test_tools.environment.file_system as file_system
 

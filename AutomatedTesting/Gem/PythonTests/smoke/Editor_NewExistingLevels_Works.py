@@ -13,7 +13,6 @@ Test Case Title: Create Test for UI apps- Editor
 """
 
 
-# fmt: off
 class Tests():
     level_created          = ("Level created",                     "Failed to create level")
     entity_found           = ("New Entity created in level",       "Failed to create New Entity in level")
@@ -25,7 +24,6 @@ class Tests():
     mesh_removed           = ("Mesh Component removed",            "Failed to remove Mesh Component")
     entity_deleted         = ("Entity deleted",                    "Failed to delete Entity")
     level_edits_present    = ("Level edits persist after saving",  "Failed to save level edits after saving")
-# fmt: on
 
 
 def Editor_NewExistingLevels_Works():
@@ -79,7 +77,7 @@ def Editor_NewExistingLevels_Works():
     helper.init_idle()
     test_level_name = "temp_level"
     general.create_level_no_prompt(test_level_name, 128, 1, 128, False)
-    general.idle_wait(2.0)
+    helper.wait_for_condition(lambda: general.get_current_level_name() == test_level_name, 2.0)
     Report.result(Tests.level_created, general.get_current_level_name() == test_level_name)
 
     # 2) Create a new entity
@@ -104,7 +102,6 @@ def Editor_NewExistingLevels_Works():
     general.open_level(test_level_name)
     Report.result(Tests.level_opened, general.get_current_level_name() == test_level_name)
     # Export Level
-    general.idle_wait(1.0)
     general.export_to_engine()
     level_pak_file = os.path.join("AutomatedTesting", "Levels", test_level_name, "level.pak")
     Report.result(Tests.level_exported, os.path.exists(level_pak_file))
