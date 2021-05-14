@@ -23,7 +23,6 @@
 #include "CmdLine.h"
 #include "CryName.h"
 
-#include "MTSafeAllocator.h"
 #include "CPUDetect.h"
 #include <AzFramework/Archive/ArchiveVars.h>
 #include "RenderBus.h"
@@ -276,33 +275,6 @@ extern SSystemCVars g_cvars;
 
 class CSystem;
 
-struct SmallModuleInfo
-{
-    string name;
-    CryModuleMemoryInfo memInfo;
-};
-
-struct SCryEngineStatsModuleInfo
-{
-    string name;
-    CryModuleMemoryInfo memInfo;
-    uint32 moduleStaticSize;
-    uint32 usedInModule;
-    uint32 SizeOfCode;
-    uint32 SizeOfInitializedData;
-    uint32 SizeOfUninitializedData;
-};
-
-struct SCryEngineStatsGlobalMemInfo
-{
-    int totalUsedInModules;
-    int totalCodeAndStatic;
-    int countedMemoryModules;
-    uint64 totalAllocatedInModules;
-    int totalNumAllocsInModules;
-    std::vector<SCryEngineStatsModuleInfo> modules;
-};
-
 struct CProfilingSystem
     : public IProfilingSystem
 {
@@ -338,17 +310,6 @@ class CSystem
     , public CrySystemRequestBus::Handler
 {
 public:
-
-    inline void* operator new(std::size_t)
-    {
-        size_t allocated = 0;
-        return CryMalloc(sizeof(CSystem), allocated, 64);
-    }
-    inline void operator delete(void* p)
-    {
-        CryFree(p, 64);
-    }
-
     CSystem(SharedEnvironmentInstance* pSharedEnvironment);
     ~CSystem();
 
@@ -390,8 +351,6 @@ public:
     ISystem* GetCrySystem() override;
     ////////////////////////////////////////////////////////////////////////
 
-    uint32 GetUsedMemory();
-
     virtual bool SteamInit();
 
     void Relaunch(bool bRelaunch);
@@ -412,17 +371,14 @@ public:
     IConsole* GetIConsole() { return m_env.pConsole; };
     IRemoteConsole* GetIRemoteConsole();
     IMovieSystem* GetIMovieSystem() { return m_env.pMovieSystem; };
-    IMemoryManager* GetIMemoryManager(){ return m_pMemoryManager; }
     ICryFont* GetICryFont(){ return m_env.pCryFont; }
     ILog* GetILog(){ return m_env.pLog; }
     ICmdLine* GetICmdLine(){ return m_pCmdLine; }
-    IStreamEngine* GetStreamEngine();
     IValidator* GetIValidator() { return m_pValidator; };
     INameTable* GetINameTable() { return m_env.pNameTable; };
     IViewSystem* GetIViewSystem();
     ILevelSystem* GetILevelSystem();
     ISystemEventDispatcher* GetISystemEventDispatcher() { return m_pSystemEventDispatcher; }
-    IResourceManager* GetIResourceManager();
     ITextModeConsole* GetITextModeConsole();
     IProfilingSystem* GetIProfilingSystem() { return &m_ProfilingSystem; }
     IZLibCompressor* GetIZLibCompressor() { return m_pIZLibCompressor; }
@@ -509,11 +465,6 @@ public:
     virtual int ShowMessage(const char* text, const char* caption, unsigned int uType);
     bool CheckLogVerbosity(int verbosity);
 
-    virtual void DebugStats(bool checkpoint, bool leaks);
-    void DumpWinHeaps();
-
-    virtual int DumpMMStats(bool log);
-
     //! Return pointer to user defined callback.
     ISystemUserCallback* GetUserCallback() const { return m_pUserCallback; };
 
@@ -540,8 +491,6 @@ public:
 #if !defined(RELEASE)
     void SetVersionInfo(const char* const szVersion);
 #endif
-
-    virtual const IImageHandler* GetImageHandler() const override { return m_imageHandler.get(); }
 
     void ShutdownModuleLibraries();
 
@@ -570,7 +519,6 @@ private:
     bool InitConsole();
     bool InitFileSystem();
     bool InitFileSystem_LoadEngineFolders(const SSystemInitParams& initParams);
-    bool InitStreamEngine();
     bool InitAudioSystem(const SSystemInitParams& initParams);
     bool InitShine(const SSystemInitParams& initParams);
 
@@ -597,7 +545,6 @@ private:
 #endif // #ifndef _RELEASE
 
     bool ReLaunchMediaCenter();
-    void LogSystemInfo();
     void UpdateAudioSystems();
 
     void AddCVarGroupDirectory(const string& sPath);
@@ -690,13 +637,8 @@ private: // ------------------------------------------------------
 
     std::map<CCryNameCRC, AZStd::unique_ptr<AZ::DynamicModuleHandle> > m_moduleDLLHandles;
 
-    //! THe streaming engine
-    class CStreamEngine* m_pStreamEngine;
-
     //! current active process
     IProcess* m_pProcess;
-
-    IMemoryManager* m_pMemoryManager;
 
     CCamera m_PhysRendererCamera;
     ICVar* m_p_draw_helpers_str;
@@ -914,7 +856,6 @@ public:
 protected: // -------------------------------------------------------------
 
     CCmdLine*                                      m_pCmdLine;
-    class CResourceManager*       m_pResourceManager;
     ITextModeConsole*             m_pTextModeConsole;
 
     string  m_currentLanguageAudio;
@@ -943,7 +884,6 @@ protected: // -------------------------------------------------------------
 
     bool m_bIsSteamInitialized;
 
-    std::unique_ptr<IImageHandler> m_imageHandler;
     std::vector<IWindowMessageHandler*> m_windowMessageHandlers;
     bool m_initedOSAllocator = false;
     bool m_initedSysAllocator = false;

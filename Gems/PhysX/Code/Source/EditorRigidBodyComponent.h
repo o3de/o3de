@@ -33,8 +33,8 @@ namespace PhysX
     struct EditorRigidBodyConfiguration
         : public AzPhysics::RigidBodyConfiguration
     {
-        AZ_CLASS_ALLOCATOR(EditorRigidBodyConfiguration, AZ::SystemAllocator, 0);
-        AZ_RTTI(EditorRigidBodyConfiguration, "{27297024-5A99-4C58-8614-4EF18137CE69}", AzPhysics::RigidBodyConfiguration);
+        AZ_CLASS_ALLOCATOR(PhysX::EditorRigidBodyConfiguration, AZ::SystemAllocator, 0);
+        AZ_RTTI(PhysX::EditorRigidBodyConfiguration, "{27297024-5A99-4C58-8614-4EF18137CE69}", AzPhysics::RigidBodyConfiguration);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -127,8 +127,7 @@ namespace PhysX
         Debug::DebugDisplayDataChangedEvent::Handler m_debugDisplayDataChangeHandler;
 
         EditorRigidBodyConfiguration m_config;
-        AzPhysics::SimulatedBodyHandle m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
-        AzPhysics::RigidBody* m_editorBody = nullptr;
+        AzPhysics::SimulatedBodyHandle m_editorRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         AzPhysics::SceneHandle m_editorSceneHandle = AzPhysics::InvalidSceneHandle;
 
         AZ::Color m_centerOfMassDebugColor = AZ::Colors::White;

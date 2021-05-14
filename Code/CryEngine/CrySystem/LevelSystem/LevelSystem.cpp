@@ -17,7 +17,6 @@
 #include "LevelSystem.h"
 #include <IAudioSystem.h>
 #include "IMovieSystem.h"
-#include <IResourceManager.h>
 #include <ILocalizationManager.h>
 #include "CryPath.h"
 #include <Pak/CryPakUtils.h>
@@ -778,9 +777,6 @@ void CLevelSystem::PrepareNextLevel(const char* levelName)
         // switched to level heap, so now imm start the loading screen (renderer will be reinitialized in the levelheap)
         gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_START_LOADINGSCREEN, 0, 0);
         gEnv->pSystem->SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_START_PREPARE);
-
-        // Inform resource manager about loading of the new level.
-        GetISystem()->GetIResourceManager()->PrepareLevel(pLevelInfo->GetPath(), pLevelInfo->GetName());
     }
 
     for (AZStd::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
@@ -986,8 +982,6 @@ void CLevelSystem::UnloadLevel()
     }
 
     m_lastLevelName.clear();
-
-    GetISystem()->GetIResourceManager()->UnloadLevel();
 
     SAFE_RELEASE(m_pCurrentLevel);
     

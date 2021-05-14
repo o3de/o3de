@@ -63,29 +63,6 @@ namespace AzToolsFramework
         void EditorNonUniformScaleComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
-
-            incompatible.push_back(AZ_CRC_CE("DebugDrawObbService"));
-            incompatible.push_back(AZ_CRC_CE("DebugDrawService"));
-            incompatible.push_back(AZ_CRC_CE("EMotionFXActorService"));
-            incompatible.push_back(AZ_CRC_CE("EMotionFXSimpleMotionService"));
-            incompatible.push_back(AZ_CRC_CE("GradientTransformService"));
-            incompatible.push_back(AZ_CRC_CE("LegacyMeshService"));
-            incompatible.push_back(AZ_CRC_CE("LookAtService"));
-            incompatible.push_back(AZ_CRC_CE("SequenceService"));
-            incompatible.push_back(AZ_CRC_CE("ClothMeshService"));
-            incompatible.push_back(AZ_CRC_CE("PhysXJointService"));
-            incompatible.push_back(AZ_CRC_CE("PhysXCharacterControllerService"));
-            incompatible.push_back(AZ_CRC_CE("PhysXRagdollService"));
-            incompatible.push_back(AZ_CRC_CE("WhiteBoxService"));
-            incompatible.push_back(AZ_CRC_CE("NavigationAreaService"));
-            incompatible.push_back(AZ_CRC_CE("GeometryService"));
-            incompatible.push_back(AZ_CRC_CE("CapsuleShapeService"));
-            incompatible.push_back(AZ_CRC_CE("CompoundShapeService"));
-            incompatible.push_back(AZ_CRC_CE("CylinderShapeService"));
-            incompatible.push_back(AZ_CRC_CE("DiskShapeService"));
-            incompatible.push_back(AZ_CRC_CE("SphereShapeService"));
-            incompatible.push_back(AZ_CRC_CE("SplineService"));
-            incompatible.push_back(AZ_CRC_CE("TubeShapeService"));
         }
 
         void EditorNonUniformScaleComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
