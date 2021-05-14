@@ -1713,15 +1713,11 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
         const int viewCount = GetIEditor()->GetViewManager()->GetViewCount(); // legacy call
         for (int viewIndex = 0; viewIndex < viewCount; ++viewIndex)
         {
-            if (auto viewportContext = viewportContextManager->GetViewportContextById(0))
+            if (auto viewportContext = viewportContextManager->GetViewportContextById(viewIndex))
             {
                 const auto cameraTransform = viewportContext->GetCameraTransform();
 
-                const float fov = AZ::DegToRad(60.0f);
-                const float fovScale = (1.0f / AZStd::tan(fov * 0.5f));
-
                 const AZ::Vector3 forward = (center - cameraTransform.GetTranslation()).GetNormalized();
-
                 const AZ::Vector3 across = [forward] {
                     AZ::Vector3 across = forward.Cross(AZ::Vector3::CreateAxisZ());
                     if (across.IsClose(AZ::Vector3::CreateZero()))
@@ -1736,6 +1732,8 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
                 // move camera 25% further back than required
                 const float centerScale = 1.25f;
                 // compute new camera transform
+                const float fov = AzFramework::RetrieveFov(viewportContext->GetCameraProjectionMatrix());
+                const float fovScale = (1.0f / AZStd::tan(fov * 0.5f));
                 const float distanceToTarget = selectionSize * fovScale * centerScale;
                 const AZ::Transform nextCameraTransform = AZ::Transform::CreateFromMatrix3x3AndTranslation(
                     AZ::Matrix3x3::CreateFromColumns(across, forward, up), aabb.GetCenter() - (forward * distanceToTarget));
