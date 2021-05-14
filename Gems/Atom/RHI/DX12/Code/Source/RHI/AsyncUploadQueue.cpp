@@ -271,7 +271,7 @@ namespace AZ
                     // Staging sizes
                     uint32_t stagingRowPitch = RHI::AlignUp(subresourceLayout.m_bytesPerRow, DX12_TEXTURE_DATA_PITCH_ALIGNMENT);
                     uint32_t stagingSlicePitch = RHI::AlignUp(subresourceLayout.m_rowCount*stagingRowPitch, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
-                    const uint32_t compressedTexelBlockSizeHeight = subresourceLayout.m_size.m_height / subresourceLayout.m_rowCount;
+                    const uint32_t compressedTexelBlockSizeHeight = subresourceLayout.m_blockElementHeight;
 
                     // ImageHeight must be bigger than or equal to the Image's row count. Images with a RowCount that is less than the ImageHeight indicates a block compression.
                     // Images with a RowCount which is higher than the ImageHeight indicates a planar image, which is not supported for streaming images.
@@ -386,7 +386,7 @@ namespace AZ
                                     const uint32_t numRowsToCopy = endRow - startRow;
 
                                     // Calculate the blocksize for BC formatted images; the copy command works in texels.
-                                    const uint32_t heightToCopy = (endRow - startRow) * compressedTexelBlockSizeHeight;
+                                    uint32_t heightToCopy = (endRow - startRow) * compressedTexelBlockSizeHeight;
 
                                     // Copy subresource data to staging memory
                                     {
@@ -402,6 +402,14 @@ namespace AZ
                                         }
                                     }
 
+                                    //Clamp heightToCopy to match subresourceLayout.m_size.m_height as it is possible to go over
+                                    //if subresourceLayout.m_size.m_height is not perfectly divisible by compressedTexelBlockSizeHeight
+                                    if(destHeight+heightToCopy > subresourceLayout.m_size.m_height)
+                                    {
+                                        uint32_t HeightDiff = (destHeight + heightToCopy) - subresourceLayout.m_size.m_height;
+                                        heightToCopy -= HeightDiff;
+                                    }
+                                    
                                     // Add copy command to copy image subresource from staging memory to image gpu resource
 
                                     // Source location

@@ -140,6 +140,9 @@ namespace PhysX
             }
         };
 
+        AZ_Warning("PhysXSystem", deltaTime <= m_systemConfig.m_maxTimestep,
+            "Frame delta time of [%.6f seconds] exceeds Physics max frame timestep, physics timestep will be clamped to [%.6f seconds].",
+            deltaTime, m_systemConfig.m_maxTimestep);
         deltaTime = AZ::GetClamp(deltaTime, 0.0f, m_systemConfig.m_maxTimestep);
 
         AZ_Assert(m_systemConfig.m_fixedTimestep >= 0.0f, "PhysXSystem - fixed timestep is negitive.");

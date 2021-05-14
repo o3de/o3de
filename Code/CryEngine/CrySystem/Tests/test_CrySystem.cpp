@@ -15,7 +15,6 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <LegacyAllocator.h>
 #include <System.h>
-#include <CryMemoryManager.h>
 
 namespace UnitTests
 {
@@ -25,10 +24,6 @@ namespace UnitTests
     public:
         void SetUp() override
         {
-            IMemoryManager* cryMemoryManager = nullptr;
-            CryGetIMemoryManagerInterface((void**)&cryMemoryManager);
-            AZ_Assert(cryMemoryManager, "Unable to resolve CryMemoryManager");
-            m_cryMemoryManager = AZ::Environment::CreateVariable<IMemoryManager*>("CryIMemoryManagerInterface", cryMemoryManager);
             SSystemInitParams startupParams;
             AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
             AZ::AllocatorInstance<CryStringAllocator>::Create();
@@ -44,8 +39,6 @@ namespace UnitTests
 
 
         CSystem* m_system = nullptr;
-        AZ::EnvironmentVariable<IMemoryManager*> m_cryMemoryManager;
-
     };
 
     TEST_F(CSystemUnitTests, ApplicationLogInstanceUnitTests)

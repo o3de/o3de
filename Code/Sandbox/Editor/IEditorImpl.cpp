@@ -92,7 +92,6 @@ AZ_POP_DISABLE_WARNING
 #ifdef _RELEASE
 #undef _RELEASE
 #endif
-#include <CrtDebugStats.h>
 
 #include "Core/QtEditorApplication.h"                               // for Editor::EditorQtApplication
 

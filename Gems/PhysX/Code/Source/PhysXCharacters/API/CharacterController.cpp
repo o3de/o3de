@@ -343,7 +343,6 @@ namespace PhysX
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             sceneInterface->RemoveSimulatedBody(m_sceneOwner, m_shadowBodyHandle);
-            m_shadowBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
             m_shadowBody = nullptr;
         }
     }

@@ -609,13 +609,15 @@ AmazonToolbar ToolbarManager::GetObjectToolbar() const
 
 AmazonToolbar ToolbarManager::GetPlayConsoleToolbar() const
 {
-    AmazonToolbar t = AmazonToolbar("PlayConsole", QObject::tr("Play Console"));
+    AmazonToolbar t = AmazonToolbar("PlayConsole", QObject::tr("Play Controls"));
     t.SetMainToolbar(true);
 
     t.AddAction(ID_TOOLBAR_WIDGET_SPACER_RIGHT, ORIGINAL_TOOLBAR_VERSION); 
     t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_VIEW_SWITCHTOGAME, TOOLBARS_WITH_PLAY_GAME);
+    t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
+    t.AddAction(ID_SWITCH_PHYSICS, TOOLBARS_WITH_PLAY_GAME);    
     return t;
 }
 

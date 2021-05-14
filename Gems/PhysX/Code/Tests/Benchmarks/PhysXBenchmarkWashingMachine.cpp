@@ -129,10 +129,8 @@ namespace PhysX::Benchmarks
             for (int i = 0; i < NumCylinderSide; i++)
             {
                 sceneInterface->RemoveSimulatedBody(m_sceneHandle, m_cylinder[i]);
-                m_cylinder[i] = AzPhysics::InvalidSimulatedBodyHandle;
             }
             sceneInterface->RemoveSimulatedBody(m_sceneHandle, m_blade);
-            m_blade = AzPhysics::InvalidSimulatedBodyHandle;
         }
         m_sceneHandle = AzPhysics::InvalidSceneHandle;
     }

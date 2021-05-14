@@ -30,18 +30,18 @@ namespace AzToolsFramework::ViewportUi
         ViewportUiRequestBus::Handler::BusDisconnect();
     }
 
-    const ClusterId ViewportUiManager::CreateCluster()
+    const ClusterId ViewportUiManager::CreateCluster(const Alignment align)
     {
         auto buttonGroup = AZStd::make_shared<Internal::ButtonGroup>();
-        m_viewportUi->AddCluster(buttonGroup);
+        m_viewportUi->AddCluster(buttonGroup, align);
 
         return RegisterNewCluster(buttonGroup);
     }
 
-    const SwitcherId ViewportUiManager::CreateSwitcher()
+    const SwitcherId ViewportUiManager::CreateSwitcher(const Alignment align)
     {
         auto buttonGroup = AZStd::make_shared<Internal::ButtonGroup>();
-        m_viewportUi->AddSwitcher(buttonGroup);
+        m_viewportUi->AddSwitcher(buttonGroup, align);
 
         return RegisterNewSwitcher(buttonGroup);
     }

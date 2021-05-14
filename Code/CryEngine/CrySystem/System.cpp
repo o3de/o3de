@@ -135,14 +135,12 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include "XML/xml.h"
 #include "XML/ReadWriteXMLSink.h"
 
-#include "StreamEngine/StreamEngine.h"
 #include "PhysRenderer.h"
 
 #include "LocalizedStringManager.h"
 #include "XML/XmlUtils.h"
 #include "SystemEventDispatcher.h"
 #include "ServerThrottle.h"
-#include "ResourceManager.h"
 #include "HMDBus.h"
 
 #include "IZLibCompressor.h"
@@ -157,7 +155,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include "CryWaterMark.h"
 WATERMARKDATA(_m);
 
-#include "ImageHandler.h"
 #include <LyShine/Bus/UiCursorBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemRequestBus.h>
@@ -179,7 +176,6 @@ WATERMARKDATA(_m);
 
 #include <ILevelSystem.h>
 
-#include <CrtDebugStats.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
 // profilers api.
@@ -190,14 +186,6 @@ VTuneFunction VTPause = NULL;
 SSystemCVars g_cvars;
 
 #include "ITextModeConsole.h"
-
-extern int CryMemoryGetAllocatedSize();
-
-// these heaps are used by underlying System structures
-// to allocate, accordingly, small (like elements of std::set<..*>) and big (like memory for reading files) objects
-// hopefully someday we'll have standard MT-safe heap
-//CMTSafeHeap g_pakHeap;
-CMTSafeHeap* g_pPakHeap = 0;// = &g_pakHeap;
 
 //////////////////////////////////////////////////////////////////////////
 #include "Validator.h"
@@ -266,7 +254,6 @@ namespace
 // System Implementation.
 //////////////////////////////////////////////////////////////////////////
 CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
-    : m_imageHandler(std::make_unique<ImageHandler>())
 {
     CrySystemRequestBus::Handler::BusConnect();
 
@@ -307,8 +294,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_env.pSharedEnvironment = pSharedEnvironment;
     //////////////////////////////////////////////////////////////////////////
 
-    m_pStreamEngine = NULL;
-
     m_pIFont = NULL;
     m_pIFontUi = NULL;
     m_rWidth = NULL;
@@ -322,7 +307,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_rStencilBits = NULL;
     m_rFullscreen = NULL;
     m_sysNoUpdate = NULL;
-    m_pMemoryManager = NULL;
     m_pProcess = NULL;
 
     m_pValidator = NULL;
@@ -387,11 +371,7 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
 
 
     m_pXMLUtils = new CXmlUtils(this);
-    m_pMemoryManager = CryGetIMemoryManager();
-    m_pResourceManager = new CResourceManager;
     m_pTextModeConsole = NULL;
-
-    g_pPakHeap = new CMTSafeHeap;
 
     if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
     {
@@ -433,10 +413,7 @@ CSystem::~CSystem()
     CRY_ASSERT(m_windowMessageHandlers.empty() && "There exists a dangling window message handler somewhere");
 
     SAFE_DELETE(m_pXMLUtils);
-    SAFE_DELETE(m_pResourceManager);
     SAFE_DELETE(m_pSystemEventDispatcher);
-
-    SAFE_DELETE(g_pPakHeap);
 
     AZCoreLogSink::Disconnect();
     if (m_initedSysAllocator)
@@ -475,12 +452,6 @@ void CSystem::FreeLib(AZStd::unique_ptr<AZ::DynamicModuleHandle>& hLibModule)
         }
         hLibModule.release();
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-IStreamEngine* CSystem::GetStreamEngine()
-{
-    return m_pStreamEngine;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -582,9 +553,6 @@ void CSystem::ShutDown()
     // Shutdown any running VR devices.
     EBUS_EVENT(AZ::VR::HMDInitRequestBus, Shutdown);
 
-    // Shutdown resource manager.
-    m_pResourceManager->Shutdown();
-
     if (gEnv && gEnv->pLyShine)
     {
         gEnv->pLyShine->Release();
@@ -645,11 +613,6 @@ void CSystem::ShutDown()
 
     SAFE_DELETE(m_pLocalizationManager);
 
-    //DebugStats(false, false);//true);
-    //CryLogAlways("");
-    //CryLogAlways("release mode memory manager stats:");
-    //DumpMMStats(true);
-
     SAFE_DELETE(m_pCpu);
 
     delete m_pCmdLine;
@@ -659,8 +622,7 @@ void CSystem::ShutDown()
     // Shut down audio as late as possible but before the streaming system and console get released!
     Audio::Gem::AudioSystemGemRequestBus::Broadcast(&Audio::Gem::AudioSystemGemRequestBus::Events::Release);
 
-    // Shut down the streaming system and console as late as possible and after audio!
-    SAFE_DELETE(m_pStreamEngine);
+    // Shut down console as late as possible and after audio!
     SAFE_RELEASE(m_env.pConsole);
 
     // Log must be last thing released.
@@ -904,12 +866,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     }
 #endif //PROFILE_WITH_VTUNE
 
-    if (m_pStreamEngine)
-    {
-        FRAME_PROFILER("StreamEngine::Update()", this, PROFILE_SYSTEM);
-        m_pStreamEngine->Update();
-    }
-
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
     if (m_bIgnoreUpdates)
     {
@@ -1022,14 +978,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
                 GetIViewSystem()->UpdateSoundListeners();
             }
         }
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Update Resource Manager.
-    //////////////////////////////////////////////////////////////////////////
-    {
-        FRAME_PROFILER("SysUpdate:ResourceManager", this, PROFILE_SYSTEM);
-        m_pResourceManager->Update();
     }
 
     // Use UI timer for CryMovie, because it should not be affected by pausing game time
@@ -1420,21 +1368,9 @@ void CSystem::Relaunch(bool bRelaunch)
 }
 
 //////////////////////////////////////////////////////////////////////////
-uint32 CSystem::GetUsedMemory()
-{
-    return CryMemoryGetAllocatedSize();
-}
-
-//////////////////////////////////////////////////////////////////////////
 ILocalizationManager* CSystem::GetLocalizationManager()
 {
     return m_pLocalizationManager;
-}
-
-//////////////////////////////////////////////////////////////////////////
-IResourceManager* CSystem::GetIResourceManager()
-{
-    return m_pResourceManager;
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -415,7 +415,7 @@ namespace AZ
 
                         // this assert typically happens when a shader needs a particular Srg (e.g., the ViewSrg) but the code did not bind it,
                         // check the pass code in this callstack to determine why it was not bound
-                        AZ_Assert(false, "ShaderResourceGroup in slot '%d' is null at DrawItem submit time. This is not valid and means the shader is expecting an Srg that is not currently bound in the pipeline. Current bindings: %s",
+                        AZ_Assert(false, "ShaderResourceGroup in slot '%d' is null at DrawItem submit time. This is not valid and means the shader is expecting an Srg that isF not currently bound in the pipeline. Current bindings: %s",
                             srgSlot,
                             slotSrgString.c_str());
 
