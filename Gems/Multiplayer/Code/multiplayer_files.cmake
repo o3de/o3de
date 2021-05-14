@@ -37,7 +37,7 @@ set(FILES
     Source/Multiplayer_precompiled.h
     Source/MultiplayerSystemComponent.cpp
     Source/MultiplayerSystemComponent.h
-	Source/MultiplayerStats.cpp
+    Source/MultiplayerStats.cpp
     Source/AutoGen/AutoComponent_Header.jinja
     Source/AutoGen/AutoComponent_Source.jinja
     Source/AutoGen/AutoComponent_Common.jinja
