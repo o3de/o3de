@@ -26,6 +26,9 @@
 
 #pragma once
 
+#include <viewsrg.srgi>
+
+
 #define SHORTCUT_MIN_ALPHA 0.02
 
 #define TRESSFX_FLOAT_EPSILON 1e-7
@@ -41,40 +44,38 @@ float4 MatrixMult(float4x4 m, float4 v)
     return mul(m, v);
 }
 
-// Calculate screen UV from XY NDC pair
-float2 NDCToScreenUV(float2 vNDC)
-{
-    float2 ScreenUV = (vNDC + 1) / 2;
-    ScreenUV.y = 1 - ScreenUV.y;
-    return ScreenUV;
+// Given the depth buffer depth of the current pixel and the fragment XY position, 
+// reconstruct the world space position
+// screenCoords - from 0.. dimension of the screen of the current pixel
+// screenTexture - screen buffer texture representing the same resolution we work in
+// sDepth - the depth buffer depth at the fragment location
+// NDC - Normalized Device Coordinates = warped screen space ( -1.1, -1..1, 0..1 )
+float3 ScreenPosToNDC( Texture2D<float> screenTexture, float2 screenCoords, float zDepth )
+{ 
+    uint2 dimensions;
+    screenTexture.GetDimensions(dimensions.x, dimensions.y);
+    float2 UV = saturate(screenCoords / dimensions.xy);
+
+    float x = UV.x * 2.0f - 1.0f;
+    float y = (1.0f - UV.y) * 2.0f - 1.0f;
+    float3 NDC = float3(x, y, zDepth);
+
+    return NDC;
 }
 
-// Get world position from NDC coordinates
-float3 NDCToWorld(float3 vNDC, float4x4 mInvViewProj)
-{
-    float4 pos = MatrixMult(mInvViewProj, float4(vNDC, 1));
-    return pos.xyz / pos.w;
-}
+float3 ScreenPosToWorldPos( 
+    Texture2D<float> screenTexture, float zDepth, float2 screenCoords,
+    inout float3 NDC )
+{ 
+    NDC = ScreenPosToNDC(screenTexture, screenCoords, zDepth);
 
-//! Get NDC from screen position (and depth)
-//! TressFX viewport assumed xy = offset in pixels, zy = normalize scale, hence
-//!   NDC = (vScreenPos.xy + viewport.xy) / viewport.zw
-//! Atom assumes xy = normalize scale, zw = offset in screen coords, hence 
-float3 ScreenPosToNDC(float3 vScreenPos, float4 viewport)
-{
-#ifdef TRESSFX_ORG
-    // add viewport offset in pixel coords and scale all to normalized screen coords
-    float2 xy = (vScreenPos.xy + viewport.xy) / viewport.zw;
+    float4 projectedPos = float4(NDC, 1.0f);    // warped projected space [0..1]
+    float4 positionVS = mul(ViewSrg::m_projectionMatrixInverse, projectedPos);
 
-    // shift and scale to put in -1 to 1. y is also being flipped.
-    xy.x = (2 * xy.x) - 1;
-    xy.y = 1 - (2 * xy.y);
-#else
-    // normalize to screen coords and then add offset in screen coords (ViewSrg::m_unprojectionConstants)
-    float2 xy = vScreenPos.xy * viewport.xy + viewport.zw;
-#endif
+    positionVS /= positionVS.w; // notice the normalization factor - crucial!
+    float4 positionWS = mul(ViewSrg::m_viewMatrixInverse, positionVS);
 
-    return float3(xy, vScreenPos.z);
+    return positionWS.xyz;
 }
 
 // Pack a float4 into an uint
