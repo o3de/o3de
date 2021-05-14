@@ -138,6 +138,10 @@ namespace AZ
                 {
                     m_materialToTextureArrayLookupTable.at(materialAsset).m_useCount++;
                 }
+                else
+                {
+                    AZ_Warning("DecalTextureArrayFeatureProcessor", false, "CloneDecal called on a decal with no material set.");
+                }
                 m_deviceBufferNeedsUpdate = true;
             }
             return decal;
