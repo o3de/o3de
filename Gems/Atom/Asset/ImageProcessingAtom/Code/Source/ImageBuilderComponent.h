@@ -17,6 +17,7 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <Atom/ImageProcessing/ImageProcessingBus.h>
+#include <Atom/ImageProcessing/ImageProcessingEditorBus.h>
 
 namespace ImageProcessingAtom
 {
@@ -47,6 +48,7 @@ namespace ImageProcessingAtom
     class BuilderPluginComponent
         : public AZ::Component
         , protected ImageProcessingRequestBus::Handler
+        , protected ImageBuilderRequestBus::Handler
     {
     public:
         AZ_COMPONENT(BuilderPluginComponent, "{A227F803-D2E4-406E-93EC-121EF45A64A1}")
@@ -69,6 +71,24 @@ namespace ImageProcessingAtom
         // AtomImageProcessingRequestBus interface implementation
         IImageObjectPtr LoadImage(const AZStd::string& filePath) override;
         IImageObjectPtr LoadImagePreview(const AZStd::string& filePath) override;
+        ////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////////
+        // ImageBuilderRequestBus interface implementation
+        IImageObjectPtr CreateImage(
+            AZ::u32 width,
+            AZ::u32 height,
+            AZ::u32 maxMipCount,
+            EPixelFormat pixelFormat) override;
+        AZStd::vector<AssetBuilderSDK::JobProduct> ConvertImageObject(
+            IImageObjectPtr imageObject,
+            const AZStd::string& presetName,
+            const AZStd::string& platformName,
+            const AZStd::string& outputDir,
+            const AZ::Data::AssetId& sourceAssetId,
+            const AZStd::string& sourceAssetName) override;
+        bool DoesSupportPlatform(const AZStd::string& platformId) override;
+        bool IsPresetFormatSquarePow2(const AZStd::string& presetName, const AZStd::string& platformName) override;
         ////////////////////////////////////////////////////////////////////////
 
     private:
