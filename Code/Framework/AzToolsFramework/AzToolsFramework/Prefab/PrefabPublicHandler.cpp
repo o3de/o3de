@@ -172,11 +172,6 @@ namespace AzToolsFramework
                 }
 
                 instanceToCreate->get().GetNestedInstances([&](AZStd::unique_ptr<Instance>& nestedInstance) {
-                    AZ_Assert(nestedInstance, "Invalid nested instance found in the new prefab created.");
-                    EntityOptionalReference nestedInstanceContainerEntity = nestedInstance->GetContainerEntity();
-                    AZ_Assert(
-                        nestedInstanceContainerEntity, "Invalid container entity found for the nested instance used in prefab creation.");
-
                     // These link creations shouldn't be undone because that would put the template in a non-usable state if a user
                     // chooses to instantiate the template after undoing the creation.
                     PrefabDom emptyPatch;
