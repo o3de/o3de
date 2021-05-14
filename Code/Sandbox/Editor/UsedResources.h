@@ -36,8 +36,6 @@ public:
 
     CUsedResources();
     void Add(const char* pResourceFileName);
-    //! validate gathered resources, reports warning if resource is not found
-    void Validate(struct IErrorReport* pReport);
 
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     TResourceFiles files;

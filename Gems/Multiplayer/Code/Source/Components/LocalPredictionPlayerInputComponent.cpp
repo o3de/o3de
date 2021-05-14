@@ -94,7 +94,7 @@ namespace Multiplayer
         if (entityIsMigrating == EntityIsMigrating::True)
         {
             m_allowMigrateClientInput = true;
-            m_serverMigrateFrameId = AZ::Interface<INetworkTime>::Get()->GetHostFrameId();
+            m_serverMigrateFrameId = GetNetworkTime()->GetHostFrameId();
         }
     }
 
@@ -492,8 +492,8 @@ namespace Multiplayer
 
         const uint32_t maxClientInputs = inputRate > 0.0 ? static_cast<uint32_t>(maxRewindHistory / inputRate) : 0;
 
-        INetworkTime* networkTime = AZ::Interface<INetworkTime>::Get();
-        IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
+        IMultiplayer* multiplayer = GetMultiplayer();
+        INetworkTime* networkTime = GetNetworkTime();
         while (m_moveAccumulator >= inputRate)
         {
             m_moveAccumulator -= inputRate;

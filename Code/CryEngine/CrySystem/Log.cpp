@@ -20,7 +20,6 @@
 //this should not be included here
 #include <IConsole.h>
 #include <ISystem.h>
-#include <IStreamEngine.h>
 #include "System.h"
 #include "CryPath.h"                    // PathUtil::ReplaceExtension()
 #include <Pak/CryPakUtils.h>
@@ -920,13 +919,7 @@ bool CLog::LogToMainThread(const char* szString, ELogType logType, bool bAdd, SL
         msg.bAdd = bAdd;
         msg.destination = destination;
         msg.logType = logType;
-        // don't try to store the log message for later in case of out of memory, since then its very likely that this allocation
-        // also fails and results in a stack overflow. This way we should at least get a out of memory on-screen message instead of
-        // a not obvious crash
-        if ((gEnv) && (gEnv->bIsOutOfMemory == false))
-        {
-            m_threadSafeMsgQueue.push(msg);
-        }
+        m_threadSafeMsgQueue.push(msg);
         return true;
     }
     return false;
@@ -1445,24 +1438,6 @@ void CLog::UpdateLoadingScreen(const char* szFormat, ...)
         va_end(args);
     }
 #endif
-
-    if (CryGetCurrentThreadId() == m_nMainThreadId)
-    {
-        ((CSystem*)m_pSystem)->UpdateLoadingScreen();
-
-#ifndef LINUX
-        // Take this opportunity to update streaming engine.
-        if (IStreamEngine* pStreamEngine = GetISystem()->GetStreamEngine())
-        {
-            const float curTime = m_pSystem->GetITimer()->GetAsyncCurTime();
-            if (curTime - m_fLastLoadingUpdateTime > .1f)    // not frequent than once in 100ms
-            {
-                m_fLastLoadingUpdateTime = curTime;
-                pStreamEngine->Update();
-            }
-        }
-#endif
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

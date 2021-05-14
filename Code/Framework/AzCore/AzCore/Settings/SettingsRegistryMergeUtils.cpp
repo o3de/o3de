@@ -552,6 +552,34 @@ namespace AZ::SettingsRegistryMergeUtils
                 ? devWriteStorage.value()
                 : projectUserPath.Native());
 
+            // Set the project in-memory build path if the ProjectBuildPath key has been supplied
+            if (AZ::IO::FixedMaxPath projectBuildPath; registry.Get(projectBuildPath.Native(), ProjectBuildPath))
+            {
+                registry.Remove(FilePathKey_ProjectBuildPath);
+                registry.Remove(FilePathKey_ProjectConfigurationBinPath);
+                AZ::IO::FixedMaxPath buildConfigurationPath = normalizedProjectPath / projectBuildPath;
+                if (IO::SystemFile::Exists(buildConfigurationPath.c_str()))
+                {
+                    registry.Set(FilePathKey_ProjectBuildPath, buildConfigurationPath.LexicallyNormal().Native());
+                }
+
+                // Add the specific build configuration paths to the Settings Registry
+                // First try <project-build-path>/bin/$<CONFIG> and if that path doesn't exist
+                // try <project-build-path>/bin/$<PLATFORM>/$<CONFIG>
+                buildConfigurationPath /= "bin";
+                if (IO::SystemFile::Exists((buildConfigurationPath / AZ_BUILD_CONFIGURATION_TYPE).c_str()))
+                {
+                    registry.Set(FilePathKey_ProjectConfigurationBinPath,
+                        (buildConfigurationPath / AZ_BUILD_CONFIGURATION_TYPE).LexicallyNormal().Native());
+                }
+                else if (IO::SystemFile::Exists((buildConfigurationPath / AZ_TRAIT_OS_PLATFORM_CODENAME / AZ_BUILD_CONFIGURATION_TYPE).c_str()))
+                {
+                    registry.Set(FilePathKey_ProjectConfigurationBinPath,
+                        (buildConfigurationPath / AZ_TRAIT_OS_PLATFORM_CODENAME / AZ_BUILD_CONFIGURATION_TYPE).LexicallyNormal().Native());
+                }
+
+            }
+
             // Project name - if it was set via merging project.json use that value, otherwise use the project path's folder name.
             auto projectNameKey =
                 AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey)
@@ -641,6 +669,14 @@ namespace AZ::SettingsRegistryMergeUtils
             mergePath = AZStd::move(cacheRootPath);
             mergePath /= SettingsRegistryInterface::RegistryFolder;
             registry.MergeSettingsFolder(mergePath.Native(), specializations, platform, "", scratchBuffer);
+        }
+
+        AZ::IO::FixedMaxPath projectBinPath;
+        if (registry.Get(projectBinPath.Native(), FilePathKey_ProjectConfigurationBinPath))
+        {
+            // Append the project build path path to the project root
+            projectBinPath /= SettingsRegistryInterface::RegistryFolder;
+            registry.MergeSettingsFolder(projectBinPath.Native(), specializations, platform, "", scratchBuffer);
         }
     }
 
@@ -887,7 +923,8 @@ namespace AZ::SettingsRegistryMergeUtils
                 "project-path", AZStd::string::format("%s/project_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)},
             OptionKeyToRegsetKey{
                 "project-cache-path",
-                AZStd::string::format("%s/project_cache_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)}};
+                AZStd::string::format("%s/project_cache_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)},
+            OptionKeyToRegsetKey{"project-build-path", ProjectBuildPath} };
 
         AZStd::fixed_vector<AZStd::string, commandOptions.size()> overrideArgs;
 

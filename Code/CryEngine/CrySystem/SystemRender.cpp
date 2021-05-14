@@ -39,8 +39,6 @@
 #include <ILevelSystem.h>
 #include <LyShine/ILyShine.h>
 
-#include "ThreadInfo.h"
-
 #include <LoadScreenBus.h>
 
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -49,12 +47,9 @@
 #define SYSTEMRENDERER_CPP_SECTION_2 2
 #endif
 
-extern CMTSafeHeap* g_pPakHeap;
 #if defined(AZ_PLATFORM_ANDROID)
 #include <AzCore/Android/Utils.h>
 #endif
-
-extern int CryMemoryGetAllocatedSize();
 
 /////////////////////////////////////////////////////////////////////////////////
 bool CSystem::GetPrimaryPhysicalDisplayDimensions([[maybe_unused]] int& o_widthPixels, [[maybe_unused]] int& o_heightPixels)
@@ -87,52 +82,6 @@ void CSystem::OnScene3DEnd()
     if (m_bDrawConsole && gEnv->pConsole)
     {
         gEnv->pConsole->Draw();
-    }
-}
-
-
-//! Update screen and call some important tick functions during loading.
-void CSystem::SynchronousLoadingTick([[maybe_unused]] const char* pFunc, [[maybe_unused]] int line)
-{
-    LOADING_TIME_PROFILE_SECTION;
-    if (gEnv && gEnv->bMultiplayer && !gEnv->IsEditor())
-    {
-        //UpdateLoadingScreen currently contains a couple of tick functions that need to be called regularly during the synchronous level loading,
-        //when the usual engine and game ticks are suspended.
-        UpdateLoadingScreen();
-
-#if defined(MAP_LOADING_SLICING)
-        GetISystemScheduler()->SliceAndSleep(pFunc, line);
-#endif
-    }
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-void CSystem::UpdateLoadingScreen()
-{
-    // Do not update the network thread from here - it will cause context corruption - use the NetworkStallTicker thread system
-
-    if (GetCurrentThreadId() != gEnv->mMainThreadId)
-    {
-        return;
-    }
-
-#if defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEMRENDERER_CPP_SECTION_2
-#include AZ_RESTRICTED_FILE(SystemRender_cpp)
-#endif
-
-#if AZ_LOADSCREENCOMPONENT_ENABLED
-    EBUS_EVENT(LoadScreenBus, UpdateAndRender);
-#endif // if AZ_LOADSCREENCOMPONENT_ENABLED
-
-    if (!m_bEditor && !IsQuitting())
-    {
-        if (m_pProgressListener)
-        {
-            m_pProgressListener->OnLoadingProgress(0);
-        }
     }
 }
 

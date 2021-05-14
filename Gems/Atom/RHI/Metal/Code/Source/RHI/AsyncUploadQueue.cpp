@@ -190,8 +190,8 @@ namespace AZ
                     const uint32_t stagingRowPitch = RHI::AlignUp(subresourceLayout.m_bytesPerRow, bufferOffsetAlign);
                     const uint32_t stagingSlicePitch = RHI::AlignUp(subresourceLayout.m_rowCount * stagingRowPitch, bufferOffsetAlign);
                     const uint32_t rowsPerSplit = static_cast<uint32_t>(m_descriptor.m_stagingSizeInBytes) / stagingRowPitch;
-                    const uint32_t compressedTexelBlockSizeHeight = subresourceLayout.m_size.m_height / subresourceLayout.m_rowCount;
-
+                    const uint32_t compressedTexelBlockSizeHeight = subresourceLayout.m_blockElementHeight;
+                    
                     // ImageHeight must be bigger than or equal to the Image's row count. Images with a RowCount that is less than the ImageHeight indicates a block compression.
                     // Images with a RowCount which is higher than the ImageHeight indicates a planar image, which is not supported for streaming images.
                     if (subresourceLayout.m_size.m_height < subresourceLayout.m_rowCount)
@@ -281,7 +281,7 @@ namespace AZ
                                     const uint32_t endRow = AZStd::min(startRow + rowsPerSplit, subresourceLayout.m_rowCount);
 
                                     // Calculate the blocksize for BC formatted images; the copy command works in texels.
-                                    const uint32_t heightToCopy = (endRow - startRow) * compressedTexelBlockSizeHeight;
+                                    uint32_t heightToCopy = (endRow - startRow) * compressedTexelBlockSizeHeight;
 
                                     // Copy subresource data to staging memory.
                                     uint8_t* stagingDataStart = framePacket->m_stagingResourceData + framePacket->m_dataOffset;
@@ -293,6 +293,14 @@ namespace AZ
                                     const uint32_t bytesCopied = (endRow - startRow) * stagingRowPitch;
                                     Platform::SynchronizeBufferOnCPU(framePacket->m_stagingResource, framePacket->m_dataOffset, bytesCopied);
 
+                                    //Clamp heightToCopy to match subresourceLayout.m_size.m_height as it is possible to go over
+                                    //if subresourceLayout.m_size.m_height is not perfectly divisible by compressedTexelBlockSizeHeight
+                                    if(destHeight+heightToCopy > subresourceLayout.m_size.m_height)
+                                    {
+                                        uint32_t HeightDiff = (destHeight + heightToCopy) - subresourceLayout.m_size.m_height;
+                                        heightToCopy -= HeightDiff;
+                                    }
+                                                                                         
                                     const RHI::Size sourceSize = RHI::Size(subresourceLayout.m_size.m_width, heightToCopy, 1);
                                     const RHI::Origin sourceOrigin = RHI::Origin(0, destHeight, depth);
                                     CopyBufferToImage(framePacket, image, stagingRowPitch, bytesCopied,

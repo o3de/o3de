@@ -19,16 +19,10 @@ set(FILES
     ConsoleBatchFile.cpp
     ConsoleHelpGen.cpp
     CryAsyncMemcpy.cpp
-    DebugCallStack.cpp
-    GeneralMemoryHeap.cpp
     HandlerBase.cpp
-    IDebugCallStack.cpp
-    AsyncPakManager.cpp
     Log.cpp
     SystemRender.cpp
-    NotificationNetwork.cpp
     PhysRenderer.cpp
-    ResourceManager.cpp
     ServerHandler.cpp
     ServerThrottle.cpp
     SyncLock.cpp
@@ -36,7 +30,6 @@ set(FILES
     SystemCFG.cpp
     SystemEventDispatcher.cpp
     SystemInit.cpp
-    SystemScheduler.cpp
     SystemWin32.cpp
     Timer.cpp
     UnixConsole.cpp
@@ -46,13 +39,10 @@ set(FILES
     AutoDetectSpec.h
     ClientHandler.h
     HandlerBase.h
-    AsyncPakManager.h
     PhysRenderer.h
-    ResourceManager.h
     ServerHandler.h
     ServerThrottle.h
     SyncLock.h
-    SystemScheduler.h
     UnixConsole.h
     SystemInit.h
     XML/ReadWriteXMLSink.h
@@ -63,12 +53,7 @@ set(FILES
     ConsoleBatchFile.h
     ConsoleHelpGen.h
     CryWaterMark.h
-    DebugCallStack.h
-    GeneralMemoryHeap.h
-    IDebugCallStack.h
-    IThreadConfigManager.h
     Log.h
-    NotificationNetwork.h
     resource.h
     SimpleStringPool.h
     CrySystem_precompiled.h
@@ -80,18 +65,6 @@ set(FILES
     WindowsConsole.h
     XConsole.h
     XConsoleVariable.h
-    crash_face.bmp
-    ImageHandler.h
-    ImageHandler.cpp
-    MemoryAddressRange.cpp
-    PageMappingHeap.cpp
-    CustomMemoryHeap.cpp
-    MemoryManager.cpp
-    MTSafeAllocator.cpp
-    MemoryAddressRange.h
-    PageMappingHeap.h
-    MemoryManager.h
-    MTSafeAllocator.h
     XML/SerializeXMLReader.cpp
     XML/SerializeXMLWriter.cpp
     XML/xml.cpp
@@ -107,24 +80,12 @@ set(FILES
     XML/WriteXMLSource.cpp
     ZipFile.h
     ZipFileFormat_info.h
-    ProfileLogSystem.cpp
     Sampler.cpp
-    ProfileLogSystem.h
     Sampler.h
     LocalizedStringManager.cpp
     LocalizedStringManager.h
-    CryThreadUtil_win32_thread.h
-    ThreadInfo.cpp
-    ThreadInfo.h
-    ThreadTask.h
-    ThreadTask.cpp
-    ThreadConfigManager.h
-    ThreadConfigManager.cpp
-    SystemThreading.cpp
     ZLibCompressor.cpp
     ZLibCompressor.h
-    SoftCode/SoftCodeMgr.cpp
-    SoftCode/SoftCodeMgr.h
     Huffman.cpp
     Huffman.h
     RemoteConsole/RemoteConsole.cpp
@@ -147,18 +108,6 @@ set(FILES
     ViewSystem/ViewSystem.h
     ZStdDecompressor.h
     ZStdDecompressor.cpp
-    StreamEngine/StreamAsyncFileRequest.cpp
-    StreamEngine/StreamAsyncFileRequest_Jobs.cpp
-    StreamEngine/StreamEngine.cpp
-    StreamEngine/StreamIOThread.cpp
-    StreamEngine/StreamReadStream.cpp
-    StreamEngine/AZRequestReadStream.cpp
-    StreamEngine/StreamAsyncFileRequest.h
-    StreamEngine/StreamEngine.h
-    StreamEngine/StreamIOThread.h
-    StreamEngine/StreamReadStream.h
-    StreamEngine/AZRequestReadStream.h
-    CrashHandler.rc
     CrySystem_precompiled.cpp
     CPUDetect.cpp
     CPUDetect.h

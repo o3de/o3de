@@ -404,10 +404,7 @@ namespace PhysX::Benchmarks
         }
         subTickTracker.Stop();
 
-        for (auto handle : snakeRigidBodyHandles)
-        {
-            m_defaultScene->RemoveSimulatedBody(handle);
-        }
+        m_defaultScene->RemoveSimulatedBodies(snakeRigidBodyHandles);
         snakeRigidBodyHandles.clear();
 
         //sort the frame times and get the P50, P90, P99 percentiles

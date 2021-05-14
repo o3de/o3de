@@ -30,11 +30,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             3rdParty::NvCloth
-            # CryCommon required for 'gEnv->IsDedicated()'.
-            # Because of this the module will need CrySystemEventBus to initialize gEnv
-            # and tests targets will need to fake gEnv. To be removed when there is
-            # an AZ replacement for asking if the game is running on a server or not.
-            Legacy::CryCommon
+            AZ::AzFramework
             Gem::AtomLyIntegration_CommonFeatures.Public
         PRIVATE
             Gem::EMotionFXStaticLib

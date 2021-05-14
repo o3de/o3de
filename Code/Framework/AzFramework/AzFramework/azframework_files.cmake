@@ -103,6 +103,9 @@ set(FILES
     Viewport/CameraState.cpp
     Viewport/CameraInput.h
     Viewport/CameraInput.cpp
+    Viewport/ClickDetector.h
+    Viewport/ClickDetector.cpp
+    Viewport/CursorState.h
     Viewport/DisplayContextRequestBus.h
     Entity/BehaviorEntity.cpp
     Entity/BehaviorEntity.h
