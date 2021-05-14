@@ -4,6 +4,8 @@
 
 Welcome to the Project Spectra Private Preview.  This is a confidential pre-release project; your use is subject to the nondisclosure agreement between you (or your organization) and Amazon.  Do not disclose the existence of this project, your participation in it, or any of the  materials provided, to any unauthorized third party.  To request access for a third party, please contact [Royal O'Brien, obriroya@amazon.com](mailto:obriroya@amazon.com).
 
+## Full instructions can be found here: https://docs.o3de.org/docs/welcome-guide/setup/setup-from-github/ (Note requires registration)
+
 ## Download and Install
 
 This repository uses Git LFS for storing large binary files.  You will need to create a Github personal access token to authenticate with the LFS service.
@@ -58,6 +60,7 @@ If you have the Git credential manager core installed, you should not be prompte
 #### Optional
 
 *   WWise - 2019.2.8.7432: [https://www.audiokinetic.com/download/](https://www.audiokinetic.com/download/)
+    *   Note: This requires registeration and installation of a client to download
 ### Quick Start Build Steps
 
 1.  Create a writable folder to cache 3rd Party dependancies. You can also use this to store other redistributable SDKs.
