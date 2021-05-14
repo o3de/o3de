@@ -182,15 +182,13 @@ namespace AZ
                 OnAssetReady(asset);
             }
 
-            void HairComponentController::OnActorInstanceCreated(EMotionFX::ActorInstance* actorInstance)
+            void HairComponentController::OnActorInstanceCreated([[maybe_unused]]EMotionFX::ActorInstance* actorInstance)
             {
-                m_actorInstance = actorInstance;
                 CreateHairObject();
             }
 
             void HairComponentController::OnActorInstanceDestroyed([[maybe_unused]]EMotionFX::ActorInstance* actorInstance)
             {
-                m_actorInstance = nullptr;
                 RemoveHairObject();
             }
 
@@ -212,9 +210,14 @@ namespace AZ
                     const float updateShadows = false;
                     m_renderObject->UpdateRenderingParameters(
                         &m_configuration.m_renderingSettings, RESERVED_PIXELS_FOR_OIT, distanceFromCamera, updateShadows);
-
-                    m_renderObject->LoadImageAsset(&m_configuration.m_renderingSettings);
                     m_configChanged = false;
+
+                    // Only load the image asset when the dirty flag has been set on the settings.
+                    if (m_configuration.m_renderingSettings.m_imgDirty)
+                    {
+                        m_renderObject->LoadImageAsset(&m_configuration.m_renderingSettings);
+                        m_configuration.m_renderingSettings.m_imgDirty = false;
+                    }
                 }
 
                 // Optional - move this to be done by the feature processor
@@ -230,13 +233,15 @@ namespace AZ
 
             bool HairComponentController::UpdateActorMatrices()
             {
-                if (!m_actorInstance)
+                EMotionFX::ActorInstance* actorInstance = nullptr;
+                EMotionFX::Integration::ActorComponentRequestBus::EventResult(
+                    actorInstance, m_entityId, &EMotionFX::Integration::ActorComponentRequestBus::Events::GetActorInstance);
+                if (!actorInstance)
                 {
-                    AZ_WarningOnce("Hair Gem", false, "Error getting the actor instance.");
                     return false;
                 }
 
-                const EMotionFX::TransformData* transformData = m_actorInstance->GetTransformData();
+                const EMotionFX::TransformData* transformData = actorInstance->GetTransformData();
                 if (!transformData)
                 {
                     AZ_WarningOnce("Hair Gem", false, "Error getting the transformData from the actorInstance.");
@@ -255,7 +260,7 @@ namespace AZ
                 }
 
                 AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-                m_entityWorldMatrix = Matrix3x4::CreateFromTransform(m_actorInstance->GetWorldSpaceTransform().ToAZTransform());
+                m_entityWorldMatrix = Matrix3x4::CreateFromTransform(actorInstance->GetWorldSpaceTransform().ToAZTransform());
                 m_renderObject->UpdateBoneMatrices(m_entityWorldMatrix, m_cachedBoneMatrices);
 
                 return true;
@@ -264,9 +269,12 @@ namespace AZ
             // The hair object will only be created when 1) The hair asset is loaded AND 2) The actor instance is created.
             bool HairComponentController::CreateHairObject()
             {
-                if (!m_actorInstance)
+                // Do not create a hairRenderObject when actor instance hasn't been created.
+                EMotionFX::ActorInstance* actorInstance = nullptr;
+                EMotionFX::Integration::ActorComponentRequestBus::EventResult(
+                    actorInstance, m_entityId, &EMotionFX::Integration::ActorComponentRequestBus::Events::GetActorInstance);
+                if (!actorInstance)
                 {
-                    // Do not create a hairRenderObject when actor instance hasn't been created.
                     return false;
                 }
 
@@ -296,7 +304,7 @@ namespace AZ
                 for (AZ::u32 tressFXBoneIndex = 0; tressFXBoneIndex < numBones; ++tressFXBoneIndex)
                 {
                     const char* boneName = hairAsset->m_boneNames[tressFXBoneIndex].c_str();
-                    const EMotionFX::Node* emfxNode = m_actorInstance->GetActor()->GetSkeleton()->FindNodeByName(boneName);
+                    const EMotionFX::Node* emfxNode = actorInstance->GetActor()->GetSkeleton()->FindNodeByName(boneName);
                     if (!emfxNode)
                     {
                         // [rhhong-TODO] Add better error handling in the UI, to show the user they have selected an asset that doesn't match the actor.
