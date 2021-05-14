@@ -45,18 +45,6 @@ namespace AzToolsFramework
             void SetScale(const AZ::Vector3& scale) override;
             void RegisterScaleChangedEvent(AZ::NonUniformScaleChangedEvent::Handler& handler);
 
-        protected:
-            //// EditorComponentSelectionRequestsBus overrides ...
-            //AZ::Aabb GetEditorSelectionBoundsViewport(
-            //    [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo) override { return AZ::Aabb::CreateNull(); };
-            //bool EditorSelectionIntersectRayViewport(
-            //    [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
-            //    [[maybe_unused]] const AZ::Vector3& src, [[maybe_unused]] const AZ::Vector3& dir, [[maybe_unused]] float& distance) override { return false; };
-            //bool SupportsEditorRayIntersect() override { return true; }
-
-            //// EditorComponentSelectionNotificationsBus overrides ... 
-            //void OnAccentTypeChanged([[maybe_unused]] AzToolsFramework::EntityAccentType accent) override {};
-
         private:
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
