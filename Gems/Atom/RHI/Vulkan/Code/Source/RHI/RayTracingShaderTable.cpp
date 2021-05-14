@@ -75,20 +75,22 @@ namespace AZ
             return static_cast<Buffer*>(shaderTableBuffer.get());
         }
 
-        RHI::ResultCode RayTracingShaderTable::InitInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::RayTracingShaderTableDescriptor* descriptor, [[maybe_unused]] const RHI::RayTracingBufferPools& bufferPools)
+        RHI::ResultCode RayTracingShaderTable::BuildInternal()
         {
-            auto& device = static_cast<Device&>(deviceBase);
+            auto& device = static_cast<Device&>(GetDevice());
             auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
             const VkPhysicalDeviceRayTracingPipelinePropertiesKHR& rayTracingPipelineProperties = physicalDevice.GetPhysicalDeviceRayTracingPipelineProperties();
             uint32_t shaderHandleSize = rayTracingPipelineProperties.shaderGroupHandleSize;
             uint32_t alignedShaderHandleSize = RHI::AlignUp(shaderHandleSize, rayTracingPipelineProperties.shaderGroupBaseAlignment);
 
+            AZStd::shared_ptr<RHI::RayTracingShaderTableDescriptor> descriptor = m_descriptor.lock();
+
             // advance to the next buffer
             m_currentBufferIndex = (m_currentBufferIndex + 1) % BufferCount;
             ShaderTableBuffers& buffers = m_buffers[m_currentBufferIndex];
 
-            // clear the shader table if a null descriptor was passed in
-            if (!descriptor)
+            // clear the shader table if the descriptor has no ray generation shader
+            if (descriptor->GetRayGenerationRecord().empty())
             {
                 buffers.m_rayGenerationTable = nullptr;
                 buffers.m_rayGenerationTableStride = 0;
@@ -118,7 +120,7 @@ namespace AZ
             buffers.m_rayGenerationTable = BuildTable(
                 rayTracingPipelineProperties,
                 rayTracingPipelineState,
-                bufferPools,
+                *m_bufferPools,
                 descriptor->GetRayGenerationRecord(),
                 buffers.m_rayGenerationTableStride,
                 "RayGenerationTable");
@@ -126,7 +128,7 @@ namespace AZ
             buffers.m_missTable = BuildTable(
                 rayTracingPipelineProperties,
                 rayTracingPipelineState,
-                bufferPools,
+                *m_bufferPools,
                 descriptor->GetMissRecords(),
                 buffers.m_missTableStride,
                 "MissTable");
@@ -134,7 +136,7 @@ namespace AZ
             buffers.m_hitGroupTable = BuildTable(
                 rayTracingPipelineProperties,
                 rayTracingPipelineState,
-                bufferPools,
+                *m_bufferPools,
                 descriptor->GetHitGroupRecords(),
                 buffers.m_hitGroupTableStride,
                 "HitGroupTable");

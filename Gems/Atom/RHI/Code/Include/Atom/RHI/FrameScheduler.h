@@ -31,6 +31,7 @@ namespace AZ
     {
         class ShaderResourceGroupPool;
         class FrameGraphExecuteGroup;
+        class RayTracingShaderTable;
 
         //! @brief Fill this descriptor when initializing a FrameScheduler instance.
         struct FrameSchedulerDescriptor
@@ -181,6 +182,9 @@ namespace AZ
 
             const TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const;
 
+            //! Adds a RayTracingShaderTable to be built this frame
+            void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable);
+
         private:
             const ScopeId m_rootScopeId{"Root"};
 
@@ -190,6 +194,7 @@ namespace AZ
             void PrepareProducers();
             void CompileProducers();
             void CompileShaderResourceGroups();
+            void BuildRayTracingShaderTables();
 
             ScopeProducer* FindScopeProducer(const ScopeId& scopeId);
 
@@ -224,6 +229,9 @@ namespace AZ
             AZStd::unique_ptr<ScopeProducerEmpty> m_rootScopeProducer;
             AZStd::vector<ScopeProducer*> m_scopeProducers;
             AZStd::unordered_map<ScopeId, ScopeProducer*> m_scopeProducerLookup;
+
+            // list of RayTracingShaderTables that should be built this frame
+            AZStd::vector<RayTracingShaderTable*> m_rayTracingShaderTablesToBuild;
         };
     }
 }

@@ -12,6 +12,7 @@
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ
 {
@@ -77,21 +78,29 @@ namespace AZ
             return rayTracingShaderTable;
         }
 
-        ResultCode RayTracingShaderTable::Init(Device& device, const RayTracingShaderTableDescriptor* descriptor, const RayTracingBufferPools& bufferPools)
+        void RayTracingShaderTable::Init(Device& device, const RayTracingBufferPools& bufferPools)
         {
 #if defined (AZ_RHI_ENABLE_VALIDATION)
             // [GFX TODO][ATOM-5217] Validate shaders in the ray tracing shader table are present in the pipeline state
 #endif
-            ResultCode resultCode = InitInternal(device, descriptor, bufferPools);
-            if (resultCode == ResultCode::Success)
-            {
-                DeviceObject::Init(device);
-            }
-            return resultCode;
+            DeviceObject::Init(device);
+            m_bufferPools = &bufferPools;
         }
 
-        void RayTracingShaderTable::Shutdown()
+        void RayTracingShaderTable::Build(const AZStd::shared_ptr<RayTracingShaderTableDescriptor> descriptor)
         {
+            AZ_Assert(!m_isQueuedForBuild, "Attempting to build a RayTracingShaderTable that's already been queued. Only build once per frame.")
+            m_descriptor = descriptor;
+
+            RHI::RHISystemInterface::Get()->QueueRayTracingShaderTableForBuild(this);
+            m_isQueuedForBuild = true;
+        }
+
+        void RayTracingShaderTable::Validate()
+        {
+            AZ_Assert(m_isQueuedForBuild, "Attempting to build a RayTracingShaderTable that is not queued.");
+            AZ_Assert(!m_descriptor.expired(), "RayTracingShaderTable descriptor is no longer valid, make sure it is not freed after calling Build.");
+            AZ_Assert(m_bufferPools, "RayTracingBufferPools pointer is null.");
         }
     }
 }

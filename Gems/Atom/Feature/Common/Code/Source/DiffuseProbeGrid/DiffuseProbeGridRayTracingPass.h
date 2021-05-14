@@ -35,8 +35,6 @@ namespace AZ
             AZ_RTTI(DiffuseProbeGridRayTracingPass, "{CB0DF817-3D07-4AC7-8574-F5EE529B8DCA}", RPI::RenderPass);
             AZ_CLASS_ALLOCATOR(DiffuseProbeGridRayTracingPass, SystemAllocator, 0);
 
-            virtual ~DiffuseProbeGridRayTracingPass() override;
-
             //! Creates a DiffuseProbeGridRayTracingPass
             static RPI::Ptr<DiffuseProbeGridRayTracingPass> Create(const RPI::PassDescriptor& descriptor);
 
@@ -44,7 +42,6 @@ namespace AZ
             explicit DiffuseProbeGridRayTracingPass(const RPI::PassDescriptor& descriptor);
 
             void CreateRayTracingPipelineState();
-            void CreateShaderTableScope();
 
             // Scope producer functions
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
@@ -65,7 +62,7 @@ namespace AZ
 
             // ray tracing shader table
             RHI::Ptr<RHI::RayTracingShaderTable> m_rayTracingShaderTable;
-            RHI::ScopeProducer* m_rayTracingScopeProducerShaderTable = nullptr;
+            AZStd::shared_ptr<RHI::RayTracingShaderTableDescriptor> m_rayTracingShaderTableDescriptor;
 
             // ray tracing global shader resource group asset and pipeline state
             Data::Asset<RPI::ShaderResourceGroupAsset> m_globalSrgAsset;

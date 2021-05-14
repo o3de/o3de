@@ -97,18 +97,29 @@ namespace AZ
             virtual ~RayTracingShaderTable() = default;
 
             static RHI::Ptr<RHI::RayTracingShaderTable> CreateRHIRayTracingShaderTable();
+            void Init(Device& device, const RayTracingBufferPools& rayTracingBufferPools);
 
-            ResultCode Init(Device& device, const RayTracingShaderTableDescriptor* descriptor, const RayTracingBufferPools& rayTracingBufferPools);
+            //! Queues this RayTracingShaderTable to be built by the FrameScheduler
+            void Build(const AZStd::shared_ptr<RayTracingShaderTableDescriptor> descriptor);
+
+        protected:
+
+            AZStd::weak_ptr<RayTracingShaderTableDescriptor> m_descriptor;
+            const RayTracingBufferPools* m_bufferPools = nullptr;
 
         private:
 
-            // explicit shutdown is not allowed for this type
-            void Shutdown() override final;
+            friend class FrameScheduler;
+
+            /// Called by the FrameScheduler to validate the state prior to building
+            void Validate();
 
             //////////////////////////////////////////////////////////////////////////
             // Platform API
-            virtual RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::RayTracingShaderTableDescriptor* descriptor, const RayTracingBufferPools& bufferPools) = 0;
+            virtual RHI::ResultCode BuildInternal() = 0;
             //////////////////////////////////////////////////////////////////////////
+
+            bool m_isQueuedForBuild = false;
         };
     }
 }
