@@ -188,6 +188,10 @@ set(FILES
     Script/ScriptDebugMsgReflection.h
     Script/ScriptRemoteDebugging.cpp
     Script/ScriptRemoteDebugging.h
+    Session/ISessionHandlingRequests.h
+    Session/ISessionRequests.h
+    Session/SessionConfig.h
+    Session/SessionNotifications.h
     StreamingInstall/StreamingInstall.h
     StreamingInstall/StreamingInstall.cpp
     StreamingInstall/StreamingInstallRequests.h
