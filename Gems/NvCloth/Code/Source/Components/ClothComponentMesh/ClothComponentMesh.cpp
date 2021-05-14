@@ -187,7 +187,7 @@ namespace NvCloth
         m_actorClothSkinning = ActorClothSkinning::Create(
             m_entityId,
             m_meshNodeInfo,
-            m_meshClothInfo.m_particles.size(),
+            m_meshClothInfo,
             m_cloth->GetParticles().size(),
             m_meshRemappedVertices);
         m_numberOfClothSkinningUpdates = 0;
@@ -406,7 +406,7 @@ namespace NvCloth
 
         auto& renderData = GetRenderData();
 
-        if (m_config.m_removeStaticTriangles && m_actorClothSkinning)
+        if (m_actorClothSkinning)
         {
             // Apply skinning to the non-simulated part of the mesh.
             m_actorClothSkinning->ApplySkinningOnNonSimulatedVertices(m_meshClothInfo, renderData);
@@ -427,7 +427,15 @@ namespace NvCloth
             if (remappedIndex >= 0)
             {
                 renderData.m_particles[index] = particles[remappedIndex];
-                renderData.m_normals[index] = normals[remappedIndex];
+
+                // For static particles only use the updated normal when indicated in the configuration.
+                const bool useSimulatedClothParticleNormal =
+                    m_meshClothInfo.m_particles[index].GetW() != 0.0f ||
+                    m_config.m_updateNormalsOfStaticParticles;
+                if (useSimulatedClothParticleNormal)
+                {
+                    renderData.m_normals[index] = normals[remappedIndex];
+                }
             }
         }
 
