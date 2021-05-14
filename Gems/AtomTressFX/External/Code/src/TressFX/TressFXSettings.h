@@ -132,6 +132,10 @@ namespace AMD
 
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_baseAlbedoAsset;
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_strandAlbedoAsset;
+        bool m_imgDirty = false;	// marks if the image assets require update
+
+    private:
+        void OnImgChanged();		// Per image asset handling callback
     };
 
 } // namespace AMD
