@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzFramework/Viewport/ViewportId.h>
 
 namespace AZ
 {
