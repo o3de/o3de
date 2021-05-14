@@ -14,7 +14,7 @@
 
 #include <EditorCoreAPI.h>
 
-namespace Editor
+namespace EditorViewport
 {
     EDITOR_CORE_API bool GridSnappingEnabled();
 
@@ -35,4 +35,8 @@ namespace Editor
     EDITOR_CORE_API void SetAngleSnappingSize(float size);
 
     EDITOR_CORE_API void SetShowingGrid(bool showing);
-} // namespace Editor
+
+    //! Return if the new editor camera system is enabled or not.
+    //! @note This is implemented in EditorViewportWidget.cpp
+    EDITOR_CORE_API bool UsingNewCameraSystem();
+} // namespace EditorViewport

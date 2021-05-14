@@ -85,6 +85,7 @@
 #include <Editor/Settings.h>
 #include <Editor/StringDlg.h>
 #include <Editor/QtViewPaneManager.h>
+#include <Editor/EditorViewportSettings.h>
 #include <IResourceSelectorHost.h>
 #include "CryEdit.h"
 
@@ -101,8 +102,6 @@
 #ifdef CreateDirectory
 #undef CreateDirectory
 #endif
-
-AZ_CVAR(bool, ed_useNewCameraSystemGoto, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Editor camera system go to behavior");
 
 //////////////////////////////////////////////////////////////////////////
 // Gathers all selected entities, culling any that have an ancestor in the selection.
@@ -1691,7 +1690,7 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
         return;
     }
 
-    if (ed_useNewCameraSystemGoto)
+    if (EditorViewport::UsingNewCameraSystem())
     {
         const AZ::Aabb aabb = AZStd::accumulate(
             AZStd::begin(entityIds), AZStd::end(entityIds), AZ::Aabb::CreateNull(), [](AZ::Aabb acc, const AZ::EntityId entityId) {

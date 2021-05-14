@@ -19,7 +19,7 @@
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Viewport/MultiViewportController.h>
 
-namespace Editor
+namespace EditorViewport
 {
     class ModernViewportCameraControllerInstance;
     class ModernViewportCameraController : public AzFramework::MultiViewportController<ModernViewportCameraControllerInstance>
@@ -74,4 +74,4 @@ namespace Editor
 
         AZ::RPI::ViewportContext::MatrixChangedEvent::Handler m_cameraViewMatrixChangeHandler;
     };
-} // namespace Editor
+} // namespace EditorViewport

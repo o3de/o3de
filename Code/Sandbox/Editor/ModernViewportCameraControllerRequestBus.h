@@ -19,7 +19,7 @@ namespace AZ
     class Transform;
 }
 
-namespace Editor
+namespace EditorViewport
 {
     //! Provides an interface to control the modern viewport camera controller from the Editor.
     //! @note The bus is addressed by viewport id.
@@ -38,4 +38,4 @@ namespace Editor
     };
 
     using ModernViewportCameraControllerRequestBus = AZ::EBus<ModernViewportCameraControllerRequests>;
-} // namespace Editor
+} // namespace EditorViewport

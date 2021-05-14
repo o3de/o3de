@@ -874,9 +874,9 @@ void MainWindow::InitActions()
         .SetCheckable(true)
         .RegisterUpdateCallback([](QAction* action) {
             Q_ASSERT(action->isCheckable());
-            action->setChecked(Editor::GridSnappingEnabled());
+            action->setChecked(EditorViewport::GridSnappingEnabled());
         })
-        .Connect(&QAction::triggered, []() { Editor::SetGridSnapping(!Editor::GridSnappingEnabled()); });
+        .Connect(&QAction::triggered, []() { EditorViewport::SetGridSnapping(!EditorViewport::GridSnappingEnabled()); });
 
     am->AddAction(ID_SNAPANGLE, tr("Snap angle"))
         .SetIcon(Style::icon("Angle"))
@@ -885,9 +885,9 @@ void MainWindow::InitActions()
         .SetCheckable(true)
         .RegisterUpdateCallback([](QAction* action) {
             Q_ASSERT(action->isCheckable());
-            action->setChecked(Editor::AngleSnappingEnabled());
+            action->setChecked(EditorViewport::AngleSnappingEnabled());
         })
-        .Connect(&QAction::triggered, []() { Editor::SetAngleSnapping(!Editor::AngleSnappingEnabled()); });
+        .Connect(&QAction::triggered, []() { EditorViewport::SetAngleSnapping(!EditorViewport::AngleSnappingEnabled()); });
 
     // Display actions
     am->AddAction(ID_WIREFRAME, tr("&Wireframe"))
@@ -1272,12 +1272,12 @@ QWidget* MainWindow::CreateSnapToGridWidget()
 {
     SnapToWidget::SetValueCallback setCallback = [](double snapStep)
     {
-        Editor::SetGridSnappingSize(snapStep);
+        EditorViewport::SetGridSnappingSize(snapStep);
     };
 
     SnapToWidget::GetValueCallback getCallback = []()
     {
-        return Editor::GridSnappingSize();
+        return EditorViewport::GridSnappingSize();
     };
 
     return new SnapToWidget(m_actionManager->GetAction(ID_SNAP_TO_GRID), setCallback, getCallback);
@@ -1287,12 +1287,12 @@ QWidget* MainWindow::CreateSnapToAngleWidget()
 {
     SnapToWidget::SetValueCallback setCallback = [](double snapAngle)
     {
-        Editor::SetAngleSnappingSize(snapAngle);
+        EditorViewport::SetAngleSnappingSize(snapAngle);
     };
 
     SnapToWidget::GetValueCallback getCallback = []()
     {
-        return Editor::AngleSnappingSize();
+        return EditorViewport::AngleSnappingSize();
     };
 
     return new SnapToWidget(m_actionManager->GetAction(ID_SNAPANGLE), setCallback, getCallback);
