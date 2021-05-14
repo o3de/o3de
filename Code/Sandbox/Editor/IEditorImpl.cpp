@@ -1587,13 +1587,6 @@ void CEditorImpl::AddUIEnums()
 void CEditorImpl::SetEditorConfigSpec(ESystemConfigSpec spec, ESystemConfigPlatform platform)
 {
     gSettings.editorConfigSpec = spec;
-    if (m_pSystem->GetConfigSpec(true) != spec || m_pSystem->GetConfigPlatform() != platform)
-    {
-        m_pSystem->SetConfigSpec(spec, platform, true);
-        gSettings.editorConfigSpec = m_pSystem->GetConfigSpec(true);
-        GetObjectManager()->SendEvent(EVENT_CONFIG_SPEC_CHANGE);
-        AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::OnEditorSpecChange);
-    }
 }
 
 ESystemConfigSpec CEditorImpl::GetEditorConfigSpec() const

@@ -13,7 +13,7 @@
 #pragma once
 
 #if !defined(AZ_RELEASE_BUILD)
-#include <ThermalInfo.h>
+#include <AzFramework/Thermal/ThermalInfo.h>
 
 class ThermalInfoAndroidHandler : public ThermalInfoRequestsBus::Handler
 {
