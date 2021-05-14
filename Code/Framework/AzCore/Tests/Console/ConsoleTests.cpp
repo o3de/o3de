@@ -107,7 +107,6 @@ namespace AZ
         ConsoleTests::s_consoleFreeFuncArgs = someStrings.size();
     }
 
-    AZ_CONSOLEFREEFUNC(TestFreeFunc, AZ::ConsoleFunctorFlags::Null, "");
 
     TEST_F(ConsoleTests, CVar_GetSetTest_Bool)
     {
@@ -450,18 +449,29 @@ namespace ConsoleSettingsRegistryTests
 
     protected:
         size_t m_stringArgCount{};
-        AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_registry;
+        AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_registry;
         AZ::IO::FixedMaxPath m_testFolder;
 
     private:
         AZ::SettingsRegistryInterface* m_oldSettingsRegistry{};
     };
 
+    static bool s_consoleFreeFunctionInvoked = false;
+    void TestFreeFunc(const AZ::ConsoleCommandContainer& someStrings)
+    {
+        EXPECT_TRUE(someStrings.empty());
+        s_consoleFreeFunctionInvoked = true;
+    }
+
+    AZ_CONSOLEFREEFUNC(TestFreeFunc, AZ::ConsoleFunctorFlags::Null, "");
+
     TEST_P(ConsoleSettingsRegistryFixture, Console_AbleToLoadSettingsFile_Successfully)
     {
         AZ::Console testConsole(*m_registry);
-        AZ_CVAR_SCOPED(int32_t, testInit, 0, nullptr, AZ::ConsoleFunctorFlags::Null, "");
         testConsole.LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
+        AZ::Interface<AZ::IConsole>::Register(&testConsole);
+        AZ_CVAR_SCOPED(int32_t, testInit, 0, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+        s_consoleFreeFunctionInvoked = false;
         testInit = {};
         AZ::testChar = {};
         AZ::testBool = {};
@@ -478,7 +488,10 @@ namespace ConsoleSettingsRegistryTests
         AZ::testString = {};
 
         auto configFileParams = GetParam();
-        testConsole.ExecuteConfigFile((m_testFolder / configFileParams.m_testConfigFileName).Native());
+        auto testFilePath = m_testFolder / configFileParams.m_testConfigFileName;
+        EXPECT_TRUE(AZ::IO::SystemFile::Exists(testFilePath.c_str()));
+        testConsole.ExecuteConfigFile(testFilePath.Native());
+        EXPECT_TRUE(s_consoleFreeFunctionInvoked);
         EXPECT_EQ(3, testInit);
         EXPECT_TRUE(static_cast<bool>(AZ::testBool));
         EXPECT_EQ('Q', AZ::testChar);
@@ -494,6 +507,7 @@ namespace ConsoleSettingsRegistryTests
         EXPECT_DOUBLE_EQ(2, AZ::testDouble);
         EXPECT_STREQ("Stable", static_cast<AZ::CVarFixedString>(AZ::testString).c_str());
         EXPECT_EQ(3, m_stringArgCount);
+        AZ::Interface<AZ::IConsole>::Unregister(&testConsole);
     }
 
 
@@ -514,6 +528,7 @@ namespace ConsoleSettingsRegistryTests
             testDouble 2
             testString Stable
             ConsoleSettingsRegistryFixture.testClassFunc Foo Bar Baz
+            TestFreeFunc
         )";
 
     static constexpr AZStd::string_view UserJsonMergePatchContent =
@@ -537,7 +552,8 @@ namespace ConsoleSettingsRegistryTests
                                 "testFloat": 1.0,
                                 "testDouble": 2,
                                 "testString": "Stable",
-                                "ConsoleSettingsRegistryFixture.testClassFunc": "Foo Bar Baz"
+                                "ConsoleSettingsRegistryFixture.testClassFunc": "Foo Bar Baz",
+                                "TestFreeFunc": ""
                             }
                         }
                     }
@@ -561,7 +577,8 @@ namespace ConsoleSettingsRegistryTests
                 { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testFloat", "value": 1.0 },
                 { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testDouble", "value": 2 },
                 { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testString", "value": "Stable" },
-                { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/ConsoleSettingsRegistryFixture.testClassFunc", "value": "Foo Bar Baz" }
+                { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/ConsoleSettingsRegistryFixture.testClassFunc", "value": "Foo Bar Baz" },
+                { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testFreeFunc", "value": "" }
             ]
         )";
 
