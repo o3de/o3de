@@ -94,8 +94,6 @@ namespace AZ
             private:
                 HairFeatureProcessor* m_featureProcessor = nullptr;
 
-                RHI::Size  m_attachmentSize = RHI::Size(1,1,0);    // for buffer set.
-
                 // The  shader that will be used by the pass
                 Data::Instance<RPI::Shader> m_shader = nullptr;
 

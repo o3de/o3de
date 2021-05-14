@@ -106,7 +106,6 @@ namespace AZ
                 AZStd::mutex m_mutex;
 
                 EntityId m_entityId;
-                EMotionFX::ActorInstance* m_actorInstance = nullptr;
 
                 Data::Asset<HairAsset> m_hairAsset;
 
