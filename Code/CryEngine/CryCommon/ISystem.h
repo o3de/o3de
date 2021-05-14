@@ -65,12 +65,10 @@ struct IProcess;
 struct ITimer;
 struct ICryFont;
 struct IMovieSystem;
-struct IMemoryManager;
 namespace Audio
 {
     struct IAudioSystem;
 } // namespace Audio
-struct IStreamEngine;
 struct SFileVersion;
 struct INameTable;
 struct ILevelSystem;
@@ -78,7 +76,6 @@ struct IViewSystem;
 class ICrySizer;
 class IXMLBinarySerializer;
 struct IReadWriteXMLSink;
-struct IResourceManager;
 struct ITextModeConsole;
 struct IAVI_Reader;
 class CPNoise3;
@@ -89,7 +86,6 @@ struct ILZ4Decompressor;
 class IZStdDecompressor;
 struct IOutputPrintSink;
 struct IWindowMessageHandler;
-struct IImageHandler;
 
 namespace AZ
 {
@@ -829,10 +825,6 @@ struct ISystem
     virtual bool NeedDoWorkDuringOcclusionChecks() = 0;
 
     // Summary:
-    //   Returns the current used memory.
-    virtual uint32 GetUsedMemory() = 0;
-
-    // Summary:
     //   Retrieve the name of the user currently logged in to the computer.
     virtual const char* GetUserName() = 0;
 
@@ -905,26 +897,17 @@ struct ISystem
     virtual ILevelSystem* GetILevelSystem() = 0;
     virtual INameTable* GetINameTable() = 0;
     virtual IValidator* GetIValidator() = 0;
-    virtual IStreamEngine* GetStreamEngine() = 0;
     virtual ICmdLine* GetICmdLine() = 0;
     virtual ILog* GetILog() = 0;
     virtual AZ::IO::IArchive* GetIPak() = 0;
     virtual ICryFont* GetICryFont() = 0;
-    virtual IMemoryManager* GetIMemoryManager() = 0;
     virtual IMovieSystem* GetIMovieSystem() = 0;
     virtual ::IConsole* GetIConsole() = 0;
     virtual IRemoteConsole* GetIRemoteConsole() = 0;
-    // Returns:
-    //   Can be NULL, because it only exists when running through the editor, not in pure game mode.
-    virtual IResourceManager* GetIResourceManager() = 0;
     virtual IProfilingSystem* GetIProfilingSystem() = 0;
     virtual ISystemEventDispatcher* GetISystemEventDispatcher() = 0;
 
     virtual ITimer* GetITimer() = 0;
-
-    virtual void DebugStats(bool checkpoint, bool leaks) = 0;
-    virtual void DumpWinHeaps() = 0;
-    virtual int DumpMMStats(bool log) = 0;
 
     // Arguments:
     //   bValue - Set to true when running on a cheat protected server or a client that is connected to it (not used in singleplayer).
@@ -1165,8 +1148,6 @@ struct ISystem
 
     // Initializes Steam if needed and returns if it was successful
     virtual bool SteamInit() = 0;
-
-    virtual const IImageHandler* GetImageHandler() const = 0;
 
     // Summary:
     //      Gets the root window message handler function

@@ -37,8 +37,6 @@ public:
         bool());
     MOCK_METHOD0(RenderStatistics,
         void());
-    MOCK_METHOD0(GetUsedMemory,
-        uint32());
     MOCK_METHOD0(GetUserName,
         const char*());
     MOCK_METHOD0(GetCPUFlags,
@@ -88,8 +86,6 @@ public:
         INameTable * ());
     MOCK_METHOD0(GetIValidator,
         IValidator * ());
-    MOCK_METHOD0(GetStreamEngine,
-        IStreamEngine * ());
     MOCK_METHOD0(GetICmdLine,
         ICmdLine * ());
     MOCK_METHOD0(GetILog,
@@ -98,8 +94,6 @@ public:
         AZ::IO::IArchive * ());
     MOCK_METHOD0(GetICryFont,
         ICryFont * ());
-    MOCK_METHOD0(GetIMemoryManager,
-        IMemoryManager * ());
     MOCK_METHOD0(GetIMovieSystem,
         IMovieSystem * ());
     MOCK_METHOD0(GetIAudioSystem,
@@ -108,20 +102,12 @@ public:
         ::IConsole * ());
     MOCK_METHOD0(GetIRemoteConsole,
         IRemoteConsole * ());
-    MOCK_METHOD0(GetIResourceManager,
-        IResourceManager * ());
     MOCK_METHOD0(GetIProfilingSystem,
         IProfilingSystem * ());
     MOCK_METHOD0(GetISystemEventDispatcher,
         ISystemEventDispatcher * ());
     MOCK_METHOD0(GetITimer,
         ITimer * ());
-    MOCK_METHOD2(DebugStats,
-        void(bool checkpoint, bool leaks));
-    MOCK_METHOD0(DumpWinHeaps,
-        void());
-    MOCK_METHOD1(DumpMMStats,
-        int(bool log));
     MOCK_METHOD1(SetForceNonDevMode,
         void(bool bValue));
     MOCK_CONST_METHOD0(GetForceNonDevMode,
@@ -237,8 +223,6 @@ public:
 
     MOCK_METHOD0(SteamInit,
         bool());
-    MOCK_CONST_METHOD0(GetImageHandler,
-        const IImageHandler * ());
     MOCK_METHOD0(GetRootWindowMessageHandler,
         void*());
     MOCK_METHOD1(RegisterWindowMessageHandler,
