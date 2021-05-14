@@ -10,24 +10,17 @@
 *
 */
 
-#include "ProjectInfo.h"
+#include "ProjectTemplateInfo.h"
 
 namespace O3DE::ProjectManager
 {
-    ProjectInfo::ProjectInfo(const QString& path, const QString& projectName, const QString& productName, const AZ::Uuid projectId,
-        const QString& imagePath, const QString& backgroundImagePath, bool isNew)
+    ProjectTemplateInfo::ProjectTemplateInfo(const QString& path)
         : m_path(path)
-        , m_projectName(projectName)
-        , m_productName(productName)
-        , m_projectId(projectId)
-        , m_imagePath(imagePath)
-        , m_backgroundImagePath(backgroundImagePath)
-        , m_isNew(isNew)
     {
     }
 
-    bool ProjectInfo::IsValid() const
+    bool ProjectTemplateInfo::IsValid() const
     {
-        return !m_path.isEmpty() && !m_projectId.IsNull();
+        return !m_path.isEmpty() && !m_name.isEmpty();
     }
 } // namespace O3DE::ProjectManager

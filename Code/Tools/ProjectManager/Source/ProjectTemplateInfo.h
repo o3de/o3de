@@ -10,24 +10,28 @@
 *
 */
 
-#include "ProjectInfo.h"
+#pragma once
+
+#if !defined(Q_MOC_RUN)
+#include <QString>
+#include <QStringList>
+#endif
 
 namespace O3DE::ProjectManager
 {
-    ProjectInfo::ProjectInfo(const QString& path, const QString& projectName, const QString& productName, const AZ::Uuid projectId,
-        const QString& imagePath, const QString& backgroundImagePath, bool isNew)
-        : m_path(path)
-        , m_projectName(projectName)
-        , m_productName(productName)
-        , m_projectId(projectId)
-        , m_imagePath(imagePath)
-        , m_backgroundImagePath(backgroundImagePath)
-        , m_isNew(isNew)
+    class ProjectTemplateInfo
     {
-    }
+    public:
+        ProjectTemplateInfo() = default;
+        ProjectTemplateInfo(const QString& path);
 
-    bool ProjectInfo::IsValid() const
-    {
-        return !m_path.isEmpty() && !m_projectId.IsNull();
-    }
+        bool IsValid() const;
+
+        QString m_displayName;
+        QString m_name;
+        QString m_path;
+        QString m_summary;
+        QStringList m_canonicalTags;
+        QStringList m_userTags;
+    };
 } // namespace O3DE::ProjectManager

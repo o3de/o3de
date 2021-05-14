@@ -26,7 +26,9 @@ namespace O3DE::ProjectManager
         ProjectInfo(const QString& path, const QString& projectName, const QString& productName, const AZ::Uuid projectId,
             const QString& imagePath, const QString& backgroundImagePath, bool isNew);
 
-        // From o3de_manifest.json and o3de_projects.json
+        bool IsValid() const;
+
+        // from o3de_manifest.json and o3de_projects.json
         QString m_path;
 
         // From project.json
