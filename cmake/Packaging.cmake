@@ -15,7 +15,7 @@ endif()
 
 # set the common cpack variables first so they are accessible via configure_file
 # when the platforms specific properties are applied below
-set(LY_INSTALLER_DOWNLOAD_URL "" CACHE PATH "URL embded into the installer to download additional artifacts")
+set(LY_INSTALLER_DOWNLOAD_URL "" CACHE STRING "URL embded into the installer to download additional artifacts")
 
 set(CPACK_PACKAGE_VENDOR "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VERSION "${LY_VERSION_STRING}")
@@ -34,7 +34,6 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_VENDOR}/${CPACK_PACKAGE_VER
 # custom cpack cache variables for use in pre/post build scripts
 set(CPACK_SOURCE_DIR ${CMAKE_SOURCE_DIR}/cmake)
 set(CPACK_BINARY_DIR ${CMAKE_BINARY_DIR}/installer)
-set(CPACK_DOWNLOAD_URL ${LY_INSTALLER_DOWNLOAD_URL})
 
 # attempt to apply platform specific settings
 ly_get_absolute_pal_filename(pal_dir ${CMAKE_SOURCE_DIR}/cmake/Platform/${PAL_HOST_PLATFORM_NAME})
@@ -86,3 +85,11 @@ ly_configure_cpack_component(
     DISPLAY_NAME "${PROJECT_NAME} Core"
     DESCRIPTION "${PROJECT_NAME} Headers, Libraries and Tools"
 )
+
+if(LY_INSTALLER_DOWNLOAD_URL)
+    cpack_configure_downloads(
+        ${LY_INSTALLER_DOWNLOAD_URL}
+        UPLOAD_DIRECTORY artifacts
+        ALL
+    )
+endif()
