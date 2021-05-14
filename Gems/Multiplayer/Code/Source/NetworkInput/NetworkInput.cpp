@@ -10,8 +10,10 @@
 *
 */
 
-#include <Multiplayer/NetworkInput.h>
-#include <Multiplayer/NetBindComponent.h>
+#include <Multiplayer/NetworkInput/NetworkInput.h>
+#include <Multiplayer/Components/MultiplayerComponentRegistry.h>
+#include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/IMultiplayer.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 
@@ -111,13 +113,12 @@ namespace Multiplayer
                 // This happens when deserializing a non-delta'd input command
                 // However in the delta serializer case, we use the previous input as our initial value
                 // which will have the NetworkInputs setup and therefore won't write out the componentId
-                NetComponentId componentId = m_componentInputs[i] ? m_componentInputs[i]->GetComponentId() : InvalidNetComponentId;
+                NetComponentId componentId = m_componentInputs[i] ? m_componentInputs[i]->GetNetComponentId() : InvalidNetComponentId;
                 serializer.Serialize(componentId, "ComponentType");
                 // Create a new input if we don't have one or the types do not match
-                if ((m_componentInputs[i] == nullptr) || (componentId != m_componentInputs[i]->GetComponentId()))
+                if ((m_componentInputs[i] == nullptr) || (componentId != m_componentInputs[i]->GetNetComponentId()))
                 {
-                    // TODO: ComponentInput factory, needs multiplayer component architecture and autogen
-                    m_componentInputs[i] = nullptr; // ComponentInputFactory(componentId);
+                    m_componentInputs[i] = AZStd::move(GetMultiplayerComponentRegistry()->AllocateComponentInput(componentId));
                 }
                 if (!m_componentInputs[i])
                 {
@@ -135,7 +136,7 @@ namespace Multiplayer
             // We assume that the order of the network inputs is fixed between the server and client
             for (auto& componentInput : m_componentInputs)
             {
-                NetComponentId componentId = componentInput->GetComponentId();
+                NetComponentId componentId = componentInput->GetNetComponentId();
                 serializer.Serialize(componentId, "ComponentId");
                 serializer.Serialize(*componentInput, "ComponentInput");
             }
@@ -148,7 +149,7 @@ namespace Multiplayer
         // linear search since we expect to have very few components
         for (auto& componentInput : m_componentInputs)
         {
-            if (componentInput->GetComponentId() == componentId)
+            if (componentInput->GetNetComponentId() == componentId)
             {
                 return componentInput.get();
             }
@@ -169,10 +170,10 @@ namespace Multiplayer
         m_componentInputs.resize(rhs.m_componentInputs.size());
         for (int32_t i = 0; i < rhs.m_componentInputs.size(); ++i)
         {
-            if (m_componentInputs[i] == nullptr || m_componentInputs[i]->GetComponentId() != rhs.m_componentInputs[i]->GetComponentId())
+            const NetComponentId rhsComponentId = rhs.m_componentInputs[i]->GetNetComponentId();
+            if (m_componentInputs[i] == nullptr || m_componentInputs[i]->GetNetComponentId() != rhsComponentId)
             {
-                // TODO: ComponentInput factory, needs multiplayer component architecture and autogen
-                m_componentInputs[i] = nullptr; // ComponentInputFactory(rhs.m_componentInputs[i]->GetComponentId());
+                m_componentInputs[i] = AZStd::move(GetMultiplayerComponentRegistry()->AllocateComponentInput(rhsComponentId));
             }
             *m_componentInputs[i] = *rhs.m_componentInputs[i];
         }

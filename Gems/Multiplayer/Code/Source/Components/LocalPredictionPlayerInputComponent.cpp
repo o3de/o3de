@@ -10,7 +10,7 @@
 *
 */
 
-#include <Source/Components/LocalPredictionPlayerInputComponent.h>
+#include <Multiplayer/Components/LocalPredictionPlayerInputComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzNetworking/Serialization/HashSerializer.h>
@@ -81,12 +81,7 @@ namespace Multiplayer
         , m_migrateStartHandler([this](ClientInputId migratedInputId) { OnMigrateStart(migratedInputId); })
         , m_migrateEndHandler([this]() { OnMigrateEnd(); })
     {
-        if (GetNetEntityRole() == NetEntityRole::Autonomous)
-        {
-            m_autonomousUpdateEvent.Enqueue(AZ::TimeMs{ 1 }, true);
-            parent.GetNetBindComponent()->AddEntityMigrationStartEventHandler(m_migrateStartHandler);
-            parent.GetNetBindComponent()->AddEntityMigrationEndEventHandler(m_migrateEndHandler);
-        }
+        ;
     }
 
     void LocalPredictionPlayerInputComponentController::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
@@ -95,6 +90,13 @@ namespace Multiplayer
         {
             m_allowMigrateClientInput = true;
             m_serverMigrateFrameId = GetNetworkTime()->GetHostFrameId();
+        }
+
+        if (IsAutonomous())
+        {
+            m_autonomousUpdateEvent.Enqueue(AZ::TimeMs{ 1 }, true);
+            GetParent().GetNetBindComponent()->AddEntityMigrationStartEventHandler(m_migrateStartHandler);
+            GetParent().GetNetBindComponent()->AddEntityMigrationEndEventHandler(m_migrateEndHandler);
         }
     }
 

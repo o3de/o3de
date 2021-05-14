@@ -18,10 +18,10 @@
 #include <Source/NetworkEntity/NetworkEntityAuthorityTracker.h>
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
 #include <Source/NetworkEntity/NetworkSpawnableLibrary.h>
-#include <Multiplayer/IEntityDomain.h>
-#include <Multiplayer/INetworkEntityManager.h>
-#include <Multiplayer/MultiplayerComponentRegistry.h>
-#include <Multiplayer/NetworkEntityRpcMessage.h>
+#include <Multiplayer/Components/MultiplayerComponentRegistry.h>
+#include <Multiplayer/EntityDomains/IEntityDomain.h>
+#include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h>
 
 namespace Multiplayer
 {

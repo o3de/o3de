@@ -13,7 +13,7 @@
 #pragma once
 
 #include <Source/AutoGen/LocalPredictionPlayerInputComponent.AutoComponent.h>
-#include <Multiplayer/NetBindComponent.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 
 namespace Multiplayer
 {

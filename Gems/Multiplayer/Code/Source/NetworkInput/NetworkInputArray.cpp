@@ -11,7 +11,7 @@
 */
 
 #include <Source/NetworkInput/NetworkInputArray.h>
-#include <Multiplayer/INetworkEntityManager.h>
+#include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/Serialization/DeltaSerializer.h>
 

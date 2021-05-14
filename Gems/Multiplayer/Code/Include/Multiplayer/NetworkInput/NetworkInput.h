@@ -12,9 +12,9 @@
 
 #pragma once
 
-#include <Multiplayer/IMultiplayerComponentInput.h>
-#include <Multiplayer/INetworkTime.h>
-#include <Multiplayer/NetworkEntityHandle.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityHandle.h>
+#include <Multiplayer/NetworkInput/IMultiplayerComponentInput.h>
+#include <Multiplayer/NetworkTime/INetworkTime.h>
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 
 namespace Multiplayer
@@ -57,15 +57,15 @@ namespace Multiplayer
         IMultiplayerComponentInput* FindComponentInput(NetComponentId componentId);
 
         template <class InputType>
-        const InputType* FindInput() const
+        const InputType* FindComponentInput() const
         {
-            return static_cast<const InputType*>(FindInput(InputType::s_Type));
+            return static_cast<const InputType*>(FindComponentInput(InputType::s_netComponentId));
         }
 
         template <typename InputType>
-        InputType* FindInput()
+        InputType* FindComponentInput()
         {
-            return static_cast<InputType*>(FindInput(InputType::s_Type));
+            return static_cast<InputType*>(FindComponentInput(InputType::s_netComponentId));
         }
 
     private:
