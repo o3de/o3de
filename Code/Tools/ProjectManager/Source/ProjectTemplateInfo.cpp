@@ -10,29 +10,17 @@
 *
 */
 
-#pragma once
-
-#if !defined(Q_MOC_RUN)
-#include <AzCore/Math/Uuid.h>
-#include <QString>
-#endif
+#include "ProjectTemplateInfo.h"
 
 namespace O3DE::ProjectManager
 {
-    class ProjectInfo
+    ProjectTemplateInfo::ProjectTemplateInfo(const QString& path)
+        : m_path(path)
     {
-    public:
-        ProjectInfo() = default;
-        ProjectInfo(const QString& path, const QString& projectName, const QString& productName, const AZ::Uuid projectId);
+    }
 
-        bool IsValid() const;
-
-        // from o3de_manifest.json and o3de_projects.json
-        QString m_path;
-
-        // from project.json
-        QString m_projectName;
-        QString m_productName;
-        AZ::Uuid m_projectId;
-    };
+    bool ProjectTemplateInfo::IsValid() const
+    {
+        return !m_path.isEmpty() && !m_name.isEmpty();
+    }
 } // namespace O3DE::ProjectManager

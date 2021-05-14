@@ -21,4 +21,9 @@ namespace O3DE::ProjectManager
         , m_projectId(projectId)
     {
     }
+
+    bool ProjectInfo::IsValid() const
+    {
+        return !m_path.isEmpty() && !m_projectId.IsNull();
+    }
 } // namespace O3DE::ProjectManager

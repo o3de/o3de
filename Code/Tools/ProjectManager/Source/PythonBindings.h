@@ -15,6 +15,14 @@
 #include <AzCore/IO/Path/Path.h> 
 #include <AzCore/std/parallel/semaphore.h>
 
+// Qt defines slots, which interferes with the use here.
+#pragma push_macro("slots")
+#undef slots
+#include <Python.h>
+#include <pybind11/pybind11.h>
+#pragma pop_macro("slots")
+
+
 namespace O3DE::ProjectManager
 {
     class PythonBindings 
@@ -26,16 +34,35 @@ namespace O3DE::ProjectManager
         ~PythonBindings() override;
 
         // PythonBindings overrides
-        ProjectInfo GetGlobalProject() override;
+        // Engine
+        AZ::Outcome<EngineInfo> GetEngineInfo() override;
+        bool SetEngineInfo(const EngineInfo& engineInfo) override;
+
+        // Gem
+        AZ::Outcome<GemInfo> GetGem(const QString& path) override;
+        AZ::Outcome<QVector<GemInfo>> GetGems() override;
+
+        // Project
+        AZ::Outcome<ProjectInfo> CreateProject(const ProjectTemplateInfo& projectTemplate, const ProjectInfo& projectInfo) override;
+        AZ::Outcome<ProjectInfo> GetProject(const QString& path) override;
+        AZ::Outcome<QVector<ProjectInfo>> GetProjects() override;
+        bool UpdateProject(const ProjectInfo& projectInfo) override;
+
+        // ProjectTemplate
+        AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates() override;
 
     private:
         AZ_DISABLE_COPY_MOVE(PythonBindings);
 
-        void ExecuteWithLock(AZStd::function<void()> executionCallback);
+        bool ExecuteWithLock(AZStd::function<void()> executionCallback);
+        GemInfo GemInfoFromPath(pybind11::handle path);
+        ProjectInfo ProjectInfoFromPath(pybind11::handle path);
+        ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path);
         bool StartPython();
         bool StopPython();
 
         AZ::IO::FixedMaxPath m_enginePath;
         AZStd::recursive_mutex m_lock;
+        pybind11::handle m_registration;
     };
 }

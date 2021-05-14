@@ -13,26 +13,24 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/Math/Uuid.h>
 #include <QString>
 #endif
 
 namespace O3DE::ProjectManager
 {
-    class ProjectInfo
+    class ProjectTemplateInfo
     {
     public:
-        ProjectInfo() = default;
-        ProjectInfo(const QString& path, const QString& projectName, const QString& productName, const AZ::Uuid projectId);
+        ProjectTemplateInfo() = default;
+        ProjectTemplateInfo(const QString& path);
 
         bool IsValid() const;
 
-        // from o3de_manifest.json and o3de_projects.json
+        QString m_displayName;
+        QString m_name;
         QString m_path;
-
-        // from project.json
-        QString m_projectName;
-        QString m_productName;
-        AZ::Uuid m_projectId;
+        QString m_summary;
+        QStringList m_canonicalTags;
+        QStringList m_userTags;
     };
 } // namespace O3DE::ProjectManager

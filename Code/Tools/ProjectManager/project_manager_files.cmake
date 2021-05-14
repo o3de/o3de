@@ -16,6 +16,8 @@ set(FILES
     Source/ScreenFactory.h
     Source/ScreenFactory.cpp
     Source/ScreenWidget.h
+    Source/EngineInfo.h
+    Source/EngineInfo.cpp
     Source/FirstTimeUse.h
     Source/FirstTimeUse.cpp
     Source/FirstTimeUse.ui
@@ -23,6 +25,8 @@ set(FILES
     Source/ProjectInfo.cpp
     Source/ProjectManagerWindow.h
     Source/ProjectManagerWindow.cpp
+    Source/ProjectTemplateInfo.h
+    Source/ProjectTemplateInfo.cpp
     Source/ProjectManagerWindow.ui
     Source/PythonBindings.h
     Source/PythonBindings.cpp

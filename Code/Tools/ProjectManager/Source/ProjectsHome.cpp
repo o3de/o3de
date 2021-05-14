@@ -25,9 +25,6 @@ namespace O3DE::ProjectManager
         m_ui->setupUi(this);
 
         ConnectSlotsAndSignals();
-
-        // example of how to get the global project name
-        ProjectInfo globalProject = PythonBindingsInterface::Get()->GetGlobalProject();
     }
 
     ProjectsHome::~ProjectsHome()
