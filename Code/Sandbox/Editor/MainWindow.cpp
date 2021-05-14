@@ -92,7 +92,6 @@ AZ_POP_DISABLE_WARNING
 #include "ErrorReportDialog.h"
 
 #include "Dialogs/PythonScriptsDialog.h"
-#include "EngineSettingsManager.h"
 
 #include "AzAssetBrowser/AzAssetBrowserWindow.h"
 #include "AssetEditor/AssetEditorWindow.h"
@@ -1020,13 +1019,16 @@ void MainWindow::InitActions()
         .SetApplyHoverEffect()
         .SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdatePlayGame);
-    am->AddAction(ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL, tr("Play Console"))
-        .SetText(tr("Play Console"));
+    am->AddAction(ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL, tr("Play Controls"))
+        .SetText(tr("Play Controls"));
     am->AddAction(ID_SWITCH_PHYSICS, tr("Simulate"))
+        .SetIcon(QIcon(":/stylesheet/img/UI20/toolbar/Simulate_Physics.svg"))
         .SetShortcut(tr("Ctrl+P"))
         .SetToolTip(tr("Simulate (Ctrl+P)"))
         .SetCheckable(true)
         .SetStatusTip(tr("Enable processing of Physics and AI."))
+        .SetApplyHoverEffect()
+        .SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnSwitchPhysicsUpdate);
     am->AddAction(ID_GAME_SYNCPLAYER, tr("Move Player and Camera Separately")).SetCheckable(true)
         .SetStatusTip(tr("Move Player and Camera Separately"))
@@ -1940,12 +1942,6 @@ void MainWindow::ConnectivityStateChanged(const AzToolsFramework::SourceControlS
             connected = true;
         }
     }
-
-#if defined(CRY_ENABLE_RC_HELPER)
-    CEngineSettingsManager settingsManager;
-    settingsManager.SetModuleSpecificBoolEntry("RC_EnableSourceControl", connected);
-    settingsManager.StoreData();
-#endif
 
     gSettings.enableSourceControl = connected;
     gSettings.SaveEnableSourceControlFlag(false);

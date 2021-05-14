@@ -233,10 +233,7 @@ namespace PhysX::Benchmarks
         subTickTracker.Stop();
 
         //object clean up
-        for (auto handle : rigidBodies)
-        {
-            m_defaultScene->RemoveSimulatedBody(handle);
-        }
+        m_defaultScene->RemoveSimulatedBodies(rigidBodies);
         rigidBodies.clear();
 
         //sort the frame times and get the P50, P90, P99 percentiles
@@ -310,10 +307,7 @@ namespace PhysX::Benchmarks
 
         //object clean up
         washingMachine.TearDownWashingMachine();
-        for (auto handle : rigidBodies)
-        {
-            m_defaultScene->RemoveSimulatedBody(handle);
-        }
+        m_defaultScene->RemoveSimulatedBodies(rigidBodies);
         rigidBodies.clear();
 
         //sort the frame times and get the P50, P90, P99 percentiles
@@ -465,10 +459,7 @@ namespace PhysX::Benchmarks
         //object clean up
         collisionHandlers.clear();
         washingMachine.TearDownWashingMachine();
-        for (auto handle : rigidBodies)
-        {
-            m_defaultScene->RemoveSimulatedBody(handle);
-        }
+        m_defaultScene->RemoveSimulatedBodies(rigidBodies);
         rigidBodies.clear();
 
         //sort the frame times and get the P50, P90, P99 percentiles

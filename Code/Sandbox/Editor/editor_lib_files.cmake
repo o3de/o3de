@@ -280,8 +280,6 @@ set(FILES
     Include/IAnimationCompressionManager.h
     Include/IAssetItem.h
     Include/IAssetItemDatabase.h
-    Include/IBackgroundScheduleManager.h
-    Include/IBackgroundTaskManager.h
     Include/ICommandManager.h
     Include/IConsoleConnectivity.h
     Include/IDataBaseItem.h
@@ -343,10 +341,6 @@ set(FILES
     AssetEditor/AssetEditorWindow.cpp
     AssetEditor/AssetEditorWindow.h
     AssetEditor/AssetEditorWindow.ui
-    BackgroundTaskManager.cpp
-    BackgroundScheduleManager.cpp
-    BackgroundTaskManager.h
-    BackgroundScheduleManager.h
     Commands/CommandManager.cpp
     Commands/CommandManager.h
     Controls/BitmapToolTip.cpp
@@ -766,10 +760,13 @@ set(FILES
     Util/PakFile.h
     Util/PredefinedAspectRatios.cpp
     Util/PredefinedAspectRatios.h
+    Util/StringHelpers.cpp
+    Util/StringHelpers.h
     Util/StringNoCasePredicate.h
     Util/TRefCountBase.h
     Util/Triangulate.cpp
     Util/Triangulate.h
+    Util/Util.h
     Util/XmlArchive.cpp
     Util/XmlArchive.h
     Util/XmlHistoryManager.cpp
