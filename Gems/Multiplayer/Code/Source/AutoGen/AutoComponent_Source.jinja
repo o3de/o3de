@@ -663,7 +663,8 @@ enum class NetworkProperties
 #}
 {% macro DefineNetworkPropertyBehaviorReflection(Component, ReplicateFrom, ReplicateTo, ClassName) %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
-{% if (Property.attrib['IsPublic'] | booleanTrue == true) and (Property.attrib['GenerateEventBindings'] | booleanTrue == true) %}
+{% if (Property.attrib['IsPublic'] | booleanTrue == true) and (Property.attrib['GenerateEventBindings'] | booleanTrue == true) -%}
+    // {{ UpperFirst(Property.attrib['Name']) }}: Replicate from {{ ReplicateFrom }} to {{ ReplicateTo }}
     ->Method("Get{{ UpperFirst(Property.attrib['Name']) }}", [](AZ::EntityId id) -> {{ Property.attrib['Type'] }}
     {
         AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
@@ -728,7 +729,7 @@ enum class NetworkProperties
         ->Attribute(AZ::Script::Attributes::AzEventDescription, AZ::BehaviorAzEventDescription{ "On {{ UpperFirst(Property.attrib['Name']) }} Changed Event", {"New {{ Property.attrib['Type'] }}"} })
 
 {% endif %}
-{% endcall -%}
+{% endcall %}
 {% endmacro %}
 {#
 
@@ -1219,12 +1220,15 @@ namespace {{ Component.attrib['Namespace'] }}
             behaviorContext->Class<{{ ComponentName }}>("{{ ComponentName }}")
                 ->Attribute(AZ::Script::Attributes::Module, "{{ LowerFirst(Component.attrib['Namespace']) }}")
                 ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }}")
-                {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Authority', ComponentName)|indent(16) -}}
-{{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Server', ComponentName)|indent(16) -}}
-{{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Client', ComponentName)|indent(16) -}}
-{{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Autonomous', ComponentName)|indent(16) -}}
-{{ DefineNetworkPropertyBehaviorReflection(Component, 'Autonomous', 'Authority', ComponentName)|indent(16) }}
-                {{ DefineArchetypePropertyBehaviorReflection(Component, ComponentName)|indent(16) }};
+
+                // Reflect Network Properties Get, Set, and OnChanged methods
+                {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Authority', ComponentName) | indent(16) -}}
+                {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Server', ComponentName) | indent(16) -}}
+                {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Client', ComponentName) | indent(16) -}}
+                {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Autonomous', ComponentName) | indent(16) -}}
+                {{ DefineNetworkPropertyBehaviorReflection(Component, 'Autonomous', 'Authority', ComponentName) | indent(16) -}}
+                {{- DefineArchetypePropertyBehaviorReflection(Component, ComponentName) | indent(16) }}
+                ;
         }
     }
 
