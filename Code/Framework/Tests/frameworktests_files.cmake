@@ -17,6 +17,8 @@ set(FILES
     BinToTextEncode.cpp
     ComponentAddRemove.cpp
     ComponentAdapterTests.cpp
+    ClickDetectorTests.cpp
+    CursorStateTests.cpp
     EntityContext.cpp
     EntityTestbed.h
     FileFunc.cpp

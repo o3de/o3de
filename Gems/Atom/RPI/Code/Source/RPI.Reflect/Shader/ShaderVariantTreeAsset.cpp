@@ -12,6 +12,7 @@
 #include <Atom/RPI.Reflect/Shader/ShaderVariantTreeAsset.h>
 
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/algorithm.h>
 
@@ -40,15 +41,12 @@ namespace AZ
         Data::AssetId ShaderVariantTreeAsset::GetShaderVariantTreeAssetIdFromShaderAssetId(const Data::AssetId& shaderAssetId)
         {
             //From the shaderAssetId We can deduce the path of the shader asset, and from the path of the shader asset we can deduce the path of the ShaderVariantTreeAsset.
-            AZStd::string shaderAssetPath;
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(shaderAssetPath
-                , &AZ::Data::AssetCatalogRequests::GetAssetPathById
-                , shaderAssetId);
-
-            AZStd::string shaderAssetPathRoot;
-            AZStd::string shaderAssetPathName;
-            AzFramework::StringFunc::Path::Split(shaderAssetPath.c_str(), nullptr /*drive*/, &shaderAssetPathRoot, &shaderAssetPathName, nullptr /*extension*/);
-
+            AZ::IO::FixedMaxPath shaderAssetPath;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(shaderAssetPath.Native(), &AZ::Data::AssetCatalogRequests::GetAssetPathById
+                    , shaderAssetId);
+            AZ::IO::FixedMaxPath shaderAssetPathRoot = shaderAssetPath.ParentPath();
+            AZ::IO::FixedMaxPath shaderAssetPathName = shaderAssetPath.Stem();
+            
             AZStd::string shaderVariantTreeAssetDir;
             AzFramework::StringFunc::Path::Join(ShaderVariantTreeAsset::CommonSubFolderLowerCase, shaderAssetPathRoot.c_str(), shaderVariantTreeAssetDir);
             AZStd::string shaderVariantTreeAssetFilename = AZStd::string::format("%s.%s", shaderAssetPathName.c_str(), ShaderVariantTreeAsset::Extension);
@@ -63,8 +61,7 @@ namespace AZ
             {
                 // If the game project did not customize the shadervariantlist, let's see if the original author of the .shader file
                 // provided a shadervariantlist.
-                shaderVariantTreeAssetDir = shaderAssetPathRoot;
-                AzFramework::StringFunc::Path::Join(shaderVariantTreeAssetDir.c_str(), shaderVariantTreeAssetFilename.c_str(), shaderVariantTreeAssetPath);
+                AzFramework::StringFunc::Path::Join(shaderAssetPathRoot.c_str(), shaderVariantTreeAssetFilename.c_str(), shaderVariantTreeAssetPath);
                 AZ::Data::AssetCatalogRequestBus::BroadcastResult(shaderVariantTreeAssetId, &AZ::Data::AssetCatalogRequests::GetAssetIdByPath
                     , shaderVariantTreeAssetPath.c_str(), AZ::Data::s_invalidAssetType, false);
             }

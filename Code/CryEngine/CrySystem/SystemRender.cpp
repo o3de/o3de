@@ -47,12 +47,9 @@
 #define SYSTEMRENDERER_CPP_SECTION_2 2
 #endif
 
-extern CMTSafeHeap* g_pPakHeap;
 #if defined(AZ_PLATFORM_ANDROID)
 #include <AzCore/Android/Utils.h>
 #endif
-
-extern int CryMemoryGetAllocatedSize();
 
 /////////////////////////////////////////////////////////////////////////////////
 bool CSystem::GetPrimaryPhysicalDisplayDimensions([[maybe_unused]] int& o_widthPixels, [[maybe_unused]] int& o_heightPixels)

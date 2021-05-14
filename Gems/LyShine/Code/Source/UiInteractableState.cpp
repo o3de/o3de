@@ -42,6 +42,16 @@ void UiInteractableStateAction::SetInteractableEntity(AZ::EntityId interactableE
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiInteractableStateAction::Reflect(AZ::ReflectContext* context)
+{
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<UiInteractableStateAction>();
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiInteractableStateAction::Init(AZ::EntityId interactableEntityId)
 {
     m_interactableEntity = interactableEntityId;
@@ -128,8 +138,8 @@ void UiInteractableStateColor::Reflect(AZ::ReflectContext* context)
 
     if (serializeContext)
     {
-        serializeContext->Class<UiInteractableStateColor>()
-            ->Version(2, &VersionConverter)
+        serializeContext->Class<UiInteractableStateColor, UiInteractableStateAction>()
+            ->Version(3, &VersionConverter)
             ->Field("TargetEntity", &UiInteractableStateColor::m_targetEntity)
             ->Field("Color", &UiInteractableStateColor::m_color);
 
@@ -223,8 +233,8 @@ void UiInteractableStateAlpha::Reflect(AZ::ReflectContext* context)
 
     if (serializeContext)
     {
-        serializeContext->Class<UiInteractableStateAlpha>()
-            ->Version(1)
+        serializeContext->Class<UiInteractableStateAlpha, UiInteractableStateAction>()
+            ->Version(2)
             ->Field("TargetEntity", &UiInteractableStateAlpha::m_targetEntity)
             ->Field("Alpha", &UiInteractableStateAlpha::m_alpha);
 
@@ -379,8 +389,8 @@ void UiInteractableStateSprite::Reflect(AZ::ReflectContext* context)
 
     if (serializeContext)
     {
-        serializeContext->Class<UiInteractableStateSprite>()
-            ->Version(3)
+        serializeContext->Class<UiInteractableStateSprite, UiInteractableStateAction>()
+            ->Version(4)
             ->Field("TargetEntity", &UiInteractableStateSprite::m_targetEntity)
             ->Field("Sprite", &UiInteractableStateSprite::m_spritePathname)
             ->Field("Index", &UiInteractableStateSprite::m_spriteSheetCellIndex);
@@ -633,8 +643,8 @@ void UiInteractableStateFont::Reflect(AZ::ReflectContext* context)
 
     if (serializeContext)
     {
-        serializeContext->Class<UiInteractableStateFont>()
-            ->Version(1)
+        serializeContext->Class<UiInteractableStateFont, UiInteractableStateAction>()
+            ->Version(2)
             ->Field("TargetEntity", &UiInteractableStateFont::m_targetEntity)
             ->Field("FontFileName", &UiInteractableStateFont::m_fontFilename)
             ->Field("EffectIndex", &UiInteractableStateFont::m_fontEffectIndex);
