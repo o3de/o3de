@@ -65,17 +65,17 @@ void MainCS(
     float3 color = PassSrg::m_inputColor[pixelCoord].rgb;
     float depth = PassSrg::m_inputDepth[pixelCoord].r;
 
+    // Depth stored in a.
     float4 lastFrameColorDepth = PassSrg::m_lastFrameAccumulation.SampleLevel(PassSrg::LinearSampler, uvOld, 0.0);
 
     float weight = PassSrg::m_minContribution;
 
+    // Very basic depth rejection
     if (abs(depth - lastFrameColorDepth.a) > 0.01)
     {
         weight = 1.0f;
     }
 
-    float invWeight = 1.0 - weight;
-
-    PassSrg::m_outputColor[pixelCoord].rgb = lastFrameColorDepth.rgb * invWeight + color * weight;
+    PassSrg::m_outputColor[pixelCoord].rgb = lerp(lastFrameColorDepth.rgb, color, weight);
     PassSrg::m_outputColor[pixelCoord].a = depth;
 }
