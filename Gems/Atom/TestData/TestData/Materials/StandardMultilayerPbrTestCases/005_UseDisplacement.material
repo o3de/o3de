@@ -10,39 +10,49 @@
             "enableLayer3": true
         },
         "layer1_baseColor": {
-            "textureMap": "TestData/Textures/cc0/Rock030_2K_Color.jpg"
+            "textureMap": "TestData/Textures/cc0/Ground033_1K_Color.jpg"
         },
         "layer1_normal": {
-            "textureMap": "TestData/Textures/cc0/Rock030_2K_Normal.jpg"
+            "textureMap": "TestData/Textures/cc0/Ground033_1K_Normal.jpg"
         },
         "layer1_occlusion": {
-            "diffuseTextureMap": "TestData/Textures/cc0/Rocks002_1K_AmbientOcclusion.jpg"
+            "diffuseTextureMap": "TestData/Textures/cc0/Ground033_1K_AmbientOcclusion.jpg"
         },
         "layer1_parallax": {
             "enable": true,
-            "factor": 0.10000000149011612,
-            "textureMap": "TestData/Textures/cc0/Rock030_2K_Displacement.jpg"
+            "factor": 0.017000000923871995,
+            "offset": -0.009999999776482582,
+            "textureMap": "TestData/Textures/cc0/Ground033_1K_Displacement.jpg"
         },
         "layer1_roughness": {
-            "textureMap": "TestData/Textures/cc0/Rock030_2K_Roughness.jpg"
+            "textureMap": "TestData/Textures/cc0/Ground033_1K_Roughness.jpg"
         },
         "layer2_baseColor": {
-            "textureMap": "TestData/Textures/cc0/Ground033_1K_Color.jpg"
+            "textureMap": "TestData/Textures/cc0/Rock030_2K_Color.jpg"
         },
         "layer2_normal": {
-            "textureMap": "TestData/Textures/cc0/Ground033_1K_Normal.jpg"
+            "textureMap": "TestData/Textures/cc0/Rock030_2K_Normal.jpg"
         },
         "layer2_occlusion": {
-            "diffuseTextureMap": "TestData/Textures/cc0/Ground033_1K_AmbientOcclusion.jpg"
+            "diffuseTextureMap": "TestData/Textures/cc0/Rocks002_1K_AmbientOcclusion.jpg"
         },
         "layer2_parallax": {
             "enable": true,
-            "factor": 0.014999999664723874,
-            "offset": -0.024000000208616258,
-            "textureMap": "TestData/Textures/cc0/Ground033_1K_Displacement.jpg"
+            "factor": 0.03099999949336052,
+            "offset": 0.0020000000949949028,
+            "textureMap": "TestData/Textures/cc0/Rock030_2K_Displacement.jpg"
         },
         "layer2_roughness": {
-            "textureMap": "TestData/Textures/cc0/Ground033_1K_Roughness.jpg"
+            "textureMap": "TestData/Textures/cc0/Rock030_2K_Roughness.jpg"
+        },
+        "layer2_uv": {
+            "center": [
+                0.5,
+                0.5
+            ],
+            "offsetU": 0.1599999964237213,
+            "offsetV": 0.07999999821186066,
+            "rotateDegrees": 90.0
         },
         "layer3_baseColor": {
             "textureMap": "TestData/Textures/cc0/Rocks002_1K_Color.jpg"
@@ -53,14 +63,13 @@
         "layer3_parallax": {
             "enable": true,
             "factor": 0.027000000700354577,
-            "offset": -0.02199999988079071,
             "textureMap": "TestData/Textures/cc0/Rocks002_1K_Displacement.jpg"
         },
         "layer3_roughness": {
             "textureMap": "TestData/Textures/cc0/Rocks002_1K_Roughness.jpg"
         },
         "layer3_uv": {
-            "scale": 1.600000023841858
+            "scale": 3.4999988079071047
         },
         "parallax": {
             "algorithm": "Relief",
