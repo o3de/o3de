@@ -708,6 +708,7 @@ namespace AzToolsFramework
 
                     for (auto& nestedInstance : instances)
                     {
+                        RemoveLink(nestedInstance, commonOwningInstance->get().GetTemplateId(), currentUndoBatch);
                         nestedInstance.reset();
                     }
                 }
@@ -720,7 +721,7 @@ namespace AzToolsFramework
                         if (owningInstance->get().GetContainerEntityId() == entityId)
                         {
                             auto instancePtr = commonOwningInstance->get().DetachNestedInstance(owningInstance->get().GetInstanceAlias());
-                            instancePtr.reset();
+                            RemoveLink(instancePtr, commonOwningInstance->get().GetTemplateId(), currentUndoBatch);
                         }
                         else
                         {
