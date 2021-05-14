@@ -36,7 +36,7 @@ namespace AzToolsFramework
                 2.0f, AzFramework::ViewportColors::XAxisColor, AzFramework::ViewportColors::YAxisColor,
                 AzFramework::ViewportColors::ZAxisColor);
 
-            m_manipulators->InstallAxisLeftMouseDownCallback([this](const LinearManipulator::Action& action) {
+            auto mouseDownCallback = [this](const LinearManipulator::Action& action) {
                 AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
 
                 AZ::NonUniformScaleRequestBus::EventResult(
@@ -46,15 +46,32 @@ namespace AzToolsFramework
 
                 AZ::NonUniformScaleRequestBus::Event(
                     m_entityComponentIdPair.GetEntityId(), &AZ::NonUniformScaleRequests::SetScale, m_initialScale);
-            });
+            };
+
+            m_manipulators->InstallAxisLeftMouseDownCallback(mouseDownCallback);
 
             m_manipulators->InstallAxisMouseMoveCallback([this](const LinearManipulator::Action& action) {
-                const AZ::Vector3 scale =
-                    (AZ::Vector3::CreateOne() + ((action.LocalScaleOffset() * action.m_start.m_sign) / m_initialScale))
-                        .GetMax(AZ::Vector3(AZ::MinTransformScale));
+                const AZ::Vector3 scaleMultiplier =
+                    (AZ::Vector3::CreateOne() + ((action.LocalScaleOffset() * action.m_start.m_sign) / m_initialScale));
 
                 AZ::NonUniformScaleRequestBus::Event(
-                    m_entityComponentIdPair.GetEntityId(), &AZ::NonUniformScaleRequests::SetScale, scale * m_initialScale);
+                    m_entityComponentIdPair.GetEntityId(), &AZ::NonUniformScaleRequests::SetScale,
+                    (scaleMultiplier * m_initialScale).GetClamp(AZ::Vector3(AZ::MinTransformScale), AZ::Vector3(AZ::MaxTransformScale)));
+            });
+
+            m_manipulators->InstallUniformLeftMouseDownCallback(mouseDownCallback);
+
+            m_manipulators->InstallUniformMouseMoveCallback([this](const LinearManipulator::Action& action) {
+                const auto sumVectorElements = [](const AZ::Vector3& vec) { return vec.GetX() + vec.GetY() + vec.GetZ(); };
+
+                const float minScaleMultiplier = AZ::MinTransformScale / m_initialScale.GetMinElement();
+                const float maxScaleMultiplier = AZ::MaxTransformScale / m_initialScale.GetMaxElement();
+                const float scaleMultiplier = AZ::GetClamp(
+                    1.0f + sumVectorElements(action.m_start.m_sign * action.LocalScaleOffset() / m_initialScale), minScaleMultiplier,
+                    maxScaleMultiplier);
+
+                AZ::NonUniformScaleRequestBus::Event(
+                    m_entityComponentIdPair.GetEntityId(), &AZ::NonUniformScaleRequests::SetScale, scaleMultiplier * m_initialScale);
             });
         }
 
