@@ -4,7 +4,8 @@
 
 Welcome to the Project Spectra Private Preview.  This is a confidential pre-release project; your use is subject to the nondisclosure agreement between you (or your organization) and Amazon.  Do not disclose the existence of this project, your participation in it, or any of the  materials provided, to any unauthorized third party.  To request access for a third party, please contact [Royal O'Brien, obriroya@amazon.com](mailto:obriroya@amazon.com).
 
-## Full instructions can be found here: https://docs.o3de.org/docs/welcome-guide/setup/setup-from-github/ (Note requires registration)
+## Full instructions can be found here: 
+## https://docs.o3de.org/docs/welcome-guide/setup/setup-from-github/ (Note requires registration)
 
 ## Download and Install
 
@@ -72,7 +73,7 @@ If you have the Git credential manager core installed, you should not be prompte
     
 3.  Add the following environment variables through the command line
     ```
-    set 3RDPARTY_PATH=<Location of the unzipped 3rdParty zip>
+    set 3RDPARTY_PATH=<Location of the 3rdParty cache>
     ```
     
 4.  Navigate into the repo folder, then register the engine with this command:
