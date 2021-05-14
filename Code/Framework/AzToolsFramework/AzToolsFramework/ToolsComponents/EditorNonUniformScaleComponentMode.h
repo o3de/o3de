@@ -31,7 +31,7 @@ namespace AzToolsFramework
             NonUniformScaleComponentMode& operator=(NonUniformScaleComponentMode&&) = delete;
             ~NonUniformScaleComponentMode();
 
-            // EditorBaseComponentMode
+            // EditorBaseComponentMode overrides ...
             void Refresh() override;
 
         private:

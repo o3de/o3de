@@ -16,8 +16,6 @@
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 
-#include <AzToolsFramework/ComponentModes/BoxComponentMode.h>
-
 namespace AzToolsFramework
 {
     namespace Components
