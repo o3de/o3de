@@ -200,9 +200,12 @@ namespace AZ
 
             m_platformLimitsDescriptor = nullptr;
             m_pipelineStateCache = nullptr;
-            m_device->PreShutdown();
-            AZ_Assert(m_device->use_count()==1, "The ref count for Device is %i but it should be 1 here to ensure all the resources are released", m_device->use_count());
-            m_device = nullptr;
+            if (m_device)
+            {            
+                m_device->PreShutdown();
+                AZ_Assert(m_device->use_count()==1, "The ref count for Device is %i but it should be 1 here to ensure all the resources are released", m_device->use_count());
+                m_device = nullptr;
+            }
 
             m_cpuProfiler.Shutdown();
         }

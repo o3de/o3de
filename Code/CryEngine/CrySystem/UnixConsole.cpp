@@ -783,12 +783,6 @@ void CUNIXConsole::KeyEnter()
 
     if (pushCommand)
     {
-        CSystem* pSystem = static_cast<CSystem*>(gEnv->pSystem);
-#if defined(CVARS_WHITELIST)
-        ICVarsWhitelist* pCVarsWhitelist = pSystem->GetCVarsWhiteList();
-        bool execute = (pCVarsWhitelist) ? pCVarsWhitelist->IsWhiteListed(m_InputLine, false) : true;
-        if (execute)
-#endif // defined(CVARS_WHITELIST)
         {
             m_CommandQueue.push_back(m_InputLine);
         }

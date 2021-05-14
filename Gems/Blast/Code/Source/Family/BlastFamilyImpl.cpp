@@ -241,7 +241,7 @@ namespace Blast
         configuration.m_orientation = transform.GetRotation();
         configuration.m_scale = transform.GetScale();
         configuration.m_ccdEnabled = m_actorConfiguration.m_isCcdEnabled;
-        configuration.m_simulated = m_actorConfiguration.m_isSimulated;
+        configuration.m_startSimulationEnabled = m_actorConfiguration.m_isSimulated;
         configuration.m_initialAngularVelocity = AZ::Vector3::CreateZero();
 
         BlastActorDesc actorDesc;

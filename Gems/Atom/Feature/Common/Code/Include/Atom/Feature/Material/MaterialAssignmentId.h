@@ -1,20 +1,20 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
-#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/ReflectContext.h>
@@ -26,6 +26,9 @@ namespace AZ
     {
         using MaterialAssignmentLodIndex = AZ::u64;
 
+        //! MaterialAssignmentId is used to address available and overridable material slots on a model.
+        //! The LOD and one of the model's original material asset IDs are used as coordinates that identify
+        //! a specific material slot or a set of slots matching either.
         struct MaterialAssignmentId final
         {
             AZ_RTTI(AZ::Render::MaterialAssignmentId, "{EB603581-4654-4C17-B6DE-AE61E79EDA97}");
@@ -34,69 +37,37 @@ namespace AZ
 
             MaterialAssignmentId() = default;
 
-            MaterialAssignmentId(MaterialAssignmentLodIndex lodIndex, const AZ::Data::AssetId& materialAssetId)
-                : m_lodIndex(lodIndex)
-                , m_materialAssetId(materialAssetId)
-            {
-            }
+            MaterialAssignmentId(MaterialAssignmentLodIndex lodIndex, const AZ::Data::AssetId& materialAssetId);
 
-            static MaterialAssignmentId CreateDefault()
-            {
-                return MaterialAssignmentId(NonLodIndex, AZ::Data::AssetId());
-            }
+            //! Create an ID that maps to all material slots, regardless of asset ID or LOD, effectively applying to an entire model.
+            static MaterialAssignmentId CreateDefault();
 
-            static MaterialAssignmentId CreateFromAssetOnly(AZ::Data::AssetId materialAssetId)
-            {
-                return MaterialAssignmentId(NonLodIndex, materialAssetId);
-            }
+            //! Create an ID that maps to all material slots with a corresponding asset ID, regardless of LOD.
+            static MaterialAssignmentId CreateFromAssetOnly(AZ::Data::AssetId materialAssetId);
 
-            static MaterialAssignmentId CreateFromLodAndAsset(MaterialAssignmentLodIndex lodIndex, AZ::Data::AssetId materialAssetId)
-            {
-                return MaterialAssignmentId(lodIndex, materialAssetId);
-            }
+            //! Create an ID that maps to a specific material slot with a corresponding asset ID and LOD.
+            static MaterialAssignmentId CreateFromLodAndAsset(MaterialAssignmentLodIndex lodIndex, AZ::Data::AssetId materialAssetId);
 
-            bool IsDefault() const
-            {
-                return m_lodIndex == NonLodIndex && !m_materialAssetId.IsValid();
-            }
+            //! Returns true if the asset ID and LOD are invalid
+            bool IsDefault() const;
 
-            bool IsAssetOnly() const
-            {
-                return m_lodIndex == NonLodIndex && m_materialAssetId.IsValid();
-            }
+            //! Returns true if the asset ID is valid and LOD is invalid
+            bool IsAssetOnly() const;
 
-            bool IsLodAndAsset() const
-            {
-                return m_lodIndex != NonLodIndex && m_materialAssetId.IsValid();
-            }
+            //! Returns true if the asset ID and LOD are both valid
+            bool IsLodAndAsset() const;
 
+            //! Creates a string composed of the asset path and LOD
+            AZStd::string ToString() const;
 
-            AZStd::string ToString() const
-            {
-                AZStd::string assetPathString;
-                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPathString, &AZ::Data::AssetCatalogRequests::GetAssetPathById, m_materialAssetId);
-                AZ::StringFunc::Path::StripPath(assetPathString);
-                AZ::StringFunc::Path::StripExtension(assetPathString);
-                return AZStd::string::format("%s:%llu", assetPathString.c_str(), m_lodIndex);
-            }
+            //! Creates a hash composed of the asset ID sub ID and LOD
+            size_t GetHash() const;
 
-            size_t GetHash() const
-            {
-                size_t seed = 0;
-                AZStd::hash_combine(seed, m_lodIndex);
-                AZStd::hash_combine(seed, m_materialAssetId);
-                return seed;
-            }
+            //! Returns true if both asset ID sub IDs and LODs match
+            bool operator==(const MaterialAssignmentId& rhs) const;
 
-            bool operator==(const MaterialAssignmentId& rhs) const
-            {
-                return m_lodIndex == rhs.m_lodIndex && m_materialAssetId == rhs.m_materialAssetId;
-            }
-
-            bool operator!=(const MaterialAssignmentId& rhs) const
-            {
-                return m_lodIndex != rhs.m_lodIndex || m_materialAssetId != rhs.m_materialAssetId;
-            }
+            //! Returns true if both asset ID sub IDs and LODs do not match
+            bool operator!=(const MaterialAssignmentId& rhs) const;
 
             static constexpr MaterialAssignmentLodIndex NonLodIndex = -1;
             MaterialAssignmentLodIndex m_lodIndex = NonLodIndex;
@@ -116,4 +87,4 @@ namespace AZStd
             return id.GetHash();
         }
     };
-} //namespace AZStd
+} // namespace AZStd

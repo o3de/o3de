@@ -189,7 +189,7 @@ namespace AZ
                 if (!WasLoadSuccess(result.GetOutcome()))
                 {
                     // This if is a hack around fault in the JSON serialization system
-                    // Jira: https://jira.agscollab.com/browse/LY-106587
+                    // Jira: LY-106587
                     if (message != "No part of the string could be interpreted as a uuid.")
                     {
                         deserializeError.append(message);

@@ -26,7 +26,7 @@ namespace GridMate
 
             m_replicaMgr = replica->GetReplicaManager();
 
-            if (replica->IsMaster() && newOwnerId != m_replicaMgr->GetLocalPeerId())
+            if (replica->IsPrimary() && newOwnerId != m_replicaMgr->GetLocalPeerId())
             {
                 m_sm.SetStateHandler(AZ_HSM_STATE_NAME(MST_TOP), AZ::HSM::StateHandler(this, &MigrationSequence::DefaultHandler), AZ::HSM::InvalidStateId, MST_MIGRATING);
             }
@@ -312,7 +312,7 @@ namespace GridMate
                 return true;
             case ME_MODIFY_NEW_OWNER:
                 m_newOwnerId = *static_cast<PeerId*>(event.userData);
-                if (m_replica->IsMaster() && m_newOwnerId != m_replicaMgr->m_self.GetId())
+                if (m_replica->IsPrimary() && m_newOwnerId != m_replicaMgr->m_self.GetId())
                 {
                     sm.Transition(MST_MIGRATING);
                 }

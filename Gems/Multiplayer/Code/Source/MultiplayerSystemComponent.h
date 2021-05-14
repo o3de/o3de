@@ -19,7 +19,7 @@
 #include <AzCore/Threading/ThreadSafeDeque.h>
 #include <AzCore/std/string/string.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
-#include <Include/IMultiplayer.h>
+#include <Multiplayer/IMultiplayer.h>
 #include <Source/NetworkTime/NetworkTime.h>
 #include <Source/NetworkEntity/NetworkEntityManager.h>
 #include <Source/AutoGen/Multiplayer.AutoPacketDispatcher.h>
@@ -84,12 +84,16 @@ namespace Multiplayer
 
         //! IMultiplayer interface
         //! @{
-        MultiplayerAgentType GetAgentType() override;
+        MultiplayerAgentType GetAgentType() const override;
         void InitializeMultiplayer(MultiplayerAgentType state) override;
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
         void AddSessionInitHandler(SessionInitEvent::Handler& handler) override;
         void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
+        void SetOnConnectFunctor(const OnConnectFunctor& functor) override;
         void SendReadyForEntityUpdates(bool readyForEntityUpdates) override;
+        AZ::TimeMs GetCurrentHostTimeMs() const override;
+        INetworkTime* GetNetworkTime() override;
+        INetworkEntityManager* GetNetworkEntityManager() override;
         const char* GetComponentGemName(NetComponentId netComponentId) const override;
         const char* GetComponentName(NetComponentId netComponentId) const override;
         const char* GetComponentPropertyName(NetComponentId netComponentId, PropertyIndex propertyIndex) const override;
@@ -119,5 +123,10 @@ namespace Multiplayer
         SessionInitEvent m_initEvent;
         SessionShutdownEvent m_shutdownEvent;
         ConnectionAcquiredEvent m_connAcquiredEvent;
+
+        OnConnectFunctor m_onConnectFunctor = nullptr;
+
+        AZ::TimeMs m_lastReplicatedHostTimeMs = AZ::TimeMs{ 0 };
+        HostFrameId m_lastReplicatedHostFrameId = InvalidHostFrameId;
     };
 }

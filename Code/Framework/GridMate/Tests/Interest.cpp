@@ -534,7 +534,7 @@ namespace GridMate
 
         auto replica = Replica::CreateReplica("ProximityInterestHandlerRules");
         m_rulesReplica = CreateAndAttachReplicaChunk<ProximityInterestChunk>(replica);
-        m_rm->AddMaster(replica);
+        m_rm->AddPrimary(replica);
     }
 
     void ProximityInterestHandler::OnRulesHandlerUnregistered(InterestManager* manager)
@@ -658,7 +658,7 @@ class Integ_InterestTest
         {
             AZ_Printf("GridMate", "InterestTestChunk::OnReplicaActivate repId=%08X(%s) fromPeerId=%08X localPeerId=%08X\n",
                 GetReplicaId(),
-                IsMaster() ? "master" : "proxy",
+                IsPrimary() ? "primary" : "proxy",
                 rc.m_peer ? rc.m_peer->GetId() : 0,
                 rc.m_rm->GetLocalPeerId());
 
@@ -674,7 +674,7 @@ class Integ_InterestTest
         {
             AZ_Printf("GridMate", "InterestTestChunk::OnReplicaDeactivate repId=%08X(%s) fromPeerId=%08X localPeerId=%08X\n",
                 GetReplicaId(),
-                IsMaster() ? "master" : "proxy",
+                IsPrimary() ? "primary" : "proxy",
                 rc.m_peer ? rc.m_peer->GetId() : 0,
                 rc.m_rm->GetLocalPeerId());
 
@@ -734,7 +734,7 @@ class Integ_InterestTest
             m_replica->m_data.Set(m_num);
             m_replica->m_bitmaskAttributeData.Set(1 << i);
 
-            m_session->GetReplicaMgr()->AddMaster(r);
+            m_session->GetReplicaMgr()->AddPrimary(r);
         }
 
         void UpdateAttribute()
@@ -952,7 +952,7 @@ public:
 
             if (numUpdates == 250)
             {
-                // Checking everybody lost all replicas (except master)
+                // Checking everybody lost all replicas (except primary)
                 for (int i = 0; i < k_numMachines; ++i)
                 {
                     for (int j = 0; j < k_numMachines; ++j)
@@ -1079,11 +1079,11 @@ class LargeWorldTest
 
         void OnReplicaActivate(const ReplicaContext& rc) override
         {
-            /*if (!IsMaster())*/
+            /*if (!IsPrimary())*/
             /*{
                 AZ_Printf("GridMate", "LargeWorldTestChunk::OnReplicaActivate repId=%08X(%s) fromPeerId=%08X localPeerId=%08X\n",
                     GetReplicaId(),
-                    IsMaster() ? "master" : "proxy",
+                    IsPrimary() ? "primary" : "proxy",
                     rc.m_peer ? rc.m_peer->GetId() : 0,
                     rc.m_rm->GetLocalPeerId());
             }*/
@@ -1214,7 +1214,7 @@ class LargeWorldTest
 
             m_replicas.push_back(replica);
 
-            m_session->GetReplicaMgr()->AddMaster(r);
+            m_session->GetReplicaMgr()->AddPrimary(r);
         }
 
         void PopulateWorld()
@@ -1453,7 +1453,7 @@ public:
 
             if (numUpdates == 250)
             {
-                // Checking everybody lost all replicas (except master)
+                // Checking everybody lost all replicas (except primary)
                 for (int i = 0; i < k_numMachines; ++i)
                 {
                     /*for (int j = 0; j < k_numMachines; ++j)

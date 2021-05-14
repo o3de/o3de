@@ -100,7 +100,7 @@ namespace AtomToolsFramework
             const AzFramework::ScreenPoint& screenPosition) override;
 
         //! Set interface for providing viewport specific settings (e.g. snapping properties).
-        void SetViewportSettings(AzToolsFramework::ViewportInteraction::ViewportSettings* viewportSettings);
+        void SetViewportSettings(const AzToolsFramework::ViewportInteraction::ViewportSettings* viewportSettings);
 
         // AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler ...
         void BeginCursorCapture() override;

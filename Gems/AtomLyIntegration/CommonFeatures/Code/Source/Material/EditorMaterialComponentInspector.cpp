@@ -213,7 +213,11 @@ namespace AZ
                 }
 
                 // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-                auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(&group, &group, group.TYPEINFO_Uuid(), this, this,
+                const AZ::Crc32 saveStateKey(AZStd::string::format(
+                    "MaterialPropertyInspector::PropertyGroup::%s::%s", m_materialAssetId.ToString<AZStd::string>().c_str(),
+                    groupNameId.c_str()));
+                auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
+                    &group, &group, group.TYPEINFO_Uuid(), this, this, saveStateKey,
                     [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
                         AZ_UNUSED(source);
                         const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
@@ -262,7 +266,11 @@ namespace AZ
                     }
 
                     // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-                    auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(&group, &group, group.TYPEINFO_Uuid(), this, this,
+                    const AZ::Crc32 saveStateKey(AZStd::string::format(
+                        "MaterialPropertyInspector::PropertyGroup::%s::%s", m_materialAssetId.ToString<AZStd::string>().c_str(),
+                        groupNameId.c_str()));
+                    auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
+                        &group, &group, group.TYPEINFO_Uuid(), this, this, saveStateKey,
                         [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
                             AZ_UNUSED(source);
                             const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
