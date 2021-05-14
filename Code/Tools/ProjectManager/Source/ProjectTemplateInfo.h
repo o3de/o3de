@@ -14,6 +14,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QString>
+#include <QStringList>
 #endif
 
 namespace O3DE::ProjectManager
