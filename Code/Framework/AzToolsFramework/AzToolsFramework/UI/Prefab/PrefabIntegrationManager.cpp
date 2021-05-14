@@ -125,7 +125,10 @@ namespace AzToolsFramework
             AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
                 selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
-            
+            bool prefabWipFeaturesEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
+
             // Create Prefab
             {
                 if (!selectedEntities.empty())
@@ -187,18 +190,21 @@ namespace AzToolsFramework
                     if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity))
                     {
                         // Edit Prefab
-                        bool beingEdited = s_prefabEditInterface->IsOwningPrefabBeingEdited(selectedEntity);
-
-                        if (!beingEdited)
+                        if (prefabWipFeaturesEnabled)
                         {
-                            QAction* editAction = menu->addAction(QObject::tr("Edit Prefab"));
-                            editAction->setToolTip(QObject::tr("Edit the prefab in focus mode."));
+                            bool beingEdited = s_prefabEditInterface->IsOwningPrefabBeingEdited(selectedEntity);
 
-                            QObject::connect(editAction, &QAction::triggered, editAction, [this, selectedEntity] {
-                                ContextMenu_EditPrefab(selectedEntity);
-                            });
+                            if (!beingEdited)
+                            {
+                                QAction* editAction = menu->addAction(QObject::tr("Edit Prefab"));
+                                editAction->setToolTip(QObject::tr("Edit the prefab in focus mode."));
 
-                            itemWasShown = true;
+                                QObject::connect(editAction, &QAction::triggered, editAction, [this, selectedEntity] {
+                                    ContextMenu_EditPrefab(selectedEntity);
+                                });
+
+                                itemWasShown = true;
+                            }
                         }
 
                         // Save Prefab
