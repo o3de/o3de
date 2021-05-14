@@ -258,13 +258,6 @@ def register_shipped_engine_o3de_objects() -> int:
     if error_code:
         ret_val = error_code
 
-    starting_external_subdirectories = [
-    ]
-    for external_subdir in sorted(starting_external_subdirectories, reverse=True):
-        error_code = add_external_subdirectory(engine_path=engine_path, external_subdir=external_subdir)
-        if error_code:
-            ret_val = error_code
-
     json_data = load_o3de_manifest()
     engine_object = find_engine_data(json_data)
     gems = json_data['gems'].copy()
