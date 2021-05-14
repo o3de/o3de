@@ -95,7 +95,6 @@
 #include "XConsole.h"
 #include "Log.h"
 #include "XML/xml.h"
-#include "StreamEngine/StreamEngine.h"
 #include "PhysRenderer.h"
 #include "LocalizedStringManager.h"
 #include "SystemEventDispatcher.h"
@@ -103,8 +102,6 @@
 #include "ServerThrottle.h"
 #include "SystemCFG.h"
 #include "AutoDetectSpec.h"
-#include "ResourceManager.h"
-#include "MTSafeAllocator.h"
 #include "ZLibCompressor.h"
 #include "ZLibDecompressor.h"
 #include "ZStdDecompressor.h"
@@ -245,8 +242,6 @@ CUNIXConsole* pUnixConsole;
 
 #define AZ_TRACE_SYSTEM_WINDOW AZ::Debug::Trace::GetDefaultSystemWindow()
 
-extern CMTSafeHeap* g_pPakHeap;
-
 #ifdef WIN32
 extern HMODULE gDLLHandle;
 #endif
@@ -274,7 +269,6 @@ struct SCVarsClientConfigSink
 //////////////////////////////////////////////////////////////////////////
 static inline void InlineInitializationProcessing([[maybe_unused]] const char* sDescription)
 {
-    assert(CryMemory::IsHeapValid());
     if (gEnv->pLog)
     {
         gEnv->pLog->UpdateLoadingScreen(0);
@@ -1101,12 +1095,7 @@ bool CSystem::InitFileSystem_LoadEngineFolders(const SSystemInitParams&)
     auto projectName = AZ::Utils::GetProjectName();
     AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Project Name: %s\n", projectName.empty() ? "None specified" : projectName.c_str());
 
-    // simply open all paks if fast load pak can't be found
-    if (!m_pResourceManager->LoadFastLoadPaks(true))
-    {
-        OpenBasicPaks();
-    }
-
+    OpenBasicPaks();
 
     // Load game-specific folder.
     LoadConfiguration("game.cfg");
@@ -1118,21 +1107,6 @@ bool CSystem::InitFileSystem_LoadEngineFolders(const SSystemInitParams&)
     AddCVarGroupDirectory("Config/CVarGroups");
 
     return (true);
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CSystem::InitStreamEngine()
-{
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
-    if (m_pUserCallback)
-    {
-        m_pUserCallback->OnInitProgress("Initializing Stream Engine...");
-    }
-
-    m_pStreamEngine = new CStreamEngine();
-
-    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1216,7 +1190,7 @@ bool CSystem::InitShine([[maybe_unused]] const SSystemInitParams& initParams)
 
     if (!m_env.pLyShine)
     {
-        AZ_Error(AZ_TRACE_SYSTEM_WINDOW, false, "LYShine System did not initialize correctly. Please check that the LyShine gem is enabled for this project in ProjectConfigurator.");
+        AZ_Error(AZ_TRACE_SYSTEM_WINDOW, false, "LYShine System did not initialize correctly. Please check that the LyShine gem is enabled for this project in *_dependencies.cmake.");
         return false;
     }
     return true;
@@ -1299,8 +1273,6 @@ void CSystem::OpenBasicPaks()
     //////////////////////////////////////////////////////////////////////////
 
     const char* const assetsDir = "@assets@";
-    const char* shaderCachePakDir = "@assets@/shadercache.pak";
-    const char* shaderCacheStartupPakDir = "@assets@/shadercachestartup.pak";
 
     // After game paks to have same search order as with files on disk
     m_env.pCryPak->OpenPack(assetsDir, "Engine.pak");
@@ -1309,11 +1281,6 @@ void CSystem::OpenBasicPaks()
 #define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_15
 #include AZ_RESTRICTED_FILE(SystemInit_cpp)
 #endif
-
-    m_env.pCryPak->OpenPack(assetsDir, shaderCachePakDir);
-    m_env.pCryPak->OpenPack(assetsDir, shaderCacheStartupPakDir);
-    m_env.pCryPak->OpenPack(assetsDir, "Shaders.pak");
-    m_env.pCryPak->OpenPack(assetsDir, "ShadersBin.pak");
 
 #ifdef AZ_PLATFORM_ANDROID
     // Load Android Obb files if available
@@ -1325,22 +1292,6 @@ void CSystem::OpenBasicPaks()
 #endif //AZ_PLATFORM_ANDROID
 
     InlineInitializationProcessing("CSystem::OpenBasicPaks OpenPacks( Engine... )");
-
-    //////////////////////////////////////////////////////////////////////////
-    // Open paks in MOD subfolders.
-    //////////////////////////////////////////////////////////////////////////
-#if !defined(_RELEASE)
-    if (const ICmdLineArg* pModArg = GetICmdLine()->FindArg(eCLAT_Pre, "MOD"))
-    {
-        if (IsMODValid(pModArg->GetValue()))
-        {
-            AZStd::string modFolder = "Mods\\";
-            modFolder += pModArg->GetValue();
-            modFolder += "\\*.pak";
-            GetIPak()->OpenPacks(assetsDir, modFolder, AZ::IO::IArchive::FLAGS_PATH_REAL | AZ::IO::INestedArchive::FLAGS_OVERRIDE_PAK);
-        }
-    }
-#endif // !defined(_RELEASE)
 
     // Load paks required for game init to mem
     gEnv->pCryPak->LoadPakToMemory("Engine.pak", AZ::IO::IArchive::eInMemoryPakLocale_GPU);
@@ -1687,8 +1638,6 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
         m_systemConfigName += ".cfg";
     }
 
-    AZ_Assert(CryMemory::IsHeapValid(), "Memory heap must be valid before continuing SystemInit.");
-
 #if defined(WIN32) || defined(WIN64)
     // check OS version - we only want to run on XP or higher - talk to Martin Mittring if you want to change this
     {
@@ -1708,8 +1657,6 @@ AZ_POP_DISABLE_WARNING
         }
     }
 #endif
-
-    m_pResourceManager->Init();
 
     // Get file version information.
     QueryVersionInfo();
@@ -1983,11 +1930,6 @@ AZ_POP_DISABLE_WARNING
             return false;
         }
 
-        if (!startupParams.bSkipConsole)
-        {
-            LogSystemInfo();
-        }
-
         InlineInitializationProcessing("CSystem::Init Load Engine Folders");
 
         //////////////////////////////////////////////////////////////////////////
@@ -2050,29 +1992,6 @@ AZ_POP_DISABLE_WARNING
         if (g_cvars.sys_asserts == 2)
         {
             gEnv->bNoAssertDialog = true;
-        }
-
-        //////////////////////////////////////////////////////////////////////////
-        // Stream Engine
-        //////////////////////////////////////////////////////////////////////////
-        AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Stream Engine Initialization");
-        InitStreamEngine();
-        InlineInitializationProcessing("CSystem::Init StreamEngine");
-
-
-        {
-            if (m_pCmdLine->FindArg(eCLAT_Pre, "NullRenderer"))
-            {
-                m_env.pConsole->LoadConfigVar("r_Driver", "NULL");
-            }
-            else if (m_pCmdLine->FindArg(eCLAT_Pre, "DX11"))
-            {
-                m_env.pConsole->LoadConfigVar("r_Driver", "DX11");
-            }
-            else if (m_pCmdLine->FindArg(eCLAT_Pre, "GL"))
-            {
-                m_env.pConsole->LoadConfigVar("r_Driver", "GL");
-            }
         }
 
         LogBuildInfo();

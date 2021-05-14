@@ -75,6 +75,11 @@ namespace WhiteBox
         required.push_back(AZ_CRC("WhiteBoxService", 0x2f2f42b8));
     }
 
+    void EditorWhiteBoxColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+    }
+
     void EditorWhiteBoxColliderComponent::Activate()
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
@@ -158,7 +163,6 @@ namespace WhiteBox
         if (m_sceneInterface)
         {
             m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_rigidBodyHandle);
-            m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
     }
 

@@ -15,7 +15,7 @@
 #define CRYINCLUDE_CRYCOMMON_CRYARRAY_H
 #pragma once
 
-#include <IGeneralMemoryHeap.h> // <> required for Interfuscator
+#include "CryLegacyAllocator.h"
 
 //---------------------------------------------------------------------------
 // Convenient iteration macros
@@ -91,8 +91,6 @@ Public classes:
         Array<T, [I, STORAGE]>
         StaticArray<T, nSIZE, [I]>
         DynArray<T, [I, STORAGE, ALLOC]>
-        FastDynArray<T, [I]>
-        FixedDynArray<T, [I]>
         StaticDynArray<T, nSIZE, [I]>
 
 Support classes are placed in namespaces NArray and NAlloc to reduce global name usage.
@@ -612,13 +610,6 @@ namespace NAlloc
     //---------------------------------------------------------------------------
     // Allocators for DynArray.
 
-    // No reallocation, for use in FixedDynArray
-    struct NullAlloc
-    {
-        static void* alloc(void* pMem, [[maybe_unused]] size_t& nSize, [[maybe_unused]] size_t nAlign, [[maybe_unused]] bool bSlack = false)
-        { return pMem; }
-    };
-
     // Standard CryModule memory allocation, using aligned versions
     struct ModuleAlloc
     {
@@ -655,128 +646,15 @@ namespace NAlloc
 
     // Standard allocator for DynArray stores a compatibility pointer in the memory
     typedef AllocCompatible<ModuleAlloc> StandardAlloc;
-
-    // Allocator using specific heaps
-    struct GeneralHeapAlloc
-        : ModuleAlloc
-    {
-        IGeneralMemoryHeap* m_pHeap;
-
-        GeneralHeapAlloc()
-            : m_pHeap(0) {}
-
-        explicit GeneralHeapAlloc(IGeneralMemoryHeap* pHeap)
-            : m_pHeap(pHeap) {}
-
-        void* alloc(void* pMem, size_t& nSize, size_t nAlign, bool bSlack = false) const
-        {
-            if (m_pHeap)
-            {
-                if (pMem)
-                {
-                    if (!nSize)
-                    {
-                        // Dealloc
-                        m_pHeap->Free(pMem);
-                        return 0;
-                    }
-                }
-                else if (nSize)
-                {
-                    // Alloc
-                    if (bSlack)
-                    {
-                        nSize = realloc_size(nSize);
-                    }
-                    return m_pHeap->Memalign(nAlign, nSize, "");
-                }
-            }
-
-            return ModuleAlloc::alloc(pMem, nSize, nAlign, bSlack);
-        }
-    };
 };
 
 //---------------------------------------------------------------------------
 // Storage schemes for dynamic arrays
 namespace NArray
 {
-    /*---------------------------------------------------------------------------
-    // STORAGE prototype for DynArray<T,I,STORAGE>
-    // Extends ArrayStorage with resizing functionality.
-
-    struct DynStorage
-    {
-        struct Store<T,I>: ArrayStorage<T,I>::Store
-        {
-            I capacity() const;
-            size_t get_alloc_size() const;
-            void resize_raw( I new_size, bool allow_slack );
-        };
-    };
-    ---------------------------------------------------------------------------*/
-
-    //---------------------------------------------------------------------------
-    // FastDynStorage: STORAGE scheme for DynArray<T,I,STORAGE>.
-    // Simple extension to ArrayStorage: size & capacity fields are inline, 3 words storage, fast access.
-
-    template<class A = NAlloc::StandardAlloc>
-    struct FastDynStorage
-    {
-        template<class T, class I>
-        struct Store
-            : private A
-            , public ArrayStorage::Store<T, I>
-        {
-            typedef ArrayStorage::Store<T, I> super_type;
-
-            using super_type::m_aElems;
-            using super_type::m_nCount;
-
-            // Construction.
-            Store()
-                : m_nCapacity(0)
-            {                
-            }
-
-            Store(const A& a)
-                : A(a)
-                , m_nCapacity(0)
-            {
-            }
-
-            I capacity() const
-            { return m_nCapacity; }
-
-            size_t get_alloc_size() const
-            { return NAlloc::get_alloc_size(*this, m_aElems, capacity() * sizeof(T), alignof(T)); }
-
-            void resize_raw(I new_size, bool allow_slack = false)
-            {
-                if (allow_slack ? new_size > capacity() : new_size != capacity())
-                {
-                    m_nCapacity = new_size;
-                    m_aElems = NAlloc::reallocate(static_cast<A&>(*this), m_aElems, m_nCount, m_nCapacity, alignof(T), allow_slack);
-                }
-                set_size(new_size);
-            }
-
-        protected:
-
-            I       m_nCapacity;
-
-            void set_size(I new_size)
-            {
-                assert(new_size >= 0 && new_size <= capacity());
-                m_nCount = new_size;
-            }
-        };
-    };
-
     //---------------------------------------------------------------------------
     // SmallDynStorage: STORAGE scheme for DynArray<T,I,STORAGE,ALLOC>.
     // Array is just a single pointer, size and capacity information stored before the array data.
-    // Slightly slower than FastDynStorage, optimal for saving space, especially when array likely to be empty.
 
     template<class A = NAlloc::StandardAlloc>
     struct SmallDynStorage
@@ -1456,35 +1334,6 @@ struct LegacyDynArray
     {
         destroy();
         S::resize_raw(0);
-    }
-};
-
-
-//---------------------------------------------------------------------------
-
-template<class T, class I = int, class A = NAlloc::StandardAlloc>
-struct FastDynArray
-    : DynArray< T, I, NArray::FastDynStorage<A> >
-{
-};
-
-template<class T, class I = int>
-struct FixedDynArray
-    : LegacyDynArray< T, I, NArray::FastDynStorage<NAlloc::NullAlloc> >
-{
-    typedef NArray::ArrayStorage::Store<T, I> S;
-
-    void set(void* elems, I mem_size)
-    {
-        this->m_aElems = (T*)elems;
-        this->m_nCapacity = mem_size / sizeof(T);
-        this->m_nCount = 0;
-    }
-    void set(Array<T, I> array)
-    {
-        this->m_aElems = array.begin();
-        this->m_nCapacity = array.size();
-        this->m_nCount = 0;
     }
 };
 

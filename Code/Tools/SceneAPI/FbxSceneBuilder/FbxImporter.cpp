@@ -139,6 +139,8 @@ namespace AZ
                     if (!nodeNameMap.RegisterNode(node.m_node, scene.GetGraph(), node.m_parent))
                     {
                         AZ_TracePrintf(Utilities::ErrorWindow, "Failed to register asset importer node in name table.");
+                        // Skip this node since it could not be registered
+                        nodes.pop();
                         continue;
                     }
                     AZStd::string nodeName = nodeNameMap.GetNodeName(node.m_node);

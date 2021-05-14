@@ -139,6 +139,11 @@ namespace Maestro
         }
     }
 
+    void SequenceComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+    }
+
     void SequenceComponent::ReflectCinematicsLib(AZ::ReflectContext* context)
     {
         // The Movie System itself
