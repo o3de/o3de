@@ -36,8 +36,6 @@
 #include <CrySizer.h>
 #include <IMaterial.h>
 
-#include <CryThreadSafeRendererContainer.h>
-
 struct IMaterial;
 class CRendElementBase;
 class CRenderObject;
@@ -2238,74 +2236,6 @@ struct SShaderTexSlots
     }
 };
 
-struct SShaderGenBit
-{
-    SShaderGenBit()
-    {
-        m_Mask = 0;
-        m_Flags = 0;
-        m_nDependencySet = 0;
-        m_nDependencyReset = 0;
-        m_NameLength = 0;
-        m_dwToken = 0;
-    }
-    string m_ParamName;
-    string m_ParamProp;
-    string m_ParamDesc;
-    int m_NameLength;
-    uint64 m_Mask;
-    uint32 m_Flags;
-    uint32 m_dwToken;
-    std::vector<uint32> m_PrecacheNames;
-    std::vector<string> m_DependSets;
-    std::vector<string> m_DependResets;
-    uint32 m_nDependencySet;
-    uint32 m_nDependencyReset;
-
-    void GetMemoryUsage(ICrySizer* pSizer) const
-    {
-        pSizer->AddObject(m_ParamName);
-        pSizer->AddObject(m_ParamProp);
-        pSizer->AddObject(m_ParamDesc);
-        pSizer->AddObject(m_PrecacheNames);
-        pSizer->AddObject(m_DependSets);
-        pSizer->AddObject(m_DependResets);
-    }
-};
-
-struct SShaderGen
-{
-    uint32 m_nRefCount;
-    TArray<SShaderGenBit*> m_BitMask;
-    SShaderGen()
-    {
-        m_nRefCount = 1;
-    }
-    ~SShaderGen()
-    {
-        uint32 i;
-        for (i = 0; i < m_BitMask.Num(); i++)
-        {
-            SShaderGenBit* pBit = m_BitMask[i];
-            SAFE_DELETE(pBit);
-        }
-        m_BitMask.Free();
-    }
-    void Release()
-    {
-        m_nRefCount--;
-        if (!m_nRefCount)
-        {
-            delete this;
-        }
-    }
-
-    void GetMemoryUsage(ICrySizer* pSizer) const
-    {
-        pSizer->AddObject(m_BitMask);
-    }
-};
-
 //===================================================================================
 
 enum EShaderType
@@ -2570,7 +2500,6 @@ public:
     virtual void SetFlags2(int Flags) = 0;
     virtual void ClearFlags2(int Flags) = 0;
     virtual bool Reload(int nFlags, const char* szShaderName) = 0;
-    virtual TArray<CRendElementBase*>* GetREs (int nTech) = 0;
     virtual AZStd::vector<SShaderParam>& GetPublicParams() = 0;
     virtual int GetTexId () = 0;
     virtual ITexture* GetBaseTexture(int* nPass, int* nTU) = 0;
@@ -2579,7 +2508,6 @@ public:
     virtual ECull GetCull(void) = 0;
     virtual int Size(int Flags) = 0;
     virtual uint64 GetGenerationMask() = 0;
-    virtual SShaderGen* GetGenerationParams() = 0;
     virtual size_t GetNumberOfUVSets() = 0;
     virtual int GetTechniqueID(int nTechnique, int nRegisteredTechnique) = 0;
     virtual AZ::Vertex::Format GetVertexFormat(void) = 0;

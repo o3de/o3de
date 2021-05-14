@@ -37,7 +37,6 @@
                 "AssetBundler/**": "#include",
                 "AzTestRunner/**": "#include",
                 "CrashHandler/**": "#include",
-                "CryCommonTools/**": "#include",
                 "DeltaCataloger/**": "#include",
                 "GridHub/**": "#include",
                 "News/**": "#include",

@@ -546,6 +546,7 @@ void UiInteractableComponent::Reflect(AZ::ReflectContext* context)
             ->Handler<BehaviorUiInteractableNotificationBusHandler>();
     }
 
+    UiInteractableStateAction::Reflect(context);
     UiInteractableStateColor::Reflect(context);
     UiInteractableStateAlpha::Reflect(context);
     UiInteractableStateSprite::Reflect(context);

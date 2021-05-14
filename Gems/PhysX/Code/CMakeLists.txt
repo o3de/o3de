@@ -107,7 +107,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::SceneCore
                 AZ::SceneData
                 Legacy::CryCommon
-                Legacy::CryCommonTools
                 Gem::LmbrCentral
                 Gem::PhysX.NumericalMethods
                 Gem::PhysX.Static

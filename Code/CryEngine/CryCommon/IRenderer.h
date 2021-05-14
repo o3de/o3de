@@ -1510,7 +1510,6 @@ struct IRenderer
     // Summary:
     //  Loads lightmap for name.
     virtual int           EF_LoadLightmap (const char* name) = 0;
-    virtual bool          EF_RenderEnvironmentCubeHDR (int size, Vec3& Pos, TArray<unsigned short>& vecData) = 0;
 
     // Summary:
     //  Starts using of the shaders (return first index for allow recursions).
@@ -1547,7 +1546,6 @@ struct IRenderer
     virtual int EF_AddDeferredLight(const CDLight& pLight, float fMult, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter) = 0;
     virtual uint32 EF_GetDeferredLightsNum(eDeferredLightType eLightType = eDLT_DeferredLight) = 0;
     virtual void EF_ClearDeferredLightsList() = 0;
-    virtual TArray<SRenderLight>* EF_GetDeferredLights(const SRenderingPassInfo& passInfo, eDeferredLightType eLightType = eDLT_DeferredLight) = 0;
 
     virtual uint8 EF_AddDeferredClipVolume(const IClipVolume* pClipVolume) = 0;
     virtual bool EF_SetDeferredClipVolumeBlendData(const IClipVolume* pClipVolume, const SClipVolumeBlendInfo& blendInfo) = 0;

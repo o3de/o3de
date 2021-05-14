@@ -12,7 +12,6 @@
 set(FILES
     QTangent.h
     CryCommon.cpp
-    Allocator.h
     FinalizingSpline.h
     IAudioInterfacesCommonData.h
     IAudioSystem.h
@@ -26,10 +25,8 @@ set(FILES
     IFunctorBase.h
     IFuncVariable.h
     IGem.h
-    IGeneralMemoryHeap.h
     IGeomCache.h
     IImage.h
-    IImageHandler.h
     IIndexedMesh.h
     IIndexedMesh_info.cpp
     ILevelSystem.h
@@ -39,7 +36,6 @@ set(FILES
     ILog.h
     ILZ4Decompressor.h
     IMaterial.h
-    IMemory.h
     IMeshBaking.h
     IMiniLog.h
     IMovieSystem.h
@@ -51,8 +47,6 @@ set(FILES
     IRenderAuxGeom.h
     IRenderer.h
     IRenderMesh.h
-    IResourceCollector.h
-    IResourceManager.h
     ISerialize.h
     IShader.h
     IShader_info.h
@@ -60,8 +54,6 @@ set(FILES
     IStatObj.h
     StatObjBus.h
     IStereoRenderer.h
-    IStreamEngine.h
-    IStreamEngineDefs.h
     ISurfaceType.h
     ISystem.h
     ITextModeConsole.h
@@ -85,10 +77,8 @@ set(FILES
     IObjManager.h
     INavigationSystem.h
     IMNM.h
-    AzDXGIFormat.h
     SFunctor.h
     FunctorBaseFunction.h
-    CustomMemoryHeap.h
     FunctorBaseMember.h
     stridedptr.h
     Options.h
@@ -102,31 +92,21 @@ set(FILES
     CryTypeInfo.cpp
     BaseTypes.h
     CompileTimeAssert.h
-    CryThreadSafeWorkerContainer.h
-    CryThreadSafeRendererContainer.h
     intrusive_list.hpp
     MemoryAccess.h
-    Algorithm.h
     AnimKey.h
     BitFiddling.h
-    CGFContent.h
-    CGFContent_info.cpp
     Common_TypeInfo.cpp
-    CountedValue.h
-    CrtDebugStats.h
     CryArray.h
     CryArray2d.h
     CryAssert.h
     CryCrc32.h
     CryCustomTypes.h
     CryFile.h
-    CryFixedArray.h
     CryFixedString.h
     CryHeaders.h
     CryHeaders_info.cpp
     CryListenerSet.h
-    CryMemoryAllocator.h
-    CryMemoryManager.h
     CryLegacyAllocator.h
     CryName.h
     CryPath.h
@@ -145,9 +125,6 @@ set(FILES
     HashGrid.h
     HeapAllocator.h
     HeapContainer.h
-    ImageExtensionHelper.cpp
-    ImageExtensionHelper.h
-    ImageExtensionHelper_info.h
     InplaceFactory.h
     LegacyAllocator.h
     MetaUtils.h
@@ -172,8 +149,6 @@ set(FILES
     SmartPointersHelpers.h
     smartptr.h
     StackContainer.h
-    STLGlobalAllocator.h
-    STLPoolAllocator.h
     StlUtils.h
     StringUtils.h
     Synchronization.h
@@ -203,7 +178,6 @@ set(FILES
     Cry_Matrix44.h
     Cry_MatrixDiag.h
     Cry_Vector4.h
-    AABBSV.h
     Cry_Camera.h
     Cry_Color.h
     Cry_Geo.h
@@ -224,7 +198,6 @@ set(FILES
     Cry_HWVector3.h
     AndroidSpecific.h
     AppleSpecific.h
-    Console_std.h
     CryAssert_Android.h
     CryAssert_impl.h
     CryAssert_iOS.h
@@ -232,7 +205,6 @@ set(FILES
     CryAssert_Mac.h
     CryLibrary.cpp
     CryLibrary.h
-    CryMemoryManager_impl.h
     CryThread_dummy.h
     CryThread_pthreads.h
     CryThread_windows.h

@@ -572,7 +572,6 @@ struct IVoxelObject
     : public IRenderNode
 {
     // <interfuscator:shuffle>
-    virtual struct IMemoryBlock* GetCompiledData(EEndian eEndian) = 0;
     virtual void SetCompiledData(void* pData, int nSize, uint8 ucChildId, EEndian eEndian) = 0;
     virtual void SetObjectName(const char* pName) = 0;
     virtual void SetMatrix(const Matrix34& mat) = 0;
