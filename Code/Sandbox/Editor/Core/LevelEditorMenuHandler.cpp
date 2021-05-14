@@ -475,11 +475,7 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     bool isPrefabSystemEnabled = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
-    bool prefabWipFeaturesEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-    if (!isPrefabSystemEnabled || (isPrefabSystemEnabled && prefabWipFeaturesEnabled))
+    if (!isPrefabSystemEnabled)
     {
         // Duplicate
         editMenu.AddAction(ID_EDIT_CLONE);
