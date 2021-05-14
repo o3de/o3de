@@ -55,6 +55,12 @@ namespace PhysX
         m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::Offset, false);
     }
 
+    EditorShapeColliderComponent::~EditorShapeColliderComponent()
+    {
+        int i = 0;
+        i++;
+    }
+
     AZ::Crc32 EditorShapeColliderComponent::SubdivisionCountVisibility()
     {
         if (m_shapeType == ShapeType::Cylinder)
@@ -226,7 +232,7 @@ namespace PhysX
     void EditorShapeColliderComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         auto* shapeColliderComponent = gameEntity->CreateComponent<ShapeColliderComponent>();
-        Physics::ShapeConfigurationList shapeConfigurationList;
+        AzPhysics::ShapeColliderPairList shapeConfigurationList;
         shapeConfigurationList.reserve(m_shapeConfigs.size());
         for (const auto& shapeConfig : m_shapeConfigs)
         {
@@ -257,11 +263,12 @@ namespace PhysX
         configuration.m_entityId = GetEntityId();
         configuration.m_debugName = GetEntity()->GetName();
 
-        AZStd::vector<AzPhysics::ShapeColliderPair> colliderShapePairs;
+        AzPhysics::ShapeColliderPairList colliderShapePairs;
         colliderShapePairs.reserve(m_shapeConfigs.size());
         for (const auto& shapeConfig : m_shapeConfigs)
         {
-            colliderShapePairs.emplace_back(&m_colliderConfig, shapeConfig.get());
+            colliderShapePairs.emplace_back(
+                AZStd::make_shared<Physics::ColliderConfiguration>(m_colliderConfig), shapeConfig);
         }
         configuration.m_colliderAndShapeData = colliderShapePairs;
 

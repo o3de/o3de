@@ -40,7 +40,7 @@ namespace EMotionFX
         const Physics::CharacterColliderNodeConfiguration* copyFromNodeConfig = copyFromColliderConfig->FindNodeConfigByName(joint->GetNameString());
         if (copyFromNodeConfig)
         {
-            for (const Physics::ShapeConfigurationPair& shapeConfigPair : copyFromNodeConfig->m_shapes)
+            for (const AzPhysics::ShapeColliderPair& shapeConfigPair : copyFromNodeConfig->m_shapes)
             {
                 const AZStd::string contents = MCore::ReflectionSerializer::Serialize(&shapeConfigPair).GetValue();
                 CommandColliderHelpers::AddCollider(actor->GetID(), joint->GetNameString(), copyTo, contents, AZStd::nullopt, &commandGroup);
@@ -231,7 +231,7 @@ namespace EMotionFX
         const Physics::CharacterColliderNodeConfiguration* copyFromNodeConfig = copyFromColliderConfig->FindNodeConfigByName(joint->GetNameString());
         if (copyFromNodeConfig && shapeIndex < copyFromNodeConfig->m_shapes.size())
         {
-            const Physics::ShapeConfigurationPair* shape = &copyFromNodeConfig->m_shapes[shapeIndex];
+            const AzPhysics::ShapeColliderPair* shape = &copyFromNodeConfig->m_shapes[shapeIndex];
             const AZStd::string contents = MCore::ReflectionSerializer::Serialize(shape).GetValue();
             QMimeData* mimeData = new QMimeData();
             mimeData->setData(
