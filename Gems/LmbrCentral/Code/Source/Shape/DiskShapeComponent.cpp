@@ -28,6 +28,7 @@ namespace LmbrCentral
     {
         incompatible.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
         incompatible.push_back(AZ_CRC("DiskShapeService", 0xd90c482b));
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void DiskShapeComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

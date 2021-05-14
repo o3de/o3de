@@ -35,19 +35,13 @@
 #define SYSTEMINIT_CPP_SECTION_17 17
 #endif
 
-#if defined(MAP_LOADING_SLICING)
-#include "SystemScheduler.h"
-#endif // defined(MAP_LOADING_SLICING)
 #include "CryLibrary.h"
 #include "CryPath.h"
 #include <StringUtils.h>
-#include <IThreadManager.h>
 
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
-#include <IEngineModule.h>
-#include <CryExtension/CryCreateClassInstance.h>
 #include <AzCore/IO/SystemFile.h> // for AZ_MAX_PATH_LEN
 #include <AzCore/IO/Streamer/Streamer.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
@@ -105,24 +99,16 @@
 #include "PhysRenderer.h"
 #include "LocalizedStringManager.h"
 #include "SystemEventDispatcher.h"
-#include "ThreadConfigManager.h"
 #include "Validator.h"
 #include "ServerThrottle.h"
 #include "SystemCFG.h"
 #include "AutoDetectSpec.h"
 #include "ResourceManager.h"
 #include "MTSafeAllocator.h"
-#include "NotificationNetwork.h"
-#include "ExtensionSystem/CryFactoryRegistryImpl.h"
-#include "ExtensionSystem/TestCases/TestExtensions.h"
-#include "ProfileLogSystem.h"
-#include "SoftCode/SoftCodeMgr.h"
 #include "ZLibCompressor.h"
 #include "ZLibDecompressor.h"
 #include "ZStdDecompressor.h"
 #include "LZ4Decompressor.h"
-#include "ServiceNetwork.h"
-#include "RemoteCommand.h"
 #include "LevelSystem/LevelSystem.h"
 #include "LevelSystem/SpawnableLevelSystem.h"
 #include "ViewSystem/ViewSystem.h"
@@ -152,8 +138,6 @@
 #include "MobileDetectSpec.h"
 #endif
 
-#include "IDebugCallStack.h"
-
 #include "WindowsConsole.h"
 
 #if defined(EXTERNAL_CRASH_REPORTING)
@@ -167,11 +151,6 @@
 #if defined(REMOTE_ASSET_PROCESSOR)
 // Over here, we'd put the header to the Remote Asset Processor interface (as opposed to the Local built in version  below)
 #   include <AzFramework/Network/AssetProcessorConnection.h>
-#endif
-
-// if we enable the built-in local version instead of remote:
-#if defined(CRY_ENABLE_RC_HELPER)
-#include "ResourceCompilerHelper.h"
 #endif
 
 #ifdef WIN32
@@ -406,26 +385,20 @@ struct SysSpecOverrideSink
                 }
                 else
                 {
-                    // This could bypass the restricted/whitelisted cvar checks that exist elsewhere depending on
+                    // This could bypass the restricted cvar checks that exist elsewhere depending on
                     // the calling code so we also need check here before setting.
                     bool isConst = pCvar->IsConstCVar();
                     bool isCheat = ((pCvar->GetFlags() & (VF_CHEAT | VF_CHEAT_NOCHECK | VF_CHEAT_ALWAYS_CHECK)) != 0);
                     bool isReadOnly = ((pCvar->GetFlags() & VF_READONLY) != 0);
                     bool isDeprecated = ((pCvar->GetFlags() & VF_DEPRECATED) != 0);
                     bool allowApplyCvar = true;
-                    bool whitelisted = true;
-
-#if defined CVARS_WHITELIST
-                    ICVarsWhitelist* cvarWhitelist = gEnv->pSystem->GetCVarsWhiteList();
-                    whitelisted = cvarWhitelist ? cvarWhitelist->IsWhiteListed(szKey, true) : true;
-#endif
 
                     if ((isConst || isCheat || isReadOnly) || isDeprecated)
                     {
                         allowApplyCvar = !isDeprecated && (gEnv->pSystem->IsDevMode()) || (gEnv->IsEditor());
                     }
 
-                    if ((allowApplyCvar && whitelisted) || ALLOW_CONST_CVAR_MODIFICATIONS)
+                    if ((allowApplyCvar) || ALLOW_CONST_CVAR_MODIFICATIONS)
                     {
                         applyCvar = true;
                     }
@@ -857,148 +830,6 @@ bool CSystem::UnloadDLL(const char* dllName)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CSystem::InitializeEngineModule(const char* dllName, const char* moduleClassName, const SSystemInitParams& initParams)
-{
-    bool bResult = false;
-
-    stack_string msg;
-    msg = "Initializing ";
-    AZStd::string dll = dllName;
-
-    // Strip off Cry if the dllname is Cry<something>
-    if (dll.find("Cry") == 0)
-    {
-        msg += dll.substr(3).c_str();
-    }
-    else
-    {
-        msg += dllName;
-    }
-    msg += "...";
-
-    if (m_pUserCallback)
-    {
-        m_pUserCallback->OnInitProgress(msg.c_str());
-    }
-    AZ_TracePrintf(moduleClassName, "%s", msg.c_str());
-
-    IMemoryManager::SProcessMemInfo memStart, memEnd;
-    if (GetIMemoryManager())
-    {
-        GetIMemoryManager()->GetProcessMemInfo(memStart);
-    }
-    else
-    {
-        ZeroStruct(memStart);
-    }
-
-    stack_string dllfile = "";
-
-
-#if defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_16
-#include AZ_RESTRICTED_FILE(SystemInit_cpp)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-
-    dllfile.append(dllName);
-
-#if defined(LINUX)
-    dllfile = "lib" + PathUtil::ReplaceExtension(dllfile, "so");
-#ifndef LINUX
-    dllfile.MakeLower();
-#endif
-#elif defined(AZ_PLATFORM_MAC)
-    dllfile = "lib" + PathUtil::ReplaceExtension(dllfile, "dylib");
-#elif defined(AZ_PLATFORM_IOS)
-    PathUtil::RemoveExtension(dllfile);
-#else
-    dllfile = PathUtil::ReplaceExtension(dllfile, "dll");
-#endif
-
-#endif
-
-#if !defined(AZ_MONOLITHIC_BUILD)
-
-    m_moduleDLLHandles.insert(std::make_pair(dllfile.c_str(), LoadDLL(dllfile.c_str())));
-    if (!m_moduleDLLHandles[dllfile.c_str()])
-    {
-        return bResult;
-    }
-
-#endif // #if !defined(AZ_MONOLITHIC_BUILD)
-
-    AZStd::shared_ptr<IEngineModule> pModule;
-    if (CryCreateClassInstance(moduleClassName, pModule))
-    {
-        bResult = pModule->Initialize(m_env, initParams);
-
-        // After initializing the module, give it a chance to register any AZ console vars
-        // declared within the module.
-        pModule->RegisterConsoleVars();
-    }
-
-    if (GetIMemoryManager())
-    {
-        GetIMemoryManager()->GetProcessMemInfo(memEnd);
-
-#if defined(AZ_ENABLE_TRACING)
-        uint64 memUsed = memEnd.WorkingSetSize - memStart.WorkingSetSize;
-#endif
-        AZ_TracePrintf(AZ_TRACE_SYSTEM_WINDOW, "Initializing %s %s, MemUsage=%uKb", dllName, pModule ? "done" : "failed", uint32(memUsed / 1024));
-    }
-
-    return bResult;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CSystem::UnloadEngineModule(const char* dllName, const char* moduleClassName)
-{
-    bool isSuccess = false;
-
-    // Remove the factory.
-    ICryFactoryRegistryImpl* const pReg = static_cast<ICryFactoryRegistryImpl*>(GetCryFactoryRegistry());
-
-    if (pReg != nullptr)
-    {
-        ICryFactory* pICryFactory = pReg->GetFactory(moduleClassName);
-
-        if (pICryFactory != nullptr)
-        {
-            pReg->UnregisterFactory(pICryFactory);
-        }
-    }
-
-    stack_string msg;
-    msg = "Unloading ";
-    msg += dllName;
-    msg += "...";
-
-    AZ_TracePrintf(AZ_TRACE_SYSTEM_WINDOW, "%s", msg.c_str());
-
-    stack_string dllfile = dllName;
-
-#if defined(LINUX)
-    dllfile = "lib" + PathUtil::ReplaceExtension(dllfile, "so");
-#ifndef LINUX
-    dllfile.MakeLower();
-#endif
-#elif defined(APPLE)
-    dllfile = "lib" + PathUtil::ReplaceExtension(dllfile, "dylib");
-#else
-    dllfile = PathUtil::ReplaceExtension(dllfile, "dll");
-#endif
-
-#if !defined(AZ_MONOLITHIC_BUILD)
-    isSuccess = UnloadDLL(dllfile.c_str());
-#endif // #if !defined(AZ_MONOLITHIC_BUILD)
-
-    return isSuccess;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CSystem::ShutdownModuleLibraries()
 {
 #if !defined(AZ_MONOLITHIC_BUILD)
@@ -1176,7 +1007,6 @@ bool CSystem::InitFileSystem()
 
     // get the DirectInstance FileIOBase which should be the AZ::LocalFileIO
     m_env.pFileIO = AZ::IO::FileIOBase::GetDirectInstance();
-    m_env.pResourceCompilerHelper = nullptr;
 
     m_env.pCryPak = AZ::Interface<AZ::IO::IArchive>::Get();
     m_env.pFileIO = AZ::IO::FileIOBase::GetInstance();
@@ -1255,8 +1085,7 @@ bool CSystem::InitFileSystem_LoadEngineFolders(const SSystemInitParams&)
 {
     LOADING_TIME_PROFILE_SECTION;
     {
-        ILoadConfigurationEntrySink* pCVarsWhiteListConfigSink = GetCVarsWhiteListConfigSink();
-        LoadConfiguration(m_systemConfigName.c_str(), pCVarsWhiteListConfigSink);
+        LoadConfiguration(m_systemConfigName.c_str());
         AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Loading system configuration from %s...", m_systemConfigName.c_str());
     }
 
@@ -1265,13 +1094,6 @@ bool CSystem::InitFileSystem_LoadEngineFolders(const SSystemInitParams&)
 #endif
 
     GetISystem()->SetConfigPlatform(GetDevicePlatform());
-
-#if defined(CRY_ENABLE_RC_HELPER)
-    if (!m_env.pResourceCompilerHelper)
-    {
-        m_env.pResourceCompilerHelper = new CResourceCompilerHelper();
-    }
-#endif
 
     auto projectPath = AZ::Utils::GetProjectPath();
     AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Project Path: %s\n", projectPath.empty() ? "None specified" : projectPath.c_str());
@@ -1327,7 +1149,6 @@ bool CSystem::InitAudioSystem(const SSystemInitParams& initParams)
 
     bool useRealAudioSystem = false;
     if (!initParams.bPreview
-        && !initParams.bMinimal
         && !m_bDedicatedServer
         && m_sys_audio_disable->GetIVal() == 0)
     {
@@ -1395,7 +1216,7 @@ bool CSystem::InitShine([[maybe_unused]] const SSystemInitParams& initParams)
 
     if (!m_env.pLyShine)
     {
-        AZ_Error(AZ_TRACE_SYSTEM_WINDOW, false, "LYShine System did not initialize correctly. Please check that the LyShine gem is enabled for this project in ProjectConfigurator.");
+        AZ_Error(AZ_TRACE_SYSTEM_WINDOW, false, "LYShine System did not initialize correctly. Please check that the LyShine gem is enabled for this project in *_dependencies.cmake.");
         return false;
     }
     return true;
@@ -1820,12 +1641,8 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     gEnv->mMainThreadId = GetCurrentThreadId();         //Set this ASAP on startup
 
     InlineInitializationProcessing("CSystem::Init start");
-    m_szCmdLine = startupParams.szSystemCmdLine;
 
-    m_env.szCmdLine = m_szCmdLine.c_str();
-    m_env.bTesting = startupParams.bTesting;
-    m_env.bNoAssertDialog = startupParams.bTesting;
-    m_env.bNoRandomSeed = startupParams.bNoRandom;
+    m_env.bNoAssertDialog = false;
 
     m_bNoCrashDialog = gEnv->IsDedicated();
 
@@ -1872,12 +1689,6 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
 
     AZ_Assert(CryMemory::IsHeapValid(), "Memory heap must be valid before continuing SystemInit.");
 
-#ifdef EXTENSION_SYSTEM_INCLUDE_TESTCASES
-    TestExtensions(&CCryFactoryRegistryImpl::Access());
-#endif
-
-    //_controlfp(0, _EM_INVALID|_EM_ZERODIVIDE | _PC_64 );
-
 #if defined(WIN32) || defined(WIN64)
     // check OS version - we only want to run on XP or higher - talk to Martin Mittring if you want to change this
     {
@@ -1908,15 +1719,9 @@ AZ_POP_DISABLE_WARNING
     m_bPreviewMode = startupParams.bPreview;
     m_bTestMode = startupParams.bTestMode;
     m_pUserCallback = startupParams.pUserCallback;
-    m_bMinimal = startupParams.bMinimal;
 
-#if defined(CVARS_WHITELIST)
-    m_pCVarsWhitelist = startupParams.pCVarsWhitelist;
-#endif // defined(CVARS_WHITELIST)
     m_bDedicatedServer = startupParams.bDedicatedServer;
     m_currentLanguageAudio = "";
-
-    memcpy(gEnv->pProtectedFunctions, startupParams.pProtectedFunctions, sizeof(startupParams.pProtectedFunctions));
 
 #if !defined(CONSOLE)
     m_env.SetIsEditor(m_bEditor);
@@ -1925,7 +1730,6 @@ AZ_POP_DISABLE_WARNING
 #endif
 
     m_env.SetToolMode(startupParams.bToolMode);
-    m_env.bIsOutOfMemory = false;
 
     if (m_bEditor)
     {
@@ -2089,23 +1893,6 @@ AZ_POP_DISABLE_WARNING
         // so we log this immediately after setting the log filename
         LogVersion();
 
-        //here we should be good to ask Crypak to do something
-
-        // Initialise after pLog and CPU feature initialization
-        // AND after console creation (Editor only)
-        // May need access to engine folder .pak files
-        gEnv->pThreadManager->GetThreadConfigManager()->LoadConfig("config/engine_core.thread_config");
-
-        if (m_bEditor)
-        {
-            gEnv->pThreadManager->GetThreadConfigManager()->LoadConfig("config/engine_sandbox.thread_config");
-        }
-
-        // Setup main thread
-        void* pThreadHandle = 0; // Let system figure out thread handle
-        gEnv->pThreadManager->RegisterThirdPartyThread(pThreadHandle, "Main");
-        m_env.pProfileLogSystem = new CProfileLogSystem();
-
         bool devModeEnable = true;
 
 #if defined(_RELEASE)
@@ -2120,22 +1907,6 @@ AZ_POP_DISABLE_WARNING
         }
 
         SetDevMode(devModeEnable);
-
-        //////////////////////////////////////////////////////////////////////////
-        // CREATE NOTIFICATION NETWORK
-        //////////////////////////////////////////////////////////////////////////
-        m_pNotificationNetwork = nullptr;
-#ifndef _RELEASE
-    #ifndef LINUX
-
-        if (!startupParams.bMinimal)
-        {
-            m_pNotificationNetwork = CNotificationNetwork::Create();
-        }
-    #endif//LINUX
-#endif // _RELEASE
-
-        InlineInitializationProcessing("CSystem::Init NotificationNetwork");
 
         //////////////////////////////////////////////////////////////////////////
         // CREATE CONSOLE
@@ -2205,8 +1976,6 @@ AZ_POP_DISABLE_WARNING
         // CPU features detection.
         m_pCpu = new CCpuFeatures;
         m_pCpu->Detect();
-        m_env.pi.numCoresAvailableToProcess = m_pCpu->GetCPUCount();
-        m_env.pi.numLogicalProcessors = m_pCpu->GetLogicalCPUCount();
 
         // Check hard minimum CPU requirements
         if (!CheckCPURequirements(m_pCpu, this))
@@ -2256,17 +2025,15 @@ AZ_POP_DISABLE_WARNING
         }
 
         {
-            ILoadConfigurationEntrySink* pCVarsWhiteListConfigSink = GetCVarsWhiteListConfigSink();
-
             // We have to load this file again since first time we did it without devmode
-            LoadConfiguration(m_systemConfigName.c_str(), pCVarsWhiteListConfigSink);
+            LoadConfiguration(m_systemConfigName.c_str());
             // Optional user defined overrides
-            LoadConfiguration("user.cfg", pCVarsWhiteListConfigSink);
+            LoadConfiguration("user.cfg");
 
 #if defined(ENABLE_STATS_AGENT)
             if (m_pCmdLine->FindArg(eCLAT_Pre, "useamblecfg"))
             {
-                LoadConfiguration("amble.cfg", pCVarsWhiteListConfigSink);
+                LoadConfiguration("amble.cfg");
             }
 #endif
         }
@@ -2313,7 +2080,7 @@ AZ_POP_DISABLE_WARNING
         InlineInitializationProcessing("CSystem::Init LoadConfigurations");
 
 #ifdef WIN32
-        if ((g_cvars.sys_WER) && (!startupParams.bMinimal))
+        if ((g_cvars.sys_WER))
         {
             SetUnhandledExceptionFilter(CryEngineExceptionFilterWER);
         }
@@ -2323,7 +2090,6 @@ AZ_POP_DISABLE_WARNING
         //////////////////////////////////////////////////////////////////////////
         // Localization
         //////////////////////////////////////////////////////////////////////////
-        if (!startupParams.bMinimal)
         {
             InitLocalization();
         }
@@ -2341,7 +2107,6 @@ AZ_POP_DISABLE_WARNING
         //////////////////////////////////////////////////////////////////////////
         // AUDIO
         //////////////////////////////////////////////////////////////////////////
-        if (!startupParams.bMinimal)
         {
             if (InitAudioSystem(startupParams))
             {
@@ -2364,12 +2129,6 @@ AZ_POP_DISABLE_WARNING
             m_pUserCallback->OnInitProgress("First time asset processing - may take a minute...");
         }
 
-#ifdef SOFTCODE_SYSTEM_ENABLED
-        m_env.pSoftCodeMgr = new SoftCodeMgr();
-#else
-        m_env.pSoftCodeMgr = nullptr;
-#endif
-
         //////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////
         // System cursor
@@ -2379,8 +2138,7 @@ AZ_POP_DISABLE_WARNING
         // - System cursor has to be enabled manually by the Game if needed; the custom UiCursor will typically be used instead
 
         if (!gEnv->IsDedicated() &&
-            !gEnv->IsEditor() &&
-            !startupParams.bTesting)
+            !gEnv->IsEditor())
         {
             AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
                                                             &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
@@ -2412,29 +2170,11 @@ AZ_POP_DISABLE_WARNING
         }
 
         InlineInitializationProcessing("CSystem::Init InitShine");
-
-        //////////////////////////////////////////////////////////////////////////
         // CONSOLE
         //////////////////////////////////////////////////////////////////////////
         if (!InitConsole())
         {
             return false;
-        }
-
-        //////////////////////////////////////////////////////////////////////////
-        // SERVICE NETWORK
-        //////////////////////////////////////////////////////////////////////////
-        if (!startupParams.bSkipNetwork && !startupParams.bMinimal)
-        {
-            m_env.pServiceNetwork = new CServiceNetwork();
-        }
-
-        //////////////////////////////////////////////////////////////////////////
-        // REMOTE COMMAND SYTSTEM
-        //////////////////////////////////////////////////////////////////////////
-        if (!startupParams.bSkipNetwork && !startupParams.bMinimal)
-        {
-            m_env.pRemoteCommandManager = new CRemoteCommandManager();
         }
 
         if (m_pUserCallback)
@@ -2494,27 +2234,6 @@ AZ_POP_DISABLE_WARNING
 
         InlineInitializationProcessing("CSystem::Init ZStdDecompressor");
 
-        //////////////////////////////////////////////////////////////////////////
-        // Initialize task threads.
-        //////////////////////////////////////////////////////////////////////////
-        {
-            m_pThreadTaskManager->InitThreads();
-
-            SetAffinity();
-            AZ_Assert(CryMemory::IsHeapValid(), "CryMemory heap must be valid before initializing VTune.");
-
-
-            if (strstr(startupParams.szSystemCmdLine, "-VTUNE") != 0 || g_cvars.sys_vtune != 0)
-            {
-                if (!InitVTuneProfiler())
-                {
-                    return false;
-                }
-            }
-        }
-
-        InlineInitializationProcessing("CSystem::Init InitTaskThreads");
-
         if (m_env.pLyShine)
         {
             m_env.pLyShine->PostInit();
@@ -2538,8 +2257,6 @@ AZ_POP_DISABLE_WARNING
             }
         }
         EnableFloatExceptions(g_cvars.sys_float_exceptions);
-
-        MarkThisThreadForDebugging("Main");
     }
 
     InlineInitializationProcessing("CSystem::Init End");
@@ -2594,8 +2311,7 @@ static void LoadConfigurationCmd(IConsoleCmdArgs* pParams)
         return;
     }
 
-    ILoadConfigurationEntrySink* pCVarsWhiteListConfigSink = GetISystem()->GetCVarsWhiteListConfigSink();
-    GetISystem()->LoadConfiguration(string("Config/") + pParams->GetArg(1), pCVarsWhiteListConfigSink);
+    GetISystem()->LoadConfiguration(string("Config/") + pParams->GetArg(1));
 }
 
 
@@ -2820,20 +2536,6 @@ void CmdDrillToFile(IConsoleCmdArgs* pArgs)
     }
 }
 
-void ChangeLogAllocations(ICVar* pVal)
-{
-    g_iTraceAllocations = pVal->GetIVal();
-
-    if (g_iTraceAllocations == 2)
-    {
-        IDebugCallStack::instance()->StartMemLog();
-    }
-    else
-    {
-        IDebugCallStack::instance()->StopMemLog();
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
 void CSystem::CreateSystemVars()
 {
@@ -2890,9 +2592,6 @@ void CSystem::CreateSystemVars()
 #endif // #ifndef _RELEASE
 
     m_cvAIUpdate = REGISTER_INT("ai_NoUpdate", 0, VF_CHEAT, "Disables AI system update when 1");
-
-    m_iTraceAllocations = g_iTraceAllocations;
-    REGISTER_CVAR2_CB("sys_logallocations", &m_iTraceAllocations, m_iTraceAllocations, VF_DUMPTODISK, "Save allocation call stack", ChangeLogAllocations);
 
     m_cvMemStats = REGISTER_INT("MemStats", 0, 0,
             "0/x=refresh rate in milliseconds\n"
@@ -3031,16 +2730,6 @@ void CSystem::CreateSystemVars()
 
     m_sys_TaskThread_CPU[5] = REGISTER_INT("sys_TaskThread5_CPU", 1, 0,
             "Specifies the physical CPU index taskthread5 will run on");
-
-    //if physics thread is excluded all locks inside are mapped to NO_LOCK
-    //var must be not visible to accidentally get enabled
-#if defined(EXCLUDE_PHYSICS_THREAD)
-    m_sys_physics_CPU = REGISTER_INT("sys_physics_CPU_disabled", 0, 0,
-            "Specifies the physical CPU index physics will run on");
-#else
-    m_sys_physics_CPU = REGISTER_INT("sys_physics_CPU", 1, 0,
-            "Specifies the physical CPU index physics will run on");
-#endif
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_12
@@ -3205,7 +2894,6 @@ void CSystem::CreateSystemVars()
             "0=off / 1=enabled");
     */
     REGISTER_CVAR2("sys_AI", &g_cvars.sys_ai, 1, 0, "Enables AI Update");
-    REGISTER_CVAR2("sys_physics", &g_cvars.sys_physics, 1, 0, "Enables Physics Update");
     REGISTER_CVAR2("sys_entities", &g_cvars.sys_entitysystem, 1, 0, "Enables Entities Update");
     REGISTER_CVAR2("sys_trackview", &g_cvars.sys_trackview, 1, 0, "Enables TrackView Update");
 
@@ -3239,10 +2927,6 @@ void CSystem::CreateSystemVars()
     REGISTER_CVAR2("sys_error_debugbreak", &g_cvars.sys_error_debugbreak, 0, VF_CHEAT, "__debugbreak() if a VALIDATOR_ERROR_DBGBREAK message is hit");
 
     REGISTER_STRING("dlc_directory", "", 0, "Holds the path to the directory where DLC should be installed to and read from");
-
-#if defined(MAP_LOADING_SLICING)
-    CreateSystemScheduler(this);
-#endif // defined(MAP_LOADING_SLICING)
 
 #if defined(WIN32) || defined(WIN64)
     REGISTER_INT("sys_screensaver_allowed", 0, VF_NULL, "Specifies if screen saver is allowed to start up while the game is running.");

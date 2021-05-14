@@ -418,6 +418,11 @@ namespace NvCloth
         required.push_back(AZ_CRC("MeshService", 0x71d8a455));
     }
 
+    void EditorClothComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+    }
+
     const MeshNodeList& EditorClothComponent::GetMeshNodeList() const
     {
         return m_meshNodeList;

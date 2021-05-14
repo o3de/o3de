@@ -1615,7 +1615,7 @@ public:
     {
         (void)f;
         (void)rc;
-        AZ_TracePrintf("GridMate", "Executed MyHandler123 requested at %u with %g on %s at %u.\n", rc.m_timestamp, f, GetReplica()->IsMaster() ? "Master" : "Proxy", rc.m_realTime);
+        AZ_TracePrintf("GridMate", "Executed MyHandler123 requested at %u with %g on %s at %u.\n", rc.m_timestamp, f, GetReplica()->IsPrimary() ? "Primary" : "Proxy", rc.m_realTime);
         return true;
     }
 
@@ -1653,14 +1653,14 @@ public:
         (void)rc;
         if (rc.m_rm->GetUserContext(12345))
         {
-            AZ_TracePrintf("GridMate", "Activate %s with UserData:%p\n", GetReplica()->IsMaster() ? "master" : "proxy", rc.m_rm->GetUserContext(12345));
+            AZ_TracePrintf("GridMate", "Activate %s with UserData:%p\n", GetReplica()->IsPrimary() ? "primary" : "proxy", rc.m_rm->GetUserContext(12345));
         }
         if (IsProxy())
         {
             Bind(aznew MyObj());
         }
 
-        if (IsMaster())
+        if (IsPrimary())
         {
             EBUS_EVENT(MigratableReplicaDebugMsgs::EBus, OnNewOwner, GetReplicaId(), rc.m_rm);
         }
@@ -1679,9 +1679,9 @@ public:
     void OnReplicaChangeOwnership(const ReplicaContext& rc) override
     {
         (void)rc;
-        AZ_TracePrintf("GridMate", "Migratable replica 0x%x became %s on Peer %d\n", (int) GetReplicaId(), IsMaster() ? "master" : "proxy", (int) rc.m_rm->GetLocalPeerId());
+        AZ_TracePrintf("GridMate", "Migratable replica 0x%x became %s on Peer %d\n", (int) GetReplicaId(), IsPrimary() ? "primary" : "proxy", (int) rc.m_rm->GetLocalPeerId());
 
-        if (IsMaster())
+        if (IsPrimary())
         {
             EBUS_EVENT(MigratableReplicaDebugMsgs::EBus, OnNewOwner, GetReplicaId(), rc.m_rm);
         }
@@ -1725,7 +1725,7 @@ protected:
     {
         (void)f;
         (void)rc;
-        AZ_TracePrintf("GridMate", "Executed MyHandler123 requested at %u with %g on %s at %u.\n", rc.m_timestamp, f, IsMaster() ? "Master" : "Proxy", rc.m_realTime);
+        AZ_TracePrintf("GridMate", "Executed MyHandler123 requested at %u with %g on %s at %u.\n", rc.m_timestamp, f, IsPrimary() ? "Primary" : "Proxy", rc.m_realTime);
         return true;
     }
     bool MyHandler2(const float& f, int p2, const RpcContext& rc)
@@ -1733,7 +1733,7 @@ protected:
         (void)f;
         (void)p2;
         (void)rc;
-        AZ_TracePrintf("GridMate", "Executed MyHandler2 requested at %u with %g,%d on %s at %u.\n", rc.m_timestamp, f, p2, IsMaster() ? "Master" : "Proxy", rc.m_realTime);
+        AZ_TracePrintf("GridMate", "Executed MyHandler2 requested at %u with %g,%d on %s at %u.\n", rc.m_timestamp, f, p2, IsPrimary() ? "Primary" : "Proxy", rc.m_realTime);
         return true;
     }
     bool MyHandler3(const float& f, int p2, EBla p3, const RpcContext& rc)
@@ -1742,7 +1742,7 @@ protected:
         (void)p2;
         (void)p3;
         (void)rc;
-        AZ_TracePrintf("GridMate", "Executed MyHandler3 requested at %u with %g,%d,%d on %s at %u.\n", rc.m_timestamp, f, p2, p3, IsMaster() ? "Master" : "Proxy", rc.m_realTime);
+        AZ_TracePrintf("GridMate", "Executed MyHandler3 requested at %u with %g,%d,%d on %s at %u.\n", rc.m_timestamp, f, p2, p3, IsPrimary() ? "Primary" : "Proxy", rc.m_realTime);
         return true;
     }
     bool MyHandler4(const float& f, int p2, EBla p3, const IntVectorType& p4, const RpcContext& rc)
@@ -1752,13 +1752,13 @@ protected:
         (void)p3;
         (void)p4;
         (void)rc;
-        AZ_TracePrintf("GridMate", "Executed MyHandler4 requested at %u with %g,%d,%d,%d,%d on %s at %u.\n", rc.m_timestamp, f, p2, p3, p4[0], p4[1], IsMaster() ? "Master" : "Proxy", rc.m_realTime);
+        AZ_TracePrintf("GridMate", "Executed MyHandler4 requested at %u with %g,%d,%d,%d,%d on %s at %u.\n", rc.m_timestamp, f, p2, p3, p4[0], p4[1], IsPrimary() ? "Primary" : "Proxy", rc.m_realTime);
         return true;
     }
     bool MyHandlerUnreliable(const int& i, const RpcContext& rc)
     {
         (void)rc;
-        AZ_TracePrintf("GridMate", "Executed MyHandlerUnreliable requested at %u with %d on %s at %u.\n", rc.m_timestamp, i, IsMaster() ? "Master" : "Proxy", rc.m_realTime);
+        AZ_TracePrintf("GridMate", "Executed MyHandlerUnreliable requested at %u with %d on %s at %u.\n", rc.m_timestamp, i, IsPrimary() ? "Primary" : "Proxy", rc.m_realTime);
         AZ_TEST_ASSERT(i > m_prevUnreliableValue);
         if ((i - m_prevUnreliableValue) > 1)
         {
@@ -1824,7 +1824,7 @@ public:
         (void)rc;
         if (rc.m_rm->GetUserContext(12345))
         {
-            AZ_TracePrintf("GridMate", "Activate %s with UserData:%p\n", IsMaster() ? "master" : "proxy", rc.m_rm->GetUserContext(12345));
+            AZ_TracePrintf("GridMate", "Activate %s with UserData:%p\n", IsPrimary() ? "primary" : "proxy", rc.m_rm->GetUserContext(12345));
         }
         if (IsProxy())
         {
@@ -1845,7 +1845,7 @@ public:
     void OnReplicaChangeOwnership(const ReplicaContext& rc) override
     {
         (void)rc;
-        AZ_TracePrintf("GridMate", "NonMigratable replica 0x%x became %s on Peer %d\n", (int) GetReplicaId(), IsMaster() ? "master" : "proxy", (int) rc.m_rm->GetLocalPeerId());
+        AZ_TracePrintf("GridMate", "NonMigratable replica 0x%x became %s on Peer %d\n", (int) GetReplicaId(), IsPrimary() ? "primary" : "proxy", (int) rc.m_rm->GetLocalPeerId());
     }
 
     void Bind(MyObj* pObj)
@@ -1950,7 +1950,7 @@ TEST_F(Integ_ReplicaGMTest, ReplicaTest)
         // put something on s1 to get it going
         auto rep = Replica::CreateReplica(nullptr);
         s1rep1 = CreateAndAttachReplicaChunk<MigratableReplica>(rep);
-        s1rep1id = sessions[s1].GetReplicaMgr().AddMaster(rep);
+        s1rep1id = sessions[s1].GetReplicaMgr().AddPrimary(rep);
         s1rep1->Bind(s1obj1 = aznew MyObj());
 
         // connect s2 to s1
@@ -1993,7 +1993,7 @@ TEST_F(Integ_ReplicaGMTest, ReplicaTest)
                 {
                     auto newReplica = Replica::CreateReplica(nullptr);
                     s2rep1 = CreateAndAttachReplicaChunk<MyDerivedReplica>(newReplica);
-                    s2rep1id = sessions[s2].GetReplicaMgr().AddMaster(newReplica);
+                    s2rep1id = sessions[s2].GetReplicaMgr().AddPrimary(newReplica);
                     s2rep1->Bind(s2obj1 = aznew MyObj());
                 }
                 else
@@ -2020,7 +2020,7 @@ TEST_F(Integ_ReplicaGMTest, ReplicaTest)
                 {
                     auto newReplica = Replica::CreateReplica(nullptr);
                     s1rep2 = CreateAndAttachReplicaChunk<NonMigratableReplica>(newReplica);
-                    s1rep2id = sessions[s1].GetReplicaMgr().AddMaster(newReplica);
+                    s1rep2id = sessions[s1].GetReplicaMgr().AddPrimary(newReplica);
                     s1rep2->Bind(s1obj2 = aznew MyObj);
                 }
                 else
@@ -2041,7 +2041,7 @@ TEST_F(Integ_ReplicaGMTest, ReplicaTest)
                 {
                     auto newReplica = Replica::CreateReplica(nullptr);
                     s3rep1 = CreateAndAttachReplicaChunk<MigratableReplica>(newReplica);
-                    s3rep1id = sessions[s3].GetReplicaMgr().AddMaster(newReplica);
+                    s3rep1id = sessions[s3].GetReplicaMgr().AddPrimary(newReplica);
                     s3rep1->Bind(s3obj1 = aznew MyObj());
                 }
                 else
@@ -2289,13 +2289,13 @@ TEST_F(Integ_ForcedReplicaMigrationTest, ForcedReplicaMigrationTest)
                         {
                             auto rep = Replica::CreateReplica(nullptr);
                             migrRep[i] = CreateAndAttachReplicaChunk<MigratableReplica>(rep, aznew MyObj());
-                            peers[i].GetReplicaMgr().AddMaster(rep);
+                            peers[i].GetReplicaMgr().AddPrimary(rep);
                             AZ_TEST_ASSERT(m_replicaOwnership[migrRep[i]->GetReplicaId()] == &peers[i].GetReplicaMgr());
                         }
                         {
                             auto rep = Replica::CreateReplica(nullptr);
                             nonMigrRep[i] = CreateAndAttachReplicaChunk<NonMigratableReplica>(rep, aznew MyObj());
-                            peers[i].GetReplicaMgr().AddMaster(rep);
+                            peers[i].GetReplicaMgr().AddPrimary(rep);
                         }
                     }
                     addReplicas = false;
@@ -2418,7 +2418,7 @@ public:
 
         void OnReplicaActivate(const ReplicaContext& rc) override
         {
-            if (IsMaster())
+            if (IsPrimary())
             {
                 m_owner.Set(rc.m_rm->GetLocalPeerId() - 1);
                 m_control.Set(rc.m_rm->GetLocalPeerId() - 1);
@@ -2427,9 +2427,9 @@ public:
 
         void OnReplicaChangeOwnership(const ReplicaContext& rc) override
         {
-            if (IsMaster())
+            if (IsPrimary())
             {
-                AZ_TracePrintf("GridMate", "OnChangeOwnership: 0x%04x Became master on node %d\n", GetReplicaId(), rc.m_rm->GetLocalPeerId() - 1);
+                AZ_TracePrintf("GridMate", "OnChangeOwnership: 0x%04x Became primary on node %d\n", GetReplicaId(), rc.m_rm->GetLocalPeerId() - 1);
                 m_owner.Set(rc.m_rm->GetLocalPeerId() - 1);
             }
             else
@@ -2591,18 +2591,18 @@ TEST_F(Integ_ReplicaMigrationRequestTest, ReplicaMigrationRequestTest)
                         {
                             auto rep = Replica::CreateReplica(nullptr);
                             nodes[iNode].m_always = CreateAndAttachReplicaChunk<AlwaysMigratable>(rep);
-                            nodes[iNode].m_session.GetReplicaMgr().AddMaster(rep);
+                            nodes[iNode].m_session.GetReplicaMgr().AddPrimary(rep);
                         }
                         {
                             auto rep = Replica::CreateReplica(nullptr);
                             nodes[iNode].m_never = CreateAndAttachReplicaChunk<NeverMigratable>(rep);
-                            nodes[iNode].m_session.GetReplicaMgr().AddMaster(rep);
+                            nodes[iNode].m_session.GetReplicaMgr().AddPrimary(rep);
                         }
                         {
                             auto rep = Replica::CreateReplica(nullptr);
                             nodes[iNode].m_sometimes = CreateAndAttachReplicaChunk<SometimesMigratable>(rep);
                             nodes[iNode].m_sometimes->m_acceptMigrationRequests = iNode == Peer1 || iNode == Client1;
-                            nodes[iNode].m_session.GetReplicaMgr().AddMaster(rep);
+                            nodes[iNode].m_session.GetReplicaMgr().AddPrimary(rep);
                         }
                     }
                 }
@@ -2675,7 +2675,7 @@ TEST_F(Integ_ReplicaMigrationRequestTest, ReplicaMigrationRequestTest)
                 AZ_TEST_ASSERT(nodes[Client1].m_always->m_accepted == 1);
                 AZ_TEST_ASSERT(nodes[Client1].m_always->GetReplica()->IsProxy());
                 AZ_TEST_ASSERT(nodes[Client1].m_always->m_owner.Get() == Client2);
-                AZ_TEST_ASSERT(nodes[Client2].m_session.GetReplicaMgr().FindReplica(nodes[Client1].m_always->GetReplicaId())->IsMaster());
+                AZ_TEST_ASSERT(nodes[Client2].m_session.GetReplicaMgr().FindReplica(nodes[Client1].m_always->GetReplicaId())->IsPrimary());
 
                 // C1 -> C2 -> Host (2nd migration)
                 ReplicaPtr aHonC1 = nodes[Host].m_session.GetReplicaMgr().FindReplica(nodes[Client1].m_always->GetReplicaId());
@@ -2737,7 +2737,7 @@ TEST_F(Integ_ReplicaMigrationRequestTest, ReplicaMigrationRequestTest)
         AZ_TEST_ASSERT(nodes[Peer1].m_always->m_accepted == 1);
         AZ_TEST_ASSERT(nodes[Peer1].m_always->GetReplica()->IsProxy());
         AZ_TEST_ASSERT(nodes[Peer1].m_always->m_owner.Get() == Peer2);
-        AZ_TEST_ASSERT(nodes[Peer2].m_session.GetReplicaMgr().FindReplica(nodes[Peer1].m_always->GetReplicaId())->IsMaster());
+        AZ_TEST_ASSERT(nodes[Peer2].m_session.GetReplicaMgr().FindReplica(nodes[Peer1].m_always->GetReplicaId())->IsPrimary());
         AZ_TEST_ASSERT(nodes[Peer1].m_always->m_control.Get() == Peer2);
 
         // P2 -> Host -> C2 (both at same time, with C2 arriving second)
@@ -2750,7 +2750,7 @@ TEST_F(Integ_ReplicaMigrationRequestTest, ReplicaMigrationRequestTest)
         AZ_TEST_ASSERT(aP2onH->m_accepted == 1);
         AZ_TEST_ASSERT(aP2onH->GetReplica()->IsProxy());
         AZ_TEST_ASSERT(aP2onH->m_owner.Get() == Client2);
-        AZ_TEST_ASSERT(nodes[Client2].m_session.GetReplicaMgr().FindReplica(nodes[Peer2].m_always->GetReplicaId())->IsMaster());
+        AZ_TEST_ASSERT(nodes[Client2].m_session.GetReplicaMgr().FindReplica(nodes[Peer2].m_always->GetReplicaId())->IsPrimary());
         AZ_TEST_ASSERT(nodes[Peer2].m_always->m_control.Get() == Client2);
 
         // Host -> C1
@@ -2758,7 +2758,7 @@ TEST_F(Integ_ReplicaMigrationRequestTest, ReplicaMigrationRequestTest)
         AZ_TEST_ASSERT(nodes[Host].m_always->m_accepted == 1);
         AZ_TEST_ASSERT(nodes[Host].m_always->GetReplica()->IsProxy());
         AZ_TEST_ASSERT(nodes[Host].m_always->m_owner.Get() == Client1);
-        AZ_TEST_ASSERT(nodes[Client1].m_session.GetReplicaMgr().FindReplica(nodes[Host].m_always->GetReplicaId())->IsMaster());
+        AZ_TEST_ASSERT(nodes[Client1].m_session.GetReplicaMgr().FindReplica(nodes[Host].m_always->GetReplicaId())->IsPrimary());
         AZ_TEST_ASSERT(nodes[Host].m_always->m_control.Get() == Client1);
 
         // C1 -> C2 -> Host (2nd migration)
@@ -2771,7 +2771,7 @@ TEST_F(Integ_ReplicaMigrationRequestTest, ReplicaMigrationRequestTest)
         AZ_TEST_ASSERT(aC1onC2->m_accepted == 1);
         AZ_TEST_ASSERT(aC1onC2->GetReplica()->IsProxy());
         AZ_TEST_ASSERT(aC1onC2->m_owner.Get() == Host);
-        AZ_TEST_ASSERT(nodes[Host].m_session.GetReplicaMgr().FindReplica(nodes[Client1].m_always->GetReplicaId())->IsMaster());
+        AZ_TEST_ASSERT(nodes[Host].m_session.GetReplicaMgr().FindReplica(nodes[Client1].m_always->GetReplicaId())->IsPrimary());
         AZ_TEST_ASSERT(nodes[Client1].m_always->m_control.Get() == Host);
 
         // C2 -> P1
@@ -2779,13 +2779,13 @@ TEST_F(Integ_ReplicaMigrationRequestTest, ReplicaMigrationRequestTest)
         AZ_TEST_ASSERT(nodes[Client2].m_always->m_accepted == 1);
         AZ_TEST_ASSERT(nodes[Client2].m_always->GetReplica()->IsProxy());
         AZ_TEST_ASSERT(nodes[Client2].m_always->m_owner.Get() == Peer1);
-        AZ_TEST_ASSERT(nodes[Peer1].m_session.GetReplicaMgr().FindReplica(nodes[Client2].m_always->GetReplicaId())->IsMaster());
+        AZ_TEST_ASSERT(nodes[Peer1].m_session.GetReplicaMgr().FindReplica(nodes[Client2].m_always->GetReplicaId())->IsPrimary());
         AZ_TEST_ASSERT(nodes[Client2].m_always->m_control.Get() == Peer1);
 
         // P1 -> C1 (Forbidden)
         AZ_TEST_ASSERT(nodes[Peer1].m_never->m_requests == 0);
         AZ_TEST_ASSERT(nodes[Peer1].m_never->m_accepted == 0);
-        AZ_TEST_ASSERT(nodes[Peer1].m_never->GetReplica()->IsMaster());
+        AZ_TEST_ASSERT(nodes[Peer1].m_never->GetReplica()->IsPrimary());
         AZ_TEST_ASSERT(nodes[Peer1].m_never->m_owner.Get() == Peer1);
         AZ_TEST_ASSERT(nodes[Client1].m_session.GetReplicaMgr().FindReplica(nodes[Peer1].m_never->GetReplicaId())->IsProxy());
         AZ_TEST_ASSERT(nodes[Peer1].m_never->m_control.Get() == Peer1);
@@ -2793,7 +2793,7 @@ TEST_F(Integ_ReplicaMigrationRequestTest, ReplicaMigrationRequestTest)
         // C2 -> P2 (Forbidden)
         AZ_TEST_ASSERT(nodes[Client2].m_never->m_requests == 0);
         AZ_TEST_ASSERT(nodes[Client2].m_never->m_accepted == 0);
-        AZ_TEST_ASSERT(nodes[Client2].m_never->GetReplica()->IsMaster());
+        AZ_TEST_ASSERT(nodes[Client2].m_never->GetReplica()->IsPrimary());
         AZ_TEST_ASSERT(nodes[Client2].m_never->m_owner.Get() == Client2);
         AZ_TEST_ASSERT(nodes[Peer2].m_session.GetReplicaMgr().FindReplica(nodes[Client2].m_never->GetReplicaId())->IsProxy());
         AZ_TEST_ASSERT(nodes[Client2].m_never->m_control.Get() == Client2);
@@ -2803,7 +2803,7 @@ TEST_F(Integ_ReplicaMigrationRequestTest, ReplicaMigrationRequestTest)
         AZ_TEST_ASSERT(nodes[Peer1].m_sometimes->m_accepted == 1);
         AZ_TEST_ASSERT(nodes[Peer1].m_sometimes->GetReplica()->IsProxy());
         AZ_TEST_ASSERT(nodes[Peer1].m_sometimes->m_owner.Get() == Host);
-        AZ_TEST_ASSERT(nodes[Host].m_session.GetReplicaMgr().FindReplica(nodes[Peer1].m_sometimes->GetReplicaId())->IsMaster());
+        AZ_TEST_ASSERT(nodes[Host].m_session.GetReplicaMgr().FindReplica(nodes[Peer1].m_sometimes->GetReplicaId())->IsPrimary());
         AZ_TEST_ASSERT(nodes[Peer1].m_sometimes->m_control.Get() == Host);
 
         // C1 -> P1
@@ -2811,13 +2811,13 @@ TEST_F(Integ_ReplicaMigrationRequestTest, ReplicaMigrationRequestTest)
         AZ_TEST_ASSERT(nodes[Client1].m_sometimes->m_accepted == 1);
         AZ_TEST_ASSERT(nodes[Client1].m_sometimes->GetReplica()->IsProxy());
         AZ_TEST_ASSERT(nodes[Client1].m_sometimes->m_owner.Get() == Peer1);
-        AZ_TEST_ASSERT(nodes[Peer1].m_session.GetReplicaMgr().FindReplica(nodes[Client1].m_sometimes->GetReplicaId())->IsMaster());
+        AZ_TEST_ASSERT(nodes[Peer1].m_session.GetReplicaMgr().FindReplica(nodes[Client1].m_sometimes->GetReplicaId())->IsPrimary());
         AZ_TEST_ASSERT(nodes[Client1].m_sometimes->m_control.Get() == Peer1);
 
         // P2 -> C2 (Forbidden)
         AZ_TEST_ASSERT(nodes[Peer2].m_sometimes->m_requests == 1);
         AZ_TEST_ASSERT(nodes[Peer2].m_sometimes->m_accepted == 0);
-        AZ_TEST_ASSERT(nodes[Peer2].m_sometimes->GetReplica()->IsMaster());
+        AZ_TEST_ASSERT(nodes[Peer2].m_sometimes->GetReplica()->IsPrimary());
         AZ_TEST_ASSERT(nodes[Peer2].m_sometimes->m_owner.Get() == Peer2);
         AZ_TEST_ASSERT(nodes[Client2].m_session.GetReplicaMgr().FindReplica(nodes[Peer2].m_never->GetReplicaId())->IsProxy());
         AZ_TEST_ASSERT(nodes[Peer2].m_sometimes->m_control.Get() == Peer2);
@@ -2825,7 +2825,7 @@ TEST_F(Integ_ReplicaMigrationRequestTest, ReplicaMigrationRequestTest)
         // C2 -> Host (Forbidden)
         AZ_TEST_ASSERT(nodes[Client2].m_sometimes->m_requests == 1);
         AZ_TEST_ASSERT(nodes[Client2].m_sometimes->m_accepted == 0);
-        AZ_TEST_ASSERT(nodes[Client2].m_sometimes->GetReplica()->IsMaster());
+        AZ_TEST_ASSERT(nodes[Client2].m_sometimes->GetReplica()->IsPrimary());
         AZ_TEST_ASSERT(nodes[Client2].m_sometimes->m_owner.Get() == Client2);
         AZ_TEST_ASSERT(nodes[Host].m_session.GetReplicaMgr().FindReplica(nodes[Client2].m_never->GetReplicaId())->IsProxy());
         AZ_TEST_ASSERT(nodes[Client2].m_sometimes->m_control.Get() == Client2);
@@ -2946,12 +2946,12 @@ TEST_F(Integ_PeerRejoinTest, PeerRejoinTest)
                         {
                             auto rep = Replica::CreateReplica(nullptr);
                             migrRep[i] = CreateAndAttachReplicaChunk<MigratableReplica>(rep, aznew MyObj());
-                            peers[i].GetReplicaMgr().AddMaster(rep);
+                            peers[i].GetReplicaMgr().AddPrimary(rep);
                         }
                         {
                             auto rep = Replica::CreateReplica(nullptr);
                             nonMigrRep[i] = CreateAndAttachReplicaChunk<NonMigratableReplica>(rep, aznew MyObj());
-                            peers[i].GetReplicaMgr().AddMaster(rep);
+                            peers[i].GetReplicaMgr().AddPrimary(rep);
                         }
                     }
                     addReplicas = false;
@@ -3099,7 +3099,7 @@ public:
         {
             // make sure the requestor is set to s1
             AZ_TEST_ASSERT(rpcContext.m_sourcePeer == s1 + 1);
-            if (IsMaster())
+            if (IsPrimary())
             {
                 m_nAuthoritativeOnlyRpcCallsFromS1.Modify([](int& value) { ++value; return true; });
             }
@@ -3114,7 +3114,7 @@ public:
         {
             // make sure the requestor is set to s2
             AZ_TEST_ASSERT(rpcContext.m_sourcePeer == s2 + 1);
-            if (IsMaster())
+            if (IsPrimary())
             {
                 m_nAuthoritativeOnlyRpcCallsFromS2.Modify([](int& value) { ++value; return true; });
             }
@@ -3129,7 +3129,7 @@ public:
         {
             // make sure the requestor is set to s3
             AZ_TEST_ASSERT(rpcContext.m_sourcePeer == s3 + 1);
-            if (IsMaster())
+            if (IsPrimary())
             {
                 m_nAuthoritativeOnlyRpcCallsFromS3.Modify([](int& value) { ++value; return true; });
             }
@@ -3168,7 +3168,7 @@ TEST_F(Integ_ReplicationSecurityOptionsTest, ReplicationSecurityOptionsTest)
         ReplicaChunkDescriptorTable::Get().RegisterChunkType<TestChunk>();
 
         MPSession sessions[nSessions];
-        ReplicaPtr masters[nSessions];
+        ReplicaPtr primarys[nSessions];
 
         // initialize transport
         int basePort = 4427;
@@ -3202,10 +3202,10 @@ TEST_F(Integ_ReplicationSecurityOptionsTest, ReplicationSecurityOptionsTest)
                 for (int i = 0; i < nSessions; ++i)
                 {
                     AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().IsReady());
-                    masters[i] = Replica::CreateReplica("ReplicationSecurityOptionsTest::TestReplica");
+                    primarys[i] = Replica::CreateReplica("ReplicationSecurityOptionsTest::TestReplica");
                     TestChunkPtr chunk = CreateReplicaChunk<TestChunk>();
-                    masters[i]->AttachReplicaChunk(chunk);
-                    sessions[i].GetReplicaMgr().AddMaster(masters[i]);
+                    primarys[i]->AttachReplicaChunk(chunk);
+                    sessions[i].GetReplicaMgr().AddPrimary(primarys[i]);
                 }
             }
 
@@ -3214,9 +3214,9 @@ TEST_F(Integ_ReplicationSecurityOptionsTest, ReplicationSecurityOptionsTest)
                 AZ_TEST_START_TRACE_SUPPRESSION;
                 for (int i = 0; i < nSessions; ++i)
                 {
-                    sessions[s1].GetReplicaMgr().FindReplica(masters[i]->GetRepId())->FindReplicaChunk<TestChunk>()->ForwardSourcePeerRpcFromS1();
-                    sessions[s2].GetReplicaMgr().FindReplica(masters[i]->GetRepId())->FindReplicaChunk<TestChunk>()->ForwardSourcePeerRpcFromS2();
-                    sessions[s3].GetReplicaMgr().FindReplica(masters[i]->GetRepId())->FindReplicaChunk<TestChunk>()->ForwardSourcePeerRpcFromS3();
+                    sessions[s1].GetReplicaMgr().FindReplica(primarys[i]->GetRepId())->FindReplicaChunk<TestChunk>()->ForwardSourcePeerRpcFromS1();
+                    sessions[s2].GetReplicaMgr().FindReplica(primarys[i]->GetRepId())->FindReplicaChunk<TestChunk>()->ForwardSourcePeerRpcFromS2();
+                    sessions[s3].GetReplicaMgr().FindReplica(primarys[i]->GetRepId())->FindReplicaChunk<TestChunk>()->ForwardSourcePeerRpcFromS3();
                 }
             }
 
@@ -3227,36 +3227,36 @@ TEST_F(Integ_ReplicationSecurityOptionsTest, ReplicationSecurityOptionsTest)
                 AZ_TEST_STOP_TRACE_SUPPRESSION(2);
 
                 // All chunks should have received the call from the host
-                AZ_TEST_ASSERT(masters[s1]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS1 == 1);
-                AZ_TEST_ASSERT(masters[s2]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS1 == 1);
-                AZ_TEST_ASSERT(masters[s3]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS1 == 1);
+                AZ_TEST_ASSERT(primarys[s1]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS1 == 1);
+                AZ_TEST_ASSERT(primarys[s2]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS1 == 1);
+                AZ_TEST_ASSERT(primarys[s3]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS1 == 1);
 
                 // the host chunk should have received calls from both clients
-                AZ_TEST_ASSERT(masters[s1]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS2 == 1);
-                AZ_TEST_ASSERT(masters[s1]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS3 == 1);
+                AZ_TEST_ASSERT(primarys[s1]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS2 == 1);
+                AZ_TEST_ASSERT(primarys[s1]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS3 == 1);
 
                 // the chunk on s2 should receive its own call but not from s3
-                AZ_TEST_ASSERT(masters[s2]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS2 == 1);
-                AZ_TEST_ASSERT(masters[s2]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS3 == 0);
+                AZ_TEST_ASSERT(primarys[s2]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS2 == 1);
+                AZ_TEST_ASSERT(primarys[s2]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS3 == 0);
 
                 // the chunk on s3 should receive its own call but not from s2
-                AZ_TEST_ASSERT(masters[s3]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS2 == 0);
-                AZ_TEST_ASSERT(masters[s3]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS3 == 1);
+                AZ_TEST_ASSERT(primarys[s3]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS2 == 0);
+                AZ_TEST_ASSERT(primarys[s3]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS3 == 1);
 
                 // all datasets should have propagated properly
                 for (int i = 0; i < nSessions; ++i)
                 {
-                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(masters[s1]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS1.Get() == masters[s1]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS1.Get());
-                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(masters[s1]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS2.Get() == masters[s1]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS2.Get());
-                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(masters[s1]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS3.Get() == masters[s1]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS3.Get());
+                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(primarys[s1]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS1.Get() == primarys[s1]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS1.Get());
+                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(primarys[s1]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS2.Get() == primarys[s1]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS2.Get());
+                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(primarys[s1]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS3.Get() == primarys[s1]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS3.Get());
 
-                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(masters[s2]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS1.Get() == masters[s2]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS1.Get());
-                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(masters[s2]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS2.Get() == masters[s2]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS2.Get());
-                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(masters[s2]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS3.Get() == masters[s2]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS3.Get());
+                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(primarys[s2]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS1.Get() == primarys[s2]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS1.Get());
+                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(primarys[s2]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS2.Get() == primarys[s2]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS2.Get());
+                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(primarys[s2]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS3.Get() == primarys[s2]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS3.Get());
 
-                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(masters[s3]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS1.Get() == masters[s3]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS1.Get());
-                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(masters[s3]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS2.Get() == masters[s3]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS2.Get());
-                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(masters[s3]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS3.Get() == masters[s3]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS3.Get());
+                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(primarys[s3]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS1.Get() == primarys[s3]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS1.Get());
+                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(primarys[s3]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS2.Get() == primarys[s3]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS2.Get());
+                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(primarys[s3]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS3.Get() == primarys[s3]->FindReplicaChunk<TestChunk>()->m_nForwardSourcePeerRpcCallsFromS3.Get());
                 }
             }
 
@@ -3265,9 +3265,9 @@ TEST_F(Integ_ReplicationSecurityOptionsTest, ReplicationSecurityOptionsTest)
                 AZ_TEST_START_TRACE_SUPPRESSION;
                 for (int i = 0; i < nSessions; ++i)
                 {
-                    sessions[s1].GetReplicaMgr().FindReplica(masters[i]->GetRepId())->FindReplicaChunk<TestChunk>()->AuthoritativeOnlyRpcFromS1();
-                    sessions[s2].GetReplicaMgr().FindReplica(masters[i]->GetRepId())->FindReplicaChunk<TestChunk>()->AuthoritativeOnlyRpcFromS2();
-                    sessions[s3].GetReplicaMgr().FindReplica(masters[i]->GetRepId())->FindReplicaChunk<TestChunk>()->AuthoritativeOnlyRpcFromS3();
+                    sessions[s1].GetReplicaMgr().FindReplica(primarys[i]->GetRepId())->FindReplicaChunk<TestChunk>()->AuthoritativeOnlyRpcFromS1();
+                    sessions[s2].GetReplicaMgr().FindReplica(primarys[i]->GetRepId())->FindReplicaChunk<TestChunk>()->AuthoritativeOnlyRpcFromS2();
+                    sessions[s3].GetReplicaMgr().FindReplica(primarys[i]->GetRepId())->FindReplicaChunk<TestChunk>()->AuthoritativeOnlyRpcFromS3();
                 }
             }
 
@@ -3278,40 +3278,40 @@ TEST_F(Integ_ReplicationSecurityOptionsTest, ReplicationSecurityOptionsTest)
                 AZ_TEST_STOP_TRACE_SUPPRESSION(6);
 
                 // Each chunk should have received their own AuthoritativeOnlyRpc once.
-                AZ_TEST_ASSERT(masters[s1]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS1 == 1);
-                AZ_TEST_ASSERT(masters[s2]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS2 == 1);
-                AZ_TEST_ASSERT(masters[s3]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS3 == 1);
+                AZ_TEST_ASSERT(primarys[s1]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS1 == 1);
+                AZ_TEST_ASSERT(primarys[s2]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS2 == 1);
+                AZ_TEST_ASSERT(primarys[s3]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS3 == 1);
 
                 // Calls from other nodes should have been discarded.
-                AZ_TEST_ASSERT(masters[s1]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS2 == 0);
-                AZ_TEST_ASSERT(masters[s1]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS3 == 0);
-                AZ_TEST_ASSERT(masters[s2]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS1 == 0);
-                AZ_TEST_ASSERT(masters[s2]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS3 == 0);
-                AZ_TEST_ASSERT(masters[s3]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS1 == 0);
-                AZ_TEST_ASSERT(masters[s3]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS2 == 0);
+                AZ_TEST_ASSERT(primarys[s1]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS2 == 0);
+                AZ_TEST_ASSERT(primarys[s1]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS3 == 0);
+                AZ_TEST_ASSERT(primarys[s2]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS1 == 0);
+                AZ_TEST_ASSERT(primarys[s2]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS3 == 0);
+                AZ_TEST_ASSERT(primarys[s3]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS1 == 0);
+                AZ_TEST_ASSERT(primarys[s3]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS2 == 0);
 
                 // Calls should have successfully propagated to the other 2 proxies
-                AZ_TEST_ASSERT(sessions[s1].GetReplicaMgr().FindReplica(masters[s2]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyProxyRpcCallsFromS2 == 1);
-                AZ_TEST_ASSERT(sessions[s1].GetReplicaMgr().FindReplica(masters[s3]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyProxyRpcCallsFromS3 == 1);
-                AZ_TEST_ASSERT(sessions[s2].GetReplicaMgr().FindReplica(masters[s1]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyProxyRpcCallsFromS1 == 1);
-                AZ_TEST_ASSERT(sessions[s2].GetReplicaMgr().FindReplica(masters[s3]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyProxyRpcCallsFromS3 == 1);
-                AZ_TEST_ASSERT(sessions[s3].GetReplicaMgr().FindReplica(masters[s1]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyProxyRpcCallsFromS1 == 1);
-                AZ_TEST_ASSERT(sessions[s3].GetReplicaMgr().FindReplica(masters[s2]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyProxyRpcCallsFromS2 == 1);
+                AZ_TEST_ASSERT(sessions[s1].GetReplicaMgr().FindReplica(primarys[s2]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyProxyRpcCallsFromS2 == 1);
+                AZ_TEST_ASSERT(sessions[s1].GetReplicaMgr().FindReplica(primarys[s3]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyProxyRpcCallsFromS3 == 1);
+                AZ_TEST_ASSERT(sessions[s2].GetReplicaMgr().FindReplica(primarys[s1]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyProxyRpcCallsFromS1 == 1);
+                AZ_TEST_ASSERT(sessions[s2].GetReplicaMgr().FindReplica(primarys[s3]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyProxyRpcCallsFromS3 == 1);
+                AZ_TEST_ASSERT(sessions[s3].GetReplicaMgr().FindReplica(primarys[s1]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyProxyRpcCallsFromS1 == 1);
+                AZ_TEST_ASSERT(sessions[s3].GetReplicaMgr().FindReplica(primarys[s2]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyProxyRpcCallsFromS2 == 1);
 
                 // all datasets should have propagated properly
                 for (int i = 0; i < nSessions; ++i)
                 {
-                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(masters[s1]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS1.Get() == masters[s1]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS1.Get());
-                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(masters[s1]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS2.Get() == masters[s1]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS2.Get());
-                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(masters[s1]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS3.Get() == masters[s1]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS3.Get());
+                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(primarys[s1]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS1.Get() == primarys[s1]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS1.Get());
+                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(primarys[s1]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS2.Get() == primarys[s1]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS2.Get());
+                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(primarys[s1]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS3.Get() == primarys[s1]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS3.Get());
 
-                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(masters[s2]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS1.Get() == masters[s2]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS1.Get());
-                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(masters[s2]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS2.Get() == masters[s2]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS2.Get());
-                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(masters[s2]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS3.Get() == masters[s2]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS3.Get());
+                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(primarys[s2]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS1.Get() == primarys[s2]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS1.Get());
+                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(primarys[s2]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS2.Get() == primarys[s2]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS2.Get());
+                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(primarys[s2]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS3.Get() == primarys[s2]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS3.Get());
 
-                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(masters[s3]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS1.Get() == masters[s3]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS1.Get());
-                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(masters[s3]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS2.Get() == masters[s3]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS2.Get());
-                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(masters[s3]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS3.Get() == masters[s3]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS3.Get());
+                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(primarys[s3]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS1.Get() == primarys[s3]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS1.Get());
+                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(primarys[s3]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS2.Get() == primarys[s3]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS2.Get());
+                    AZ_TEST_ASSERT(sessions[i].GetReplicaMgr().FindReplica(primarys[s3]->GetRepId())->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS3.Get() == primarys[s3]->FindReplicaChunk<TestChunk>()->m_nAuthoritativeOnlyRpcCallsFromS3.Get());
                 }
             }
 
@@ -3594,7 +3594,7 @@ public:
                 auto rep = Replica::CreateReplica(nullptr);
                 auto chunk = CreateAndAttachReplicaChunk<StressTestReplica>(rep);
                 replicas.push_back(AZStd::make_pair(rep, chunk));
-                session.GetReplicaMgr().AddMaster(rep);
+                session.GetReplicaMgr().AddPrimary(rep);
             }
         }
 
@@ -3730,7 +3730,7 @@ public:
         {
             auto rep = Replica::CreateReplica(nullptr);
             chunks[i] = CreateAndAttachReplicaChunk<BandwidthTestChunk>(rep);
-            sessions[sHost].GetReplicaMgr().AddMaster(rep);
+            sessions[sHost].GetReplicaMgr().AddPrimary(rep);
         }
 
         // connect to host

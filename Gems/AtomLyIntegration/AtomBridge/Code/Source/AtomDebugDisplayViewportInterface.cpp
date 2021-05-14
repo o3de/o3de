@@ -506,9 +506,10 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            AZStd::vector<AZ::Vector3> transformedVertices = ToWorldSpacePosition(vertices);
             AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
-            drawArgs.m_verts = vertices.data();
-            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(vertices.size());
+            drawArgs.m_verts = transformedVertices.data();
+            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(transformedVertices.size());
             drawArgs.m_colors = &color;
             drawArgs.m_colorCount = 1;
             drawArgs.m_opacityType = m_rendState.m_opacityType;
@@ -526,9 +527,10 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            AZStd::vector<AZ::Vector3> transformedVertices = ToWorldSpacePosition(vertices);
             AZ::RPI::AuxGeomDraw::AuxGeomDynamicIndexedDrawArguments drawArgs;
-            drawArgs.m_verts = vertices.data();
-            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(vertices.size());
+            drawArgs.m_verts = transformedVertices.data();
+            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(transformedVertices.size());
             drawArgs.m_indices = indices.data();
             drawArgs.m_indexCount = aznumeric_cast<uint32_t>(indices.size());
             drawArgs.m_colors = &color;
@@ -659,9 +661,10 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            AZStd::vector<AZ::Vector3> transformedLines = ToWorldSpacePosition(lines);
             AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
-            drawArgs.m_verts = lines.data();
-            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(lines.size());
+            drawArgs.m_verts = transformedLines.data();
+            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(transformedLines.size());
             drawArgs.m_colors = &color;
             drawArgs.m_colorCount = 1;
             drawArgs.m_size = m_rendState.m_lineWidth;
@@ -928,13 +931,14 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
             const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
             const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
             m_auxGeomPtr->DrawCylinder(
                 worldCenter, 
                 worldAxis, 
-                radius, 
-                height, 
+                scale * radius, 
+                scale * height, 
                 m_rendState.m_color, 
                 AZ::RPI::AuxGeomDraw::DrawStyle::Line,
                 m_rendState.m_depthTest,
@@ -954,13 +958,14 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
             const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
             const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
             m_auxGeomPtr->DrawCylinder(
                 worldCenter, 
                 worldAxis, 
-                radius, 
-                height, 
+                scale * radius, 
+                scale * height, 
                 m_rendState.m_color, 
                 drawShaded ? AZ::RPI::AuxGeomDraw::DrawStyle::Shaded : AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
                 m_rendState.m_depthTest,
@@ -1064,10 +1069,10 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
-
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
             m_auxGeomPtr->DrawSphere(
                 ToWorldSpacePosition(pos), 
-                radius, 
+                scale * radius, 
                 m_rendState.m_color, 
                 AZ::RPI::AuxGeomDraw::DrawStyle::Line,
                 m_rendState.m_depthTest,
@@ -1158,12 +1163,13 @@ namespace AZ::AtomBridge
     {
         if (m_auxGeomPtr)
         {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
             const AZ::Vector3 worldPos = ToWorldSpacePosition(pos);
             const AZ::Vector3 worldDir = ToWorldSpaceVector(dir);
             m_auxGeomPtr->DrawDisk(
                 worldPos, 
                 worldDir, 
-                radius, 
+                scale * radius, 
                 m_rendState.m_color,
                 AZ::RPI::AuxGeomDraw::DrawStyle::Shaded,
                 m_rendState.m_depthTest,
@@ -1511,6 +1517,26 @@ namespace AZ::AtomBridge
     const AZ::Matrix3x4& AtomDebugDisplayViewportInterface::GetCurrentTransform() const
     {
         return m_rendState.m_transformStack[m_rendState.m_currentTransform];
+    }
+
+    AZStd::vector<AZ::Vector3> AtomDebugDisplayViewportInterface::ToWorldSpacePosition(const AZStd::vector<AZ::Vector3>& positions) const
+    {
+        AZStd::vector<AZ::Vector3> transformedPositions;
+        transformedPositions.resize_no_construct(positions.size());
+        AZStd::transform(positions.begin(), positions.end(), transformedPositions.begin(), [this](const AZ::Vector3& position) {
+            return ToWorldSpacePosition(position);
+        });
+        return transformedPositions;
+    }
+
+    AZStd::vector<AZ::Vector3> AtomDebugDisplayViewportInterface::ToWorldSpaceVector(const AZStd::vector<AZ::Vector3>& vectors) const
+    {
+        AZStd::vector<AZ::Vector3> transformedVectors;
+        transformedVectors.resize_no_construct(vectors.size());
+        AZStd::transform(vectors.begin(), vectors.end(), transformedVectors.begin(), [this](const AZ::Vector3& vector) {
+            return ToWorldSpaceVector(vector);
+        });
+        return transformedVectors;
     }
 
     AZ::RPI::ViewportContextPtr AtomDebugDisplayViewportInterface::GetViewportContext() const
