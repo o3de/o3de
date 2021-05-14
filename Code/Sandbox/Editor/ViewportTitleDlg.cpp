@@ -187,8 +187,8 @@ void CViewportTitleDlg::OnToggleDisplayInfo()
         state,
         &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState
     );
-    state = static_cast<AZ::AtomBridge::ViewportInfoDisplayState>(
-        (static_cast<int>(state)+1) % static_cast<int>(AZ::AtomBridge::ViewportInfoDisplayState::Invalid));
+    state = aznumeric_cast<AZ::AtomBridge::ViewportInfoDisplayState>(
+        (aznumeric_cast<int>(state)+1) % aznumeric_cast<int>(AZ::AtomBridge::ViewportInfoDisplayState::Invalid));
     // SetDisplayState will fire OnViewportInfoDisplayStateChanged and notify us, no need to call UpdateDisplayInfo.
     AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Broadcast(
         &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::SetDisplayState,

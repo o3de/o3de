@@ -35,7 +35,7 @@ namespace AZ::Render
             // This callback only gets triggered by console commands, so this will not recurse.
             AtomBridge::AtomViewportInfoDisplayRequestBus::Broadcast(
                 &AtomBridge::AtomViewportInfoDisplayRequestBus::Events::SetDisplayState,
-                static_cast<AtomBridge::ViewportInfoDisplayState>(newDisplayInfoVal)
+                aznumeric_cast<AtomBridge::ViewportInfoDisplayState>(newDisplayInfoVal)
             );
         }, AZ::ConsoleFunctorFlags::DontReplicate,
         "Toggles debugging information display.\n"
@@ -184,12 +184,12 @@ namespace AZ::Render
 
     AtomBridge::ViewportInfoDisplayState AtomViewportDisplayInfoSystemComponent::GetDisplayState() const
     {
-        return static_cast<AtomBridge::ViewportInfoDisplayState>(r_displayInfo.operator int());
+        return aznumeric_cast<AtomBridge::ViewportInfoDisplayState>(r_displayInfo.operator int());
     }
 
     void AtomViewportDisplayInfoSystemComponent::SetDisplayState(AtomBridge::ViewportInfoDisplayState state)
     {
-        r_displayInfo = static_cast<int>(state);
+        r_displayInfo = aznumeric_cast<int>(state);
         AtomBridge::AtomViewportInfoDisplayNotificationBus::Broadcast(
             &AtomBridge::AtomViewportInfoDisplayNotificationBus::Events::OnViewportInfoDisplayStateChanged,
             state);
@@ -254,10 +254,10 @@ namespace AZ::Render
         if (!m_tickRequests)
         {
             m_tickRequests = AZ::TickRequestBus::FindFirstHandler();
-        }
-        if (!m_tickRequests)
-        {
-            return;
+            if (!m_tickRequests)
+            {
+                return;
+            }
         }
 
         AZ::ScriptTimePoint currentTime = m_tickRequests->GetTimeAtCurrentTick();
