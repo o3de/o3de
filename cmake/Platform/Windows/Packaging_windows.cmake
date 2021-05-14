@@ -91,6 +91,16 @@ set(CPACK_WIX_UPGRADE_GUID ${LY_WIX_UPGRADE_GUID})
 
 set(CPACK_WIX_TEMPLATE "${CPACK_SOURCE_DIR}/Platform/Windows/PackagingTemplate.wxs.in")
 
-set(CPACK_POST_BUILD_SCRIPTS
-    ${CPACK_SOURCE_DIR}/Platform/Windows/PackagingPostBuild.cmake
+set(_embed_artifacts_value yes)
+
+if(LY_INSTALLER_DOWNLOAD_URL)
+    set(_embed_artifacts_value no)
+
+    set(CPACK_POST_BUILD_SCRIPTS
+        ${CPACK_SOURCE_DIR}/Platform/Windows/PackagingPostBuild.cmake
+    )
+endif()
+
+set(CPACK_WIX_CANDLE_EXTRA_FLAGS
+    -dCPACK_EMBED_ARTIFACTS=${_embed_artifacts_value}
 )
