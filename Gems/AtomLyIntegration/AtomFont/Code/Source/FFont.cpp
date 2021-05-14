@@ -1675,11 +1675,11 @@ static void SetCommonContextFlags(AZ::TextDrawContext& ctx, const AzFramework::T
         }
 }
 
-AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::TextDrawParameters& params, const AZStd::string_view& string, bool forceCalculateSize)
+AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::TextDrawParameters& params, AZStd::string_view text, bool forceCalculateSize)
 {
     DrawParameters internalParams;
     if (params.m_drawViewportId == AzFramework::InvalidViewportId ||
-        string.empty())
+        text.empty())
     {
         return internalParams;
     }
@@ -1711,7 +1711,7 @@ AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::Te
         params.m_vAlign != AzFramework::TextVerticalAlignment::Top ||
         forceCalculateSize)
     {
-        Vec2 textSize = GetTextSizeUInternal(viewport, string.data(), params.m_multiline, internalParams.m_ctx);
+        Vec2 textSize = GetTextSizeUInternal(viewport, text.data(), params.m_multiline, internalParams.m_ctx);
         // If we're using virtual 800x600 coordinates, convert the text size from
         // pixels to that before using it as an offset.
         if (internalParams.m_ctx.m_sizeIn800x600)
@@ -1750,9 +1750,9 @@ AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::Te
 
 void AZ::FFont::DrawScreenAlignedText2d(
     const AzFramework::TextDrawParameters& params,
-    const AZStd::string_view& string)
+    AZStd::string_view text)
 {
-    DrawParameters internalParams = ExtractDrawParameters(params, string, false);
+    DrawParameters internalParams = ExtractDrawParameters(params, text, false);
     if (!internalParams.m_viewportContext)
     {
         return;
@@ -1764,7 +1764,7 @@ void AZ::FFont::DrawScreenAlignedText2d(
         internalParams.m_position.GetX(), 
         internalParams.m_position.GetY(), 
         params.m_position.GetZ(), // Z
-        string.data(),
+        text.data(),
         params.m_multiline,
         internalParams.m_ctx
     );
@@ -1772,9 +1772,9 @@ void AZ::FFont::DrawScreenAlignedText2d(
 
 void AZ::FFont::DrawScreenAlignedText3d(
     const AzFramework::TextDrawParameters& params,
-    const AZStd::string_view& string)
+    AZStd::string_view text)
 {
-    DrawParameters internalParams = ExtractDrawParameters(params, string, false);
+    DrawParameters internalParams = ExtractDrawParameters(params, text, false);
     if (!internalParams.m_viewportContext)
     {
         return;
@@ -1798,15 +1798,15 @@ void AZ::FFont::DrawScreenAlignedText3d(
         internalParams.m_position.GetX(), 
         internalParams.m_position.GetY(), 
         params.m_position.GetZ(), // Z
-        string.data(),
+        text.data(),
         params.m_multiline,
         internalParams.m_ctx
     );
 }
 
-AZ::Vector2 AZ::FFont::GetTextSize(const AzFramework::TextDrawParameters& params, const AZStd::string_view& string)
+AZ::Vector2 AZ::FFont::GetTextSize(const AzFramework::TextDrawParameters& params, AZStd::string_view text)
 {
-    DrawParameters sizeParams = ExtractDrawParameters(params, string, true);
+    DrawParameters sizeParams = ExtractDrawParameters(params, text, true);
     return sizeParams.m_size;
 }
 

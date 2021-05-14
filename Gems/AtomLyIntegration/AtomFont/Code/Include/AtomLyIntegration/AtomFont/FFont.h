@@ -207,15 +207,15 @@ namespace AZ
         // AzFramework::FontDrawInterface implementation
         void DrawScreenAlignedText2d(
             const AzFramework::TextDrawParameters& params,
-            const AZStd::string_view& string) override;
+            AZStd::string_view text) override;
 
         void DrawScreenAlignedText3d(
             const AzFramework::TextDrawParameters& params,
-            const AZStd::string_view& string) override;
+            AZStd::string_view text) override;
 
         AZ::Vector2 GetTextSize(
             const AzFramework::TextDrawParameters& params,
-            const AZStd::string_view& string) override;
+            AZStd::string_view text) override;
 
     public:
         FFont(AtomFont* atomFont, const char* fontName);
@@ -294,7 +294,7 @@ namespace AZ
             AZ::RPI::ViewportContextPtr m_viewportContext;
             const AZ::RHI::Viewport* m_viewport;
         };
-        DrawParameters ExtractDrawParameters(const AzFramework::TextDrawParameters& params, const AZStd::string_view& string, bool forceCalculateSize);
+        DrawParameters ExtractDrawParameters(const AzFramework::TextDrawParameters& params, AZStd::string_view text, bool forceCalculateSize);
 
     private:
         static constexpr uint32_t NumBuffers = 2;
