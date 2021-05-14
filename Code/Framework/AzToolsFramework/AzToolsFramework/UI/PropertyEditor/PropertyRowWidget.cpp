@@ -1780,7 +1780,7 @@ namespace AzToolsFramework
         return ypos - ystart;
     }
 
-    QPixmap PropertyRowWidget::createDragImage(const QColor backgroundColor, const QColor borderColor, const float alpha, bool includeVisibleChildren, QSize& size)
+    QPixmap PropertyRowWidget::createDragImage(const QColor backgroundColor, const QColor borderColor, const float alpha, DragImageType imageType)
     {
         // Make the drag box as wide as the containing editor minus a gap each side for the border.
         static int ParentEditorBorderSize = 2;
@@ -1788,7 +1788,7 @@ namespace AzToolsFramework
         int height = 0;
 
 
-        if (includeVisibleChildren)
+        if (imageType == DragImageType::IncludeVisibleChildren)
         {
             height = GetHeightOfRowAndVisibleChildren();
         }
@@ -1796,9 +1796,6 @@ namespace AzToolsFramework
         {
             height = rect().height();
         }
-
-        size.setWidth(width);
-        size.setHeight(height);
 
         const auto dpr = devicePixelRatioF();
         QPixmap dragImage(width * dpr, height * dpr);
@@ -1818,7 +1815,7 @@ namespace AzToolsFramework
 
         int marginWidth = (imageRect.width() - rect().width()) / 2 + ParentEditorBorderSize - 1;
 
-        if (includeVisibleChildren)
+        if (imageType == DragImageType::IncludeVisibleChildren)
         {
             DrawDragImageAndVisibleChildrenInto(dragPainter, marginWidth, 0);
         }

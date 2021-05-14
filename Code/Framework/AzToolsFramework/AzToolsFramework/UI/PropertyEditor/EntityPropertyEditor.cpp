@@ -191,7 +191,6 @@ namespace AzToolsFramework
             PropertyRowWidget* dropTarget = m_editor->GetReorderDropTarget();
             EntityPropertyEditor::DropArea dropArea = m_editor->GetReorderDropArea();
             QPixmap dragImage = m_editor->GetReorderRowWidgetImage();
-            QSize dragImageSize = m_editor->GetReorderRowWidgetImageSize();
             float indicatorAlpha = m_editor->GetMoveIndicatorAlpha();
 
             if (currentState == EntityPropertyEditor::ReorderState::DraggingRowWidget)
@@ -274,7 +273,9 @@ namespace AzToolsFramework
                 QRect globalRect = m_editor->GetWidgetAndVisibleChildrenGlobalRect(dragRowWidget);
                 
                 int top = mapFromGlobal(globalRect.topLeft()).y();
-                currRect = QRect(QPoint(LeftMargin + 1, top), QPoint(LeftMargin + 1 + dragImageSize.width(), top + dragImageSize.height()));
+                int imageHeight = dragImage.height() / dragImage.devicePixelRatioF();
+                int imageWidth = dragImage.width() / dragImage.devicePixelRatioF();
+                currRect = QRect(QPoint(LeftMargin + 1, top), QPoint(LeftMargin + 1 + imageWidth, top + imageHeight));
 
                 painter.setOpacity(alpha);
                 painter.drawPixmap(currRect, dragImage);
@@ -4941,8 +4942,7 @@ namespace AzToolsFramework
             mimeData->setData(kComponentEditorRowWidgetType, QByteArray());
 
             drag->setMimeData(mimeData);
-            QSize imageSize;
-            drag->setPixmap(m_reorderRowWidget->createDragImage(QColor("#8E863E"), QColor("#EAECAA"), 0.5f, false, imageSize));
+            drag->setPixmap(m_reorderRowWidget->createDragImage(QColor("#8E863E"), QColor("#EAECAA"), 0.5f, PropertyRowWidget::DragImageType::SingleRow));
             drag->setHotSpot(m_dragStartPosition - GetWidgetGlobalRect(m_reorderRowWidget).topLeft());
             drag->setDragCursor(m_dragIcon.pixmap(32), Qt::DropAction::MoveAction);
             //Ensure we can tidy up if the drop happens elsewhere.
@@ -5044,7 +5044,7 @@ namespace AzToolsFramework
     void EntityPropertyEditor::SetRowWidgetHighlighted(PropertyRowWidget* rowWidget)
     {
         m_reorderRowWidget = rowWidget;
-        m_reorderRowImage = rowWidget->createDragImage(QColor("#8E863E"), QColor("#EAECAA"), 0.5f, true, m_reorderRowImageSize);
+        m_reorderRowImage = rowWidget->createDragImage(QColor("#8E863E"), QColor("#EAECAA"), 0.5f, PropertyRowWidget::DragImageType::IncludeVisibleChildren);
     }
 
     void EntityPropertyEditor::EndRowWidgetReorder()
@@ -5619,11 +5619,6 @@ namespace AzToolsFramework
     QPixmap EntityPropertyEditor::GetReorderRowWidgetImage() const
     {
         return m_reorderRowImage;
-    }
-
-    QSize EntityPropertyEditor::GetReorderRowWidgetImageSize() const
-    {
-        return m_reorderRowImageSize;
     }
 
     float EntityPropertyEditor::GetMoveIndicatorAlpha() const

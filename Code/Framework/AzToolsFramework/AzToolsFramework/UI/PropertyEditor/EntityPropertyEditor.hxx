@@ -176,7 +176,6 @@ namespace AzToolsFramework
         PropertyRowWidget* GetReorderDropTarget() const;
         DropArea GetReorderDropArea() const;
         QPixmap GetReorderRowWidgetImage() const;
-        QSize GetReorderRowWidgetImageSize() const;
         float GetMoveIndicatorAlpha() const;
     Q_SIGNALS:
         void SelectedEntityNameChanged(const AZ::EntityId& entityId, const AZStd::string& name);
@@ -619,7 +618,6 @@ namespace AzToolsFramework
         PropertyRowWidget* m_reorderDropTarget = nullptr;
         DropArea m_reorderDropArea = DropArea::Above;
         QPixmap m_reorderRowImage;
-        QSize m_reorderRowImageSize;
         float m_moveFadeTimeRemaining;
         DropArea m_moveDirectionAfterFade;
 

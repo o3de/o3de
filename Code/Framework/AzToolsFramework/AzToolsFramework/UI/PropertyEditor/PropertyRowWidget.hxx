@@ -47,6 +47,13 @@ namespace AzToolsFramework
         Q_PROPERTY(bool appendDefaultLabelToName READ GetAppendDefaultLabelToName WRITE AppendDefaultLabelToName)
     public:
         AZ_CLASS_ALLOCATOR(PropertyRowWidget, AZ::SystemAllocator, 0)
+
+        enum class DragImageType
+        {
+            SingleRow,
+            IncludeVisibleChildren
+        };
+
         PropertyRowWidget(QWidget* pParent);
         virtual ~PropertyRowWidget();
 
@@ -156,7 +163,7 @@ namespace AzToolsFramework
         bool CanMoveDown() const;
 
         int GetParentWidgetWidth();
-        QPixmap createDragImage(const QColor backgroundColor, const QColor borderColor, const float alpha, bool includeVisibleChildren, QSize& size);
+        QPixmap createDragImage(const QColor backgroundColor, const QColor borderColor, const float alpha, DragImageType imageType);
 
     protected:
         int CalculateLabelWidth() const;
