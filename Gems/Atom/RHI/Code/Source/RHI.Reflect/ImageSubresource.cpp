@@ -302,8 +302,22 @@ namespace AZ
                 numBlocks = 4;
                 break;
 
+            case RHI::Format::EAC_R11_UNORM:
+            case RHI::Format::EAC_R11_SNORM:
+                isBlockCompressed = true;
+                bytesPerElement = 8;
+                numBlocks = 4;
+                break;
+
+            case RHI::Format::EAC_RG11_UNORM:
+            case RHI::Format::EAC_RG11_SNORM:
+                isBlockCompressed = true;
+                bytesPerElement = 16;
+                numBlocks = 4;
+                break;
+
             default:
-                AZ_Assert(false, "Unimplemented esoteric format.");
+                AZ_Assert(false, "Unimplemented esoteric format %i.", static_cast<int>(imageFormat));
             }
 
             if (isBlockCompressed)
