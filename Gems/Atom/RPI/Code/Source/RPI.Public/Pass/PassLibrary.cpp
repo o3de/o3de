@@ -381,7 +381,7 @@ namespace AZ
                         if (m_templateEntries[templateName].m_mappingAssetId != mappingAssetId)
                         {
                             AZ_Warning("PassLibrary", false, "Template [%s] was aleady added to the library. Duplicated template from [%s]",
-                                templateName.GetCStr(), mappingAssetId.ToString<AZStd::string>().c_str());
+                                templateName.GetCStr(), mappingAsset.ToString<AZStd::string>().c_str());
                         }
                     }
                 }

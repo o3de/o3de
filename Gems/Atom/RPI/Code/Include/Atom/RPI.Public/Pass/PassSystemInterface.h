@@ -64,7 +64,10 @@ namespace AZ
             //! initializing a scene;
             virtual void ProcessQueuedChanges() = 0;
             
-            //! Load pass templates listed in a name-assetid mapping asset 
+            //! Load pass templates listed in a name-assetid mapping asset
+            //! This function should be called before the render pipelines which use templates from this mappings are created.
+            //! To load pass template mapping before any render pipelines are created, use OnReadyLoadTemplatesEvent::Handler to
+            //! load desired pass template mappings
             virtual bool LoadPassTemplateMappings(const AZStd::string& templateMappingPath) = 0;
             
             //! Writes a pass template to a .pass file which can then be used as a pass asset. Useful for

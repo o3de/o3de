@@ -57,7 +57,7 @@ namespace AZ
                 // The list of passes created from this template
                 AZStd::vector<Pass*> m_passes;
 
-                // The mapping asset where this template is coming from.  
+                // The pass templates mapping asset id which this template is coming from.  
                 Data::AssetId m_mappingAssetId;
             };
 
