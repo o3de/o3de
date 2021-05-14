@@ -302,10 +302,10 @@ def post_startup():
 
     # Add communication server ------------------------------------------------------->>
     # Arguments: Target DCC App, Target Script, Target Script Function, Target File Path
-    from azpy.maya.utils import maya_server, maya_client
-    maya_server.start_server()
+    from azpy.maya.utils import server, client
+    server.start_server()
     if len(sys.argv) > 1:
-        maya_client.run_script(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+        client.run_script(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
 
     # TODO: manage custom shelf in a sub-module
 

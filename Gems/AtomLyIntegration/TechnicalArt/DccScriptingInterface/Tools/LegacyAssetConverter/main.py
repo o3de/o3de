@@ -45,6 +45,7 @@ from shutil import copyfile
 
 # azpy bootstrapping and extensions
 import azpy.config_utils
+import azpy.shared.service.start
 
 _config = azpy.config_utils.get_dccsi_config()
 print(_config)

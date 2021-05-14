@@ -18,9 +18,6 @@ import time
 import logging as _logging
 import json
 
-# -- External Python modules --
-import maya.cmds as mc
-mc.loadPlugin("fbxmaya")
 
 # --------------------------------------------------------------------------
 # -- Global Definitions --
@@ -35,13 +32,20 @@ _LOGGER.info('local_host: {}'.format(_LOCAL_HOST))
 # TODO - You could add this tool to the shelf and incorporate that as well
 
 
+try:
+    import maya.cmds as mc
+    mc.loadPlugin("fbxmaya")
+except ImportError:
+    pass
+
+
 def create_preview_files(target_files, database_values):
     """
     This function is run from the 'material_preview_builder' tool to build Maya preview files using fbx files, recorded
     materials and attached texture files from legacy .mtl file information
     :param target_files: List of fbx files to process
     :param database_values: Values extracted from legacy .mtl files that assist with material assignments
-    :return:
+    :return: None
     """
     _LOGGER.info('Database values passed: {}'.format(database_values))
     for file in target_files:
@@ -61,7 +65,7 @@ def process_single_file(action, target_file, data):
     :param action: Description of the task that needs to be performed
     :param target_file: Target file to perform actions to
     :param data: Information needed to perform the specified action
-    :return:
+    :return: None
     """
     if action == 'stingray_texture_assignment':
         mc.file(target_file, o=True, force=True)
@@ -71,7 +75,6 @@ def process_single_file(action, target_file, data):
             try:
                 if material in material_info.keys():
                     pass
-
             except Exception as e:
                 _LOGGER.info('Material conversion failed [{}]-- Error: {}'.format(material, e))
 
@@ -81,7 +84,7 @@ def refresh_stingray_attributes():
     THIS WORKAROUND STILL DOESN'T FIX THE PROBLEM- MIGHT NEED TO WAIT FOR AUTODESK TO FIX THIS
     Stingray materials do not initialize when creating a new Maya file. The only way currently to get around
     activating them manually is to put together less than desirable workarounds like this to initialize.
-    :return:
+    :return: Boolean - Success of refresh attempt
     """
     scene_geo = mc.ls(v=True, geometry=True)
 
@@ -109,8 +112,8 @@ def refresh_stingray_attributes():
 
 def get_materials_in_scene():
     """
-    Audits scene to gather all materials present in the Hypershade, and returns them in a list
-    :return:
+    Audits scene to gather all materials present in the Hypershade
+    :return: List
     """
     material_list = []
     for shading_engine in mc.ls(type='shadingEngine'):
@@ -123,7 +126,7 @@ def get_materials_in_scene():
 def get_material_assignments():
     """
     Gathers all materials in a scene and which mesh they are assigned to
-    :return: Returns dictionary of material keys and assigned mesh values
+    :return: Dictionary - material keys and assigned mesh values
     """
     assignments = {}
     scene_geo = mc.ls(v=True, geometry=True)
@@ -136,10 +139,28 @@ def get_material_assignments():
     return assignments
 
 
+def get_material_textures(material_name):
+    """
+    Gets the texture file list for specified material_name in Maya scene
+    :param material_name: The target material from which to gather assigned texture files
+    :return: Dictionary
+    """
+    material_textures = {}
+    file_nodes = mc.listConnections(material_name, type='file', c=False)
+    for node in file_nodes:
+        try:
+            plug = mc.listConnections(node, plugs=1, source=1)[0]
+            texture_name = mc.getAttr("{}.fileTextureName".format(node))
+            material_textures[plug] = texture_name
+        except Exception:
+            pass
+    return material_textures
+
+
 def get_scene_material_information():
     """
     Gathers several points of information about materials in current Maya scene
-    :return:
+    :return: Dictionary - Material Info: Material Name, Shading Group, Material Type, Textures, Assignments
     """
     material_information = {}
     scene_materials = get_materials_in_scene()
@@ -159,9 +180,8 @@ def get_shading_group(material_name):
     """
     Convenience function for obtaining the shader that the specified material (as an argument)
     is attached to.
-
     :param material_name: Takes the material name as an argument to get associated shader object
-    :return: Shading group of assigned material_name
+    :return: Shading group
     """
     return mc.listConnections(material_name, type='shadingEngine')[0]
 
@@ -169,44 +189,39 @@ def get_shading_group(material_name):
 def get_mesh_materials(target_mesh):
     """
     Gathers a list of all materials attached to each mesh's shader
-
     :param target_mesh: The target mesh to pull attached material information from.
-    :return: List of unique material values attached to the mesh passed as an argument.
+    :return: List - unique material values attached to the mesh passed as an argument.
     """
     shading_group = mc.listConnections(target_mesh, type='shadingEngine')
     materials = mc.ls(mc.listConnections(shading_group), materials=1)
     return list(set(materials))
 
 
-def get_material_textures(material_name):
-    """
-    Gets the texture file list for specified material_name in Maya scene
-    :param material_name: The target material from which to gather assigned texture files
-    :return:
-    """
-    material_textures = {}
-    file_nodes = mc.listConnections(material_name, type='file', c=False)
-    for node in file_nodes:
-        try:
-            plug = mc.listConnections(node, plugs=1, source=1)[0]
-            texture_name = mc.getAttr("{}.fileTextureName".format(node))
-            material_textures[plug] = texture_name
-        except Exception:
-            pass
-    return material_textures
-
-
 def get_maya_file_path(fbx_file_path):
+    """
+    Convenience function for creating a maya file path based on an existing FBX path.
+    :param fbx_file_path: Path to the existing FBX file
+    :return: File path
+    """
     return os.path.splitext(fbx_file_path)[0] + '.ma'
 
 
 def set_scene_attributes():
+    """
+    Preps Maya scene for Stingray Materials preview
+    :return:
+    """
     set_camera_attributes()
     mc.currentUnit(linear='meter')
     mc.grid(reset=True)
 
 
 def set_camera_attributes():
+    """
+    Corrects Near/Far Clip planes so visual display of objects aren't clipped if user
+    scene units were set to Maya default of centimeters
+    :return: None
+    """
     camera_list = mc.ls(type='camera')
     attributes = {'nearClipPlane': 0.01, 'farClipPlane': 1000000}
     for c in camera_list:
@@ -217,23 +232,16 @@ def set_camera_attributes():
 def set_stingray_materials(material_list):
     for material_name, material_values in material_list.items():
         if 'textures' in material_values.keys():
-            _LOGGER.info('+++++++++++++++++++++++++++++')
-            _LOGGER.info('Converting material: {}'.format(material_name))
+
             sha, sg = get_material(material_name)
             material_textures = material_values['textures']
-            _LOGGER.info('Material Textures: {}'.format(material_textures))
             material_assignments = material_values['assigned']
-            _LOGGER.info('Material Assignments: {}'.format(material_assignments))
             material_modifications = material_values['modifications']
 
-            registered = False
-            counter = 0
-            while not registered:
-                registered = refresh_stingray_attributes()
-                _LOGGER.info('Registered: {}'.format(registered))
-                counter += 1
-                if counter == 10:
-                    registered = True
+            _LOGGER.info('+++++++++++++++++++++++++++++')
+            _LOGGER.info('Converting material: {}'.format(material_name))
+            _LOGGER.info('Material Textures: {}'.format(material_textures))
+            _LOGGER.info('Material Assignments: {}'.format(material_assignments))
 
             try:
                 set_material(material_name, sg, material_assignments)
@@ -244,11 +252,21 @@ def set_stingray_materials(material_list):
                 _LOGGER.info('Material Assignment failed: {}'.format(e))
 
 
+def enable_stingray_textures(material_name):
+    mc.setAttr('{}.use_color_map'.format(material_name), 1)
+    mc.setAttr('{}.use_normal_map'.format(material_name), 1)
+    mc.setAttr('{}.use_metallic_map'.format(material_name), 1)
+    mc.setAttr('{}.use_roughness_map'.format(material_name), 1)
+    mc.setAttr('{}.use_emissive_map'.format(material_name), 1)
+
+
 def get_material(material_name):
     """
-    Gets material assignments and swaps legacy formatted materials with Stingray PBS materials
+    Gets material assignments and swaps legacy formatted materials with Stingray PBS materials. This will delete
+    non-Stingray materials and replace with Stingray. Currently Stingray material attributes can only be queried
+    and/or altered if user manually initiates them in an open Maya system first. Bug has been filed with Autodesk
     :param material_name: Target material name
-    :return:
+    :return: Material, Shading Group
     """
     _LOGGER.info('Shaders in scene: {}'.format(get_materials_in_scene()))
     sha = None
@@ -262,11 +280,7 @@ def get_material(material_name):
         sha = mc.shadingNode('StingrayPBS', asShader=True, name=material_name)
         sg = mc.sets(renderable=True, noSurfaceShader=True, empty=True)
         mc.connectAttr(sha + '.outColor', sg + '.surfaceShader', force=True)
-        mc.setAttr('{}.use_color_map'.format(material_name), 1)
-        mc.setAttr('{}.use_normal_map'.format(material_name), 1)
-        mc.setAttr('{}.use_metallic_map'.format(material_name), 1)
-        mc.setAttr('{}.use_roughness_map'.format(material_name), 1)
-        mc.setAttr('{}.use_emissive_map'.format(material_name), 1)
+        enable_stingray_textures(material_name)
     except Exception as e:
         _LOGGER.info('Shader creation failed: {}'.format(e))
     return sha, sg
@@ -312,16 +326,17 @@ def set_textures(material_name, texture_list):
     _LOGGER.info('Material--> {}'.format(material_name))
     for texture_type, texture_path in texture_list.items():
         try:
-            _LOGGER.info('Texture type: {}   Texture path: {}'.format(texture_type, texture_path))
             file_count = len(mc.ls(type='file')) + 1
             texture_file = 'file{}'.format(file_count)
             mc.shadingNode('file', asTexture=True, name=texture_file)
             mc.setAttr('{}.fileTextureName'.format(texture_file), texture_path, type="string")
-            _LOGGER.info('TexturePath: {}'.format(texture_path))
-            _LOGGER.info('Attributes: {}'.format(mc.listAttr(material_name)))
             mc.setAttr('{}.use_{}_map'.format(material_name, shader_translation_keys[texture_type]), 1)
             mc.connectAttr('{}.outColor'.format(texture_file),
                            '{}.TEX_{}_map'.format(material_name, shader_translation_keys[texture_type]), force=True)
+
+            _LOGGER.info('Texture type: {}   Texture path: {}'.format(texture_type, texture_path))
+            _LOGGER.info('TexturePath: {}'.format(texture_path))
+            _LOGGER.info('Attributes: {}'.format(mc.listAttr(material_name)))
+
         except Exception as e:
             _LOGGER.info('Conversion failed: {}'.format(e))
-

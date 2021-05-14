@@ -219,123 +219,13 @@ class CreateMayaFiles(QtCore.QObject):
             _LOGGER.info('Shader creation failed: {}'.format(e))
         return sha, sg
 
-    def get_scene_shader_info(self):
-        """
-        Audits scene to gather all materials present in scene geometry (that is to be converted)
-        :return:
-        """
-        self.scene_shader_info = {}
-        scene_geo = mc.ls(v=True, geometry=True)
-        for target_mesh in scene_geo:
-            try:
-                shading_groups = list(set(mc.listConnections(target_mesh, type='shadingEngine')))
-                for sg in shading_groups:
-                    if sg not in self.scene_shader_info.keys():
-                        self.scene_shader_info[sg] = list(set(mc.ls(mc.listConnections(sg), materials=True)))
-            except Exception:
-                pass
 
-    def get_materials_in_scene(self):
-        """
-        Audits scene to gather all materials present in the Hypershade, and returns them in a list
-        :return:
-        """
-        material_list = []
-        for shading_engine in mc.ls(type='shadingEngine'):
-            if mc.sets(shading_engine, q=True):
-                for material in mc.ls(mc.listConnections(shading_engine), materials=True):
-                    material_list.append(material)
-        return material_list
 
-    def set_material(self, sha, sg, assignment_list):
-        """
-        Assigns specified material to specified mesh
-        :param sha: Material name
-        :param sg: Shading Group
-        :param assignment_list: List of geometry to assign shader to
-        :return:
-        """
-        assignment_list = list(set([x.replace('.', '|') for x in assignment_list]))
-        _LOGGER.info('\n_\nSET MATERIAL: {} {{{{{{{{{{{{{{{{{{{{{{'.format(sha))
-        _LOGGER.info('Assignment list--> {}'.format(assignment_list))
-        for item in assignment_list:
-            try:
-                mc.sets(item, e=True, forceElement=sg)
-            except Exception as e:
-                _LOGGER.info('Material assignment failed: {}'.format(e))
 
-    def set_texture_maps(self, material_name, texture_list):
-        """
-        Plugs texture files into texture slots in the shader for specified material name. Currently due to the
-        aforementioned bug this functionality does not work as intended, but it remains for when Autodesk supplies a fix
-        :param material_name:
-        :param texture_list:
-        :return:
-        """
-        shader_translation_keys = {
-            'BaseColor': 'color',
-            'Roughness': 'roughness',
-            'Metallic': 'metallic',
-            'Emissive': 'emissive',
-            'Normal': 'normal'
-        }
 
-        _LOGGER.info('\n_\nSET_TEXTURE_MAPS {{{{{{{{{{{{{{{{{{{{{{')
-        _LOGGER.info('Material--> {}'.format(material_name))
-        for texture_type, texture_path in texture_list.items():
-            try:
-                _LOGGER.info('Texture type: {}   Texture path: {}'.format(texture_type, texture_path))
-                file_count = len(mc.ls(type='file')) + 1
-                texture_file = 'file{}'.format(file_count)
-                mc.shadingNode('file', asTexture=True, name=texture_file)
-                mc.setAttr('{}.fileTextureName'.format(texture_file), texture_path, type="string")
-                _LOGGER.info('TexturePath: {}'.format(texture_path))
-                _LOGGER.info('Attributes: {}'.format(mc.listAttr(material_name)))
-                mc.setAttr('{}.use_{}_map'.format(material_name, shader_translation_keys[texture_type]), 1)
-                mc.connectAttr('{}.outColor'.format(texture_file),
-                               '{}.TEX_{}_map'.format(material_name, shader_translation_keys[texture_type]), force=True)
-            except Exception as e:
-                _LOGGER.info('Conversion failed: {}'.format(e))
 
     # Revise to make generic and put in Maya utility class --------------------------------------------------------
-    # def get_textures_by_connections(self, material_name):
-    #     _LOGGER.info(':::::: Get textures by connections ::::::')
-    #     material_files = [x for x in mc.listConnections(material_name, plugs=1, source=1) if x.startswith('file')]
-    #     searched_values = []
-    #     for material_file in material_files:
-    #         try:
-    #             texture_path = mc.getAttr('{}.fileTextureName'.format(material_file.split('.')[0]))
-    #             texture_path_list = texture_path.split('/')
-    #             if 'ShaderFX' not in texture_path_list:
-    #                 if texture_path:
-    #                     search_string = self.get_base_texture_name(texture_path)
-    #                     if search_string not in searched_values:
-    #                         _LOGGER.info('TexturePath: {}'.format(texture_path))
-    #                         searched_values.append(search_string)
-    #                         search_results_list = self.get_texture_set(search_string, material_name)
-    #                         if search_results_list:
-    #                             self.material_list[material_name] = search_results_list
-    #
-    #         except mc.MayaAttributeError:
-    #             pass
 
-    # def get_texture_set(self, search_string, material_name):
-    #     target_key = self.base_directory.split('\\')[-1]
-    #     for key, values in self.materials_db.items():
-    #         if values['directoryname'] == target_key:
-    #             for texture_key, texture_set in values['textures'].items():
-    #                 for k, v in texture_set.items():
-    #                     texture_base = self.get_base_texture_name(v).lower()
-    #                     if texture_base.find('_') != -1:
-    #                         texture_base = '_'.join(texture_base.split('_')[:-1])
-    #                     if texture_base == search_string:
-    #                         _LOGGER.info('MatchFound:::::::::::::::')
-    #                         _LOGGER.info('Finding modifications... MaterialName: {}'.format(material_name))
-    #                         if material_name in self.textures_modifications.keys():
-    #                             texture_set['modifications'] = self.textures_modifications[material_name]
-    #                             _LOGGER.info('Texture modifications found: {}'.format(self.textures_modifications[material_name]))
-    #                         return texture_set
-    #     return None
 
     # def get_base_texture_name(self, texture_path):
     #     path_base = os.path.basename(texture_path)

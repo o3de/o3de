@@ -13,13 +13,14 @@
 # -- This line is 75 characters -------------------------------------------
 from azpy.shared.server_base import ServerBase
 # -- Standard Python modules --
-import sys
-import os
+import logging as _logging
+import importlib
 import socket
 import time
-import logging as _logging
 import json
-import importlib
+import sys
+import os
+
 
 # -- External Python modules --
 from PySide2 import QtWidgets

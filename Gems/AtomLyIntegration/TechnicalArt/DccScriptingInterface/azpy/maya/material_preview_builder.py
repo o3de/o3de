@@ -31,7 +31,7 @@ from shiboken2 import wrapInstance
 #  built-ins
 import os
 
-from azpy.maya import maya_materials
+from azpy.maya import materials
 
 mayaMainWindowPtr = omui.MQtUtil.mainWindow()
 mayaMainWindow = wrapInstance(long(mayaMainWindowPtr), QtWidgets.QWidget)
@@ -232,17 +232,12 @@ class PreviewBuilder(QtWidgets.QWidget):
 
     def radio_clicked(self):
         signal_sender = self.sender()
-        if signal_sender.text() == 'Single File':
-            self.processing_mode = 'single_file'
-        elif signal_sender.text() == 'Directory':
-            self.processing_mode = 'directory'
-        else:
-            self.processing_mode = 'directory_and_subdirectories'
+        self.processing_mode = '_'.join(signal_sender.lower().split(' '))
 
     def create_files_clicked(self):
         validation = self.validate_path()
         if 'success' in validation.keys():
-            maya_materials.create_preview_files(validation['target_list'], self.database_values)
+            materials.create_preview_files(validation['target_list'], self.database_values)
         else:
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Warning)

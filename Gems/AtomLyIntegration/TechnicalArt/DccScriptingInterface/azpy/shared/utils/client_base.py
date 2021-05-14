@@ -65,7 +65,6 @@ class ClientBase(object):
 
     def recv(self):
         total_data = []
-        data = ''
         reply_length = 0
         bytes_remaining = ClientBase.HEADER_SIZE
 
@@ -73,7 +72,7 @@ class ClientBase(object):
         while time.time() - start_time < self.timeout:
             try:
                 data = self.client_socket.recv(bytes_remaining)
-            except:
+            except Exception:
                 time.sleep(0.01)
                 continue
 

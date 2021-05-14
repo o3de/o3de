@@ -68,7 +68,7 @@ def walk_directories(target_path):
                 for subdirectory in subdirectories:
                     target_path = subdirectory.name
                     if not [x for x in subdirectory.iterdir() if x.suffix.lower() == '.fbx'] and target_path \
-                        not in (exclusion_list +[base_directory_name]):
+                        not in (exclusion_list + [base_directory_name]):
                         files_dictionary.update(scan_directory(root / subdirectory))
                 temp_dictionary['files'] = files_dictionary
             directory_audit[directory_index] = temp_dictionary
@@ -106,6 +106,23 @@ def get_base_directory(target_path):
         scan_type = 'file'
         base_directory = Path(target_path.parent)
     return scan_type, base_directory
+
+
+# TODO -
+def get_base_texture_name(texture_path):
+    path_base = os.path.basename(texture_path)
+    base_texture_name = os.path.splitext(path_base)[0]
+    if path_base.find('_') != -1:
+        base = path_base.split('_')[-1]
+        suffix = base.split('.')[0]
+        naming_key_found = None
+        for key, values in self.texture_naming_dict.items():
+            for v in values:
+                if suffix == v:
+                    base_list = path_base.split('_')[:-1]
+                    base_texture_name = '_'.join(base_list)
+                    return base_texture_name
+    return base_texture_name
 
 
 def get_material_info(target_directory, filename):
