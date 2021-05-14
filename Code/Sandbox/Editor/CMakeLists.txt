@@ -112,14 +112,12 @@ ly_add_target(
             3rdParty::zlib
             3rdParty::AWSNativeSDK::STS
             Legacy::CryCommon
-            Legacy::CryCommon.EngineSettings.Static
             Legacy::EditorCommon
             AZ::AzCore
             AZ::AzToolsFramework
             Gem::LmbrCentral.Static
             Legacy::NewsShared
             AZ::AWSNativeSDKInit
-            Legacy::CryCommonTools
             AZ::AtomCore
             Gem::Atom_RPI.Edit
             Gem::Atom_RPI.Public
@@ -245,7 +243,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzToolsFramework
                 Legacy::EditorLib
                 Gem::LmbrCentral
-                Legacy::CryCommonTools
     )
     ly_add_googletest(
         NAME Legacy::EditorLib.Tests

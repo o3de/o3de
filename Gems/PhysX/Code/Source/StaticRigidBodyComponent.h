@@ -65,7 +65,6 @@ namespace PhysX
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
         AzPhysics::SimulatedBodyHandle m_staticRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
-        PhysX::StaticRigidBody* m_staticRigidBody = nullptr;
         AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
     };
 } // namespace PhysX

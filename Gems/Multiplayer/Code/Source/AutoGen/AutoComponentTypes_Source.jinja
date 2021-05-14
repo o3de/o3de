@@ -1,6 +1,6 @@
 #include <AzCore/Component/Component.h>
-#include <Source/Components/MultiplayerComponentRegistry.h>
-#include <Include/INetworkEntityManager.h>
+#include <Multiplayer/MultiplayerComponentRegistry.h>
+#include <Multiplayer/INetworkEntityManager.h>
 {% for Component in dataFiles %}
 {% set ComponentDerived = Component.attrib['OverrideComponent']|booleanTrue %}
 {% set ControllerDerived = Component.attrib['OverrideController']|booleanTrue %}
@@ -21,8 +21,8 @@ namespace {{ Namespace }}
 {
     void RegisterMultiplayerComponents()
     {
-        Multiplayer::MultiplayerComponentRegistry* multiplayerComponentRegistry = GetMultiplayerComponentRegistry();
-        Multiplayer::MultiplayerStats& stats = AZ::Interface<Multiplayer::IMultiplayer>::Get()->GetStats();
+        Multiplayer::MultiplayerComponentRegistry* multiplayerComponentRegistry = Multiplayer::GetMultiplayerComponentRegistry();
+        Multiplayer::MultiplayerStats& stats = Multiplayer::GetMultiplayer()->GetStats();
 {% for Component in dataFiles %}
 {%      set ComponentName = Component.attrib['Name'] %}
 {%      set ComponentBaseName = ComponentName %}

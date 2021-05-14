@@ -18,7 +18,5 @@ set(FILES
     Tests/Test_Localization.cpp
     Tests/test_Main.cpp
     Tests/test_MaterialUtils.cpp
-    UnitTests/CryMathTests.cpp
-    UnitTests/CryPakUnitTests.cpp
     DllMain.cpp
 )

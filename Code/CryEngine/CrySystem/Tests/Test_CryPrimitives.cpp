@@ -12,7 +12,6 @@
 #include "CrySystem_precompiled.h"
 #include <AzTest/AzTest.h>
 #include <AzCore/Memory/AllocatorScope.h>
-#include <CryCommon/stl/STLAlignedAlloc.h>
 
 TEST(StringTests, CUT_Strings)
 {
@@ -422,21 +421,6 @@ TEST_F(CryPrimitives, CUT_FixedString)
     // we expect here that the string gets cut since it doesn't fit into the string buffer
     str5.FormatFast("%s", "012345");
     EXPECT_EQ("0123", str5);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Unit Testing of aligned_vector
-//////////////////////////////////////////////////////////////////////////
-TEST_F(CryPrimitives, CUT_AlignedVector)
-{
-    stl::aligned_vector<int, 16> vec;
-
-    vec.push_back(1);
-    vec.push_back(2);
-    vec.push_back(3);
-
-    EXPECT_TRUE(vec.size() == 3);
-    EXPECT_TRUE(((INT_PTR)(&vec[0]) % 16) == 0);
 }
 
 TEST_F(CryPrimitives, CUT_DynArray)
