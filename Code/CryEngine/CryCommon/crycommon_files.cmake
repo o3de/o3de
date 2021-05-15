@@ -34,7 +34,6 @@ set(FILES
     LocalizationManagerBus.h
     LocalizationManagerBus.inl
     ILog.h
-    ILZ4Decompressor.h
     IMaterial.h
     IMeshBaking.h
     IMiniLog.h
@@ -56,7 +55,6 @@ set(FILES
     IStereoRenderer.h
     ISurfaceType.h
     ISystem.h
-    ITextModeConsole.h
     ITexture.h
     ITimer.h
     IValidator.h
@@ -64,9 +62,6 @@ set(FILES
     IViewSystem.h
     IWindowMessageHandler.h
     IXml.h
-    IZLibCompressor.h
-    IZlibDecompressor.h
-    IZStdDecompressor.h
     IProximityTriggerSystem.h
     MicrophoneBus.h
     physinterface.h
