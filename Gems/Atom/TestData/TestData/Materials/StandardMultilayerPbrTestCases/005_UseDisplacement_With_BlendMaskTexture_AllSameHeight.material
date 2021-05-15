@@ -4,9 +4,6 @@
     "parentMaterial": "TestData/Materials/StandardMultilayerPbrTestCases/005_UseDisplacement_With_BlendMaskTexture.material",
     "propertyLayoutVersion": 3,
     "properties": {
-        "blend": {
-            "displacementBlendDistance": 0.0
-        },
         "layer1_parallax": {
             "offset": -0.00800000037997961,
             "textureMap": ""
