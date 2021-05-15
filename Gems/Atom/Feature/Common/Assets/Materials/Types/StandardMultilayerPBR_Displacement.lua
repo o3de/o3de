@@ -35,23 +35,6 @@ function GetMaterialPropertyDependencies()
     }
 end
 
-function GetMergedHeightRange(heightMinMax, offset, factor)
-    top = offset
-    bottom = offset - factor
-
-    if(heightMinMax[1] == nil) then
-        heightMinMax[1] = top
-    else
-        heightMinMax[1] = math.max(heightMinMax[1], top)
-    end
-    
-    if(heightMinMax[0] == nil) then
-        heightMinMax[0] = bottom
-    else
-        heightMinMax[0] = math.min(heightMinMax[0], bottom)
-    end
-end
-
 -- These values must align with LayerBlendSource in StandardMultilayerPBR_Common.azsli.
 LayerBlendSource_BlendMaskTexture = 0
 LayerBlendSource_BlendMaskVertexColors = 1
@@ -67,9 +50,31 @@ function BlendSourceUsesDisplacement(context)
     return blendSourceIncludesDisplacement
 end
 
-function Process(context)
-    local enableParallax = context:GetMaterialPropertyValue_bool("parallax.enable")
+-- Calculates the min and max displacement height values encompassing all enabled layers.
+-- @return a table with two values {min,max}. Negative values are below the surface and positive values are above the surface.
+function CalcOverallHeightRange(context)
     
+    local heightMinMax = {nil, nil}
+
+    local function GetMergedHeightRange(heightMinMax, offset, factor)
+        top = offset
+        bottom = offset - factor
+
+        if(heightMinMax[1] == nil) then
+            heightMinMax[1] = top
+        else
+            heightMinMax[1] = math.max(heightMinMax[1], top)
+        end
+    
+        if(heightMinMax[0] == nil) then
+            heightMinMax[0] = bottom
+        else
+            heightMinMax[0] = math.min(heightMinMax[0], bottom)
+        end
+    end
+    
+    local enableParallax = context:GetMaterialPropertyValue_bool("parallax.enable")
+
     if(enableParallax or BlendSourceUsesDisplacement(context)) then
         local hasTextureLayer1 = nil ~= context:GetMaterialPropertyValue_Image("layer1_parallax.textureMap")
         local hasTextureLayer2 = nil ~= context:GetMaterialPropertyValue_Image("layer2_parallax.textureMap")
@@ -94,19 +99,21 @@ function Process(context)
         local enableLayer2 = context:GetMaterialPropertyValue_bool("blend.enableLayer2")
         local enableLayer3 = context:GetMaterialPropertyValue_bool("blend.enableLayer3")
 
-        local heightMinMax = {nil, nil}
-
         GetMergedHeightRange(heightMinMax, offsetLayer1, factorLayer1)
-
         if(enableLayer2) then GetMergedHeightRange(heightMinMax, offsetLayer2, factorLayer2) end
         if(enableLayer3) then GetMergedHeightRange(heightMinMax, offsetLayer3, factorLayer3) end
 
-        context:SetShaderConstant_float("m_displacementMin", heightMinMax[0])
-        context:SetShaderConstant_float("m_displacementMax", heightMinMax[1])
     else
-        context:SetShaderConstant_float("m_displacementMin", 0)
-        context:SetShaderConstant_float("m_displacementMax", 0)
+        heightMinMax = {0,0}
     end
+
+    return heightMinMax
+end
+
+function Process(context)
+    local heightMinMax = CalcOverallHeightRange(context)
+    context:SetShaderConstant_float("m_displacementMin", heightMinMax[0])
+    context:SetShaderConstant_float("m_displacementMax", heightMinMax[1])
 end
 
 function ProcessEditor(context)
@@ -128,6 +135,13 @@ function ProcessEditor(context)
     else
         context:SetMaterialPropertyVisibility("blend.displacementBlendDistance", MaterialPropertyVisibility_Hidden)
     end
-
+    
+    -- We set the displacementBlendDistance slider range to match the range of displacement, so the slider will feel good
+    -- regardless of how big the overall displacement is. Using a soft max allows the user to exceed the limit if desired,
+    -- but the main reason for the *soft* max is to avoid impacting the value of displacementBlendDistance which could 
+    -- otherwise lead to edge cases.
+    local heightMinMax = CalcOverallHeightRange(context)
+    local totalDisplacementRange = heightMinMax[1] - heightMinMax[0]
+    context:SetMaterialPropertySoftMaxValue_float("blend.displacementBlendDistance", totalDisplacementRange)
 end
 
