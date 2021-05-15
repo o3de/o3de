@@ -413,6 +413,7 @@ namespace {{ Component.attrib['Namespace'] }}
 
         static void Reflect(AZ::ReflectContext* context);
         static void ReflectToEditContext(AZ::ReflectContext* context);
+        static void ReflectToBehaviorContext(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);

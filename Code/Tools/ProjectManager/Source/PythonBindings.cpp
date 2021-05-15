@@ -12,12 +12,11 @@
 
 #include <PythonBindings.h>
 
+
 // Qt defines slots, which interferes with the use here.
 #pragma push_macro("slots")
 #undef slots
-#include <Python.h>
 #include <pybind11/functional.h>
-#include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
 #include <pybind11/eval.h>
 #pragma pop_macro("slots")
@@ -50,6 +49,9 @@ namespace Platform
     AZStd::string GetPythonHomePath(const char* pythonPackage, const char* engineRoot);
 
 } // namespace Platform
+
+#define Py_To_String(obj) obj.cast<std::string>().c_str()
+#define Py_To_String_Optional(dict, key, default_string) dict.contains(key) ? Py_To_String(dict[key]) : default_string
 
 namespace O3DE::ProjectManager 
 {
@@ -109,10 +111,13 @@ namespace O3DE::ProjectManager
             result = PyRun_SimpleString(AZStd::string::format("sys.path.append('%s')", m_enginePath.c_str()).c_str());
             AZ_Warning("ProjectManagerWindow", result != -1, "Append to sys path failed");
 
+            // import required modules
+            m_registration = pybind11::module::import("cmake.Tools.registration");
+
             return result == 0 && !PyErr_Occurred();
         } catch ([[maybe_unused]] const std::exception& e)
         {
-            AZ_Warning("python", false, "Py_Initialize() failed with %s", e.what());
+            AZ_Warning("ProjectManagerWindow", false, "Py_Initialize() failed with %s", e.what());
             return false;
         }
     }
@@ -125,31 +130,256 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            AZ_Warning("python", false, "Did not finalize since Py_IsInitialized() was false");
+            AZ_Warning("ProjectManagerWindow", false, "Did not finalize since Py_IsInitialized() was false");
         }
         return !PyErr_Occurred();
     }
 
-    void PythonBindings::ExecuteWithLock(AZStd::function<void()> executionCallback)
+    bool PythonBindings::ExecuteWithLock(AZStd::function<void()> executionCallback)
     {
         AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
         pybind11::gil_scoped_release release;
         pybind11::gil_scoped_acquire acquire;
-        executionCallback();
+
+        try
+        {
+            executionCallback();
+            return true;
+        }
+        catch ([[maybe_unused]] const std::exception& e)
+        {
+            AZ_Warning("PythonBindings", false, "Python exception %s", e.what());
+            return false;
+        }
     }
 
-    ProjectInfo PythonBindings::GetCurrentProject()
+    AZ::Outcome<EngineInfo> PythonBindings::GetEngineInfo()  
     {
-        ProjectInfo project;
+        return AZ::Failure();
+    }
 
-        ExecuteWithLock([&] {
-            auto currentProjectTool = pybind11::module::import("cmake.Tools.current_project");
-            auto getCurrentProject = currentProjectTool.attr("get_current_project");
-            auto currentProject = getCurrentProject(m_enginePath.c_str());
+    bool PythonBindings::SetEngineInfo([[maybe_unused]] const EngineInfo& engineInfo)  
+    {
+        return false;
+    }
 
-            project.m_path = currentProject.cast<std::string>().c_str();
+    AZ::Outcome<GemInfo> PythonBindings::GetGem(const QString& path)  
+    {
+        GemInfo gemInfo = GemInfoFromPath(pybind11::str(path.toStdString()));
+        if (gemInfo.IsValid())
+        {
+            return AZ::Success(AZStd::move(gemInfo)); 
+        }
+        else
+        {
+            return AZ::Failure();
+        }
+    }
+
+    AZ::Outcome<QVector<GemInfo>> PythonBindings::GetGems()  
+    {
+        QVector<GemInfo> gems;
+
+        bool result = ExecuteWithLock([&] {
+            // external gems 
+            for (auto path : m_registration.attr("get_gems")())
+            {
+                gems.push_back(GemInfoFromPath(path));
+            }
+
+            // gems from the engine 
+            for (auto path : m_registration.attr("get_engine_gems")())
+            {
+                gems.push_back(GemInfoFromPath(path));
+            }
         });
 
-        return project; 
+        if (!result)
+        {
+            return AZ::Failure();
+        }
+        else
+        {
+            return AZ::Success(AZStd::move(gems)); 
+        }
+    }
+
+    AZ::Outcome<ProjectInfo> PythonBindings::CreateProject([[maybe_unused]] const ProjectTemplateInfo& projectTemplate,[[maybe_unused]]  const ProjectInfo& projectInfo)  
+    {
+        return AZ::Failure();
+    }
+
+    AZ::Outcome<ProjectInfo> PythonBindings::GetProject(const QString& path)  
+    {
+        ProjectInfo projectInfo = ProjectInfoFromPath(pybind11::str(path.toStdString()));
+        if (projectInfo.IsValid())
+        {
+            return AZ::Success(AZStd::move(projectInfo)); 
+        }
+        else
+        {
+            return AZ::Failure();
+        }
+    }
+
+    GemInfo PythonBindings::GemInfoFromPath(pybind11::handle path)
+    {
+        GemInfo gemInfo;
+        gemInfo.m_path = Py_To_String(path); 
+
+        auto data = m_registration.attr("get_gem_data")(pybind11::none(), path);
+        if (pybind11::isinstance<pybind11::dict>(data))
+        {
+            try
+            {
+                // required
+                gemInfo.m_name        = Py_To_String(data["Name"]); 
+                gemInfo.m_uuid        = AZ::Uuid(Py_To_String(data["Uuid"])); 
+
+                // optional
+                gemInfo.m_displayName = Py_To_String_Optional(data, "DisplayName", gemInfo.m_name); 
+                gemInfo.m_summary     = Py_To_String_Optional(data, "Summary", ""); 
+                gemInfo.m_version     = Py_To_String_Optional(data, "Version", ""); 
+
+                if (data.contains("Dependencies"))
+                {
+                    for (auto dependency : data["Dependencies"])
+                    {
+                        gemInfo.m_dependingGemUuids.push_back(AZ::Uuid(Py_To_String(dependency["Uuid"])));
+                    }
+                }
+                if (data.contains("Tags"))
+                {
+                    for (auto tag : data["Tags"])
+                    {
+                        gemInfo.m_features.push_back(Py_To_String(tag));
+                    }
+                }
+            }
+            catch ([[maybe_unused]] const std::exception& e)
+            {
+                AZ_Warning("PythonBindings", false, "Failed to get GemInfo for gem %s", Py_To_String(path));
+            }
+        }
+
+        return gemInfo;
+    }
+
+    ProjectInfo PythonBindings::ProjectInfoFromPath(pybind11::handle path)
+    {
+        ProjectInfo projectInfo;
+        projectInfo.m_path = Py_To_String(path); 
+
+        auto projectData = m_registration.attr("get_project_data")(pybind11::none(), path);
+        if (pybind11::isinstance<pybind11::dict>(projectData))
+        {
+            try
+            {
+                // required fields
+                projectInfo.m_productName = Py_To_String(projectData["product_name"]); 
+                projectInfo.m_projectName = Py_To_String(projectData["project_name"]); 
+                projectInfo.m_projectId   = AZ::Uuid(Py_To_String(projectData["project_id"])); 
+            }
+            catch ([[maybe_unused]] const std::exception& e)
+            {
+                AZ_Warning("PythonBindings", false, "Failed to get ProjectInfo for project %s", Py_To_String(path));
+            }
+        }
+
+        return projectInfo;
+    }
+
+    AZ::Outcome<QVector<ProjectInfo>> PythonBindings::GetProjects()  
+    {
+        QVector<ProjectInfo> projects;
+
+        bool result = ExecuteWithLock([&] {
+            // external projects 
+            for (auto path : m_registration.attr("get_projects")())
+            {
+                projects.push_back(ProjectInfoFromPath(path));
+            }
+
+            // projects from the engine 
+            for (auto path : m_registration.attr("get_engine_projects")())
+            {
+                projects.push_back(ProjectInfoFromPath(path));
+            }
+        });
+
+        if (!result)
+        {
+            return AZ::Failure();
+        }
+        else
+        {
+            return AZ::Success(AZStd::move(projects)); 
+        }
+    }
+
+    bool PythonBindings::UpdateProject([[maybe_unused]] const ProjectInfo& projectInfo)  
+    {
+        return false;
+    }
+
+    ProjectTemplateInfo PythonBindings::ProjectTemplateInfoFromPath(pybind11::handle path)
+    {
+        ProjectTemplateInfo templateInfo;
+        templateInfo.m_path = Py_To_String(path); 
+
+        auto data = m_registration.attr("get_template_data")(pybind11::none(), path);
+        if (pybind11::isinstance<pybind11::dict>(data))
+        {
+            try
+            {
+                // required
+                templateInfo.m_displayName = Py_To_String(data["display_name"]); 
+                templateInfo.m_name        = Py_To_String(data["template_name"]); 
+                templateInfo.m_summary     = Py_To_String(data["summary"]); 
+                
+                // optional
+                if (data.contains("canonical_tags"))
+                {
+                    for (auto tag : data["canonical_tags"])
+                    {
+                        templateInfo.m_canonicalTags.push_back(Py_To_String(tag));
+                    }
+                }
+                if (data.contains("user_tags"))
+                {
+                    for (auto tag : data["user_tags"])
+                    {
+                        templateInfo.m_canonicalTags.push_back(Py_To_String(tag));
+                    }
+                }
+            }
+            catch ([[maybe_unused]] const std::exception& e)
+            {
+                AZ_Warning("PythonBindings", false, "Failed to get ProjectTemplateInfo for %s", Py_To_String(path));
+            }
+        }
+
+        return templateInfo;
+    }
+
+    AZ::Outcome<QVector<ProjectTemplateInfo>> PythonBindings::GetProjectTemplates()  
+    {
+        QVector<ProjectTemplateInfo> templates;
+
+        bool result = ExecuteWithLock([&] {
+            for (auto path : m_registration.attr("get_project_templates")())
+            {
+                templates.push_back(ProjectTemplateInfoFromPath(path));
+            }
+        });
+
+        if (!result)
+        {
+            return AZ::Failure();
+        }
+        else
+        {
+            return AZ::Success(AZStd::move(templates)); 
+        }
     }
 }
