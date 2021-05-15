@@ -115,7 +115,7 @@ If you have the Git credential manager core or other credential helpers installe
     scripts\o3de.bat register --this-engine
     ```
 
-5.  Configure the source into a solution using this command line, replacing <your build location> and <Location of the 3rdParty cache> to a path you've created:
+5.  Configure the source into a solution using this command line, replacing <your build path> and <3rdParty cache path> to a path you've created:
     ```
     cmake -B <your build path> -S <your source path> -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH=<3rdParty cache path> -DLY_UNITY_BUILD=ON -DLY_PROJECTS=AutomatedTesting 
     ```
