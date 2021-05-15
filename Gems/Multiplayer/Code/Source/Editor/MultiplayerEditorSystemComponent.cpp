@@ -12,6 +12,7 @@
 
 #include <Include/IMultiplayer.h>
 #include <Include/IMultiplayerTools.h>
+#include <Include/MultiplayerConstants.h>
 #include <Source/AutoGen/Multiplayer.AutoPackets.h>
 #include <Source/MultiplayerSystemComponent.h>
 #include <Source/Editor/MultiplayerEditorSystemComponent.h>
@@ -26,16 +27,16 @@
 
 namespace Multiplayer
 {
-    static const AZStd::string_view s_networkEditorInterfaceName("MultiplayerEditorNetworkInterface");
-
     using namespace AzNetworking;
 
     AZ_CVAR(bool, editorsv_enabled, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Whether Editor launching a local server to connect to is supported");
+    AZ_CVAR(bool, editorsv_launch, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "Whether Editor should launch a server when the server address is localhost");
     AZ_CVAR(AZ::CVarFixedString, editorsv_process, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "The server executable that should be run. Empty to use the current project's ServerLauncher");
-    AZ_CVAR(AZ::CVarFixedString, editorsv_serveraddr, "127.0.0.1", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The address of the server to connect to");
-    AZ_CVAR(uint16_t, editorsv_port, 30091, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port that the multiplayer editor gem will bind to for traffic");
+    AZ_CVAR(AZ::CVarFixedString, editorsv_serveraddr, LocalHost.data(), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The address of the server to connect to");
+    AZ_CVAR(uint16_t, editorsv_port, DefaultServerEditorPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port that the multiplayer editor gem will bind to for traffic");
 
     void MultiplayerEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -105,13 +106,53 @@ namespace Multiplayer
                 m_serverProcess->TerminateProcess(0);
                 m_serverProcess = nullptr;
             }
-            INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(s_networkEditorInterfaceName));
+            INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPEditorInterfaceName));
             if (editorNetworkInterface)
             {
                 editorNetworkInterface->Disconnect(m_editorConnId, AzNetworking::DisconnectReason::TerminatedByClient);
             }
             break;
         }
+    }
+
+    void LaunchEditorServer(AzFramework::ProcessWatcher* outProcess)
+    {
+        // Assemble the server's path
+        AZ::CVarFixedString serverProcess = editorsv_process;
+        if (serverProcess.empty())
+        {
+            // If enabled but no process name is supplied, try this project's ServerLauncher
+            serverProcess = AZ::Utils::GetProjectName() + ".ServerLauncher";
+        }
+
+        AZ::IO::FixedMaxPathString serverPath = AZ::Utils::GetExecutableDirectory();
+        if (!serverProcess.contains(AZ_TRAIT_OS_PATH_SEPARATOR))
+        {
+            // If only the process name is specified, append that as well
+            serverPath.append(AZ_TRAIT_OS_PATH_SEPARATOR + serverProcess);
+        }
+        else
+        {
+            // If any path was already specified, then simply assign
+            serverPath = serverProcess;
+        }
+
+        if (!serverProcess.ends_with(AZ_TRAIT_OS_EXECUTABLE_EXTENSION))
+        {
+            // Add this platform's exe extension if it's not specified
+            serverPath.append(AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+        }
+
+        // Start the configured server if it's available
+        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+        processLaunchInfo.m_commandlineParameters = AZStd::string::format("\"%s\" --editorsv_isDedicated true", serverPath.c_str());
+        processLaunchInfo.m_showWindow = true;
+        processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
+
+        // Launch the Server and give it a few seconds to boot up
+        outProcess = AzFramework::ProcessWatcher::LaunchProcess(
+            processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE);
+        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(15000));
     }
 
     void MultiplayerEditorSystemComponent::OnGameEntitiesStarted()
@@ -134,54 +175,37 @@ namespace Multiplayer
             // Serialize Asset information and AssetData into a potentially large buffer
             for (auto asset : assetData)
             {
+                AZ::Data::AssetId assetId = asset.GetId();
                 AZ::Data::AssetLoadBehavior assetLoadBehavior = asset.GetAutoLoadBehavior();
+                AZStd::string assetHint = asset.GetHint();
+                uint32_t hintSize = aznumeric_cast<uint32_t>(assetHint.size());
+
+                byteStream.Write(sizeof(AZ::Data::AssetId), reinterpret_cast<void*>(&assetId));
                 byteStream.Write(sizeof(AZ::Data::AssetLoadBehavior), reinterpret_cast<void*>(&assetLoadBehavior));
-            
+                byteStream.Write(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
+                byteStream.Write(assetHint.size(), assetHint.data());
                 AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, asset.GetData(), asset.GetData()->GetType());
             }
 
-            // Assemble the server's path
-            AZ::CVarFixedString serverProcess = editorsv_process;
-            if (serverProcess.empty())
-            {
-                // If enabled but no process name is supplied, try this project's ServerLauncher
-                serverProcess = AZ::Utils::GetProjectName() + ".ServerLauncher";
-            }
-
-            AZ::IO::FixedMaxPathString serverPath = AZ::Utils::GetExecutableDirectory();
-            if (!serverProcess.contains(AZ_TRAIT_OS_PATH_SEPARATOR))
-            {
-                // If only the process name is specified, append that as well
-                serverPath.append(AZ_TRAIT_OS_PATH_SEPARATOR + serverProcess);
-            }
-            else
-            {
-                // If any path was already specified, then simply assign
-                serverPath = serverProcess;
-            }
-
-            if (!serverProcess.ends_with(AZ_TRAIT_OS_EXECUTABLE_EXTENSION))
-            {
-                // Add this platform's exe extension if it's not specified
-                serverPath.append(AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
-            }
-
-            // Start the configured server if it's available
-            AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-            processLaunchInfo.m_commandlineParameters = AZStd::string::format("\"%s\" --editorsv_isDedicated true", serverPath.c_str());
-            processLaunchInfo.m_showWindow = true;
-            processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
-
-            // Launch the Server and give it a few seconds to boot up
-            m_serverProcess = AzFramework::ProcessWatcher::LaunchProcess(
-                processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE);
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(15000));
-
-            // Now that the server has launched, attempt to connect the NetworkInterface
             const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
-            INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(s_networkEditorInterfaceName));
+            if (editorsv_launch && LocalHost.compare(remoteAddress.c_str()) == 0)
+            {
+                LaunchEditorServer(m_serverProcess);
+            }
+
+            // Now that the server has launched, attempt to connect the NetworkInterface         
+            INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPEditorInterfaceName));
+            AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.");
             m_editorConnId = editorNetworkInterface->Connect(
                 AzNetworking::IpAddress(remoteAddress.c_str(), editorsv_port, AzNetworking::ProtocolType::Tcp));
+
+            if (m_editorConnId == AzNetworking::InvalidConnectionId)
+            {
+                AZ_Warning(
+                    "MultiplayerEditor", false,
+                    "Could not connect to server targeted by Editor. If using a local server, check that it's built and editorsv_launch is true.");
+                return;
+            }
 
             // Read the buffer into EditorServerInit packets until we've flushed the whole thing
             byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);

@@ -31,11 +31,16 @@ namespace Multiplayer
     void NetworkPrefabProcessor::Process(PrefabProcessorContext& context)
     {
         IMultiplayerTools* mpTools = AZ::Interface<IMultiplayerTools>::Get();
-        mpTools->SetDidProcessNetworkPrefabs(false);
+        if (mpTools)
+        {
+            mpTools->SetDidProcessNetworkPrefabs(false);
+        }
+
         context.ListPrefabs([&context](AZStd::string_view prefabName, PrefabDom& prefab) {
             ProcessPrefab(context, prefabName, prefab);
         });
-        if (context.GetProcessedObjects().size() > 0)
+
+        if (mpTools && context.GetProcessedObjects().size() > 0)
         {
             mpTools->SetDidProcessNetworkPrefabs(true);
         }

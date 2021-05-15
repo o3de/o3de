@@ -11,25 +11,21 @@
  */
 
 #include <Include/IMultiplayer.h>
+#include <Include/MultiplayerConstants.h>
 #include <Source/Editor/MultiplayerEditorConnection.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/Framework/INetworking.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzFramework/Spawnable/Spawnable.h>
 
 namespace Multiplayer
 {
     using namespace AzNetworking;
-
-    static const AZStd::string_view s_networkInterfaceName("MultiplayerNetworkInterface");
-    static const AZStd::string_view s_networkEditorInterfaceName("MultiplayerEditorNetworkInterface");
-    static constexpr AZStd::string_view DefaultEditorIp = "127.0.0.1";
-    static constexpr uint16_t DefaultServerPort = 30090;
-    static constexpr uint16_t DefaultServerEditorPort = 30091;
 
     static AZStd::vector<uint8_t> buffer;
     static AZ::IO::ByteContainerStream<AZStd::vector<uint8_t>> s_byteStream(&buffer);
@@ -39,10 +35,16 @@ namespace Multiplayer
     MultiplayerEditorConnection::MultiplayerEditorConnection()
     {
         m_networkEditorInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(
-            AZ::Name(s_networkEditorInterfaceName), ProtocolType::Tcp, TrustZone::ExternalClientToServer, *this);
+            AZ::Name(MPEditorInterfaceName), ProtocolType::Tcp, TrustZone::ExternalClientToServer, *this);
         if (editorsv_isDedicated)
         {
-            m_networkEditorInterface->Listen(DefaultServerEditorPort);
+            uint16_t editorServerPort = DefaultServerEditorPort;
+            if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
+            {
+                console->GetCvarValue("editorsv_port", editorServerPort);
+            }
+            AZ_Assert(m_networkEditorInterface, "MP Editor Network Interface was unregistered before Editor Server could start listening.");
+            m_networkEditorInterface->Listen(editorServerPort);
         }
     }
   
@@ -69,34 +71,56 @@ namespace Multiplayer
             AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> assetData;
             while (s_byteStream.GetCurPos() < s_byteStream.GetLength())
             {
+                AZ::Data::AssetId assetId;
                 AZ::Data::AssetLoadBehavior assetLoadBehavior;
+                uint32_t hintSize;
+                AZStd::string assetHint;
+                s_byteStream.Read(sizeof(AZ::Data::AssetId), reinterpret_cast<void*>(&assetId));
                 s_byteStream.Read(sizeof(AZ::Data::AssetLoadBehavior), reinterpret_cast<void*>(&assetLoadBehavior));
+                s_byteStream.Read(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
+                assetHint.resize(hintSize);
+                s_byteStream.Read(hintSize, assetHint.data());
 
-                AZ::Data::AssetData* assetDatum = AZ::Utils::LoadObjectFromStream<AZ::Data::AssetData>(s_byteStream, nullptr);             
-                AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::Asset<AZ::Data::AssetData>(assetDatum, assetLoadBehavior);
-                
-				/*
+                size_t assetSize = s_byteStream.GetCurPos();
+                AZ::Data::AssetData* assetDatum = AZ::Utils::LoadObjectFromStream<AZ::Data::AssetData>(s_byteStream, nullptr);
+                assetSize = s_byteStream.GetCurPos() - assetSize;
+                AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::Asset<AZ::Data::AssetData>(assetId, assetDatum, assetLoadBehavior);
+                asset.SetHint(assetHint);
+
+                AZ::Data::AssetInfo assetInfo;
+                assetInfo.m_assetId = asset.GetId();
+                assetInfo.m_assetType = asset.GetType();
+                assetInfo.m_relativePath = asset.GetHint();
+                assetInfo.m_sizeBytes = assetSize;
+
 				// Register Asset to AssetManager
-                */
-				
-				assetData.push_back(asset);
+                AZ::Data::AssetManager::Instance().AssignAssetData(asset);
+                AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::RegisterAsset, asset.GetId(), assetInfo);
+
+                assetData.push_back(asset);
             }
 
             // Now that we've deserialized, clear the byte stream
             s_byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
             s_byteStream.Truncate();
 
-            /*
-            // Hand-off our resultant assets
-			*/
+            // Load the level via the root spawnable tha was registered
+            AZ::CVarFixedString loadLevelString = "LoadLevel Root.spawnable";
+            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
 
             AZLOG_INFO("Editor Server completed asset receive, responding to Editor...");
             if (connection->SendReliablePacket(MultiplayerEditorPackets::EditorServerReady()))
             {
                 // Setup the normal multiplayer connection
                 AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
-                INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(s_networkInterfaceName));
-                networkInterface->Listen(DefaultServerPort);
+                INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPNetworkInterfaceName));
+
+                uint16_t serverPort = DefaultServerPort;
+                if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
+                {
+                    console->GetCvarValue("sv_port", serverPort);
+                }
+                networkInterface->Listen(serverPort);
 
                 return true;
             }
@@ -121,11 +145,22 @@ namespace Multiplayer
             // Receiving this packet means Editor sync is done, disconnect
             connection->Disconnect(AzNetworking::DisconnectReason::TerminatedByClient, AzNetworking::TerminationEndpoint::Local);
 
-            // Connect the Editor to the local server for Multiplayer simulation
-            AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::Client);
-            INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(s_networkInterfaceName));
-            const IpAddress ipAddress(DefaultEditorIp.data(), DefaultServerEditorPort, networkInterface->GetType());
-            networkInterface->Connect(ipAddress);
+            if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
+            {
+                AZ::CVarFixedString remoteAddress;
+                uint16_t remotePort;
+                if (console->GetCvarValue("editorsv_serveraddr", remoteAddress) != AZ::GetValueResult::ConsoleVarNotFound &&
+                    console->GetCvarValue("editorsv_port", remotePort) != AZ::GetValueResult::ConsoleVarNotFound)
+                    {
+                        // Connect the Editor to the editor server for Multiplayer simulation
+                        AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::Client);
+                        INetworkInterface* networkInterface =
+                            AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPNetworkInterfaceName));
+
+                        const IpAddress ipAddress(remoteAddress.c_str(), remotePort, networkInterface->GetType());
+                        networkInterface->Connect(ipAddress);
+                    }
+            }
         }
         return true;
     }

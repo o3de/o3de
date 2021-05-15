@@ -17,6 +17,7 @@ set(FILES
     Include/INetworkEntityManager.h
     Include/INetworkTime.h
     Include/IReplicationWindow.h
+    Include/MultiplayerConstants.h
     Include/MultiplayerStats.cpp
     Include/MultiplayerStats.h
     Include/MultiplayerTypes.h

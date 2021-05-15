@@ -308,6 +308,8 @@ namespace AZ
             Asset(AssetLoadBehavior loadBehavior = AssetLoadBehavior::Default);
             /// Create an asset from a valid asset data (created asset), might not be loaded or currently loading.
             Asset(AssetData* assetData, AssetLoadBehavior loadBehavior);
+            /// Create an asset from a valid asset data (created asset) and set the asset id for both, might not be loaded or currently loading.
+            Asset(const AZ::Data::AssetId& id, AssetData* assetData, AssetLoadBehavior loadBehavior);
             /// Initialize asset pointer with id, type, and hint. No data construction will occur until QueueLoad is called.
             Asset(const AZ::Data::AssetId& id, const AZ::Data::AssetType& type, const AZStd::string& hint = AZStd::string());
 
@@ -785,6 +787,17 @@ namespace AZ
             : m_assetType(azrtti_typeid<T>())
             , m_loadBehavior(loadBehavior)
         {
+            SetData(assetData);
+        }
+
+        //=========================================================================
+        template<class T>
+        Asset<T>::Asset(const AssetId& id, AssetData* assetData, AssetLoadBehavior loadBehavior)
+            : m_assetId(id)
+            , m_assetType(azrtti_typeid<T>())
+            , m_loadBehavior(loadBehavior)
+        {
+            assetData->m_assetId = id;
             SetData(assetData);
         }
 
