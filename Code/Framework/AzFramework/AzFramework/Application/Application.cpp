@@ -236,8 +236,6 @@ namespace AzFramework
         // Archive classes relies on the FileIOBase DirectInstance to close
         // files properly
         m_directFileIO.reset();
-
-        // The AZ::Console skips destruction and always leaks to allow it to be used in static memory
     }
 
     void Application::Start(const Descriptor& descriptor, const StartupParameters& startupParameters)
