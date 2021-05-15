@@ -557,6 +557,14 @@ namespace AZ
                         commandArgs.emplace_back(commandArgString);
                     }
                 }
+                CVarFixedString commandTrace(command);
+                for (AZStd::string_view commandArg : commandArgs)
+                {
+                    commandTrace.push_back(' ');
+                    commandTrace += commandArg;
+                }
+
+                printf("Az Console: %s\n", commandTrace.c_str());
                 m_console.PerformCommand(command, commandArgs, ConsoleSilentMode::NotSilent, ConsoleInvokedFrom::AzConsole, ConsoleFunctorFlags::Null, ConsoleFunctorFlags::Null);
             }
         }
