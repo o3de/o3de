@@ -60,7 +60,6 @@ public:
     static void LoadCustomPresets(const QString& section, const QString& keyName, QStringList& outCustompresets);
     static void SaveCustomPresets(const QString& section, const QString& keyName, const QStringList& custompresets);
     static void UpdateCustomPresets(const QString& text, QStringList& custompresets);
-    static void OnChangedDisplayInfo(ICVar*    pDisplayInfo, QAbstractButton* pDisplayInfoButton);
 
     bool eventFilter(QObject* object, QEvent* event) override;
 
@@ -77,6 +76,7 @@ protected:
     void OnMaximize();
     void OnToggleHelpers();
     void OnToggleDisplayInfo();
+    void UpdateDisplayInfo();
 
     QString m_title;
 
@@ -86,8 +86,6 @@ protected:
     QStringList m_customResPresets;
     QStringList m_customFOVPresets;
     QStringList m_customAspectRatioPresets;
-
-    uint64 m_displayInfoCallbackIndex;
 
     void OnMenuFOVCustom();
 

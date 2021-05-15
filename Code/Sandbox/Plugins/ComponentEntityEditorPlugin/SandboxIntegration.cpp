@@ -160,7 +160,6 @@ void SandboxIntegrationManager::Setup()
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
 
     AzFramework::DisplayContextRequestBus::Handler::BusConnect();
-    SetupFileExtensionMap();
 
     MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_FILE_SAVE_SLICE_TO_ROOT, [this]() {
         SaveSlice(false);
@@ -1924,30 +1923,6 @@ void SandboxIntegrationManager::MakeSliceFromEntities(const AzToolsFramework::En
     char path[AZ_MAX_PATH_LEN] = { 0 };
     gEnv->pFileIO->ResolvePath(slicesAssetsPath.c_str(), path, AZ_MAX_PATH_LEN);
     AzToolsFramework::SliceUtilities::MakeNewSlice(entitiesAndDescendants, path, inheritSlices, setAsDynamic);
-}
-
-void SandboxIntegrationManager::SetupFileExtensionMap()
-{
-    // There's no central registry for geometry file types.
-    const char* geometryFileExtensions[] =
-    {
-        CRY_GEOMETRY_FILE_EXT,                  // .cgf
-        CRY_SKEL_FILE_EXT,                      // .chr
-        CRY_CHARACTER_DEFINITION_FILE_EXT,      // .cdf
-    };
-
-    // Cry geometry file extensions.
-    for (const char* extension : geometryFileExtensions)
-    {
-        m_extensionToFileType[AZ::Crc32(extension)] = IFileUtil::EFILE_TYPE_GEOMETRY;
-    }
-
-    // Cry image file extensions.
-    for (size_t i = 0; i < IResourceCompilerHelper::GetNumSourceImageFormats(); ++i)
-    {
-        const char* extension = IResourceCompilerHelper::GetSourceImageFormat(i, false);
-        m_extensionToFileType[AZ::Crc32(extension)] = IFileUtil::EFILE_TYPE_TEXTURE;
-    }
 }
 
 void SandboxIntegrationManager::RegisterViewPane(const char* name, const char* category, const AzToolsFramework::ViewPaneOptions& viewOptions, const WidgetCreationFunc& widgetCreationFunc)

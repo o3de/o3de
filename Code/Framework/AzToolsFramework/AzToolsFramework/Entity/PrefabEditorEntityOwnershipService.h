@@ -201,6 +201,8 @@ namespace AzToolsFramework
 
         void OnEntityRemoved(AZ::EntityId entityId);
 
+        void LoadReferencedAssets(AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets);
+
         OnEntitiesAddedCallback m_entitiesAddedCallback;
         OnEntitiesRemovedCallback m_entitiesRemovedCallback;
         ValidateEntitiesCallback m_validateEntitiesCallback;

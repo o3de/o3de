@@ -89,7 +89,7 @@ namespace AZ
             // --- Members ---
 
             // Cached pointer to the pass library to simplify code
-            PassLibrary* m_passLibary = nullptr;
+            PassLibrary* m_passLibrary = nullptr;
 
             // ClassNames are used to look up PassCreators. This list is 1-to-1 with the PassCreator list
             AZStd::vector<Name> m_passClassNames;

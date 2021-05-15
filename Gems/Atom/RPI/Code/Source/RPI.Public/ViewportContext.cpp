@@ -40,9 +40,10 @@ namespace AZ
             {
                 m_projectionMatrixChangedEvent.Signal(matrix);
             });
+
             m_onViewMatrixChangedHandler = ViewportContext::MatrixChangedEvent::Handler([this](const AZ::Matrix4x4& matrix)
             {
-                m_projectionMatrixChangedEvent.Signal(matrix);
+                m_viewMatrixChangedEvent.Signal(matrix);
             });
 
             SetRenderScene(renderScene);
@@ -193,18 +194,14 @@ namespace AZ
 
         AZ::Transform ViewportContext::GetCameraTransform() const
         {
-            const Matrix4x4& worldToViewMatrix = GetDefaultView()->GetViewToWorldMatrix();
-            const Quaternion zUpToYUp = Quaternion::CreateRotationX(-AZ::Constants::HalfPi);
-            return AZ::Transform::CreateFromQuaternionAndTranslation(
-                Quaternion::CreateFromMatrix4x4(worldToViewMatrix) * zUpToYUp,
-                worldToViewMatrix.GetTranslation()
-            ).GetOrthogonalized();
+            return GetDefaultView()->GetCameraTransform();
         }
 
         void ViewportContext::SetCameraTransform(const AZ::Transform& transform)
         {
             const auto view = GetDefaultView();
             view->SetCameraTransform(AZ::Matrix3x4::CreateFromTransform(transform.GetOrthogonalized()));
+            m_viewMatrixChangedEvent.Signal(view->GetWorldToViewMatrix());
         }
 
         void ViewportContext::SetDefaultView(ViewPtr view)

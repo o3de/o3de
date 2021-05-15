@@ -10,9 +10,9 @@
  *
  */
 
-#include <Include/IMultiplayer.h>
-#include <Include/IMultiplayerTools.h>
-#include <Include/MultiplayerConstants.h>
+#include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/IMultiplayerTools.h>
+#include <Multiplayer/MultiplayerConstants.h>
 #include <Source/AutoGen/Multiplayer.AutoPackets.h>
 #include <Source/MultiplayerSystemComponent.h>
 #include <Source/Editor/MultiplayerEditorSystemComponent.h>

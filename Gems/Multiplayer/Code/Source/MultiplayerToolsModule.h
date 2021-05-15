@@ -14,7 +14,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Module/Module.h>
-#include <Include/IMultiplayerTools.h>
+#include <Multiplayer/IMultiplayerTools.h>
 
 namespace Multiplayer
 {

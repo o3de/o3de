@@ -280,8 +280,6 @@ set(FILES
     Include/IAnimationCompressionManager.h
     Include/IAssetItem.h
     Include/IAssetItemDatabase.h
-    Include/IBackgroundScheduleManager.h
-    Include/IBackgroundTaskManager.h
     Include/ICommandManager.h
     Include/IConsoleConnectivity.h
     Include/IDataBaseItem.h
@@ -343,10 +341,6 @@ set(FILES
     AssetEditor/AssetEditorWindow.cpp
     AssetEditor/AssetEditorWindow.h
     AssetEditor/AssetEditorWindow.ui
-    BackgroundTaskManager.cpp
-    BackgroundScheduleManager.cpp
-    BackgroundTaskManager.h
-    BackgroundScheduleManager.h
     Commands/CommandManager.cpp
     Commands/CommandManager.h
     Controls/BitmapToolTip.cpp
@@ -357,8 +351,6 @@ set(FILES
     Controls/ConsoleSCB.h
     Controls/ConsoleSCB.ui
     Controls/ConsoleSCB.qrc
-    Controls/CurveEditorCtrl.cpp
-    Controls/CurveEditorCtrl.h
     Controls/FolderTreeCtrl.cpp
     Controls/FolderTreeCtrl.h
     Controls/HotTrackingTreeCtrl.cpp
@@ -437,9 +429,6 @@ set(FILES
     GotoPositionDlg.cpp
     GotoPositionDlg.h
     GotoPositionDlg.ui
-    GridSettingsDialog.cpp
-    GridSettingsDialog.h
-    GridSettingsDialog.ui
     InfoBar.cpp
     InfoBar.qrc
     InfoBar.h
@@ -578,11 +567,6 @@ set(FILES
     QtUI/WaitCursor.cpp
     RenderHelpers/AxisHelper.cpp
     RenderHelpers/AxisHelper.h
-    Serialization.h
-    Serialization/VariableOArchive.cpp
-    Serialization/VariableOArchive.h
-    Serialization/VariableIArchive.cpp
-    Serialization/VariableIArchive.h
     CustomizeKeyboardDialog.h
     CustomizeKeyboardDialog.cpp
     CustomizeKeyboardDialog.ui
@@ -741,8 +725,6 @@ set(FILES
     TrackView/TrackViewEventNode.h
     ConfigGroup.cpp
     ConfigGroup.h
-    SettingsBlock.cpp
-    SettingsBlock.h
     Util/AffineParts.h
     Util/AutoLogTime.cpp
     Util/AutoLogTime.h
@@ -778,10 +760,13 @@ set(FILES
     Util/PakFile.h
     Util/PredefinedAspectRatios.cpp
     Util/PredefinedAspectRatios.h
+    Util/StringHelpers.cpp
+    Util/StringHelpers.h
     Util/StringNoCasePredicate.h
     Util/TRefCountBase.h
     Util/Triangulate.cpp
     Util/Triangulate.h
+    Util/Util.h
     Util/XmlArchive.cpp
     Util/XmlArchive.h
     Util/XmlHistoryManager.cpp
@@ -835,8 +820,6 @@ set(FILES
     WelcomeScreen/WelcomeScreenDialog.qrc
     2DViewport.cpp
     2DViewport.h
-    Grid.cpp
-    Grid.h
     LayoutWnd.cpp
     LayoutWnd.h
     EditorViewportWidget.cpp
