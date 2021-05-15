@@ -9,7 +9,7 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
-#pragma optimize ("", off)
+
 #include <Multiplayer/NetworkInput/NetworkInput.h>
 #include <Multiplayer/Components/MultiplayerComponentRegistry.h>
 #include <Multiplayer/Components/NetBindComponent.h>
