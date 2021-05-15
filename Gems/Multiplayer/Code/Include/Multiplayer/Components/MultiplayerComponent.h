@@ -71,6 +71,7 @@ namespace Multiplayer
         NetworkEntityHandle GetEntityHandle();
         void MarkDirty();
 
+        virtual void SetOwningConnectionId(AzNetworking::ConnectionId connectionId) = 0;
         virtual NetComponentId GetNetComponentId() const = 0;
 
         virtual bool HandleRpcMessage(AzNetworking::IConnection* invokingConnection, NetEntityRole netEntityRole, NetworkEntityRpcMessage& rpcMessage) = 0;

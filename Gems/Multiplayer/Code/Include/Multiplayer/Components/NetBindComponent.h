@@ -72,6 +72,7 @@ namespace Multiplayer
         ConstNetworkEntityHandle GetEntityHandle() const;
         NetworkEntityHandle GetEntityHandle();
 
+        void SetOwningConnectionId(AzNetworking::ConnectionId connectionId);
         void SetAllowAutonomy(bool value);
         MultiplayerComponentInputVector AllocateComponentInputs();
         bool IsProcessingInput() const;

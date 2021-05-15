@@ -152,6 +152,14 @@ namespace Multiplayer
         return m_netEntityHandle;
     }
 
+    void NetBindComponent::SetOwningConnectionId(AzNetworking::ConnectionId connectionId)
+    {
+        for (MultiplayerComponent* multiplayerComponent : m_multiplayerInputComponentVector)
+        {
+            multiplayerComponent->SetOwningConnectionId(connectionId);
+        }
+    }
+
     void NetBindComponent::SetAllowAutonomy(bool value)
     {
         // This flag allows a player host to autonomously control their player entity, even though the entity is in an authority role

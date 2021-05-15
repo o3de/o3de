@@ -30,6 +30,7 @@ namespace Multiplayer
         virtual ~IMultiplayerComponentInput() = default;
         virtual NetComponentId GetNetComponentId() const = 0;
         virtual bool Serialize(AzNetworking::ISerializer& serializer) = 0;
+        virtual IMultiplayerComponentInput& operator= (const IMultiplayerComponentInput&) { return *this; }
     };
 
     using MultiplayerComponentInputVector = AZStd::vector<AZStd::unique_ptr<IMultiplayerComponentInput>>;

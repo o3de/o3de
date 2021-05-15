@@ -48,16 +48,6 @@ namespace Multiplayer
         return m_inputs[index].m_networkInput;
     }
 
-    void NetworkInputArray::SetPreviousInputId(ClientInputId previousInputId)
-    {
-        m_previousInputId = previousInputId;
-    }
-
-    ClientInputId NetworkInputArray::GetPreviousInputId() const
-    {
-        return m_previousInputId;
-    }
-
     bool NetworkInputArray::Serialize(AzNetworking::ISerializer& serializer)
     {
         // Always serialize the full first element
@@ -102,7 +92,6 @@ namespace Multiplayer
                 }
             }
         }
-        serializer.Serialize(m_previousInputId, "PreviousInputId");
         return true;
     }
 }

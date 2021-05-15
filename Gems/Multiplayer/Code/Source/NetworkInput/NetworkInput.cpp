@@ -9,7 +9,7 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
-
+#pragma optimize ("", off)
 #include <Multiplayer/NetworkInput/NetworkInput.h>
 #include <Multiplayer/Components/MultiplayerComponentRegistry.h>
 #include <Multiplayer/Components/NetBindComponent.h>
@@ -166,6 +166,7 @@ namespace Multiplayer
     void NetworkInput::CopyInternal(const NetworkInput& rhs)
     {
         m_inputId = rhs.m_inputId;
+        m_hostFrameId = rhs.m_hostFrameId;
         m_hostTimeMs = rhs.m_hostTimeMs;
         m_componentInputs.resize(rhs.m_componentInputs.size());
         for (int32_t i = 0; i < rhs.m_componentInputs.size(); ++i)
@@ -175,7 +176,7 @@ namespace Multiplayer
             {
                 m_componentInputs[i] = AZStd::move(GetMultiplayerComponentRegistry()->AllocateComponentInput(rhsComponentId));
             }
-            *m_componentInputs[i] = *rhs.m_componentInputs[i];
+            *(m_componentInputs[i]) = *(rhs.m_componentInputs[i]);
         }
         m_wasAttached = rhs.m_wasAttached;
     }

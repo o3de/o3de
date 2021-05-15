@@ -329,6 +329,7 @@ namespace {{ Component.attrib['Namespace'] }}
     public:
         Multiplayer::NetComponentId GetNetComponentId() const override;
         bool Serialize(AzNetworking::ISerializer& serializer) override;
+        Multiplayer::IMultiplayerComponentInput& operator =(const Multiplayer::IMultiplayerComponentInput& rhs) override;
 
 {% call(Input) AutoComponentMacros.ParseNetworkInputs(Component) %}
         {{ Input.attrib['Type'] }} m_{{ LowerFirst(Input.attrib['Name']) }} = {{ Input.attrib['Type'] }}({{ Input.attrib['Init'] }});
@@ -439,6 +440,7 @@ namespace {{ Component.attrib['Namespace'] }}
 
         //! MultiplayerComponent interface
         //! @{
+        void SetOwningConnectionId(AzNetworking::ConnectionId connectionId) override;
         Multiplayer::NetComponentId GetNetComponentId() const override;
         bool HandleRpcMessage(AzNetworking::IConnection* invokingConnection, Multiplayer::NetEntityRole remoteRole, Multiplayer::NetworkEntityRpcMessage& rpcMessage) override;
         bool SerializeStateDeltaMessage(Multiplayer::ReplicationRecord& replicationRecord, AzNetworking::ISerializer& serializer) override;
@@ -519,7 +521,7 @@ namespace {{ Component.attrib['Namespace'] }}
         //! Archetype Properties
         {{ DeclareArchetypePropertyVars(Component)|indent(8) }}
 {% call(Type, Name) AutoComponentMacros.ParseComponentServiceTypeAndName(Component) %}
-	    {{ Type }}* {{ Name }} = nullptr;
+        {{ Type }}* {{ Name }} = nullptr;
 {% endcall %}
 
         static Multiplayer::NetComponentId s_netComponentId;

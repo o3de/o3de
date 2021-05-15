@@ -448,6 +448,7 @@ namespace Multiplayer
                 if (entityList.size() > 0)
                 {
                     controlledEntity = entityList[0];
+                    controlledEntity.GetNetBindComponent()->SetOwningConnectionId(connection->GetConnectionId());
                 }
 
                 if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
