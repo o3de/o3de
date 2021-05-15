@@ -275,12 +275,12 @@ namespace AZ
                 // scene changed, need to rebuild the shader table
                 m_rayTracingRevision = rayTracingRevision;
 
-                m_rayTracingShaderTableDescriptor = AZStd::make_shared<RHI::RayTracingShaderTableDescriptor>();
+                AZStd::shared_ptr<RHI::RayTracingShaderTableDescriptor> descriptor = AZStd::make_shared<RHI::RayTracingShaderTableDescriptor>();
 
                 if (rayTracingFeatureProcessor->GetSubMeshCount())
                 {
                     // build the ray tracing shader table descriptor
-                    RHI::RayTracingShaderTableDescriptor* descriptorBuild = m_rayTracingShaderTableDescriptor->Build(AZ::Name("RayTracingShaderTable"), m_rayTracingPipelineState)
+                    RHI::RayTracingShaderTableDescriptor* descriptorBuild = descriptor->Build(AZ::Name("RayTracingShaderTable"), m_rayTracingPipelineState)
                         ->RayGenerationRecord(AZ::Name("RayGen"))
                         ->MissRecord(AZ::Name("Miss"));
 
@@ -291,7 +291,7 @@ namespace AZ
                     }
                 }
 
-                m_rayTracingShaderTable->Build(m_rayTracingShaderTableDescriptor);
+                m_rayTracingShaderTable->Build(descriptor);
             }
         }
     

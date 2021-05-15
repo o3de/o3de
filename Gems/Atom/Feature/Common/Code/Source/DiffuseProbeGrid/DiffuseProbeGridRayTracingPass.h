@@ -62,7 +62,6 @@ namespace AZ
 
             // ray tracing shader table
             RHI::Ptr<RHI::RayTracingShaderTable> m_rayTracingShaderTable;
-            AZStd::shared_ptr<RHI::RayTracingShaderTableDescriptor> m_rayTracingShaderTableDescriptor;
 
             // ray tracing global shader resource group asset and pipeline state
             Data::Asset<RPI::ShaderResourceGroupAsset> m_globalSrgAsset;

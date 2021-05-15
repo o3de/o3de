@@ -18,6 +18,7 @@
 #include <Atom/RHI/FrameGraphExecuter.h>
 #include <Atom/RHI/FrameGraphCompiler.h>
 #include <Atom/RHI/FrameGraph.h>
+#include <Atom/RHI/RayTracingShaderTable.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI/ScopeProducerEmpty.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
@@ -31,7 +32,6 @@ namespace AZ
     {
         class ShaderResourceGroupPool;
         class FrameGraphExecuteGroup;
-        class RayTracingShaderTable;
 
         //! @brief Fill this descriptor when initializing a FrameScheduler instance.
         struct FrameSchedulerDescriptor
@@ -231,7 +231,7 @@ namespace AZ
             AZStd::unordered_map<ScopeId, ScopeProducer*> m_scopeProducerLookup;
 
             // list of RayTracingShaderTables that should be built this frame
-            AZStd::vector<RayTracingShaderTable*> m_rayTracingShaderTablesToBuild;
+            AZStd::vector<RHI::Ptr<RayTracingShaderTable>> m_rayTracingShaderTablesToBuild;
         };
     }
 }

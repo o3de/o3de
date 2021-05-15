@@ -99,12 +99,13 @@ namespace AZ
             static RHI::Ptr<RHI::RayTracingShaderTable> CreateRHIRayTracingShaderTable();
             void Init(Device& device, const RayTracingBufferPools& rayTracingBufferPools);
 
-            //! Queues this RayTracingShaderTable to be built by the FrameScheduler
+            //! Queues this RayTracingShaderTable to be built by the FrameScheduler.
+            //! Note that the descriptor must be heap allocated, preferably using make_shared.
             void Build(const AZStd::shared_ptr<RayTracingShaderTableDescriptor> descriptor);
 
         protected:
 
-            AZStd::weak_ptr<RayTracingShaderTableDescriptor> m_descriptor;
+            AZStd::shared_ptr<RayTracingShaderTableDescriptor> m_descriptor;
             const RayTracingBufferPools* m_bufferPools = nullptr;
 
         private:

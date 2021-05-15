@@ -99,7 +99,6 @@ namespace AZ
         void RayTracingShaderTable::Validate()
         {
             AZ_Assert(m_isQueuedForBuild, "Attempting to build a RayTracingShaderTable that is not queued.");
-            AZ_Assert(!m_descriptor.expired(), "RayTracingShaderTable descriptor is no longer valid, make sure it is not freed after calling Build.");
             AZ_Assert(m_bufferPools, "RayTracingBufferPools pointer is null.");
         }
     }
