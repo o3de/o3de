@@ -19,13 +19,10 @@ set(FILES
     ConsoleBatchFile.cpp
     ConsoleHelpGen.cpp
     CryAsyncMemcpy.cpp
-    GeneralMemoryHeap.cpp
     HandlerBase.cpp
-    AsyncPakManager.cpp
     Log.cpp
     SystemRender.cpp
     PhysRenderer.cpp
-    ResourceManager.cpp
     ServerHandler.cpp
     ServerThrottle.cpp
     SyncLock.cpp
@@ -42,9 +39,7 @@ set(FILES
     AutoDetectSpec.h
     ClientHandler.h
     HandlerBase.h
-    AsyncPakManager.h
     PhysRenderer.h
-    ResourceManager.h
     ServerHandler.h
     ServerThrottle.h
     SyncLock.h
@@ -58,7 +53,6 @@ set(FILES
     ConsoleBatchFile.h
     ConsoleHelpGen.h
     CryWaterMark.h
-    GeneralMemoryHeap.h
     Log.h
     resource.h
     SimpleStringPool.h
@@ -71,18 +65,6 @@ set(FILES
     WindowsConsole.h
     XConsole.h
     XConsoleVariable.h
-    crash_face.bmp
-    ImageHandler.h
-    ImageHandler.cpp
-    MemoryAddressRange.cpp
-    PageMappingHeap.cpp
-    CustomMemoryHeap.cpp
-    MemoryManager.cpp
-    MTSafeAllocator.cpp
-    MemoryAddressRange.h
-    PageMappingHeap.h
-    MemoryManager.h
-    MTSafeAllocator.h
     XML/SerializeXMLReader.cpp
     XML/SerializeXMLWriter.cpp
     XML/xml.cpp
@@ -126,18 +108,6 @@ set(FILES
     ViewSystem/ViewSystem.h
     ZStdDecompressor.h
     ZStdDecompressor.cpp
-    StreamEngine/StreamAsyncFileRequest.cpp
-    StreamEngine/StreamAsyncFileRequest_Jobs.cpp
-    StreamEngine/StreamEngine.cpp
-    StreamEngine/StreamIOThread.cpp
-    StreamEngine/StreamReadStream.cpp
-    StreamEngine/AZRequestReadStream.cpp
-    StreamEngine/StreamAsyncFileRequest.h
-    StreamEngine/StreamEngine.h
-    StreamEngine/StreamIOThread.h
-    StreamEngine/StreamReadStream.h
-    StreamEngine/AZRequestReadStream.h
-    CrashHandler.rc
     CrySystem_precompiled.cpp
     CPUDetect.cpp
     CPUDetect.h

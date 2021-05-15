@@ -60,6 +60,11 @@ namespace PhysX
         required.push_back(AZ_CRC("PhysXRigidBodyService", 0x1d4c64a8));
     }
 
+    void EditorFixedJointComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+    }
+
     void EditorFixedJointComponent::Activate()
     {
         EditorJointComponent::Activate();

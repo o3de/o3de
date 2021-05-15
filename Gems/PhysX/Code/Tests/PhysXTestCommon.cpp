@@ -415,6 +415,10 @@ namespace PhysX
             Physics::SphereShapeConfiguration shapeConfiguration;
             shapeConfiguration.m_radius = radius;
             AzPhysics::RigidBodyConfiguration rigidBodySettings;
+            rigidBodySettings.m_computeMass = false;
+            rigidBodySettings.m_computeInertiaTensor = false;
+            rigidBodySettings.m_computeCenterOfMass = false;
+            rigidBodySettings.m_mass = 1.0f;
             rigidBodySettings.m_position = position;
             rigidBodySettings.m_linearDamping = 0.0f;
             rigidBodySettings.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
@@ -437,6 +441,10 @@ namespace PhysX
             Physics::CapsuleShapeConfiguration shapeConfig(height, radius);
             rigidBodySettings.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfig);
             rigidBodySettings.m_position = position;
+            rigidBodySettings.m_computeMass = false;
+            rigidBodySettings.m_computeInertiaTensor = false;
+            rigidBodySettings.m_computeCenterOfMass = false;
+            rigidBodySettings.m_mass = 1.0f;
 
             if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
             {
@@ -455,6 +463,10 @@ namespace PhysX
             shapeConfiguration.m_dimensions = dimensions;
 
             AzPhysics::RigidBodyConfiguration rigidBodySettings;
+            rigidBodySettings.m_computeMass = false;
+            rigidBodySettings.m_computeInertiaTensor = false;
+            rigidBodySettings.m_computeCenterOfMass = false;
+            rigidBodySettings.m_mass = 1.0f;
             rigidBodySettings.m_position = position;
             rigidBodySettings.m_linearDamping = 0.0f;
             rigidBodySettings.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);

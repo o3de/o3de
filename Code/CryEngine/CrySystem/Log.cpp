@@ -20,7 +20,6 @@
 //this should not be included here
 #include <IConsole.h>
 #include <ISystem.h>
-#include <IStreamEngine.h>
 #include "System.h"
 #include "CryPath.h"                    // PathUtil::ReplaceExtension()
 #include <Pak/CryPakUtils.h>
@@ -1439,22 +1438,6 @@ void CLog::UpdateLoadingScreen(const char* szFormat, ...)
         va_end(args);
     }
 #endif
-
-    if (CryGetCurrentThreadId() == m_nMainThreadId)
-    {
-#ifndef LINUX
-        // Take this opportunity to update streaming engine.
-        if (IStreamEngine* pStreamEngine = GetISystem()->GetStreamEngine())
-        {
-            const float curTime = m_pSystem->GetITimer()->GetAsyncCurTime();
-            if (curTime - m_fLastLoadingUpdateTime > .1f)    // not frequent than once in 100ms
-            {
-                m_fLastLoadingUpdateTime = curTime;
-                pStreamEngine->Update();
-            }
-        }
-#endif
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
