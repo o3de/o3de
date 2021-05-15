@@ -13,7 +13,7 @@
 #pragma once
 
 #include <Source/AutoGen/LocalPredictionPlayerInputComponent.AutoComponent.h>
-#include <Multiplayer/NetBindComponent.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 
 namespace Multiplayer
 {
@@ -102,7 +102,8 @@ namespace Multiplayer
         AZ::TimeMs m_lastInputReceivedTimeMs = AZ::TimeMs{ 0 };
         AZ::TimeMs m_lastCorrectionSentTimeMs = AZ::TimeMs{ 0 };
 
-        ClientInputId m_clientInputId = ClientInputId{ 0 };
+        ClientInputId m_clientInputId = ClientInputId{ 0 }; // Clients incrementing inputId
+        ClientInputId m_lastClientInputId = ClientInputId{ 0 }; // Last inputId processed by the server
         ClientInputId m_lastCorrectionInputId = ClientInputId{ 0 };
         ClientInputId m_lastMigratedInputId = ClientInputId{ 0 }; // Used to resend inputs that were queued during a migration event
         HostFrameId   m_serverMigrateFrameId = InvalidHostFrameId;

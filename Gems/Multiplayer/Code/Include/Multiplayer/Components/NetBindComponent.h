@@ -20,10 +20,10 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
-#include <Multiplayer/ReplicationRecord.h>
-#include <Multiplayer/NetworkEntityHandle.h>
-#include <Multiplayer/IMultiplayerComponentInput.h>
-#include <Multiplayer/INetworkTime.h>
+#include <Multiplayer/NetworkEntity/EntityReplication/ReplicationRecord.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityHandle.h>
+#include <Multiplayer/NetworkInput/IMultiplayerComponentInput.h>
+#include <Multiplayer/NetworkTime/INetworkTime.h>
 #include <Multiplayer/MultiplayerTypes.h>
 #include <AzCore/EBus/Event.h>
 
@@ -63,12 +63,17 @@ namespace Multiplayer
 
         NetEntityRole GetNetEntityRole() const;
         bool IsAuthority() const;
+        bool IsAutonomous() const;
+        bool IsServer() const;
+        bool IsClient() const;
         bool HasController() const;
         NetEntityId GetNetEntityId() const;
         const PrefabEntityId& GetPrefabEntityId() const;
         ConstNetworkEntityHandle GetEntityHandle() const;
         NetworkEntityHandle GetEntityHandle();
 
+        void SetOwningConnectionId(AzNetworking::ConnectionId connectionId);
+        void SetAllowAutonomy(bool value);
         MultiplayerComponentInputVector AllocateComponentInputs();
         bool IsProcessingInput() const;
         void CreateInput(NetworkInput& networkInput, float deltaTime);
@@ -155,6 +160,7 @@ namespace Multiplayer
         bool                  m_isProcessingInput    = false;
         bool                  m_isMigrationDataValid = false;
         bool                  m_needsToBeStopped     = false;
+        bool                  m_allowAutonomy        = false; // Set to true for the hosts controlled entity
 
         friend class NetworkEntityManager;
         friend class EntityReplicationManager;

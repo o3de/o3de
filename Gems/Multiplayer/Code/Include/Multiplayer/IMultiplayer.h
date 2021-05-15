@@ -15,8 +15,9 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
-#include <Multiplayer/INetworkEntityManager.h>
-#include <Multiplayer/INetworkTime.h>
+#include <Multiplayer/Components/MultiplayerComponentRegistry.h>
+#include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
+#include <Multiplayer/NetworkTime/INetworkTime.h>
 #include <Multiplayer/MultiplayerStats.h>
 
 namespace AzNetworking
@@ -100,28 +101,6 @@ namespace Multiplayer
         //! Returns the network entity manager instance bound to this multiplayer instance.
         //! @return pointer to the network entity manager instance bound to this multiplayer instance
         virtual INetworkEntityManager* GetNetworkEntityManager() = 0;
-
-        //! Returns the gem name associated with the provided component index.
-        //! @param  netComponentId the componentId to return the gem name of
-        //! @return the name of the gem that contains the requested component
-        virtual const char* GetComponentGemName(NetComponentId netComponentId) const = 0;
-
-        //! Returns the component name associated with the provided component index.
-        //! @param  netComponentId the componentId to return the component name of
-        //! @return the name of the component
-        virtual const char* GetComponentName(NetComponentId netComponentId) const = 0;
-
-        //! Returns the property name associated with the provided component index and property index.
-        //! @param  netComponentId the component index to return the property name of
-        //! @param  propertyIndex  the index of the network property to return the property name of
-        //! @return the name of the network property
-        virtual const char* GetComponentPropertyName(NetComponentId netComponentId, PropertyIndex propertyIndex) const = 0;
-
-        //! Returns the Rpc name associated with the provided component index and rpc index.
-        //! @param  netComponentId the componentId to return the property name of
-        //! @param  rpcIndex       the index of the rpc to return the rpc name of
-        //! @return the name of the requested rpc
-        virtual const char* GetComponentRpcName(NetComponentId netComponentId, RpcIndex rpcIndex) const = 0;
 
         //! Retrieve the stats object bound to this multiplayer instance.
         //! @return the stats object bound to this multiplayer instance
