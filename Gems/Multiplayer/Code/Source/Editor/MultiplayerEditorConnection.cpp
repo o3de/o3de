@@ -10,8 +10,8 @@
  *
  */
 
-#include <Include/IMultiplayer.h>
-#include <Include/MultiplayerConstants.h>
+#include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/MultiplayerConstants.h>
 #include <Source/Editor/MultiplayerEditorConnection.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>

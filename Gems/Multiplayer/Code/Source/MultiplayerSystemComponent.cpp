@@ -10,7 +10,7 @@
  *
  */
 
-#include <Include/MultiplayerConstants.h>
+#include <Multiplayer/MultiplayerConstants.h>
 #include <Source/MultiplayerSystemComponent.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
 #include <Source/ConnectionData/ClientToServerConnectionData.h>
