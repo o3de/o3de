@@ -504,7 +504,7 @@ namespace AZ
             AZ::IO::PathView inputKey{ path, AZ::IO::PosixPathSeparator };
             if (inputKey.IsRelativeTo(consoleRootCommandKey))
             {
-                AZStd::string_view command = inputKey.LexicallyRelative(consoleRootCommandKey).Native();
+                FixedValueString command = inputKey.LexicallyRelative(consoleRootCommandKey).Native();
                 ConsoleCommandContainer commandArgs;
                 // Argument string which stores the value from the Settings Registry long enough
                 // to pass into the PerformCommand. The ConsoleCommandContainer stores string_views
@@ -564,7 +564,6 @@ namespace AZ
                     commandTrace += commandArg;
                 }
 
-                printf("Az Console: %s\n", commandTrace.c_str());
                 m_console.PerformCommand(command, commandArgs, ConsoleSilentMode::NotSilent, ConsoleInvokedFrom::AzConsole, ConsoleFunctorFlags::Null, ConsoleFunctorFlags::Null);
             }
         }

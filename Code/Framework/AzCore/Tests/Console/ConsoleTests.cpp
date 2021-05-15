@@ -107,6 +107,7 @@ namespace AZ
         ConsoleTests::s_consoleFreeFuncArgs = someStrings.size();
     }
 
+    AZ_CONSOLEFREEFUNC(TestFreeFunc, AZ::ConsoleFunctorFlags::Null, "");
 
     TEST_F(ConsoleTests, CVar_GetSetTest_Bool)
     {
@@ -457,13 +458,13 @@ namespace ConsoleSettingsRegistryTests
     };
 
     static bool s_consoleFreeFunctionInvoked = false;
-    void TestFreeFunc(const AZ::ConsoleCommandContainer& someStrings)
+    static void TestSettingsRegistryFreeFunc(const AZ::ConsoleCommandContainer& someStrings)
     {
         EXPECT_TRUE(someStrings.empty());
         s_consoleFreeFunctionInvoked = true;
     }
 
-    AZ_CONSOLEFREEFUNC(TestFreeFunc, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CONSOLEFREEFUNC(TestSettingsRegistryFreeFunc, AZ::ConsoleFunctorFlags::Null, "");
 
     TEST_P(ConsoleSettingsRegistryFixture, Console_AbleToLoadSettingsFile_Successfully)
     {
@@ -528,7 +529,7 @@ namespace ConsoleSettingsRegistryTests
             testDouble 2
             testString Stable
             ConsoleSettingsRegistryFixture.testClassFunc Foo Bar Baz
-            TestFreeFunc
+            TestSettingsRegistryFreeFunc
         )";
 
     static constexpr AZStd::string_view UserJsonMergePatchContent =
@@ -553,7 +554,7 @@ namespace ConsoleSettingsRegistryTests
                                 "testDouble": 2,
                                 "testString": "Stable",
                                 "ConsoleSettingsRegistryFixture.testClassFunc": "Foo Bar Baz",
-                                "TestFreeFunc": ""
+                                "TestSettingsRegistryFreeFunc": ""
                             }
                         }
                     }
@@ -578,7 +579,7 @@ namespace ConsoleSettingsRegistryTests
                 { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testDouble", "value": 2 },
                 { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testString", "value": "Stable" },
                 { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/ConsoleSettingsRegistryFixture.testClassFunc", "value": "Foo Bar Baz" },
-                { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/testFreeFunc", "value": "" }
+                { "op": "add", "path": "/Amazon/AzCore/Runtime/ConsoleCommands/TestSettingsRegistryFreeFunc", "value": "" }
             ]
         )";
 
