@@ -117,7 +117,7 @@ If you have the Git credential manager core or other credential helpers installe
 
 5.  Configure the source into a solution using this command line, replacing <your build location> and <Location of the 3rdParty cache> to a path you've created:
     ```
-    cmake -B <your build location> -S <source-dir> -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH=<Location of the 3rdParty cache> -DLY_UNITY_BUILD=ON -DLY_PROJECTS=AutomatedTesting 
+    cmake -B <your build path> -S <your source path> -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH=<3rdParty cache path> -DLY_UNITY_BUILD=ON -DLY_PROJECTS=AutomatedTesting 
     ```
 
 6.  Alternatively, you can do this through the CMake GUI:
@@ -131,7 +131,7 @@ If you have the Git credential manager core or other credential helpers installe
     
 7.  The configuration of the solution is complete. To build the Editor and AssetProcessor to binaries, run this command inside your repo:
     ```
-    cmake --build <your build location> --target AutomatedTesting.GameLauncher AssetProcessor Editor --config profile -- /m
+    cmake --build <your build path> --target AutomatedTesting.GameLauncher AssetProcessor Editor --config profile -- /m
     ```
    
 8.  This will compile after some time and binaries will be available in the build path you've specified
@@ -139,13 +139,17 @@ If you have the Git credential manager core or other credential helpers installe
 ### Setting up new projects    
 1. Setup new projects using this command
     ```
-    <Repo path>\scripts\o3de.bat create-project --project-path <New project path>
+    <Repo path>\scripts\o3de.bat create-project --project-path <your new project path>
     ```
-2.  Once you're ready to build the project, run the same set of commands to configure and build:
+2. Register the engine to the project
     ```
-    cmake -B <your build location> -S <source-dir> -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH=<Location of the 3rdParty cache> -DLY_PROJECTS=<New project name> -DLY_MONOLITHIC_GAME=1
+    <Repo path>\scripts\o3de.bat register --project-path <New project path>
+    ```
+3.  Once you're ready to build the project, run the same set of commands to configure and build:
+    ```
+    cmake -B <your project build path> -S <your new project source path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=<3rdParty cache path>
 
-    cmake --build <your build location> --target <New Project Name> --config profile -- /m
+    cmake --build <your project build path> --target <New Project Name> --config profile -- /m
     ```
 
 ## License
