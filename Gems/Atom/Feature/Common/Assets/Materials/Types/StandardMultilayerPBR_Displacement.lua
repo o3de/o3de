@@ -17,23 +17,24 @@
 function GetMaterialPropertyDependencies()
     return { 
         "blend.blendSource",
+        "blend.enableLayer2",
+        "blend.enableLayer3",
         "parallax.enable",
-        "layer1_parallax.enable",
-        "layer2_parallax.enable",
-        "layer3_parallax.enable",
+        "layer1_parallax.textureMap",
+        "layer2_parallax.textureMap",
+        "layer3_parallax.textureMap",
+        "layer1_parallax.useTexture",
+        "layer2_parallax.useTexture",
+        "layer3_parallax.useTexture",
         "layer1_parallax.factor",
         "layer2_parallax.factor",
         "layer3_parallax.factor",
         "layer1_parallax.offset",
         "layer2_parallax.offset",
-        "layer3_parallax.offset" 
+        "layer3_parallax.offset"
     }
 end
 
-function GetShaderOptionDependencies()
-    return {"o_parallax_feature_enabled"}
-end
- 
 function GetMergedHeightRange(heightMinMax, offset, factor)
     top = offset
     bottom = offset - factor
@@ -61,39 +62,50 @@ LayerBlendSource_Displacement_With_BlendMaskVertexColors = 4
 function BlendSourceUsesDisplacement(context)
     local blendSource = context:GetMaterialPropertyValue_enum("blend.blendSource")
     local blendSourceIncludesDisplacement = (blendSource == LayerBlendSource_Displacement or 
-                                             blendSource ==LayerBlendSource_Displacement_With_BlendMaskTexture or 
+                                             blendSource == LayerBlendSource_Displacement_With_BlendMaskTexture or 
                                              blendSource == LayerBlendSource_Displacement_With_BlendMaskVertexColors)
     return blendSourceIncludesDisplacement
 end
 
 function Process(context)
     local enableParallax = context:GetMaterialPropertyValue_bool("parallax.enable")
-    local enable1 = context:GetMaterialPropertyValue_bool("layer1_parallax.enable")
-    local enable2 = context:GetMaterialPropertyValue_bool("layer2_parallax.enable")
-    local enable3 = context:GetMaterialPropertyValue_bool("layer3_parallax.enable")
-    enableParallax = enableParallax and (enable1 or enable2 or enable3)
-    context:SetShaderOptionValue_bool("o_parallax_feature_enabled", enableParallax)
     
     if(enableParallax or BlendSourceUsesDisplacement(context)) then
+        local hasTextureLayer1 = nil ~= context:GetMaterialPropertyValue_Image("layer1_parallax.textureMap")
+        local hasTextureLayer2 = nil ~= context:GetMaterialPropertyValue_Image("layer2_parallax.textureMap")
+        local hasTextureLayer3 = nil ~= context:GetMaterialPropertyValue_Image("layer3_parallax.textureMap")
+        
+        local useTextureLayer1 = context:GetMaterialPropertyValue_bool("layer1_parallax.useTexture")
+        local useTextureLayer2 = context:GetMaterialPropertyValue_bool("layer2_parallax.useTexture")
+        local useTextureLayer3 = context:GetMaterialPropertyValue_bool("layer3_parallax.useTexture")
+
         local factorLayer1 = context:GetMaterialPropertyValue_float("layer1_parallax.factor")
         local factorLayer2 = context:GetMaterialPropertyValue_float("layer2_parallax.factor")
         local factorLayer3 = context:GetMaterialPropertyValue_float("layer3_parallax.factor")
 
+        if not hasTextureLayer1 or not useTextureLayer1 then factorLayer1 = 0 end
+        if not hasTextureLayer2 or not useTextureLayer2 then factorLayer2 = 0 end
+        if not hasTextureLayer3 or not useTextureLayer3 then factorLayer3 = 0 end
+
         local offsetLayer1 = context:GetMaterialPropertyValue_float("layer1_parallax.offset")
         local offsetLayer2 = context:GetMaterialPropertyValue_float("layer2_parallax.offset")
         local offsetLayer3 = context:GetMaterialPropertyValue_float("layer3_parallax.offset")
+        
+        local enableLayer2 = context:GetMaterialPropertyValue_bool("blend.enableLayer2")
+        local enableLayer3 = context:GetMaterialPropertyValue_bool("blend.enableLayer3")
 
         local heightMinMax = {nil, nil}
-        if(enable1) then GetMergedHeightRange(heightMinMax, offsetLayer1, factorLayer1) end
-        if(enable2) then GetMergedHeightRange(heightMinMax, offsetLayer2, factorLayer2) end
-        if(enable3) then GetMergedHeightRange(heightMinMax, offsetLayer3, factorLayer3) end
 
-        if(heightMinMax[1] - heightMinMax[0] < 0.0001) then
-            context:SetShaderOptionValue_bool("o_parallax_feature_enabled", false)
-        else
-            context:SetShaderConstant_float("m_displacementMin", heightMinMax[0])
-            context:SetShaderConstant_float("m_displacementMax", heightMinMax[1])
-        end
+        GetMergedHeightRange(heightMinMax, offsetLayer1, factorLayer1)
+
+        if(enableLayer2) then GetMergedHeightRange(heightMinMax, offsetLayer2, factorLayer2) end
+        if(enableLayer3) then GetMergedHeightRange(heightMinMax, offsetLayer3, factorLayer3) end
+
+        context:SetShaderConstant_float("m_displacementMin", heightMinMax[0])
+        context:SetShaderConstant_float("m_displacementMax", heightMinMax[1])
+    else
+        context:SetShaderConstant_float("m_displacementMin", 0)
+        context:SetShaderConstant_float("m_displacementMax", 0)
     end
 end
 
@@ -112,9 +124,9 @@ function ProcessEditor(context)
     context:SetMaterialPropertyVisibility("parallax.showClipping", visibility)
     
     if BlendSourceUsesDisplacement(context) then
-        context:SetMaterialPropertyVisibility("blend.displacementBlendFactor", MaterialPropertyVisibility_Enabled)
+        context:SetMaterialPropertyVisibility("blend.displacementBlendDistance", MaterialPropertyVisibility_Enabled)
     else
-        context:SetMaterialPropertyVisibility("blend.displacementBlendFactor", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("blend.displacementBlendDistance", MaterialPropertyVisibility_Hidden)
     end
 
 end
