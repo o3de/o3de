@@ -100,52 +100,52 @@ If you have the Git credential manager core or other credential helpers installe
 
 1.  Create a writable folder to cache 3rd Party dependencies. You can also use this to store other redistributable SDKs.
 
-2.  Install the following redistributables to the following:
+1.  Install the following redistributables to the following:
     - Visual Studio and VC++ redistributable can be installed to any location
     - CMake can be installed to any location, as long as it's available in the system path, otherwise it can be installed to: `<3rdParty Path>\CMake\3.19.1`
     - WWise can be installed anywhere, but you will need to set an environment variable for CMake to detect it:  `set LY_WWISE_INSTALL_PATH=<path to WWise>`
     
-3.  Navigate into the repo folder, then download the python runtime with this command
+1.  Navigate into the repo folder, then download the python runtime with this command
     ```
     scripts\get_python.bat
     ```
     
-4.  While still within the repo folder, register the engine with this command:
+1.  While still within the repo folder, register the engine with this command:
     ```
     scripts\o3de.bat register --this-engine
     ```
 
-5.  Configure the source into a solution using this command line, replacing <your build path> and <3rdParty cache path> to a path you've created:
+1.  Configure the source into a solution using this command line, replacing <your build path> and <3rdParty cache path> to a path you've created:
     ```
     cmake -B <your build path> -S <your source path> -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH=<3rdParty cache path> -DLY_UNITY_BUILD=ON -DLY_PROJECTS=AutomatedTesting 
     ```
 
-6.  Alternatively, you can do this through the CMake GUI:
+1.  Alternatively, you can do this through the CMake GUI:
     
     1.  Start `cmake-gui.exe`
-    2.  Select the local path of the repo under "Where is the source code"
-    3.  Select a path where to build binaries under "Where to build the binaries"
-    4.  Click "Configure"
-    5.  Wait for the key values to populate. Fill in the fields that are relevant, including `LY_3RDPARTY_PATH` and `LY_PROJECTS`
-    6.  Click "Generate"
+    1.  Select the local path of the repo under "Where is the source code"
+    1.  Select a path where to build binaries under "Where to build the binaries"
+    1.  Click "Configure"
+    1.  Wait for the key values to populate. Fill in the fields that are relevant, including `LY_3RDPARTY_PATH` and `LY_PROJECTS`
+    1.  Click "Generate"
     
-7.  The configuration of the solution is complete. To build the Editor and AssetProcessor to binaries, run this command inside your repo:
+1.  The configuration of the solution is complete. To build the Editor and AssetProcessor to binaries, run this command inside your repo:
     ```
     cmake --build <your build path> --target AutomatedTesting.GameLauncher AssetProcessor Editor --config profile -- /m
     ```
    
-8.  This will compile after some time and binaries will be available in the build path you've specified
+1.  This will compile after some time and binaries will be available in the build path you've specified
 
 ### Setting up new projects    
 1. Setup new projects using this command
     ```
     <Repo path>\scripts\o3de.bat create-project --project-path <your new project path>
     ```
-2. Register the engine to the project
+1. Register the engine to the project
     ```
     <Repo path>\scripts\o3de.bat register --project-path <New project path>
     ```
-3.  Once you're ready to build the project, run the same set of commands to configure and build:
+1.  Once you're ready to build the project, run the same set of commands to configure and build:
     ```
     cmake -B <your project build path> -S <your new project source path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=<3rdParty cache path>
 
