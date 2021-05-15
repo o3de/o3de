@@ -66,44 +66,90 @@ If you have the Git credential manager core installed, you should not be prompte
     - FBXSDK should be installed to `<3rdParty path>\FbxSdk\2016.1.2-az.1`. See the README in this folder for details
     - WWise should be installed to: `<3rdParty Path>\Wwise\2019.2.8.7432`
     - CMake should be installed to: `<3rdParty Path>\CMake\3.19.1`
+
 4.  Add the following environment variables through the command line
     ```
     set LY_3RDPARTY_PATH=<Location of the unzipped 3rdParty zip>
-    set LY_PACKAGE_SERVER_URLS="https://d2c171ws20a1rv.cloudfront.net"
-    ```
-    
-5.  Configure the source into a solution using this command line, replacing <your build location> to a path you've created
-    ```
-    cmake -B <your build location> -S <source-dir> -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH=%LY_3RDPARTY_PATH% -DLY_UNITY_BUILD=ON -DLY_PROJECTS=AutomatedTesting
     ```
 
-6.  Alternatively, you can do this through the CMake GUI:
-    
-    1.  Start `cmake-gui.exe`
-    2.  Select the local path of the repo under "Where is the source code"
-    3.  Select a path where to build binaries under "Where to build the binaries"
-    4.  Click "Configure"
-    5.  Wait for the key values to populate. Fill in the fields that are relevant, including `LY_3RDPARTY_PATH`, `LY_PACKAGE_SERVER_URLS`, and `LY_PROJECTS`
-    6.  Click "Generate"
-    
-7.  The configuration of the solution is complete. To build the Editor and AssetProcessor to binaries, run this command inside your repo:
-    ```
-    cmake --build <your build location> --target AutomatedTesting.GameLauncher AssetProcessor Editor --config profile -- /m
-    ```
+5.  Configure and build via the command line as shown, or via IDEs which recognise [cmake-presets](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html) such as [VSCode or Visual Studio](https://devblogs.microsoft.com/cppblog/cmake-presets-integration-in-visual-studio-and-visual-studio-code/).
+```
+    # configure
+    cmake -S . --preset WindowsEditor
+    # build
+    cmake --build --preset WindowsEditor-Profile
+```
    
 8.  This will compile after some time and binaries will be available in the build path you've specified
 
 ### Setting up new projects    
 1. Setup new projects using this command
     ```
-    <Repo path>\scripts\o3de.bat create-project --project-path <New project path>
+    <Repo path>\scripts\o3de.bat create-project --project-path "c:\path\to\MyFirstProject"
     ```
-2.  Once you're ready to build the project, run the same set of commands to configure and build:
-    ```
-    cmake -B <your build location> -S <source-dir> -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH=%LY_3RDPARTY_PATH% -DLY_PROJECTS=<New project name> -DLY_MONOLITHIC_GAME=1
+2.  Once you're ready to build the project, add an additional configuration/build presets to `CMakeUserPresets.json` for the new project like so.  This file is ignored by git.
 
-    cmake --build <your build location> --target <New Project Name> --config profile -- /m
-    ```
+```
+{
+  "version": 2,
+  "configurePresets": [
+    {
+      "name": "MyFirstProject",
+      "displayName": "Example user project configuration",
+      "description": "Example user project configuration. Assumes project already initialised with scripts/o3de.bat",
+      "inherits": "WindowsEditor",
+      "cacheVariables": {
+        "LY_PROJECTS":"c:/path/to/MyFirstProject"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "MyFirstProject-Profile",
+      "inherits": "WindowsEditor-Profile",
+      "configurePreset": "MyFirstProject",
+      "targets": [ "MyFirstProject" ]
+    }
+  ]
+}
+```
+
+3. Configure and build the new project.
+```
+    # configure
+    cmake --preset MyFirstProject
+    # build
+    cmake --build --preset MyFirstProject-Profile
+```
+
+### Run from vscode
+
+(just dumping this here for now, might be worth having a step-by-step guide per IDE)
+
+1. Install Microsoft's C/C++ extension, [ms-vscode.cpptools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
+2. Put the following in `.vscode/launch.json` for vscode
+```
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(Windows) Editor Launch",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/WindowsEditor/bin/profile/Editor.exe",
+            "args": [],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "externalTerminal"
+        }
+    ]
+}
+```
+3. You're ready to launch and debug using the UI.
 
 ## License
 

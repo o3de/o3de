@@ -1,0 +1,41 @@
+{
+  "version": 2,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 19,
+    "patch": 1
+  },
+  "configurePresets": [
+    {
+      "name": "WindowsEditor",
+      "displayName": "Windows Editor Default Configuration",
+      "description": "Editor, asset processor and automated tests.",
+      "generator": "Visual Studio 16 2019",
+      "binaryDir": "${sourceDir}/build/WindowsEditor",
+      "cacheVariables": {
+        "LY_3RDPARTY_PATH": "$env{LY_3RDPARTY_PATH}",
+        "LY_PACKAGE_SERVER_URLS": "https://d2c171ws20a1rv.cloudfront.net",
+        "LY_UNITY_BUILD":"ON",
+        "LY_PROJECTS":"AutomatedTesting"
+      },
+      "architecture": {
+        "value": "x64",
+        "strategy": "set"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "WindowsEditor-Profile",
+      "configurePreset": "WindowsEditor",
+      "configuration": "profile",
+      "targets": [
+        "AutomatedTesting.GameLauncher",
+        "AssetProcessor",
+        "Editor"
+      ],
+      "nativeToolOptions": ["/m"]
+    }
+  ]
+
+}
