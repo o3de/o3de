@@ -20,7 +20,6 @@
 
 #include <Cry_Math.h>
 #include <IXml.h>
-#include "CountedValue.h"
 #include "MiniQueue.h"
 #include <VectorSet.h>
 #include <VectorMap.h>
@@ -469,58 +468,6 @@ public:
             Value(name, a, policy);
             val.SetGoal(a);
         }
-    }
-
-    template <class T>
-    void Value(const char* name, CountedValue<T>& countedValue)
-    {
-        if (!BeginOptionalGroup(name, true))
-        {
-            return;
-        }
-        if (IsWriting())
-        {
-            T rawValue = countedValue.Peek();
-            Value("Value", rawValue);
-            typename CountedValue<T>::TCountedID rawId = countedValue.GetLatestID();
-            Value("Id", rawId, 'ui32');
-        }
-
-        if (IsReading())
-        {
-            T rawValue;
-            Value("Value", rawValue);
-            typename CountedValue<T>::TCountedID rawId;
-            Value("Id", rawId, 'ui32');
-            countedValue.UpdateDuringSerializationOnly(rawValue, rawId);
-        }
-        EndGroup();
-    }
-
-    template <class T>
-    void Value(const char* name, CountedValue<T>& countedValue, int policy)
-    {
-        if (!BeginOptionalGroup(name, true))
-        {
-            return;
-        }
-        if (IsWriting())
-        {
-            T rawValue = countedValue.Peek();
-            Value("Value", rawValue, policy);
-            typename CountedValue<T>::TCountedID rawId = countedValue.GetLatestID();
-            Value("Id", rawId, 'ui32');
-        }
-
-        if (IsReading())
-        {
-            T rawValue;
-            Value("Value", rawValue, policy);
-            typename CountedValue<T>::TCountedID rawId;
-            Value("Id", rawId, 'ui32');
-            countedValue.UpdateDuringSerializationOnly(rawValue, rawId);
-        }
-        EndGroup();
     }
 
     bool ValueChar(const char* name, char* buffer, int len)

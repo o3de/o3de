@@ -85,7 +85,7 @@ namespace AZ::SerializeContextTools
                     result = false;
                 }
             };
-            if (!Utilities::InspectSerializedFile(filePath, sc, callback))
+            if (!Utilities::InspectSerializedFile(filePath.c_str(), sc, callback))
             {
                 result = false;
                 continue;

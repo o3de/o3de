@@ -440,7 +440,6 @@ bool CImageTIF::SaveRAW(const QString& fileName, const void* pData, int width, i
         {
             size_t offset = h * pitch;
             int err = TIFFWriteScanline(tif, raster + offset, h, 0);
-            assert(CryMemory::IsHeapValid());
             if (err < 0)
             {
                 bRet = false;

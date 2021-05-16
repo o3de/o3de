@@ -18,8 +18,8 @@
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/containers/ring_buffer.h>
-#include <Multiplayer/NetBindComponent.h>
-#include <Multiplayer/NetworkEntityUpdateMessage.h>
+#include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h>
 
 namespace AzNetworking
 {

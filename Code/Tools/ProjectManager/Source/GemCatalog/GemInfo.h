@@ -35,7 +35,10 @@ namespace O3DE::ProjectManager
         };
         Q_DECLARE_FLAGS(Platforms, Platform)
 
+        GemInfo() = default;
         GemInfo(const QString& name, const QString& creator, const QString& summary, Platforms platforms, bool isAdded);
+
+        bool IsValid() const;
 
         QString m_path;
         QString m_name;
