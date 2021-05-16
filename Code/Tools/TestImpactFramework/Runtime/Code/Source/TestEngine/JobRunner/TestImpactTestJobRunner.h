@@ -16,7 +16,7 @@
 
 #include <Process/JobRunner/TestImpactProcessJob.h>
 #include <Process/JobRunner/TestImpactProcessJobRunner.h>
-#include <TestEngine/Job/TestImpactTestJobException.h>
+#include <TestEngine/JobRunner/TestImpactTestJobException.h>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/optional.h>
@@ -45,6 +45,7 @@ namespace TestImpact
     public:
         using JobData = AdditionalInfo;
         using JobInfo = JobInfo<AdditionalInfo>;
+        using Command = typename JobInfo::Command;
         using JobPayload = Payload;
         using Job = Job<JobInfo, Payload>;
         using ClientJobCallback = AZStd::function<void(const JobInfo& jobInfo, const JobMeta& meta)>;

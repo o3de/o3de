@@ -13,9 +13,9 @@
 #include <TestImpactTestJobRunnerCommon.h>
 #include <TestImpactTestUtils.h>
 
-#include <Test/Enumeration/TestImpactTestEnumerationException.h>
-#include <Test/Enumeration/TestImpactTestEnumerationSerializer.h>
-#include <Test/Enumeration/TestImpactTestEnumerator.h>
+#include <TestEngine/Enumeration/TestImpactTestEnumerationException.h>
+#include <TestEngine/Enumeration/TestImpactTestEnumerationSerializer.h>
+#include <TestEngine/Enumeration/TestImpactTestEnumerator.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -32,13 +32,13 @@ namespace UnitTest
     using CacheExceptionPolicy = TestImpact::TestEnumerator::CacheExceptionPolicy;
 
     // Generates the command to run the given test target through AzTestRunner and get gtest to output the enumeration file
-    AZStd::string GetEnumerateCommandForTarget(AZStd::pair<AZ::IO::Path, AZ::IO::Path> testTarget)
+    TestImpact::TestEnumerator::Command GetEnumerateCommandForTarget(AZStd::pair<AZ::IO::Path, AZ::IO::Path> testTarget)
     {
-        return AZStd::string::format(
+        return TestImpact::TestEnumerator::Command{ AZStd::string::format(
             "%s %s AzRunUnitTests --gtest_list_tests --gtest_output=xml:%s",
             LY_TEST_IMPACT_AZ_TESTRUNNER_BIN,
-            testTarget.first.c_str(),   // Path to test target bin
-            testTarget.second.c_str()); // Path to test target gtest enumeration file
+            testTarget.first.c_str(),     // Path to test target bin
+            testTarget.second.c_str()) }; // Path to test target gtest enumeration file
     }
 
     class TestEnumeratorFixture
@@ -50,10 +50,11 @@ namespace UnitTest
     protected:
         using JobInfo = TestImpact::TestEnumerator::JobInfo;
         using JobData = TestImpact::TestEnumerator::JobData;
+        using Command = TestImpact::TestEnumerator::Command;
 
         AZStd::vector<JobInfo> m_jobInfos;
         AZStd::unique_ptr<TestImpact::TestEnumerator> m_testEnumerator;
-        AZStd::vector<AZStd::string> m_testTargetJobArgs;
+        AZStd::vector<Command> m_testTargetJobArgs;
         AZStd::vector<AZStd::pair<AZ::IO::Path, AZ::IO::Path>> m_testTargetPaths;
         AZStd::vector<TestImpact::TestEnumeration> m_expectedTestTargetEnumerations;
         AZStd::vector<AZStd::string> m_cacheFiles;
@@ -184,7 +185,7 @@ namespace UnitTest
     // Validates that the specified job successfully read from its test enumeration cache
     void ValidateJobSuccessfulCacheRead(const TestImpact::TestEnumerator::Job& job)
     {
-        EXPECT_EQ(job.GetResult(), TestImpact::JobResult::NotExecuted);
+        EXPECT_EQ(job.GetJobResult(), TestImpact::JobResult::NotExecuted);
         EXPECT_EQ(job.GetStartTime(), AZStd::chrono::high_resolution_clock::time_point());
         EXPECT_EQ(job.GetEndTime(), AZStd::chrono::high_resolution_clock::time_point());
         EXPECT_EQ(job.GetDuration(), AZStd::chrono::milliseconds(0));
@@ -241,7 +242,7 @@ namespace UnitTest
         // Given a mixture of test enumeration jobs with valid and invalid command arguments
         for (size_t jobId = 0; jobId < m_testTargetJobArgs.size(); jobId++)
         {
-            const AZStd::string args = (jobId % 2) ? InvalidProcessPath : m_testTargetJobArgs[jobId];
+            const Command args = (jobId % 2) ? Command{ InvalidProcessPath } : m_testTargetJobArgs[jobId];
             JobData jobData(m_testTargetPaths[jobId].second, AZStd::nullopt);
             m_jobInfos.emplace_back(JobInfo({jobId}, args, AZStd::move(jobData)));
         }
@@ -296,8 +297,8 @@ namespace UnitTest
         for (size_t jobId = 0; jobId < m_testTargetJobArgs.size(); jobId++)
         {
             JobData jobData(m_testTargetPaths[jobId].second, AZStd::nullopt);
-            const AZStd::string args = (jobId % 2)
-                ? AZStd::string::format("%s %s", ValidProcessPath, ConstructTestProcessArgs(jobId, AZStd::chrono::milliseconds(0)).c_str())
+            const Command args = (jobId % 2)
+                ? Command{AZStd::string::format("%s %s", ValidProcessPath, ConstructTestProcessArgs(jobId, AZStd::chrono::milliseconds(0)).c_str())}
                 : m_testTargetJobArgs[jobId];
             m_jobInfos.emplace_back(JobInfo({jobId}, args, AZStd::move(jobData)));
         }
@@ -643,7 +644,7 @@ namespace UnitTest
 
         // Given an test enumeration job that will return successfully but not produce an artifact
         m_jobInfos.emplace_back(JobInfo(
-            {0}, AZStd::string::format("%s %s", ValidProcessPath, ConstructTestProcessArgs(0, AZStd::chrono::milliseconds(0)).c_str()),
+            { 0 }, Command{ AZStd::string::format("%s %s", ValidProcessPath, ConstructTestProcessArgs(0, AZStd::chrono::milliseconds(0)).c_str()) },
             JobData("", AZStd::nullopt)));
 
         try
@@ -801,8 +802,8 @@ namespace UnitTest
         for (size_t jobId = 0; jobId < m_testTargetJobArgs.size(); jobId++)
         {
             JobData jobData(m_testTargetPaths[jobId].second, AZStd::nullopt);
-            const AZStd::string args = (jobId % 2)
-                ? AZStd::string::format("%s %s", ValidProcessPath, ConstructTestProcessArgs(jobId, LongSleep).c_str())
+            const Command args = (jobId % 2)
+                ? Command{ AZStd::string::format("%s %s", ValidProcessPath, ConstructTestProcessArgs(jobId, LongSleep).c_str()) }
                 : m_testTargetJobArgs[jobId];
             m_jobInfos.emplace_back(JobInfo({jobId}, args, AZStd::move(jobData)));
         }
@@ -840,8 +841,8 @@ namespace UnitTest
         for (size_t jobId = 0; jobId < m_testTargetJobArgs.size(); jobId++)
         {
             JobData jobData(m_testTargetPaths[jobId].second, AZStd::nullopt);
-            const AZStd::string args = (jobId % 2)
-                ? AZStd::string::format("%s %s", ValidProcessPath, ConstructTestProcessArgs(jobId, LongSleep).c_str())
+            const Command args = (jobId % 2)
+                ? Command{ AZStd::string::format("%s %s", ValidProcessPath, ConstructTestProcessArgs(jobId, LongSleep).c_str()) }
                 : m_testTargetJobArgs[jobId];
             m_jobInfos.emplace_back(JobInfo({jobId}, args, AZStd::move(jobData)));
         }

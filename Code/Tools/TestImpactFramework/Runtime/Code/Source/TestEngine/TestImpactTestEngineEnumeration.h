@@ -10,5 +10,20 @@
  *
  */
 
-#include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#pragma once
+
+#include <TestEngine/TestImpactTestEngineJob.h>
+#include <TestEngine/Enumeration/TestImpactTestEnumeration.h>
+
+namespace TestImpact
+{
+    class TestEngineEnumeration
+        : public TestEngineJob
+    {
+    public:
+        TestEngineEnumeration(TestEngineJob&& job, AZStd::optional<TestEnumeration>&& enumeration);
+        const AZStd::optional<TestEnumeration>& GetTestEnumeration() const;
+    private:
+        AZStd::optional<TestEnumeration> m_enumeration;
+    };
+} // namespace TestImpact

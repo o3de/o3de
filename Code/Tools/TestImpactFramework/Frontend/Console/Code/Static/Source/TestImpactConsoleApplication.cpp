@@ -98,6 +98,7 @@ namespace TestImpact
                     options.GetExecutionFailurePolicy(),
                     options.GetExecutionFailureDraftingPolicy(),
                     options.GetTestFailurePolicy(),
+                    options.GetIntegrityFailurePolicy(),
                     options.GetTestShardingPolicy(),
                     options.GetTargetOutputCapture(),
                     options.GetMaxConcurrency());
@@ -110,8 +111,8 @@ namespace TestImpact
                         return ReturnCode::Success;
                     case TestSequenceResult::Failure:
                         return ReturnCode::TestFailure;
-                    case TestSequenceResult::Timeout:
-                        return ReturnCode::TestFailure;
+                    //case TestSequenceResult::Timeout:
+                    //    return ReturnCode::TestFailure;
                     default:
                         std::cout << "Unexpected TestSequenceResult value: " << static_cast<size_t>(result) << std::endl;
                         return ReturnCode::UnknownError;
@@ -127,11 +128,11 @@ namespace TestImpact
                         result = runtime.ImpactAnalysisTestSequence(
                             changeList.value(),
                             options.GetTestPrioritizationPolicy(),
-                            AZStd::nullopt,
-                            AZStd::nullopt,
-                            AZStd::nullopt,
                             options.GetTestTargetTimeout(),
-                            options.GetGlobalTimeout());
+                            options.GetGlobalTimeout(),
+                            AZStd::nullopt,
+                            AZStd::nullopt,
+                            AZStd::nullopt);
                     }
                     else
                     {
@@ -139,11 +140,11 @@ namespace TestImpact
                             changeList.value(),
                             options.GetSuitesFilter(),
                             options.GetTestPrioritizationPolicy(),
-                            AZStd::nullopt,
-                            AZStd::nullopt,
-                            AZStd::nullopt,
                             options.GetTestTargetTimeout(),
-                            options.GetGlobalTimeout());
+                            options.GetGlobalTimeout(),
+                            AZStd::nullopt,
+                            AZStd::nullopt,
+                            AZStd::nullopt);
                     }
 
                     return handleTestSequenceResult(result);
@@ -155,21 +156,21 @@ namespace TestImpact
                 {
                     const auto result = runtime.RegularTestSequence(
                         options.GetSuitesFilter(),
-                        AZStd::nullopt,
-                        AZStd::nullopt,
-                        AZStd::nullopt,
                         options.GetTestTargetTimeout(),
-                        options.GetGlobalTimeout());
+                        options.GetGlobalTimeout(),
+                        AZStd::nullopt,
+                        AZStd::nullopt,
+                        AZStd::nullopt);
 
                     return handleTestSequenceResult(result);
                 }
                 case TestSequenceType::Seed:
                 {
                     const auto result = runtime.SeededTestSequence(
+                        options.GetGlobalTimeout(),
                         AZStd::nullopt,
                         AZStd::nullopt,
-                        AZStd::nullopt,
-                        options.GetGlobalTimeout());
+                        AZStd::nullopt);
 
                     return handleTestSequenceResult(result);
                 }
@@ -186,10 +187,10 @@ namespace TestImpact
                     else
                     {
                         const auto result = runtime.SeededTestSequence(
+                            options.GetGlobalTimeout(),
                             AZStd::nullopt,
                             AZStd::nullopt,
-                            AZStd::nullopt,
-                            options.GetGlobalTimeout());
+                            AZStd::nullopt);
 
                         return handleTestSequenceResult(result);
                     }

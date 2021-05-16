@@ -54,6 +54,7 @@ namespace TestImpact
         ExecutionFailurePolicy GetExecutionFailurePolicy() const;
         ExecutionFailureDraftingPolicy GetExecutionFailureDraftingPolicy() const;
         TestFailurePolicy GetTestFailurePolicy() const;
+        IntegrityFailurePolicy GetIntegrityFailurePolicy() const;
         TestShardingPolicy GetTestShardingPolicy() const;
         TargetOutputCapture GetTargetOutputCapture() const;
         const AZStd::optional<size_t>& GetMaxConcurrency() const;
@@ -70,6 +71,7 @@ namespace TestImpact
         ExecutionFailurePolicy m_executionFailurePolicy = ExecutionFailurePolicy::Continue;
         ExecutionFailureDraftingPolicy m_executionFailureDraftingPolicy = ExecutionFailureDraftingPolicy::Always;
         TestFailurePolicy m_testFailurePolicy = TestFailurePolicy::Abort;
+        IntegrityFailurePolicy m_integrityFailurePolicy = IntegrityFailurePolicy::Abort;
         TestShardingPolicy m_testShardingPolicy = TestShardingPolicy::Never;
         TargetOutputCapture m_targetOutputCapture = TargetOutputCapture::None;
         AZStd::optional<size_t> m_maxConcurrency;

@@ -12,8 +12,8 @@
 
 #include <TestImpactTestUtils.h>
 
-#include <Test/Run/TestImpactTestRun.h>
-#include <Test/Run/TestImpactTestRunSerializer.h>
+#include <TestEngine/Run/TestImpactTestRun.h>
+#include <TestEngine/Run/TestImpactTestRunSerializer.h>
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>

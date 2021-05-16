@@ -14,8 +14,8 @@
 #include <TestImpactTestUtils.h>
 
 #include <Artifact/TestImpactArtifactException.h>
-#include <Test/Run/TestImpactTestRunException.h>
-#include <Test/Run/TestImpactTestRunner.h>
+#include <TestEngine/Run/TestImpactTestRunException.h>
+#include <TestEngine/Run/TestImpactTestRunner.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -30,11 +30,11 @@ namespace UnitTest
 {
     using JobExceptionPolicy = TestImpact::TestRunner::JobExceptionPolicy;
 
-    AZStd::string GetRunCommandForTarget(AZStd::pair<AZ::IO::Path, AZ::IO::Path> testTarget)
+    TestImpact::TestRunner::Command GetRunCommandForTarget(AZStd::pair<AZ::IO::Path, AZ::IO::Path> testTarget)
     {
-        return AZStd::string::format(
+        return TestImpact::TestRunner::Command{ AZStd::string::format(
             "%s %s AzRunUnitTests --gtest_output=xml:%s", LY_TEST_IMPACT_AZ_TESTRUNNER_BIN, testTarget.first.c_str(),
-            testTarget.second.c_str());
+            testTarget.second.c_str()) };
     }
 
     class TestRunnerFixture
@@ -46,10 +46,11 @@ namespace UnitTest
     protected:
         using JobInfo = TestImpact::TestRunner::JobInfo;
         using JobData = TestImpact::TestRunner::JobData;
+        using Command = TestImpact::TestRunner::Command;
 
         AZStd::vector<JobInfo> m_jobInfos;
         AZStd::unique_ptr<TestImpact::TestRunner> m_testRunner;
-        AZStd::vector<AZStd::string> m_testTargetJobArgs;
+        AZStd::vector<Command> m_testTargetJobArgs;
         AZStd::vector<AZStd::pair<AZ::IO::Path, AZ::IO::Path>> m_testTargetPaths;
         AZStd::vector<TestImpact::TestRun> m_expectedTestTargetRuns;
         AZStd::vector<TestImpact::TestRunResult> m_expectedTestTargetResult;
@@ -158,7 +159,7 @@ namespace UnitTest
         // Given a mixture of test run jobs with valid and invalid command arguments
         for (size_t jobId = 0; jobId < m_testTargetJobArgs.size(); jobId++)
         {
-            const AZStd::string args = (jobId % 2) ? InvalidProcessPath : m_testTargetJobArgs[jobId];
+            const Command args = (jobId % 2) ? Command{ InvalidProcessPath } : m_testTargetJobArgs[jobId];
             JobData jobData(m_testTargetPaths[jobId].second);
             m_jobInfos.emplace_back(JobInfo({jobId}, args, AZStd::move(jobData)));
         }
@@ -282,7 +283,7 @@ namespace UnitTest
         // Given a job command that will write the test run artifact to a different location that what we will read from
         auto invalidRunArtifact = m_testTargetPaths[TestTargetA];
         invalidRunArtifact.second /= ".xml";
-        const AZStd::string args = GetRunCommandForTarget(invalidRunArtifact);
+        const Command args = GetRunCommandForTarget(invalidRunArtifact);
 
         // Given a test runner with no client callback, concurrency, run timeout or runner timeout
         m_testRunner = AZStd::make_unique<TestImpact::TestRunner>(AZStd::nullopt, OneConcurrentProcess, AZStd::nullopt, AZStd::nullopt);
@@ -440,8 +441,8 @@ namespace UnitTest
         for (size_t jobId = 0; jobId < m_testTargetJobArgs.size(); jobId++)
         {
             JobData jobData(m_testTargetPaths[jobId].second);
-            const AZStd::string args = (jobId % 2)
-                ? AZStd::string::format("%s %s", ValidProcessPath, ConstructTestProcessArgs(jobId, LongSleep).c_str())
+            const Command args = (jobId % 2)
+                ? Command{ AZStd::string::format("%s %s", ValidProcessPath, ConstructTestProcessArgs(jobId, LongSleep).c_str()) }
                 : m_testTargetJobArgs[jobId];
             m_jobInfos.emplace_back(JobInfo({jobId}, args, AZStd::move(jobData)));
         }
@@ -476,8 +477,8 @@ namespace UnitTest
         for (size_t jobId = 0; jobId < m_testTargetJobArgs.size(); jobId++)
         {
             JobData jobData(m_testTargetPaths[jobId].second);
-            const AZStd::string args = (jobId % 2)
-                ? AZStd::string::format("%s %s", ValidProcessPath, ConstructTestProcessArgs(jobId, LongSleep).c_str())
+            const Command args = (jobId % 2)
+                ? Command{ AZStd::string::format("%s %s", ValidProcessPath, ConstructTestProcessArgs(jobId, LongSleep).c_str()) }
                 : m_testTargetJobArgs[jobId];
             m_jobInfos.emplace_back(JobInfo({jobId}, args, AZStd::move(jobData)));
         }

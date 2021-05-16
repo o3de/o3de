@@ -12,20 +12,18 @@
 
 #pragma once
 
-#include <TestEngine/JobRunner/TestImpactTestJobRunner.h>
+#include <TestEngine/TestImpactTestEngineRegularRun.h>
+#include <TestEngine/Run/TestImpactTestCoverage.h>
 
 namespace TestImpact
 {
-    //! Per-job data for test runs.
-    class TestRunJobData
+    class TestEngineInstrumentedRun
+        : public TestEngineRegularRun
     {
     public:
-        TestRunJobData(const AZ::IO::Path& resultsArtifact);
-
-        //! Returns the path to the test run artifact produced by the test target.
-        const AZ::IO::Path& GetRunArtifactPath() const;
-
+        TestEngineInstrumentedRun(TestEngineJob&& testJob, AZStd::optional<TestRun>&& testRun, AZStd::optional<TestCoverage>&& testCoverage);
+        const AZStd::optional<TestCoverage>& GetTestCoverge() const;
     private:
-        AZ::IO::Path m_runArtifact; //!< Path to results data.
+        AZStd::optional<TestCoverage> m_testCoverage;
     };
 } // namespace TestImpact

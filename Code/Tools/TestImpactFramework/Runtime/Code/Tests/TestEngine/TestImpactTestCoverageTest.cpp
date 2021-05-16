@@ -10,7 +10,7 @@
  *
  */
 
-#include <Test/Run/TestImpactTestCoverage.h>
+#include <TestEngine/Run/TestImpactTestCoverage.h>
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>

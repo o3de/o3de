@@ -200,6 +200,28 @@ namespace TestImpact
             return TestFailurePolicy::Abort;
         }
 
+        IntegrityFailurePolicy ParseIntegrityFailurePolicy(const AZ::CommandLine& cmd)
+        {
+            const auto numSwitchValues = cmd.GetNumSwitchValues("ipolicy");
+            if (numSwitchValues)
+            {
+                AZ_TestImpact_Eval(numSwitchValues == 1, CommandLineOptionsException, "Unexpected parameters for integrity failure policy option");
+                const auto option = cmd.GetSwitchValue("ipolicy", 0);
+                if (option == "abort")
+                {
+                    return IntegrityFailurePolicy::Abort;
+                }
+                else if (option == "continue")
+                {
+                    return IntegrityFailurePolicy::Continue;
+                }
+
+                throw CommandLineOptionsException(AZStd::string::format("Unexpected value for integrity failure policy option: %s", option.c_str()));
+            }
+
+            return IntegrityFailurePolicy::Abort;
+        }
+
         TestShardingPolicy ParseTestShading(const AZ::CommandLine& cmd)
         {
             const auto numSwitchValues = cmd.GetNumSwitchValues("shard");
@@ -449,6 +471,7 @@ namespace TestImpact
         m_executionFailurePolicy = ParseExecutionFailurePolicy(cmd);
         m_executionFailureDraftingPolicy = ParseExecutionFailureDraftingPolicy(cmd);
         m_testFailurePolicy = ParseTestFailurePolicy(cmd);
+        m_integrityFailurePolicy = ParseIntegrityFailurePolicy(cmd);
         m_testShardingPolicy = ParseTestShading(cmd);
         m_targetOutputCapture = ParseTargetOutputCapture(cmd);
         m_maxConcurrency = ParseMaxConcurrency(cmd);

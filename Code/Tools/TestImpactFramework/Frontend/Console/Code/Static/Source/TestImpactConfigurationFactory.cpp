@@ -170,58 +170,29 @@ namespace TestImpact
         // Test target meta
         runtimeConfig.m_testTargetMeta.m_file = configurationFile["artifacts"]["static"]["test_target_meta"]["file"].GetString();
 
-        // Test engine
-        runtimeConfig.m_testEngine.m_testRun.m_enumerationArgs =
-            parseAndReplace(configurationFile["test_engine"]["test_run"]["enumeration_args"].GetString());
-        runtimeConfig.m_testEngine.m_testRun.m_testRunner.m_binary =
-            configurationFile["test_engine"]["test_run"]["test_runner"]["bin"].GetString();
-        runtimeConfig.m_testEngine.m_testRun.m_testRunner.m_runArgs =
-            parseAndReplace(configurationFile["test_engine"]["test_run"]["test_runner"]["run_args"].GetString());
-        runtimeConfig.m_testEngine.m_testRun.m_testRunner.m_shardArgs =
-            parseAndReplace(configurationFile["test_engine"]["test_run"]["test_runner"]["shard_args"].GetString());
-        runtimeConfig.m_testEngine.m_instrumentation.m_binary =
-            configurationFile["test_engine"]["instrumentation"]["bin"].GetString();
-        runtimeConfig.m_testEngine.m_instrumentation.m_sourceCoverageArgs =
-            parseAndReplace(configurationFile["test_engine"]["instrumentation"]["source_coverage_args"].GetString());
-        runtimeConfig.m_testEngine.m_instrumentation.m_lineCoverageArgs =
-            parseAndReplace(configurationFile["test_engine"]["instrumentation"]["line_coverage_args"].GetString());
-        runtimeConfig.m_testEngine.m_instrumentation.m_runArgs =
-            parseAndReplace(configurationFile["test_engine"]["instrumentation"]["run_args"].GetString());
-
         // Target
         runtimeConfig.m_target.m_outputDirectory = configurationFile["target"]["dir"].GetString();
         const auto& testExcludes =
             configurationFile["target"]["exclude"].GetArray();
         if (!testExcludes.Empty())
         {
-            runtimeConfig.m_target.m_excludedTargets.reserve(testExcludes.Size());
+            runtimeConfig.m_target.m_excludedTestTargets.reserve(testExcludes.Size());
             for (const auto& testExclude : testExcludes)
             {
-                TargetConfig::ExcludedTarget exclude;
-                exclude.m_name = testExclude["target"].GetString();
-                const auto& excludedTests = testExclude["tests"].GetArray();
-                if (!excludedTests.Empty())
-                {
-                    exclude.m_tests.reserve(excludedTests.Size());
-                    for (const auto& excludedTest : excludedTests)
-                    {
-                        exclude.m_tests.push_back(excludedTest.GetString());
-                    }
-                }
-                runtimeConfig.m_target.m_excludedTargets.push_back(AZStd::move(exclude));
+                runtimeConfig.m_target.m_excludedTestTargets.push_back(testExclude.GetString());
             }
         }
         const auto& testShards =
             configurationFile["target"]["shard"].GetArray();
         if (!testShards.Empty())
         {
-            runtimeConfig.m_target.m_shardedTargets.reserve(testShards.Size());
+            runtimeConfig.m_target.m_shardedTestTargets.reserve(testShards.Size());
             for (const auto& testShard : testShards)
             {
                 TargetConfig::ShardedTarget shard;
                 shard.m_name = testShard["target"].GetString();
                 shard.m_policy = testShard["policy"].GetString();
-                runtimeConfig.m_target.m_shardedTargets.push_back(AZStd::move(shard));
+                runtimeConfig.m_target.m_shardedTestTargets.push_back(AZStd::move(shard));
             }
         }
 

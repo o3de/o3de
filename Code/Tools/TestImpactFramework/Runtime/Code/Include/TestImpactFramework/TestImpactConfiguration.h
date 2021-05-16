@@ -56,41 +56,8 @@ namespace TestImpact
         AZ::IO::Path m_file;
     };
 
-    struct TestEngineConfig
-    {
-        struct TestRun
-        {
-            struct TestRunner
-            {
-                AZ::IO::Path m_binary;
-                AZStd::string m_runArgs;
-                AZStd::string m_shardArgs;
-            };
-
-            AZStd::string m_enumerationArgs;
-            TestRunner m_testRunner;
-        };
-
-        struct Instrumentation
-        {
-            AZ::IO::Path m_binary;
-            AZStd::string m_runArgs;
-            AZStd::string m_sourceCoverageArgs;
-            AZStd::string m_lineCoverageArgs;
-        };
-
-        TestRun m_testRun;
-        Instrumentation m_instrumentation;
-    };
-
     struct TargetConfig
-    {
-        struct ExcludedTarget
-        {
-            AZStd::string m_name;
-            AZStd::vector<AZStd::string> m_tests;
-        };
-
+    {  
         struct ShardedTarget
         {
             AZStd::string m_name;
@@ -98,8 +65,8 @@ namespace TestImpact
         };
 
         AZ::IO::Path m_outputDirectory;
-        AZStd::vector<ExcludedTarget> m_excludedTargets;
-        AZStd::vector<ShardedTarget> m_shardedTargets;
+        AZStd::vector<AZStd::string> m_excludedTestTargets;
+        AZStd::vector<ShardedTarget> m_shardedTestTargets;
     };
 
     struct RuntimeConfig
@@ -110,7 +77,6 @@ namespace TestImpact
         BuildTargetDescriptorConfig m_buildTargetDescriptor;
         DependencyGraphDataConfig m_dependencyGraphData;
         TestTargetMetaConfig m_testTargetMeta;
-        TestEngineConfig m_testEngine;
         TargetConfig m_target;
     };
 }

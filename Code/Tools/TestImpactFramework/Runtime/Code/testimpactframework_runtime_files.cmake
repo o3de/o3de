@@ -19,7 +19,9 @@ set(FILES
     Include/TestImpactFramework/TestImpactChangelistSerializer.h
     Include/TestImpactFramework/TestImpactChangelistException.h
     Include/TestImpactFramework/TestImpactTestSelection.h
-    Include/TestImpactFramework/TestImpactTestRun.h
+    Include/TestImpactFramework/TestImpactTestEnginePolicy.h
+    Include/TestImpactFramework/TestImpactTest.h
+    Include/TestImpactFramework/TestImpactFailureReport.h
     Include/TestImpactFramework/TestImpactUtils.h
     Source/Artifact/TestImpactArtifactException.h
     Source/Artifact/Factory/TestImpactBuildTargetDescriptorFactory.cpp
@@ -56,6 +58,8 @@ set(FILES
     Source/Process/TestImpactProcessLauncher.h
     Source/Process/JobRunner/TestImpactProcessJob.h
     Source/Process/JobRunner/TestImpactProcessJobInfo.h
+    Source/Process/JobRunner/TestImpactProcessJobMeta.cpp
+    Source/Process/JobRunner/TestImpactProcessJobMeta.h
     Source/Process/JobRunner/TestImpactProcessJobRunner.h
     Source/Process/Scheduler/TestImpactProcessScheduler.cpp
     Source/Process/Scheduler/TestImpactProcessScheduler.h
@@ -101,17 +105,28 @@ set(FILES
     Source/TestEngine/Run/TestImpactTestCoverage.cpp
     Source/TestEngine/Run/TestImpactTestCoverage.h
     Source/TestEngine/Run/TestImpactTestRunException.h
-    Source/TestEngine/Job/TestImpactTestJobRunner.h
-    Source/TestEngine/Job/TestImpactTestJobException.h
+    Source/TestEngine/JobRunner/TestImpactTestJobRunner.h
+    Source/TestEngine/JobRunner/TestImpactTestJobException.h
+    Source/TestEngine/JobRunner/TestImpactTestJobInfoGenerator.cpp
+    Source/TestEngine/JobRunner/TestImpactTestJobInfoGenerator.h
     Source/TestEngine/TestImpactTestSuiteContainer.h
     Source/TestEngine/TestImpactTestEngine.cpp
     Source/TestEngine/TestImpactTestEngine.h
+    Source/TestEngine/TestImpactTestEngineJob.cpp
+    Source/TestEngine/TestImpactTestEngineJob.h
+    Source/TestEngine/TestImpactTestEngineEnumeration.cpp
+    Source/TestEngine/TestImpactTestEngineEnumeration.h
+    Source/TestEngine/TestImpactTestEngineRegularRun.cpp
+    Source/TestEngine/TestImpactTestEngineRegularRun.h
+    Source/TestEngine/TestImpactTestEngineInstrumentedRun.cpp
+    Source/TestEngine/TestImpactTestEngineInstrumentedRun.h
     Source/TestImpactException.cpp
     Source/TestImpactFrameworkPath.cpp
     Source/TestImpactBitwise.h
     Source/TestImpactFrameworkPath.h
     Source/TestImpactRuntime.cpp
     Source/TestImpactTestSelection.cpp
-    Source/TestImpactTestRun.cpp
+    Source/TestImpactTest.cpp
+    Source/TestImpactFailureReport.cpp
     Source/TestImpactChangeListSerializer.cpp
 )

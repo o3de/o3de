@@ -14,8 +14,8 @@
 
 #include <TestImpactTestUtils.h>
 
-#include <Test/Enumeration/TestImpactTestEnumeration.h>
-#include <Test/Run/TestImpactTestRun.h>
+#include <TestEngine/Enumeration/TestImpactTestEnumeration.h>
+#include <TestEngine/Run/TestImpactTestRun.h>
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -49,7 +49,7 @@ namespace UnitTest
     template<typename Job>
     void ValidateJobExecutedSuccessfully(const Job& job)
     {
-        EXPECT_EQ(job.GetResult(), TestImpact::JobResult::ExecutedWithSuccess);
+        EXPECT_EQ(job.GetJobResult(), TestImpact::JobResult::ExecutedWithSuccess);
         EXPECT_TRUE(job.GetDuration() > AZStd::chrono::milliseconds(0));
         EXPECT_TRUE(job.GetReturnCode().has_value());
         EXPECT_EQ(job.GetReturnCode(), 0);
@@ -60,7 +60,7 @@ namespace UnitTest
     template<typename Job>
     void ValidateJobNotExecuted(const Job& job)
     {
-        EXPECT_EQ(job.GetResult(), TestImpact::JobResult::NotExecuted);
+        EXPECT_EQ(job.GetJobResult(), TestImpact::JobResult::NotExecuted);
         EXPECT_EQ(job.GetStartTime(), AZStd::chrono::high_resolution_clock::time_point());
         EXPECT_EQ(job.GetEndTime(), AZStd::chrono::high_resolution_clock::time_point());
         EXPECT_EQ(job.GetDuration(), AZStd::chrono::milliseconds(0));
@@ -72,7 +72,7 @@ namespace UnitTest
     template<typename Job>
     void ValidateJobFailedToExecute(const Job& job)
     {
-        EXPECT_EQ(job.GetResult(), TestImpact::JobResult::FailedToExecute);
+        EXPECT_EQ(job.GetJobResult(), TestImpact::JobResult::FailedToExecute);
         EXPECT_EQ(job.GetStartTime(), AZStd::chrono::high_resolution_clock::time_point());
         EXPECT_EQ(job.GetEndTime(), AZStd::chrono::high_resolution_clock::time_point());
         EXPECT_EQ(job.GetDuration(), AZStd::chrono::milliseconds(0));
@@ -84,7 +84,7 @@ namespace UnitTest
     template<typename Job>
     void ValidateJobExecutedWithFailure(const Job& job)
     {
-        EXPECT_EQ(job.GetResult(), TestImpact::JobResult::ExecutedWithFailure);
+        EXPECT_EQ(job.GetJobResult(), TestImpact::JobResult::ExecutedWithFailure);
         EXPECT_TRUE(job.GetDuration() > AZStd::chrono::milliseconds(0));
         EXPECT_TRUE(job.GetReturnCode().has_value());
         EXPECT_GT(job.GetReturnCode().value(), 0);
@@ -95,7 +95,7 @@ namespace UnitTest
     template<typename Job>
     void ValidateJobTimeout(const Job& job)
     {
-        EXPECT_EQ(job.GetResult(), TestImpact::JobResult::Terminated);
+        EXPECT_EQ(job.GetJobResult(), TestImpact::JobResult::Terminated);
         EXPECT_TRUE(job.GetDuration() > AZStd::chrono::milliseconds(0));
         EXPECT_TRUE(job.GetReturnCode().has_value());
         EXPECT_EQ(job.GetReturnCode().value(), TestImpact::ProcessTimeoutErrorCode);
@@ -106,7 +106,7 @@ namespace UnitTest
     template<typename Job>
     void ValidateJobExecutedWithFailedTests(const Job& job)
     {
-        EXPECT_EQ(job.GetResult(), TestImpact::JobResult::ExecutedWithFailure);
+        EXPECT_EQ(job.GetJobResult(), TestImpact::JobResult::ExecutedWithFailure);
         EXPECT_TRUE(job.GetDuration() > AZStd::chrono::milliseconds(0));
         EXPECT_TRUE(job.GetReturnCode().has_value());
         EXPECT_GT(job.GetReturnCode().value(), 0);

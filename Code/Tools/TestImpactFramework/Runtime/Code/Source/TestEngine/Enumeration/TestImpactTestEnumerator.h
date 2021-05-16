@@ -14,7 +14,7 @@
 
 #include <Artifact/TestImpactArtifactException.h>
 #include <TestEngine/Enumeration/TestImpactTestEnumeration.h>
-#include <TestEngine/Job/TestImpactTestJobRunner.h>
+#include <TestEngine/JobRunner/TestImpactTestJobRunner.h>
 
 #include <AzCore/IO/Path/Path.h>
 

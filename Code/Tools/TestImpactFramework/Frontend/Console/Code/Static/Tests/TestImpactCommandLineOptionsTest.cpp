@@ -54,6 +54,7 @@ namespace UnitTest
         EXPECT_FALSE(m_options->GetOutputChangeList().has_value());
         EXPECT_EQ(m_options->GetTargetOutputCapture(), TestImpact::TargetOutputCapture::None);
         EXPECT_EQ(m_options->GetTestFailurePolicy(), TestImpact::TestFailurePolicy::Abort);
+        EXPECT_EQ(m_options->GetIntegrityFailurePolicy(), TestImpact::TestFailurePolicy::Abort);
         EXPECT_EQ(m_options->GetTestPrioritizationPolicy(), TestImpact::TestPrioritizationPolicy::None);
         EXPECT_FALSE(m_options->HasTestSequence());
         EXPECT_FALSE(m_options->GetTestSequenceType().has_value());
@@ -698,6 +699,95 @@ namespace UnitTest
     TEST_F(CommandLineOptionsTestFixture, TestFailurePolicyHasMultipeValues_ExpectCommandLineOptionsException)
     {
         m_args.push_back("-fpolicy");
+        m_args.push_back("abort,continue");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    //
+
+    TEST_F(CommandLineOptionsTestFixture, IntegrityFailurePolicyHasEmptyOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-ipolicy");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, IntegrityFailurePolicyHasAbortOption_ExpectAbortIntegrityFailurePolicy)
+    {
+        m_args.push_back("-ipolicy");
+        m_args.push_back("abort");
+        InitOptions();
+        EXPECT_EQ(m_options->GetIntegrityFailurePolicy(), TestImpact::IntegrityFailurePolicy::Abort);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, IntegrityFailurePolicyHasContinueOption_ExpectContinueIntegrityFailurePolicy)
+    {
+        m_args.push_back("-ipolicy");
+        m_args.push_back("continue");
+        InitOptions();
+        EXPECT_EQ(m_options->GetIntegrityFailurePolicy(), TestImpact::IntegrityFailurePolicy::Continue);
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, IntegrityFailurePolicyInvalidOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-ipolicy");
+        m_args.push_back("foo");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, IntegrityFailurePolicyHasMultipeValues_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-ipolicy");
         m_args.push_back("abort,continue");
 
         try

@@ -15,7 +15,9 @@
 #include <TestImpactFramework/TestImpactConfiguration.h>
 #include <TestImpactFramework/TestImpactChangeList.h>
 #include <TestImpactFramework/TestImpactTestSelection.h>
-#include <TestImpactFramework/TestImpactTestRun.h>
+#include <TestImpactFramework/TestImpactTestEnginePolicy.h>
+#include <TestImpactFramework/TestImpactTest.h>
+#include <TestImpactFramework/TestImpactFailureReport.h>
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/chrono/chrono.h>
@@ -28,61 +30,21 @@
 namespace TestImpact
 {
     class DynamicDependencyMap;
-
-    //! Policy for handling of test targets that fail to execute (e.g. due to the binary not being found).
-    //! @note Test targets that fail to execute will be tagged such that their execution can be attempted at a later date. This is
-    //! important as otherwise it would be erroneously assumed that they cover no sources due to having no entries in the dynamic
-    //! dependency map.
-    enum class ExecutionFailurePolicy
-    {
-        Abort, //! Abort the test sequence and report a failure.
-        Continue, //! Continue the test sequence but treat the execution failures as test failures after the run.
-        Ignore //! Continue the test sequence and ignore the execution failures.
-    };
+    class TestEngine;
+    class TestTarget;
 
     //! Policy for reattempting the execution of test targets that failed to execute in previous runs.
     enum class ExecutionFailureDraftingPolicy
     {
-        Never, //! Do not attempt to execute historic execution failures.
-        Always //! Reattempt the exectuion of historic execution failures.
-    };
-
-    //! Policy for handling test targets that report failing tests.
-    enum class TestFailurePolicy
-    {
-        Abort, //! Abort the test sequence and report the test failure.
-        Continue //! Continue the test sequence and report the test failures after the run.
+        Never, //!< Do not attempt to execute historic execution failures.
+        Always //!< Reattempt the exectution of historic execution failures.
     };
 
     //! Policy for prioritizing selected tests.
     enum class TestPrioritizationPolicy
     {
-        None, //! Do not attempt any test prioritization.
-        DependencyLocality //! Prioritize test targets according to the locality of the production targets they cover in the build dependency graph.
-    };
-
-    //! Policy for sharding test targets that have been marked for test sharding.
-    enum class TestShardingPolicy
-    {
-        Never, //! Do not shard any test targets.
-        Always //! Shard all test targets that have been marked for test sharding.
-    };
-
-    //! Standard output capture of test target runs. 
-    enum class TargetOutputCapture
-    {
-        None, //! Do not capture any output.
-        StdOut, //! Send captured output to standard output
-        File, //! Write captured output to file.
-        StdOutAndFile //! Send captured output to standard output and write to file.
-    };
-
-    //! 
-    enum class TestSequenceResult
-    {
-        Success,
-        Failure,
-        Timeout
+        None, //!< Do not attempt any test prioritization.
+        DependencyLocality //!< Prioritize test targets according to the locality of the production targets they cover in the build dependency graph.
     };
 
     //! Callback for a test sequence that isn't using test impact analysis.
@@ -98,9 +60,9 @@ namespace TestImpact
     //! These tests will be run with coverage instrumentation.
     //! @note discardedTests and draftedTests may contain overlapping tests.
     using ImpactAnalysisTestSequenceStartCallback = AZStd::function<void(
-        const TestSelection& selectedTests,
-        const AZStd::vector<AZStd::string>& discardedTests,
-        const AZStd::vector<AZStd::string>& draftedTests)>;
+        TestSelection&& selectedTests,
+        AZStd::vector<AZStd::string>&& discardedTests,
+        AZStd::vector<AZStd::string>&& draftedTests)>;
 
     //! Callback for a test sequence using test impact analysis.
     //! @param selectedTests The tests that have been selected for this run by test impact analysis.
@@ -111,17 +73,26 @@ namespace TestImpact
     //! to execute previously).
     //! @note discardedTests and draftedTests may contain overlapping tests.
     using SafeImpactAnalysisTestSequenceStartCallback = AZStd::function<void(
-        const TestSelection& selectedTests,
-        const TestSelection& discardedTests,
-        const AZStd::vector<AZStd::string>& draftedTests)>;
+        TestSelection&& selectedTests,
+        TestSelection&& discardedTests,
+        AZStd::vector<AZStd::string>&& draftedTests)>;
+
+    // reports:
+    // execute failure: name, command string
+    // runner failure (AzTest, OpenCppCoverage, gtest): name, command string, return code
+    // test failure: name, failing tests grouped by suite
 
     //! Callback for a test sequence ending.
     //! @param testRuns The test results of all test target runs.
-    using TestSequenceEndCallback = AZStd::function<void(const AZStd::vector<TestRun>& testRuns)>;
+    using TestSequenceEndCallback = AZStd::function<void(FailureReport&& failureReport)>;
 
-    //! Callback for test run ending.
-    //! testRun The test run that has ended.
-    using TestRunEndCallback = AZStd::function<void(const TestRunEnd& testRunEnd)>;
+    //! Callback for a test sequence ending.
+    //! @param testRuns The test results of all test target runs.
+    using ImpactAnalysisTestSequenceEndCallback = AZStd::function<void(ImpactAnalysisFailureReport&& failureReport)>;
+
+    //! Callback for completed tests.
+    //! test The test that has completed.
+    using TestCompleteCallback = AZStd::function<void(Test&& test)>;
 
     //!
     class Runtime
@@ -132,52 +103,45 @@ namespace TestImpact
             ExecutionFailurePolicy executionFailurePolicy,
             ExecutionFailureDraftingPolicy executionFailureDraftingPolicy,
             TestFailurePolicy testFailurePolicy,
+            IntegrityFailurePolicy integrationFailurePolicy,
             TestShardingPolicy testShardingPolicy,
             TargetOutputCapture targetOutputCapture,
             AZStd::optional<size_t> maxConcurrency = AZStd::nullopt);
 
         ~Runtime();
 
-        // selected tests (excluded/included)
         TestSequenceResult RegularTestSequence(
             const AZStd::unordered_set<AZStd::string> suitesFilter,
+            AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
             AZStd::optional<TestSequenceEndCallback> testSequenceEndCallback,
-            AZStd::optional<TestRunEndCallback> testRunEndCallback,
-            AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout);
+            AZStd::optional<TestCompleteCallback> testRunEndCallback);
 
-        // selected tests (excluded/included)
-        // discarded tests
-        // drafted tests
         TestSequenceResult ImpactAnalysisTestSequence(
             const ChangeList& changeList,
             TestPrioritizationPolicy testPrioritizationPolicy,
-            AZStd::optional<ImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
-            AZStd::optional<TestSequenceEndCallback> testSequenceEndCallback,
-            AZStd::optional<TestRunEndCallback> testRunEndCallback,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout);
+            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+            AZStd::optional<ImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
+            AZStd::optional<ImpactAnalysisTestSequenceEndCallback> testSequenceEndCallback,
+            AZStd::optional<TestCompleteCallback> testRunEndCallback);
 
-        // selected tests (excluded/included)
-        // discarded tests (excluded/included)
-        // drafted tests
         TestSequenceResult SafeImpactAnalysisTestSequence(
             const ChangeList& changeList,
             const AZStd::unordered_set<AZStd::string> suitesFilter,
             TestPrioritizationPolicy testPrioritizationPolicy,
-            AZStd::optional<SafeImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
-            AZStd::optional<TestSequenceEndCallback> testSequenceEndCallback,
-            AZStd::optional<TestRunEndCallback> testRunEndCallback,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout);
+            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+            AZStd::optional<SafeImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
+            AZStd::optional<ImpactAnalysisTestSequenceEndCallback> testSequenceEndCallback,
+            AZStd::optional<TestCompleteCallback> testRunEndCallback);
 
-        // selected tests (excluded/included)
         TestSequenceResult SeededTestSequence(
+            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
             AZStd::optional<TestSequenceEndCallback> testSequenceEndCallback,
-            AZStd::optional<TestRunEndCallback> testRunEndCallback,
-            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout);
+            AZStd::optional<TestCompleteCallback> testRunEndCallback);
 
         bool HasImpactAnalysisData() const;
 
@@ -186,9 +150,13 @@ namespace TestImpact
         ExecutionFailurePolicy m_executionFailurePolicy;
         ExecutionFailureDraftingPolicy m_executionFailureDraftingPolicy;
         TestFailurePolicy m_testFailurePolicy;
+        IntegrityFailurePolicy m_integrationFailurePolicy;
         TestShardingPolicy m_testShardingPolicy;
         TargetOutputCapture m_targetOutputCapture;
         size_t m_maxConcurrency;
         AZStd::unique_ptr<DynamicDependencyMap> m_dynamicDependencyMap;
+        AZStd::unique_ptr<TestEngine> m_testEngine;
+        AZStd::unordered_set<const TestTarget*> m_testTargetExcludeList;
+        AZStd::unordered_set<const TestTarget*> m_testTargetShardList;
     };
 }

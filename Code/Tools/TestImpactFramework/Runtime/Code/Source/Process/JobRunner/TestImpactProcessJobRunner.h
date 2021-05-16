@@ -115,7 +115,7 @@ namespace TestImpact
             const auto* jobInfo = &jobInfos[jobIndex];
             const auto jobId = jobInfo->GetId().m_value;
             metas.emplace(jobId, AZStd::pair<JobMeta, const typename JobT::Info*>{JobMeta{}, jobInfo});
-            processes.emplace_back(jobId, m_stdOutRouting, m_stdErrRouting, jobInfo->GetArgs());
+            processes.emplace_back(jobId, m_stdOutRouting, m_stdErrRouting, jobInfo->GetCommand().m_args);
         }
 
         // Wrapper around low-level process launch callback to gather job meta-data and present a simplified callback interface to the client

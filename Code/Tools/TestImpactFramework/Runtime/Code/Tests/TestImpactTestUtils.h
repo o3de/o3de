@@ -21,9 +21,9 @@
 #include <Artifact/Static/TestImpacttestTargetMeta.h>
 #include <Dependency/TestImpactSourceCoveringTestsList.h>
 #include <Process/TestImpactProcess.h>
-#include <Test/Enumeration/TestImpactTestEnumeration.h>
-#include <Test/Run/TestImpactTestCoverage.h>
-#include <Test/Run/TestImpactTestRun.h>
+#include <TestEngine/Enumeration/TestImpactTestEnumeration.h>
+#include <TestEngine/Run/TestImpactTestCoverage.h>
+#include <TestEngine/Run/TestImpactTestRun.h>
 
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/string.h>

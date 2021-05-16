@@ -10,9 +10,10 @@
  *
  */
 
+#include <TestImpactFrameworkPath.h>
+
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>
-#include <TestImpactFramework/TestImpactFrameworkPath.h>
 
 namespace UnitTest
 {

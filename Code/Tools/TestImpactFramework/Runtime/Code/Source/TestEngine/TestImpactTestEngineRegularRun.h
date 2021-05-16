@@ -10,5 +10,22 @@
  *
  */
 
-#include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#pragma once
+
+#include <TestEngine/TestImpactTestEngineJob.h>
+#include <TestEngine/Run/TestImpactTestRun.h>
+
+namespace TestImpact
+{
+    class TestEngineRegularRun
+        : public TestEngineJob
+    {
+    public:
+        TestEngineRegularRun(TestEngineJob&& testJob, AZStd::optional<TestRun>&& testRun);
+        TestResult GetTestResult() const;
+        const AZStd::optional<TestRun>& GetTestRun() const;
+    private:
+        AZStd::optional<TestRun> m_testRun;
+        TestResult m_testResult;
+    };
+} // namespace TestImpact

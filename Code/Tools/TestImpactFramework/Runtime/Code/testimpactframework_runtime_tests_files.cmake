@@ -34,6 +34,7 @@ set(FILES
     Tests/TestEngine/TestImpactInstrumentedTestRunnerTest.cpp
     Tests/TestEngine/TestImpactTestCoverageTest.cpp
     Tests/TestEngine/TestImpactTestEngineTest.cpp
+    Tests/TestEngine/TestImpactTestJobInfoGeneratorTest.cpp
     Tests/TestImpactTestJobRunnerCommon.h
     Tests/TestImpactRuntimeTestMain.cpp
     Tests/TestImpactTestUtils.cpp

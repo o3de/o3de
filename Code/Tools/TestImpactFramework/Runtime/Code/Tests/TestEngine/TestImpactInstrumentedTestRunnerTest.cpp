@@ -14,8 +14,8 @@
 #include <TestImpactTestUtils.h>
 
 #include <Artifact/TestImpactArtifactException.h>
-#include <Test/Run/TestImpactInstrumentedTestRunner.h>
-#include <Test/Run/TestImpactTestRunException.h>
+#include <Testengine/Run/TestImpactInstrumentedTestRunner.h>
+#include <Testengine/Run/TestImpactTestRunException.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -47,7 +47,7 @@ namespace UnitTest
     };
 
     // Get the job command for an instrumented test run
-    AZStd::string GetRunCommandForTarget(const TargetPaths& testTarget, CoverageLevel coverageLevel, const char* sourcesFilter)
+    TestImpact::InstrumentedTestRunner::Command GetRunCommandForTarget(const TargetPaths& testTarget, CoverageLevel coverageLevel, const char* sourcesFilter)
     {
         AZStd::string args = AZStd::string::format(
             "%s "                                                               // 1. Instrumented test runner
@@ -73,17 +73,17 @@ namespace UnitTest
         );
 
         // OpenCppCoverage doesn't support forward slash directory separators so replace all with escaped backslashes
-        return AZStd::regex_replace(args, AZStd::regex("/"), "\\");
+        return TestImpact::InstrumentedTestRunner::Command{ AZStd::regex_replace(args, AZStd::regex("/"), "\\") };
     }
 
     // Get the job command for an instrumented test run with valid source filters to produce coverage artifact
-    AZStd::string GetRunCommandForTargetWithSources(const TargetPaths& testTarget, CoverageLevel coverageLevel)
+    TestImpact::InstrumentedTestRunner::Command GetRunCommandForTargetWithSources(const TargetPaths& testTarget, CoverageLevel coverageLevel)
     {
         return GetRunCommandForTarget(testTarget, coverageLevel, LY_TEST_IMPACT_COVERAGE_SOURCES_DIR);
     }
 
     // Get the job command for an instrumented test run without valid source filters to produce empty coverage artifact
-    AZStd::string GetRunCommandForTargetWithoutSources(const TargetPaths& testTarget, CoverageLevel coverageLevel)
+    TestImpact::InstrumentedTestRunner::Command GetRunCommandForTargetWithoutSources(const TargetPaths& testTarget, CoverageLevel coverageLevel)
     {
         return GetRunCommandForTarget(testTarget, coverageLevel, "C:\\No\\Sources\\Here\\At\\All\\Ever\\Ever\\Ever");
     }
@@ -98,10 +98,11 @@ namespace UnitTest
     protected:
         using JobInfo = TestImpact::InstrumentedTestRunner::JobInfo;
         using JobData = TestImpact::InstrumentedTestRunner::JobData;
+        using Command = TestImpact::InstrumentedTestRunner::Command;
 
         AZStd::vector<JobInfo> m_jobInfos;
         AZStd::unique_ptr<TestImpact::InstrumentedTestRunner> m_testRunner;
-        AZStd::vector<AZStd::array<AZStd::string, 2>> m_testTargetJobArgs;
+        AZStd::vector<AZStd::array<Command, 2>> m_testTargetJobArgs;
         AZStd::vector<TargetPaths> m_testTargetPaths;
         AZStd::vector<TestImpact::TestRun> m_expectedTestTargetRuns;
         AZStd::vector<AZStd::array<TestImpact::TestCoverage, 2>> m_expectedTestTargetCoverages;
@@ -175,7 +176,7 @@ namespace UnitTest
         // Generate the job command arguments for both line level and source level coverage permutations
         for (const auto& testTarget : m_testTargetPaths)
         {
-            m_testTargetJobArgs.emplace_back(AZStd::array<AZStd::string, 2>{
+            m_testTargetJobArgs.emplace_back(AZStd::array<Command, 2>{
                 GetRunCommandForTargetWithSources(testTarget, CoverageLevel::LineLevel),
                 GetRunCommandForTargetWithSources(testTarget, CoverageLevel::SourceLevel)});
         }
@@ -309,7 +310,7 @@ namespace UnitTest
         // Given a mixture of instrumented test run jobs with and without coverage sources
         for (size_t jobId = 0; jobId < m_testTargetJobArgs.size(); jobId++)
         {
-            const AZStd::string args = (jobId % 2) ? GetRunCommandForTargetWithoutSources(m_testTargetPaths[jobId], m_coverageLevel)
+            const Command args = (jobId % 2) ? GetRunCommandForTargetWithoutSources(m_testTargetPaths[jobId], m_coverageLevel)
                                                    : m_testTargetJobArgs[jobId][m_coverageLevel];
 
             JobData jobData(m_testTargetPaths[jobId].m_testRunArtifact, m_testTargetPaths[jobId].m_testCoverageArtifact);
@@ -365,7 +366,7 @@ namespace UnitTest
         // Given a mixture of instrumented test run jobs with valid and invalid command arguments
         for (size_t jobId = 0; jobId < m_testTargetJobArgs.size(); jobId++)
         {
-            const AZStd::string args = (jobId % 2) ? InvalidProcessPath : m_testTargetJobArgs[jobId][m_coverageLevel];
+            const Command args = (jobId % 2) ? Command{ InvalidProcessPath } : m_testTargetJobArgs[jobId][m_coverageLevel];
             JobData jobData(m_testTargetPaths[jobId].m_testRunArtifact, m_testTargetPaths[jobId].m_testCoverageArtifact);
             m_jobInfos.emplace_back(JobInfo({jobId}, args, AZStd::move(jobData)));
         }
@@ -526,7 +527,7 @@ namespace UnitTest
         // Given a job command that will write the run artifact to a different location that what we will read from
         TargetPaths invalidRunArtifact = m_testTargetPaths[TestTargetA];
         invalidRunArtifact.m_testRunArtifact /= ".xml";
-        const AZStd::string args = GetRunCommandForTargetWithSources(invalidRunArtifact, LineLevel);
+        const Command args = GetRunCommandForTargetWithSources(invalidRunArtifact, LineLevel);
 
         // Given a test runner with no client callback, concurrency, run timeout or runner timeout
         m_testRunner =
@@ -565,7 +566,7 @@ namespace UnitTest
         // Given a job command that will write the coverage artifact to a different location that what we will read from
         TargetPaths invalidCoverageArtifact = m_testTargetPaths[TestTargetA];
         invalidCoverageArtifact.m_testCoverageArtifact /= ".xml";
-        const AZStd::string args = GetRunCommandForTargetWithSources(invalidCoverageArtifact, LineLevel);
+        const Command args = GetRunCommandForTargetWithSources(invalidCoverageArtifact, LineLevel);
 
         // Given a test runner with no client callback, concurrency, run timeout or runner timeout
         m_testRunner =
@@ -730,8 +731,8 @@ namespace UnitTest
         for (size_t jobId = 0; jobId < m_testTargetJobArgs.size(); jobId++)
         {
             JobData jobData(m_testTargetPaths[jobId].m_testRunArtifact, m_testTargetPaths[jobId].m_testCoverageArtifact);
-            const AZStd::string args = (jobId % 2)
-                ? AZStd::string::format("%s %s", ValidProcessPath, ConstructTestProcessArgs(jobId, LongSleep).c_str())
+            const Command args = (jobId % 2)
+                ? Command{ AZStd::string::format("%s %s", ValidProcessPath, ConstructTestProcessArgs(jobId, LongSleep).c_str()) }
                 : m_testTargetJobArgs[jobId][m_coverageLevel];
             m_jobInfos.emplace_back(JobInfo({jobId}, args, AZStd::move(jobData)));
         }
@@ -767,8 +768,8 @@ namespace UnitTest
         for (size_t jobId = 0; jobId < m_testTargetJobArgs.size(); jobId++)
         {
             JobData jobData(m_testTargetPaths[jobId].m_testRunArtifact, m_testTargetPaths[jobId].m_testCoverageArtifact);
-            const AZStd::string args = (jobId % 2)
-                ? AZStd::string::format("%s %s", ValidProcessPath, ConstructTestProcessArgs(jobId, LongSleep).c_str())
+            const Command args = (jobId % 2)
+                ? Command{ AZStd::string::format("%s %s", ValidProcessPath, ConstructTestProcessArgs(jobId, LongSleep).c_str()) }
                 : m_testTargetJobArgs[jobId][m_coverageLevel];
             m_jobInfos.emplace_back(JobInfo({jobId}, args, AZStd::move(jobData)));
         }

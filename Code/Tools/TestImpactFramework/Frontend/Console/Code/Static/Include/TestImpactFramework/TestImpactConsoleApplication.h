@@ -18,14 +18,15 @@ namespace TestImpact
     {
         enum class ReturnCode : int
         {
-            Success = 0,
-            InvalidArgs,
-            InvalidUnifiedDiff,
-            InvalidConfiguration,
-            RuntimeError,
-            UnhandledError,
-            UnknownError,
-            TestFailure
+            Success = 0, //!< 	The instigation operation(s) returned without error.
+            InvalidArgs, //!< The specified command line arguments were incorrect.
+            InvalidUnifiedDiff, //!< The specified unified diff could not be transformed into a valid change list.
+            InvalidConfiguration, //!< The runtime configuration is malformed.
+            RuntimeError, //!< The runtime encountered an error that it could not recover from.
+            UnhandledError, //!< The framework encountered an error that it anticipated but did not handle and could not recover from (this usually means that the framework should be revisited to ensure it handles this error less generically).
+            UnknownError, //!< An error of unknown origin was encountered that the console or runtime could not recover from.
+            TestFailure, //!< The test sequence had one or more test failures.
+            Timeout //!< The test sequence runtime exceeded the global timeout value.
         };
 
         [[nodiscard]] ReturnCode Main(int argc, char** argv);

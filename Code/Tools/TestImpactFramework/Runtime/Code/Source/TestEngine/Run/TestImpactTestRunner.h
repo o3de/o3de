@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <TestEngine/Job/TestImpactTestJobRunner.h>
+#include <TestEngine/JobRunner/TestImpactTestJobRunner.h>
 #include <TestEngine/Run/TestImpactTestRun.h>
 #include <TestEngine/Run/TestImpactTestRunJobData.h>
 

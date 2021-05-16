@@ -12,8 +12,8 @@
 
 #include <TestImpactTestUtils.h>
 
-#include <Test/Enumeration/TestImpactTestEnumeration.h>
-#include <Test/Enumeration/TestImpactTestEnumerationSerializer.h>
+#include <TestEngine/Enumeration/TestImpactTestEnumeration.h>
+#include <TestEngine/Enumeration/TestImpactTestEnumerationSerializer.h>
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>

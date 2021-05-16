@@ -18,7 +18,7 @@
 namespace TestImpact
 {
     //! Representation of a given test target's test run results.
-    class TestRun // CALL THIS TEST RESULT
+    class TestRun
         : public TestSuiteContainer<TestRunSuite>
     {
         using TestSuiteContainer = TestSuiteContainer<TestRunSuite>;

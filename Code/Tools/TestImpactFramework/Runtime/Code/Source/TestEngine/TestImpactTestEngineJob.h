@@ -10,28 +10,23 @@
  *
  */
 
-#include <AzCore/std/string/string.h>
-#include <AzCore/std/chrono/chrono.h>
-#include <AzCore/std/optional.h>
-
 #pragma once
+
+#include <Process/JobRunner/TestImpactProcessJobMeta.h>
 
 namespace TestImpact
 {
-    class FailureReport
+    class TestTarget;
+
+    class TestEngineJob
+        : public JobMetaContainer
     {
     public:
-        const AZStd::string& GetTargetName() const;
+        TestEngineJob(const TestTarget* testTarget, const AZStd::string& commandString, const JobMeta& jobMeta);
+        const TestTarget* GetTestTarget() const;
+        const AZStd::string& GetCommandString() const;
+    private:
+        const TestTarget* m_testTarget;
+        AZStd::string m_commandString;
     };
-
-    class ExecutionFailureReport
-        : public FailureReport
-    {
-    public:
-        const AZStd::string& GetCommand() const;
-    };
-
-    class TestFailureReport
-        : FailureReport
-    {};
-}
+} // namespace TestImpact

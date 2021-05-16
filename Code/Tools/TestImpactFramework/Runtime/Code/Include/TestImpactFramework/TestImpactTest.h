@@ -10,5 +10,19 @@
  *
  */
 
-#include <AzTest/AzTest.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/chrono/chrono.h>
+
+#pragma once
+
+namespace TestImpact
+{
+    class Test
+    {
+    public:
+        Test(const AZStd::string& name, TestResult testResult, AZStd::chrono::milliseconds duration);
+        const AZStd::string& GetTargetName() const;
+        AZStd::chrono::milliseconds GetDuration() const;
+        TestResult GetTestResult() const;
+    };
+}

@@ -43,80 +43,17 @@
       }
     }
   },
-  "test_engine": {
-    "test_run": {
-      "enumeration_args": "--gtest_list_tests --gtest_output=xml:\"{test_shard_selection_file}\"",
-      "test_runner": {
-        "bin": "${test_runner_bin}",
-        "run_args": "\"{[target.dir]}\\{test_target}.dll\" AzRunUnitTests",
-        "shard_args": "--args_from_file \"{test_enumeration_file}\""
-      }
-    },
-    "instrumentation": {
-      "bin": "${instrumentation_bin}",
-      "source_coverage_args": "--coverage_level source",
-      "line_coverage_args": "--coverage_level line",
-      "run_args": "--modules \"{[target.dir]}\" --excluded_modules \"{[test_engine.test_run.test_runner.bin]}\" --sources \"{[repo.root]}\" {coverage_type} --export_type cobertura:\"{test_run_coverage_file}\" -- "
-    }
-  },
   "target": {
     "dir": "${bin_dir}",
     "exclude": [
-      {
-        "target": "AssetBundler.Tests",
-        "tests": [
-          "*"
-        ]
-      },
-      {
-        "target": "AssetProcessor.Tests",
-        "tests": [
-          "*"
-        ]
-      },
-      {
-        "target": "CryRenderD3D11.Tests",
-        "tests": [
-          "*"
-        ]
-      },
-      {
-        "target": "CryRenderD3D12.Tests",
-        "tests": [
-          "*"
-        ]
-      },
-      {
-        "target": "LyzardApplicationDescriptors.Tests",
-        "tests": [
-          "*"
-        ]
-      },
-      {
-        "target": "EMotionFX.Editor.Tests",
-        "tests": [
-          "UIFixture.*",
-          "SimulatedObjectModelTestsFixture.*",
-          "TestParametersFixture.*",
-          "CanSeeJointsFixture.*",
-          "LODSkinnedMeshFixtureTests/LODSkinnedMeshFixture.CheckLODLevels/*"
-        ]
-      },
-      {
-        "target": "EMotionFX.Tests",
-        "tests": [
-          "UIFixture.*",
-          "SimulatedObjectModelTestsFixture.*",
-          "TestParametersFixture.*",
-          "CanSeeJointsFixture.*"
-        ]
-      },
-      {
-        "target": "AzCore.Tests",
-        "tests": [
-          "AllocatorsTestFixtureLeakDetectionDeathTest_SKIPCODECOVERAGE.AllocatorLeak"
-        ]
-      }
+      "AssetBundler.Tests",
+      "AssetProcessor.Tests",
+      "CryRenderD3D11.Tests",
+      "CryRenderD3D12.Tests",
+      "LyzardApplicationDescriptors.Tests",
+      "EMotionFX.Editor.Tests",
+      "EMotionFX.Tests",
+      "AzCore.Tests"
     ],
     "shard": [
       {
