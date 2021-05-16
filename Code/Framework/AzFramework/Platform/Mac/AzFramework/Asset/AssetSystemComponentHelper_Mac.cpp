@@ -34,7 +34,8 @@ namespace AzFramework::AssetSystem::Platform
         if (!AZ::IO::SystemFile::Exists(assetProcessorPath.c_str()))
         {
             // Check for existence of one under a "bin" directory, i.e. engineRoot is an SDK structure.
-            assetProcessorPath = AZ::IO::FixedMaxPath{engineRoot} / "bin" / AZ_BUILD_CONFIGURATION_TYPE / "AssetProcessor.app";
+            assetProcessorPath =
+                AZ::IO::FixedMaxPath{engineRoot} / "bin" / AZ_TRAIT_OS_PLATFORM_NAME / AZ_BUILD_CONFIGURATION_TYPE / "AssetProcessor.app";
 
             if (!AZ::IO::SystemFile::Exists(assetProcessorPath.c_str()))
             {
