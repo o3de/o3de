@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Multiplayer/INetworkTime.h>
+#include <Multiplayer/NetworkTime/INetworkTime.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/Utilities/NetworkCommon.h>
@@ -115,4 +115,4 @@ namespace AZ
     AZ_TYPE_INFO_TEMPLATE(Multiplayer::RewindableObject, "{B2937B44-FEE1-4277-B1E0-863DE76D363F}", AZ_TYPE_INFO_TYPENAME, AZ_TYPE_INFO_AUTO);
 }
 
-#include <Multiplayer/RewindableObject.inl>
+#include <Multiplayer/NetworkTime/RewindableObject.inl>

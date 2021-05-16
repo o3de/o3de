@@ -5,13 +5,13 @@
     Namespace="Multiplayer" 
     OverrideComponent="true" 
     OverrideController="true" 
-    OverrideInclude="Source/Components/LocalPredictionPlayerInputComponent.h"
+    OverrideInclude="Multiplayer/Components/LocalPredictionPlayerInputComponent.h"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-    <ComponentRelation Constraint="Weak" HasController="true" Name="NetworkTransformComponent" Namespace="Multiplayer" Include="Source/Components/NetworkTransformComponent.h" />
+    <ComponentRelation Constraint="Weak" HasController="true" Name="NetworkTransformComponent" Namespace="Multiplayer" Include="Multiplayer/Components/NetworkTransformComponent.h" />
 
     <Include File="Multiplayer/MultiplayerTypes.h"/>
-    <Include File="Multiplayer/NetworkInput.h"/>
+    <Include File="Multiplayer/NetworkInput/NetworkInput.h"/>
     <Include File="Source/NetworkInput/NetworkInputArray.h"/>
     <Include File="Source/NetworkInput/NetworkInputHistory.h"/>
     <Include File="Source/NetworkInput/NetworkInputMigrationVector.h"/>

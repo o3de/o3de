@@ -19,7 +19,7 @@
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <Prefab/Spawnable/SpawnableUtils.h>
 #include <Multiplayer/IMultiplayerTools.h>
-#include <Multiplayer/NetBindComponent.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 #include <Source/Pipeline/NetBindMarkerComponent.h>
 #include <Source/Pipeline/NetworkSpawnableHolderComponent.h>
 

@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Multiplayer/NetworkEntityHandle.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityHandle.h>
 #include <AzCore/Math/Aabb.h>
 
 namespace Multiplayer
@@ -47,9 +47,13 @@ namespace Multiplayer
         //! @return the networkId for the entity that owns this controller
         NetEntityId GetNetEntityId() const;
 
-        //! Returns the networkRole for the entity that owns this controller.
-        //! @return the networkRole for the entity that owns this controller
-        NetEntityRole GetNetEntityRole() const;
+        //! Returns true if this controller has authority.
+        //! @return boolean true if this controller has authority
+        bool IsAuthority() const;
+
+        //! Returns true if this controller has autonomy (can locally predict).
+        //! @return boolean true if this controller has autonomy
+        bool IsAutonomous() const;
 
         //! Returns the raw AZ::Entity pointer for the entity that owns this controller.
         //! @return the raw AZ::Entity pointer for the entity that owns this controller
