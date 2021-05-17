@@ -16,11 +16,11 @@
 #include "Cry_Geo.h"
 #include "Cry_Camera.h"
 #include "ITexture.h"
-#include <IFlares.h> // <> required for Interfuscator
+#include <IFuncVariable.h> // <> required for Interfuscator
+#include <IXml.h> // <> required for Interfuscator
+#include "smartptr.h"
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/containers/intrusive_slist.h>
-
-#include "IResourceCompilerHelper.h" //  for IResourceCompilerHelper::ERcCallResult
 
 // forward declarations
 struct SRenderingPassInfo;
@@ -95,7 +95,6 @@ struct IFFont;
 struct IFFont_RenderProxy;
 struct STextDrawContext;
 struct IRenderMesh;
-class IOpticsManager;
 struct ShadowFrustumMGPUCache;
 struct IAsyncTextureCompileListener;
 struct IClipVolume;
@@ -955,25 +954,6 @@ protected:
     virtual ~ITextureStreamListener() {}
 };
 
-#if defined(CRY_ENABLE_RC_HELPER)
-////////////////////////////////////////////////////////////////////////////
-// Listener for asynchronous texture compilation.
-// Connects the listener to the task-queue of pending compilation requests.
-enum ERcExitCode;
-struct IAsyncTextureCompileListener
-{
-public:
-    virtual void OnCompilationStarted(const char* source, const char* target, int nPending) = 0;
-    virtual void OnCompilationFinished(const char* source, const char* target, IResourceCompilerHelper::ERcCallResult nReturnCode) = 0;
-
-    virtual void OnCompilationQueueTriggered(int nPending) = 0;
-    virtual void OnCompilationQueueDepleted() = 0;
-
-protected:
-    virtual ~IAsyncTextureCompileListener() {}
-};
-#endif
-
 enum eDolbyVisionMode
 {
     eDVM_Disabled,
@@ -1530,7 +1510,6 @@ struct IRenderer
     // Summary:
     //  Loads lightmap for name.
     virtual int           EF_LoadLightmap (const char* name) = 0;
-    virtual bool          EF_RenderEnvironmentCubeHDR (int size, Vec3& Pos, TArray<unsigned short>& vecData) = 0;
 
     // Summary:
     //  Starts using of the shaders (return first index for allow recursions).
@@ -1567,7 +1546,6 @@ struct IRenderer
     virtual int EF_AddDeferredLight(const CDLight& pLight, float fMult, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter) = 0;
     virtual uint32 EF_GetDeferredLightsNum(eDeferredLightType eLightType = eDLT_DeferredLight) = 0;
     virtual void EF_ClearDeferredLightsList() = 0;
-    virtual TArray<SRenderLight>* EF_GetDeferredLights(const SRenderingPassInfo& passInfo, eDeferredLightType eLightType = eDLT_DeferredLight) = 0;
 
     virtual uint8 EF_AddDeferredClipVolume(const IClipVolume* pClipVolume) = 0;
     virtual bool EF_SetDeferredClipVolumeBlendData(const IClipVolume* pClipVolume, const SClipVolumeBlendInfo& blendInfo) = 0;
@@ -1868,8 +1846,6 @@ struct IRenderer
     virtual bool SetRenderTarget(int nHandle, SDepthTexture* pDepthSurf = nullptr) = 0;
     virtual SDepthTexture* CreateDepthSurface(int nWidth, int nHeight, bool shaderResourceView = false) = 0;
     virtual void DestroyDepthSurface(SDepthTexture* pDepthSurf) = 0;
-
-    virtual IOpticsElementBase* CreateOptics(EFlareType type) const = 0;
 
     // Note:
     //  Used for pausing timer related stuff.

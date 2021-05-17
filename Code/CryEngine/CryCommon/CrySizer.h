@@ -48,8 +48,6 @@ struct SPipTangents;
 #include <string.h> // workaround for Amd64 compiler
 #endif
 
-#include <IResourceCollector.h>             // <> required for Interfuscator. IResourceCollector
-
 namespace AZ
 {
     class Vector3;
@@ -336,20 +334,6 @@ public:
     }
 
     template<typename T>
-    void AddObject(const TArray<T>& rVector)
-    {
-        if (!this->AddObject(rVector.begin(), rVector.capacity() * sizeof(T)))
-        {
-            return;
-        }
-
-        for (int i = 0, end = rVector.size(); i < end; ++i)
-        {
-            this->AddObject(rVector[i]);
-        }
-    }
-
-    template<typename T>
     void AddObject(const PodArray<T>& rVector)
     {
         if (!this->AddObject(rVector.begin(), rVector.capacity() * sizeof(T)))
@@ -426,11 +410,6 @@ public:
     {
         return AddObject (&rObject, sizeof(T));
     }
-
-    // used to collect the assets needed for streaming and to gather statistics
-    // always returns a valid reference
-    virtual IResourceCollector* GetResourceCollector() = 0;
-    virtual void SetResourceCollector(IResourceCollector* pColl) = 0;
 
     bool Add (const char* szText)
     {
