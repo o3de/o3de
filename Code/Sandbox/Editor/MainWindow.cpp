@@ -688,32 +688,18 @@ void MainWindow::InitActions()
     auto cryEdit = CCryEditApp::instance();
     cryEdit->RegisterActionHandlers();
 
-<<<<<<< HEAD
-    am->AddAction(ID_TOOLBAR_SEPARATOR, QString())
-        .SetParent(this);
-    am->AddAction(ID_TOOLBAR_WIDGET_UNDO, QString())
-        .SetParent(this);
-    am->AddAction(ID_TOOLBAR_WIDGET_REDO, QString())
-        .SetParent(this);
-    am->AddAction(ID_TOOLBAR_WIDGET_SNAP_ANGLE, QString())
-        .SetParent(this);
-    am->AddAction(ID_TOOLBAR_WIDGET_SNAP_GRID, QString())
-        .SetParent(this);
-    am->AddAction(ID_TOOLBAR_WIDGET_ENVIRONMENT_MODE, QString())
-        .SetParent(this);
-    am->AddAction(ID_TOOLBAR_WIDGET_DEBUG_MODE, QString())
-        .SetParent(this);
-    am->AddAction(ID_TOOLBAR_WIDGET_SPACER_RIGHT, QString())
-        .SetParent(this);
-=======
     am->AddAction(ID_TOOLBAR_SEPARATOR, QString());
 
-    am->AddAction(ID_TOOLBAR_WIDGET_UNDO, QString());
-    am->AddAction(ID_TOOLBAR_WIDGET_REDO, QString());
-    am->AddAction(ID_TOOLBAR_WIDGET_SNAP_ANGLE, QString());
-    am->AddAction(ID_TOOLBAR_WIDGET_SNAP_GRID, QString());
+    am->AddAction(ID_TOOLBAR_WIDGET_UNDO, QString())
+    .SetParent(this);
+    am->AddAction(ID_TOOLBAR_WIDGET_REDO, QString())
+    .SetParent(this);
+    am->AddAction(ID_TOOLBAR_WIDGET_SNAP_ANGLE, QString())
+    .SetParent(this);
+    am->AddAction(ID_TOOLBAR_WIDGET_SNAP_GRID, QString())
+    .SetParent(this);
     am->AddAction(ID_TOOLBAR_WIDGET_SPACER_RIGHT, QString());
->>>>>>> 112f0d3448c2d8aa2fcf6097b11b0080abd6ac1f
+
 
     // File actions
         am->AddAction(ID_FILE_NEW, tr("New Level"))
@@ -929,12 +915,6 @@ void MainWindow::InitActions()
         .SetParent(this);
 
     // Modify actions
-<<<<<<< HEAD
-    am->AddAction(ID_EDIT_RENAMEOBJECT, tr("Rename Object(s)..."))
-        .SetStatusTip(tr("Rename Object"))
-        .SetParent(this);
-=======
->>>>>>> 112f0d3448c2d8aa2fcf6097b11b0080abd6ac1f
     am->AddAction(ID_EDITMODE_MOVE, tr("Move"))
         .SetIcon(Style::icon("Move"))
         .SetApplyHoverEffect()
@@ -969,33 +949,25 @@ void MainWindow::InitActions()
         .SetToolTip(tr("Snap to grid (G)"))
         .SetStatusTip(tr("Toggles snap to grid"))
         .SetCheckable(true)
-<<<<<<< HEAD
-        .RegisterUpdateCallback(this, &MainWindow::OnUpdateSnapToGrid)
-        .SetParent(this);
-=======
         .RegisterUpdateCallback([](QAction* action) {
             Q_ASSERT(action->isCheckable());
             action->setChecked(Editor::GridSnappingEnabled());
         })
-        .Connect(&QAction::triggered, []() { Editor::SetGridSnapping(!Editor::GridSnappingEnabled()); });
+        .Connect(&QAction::triggered, []() { Editor::SetGridSnapping(!Editor::GridSnappingEnabled()); })
+        .SetParent(this);
 
->>>>>>> 112f0d3448c2d8aa2fcf6097b11b0080abd6ac1f
     am->AddAction(ID_SNAPANGLE, tr("Snap angle"))
         .SetIcon(Style::icon("Angle"))
         .SetApplyHoverEffect()
         .SetStatusTip(tr("Snap angle"))
         .SetCheckable(true)
-<<<<<<< HEAD
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSnapangle)
-        .SetParent(this);
-=======
         .RegisterUpdateCallback([](QAction* action) {
             Q_ASSERT(action->isCheckable());
             action->setChecked(Editor::AngleSnappingEnabled());
         })
-        .Connect(&QAction::triggered, []() { Editor::SetAngleSnapping(!Editor::AngleSnappingEnabled()); });
+        .Connect(&QAction::triggered, []() { Editor::SetAngleSnapping(!Editor::AngleSnappingEnabled()); })
+        .SetParent(this);
 
->>>>>>> 112f0d3448c2d8aa2fcf6097b11b0080abd6ac1f
     // Display actions
     am->AddAction(ID_WIREFRAME, tr("&Wireframe"))
         .SetShortcut(tr("F3"))
@@ -1004,8 +976,6 @@ void MainWindow::InitActions()
         .SetStatusTip(tr("Render in Wireframe Mode."))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateWireframe)
         .SetParent(this);
-
-    am->AddAction(ID_VIEW_GRIDSETTINGS, tr("Grid Settings...")).SetParent(this);
 
     am->AddAction(ID_SWITCHCAMERA_DEFAULTCAMERA, tr("Default Camera")).SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSwitchToDefaultCamera)
@@ -1172,7 +1142,7 @@ void MainWindow::InitActions()
         .SetParent(this);
 
     am->AddAction(ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL, tr("Play Controls"))
-        .SetText(tr("Play Controls"));
+        .SetText(tr("Play Controls"))
         .SetParent(this);
 
     am->AddAction(ID_SWITCH_PHYSICS, tr("Simulate"))
@@ -1205,21 +1175,12 @@ void MainWindow::InitActions()
         .SetParent(this);
 
     // Tools actions
-<<<<<<< HEAD
-    am->AddAction(ID_RELOAD_TEXTURES, tr("Reload Textures/Shaders"))
-        .SetStatusTip(tr("Reload all textures."))
-        .SetParent(this);
-
-    am->AddAction(ID_RELOAD_GEOMETRY, tr("Reload Geometry"))
-        .SetStatusTip(tr("Reload all geometries."))
-        .SetParent(this);
 
     am->AddAction(ID_TOOLS_ENABLEFILECHANGEMONITORING, tr("Enable File Change Monitoring"))
         .SetParent(this);
 
-=======
-    am->AddAction(ID_TOOLS_ENABLEFILECHANGEMONITORING, tr("Enable File Change Monitoring"));
->>>>>>> 112f0d3448c2d8aa2fcf6097b11b0080abd6ac1f
+    am->AddAction(ID_TOOLS_ENABLEFILECHANGEMONITORING, tr("Enable File Change Monitoring"))
+        .SetParent(this); 
     am->AddAction(ID_CLEAR_REGISTRY, tr("Clear Registry Data"))
         .SetStatusTip(tr("Clear Registry Data"))
         .SetParent(this);
@@ -1229,17 +1190,10 @@ void MainWindow::InitActions()
         .SetParent(this);
     am->AddAction(ID_TOOLS_VALIDATEOBJECTPOSITIONS, tr("Check Object Positions"))
         .SetParent(this);
-
     QAction* saveLevelStatsAction =
         am->AddAction(ID_TOOLS_LOGMEMORYUSAGE, tr("Save Level Statistics"))
-<<<<<<< HEAD
-                .SetStatusTip(tr("Logs Editor memory usage."))
-                .SetParent(this);
-    if( saveLevelStatsAction && AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-=======
-                .SetStatusTip(tr("Logs Editor memory usage."));
-    if( saveLevelStatsAction )
->>>>>>> 112f0d3448c2d8aa2fcf6097b11b0080abd6ac1f
+            .SetStatusTip(tr("Logs Editor memory usage."));
+    if (saveLevelStatsAction)
     {
         saveLevelStatsAction->setEnabled(false);
     }
@@ -1381,17 +1335,6 @@ void MainWindow::InitActions()
         .SetApplyHoverEffect()
         .SetParent(this);
 
-<<<<<<< HEAD
-    if (!AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-    {
-        am->AddAction(ID_TERRAIN_TIMEOFDAYBUTTON, tr("Time of Day Editor"))
-            .SetToolTip(tr("Open Time of Day"))
-            .SetApplyHoverEffect()
-            .SetParent(this);
-    }
-
-=======
->>>>>>> 112f0d3448c2d8aa2fcf6097b11b0080abd6ac1f
     am->AddAction(ID_OPEN_UICANVASEDITOR, tr(LyViewPane::UiEditor))
         .SetToolTip(tr("Open UI Editor"))
         .SetApplyHoverEffect()
