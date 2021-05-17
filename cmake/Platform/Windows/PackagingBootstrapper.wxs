@@ -16,11 +16,19 @@
             Value="[ProgramFiles64Folder]$(var.CPACK_PACKAGE_INSTALL_DIRECTORY)"
             bal:Overridable="yes"/>
 
-        <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
-            <bal:WixStandardBootstrapperApplication
-                LicenseFile="$(var.CPACK_WIX_LICENSE_RTF)"
-                ShowVersion="yes" />
-        </BootstrapperApplicationRef>
+        <?ifdef CPACK_LICENSE_URL?>
+            <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
+                <bal:WixStandardBootstrapperApplication
+                    LicenseUrl="$(var.CPACK_LICENSE_URL)"
+                    ShowVersion="yes" />
+            </BootstrapperApplicationRef>
+        <?else?>
+            <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
+                <bal:WixStandardBootstrapperApplication
+                    LicenseFile="$(var.CPACK_WIX_LICENSE_RTF)"
+                    ShowVersion="yes" />
+            </BootstrapperApplicationRef>
+        <?endif?>
 
         <Chain>
             <MsiPackage Id="$(var.CPACK_PACKAGE_FILE_NAME)"

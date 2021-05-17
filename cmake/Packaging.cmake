@@ -13,10 +13,14 @@ if(NOT PAL_TRAIT_BUILD_CPACK_SUPPORTED)
     return()
 endif()
 
-# set the common cpack variables first so they are accessible via configure_file
-# when the platforms specific properties are applied below
+# public facing options will eventually be converted into cpack specific ones below.
+# all variables with the "CPACK_" prefix will automatically be cached for use in any
+# of the build steps cpack runs e.g. pre-build, standard build, post-build.
 set(LY_INSTALLER_DOWNLOAD_URL "" CACHE STRING "URL embded into the installer to download additional artifacts")
+set(LY_INSTALLER_LICENSE_URL "" CACHE STRING "Optionally embed a link to the license instead of raw text")
 
+# set all common cpack variable overrides first so they can be accessible via configure_file
+# when the platform specific settings are applied below
 set(CPACK_PACKAGE_VENDOR "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VERSION "${LY_VERSION_STRING}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installation Tool")
@@ -28,11 +32,11 @@ set(DEFAULT_LICENSE_NAME "Apache-2.0")
 set(DEFAULT_LICENSE_FILE "${CMAKE_SOURCE_DIR}/LICENSE.txt")
 
 set(CPACK_RESOURCE_FILE_LICENSE ${DEFAULT_LICENSE_FILE})
+set(CPACK_LICENSE_URL ${LY_INSTALLER_LICENSE_URL})
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_VENDOR}/${CPACK_PACKAGE_VERSION}")
 
-# CMAKE_SOURCE_DIR doesn't equate to anything during execution of pre/post build scripts.
-# to pass it down, we can utilize the auto-caching of any variable with prefix "CPACK_"
+# CMAKE_SOURCE_DIR doesn't equate to anything during execution of pre/post build scripts
 set(CPACK_SOURCE_DIR ${CMAKE_SOURCE_DIR}/cmake)
 
 # attempt to apply platform specific settings

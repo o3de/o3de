@@ -31,6 +31,10 @@ set(_addtional_defines
     -dCPACK_PACKAGE_INSTALL_DIRECTORY=${_fixed_package_install_dir}
 )
 
+if(CPACK_LICENSE_URL)
+    list(APPEND _addtional_defines -dCPACK_LICENSE_URL=${CPACK_LICENSE_URL})
+endif()
+
 set(_candle_command
     ${CPACK_WIX_CANDLE_EXECUTABLE}
     -nologo
@@ -59,3 +63,18 @@ execute_process(
     COMMAND ${_light_command}
     COMMAND_ERROR_IS_FATAL ANY
 )
+
+# use the internal default path if somehow not specified from cpack_configure_downloads
+if(NOT CPACK_UPLOAD_DIRECTORY)
+    set(CPACK_UPLOAD_DIRECTORY ${CPACK_PACKAGE_DIRECTORY}/CPackUploads)
+endif()
+
+# copy the artifacts intended to be uploaded to a remote server into the folder specified
+# through cpack_configure_downloads.  this mimics the same process cpack does natively for
+# some other frameworks that have built-in online installer support.
+message(STATUS "Copying installer artifacts to upload directory...")
+file(GLOB _artifacts "${_cpack_wix_out_dir}/*.msi" "${_cpack_wix_out_dir}/*.cab")
+file(COPY ${_artifacts}
+    DESTINATION ${CPACK_UPLOAD_DIRECTORY}
+)
+message(STATUS "Artifacts copied to ${CPACK_UPLOAD_DIRECTORY}")
