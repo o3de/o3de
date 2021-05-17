@@ -477,7 +477,7 @@ namespace AZ
         m_console = AZ::Interface<AZ::IConsole>::Get();
         if (m_console == nullptr)
         {
-            m_console = aznew AZ::Console();
+            m_console = aznew AZ::Console(*m_settingsRegistry);
             AZ::Interface<AZ::IConsole>::Register(m_console);
             m_ownsConsole = true;
             m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());

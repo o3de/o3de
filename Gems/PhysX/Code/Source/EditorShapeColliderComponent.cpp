@@ -326,6 +326,7 @@ namespace PhysX
         else
         {
             m_shapeType = !shapeCrc ? ShapeType::None : ShapeType::Unsupported;
+            m_shapeConfigs.clear();
             AZ_Warning("PhysX Shape Collider Component", m_shapeTypeWarningIssued, "Unsupported shape type for "
                 "entity \"%s\". The following shapes are currently supported - box, capsule, sphere, polygon prism.",
                 GetEntity()->GetName().c_str());
