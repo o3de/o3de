@@ -118,8 +118,11 @@ def _merge_xml_results(xml_results_path, prefix, merged_xml_name, parent_element
     def _aggregate_attributes(nodes):
         for node in nodes:
             for attribute in attributes_to_aggregate:
-                value = node.attrib[attribute.name]
-                temp_dict[attribute.name] += attribute.func(value)
+                try:
+                    value = node.attrib[attribute.name]
+                    temp_dict[attribute.name] += attribute.func(value)
+                except KeyError as e:
+                    print("Failed to find key {} in {}, continuing...".format(attribute.name, node.tag))
 
     base_tree = xet.parse(xml_files[0])
     base_tree_root = base_tree.getroot()
