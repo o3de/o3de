@@ -760,10 +760,13 @@ set(FILES
     Util/PakFile.h
     Util/PredefinedAspectRatios.cpp
     Util/PredefinedAspectRatios.h
+    Util/StringHelpers.cpp
+    Util/StringHelpers.h
     Util/StringNoCasePredicate.h
     Util/TRefCountBase.h
     Util/Triangulate.cpp
     Util/Triangulate.h
+    Util/Util.h
     Util/XmlArchive.cpp
     Util/XmlArchive.h
     Util/XmlHistoryManager.cpp

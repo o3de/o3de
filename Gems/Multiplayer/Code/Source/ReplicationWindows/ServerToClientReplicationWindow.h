@@ -13,8 +13,8 @@
 #pragma once
 
 #include <Multiplayer/IMultiplayer.h>
-#include <Multiplayer/IReplicationWindow.h>
-#include <Multiplayer/NetworkEntityHandle.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityHandle.h>
+#include <Multiplayer/ReplicationWindows/IReplicationWindow.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/EBus/ScheduledEvent.h>

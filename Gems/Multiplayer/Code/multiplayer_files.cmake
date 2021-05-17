@@ -10,33 +10,34 @@
 #
 
 set(FILES
-    Include/Multiplayer/IConnectionData.h
-    Include/Multiplayer/IEntityDomain.h
     Include/Multiplayer/IMultiplayer.h
-    Include/Multiplayer/IMultiplayerComponentInput.h
-    Include/Multiplayer/INetworkEntityManager.h
-    Include/Multiplayer/INetworkPlayerSpawner.h
-    Include/Multiplayer/INetworkTime.h
-    Include/Multiplayer/IReplicationWindow.h
-    Include/Multiplayer/MultiplayerComponent.h
-    Include/Multiplayer/MultiplayerController.h
-    Include/Multiplayer/MultiplayerComponentRegistry.h
-    Include/Multiplayer/MultiplayerStats.cpp
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
-    Include/Multiplayer/NetBindComponent.h
-    Include/Multiplayer/NetworkEntityRpcMessage.h
-    Include/Multiplayer/NetworkEntityUpdateMessage.h
-    Include/Multiplayer/NetworkEntityHandle.h
-    Include/Multiplayer/NetworkEntityHandle.inl
-    Include/Multiplayer/NetworkInput.h
-    Include/Multiplayer/ReplicationRecord.h
-    Include/Multiplayer/RewindableObject.h
-    Include/Multiplayer/RewindableObject.inl
+    Include/Multiplayer/Components/LocalPredictionPlayerInputComponent.h
+    Include/Multiplayer/Components/MultiplayerComponent.h
+    Include/Multiplayer/Components/MultiplayerController.h
+    Include/Multiplayer/Components/MultiplayerComponentRegistry.h
+    Include/Multiplayer/Components/NetBindComponent.h
+    Include/Multiplayer/Components/NetworkTransformComponent.h
+    Include/Multiplayer/ConnectionData/IConnectionData.h
+    Include/Multiplayer/EntityDomains/IEntityDomain.h
+    Include/Multiplayer/NetworkEntity/INetworkEntityManager.h
+    Include/Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h
+    Include/Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h
+    Include/Multiplayer/NetworkEntity/NetworkEntityHandle.h
+    Include/Multiplayer/NetworkEntity/NetworkEntityHandle.inl
+    Include/Multiplayer/NetworkEntity/EntityReplication/ReplicationRecord.h
+    Include/Multiplayer/NetworkInput/IMultiplayerComponentInput.h
+    Include/Multiplayer/NetworkInput/NetworkInput.h
+    Include/Multiplayer/NetworkTime/INetworkTime.h
+    Include/Multiplayer/NetworkTime/RewindableObject.h
+    Include/Multiplayer/NetworkTime/RewindableObject.inl
+    Include/Multiplayer/ReplicationWindows/IReplicationWindow.h
     Source/Multiplayer_precompiled.cpp
     Source/Multiplayer_precompiled.h
     Source/MultiplayerSystemComponent.cpp
     Source/MultiplayerSystemComponent.h
+    Source/MultiplayerStats.cpp
     Source/AutoGen/AutoComponent_Header.jinja
     Source/AutoGen/AutoComponent_Source.jinja
     Source/AutoGen/AutoComponent_Common.jinja
@@ -46,13 +47,11 @@ set(FILES
     Source/AutoGen/Multiplayer.AutoPackets.xml
     Source/AutoGen/NetworkTransformComponent.AutoComponent.xml
     Source/Components/LocalPredictionPlayerInputComponent.cpp
-    Source/Components/LocalPredictionPlayerInputComponent.h
     Source/Components/MultiplayerComponent.cpp
     Source/Components/MultiplayerController.cpp
     Source/Components/MultiplayerComponentRegistry.cpp
     Source/Components/NetBindComponent.cpp
     Source/Components/NetworkTransformComponent.cpp
-    Source/Components/NetworkTransformComponent.h
     Source/ConnectionData/ClientToServerConnectionData.cpp
     Source/ConnectionData/ClientToServerConnectionData.h
     Source/ConnectionData/ClientToServerConnectionData.inl
