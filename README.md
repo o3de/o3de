@@ -152,6 +152,8 @@ If you have the Git credential manager core or other credential helpers installe
 
     cmake --build <your project build path> --target <New Project Name> --config profile -- /m
     ```
+  
+For a tutorial on project configuration, see [Creating Projects Using the Command Line](https://docs.o3de.org/docs/welcome-guide/get-started/project-config/creating-projects-using-cli) in the documentation.
 
 ## License
 
