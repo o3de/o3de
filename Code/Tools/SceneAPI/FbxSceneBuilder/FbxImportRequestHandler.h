@@ -21,9 +21,9 @@ namespace AZ
     {
         namespace FbxSceneImporter
         {
-            struct AssetImporterSettings
+            struct SceneImporterSettings
             {
-                AZ_TYPE_INFO(AssetImporterSettings, "{8BB6C7AD-BF99-44DC-9DA1-E7AD3F03DC10}");
+                AZ_TYPE_INFO(SceneImporterSettings, "{8BB6C7AD-BF99-44DC-9DA1-E7AD3F03DC10}");
                 
                 static void Reflect(AZ::ReflectContext* context);
 
@@ -51,7 +51,7 @@ namespace AZ
 
             private:
 
-                AssetImporterSettings m_settings;
+                SceneImporterSettings m_settings;
 
                 static constexpr const char* SettingsFilename = "AssetImporterSettings.json";
             };

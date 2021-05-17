@@ -27,13 +27,13 @@ namespace AZ
     {
         namespace FbxSceneImporter
         {
-            void AssetImporterSettings::Reflect(AZ::ReflectContext* context)
+            void SceneImporterSettings::Reflect(AZ::ReflectContext* context)
             {
                 if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext)
                 {
-                    serializeContext->Class<AssetImporterSettings>()
+                    serializeContext->Class<SceneImporterSettings>()
                                     ->Version(1)
-                                    ->Field("SupportedFileTypeExtensions", &AssetImporterSettings::m_supportedFileTypeExtensions);
+                                    ->Field("SupportedFileTypeExtensions", &SceneImporterSettings::m_supportedFileTypeExtensions);
                 }
             }
 
@@ -56,7 +56,7 @@ namespace AZ
 
             void FbxImportRequestHandler::Reflect(ReflectContext* context)
             {
-                AssetImporterSettings::Reflect(context);
+                SceneImporterSettings::Reflect(context);
 
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
