@@ -72,8 +72,8 @@ namespace AzToolsFramework
             /**
              * Creates a link between the templates of an instance and its parent.
              * 
-             * \param sourceInstance The instance that corresponds to the source template of the link.
-             * \param targetInstance The id of the target template.
+             * \param sourceInstance The instance that corresponds to the source template of the link (child).
+             * \param targetInstance The id of the target template (parent).
              * \param undoBatch The undo batch to set as parent for this create link action.
              * \param patch The patch to store in the newly created link dom.
              * \param isUndoRedoSupportNeeded The flag indicating whether the link should be created with undo/redo support or not.

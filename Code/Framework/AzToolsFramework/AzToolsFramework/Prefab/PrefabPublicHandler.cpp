@@ -149,7 +149,7 @@ namespace AzToolsFramework
                     m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, containerEntityId);
 
                     // Update the cache - this prevents these changes from being stored in the regular undo/redo nodes
-                    m_prefabUndoCache.Store(containerEntityId, AZStd::move(containerEntityDomAfter));
+                    m_prefabUndoCache.Store(containerEntityId, AZStd::move(containerEntityDomAfter), commonRootEntityId);
 
                     // Create a link between the templates of the newly created instance and the instance it's being parented under.
                     CreateLink(
@@ -355,9 +355,6 @@ namespace AzToolsFramework
             }
 
             sourceInstance.SetLinkId(linkId);
-
-            // Update the cache - this prevents these changes from being stored in the regular undo/redo nodes
-            m_prefabUndoCache.Store(containerEntityId, AZStd::move(containerEntityDomAfter), commonRootEntityId);
         }
 
         void PrefabPublicHandler::RemoveLink(
@@ -553,15 +550,14 @@ namespace AzToolsFramework
                         m_instanceToTemplateInterface->GenerateDomForInstance(afterInstanceDomBeforeAdd, afterOwningInstance->get());
 
                         // Add all entities
-                        for (AZ::Entity* entity : entities)
+                        for (AZ::Entity* nestedEntity : entities)
                         {
-                            afterOwningInstance->get().AddEntity(*entity);
+                            afterOwningInstance->get().AddEntity(*nestedEntity);
                         }
 
                         // Add all instances, and recreate the links
                         for (AZStd::unique_ptr<Instance>& instance : instances)
                         {
-                            afterOwningInstance->get().AddInstance(AZStd::move(instance));
 
                             // Retrieve Link reference
                             auto linkRef = m_prefabSystemComponentInterface->FindLink(afterOwningInstance->get().GetLinkId());
@@ -578,8 +574,14 @@ namespace AzToolsFramework
                             // Remove old link
                             RemoveLink(instance, beforeOwningInstance->get().GetTemplateId(), parentUndoBatch);
 
+                            // Get direct pointer as AddInstance will move the unique one.
+                            Instance* instancePtr = instance.get();
+
+                            afterOwningInstance->get().AddInstance(AZStd::move(instance));
+
                             // Add a new link with the old dom
                             // TODO - needs a change to CreateLink, will address that separately and merge it here...
+                            CreateLink(*instancePtr, afterOwningInstance->get().GetTemplateId(), parentUndoBatch, linkDom);
                         }
 
                         // Create the Update node
