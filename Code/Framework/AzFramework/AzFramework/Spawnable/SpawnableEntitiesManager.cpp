@@ -14,17 +14,20 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesManager.h>
 
 namespace AzFramework
 {
-    void SpawnableEntitiesManager::SpawnAllEntities(EntitySpawnTicket& ticket, EntitySpawnCallback completionCallback)
+    void SpawnableEntitiesManager::SpawnAllEntities(EntitySpawnTicket& ticket, EntityPreInsertionCallback preInsertionCallback,
+        EntitySpawnCallback completionCallback)
     {
         SpawnAllEntitiesCommand queueEntry;
         queueEntry.m_ticket = &ticket;
         queueEntry.m_completionCallback = AZStd::move(completionCallback);
+        queueEntry.m_preInsertionCallback = AZStd::move(preInsertionCallback);
         {
             AZStd::scoped_lock queueLock(m_pendingRequestQueueMutex);
             queueEntry.m_ticketId = GetTicketPayload<Ticket>(ticket).m_nextTicketId++;
@@ -32,13 +35,15 @@ namespace AzFramework
         }
     }
 
-    void SpawnableEntitiesManager::SpawnEntities(EntitySpawnTicket& ticket, AZStd::vector<size_t> entityIndices,
-        EntitySpawnCallback completionCallback)
+    void SpawnableEntitiesManager::SpawnEntities(
+        EntitySpawnTicket& ticket, AZStd::vector<size_t> entityIndices,
+        EntityPreInsertionCallback preInsertionCallback, EntitySpawnCallback completionCallback)
     {
         SpawnEntitiesCommand queueEntry;
         queueEntry.m_ticket = &ticket;
         queueEntry.m_entityIndices = AZStd::move(entityIndices);
         queueEntry.m_completionCallback = AZStd::move(completionCallback);
+        queueEntry.m_preInsertionCallback = AZStd::move(preInsertionCallback);
         {
             AZStd::scoped_lock queueLock(m_pendingRequestQueueMutex);
             queueEntry.m_ticketId = GetTicketPayload<Ticket>(ticket).m_nextTicketId++;
@@ -205,6 +210,9 @@ namespace AzFramework
         AZ::Entity* clone = serializeContext.CloneObject(&entityTemplate);
         AZ_Assert(clone != nullptr, "Failed to clone spawnable entity.");
         clone->SetId(AZ::Entity::MakeId());
+
+        // Need to inject a callback here
+
         GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, clone);
         return clone;
     }
@@ -214,23 +222,79 @@ namespace AzFramework
         Ticket& ticket = GetTicketPayload<Ticket>(*request.m_ticket);
         if (ticket.m_spawnable.IsReady() && request.m_ticketId == ticket.m_currentTicketId)
         {
-            size_t spawnedEntitiesCount = ticket.m_spawnedEntities.size();
+            AZStd::vector<AZ::Entity*>& spawnedEntities = ticket.m_spawnedEntities;
+            AZStd::vector<size_t>& spawnedEntityIndices = ticket.m_spawnedEntityIndices;
 
-            const Spawnable::EntityList& entities = ticket.m_spawnable->GetEntities();
-            size_t entitiesSize = entities.size();
-            ticket.m_spawnedEntities.reserve(ticket.m_spawnedEntities.size() + entitiesSize);
-            ticket.m_spawnedEntityIndices.reserve(ticket.m_spawnedEntityIndices.size() + entitiesSize);
+            // Keep track how many entities there were in the array initially
+            size_t spawnedEntitiesInitialCount = spawnedEntities.size();
 
-            for(size_t i=0; i<entitiesSize; ++i)
+            // These are 'template' entities we'll be cloning from
+            const Spawnable::EntityList& entitiesToSpawn = ticket.m_spawnable->GetEntities();
+            size_t entitiesToSpawnSize = entitiesToSpawn.size();
+
+            // Reserve buffers
+            spawnedEntities.reserve(spawnedEntities.size() + entitiesToSpawnSize);
+            ticket.m_spawnedEntityIndices.reserve(ticket.m_spawnedEntityIndices.size() + entitiesToSpawnSize);
+
+            // TEMP: To be replaced by IdUtils::Remapper
+            using EntityIdMap = AZStd::unordered_map<AZ::EntityId, AZ::EntityId>;
+            EntityIdMap templateToCloneIdMap;
+            // \TEMP
+            
+            // Clone the entities from Spawnable
+            for (size_t i = 0; i < entitiesToSpawnSize; ++i)
             {
-                ticket.m_spawnedEntities.push_back(SpawnSingleEntity(*entities[i], serializeContext));
-                ticket.m_spawnedEntityIndices.push_back(i);
+                const AZ::Entity& entityTemplate = *entitiesToSpawn[i];
+
+                AZ::Entity* clone = serializeContext.CloneObject(&entityTemplate);
+                AZ_Assert(clone != nullptr, "Failed to clone spawnable entity.");
+                clone->SetId(AZ::Entity::MakeId());
+
+                spawnedEntities.push_back(clone);
+                spawnedEntityIndices.push_back(i);
+
+                // TEMP: To be replaced by IdUtils::Remapper
+                templateToCloneIdMap[entityTemplate.GetId()] = clone->GetId();
+
+                // Update TransformComponent parent Id. It is guaranteed for the entities array to be sorted from parent->child here.
+                auto* transformComponent = clone->FindComponent<AzFramework::TransformComponent>();
+                AZ::EntityId parentId = transformComponent->GetParentId();
+                if (parentId.IsValid())
+                {
+                    auto it = templateToCloneIdMap.find(parentId);
+                    if (it != templateToCloneIdMap.end())
+                    {
+                        transformComponent->SetParentRelative(it->second);
+                    }
+                    else
+                    {
+                        AZ_Warning(
+                            "SpawnableEntitiesManager", false, "Entity %s doesn't have the parent entity %s present in the spawnable",
+                            clone->GetName().c_str(), parentId.ToString().data());
+                    }
+                }
+                // \TEMP
             }
 
+            // Let other systems know about newly spawned entities for any pre-processing before adding to the scene/game context.
+            if (request.m_preInsertionCallback)
+            {
+                request.m_preInsertionCallback(*request.m_ticket, SpawnableEntityContainerView(
+                        ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount, ticket.m_spawnedEntities.end()));
+            }
+
+            // Add to the game context, now the entities are active
+            AZStd::for_each(ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount, ticket.m_spawnedEntities.end(),
+                [](AZ::Entity* entity)
+            {
+                GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, entity);
+            });
+
+            // Let other systems know about newly spawned entities for any post-processing after adding to the scene/game context.
             if (request.m_completionCallback)
             {
                 request.m_completionCallback(*request.m_ticket, SpawnableConstEntityContainerView(
-                    ticket.m_spawnedEntities.begin() + spawnedEntitiesCount, ticket.m_spawnedEntities.end()));
+                        ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount, ticket.m_spawnedEntities.end()));
             }
 
             m_onSpawnedEvent.Signal(ticket.m_spawnable);
@@ -249,24 +313,56 @@ namespace AzFramework
         Ticket& ticket = GetTicketPayload<Ticket>(*request.m_ticket);
         if (ticket.m_spawnable.IsReady() && request.m_ticketId == ticket.m_currentTicketId)
         {
-            size_t spawnedEntitiesCount = ticket.m_spawnedEntities.size();
+            AZStd::vector<AZ::Entity*>& spawnedEntities = ticket.m_spawnedEntities;
+            AZStd::vector<size_t>& spawnedEntityIndices = ticket.m_spawnedEntityIndices;
 
-            const Spawnable::EntityList& entities = ticket.m_spawnable->GetEntities();
-            size_t entitiesSize = entities.size();
-            ticket.m_spawnedEntities.reserve(ticket.m_spawnedEntities.size() + entitiesSize);
-            ticket.m_spawnedEntityIndices.reserve(ticket.m_spawnedEntityIndices.size() + entitiesSize);
+            // Keep track how many entities there were in the array initially
+            size_t spawnedEntitiesInitialCount = spawnedEntities.size();
+
+            // These are 'template' entities we'll be cloning from
+            const Spawnable::EntityList& entitiesToSpawn = ticket.m_spawnable->GetEntities();
+            size_t entitiesToSpawnSize = request.m_entityIndices.size();
+
+            spawnedEntities.reserve(spawnedEntities.size() + entitiesToSpawnSize);
+            spawnedEntityIndices.reserve(spawnedEntityIndices.size() + entitiesToSpawnSize);
 
             for (size_t index : request.m_entityIndices)
             {
-                ticket.m_spawnedEntities.push_back(SpawnSingleEntity(*entities[index], serializeContext));
-                ticket.m_spawnedEntityIndices.push_back(index);
+                if (index < entitiesToSpawn.size())
+                {
+                    const AZ::Entity& entityTemplate = *entitiesToSpawn[index];
+
+                    AZ::Entity* clone = serializeContext.CloneObject(&entityTemplate);
+                    AZ_Assert(clone != nullptr, "Failed to clone spawnable entity.");
+                    clone->SetId(AZ::Entity::MakeId());
+
+                    spawnedEntities.push_back(clone);
+                    spawnedEntityIndices.push_back(index);
+
+                }
             }
             ticket.m_loadAll = false;
+
+            // Let other systems know about newly spawned entities for any pre-processing before adding to the scene/game context.
+            if (request.m_preInsertionCallback)
+            {
+                request.m_preInsertionCallback(
+                    *request.m_ticket,
+                    SpawnableEntityContainerView(
+                        ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount, ticket.m_spawnedEntities.end()));
+            }
+
+            // Add to the game context, now the entities are active
+            AZStd::for_each(ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount, ticket.m_spawnedEntities.end(),
+                [](AZ::Entity* entity)
+            {
+                GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, entity);
+            });
 
             if (request.m_completionCallback)
             {
                 request.m_completionCallback(*request.m_ticket, SpawnableConstEntityContainerView(
-                    ticket.m_spawnedEntities.begin() + spawnedEntitiesCount, ticket.m_spawnedEntities.end()));
+                    ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount, ticket.m_spawnedEntities.end()));
             }
 
             m_onSpawnedEvent.Signal(ticket.m_spawnable);

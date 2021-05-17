@@ -114,29 +114,31 @@ namespace Multiplayer
 
         AZStd::unique_ptr<Instance> networkInstance(aznew Instance());
 
-        for (auto entityId : networkedEntityIds)
+        AZ::Data::Asset<AzFramework::Spawnable> networkSpawnableAsset;
+        networkSpawnableAsset.Create(networkSpawnable->GetId());
+        networkSpawnableAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
+
+        for (size_t entityIndex = 0; entityIndex < networkedEntityIds.size(); ++entityIndex) 
         {
+            AZ::EntityId entityId = networkedEntityIds[entityIndex];
             AZ::Entity* netEntity = sourceInstance->DetachEntity(entityId).release();
 
             networkInstance->AddEntity(*netEntity);
 
             AZ::Entity* breadcrumbEntity = aznew AZ::Entity(netEntity->GetName());
             breadcrumbEntity->SetRuntimeActiveByDefault(netEntity->IsRuntimeActiveByDefault());
-            breadcrumbEntity->CreateComponent<NetBindMarkerComponent>();
+            NetBindMarkerComponent* netBindMarkerComponent = breadcrumbEntity->CreateComponent<NetBindMarkerComponent>();
+            // Each spawnable has a root meta-data entity at position 0, so starting net indices from 1
+            netBindMarkerComponent->SetNetEntityIndex(entityIndex + 1);
+            netBindMarkerComponent->SetNetworkSpawnableAsset(networkSpawnableAsset);
             AzFramework::TransformComponent* transformComponent = netEntity->FindComponent<AzFramework::TransformComponent>();
             breadcrumbEntity->CreateComponent<AzFramework::TransformComponent>(*transformComponent);
             
-            // TODO: Configure NetBindMarkerComponent to refer to the net entity
             sourceInstance->AddEntity(*breadcrumbEntity);
         }
 
         // Add net spawnable asset holder
         {
-            AZ::Data::AssetId assetId = networkSpawnable->GetId();
-            AZ::Data::Asset<AzFramework::Spawnable> networkSpawnableAsset;
-            networkSpawnableAsset.Create(assetId);
-            networkSpawnableAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
-
             EntityOptionalReference containerEntityRef = sourceInstance->GetContainerEntity();
             if (containerEntityRef.has_value())
             {

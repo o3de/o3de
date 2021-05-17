@@ -15,7 +15,7 @@
 #include <AzTest/AzTest.h>
 #include <AzTest/GemTestEnvironment.h>
 #include <QApplication>
-#include <Source/Components/NetBindComponent.h>
+#include <Multiplayer/NetBindComponent.h>
 #include <Source/Pipeline/NetBindMarkerComponent.h>
 #include <Source/Pipeline/NetworkSpawnableHolderComponent.h>
 #include <UnitTest/ToolsTestApplication.h>
