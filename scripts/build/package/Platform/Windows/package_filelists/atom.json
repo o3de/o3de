@@ -37,7 +37,6 @@
                 "AssetBundler/**": "#include",
                 "AzTestRunner/**": "#include",
                 "CrashHandler/**": "#include",
-                "CryCommonTools/**": "#include",
                 "DeltaCataloger/**": "#include",
                 "GridHub/**": "#include",
                 "News/**": "#include",
@@ -139,7 +138,6 @@
             "3dsmax/**": "#include",
             "7za.exe": "#include",
             "7za_legal_notice.txt": "#include",
-            "CrySCompileServer/**": "#include",
             "PakShaders/**": "#include",
             "Python/**": "#include",
             "Redistributables": {

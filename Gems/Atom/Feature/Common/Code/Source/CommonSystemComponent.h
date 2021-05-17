@@ -14,6 +14,8 @@
 #include <AzCore/Component/Component.h>
 #include <Atom_Feature_Traits_Platform.h>
 
+#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
+
 #if AZ_TRAIT_LUXCORE_SUPPORTED
 #include "LuxCore/LuxCoreRenderer.h"
 #endif
@@ -40,6 +42,11 @@ namespace AZ
             void Init() override;
             void Activate() override;
             void Deactivate() override;
+
+            // Load pass template mappings for this gem
+            void LoadPassTemplateMappings();
+
+            RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler m_loadTemplatesHandler;
 
 #if AZ_TRAIT_LUXCORE_SUPPORTED
             // LuxCore

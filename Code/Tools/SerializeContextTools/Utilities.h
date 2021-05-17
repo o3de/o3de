@@ -39,7 +39,7 @@ namespace AZ
 
             static AZStd::vector<AZ::Uuid> GetSystemComponents(const Application& application);
 
-            static bool InspectSerializedFile(const AZStd::string& filePath, SerializeContext* sc, const ObjectStream::ClassReadyCB& classCallback);
+            static bool InspectSerializedFile(const char* filePath, SerializeContext* sc, const ObjectStream::ClassReadyCB& classCallback);
 
         private:
             Utilities() = delete;
