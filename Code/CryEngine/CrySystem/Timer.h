@@ -31,7 +31,7 @@ public:
 
     // interface ITimer ----------------------------------------------------------
 
-    // TODO: Review m_time usage in System.cpp / SystemRender.cpp
+    // TODO: Review m_time usage in System.cpp
     //       if it wants Game Time / UI Time or a new Render Time?
 
     virtual void ResetTimer();

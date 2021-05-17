@@ -14,6 +14,7 @@
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Memory/OSAllocator.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/containers/unordered_map.h>
 
@@ -29,6 +30,9 @@ namespace AZ
         AZ_CLASS_ALLOCATOR(Console, AZ::OSAllocator, 0);
 
         Console();
+        //! Constructor overload which registers a notifier with the Settings Registry that will execute
+        //! a console command whenever a key is set under the AZ::IConsole::ConsoleCommandRootKey JSON object
+        explicit Console(AZ::SettingsRegistryInterface& settingsRegistry);
         ~Console() override;
 
         //! IConsole interface
@@ -67,6 +71,7 @@ namespace AZ
         void RegisterFunctor(ConsoleFunctorBase* functor) override;
         void UnregisterFunctor(ConsoleFunctorBase* functor) override;
         void LinkDeferredFunctors(ConsoleFunctorBase*& deferredHead) override;
+        void RegisterCommandInvokerWithSettingsRegistry(AZ::SettingsRegistryInterface& settingsRegistry) override;
         //! @}
 
     private:
@@ -96,6 +101,7 @@ namespace AZ
         ConsoleFunctorBase* m_head;
         using CommandMap = AZStd::unordered_map<CVarFixedString, AZStd::vector<ConsoleFunctorBase*>>;
         CommandMap m_commands;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_consoleCommandKeyHandler;
 
         friend class ConsoleFunctorBase;
     };

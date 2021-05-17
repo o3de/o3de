@@ -14,6 +14,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
+#include <PythonBindingsInterface.h>
 
 namespace O3DE::ProjectManager
 {
@@ -78,6 +79,14 @@ namespace O3DE::ProjectManager
                 false));
         }
         // End: Temporary gem test data
+        auto result = PythonBindingsInterface::Get()->GetGems();
+        if (result.IsSuccess())
+        {
+            for (auto gemInfo : result.GetValue())
+            {
+                m_gemModel->AddGem(gemInfo);
+            }
+        }
     }
 
     ProjectManagerScreen GemCatalogScreen::GetScreenEnum()
