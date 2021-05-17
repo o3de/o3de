@@ -14,18 +14,14 @@ Launch AssetProcessorBatch and Shutdown AssetProcessorBatch without any crash
 """
 
 
-# Import builtin libraries
 import pytest
-from ly_test_tools.o3de.asset_processor import AssetProcessor
 
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
-@pytest.mark.timeout(10)
 @pytest.mark.SUITE_smoke
 class TestsCLIToolAssetProcessorBatchWorks(object):
     def test_CLITool_AssetProcessorBatch_Works(self, workspace):
         """
         Test Launching AssetProcessorBatch and verifies that is shuts down without issue
         """
-        asset_processor = AssetProcessor(workspace)
-        asset_processor.batch_process()
+        workspace.asset_processor.batch_process()

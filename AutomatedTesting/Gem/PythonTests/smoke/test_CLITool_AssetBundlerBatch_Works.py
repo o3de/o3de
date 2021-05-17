@@ -18,14 +18,13 @@ import pytest
 import subprocess
 
 
-@pytest.mark.timeout(10)
 @pytest.mark.SUITE_smoke
 class TestCLIToolAssetBundlerBatchWorks(object):
     def test_CLITool_AssetBundlerBatch_Works(self, build_directory):
         file_path = os.path.join(build_directory, "AssetBundlerBatch")
         help_message = "Specifies the Seed List file to operate on by path"
         # Launch AssetBundlerBatch
-        output = subprocess.run([file_path, "--help"], capture_output=True)
+        output = subprocess.run([file_path, "--help"], capture_output=True, timeout=10)
         assert (
             len(output.stderr) == 0 and output.returncode == 0
         ), f"Error occurred while launching {file_path}: {output.stderr}"

@@ -18,7 +18,6 @@ import pytest
 import subprocess
 
 
-@pytest.mark.timeout(10)
 @pytest.mark.SUITE_smoke
 class TestCLIToolAzTestRunnerWorks(object):
     def test_CLITool_AzTestRunner_Works(self, build_directory):
@@ -26,7 +25,7 @@ class TestCLIToolAzTestRunnerWorks(object):
         help_message = "OKAY Symbol found: AzRunUnitTests"
         # Launch AzTestRunner
         output = subprocess.run(
-            [file_path, "AzTestRunner.Tests", "AzRunUnitTests", "--gtest_list_tests"], capture_output=True
+            [file_path, "AzTestRunner.Tests", "AzRunUnitTests", "--gtest_list_tests"], capture_output=True, timeout=10
         )
         assert (
             len(output.stderr) == 0 and output.returncode == 0

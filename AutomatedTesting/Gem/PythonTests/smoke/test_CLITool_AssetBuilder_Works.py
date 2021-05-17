@@ -18,14 +18,13 @@ import pytest
 import subprocess
 
 
-@pytest.mark.timeout(10)
 @pytest.mark.SUITE_smoke
 class TestCLIToolAssetBuilderWorks(object):
     def test_CLITool_AssetBuilder_Works(self, build_directory):
         file_path = os.path.join(build_directory, "AssetBuilder")
         help_message = "AssetBuilder is part of the Asset Processor"
         # Launch AssetBuilder
-        output = subprocess.run([file_path, "-help"], capture_output=True)
+        output = subprocess.run([file_path, "-help"], capture_output=True, timeout=10)
         assert (
             len(output.stderr) == 0 and output.returncode == 0
         ), f"Error occurred while launching {file_path}: {output.stderr}"

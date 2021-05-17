@@ -18,14 +18,13 @@ import pytest
 import subprocess
 
 
-@pytest.mark.timeout(10)
 @pytest.mark.SUITE_smoke
 class TestCLIToolPythonBindingsExampleWorks(object):
     def test_CLITool_PythonBindingsExample_Works(self, build_directory):
         file_path = os.path.join(build_directory, "PythonBindingsExample")
         help_message = "--help Prints the help text"
         # Launch PythonBindingsExample
-        output = subprocess.run([file_path, "-help"], capture_output=True)
+        output = subprocess.run([file_path, "-help"], capture_output=True, timeout=10)
         assert (
             len(output.stderr) == 0 and output.returncode == 1
         ), f"Error occurred while launching {file_path}: {output.stderr}"
