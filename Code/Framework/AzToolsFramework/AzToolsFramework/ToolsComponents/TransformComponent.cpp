@@ -162,6 +162,12 @@ namespace AzToolsFramework
                     classElement.RemoveElementByName(AZ_CRC("InterpolateScale", 0x9d00b831));
                 }
 
+                if (classElement.GetVersion() < 10)
+                {
+                    // The "Sync Enabled" flag is no longer needed.
+                    classElement.RemoveElementByName(AZ_CRC_CE("Sync Enabled"));
+                }
+
                 return true;
             }
         } // namespace Internal
@@ -1305,7 +1311,7 @@ namespace AzToolsFramework
                     Field("IsStatic", &TransformComponent::m_isStatic)->
                     Field("InterpolatePosition", &TransformComponent::m_interpolatePosition)->
                     Field("InterpolateRotation", &TransformComponent::m_interpolateRotation)->
-                    Version(9, &Internal::TransformComponentDataConverter);
+                    Version(10, &Internal::TransformComponentDataConverter);
 
                 if (AZ::EditContext* ptrEdit = serializeContext->GetEditContext())
                 {

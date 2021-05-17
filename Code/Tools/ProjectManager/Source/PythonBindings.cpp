@@ -437,7 +437,7 @@ namespace O3DE::ProjectManager
                 {
                     for (auto dependency : data["Dependencies"])
                     {
-                        gemInfo.m_dependingGemUuids.push_back(AZ::Uuid(Py_To_String(dependency["Uuid"])));
+                        gemInfo.m_dependingGemUuids.push_back(Py_To_String(dependency["Uuid"]));
                     }
                 }
                 if (data.contains("Tags"))
