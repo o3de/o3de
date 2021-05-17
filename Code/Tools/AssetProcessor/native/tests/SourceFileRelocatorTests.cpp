@@ -487,20 +487,12 @@ namespace UnitTests
         TestGetSourcesByPath("dev/", { }, false);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    TEST_F(SourceFileRelocatorTest, DISABLED_GetSources_MultipleScanFolders_Fails)
-#else
     TEST_F(SourceFileRelocatorTest, GetSources_MultipleScanFolders_Fails)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
     {
         TestGetSourcesByPath("*", { }, false);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    TEST_F(SourceFileRelocatorTest, DISABLED_GetSources_PartialPath_FailsWithNoResults)
-#else
     TEST_F(SourceFileRelocatorTest, GetSources_PartialPath_FailsWithNoResults)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
     {
         TestGetSourcesByPath("older/*", { }, false);
     }
