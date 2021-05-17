@@ -93,8 +93,9 @@ If you have the Git credential manager core or other credential helpers installe
 #### Optional
 
 *   WWise - 2019.2.8.7432 minimum: [https://www.audiokinetic.com/download/](https://www.audiokinetic.com/download/)
-    *   Note: This requires registeration and installation of a client to download
-    *   You will also need to set a environment variable: `set LY_WWISE_INSTALL_PATH=<path to WWise>`
+    *   Note: This requires registration and installation of a client to download
+    *   You will also need to set a environment variable: `set LY_WWISE_INSTALL_PATH=<path to WWise version>`
+    *   For example: `set LY_WWISE_INSTALL_PATH="C:\Program Files (x86)\Audiokinetic\Wwise 2019.2.8.7432"`
 
 ### Quick Start Build Steps
 
@@ -107,7 +108,7 @@ If you have the Git credential manager core or other credential helpers installe
     
 1.  Navigate into the repo folder, then download the python runtime with this command
     ```
-    scripts\get_python.bat
+    python\get_python.bat
     ```
     
 1.  While still within the repo folder, register the engine with this command:
@@ -117,7 +118,7 @@ If you have the Git credential manager core or other credential helpers installe
 
 1.  Configure the source into a solution using this command line, replacing <your build path> and <3rdParty cache path> to a path you've created:
     ```
-    cmake -B <your build path> -S <your source path> -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH=<3rdParty cache path> -DLY_UNITY_BUILD=ON -DLY_PROJECTS=AutomatedTesting 
+    cmake -B <your build path> -S <your source path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=<3rdParty cache path> -DLY_UNITY_BUILD=ON -DLY_PROJECTS=AutomatedTesting 
     ```
 
 1.  Alternatively, you can do this through the CMake GUI:
@@ -137,7 +138,7 @@ If you have the Git credential manager core or other credential helpers installe
 1.  This will compile after some time and binaries will be available in the build path you've specified
 
 ### Setting up new projects    
-1. Setup new projects using this command
+1. Setup new projects using the `o3de create-project` command.
     ```
     <Repo path>\scripts\o3de.bat create-project --project-path <your new project path>
     ```
