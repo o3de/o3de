@@ -5,7 +5,8 @@
     "propertyLayoutVersion": 3,
     "properties": {
         "blend": {
-            "blendSource": "Displacement_With_BlendMaskVertexColors"
+            "blendSource": "Displacement_With_BlendMaskVertexColors",
+            "displacementBlendDistance": 0.02387000061571598
         },
         "parallax": {
             "enable": false

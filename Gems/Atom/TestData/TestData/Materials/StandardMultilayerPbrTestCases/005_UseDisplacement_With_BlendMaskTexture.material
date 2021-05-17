@@ -6,6 +6,9 @@
     "properties": {
         "blend": {
             "blendSource": "Displacement_With_BlendMaskTexture"
+        },
+        "layer1_parallax": {
+            "offset": -0.004000000189989805
         }
     }
 }

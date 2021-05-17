@@ -142,6 +142,6 @@ function ProcessEditor(context)
     -- otherwise lead to edge cases.
     local heightMinMax = CalcOverallHeightRange(context)
     local totalDisplacementRange = heightMinMax[1] - heightMinMax[0]
-    context:SetMaterialPropertySoftMaxValue_float("blend.displacementBlendDistance", totalDisplacementRange)
+    context:SetMaterialPropertySoftMaxValue_float("blend.displacementBlendDistance", math.max(totalDisplacementRange, 0.001))
 end
 

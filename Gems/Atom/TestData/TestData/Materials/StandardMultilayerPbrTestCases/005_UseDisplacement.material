@@ -6,7 +6,7 @@
     "properties": {
         "blend": {
             "blendSource": "Displacement",
-            "displacementBlendDistance": 0.003,
+            "displacementBlendDistance": 0.008999999612569809,
             "enableLayer2": true,
             "enableLayer3": true
         },
@@ -21,7 +21,7 @@
         },
         "layer1_parallax": {
             "factor": 0.017000000923871995,
-            "offset": -0.009999999776482582,
+            "offset": -0.006000000052154064,
             "textureMap": "TestData/Textures/cc0/Ground033_1K_Displacement.jpg"
         },
         "layer1_roughness": {
