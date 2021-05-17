@@ -98,6 +98,7 @@ namespace Maestro
         {
             // This guarantees that only one SequenceComponent will ever be on an entity
             incompatible.push_back(AZ_CRC("SequenceService", 0x7cbe5938));
+            incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         // Required Reflect function.

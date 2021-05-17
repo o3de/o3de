@@ -30,6 +30,7 @@ namespace AZ
         public:
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+            static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
             static void Reflect(AZ::ReflectContext* reflection);
 
             AZ_COMPONENT(FlyCameraInputComponent, "{7AE0D6AD-691C-41B6-9DD5-F23F78B1A02E}");

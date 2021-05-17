@@ -283,7 +283,6 @@ namespace PhysX
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorRigidBodyHandle);
-            m_editorRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
     }
 
@@ -428,7 +427,6 @@ namespace PhysX
             if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
             {
                 sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorRigidBodyHandle);
-                m_editorRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
 
                 CreateEditorWorldRigidBody();
             }

@@ -2308,20 +2308,12 @@ void CUiAnimViewDopeSheetBase::DrawKeys(CUiAnimViewTrack* pTrack, QPainter* pain
     const int kDefaultWidthForDescription = 200;
     const int kSmallMargin = 10;
 
-    FixedDynArray<float> drawnKeyTimes;
-    drawnKeyTimes.set(ArrayT((float*)alloca(numKeys * sizeof(float)), numKeys));
-
     // Draw keys.
     for (int i = 0; i < numKeys; ++i)
     {
         CUiAnimViewKeyHandle keyHandle = pTrack->GetKey(i);
 
         const float time = keyHandle.GetTime();
-        if (!stl::push_back_unique(drawnKeyTimes, time))
-        {
-            continue;
-        }
-
         int x = TimeToClient(time);
         if (x - kSmallMargin > rect.right())
         {

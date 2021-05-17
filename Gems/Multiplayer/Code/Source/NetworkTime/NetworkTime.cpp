@@ -11,6 +11,9 @@
  */
 
 #include <Source/NetworkTime/NetworkTime.h>
+#include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/Components/NetBindComponent.h>
+#include <AzFramework/Visibility/IVisibilitySystem.h>
 
 namespace Multiplayer
 {
@@ -51,11 +54,6 @@ namespace Multiplayer
         return m_hostTimeMs;
     }
 
-    void NetworkTime::SyncRewindableEntityState()
-    {
-
-    }
-
     AzNetworking::ConnectionId NetworkTime::GetRewindingConnectionId() const
     {
         return m_rewindingConnectionId;
@@ -71,5 +69,39 @@ namespace Multiplayer
         m_hostFrameId = frameId;
         m_hostTimeMs = timeMs;
         m_rewindingConnectionId = rewindConnectionId;
+    }
+
+    void NetworkTime::SyncEntitiesToRewindState(const AZ::Aabb& rewindVolume)
+    {
+        // TODO: extrude rewind volume for initial gather
+        AZStd::vector<AzFramework::VisibilityEntry*> gatheredEntries;
+        AZ::Interface<AzFramework::IVisibilitySystem>::Get()->GetDefaultVisibilityScene()->Enumerate(rewindVolume, [&gatheredEntries](const AzFramework::IVisibilityScene::NodeData& nodeData)
+        {
+            gatheredEntries.reserve(gatheredEntries.size() + nodeData.m_entries.size());
+            for (AzFramework::VisibilityEntry* visEntry : nodeData.m_entries)
+            {
+                if (visEntry->m_typeFlags & AzFramework::VisibilityEntry::TypeFlags::TYPE_Entity)
+                {
+                    // TODO: offset aabb for exact rewound position and check against the non-extruded rewind volume
+                    gatheredEntries.push_back(visEntry);
+                }
+            }
+        });
+
+        for (AzFramework::VisibilityEntry* visEntry : gatheredEntries)
+        {
+            AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
+            [[maybe_unused]] NetBindComponent* entryNetBindComponent = entity->template FindComponent<NetBindComponent>();
+            if (entryNetBindComponent != nullptr)
+            {
+                // TODO: invoke the sync to rewind event on the netBindComponent and add the entity to the rewound entity set
+            }
+        }
+    }
+
+    void NetworkTime::ClearRewoundEntities()
+    {
+        AZ_Assert(!IsTimeRewound(), "Cannot clear rewound entity state while still within scoped rewind");
+        // TODO: iterate all rewound entities, signal them to sync rewind state, and clear the rewound entity set
     }
 }

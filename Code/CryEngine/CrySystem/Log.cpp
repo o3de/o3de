@@ -20,7 +20,6 @@
 //this should not be included here
 #include <IConsole.h>
 #include <ISystem.h>
-#include <IStreamEngine.h>
 #include "System.h"
 #include "CryPath.h"                    // PathUtil::ReplaceExtension()
 #include <Pak/CryPakUtils.h>
@@ -418,7 +417,7 @@ void CLog::LogV(const ELogType type, const char* szFormat, va_list args)
     LogV(type, 0, szFormat, args);
 }
 
-void CLog::LogV(const ELogType type, int flags, const char* szFormat, va_list args)
+void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFormat, va_list args)
 {
     // this is here in case someone called LogV directly, with an invalid formatter.
     if (!CheckLogFormatter(szFormat))
@@ -595,28 +594,6 @@ void CLog::LogV(const ELogType type, int flags, const char* szFormat, va_list ar
     case eErrorAlways:
         GetISystem()->GetIRemoteConsole()->AddLogError(szString);
         break;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    if (type == eWarningAlways || type == eWarning || type == eError || type == eErrorAlways)
-    {
-        IValidator* pValidator = m_pSystem->GetIValidator();
-        if (pValidator && (flags & VALIDATOR_FLAG_SKIP_VALIDATOR) == 0)
-        {
-            CryAutoCriticalSection scope_lock(m_logCriticalSection);
-
-            SValidatorRecord record;
-            record.text = szBuffer;
-            record.module = VALIDATOR_MODULE_SYSTEM;
-            record.severity = VALIDATOR_WARNING;
-            record.assetScope = GetAssetScopeString();
-            record.flags = flags;
-            if (type == eError || type == eErrorAlways)
-            {
-                record.severity = VALIDATOR_ERROR;
-            }
-            pValidator->Report(record);
-        }
     }
 }
 
@@ -1439,22 +1416,6 @@ void CLog::UpdateLoadingScreen(const char* szFormat, ...)
         va_end(args);
     }
 #endif
-
-    if (CryGetCurrentThreadId() == m_nMainThreadId)
-    {
-#ifndef LINUX
-        // Take this opportunity to update streaming engine.
-        if (IStreamEngine* pStreamEngine = GetISystem()->GetStreamEngine())
-        {
-            const float curTime = m_pSystem->GetITimer()->GetAsyncCurTime();
-            if (curTime - m_fLastLoadingUpdateTime > .1f)    // not frequent than once in 100ms
-            {
-                m_fLastLoadingUpdateTime = curTime;
-                pStreamEngine->Update();
-            }
-        }
-#endif
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

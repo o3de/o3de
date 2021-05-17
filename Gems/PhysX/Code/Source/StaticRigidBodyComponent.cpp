@@ -117,7 +117,6 @@ namespace PhysX
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             sceneInterface->RemoveSimulatedBody(m_attachedSceneHandle, m_staticRigidBodyHandle);
-            m_staticRigidBodyHandle = AzPhysics::InvalidSceneHandle;
         }
 
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();

@@ -729,7 +729,7 @@ namespace PhysX
         return results;
     }
 
-    void PhysXScene::RemoveSimulatedBody(AzPhysics::SimulatedBodyHandle bodyHandle)
+    void PhysXScene::RemoveSimulatedBody(AzPhysics::SimulatedBodyHandle& bodyHandle)
     {
         if (bodyHandle == AzPhysics::InvalidSimulatedBodyHandle)
         {
@@ -751,10 +751,12 @@ namespace PhysX
             m_deferredDeletions.push_back(m_simulatedBodies[index].second);
             m_simulatedBodies[index] = AZStd::make_pair(AZ::Crc32(), nullptr);
             m_freeSceneSlots.push(index);
+
+            bodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
     }
 
-    void PhysXScene::RemoveSimulatedBodies(const AzPhysics::SimulatedBodyHandleList& bodyHandles)
+    void PhysXScene::RemoveSimulatedBodies(AzPhysics::SimulatedBodyHandleList& bodyHandles)
     {
         for (auto& handle: bodyHandles)
         {
