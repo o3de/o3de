@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<WwiseDocument Type="WorkUnit" ID="{3B167755-FB42-458B-98BF-96F557AFB3B9}" SchemaVersion="97">
+<WwiseDocument Type="WorkUnit" ID="{3B167755-FB42-458B-98BF-96F557AFB3B9}" SchemaVersion="103">
 	<GameParameters>
 		<WorkUnit Name="Factory SoundSeed Air Game Syncs" ID="{3B167755-FB42-458B-98BF-96F557AFB3B9}" PersistMode="Standalone">
 			<ChildrenList>

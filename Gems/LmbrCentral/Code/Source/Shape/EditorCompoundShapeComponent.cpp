@@ -59,6 +59,12 @@ namespace LmbrCentral
         }
     }
 
+    void EditorCompoundShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        EditorBaseShapeComponent::GetIncompatibleServices(incompatible);
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+    }
+
     void EditorCompoundShapeComponent::Init()
     {
         // setup the contained runtime component so that it can manage the child entities in the editor.

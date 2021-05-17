@@ -99,6 +99,11 @@ namespace AzPhysics
                 classElement.RemoveElementByName(AZ_CRC_CE("Property Visibility Flags"));
             }
 
+            if (classElement.GetVersion() <= 4)
+            {
+                classElement.RemoveElementByName(AZ_CRC_CE("Simulated"));
+            }
+
             return true;
         }
     }
@@ -110,7 +115,7 @@ namespace AzPhysics
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<RigidBodyConfiguration, AzPhysics::SimulatedBodyConfiguration>()
-                ->Version(4, &Internal::RigidBodyVersionConverter)
+                ->Version(5, &Internal::RigidBodyVersionConverter)
                 ->Field("Initial linear velocity", &RigidBodyConfiguration::m_initialLinearVelocity)
                 ->Field("Initial angular velocity", &RigidBodyConfiguration::m_initialAngularVelocity)
                 ->Field("Linear damping", &RigidBodyConfiguration::m_linearDamping)
@@ -119,7 +124,6 @@ namespace AzPhysics
                 ->Field("Start Asleep", &RigidBodyConfiguration::m_startAsleep)
                 ->Field("Interpolate Motion", &RigidBodyConfiguration::m_interpolateMotion)
                 ->Field("Gravity Enabled", &RigidBodyConfiguration::m_gravityEnabled)
-                ->Field("Simulated", &RigidBodyConfiguration::m_simulated)
                 ->Field("Kinematic", &RigidBodyConfiguration::m_kinematic)
                 ->Field("CCD Enabled", &RigidBodyConfiguration::m_ccdEnabled)
                 ->Field("Compute Mass", &RigidBodyConfiguration::m_computeMass)

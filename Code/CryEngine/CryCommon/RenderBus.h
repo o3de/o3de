@@ -34,14 +34,6 @@ namespace AZ
         //////////////////////////////////////////////////////////////////////////
 
         /**
-        * This event gets posted at the end of CD3D9Renderer's EF_Scene3D method.
-        * CSystem (in SystemRenderer.cpp) uses this to render the console, aux geom and UI
-        * in a manner that will make sure the render calls end up as part of the scene's render.
-        * This is important or else those render calls won't show up properly in VR.
-        */
-        virtual void OnScene3DEnd() {};
-
-        /**
         * This event gets posted at the beginning of CD3D9Renderer's FreeResources method, before the resources have been freed.
         */
         virtual void OnRendererFreeResources([[maybe_unused]] int flags) {};

@@ -73,6 +73,7 @@ namespace AZ
         void DiffuseProbeGridComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC("DiffuseProbeGridService", 0x63d32042));
+            incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         void DiffuseProbeGridComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

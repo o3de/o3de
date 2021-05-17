@@ -61,6 +61,8 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
         float  m_invAttenuationRadiusSquared;
         float3 m_rgbIntensity;
         float  m_bulbRadius;
+        uint3 m_shadowIndices;
+        uint m_padding;
     };
     
     StructuredBuffer<PointLight> m_pointLights;

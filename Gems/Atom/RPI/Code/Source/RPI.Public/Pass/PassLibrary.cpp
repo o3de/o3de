@@ -262,6 +262,7 @@ namespace AZ
             }
 
             // Handle template mapping reload
+            // Note: it's a known issue that when mapping asset got reloaded, we only handle the new entries
             Data::Asset<AnyAsset> templateMappings = { asset.GetAs<AnyAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
             if (templateMappings)
             {
@@ -310,7 +311,7 @@ namespace AZ
             return success;
         }
 
-        void PassLibrary::LoadPassAsset(const Name& name, const Data::AssetId& passAssetId)
+        bool PassLibrary::LoadPassAsset(const Name& name, const Data::AssetId& passAssetId)
         {
             Data::Asset<PassAsset> passAsset;
             if (passAssetId.IsValid())
@@ -325,16 +326,26 @@ namespace AZ
             {
                 Data::AssetBus::MultiHandler::BusConnect(passAssetId);
             }
+
+            return loadSuccess;
         }
 
-        void PassLibrary::LoadPassTemplateMappings(const AZStd::string& templateMappingPath)
+        bool PassLibrary::LoadPassTemplateMappings(const AZStd::string& templateMappingPath)
         {
-            Data::Asset<AnyAsset> mappingAsset = AssetUtils::LoadAssetByProductPath<AnyAsset>(templateMappingPath.c_str(), AssetUtils::TraceLevel::Error);
+            Data::Asset<AnyAsset> mappingAsset = AssetUtils::LoadCriticalAsset<AnyAsset>(templateMappingPath.c_str(), AssetUtils::TraceLevel::Error);
+
+            if (m_templateMappingAssets.find(mappingAsset.GetId()) != m_templateMappingAssets.end())
+            {
+                AZ_Warning("PassLibrary", false, "Pass template mapping [%s] was already loaded", mappingAsset.GetHint().c_str());
+                return true;
+            }
+
             bool success = LoadPassTemplateMappings(mappingAsset);
             if (success)
             {
                 Data::AssetBus::MultiHandler::BusConnect(mappingAsset->GetId());
             }
+            return success;
         }
 
         bool PassLibrary::LoadPassTemplateMappings(Data::Asset<AnyAsset> mappingAsset)
@@ -349,13 +360,29 @@ namespace AZ
                 }
 
                 const AZStd::unordered_map<AZStd::string, Data::AssetId>& assetMapping = mappings->GetAssetMapping();
+                Data::AssetId mappingAssetId = mappingAsset.GetId();
                 m_templateEntries.reserve(m_templateEntries.size() + assetMapping.size());
                 for (const auto& assetInfo : assetMapping)
                 {
                     Name templateName = AZ::Name(assetInfo.first);
                     if (!HasTemplate(templateName))
                     {
-                        LoadPassAsset(templateName, assetInfo.second);
+                        bool loaded = LoadPassAsset(templateName, assetInfo.second);
+                        if (loaded)
+                        {
+                            auto& entry = m_templateEntries[templateName];
+                            entry.m_mappingAssetId = mappingAssetId;
+                        }
+                    }
+                    else
+                    {
+                        // Report a warning if the template was setup in another mappping asset.
+                        // We won't report a warning if the template was loaded from same asset. This only happens when the asset got reloaded.
+                        if (m_templateEntries[templateName].m_mappingAssetId != mappingAssetId)
+                        {
+                            AZ_Warning("PassLibrary", false, "Template [%s] was aleady added to the library. Duplicated template from [%s]",
+                                templateName.GetCStr(), mappingAsset.ToString<AZStd::string>().c_str());
+                        }
                     }
                 }
 

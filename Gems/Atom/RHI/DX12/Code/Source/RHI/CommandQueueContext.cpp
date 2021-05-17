@@ -109,7 +109,10 @@ namespace AZ
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
             for (uint32_t hardwareQueueIdx = 0; hardwareQueueIdx < RHI::HardwareQueueClassCount; ++hardwareQueueIdx)
             {
-                m_commandQueues[hardwareQueueIdx]->WaitForIdle();
+                if (m_commandQueues[hardwareQueueIdx])
+                {
+                    m_commandQueues[hardwareQueueIdx]->WaitForIdle();
+                }
             }
         }
 

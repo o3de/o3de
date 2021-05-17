@@ -13,7 +13,6 @@
 
 #include <ACES/Aces.h>
 #include <AzCore/EBus/EBus.h>
-#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
 

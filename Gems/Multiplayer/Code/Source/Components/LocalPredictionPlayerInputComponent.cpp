@@ -10,7 +10,7 @@
 *
 */
 
-#include <Source/Components/LocalPredictionPlayerInputComponent.h>
+#include <Multiplayer/Components/LocalPredictionPlayerInputComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzNetworking/Serialization/HashSerializer.h>
@@ -81,12 +81,7 @@ namespace Multiplayer
         , m_migrateStartHandler([this](ClientInputId migratedInputId) { OnMigrateStart(migratedInputId); })
         , m_migrateEndHandler([this]() { OnMigrateEnd(); })
     {
-        if (GetNetEntityRole() == NetEntityRole::Autonomous)
-        {
-            m_autonomousUpdateEvent.Enqueue(AZ::TimeMs{ 1 }, true);
-            parent.GetNetBindComponent()->AddEntityMigrationStartEventHandler(m_migrateStartHandler);
-            parent.GetNetBindComponent()->AddEntityMigrationEndEventHandler(m_migrateEndHandler);
-        }
+        ;
     }
 
     void LocalPredictionPlayerInputComponentController::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
@@ -94,7 +89,14 @@ namespace Multiplayer
         if (entityIsMigrating == EntityIsMigrating::True)
         {
             m_allowMigrateClientInput = true;
-            m_serverMigrateFrameId = AZ::Interface<INetworkTime>::Get()->GetHostFrameId();
+            m_serverMigrateFrameId = GetNetworkTime()->GetHostFrameId();
+        }
+
+        if (IsAutonomous())
+        {
+            m_autonomousUpdateEvent.Enqueue(AZ::TimeMs{ 1 }, true);
+            GetParent().GetNetBindComponent()->AddEntityMigrationStartEventHandler(m_migrateStartHandler);
+            GetParent().GetNetBindComponent()->AddEntityMigrationEndEventHandler(m_migrateEndHandler);
         }
     }
 
@@ -111,16 +113,24 @@ namespace Multiplayer
         [[maybe_unused]] const AzNetworking::PacketEncodingBuffer& clientState
     )
     {
-        // After receiving the first input from the client, start the update event to check for slow hacking
-        if (!m_updateBankedTimeEvent.IsScheduled())
-        {
-            m_updateBankedTimeEvent.Enqueue(sv_InputUpdateTimeMs, true);
-        }
-
         if (invokingConnection == nullptr)
         {
             // Discard any input messages that were locally dispatched or sent by disconnected clients
             return;
+        }
+
+        const ClientInputId clientInputId = inputArray[0].GetClientInputId();
+        if (clientInputId <= m_lastClientInputId)
+        {
+            AZLOG(NET_Prediction, "Discarding old or out of order move input (current: %u, received %u)",
+                aznumeric_cast<uint32_t>(m_lastClientInputId), aznumeric_cast<uint32_t>(clientInputId));
+            return;
+        }
+
+        // After receiving the first input from the client, start the update event to check for slow hacking
+        if (!m_updateBankedTimeEvent.IsScheduled())
+        {
+            m_updateBankedTimeEvent.Enqueue(sv_InputUpdateTimeMs, true);
         }
 
         const AZ::TimeMs currentTimeMs = AZ::GetElapsedTimeMs();
@@ -129,55 +139,31 @@ namespace Multiplayer
 
         // Keep track of last inputs received, also allows us to update frame ids
         m_lastInputReceived = inputArray;
-
-        // Figure out which index from the input array we want
-        // we start at the oldest input that has not been processed
-        int32_t inputArrayIndex = -1;
-        for (int32_t i = NetworkInputArray::MaxElements - 1; i >= 0; --i)
-        {
-            // Find an input that is newer than the last one we processed 
-            if (m_lastInputReceived[i].GetClientInputId() > GetLastInputId())
-            {
-                inputArrayIndex = i;
-                break;
-            }
-        }
-
-        if (inputArrayIndex < 0)
-        {
-            AZLOG
-            (
-                NET_Prediction,
-                "Discarding old or out of order move input (current: %u, received %u)",
-                aznumeric_cast<uint32_t>(GetLastInputId()),
-                aznumeric_cast<uint32_t>(m_lastInputReceived[0].GetClientInputId())
-            );
-            return;
-        }
-
-        bool lostInput = false;
-        if (GetLastInputId() < inputArray.GetPreviousInputId())
-        {
-            // last move id processed is older than the previous input id, we missed some input packets
-            lostInput = true;
-        }
-
         SetLastInputId(m_lastInputReceived[0].GetClientInputId()); // Set this variable in case of migration
 
-        while (inputArrayIndex >= 0)
+        while (m_lastClientInputId < clientInputId)
         {
-            NetworkInput& input = m_lastInputReceived[inputArrayIndex];
+            ++m_lastClientInputId;
+
+            // Figure out which index from the input array we want
+            // If we have skipped an id, check if it was sent to us in the array. If we have lost too many, just use the oldest one in the array
+            const uint32_t deltaFrameId = aznumeric_cast<uint32_t>(clientInputId - m_lastClientInputId); // always >= 0 because of while loop check
+            const uint32_t inputArrayIdx = AZStd::min(deltaFrameId, NetworkInputArray::MaxElements - 1);
+            const bool     lostInput = deltaFrameId >= NetworkInputArray::MaxElements; // For logging only
+
+            NetworkInput &input = m_lastInputReceived[inputArrayIdx];
+            input.SetClientInputId(m_lastClientInputId);
 
             // Anticheat, if we're receiving too many inputs, and fall outside our variable latency input window
             // Discard move input events, client may be speed hacking
             if (m_clientBankedTime < sv_MaxBankTimeWindowSec)
             {
                 m_clientBankedTime = AZStd::min(m_clientBankedTime + clientInputRateSec, (double)sv_MaxBankTimeWindowSec); // clamp to boundary
-
                 {
                     ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), invokingConnection->GetConnectionId());
                     GetNetBindComponent()->ProcessInput(input, static_cast<float>(clientInputRateSec));
                 }
+
                 if (lostInput)
                 {
                     AZLOG(NET_Prediction, "InputLost InputId=%u", aznumeric_cast<uint32_t>(input.GetClientInputId()));
@@ -191,7 +177,6 @@ namespace Multiplayer
             {
                 AZLOG(NET_Prediction, "Dropped InputId=%u", aznumeric_cast<uint32_t>(input.GetClientInputId()));
             }
-            --inputArrayIndex;
         }
 
         if (sv_EnableCorrections && (currentTimeMs - m_lastCorrectionSentTimeMs > sv_MinCorrectionTimeMs))
@@ -202,6 +187,14 @@ namespace Multiplayer
             GetNetBindComponent()->SerializeEntityCorrection(hashSerializer);
 
             const AZ::HashValue32 localAuthorityHash = hashSerializer.GetHash();
+
+            AZLOG
+            (
+                NET_Prediction,
+                "Hash values for ProcessInput: client=%u, server=%u",
+                aznumeric_cast<uint32_t>(stateHash), 
+                aznumeric_cast<uint32_t>(localAuthorityHash)
+            );
 
             if (stateHash != localAuthorityHash)
             {
@@ -492,8 +485,8 @@ namespace Multiplayer
 
         const uint32_t maxClientInputs = inputRate > 0.0 ? static_cast<uint32_t>(maxRewindHistory / inputRate) : 0;
 
-        INetworkTime* networkTime = AZ::Interface<INetworkTime>::Get();
-        IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
+        IMultiplayer* multiplayer = GetMultiplayer();
+        INetworkTime* networkTime = GetNetworkTime();
         while (m_moveAccumulator >= inputRate)
         {
             m_moveAccumulator -= inputRate;
@@ -540,21 +533,15 @@ namespace Multiplayer
                 m_inputHistory.PopFront();
             }
 
-            const size_t inputHistorySize = m_inputHistory.Size();
+            const int64_t inputHistorySize = aznumeric_cast<int64_t>(m_inputHistory.Size());
 
             // Form the rest of the input array using the n most recent elements in the history buffer
             // NOTE: inputArray[0] has already been initialized hence start at i = 1
-            for (uint32_t i = 1; i < NetworkInputArray::MaxElements; ++i)
+            for (int64_t i = 1; i < aznumeric_cast<int64_t>(NetworkInputArray::MaxElements); ++i)
             {
-                if (i < inputHistorySize)
-                {
-                    inputArray[i] = m_inputHistory[inputHistorySize - 1 - i];
-                }
-                else // History is too small?
-                {
-                    // Plug in the most recent input
-                    inputArray[i] = input;
-                }
+                // Clamp to oldest element if history is too small
+                const int64_t historyIndex = AZStd::max<int64_t>(inputHistorySize - 1 - i, 0);
+                inputArray[i] = m_inputHistory[historyIndex];
             }
 
             // Send the input to server (only when we are not migrating)
