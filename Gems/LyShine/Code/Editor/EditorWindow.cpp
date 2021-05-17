@@ -1451,7 +1451,6 @@ void EditorWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
     {
         // change skin
         RefreshEditorMenu();
-        m_viewport->UpdateViewportBackground();
         break;
     }
     case eNotify_OnUpdateViewports:

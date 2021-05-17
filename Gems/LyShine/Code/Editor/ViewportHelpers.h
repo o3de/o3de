@@ -17,7 +17,6 @@ namespace ViewportHelpers
 {
     //-------------------------------------------------------------------------------
 
-    const AZ::Color backgroundColorLight(0.85f, 0.85f, 0.85f, 1.0f);
     const AZ::Color backgroundColorDark(0.133f, 0.137f, 0.149f, 1.0f);      // #222236, RGBA: 34, 35, 38, 255
     const AZ::Color selectedColor(1.000f, 1.000f, 1.000f, 1.0f);            // #FFFFFF, RGBA: 255, 255, 255, 255
     const AZ::Color unselectedColor(0.800f, 0.800f, 0.800f, 0.500f);        // #CCCCCC, RGBA: 204, 204, 204, 128

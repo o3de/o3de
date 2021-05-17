@@ -199,6 +199,43 @@ namespace AzToolsFramework
                 return true;
             }
 
+            void GetTemplateSourcePaths(const PrefabDomValue& prefabDom, AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths)
+            {
+                PrefabDomValueConstReference findSourceResult = PrefabDomUtils::FindPrefabDomValue(prefabDom, PrefabDomUtils::SourceName);
+                if (!findSourceResult.has_value() || !(findSourceResult->get().IsString()) ||
+                    findSourceResult->get().GetStringLength() == 0)
+                {
+                    AZ_Assert(
+                        false,
+                        "PrefabDomUtils::GetDependentTemplatePath - Source value of prefab in the provided DOM is not a valid string.");
+                    return;
+                }
+
+                templateSourcePaths.emplace(findSourceResult->get().GetString());
+                PrefabDomValueConstReference instancesReference = GetInstancesValue(prefabDom);
+                if (instancesReference.has_value())
+                {
+                    const PrefabDomValue& instances = instancesReference->get();
+
+                    for (PrefabDomValue::ConstMemberIterator instanceIterator = instances.MemberBegin();
+                         instanceIterator != instances.MemberEnd(); ++instanceIterator)
+                    {
+                        GetTemplateSourcePaths(instanceIterator->value, templateSourcePaths);
+                    }
+                }
+            }
+
+            PrefabDomValueConstReference GetInstancesValue(const PrefabDomValue& prefabDom)
+            {
+                PrefabDomValueConstReference findInstancesResult = FindPrefabDomValue(prefabDom, PrefabDomUtils::InstancesName);
+                if (!findInstancesResult.has_value() || !(findInstancesResult->get().IsObject()))
+                {
+                    return AZStd::nullopt;
+                }
+
+                return findInstancesResult->get();
+            }
+
             void PrintPrefabDomValue(
                 [[maybe_unused]] const AZStd::string_view printMessage,
                 [[maybe_unused]] const PrefabDomValue& prefabDomValue)

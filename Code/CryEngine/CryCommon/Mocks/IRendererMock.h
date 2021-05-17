@@ -330,8 +330,6 @@ public:
         ITexture * (const char* nameTex));
     MOCK_METHOD1(EF_LoadLightmap,
         int(const char* name));
-    MOCK_METHOD3(EF_RenderEnvironmentCubeHDR,
-        bool(int size, Vec3 & Pos, TArray<unsigned short>&vecData));
     MOCK_METHOD1(EF_StartEf,
         void(const SRenderingPassInfo& passInfo));
     MOCK_METHOD3(EF_GetObjData,
@@ -360,8 +358,6 @@ public:
         uint32(eDeferredLightType));
     MOCK_METHOD0(EF_ClearDeferredLightsList,
         void());
-    MOCK_METHOD2(EF_GetDeferredLights,
-        TArray<SRenderLight>*(const SRenderingPassInfo&, const eDeferredLightType));
     MOCK_METHOD1(EF_AddDeferredClipVolume,
         uint8(const IClipVolume * pClipVolume));
     MOCK_METHOD2(EF_SetDeferredClipVolumeBlendData,

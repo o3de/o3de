@@ -54,8 +54,6 @@ public: // member functions
     bool IsDrawingElementBorders(uint32 flags) const;
     void ToggleDrawElementBorders(uint32 flags);
 
-    void UpdateViewportBackground();
-
     void ActiveCanvasChanged();
     void EntityContextChanged();
 
@@ -153,6 +151,9 @@ private: // member functions
 
     //! Render the viewport when in preview mode
     void RenderPreviewMode(float deltaTime);
+
+    //! Fill the entire viewport area with a background color
+    void RenderViewportBackground();
 
     //! Create shortcuts for manipulating the viewport
     void SetupShortcuts();
