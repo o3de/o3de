@@ -8,8 +8,15 @@
     "root": "${repo_dir}"
   },
   "workspace": {
-    "temp_dir": "${temp_dir}",
-    "test_impact_data_file": "${test_impact_data_file}"
+    "temp": {
+      "root": "${temp_dir}",
+      "artifact_dir": "RuntimeArtifact"
+    },
+    "persistent": {
+      "root": "${persistent_dir}",
+      "test_impact_data_file": "TestImpactData.spartia",
+      "enumeration_cache_dir": "EnumerationCache"
+    }
   },
   "artifacts": {
     "static": {
@@ -41,6 +48,14 @@
       "test_target_meta": {
         "file": "${test_target_type_file}"
       }
+    }
+  },
+  "test_engine": {
+    "test_runner": {
+        "bin": "${test_runner_bin}"
+    },
+    "instrumentation": {
+      "bin": "${instrumentation_bin}"
     }
   },
   "target": {

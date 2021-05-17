@@ -540,6 +540,11 @@ namespace TestImpact
     {
         return m_testFailurePolicy;
     }
+
+    IntegrityFailurePolicy CommandLineOptions::GetIntegrityFailurePolicy() const
+    {
+        return m_integrityFailurePolicy;
+    }
     
     TestShardingPolicy CommandLineOptions::GetTestShardingPolicy() const
     {

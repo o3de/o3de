@@ -82,6 +82,11 @@ namespace TestImpact
         }
     }
 
+    AZ::IO::Path MakePreferredPath(const char* path)
+    {
+        return AZ::IO::Path(path).MakePreferred();
+    }
+
     RuntimeConfig ConfigurationFactory(const AZStd::string& configurationData)
     {
         RuntimeConfig runtimeConfig;
@@ -120,7 +125,7 @@ namespace TestImpact
 
         if (configurationFile.Parse(configurationData.c_str()).HasParseError())
         {
-            throw TestImpact::ConfigurationException("Could not parse runtimeConfig file");
+            throw TestImpact::ConfigurationException("Could not parse runtimeConfig data, JSON has errors");
         }
 
         // Configuration meta-data
@@ -129,14 +134,17 @@ namespace TestImpact
         runtimeConfig.m_meta.m_timestamp = configurationFile["meta"]["timestamp"].GetString();
 
         // Repository
-        runtimeConfig.m_repo.m_root = configurationFile["repo"]["root"].GetString();
+        runtimeConfig.m_repo.m_root = MakePreferredPath(configurationFile["repo"]["root"].GetString());
 
         // Workspace
-        runtimeConfig.m_workspace.m_tempDirectory = configurationFile["workspace"]["temp_dir"].GetString();
-        runtimeConfig.m_workspace.m_testImpactDataFile = configurationFile["workspace"]["test_impact_data_file"].GetString();
+        runtimeConfig.m_workspace.m_temp.m_root = MakePreferredPath(configurationFile["workspace"]["temp"]["root"].GetString());
+        runtimeConfig.m_workspace.m_temp.m_artifactDirectory = runtimeConfig.m_workspace.m_temp.m_root / MakePreferredPath(configurationFile["workspace"]["temp"]["root"].GetString());
+        runtimeConfig.m_workspace.m_persistent.m_root = MakePreferredPath(configurationFile["workspace"]["persistent"]["root"].GetString());
+        runtimeConfig.m_workspace.m_persistent.m_sparTIAFile = runtimeConfig.m_workspace.m_persistent.m_root / MakePreferredPath(configurationFile["workspace"]["persistent"]["test_impact_data_file"].GetString());
+        runtimeConfig.m_workspace.m_persistent.m_enumerationCacheDirectory = runtimeConfig.m_workspace.m_persistent.m_root / MakePreferredPath(configurationFile["workspace"]["persistent"]["enumeration_cache_dir"].GetString());
 
         // Build target descriptors
-        runtimeConfig.m_buildTargetDescriptor.m_outputDirectory = configurationFile["artifacts"]["static"]["build_target_descriptor"]["dir"].GetString();
+        runtimeConfig.m_buildTargetDescriptor.m_outputDirectory = MakePreferredPath(configurationFile["artifacts"]["static"]["build_target_descriptor"]["dir"].GetString());
         const auto& staticInclusionFilters =
             configurationFile["artifacts"]["static"]["build_target_descriptor"]["target_sources"]["static"]["include_filters"].GetArray();
         if (!staticInclusionFilters.Empty())
@@ -161,17 +169,21 @@ namespace TestImpact
         }
 
         // Dependency graph data
-        runtimeConfig.m_dependencyGraphData.m_outputDirectory = configurationFile["artifacts"]["static"]["dependency_graph_data"]["dir"].GetString();
+        runtimeConfig.m_dependencyGraphData.m_outputDirectory = MakePreferredPath(configurationFile["artifacts"]["static"]["dependency_graph_data"]["dir"].GetString());
         runtimeConfig.m_dependencyGraphData.m_targetDependencyFileMatcher =
             configurationFile["artifacts"]["static"]["dependency_graph_data"]["matchers"]["target_dependency_file"].GetString();
         runtimeConfig.m_dependencyGraphData.m_targetVertexMatcher =
             configurationFile["artifacts"]["static"]["dependency_graph_data"]["matchers"]["target_vertex"].GetString();
 
         // Test target meta
-        runtimeConfig.m_testTargetMeta.m_file = configurationFile["artifacts"]["static"]["test_target_meta"]["file"].GetString();
+        runtimeConfig.m_testTargetMeta.m_file = MakePreferredPath(configurationFile["artifacts"]["static"]["test_target_meta"]["file"].GetString());
+
+        // Test engine
+        runtimeConfig.m_testEngine.m_testRunner.m_binary = MakePreferredPath(configurationFile["test_engine"]["test_runner"]["bin"].GetString());
+        runtimeConfig.m_testEngine.m_instrumentation.m_binary = MakePreferredPath(configurationFile["test_engine"]["instrumentation"]["bin"].GetString());
 
         // Target
-        runtimeConfig.m_target.m_outputDirectory = configurationFile["target"]["dir"].GetString();
+        runtimeConfig.m_target.m_outputDirectory = MakePreferredPath(configurationFile["target"]["dir"].GetString());
         const auto& testExcludes =
             configurationFile["target"]["exclude"].GetArray();
         if (!testExcludes.Empty())

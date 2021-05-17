@@ -138,6 +138,14 @@ namespace TestImpact
         m_dynamicDependencyMap = ConstructDynamicDependencyMap(m_config.m_testTargetMeta, m_config.m_buildTargetDescriptor);
         m_testTargetExcludeList = ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetTestTargetList(), m_config.m_target);
         //EnumerateDirtyTestTargets();
+        m_testEngine = AZStd::make_unique<TestEngine>(
+            m_config.m_repo.m_root,
+            m_config.m_target.m_outputDirectory,
+            m_config.m_workspace.m_persistent.m_enumerationCacheDirectory,
+            m_config.m_workspace.m_temp.m_artifactDirectory,
+            m_config.m_testEngine.m_testRunner.m_binary,
+            m_config.m_testEngine.m_instrumentation.m_binary,
+            m_maxConcurrency);
     }
 
     Runtime::~Runtime() = default;
@@ -150,21 +158,32 @@ namespace TestImpact
     //}
 
     TestSequenceResult Runtime::RegularTestSequence(
-        [[maybe_unused]]const AZStd::unordered_set<AZStd::string> suitesFilter,
-        [[maybe_unused]]AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        [[maybe_unused]]AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        [[maybe_unused]]AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
-        [[maybe_unused]]AZStd::optional<TestSequenceEndCallback> testSequenceEndCallback,
-        [[maybe_unused]]AZStd::optional<TestCompleteCallback> testCompleteCallback)
+        const AZStd::unordered_set<AZStd::string> suitesFilter,
+        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+        AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
+        AZStd::optional<TestSequenceEndCallback> testSequenceEndCallback,
+        AZStd::optional<TestCompleteCallback> testCompleteCallback)
     {
         AZStd::vector<const TestTarget*> includedTestTargets;
         AZStd::vector<const TestTarget*> excludedTestTargets;
 
-        for (const auto testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
+        for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
         {
-            if (m_testTargetExcludeList.contains(&testTarget) && suitesFilter.contains(testTarget.GetSuite()))
+            if (!m_testTargetExcludeList.contains(&testTarget))
             {
-                includedTestTargets.push_back(&testTarget);
+                if (suitesFilter.empty())
+                {
+                    includedTestTargets.push_back(&testTarget);
+                }
+                else if(suitesFilter.contains(testTarget.GetSuite()))
+                {
+                    includedTestTargets.push_back(&testTarget);
+                }
+                else
+                {
+                    excludedTestTargets.push_back(&testTarget);
+                }
             }
             else
             {
@@ -191,7 +210,7 @@ namespace TestImpact
             m_executionFailurePolicy,
             m_testFailurePolicy,
             m_targetOutputCapture,
-            AZStd::nullopt,
+            testTargetTimeout,
             globalTimeout,
             testComplete);
 

@@ -17,12 +17,15 @@
 
 namespace TestImpact
 {
+    // put this stuff in Client folder/namespace
     class TargetFailure
     {
     public:
         TargetFailure(const AZStd::string& targetName);
 
         const AZStd::string& GetTargetName() const;
+    private:
+        AZStd::string m_targetName;
     };
 
     class ExecutionFailure
@@ -32,6 +35,8 @@ namespace TestImpact
         ExecutionFailure(const AZStd::string& targetName, const AZStd::string& command);
 
         const AZStd::string& GetCommandString() const;
+    private:
+        AZStd::string m_commandString;
     };
 
     class LauncherFailure
@@ -41,6 +46,8 @@ namespace TestImpact
         LauncherFailure(const AZStd::string& targetName, const AZStd::string& command, int returnCode);
 
         int GetReturnCode() const;
+    private:
+        int m_returnCode;
     };
 
     class TestFailure
@@ -50,6 +57,10 @@ namespace TestImpact
 
         const AZStd::string& GetName() const;
         const AZStd::string& GetErrorMessage() const;
+
+    private:
+        AZStd::string m_name;
+        AZStd::string m_errorMessage;
     };
 
     class TestCaseFailure
@@ -59,6 +70,10 @@ namespace TestImpact
 
         const AZStd::string& GetName() const;
         const AZStd::vector<TestFailure>& GetTestFailures() const;
+
+    private:
+        AZStd::string m_name;
+        AZStd::vector<TestFailure> m_testFailures;
     };
 
     class TestRunFailure
@@ -69,6 +84,9 @@ namespace TestImpact
 
         size_t GetNumTestFailures() const;
         const AZStd::vector<TestCaseFailure>& GetTestCaseFailures() const;
+
+    private:
+        AZStd::vector<TestCaseFailure> m_testCaseFailures;
     };
 
     class FailureReport
@@ -84,10 +102,16 @@ namespace TestImpact
         const AZStd::vector<LauncherFailure>& GetLauncherFailures() const;
         const AZStd::vector<TestRunFailure>& GetTestRunFailures() const;
         const AZStd::vector<TargetFailure>& GetUnexecutedTest() const;
+
+    private:
+        AZStd::vector<ExecutionFailure> m_executionFailures;
+        AZStd::vector<LauncherFailure> m_launcherFailures;
+        AZStd::vector<TestRunFailure> m_testRunFailures;
+        AZStd::vector<TargetFailure> m_unexecutionTests;
     };
 
     class ImpactAnalysisFailureReport
-        : public FailureReport
+        //: public FailureReport
     {
     public:
         ImpactAnalysisFailureReport(
@@ -97,7 +121,17 @@ namespace TestImpact
             AZStd::vector<TestRunFailure>&& discardedTestRunFailures,
             AZStd::vector<TargetFailure>&& unexecutionTests);
 
-        const AZStd::vector<TestRunFailure>& GetSelectedTestRunFailures() const;
-        const AZStd::vector<TestRunFailure>& GetDiscardedTestRunFailures() const;
+        const AZStd::vector<ExecutionFailure> GetExecutionFailures() const;
+        const AZStd::vector<LauncherFailure> GetLauncherFailures() const;
+        const AZStd::vector<TestRunFailure> GetSelectedTestRunFailures() const;
+        const AZStd::vector<TestRunFailure> GetDiscardedTestRunFailures() const;
+        const AZStd::vector<TargetFailure> GetUnexecutedTest() const;
+
+    private:
+        AZStd::vector<ExecutionFailure> m_executionFailures;
+        AZStd::vector<LauncherFailure> m_launcherFailures;
+        AZStd::vector<TestRunFailure> m_selectedTestRunFailures;
+        AZStd::vector<TestRunFailure> m_discardedTestRunFailures;
+        AZStd::vector<TargetFailure> m_unexecutionTests;
     };
 }

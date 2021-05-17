@@ -13,6 +13,7 @@
 #pragma once
 
 #include <TestImpactFramework/TestImpactTestEnginePolicy.h>
+#include <TestImpactFramework/TestImpactTest.h>
 
 #include <TestEngine/TestImpactTestEngineEnumeration.h>
 #include <TestEngine/TestImpactTestEngineInstrumentedRun.h>
@@ -49,7 +50,7 @@ namespace TestImpact
             ExecutionFailurePolicy executionFailurePolicy,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-            AZStd::optional<TestEngineEnumerationCallback> enumerationCallback);
+            AZStd::optional<TestEngineEnumerationCallback> callback);
 
         AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun>> RegularRun(
             const AZStd::vector<const TestTarget*> testTargets,
@@ -59,7 +60,7 @@ namespace TestImpact
             TargetOutputCapture targetOutputCapture,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-            AZStd::optional<TestEngineRunCallback> runCallback);
+            AZStd::optional<TestEngineRunCallback> callback);
 
         AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun>> InstrumentedRun(
             const AZStd::vector<const TestTarget*> testTargets,
@@ -70,7 +71,7 @@ namespace TestImpact
             TargetOutputCapture targetOutputCapture,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-            AZStd::optional<TestEngineRunCallback> runCallback);
+            AZStd::optional<TestEngineRunCallback> callback);
 
     private:
         size_t m_maxConcurrentRuns = 0;

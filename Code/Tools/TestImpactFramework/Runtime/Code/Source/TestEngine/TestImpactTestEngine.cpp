@@ -20,6 +20,113 @@
 
 namespace TestImpact
 {
+    namespace ErrorCodes
+    {
+        namespace OpenCppCoverage
+        {
+            static constexpr ReturnCode InvalidArgs = -1618178468;
+        }
+    }
+
+    namespace ErrorCodes
+    {
+        namespace GTest
+        {
+            static constexpr ReturnCode Unsuccessful = 1;
+        }
+    }
+
+    namespace ErrorCodes
+    {
+        namespace AZTestRunner
+        {
+            static constexpr ReturnCode InvalidArgs = 101;
+            static constexpr ReturnCode FailedToFindTargetBinary = 102;
+            static constexpr ReturnCode SymbolNotFound = 103;
+            static constexpr ReturnCode ModuleSkipped = 104;
+        }
+    }
+
+    namespace
+    {
+        // this will change when timeout result implemented in process scheduler!!!
+        template<typename TestEngineJobType>
+        TestSequenceResult CalculateSequenceResult(const AZStd::vector<TestEngineJobType>& engineJobs, ExecutionFailurePolicy executionFailurePolicy)
+        {
+            bool hasExecutionFailures = false;
+            bool hasTestFailures = false;
+
+            for (const auto engineJob : engineJobs)
+            {
+                switch (engineJob.GetTestResult())
+                {
+                case TestResult::FailedToExecute:
+                {
+                    hasExecutionFailures = true;
+                    break;
+                }
+                /*case TestResult::NotExecuted: 
+                {
+                    hasTestTimeouts = true;
+                    break;
+                }*/
+                case TestResult::Timeout:
+                case TestResult::TestFailures:
+                {
+                    hasTestFailures = true;
+                }
+                default:
+                {
+                    continue;
+                }
+                }
+            }
+
+            if ((hasExecutionFailures && executionFailurePolicy != ExecutionFailurePolicy::Ignore) || hasTestFailures)
+            {
+                return TestSequenceResult::Failure;
+            }
+            else
+            {
+                return TestSequenceResult::Success;
+            }
+        }
+
+        TestResult GetTestResultForMeta(const JobMeta& meta)
+        {
+            if (meta.m_returnCode.has_value())
+            {
+                switch (meta.m_returnCode.value())
+                {
+                case ErrorCodes::OpenCppCoverage::InvalidArgs:
+                case ErrorCodes::AZTestRunner::InvalidArgs:
+                case ErrorCodes::AZTestRunner::FailedToFindTargetBinary:
+                case ErrorCodes::AZTestRunner::ModuleSkipped:
+                case ErrorCodes::AZTestRunner::SymbolNotFound:
+                    return TestResult::FailedToExecute;
+                case ErrorCodes::GTest::Unsuccessful:
+                    return TestResult::TestFailures;
+                default:
+                    break;
+                }
+            }
+
+            switch (meta.m_result)
+            {
+            case JobResult::ExecutedWithFailure:
+                return TestResult::TestFailures;
+            case JobResult::ExecutedWithSuccess:
+                return TestResult::AllTestsPass;
+            case JobResult::NotExecuted:
+                return TestResult::NotExecuted;
+            case JobResult::Terminated:
+                return TestResult::Timeout;
+            default:
+                throw(/*TestEngine*/Exception(AZStd::string::format("Unexpected job result: %u", static_cast<unsigned int>(meta.m_result))));
+            }
+        }
+    }
+
     TestEngine::TestEngine(
         const AZ::IO::Path& sourceDir,
         const AZ::IO::Path& targetBinaryDir,
@@ -40,7 +147,7 @@ namespace TestImpact
         ExecutionFailurePolicy executionFailurePolicy,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineEnumerationCallback> enumerationCallback)
+        AZStd::optional<TestEngineEnumerationCallback> callback)
     {
         AZStd::vector<TestEnumerator::JobInfo> jobInfos;
         AZStd::unordered_map<TestEnumerator::JobInfo::IdType, TestEngineJob> engineJobs;
@@ -53,14 +160,14 @@ namespace TestImpact
                 m_testJobInfoGenerator->GenerateTestEnumerationJobInfo(testTargets[jobId], { jobId }, TestEnumerator::JobInfo::CachePolicy::Write));
         }
 
-        const auto jobCallback = [&testTargets, &engineJobs, &enumerationCallback]
+        const auto jobCallback = [&testTargets, &engineJobs, &callback]
         (const TestImpact::TestEnumerator::JobInfo& jobInfo, const TestImpact::JobMeta& meta)
         {
             const auto& [item, success] =
                 engineJobs.emplace(jobInfo.GetId().m_value, TestEngineJob(testTargets[jobInfo.GetId().m_value], jobInfo.GetCommand().m_args, meta));
-            if (enumerationCallback.has_value())
+            if (callback.has_value())
             {
-                (*enumerationCallback)(item->second);
+                (*callback)(item->second);
             }
         };
 
@@ -84,5 +191,64 @@ namespace TestImpact
         }
 
         return engineEnumerations;
+    }
+
+    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun>> TestEngine::RegularRun(
+        const AZStd::vector<const TestTarget*> testTargets,
+        [[maybe_unused]] TestShardingPolicy testShardingPolicy,
+        ExecutionFailurePolicy executionFailurePolicy,
+        TestFailurePolicy testFailurePolicy,
+        [[maybe_unused]]TargetOutputCapture targetOutputCapture, // NOT IMPLEMENTED YET
+        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+        AZStd::optional<TestEngineRunCallback> callback)
+    {
+        AZStd::vector<TestRunner::JobInfo> jobInfos;
+        AZStd::unordered_map<TestRunner::JobInfo::IdType, AZStd::pair<TestEngineJob, TestResult>> engineJobs;
+        AZStd::vector<TestEngineRegularRun> engineRuns;
+        engineRuns.reserve(testTargets.size());
+
+        for (size_t jobId = 0; jobId < testTargets.size(); jobId++)
+        {
+            jobInfos.push_back(
+                m_testJobInfoGenerator->GenerateRegularTestRunJobInfo(testTargets[jobId], { jobId }));
+        }
+
+        const auto jobCallback = [&testTargets, &engineJobs, &callback]
+        (const TestImpact::TestRunner::JobInfo& jobInfo, const TestImpact::JobMeta& meta)
+        {
+            const auto& [item, success] =
+                engineJobs.emplace(jobInfo.GetId().m_value, AZStd::pair<TestEngineJob, TestResult>{ TestEngineJob(testTargets[jobInfo.GetId().m_value], jobInfo.GetCommand().m_args, meta), GetTestResultForMeta(meta) });
+            if (callback.has_value())
+            {
+                (*callback)(item->second.first, item->second.second);
+            }
+        };
+
+        TestImpact::TestRunner testRunner(jobCallback, m_maxConcurrentRuns, testTargetTimeout, globalTimeout);
+
+        auto jobExecutionPolicy = TestRunner::JobExceptionPolicy::Never;
+
+        if (executionFailurePolicy == ExecutionFailurePolicy::Abort)
+        {
+            jobExecutionPolicy |= TestRunner::JobExceptionPolicy::OnExecutedWithFailure;
+        }
+
+        if (testFailurePolicy == TestFailurePolicy::Abort)
+        {
+            jobExecutionPolicy |= TestRunner::JobExceptionPolicy::OnExecutedWithFailure;
+        }
+
+        auto runJobs = testRunner.RunTests(jobInfos, jobExecutionPolicy);
+        for (auto& job : runJobs)
+        {
+            auto engineJob = engineJobs.find(job.GetJobInfo().GetId().m_value);
+            // DO EVAL!!
+            TestEngineRegularRun run(AZStd::move(engineJob->second.first), job.ReleasePayload(), engineJob->second.second);
+            engineRuns.push_back(AZStd::move(run));
+        }
+
+        const auto sequenceResult = CalculateSequenceResult(engineRuns, executionFailurePolicy);
+        return { sequenceResult, AZStd::move(engineRuns) };
     }
 }

@@ -300,9 +300,9 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE PERSISTENT_DATA_D
     # Temp dir
     set(temp_dir "${LY_TEST_IMPACT_TEMP_DIR}")
 
-    # Test impact data file
-    set(test_impact_data_file "${PERSISTENT_DATA_DIR}/TestImpactData.spartia")
-    
+    # Persistent dir
+    set(persistent_dir "${PERSISTENT_DATA_DIR}")
+
     # Source to target mappings dir
     set(source_target_mapping_dir "${LY_TEST_IMPACT_SOURCE_TARGET_MAPPING_DIR}")
     

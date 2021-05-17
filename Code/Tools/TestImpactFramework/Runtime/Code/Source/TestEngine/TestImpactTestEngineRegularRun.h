@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactTest.h>
+
 #include <TestEngine/TestImpactTestEngineJob.h>
 #include <TestEngine/Run/TestImpactTestRun.h>
 
@@ -21,7 +23,7 @@ namespace TestImpact
         : public TestEngineJob
     {
     public:
-        TestEngineRegularRun(TestEngineJob&& testJob, AZStd::optional<TestRun>&& testRun);
+        TestEngineRegularRun(TestEngineJob&& testJob, AZStd::optional<TestRun>&& testRun, TestResult testResult);
         TestResult GetTestResult() const;
         const AZStd::optional<TestRun>& GetTestRun() const;
     private:

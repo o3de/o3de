@@ -18,6 +18,8 @@ namespace TestImpact
     static constexpr char* const standAloneExtension = ".exe"; // these are os specific so move these to the platform dir
     static constexpr char* const testRunnerExtension = ".dll"; // these are os specific so move these to the platform dir
 
+    // SPLIT INTO COMMAND GENERATOR (INSTRUMENT, RUNNER, ENUM, RESULTS)
+
     TestJobInfoGenerator::TestJobInfoGenerator(
         const AZ::IO::Path& sourceDir,
         const AZ::IO::Path& targetBinaryDir,

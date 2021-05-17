@@ -19,6 +19,7 @@
 #include <TestImpactFramework/TestImpactChangeList.h>
 #include <TestImpactFramework/TestImpactRuntime.h>
 #include <TestImpactFramework/TestImpactUtils.h>
+#include <TestImpactFramework/TestImpactTestSelection.h>
 
 #include <TestImpactChangeListFactory.h>
 #include <TestImpactCommandLineOptions.h>
@@ -150,17 +151,40 @@ namespace TestImpact
                     return handleTestSequenceResult(result);
                 };
 
+                const auto testComplete = [](Test&& test)
+                {
+                    std::cout << "Test " << test.GetTargetName().c_str() << " completed\n";
+                };
+
                 switch (const auto type = *options.GetTestSequenceType())
                 {
                 case TestSequenceType::Regular:
                 {
+                    const auto sequenceStart = [&options](TestSelection&& testSelection)
+                    {
+                        std::cout << "Test suite filter:\n";
+                        if (const auto& suiteFilter = options.GetSuitesFilter(); suiteFilter.empty())
+                        {
+                            std::cout << "  *\n";
+                        }
+                        else
+                        {
+                            for (const auto& suite : suiteFilter)
+                            {
+                                std::cout << "  " << suite.c_str() << "\n";
+                            }
+                        }
+
+                        std::cout << testSelection.GetIncludededTests().size() << " tests selected, " << testSelection.GetExcludedTests().size() << " excluded\n";
+                    };
+
                     const auto result = runtime.RegularTestSequence(
                         options.GetSuitesFilter(),
                         options.GetTestTargetTimeout(),
                         options.GetGlobalTimeout(),
+                        sequenceStart,
                         AZStd::nullopt,
-                        AZStd::nullopt,
-                        AZStd::nullopt);
+                        testComplete);
 
                     return handleTestSequenceResult(result);
                 }

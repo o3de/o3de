@@ -26,6 +26,13 @@ namespace TestImpact
         }
 
         template<typename Flags>
+        Flags& operator |=(Flags& lhs, Flags rhs)
+        {
+            lhs = lhs | rhs;
+            return lhs;
+        }
+
+        template<typename Flags>
         bool IsFlagSet(Flags flags, Flags flag)
         {
             return static_cast<bool>(

@@ -16,6 +16,11 @@
 
 namespace TestImpact
 {
+    JobMetaContainer::JobMetaContainer(const JobMeta& jobMeta)
+        : m_meta(jobMeta)
+    {
+    }
+
     JobMetaContainer::JobMetaContainer(JobMeta&& jobMeta)
         : m_meta(AZStd::move(jobMeta))
     {

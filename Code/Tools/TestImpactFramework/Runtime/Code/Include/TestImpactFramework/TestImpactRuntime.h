@@ -49,7 +49,7 @@ namespace TestImpact
 
     //! Callback for a test sequence that isn't using test impact analysis.
     //! @param tests The tests that will be run for this sequence.
-    using TestSequenceStartCallback = AZStd::function<void(const TestSelection& tests)>;
+    using TestSequenceStartCallback = AZStd::function<void(TestSelection&& tests)>;
 
     //! Callback for a test sequence using test impact analysis.
     //! @param selectedTests The tests that have been selected for this run by test impact analysis.

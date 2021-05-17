@@ -17,12 +17,26 @@
 
 namespace TestImpact
 {
-    class Test
+    enum class TestResult
+    {
+        NotExecuted,
+        FailedToExecute,
+        Timeout,
+        TestFailures,
+        AllTestsPass
+    };
+
+    class Test // maybe call this ClientTest
     {
     public:
         Test(const AZStd::string& name, TestResult testResult, AZStd::chrono::milliseconds duration);
         const AZStd::string& GetTargetName() const;
-        AZStd::chrono::milliseconds GetDuration() const;
         TestResult GetTestResult() const;
+        AZStd::chrono::milliseconds GetDuration() const;
+
+    private:
+        AZStd::string m_targetName;
+        TestResult m_testResult;
+        AZStd::chrono::milliseconds m_duration;
     };
 }

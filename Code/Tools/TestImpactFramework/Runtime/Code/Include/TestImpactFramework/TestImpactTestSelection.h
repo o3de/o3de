@@ -23,9 +23,11 @@ namespace TestImpact
     public:
         TestSelection(AZStd::vector<AZStd::string>&& includedTests, AZStd::vector<AZStd::string>&& excludedTests);
 
-        size_t GetNumSelectedTests() const;
-        size_t GetNumActualTests() const;
         const AZStd::vector<AZStd::string>& GetIncludededTests() const;
         const AZStd::vector<AZStd::string>& GetExcludedTests() const;
+
+    private:
+        AZStd::vector<AZStd::string> m_includedTests;
+        AZStd::vector<AZStd::string> m_excludedTests;
     };
 }

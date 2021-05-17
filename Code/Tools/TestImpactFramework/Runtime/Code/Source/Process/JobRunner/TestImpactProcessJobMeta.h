@@ -42,6 +42,7 @@ namespace TestImpact
     class JobMetaContainer
     {
     public:
+        JobMetaContainer(const JobMeta& jobMeta);
         JobMetaContainer(JobMeta&& jobMeta);
 
         //! Returns the result of this job.

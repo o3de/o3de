@@ -32,8 +32,23 @@ namespace TestImpact
 
     struct WorkspaceConfig
     {
-        AZ::IO::Path m_tempDirectory;
-        AZ::IO::Path m_testImpactDataFile;
+        //AZ::IO::Path m_tempDirectory;
+        //AZ::IO::Path m_testImpactDataFile;
+        struct Temp
+        {
+            AZ::IO::Path m_root;
+            AZ::IO::Path m_artifactDirectory;
+        };
+
+        struct Persistent
+        {
+            AZ::IO::Path m_root;
+            AZ::IO::Path m_sparTIAFile;
+            AZ::IO::Path m_enumerationCacheDirectory;
+        };
+
+        Temp m_temp;
+        Persistent m_persistent;
     };
 
     struct BuildTargetDescriptorConfig
@@ -54,6 +69,22 @@ namespace TestImpact
     struct TestTargetMetaConfig
     {
         AZ::IO::Path m_file;
+    };
+
+    struct TestEngineConfig
+    {
+        struct TestRunner
+        {
+            AZ::IO::Path m_binary;
+        };
+
+        struct Instrumentation
+        {
+            AZ::IO::Path m_binary;
+        };
+
+        TestRunner m_testRunner;
+        Instrumentation m_instrumentation;
     };
 
     struct TargetConfig
@@ -77,6 +108,7 @@ namespace TestImpact
         BuildTargetDescriptorConfig m_buildTargetDescriptor;
         DependencyGraphDataConfig m_dependencyGraphData;
         TestTargetMetaConfig m_testTargetMeta;
+        TestEngineConfig m_testEngine;
         TargetConfig m_target;
     };
 }

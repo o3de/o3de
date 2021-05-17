@@ -57,15 +57,6 @@ namespace TestImpact
         StdOutAndFile //!< Send captured output to standard output and write to file.
     };
 
-    enum class TestResult
-    {
-        NotExecuted,
-        FailedToExecute,
-        Timeout,
-        TestFailures,
-        Success
-    };
-
     //! 
     enum class TestSequenceResult
     {

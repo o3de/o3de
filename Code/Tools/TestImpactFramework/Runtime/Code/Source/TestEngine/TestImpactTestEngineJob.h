@@ -28,5 +28,6 @@ namespace TestImpact
     private:
         const TestTarget* m_testTarget;
         AZStd::string m_commandString;
+        JobMeta m_meta;
     };
 } // namespace TestImpact
