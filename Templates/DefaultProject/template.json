@@ -25,6 +25,12 @@
             "isOptional": false
         },
         {
+            "file": "EngineFinder.cmake",
+            "origin": "EngineFinder.cmake",
+            "isTemplated": false,
+            "isOptional": false
+        },
+        {
             "file": "Code/${NameLower}_files.cmake",
             "origin": "Code/${NameLower}_files.cmake",
             "isTemplated": true,
