@@ -12,12 +12,12 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include "ProjectInfo.h"
 #include <ScreenWidget.h>
-
 #include <ScreensCtrl.h>
-
 #include <QPushButton>
 #endif
+
 
 namespace O3DE::ProjectManager
 {
