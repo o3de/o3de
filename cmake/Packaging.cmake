@@ -31,12 +31,12 @@ set(CPACK_RESOURCE_FILE_LICENSE ${DEFAULT_LICENSE_FILE})
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_VENDOR}/${CPACK_PACKAGE_VERSION}")
 
-# custom cpack cache variables for use in pre/post build scripts
+# CMAKE_SOURCE_DIR doesn't equate to anything during execution of pre/post build scripts.
+# to pass it down, we can utilize the auto-caching of any variable with prefix "CPACK_"
 set(CPACK_SOURCE_DIR ${CMAKE_SOURCE_DIR}/cmake)
-set(CPACK_BINARY_DIR ${CMAKE_BINARY_DIR}/installer)
 
 # attempt to apply platform specific settings
-ly_get_absolute_pal_filename(pal_dir ${CMAKE_SOURCE_DIR}/cmake/Platform/${PAL_HOST_PLATFORM_NAME})
+ly_get_absolute_pal_filename(pal_dir ${CPACK_SOURCE_DIR}/Platform/${PAL_HOST_PLATFORM_NAME})
 include(${pal_dir}/Packaging_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 
 # if we get here and the generator hasn't been set, then a non fatal error occurred disabling packaging support
@@ -89,7 +89,7 @@ ly_configure_cpack_component(
 if(LY_INSTALLER_DOWNLOAD_URL)
     cpack_configure_downloads(
         ${LY_INSTALLER_DOWNLOAD_URL}
-        UPLOAD_DIRECTORY artifacts
+        UPLOAD_DIRECTORY ${CMAKE_BINARY_DIR}/_CPack_Uploads # to match the _CPack_Packages directory
         ALL
     )
 endif()
