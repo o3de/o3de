@@ -121,7 +121,7 @@ def _merge_xml_results(xml_results_path, prefix, merged_xml_name, parent_element
                 if attribute.name in node.attrib:
                     temp_dict[attribute.name] += attribute.func(node.attrib[attribute.name])
                 else:
-                    temp_dict[attribute.name] = []
+                    print("Failed to find key {} in {}, continuing...".format(attribute.name, node.tag))
 
     base_tree = xet.parse(xml_files[0])
     base_tree_root = base_tree.getroot()
