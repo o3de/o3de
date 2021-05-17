@@ -75,6 +75,7 @@ namespace AzToolsFramework
             // The InstanceUpdateExecutor queries the TemplateInstanceMapper for a list of instances related to a template.
             // Consequently, if an instance gets unregistered for a template, we need to notify the InstanceUpdateExecutor as well
             // so that it clears any internal associations that it might have in its queue.
+            AZ_Assert(AZ::Interface<InstanceUpdateExecutorInterface>::Get() != nullptr, "InstanceUpdateExecutor doesn't exist");
             AZ::Interface<InstanceUpdateExecutorInterface>::Get()->RemoveTemplateInstanceFromQueue(&instance);
 
             auto found = m_templateIdToInstancesMap.find(instance.GetTemplateId());
