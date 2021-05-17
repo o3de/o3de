@@ -102,8 +102,16 @@
 #include <IStatObj.h>
 
 AZ_CVAR(
-    bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "Output the timing of the new IVisibilitySystem query");
+    bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
+AZ_CVAR(bool, ed_useNewCameraSystem, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Editor camera system");
+
+namespace SandboxEditor
+{
+    bool UsingNewCameraSystem()
+    {
+        return ed_useNewCameraSystem;
+    }
+} // namespace SandboxEditor
 
 EditorViewportWidget* EditorViewportWidget::m_pPrimaryViewport = nullptr;
 
@@ -114,7 +122,7 @@ namespace AzFramework
     extern InputChannelId CameraOrbitLookButton;
     extern InputChannelId CameraOrbitDollyButton;
     extern InputChannelId CameraOrbitPanButton;
-}
+} // namespace AzFramework
 
 #if AZ_TRAIT_OS_PLATFORM_APPLE
 void StopFixedCursorMode();
@@ -123,10 +131,6 @@ void StartFixedCursorMode(QObject *viewport);
 
 #define RENDER_MESH_TEST_DISTANCE (0.2f)
 #define CURSOR_FONT_HEIGHT  8.0f
-
-AZ_CVAR(
-    bool, ed_useNewCameraSystem, false, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "Use the new Editor camera system (the Atom-native Editor viewport (experimental) must also be enabled)");
 
 //! Viewport settings for the EditorViewportWidget
 struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::ViewportSettings
@@ -2885,27 +2889,27 @@ void EditorViewportWidget::SetAsActiveViewport()
 
 bool EditorViewportSettings::GridSnappingEnabled() const
 {
-    return Editor::GridSnappingEnabled();
+    return SandboxEditor::GridSnappingEnabled();
 }
 
 float EditorViewportSettings::GridSize() const
 {
-    return Editor::GridSnappingSize();
+    return SandboxEditor::GridSnappingSize();
 }
 
 bool EditorViewportSettings::ShowGrid() const
 {
-    return Editor::ShowingGrid();
+    return SandboxEditor::ShowingGrid();
 }
 
 bool EditorViewportSettings::AngleSnappingEnabled() const
 {
-    return Editor::AngleSnappingEnabled();
+    return SandboxEditor::AngleSnappingEnabled();
 }
 
 float EditorViewportSettings::AngleStep() const
 {
-    return Editor::AngleSnappingSize();
+    return SandboxEditor::AngleSnappingSize();
 }
 
 #include <moc_EditorViewportWidget.cpp>
