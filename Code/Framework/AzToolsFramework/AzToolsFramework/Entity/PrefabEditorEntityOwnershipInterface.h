@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
