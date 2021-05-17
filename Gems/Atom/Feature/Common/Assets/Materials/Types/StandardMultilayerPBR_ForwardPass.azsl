@@ -386,16 +386,22 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // ------- Layer 1 (base layer) -----------
 
     ProcessedMaterialInputs lightingInputLayer1;
+    if(blendWeights.r > 0)
     {
         StandardMaterialInputs inputs;
         FILL_STANDARD_MATERIAL_INPUTS(inputs, MaterialSrg::m_layer1_, o_layer1_, blendWeights.r)
         lightingInputLayer1 = ProcessStandardMaterialInputs(inputs);
     }
+    else
+    {
+        lightingInputLayer1.InitializeToZero();
+        blendWeights.r = 0;
+    }
     
     // ----------- Layer 2 -----------
 
     ProcessedMaterialInputs lightingInputLayer2; 
-    if(o_layer2_enabled)
+    if(o_layer2_enabled && blendWeights.g > 0)
     {
         StandardMaterialInputs inputs;
         FILL_STANDARD_MATERIAL_INPUTS(inputs, MaterialSrg::m_layer2_, o_layer2_, blendWeights.g)
@@ -404,12 +410,13 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     else
     {
         lightingInputLayer2.InitializeToZero();
+        blendWeights.g = 0;
     }
     
     // ----------- Layer 3 -----------
 
     ProcessedMaterialInputs lightingInputLayer3;
-    if(o_layer3_enabled)
+    if(o_layer3_enabled && blendWeights.b > 0)
     {
         StandardMaterialInputs inputs;
         FILL_STANDARD_MATERIAL_INPUTS(inputs, MaterialSrg::m_layer3_, o_layer3_, blendWeights.b)
@@ -418,6 +425,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     else
     {
         lightingInputLayer3.InitializeToZero();
+        blendWeights.b = 0;
     }
 
     // ------- Combine all layers ---------
@@ -428,12 +436,16 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     // ------- Combine Normals ---------
 
-    float3 normalTS = lightingInputLayer1.m_normalTS;
-    if(o_layer2_enabled)
+    float3 normalTS = float3(0,0,1);
+    if(blendWeights.r > 0)
+    {
+        normalTS = lightingInputLayer1.m_normalTS;
+    }
+    if(o_layer2_enabled && blendWeights.g > 0)
     {
         normalTS = ReorientTangentSpaceNormal(normalTS, lightingInputLayer2.m_normalTS);
     }
-    if(o_layer3_enabled)
+    if(o_layer3_enabled && blendWeights.b > 0)
     {
         normalTS = ReorientTangentSpaceNormal(normalTS, lightingInputLayer3.m_normalTS);
     }
