@@ -377,9 +377,28 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<ProjectInfo> PythonBindings::CreateProject([[maybe_unused]] const ProjectTemplateInfo& projectTemplate,[[maybe_unused]]  const ProjectInfo& projectInfo)  
+    AZ::Outcome<ProjectInfo> PythonBindings::CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo)  
     {
-        return AZ::Failure();
+        ProjectInfo createdProjectInfo;
+        bool result = ExecuteWithLock([&] {
+
+            pybind11::str projectPath = projectInfo.m_path.toStdString();
+            pybind11::str templatePath = projectTemplatePath.toStdString();
+            auto createProjectResult = m_engineTemplate.attr("create_project")(projectPath, templatePath);
+            if (createProjectResult.cast<int>() == 0)
+            {
+                createdProjectInfo = ProjectInfoFromPath(projectPath);
+            }
+        });
+
+        if (!result || !createdProjectInfo.IsValid())
+        {
+            return AZ::Failure();
+        }
+        else
+        {
+            return AZ::Success(AZStd::move(createdProjectInfo)); 
+        }
     }
 
     AZ::Outcome<ProjectInfo> PythonBindings::GetProject(const QString& path)  
@@ -448,10 +467,8 @@ namespace O3DE::ProjectManager
         {
             try
             {
-                // required fields
-                projectInfo.m_productName = Py_To_String(projectData["product_name"]); 
                 projectInfo.m_projectName = Py_To_String(projectData["project_name"]); 
-                projectInfo.m_projectId   = AZ::Uuid(Py_To_String(projectData["project_id"])); 
+                projectInfo.m_displayName = Py_To_String_Optional(projectData,"display_name", projectInfo.m_projectName); 
             }
             catch ([[maybe_unused]] const std::exception& e)
             {

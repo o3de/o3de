@@ -40,6 +40,9 @@ namespace O3DE::ProjectManager
         QPushButton* m_backButton;
         QPushButton* m_nextButton;
         QVector<ProjectManagerScreen> m_screensOrder;
+
+        QString m_projectTemplatePath;
+        ProjectInfo m_projectInfo;
     };
 
 } // namespace O3DE::ProjectManager
