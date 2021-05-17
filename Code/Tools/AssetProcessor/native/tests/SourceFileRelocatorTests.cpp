@@ -921,32 +921,46 @@ namespace UnitTests
         ASSERT_FALSE(AZ::IO::FileIOBase::GetInstance()->Exists(filePath.toUtf8().constData()));
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    TEST_F(SourceFileRelocatorTest, DISABLED_Delete_Real_Readonly_Fails)
-#else
     TEST_F(SourceFileRelocatorTest, Delete_Real_Readonly_Fails)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
     {
+        struct AutoResetDirectoryReadOnlyState
+        {
+            AutoResetDirectoryReadOnlyState(QString dirName)
+                : m_dirName(AZStd::move(dirName))
+            {
+                AZ::IO::SystemFile::SetWritable(m_dirName.toUtf8().constData(), false);
+            }
+            ~AutoResetDirectoryReadOnlyState()
+            {
+                AZ::IO::SystemFile::SetWritable(m_dirName.toUtf8().constData(), true);
+            }
+            AZ_DISABLE_COPY_MOVE(AutoResetDirectoryReadOnlyState)
+        private:
+            QString m_dirName;
+        };
+
         QDir tempPath(m_tempDir.path());
 
         auto filePath = QDir(tempPath.absoluteFilePath(m_data->m_scanFolder1.m_scanFolder.c_str())).absoluteFilePath("duplicate/file1.tif");
 
         ASSERT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(filePath.toUtf8().constData()));
 
+        AutoResetDirectoryReadOnlyState readOnlyResetter(QFileInfo(filePath).absoluteDir().absolutePath());
+
         AZ::IO::SystemFile::SetWritable(filePath.toUtf8().constData(), false);
 
         auto result = m_data->m_reporter->Delete(filePath.toUtf8().constData(), false);
 
-        ASSERT_TRUE(result.IsSuccess());
+        EXPECT_TRUE(result.IsSuccess());
 
         RelocationSuccess successResult = result.TakeValue();
 
-        ASSERT_EQ(successResult.m_moveSuccessCount, 0);
-        ASSERT_EQ(successResult.m_moveFailureCount, 1);
-        ASSERT_EQ(successResult.m_moveTotalCount, 1);
-        ASSERT_EQ(successResult.m_updateTotalCount, 0);
+        EXPECT_EQ(successResult.m_moveSuccessCount, 0);
+        EXPECT_EQ(successResult.m_moveFailureCount, 1);
+        EXPECT_EQ(successResult.m_moveTotalCount, 1);
+        EXPECT_EQ(successResult.m_updateTotalCount, 0);
 
-        ASSERT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(filePath.toUtf8().constData()));
+        EXPECT_TRUE(AZ::IO::FileIOBase::GetInstance()->Exists(filePath.toUtf8().constData()));
     }
 
     TEST_F(SourceFileRelocatorTest, Delete_Real_WithDependencies_Fails)
