@@ -1690,7 +1690,7 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
         return;
     }
 
-    if (EditorViewport::UsingNewCameraSystem())
+    if (SandboxEditor::UsingNewCameraSystem())
     {
         const AZ::Aabb aabb = AZStd::accumulate(
             AZStd::begin(entityIds), AZStd::end(entityIds), AZ::Aabb::CreateNull(), [](AZ::Aabb acc, const AZ::EntityId entityId) {
@@ -1726,8 +1726,8 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
                 const AZ::Transform nextCameraTransform =
                     AZ::Transform::CreateLookAt(aabb.GetCenter() - (forward * distanceToTarget), aabb.GetCenter());
 
-                EditorViewport::ModernViewportCameraControllerRequestBus::Event(
-                    viewportContext->GetId(), &EditorViewport::ModernViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+                SandboxEditor::ModernViewportCameraControllerRequestBus::Event(
+                    viewportContext->GetId(), &SandboxEditor::ModernViewportCameraControllerRequestBus::Events::InterpolateToTransform,
                     nextCameraTransform);
             }
         }

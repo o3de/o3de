@@ -105,13 +105,13 @@ AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
 AZ_CVAR(bool, ed_useNewCameraSystem, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Editor camera system");
 
-namespace EditorViewport
+namespace SandboxEditor
 {
     bool UsingNewCameraSystem()
     {
         return ed_useNewCameraSystem;
     }
-} // namespace EditorViewport
+} // namespace SandboxEditor
 
 EditorViewportWidget* EditorViewportWidget::m_pPrimaryViewport = nullptr;
 
@@ -1219,7 +1219,7 @@ void EditorViewportWidget::SetViewportId(int id)
     {
         AzFramework::ReloadCameraKeyBindings();
 
-        auto controller = AZStd::make_shared<EditorViewport::ModernViewportCameraController>();
+        auto controller = AZStd::make_shared<SandboxEditor::ModernViewportCameraController>();
         controller->SetCameraListBuilderCallback([](AzFramework::Cameras& cameras)
         {
             auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraFreeLookButton);
@@ -2880,27 +2880,27 @@ void EditorViewportWidget::SetAsActiveViewport()
 
 bool EditorViewportSettings::GridSnappingEnabled() const
 {
-    return EditorViewport::GridSnappingEnabled();
+    return SandboxEditor::GridSnappingEnabled();
 }
 
 float EditorViewportSettings::GridSize() const
 {
-    return EditorViewport::GridSnappingSize();
+    return SandboxEditor::GridSnappingSize();
 }
 
 bool EditorViewportSettings::ShowGrid() const
 {
-    return EditorViewport::ShowingGrid();
+    return SandboxEditor::ShowingGrid();
 }
 
 bool EditorViewportSettings::AngleSnappingEnabled() const
 {
-    return EditorViewport::AngleSnappingEnabled();
+    return SandboxEditor::AngleSnappingEnabled();
 }
 
 float EditorViewportSettings::AngleStep() const
 {
-    return EditorViewport::AngleSnappingSize();
+    return SandboxEditor::AngleSnappingSize();
 }
 
 #include <moc_EditorViewportWidget.cpp>

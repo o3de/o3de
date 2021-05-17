@@ -23,7 +23,7 @@
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
-namespace EditorViewport
+namespace SandboxEditor
 {
     // debug
     void DrawPreviewAxis(AzFramework::DebugDisplayRequests& display, const AZ::Transform& transform, const float axisLength)
@@ -165,4 +165,4 @@ namespace EditorViewport
         m_transformStart = m_camera.Transform();
         m_transformEnd = worldFromLocal;
     }
-} // namespace EditorViewport
+} // namespace SandboxEditor

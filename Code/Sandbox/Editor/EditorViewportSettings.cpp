@@ -16,7 +16,7 @@
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/string/string_view.h>
 
-namespace EditorViewport
+namespace SandboxEditor
 {
     constexpr AZStd::string_view GridSnappingSetting = "/Amazon/Preferences/Editor/GridSnapping";
     constexpr AZStd::string_view GridSizeSetting = "/Amazon/Preferences/Editor/GridSize";
@@ -113,4 +113,4 @@ namespace EditorViewport
             registry->Set(ShowGridSetting, showing);
         }
     }
-} // namespace EditorViewport
+} // namespace SandboxEditor
