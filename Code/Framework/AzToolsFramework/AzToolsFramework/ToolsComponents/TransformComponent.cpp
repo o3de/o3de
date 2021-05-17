@@ -254,7 +254,7 @@ namespace AzToolsFramework
             m_localTransformDirty = true;
             m_worldTransformDirty = true;
 
-            if (GetEntity())
+            if (const AZ::Entity* entity = GetEntity())
             {
                 SetDirty();
 
@@ -272,6 +272,22 @@ namespace AzToolsFramework
                 if (boundsUnion != nullptr)
                 {
                     boundsUnion->OnTransformUpdated(GetEntity());
+                }
+                // Fire a property changed notification for this component
+                if (const AZ::Component* component = entity->FindComponent<Components::TransformComponent>())
+                {
+                    PropertyEditorEntityChangeNotificationBus::Event(
+                        GetEntityId(), &PropertyEditorEntityChangeNotifications::OnEntityComponentPropertyChanged, component->GetId());
+                }
+
+                // Refresh the property editor if we're selected
+                bool selected = false;
+                ToolsApplicationRequestBus::BroadcastResult(
+                    selected, &AzToolsFramework::ToolsApplicationRequests::IsSelected, GetEntityId());
+                if (selected)
+                {
+                    ToolsApplicationEvents::Bus::Broadcast(
+                        &ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
                 }
             }
         }

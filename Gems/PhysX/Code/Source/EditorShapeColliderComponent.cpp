@@ -271,7 +271,6 @@ namespace PhysX
             if (m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
             {
                 m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-                m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
             }
 
             m_editorBodyHandle = m_sceneInterface->AddSimulatedBody(m_editorSceneHandle, &configuration);
@@ -327,6 +326,7 @@ namespace PhysX
         else
         {
             m_shapeType = !shapeCrc ? ShapeType::None : ShapeType::Unsupported;
+            m_shapeConfigs.clear();
             AZ_Warning("PhysX Shape Collider Component", m_shapeTypeWarningIssued, "Unsupported shape type for "
                 "entity \"%s\". The following shapes are currently supported - box, capsule, sphere, polygon prism.",
                 GetEntity()->GetName().c_str());
@@ -681,7 +681,6 @@ namespace PhysX
         if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
             m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-            m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
     }
 

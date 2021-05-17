@@ -10,7 +10,7 @@
 *
 */
 
-#include <Source/NetworkEntity/NetworkEntityUpdateMessage.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
 #include <AzCore/Console/ILogger.h>

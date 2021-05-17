@@ -52,6 +52,14 @@ namespace AZ::SettingsRegistryMergeUtils
     //! project settings can be stored
     inline static constexpr char FilePathKey_ProjectUserPath[] = "/Amazon/AzCore/Runtime/FilePaths/SourceProjectUserPath";
 
+    //! User facing key which represents the root of a project cmake build tree. i.e the ${CMAKE_BINARY_DIR}
+    //! A relative path is taking relative to the *project* root, NOT *engine* root.
+    inline constexpr AZStd::string_view ProjectBuildPath = "/Amazon/Project/Settings/Build/project_build_path";
+    //! In-Memory only key which stores an absolute path to the project build directory
+    inline constexpr AZStd::string_view FilePathKey_ProjectBuildPath = "/Amazon/AzCore/Runtime/FilePaths/ProjectBuildPath";
+    //! In-Memory only key which stores the configuration directory containing the built binaries
+    inline constexpr AZStd::string_view FilePathKey_ProjectConfigurationBinPath = "/Amazon/AzCore/Runtime/FilePaths/ProjectConfigurationBinPath";
+
     //! Development write storage path may be considered temporary or cache storage on some platforms
     inline static constexpr char FilePathKey_DevWriteStorage[] = "/Amazon/AzCore/Runtime/FilePaths/DevWriteStorage";
 
@@ -128,7 +136,7 @@ namespace AZ::SettingsRegistryMergeUtils
         //! Callback function that is after a has been filtered through the CommentPrefixFunc
         //! to determine if the text matches a section header
         //! returns a view of the section name if the line contains a section
-        //! Otherwise an empty view is returend
+        //! Otherwise an empty view is returned
         using SectionHeaderFunc = AZStd::function<AZStd::string_view(AZStd::string_view line)>;
 
         //! Root JSON pointer path to place all key=values pairs of configuration data within
