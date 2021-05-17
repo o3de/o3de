@@ -55,12 +55,6 @@ namespace PhysX
         m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::Offset, false);
     }
 
-    EditorShapeColliderComponent::~EditorShapeColliderComponent()
-    {
-        int i = 0;
-        i++;
-    }
-
     AZ::Crc32 EditorShapeColliderComponent::SubdivisionCountVisibility()
     {
         if (m_shapeType == ShapeType::Cylinder)

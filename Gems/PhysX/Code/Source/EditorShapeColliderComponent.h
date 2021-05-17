@@ -79,7 +79,6 @@ namespace PhysX
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         EditorShapeColliderComponent();
-        ~EditorShapeColliderComponent();
 
         const AZStd::vector<AZ::Vector3>& GetSamplePoints() const;
 
