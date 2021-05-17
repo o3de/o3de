@@ -150,7 +150,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
         GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_depthFactor, MaterialSrg::m_depthOffset,
                          ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
-                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depth, displacementIsClipped);
+                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depth, IN.m_position.w, displacementIsClipped);
 
         // Apply second part of the offset to the detail UV (see comment above)
         IN.m_detailUv[MaterialSrg::m_parallaxUvIndex] -= IN.m_uv[MaterialSrg::m_parallaxUvIndex];

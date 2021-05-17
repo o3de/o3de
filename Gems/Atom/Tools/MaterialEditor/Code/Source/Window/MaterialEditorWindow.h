@@ -119,7 +119,7 @@ namespace MaterialEditor
         QMenu* m_menuEdit = {};
         QAction* m_actionUndo = {};
         QAction* m_actionRedo = {};
-        QAction* m_actionPreferences = {};
+        QAction* m_actionSettings = {};
 
         QMenu* m_menuView = {};
         QAction* m_actionAssetBrowser = {};

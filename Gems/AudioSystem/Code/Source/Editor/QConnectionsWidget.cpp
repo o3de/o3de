@@ -26,8 +26,6 @@
 #include <QMimeData>
 #include <QMessageBox>
 #include <QMenu>
-#include <Serialization/IArchive.h>
-#include <Serialization/STL.h>
 
 namespace AudioControls
 {
@@ -39,10 +37,6 @@ namespace AudioControls
         , m_control(nullptr)
     {
         setupUi(this);
-
-        m_connectionProperties->setSizeToContent(true);
-        m_connectionPropertiesFrame->setHidden(true);
-        connect(m_connectionProperties, SIGNAL(signalChanged()), this, SLOT(CurrentConnectionModified()));
 
         m_connectionList->viewport()->installEventFilter(this);
         m_connectionList->installEventFilter(this);
@@ -130,17 +124,6 @@ namespace AudioControls
                     controlType = m_control->GetType();
                 }
             }
-        }
-
-        if (connection && connection->HasProperties())
-        {
-            m_connectionProperties->attach(Serialization::SStruct(*connection.get()));
-            m_connectionPropertiesFrame->setHidden(false);
-        }
-        else
-        {
-            m_connectionProperties->detach();
-            m_connectionPropertiesFrame->setHidden(true);
         }
     }
 
