@@ -17,7 +17,7 @@
 #include <Source/ReplicationWindows/NullReplicationWindow.h>
 #include <Source/ReplicationWindows/ServerToClientReplicationWindow.h>
 #include <Source/EntityDomains/FullOwnershipEntityDomain.h>
-#include <Multiplayer/MultiplayerComponent.h>
+#include <Multiplayer/Components/MultiplayerComponent.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Interface/Interface.h>
@@ -80,6 +80,31 @@ namespace Multiplayer
         {
             serializeContext->Class<MultiplayerSystemComponent, AZ::Component>()
                 ->Version(1);
+
+            serializeContext->Class<HostId>()
+                ->Version(1);
+            serializeContext->Class<NetEntityId>()
+                ->Version(1);
+            serializeContext->Class<NetComponentId>()
+                ->Version(1);
+            serializeContext->Class<PropertyIndex>()
+                ->Version(1);
+            serializeContext->Class<RpcIndex>()
+                ->Version(1);
+            serializeContext->Class<ClientInputId>()
+                ->Version(1);
+            serializeContext->Class<HostFrameId>()
+                ->Version(1);
+        }
+        else if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<HostId>();
+            behaviorContext->Class<NetEntityId>();
+            behaviorContext->Class<NetComponentId>();
+            behaviorContext->Class<PropertyIndex>();
+            behaviorContext->Class<RpcIndex>();
+            behaviorContext->Class<ClientInputId>();
+            behaviorContext->Class<HostFrameId>();
         }
 
         MultiplayerComponent::Reflect(context);
@@ -448,6 +473,7 @@ namespace Multiplayer
                 if (entityList.size() > 0)
                 {
                     controlledEntity = entityList[0];
+                    controlledEntity.GetNetBindComponent()->SetOwningConnectionId(connection->GetConnectionId());
                 }
 
                 if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
@@ -574,26 +600,6 @@ namespace Multiplayer
     INetworkEntityManager* MultiplayerSystemComponent::GetNetworkEntityManager()
     {
         return &m_networkEntityManager;
-    }
-
-    const char* MultiplayerSystemComponent::GetComponentGemName(NetComponentId netComponentId) const
-    {
-        return GetMultiplayerComponentRegistry()->GetComponentGemName(netComponentId);
-    }
-
-    const char* MultiplayerSystemComponent::GetComponentName(NetComponentId netComponentId) const
-    {
-        return GetMultiplayerComponentRegistry()->GetComponentName(netComponentId);
-    }
-
-    const char* MultiplayerSystemComponent::GetComponentPropertyName(NetComponentId netComponentId, PropertyIndex propertyIndex) const
-    {
-        return GetMultiplayerComponentRegistry()->GetComponentPropertyName(netComponentId, propertyIndex);
-    }
-
-    const char* MultiplayerSystemComponent::GetComponentRpcName(NetComponentId netComponentId, RpcIndex rpcIndex) const
-    {
-        return GetMultiplayerComponentRegistry()->GetComponentRpcName(netComponentId, rpcIndex);
     }
 
     void MultiplayerSystemComponent::DumpStats([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)

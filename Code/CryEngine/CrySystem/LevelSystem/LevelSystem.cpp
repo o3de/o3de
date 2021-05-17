@@ -19,7 +19,6 @@
 #include "IMovieSystem.h"
 #include <ILocalizationManager.h>
 #include "CryPath.h"
-#include <Pak/CryPakUtils.h>
 
 #include <LoadScreenBus.h>
 
@@ -260,16 +259,6 @@ void CLevelSystem::Rescan(const char* levelsFolder)
 {
     if (levelsFolder)
     {
-        if (const ICmdLineArg* pModArg = m_pSystem->GetICmdLine()->FindArg(eCLAT_Pre, "MOD"))
-        {
-            if (m_pSystem->IsMODValid(pModArg->GetValue()))
-            {
-                m_levelsFolder.format("Mods/%s/%s", pModArg->GetValue(), levelsFolder);
-                m_levelInfos.clear();
-                ScanFolder(0, true);
-            }
-        }
-
         m_levelsFolder = levelsFolder;
     }
 

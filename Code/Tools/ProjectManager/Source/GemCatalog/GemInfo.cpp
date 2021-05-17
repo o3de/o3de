@@ -28,4 +28,27 @@ namespace O3DE::ProjectManager
         return !m_path.isEmpty() && !m_uuid.IsNull();
     }
 
+    QString GemInfo::GetPlatformString(Platform platform)
+    {
+        switch (platform)
+        {
+        case O3DE::ProjectManager::GemInfo::Android:
+            return "Android";
+        case O3DE::ProjectManager::GemInfo::iOS:
+            return "iOS";
+        case O3DE::ProjectManager::GemInfo::Linux:
+            return "Linux";
+        case O3DE::ProjectManager::GemInfo::macOS:
+            return "macOS";
+        case O3DE::ProjectManager::GemInfo::Windows:
+            return "Windows";
+        default:
+            return "<Unknown Platform>";
+        }
+    }
+
+    bool GemInfo::IsPlatformSupported(Platform platform) const
+    {
+        return (m_platforms & platform);
+    }
 } // namespace O3DE::ProjectManager
