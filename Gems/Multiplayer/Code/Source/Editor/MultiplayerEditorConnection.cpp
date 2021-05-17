@@ -104,7 +104,7 @@ namespace Multiplayer
             s_byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
             s_byteStream.Truncate();
 
-            // Load the level via the root spawnable tha was registered
+            // Load the level via the root spawnable that was registered
             AZ::CVarFixedString loadLevelString = "LoadLevel Root.spawnable";
             AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
 
