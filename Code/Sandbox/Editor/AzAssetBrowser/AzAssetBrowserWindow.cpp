@@ -97,7 +97,6 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     });
 
     connect(m_filterModel.data(), &AssetBrowserFilterModel::filterChanged, m_tableModel.data(), &AssetBrowserTableModel::UpdateTableModelMaps);
-    connect(m_filterModel.data(), &AssetBrowserFilterModel::switchFilterView, this, &AzAssetBrowserWindow::SwitchDisplayView);
 
     connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::selectionChangedSignal,
         this, &AzAssetBrowserWindow::SelectionChangedSlot);
@@ -119,6 +118,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_ui->m_assetBrowserTreeViewWidget->SetName("AssetBrowserTreeView_main");
     m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
 
+    connect(m_filterModel.data(), &AssetBrowserFilterModel::stringFilterPopulated, this, &AzAssetBrowserWindow::SwitchDisplayView);
     connect(m_ui->m_viewSwitcherCheckBox, &QCheckBox::stateChanged, this, &AzAssetBrowserWindow::SwitchDisplayView);
 }
 
