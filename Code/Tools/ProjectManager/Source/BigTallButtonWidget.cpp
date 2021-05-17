@@ -9,31 +9,22 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  */
-#pragma once
 
-#if !defined(Q_MOC_RUN)
-#include <ScreenWidget.h>
-#endif
+#include <BigTallButtonWidget.h>
 
 namespace O3DE::ProjectManager
 {
-    class BigTallButton;
-
-    class FirstTimeUseScreen
-        : public ScreenWidget
+    BigTallButton::BigTallButton(const QIcon& icon, const QString& text, QWidget* parent)
+        : QPushButton(icon, text, parent)
     {
-    public:
-        explicit FirstTimeUseScreen(QWidget* parent = nullptr);
-        ~FirstTimeUseScreen() = default;
-        ProjectManagerScreen GetScreenEnum() override;
+        SetDefaultStyle();
+    }
 
-    protected slots:
-        void HandleNewProjectButton();
-        void HandleAddProjectButton();
-
-    private:
-        BigTallButton* m_createProjectButton;
-        BigTallButton* m_addProjectButton;
-    };
-
+    void BigTallButton::SetDefaultStyle()
+    {
+        setFixedSize(210, 280);
+        setFlat(true);
+        setFocusPolicy(Qt::FocusPolicy::NoFocus);
+        setStyleSheet("QPushButton { font-size: 14px; background-color: rgba(0, 0, 0, 191); }");
+    }
 } // namespace O3DE::ProjectManager

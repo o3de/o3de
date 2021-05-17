@@ -9,31 +9,24 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  */
+
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <ScreenWidget.h>
+#include <QPushButton>
 #endif
 
 namespace O3DE::ProjectManager
 {
-    class BigTallButton;
-
-    class FirstTimeUseScreen
-        : public ScreenWidget
+    class BigTallButton
+        : public QPushButton
     {
-    public:
-        explicit FirstTimeUseScreen(QWidget* parent = nullptr);
-        ~FirstTimeUseScreen() = default;
-        ProjectManagerScreen GetScreenEnum() override;
+        Q_OBJECT // AUTOMOC
 
-    protected slots:
-        void HandleNewProjectButton();
-        void HandleAddProjectButton();
+    public: explicit BigTallButton(const QIcon& icon, const QString& text, QWidget* parent = nullptr);
+        ~BigTallButton() = default;
 
     private:
-        BigTallButton* m_createProjectButton;
-        BigTallButton* m_addProjectButton;
+        void SetDefaultStyle();
     };
-
 } // namespace O3DE::ProjectManager

@@ -12,18 +12,63 @@
 
 #include <FirstTimeUseScreen.h>
 
-#include <Source/ui_FirstTimeUseScreen.h>
+#include <BigTallButtonWidget.h>
+
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QIcon>
+#include <QSpacerItem>
 
 namespace O3DE::ProjectManager
 {
     FirstTimeUseScreen::FirstTimeUseScreen(QWidget* parent)
         : ScreenWidget(parent)
-        , m_ui(new Ui::FirstTimeUseClass())
     {
-        m_ui->setupUi(this);
+        QVBoxLayout* vLayout = new QVBoxLayout();
+        this->setLayout(vLayout);
+        //setContentsMargins(80, 80, 80, 80);
+        vLayout->setContentsMargins(80, 80, 80, 80);
 
-        connect(m_ui->createProjectButton, &QPushButton::pressed, this, &FirstTimeUseScreen::HandleNewProjectButton);
-        connect(m_ui->openProjectButton, &QPushButton::pressed, this, &FirstTimeUseScreen::HandleOpenProjectButton);
+        QLabel* titleLabel = new QLabel(this);
+        titleLabel->setText("Ready. Set. Create!");
+        titleLabel->setStyleSheet("font-size: 60px; font-family: 'Open Sans'; text-align: left;");
+        vLayout->addWidget(titleLabel);
+
+        QLabel* introLabel = new QLabel(this);
+        introLabel->setTextFormat(Qt::AutoText);
+        introLabel->setText("<html><head/><body><p>Welcome to O3DE! Start something new by creating a project. Not sure what to create? </p><p>Explore what\342\200\231s available by downloading our sample project.</p></body></html>");
+        introLabel->setStyleSheet("font-size: 14px; font-family: 'Open Sans'; text-align: left;");
+        vLayout->addWidget(introLabel);
+
+        QHBoxLayout* buttonLayout = new QHBoxLayout();
+        buttonLayout->setSpacing(30);
+
+        QIcon createIcon;
+        createIcon.addFile(QString::fromUtf8(":/Resources/Add.svg"));
+        m_createProjectButton = new BigTallButton(createIcon, "Create Project", this);
+        m_createProjectButton->setIconSize(QSize(24, 24));
+        buttonLayout->addWidget(m_createProjectButton);
+
+        QIcon addIcon;
+        addIcon.addFile(QString::fromUtf8(":/Resources/Select_Folder.svg"));
+        m_addProjectButton = new BigTallButton(addIcon, "Add a Project", this);
+        m_addProjectButton->setIconSize(QSize(24, 24));
+        buttonLayout->addWidget(m_addProjectButton);
+
+        QSpacerItem* buttonSpacer = new QSpacerItem(20, 40, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        buttonLayout->addItem(buttonSpacer);
+
+        vLayout->addItem(buttonLayout);
+
+        QSpacerItem* verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        vLayout->addItem(verticalSpacer);
+
+        // Using border-image allows for scaling options background-image does not support
+        setStyleSheet("O3DE--ProjectManager--ScreenWidget { border-image: url(:/Resources/FirstTimeBackgroundImage.jpg) repeat repeat; }");
+
+        connect(m_createProjectButton, &QPushButton::pressed, this, &FirstTimeUseScreen::HandleNewProjectButton);
+        connect(m_addProjectButton, &QPushButton::pressed, this, &FirstTimeUseScreen::HandleAddProjectButton);
     }
 
     ProjectManagerScreen FirstTimeUseScreen::GetScreenEnum()
@@ -36,7 +81,7 @@ namespace O3DE::ProjectManager
         emit ResetScreenRequest(ProjectManagerScreen::NewProjectSettingsCore);
         emit ChangeScreenRequest(ProjectManagerScreen::NewProjectSettingsCore);
     }
-    void FirstTimeUseScreen::HandleOpenProjectButton()
+    void FirstTimeUseScreen::HandleAddProjectButton()
     {
         emit ChangeScreenRequest(ProjectManagerScreen::ProjectsHome);
     }
