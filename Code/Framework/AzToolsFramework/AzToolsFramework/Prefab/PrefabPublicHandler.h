@@ -69,6 +69,9 @@ namespace AzToolsFramework
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
             bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
 
+            PrefabDom ApplyContainerTransformAndGeneratePatch(
+                AZ::EntityId containerEntityId, AZ::EntityId commonRootEntityId, const EntityList& topLevelEntities);
+
             /**
              * Creates a link between the templates of an instance and its parent.
              * 
@@ -80,7 +83,7 @@ namespace AzToolsFramework
              */
             void CreateLink(
                 Instance& sourceInstance, TemplateId targetTemplateId, UndoSystem::URSequencePoint* undoBatch,
-                PrefabDom& patch, const bool isUndoRedoSupportNeeded = true);
+                PrefabDom patch, const bool isUndoRedoSupportNeeded = true);
 
             /**
              * Removes the link between template of the sourceInstance and the template corresponding to targetTemplateId.
