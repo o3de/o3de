@@ -204,7 +204,7 @@ namespace PhysX::Benchmarks
         };
         
         auto boxShapeConfiguration = AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3(RigidBodyConstants::RigidBodys::BoxSize));
-        Utils::GenerateColliderFuncPtr colliderGenerator = [&boxShapeConfiguration]([[maybe_unused]] int idx) -> auto
+        Utils::GenerateColliderFuncPtr colliderGenerator = [&boxShapeConfiguration]([[maybe_unused]] int idx)
         {
             return boxShapeConfiguration;
         };
@@ -276,7 +276,7 @@ namespace PhysX::Benchmarks
             return rand.GetRandomFloat() * 25.0f + 5.0f;
         };
         auto boxShapeConfiguration = AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3(RigidBodyConstants::RigidBodys::BoxSize));
-        Utils::GenerateColliderFuncPtr colliderGenerator = [&boxShapeConfiguration]([[maybe_unused]] int idx) -> auto
+        Utils::GenerateColliderFuncPtr colliderGenerator = [&boxShapeConfiguration]([[maybe_unused]] int idx)
         {
             return boxShapeConfiguration;
         };
@@ -409,7 +409,7 @@ namespace PhysX::Benchmarks
             return AZ::EntityId(static_cast<AZ::u64>(idx) + RigidBodyConstants::RigidBodys::RigidBodyEntityIdStart);
         };
         auto boxShapeConfiguration = AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3(RigidBodyConstants::RigidBodys::BoxSize));
-        Utils::GenerateColliderFuncPtr colliderGenerator = [&boxShapeConfiguration]([[maybe_unused]] int idx) -> auto
+        Utils::GenerateColliderFuncPtr colliderGenerator = [&boxShapeConfiguration]([[maybe_unused]] int idx)
         {
             return boxShapeConfiguration;
         };
