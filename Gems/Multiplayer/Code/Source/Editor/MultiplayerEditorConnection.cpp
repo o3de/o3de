@@ -27,12 +27,10 @@ namespace Multiplayer
 {
     using namespace AzNetworking;
 
-    static AZStd::vector<uint8_t> buffer;
-    static AZ::IO::ByteContainerStream<AZStd::vector<uint8_t>> s_byteStream(&buffer);
-
     AZ_CVAR(bool, editorsv_isDedicated, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to init as a server expecting data from an Editor. Do not modify unless you're sure of what you're doing.");
 
     MultiplayerEditorConnection::MultiplayerEditorConnection()
+        : m_byteStream(&m_buffer)
     {
         m_networkEditorInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(
             AZ::Name(MPEditorInterfaceName), ProtocolType::Tcp, TrustZone::ExternalClientToServer, *this);
@@ -59,31 +57,31 @@ namespace Multiplayer
         if (!packet.GetLastUpdate())
         {
             // More packets are expected, flush this to the buffer
-            s_byteStream.Write(TcpPacketEncodingBuffer::GetCapacity(), reinterpret_cast<void*>(packet.ModifyAssetData().GetBuffer()));
+            m_byteStream.Write(TcpPacketEncodingBuffer::GetCapacity(), reinterpret_cast<void*>(packet.ModifyAssetData().GetBuffer()));
         }
         else
         {
             // This is the last expected packet, flush it to the buffer
-            s_byteStream.Write(packet.GetAssetData().GetSize(), reinterpret_cast<void*>(packet.ModifyAssetData().GetBuffer()));
+            m_byteStream.Write(packet.GetAssetData().GetSize(), reinterpret_cast<void*>(packet.ModifyAssetData().GetBuffer()));
 
             // Read all assets out of the buffer
-            s_byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
+            m_byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
             AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> assetData;
-            while (s_byteStream.GetCurPos() < s_byteStream.GetLength())
+            while (m_byteStream.GetCurPos() < m_byteStream.GetLength())
             {
                 AZ::Data::AssetId assetId;
                 AZ::Data::AssetLoadBehavior assetLoadBehavior;
                 uint32_t hintSize;
                 AZStd::string assetHint;
-                s_byteStream.Read(sizeof(AZ::Data::AssetId), reinterpret_cast<void*>(&assetId));
-                s_byteStream.Read(sizeof(AZ::Data::AssetLoadBehavior), reinterpret_cast<void*>(&assetLoadBehavior));
-                s_byteStream.Read(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
+                m_byteStream.Read(sizeof(AZ::Data::AssetId), reinterpret_cast<void*>(&assetId));
+                m_byteStream.Read(sizeof(AZ::Data::AssetLoadBehavior), reinterpret_cast<void*>(&assetLoadBehavior));
+                m_byteStream.Read(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
                 assetHint.resize(hintSize);
-                s_byteStream.Read(hintSize, assetHint.data());
+                m_byteStream.Read(hintSize, assetHint.data());
 
-                size_t assetSize = s_byteStream.GetCurPos();
-                AZ::Data::AssetData* assetDatum = AZ::Utils::LoadObjectFromStream<AZ::Data::AssetData>(s_byteStream, nullptr);
-                assetSize = s_byteStream.GetCurPos() - assetSize;
+                size_t assetSize = m_byteStream.GetCurPos();
+                AZ::Data::AssetData* assetDatum = AZ::Utils::LoadObjectFromStream<AZ::Data::AssetData>(m_byteStream, nullptr);
+                assetSize = m_byteStream.GetCurPos() - assetSize;
                 AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::Asset<AZ::Data::AssetData>(assetId, assetDatum, assetLoadBehavior);
                 asset.SetHint(assetHint);
 
@@ -101,8 +99,8 @@ namespace Multiplayer
             }
 
             // Now that we've deserialized, clear the byte stream
-            s_byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
-            s_byteStream.Truncate();
+            m_byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
+            m_byteStream.Truncate();
 
             // Load the level via the root spawnable that was registered
             AZ::CVarFixedString loadLevelString = "LoadLevel Root.spawnable";
