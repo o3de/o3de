@@ -13,6 +13,10 @@
 # Automated Tests
 ################################################################################
 
+ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+
+include(${pal_dir}/PAL_traits_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+
 ## Asset pipeline ##
 add_subdirectory(assetpipeline)
 
