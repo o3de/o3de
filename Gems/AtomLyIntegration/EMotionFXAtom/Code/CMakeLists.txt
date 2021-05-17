@@ -25,6 +25,7 @@ ly_add_target(
             Gem::Atom_Utils.Static
             Gem::Atom_Feature_Common
             Gem::Atom_Feature_Common.Public
+            Gem::Atom_Feature_Common.Static
             Gem::Atom_RPI.Public
             Gem::Atom_RHI.Reflect
             Gem::AtomLyIntegration_CommonFeatures.Public

@@ -237,13 +237,17 @@ namespace PhysX
 
         //select 1 to remove
         AzPhysics::SimulatedBodyHandle removedSelection = simBodyHandles[simBodyHandles.size() / 2];
+        const AzPhysics::SimulatedBodyIndex removedIndex = AZStd::get<AzPhysics::HandleTypeIndex::Index>(removedSelection);
         sceneInterface->RemoveSimulatedBody(m_testSceneHandle, removedSelection);
+
+        // The removedSelection handle should be set to invalid in RemoveSimulatedBody
+        EXPECT_EQ(removedSelection, AzPhysics::InvalidSimulatedBodyHandle);
 
         //add a new one.
         AzPhysics::SimulatedBodyHandle newSimBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &config);
 
         //The old and new handle should share an index as the freed slot will be used
-        EXPECT_EQ(AZStd::get<AzPhysics::HandleTypeIndex::Index>(removedSelection),
+        EXPECT_EQ(removedIndex,
                   AZStd::get<AzPhysics::HandleTypeIndex::Index>(newSimBodyHandle));
     }
 
@@ -287,9 +291,10 @@ namespace PhysX
         EXPECT_EQ(simBodyHandle, addEventSimBodyHandle);
 
         //remove the body
+        const AzPhysics::SimulatedBodyHandle removedHandle = simBodyHandle; //copy the handle as RemoveSimulatedBody will mark it invalid.
         sceneInterface->RemoveSimulatedBody(m_testSceneHandle, simBodyHandle);
         EXPECT_TRUE(removedTriggered);
-        EXPECT_EQ(simBodyHandle, removeEventSimBodyHandle);
+        EXPECT_EQ(removedHandle, removeEventSimBodyHandle);
     }
 
     TEST_F(PhysXSceneFixture, StartFinishSimulationEvents_triggerAsExpected)

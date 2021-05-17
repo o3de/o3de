@@ -76,8 +76,5 @@ namespace GradientSignal
 
         static void Register();
         static void Unregister();
-
-    private:
-        static GradientPreviewDataWidgetHandler* s_instance;
     };
 }
