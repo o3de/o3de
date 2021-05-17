@@ -673,8 +673,6 @@ void ActionManager::AddActionViaBus(int id, QAction* action)
 {
     action->setData(id);
     m_shortcutDispatcher->AddNewAction(action);
-
-    // change this alex
 }
 
 void ActionManager::RemoveActionViaBus(QAction* action)

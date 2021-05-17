@@ -342,19 +342,11 @@ public:
         {
             if (m_shortcutDispatcher->m_all_actions[i].second->data().toInt() == id)
             {
-                auto f = std::bind(method, object, m_shortcutDispatcher->m_all_actions[i].second);
-                m_updateCallbacks[id] = f;
+                m_updateCallbacks[id] = [action = m_shortcutDispatcher->m_all_actions[i].second, fn] { fn(action); };
             }
         }
-
-        Q_ASSERT(m_actions.contains(id));
-<<<<<<< HEAD
-
+        Q_ASSERT(nullptr);
         return;
-
-=======
-        m_updateCallbacks[id] = [action = m_actions.value(id), fn] { fn(action); };
->>>>>>> 112f0d3448c2d8aa2fcf6097b11b0080abd6ac1f
     }
 
     template<typename T>
