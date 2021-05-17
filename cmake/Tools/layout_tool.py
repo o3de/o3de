@@ -333,7 +333,7 @@ def create_link(src:pathlib.Path, tgt:pathlib.Path, copy):
                 import _winapi
                 _winapi.CreateJunction(str(src), str(tgt))
             else:
-                if tgt.exists() and tgt.is_symlink():
+                if tgt.exists():
                     tgt.unlink()
                 tgt.symlink_to(src, target_is_directory=True)
         except OSError as e:
