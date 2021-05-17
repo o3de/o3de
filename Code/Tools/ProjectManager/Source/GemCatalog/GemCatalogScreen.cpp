@@ -11,9 +11,13 @@
  */
 
 #include <GemCatalog/GemCatalogScreen.h>
+#include <PythonBindingsInterface.h>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
+#include <QTimer>
+
+//#define USE_TESTGEMDATA
 
 namespace O3DE::ProjectManager
 {
@@ -34,16 +38,14 @@ namespace O3DE::ProjectManager
         m_gemInspector->setFixedWidth(320);
 
         // Start: Temporary gem test data
+#ifdef USE_TESTGEMDATA
         QVector<GemInfo> testGemData = GenerateTestData();
         for (const GemInfo& gemInfo : testGemData)
         {
             m_gemModel->AddGem(gemInfo);
         }
+#else
         // End: Temporary gem test data
-
-        hLayout->addWidget(m_gemListView);
-        hLayout->addWidget(m_gemInspector);
-
         auto result = PythonBindingsInterface::Get()->GetGems();
         if (result.IsSuccess())
         {
@@ -52,6 +54,11 @@ namespace O3DE::ProjectManager
                 m_gemModel->AddGem(gemInfo);
             }
         }
+#endif
+
+        hLayout->addWidget(m_gemListView);
+        hLayout->addWidget(m_gemInspector);
+
 
         // Select the first entry after everything got correctly sized
         QTimer::singleShot(100, [=]{
@@ -60,7 +67,7 @@ namespace O3DE::ProjectManager
             });
     }
 
-    QVector<GemInfo> GemCatalog::GenerateTestData()
+    QVector<GemInfo> GemCatalogScreen::GenerateTestData()
     {
         QVector<GemInfo> result;
 

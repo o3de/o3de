@@ -22,7 +22,7 @@ namespace O3DE::ProjectManager
         , m_isAdded(isAdded)
     {
     }
-	
+    
     bool GemInfo::IsValid() const
     {
         return !m_path.isEmpty() && !m_uuid.IsNull();
