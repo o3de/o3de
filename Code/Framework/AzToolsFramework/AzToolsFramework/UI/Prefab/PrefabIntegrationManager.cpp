@@ -403,9 +403,12 @@ namespace AzToolsFramework
             AzToolsFramework::EntityIdList selectedEntityIds;
             AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
                 selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-
-            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-                &AzToolsFramework::ToolsApplicationRequests::DeleteEntitiesAndAllDescendants, selectedEntityIds);
+            PrefabOperationResult deleteSelectedResult =
+                s_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(selectedEntityIds);
+            if (!deleteSelectedResult.IsSuccess())
+            {
+                WarnUserOfError("Delete selected entities error", deleteSelectedResult.GetError());
+            }
         }
 
         void PrefabIntegrationManager::GenerateSuggestedFilenameFromEntities(const EntityIdList& entityIds, AZStd::string& outName)

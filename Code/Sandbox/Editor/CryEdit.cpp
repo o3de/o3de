@@ -85,7 +85,6 @@ AZ_POP_DISABLE_WARNING
 // Editor
 #include "Settings.h"
 
-#include "Include/IBackgroundScheduleManager.h"
 #include "GameExporter.h"
 #include "GameResourcesExporter.h"
 
@@ -95,7 +94,6 @@ AZ_POP_DISABLE_WARNING
 #include "Core/QtEditorApplication.h"
 #include "StringDlg.h"
 #include "NewLevelDialog.h"
-#include "GridSettingsDialog.h"
 #include "LayoutConfigDialog.h"
 #include "ViewManager.h"
 #include "FileTypeUtils.h"
@@ -400,7 +398,6 @@ void CCryEditApp::RegisterActionHandlers()
 
     ON_COMMAND(ID_WIREFRAME, OnWireframe)
 
-    ON_COMMAND(ID_VIEW_GRIDSETTINGS, OnViewGridsettings)
     ON_COMMAND(ID_VIEW_CONFIGURELAYOUT, OnViewConfigureLayout)
 
     ON_COMMAND(IDC_SELECTION, OnDummyCommand)
@@ -2316,15 +2313,6 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
     #endif
     }
 
-    // process the work schedule - regardless if the app is active or not
-    GetIEditor()->GetBackgroundScheduleManager()->Update();
-
-    // if there are active schedules keep updating the application
-    if (GetIEditor()->GetBackgroundScheduleManager()->GetNumSchedules() > 0)
-    {
-        bActive = true;
-    }
-
     m_bPrevActive = bActive;
 
     AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
@@ -3457,14 +3445,6 @@ void CCryEditApp::OnUpdateWireframe(QAction* action)
     }
 
     action->setChecked(nWireframe == R_WIREFRAME_MODE);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnViewGridsettings()
-{
-    CGridSettingsDialog dlg;
-    dlg.exec();
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -36,9 +36,13 @@ namespace O3DE::ProjectManager
         Q_DECLARE_FLAGS(Platforms, Platform)
         static QString GetPlatformString(Platform platform);
 
+        GemInfo() = default;
         GemInfo(const QString& name, const QString& creator, const QString& summary, Platforms platforms, bool isAdded);
         bool IsPlatformSupported(Platform platform) const;
 
+        bool IsValid() const;
+
+        QString m_path;
         QString m_name;
         QString m_displayName;
         AZ::Uuid m_uuid;

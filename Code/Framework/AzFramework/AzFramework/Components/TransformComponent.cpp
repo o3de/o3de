@@ -878,15 +878,15 @@ namespace AzFramework
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);
         if (serializeContext)
         {
-            serializeContext->Class<TransformComponent, AZ::Component, NetBindable>()
-                ->Version(4, &TransformComponentVersionConverter)
+            serializeContext->ClassDeprecate("NetBindable", "{80206665-D429-4703-B42E-94434F82F381}");
+
+            serializeContext->Class<TransformComponent, AZ::Component>()
+                ->Version(5, &TransformComponentVersionConverter)
                 ->Field("Parent", &TransformComponent::m_parentId)
                 ->Field("Transform", &TransformComponent::m_worldTM)
                 ->Field("LocalTransform", &TransformComponent::m_localTM)
                 ->Field("ParentActivationTransformMode", &TransformComponent::m_parentActivationTransformMode)
                 ->Field("IsStatic", &TransformComponent::m_isStatic)
-                ->Field("InterpolatePosition", &TransformComponent::m_interpolatePosition)
-                ->Field("InterpolateRotation", &TransformComponent::m_interpolateRotation)
                 ;
         }
 
