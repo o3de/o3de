@@ -13,7 +13,6 @@ CLI tool - AssetProcessorBatch
 Launch AssetProcessorBatch and Shutdown AssetProcessorBatch without any crash
 """
 
-
 import pytest
 
 
