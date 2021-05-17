@@ -16,7 +16,6 @@
 #include "Cry_Geo.h"
 #include "Cry_Camera.h"
 #include "ITexture.h"
-#include <IFuncVariable.h> // <> required for Interfuscator
 #include <IXml.h> // <> required for Interfuscator
 #include "smartptr.h"
 #include <AzCore/Casting/numeric_cast.h>
@@ -99,7 +98,6 @@ struct ShadowFrustumMGPUCache;
 struct IAsyncTextureCompileListener;
 struct IClipVolume;
 struct SClipVolumeBlendInfo;
-class IImageFile;
 class CRenderView;
 struct SDynTexture2;
 class CTexture;
@@ -693,7 +691,6 @@ public:
 #include <IShader.h> // <> required for Interfuscator
 //DOC-IGNORE-END
 #include <IRenderMesh.h>
-#include "IMeshBaking.h"
 
 // Flags passed in function FreeResources.
 #define FRR_SHADERS   1
@@ -1050,11 +1047,6 @@ namespace AZ {
     class Plane;
     namespace Vertex {
         class Format;
-    }
-    namespace VideoRenderer
-    {
-        struct IVideoRenderer;
-        struct DrawArguments;
     }
 }
 enum eRenderPrimitiveType : int8;
@@ -1464,7 +1456,6 @@ struct IRenderer
     //  Is threadsafe
     virtual bool          EF_ReloadFile_Request (const char* szFileName) = 0;
 
-    virtual _smart_ptr<IImageFile> EF_LoadImage(const char* szFileName, uint32 nFlags) = 0;
     // Summary:
     //      Remaps shader gen mask to common global mask.
     virtual uint64      EF_GetRemapedShaderMaskGen(const char* name, uint64 nMaskGen = 0, bool bFixup = 0) = 0;
@@ -1738,8 +1729,6 @@ struct IRenderer
     virtual bool DXTDecompress(const byte* srcData, size_t srcFileSize, byte* dstData, int nWidth, int nHeight, int nMips, ETEX_Format eSrcTF, bool bUseHW, int nDstBytesPerPix) = 0;
     virtual void RemoveTexture(unsigned int TextureId) = 0;
     virtual void DeleteFont(IFFont* font) = 0;
-
-    virtual bool BakeMesh(const SMeshBakingInputParams* pInputParams, SMeshBakingOutput* pReturnValues) = 0;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////
     // This routines uses 2 destination surfaces.  It triggers a backbuffer copy to one of its surfaces,
@@ -2345,11 +2334,6 @@ struct IRenderer
     virtual void BeginProfilerSection(const char* name, uint32 eProfileLabelFlags = 0) = 0;
     virtual void EndProfilerSection(const char* name) = 0;
     virtual void AddProfilerLabel(const char* name) = 0;
-
-    // Video Renderer interface
-    virtual void InitializeVideoRenderer(AZ::VideoRenderer::IVideoRenderer* pVideoRenderer) = 0;
-    virtual void CleanupVideoRenderer(AZ::VideoRenderer::IVideoRenderer* pVideoRenderer) = 0;
-    virtual void DrawVideoRenderer(AZ::VideoRenderer::IVideoRenderer* pVideoRenderer, const AZ::VideoRenderer::DrawArguments& drawArguments) = 0;
 
 private:
     // use private for EF_Query to prevent client code to submit arbitrary combinations of output data/size

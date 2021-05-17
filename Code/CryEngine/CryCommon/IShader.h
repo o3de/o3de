@@ -24,7 +24,6 @@
 #endif
 
 #include "smartptr.h"
-#include <IFuncVariable.h> // <> required for Interfuscator
 #include <IXml.h> // <> required for Interfuscator
 #include "smartptr.h"
 #include "VertexFormats.h"

@@ -22,7 +22,6 @@
 #include <ISystem.h>
 #include "System.h"
 #include "CryPath.h"                    // PathUtil::ReplaceExtension()
-#include <Pak/CryPakUtils.h>
 #include "UnicodeFunctions.h"
 
 #include <AzFramework/IO/FileOperations.h>
@@ -237,7 +236,6 @@ void CLog::CloseLogFile([[maybe_unused]] bool forceClose)
 //////////////////////////////////////////////////////////////////////////
 AZ::IO::HandleType CLog::OpenLogFile(const char* filename, const char* mode)
 {
-    CDebugAllowFileAccess ignoreInvalidFileAccess;
     using namespace AZ::IO;
 
     AZ_Assert(m_logFileHandle == AZ::IO::InvalidHandle, "Attempt to open log file when one is already open.  This would lead to a handle leak.");
