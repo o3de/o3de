@@ -92,7 +92,6 @@ AZ_POP_DISABLE_WARNING
 #ifdef _RELEASE
 #undef _RELEASE
 #endif
-#include <CrtDebugStats.h>
 
 #include "Core/QtEditorApplication.h"                               // for Editor::EditorQtApplication
 
@@ -1585,16 +1584,9 @@ void CEditorImpl::AddUIEnums()
     m_pUIEnumsDatabase->SetEnumStrings("ShadowMinResPercent", types);
 }
 
-void CEditorImpl::SetEditorConfigSpec(ESystemConfigSpec spec, ESystemConfigPlatform platform)
+void CEditorImpl::SetEditorConfigSpec(ESystemConfigSpec spec, [[maybe_unused]]ESystemConfigPlatform platform)
 {
     gSettings.editorConfigSpec = spec;
-    if (m_pSystem->GetConfigSpec(true) != spec || m_pSystem->GetConfigPlatform() != platform)
-    {
-        m_pSystem->SetConfigSpec(spec, platform, true);
-        gSettings.editorConfigSpec = m_pSystem->GetConfigSpec(true);
-        GetObjectManager()->SendEvent(EVENT_CONFIG_SPEC_CHANGE);
-        AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::OnEditorSpecChange);
-    }
 }
 
 ESystemConfigSpec CEditorImpl::GetEditorConfigSpec() const

@@ -10,7 +10,7 @@
 *
 */
 
-#include <Multiplayer/MultiplayerComponentRegistry.h>
+#include <Multiplayer/Components/MultiplayerComponentRegistry.h>
 
 namespace Multiplayer
 {
@@ -19,6 +19,12 @@ namespace Multiplayer
         NetComponentId netComponentId = m_nextNetComponentId++;
         m_componentData[netComponentId] = componentData;
         return netComponentId;
+    }
+
+    AZStd::unique_ptr<IMultiplayerComponentInput> MultiplayerComponentRegistry::AllocateComponentInput(NetComponentId netComponentId)
+    {
+        const ComponentData& componentData = GetMultiplayerComponentData(netComponentId);
+        return AZStd::move(componentData.m_allocComponentInputFunction());
     }
 
     const char* MultiplayerComponentRegistry::GetComponentGemName(NetComponentId netComponentId) const
