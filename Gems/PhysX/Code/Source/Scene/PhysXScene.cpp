@@ -794,6 +794,15 @@ namespace PhysX
         }
     }
 
+    AzPhysics::ApiJointHandle PhysXScene::AddJoint([[ maybe_unused ]] const AzPhysics::ApiJointConfiguration* jointConfig, 
+        [[ maybe_unused ]] AzPhysics::SimulatedBodyHandle parentBody, [[ maybe_unused ]] AzPhysics::SimulatedBodyHandle childBody) {
+        return AzPhysics::InvalidApiJointHandle;
+    }
+
+    void PhysXScene::RemoveJoint([[ maybe_unused ]] AzPhysics::ApiJointHandle jointHandle) {
+
+    }
+
     AzPhysics::SceneQueryHits PhysXScene::QueryScene(const AzPhysics::SceneQueryRequest* request)
     {
         if (request == nullptr)

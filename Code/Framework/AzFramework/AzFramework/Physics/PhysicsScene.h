@@ -16,6 +16,7 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <AzFramework/Physics/Configuration/ApiJointConfiguration.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
 
 namespace AzPhysics
@@ -102,6 +103,20 @@ namespace AzPhysics
         //! @param bodyHandle The handle of the simulated body to enable / disable.
         virtual void EnableSimulationOfBody(SceneHandle sceneHandle, SimulatedBodyHandle bodyHandle) = 0;
         virtual void DisableSimulationOfBody(SceneHandle sceneHandle, SimulatedBodyHandle bodyHandle) = 0;
+
+        //! Add a joint to the Scene.
+        //! @param sceneHandle A handle to the scene to add / remove the joint.
+        //! @param jointConfig The config of the joint.
+        //! @param parentBody The parent body of the joint.
+        //! @param childBody The child body of the joint
+        //! @return Returns a handle to the created joint. Will return AzPhyiscs::InvalidApiJointHandle if it fails.
+        virtual ApiJointHandle AddJoint(SceneHandle sceneHandle, const ApiJointConfiguration* jointConfig, 
+            SimulatedBodyHandle parentBody, SimulatedBodyHandle childBody) = 0;
+
+        //! Remove a joint from the Scene.
+        //! @param sceneHandle A handle to the scene to add / remove the joint.
+        //! @param jointHandle A handle to the joint being removed.
+        virtual void RemoveJoint(SceneHandle sceneHandle, ApiJointHandle jointHandle) = 0;
 
         //! Make a blocking query into the scene.
         //! @param sceneHandle A handle to the scene to make the scene query with.
@@ -298,6 +313,18 @@ namespace AzPhysics
         //! @param bodyHandle The handle of the simulated body to enable / disable.
         virtual void EnableSimulationOfBody(SimulatedBodyHandle bodyHandle) = 0;
         virtual void DisableSimulationOfBody(SimulatedBodyHandle bodyHandle) = 0;
+
+        //! Add a joint to the Scene.
+        //! @param jointConfig The config of the joint.
+        //! @param parentBody The parent body of the joint.
+        //! @param childBody The child body of the joint
+        //! @return Returns a handle to the created joint. Will return AzPhyiscs::InvalidApiJointHandle if it fails.
+        virtual ApiJointHandle AddJoint(const ApiJointConfiguration* jointConfig, 
+            SimulatedBodyHandle parentBody, SimulatedBodyHandle childBody) = 0;
+
+        //! Remove a joint from the Scene.
+        //! @param jointHandle A handle to the joint being removed.
+        virtual void RemoveJoint(ApiJointHandle jointHandle) = 0;
 
         //! Make a blocking query into the scene.
         //! @param request The request to make. Should be one of RayCastRequest || ShapeCastRequest || OverlapRequest
