@@ -211,8 +211,6 @@ namespace AzFramework
         AZ_Assert(clone != nullptr, "Failed to clone spawnable entity.");
         clone->SetId(AZ::Entity::MakeId());
 
-        // Need to inject a callback here
-
         GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, clone);
         return clone;
     }
