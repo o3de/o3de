@@ -132,6 +132,7 @@ namespace PhysX
 
     private:
         void CreateController();
+        void DisableController();
         void DestroyController();
 
         void OnPreSimulate(float deltaTime);
@@ -139,6 +140,8 @@ namespace PhysX
         AZStd::unique_ptr<Physics::CharacterConfiguration> m_characterConfig;
         AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfig;
         PhysX::CharacterController* m_controller = nullptr;
+        AzPhysics::SimulatedBodyHandle m_controllerBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         AzPhysics::SystemEvents::OnPresimulateEvent::Handler m_preSimulateHandler;
+        AzPhysics::SceneEvents::OnSimulationBodyRemoved::Handler m_onSimulatedBodyRemovedHandler;
     };
 } // namespace PhysX
