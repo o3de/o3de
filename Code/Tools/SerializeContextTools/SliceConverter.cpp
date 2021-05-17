@@ -143,7 +143,7 @@ namespace AZ
                 if (packOpened)
                 {
                     [[maybe_unused]] bool closeResult = archiveInterface->ClosePack(filePath);
-                    AZ_Warning("Convert-Slice", !closeResult, "Failed to close '%s'.", filePath.c_str());
+                    AZ_Warning("Convert-Slice", closeResult, "Failed to close '%s'.", filePath.c_str());
                 }
 
                 AZ_Printf("Convert-Slice", "Finished converting '%s' to '%s'\n", filePath.c_str(), outputPath.c_str());
