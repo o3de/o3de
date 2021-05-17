@@ -65,6 +65,7 @@ private Q_SLOTS:
     void DoubleClickedItem(const QModelIndex& element);
     void DoubleClickedItemTableModel(const QModelIndex& element);
     void SwitchDisplayView(bool state);
+    void LockToDefaultView(bool state);
 };
 
 extern const char* AZ_ASSET_BROWSER_PREVIEW_NAME;

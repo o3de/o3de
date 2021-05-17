@@ -119,7 +119,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
 
     connect(m_filterModel.data(), &AssetBrowserFilterModel::stringFilterPopulated, this, &AzAssetBrowserWindow::SwitchDisplayView);
-    connect(m_ui->m_viewSwitcherCheckBox, &QCheckBox::stateChanged, this, &AzAssetBrowserWindow::SwitchDisplayView);
+    connect(m_ui->m_viewSwitcherCheckBox, &QCheckBox::stateChanged, this, &AzAssetBrowserWindow::LockToDefaultView);
 }
 
 AzAssetBrowserWindow::~AzAssetBrowserWindow()
@@ -288,6 +288,17 @@ void AzAssetBrowserWindow::SwitchDisplayView(bool state)
 {
     m_ui->m_assetBrowserTableViewWidget->setVisible(state);
     m_ui->m_assetBrowserTreeViewWidget->setVisible(!state);
+}
+
+void AzAssetBrowserWindow::LockToDefaultView(bool state)
+{
+    using namespace AzToolsFramework;
+    using namespace AzToolsFramework::AssetBrowser;
+    SwitchDisplayView(!state);
+    if (state == true)
+        disconnect(m_filterModel.data(), &AssetBrowserFilterModel::stringFilterPopulated, this, &AzAssetBrowserWindow::SwitchDisplayView);
+    else
+        connect(m_filterModel.data(), &AssetBrowserFilterModel::stringFilterPopulated, this, &AzAssetBrowserWindow::SwitchDisplayView);
 }
 
 #include <AzAssetBrowser/moc_AzAssetBrowserWindow.cpp>
