@@ -22,6 +22,7 @@
 namespace SandboxEditor
 {
     class ModernViewportCameraControllerInstance;
+    // , AzFramework::ViewportControllerPriority::DispatchToAllPriorities -- CameraBoxSelectFix
     class ModernViewportCameraController : public AzFramework::MultiViewportController<ModernViewportCameraControllerInstance>
     {
     public:

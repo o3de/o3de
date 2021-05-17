@@ -103,7 +103,28 @@ namespace SandboxEditor
         AzFramework::WindowRequestBus::EventResult(
             windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
 
-        return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel, windowSize));
+        // CameraBoxSelectFix
+
+        // bumping priority of camera system when we're in orbit mode (to eat LMB)
+
+        // in 'regular mode' and priority == normal
+        //  handle as before
+        // otherwise ignore...
+
+        // only handle when it
+
+        const bool handled = m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel, windowSize));
+
+        // event.m_priority
+        /*
+            if (cameraSystem.IsOrbit()) {
+                event == LBM && priority == highest {
+                    return true;
+                }
+            }
+        */
+
+        return handled;
     }
 
     void ModernViewportCameraControllerInstance::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
