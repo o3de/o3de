@@ -9,9 +9,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/../Platform/${PAL_PLATFORM_NAME})
-
-include(${pal_dir}/PAL_traits_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_LARGE_WORLDS_TEST_SUPPORTED)
 
 ## DynVeg ##
