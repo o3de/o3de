@@ -28,6 +28,8 @@ namespace O3DE::ProjectManager
     {
         m_ui->setupUi(this);
 
+        setFixedSize(this->geometry().width(), this->geometry().height());
+
         m_pythonBindings = AZStd::make_unique<PythonBindings>(engineRootPath);
 
         m_screensCtrl = new ScreensCtrl();
