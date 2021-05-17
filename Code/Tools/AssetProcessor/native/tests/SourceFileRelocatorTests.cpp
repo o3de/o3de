@@ -112,7 +112,6 @@ namespace UnitTests
             SourceDatabaseEntry sourceFile8 = { m_data->m_scanFolder1.m_scanFolderID, "test.txt", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
             SourceDatabaseEntry sourceFile9 = { m_data->m_scanFolder1.m_scanFolderID, "duplicate/folder/file1.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
             SourceDatabaseEntry sourceFile10 = { m_data->m_scanFolder1.m_scanFolderID, "folder/file.foo", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile11 = { m_data->m_scanFolder1.m_scanFolderID, "testfolder/file.foo", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile1));
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile2));
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile3));
@@ -123,7 +122,6 @@ namespace UnitTests
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile8));
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile9));
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile10));
-            ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile11));
 
             SourceFileDependencyEntry dependency1 = { AZ::Uuid::CreateRandom(), "subfolder1/somefile.tif", "subfolder1/otherfile.tif", SourceFileDependencyEntry::TypeOfDependency::DEP_SourceToSource, false };
             SourceFileDependencyEntry dependency2 = { AZ::Uuid::CreateRandom(), "subfolder1/otherfile.tif", "otherfile.tif", SourceFileDependencyEntry::TypeOfDependency::DEP_JobToJob, false };
@@ -176,8 +174,6 @@ namespace UnitTests
             ASSERT_TRUE(UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("dev/dummy/foo.metadataextension")));
             ASSERT_TRUE(UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("dev/folder/file.foo")));
             ASSERT_TRUE(UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("dev/folder/file.bar")));
-            ASSERT_TRUE(UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("dev/testfolder/file.foo")));
-            ASSERT_TRUE(UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("dev/testfolder/File.bar")));
 
             if (AZ::IO::FileIOBase::GetInstance() == nullptr)
             {
@@ -537,18 +533,6 @@ namespace UnitTests
 
         auto filePath = QDir(tempPath.absoluteFilePath(m_data->m_scanFolder1.m_scanFolder.c_str())).absoluteFilePath("folder/file.foo");
         TestGetSourcesByPath(filePath.toUtf8().constData(), { "folder/file.foo" }, true, true);
-    }
-
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    TEST_F(SourceFileRelocatorTest, DISABLED_GetSources_HaveMetadataDifferentFileCase_AbsolutePath_Succeeds)
-#else
-    TEST_F(SourceFileRelocatorTest, GetSources_HaveMetadataDifferentFileCase_AbsolutePath_Succeeds)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    {
-        QDir tempPath(m_tempDir.path());
-
-        auto filePath = QDir(tempPath.absoluteFilePath(m_data->m_scanFolder1.m_scanFolder.c_str())).absoluteFilePath("testfolder/file.foo");
-        TestGetSourcesByPath(filePath.toUtf8().constData(), { "testfolder/file.foo", "testfolder/File.bar" }, true, false);
     }
 
     TEST_F(SourceFileRelocatorTest, GetMetaDataFile_SingleFileWildcard_Succeeds)
