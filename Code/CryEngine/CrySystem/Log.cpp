@@ -1114,8 +1114,6 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
 
     if (logToFile)
     {
-        CDebugAllowFileAccess dafa;
-
         if (m_logFileHandle == AZ::IO::InvalidHandle)
         {
             OpenLogFile(m_szFilename, "w+t");
