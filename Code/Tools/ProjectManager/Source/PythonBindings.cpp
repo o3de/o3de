@@ -156,13 +156,13 @@ namespace RedirectOutput
             return 0;
         }
 
-        PyObject* m = PyModule_Create(&RedirectOutputModule);
-        if (m)
+        PyObject* redirectModule = PyModule_Create(&RedirectOutputModule);
+        if (redirectModule)
         {
             Py_INCREF(&RedirectOutputType);
-            PyModule_AddObject(m, "Redirect", reinterpret_cast<PyObject*>(&RedirectOutputType));
+            PyModule_AddObject(redirectModule, "Redirect", reinterpret_cast<PyObject*>(&RedirectOutputType));
         }
-        return m;
+        return redirectModule;
     }
 
     void SetRedirection(const char* funcname, PyObject*& saved, PyObject*& current, RedirectOutputFunc func)

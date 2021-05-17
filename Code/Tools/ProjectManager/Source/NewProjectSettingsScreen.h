@@ -14,7 +14,6 @@
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
 #include <ProjectInfo.h>
-#include <ProjectTemplateInfo.h>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QButtonGroup)

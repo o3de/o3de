@@ -68,7 +68,7 @@ namespace O3DE::ProjectManager
     }
     void ProjectSettingsCtrl::HandleNextButton()
     {
-        ScreenWidget *currentScreen = m_screensCtrl->GetCurrentScreen();
+        ScreenWidget* currentScreen = m_screensCtrl->GetCurrentScreen();
         ProjectManagerScreen screenEnum = currentScreen->GetScreenEnum();
         auto screenOrderIter = m_screensOrder.begin();
         for (; screenOrderIter != m_screensOrder.end(); ++screenOrderIter)

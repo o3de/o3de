@@ -48,7 +48,7 @@ namespace O3DE::ProjectManager
         {
             QHBoxLayout* projectPathLayout = new QHBoxLayout(this);
 
-            m_projectPathLineEdit = new QLineEdit(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),this);
+            m_projectPathLineEdit = new QLineEdit(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation), this);
             projectPathLayout->addWidget(m_projectPathLineEdit);
 
             QPushButton* browseButton = new QPushButton(tr("Browse"), this);
