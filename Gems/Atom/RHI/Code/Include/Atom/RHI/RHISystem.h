@@ -57,6 +57,7 @@ namespace AZ
             const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const override;
             const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const override;
             ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor() const override;
+            void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) override;
             //////////////////////////////////////////////////////////////////////////
 
         private:
