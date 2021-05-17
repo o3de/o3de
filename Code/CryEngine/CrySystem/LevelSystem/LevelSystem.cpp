@@ -17,8 +17,6 @@
 #include "LevelSystem.h"
 #include <IAudioSystem.h>
 #include "IMovieSystem.h"
-#include "IMaterialEffects.h"
-#include <IResourceManager.h>
 #include <ILocalizationManager.h>
 #include "CryPath.h"
 #include <Pak/CryPakUtils.h>
@@ -262,16 +260,6 @@ void CLevelSystem::Rescan(const char* levelsFolder)
 {
     if (levelsFolder)
     {
-        if (const ICmdLineArg* pModArg = m_pSystem->GetICmdLine()->FindArg(eCLAT_Pre, "MOD"))
-        {
-            if (m_pSystem->IsMODValid(pModArg->GetValue()))
-            {
-                m_levelsFolder.format("Mods/%s/%s", pModArg->GetValue(), levelsFolder);
-                m_levelInfos.clear();
-                ScanFolder(0, true);
-            }
-        }
-
         m_levelsFolder = levelsFolder;
     }
 
@@ -648,20 +636,6 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
 
         AZStd::string levelPath(pLevelInfo->GetPath());
 
-        /*
-        ICVar *pFileCache = gEnv->pConsole->GetCVar("sys_FileCache");       CRY_ASSERT(pFileCache);
-
-        if(pFileCache->GetIVal())
-        {
-        if(pPak->OpenPack("",pLevelInfo->GetPath()+string("/FileCache.dat")))
-        gEnv->pLog->Log("FileCache.dat loaded");
-        else
-        gEnv->pLog->Log("FileCache.dat not loaded");
-        }
-        */
-
-        m_pSystem->SetThreadState(ESubsys_Physics, false);
-
         ICVar* pSpamDelay = gEnv->pConsole->GetCVar("log_SpamDelay");
         float spamDelay = 0.0f;
         if (pSpamDelay)
@@ -768,8 +742,6 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
 
     gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_PRECACHE_START, 0, 0);
 
-    m_pSystem->SetThreadState(ESubsys_Physics, true);
-
     return m_pCurrentLevel;
 }
 
@@ -795,9 +767,6 @@ void CLevelSystem::PrepareNextLevel(const char* levelName)
         // switched to level heap, so now imm start the loading screen (renderer will be reinitialized in the levelheap)
         gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_START_LOADINGSCREEN, 0, 0);
         gEnv->pSystem->SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_START_PREPARE);
-
-        // Inform resource manager about loading of the new level.
-        GetISystem()->GetIResourceManager()->PrepareLevel(pLevelInfo->GetPath(), pLevelInfo->GetName());
     }
 
     for (AZStd::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
@@ -1003,8 +972,6 @@ void CLevelSystem::UnloadLevel()
     }
 
     m_lastLevelName.clear();
-
-    GetISystem()->GetIResourceManager()->UnloadLevel();
 
     SAFE_RELEASE(m_pCurrentLevel);
     

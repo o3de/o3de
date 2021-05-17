@@ -249,10 +249,6 @@ public:
     void SetName(const char* Name)
     {
         m_name = Name;
-        if (m_threadId)
-        {
-            CryThreadSetName(m_threadId, m_name);
-        }
     }
     const char* GetName() { return m_name; }
 
@@ -289,11 +285,6 @@ private:
         self->m_bIsStarted = true;
         self->m_bIsRunning = true;
 
-        if (!self->m_name.empty())
-        {
-            CryThreadSetName(-1, self->m_name);
-        }
-
         self->m_Runnable->Run();
         self->m_bIsRunning = false;
         self->m_bCreatedThread = false;
@@ -310,11 +301,6 @@ private:
         CrySimpleThread<Runnable>* const self = (CrySimpleThread<Runnable>*)thisPtr;
         self->m_bIsStarted = true;
         self->m_bIsRunning = true;
-
-        if (!self->m_name.empty())
-        {
-            CryThreadSetName(-1, self->m_name);
-        }
 
         self->Run();
         self->m_bIsRunning = false;

@@ -27,7 +27,6 @@
 #endif
 
 #define STATIC_ASSERT(condition, errMessage) static_assert(condition, errMessage)
-#include "STLGlobalAllocator.h"
 
 #include <map>
 #include <set>
