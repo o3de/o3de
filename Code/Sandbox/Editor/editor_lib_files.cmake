@@ -824,12 +824,15 @@ set(FILES
     LayoutWnd.h
     EditorViewportWidget.cpp
     EditorViewportWidget.h
+    EditorViewportSettings.cpp
+    EditorViewportSettings.h
     ViewportManipulatorController.cpp
     ViewportManipulatorController.h
     LegacyViewportCameraController.cpp
     LegacyViewportCameraController.h
     ModernViewportCameraController.cpp
     ModernViewportCameraController.h
+    ModernViewportCameraControllerRequestBus.h
     RenderViewport.cpp
     RenderViewport.h
     TopRendererWnd.cpp

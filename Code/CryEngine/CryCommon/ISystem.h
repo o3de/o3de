@@ -76,14 +76,9 @@ struct IViewSystem;
 class ICrySizer;
 class IXMLBinarySerializer;
 struct IReadWriteXMLSink;
-struct ITextModeConsole;
 struct IAVI_Reader;
 class CPNoise3;
 struct ILocalizationManager;
-struct IZLibCompressor;
-struct IZLibDecompressor;
-struct ILZ4Decompressor;
-class IZStdDecompressor;
 struct IOutputPrintSink;
 struct IWindowMessageHandler;
 
@@ -524,7 +519,6 @@ struct SSystemInitParams
     ISystemUserCallback* pUserCallback;
     const char* sLogFileName;                       // File name to use for log.
     bool autoBackupLogs;                            // if true, logs will be automatically backed up each startup
-    IValidator* pValidator;                         // You can specify different validator object to use by System.
     IOutputPrintSink* pPrintSync;               // Print Sync which can be used to catch all output from engine
     char szSystemCmdLine[2048];                     // Command line.
 
@@ -554,7 +548,6 @@ struct SSystemInitParams
         pUserCallback = NULL;
         sLogFileName = NULL;
         autoBackupLogs = true;
-        pValidator = NULL;
         pPrintSync = NULL;
         memset(szSystemCmdLine, 0, sizeof(szSystemCmdLine));
 
@@ -829,14 +822,6 @@ struct ISystem
     virtual const char* GetUserName() = 0;
 
     // Summary:
-    //   Gets current supported CPU features flags. (CPUF_SSE, CPUF_SSE2, CPUF_3DNOW, CPUF_MMX)
-    virtual int GetCPUFlags() = 0;
-
-    // Summary:
-    //   Gets number of CPUs
-    virtual int GetLogicalCPUCount() = 0;
-
-    // Summary:
     //   Quits the application.
     virtual void    Quit() = 0;
     // Summary:
@@ -851,13 +836,6 @@ struct ISystem
     virtual int IsSerializingFile() const = 0;
 
     virtual bool IsRelaunch() const = 0;
-
-    // Summary:
-    //   Displays an error message to display info for certain time
-    // Arguments:
-    //   acMessage - Message to show
-    //   fTime - Amount of seconds to show onscreen
-    virtual void DisplayErrorMessage(const char* acMessage, float fTime, const float* pfColor = 0, bool bHardError = true) = 0;
 
     // Description:
     //   Displays error message.
@@ -889,14 +867,9 @@ struct ISystem
     // return the related subsystem interface
 
     //
-    virtual IZLibCompressor* GetIZLibCompressor() = 0;
-    virtual IZLibDecompressor* GetIZLibDecompressor() = 0;
-    virtual ILZ4Decompressor* GetLZ4Decompressor() = 0;
-    virtual IZStdDecompressor* GetZStdDecompressor() = 0;
     virtual IViewSystem* GetIViewSystem() = 0;
     virtual ILevelSystem* GetILevelSystem() = 0;
     virtual INameTable* GetINameTable() = 0;
-    virtual IValidator* GetIValidator() = 0;
     virtual ICmdLine* GetICmdLine() = 0;
     virtual ILog* GetILog() = 0;
     virtual AZ::IO::IArchive* GetIPak() = 0;
@@ -917,7 +890,6 @@ struct ISystem
     virtual bool GetForceNonDevMode() const = 0;
     virtual bool WasInDevMode() const = 0;
     virtual bool IsDevMode() const = 0;
-    virtual bool IsMODValid(const char* szMODName) const = 0;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
@@ -974,13 +946,6 @@ struct ISystem
     //   Gets build version.
     virtual const SFileVersion& GetBuildVersion() = 0;
 
-    // Summary:
-    //   Data compression
-    //##@{
-    virtual bool CompressDataBlock(const void* input, size_t inputSize, void* output, size_t& outputSize, int level = 3) = 0;
-    virtual bool DecompressDataBlock(const void* input, size_t inputSize, void* output, size_t& outputSize) = 0;
-    //##@}
-
     //////////////////////////////////////////////////////////////////////////
     // Configuration.
     //////////////////////////////////////////////////////////////////////////
@@ -1002,20 +967,7 @@ struct ISystem
     //   pCallback - 0 means normal LoadConfigVar behaviour is used
     virtual void LoadConfiguration(const char* sFilename, ILoadConfigurationEntrySink* pSink = 0, bool warnIfMissing = true) = 0;
 
-    // Summary:
-    //   Retrieves current configuration specification for client or server.
-    // Arguments:
-    //   bClient - If true returns local client config spec, if false returns server config spec.
-    virtual ESystemConfigSpec GetConfigSpec(bool bClient = true) = 0;
-
     virtual ESystemConfigSpec GetMaxConfigSpec() const = 0;
-
-    // Summary:
-    //   Changes current configuration specification for client or server.
-    // Arguments:
-    //   bClient - If true changes client config spec (sys_spec variable changed),
-    //             if false changes only server config spec (as known on the client).
-    virtual void SetConfigSpec(ESystemConfigSpec spec, ESystemConfigPlatform platform, bool bClient) = 0;
 
     //////////////////////////////////////////////////////////////////////////
 
@@ -1029,10 +981,6 @@ struct ISystem
     //////////////////////////////////////////////////////////////////////////
 
     // Summary:
-    //   Detects and set optimal spec.
-    virtual void AutoDetectSpec(bool detectResolution) = 0;
-
-    // Summary:
     //   Query if system is now paused.
     //   Pause flag is set when calling system update with pause mode.
     virtual bool IsPaused() const = 0;
@@ -1040,8 +988,6 @@ struct ISystem
     // Summary:
     //   Retrieves localized strings manager interface.
     virtual ILocalizationManager* GetLocalizationManager() = 0;
-
-    virtual ITextModeConsole* GetITextModeConsole() = 0;
 
     // Summary:
     //   Retrieves the perlin noise singleton instance.
@@ -1133,21 +1079,9 @@ struct ISystem
     virtual ESystemGlobalState  GetSystemGlobalState(void) = 0;
     virtual void SetSystemGlobalState(ESystemGlobalState systemGlobalState) = 0;
 
-    // Summary:
-    //      Asynchronous memcpy
-    // Note sync variable will be incremented (in calling thread) before job starts
-    // and decremented when job finishes. Multiple async copies can therefore be
-    // tied to the same sync variable, therefore it's advised to wait for completion with
-    // while(*sync) (yield());
-    virtual void AsyncMemcpy(void* dst, const void* src, size_t size, int nFlags, volatile int* sync) = 0;
-    // </interfuscator:shuffle>
-
 #if !defined(_RELEASE)
     virtual bool IsSavingResourceList() const = 0;
 #endif
-
-    // Initializes Steam if needed and returns if it was successful
-    virtual bool SteamInit() = 0;
 
     // Summary:
     //      Gets the root window message handler function
@@ -1751,44 +1685,6 @@ inline void CryLogAlways(const char* format, ...)
 }
 
 #endif // EXCLUDE_NORMAL_LOG
-
-/*****************************************************
-ASYNC MEMCPY FUNCTIONS
-*****************************************************/
-
-// Complex delegation required because it is not really easy to
-// export a external standalone symbol like a memcpy function when
-// building with modules. Dll pay an extra indirection cost for calling this
-// function.
-#if !defined(AZ_MONOLITHIC_BUILD)
-# define CRY_ASYNC_MEMCPY_DELEGATE_TO_CRYSYSTEM
-#endif
-#define CRY_ASYNC_MEMCPY_API extern "C"
-
-// Note sync variable will be incremented (in calling thread) before job starts
-// and decremented when job finishes. Multiple async copies can therefore be
-// tied to the same sync variable, therefore wait for completion with
-// while(*sync) (yield());
-#if defined(CRY_ASYNC_MEMCPY_DELEGATE_TO_CRYSYSTEM)
-inline void cryAsyncMemcpy(
-    void* dst
-    , const void* src
-    , size_t size
-    , int nFlags
-    , volatile int* sync)
-{
-    GetISystem()->AsyncMemcpy(dst, src, size, nFlags, sync);
-}
-# else
-CRY_ASYNC_MEMCPY_API void cryAsyncMemcpy(
-    void* dst
-    , const void* src
-    , size_t size
-    , int nFlags
-    , volatile int* sync);
-#endif
-
-
 
 //////////////////////////////////////////////////////////////////////////
 // Additional headers.

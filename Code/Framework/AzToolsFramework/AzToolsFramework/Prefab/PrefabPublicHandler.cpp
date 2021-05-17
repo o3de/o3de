@@ -234,18 +234,24 @@ namespace AzToolsFramework
             auto relativePath = m_prefabLoaderInterface->GetRelativePathToProject(filePath);
             Prefab::TemplateId templateId = m_prefabSystemComponentInterface->GetTemplateIdFromFilePath(relativePath);
 
-            // If the template isn't currently loaded, there's no way for it to be in the hierarchy so we just skip the check.
-            if (templateId != Prefab::InvalidTemplateId && IsPrefabInInstanceAncestorHierarchy(templateId, instanceToParentUnder->get()))
+            if (templateId == InvalidTemplateId)
             {
-                return AZ::Failure(
-                    AZStd::string::format(
-                        "Instantiate Prefab operation aborted - Cyclical dependency detected\n(%s depends on %s).",
-                        relativePath.Native().c_str(),
-                        instanceToParentUnder->get().GetTemplateSourcePath().Native().c_str()
-                    )
-                );
+                // Load the template from the file
+                templateId = m_prefabLoaderInterface->LoadTemplateFromFile(filePath);
+                AZ_Assert(templateId != InvalidTemplateId, "Template with source path %s couldn't be loaded correctly.", filePath);
             }
-            
+
+            const PrefabDom& templateDom = m_prefabSystemComponentInterface->FindTemplateDom(templateId);
+            AZStd::unordered_set<AZ::IO::Path> templatePaths;
+            PrefabDomUtils::GetTemplateSourcePaths(templateDom, templatePaths);
+
+            if (IsCyclicalDependencyFound(instanceToParentUnder->get(), templatePaths))
+            {
+                return AZ::Failure(AZStd::string::format(
+                    "Instantiate Prefab operation aborted - Cyclical dependency detected\n(%s depends on %s).",
+                    relativePath.Native().c_str(), instanceToParentUnder->get().GetTemplateSourcePath().Native().c_str()));
+            }
+
             {
                 // Initialize Undo Batch object
                 ScopedUndoBatch undoBatch("Instantiate Prefab");
@@ -319,17 +325,17 @@ namespace AzToolsFramework
             return AZ::Success();
         }
 
-        bool PrefabPublicHandler::IsPrefabInInstanceAncestorHierarchy(TemplateId prefabTemplateId, InstanceOptionalConstReference instance)
+        bool PrefabPublicHandler::IsCyclicalDependencyFound(
+            InstanceOptionalConstReference instance, const AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths)
         {
             InstanceOptionalConstReference currentInstance = instance;
 
             while (currentInstance.has_value())
             {
-                if (currentInstance->get().GetTemplateId() == prefabTemplateId)
+                if (templateSourcePaths.contains(currentInstance->get().GetTemplateSourcePath()))
                 {
                     return true;
                 }
-
                 currentInstance = currentInstance->get().GetParentInstance();
             }
 
@@ -999,5 +1005,5 @@ namespace AzToolsFramework
 
             return true;
         }
-    }
-}
+    } // namespace Prefab
+} // namespace AzToolsFramework

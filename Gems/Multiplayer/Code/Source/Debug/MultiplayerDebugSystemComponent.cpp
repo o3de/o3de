@@ -138,7 +138,7 @@ namespace Multiplayer
 
     void DrawComponentDetails(const MultiplayerStats& stats, NetComponentId netComponentId)
     {
-        IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
+        MultiplayerComponentRegistry* componentRegistry = GetMultiplayerComponentRegistry();
         {
             const MultiplayerStats::Metric metric = stats.CalculateComponentPropertyUpdateSentMetrics(netComponentId);
             float callsPerSecond = 0.0f;
@@ -150,7 +150,7 @@ namespace Multiplayer
                 for (AZStd::size_t index = 0; index < componentStats.m_propertyUpdatesSent.size(); ++index)
                 {
                     const PropertyIndex propertyIndex = aznumeric_cast<PropertyIndex>(index);
-                    const char* propertyName = multiplayer->GetComponentPropertyName(netComponentId, propertyIndex);
+                    const char* propertyName = componentRegistry->GetComponentPropertyName(netComponentId, propertyIndex);
                     const MultiplayerStats::Metric& subMetric = componentStats.m_propertyUpdatesSent[index];
                     callsPerSecond = 0.0f;
                     bytesPerSecond = 0.0f;
@@ -172,7 +172,7 @@ namespace Multiplayer
                 for (AZStd::size_t index = 0; index < componentStats.m_propertyUpdatesRecv.size(); ++index)
                 {
                     const PropertyIndex propertyIndex = aznumeric_cast<PropertyIndex>(index);
-                    const char* propertyName = multiplayer->GetComponentPropertyName(netComponentId, propertyIndex);
+                    const char* propertyName = componentRegistry->GetComponentPropertyName(netComponentId, propertyIndex);
                     const MultiplayerStats::Metric& subMetric = componentStats.m_propertyUpdatesRecv[index];
                     callsPerSecond = 0.0f;
                     bytesPerSecond = 0.0f;
@@ -194,7 +194,7 @@ namespace Multiplayer
                 for (AZStd::size_t index = 0; index < componentStats.m_rpcsSent.size(); ++index)
                 {
                     const RpcIndex rpcIndex = aznumeric_cast<RpcIndex>(index);
-                    const char* rpcName = multiplayer->GetComponentRpcName(netComponentId, rpcIndex);
+                    const char* rpcName = componentRegistry->GetComponentRpcName(netComponentId, rpcIndex);
                     const MultiplayerStats::Metric& subMetric = componentStats.m_rpcsSent[index];
                     callsPerSecond = 0.0f;
                     bytesPerSecond = 0.0f;
@@ -216,7 +216,7 @@ namespace Multiplayer
                 for (AZStd::size_t index = 0; index < componentStats.m_rpcsRecv.size(); ++index)
                 {
                     const RpcIndex rpcIndex = aznumeric_cast<RpcIndex>(index);
-                    const char* rpcName = multiplayer->GetComponentRpcName(netComponentId, rpcIndex);
+                    const char* rpcName = componentRegistry->GetComponentRpcName(netComponentId, rpcIndex);
                     const MultiplayerStats::Metric& subMetric = componentStats.m_rpcsRecv[index];
                     callsPerSecond = 0.0f;
                     bytesPerSecond = 0.0f;
@@ -238,6 +238,7 @@ namespace Multiplayer
             if (ImGui::Begin("Multiplayer Stats", &m_displayMultiplayerStats, ImGuiWindowFlags_None))
             {
                 IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
+                MultiplayerComponentRegistry* componentRegistry = GetMultiplayerComponentRegistry();
                 const Multiplayer::MultiplayerStats& stats = multiplayer->GetStats();
                 ImGui::Text("Multiplayer operating in %s mode", GetEnumString(multiplayer->GetAgentType()));
                 ImGui::Text("Total networked entities: %llu", aznumeric_cast<AZ::u64>(stats.m_entityCount));
@@ -267,8 +268,8 @@ namespace Multiplayer
                         {
                             const NetComponentId netComponentId = aznumeric_cast<NetComponentId>(index);
                             using StringLabel = AZStd::fixed_string<128>;
-                            const StringLabel gemName = multiplayer->GetComponentGemName(netComponentId);
-                            const StringLabel componentName = multiplayer->GetComponentName(netComponentId);
+                            const StringLabel gemName = componentRegistry->GetComponentGemName(netComponentId);
+                            const StringLabel componentName = componentRegistry->GetComponentName(netComponentId);
                             const StringLabel label = gemName + "::" + componentName;
                             if (DrawComponentRow(label.c_str(), stats, netComponentId))
                             {
