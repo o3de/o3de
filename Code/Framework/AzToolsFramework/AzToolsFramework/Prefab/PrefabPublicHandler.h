@@ -12,8 +12,8 @@
 
 #pragma once
 
-#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
@@ -107,13 +107,15 @@ namespace AzToolsFramework
                 const AZStd::vector<AZ::EntityId>& entityIds, EntityList& inputEntityList, EntityList& topLevelEntities,
                 AZ::EntityId& commonRootEntityId, InstanceOptionalReference& commonRootEntityOwningInstance);
 
-            /* Detects whether an instance of prefabTemplateId is present in the hierarchy of ancestors of instance.
+            /* Checks whether the template source path of any of the ancestors in the instance hierarchy matches with one of the
+             * paths provided in a set.
              *
-             * \param prefabTemplateId The template id to test for
-             * \param instance The instance whose ancestor hierarchy prefabTemplateId will be tested against.
-             * \return true if an instance of the template of id prefabTemplateId could be found in the ancestor hierarchy of instance, false otherwise.
+             * \param instance The instance whose ancestor hierarchy the provided set of template source paths will be tested against.
+             * \param templateSourcePaths The template source paths provided to be checked against the instance ancestor hierarchy.
+             * \return true if any of the template source paths could be found in the ancestor hierarchy of instance, false otherwise.
              */
-            bool IsPrefabInInstanceAncestorHierarchy(TemplateId prefabTemplateId, InstanceOptionalConstReference instance);
+            bool IsCyclicalDependencyFound(
+                InstanceOptionalConstReference instance, const AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths);
 
             static Instance* GetParentInstance(Instance* instance);
             static Instance* GetAncestorOfInstanceThatIsChildOfRoot(const Instance* ancestor, Instance* descendant);
@@ -129,5 +131,5 @@ namespace AzToolsFramework
 
             uint64_t m_newEntityCounter = 1;
         };
-    }
-}
+    } // namespace Prefab
+} // namespace AzToolsFramework

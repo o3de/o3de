@@ -53,7 +53,6 @@
 #include "XConsole.h"
 #include "LocalizedStringManager.h"
 #include "XML/XmlUtils.h"
-#include "AutoDetectSpec.h"
 
 #if defined(WIN32)
 __pragma(comment(lib, "wininet.lib"))
