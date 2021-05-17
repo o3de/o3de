@@ -26,8 +26,6 @@ namespace AzToolsFramework
         class EditorNonUniformScaleComponent
             : public AzToolsFramework::Components::EditorComponentBase
             , public AZ::NonUniformScaleRequestBus::Handler
-            , public AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
-            , public AzToolsFramework::EditorComponentSelectionNotificationsBus::Handler
         {
         public:
             AZ_EDITOR_COMPONENT(EditorNonUniformScaleComponent, "{2933FB4F-B3DA-4CD1-8106-F37300730777}", EditorComponentBase);

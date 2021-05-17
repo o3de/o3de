@@ -81,7 +81,7 @@ namespace AzToolsFramework
 
             // ComponentMode
             m_componentModeDelegate.ConnectWithSingleComponentMode<EditorNonUniformScaleComponent, NonUniformScaleComponentMode>(
-                AZ::EntityComponentIdPair(GetEntityId(), GetId()), this);
+                AZ::EntityComponentIdPair(GetEntityId(), GetId()), nullptr);
         }
 
         void EditorNonUniformScaleComponent::Deactivate()
