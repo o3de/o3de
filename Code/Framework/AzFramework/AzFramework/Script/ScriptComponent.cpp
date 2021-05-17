@@ -979,7 +979,7 @@ namespace AzFramework
                 };
 
                 serializeContext->Class<ScriptComponent, AZ::Component>()
-                    ->Version(3, converter)
+                    ->Version(4, converter)
                     ->Field("ContextID", &ScriptComponent::m_contextId)
                     ->Field("Properties", &ScriptComponent::m_properties)
                     ->Field("Script", &ScriptComponent::m_script)

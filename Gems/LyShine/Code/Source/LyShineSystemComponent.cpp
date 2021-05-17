@@ -56,26 +56,6 @@
 #include "UiDynamicScrollBoxComponent.h"
 #include "UiNavigationSettings.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-struct CSystemEventListener_UI
-    : public ISystemEventListener
-{
-public:
-    virtual void OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
-    {
-        switch (event)
-        {
-        case ESYSTEM_EVENT_LEVEL_POST_UNLOAD:
-        {
-            STLALLOCATOR_CLEANUP;
-            break;
-        }
-        }
-    }
-};
-static CSystemEventListener_UI g_system_event_listener_ui;
-
-
 namespace LyShine
 {
     const AZStd::list<AZ::ComponentDescriptor*>* LyShineSystemComponent::m_componentDescriptors = nullptr;
@@ -228,9 +208,6 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineSystemComponent::InitializeSystem()
     {
-        // Not sure if this is still required
-        gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(&g_system_event_listener_ui);
-
         m_pLyShine = new CLyShine(gEnv->pSystem);
         gEnv->pLyShine = m_pLyShine;
         BroadcastCursorImagePathname();

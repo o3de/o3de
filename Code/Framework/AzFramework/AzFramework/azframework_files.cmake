@@ -296,6 +296,7 @@ set(FILES
     Spawnable/SpawnableSystemComponent.cpp
     Terrain/TerrainDataRequestBus.h
     Terrain/TerrainDataRequestBus.cpp
+    Thermal/ThermalInfo.h
     Platform/PlatformDefaults.h
     Windowing/WindowBus.h
     Windowing/NativeWindow.cpp

@@ -10,7 +10,6 @@
 *
 */
 
-#include <AzCore/IO/SystemFile.h> // for AZ_MAX_PATH_LEN
 #include <AzCore/std/string/osstring.h>
 #include <AzCore/Utils/Utils.h>
 #include <dlfcn.h>
@@ -19,15 +18,9 @@ namespace AZ
 {
     namespace Platform
     {
-        void GetModulePath(AZ::OSString& path)
+        AZ::IO::FixedMaxPath GetModulePath()
         {
-            char exePath[AZ_MAX_PATH_LEN];
-            if (AZ::Utils::GetExecutableDirectory(exePath, AZ_ARRAY_SIZE(exePath)) ==
-                AZ::Utils::ExecutablePathResult::Success)
-            {
-                path = exePath;
-                path.push_back('/');
-            }
+            return AZ::Utils::GetExecutableDirectory();
         }
 
         void* OpenModule(const AZ::OSString& fileName, bool& alreadyOpen)
@@ -40,10 +33,9 @@ namespace AZ
             }
             return handle;
         }
-    
-        void ConstructModuleFullFileName(const AZ::OSString& path, const AZ::OSString& fileName, AZ::OSString& fullPath)
+
+        void ConstructModuleFullFileName(AZ::IO::FixedMaxPath&)
         {
-            fullPath = path + fileName;
         }
     }
 }
