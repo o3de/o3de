@@ -24,6 +24,12 @@
 #endif
 
 #include "smartptr.h"
+#include "Cry_Vector2.h"
+#include "Cry_Vector3.h"
+#include "Cry_Matrix33.h"
+#include "Cry_Color.h"
+#include "smartptr.h"
+#include "StringUtils.h"
 #include <IXml.h> // <> required for Interfuscator
 #include "smartptr.h"
 #include "VertexFormats.h"

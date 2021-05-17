@@ -16,6 +16,12 @@
 #include "Cry_Geo.h"
 #include "Cry_Camera.h"
 #include "ITexture.h"
+#include "Cry_Vector2.h"
+#include "Cry_Vector3.h"
+#include "Cry_Matrix33.h"
+#include "Cry_Color.h"
+#include "smartptr.h"
+#include "StringUtils.h"
 #include <IXml.h> // <> required for Interfuscator
 #include "smartptr.h"
 #include <AzCore/Casting/numeric_cast.h>
