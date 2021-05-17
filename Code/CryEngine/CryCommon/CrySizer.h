@@ -33,7 +33,6 @@
 #include <Cry_Vector3.h>
 #include <Cry_Quat.h>
 #include <Cry_Color.h>
-#include <CryArray2d.h>
 #include <smartptr.h>
 
 // forward declarations for overloads
