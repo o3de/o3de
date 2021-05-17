@@ -229,6 +229,11 @@ WelcomeScreenDialog QLabel#bodyLabel
     line-height: 20px;
 }
 
+WelcomeScreenDialog QLabel#currentProjectLabel
+{
+    margin-top: 10px;
+}
+
 WelcomeScreenDialog QLabel[fontStyle="sectionTitle"], QLabel#titleLabel[fontStyle="sectionTitle"], QLabel#documentationLink
 {
     font-size: 16px;
@@ -255,7 +260,12 @@ WelcomeScreenDialog QFrame#viewContainer[articleStyle="pinned"]
 
 WelcomeScreenDialog QWidget#articleViewContainerRoot
 {
-    background: #111111;
+    background: #444444;
+}
+
+WelcomeScreenDialog QWidget#levelViewFTUEContainer
+{
+    background: #282828;
 }
 
 WelcomeScreenDialog QScrollArea#previewArea

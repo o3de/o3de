@@ -90,13 +90,13 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     ui->recentLevelList->setMouseTracking(true);
     ui->recentLevelList->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    auto currentProjectButtonMenu = new QMenu();
+//    auto currentProjectButtonMenu = new QMenu();
 
-    ui->currentProjectButton->setMenu(currentProjectButtonMenu);
+//    ui->currentProjectButton->setMenu(currentProjectButtonMenu);
     auto projectName = AZ::Utils::GetProjectName();
-    ui->currentProjectButton->setText(projectName.c_str());
-    ui->currentProjectButton->adjustSize();
-    ui->currentProjectButton->setMinimumWidth(ui->currentProjectButton->width() + 40);
+    ui->currentProjectName->setText(projectName.c_str());
+//    ui->currentProjectButton->adjustSize();
+//    ui->currentProjectButton->setMinimumWidth(ui->currentProjectButton->width() + 40);
 
 //    ui->documentationLink->setCursor(Qt::PointingHandCursor);
 //    ui->documentationLink->installEventFilter(this);
@@ -115,7 +115,7 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
 //    connect(ui->documentationButton, &QPushButton::clicked, this, &WelcomeScreenDialog::OnDocumentationBtnClicked);
 //    connect(ui->showOnStartup, &QCheckBox::clicked, this, &WelcomeScreenDialog::OnShowOnStartupBtnClicked);
 //    connect(ui->autoLoadLevel, &QCheckBox::clicked, this, &WelcomeScreenDialog::OnAutoLoadLevelBtnClicked);
-
+#if 0
     m_manifest = new News::ResourceManifest(
             std::bind(&WelcomeScreenDialog::SyncSuccess, this),
             std::bind(&WelcomeScreenDialog::SyncFail, this, std::placeholders::_1),
@@ -127,7 +127,7 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     ui->articleViewContainerRoot->layout()->addWidget(m_articleViewContainer);
 
     m_manifest->Sync();
-
+#endif
 #ifndef ENABLE_SLICE_EDITOR
     ui->newSliceButton->hide();
     ui->openSliceButton->hide();
