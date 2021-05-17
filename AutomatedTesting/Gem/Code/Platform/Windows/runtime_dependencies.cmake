@@ -10,7 +10,4 @@
 #
 
 set(GEM_DEPENDENCIES
-    Gem::AWSCore
-    Gem::AWSClientAuth
-    Gem::AWSMetrics
 )
