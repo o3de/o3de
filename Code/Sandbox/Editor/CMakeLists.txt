@@ -123,6 +123,7 @@ ly_add_target(
             Gem::Atom_RPI.Public
             Gem::Atom_Feature_Common.Static
             Gem::AtomToolsFramework.Static
+            Gem::AtomViewportDisplayInfo
             ${additional_dependencies}
         PUBLIC
             3rdParty::AWSNativeSDK::Core

@@ -340,46 +340,6 @@ namespace AZ::SettingsRegistryMergeUtils
         return sectionName;
     }
 
-    // Encodes a key, value delimited line such that the entire "key" can be stored as a single
-    // JSON Pointer key by escaping the tilde(~) and forward slash(/)
-    template<size_t BufferSize>
-    static AZStd::fixed_string<BufferSize> EncodeLineForJsonPointer(AZStd::string_view token,
-        const AZ::SettingsRegistryInterface::CommandLineArgumentSettings::DelimiterFunc& delimiterFunc)
-    {
-        if (!delimiterFunc)
-        {
-            // Since the delimiter function is not valid, return the token unchanged
-            return AZStd::fixed_string<BufferSize>{ token };
-        }
-        // Iterate over the line and escape the '~' and '/' values
-        AZStd::fixed_string<BufferSize> encodedToken;
-        size_t chIndex = 0;
-        for (; chIndex < token.size(); ++chIndex)
-        {
-            const char ch = token[chIndex];
-            if (delimiterFunc(ch))
-            {
-                // If the delimiter is found, this indicates that the end of the key has been found
-                break;
-            }
-            switch (ch)
-            {
-            case '~':
-                encodedToken += "~0";
-                break;
-            case '/':
-                encodedToken += "~1";
-                break;
-            default:
-                encodedToken += ch;
-            }
-        }
-
-        // Copy over the rest of the post delimited line to the encoded token
-        encodedToken.append(token.data() + chIndex, token.data() + token.size());
-        return encodedToken;
-    }
-
     void QuerySpecializationsFromRegistry(SettingsRegistryInterface& registry, SettingsRegistryInterface::Specializations& specializations)
     {
         // Append any specializations stored in the registry
@@ -499,14 +459,7 @@ namespace AZ::SettingsRegistryMergeUtils
                     }
                 }
 
-                // Check if the "key" portion of the line has '~' or '/' as the SettingsRegistry uses JSON Pointer
-                // to set the "value" portion. Those characters need to be escaped with ~0 and ~1 respectively
-                // to allow them to be embedded in a single json key
-                // Iterate over the line and escape the '~' and '/' values
-                AZStd::fixed_string<ConfigBufferMaxSize> escapedLine = EncodeLineForJsonPointer<ConfigBufferMaxSize>(line,
-                    configParserSettings.m_commandLineSettings.m_delimiterFunc);
-
-                registry.MergeCommandLineArgument(escapedLine, currentJsonPointerPath, configParserSettings.m_commandLineSettings);
+                registry.MergeCommandLineArgument(line, currentJsonPointerPath, configParserSettings.m_commandLineSettings);
 
                 // Skip past the newline character if found
                 frontIter = lineEndIter + (foundNewLine ? 1 : 0);

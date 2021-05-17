@@ -138,4 +138,4 @@ namespace Multiplayer
     };
 }
 
-#include <Multiplayer/NetworkEntityHandle.inl>
+#include <Multiplayer/NetworkEntity/NetworkEntityHandle.inl>

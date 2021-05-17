@@ -14,7 +14,8 @@
 
 #include <AzCore/Name/Name.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <Multiplayer/MultiplayerComponent.h>
+#include <Multiplayer/Components/MultiplayerComponent.h>
+#include <Multiplayer/NetworkInput/IMultiplayerComponentInput.h>
 
 namespace Multiplayer
 {
@@ -22,19 +23,26 @@ namespace Multiplayer
     {
     public:
         using PropertyNameLookupFunction = AZStd::function<const char*(PropertyIndex index)>;
-        using RpcNameLookupFunction = AZStd::function<const char* (RpcIndex index)>;
+        using RpcNameLookupFunction = AZStd::function<const char*(RpcIndex index)>;
+        using AllocComponentInputFunction = AZStd::function<AZStd::unique_ptr<IMultiplayerComponentInput>()>;
         struct ComponentData
         {
             AZ::Name m_gemName;
             AZ::Name m_componentName;
             PropertyNameLookupFunction m_componentPropertyNameLookupFunction;
             RpcNameLookupFunction m_componentRpcNameLookupFunction;
+            AllocComponentInputFunction m_allocComponentInputFunction;
         };
 
         //! Registers a multiplayer component with the multiplayer system.
         //! @param  componentData the data associated with the component being registered
         //! @return the NetComponentId assigned to this particular component
         NetComponentId RegisterMultiplayerComponent(const ComponentData& componentData);
+
+        //! Allocates a new component input for the provided netComponentId.
+        //! @param  netComponentId the NetComponentId to allocate a component input for
+        //! @return pointer to the allocated component input, caller assumes ownership
+        AZStd::unique_ptr<IMultiplayerComponentInput> AllocateComponentInput(NetComponentId netComponentId);
 
         //! Returns the gem name associated with the provided NetComponentId.
         //! @param  netComponentId the NetComponentId to return the gem name of

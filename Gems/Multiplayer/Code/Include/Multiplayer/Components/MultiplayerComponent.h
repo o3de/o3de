@@ -15,7 +15,8 @@
 #include <AzCore/Component/Component.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/DataStructures/FixedSizeBitsetView.h>
-#include <Multiplayer/NetworkEntityHandle.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityHandle.h>
+#include <Multiplayer/MultiplayerStats.h>
 #include <Multiplayer/MultiplayerTypes.h>
 #include <Multiplayer/IMultiplayer.h>
 
@@ -62,11 +63,15 @@ namespace Multiplayer
         //! @}
 
         NetEntityId GetNetEntityId() const;
-        NetEntityRole GetNetEntityRole() const;
+        bool IsAuthority() const;
+        bool IsAutonomous() const;
+        bool IsServer() const;
+        bool IsClient() const;
         ConstNetworkEntityHandle GetEntityHandle() const;
         NetworkEntityHandle GetEntityHandle();
         void MarkDirty();
 
+        virtual void SetOwningConnectionId(AzNetworking::ConnectionId connectionId) = 0;
         virtual NetComponentId GetNetComponentId() const = 0;
 
         virtual bool HandleRpcMessage(AzNetworking::IConnection* invokingConnection, NetEntityRole netEntityRole, NetworkEntityRpcMessage& rpcMessage) = 0;

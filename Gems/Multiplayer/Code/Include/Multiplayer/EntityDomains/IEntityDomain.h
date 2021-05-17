@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Multiplayer/INetworkEntityManager.h>
+#include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
 
 namespace Multiplayer
 {
