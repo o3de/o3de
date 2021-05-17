@@ -93,7 +93,7 @@ namespace Multiplayer
                 assetInfo.m_relativePath = asset.GetHint();
                 assetInfo.m_sizeBytes = assetSize;
 
-				// Register Asset to AssetManager
+                // Register Asset to AssetManager
                 AZ::Data::AssetManager::Instance().AssignAssetData(asset);
                 AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::RegisterAsset, asset.GetId(), assetInfo);
 
@@ -108,26 +108,19 @@ namespace Multiplayer
             AZ::CVarFixedString loadLevelString = "LoadLevel Root.spawnable";
             AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
 
+            // Setup the normal multiplayer connection
+            AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
+            INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPNetworkInterfaceName));
+
+            uint16_t serverPort = DefaultServerPort;
+            if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
+            {
+                console->GetCvarValue("sv_port", serverPort);
+            }
+            networkInterface->Listen(serverPort);
+
             AZLOG_INFO("Editor Server completed asset receive, responding to Editor...");
-            if (connection->SendReliablePacket(MultiplayerEditorPackets::EditorServerReady()))
-            {
-                // Setup the normal multiplayer connection
-                AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
-                INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPNetworkInterfaceName));
-
-                uint16_t serverPort = DefaultServerPort;
-                if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
-                {
-                    console->GetCvarValue("sv_port", serverPort);
-                }
-                networkInterface->Listen(serverPort);
-
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return connection->SendReliablePacket(MultiplayerEditorPackets::EditorServerReady());
         }
 
         return true;
