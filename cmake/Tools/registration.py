@@ -2216,6 +2216,19 @@ def get_gem_data(gem_name: str = None,
 
     return None
 
+def get_gems_metadata():
+    gem_list = get_gems() + get_engine_gems()
+    gem_data_dict = {}
+    for gem in gem_list:
+        json_path = os.path.join(gem, 'gem.json')
+        if (os.path.exists(json_path)):
+            with open(json_path, 'r') as gem_json:
+                parsed_meta_data = json.loads(gem_json.read())
+                gem_data_dict[str(parsed_meta_data['gem_name'])] = parsed_meta_data
+        else:
+            logger.error(f'Gem json {gem_json} is not present.')
+    json_result = json.dumps(gem_data_dict, indent = 4)
+    return json_result
 
 def get_template_data(template_name: str = None,
                       template_path: str or pathlib.Path = None, ) -> dict or None:
@@ -2410,6 +2423,12 @@ def print_downloadables(verbose: int) -> None:
         print_templates_data(downloadable_data['templates'])
         print_restricted_data(downloadable_data['templates'])
 
+def print_gems_metadata(verbose: int) -> None:
+    gems_data = get_gems_metadata()
+    print(gems_data)
+    if verbose > 0:
+        gem_list = get_gems() + get_engine_gems()
+        print(gem_list)
 
 def download_engine(engine_name: str,
                     dest_path: str) -> int:
@@ -3833,7 +3852,6 @@ def _run_register_show(args: argparse) -> int:
     if args.this_engine:
         print_this_engine(args.verbose)
         return 0
-
     elif args.engines:
         print_engines(args.verbose)
         return 0
@@ -3896,6 +3914,9 @@ def _run_register_show(args: argparse) -> int:
         return 0
     elif args.downloadable_templates:
         print_downloadable_templates(args.verbose)
+        return 0
+    elif args.gems_data:
+        print_gems_metadata(args.verbose)
         return 0
     else:
         register_show(args.verbose)
@@ -4168,6 +4189,9 @@ def add_args(parser, subparsers) -> None:
     group.add_argument('-dt', '--downloadable-templates', action='store_true', required=False,
                        default=False,
                        help='Combine all repos templates into a single list of resources.')
+    group.add_argument('-gd', '--gems-data', action='store_true', required=False,
+                       default=False,
+                       help='Returns a json formatted string of meta data for all local and engine gems.')
 
     register_show_subparser.add_argument('-v', '--verbose', action='count', required=False,
                                          default=0,
