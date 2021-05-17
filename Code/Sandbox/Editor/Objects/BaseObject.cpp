@@ -1268,12 +1268,6 @@ int CBaseObject::MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint&
     if (event == eMouseWheel)
     {
         double angle = 1;
-
-        if (view->GetViewManager()->GetGrid()->IsAngleSnapEnabled())
-        {
-            angle = view->GetViewManager()->GetGrid()->GetAngleSnap();
-        }
-
         Quat rot = GetRotation();
         rot.SetRotationXYZ(Ang3(0, 0, rot.GetRotZ() + DEG2RAD(flags > 0 ? angle * (-1) : angle)));
         SetRotation(rot);

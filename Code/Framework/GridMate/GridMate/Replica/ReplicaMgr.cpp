@@ -386,7 +386,7 @@ namespace GridMate
             replica->SetMigratable(true);
 
             // register global session info
-            // this one is kind of special so don't go through AddMaster()
+            // this one is kind of special so don't go through AddPrimary()
             ReplicaContext rc(this, GetTime(), &m_self);
             replica->m_createTime = rc.m_realTime;
             replica->SetRepId(RepId_SessionInfo);
@@ -405,7 +405,7 @@ namespace GridMate
         else
         {
             // take over ownership of the session info
-            AZ_Assert(!m_sessionInfo->IsMaster(), "We just became host but we were already the owner of sessionInfo!");
+            AZ_Assert(!m_sessionInfo->IsPrimary(), "We just became host but we were already the owner of sessionInfo!");
             AZ_Assert(m_sessionInfo->m_pHostPeer->IsOrphan(), "We can't be promoted if we are still connected to the host!");
             m_sessionInfo->m_pHostPeer->Remove(m_sessionInfo->GetReplica());
             m_self.Add(m_sessionInfo->GetReplica());
@@ -903,7 +903,7 @@ namespace GridMate
         ReplicaContext rc(this, GetTime());
         for (auto& replicaObject : m_self.m_objectsTimeSort)
         {
-            if (replicaObject.m_replica->IsMaster())
+            if (replicaObject.m_replica->IsPrimary())
             {
                 replicaObject.m_replica->UpdateReplica(rc);
             }
@@ -1357,11 +1357,11 @@ namespace GridMate
         m_flags &= ~Rm_Processing;
     }
     //-----------------------------------------------------------------------------
-    void ReplicaManager::RegisterReplica(const ReplicaPtr& pReplica, bool isMaster, ReplicaContext& rc)
+    void ReplicaManager::RegisterReplica(const ReplicaPtr& pReplica, bool isPrimary, ReplicaContext& rc)
     {
         AZ_Assert((pReplica->m_flags & ~Replica::Rep_Traits) == 0, "This replica is not clean, flags=0x%x, rpcs=%d!", pReplica->m_flags);
         AZ_Assert(pReplica->GetRepId() != InvalidReplicaId, "You should set the replica ID before you register it!");
-        pReplica->SetMaster(isMaster);
+        pReplica->SetPrimary(isPrimary);
         pReplica->SetNew();
         auto it = m_replicas.insert(AZStd::make_pair(pReplica->GetRepId(), pReplica)); // register with lookup table
         (void)it;
@@ -1371,21 +1371,21 @@ namespace GridMate
         OnReplicaChanged(pReplica);
     }
     //-----------------------------------------------------------------------------
-    ReplicaId ReplicaManager::AddMaster(const ReplicaPtr& pMaster)
+    ReplicaId ReplicaManager::AddPrimary(const ReplicaPtr& pPrimary)
     {
         AZ_Assert(IsReady(), "ReplicaManager is not ready!");
-        AZ_Assert(pMaster, "Attempting to register NULL replica!");
+        AZ_Assert(pPrimary, "Attempting to register NULL replica!");
         ReplicaId newId = m_localIdBlocks.Alloc();
         ReplicaContext rc(this, GetTime(), &m_self);
-        pMaster->m_createTime = rc.m_realTime;
-        pMaster->SetRepId(newId);
-        m_self.Add(pMaster.get());
-        AZStd::static_pointer_cast<ReplicaStatus>(pMaster->m_replicaStatus)->m_ownerSeq.Set(1);
-        pMaster->InitReplica(this);
-        RegisterReplica(pMaster, true, rc);
+        pPrimary->m_createTime = rc.m_realTime;
+        pPrimary->SetRepId(newId);
+        m_self.Add(pPrimary.get());
+        AZStd::static_pointer_cast<ReplicaStatus>(pPrimary->m_replicaStatus)->m_ownerSeq.Set(1);
+        pPrimary->InitReplica(this);
+        RegisterReplica(pPrimary, true, rc);
 
-        //AZ_TracePrintf("GridMate", "Peer 0x%x: Added replica master 0x%x.\n",
-        //               GetLocalPeerId(), pMaster->GetRepId());
+        //AZ_TracePrintf("GridMate", "Peer 0x%x: Added replica primary 0x%x.\n",
+        //               GetLocalPeerId(), pPrimary->GetRepId());
 
         return newId;
     }
@@ -1458,9 +1458,9 @@ namespace GridMate
                         continue;
                     }
 
-                    ReplicaPeer* source = replica->IsMaster() ? &m_self : replica->m_upstreamHop;
+                    ReplicaPeer* source = replica->IsPrimary() ? &m_self : replica->m_upstreamHop;
 
-                    if (replica->IsMaster()
+                    if (replica->IsPrimary()
                         || (IsSyncHost() && source->GetId() != target->GetId() && !(source->GetMode() == Mode_Peer && target->GetMode() == Mode_Peer)))
                     {
                         ReplicaTarget::AddReplicaTarget(target, replica.get());
@@ -1471,7 +1471,7 @@ namespace GridMate
         else
         {
             // Replica might've changed owner -> we need to update its targets accordingly
-            ReplicaPeer* source = replica->IsMaster() ? &m_self : replica->m_upstreamHop;
+            ReplicaPeer* source = replica->IsPrimary() ? &m_self : replica->m_upstreamHop;
 
             for (auto it = replica->m_targets.begin(); it != replica->m_targets.end(); )
             {
@@ -1652,14 +1652,14 @@ namespace GridMate
         }
     }
     //-----------------------------------------------------------------------------
-    void ReplicaManager::ChangeReplicaOwnership(ReplicaPtr replica, const ReplicaContext& rc, bool isMaster)
+    void ReplicaManager::ChangeReplicaOwnership(ReplicaPtr replica, const ReplicaContext& rc, bool isPrimary)
     {
-        bool wasMaster = replica->IsMaster();
-        if (wasMaster != isMaster) // wasMaster == isMaster can happen when host's replica is moved to client, and client confirms with Cmd_NewOwner
+        bool wasPrimary = replica->IsPrimary();
+        if (wasPrimary != isPrimary) // wasPrimary == isPrimary can happen when host's replica is moved to client, and client confirms with Cmd_NewOwner
         {
-            replica->SetMaster(isMaster);
+            replica->SetPrimary(isPrimary);
             replica->OnChangeOwnership(rc);
-            EBUS_EVENT(Debug::ReplicaDrillerBus, OnReplicaChangeOwnership, replica.get(), wasMaster);
+            EBUS_EVENT(Debug::ReplicaDrillerBus, OnReplicaChangeOwnership, replica.get(), wasPrimary);
         }
     }
     //-----------------------------------------------------------------------------
