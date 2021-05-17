@@ -120,43 +120,45 @@ namespace SandboxEditor
 
     void ModernViewportCameraControllerInstance::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
     {
+        if (event.m_priority != AzFramework::ViewportControllerPriority::Normal)
+        {
+            return;
+        }
+
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
             m_updatingTransform = true;
 
-            if (ShouldHandle(event.m_priority, m_cameraSystem.m_cameras.Exclusive()))
+            if (m_cameraMode == CameraMode::Control)
             {
-                if (m_cameraMode == CameraMode::Control)
+                m_targetCamera = m_cameraSystem.StepCamera(m_targetCamera, event.m_deltaTime.count());
+                m_camera = AzFramework::SmoothCamera(m_camera, m_targetCamera, event.m_deltaTime.count());
+
+                viewportContext->SetCameraTransform(m_camera.Transform());
+            }
+            else if (m_cameraMode == CameraMode::Animation)
+            {
+                const auto smootherStepFn = [](const float t) { return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f); };
+                const float transitionT = smootherStepFn(m_animationT);
+
+                const AZ::Transform current = AZ::Transform::CreateFromQuaternionAndTranslation(
+                    m_transformStart.GetRotation().Slerp(m_transformEnd.GetRotation(), transitionT),
+                    m_transformStart.GetTranslation().Lerp(m_transformEnd.GetTranslation(), transitionT));
+
+                const AZ::Vector3 eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromTransform(current));
+                m_camera.m_pitch = eulerAngles.GetX();
+                m_camera.m_yaw = eulerAngles.GetZ();
+                m_camera.m_lookAt = current.GetTranslation();
+                m_targetCamera = m_camera;
+
+                if (m_animationT >= 1.0f)
                 {
-                    m_targetCamera = m_cameraSystem.StepCamera(m_targetCamera, event.m_deltaTime.count());
-                    m_camera = AzFramework::SmoothCamera(m_camera, m_targetCamera, event.m_deltaTime.count());
-
-                    viewportContext->SetCameraTransform(m_camera.Transform());
+                    m_cameraMode = CameraMode::Control;
                 }
-                else if (m_cameraMode == CameraMode::Animation)
-                {
-                    const auto smootherStepFn = [](const float t) { return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f); };
-                    const float transitionT = smootherStepFn(m_animationT);
 
-                    const AZ::Transform current = AZ::Transform::CreateFromQuaternionAndTranslation(
-                        m_transformStart.GetRotation().Slerp(m_transformEnd.GetRotation(), transitionT),
-                        m_transformStart.GetTranslation().Lerp(m_transformEnd.GetTranslation(), transitionT));
+                m_animationT = AZ::GetClamp(m_animationT + event.m_deltaTime.count(), 0.0f, 1.0f);
 
-                    const AZ::Vector3 eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromTransform(current));
-                    m_camera.m_pitch = eulerAngles.GetX();
-                    m_camera.m_yaw = eulerAngles.GetZ();
-                    m_camera.m_lookAt = current.GetTranslation();
-                    m_targetCamera = m_camera;
-
-                    if (m_animationT >= 1.0f)
-                    {
-                        m_cameraMode = CameraMode::Control;
-                    }
-
-                    m_animationT = AZ::GetClamp(m_animationT + event.m_deltaTime.count(), 0.0f, 1.0f);
-
-                    viewportContext->SetCameraTransform(current);
-                }
+                viewportContext->SetCameraTransform(current);
             }
 
             m_updatingTransform = false;
