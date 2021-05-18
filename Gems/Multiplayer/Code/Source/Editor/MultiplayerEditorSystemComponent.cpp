@@ -169,7 +169,7 @@ namespace Multiplayer
             AZ::IO::ByteContainerStream byteStream(&buffer);
 
             // Serialize Asset information and AssetData into a potentially large buffer
-            for (auto& asset : assetData)
+            for (const auto& asset : assetData)
             {
                 AZ::Data::AssetId assetId = asset.GetId();
                 AZStd::string assetHint = asset.GetHint();
