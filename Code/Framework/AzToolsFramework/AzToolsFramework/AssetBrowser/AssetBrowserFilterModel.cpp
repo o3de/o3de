@@ -174,7 +174,7 @@ namespace AzToolsFramework
                 if (compStringFilterIter != subFilters.end())
                 {
                     auto compStringFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(*compStringFilterIter);
-                    if (compStringFilter->GetSubFilters().size() > 0 && compStringFilter->GetSubFilters()[0])
+                    if (!compStringFilter->GetSubFilters().isEmpty() && compStringFilter->GetSubFilters()[0])
                     {
                         m_stringFilter = qobject_cast<QSharedPointer<const StringFilter>>(compStringFilter->GetSubFilters()[0]);
                     }

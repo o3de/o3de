@@ -1,3 +1,14 @@
+/*
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
 #include <AssetBrowser/AssetBrowserTableModel.h>
 #include <AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
@@ -32,24 +43,27 @@ namespace AzToolsFramework
         {
             if (role == Qt::DisplayRole && orientation == Qt::Horizontal)
             {
-                switch (section)
+                auto columnRole = aznumeric_cast<AssetBrowserEntry::Column>(role);
+                switch (columnRole)
                 {
-                case static_cast<int>(AssetBrowserEntry::Column::Name):
+                case AssetBrowserEntry::Column::Name:
                     return QString("Name");
-                case static_cast<int>(AssetBrowserEntry::Column::Path):
+                case AssetBrowserEntry::Column::Path:
                     return QString("Path");
                 default:
                     return QString::number(section);
                 }
             }
-            return QSortFilterProxyModel::headerData(section, orientation, role); // QVariant();
+            return QSortFilterProxyModel::headerData(section, orientation, role);
         }
 
         QVariant AssetBrowserTableModel::data(const QModelIndex& index, int role) const
         {
             auto sourceIndex = mapToSource(index);
             if (!sourceIndex.isValid())
+            {
                 return QVariant();
+            }
 
             AssetBrowserEntry* entry = GetAssetEntry(sourceIndex);
             if (entry == nullptr)
@@ -66,21 +80,9 @@ namespace AzToolsFramework
             return parent.isValid() ? QModelIndex() : createIndex(row, column, m_indexMap[row].internalPointer());
         }
 
-        QModelIndex AssetBrowserTableModel::parent(const QModelIndex& child) const
+        QModelIndex AssetBrowserTableModel::parent([[maybe_unused]] const QModelIndex& child) const
         {
-            AZ_UNUSED(child);
             return QModelIndex();
-        }
-        bool AssetBrowserTableModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
-        {
-            AZ_UNUSED(source_row);
-            AZ_UNUSED(source_parent);
-            // no filter present, every entry is not visible
-            if (!m_filterModel->GetFilter())
-            {
-                return true;
-            }
-            return true;
         }
 
         int AssetBrowserTableModel::rowCount(const QModelIndex& parent) const
@@ -94,14 +96,14 @@ namespace AzToolsFramework
             for (int i = 0; i < rows; ++i)
             {
                 QModelIndex index = model->index(i, 0, parent);
-                if (model->hasChildren(index) == false)
+                if (!model->hasChildren(index))
                 {
                     beginInsertRows(parent, row, row);
                     m_indexMap[row] = index;
                     endInsertRows();
 
                     Q_EMIT dataChanged(index, index);
-                    row = row + 1;
+                    ++row;
                 }
 
                 if (model->hasChildren(index))
@@ -124,9 +126,9 @@ namespace AzToolsFramework
             }
         }
         void AssetBrowserTableModel::UpdateTableModelMaps()
-{
+        {
             emit layoutAboutToBeChanged();
-            if (m_indexMap.size() > 0)
+            if (!m_indexMap.isEmpty())
             {
                 beginRemoveRows(m_indexMap.first(), m_indexMap.first().row(), m_indexMap.last().row());
                 m_indexMap.clear();

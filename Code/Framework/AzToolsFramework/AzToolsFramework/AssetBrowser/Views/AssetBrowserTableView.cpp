@@ -1,3 +1,15 @@
+/*
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
+
 #include <API/EditorAssetSystemAPI.h>
 
 #include <AzCore/std/containers/vector.h>
@@ -109,21 +121,16 @@ namespace AzToolsFramework
             }
             QTableView::rowsAboutToBeRemoved(parent, start, end);
         }
-        void AssetBrowserTableView::layoutChangedSlot(const QList<QPersistentModelIndex>& parents, QAbstractItemModel::LayoutChangeHint hint)
+        void AssetBrowserTableView::layoutChangedSlot([[maybe_unused]] const QList<QPersistentModelIndex>& parents,[[maybe_unused]]  QAbstractItemModel::LayoutChangeHint hint)
         {
-            AZ_UNUSED(parents);
-            AZ_UNUSED(hint);
-
             scrollToTop();
         }
-        void AssetBrowserTableView::SelectProduct(AZ::Data::AssetId assetID)
+        void AssetBrowserTableView::SelectProduct([[maybe_unused]] AZ::Data::AssetId assetID)
         {
-            AZ_UNUSED(assetID);
         }
 
-        void AssetBrowserTableView::SelectFileAtPath(const AZStd::string& assetPath)
+        void AssetBrowserTableView::SelectFileAtPath([[maybe_unused]] const AZStd::string& assetPath)
         {
-            AZ_UNUSED(assetPath);
         }
 
         void AssetBrowserTableView::ClearFilter()
@@ -142,11 +149,10 @@ namespace AzToolsFramework
         {
         }
 
-        void AssetBrowserTableView::OnContextMenu(const QPoint& point)
+        void AssetBrowserTableView::OnContextMenu([[maybe_unused]] const QPoint& point)
         {
-            AZ_UNUSED(point);
 
-            auto selectedAssets = GetSelectedAssets();
+            const auto& selectedAssets = GetSelectedAssets();
             if (selectedAssets.size() != 1)
             {
                 return;
