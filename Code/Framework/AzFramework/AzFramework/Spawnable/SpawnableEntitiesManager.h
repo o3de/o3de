@@ -49,8 +49,8 @@ namespace AzFramework
         // The following functions are thread safe
         //
 
-        void SpawnAllEntities(EntitySpawnTicket& ticket, EntitySpawnCallback completionCallback = {}) override;
-        void SpawnEntities(EntitySpawnTicket& ticket, AZStd::vector<size_t> entityIndices,
+        void SpawnAllEntities(EntitySpawnTicket& ticket, EntityPreInsertionCallback preInsertionCallback = {}, EntitySpawnCallback completionCallback = {}) override;
+        void SpawnEntities(EntitySpawnTicket& ticket, AZStd::vector<size_t> entityIndices, EntityPreInsertionCallback preInsertionCallback = {},
             EntitySpawnCallback completionCallback = {}) override;
         void DespawnAllEntities(EntitySpawnTicket& ticket, EntityDespawnCallback completionCallback = {}) override;
 
@@ -94,6 +94,7 @@ namespace AzFramework
         struct SpawnAllEntitiesCommand
         {
             EntitySpawnCallback m_completionCallback;
+            EntityPreInsertionCallback m_preInsertionCallback;
             EntitySpawnTicket* m_ticket;
             uint32_t m_ticketId;
         };
@@ -101,6 +102,7 @@ namespace AzFramework
         {
             AZStd::vector<size_t> m_entityIndices;
             EntitySpawnCallback m_completionCallback;
+            EntityPreInsertionCallback m_preInsertionCallback;
             EntitySpawnTicket* m_ticket;
             uint32_t m_ticketId;
         };
