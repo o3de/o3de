@@ -49,6 +49,7 @@
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
+#include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
 // AtomToolsFramework
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
@@ -1238,6 +1239,20 @@ void EditorViewportWidget::SetViewportId(int id)
             auto firstPersonWheelCamera = AZStd::make_shared<AzFramework::ScrollTranslationCameraInput>();
 
             auto orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>();
+            orbitCamera->SetLookAtFn([]() -> AZStd::optional<AZ::Vector3> {
+                AZStd::optional<AZ::Transform> manipulatorTransform;
+                AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
+                    manipulatorTransform, AzToolsFramework::GetEntityContextId(),
+                    &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
+
+                if (manipulatorTransform)
+                {
+                    return manipulatorTransform->GetTranslation();
+                }
+
+                return {};
+            });
+
             auto orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraOrbitLookButton);
             auto orbitTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::OrbitTranslation);
             auto orbitDollyWheelCamera = AZStd::make_shared<AzFramework::OrbitDollyScrollCameraInput>();
