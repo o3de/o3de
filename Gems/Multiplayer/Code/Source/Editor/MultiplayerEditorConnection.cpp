@@ -71,11 +71,9 @@ namespace Multiplayer
             while (m_byteStream.GetCurPos() < m_byteStream.GetLength())
             {
                 AZ::Data::AssetId assetId;
-                AZ::Data::AssetLoadBehavior assetLoadBehavior;
                 uint32_t hintSize;
                 AZStd::string assetHint;
                 m_byteStream.Read(sizeof(AZ::Data::AssetId), reinterpret_cast<void*>(&assetId));
-                m_byteStream.Read(sizeof(AZ::Data::AssetLoadBehavior), reinterpret_cast<void*>(&assetLoadBehavior));
                 m_byteStream.Read(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
                 assetHint.resize(hintSize);
                 m_byteStream.Read(hintSize, assetHint.data());
@@ -83,7 +81,7 @@ namespace Multiplayer
                 size_t assetSize = m_byteStream.GetCurPos();
                 AZ::Data::AssetData* assetDatum = AZ::Utils::LoadObjectFromStream<AZ::Data::AssetData>(m_byteStream, nullptr);
                 assetSize = m_byteStream.GetCurPos() - assetSize;
-                AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::Asset<AZ::Data::AssetData>(assetId, assetDatum, assetLoadBehavior);
+                AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::Asset<AZ::Data::AssetData>(assetId, assetDatum, AZ::Data::AssetLoadBehavior::NoLoad);
                 asset.SetHint(assetHint);
 
                 AZ::Data::AssetInfo assetInfo;
@@ -104,7 +102,7 @@ namespace Multiplayer
             m_byteStream.Truncate();
 
             // Load the level via the root spawnable that was registered
-            AZ::CVarFixedString loadLevelString = "LoadLevel Root.spawnable";
+            const AZ::CVarFixedString loadLevelString = "LoadLevel Root.spawnable";
             AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
 
             // Setup the normal multiplayer connection

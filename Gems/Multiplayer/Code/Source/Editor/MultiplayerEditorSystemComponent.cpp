@@ -169,15 +169,13 @@ namespace Multiplayer
             AZ::IO::ByteContainerStream byteStream(&buffer);
 
             // Serialize Asset information and AssetData into a potentially large buffer
-            for (auto asset : assetData)
+            for (auto& asset : assetData)
             {
                 AZ::Data::AssetId assetId = asset.GetId();
-                AZ::Data::AssetLoadBehavior assetLoadBehavior = asset.GetAutoLoadBehavior();
                 AZStd::string assetHint = asset.GetHint();
                 uint32_t hintSize = aznumeric_cast<uint32_t>(assetHint.size());
 
                 byteStream.Write(sizeof(AZ::Data::AssetId), reinterpret_cast<void*>(&assetId));
-                byteStream.Write(sizeof(AZ::Data::AssetLoadBehavior), reinterpret_cast<void*>(&assetLoadBehavior));
                 byteStream.Write(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
                 byteStream.Write(assetHint.size(), assetHint.data());
                 AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, asset.GetData(), asset.GetData()->GetType());
