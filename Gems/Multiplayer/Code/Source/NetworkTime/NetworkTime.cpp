@@ -11,8 +11,8 @@
  */
 
 #include <Source/NetworkTime/NetworkTime.h>
-#include <Multiplayer/NetBindComponent.h>
 #include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 #include <AzFramework/Visibility/IVisibilitySystem.h>
 
 namespace Multiplayer
