@@ -426,7 +426,7 @@ namespace O3DE::ProjectManager
             {
                 // required
                 gemInfo.m_name        = Py_To_String(data["Name"]); 
-                gemInfo.m_uuid        = AZ::Uuid(Py_To_String(data["Uuid"])); 
+                gemInfo.m_uuid        = AZ::Uuid(Py_To_String(data["Uuid"]));
 
                 // optional
                 gemInfo.m_displayName = Py_To_String_Optional(data, "DisplayName", gemInfo.m_name); 
@@ -437,7 +437,8 @@ namespace O3DE::ProjectManager
                 {
                     for (auto dependency : data["Dependencies"])
                     {
-                        gemInfo.m_dependingGemUuids.push_back(Py_To_String(dependency["Uuid"]));
+                        const AZ::Uuid uuid = Py_To_String(dependency["Uuid"]);
+                        gemInfo.m_dependingGemUuids.push_back(uuid.ToString<AZStd::string>().c_str());
                     }
                 }
                 if (data.contains("Tags"))
