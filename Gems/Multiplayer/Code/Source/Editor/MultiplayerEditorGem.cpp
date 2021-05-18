@@ -10,13 +10,13 @@
 *
 */
 
-#include <Source/Multiplayer_precompiled.h>
-#include <Source/MultiplayerGem.h>
-#include <Source/MultiplayerSystemComponent.h>
-#include <Source/MultiplayerEditorGem.h>
-#include <AzNetworking/Framework/NetworkingSystemComponent.h>
+#include <Multiplayer_precompiled.h>
+#include <MultiplayerGem.h>
+#include <MultiplayerSystemComponent.h>
+#include <Editor/MultiplayerEditorGem.h>
+#include <Editor/MultiplayerEditorSystemComponent.h>
 
-#include <Source/Editor/MultiplayerEditorSystemComponent.h>
+#include <AzNetworking/Framework/NetworkingSystemComponent.h>
 
 namespace Multiplayer
 {

@@ -23,7 +23,7 @@ namespace Multiplayer
 {
     AZ_CVAR(AZ::TimeMs, cl_InputRateMs, AZ::TimeMs{ 33 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Rate at which to sample and process client inputs");
     AZ_CVAR(AZ::TimeMs, cl_MaxRewindHistoryMs, AZ::TimeMs{ 2000 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Maximum number of milliseconds to keep for server correction rewind and replay");
-#ifndef _RELEASE
+#ifndef AZ_RELEASE_BUILD
     AZ_CVAR(float, cl_DebugHackTimeMultiplier, 1.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "Scalar value used to simulate clock hacking cheats for validating bank time system and anticheat");
 #endif
 
@@ -477,7 +477,7 @@ namespace Multiplayer
         const double inputRate = static_cast<double>(static_cast<AZ::TimeMs>(cl_InputRateMs)) / 1000.0;
         const double maxRewindHistory = static_cast<double>(static_cast<AZ::TimeMs>(cl_MaxRewindHistoryMs)) / 1000.0;
 
-#ifndef _RELEASE
+#ifndef AZ_RELEASE_BUILD
         m_moveAccumulator += deltaTime * cl_DebugHackTimeMultiplier;
 #else
         m_moveAccumulator += deltaTime;
