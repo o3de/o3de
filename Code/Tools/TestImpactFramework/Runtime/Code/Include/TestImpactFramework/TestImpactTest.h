@@ -19,7 +19,7 @@ namespace TestImpact
 {
     enum class TestResult
     {
-        NotExecuted,
+        NotRun,
         FailedToExecute,
         Timeout,
         TestFailures,

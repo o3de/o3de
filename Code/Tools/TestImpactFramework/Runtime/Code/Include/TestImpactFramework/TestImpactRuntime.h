@@ -84,11 +84,11 @@ namespace TestImpact
 
     //! Callback for a test sequence ending.
     //! @param testRuns The test results of all test target runs.
-    using TestSequenceEndCallback = AZStd::function<void(FailureReport&& failureReport)>;
+    using TestSequenceEndCallback = AZStd::function<void(FailureReport&& failureReport, AZStd::chrono::milliseconds duration)>;
 
     //! Callback for a test sequence ending.
     //! @param testRuns The test results of all test target runs.
-    using ImpactAnalysisTestSequenceEndCallback = AZStd::function<void(ImpactAnalysisFailureReport&& failureReport)>;
+    using ImpactAnalysisTestSequenceEndCallback = AZStd::function<void(ImpactAnalysisFailureReport&& failureReport, AZStd::chrono::milliseconds duration)>;
 
     //! Callback for completed tests.
     //! test The test that has completed.

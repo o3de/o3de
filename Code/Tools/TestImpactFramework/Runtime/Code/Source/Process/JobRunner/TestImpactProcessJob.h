@@ -29,7 +29,7 @@ namespace TestImpact
         using Payload = JobPayloadT;
 
         //! Constructor with r-values for the specific use case of the job runner.
-        Job(Info jobInfo, JobMeta&& jobMeta, AZStd::optional<Payload>&& payload);
+        Job(const Info& jobInfo, JobMeta&& jobMeta, AZStd::optional<Payload>&& payload);
 
         //! Returns the job info associated with this job.
         const Info& GetJobInfo() const;
@@ -46,7 +46,7 @@ namespace TestImpact
     };
 
     template<typename JobInfoT, typename JobPayloadT>
-    Job<JobInfoT, JobPayloadT>::Job(Info jobInfo, JobMeta&& jobMeta, AZStd::optional<Payload>&& payload)
+    Job<JobInfoT, JobPayloadT>::Job(const Info& jobInfo, JobMeta&& jobMeta, AZStd::optional<Payload>&& payload)
         : JobMetaContainer(AZStd::move(jobMeta))
         , m_jobInfo(jobInfo)
         , m_payload(AZStd::move(payload))

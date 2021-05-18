@@ -52,7 +52,7 @@ namespace TestImpact
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<TestEngineEnumerationCallback> callback);
 
-        AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun>> RegularRun(
+        [[nodiscard]]AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun>> RegularRun(
             const AZStd::vector<const TestTarget*> testTargets,
             TestShardingPolicy testShardingPolicy,
             ExecutionFailurePolicy executionFailurePolicy,
@@ -62,12 +62,12 @@ namespace TestImpact
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<TestEngineRunCallback> callback);
 
-        AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun>> InstrumentedRun(
+        [[nodiscard]]AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun>> InstrumentedRun(
             const AZStd::vector<const TestTarget*> testTargets,
             TestShardingPolicy testShardingPolicy,
-            TestFailurePolicy testFailurePolicy,
             ExecutionFailurePolicy executionFailurePolicy,
             IntegrityFailurePolicy integrityFailurePolicy,
+            TestFailurePolicy testFailurePolicy,
             TargetOutputCapture targetOutputCapture,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,

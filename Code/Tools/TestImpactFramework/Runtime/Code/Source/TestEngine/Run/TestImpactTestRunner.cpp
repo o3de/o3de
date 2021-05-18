@@ -47,7 +47,15 @@ namespace TestImpact
                 const auto& [meta, jobInfo] = jobData;
                 if (meta.m_result == JobResult::ExecutedWithSuccess || meta.m_result == JobResult::ExecutedWithFailure)
                 {
-                    runs[jobId] = ParseTestRunFile(jobInfo->GetRunArtifactPath(), meta.m_duration.value());
+                    try
+                    {
+                        runs[jobId] = ParseTestRunFile(jobInfo->GetRunArtifactPath(), meta.m_duration.value());
+                    }
+                    catch (const Exception& e)
+                    {
+                        AZ_Warning("RunTests", false, e.what());
+                        runs[jobId] = AZStd::nullopt;
+                    }
                 }
             }
 

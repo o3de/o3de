@@ -61,14 +61,7 @@
   "target": {
     "dir": "${bin_dir}",
     "exclude": [
-      "AssetBundler.Tests",
-      "AssetProcessor.Tests",
-      "CryRenderD3D11.Tests",
-      "CryRenderD3D12.Tests",
-      "LyzardApplicationDescriptors.Tests",
-      "EMotionFX.Editor.Tests",
-      "EMotionFX.Tests",
-      "AzCore.Tests"
+     
     ],
     "shard": [
       {

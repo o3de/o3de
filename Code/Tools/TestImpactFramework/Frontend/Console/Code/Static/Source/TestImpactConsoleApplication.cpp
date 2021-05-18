@@ -151,39 +151,51 @@ namespace TestImpact
                     return handleTestSequenceResult(result);
                 };
 
-                const auto testComplete = [](Test&& test)
+                size_t numTests = 0;
+                size_t testsComplete = 0;
+
+                const auto sequenceStart = [&options, &numTests](TestSelection&& testSelection)
                 {
-                    std::cout << "Test " << test.GetTargetName().c_str() << " completed\n";
+                    std::cout << "Test suite filter:\n";
+                    if (const auto& suiteFilter = options.GetSuitesFilter(); suiteFilter.empty())
+                    {
+                        std::cout << "  *\n";
+                    }
+                    else
+                    {
+                        for (const auto& suite : suiteFilter)
+                        {
+                            std::cout << "  " << suite.c_str() << "\n";
+                        }
+                    }
+
+                    numTests = testSelection.GetIncludededTests().size();
+                    std::cout << numTests << " tests selected, " << testSelection.GetExcludedTests().size() << " excluded\n";
+                };
+
+                const auto testComplete = [&numTests, &testsComplete](Test&& test)
+                {
+                    testsComplete++;
+                    const auto progress = AZStd::string::format("(%02u/%02u)", testsComplete, numTests, test.GetTargetName().c_str());
+                    const auto result = (test.GetTestResult() == TestResult::AllTestsPass) ? "\033[37;42mPASS\033[0m" : "\033[37;41mFAIL\033[0m";
+                    std::wcout << progress.c_str() << " " << result << " "  << test.GetTargetName().c_str() << " (" << (test.GetDuration().count() / 1000.f) << "s)\n";
+                };
+
+                const auto sequenceComplete = []([[maybe_unused]] FailureReport&& failureReport, AZStd::chrono::milliseconds duration)
+                {
+                    std::cout << "DURATION: " << (duration.count() / 1000.f) << "s\n";
                 };
 
                 switch (const auto type = *options.GetTestSequenceType())
                 {
                 case TestSequenceType::Regular:
                 {
-                    const auto sequenceStart = [&options](TestSelection&& testSelection)
-                    {
-                        std::cout << "Test suite filter:\n";
-                        if (const auto& suiteFilter = options.GetSuitesFilter(); suiteFilter.empty())
-                        {
-                            std::cout << "  *\n";
-                        }
-                        else
-                        {
-                            for (const auto& suite : suiteFilter)
-                            {
-                                std::cout << "  " << suite.c_str() << "\n";
-                            }
-                        }
-
-                        std::cout << testSelection.GetIncludededTests().size() << " tests selected, " << testSelection.GetExcludedTests().size() << " excluded\n";
-                    };
-
                     const auto result = runtime.RegularTestSequence(
                         options.GetSuitesFilter(),
                         options.GetTestTargetTimeout(),
                         options.GetGlobalTimeout(),
                         sequenceStart,
-                        AZStd::nullopt,
+                        sequenceComplete,
                         testComplete);
 
                     return handleTestSequenceResult(result);
@@ -192,9 +204,9 @@ namespace TestImpact
                 {
                     const auto result = runtime.SeededTestSequence(
                         options.GetGlobalTimeout(),
-                        AZStd::nullopt,
-                        AZStd::nullopt,
-                        AZStd::nullopt);
+                        sequenceStart,
+                        sequenceComplete,
+                        testComplete);
 
                     return handleTestSequenceResult(result);
                 }
@@ -212,9 +224,9 @@ namespace TestImpact
                     {
                         const auto result = runtime.SeededTestSequence(
                             options.GetGlobalTimeout(),
+                            sequenceStart,
                             AZStd::nullopt,
-                            AZStd::nullopt,
-                            AZStd::nullopt);
+                            testComplete);
 
                         return handleTestSequenceResult(result);
                     }

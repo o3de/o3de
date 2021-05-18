@@ -55,8 +55,8 @@ namespace TestImpact
         {
             bool hasExecutionFailures = false;
             bool hasTestFailures = false;
-
-            for (const auto engineJob : engineJobs)
+            size_t i = 0;
+            for (const auto& engineJob : engineJobs)
             {
                 switch (engineJob.GetTestResult())
                 {
@@ -65,7 +65,7 @@ namespace TestImpact
                     hasExecutionFailures = true;
                     break;
                 }
-                /*case TestResult::NotExecuted: 
+                /*case TestResult::NotExecuted:
                 {
                     hasTestTimeouts = true;
                     break;
@@ -74,12 +74,13 @@ namespace TestImpact
                 case TestResult::TestFailures:
                 {
                     hasTestFailures = true;
+                    break;
                 }
                 default:
                 {
                     continue;
                 }
-                }
+                }i++;
             }
 
             if ((hasExecutionFailures && executionFailurePolicy != ExecutionFailurePolicy::Ignore) || hasTestFailures)
@@ -118,8 +119,9 @@ namespace TestImpact
             case JobResult::ExecutedWithSuccess:
                 return TestResult::AllTestsPass;
             case JobResult::NotExecuted:
-                return TestResult::NotExecuted;
             case JobResult::Terminated:
+                return TestResult::NotRun;
+            case JobResult::TimedOut:
                 return TestResult::Timeout;
             default:
                 throw(/*TestEngine*/Exception(AZStd::string::format("Unexpected job result: %u", static_cast<unsigned int>(meta.m_result))));
@@ -142,56 +144,56 @@ namespace TestImpact
 
     TestEngine::~TestEngine() = default;
 
-    AZStd::vector<TestEngineEnumeration> TestEngine::UpdateEnumerationCache(
-        const AZStd::vector<const TestTarget*> testTargets,
-        ExecutionFailurePolicy executionFailurePolicy,
-        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineEnumerationCallback> callback)
-    {
-        AZStd::vector<TestEnumerator::JobInfo> jobInfos;
-        AZStd::unordered_map<TestEnumerator::JobInfo::IdType, TestEngineJob> engineJobs;
-        AZStd::vector<TestEngineEnumeration> engineEnumerations;
-        engineEnumerations.reserve(testTargets.size());
-
-        for (size_t jobId = 0; jobId < testTargets.size(); jobId++)
-        {
-            jobInfos.push_back(
-                m_testJobInfoGenerator->GenerateTestEnumerationJobInfo(testTargets[jobId], { jobId }, TestEnumerator::JobInfo::CachePolicy::Write));
-        }
-
-        const auto jobCallback = [&testTargets, &engineJobs, &callback]
-        (const TestImpact::TestEnumerator::JobInfo& jobInfo, const TestImpact::JobMeta& meta)
-        {
-            const auto& [item, success] =
-                engineJobs.emplace(jobInfo.GetId().m_value, TestEngineJob(testTargets[jobInfo.GetId().m_value], jobInfo.GetCommand().m_args, meta));
-            if (callback.has_value())
-            {
-                (*callback)(item->second);
-            }
-        };
-
-        TestImpact::TestEnumerator testEnumerator(jobCallback, m_maxConcurrentRuns, testTargetTimeout, globalTimeout);
-
-        const auto cacheExceptionPolicy = executionFailurePolicy == ExecutionFailurePolicy::Abort
-            ? TestEnumerator::CacheExceptionPolicy::OnCacheWriteFailure
-            : TestEnumerator::CacheExceptionPolicy::Never;
-
-        const auto jobExecutionPolicy = executionFailurePolicy == ExecutionFailurePolicy::Abort
-            ? (TestEnumerator::JobExceptionPolicy::OnExecutedWithFailure | TestEnumerator::JobExceptionPolicy::OnFailedToExecute)
-            : TestEnumerator::JobExceptionPolicy::Never;
-
-        auto enumerationJobs = testEnumerator.Enumerate(jobInfos, cacheExceptionPolicy, jobExecutionPolicy);
-        for (auto& job : enumerationJobs)
-        {
-            auto engineJob = engineJobs.find(job.GetJobInfo().GetId().m_value);
-            // DO EVAL!!
-            TestEngineEnumeration enumeration(AZStd::move(engineJob->second), job.ReleasePayload());
-            engineEnumerations.push_back(AZStd::move(enumeration));
-        }
-
-        return engineEnumerations;
-    }
+    //AZStd::vector<TestEngineEnumeration> TestEngine::UpdateEnumerationCache(
+    //    const AZStd::vector<const TestTarget*> testTargets,
+    //    ExecutionFailurePolicy executionFailurePolicy,
+    //    AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+    //    AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+    //    AZStd::optional<TestEngineEnumerationCallback> callback)
+    //{
+    //    AZStd::vector<TestEnumerator::JobInfo> jobInfos;
+    //    AZStd::unordered_map<TestEnumerator::JobInfo::IdType, TestEngineJob> engineJobs;
+    //    AZStd::vector<TestEngineEnumeration> engineEnumerations;
+    //    //engineEnumerations.reserve(testTargets.size());
+    //
+    //    //for (size_t jobId = 0; jobId < testTargets.size(); jobId++)
+    //    //{
+    //    //    jobInfos.push_back(
+    //    //        m_testJobInfoGenerator->GenerateTestEnumerationJobInfo(testTargets[jobId], { jobId }, TestEnumerator::JobInfo::CachePolicy::Write));
+    //    //}
+    //
+    //    //const auto jobCallback = [&testTargets, &engineJobs, &callback]
+    //    //(const TestImpact::TestEnumerator::JobInfo& jobInfo, const TestImpact::JobMeta& meta)
+    //    //{
+    //    //    const auto& [item, success] =
+    //    //        engineJobs.emplace(jobInfo.GetId().m_value, TestEngineJob(testTargets[jobInfo.GetId().m_value], jobInfo.GetCommand().m_args, meta));
+    //    //    if (callback.has_value())
+    //    //    {
+    //    //        (*callback)(item->second);
+    //    //    }
+    //    //};
+    //
+    //    //TestImpact::TestEnumerator testEnumerator(jobCallback, m_maxConcurrentRuns, testTargetTimeout, globalTimeout);
+    //
+    //    //const auto cacheExceptionPolicy = (executionFailurePolicy == ExecutionFailurePolicy::Abort)
+    //    //    ? TestEnumerator::CacheExceptionPolicy::OnCacheWriteFailure
+    //    //    : TestEnumerator::CacheExceptionPolicy::Never;
+    //
+    //    //const auto jobExecutionPolicy = executionFailurePolicy == ExecutionFailurePolicy::Abort
+    //    //    ? (TestEnumerator::JobExceptionPolicy::OnExecutedWithFailure | TestEnumerator::JobExceptionPolicy::OnFailedToExecute)
+    //    //    : TestEnumerator::JobExceptionPolicy::Never;
+    //
+    //    //auto enumerationJobs = testEnumerator.Enumerate(jobInfos, cacheExceptionPolicy, jobExecutionPolicy);
+    //    //for (auto& job : enumerationJobs)
+    //    //{
+    //    //    auto engineJob = engineJobs.find(job.GetJobInfo().GetId().m_value);
+    //    //    // DO EVAL!!
+    //    //    TestEngineEnumeration enumeration(AZStd::move(engineJob->second), job.ReleasePayload());
+    //    //    engineEnumerations.push_back(AZStd::move(enumeration));
+    //    //}
+    //
+    //    return engineEnumerations;
+    //}
 
     AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun>> TestEngine::RegularRun(
         const AZStd::vector<const TestTarget*> testTargets,
@@ -242,11 +244,92 @@ namespace TestImpact
         auto runJobs = testRunner.RunTests(jobInfos, jobExecutionPolicy);
         for (auto& job : runJobs)
         {
-            auto engineJob = engineJobs.find(job.GetJobInfo().GetId().m_value);
-            // DO EVAL!!
-            TestEngineRegularRun run(AZStd::move(engineJob->second.first), job.ReleasePayload(), engineJob->second.second);
-            engineRuns.push_back(AZStd::move(run));
+            if (auto engineJob = engineJobs.find(job.GetJobInfo().GetId().m_value);
+                engineJob != engineJobs.end())
+            {
+                TestEngineRegularRun run(AZStd::move(engineJob->second.first), job.ReleasePayload(), engineJob->second.second);
+                engineRuns.push_back(AZStd::move(run));
+            }
+            else
+            {
+                TestEngineRegularRun run(TestEngineJob(testTargets[job.GetJobInfo().GetId().m_value], job.GetJobInfo().GetCommand().m_args, {}), {}, TestResult::NotRun);
+                engineRuns.push_back(AZStd::move(run));
+            }
         }
+
+        const auto sequenceResult = CalculateSequenceResult(engineRuns, executionFailurePolicy);
+        return { sequenceResult, AZStd::move(engineRuns) };
+    }
+
+    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun>> TestEngine::InstrumentedRun(
+        const AZStd::vector<const TestTarget*> testTargets,
+        [[maybe_unused]] TestShardingPolicy testShardingPolicy,
+        ExecutionFailurePolicy executionFailurePolicy,
+        IntegrityFailurePolicy integrityFailurePolicy,
+        TestFailurePolicy testFailurePolicy,
+        [[maybe_unused]]TargetOutputCapture targetOutputCapture,
+        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+        AZStd::optional<TestEngineRunCallback> callback)
+    {
+        AZStd::vector<InstrumentedTestRunner::JobInfo> jobInfos;
+        AZStd::unordered_map<InstrumentedTestRunner::JobInfo::IdType, AZStd::pair<TestEngineJob, TestResult>> engineJobs;
+        AZStd::vector<TestEngineInstrumentedRun> engineRuns;
+        engineRuns.reserve(testTargets.size());
+
+        for (size_t jobId = 0; jobId < testTargets.size(); jobId++)
+        {
+            jobInfos.push_back(
+                m_testJobInfoGenerator->GenerateInstrumentedTestRunJobInfo(testTargets[jobId], { jobId }, CoverageLevel::Source));
+        }
+
+        const auto jobCallback = [&testTargets, &engineJobs, &callback]
+        (const TestImpact::InstrumentedTestRunner::JobInfo& jobInfo, const TestImpact::JobMeta& meta)
+        {
+            const auto& [item, success] =
+                engineJobs.emplace(jobInfo.GetId().m_value, AZStd::pair<TestEngineJob, TestResult>{ TestEngineJob(testTargets[jobInfo.GetId().m_value], jobInfo.GetCommand().m_args, meta), GetTestResultForMeta(meta) });
+            if (callback.has_value())
+            {
+                (*callback)(item->second.first, item->second.second);
+            }
+        };
+
+        TestImpact::InstrumentedTestRunner testRunner(jobCallback, m_maxConcurrentRuns, testTargetTimeout, globalTimeout);
+
+        auto jobExecutionPolicy = InstrumentedTestRunner::JobExceptionPolicy::Never;
+
+        if (executionFailurePolicy == ExecutionFailurePolicy::Abort)
+        {
+            jobExecutionPolicy |= InstrumentedTestRunner::JobExceptionPolicy::OnExecutedWithFailure;
+        }
+
+        if (testFailurePolicy == TestFailurePolicy::Abort)
+        {
+            jobExecutionPolicy |= TestRunner::JobExceptionPolicy::OnExecutedWithFailure;
+        }
+
+        const auto coverageExceptionPolicy = (integrityFailurePolicy == IntegrityFailurePolicy::Abort)
+            ? InstrumentedTestRunner::CoverageExceptionPolicy::OnEmptyCoverage
+            : InstrumentedTestRunner::CoverageExceptionPolicy::Never;
+
+        auto runJobs = testRunner.RunInstrumentedTests(jobInfos, coverageExceptionPolicy, jobExecutionPolicy);
+        for (auto& job : runJobs)
+        {
+            if (auto engineJob = engineJobs.find(job.GetJobInfo().GetId().m_value);
+                engineJob != engineJobs.end())
+            {
+                TestEngineInstrumentedRun run(AZStd::move(engineJob->second.first), job.ReleasePayload(), engineJob->second.second);
+                engineRuns.push_back(AZStd::move(run));
+            }
+            else
+            {
+                TestEngineInstrumentedRun run(TestEngineJob(testTargets[job.GetJobInfo().GetId().m_value], job.GetJobInfo().GetCommand().m_args, {}), {}, TestResult::NotRun);
+                engineRuns.push_back(AZStd::move(run));
+            }
+        }
+
+        // do test for passing tests with no coverage as these are integrity failrues
+        // (failing tests with no coverage must be considered as test launch failures)
 
         const auto sequenceResult = CalculateSequenceResult(engineRuns, executionFailurePolicy);
         return { sequenceResult, AZStd::move(engineRuns) };

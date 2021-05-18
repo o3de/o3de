@@ -106,7 +106,6 @@ set(FILES
     Source/TestEngine/Run/TestImpactTestCoverage.h
     Source/TestEngine/Run/TestImpactTestRunException.h
     Source/TestEngine/JobRunner/TestImpactTestJobRunner.h
-    Source/TestEngine/JobRunner/TestImpactTestJobException.h
     Source/TestEngine/JobRunner/TestImpactTestJobInfoGenerator.cpp
     Source/TestEngine/JobRunner/TestImpactTestJobInfoGenerator.h
     Source/TestEngine/TestImpactTestSuiteContainer.h
@@ -121,10 +120,10 @@ set(FILES
     Source/TestEngine/TestImpactTestEngineInstrumentedRun.cpp
     Source/TestEngine/TestImpactTestEngineInstrumentedRun.h
     Source/TestImpactException.cpp
-    Source/TestImpactFrameworkPath.cpp
     Source/TestImpactBitwise.h
-    Source/TestImpactFrameworkPath.h
     Source/TestImpactRuntime.cpp
+    Source/TestImpactRuntimeUtils.cpp
+    Source/TestImpactRuntimeUtils.h
     Source/TestImpactTestSelection.cpp
     Source/TestImpactTest.cpp
     Source/TestImpactFailureReport.cpp

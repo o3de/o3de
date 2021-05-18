@@ -41,17 +41,19 @@ namespace TestImpact
         if (testTarget->GetLaunchMethod() == LaunchMethod::StandAlone)
         {
             return AZStd::string::format(
-                "%s%s",
+                "%s%s %s",
                 (m_targetBinaryDir / testTarget->GetOutputName()).c_str(),
-                standAloneExtension).c_str();
+                standAloneExtension,
+                testTarget->GetCustomArgs().c_str()).c_str();
         }
         else
         {
             return AZStd::string::format(
-                "\"%s\" \"%s%s\" AzRunUnitTests",
+                "\"%s\" \"%s%s\" %s AzRunUnitTests",
                 m_testRunnerBinary.c_str(),
                 (m_targetBinaryDir / testTarget->GetOutputName()).c_str(),
-                testRunnerExtension).c_str();
+                testRunnerExtension,
+                testTarget->GetCustomArgs().c_str()).c_str();
         }
     }
 

@@ -14,109 +14,15 @@
 #include <TestImpactFramework/TestImpactRuntime.h>
 #include <TestImpactFramework/TestImpactRuntimeException.h>
 
-#include <Artifact/Factory/TestImpactTestTargetMetaMapFactory.h>
-#include <Artifact/Factory/TestImpactBuildTargetDescriptorFactory.h>
-#include <Artifact/Static/TestImpactTargetDescriptorCompiler.h>
+#include <TestImpactRuntimeUtils.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
+#include <Dependency/TestImpactSourceCoveringTestsSerializer.h>
 #include <TestEngine/TestImpactTestEngine.h>
 
 #include <AzCore/IO/SystemFile.h>
 
-#include <filesystem>
-
 namespace TestImpact
 {
-    namespace
-    {
-        TestTargetMetaMap ReadTestTargetMetaMapFile(const TestTargetMetaConfig& testTargetMetaConfig)
-        {
-            const auto masterTestListData = ReadFileContents<RuntimeException>(testTargetMetaConfig.m_file);
-            return TestTargetMetaMapFactory(masterTestListData);
-        }
-
-        AZStd::vector<TestImpact::BuildTargetDescriptor> ReadBuildTargetDescriptorFiles(const BuildTargetDescriptorConfig& buildTargetDescriptorConfig)
-        {
-            AZStd::vector<TestImpact::BuildTargetDescriptor> buildTargetDescriptors;
-            for (const auto& buildTargetDescriptorFile : std::filesystem::directory_iterator(buildTargetDescriptorConfig.m_outputDirectory.c_str()))
-            {
-                const auto buildTargetDescriptorContents = ReadFileContents<RuntimeException>(buildTargetDescriptorFile.path().string().c_str());
-                auto buildTargetDescriptor = TestImpact::BuildTargetDescriptorFactory(
-                    buildTargetDescriptorContents,
-                    buildTargetDescriptorConfig.m_staticInclusionFilters,
-                    buildTargetDescriptorConfig.m_inputInclusionFilters,
-                    buildTargetDescriptorConfig.m_inputOutputPairer);
-                buildTargetDescriptors.emplace_back(AZStd::move(buildTargetDescriptor));
-            }
-
-            return buildTargetDescriptors;
-        }
-    }
-
-    AZStd::unique_ptr<TestImpact::DynamicDependencyMap> ConstructDynamicDependencyMap(
-        const TestTargetMetaConfig& testTargetMetaConfig,
-        const BuildTargetDescriptorConfig& buildTargetDescriptorConfig)
-    {
-        auto testTargetmetaMap = ReadTestTargetMetaMapFile(testTargetMetaConfig);
-        auto buildTargetDescriptors = ReadBuildTargetDescriptorFiles(buildTargetDescriptorConfig);
-        auto buildTargets = TestImpact::CompileTargetDescriptors(AZStd::move(buildTargetDescriptors), AZStd::move(testTargetmetaMap));
-        auto&& [productionTargets, testTargets] = buildTargets;
-        return AZStd::make_unique<TestImpact::DynamicDependencyMap>(AZStd::move(productionTargets), AZStd::move(testTargets));
-    }
-
-    AZStd::unordered_set<const TestTarget*> ConstructTestTargetExcludeList(const TestTargetList& testTargets, const TargetConfig& targetConfig)
-    {
-        AZStd::unordered_set<const TestTarget*> testTargetExcludeList;
-        for (const auto& testTargetName : targetConfig.m_excludedTestTargets)
-        {
-            if (const auto* testTarget = testTargets.GetTarget(testTargetName); testTarget != nullptr)
-            {
-                testTargetExcludeList.insert(testTarget);
-            }
-        }
-
-        return testTargetExcludeList;
-    }
-
-    TestSelection CreateTestSelection(
-        const AZStd::vector<const TestTarget*>& includedTestTargets,
-        const AZStd::vector<const TestTarget*>& excludedTestTargets)
-    {
-        const auto populateTestTargetNames = [](const AZStd::vector<const TestTarget*> testTargets)
-        {
-            AZStd::vector<AZStd::string> testNames;
-            AZStd::transform(testTargets.begin(), testTargets.end(), AZStd::back_inserter(testNames), [](const TestTarget* testTarget)
-            {
-                return testTarget->GetName();
-            });
-
-            return testNames;
-        };
-        
-        return TestSelection(populateTestTargetNames(includedTestTargets), populateTestTargetNames(excludedTestTargets));
-    }
-
-    //template<typename TestJob>
-    FailureReport CreateFailureReport(const AZStd::vector</*TestJob*/TestEngineRegularRun> testJobs)
-    {
-        AZStd::vector<ExecutionFailure> executionFailures;
-        AZStd::vector<LauncherFailure> launcherFailures;
-        AZStd::vector<TestRunFailure> testRunFailures;
-        AZStd::vector<TargetFailure> unexecutedTestRsuns;
-
-        //for (const auto& testJob : testJobs)
-        //{
-        //    //switch (testJob.GetResult())
-        //    //{
-        //    //case JobResult::FailedToExecute:
-        //    //{
-        //    //    executionFailures.push_back()
-        //    //}
-        //    //}
-        //}
-
-        return FailureReport(AZStd::move(executionFailures), AZStd::move(launcherFailures), AZStd::move(testRunFailures), AZStd::move(unexecutedTestRsuns));
-    }
-
     Runtime::Runtime(
         RuntimeConfig&& config,
         ExecutionFailurePolicy executionFailurePolicy,
@@ -167,6 +73,7 @@ namespace TestImpact
     {
         AZStd::vector<const TestTarget*> includedTestTargets;
         AZStd::vector<const TestTarget*> excludedTestTargets;
+        const AZStd::chrono::high_resolution_clock::time_point startTime = AZStd::chrono::high_resolution_clock::now();
 
         for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
         {
@@ -214,9 +121,12 @@ namespace TestImpact
             globalTimeout,
             testComplete);
 
+        const AZStd::chrono::high_resolution_clock::time_point endTime = AZStd::chrono::high_resolution_clock::now();
+        const auto duration = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(endTime - startTime);
+
         if (testSequenceEndCallback.has_value())
         {
-            (*testSequenceEndCallback)(CreateFailureReport(testJobs));
+            (*testSequenceEndCallback)(CreateFailureReport(testJobs), duration);
         }
 
         return result;
@@ -248,12 +158,67 @@ namespace TestImpact
     }
 
     TestSequenceResult Runtime::SeededTestSequence(
-        [[maybe_unused]]AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        [[maybe_unused]]AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
-        [[maybe_unused]]AZStd::optional<TestSequenceEndCallback> testSequenceEndCallback,
-        [[maybe_unused]]AZStd::optional<TestCompleteCallback> testCompleteCallback)
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+        AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
+        AZStd::optional<TestSequenceEndCallback> testSequenceEndCallback,
+        AZStd::optional<TestCompleteCallback> testCompleteCallback)
     {        
-        return TestSequenceResult::Success;
+        AZStd::vector<const TestTarget*> includedTestTargets;
+        AZStd::vector<const TestTarget*> excludedTestTargets;
+        const AZStd::chrono::high_resolution_clock::time_point startTime = AZStd::chrono::high_resolution_clock::now();
+
+        for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
+        {
+            if (!m_testTargetExcludeList.contains(&testTarget))
+            {
+                includedTestTargets.push_back(&testTarget);
+            }
+            else
+            {
+                excludedTestTargets.push_back(&testTarget);
+            }
+        }
+
+        //includedTestTargets.push_back(m_dynamicDependencyMap->GetTestTargetList().GetTargetOrThrow("WhiteBox.Editor.Tests"));
+
+        if (testSequenceStartCallback.has_value())
+        {
+            (*testSequenceStartCallback)(CreateTestSelection(includedTestTargets, excludedTestTargets));
+        }
+
+        const auto testComplete = [testCompleteCallback](const TestEngineJob& testJob, TestResult testResult)
+        {
+            if (testCompleteCallback.has_value())
+            {
+                (*testCompleteCallback)(Test(testJob.GetTestTarget()->GetName(), testResult, testJob.GetDuration()));
+            }
+        };
+
+        const auto [result, testJobs] = m_testEngine->InstrumentedRun(
+            includedTestTargets,
+            m_testShardingPolicy,
+            m_executionFailurePolicy,
+            IntegrityFailurePolicy::Continue,
+            m_testFailurePolicy,
+            m_targetOutputCapture,
+            AZStd::nullopt,
+            globalTimeout,
+            testComplete);
+
+        const auto coverage = CreateSourceCoveringTestFromTestCoverages(testJobs, m_config.m_repo.m_root);
+        m_dynamicDependencyMap->ReplaceSourceCoverage(coverage);
+        const auto sparTIA = m_dynamicDependencyMap->ExportSourceCoverage();
+        const auto sparTIAData = SerializeSourceCoveringTestsList(sparTIA);
+        WriteFileContents<RuntimeException>(sparTIAData, m_config.m_workspace.m_persistent.m_sparTIAFile);
+
+        const AZStd::chrono::high_resolution_clock::time_point endTime = AZStd::chrono::high_resolution_clock::now();
+        const auto duration = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(endTime - startTime);
+        if (testSequenceEndCallback.has_value())
+        {
+            (*testSequenceEndCallback)(CreateFailureReport(testJobs), duration);
+        }
+
+        return result;
     }
 
     bool Runtime::HasImpactAnalysisData() const

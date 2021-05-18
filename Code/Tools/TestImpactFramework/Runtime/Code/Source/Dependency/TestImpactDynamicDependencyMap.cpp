@@ -193,7 +193,7 @@ namespace TestImpact
             }
             else
             {
-                ReplaceSourceCoverage(SourceCoveringTestsList({ SourceCoveringTests(path, { }) }));
+                ReplaceSourceCoverage(SourceCoveringTestsList({ SourceCoveringTests(path) }));
             }
         }
     }

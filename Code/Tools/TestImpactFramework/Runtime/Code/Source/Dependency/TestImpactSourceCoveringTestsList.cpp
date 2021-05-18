@@ -16,6 +16,18 @@
 
 namespace TestImpact
 {
+    AZStd::vector<AZStd::string> ExtractTargetsFromSet(AZStd::unordered_set<AZStd::string>&& coveringTestTargets)
+    {
+        AZStd::vector<AZStd::string> testTargets;
+        testTargets.reserve(coveringTestTargets.size());
+        for (auto it = coveringTestTargets.begin(); it != coveringTestTargets.end(); )
+        {
+            testTargets.push_back(std::move(coveringTestTargets.extract(it++).value()));
+        }
+
+        return testTargets;
+    }
+
     SourceCoveringTests::SourceCoveringTests(const AZStd::string& path)
         : m_path(path)
     {
@@ -24,6 +36,12 @@ namespace TestImpact
     SourceCoveringTests::SourceCoveringTests(const AZStd::string& path, AZStd::vector<AZStd::string>&& coveringTestTargets)
         : m_path(path)
         , m_coveringTestTargets(AZStd::move(coveringTestTargets))
+    {
+    }
+
+    SourceCoveringTests::SourceCoveringTests(const AZStd::string& path, AZStd::unordered_set<AZStd::string>&& coveringTestTargets)
+        : m_path(path)
+        , m_coveringTestTargets(ExtractTargetsFromSet(AZStd::move(coveringTestTargets)))
     {
     }
 

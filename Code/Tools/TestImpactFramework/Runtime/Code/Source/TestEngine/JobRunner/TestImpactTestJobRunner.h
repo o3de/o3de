@@ -16,7 +16,6 @@
 
 #include <Process/JobRunner/TestImpactProcessJob.h>
 #include <Process/JobRunner/TestImpactProcessJobRunner.h>
-#include <TestEngine/JobRunner/TestImpactTestJobException.h>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/optional.h>
@@ -112,20 +111,22 @@ namespace TestImpact
         // Callback to handle job exception policies and client/derived callbacks
         const auto jobCallback = [this, &jobExceptionPolicy](const JobInfo& jobInfo, const JobMeta& meta, StdContent&& std)
         {
+            auto callbackResult = ProcessCallbackResult::Continue;
             if (meta.m_result == JobResult::FailedToExecute && IsFlagSet(jobExceptionPolicy, JobExceptionPolicy::OnFailedToExecute))
             {
-                throw TestJobException("Job failed to execute");
+                callbackResult = ProcessCallbackResult::Abort;
             }
             else if (meta.m_result == JobResult::ExecutedWithFailure && IsFlagSet(jobExceptionPolicy, JobExceptionPolicy::OnExecutedWithFailure))
             {
-                throw TestJobException("Job executed with failure");
+                callbackResult = ProcessCallbackResult::Abort;
             }
 
             if (m_derivedJobCallback.has_value())
             {
-                if (const auto result = (*m_derivedJobCallback)(jobInfo, meta, AZStd::move(std)); result != ProcessCallbackResult::Continue)
+                if (const auto result = (*m_derivedJobCallback)(jobInfo, meta, AZStd::move(std));
+                    result == ProcessCallbackResult::Abort)
                 {
-                    return result;
+                    callbackResult = ProcessCallbackResult::Abort;
                 }
             }
 
@@ -134,7 +135,7 @@ namespace TestImpact
                 (*m_clientJobCallback)(jobInfo, meta);
             }
 
-            return ProcessCallbackResult::Continue;
+            return callbackResult;
         };
 
         return m_jobRunner.Execute(jobInfos, jobCallback, payloadMapProducer);

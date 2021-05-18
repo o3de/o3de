@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
 
 namespace TestImpact
@@ -23,6 +24,7 @@ namespace TestImpact
     public:
         explicit SourceCoveringTests(const AZStd::string& path);
         SourceCoveringTests(const AZStd::string& path, AZStd::vector<AZStd::string>&& coveringTestTargets);
+        SourceCoveringTests(const AZStd::string& path, AZStd::unordered_set<AZStd::string>&& coveringTestTargets);
 
         //! Returns the path of this source file.
         const AZStd::string& GetPath() const;

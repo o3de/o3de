@@ -16,9 +16,32 @@
 
 namespace TestImpact
 {
-    TestEngineInstrumentedRun::TestEngineInstrumentedRun(TestEngineJob&& testJob, AZStd::optional<TestRun>&& testRun, AZStd::optional<TestCoverage>&& testCoverage, TestResult testResult)
-        : TestEngineRegularRun(AZStd::move(testJob), AZStd::move(testRun), testResult)
-        , m_testCoverage(AZStd::move(testCoverage))
+    namespace
+    {
+        AZStd::optional<TestRun> ReleaseTestRun(AZStd::optional<AZStd::pair<TestRun, TestCoverage>>&& testRunAndCoverage)
+        {
+            if (testRunAndCoverage.has_value())
+            {
+                return AZStd::move(testRunAndCoverage.value().first);
+            }
+
+            return AZStd::nullopt;
+        }
+
+        AZStd::optional<TestCoverage> ReleaseTestCoverage(AZStd::optional<AZStd::pair<TestRun, TestCoverage>>&& testRunAndCoverage)
+        {
+            if (testRunAndCoverage.has_value())
+            {
+                return AZStd::move(testRunAndCoverage.value().second);
+            }
+
+            return AZStd::nullopt;
+        }
+    }
+
+    TestEngineInstrumentedRun::TestEngineInstrumentedRun(TestEngineJob&& testJob, AZStd::optional<AZStd::pair<TestRun, TestCoverage>>&& testRunAndCoverage, TestResult testResult)
+        : TestEngineRegularRun(AZStd::move(testJob), ReleaseTestRun(AZStd::move(testRunAndCoverage)), testResult)
+        , m_testCoverage(ReleaseTestCoverage(AZStd::move(testRunAndCoverage)))
     {
     }
 

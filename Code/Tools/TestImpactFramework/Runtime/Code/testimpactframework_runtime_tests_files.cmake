@@ -25,8 +25,6 @@ set(FILES
     Tests/Dependency/TestImpactTestSelectorAndPrioritizerTest.cpp
     Tests/Process/TestImpactProcessTest.cpp
     Tests/Target/TestImpactBuildTargetTest.cpp
-    Tests/TestImpactExceptionTest.cpp
-    Tests/TestImpactFrameworkPathTest.cpp
     Tests/TestEngine/TestImpactTestEnumeratorTest.cpp
     Tests/TestEngine/TestImpactTestEumerationSerializerTest.cpp
     Tests/TestEngine/TestImpactTestRunSerializerTest.cpp
@@ -35,6 +33,7 @@ set(FILES
     Tests/TestEngine/TestImpactTestCoverageTest.cpp
     Tests/TestEngine/TestImpactTestEngineTest.cpp
     Tests/TestEngine/TestImpactTestJobInfoGeneratorTest.cpp
+    Tests/TestImpactExceptionTest.cpp
     Tests/TestImpactTestJobRunnerCommon.h
     Tests/TestImpactRuntimeTestMain.cpp
     Tests/TestImpactTestUtils.cpp
@@ -42,5 +41,6 @@ set(FILES
     Tests/TestImpactMicroRepo.cpp
     Tests/TestImpactMicroRepo.h
     Tests/TestImpactRuntimeTest.cpp
+    Tests/TestImpactRuntimeUtilsTest.cpp
     Tests/TestImpactChangeListSerializerTest.cpp
 )

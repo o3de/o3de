@@ -35,6 +35,15 @@
 #include <AZTestShared/Utils/Utils.h>
 #include <AzTest/Utils.h>
 
+
+#include <vector>
+#include <thread>
+#include <mutex>
+#include <iostream>
+#include <unordered_set>
+#include <atomic>
+
+
 #if defined(HAVE_BENCHMARK)
 #include <benchmark/benchmark.h>
 #endif
@@ -1557,28 +1566,68 @@ namespace UnitTest
 
     TEST_F(Components, EntityIdGeneration)
     {
+        //// Generate 1 million ids across 100 threads, and ensure that none collide
+        //AZStd::concurrent_unordered_set<AZ::EntityId> entityIds;
+        //auto GenerateIdThread = [&entityIds]()
+        //{
+        //    for (size_t i = 0; i < AZ_TRAIT_UNIT_TEST_ENTITY_ID_GEN_TEST_COUNT; ++i)
+        //    {
+        //        EXPECT_TRUE(entityIds.insert(Entity::MakeId()));
+        //    }
+        //};
+        //
+        ////////////////////////////////////////////////////////////////////////////
+        //// test generating EntityIDs from multiple threads
+        //{
+        //    AZStd::vector<AZStd::thread> threads;
+        //    for (size_t i = 0; i < 100; ++i)
+        //    {
+        //        threads.emplace_back(GenerateIdThread);
+        //    }
+        //    for (AZStd::thread& thread : threads)
+        //    {
+        //        thread.join();
+        //    }
+        //}
+
         // Generate 1 million ids across 100 threads, and ensure that none collide
-        AZStd::concurrent_unordered_set<AZ::EntityId> entityIds;
-        auto GenerateIdThread = [&entityIds]()
+        //AZStd::concurrent_unordered_set<AZ::EntityId> entityIds;
+        std::unordered_set<AZ::u64> entityIds;
+        std::mutex m;
+        std::vector<AZ::u64> v(100 * 10000);
+        std::atomic<size_t> atom = 0;
+        auto GenerateIdThread = [&entityIds, &m, &v, &atom]([[maybe_unused]] size_t index)
         {
-            for (size_t i = 0; i < AZ_TRAIT_UNIT_TEST_ENTITY_ID_GEN_TEST_COUNT; ++i)
+            //v[index].resize(10000);
+            for (size_t i = 0; i < 10000; ++i)
             {
-                EXPECT_TRUE(entityIds.insert(Entity::MakeId()));
+
+                //{
+                //    std::lock_guard l(m);
+                //    EXPECT_TRUE(entityIds.insert(AZ::u64(Entity::MakeId())).second);
+                //}
+                v[index + i] = AZ::u64(Entity::MakeId());
+                //v[index + i] = atom.fetch_add(1);
             }
         };
 
         //////////////////////////////////////////////////////////////////////////
         // test generating EntityIDs from multiple threads
         {
-            AZStd::vector<AZStd::thread> threads;
+            std::vector<std::thread> threads;
             for (size_t i = 0; i < 100; ++i)
             {
-                threads.emplace_back(GenerateIdThread);
+                threads.emplace_back(GenerateIdThread, i * 10000);
             }
-            for (AZStd::thread& thread : threads)
+            for (std::thread& thread : threads)
             {
                 thread.join();
             }
+        }
+
+        for (auto id : v)
+        {
+            EXPECT_TRUE(entityIds.insert(id).second);
         }
     }
 

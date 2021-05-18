@@ -45,7 +45,7 @@ namespace TestImpact
         {
             AZ_TestImpact_Eval(
                 !IsFlagSet(coverageExceptionPolicy, Bitwise::CoverageExceptionPolicy::OnEmptyCoverage), TestRunException,
-                "No coverage data generated");
+                AZStd::string::format("No coverage data generated for '%s'", coverageFile.c_str()));
         }
 
         TestCoverage coverage(AZStd::move(moduleCoverages));
@@ -74,11 +74,24 @@ namespace TestImpact
                 const auto& [meta, jobInfo] = jobData;
                 if (meta.m_result == JobResult::ExecutedWithSuccess || meta.m_result == JobResult::ExecutedWithFailure)
                 {
-                    runs[jobId] = ParseTestRunAndCoverageFiles(
-                        jobInfo->GetRunArtifactPath(),
-                        jobInfo->GetCoverageArtifactPath(),
-                        meta.m_duration.value(),
-                        coverageExceptionPolicy);
+                    try
+                    {
+                        runs[jobId] = ParseTestRunAndCoverageFiles(
+                            jobInfo->GetRunArtifactPath(),
+                            jobInfo->GetCoverageArtifactPath(),
+                            meta.m_duration.value(),
+                            coverageExceptionPolicy);
+                    }
+                    catch (const Exception& e)
+                    {
+                        AZ_Warning("RunInstrumentedTests", false, e.what());
+                        runs[jobId] = AZStd::nullopt;
+
+                        if (coverageExceptionPolicy == CoverageExceptionPolicy::OnEmptyCoverage)
+                        {
+                            break;
+                        }
+                    }
                 }
             }
 
