@@ -29,6 +29,8 @@ namespace AZ
 
 namespace AzFramework
 {
+    using EntityIdMap = AZStd::unordered_map<AZ::EntityId, AZ::EntityId>;
+
     class SpawnableEntitiesManager
         : public SpawnableEntitiesInterface::Registrar
     {
@@ -81,6 +83,8 @@ namespace AzFramework
 
             AZStd::vector<AZ::Entity*> m_spawnedEntities;
             AZStd::vector<size_t> m_spawnedEntityIndices;
+            EntityIdMap           m_spawnableToInstanceEntityIdMap;
+
             AZ::Data::Asset<Spawnable> m_spawnable;
             uint32_t m_nextTicketId{ 0 }; //!< Next id for this ticket.
             uint32_t m_currentTicketId{ 0 }; //!< The id for the command that should be executed.
@@ -140,7 +144,8 @@ namespace AzFramework
         using Requests = AZStd::variant<SpawnAllEntitiesCommand, SpawnEntitiesCommand, DespawnAllEntitiesCommand, ReloadSpawnableCommand,
             ListEntitiesCommand, ClaimEntitiesCommand, BarrierCommand, DestroyTicketCommand>;
 
-        AZ::Entity* SpawnSingleEntity(const AZ::Entity& entityTemplate, AZ::SerializeContext& serializeContext);
+        AZ::Entity* SpawnSingleEntity(const AZ::Entity& entityTemplate, EntityIdMap& spawnableToInstanceEntityIdMap,
+            AZ::SerializeContext& serializeContext);
 
         bool ProcessRequest(SpawnAllEntitiesCommand& request, AZ::SerializeContext& serializeContext);
         bool ProcessRequest(SpawnEntitiesCommand& request, AZ::SerializeContext& serializeContext);

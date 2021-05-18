@@ -11,6 +11,7 @@
 */
 
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Serialization/IdUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -200,11 +201,13 @@ namespace AzFramework
         }
     }
 
-    AZ::Entity* SpawnableEntitiesManager::SpawnSingleEntity(const AZ::Entity& entityTemplate, AZ::SerializeContext& serializeContext)
+    AZ::Entity* SpawnableEntitiesManager::SpawnSingleEntity(const AZ::Entity& entityTemplate, EntityIdMap& spawnableToInstanceEntityIdMap,
+        AZ::SerializeContext& serializeContext)
     {
-        AZ::Entity* clone = serializeContext.CloneObject(&entityTemplate);
+        AZ::Entity* clone = AZ::IdUtils::Remapper<AZ::EntityId>::CloneObjectAndGenerateNewIdsAndFixRefs(
+            &entityTemplate, spawnableToInstanceEntityIdMap, &serializeContext);
+
         AZ_Assert(clone != nullptr, "Failed to clone spawnable entity.");
-        clone->SetId(AZ::Entity::MakeId());
         GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, clone);
         return clone;
     }
@@ -217,13 +220,16 @@ namespace AzFramework
             size_t spawnedEntitiesCount = ticket.m_spawnedEntities.size();
 
             const Spawnable::EntityList& entities = ticket.m_spawnable->GetEntities();
+            EntityIdMap& spawnableToInstanceEntityIdMap = ticket.m_spawnableToInstanceEntityIdMap;
+
             size_t entitiesSize = entities.size();
             ticket.m_spawnedEntities.reserve(ticket.m_spawnedEntities.size() + entitiesSize);
             ticket.m_spawnedEntityIndices.reserve(ticket.m_spawnedEntityIndices.size() + entitiesSize);
+            spawnableToInstanceEntityIdMap.reserve(entitiesSize);
 
             for(size_t i=0; i<entitiesSize; ++i)
             {
-                ticket.m_spawnedEntities.push_back(SpawnSingleEntity(*entities[i], serializeContext));
+                ticket.m_spawnedEntities.push_back(SpawnSingleEntity(*entities[i], spawnableToInstanceEntityIdMap, serializeContext));
                 ticket.m_spawnedEntityIndices.push_back(i);
             }
 
@@ -252,13 +258,16 @@ namespace AzFramework
             size_t spawnedEntitiesCount = ticket.m_spawnedEntities.size();
 
             const Spawnable::EntityList& entities = ticket.m_spawnable->GetEntities();
+            EntityIdMap& spawnableToInstanceEntityIdMap = ticket.m_spawnableToInstanceEntityIdMap;
+
             size_t entitiesSize = entities.size();
             ticket.m_spawnedEntities.reserve(ticket.m_spawnedEntities.size() + entitiesSize);
             ticket.m_spawnedEntityIndices.reserve(ticket.m_spawnedEntityIndices.size() + entitiesSize);
+            spawnableToInstanceEntityIdMap.reserve(entitiesSize);
 
             for (size_t index : request.m_entityIndices)
             {
-                ticket.m_spawnedEntities.push_back(SpawnSingleEntity(*entities[index], serializeContext));
+                ticket.m_spawnedEntities.push_back(SpawnSingleEntity(*entities[index], spawnableToInstanceEntityIdMap, serializeContext));
                 ticket.m_spawnedEntityIndices.push_back(index);
             }
             ticket.m_loadAll = false;
@@ -337,6 +346,8 @@ namespace AzFramework
             // Rebuild the list of entities.
             ticket.m_spawnedEntities.clear();
             const Spawnable::EntityList& entities = request.m_spawnable->GetEntities();
+            EntityIdMap& spawnableToInstanceEntityIdMap = ticket.m_spawnableToInstanceEntityIdMap;
+
             if (ticket.m_loadAll)
             {
                 // The new spawnable may have a different number of entities and since the intent of the user was
@@ -346,7 +357,9 @@ namespace AzFramework
                 size_t entitiesSize = entities.size();
                 for (size_t i = 0; i < entitiesSize; ++i)
                 {
-                    ticket.m_spawnedEntities.push_back(SpawnSingleEntity(*entities[i], serializeContext));
+                    ticket.m_spawnedEntities.push_back(
+                        SpawnSingleEntity(*entities[i], spawnableToInstanceEntityIdMap, serializeContext));
+
                     ticket.m_spawnedEntityIndices.push_back(i);
                 }
             }
@@ -356,7 +369,8 @@ namespace AzFramework
                 for (size_t index : ticket.m_spawnedEntityIndices)
                 {
                     ticket.m_spawnedEntities.push_back(
-                        index < entitiesSize ? SpawnSingleEntity(*entities[index], serializeContext) : nullptr);
+                        index < entitiesSize ?
+                        SpawnSingleEntity(*entities[index], spawnableToInstanceEntityIdMap, serializeContext) : nullptr);
                 }
             }
             ticket.m_spawnable = AZStd::move(request.m_spawnable);
