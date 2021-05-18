@@ -12,7 +12,7 @@
         Manufacturer="$(var.CPACK_PACKAGE_VENDOR)"
         UpgradeCode="$(var.CPACK_WIX_UPGRADE_GUID)">
 
-        <Package InstallerVersion="301" Compressed="yes"/>
+        <Package InstallerVersion="301" Compressed="yes" InstallPrivileges="elevated" InstallScope="perMachine"/>
 
         <!-- auto distribute the installable files across N cab files -->
         <MediaTemplate EmbedCab="$(var.CPACK_EMBED_ARTIFACTS)"/>
