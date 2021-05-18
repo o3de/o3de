@@ -163,7 +163,7 @@ namespace ImGui
 
     void ImGuiLYAssetExplorer::ImGuiUpdate_DrawMenu()
     {
-        // Master on / off Switch
+        // On / off Switch
         ImGui::Checkbox("Mesh Debug Enabled", &m_meshDebugEnabled);
         ImGui::SameLine();
         
