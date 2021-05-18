@@ -255,12 +255,12 @@ namespace AZ
 #endif
         }
 
-        void SkinnedMeshFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]] RPI::RenderPipelinePtr pipeline)
+        void SkinnedMeshFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
             InitSkinningAndMorphPass(pipeline->GetRootPass());
         }
 
-        void SkinnedMeshFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
+        void SkinnedMeshFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
         {
             InitSkinningAndMorphPass(renderPipeline->GetRootPass());
         }
@@ -310,6 +310,8 @@ namespace AZ
             {
                 SkinnedMeshComputePass* skinnedMeshComputePass = azdynamic_cast<SkinnedMeshComputePass*>(skinningPass.get());
                 skinnedMeshComputePass->SetFeatureProcessor(this);
+
+                // There may be multiple skinning passes in the scene due to multiple pipelines, but there is only one skinning shader
                 m_skinningShader = skinnedMeshComputePass->GetShader();
 
                 if (!m_skinningShader)
@@ -327,6 +329,8 @@ namespace AZ
             {
                 MorphTargetComputePass* morphTargetComputePass = azdynamic_cast<MorphTargetComputePass*>(morphTargetPass.get());
                 morphTargetComputePass->SetFeatureProcessor(this);
+
+                // There may be multiple morph target passes in the scene due to multiple pipelines, but there is only one morph target shader
                 m_morphTargetShader = morphTargetComputePass->GetShader();
 
                 if (!m_morphTargetShader)
