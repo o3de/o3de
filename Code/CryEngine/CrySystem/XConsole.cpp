@@ -140,147 +140,6 @@ void Command_SetWaitFrames(IConsoleCmdArgs* pCmd)
     }
 }
 
-/*
-
-  CNotificationNetworkConsole
-
-*/
-
-#include <INotificationNetwork.h>
-class CNotificationNetworkConsole
-    : public INotificationNetworkListener
-{
-private:
-    static const uint32 LENGTH_MAX = 256;
-    static CNotificationNetworkConsole* s_pInstance;
-
-public:
-    static bool Initialize()
-    {
-        if (s_pInstance)
-        {
-            return true;
-        }
-
-        INotificationNetwork* pNotificationNetwork = gEnv->pSystem->GetINotificationNetwork();
-        if (!pNotificationNetwork)
-        {
-            return false;
-        }
-
-        s_pInstance = new CNotificationNetworkConsole();
-        pNotificationNetwork->ListenerBind("Command", s_pInstance);
-        return true;
-    }
-
-    static void Shutdown()
-    {
-        if (!s_pInstance)
-        {
-            return;
-        }
-
-        delete s_pInstance;
-        s_pInstance = NULL;
-    }
-
-    static void Update()
-    {
-        if (s_pInstance)
-        {
-            s_pInstance->ProcessCommand();
-        }
-    }
-
-private:
-    CNotificationNetworkConsole()
-    {
-        m_pConsole = NULL;
-
-        m_commandBuffer[0][0] = '\0';
-        m_commandBuffer[1][0] = '\0';
-        m_commandBufferIndex = 0;
-        m_commandCriticalSection = ::CryCreateCriticalSection();
-    }
-
-    ~CNotificationNetworkConsole()
-    {
-        if (m_commandCriticalSection)
-        {
-            ::CryDeleteCriticalSection(m_commandCriticalSection);
-        }
-    }
-
-private:
-    void ProcessCommand()
-    {
-        if (!ValidateConsole())
-        {
-            return;
-        }
-
-        char* command = NULL;
-        ::CryEnterCriticalSection(m_commandCriticalSection);
-        if (*m_commandBuffer[m_commandBufferIndex])
-        {
-            command = m_commandBuffer[m_commandBufferIndex];
-        }
-        ++m_commandBufferIndex &= 1;
-        ::CryLeaveCriticalSection(m_commandCriticalSection);
-
-        if (command)
-        {
-            m_pConsole->ExecuteString(command);
-            *command = '\0';
-        }
-    }
-
-    bool ValidateConsole()
-    {
-        if (m_pConsole)
-        {
-            return true;
-        }
-
-        if (!gEnv->pConsole)
-        {
-            return false;
-        }
-
-        m_pConsole = gEnv->pConsole;
-        return true;
-    }
-
-    // INotificationNetworkListener
-public:
-    void OnNotificationNetworkReceive(const void* pBuffer, size_t length)
-    {
-        if (!ValidateConsole())
-        {
-            return;
-        }
-
-        if (length > LENGTH_MAX)
-        {
-            length = LENGTH_MAX;
-        }
-
-        ::CryEnterCriticalSection(m_commandCriticalSection);
-        ::memcpy(m_commandBuffer[m_commandBufferIndex], pBuffer, length);
-        m_commandBuffer[m_commandBufferIndex][LENGTH_MAX - 1] = '\0';
-        ::CryLeaveCriticalSection(m_commandCriticalSection);
-    }
-
-private:
-    IConsole* m_pConsole;
-
-    char m_commandBuffer[2][LENGTH_MAX];
-    size_t m_commandBufferIndex;
-    void* m_commandCriticalSection;
-};
-
-CNotificationNetworkConsole* CNotificationNetworkConsole::s_pInstance = NULL;
-
 void ConsoleShow(IConsoleCmdArgs*)
 {
     gEnv->pConsole->ShowConsole(true);
@@ -359,8 +218,6 @@ CXConsole::CXConsole()
     m_waitSeconds = 0.0f;
     m_blockCounter = 0;
 
-    CNotificationNetworkConsole::Initialize();
-
     AzFramework::ConsoleRequestBus::Handler::BusConnect();
     AzFramework::CommandRegistrationBus::Handler::BusConnect();
 
@@ -378,8 +235,6 @@ CXConsole::~CXConsole()
     {
         gEnv->pSystem->GetIRemoteConsole()->UnregisterListener(this);
     }
-
-    CNotificationNetworkConsole::Shutdown();
 
     if (!m_mapVariables.empty())
     {
@@ -1205,8 +1060,6 @@ void CXConsole::Update()
             }
         }
     }
-
-    CNotificationNetworkConsole::Update();
 }
 
 //enable this for now, we need it for profiling etc
@@ -1749,11 +1602,6 @@ void CXConsole::AuditCVars(IConsoleCmdArgs* pArg)
     int devOnlyMask = VF_DEV_ONLY;
     int dediOnlyMask = VF_DEDI_ONLY;
     int excludeMask = cheatMask | constMask | readOnlyMask | devOnlyMask | dediOnlyMask;
-#if defined(CVARS_WHITELIST)
-    CSystem* pSystem = static_cast<CSystem*>(gEnv->pSystem);
-    ICVarsWhitelist* pCVarsWhitelist = pSystem->GetCVarsWhiteList();
-    bool excludeWhitelist = true;
-#endif // defined(CVARS_WHITELIST)
 
     if (numArgs > 1)
     {
@@ -1786,13 +1634,6 @@ void CXConsole::AuditCVars(IConsoleCmdArgs* pArg)
                 excludeMask &= ~dediOnlyMask;
             }
 
-#if defined(CVARS_WHITELIST)
-            if (azstricmp(arg, "whitelist") == 0)
-            {
-                excludeWhitelist = false;
-            }
-#endif // defined(CVARS_WHITELIST)
-
             --numArgs;
         }
     }
@@ -1810,11 +1651,6 @@ void CXConsole::AuditCVars(IConsoleCmdArgs* pArg)
         int devOnlyFlags = (command.m_nFlags & devOnlyMask);
         int dediOnlyFlags = (command.m_nFlags & dediOnlyMask);
         bool shouldLog = ((cheatFlags | devOnlyFlags | dediOnlyFlags) == 0) || (((cheatFlags | devOnlyFlags | dediOnlyFlags) & ~excludeMask) != 0);
-#if defined(CVARS_WHITELIST)
-        bool whitelisted = (pCVarsWhitelist) ? pCVarsWhitelist->IsWhiteListed(command.m_sName, true) : true;
-        shouldLog &= (!whitelisted || (whitelisted & !excludeWhitelist));
-#endif // defined(CVARS_WHITELIST)
-
         if (shouldLog)
         {
             CryLogAlways("[CVARS]: [COMMAND] %s%s%s%s%s",
@@ -1822,11 +1658,7 @@ void CXConsole::AuditCVars(IConsoleCmdArgs* pArg)
                 (cheatFlags != 0) ? " [VF_CHEAT]" : "",
                 (devOnlyFlags != 0) ? " [VF_DEV_ONLY]" : "",
                 (dediOnlyFlags != 0) ? " [VF_DEDI_ONLY]" : "",
-#if defined(CVARS_WHITELIST)
-                (whitelisted == true) ? " [WHITELIST]" : ""
-#else
                 ""
-#endif // defined(CVARS_WHITELIST)
                 );
             ++commandCount;
         }
@@ -1843,11 +1675,6 @@ void CXConsole::AuditCVars(IConsoleCmdArgs* pArg)
         int devOnlyFlags = (flags & devOnlyMask);
         int dediOnlyFlags = (flags & dediOnlyMask);
         bool shouldLog = ((cheatFlags | constFlags | readOnlyFlags | devOnlyFlags | dediOnlyFlags) == 0) || (((cheatFlags | constFlags | readOnlyFlags | devOnlyFlags | dediOnlyFlags) & ~excludeMask) != 0);
-#if defined(CVARS_WHITELIST)
-        bool whitelisted = (pCVarsWhitelist) ? pCVarsWhitelist->IsWhiteListed(pVariable->GetName(), true) : true;
-        shouldLog &= (!whitelisted || (whitelisted & !excludeWhitelist));
-#endif // defined(CVARS_WHITELIST)
-
         if (shouldLog)
         {
             CryLogAlways("[CVARS]: [VARIABLE] %s%s%s%s%s%s%s",
@@ -1857,11 +1684,7 @@ void CXConsole::AuditCVars(IConsoleCmdArgs* pArg)
                 (readOnlyFlags != 0) ? " [VF_READONLY]" : "",
                 (devOnlyFlags != 0) ? " [VF_DEV_ONLY]" : "",
                 (dediOnlyFlags != 0) ? " [VF_DEDI_ONLY]" : "",
-#if defined(CVARS_WHITELIST)
-                (whitelisted == true) ? " [WHITELIST]" : ""
-#else
                 ""
-#endif // defined(CVARS_WHITELIST)
                 );
             ++cvarCount;
         }
@@ -2520,11 +2343,6 @@ const char* CXConsole::ProcessCompletion(const char* szInputBuffer)
         }
     }
     //try to search in command list
-
-#if defined(CVARS_WHITELIST)
-    CSystem* pSystem = static_cast<CSystem*>(gEnv->pSystem);
-    ICVarsWhitelist* pCVarsWhitelist = pSystem->GetCVarsWhiteList();
-#endif // defined(CVARS_WHITELIST)
     bool bArgumentAutoComplete = false;
     std::vector<string> matches;
 
@@ -2565,10 +2383,6 @@ const char* CXConsole::ProcessCompletion(const char* szInputBuffer)
                     string cmd = string(sVar) + " " + pArgumentAutoComplete->GetValue(i);
                     if (_strnicmp(m_sPrevTab.c_str(), cmd.c_str(), m_sPrevTab.length()) == 0)
                     {
-#if defined(CVARS_WHITELIST)
-                        bool whitelisted = (pCVarsWhitelist) ? pCVarsWhitelist->IsWhiteListed(cmd, true) : true;
-                        if (whitelisted)
-#endif // defined(CVARS_WHITELIST)
                         {
                             bArgumentAutoComplete = true;
                             matches.push_back(cmd);
@@ -2590,10 +2404,6 @@ const char* CXConsole::ProcessCompletion(const char* szInputBuffer)
             {
                 if (_strnicmp(m_sPrevTab.c_str(), itrCmds->first.c_str(), m_sPrevTab.length()) == 0)
                 {
-#if defined(CVARS_WHITELIST)
-                    bool whitelisted = (pCVarsWhitelist) ? pCVarsWhitelist->IsWhiteListed(itrCmds->first, true) : true;
-                    if (whitelisted)
-#endif // defined(CVARS_WHITELIST)
                     {
                         matches.push_back((char* const)itrCmds->first.c_str());
                     }
@@ -2613,10 +2423,6 @@ const char* CXConsole::ProcessCompletion(const char* szInputBuffer)
             {//if(itrVars->first.compare(0,m_sPrevTab.length(),m_sPrevTab)==0)
                 if (_strnicmp(m_sPrevTab.c_str(), itrVars->first, m_sPrevTab.length()) == 0)
                 {
-#if defined(CVARS_WHITELIST)
-                    bool whitelisted = (pCVarsWhitelist) ? pCVarsWhitelist->IsWhiteListed(itrVars->first, true) : true;
-                    if (whitelisted)
-#endif // defined(CVARS_WHITELIST)
                     {
                         matches.push_back((char* const)itrVars->first);
                     }
@@ -2990,12 +2796,6 @@ void CXConsole::ExecuteInputBuffer()
 
     AddCommandToHistory(sTemp.c_str());
 
-#if defined(CVARS_WHITELIST)
-    CSystem* pSystem = static_cast<CSystem*>(gEnv->pSystem);
-    ICVarsWhitelist* pCVarsWhitelist = pSystem->GetCVarsWhiteList();
-    bool execute = (pCVarsWhitelist) ? pCVarsWhitelist->IsWhiteListed(sTemp, false) : true;
-    if (execute)
-#endif // defined(CVARS_WHITELIST)
     {
         ExecuteStringInternal(sTemp.c_str(), true);     // from console
     }

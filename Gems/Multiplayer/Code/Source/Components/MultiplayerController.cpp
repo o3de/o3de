@@ -10,9 +10,9 @@
 *
 */
 
-#include <Source/Components/MultiplayerController.h>
-#include <Source/Components/MultiplayerComponent.h>
-#include <Source/Components/NetBindComponent.h>
+#include <Multiplayer/Components/MultiplayerController.h>
+#include <Multiplayer/Components/MultiplayerComponent.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 
 namespace Multiplayer
 {
@@ -27,9 +27,14 @@ namespace Multiplayer
         return m_owner.GetNetEntityId();
     }
 
-    NetEntityRole MultiplayerController::GetNetEntityRole() const
+    bool MultiplayerController::IsAuthority() const
     {
-        return GetNetBindComponent()->GetNetEntityRole();
+        return GetNetBindComponent() ? GetNetBindComponent()->IsAuthority() : false;
+    }
+
+    bool MultiplayerController::IsAutonomous() const
+    {
+        return GetNetBindComponent() ? GetNetBindComponent()->IsAutonomous() : false;
     }
 
     AZ::Entity* MultiplayerController::GetEntity() const

@@ -11,7 +11,7 @@
 */
 
 #include <Source/NetworkInput/NetworkInputArray.h>
-#include <Include/INetworkEntityManager.h>
+#include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/Serialization/DeltaSerializer.h>
 
@@ -46,16 +46,6 @@ namespace Multiplayer
     const NetworkInput& NetworkInputArray::operator[](uint32_t index) const
     {
         return m_inputs[index].m_networkInput;
-    }
-
-    void NetworkInputArray::SetPreviousInputId(ClientInputId previousInputId)
-    {
-        m_previousInputId = previousInputId;
-    }
-
-    ClientInputId NetworkInputArray::GetPreviousInputId() const
-    {
-        return m_previousInputId;
     }
 
     bool NetworkInputArray::Serialize(AzNetworking::ISerializer& serializer)
@@ -102,7 +92,6 @@ namespace Multiplayer
                 }
             }
         }
-        serializer.Serialize(m_previousInputId, "PreviousInputId");
         return true;
     }
 }

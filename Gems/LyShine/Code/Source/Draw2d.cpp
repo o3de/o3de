@@ -309,7 +309,8 @@ void CDraw2d::DrawRectOutlineTextured(AZ::Data::Instance<AZ::RPI::Image> image,
     UiTransformInterface::RectPoints points,
     AZ::Vector2 rightVec,
     AZ::Vector2 downVec,
-    AZ::Color color)
+    AZ::Color color,
+    uint32_t lineThickness)
 {
     // since the rect can be transformed we have to add the offsets by multiplying them
     // by unit vectors parallel with the edges of the rect. However, the rect could be
@@ -325,18 +326,22 @@ void CDraw2d::DrawRectOutlineTextured(AZ::Data::Instance<AZ::RPI::Image> image,
     float rectWidth = widthVec.GetLength();
     float rectHeight = heightVec.GetLength();
 
-    // the outline thickness will be based on the texture height
-    float textureHeight = image ? aznumeric_cast<float>(image->GetDescriptor().m_size.m_height) : 0.0f;
-    if (textureHeight <= 0.0f)
+    if (lineThickness == 0 && image)
     {
-        AZ_Assert(false, "Attempting to draw a textured rect outline with an image of zero height.");
-        return; // avoiding possible divide by zero later
+        lineThickness = image->GetDescriptor().m_size.m_height;
+    }
+
+    if (lineThickness == 0)
+    {
+        AZ_Assert(false, "Attempting to draw a rect outline with of zero thickness.");
+        return;
     }
 
     // the outline is centered on the element rect so half the outline is outside
     // the rect and half is inside the rect
-    float outerOffset = -textureHeight * 0.5f;
-    float innerOffset = textureHeight * 0.5f;
+    float offset = aznumeric_cast<float>(lineThickness);
+    float outerOffset = -offset * 0.5f;
+    float innerOffset = offset * 0.5f;
     float outerV = 0.0f;
     float innerV = 1.0f;
 
@@ -348,7 +353,7 @@ void CDraw2d::DrawRectOutlineTextured(AZ::Data::Instance<AZ::RPI::Image> image,
     {
         float oldInnerOffset = innerOffset;
         innerOffset = minDimension * 0.5f;
-        // note oldInnerOffset can't be zero because of early return if textureHeight is zero
+        // note oldInnerOffset can't be zero because of early return if lineThickness is zero
         innerV = 0.5f + 0.5f * innerOffset / oldInnerOffset;
     }
 

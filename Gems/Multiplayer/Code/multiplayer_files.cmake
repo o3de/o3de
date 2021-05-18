@@ -10,22 +10,35 @@
 #
 
 set(FILES
-    Include/IConnectionData.h
-    Include/IEntityDomain.h
-    Include/IMultiplayer.h
-    Include/IMultiplayerComponentInput.h
-    Include/INetworkEntityManager.h
-    Include/INetworkTime.h
-    Include/IReplicationWindow.h
-    Include/MultiplayerStats.cpp
-    Include/MultiplayerStats.h
-    Include/MultiplayerTypes.h
-    Include/NetworkEntityHandle.h
-    Include/NetworkEntityHandle.inl
+    Include/Multiplayer/IMultiplayer.h
+    Include/Multiplayer/MultiplayerStats.h
+    Include/Multiplayer/MultiplayerTypes.h
+    Include/Multiplayer/Components/LocalPredictionPlayerInputComponent.h
+    Include/Multiplayer/Components/MultiplayerComponent.h
+    Include/Multiplayer/Components/MultiplayerController.h
+    Include/Multiplayer/Components/MultiplayerComponentRegistry.h
+    Include/Multiplayer/Components/NetBindComponent.h
+    Include/Multiplayer/Components/NetworkTransformComponent.h
+    Include/Multiplayer/ConnectionData/IConnectionData.h
+    Include/Multiplayer/EntityDomains/IEntityDomain.h
+    Include/Multiplayer/NetworkEntity/INetworkEntityManager.h
+    Include/Multiplayer/INetworkSpawnableLibrary.h
+    Include/Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h
+    Include/Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h
+    Include/Multiplayer/NetworkEntity/NetworkEntityHandle.h
+    Include/Multiplayer/NetworkEntity/NetworkEntityHandle.inl
+    Include/Multiplayer/NetworkEntity/EntityReplication/ReplicationRecord.h
+    Include/Multiplayer/NetworkInput/IMultiplayerComponentInput.h
+    Include/Multiplayer/NetworkInput/NetworkInput.h
+    Include/Multiplayer/NetworkTime/INetworkTime.h
+    Include/Multiplayer/NetworkTime/RewindableObject.h
+    Include/Multiplayer/NetworkTime/RewindableObject.inl
+    Include/Multiplayer/ReplicationWindows/IReplicationWindow.h
     Source/Multiplayer_precompiled.cpp
     Source/Multiplayer_precompiled.h
     Source/MultiplayerSystemComponent.cpp
     Source/MultiplayerSystemComponent.h
+    Source/MultiplayerStats.cpp
     Source/AutoGen/AutoComponent_Header.jinja
     Source/AutoGen/AutoComponent_Source.jinja
     Source/AutoGen/AutoComponent_Common.jinja
@@ -35,17 +48,11 @@ set(FILES
     Source/AutoGen/Multiplayer.AutoPackets.xml
     Source/AutoGen/NetworkTransformComponent.AutoComponent.xml
     Source/Components/LocalPredictionPlayerInputComponent.cpp
-    Source/Components/LocalPredictionPlayerInputComponent.h
-    Source/Components/MultiplayerComponentRegistry.cpp
-    Source/Components/MultiplayerComponentRegistry.h
     Source/Components/MultiplayerComponent.cpp
-    Source/Components/MultiplayerComponent.h
     Source/Components/MultiplayerController.cpp
-    Source/Components/MultiplayerController.h
+    Source/Components/MultiplayerComponentRegistry.cpp
     Source/Components/NetBindComponent.cpp
-    Source/Components/NetBindComponent.h
     Source/Components/NetworkTransformComponent.cpp
-    Source/Components/NetworkTransformComponent.h
     Source/ConnectionData/ClientToServerConnectionData.cpp
     Source/ConnectionData/ClientToServerConnectionData.h
     Source/ConnectionData/ClientToServerConnectionData.inl
@@ -64,7 +71,6 @@ set(FILES
     Source/NetworkEntity/EntityReplication/PropertySubscriber.cpp
     Source/NetworkEntity/EntityReplication/PropertySubscriber.h
     Source/NetworkEntity/EntityReplication/ReplicationRecord.cpp
-    Source/NetworkEntity/EntityReplication/ReplicationRecord.h
     Source/NetworkEntity/NetworkEntityAuthorityTracker.cpp
     Source/NetworkEntity/NetworkEntityAuthorityTracker.h
     Source/NetworkEntity/NetworkEntityHandle.cpp
@@ -73,14 +79,11 @@ set(FILES
     Source/NetworkEntity/NetworkSpawnableLibrary.cpp
     Source/NetworkEntity/NetworkSpawnableLibrary.h
     Source/NetworkEntity/NetworkEntityRpcMessage.cpp
-    Source/NetworkEntity/NetworkEntityRpcMessage.h
     Source/NetworkEntity/NetworkEntityTracker.cpp
     Source/NetworkEntity/NetworkEntityTracker.h
     Source/NetworkEntity/NetworkEntityTracker.inl
     Source/NetworkEntity/NetworkEntityUpdateMessage.cpp
-    Source/NetworkEntity/NetworkEntityUpdateMessage.h
     Source/NetworkInput/NetworkInput.cpp
-    Source/NetworkInput/NetworkInput.h
     Source/NetworkInput/NetworkInputArray.cpp
     Source/NetworkInput/NetworkInputArray.h
     Source/NetworkInput/NetworkInputChild.cpp
@@ -91,8 +94,6 @@ set(FILES
     Source/NetworkInput/NetworkInputMigrationVector.h
     Source/NetworkTime/NetworkTime.cpp
     Source/NetworkTime/NetworkTime.h
-    Source/NetworkTime/RewindableObject.h
-    Source/NetworkTime/RewindableObject.inl
     Source/Pipeline/NetBindMarkerComponent.cpp
     Source/Pipeline/NetBindMarkerComponent.h
     Source/Pipeline/NetworkSpawnableHolderComponent.cpp

@@ -420,12 +420,10 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
 #else
     sip.hWnd = hwndForInputSystem;
 #endif
-    sip.hWndForInputSystem = hwndForInputSystem;
 
     sip.pLogCallback = &m_logFile;
     sip.sLogFileName = "@log@/Editor.log";
     sip.pUserCallback = m_pSystemUserCallback;
-    sip.pValidator = GetIEditor()->GetErrorReport(); // Assign validator from Editor.
 
     if (sInCmdLine)
     {
@@ -503,7 +501,6 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
 
 bool CGameEngine::InitGame(const char*)
 {
-    // in editor we do it later, bExecuteCommandLine was set to false
     m_pISystem->ExecuteCommandLine();
 
     return true;
@@ -608,8 +605,6 @@ void CGameEngine::SwitchToInGame()
     
     GetIEditor()->Notify(eNotify_OnBeginGameMode);
 
-    m_pISystem->SetThreadState(ESubsys_Physics, false);
-
     m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(true);
     m_bInGameMode = true;
 
@@ -645,8 +640,6 @@ void CGameEngine::SwitchToInEditor()
         m_pISystem->GetIMovieSystem()->GetPlayingSequence(i)->Deactivate();
     }
     m_pISystem->GetIMovieSystem()->Reset(false, false);
-
-    m_pISystem->SetThreadState(ESubsys_Physics, false);
 
     CViewport* pGameViewport = GetIEditor()->GetViewManager()->GetGameViewport();
 
@@ -791,8 +784,6 @@ void CGameEngine::SetSimulationMode(bool enabled, bool bOnlyPhysics)
     // Enables engine to know about simulation mode.
     gEnv->SetIsEditorSimulationMode(enabled);
 
-    m_pISystem->SetThreadState(ESubsys_Physics, false);
-
     if (m_bSimulationMode)
     {
         // [Anton] the order of the next 3 calls changed, since, EVENT_INGAME loads physics state (if any),
@@ -903,19 +894,6 @@ void CGameEngine::Update()
         // [marco] check current sound and vis areas for music etc.
         // but if in game mode, 'cos is already done in the above call to game->update()
         unsigned int updateFlags = ESYSUPDATE_EDITOR;
-
-        if (!m_bSimulationMode)
-        {
-            updateFlags |= ESYSUPDATE_IGNORE_PHYSICS;
-        }
-
-        bool bUpdateAIPhysics = GetSimulationMode();
-
-        if (bUpdateAIPhysics)
-        {
-            updateFlags |= ESYSUPDATE_EDITOR_AI_PHYSICS;
-        }
-
         GetIEditor()->GetAnimation()->Update();
         GetIEditor()->GetSystem()->UpdatePreTickBus(updateFlags);
         componentApplication->Tick(gEnv->pTimer->GetFrameTime(ITimer::ETIMER_GAME));

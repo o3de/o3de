@@ -37,9 +37,6 @@ enum CryLockType
 
 #define CRYLOCK_HAVE_FASTLOCK 1
 
-void CryThreadSetName(threadID nThreadId, const char* sThreadName);
-const char* CryThreadGetName(threadID nThreadId);
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Primitive locks and conditions.

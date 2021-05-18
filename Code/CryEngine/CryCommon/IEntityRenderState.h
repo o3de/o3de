@@ -27,7 +27,6 @@ namespace AZ
 struct IMaterial;
 struct IVisArea;
 struct SRenderingPassInfo;
-struct IGeomCache;
 struct SRendItemSorter;
 struct SFrameLodInfo;
 struct pe_params_area;
@@ -259,9 +258,6 @@ struct IRenderNode
     virtual struct IStatObj* GetEntityStatObj(unsigned int nPartId = 0, unsigned int nSubPartId = 0, Matrix34A* pMatrix = NULL, bool bReturnOnlyVisible = false);
     virtual _smart_ptr<IMaterial> GetEntitySlotMaterial([[maybe_unused]] unsigned int nPartId, [[maybe_unused]] bool bReturnOnlyVisible = false, [[maybe_unused]] bool* pbDrawNear = NULL) { return NULL; }
     virtual void SetEntityStatObj([[maybe_unused]] unsigned int nSlot, [[maybe_unused]] IStatObj* pStatObj, [[maybe_unused]] const Matrix34A* pMatrix = NULL) {};
-#if defined(USE_GEOM_CACHES)
-    virtual struct IGeomCacheRenderNode* GetGeomCacheRenderNode([[maybe_unused]] unsigned int nSlot, [[maybe_unused]] Matrix34A* pMatrix = NULL, [[maybe_unused]] bool bReturnOnlyVisible = false) { return NULL; }
-#endif
     virtual int GetSlotCount() const { return 1; }
 
     // Summary:
@@ -572,7 +568,6 @@ struct IVoxelObject
     : public IRenderNode
 {
     // <interfuscator:shuffle>
-    virtual struct IMemoryBlock* GetCompiledData(EEndian eEndian) = 0;
     virtual void SetCompiledData(void* pData, int nSize, uint8 ucChildId, EEndian eEndian) = 0;
     virtual void SetObjectName(const char* pName) = 0;
     virtual void SetMatrix(const Matrix34& mat) = 0;
@@ -793,82 +788,5 @@ struct IPrismRenderNode
 {
 };
 #endif // EXCLUDE_DOCUMENTATION_PURPOSE
-
-//////////////////////////////////////////////////////////////////////////
-
-#if defined(USE_GEOM_CACHES)
-struct IGeomCacheRenderNode
-    : public IRenderNode
-{
-    virtual bool LoadGeomCache(const char* sGeomCacheFileName) = 0;
-
-    virtual void SetGeomCache(_smart_ptr<IGeomCache> geomCache) = 0;
-
-    // Gets the geometry cache that is rendered
-    virtual IGeomCache* GetGeomCache() const = 0;
-
-    // Sets the time in the animation for the current frame.
-    // Note that you should start streaming before calling this.
-    virtual void SetPlaybackTime(const float time) = 0;
-
-    // Get the current playback time
-    virtual float GetPlaybackTime() const = 0;
-
-    // Check if cache is streaming.
-    virtual bool IsStreaming() const = 0;
-
-    // Need to start streaming before playback, otherwise there will be stalls.
-    virtual void StartStreaming(const float time = 0.0f) = 0;
-
-    // Stops streaming and trashes the buffers
-    virtual void StopStreaming() = 0;
-
-    // Checks if looping is enabled
-    virtual bool IsLooping() const = 0;
-
-    // Enable/disable looping playback
-    virtual void SetLooping(const bool bEnable) = 0;
-
-    // Gets time delta from current playback position to last ready to play frame
-    virtual float GetPrecachedTime() const = 0;
-
-    // Check if bounds changed since last call to this function
-    virtual bool DidBoundsChange() = 0;
-
-    // Set stand in CGFs and distance
-    virtual void SetStandIn(const char* pFilePath, const char* pMaterial) = 0;
-    virtual IStatObj* GetStandIn() = 0;
-    virtual void SetFirstFrameStandIn(const char* pFilePath, const char* pMaterial) = 0;
-    virtual IStatObj* GetFirstFrameStandIn() = 0;
-    virtual void SetLastFrameStandIn(const char* pFilePath, const char* pMaterial) = 0;
-    virtual IStatObj* GetLastFrameStandIn() = 0;
-    virtual void SetStandInDistance(const float distance) = 0;
-    virtual float GetStandInDistance() = 0;
-
-    // Set distance at which cache will start streaming automatically (0 means no auto streaming)
-    virtual void SetStreamInDistance(const float distance) = 0;
-    virtual float GetStreamInDistance() = 0;
-
-    // Start/Stop drawing the cache
-    virtual void SetDrawing(bool bDrawing) = 0;
-
-    // Debug draw geometry
-    virtual void DebugDraw(const struct SGeometryDebugDrawInfo& info, float fExtrudeScale = 0.01f, uint nodeIndex = 0) const = 0;
-
-    // Ray intersection against cache
-    virtual bool RayIntersection(struct SRayHitInfo& hitInfo, _smart_ptr<IMaterial> pCustomMtl = NULL, uint* pHitNodeIndex = NULL) const = 0;
-
-    // Set max view distance 
-    virtual void SetBaseMaxViewDistance(float maxViewDistance) = 0;
-
-    // Get node information
-    virtual uint GetNodeCount() const = 0;
-    virtual Matrix34 GetNodeTransform(const uint nodeIndex) const = 0;
-    virtual const char* GetNodeName(const uint nodeIndex) const = 0; // Node name is only stored in editor
-    virtual uint32 GetNodeNameHash(const uint nodeIndex) const = 0;
-    virtual bool IsNodeDataValid(const uint nodeIndex) const = 0; // Returns false if cache isn't loaded yet or index is out of range
-
-};
-#endif
 
 #endif // CRYINCLUDE_CRYCOMMON_IENTITYRENDERSTATE_H

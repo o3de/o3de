@@ -17,7 +17,6 @@
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzToolsFramework/ToolsComponents/ScriptEditorComponent.h>
-#include <AzFramework/Script/ScriptNetBindings.h>
 
 #include "EntityTestbed.h"
 
@@ -62,8 +61,6 @@ namespace UnitTest
             EBUS_EVENT_RESULT(m_scriptContext, ScriptSystemRequestBus, GetContext, DefaultScriptContextId);
             EBUS_EVENT_RESULT(m_behaviorContext, AZ::ComponentApplicationBus, GetBehaviorContext);
             EBUS_EVENT_RESULT(m_serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
-
-            NetBindable::Reflect(m_serializeContext);
 
             AzToolsFramework::Components::ScriptEditorComponent::CreateDescriptor(); // descriptor is deleted by app
             AzToolsFramework::Components::ScriptEditorComponent::Reflect(m_serializeContext);
@@ -227,64 +224,5 @@ namespace UnitTest
         auto* scriptComponent = BuildGameEntity(scriptAsset, gameEntity);
 
         EXPECT_NE(scriptComponent->GetScriptProperty("myNum"), nullptr);
-    }
-
-    TEST_F(ScriptComponentTest, UpdateNetSynchedProperty)
-    {
-        // Make sure altering a netsynched property in script only affects the single entity instance
-        const AZStd::string script = "local test = {\
-                                      Properties = {\
-                                        myNetSynchedNum = { default = 41, netSynched ={} },\
-                                        doUpdate = { default = false },\
-                                      },\
-                                    }\
-                                    function test:OnActivate()\
-                                      self.tickBusHandler = TickBus.Connect(self, self.entityId)\
-                                    end\
-                                    function test:OnDeactivate()\
-                                      self.tickBusHandler:Disconnect()\
-                                    end\
-                                    function test:OnTick(deltaTime, timePoint)\
-                                      if self.Properties.doUpdate then\
-                                        self.Properties.myNetSynchedNum = self.Properties.myNetSynchedNum+1\
-                                      end\
-                                    end\
-                                    return test";
-
-
-        const Data::Asset<ScriptAsset> scriptAsset = CreateAndLoadScriptAsset(script);
-        Entity entity1, entity2;
-        ScriptComponent* scriptComponentInstance1 = BuildGameEntity(scriptAsset, entity1);
-        ScriptComponent* scriptComponentInstance2 = BuildGameEntity(scriptAsset, entity2);
-
-        // Change the value of entity1's doUpdate to true.
-        // This way entity1's myNetSynchedNum should be incremented during OnTick
-        auto* doUpdateScriptProperty = azrtti_cast<ScriptPropertyBoolean*>(scriptComponentInstance1->GetScriptProperty("doUpdate"));
-        ASSERT_NE(doUpdateScriptProperty, nullptr);
-        doUpdateScriptProperty->m_value = true;
-
-        entity1.Init();
-        entity2.Init();
-        entity1.Activate();
-        entity2.Activate();
-
-        // Tick in order to call OnTick in our lua script.
-        m_app.Tick();
-        m_app.TickSystem();
-
-        // Ensure Entity1's myNetSynchedNum updated, but not Entity2
-        auto* netSynchedProperty1 = scriptComponentInstance1->GetNetworkedScriptProperty("myNetSynchedNum");
-        auto* netSynchedProperty2 = scriptComponentInstance2->GetNetworkedScriptProperty("myNetSynchedNum");
-        ASSERT_NE(netSynchedProperty1, nullptr);
-        ASSERT_NE(netSynchedProperty2, nullptr);
-
-        auto* num1 = azrtti_cast<const ScriptPropertyNumber*>(netSynchedProperty1);
-        auto* num2 = azrtti_cast<const ScriptPropertyNumber*>(netSynchedProperty2);
-
-        ASSERT_NE(num1, nullptr);
-        ASSERT_NE(num2, nullptr);
-
-        EXPECT_EQ(num1->m_value, 42);
-        EXPECT_EQ(num2->m_value, 41);
     }
 } // namespace UnitTest
