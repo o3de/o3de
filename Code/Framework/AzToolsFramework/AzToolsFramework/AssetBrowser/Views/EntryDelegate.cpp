@@ -140,7 +140,7 @@ namespace AzToolsFramework
             else
             {
                 // Scaling and centering pixmap within bounds to preserve aspect ratio
-                const QPixmap pixmap = thumbnail->GetPixmap(size).scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                const QPixmap pixmap = thumbnail->GetPixmap().scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
                 const QSize sizeDelta = size - pixmap.size();
                 const QPoint pointDelta = QPoint(sizeDelta.width() / 2, sizeDelta.height() / 2);
                 painter->drawPixmap(point + pointDelta, pixmap);

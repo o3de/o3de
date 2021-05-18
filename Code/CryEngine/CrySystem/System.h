@@ -408,13 +408,6 @@ public:
     virtual void DoWorkDuringOcclusionChecks();
     virtual bool NeedDoWorkDuringOcclusionChecks() { return m_bNeedDoWorkDuringOcclusionChecks; }
 
-    //! Begin rendering frame.
-    void    RenderBegin();
-    //! Render subsystems.
-    void    Render();
-    //! End rendering frame and swap back buffer.
-    void    RenderEnd(bool bRenderStats = true, bool bMainWindow = true);
-
     //Called when the renderer finishes rendering the scene
     void OnScene3DEnd() override;
 
@@ -428,11 +421,6 @@ public:
 
     //! Update screen and call some important tick functions during loading.
     void SynchronousLoadingTick(const char* pFunc, int line);
-
-    //! Renders the statistics; this is called from RenderEnd, but if the
-    //! Host application (Editor) doesn't employ the Render cycle in ISystem,
-    //! it may call this method to render the essential statistics
-    void RenderStatistics() override;
 
     uint32 GetUsedMemory();
 
@@ -469,7 +457,6 @@ public:
     AZ::IO::IArchive* GetIPak() { return m_env.pCryPak; };
     IConsole* GetIConsole() { return m_env.pConsole; };
     IRemoteConsole* GetIRemoteConsole();
-    I3DEngine* GetI3DEngine(){ return m_env.p3DEngine; }
     IMovieSystem* GetIMovieSystem() { return m_env.pMovieSystem; };
     IMemoryManager* GetIMemoryManager(){ return m_pMemoryManager; }
     IThreadManager* GetIThreadManager() override {return m_env.pThreadManager; }
@@ -676,17 +663,11 @@ private:
     //! @name Initialization routines
     //@{
     bool InitConsole();
-    bool InitRenderer(WIN_HINSTANCE hinst, WIN_HWND hwnd, const SSystemInitParams& initParams);
-
-    bool InitFont(const SSystemInitParams& initParams);
     bool InitFileSystem();
     bool InitFileSystem_LoadEngineFolders(const SSystemInitParams& initParams);
     bool InitStreamEngine();
-    bool Init3DEngine(const SSystemInitParams& initParams);
     bool InitAudioSystem(const SSystemInitParams& initParams);
     bool InitShine(const SSystemInitParams& initParams);
-    bool OpenRenderLibrary(int type, const SSystemInitParams& initParams);
-    bool OpenRenderLibrary(const char* t_rend, const SSystemInitParams& initParams);
 
     //@}
 
@@ -702,9 +683,6 @@ private:
     void CreateRendererVars(const SSystemInitParams& startupParams);
     void CreateSystemVars();
     void CreateAudioVars();
-    void RenderStats();
-    void RenderOverscanBorders();
-    void RenderMemStats();
 
     AZStd::unique_ptr<AZ::DynamicModuleHandle> LoadDLL(const char* dllName);
 
@@ -737,9 +715,6 @@ private:
 #elif defined(WIN32)
     bool GetWinGameFolder(char* szMyDocumentsPath, int maxPathSize);
 #endif
-
-    //! \brief Initializes the given IFFont member variable with the given name (internal use only).
-    bool LoadFontInternal(IFFont*& font, const string& fontName);
 
 public:
     void EnableFloatExceptions(int type);

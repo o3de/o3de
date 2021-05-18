@@ -544,7 +544,7 @@ namespace AzToolsFramework
             m_errorButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
             m_errorButton->setFixedSize(QSize(16, 16));
             m_errorButton->setMouseTracking(true);
-            m_errorButton->setIcon(QIcon("Editor/Icons/PropertyEditor/error_icon.png"));
+            m_errorButton->setIcon(QIcon("Icons/PropertyEditor/error_icon.png"));
             m_errorButton->setToolTip("Show Errors");
 
             // Insert the error button after the asset label
@@ -1304,7 +1304,11 @@ namespace AzToolsFramework
         }
         else if (attrib == AZ_CRC_CE("Thumbnail"))
         {
-            GUI->SetShowThumbnail(true);
+            bool showThumbnail = false;
+            if (attrValue->Read<bool>(showThumbnail))
+            {
+                GUI->SetShowThumbnail(showThumbnail);
+            }
         }
         else if (attrib == AZ_CRC_CE("ThumbnailCallback"))
         {

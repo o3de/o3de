@@ -61,7 +61,7 @@ namespace ScriptCanvas
                 {
                     editContext->Class<Entity>("Entity", "")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "")->
-                        Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Libraries/Entity.png")
+                        Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Libraries/Entity.png")
                         ;
                 }
 

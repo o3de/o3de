@@ -11,7 +11,5 @@
 
 set(FILES
     BuiltInPackages_windows.cmake
-    dyad_windows.cmake
-    FbxSdk_windows.cmake
     Wwise_windows.cmake
 )

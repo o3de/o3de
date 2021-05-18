@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C12712453
 # Test Case Title : Verify Raycast Multiple Node
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/12712453
+
 
 # fmt:off
 class Tests:

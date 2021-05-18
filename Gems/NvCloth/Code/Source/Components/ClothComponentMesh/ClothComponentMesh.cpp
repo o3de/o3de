@@ -184,7 +184,12 @@ namespace NvCloth
         m_actorClothColliders = ActorClothColliders::Create(m_entityId);
 
         // It will return a valid instance if it's an actor with skinning data.
-        m_actorClothSkinning = ActorClothSkinning::Create(m_entityId, m_meshNodeInfo, m_meshClothInfo.m_particles.size());
+        m_actorClothSkinning = ActorClothSkinning::Create(
+            m_entityId,
+            m_meshNodeInfo,
+            m_meshClothInfo.m_particles.size(),
+            m_cloth->GetParticles().size(),
+            m_meshRemappedVertices);
         m_numberOfClothSkinningUpdates = 0;
 
         m_clothConstraints = ClothConstraints::Create(
@@ -363,7 +368,7 @@ namespace NvCloth
             {
                 // Update skinning for all particles and apply it to cloth 
                 AZStd::vector<SimParticleFormat> particles = m_cloth->GetParticles();
-                m_actorClothSkinning->ApplySkinning(m_cloth->GetInitialParticles(), particles, m_meshRemappedVertices);
+                m_actorClothSkinning->ApplySkinning(m_cloth->GetInitialParticles(), particles);
                 m_cloth->SetParticles(AZStd::move(particles));
                 m_cloth->DiscardParticleDelta();
             }
@@ -379,8 +384,8 @@ namespace NvCloth
 
         if (m_actorClothSkinning)
         {
-            m_actorClothSkinning->ApplySkinning(m_clothConstraints->GetMotionConstraints(), m_motionConstraints, m_meshRemappedVertices);
-            m_actorClothSkinning->ApplySkinning(m_clothConstraints->GetSeparationConstraints(), m_separationConstraints, m_meshRemappedVertices);
+            m_actorClothSkinning->ApplySkinning(m_clothConstraints->GetMotionConstraints(), m_motionConstraints);
+            m_actorClothSkinning->ApplySkinning(m_clothConstraints->GetSeparationConstraints(), m_separationConstraints);
         }
 
         m_cloth->GetClothConfigurator()->SetMotionConstraints(m_motionConstraints);
@@ -404,7 +409,7 @@ namespace NvCloth
         if (m_config.m_removeStaticTriangles && m_actorClothSkinning)
         {
             // Apply skinning to the non-simulated part of the mesh.
-            m_actorClothSkinning->ApplySkinninOnRemovedVertices(m_meshClothInfo, renderData, m_meshRemappedVertices);
+            m_actorClothSkinning->ApplySkinningOnNonSimulatedVertices(m_meshClothInfo, renderData);
         }
 
         // Calculate normals of the cloth particles (simplified mesh).

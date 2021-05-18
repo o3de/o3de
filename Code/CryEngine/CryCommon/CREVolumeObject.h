@@ -55,7 +55,7 @@ public:
     Matrix34 m_matInv;
     Vec3 m_eyePosInWS;
     Vec3 m_eyePosInOS;
-    Plane m_volumeTraceStartPlane;
+    Plane_tpl<f32> m_volumeTraceStartPlane;
     AABB m_renderBoundsOS;
     bool m_viewerInsideVolume;
     bool m_nearPlaneIntersectsVolume;

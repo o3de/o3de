@@ -9,7 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-# Cmake version 3.17 is the minimum version needed for all of Open 3D Engine's supported platforms
+# Cmake version 3.19 is the minimum version needed for all of Open 3D Engine's supported platforms
 cmake_minimum_required(VERSION 3.19)
 
 # CMP0111 introduced in 3.19 has a bug that produces the policy to warn every time there is an
@@ -75,7 +75,9 @@ foreach(restricted_platform ${PAL_RESTRICTED_PLATFORMS})
     endif()
 endforeach()
 
-add_subdirectory(scripts)
+if(NOT INSTALLED_ENGINE)
+    add_subdirectory(scripts)
+endif()
 
 # SPEC-1417 will investigate and fix this
 if(NOT PAL_PLATFORM_NAME STREQUAL "Mac")
@@ -125,5 +127,5 @@ if(NOT INSTALLED_ENGINE)
     ly_setup_o3de_install()
 
     # IMPORTANT: must be included last
-    include(cmake/CPack.cmake)
+    include(cmake/Packaging.cmake)
 endif()

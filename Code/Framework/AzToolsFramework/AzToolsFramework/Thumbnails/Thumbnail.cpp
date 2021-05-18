@@ -24,8 +24,6 @@ namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
-        static const int DefaultIconSize = 16;
-
         //////////////////////////////////////////////////////////////////////////
         // ThumbnailKey
         //////////////////////////////////////////////////////////////////////////
@@ -54,10 +52,9 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         // Thumbnail
         //////////////////////////////////////////////////////////////////////////
-        Thumbnail::Thumbnail(SharedThumbnailKey key, int thumbnailSize)
+        Thumbnail::Thumbnail(SharedThumbnailKey key)
             : QObject()
             , m_state(State::Unloaded)
-            , m_thumbnailSize(thumbnailSize)
             , m_key(key)
         {
             connect(&m_watcher, &QFutureWatcher<void>::finished, this, [this]()
@@ -91,19 +88,9 @@ namespace AzToolsFramework
             }
         }
 
-        QPixmap Thumbnail::GetPixmap() const
+        const QPixmap& Thumbnail::GetPixmap() const
         {
-            return GetPixmap(QSize(DefaultIconSize, DefaultIconSize));
-        }
-
-        QPixmap Thumbnail::GetPixmap(const QSize& size) const
-        {
-            if (m_icon.isNull())
-            {
-                return m_pixmap;
-            }
-
-            return m_icon.pixmap(size);
+            return m_pixmap;
         }
 
         SharedThumbnailKey Thumbnail::GetKey() const

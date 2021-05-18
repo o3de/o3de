@@ -37,7 +37,7 @@ namespace DebugDraw
                     "DebugDraw Ray", "Draws debug ray on the screen from this entity's location to specified end entity's location.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/DebugDrawRay.svg")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/DebugDrawRay.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->DataElement(0, &EditorDebugDrawRayComponent::m_element, "Ray element settings", "Settings for the ray element.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugDrawRayComponent::OnPropertyUpdate)
