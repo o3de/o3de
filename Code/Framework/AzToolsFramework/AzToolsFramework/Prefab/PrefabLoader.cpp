@@ -196,7 +196,7 @@ namespace AzToolsFramework
                 }
             }
 
-            isLoadedWithErrors |= SanitizeLoadedTemplate(newTemplate.GetPrefabDom());
+            isLoadedWithErrors |= SanitizeLoadedTemplate(newTemplate);
 
             newTemplate.MarkAsLoadedWithErrors(isLoadedWithErrors);
 
@@ -279,9 +279,11 @@ namespace AzToolsFramework
             return !nestedTemplateReference->get().IsLoadedWithErrors();
         }
 
-        bool PrefabLoader::SanitizeLoadedTemplate(PrefabDomReference loadedTemplateDom)
+        bool PrefabLoader::SanitizeLoadedTemplate(Template& loadedTemplate)
         {
             Instance loadedPrefabInstance;
+            PrefabDomReference loadedTemplateDom = loadedTemplate.GetPrefabDom();
+
             if (!PrefabDomUtils::LoadInstanceFromPrefabDom(loadedPrefabInstance, loadedTemplateDom->get()))
             {
                 return false;
@@ -297,6 +299,7 @@ namespace AzToolsFramework
                 AZ::JsonSerializerCompareResult::Equal)
             {
                 loadedTemplateDom->get().CopyFrom(storedPrefabDom, loadedTemplateDom->get().GetAllocator());
+                loadedTemplate.MarkAsDirty(true);
             }
 
             return true;

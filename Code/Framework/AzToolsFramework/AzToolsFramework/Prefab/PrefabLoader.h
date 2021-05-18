@@ -30,6 +30,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class PrefabSystemComponentInterface;
+        class Template;
 
         /**
         * The Prefab Loader helps saving/loading Prefab files.
@@ -134,7 +135,7 @@ namespace AzToolsFramework
                 TemplateId targetTemplateId,
                 AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet);
 
-            bool SanitizeLoadedTemplate(PrefabDomReference loadedTemplateDom);
+            bool SanitizeLoadedTemplate(Template& loadedTemplate);
 
             //! Retrieves Dom content and its path from a template id
             AZStd::optional<AZStd::pair<PrefabDom, AZ::IO::Path>> StoreTemplateIntoFileFormat(TemplateId templateId);
