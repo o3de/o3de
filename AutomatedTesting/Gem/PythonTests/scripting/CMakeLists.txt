@@ -9,24 +9,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-add_subdirectory(asset_processor_tests)
-
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
-## AP Python Tests ##
     ly_add_pytest(
-        NAME AssetPipelineTests.AuxiliaryContent
-        PATH ${CMAKE_CURRENT_LIST_DIR}/auxiliary_content_tests/auxiliary_content_tests.py
-        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+        NAME AutomatedTesting::ScriptCanvasTests_Perodic
         TEST_SUITE periodic
-    )
-
-    ly_add_pytest(
-        NAME AssetPipelineTests.BankInfoParser
-        PATH ${CMAKE_CURRENT_LIST_DIR}/wwise_bank_dependency_tests/bank_info_parser_tests.py
-        EXCLUDE_TEST_RUN_TARGET_FROM_IDE
-        TEST_SUITE periodic
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Periodic.py
+        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
-            AZ::AssetProcessorBatch   
+            Legacy::Editor
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+        COMPONENT
+            ScriptCanvas
     )
-        
+    ly_add_pytest(
+        NAME AutomatedTesting::ScriptCanvasTests_Sandbox
+        TEST_SUITE sandbox
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Sandbox.py
+        TIMEOUT 1500
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+    )
 endif()
