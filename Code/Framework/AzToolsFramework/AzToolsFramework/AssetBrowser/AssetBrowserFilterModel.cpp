@@ -12,6 +12,7 @@
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzCore/Console/IConsole.h>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
@@ -21,6 +22,10 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QTimer>
 #include <QCollator>
 AZ_POP_DISABLE_WARNING
+
+AZ_CVAR(
+    bool, ed_useNewAssetBrowserTableView, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Use the new AssetBrowser TableView for searching assets.");
 
 namespace AzToolsFramework
 {
@@ -32,7 +37,10 @@ namespace AzToolsFramework
             : QSortFilterProxyModel(parent)
         {
             m_showColumn.insert(static_cast<int>(AssetBrowserEntry::Column::DisplayName));
-            m_showColumn.insert(static_cast<int>(AssetBrowserEntry::Column::Path));
+            if (ed_useNewAssetBrowserTableView)
+            {
+                m_showColumn.insert(static_cast<int>(AssetBrowserEntry::Column::Path));
+            }
             m_collator.setNumericMode(true);
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
         }

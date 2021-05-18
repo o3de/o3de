@@ -20,6 +20,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzCore/Console/IConsole.h>
 
 // AzQtComponents
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
@@ -32,6 +33,9 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <AzAssetBrowser/ui_AzAssetBrowserWindow.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
+AZ_CVAR(
+    bool, ed_useNewAssetBrowserTableView, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Use the new AssetBrowser TableView for searching assets.");
 
 class ListenerForShowAssetEditorEvent
     : public QObject
@@ -78,14 +82,39 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_filterModel->setSourceModel(m_assetBrowserModel);
     m_filterModel->SetFilter(m_ui->m_searchWidget->GetFilter());
 
-    m_tableModel->setFilterRole(Qt::DisplayRole);
-    m_tableModel->setSourceModel(m_filterModel.data());
+    m_ui->m_viewSwitcherCheckBox->setVisible(false);
+    m_ui->m_assetBrowserTableViewWidget->setVisible(false);
+    if (ed_useNewAssetBrowserTableView)
+    {
+        m_ui->m_viewSwitcherCheckBox->setVisible(true);
+        m_tableModel->setFilterRole(Qt::DisplayRole);
+        m_tableModel->setSourceModel(m_filterModel.data());
+        m_ui->m_assetBrowserTableViewWidget->setModel(m_tableModel.data());
+        connect(
+            m_filterModel.data(), &AssetBrowserFilterModel::filterChanged, m_tableModel.data(),
+            &AssetBrowserTableModel::UpdateTableModelMaps);
+        connect(
+            m_ui->m_assetBrowserTableViewWidget, &AssetBrowserTableView::selectionChangedSignal, this,
+            &AzAssetBrowserWindow::SelectionChangedSlot);
+        connect(
+            m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked, this,
+            &AzAssetBrowserWindow::DoubleClickedItemTableModel);
+        connect(
+            m_ui->m_assetBrowserTableViewWidget, &AssetBrowserTableView::ClearStringFilter, m_ui->m_searchWidget,
+            &SearchWidget::ClearStringFilter);
+        connect(
+            m_ui->m_assetBrowserTableViewWidget, &AssetBrowserTableView::ClearTypeFilter, m_ui->m_searchWidget,
+            &SearchWidget::ClearTypeFilter);
+
+        m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
+
+        connect(m_filterModel.data(), &AssetBrowserFilterModel::stringFilterPopulated, this, &AzAssetBrowserWindow::SwitchDisplayView);
+        connect(m_ui->m_viewSwitcherCheckBox, &QCheckBox::stateChanged, this, &AzAssetBrowserWindow::LockToDefaultView);
+
+    }
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
     //m_ui->m_assetBrowserTreeViewWidget->hideColumn(static_cast<int>(AssetBrowserEntry::Column::Path));
-
-    m_ui->m_assetBrowserTableViewWidget->setModel(m_tableModel.data());
-    m_ui->m_assetBrowserTableViewWidget->setVisible(false);
 
     connect(m_ui->m_searchWidget->GetFilter().data(), &AssetBrowserEntryFilter::updatedSignal,
         m_filterModel.data(), &AssetBrowserFilterModel::filterUpdatedSlot);
@@ -96,30 +125,18 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_assetBrowserTreeViewWidget->UpdateAfterFilter(hasFilter, selectFirstFilteredIndex);
     });
 
-    connect(m_filterModel.data(), &AssetBrowserFilterModel::filterChanged, m_tableModel.data(), &AssetBrowserTableModel::UpdateTableModelMaps);
 
     connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::selectionChangedSignal,
         this, &AzAssetBrowserWindow::SelectionChangedSlot);
 
-    connect(m_ui->m_assetBrowserTableViewWidget, &AssetBrowserTableView::selectionChangedSignal,
-        this, &AzAssetBrowserWindow::SelectionChangedSlot);
-
     connect(m_ui->m_assetBrowserTreeViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
-
-    connect(m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItemTableModel);
 
 
     connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::ClearStringFilter, m_ui->m_searchWidget, &SearchWidget::ClearStringFilter);
     connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::ClearTypeFilter, m_ui->m_searchWidget, &SearchWidget::ClearTypeFilter);
 
-    connect(m_ui->m_assetBrowserTableViewWidget, &AssetBrowserTableView::ClearStringFilter, m_ui->m_searchWidget, &SearchWidget::ClearStringFilter);
-    connect(m_ui->m_assetBrowserTableViewWidget, &AssetBrowserTableView::ClearTypeFilter, m_ui->m_searchWidget, &SearchWidget::ClearTypeFilter);
 
     m_ui->m_assetBrowserTreeViewWidget->SetName("AssetBrowserTreeView_main");
-    m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
-
-    connect(m_filterModel.data(), &AssetBrowserFilterModel::stringFilterPopulated, this, &AzAssetBrowserWindow::SwitchDisplayView);
-    connect(m_ui->m_viewSwitcherCheckBox, &QCheckBox::stateChanged, this, &AzAssetBrowserWindow::LockToDefaultView);
 }
 
 AzAssetBrowserWindow::~AzAssetBrowserWindow()

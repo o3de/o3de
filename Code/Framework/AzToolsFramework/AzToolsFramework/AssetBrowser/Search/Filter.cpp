@@ -233,11 +233,6 @@ namespace AzToolsFramework
             Q_EMIT updatedSignal();
         }
 
-        bool StringFilter::IsEmpty() const
-        {
-            return m_filterString.isEmpty();
-        }
-
         QString StringFilter::GetNameInternal() const
         {
             return m_filterString;
