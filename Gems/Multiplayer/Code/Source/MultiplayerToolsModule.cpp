@@ -10,9 +10,10 @@
 *
 */
 
-#include <Source/Multiplayer_precompiled.h>
-#include <Source/MultiplayerToolsModule.h>
+#include <Multiplayer_precompiled.h>
+#include <MultiplayerToolsModule.h>
 #include <Pipeline/NetworkPrefabProcessor.h>
+
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <Prefab/Instance/InstanceSerializer.h>
 

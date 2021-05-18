@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include <Source/AutoGen/MultiplayerEditor.AutoPacketDispatcher.h>
+
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/IConsole.h>
@@ -19,7 +21,6 @@
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/std/string/string.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
-#include <Source/AutoGen/MultiplayerEditor.AutoPacketDispatcher.h>
 
 namespace AzNetworking
 {
