@@ -63,6 +63,9 @@ namespace AZ
         //! It will populate your option with a default base of include folders given by the Asset Processor scan folders.
         //! This is going to look for a Config/shader_global_build_options.json in one of the scan folders
         //!  (that file can specify additional include files and preprocessor macros).
+        //! @param options: Outout parameter, will contain the preprocessor options.
+        //! @param builderName: Used for debugging.
+        //! @param optionalIncludeFolder: If not null, will be added to the list of include folders for the c-preprocessor in @options.
         void InitializePreprocessorOptions(PreprocessorOptions& options, const char* builderName, const char* optionalIncludeFolder = nullptr);
 
         /**

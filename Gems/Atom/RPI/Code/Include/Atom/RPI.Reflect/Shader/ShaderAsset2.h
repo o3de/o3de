@@ -48,8 +48,9 @@ namespace AZ
             SrgJson,
             OptionsJson,
             BindingdepJson,
-            GeneratedHlslSource // This must be last because we use this as a base for adding all the debug byProducts generated
-                                // with dxc, or spirv-cross, etc.
+            GeneratedHlslSource,
+            FirstByProduct, // This must be last because we use this as a base for adding all the debug byProducts generated
+                            // with dxc, or spirv-cross, etc.
         };
 
         class ShaderAsset2 final
@@ -71,7 +72,7 @@ namespace AZ
             //! The default shader variant (i.e. the one without any options set).
             static const ShaderVariantStableId RootShaderVariantStableId;
 
-            // @subProductType is one of ShaderAsset2ProductSubId, or (ShaderAsset2ProductSubId::GeneratedHlslSource + 1)+
+            // @subProductType is one of ShaderAsset2ProductSubId, or ShaderAsset2ProductSubId::FirstByProduct+
             static uint32_t MakeAssetProductSubId(uint32_t rhiApiUniqueIndex, uint32_t supervariantIndex, uint32_t subProductType);
             static SupervariantIndex GetSupervariantIndexFromAssetProductSubId(uint32_t assetProducSubId);
             static SupervariantIndex GetSupervariantIndexFromAssetId(const Data::AssetId& assetId);

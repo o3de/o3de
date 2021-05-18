@@ -634,7 +634,7 @@ namespace AZ
                     if (outputByproducts)
                     {
                         // add byproducts as job output products:
-                        uint32_t subProductType = aznumeric_cast<uint32_t>(RPI::ShaderAsset2ProductSubId::GeneratedHlslSource) + 1;
+                        uint32_t subProductType = aznumeric_cast<uint32_t>(RPI::ShaderAsset2ProductSubId::FirstByProduct);
                         for (const AZStd::string& byproduct : outputByproducts.value().m_intermediatePaths)
                         {
                             AssetBuilderSDK::JobProduct jobProduct;

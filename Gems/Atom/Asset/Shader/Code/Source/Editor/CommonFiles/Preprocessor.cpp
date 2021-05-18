@@ -67,9 +67,8 @@ namespace AZ
                         {
                             for (const auto& macroName : macroNames)
                             {
-                                //                                             Haystack       , Needle 
-                                const auto pos = AzFramework::StringFunc::Find(predefinedMacro, macroName, 0 /*pos*/, false /*reverse*/, true /*bCaseSensitive*/);
-                                if (pos != 0)
+                                //                                       Haystack,        needle,    bCaseSensitive
+                                if (!AzFramework::StringFunc::StartsWith(predefinedMacro, macroName, true))
                                 {
                                     return false;
                                 }
