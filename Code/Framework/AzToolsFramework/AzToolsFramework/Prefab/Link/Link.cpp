@@ -182,16 +182,16 @@ namespace AzToolsFramework
             else
             {
                 AZ::JsonSerializationResult::ResultCode applyPatchResult = AZ::JsonSerialization::ApplyPatch(
-                    linkedInstanceDom,
+                    sourceTemplateDomCopy,
                     targetTemplatePrefabDom.GetAllocator(),
-                    sourceTemplatePrefabDom,
                     patchesReference->get(),
                     AZ::JsonMergeApproach::JsonPatch);
+                linkedInstanceDom.CopyFrom(sourceTemplateDomCopy, targetTemplatePrefabDom.GetAllocator());
                 if (applyPatchResult.GetProcessing() != AZ::JsonSerializationResult::Processing::Completed)
                 {
-                    AZ_Error("Prefab", false,
-                        "Link::UpdateTarget - "
-                        "ApplyPatches failed for Prefab DOM from source Template '%u' and target Template '%u'.",
+                    AZ_Error(
+                        "Prefab", false,
+                        "Link::UpdateTarget - ApplyPatches failed for Prefab DOM from source Template '%u' and target Template '%u'.",
                         m_sourceTemplateId, m_targetTemplateId);
                     return false;
                 }
