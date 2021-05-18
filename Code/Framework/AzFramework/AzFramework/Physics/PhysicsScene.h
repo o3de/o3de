@@ -88,13 +88,13 @@ namespace AzPhysics
 
         //! Remove a simulated body from the Scene.z
         //! @param sceneHandle A handle to the scene to remove the requested simulated body.
-        //! @param bodyHandle A handle to the simulated body being removed.
-        virtual void RemoveSimulatedBody(SceneHandle sceneHandle, SimulatedBodyHandle bodyHandle) = 0;
+        //! @param bodyHandle A handle to the simulated body being removed. This will be set to AzPhysics::InvalidSimulatedBodyHandle as they're no longer valid.
+        virtual void RemoveSimulatedBody(SceneHandle sceneHandle, SimulatedBodyHandle& bodyHandle) = 0;
 
         //! Remove a list of simulated bodies from the Scene.
         //! @param sceneHandle A handle to the scene to remove the simulated bodies from.
-        //! @param bodyHandles A list of simulated body handles to be removed.
-        virtual void RemoveSimulatedBodies(SceneHandle sceneHandle, const SimulatedBodyHandleList& bodyHandles) = 0;
+        //! @param bodyHandles A list of simulated body handles to be removed. All handles will be set to AzPhysics::InvalidSimulatedBodyHandle as they're no longer valid.
+        virtual void RemoveSimulatedBodies(SceneHandle sceneHandle, SimulatedBodyHandleList& bodyHandles) = 0;
 
         //! Enable / Disable simulation of the requested body. By default all bodies added are enabled.
         //! Disabling simulation the body will no longer be affected by any forces, collisions, or found with scene queries.
@@ -286,12 +286,12 @@ namespace AzPhysics
         virtual SimulatedBodyList GetSimulatedBodiesFromHandle(const SimulatedBodyHandleList& bodyHandles) = 0;
 
         //! Remove a simulated body from the Scene.
-        //! @param bodyHandle A handle to the simulated body being removed.
-        virtual void RemoveSimulatedBody(SimulatedBodyHandle bodyHandle) = 0;
+        //! @param bodyHandle A handle to the simulated body being removed. This will be set to AzPhysics::InvalidSimulatedBodyHandle as they're no longer valid.
+        virtual void RemoveSimulatedBody(SimulatedBodyHandle& bodyHandle) = 0;
 
         //! Remove a list of simulated bodies from the Scene.
-        //! @param bodyHandles A list of simulated body handles to be removed.
-        virtual void RemoveSimulatedBodies(const SimulatedBodyHandleList& bodyHandles) = 0;
+        //! @param bodyHandles A list of simulated body handles to be removed. All handles will be set to AzPhysics::InvalidSimulatedBodyHandle as they're no longer valid.
+        virtual void RemoveSimulatedBodies(SimulatedBodyHandleList& bodyHandles) = 0;
 
         //! Enable / Disable simulation of the requested body. By default all bodies added are enabled.
         //! Disabling simulation the body will no longer be affected by any forces, collisions, or found with scene queries.

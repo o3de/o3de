@@ -131,16 +131,18 @@ public: // member functions
 
     //! Draw a rectangular outline with a texture
     //
-    //! \param image        The texture to be used for drawing the outline
-    //! \param points       The rect's vertices (top left, top right, bottom right, bottom left)
-    //! \param rightVec     Right vector. Specified because the rect's width/height could be 0 
-    //! \param downVec      Down vector. Specified because the rect's width/height could be 0
-    //! \param color        The color of the outline
+    //! \param image            The texture to be used for drawing the outline
+    //! \param points           The rect's vertices (top left, top right, bottom right, bottom left)
+    //! \param rightVec         Right vector. Specified because the rect's width/height could be 0 
+    //! \param downVec          Down vector. Specified because the rect's width/height could be 0
+    //! \param color            The color of the outline
+    //! \param lineThickness    The thickness in pixels of the outline. If 0, it will be based on image height
     void DrawRectOutlineTextured(AZ::Data::Instance<AZ::RPI::Image> image,
         UiTransformInterface::RectPoints points,
         AZ::Vector2 rightVec,
         AZ::Vector2 downVec,
-        AZ::Color color);
+        AZ::Color color,
+        uint32_t lineThickness = 0);
 
     //! Get the width and height (in pixels) that would be used to draw the given text string.
     //
@@ -439,11 +441,12 @@ public: // member functions
         UiTransformInterface::RectPoints points,
         AZ::Vector2 rightVec,
         AZ::Vector2 downVec,
-        AZ::Color color)
+        AZ::Color color,
+        uint32_t lineThickness = 0)
     {
         if (m_draw2d)
         {
-            m_draw2d->DrawRectOutlineTextured(image, points, rightVec, downVec, color);
+            m_draw2d->DrawRectOutlineTextured(image, points, rightVec, downVec, color, lineThickness);
         }
     }
 

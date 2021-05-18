@@ -63,6 +63,7 @@ ly_add_target(
         Gem::EMotionFX_Atom
         Gem::ImguiAtom
         Gem::AtomFont
+        Gem::AtomViewportDisplayInfo
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -104,5 +105,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::ImguiAtom
             Gem::AtomFont
             Gem::AtomToolsFramework.Editor
+            Gem::AtomViewportDisplayInfo
     )
 endif()

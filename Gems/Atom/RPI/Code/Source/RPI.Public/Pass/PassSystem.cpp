@@ -100,6 +100,12 @@ namespace AZ
             m_rootPass->m_flags.m_partOfHierarchy = true;
         }
 
+        void PassSystem::InitPassTemplates()
+        {
+            AZ_Assert(m_rootPass, "PassSystem::Init() need to be called");
+            m_loadTemplatesEvent.Signal();
+        }
+
         bool PassSystem::LoadPassTemplateMappings(const AZStd::string& templateMappingPath)
         {
             return m_passLibrary.LoadPassTemplateMappings(templateMappingPath);
@@ -213,7 +219,6 @@ namespace AZ
                     DebugPrintPassHierarchy();
                 }
 #endif
-                PassSystemNotificiationBus::Broadcast(&PassSystemNotificiationBus::Events::OnPassAttachmentsBuilt);
             }
 
             m_isBuilding = false;
@@ -321,6 +326,11 @@ namespace AZ
         const AZ::Name& PassSystem::GetTargetedPassDebuggingName() const
         {
             return m_targetedPassDebugName;
+        }
+
+        void PassSystem::ConnectEvent(OnReadyLoadTemplatesEvent::Handler& handler)
+        {
+            handler.Connect(m_loadTemplatesEvent);
         }
 
         // --- Pass Factory Functions --- 

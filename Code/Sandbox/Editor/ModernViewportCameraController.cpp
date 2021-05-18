@@ -25,7 +25,8 @@
 
 namespace SandboxEditor
 {
-    static void DrawPreviewAxis(AzFramework::DebugDisplayRequests& display, const AZ::Transform& transform, const float axisLength)
+    // debug
+    void DrawPreviewAxis(AzFramework::DebugDisplayRequests& display, const AZ::Transform& transform, const float axisLength)
     {
         display.SetColor(AZ::Colors::Red);
         display.DrawLine(transform.GetTranslation(), transform.GetTranslation() + transform.GetBasisX().GetNormalizedSafe() * axisLength);
@@ -87,10 +88,12 @@ namespace SandboxEditor
         }
 
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
+        ModernViewportCameraControllerRequestBus::Handler::BusConnect(viewportId);
     }
 
     ModernViewportCameraControllerInstance::~ModernViewportCameraControllerInstance()
     {
+        ModernViewportCameraControllerRequestBus::Handler::BusDisconnect();
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
     }
 
@@ -99,27 +102,6 @@ namespace SandboxEditor
         AzFramework::WindowSize windowSize;
         AzFramework::WindowRequestBus::EventResult(
             windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
-
-        if (m_cameraMode == CameraMode::Control)
-        {
-            if (AzFramework::InputDeviceKeyboard::IsKeyboardDevice(event.m_inputChannel.GetInputDevice().GetInputDeviceId()))
-            {
-                if (event.m_inputChannel.GetInputChannelId() == AzFramework::InputDeviceKeyboard::Key::AlphanumericR)
-                {
-                    m_transformEnd = m_camera.Transform();
-
-                    return true;
-                }
-                else if (event.m_inputChannel.GetInputChannelId() == AzFramework::InputDeviceKeyboard::Key::AlphanumericP)
-                {
-                    m_animationT = 0.0f;
-                    m_cameraMode = CameraMode::Animation;
-                    m_transformStart = m_camera.Transform();
-
-                    return true;
-                }
-            }
-        }
 
         return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel, windowSize));
     }
@@ -174,7 +156,13 @@ namespace SandboxEditor
             debugDisplay.SetColor(1.0f, 1.0f, 1.0f, alpha);
             debugDisplay.DrawWireSphere(m_camera.m_lookAt, 0.5f);
         }
+    }
 
-        DrawPreviewAxis(debugDisplay, m_transformEnd, 2.0f);
+    void ModernViewportCameraControllerInstance::InterpolateToTransform(const AZ::Transform& worldFromLocal)
+    {
+        m_animationT = 0.0f;
+        m_cameraMode = CameraMode::Animation;
+        m_transformStart = m_camera.Transform();
+        m_transformEnd = worldFromLocal;
     }
 } // namespace SandboxEditor

@@ -18,7 +18,7 @@
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <Prefab/Spawnable/SpawnableUtils.h>
-#include <Source/Components/NetBindComponent.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 #include <Source/Pipeline/NetBindMarkerComponent.h>
 #include <Source/Pipeline/NetworkSpawnableHolderComponent.h>
 

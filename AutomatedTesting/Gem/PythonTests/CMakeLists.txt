@@ -55,3 +55,6 @@ add_subdirectory(editor)
 
 ## Streaming ##
 add_subdirectory(streaming)
+
+## Streaming ##
+add_subdirectory(smoke)
