@@ -43,7 +43,6 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Render/Intersector.h>
 #include <MathConversion.h>
-#include <CryPhysicsDeprecation.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Anonymous namespace

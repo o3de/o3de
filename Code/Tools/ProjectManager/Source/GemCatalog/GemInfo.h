@@ -34,9 +34,11 @@ namespace O3DE::ProjectManager
             NumPlatforms = 5
         };
         Q_DECLARE_FLAGS(Platforms, Platform)
+        static QString GetPlatformString(Platform platform);
 
         GemInfo() = default;
         GemInfo(const QString& name, const QString& creator, const QString& summary, Platforms platforms, bool isAdded);
+        bool IsPlatformSupported(Platform platform) const;
 
         bool IsValid() const;
 
@@ -49,11 +51,13 @@ namespace O3DE::ProjectManager
         QString m_summary;
         Platforms m_platforms;
         QStringList m_features;
+        QString m_directoryLink;
+        QString m_documentationLink;
         QString m_version;
         QString m_lastUpdatedDate;
-        QString m_documentationUrl;
-        QVector<AZ::Uuid> m_dependingGemUuids;
-        QVector<AZ::Uuid> m_conflictingGemUuids;
+        int m_binarySizeInKB = 0;
+        QStringList m_dependingGemUuids;
+        QStringList m_conflictingGemUuids;
     };
 } // namespace O3DE::ProjectManager
 
