@@ -10,7 +10,11 @@
  *
  */
 
-#include <Source/Pipeline/NetworkPrefabProcessor.h>
+#include <Multiplayer/IMultiplayerTools.h>
+#include <Multiplayer/Components/NetBindComponent.h>
+#include <Pipeline/NetBindMarkerComponent.h>
+#include <Pipeline/NetworkPrefabProcessor.h>
+#include <Pipeline/NetworkSpawnableHolderComponent.h>
 
 #include <AzCore/Serialization/Utils.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -18,9 +22,6 @@
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <Prefab/Spawnable/SpawnableUtils.h>
-#include <Multiplayer/Components/NetBindComponent.h>
-#include <Source/Pipeline/NetBindMarkerComponent.h>
-#include <Source/Pipeline/NetworkSpawnableHolderComponent.h>
 
 namespace Multiplayer
 {
@@ -29,9 +30,20 @@ namespace Multiplayer
 
     void NetworkPrefabProcessor::Process(PrefabProcessorContext& context)
     {
+        IMultiplayerTools* mpTools = AZ::Interface<IMultiplayerTools>::Get();
+        if (mpTools)
+        {
+            mpTools->SetDidProcessNetworkPrefabs(false);
+        }
+
         context.ListPrefabs([&context](AZStd::string_view prefabName, PrefabDom& prefab) {
             ProcessPrefab(context, prefabName, prefab);
         });
+
+        if (mpTools && !context.GetProcessedObjects().empty())
+        {
+            mpTools->SetDidProcessNetworkPrefabs(true);
+        }
     }
 
     void NetworkPrefabProcessor::Reflect(AZ::ReflectContext* context)
