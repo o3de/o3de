@@ -772,7 +772,6 @@ _MS_ALIGN(16) struct SSkinningData
     void*                   pCharInstCB; // used if per char instance cbs are available in renderdll (d3d11+);
     // members below are for Software Skinning
     void*                   pCustomData; // client specific data, used for example for sw-skinning on animation side
-    SSkinningData**         pMasterSkinningDataList;    // used by the SkinningData for a Character Instance, contains a list of all Skin Instances which need SW-Skinning
     SSkinningData*          pNextSkinningData;          // List to the next element which needs SW-Skinning
 } _ALIGN(16);
 

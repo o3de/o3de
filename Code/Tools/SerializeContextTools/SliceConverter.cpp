@@ -173,8 +173,7 @@ namespace AZ
                 return false;
             }
 
-            const SliceComponent::SliceList& sliceList = sliceComponent->GetSlices();
-            AZ_Warning("Convert-Slice", sliceList.empty(), "  Slice depends on other slices, this conversion will lose data.\n");
+            AZ_Warning("Convert-Slice", sliceComponent->GetSlices().empty(), "  Slice depends on other slices, this conversion will lose data.\n");
 
             // Create the Prefab with the entities from the slice
             AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> sourceInstance(

@@ -53,6 +53,173 @@ namespace Platform
 #define Py_To_String(obj) obj.cast<std::string>().c_str()
 #define Py_To_String_Optional(dict, key, default_string) dict.contains(key) ? Py_To_String(dict[key]) : default_string
 
+namespace RedirectOutput
+{
+    using RedirectOutputFunc = AZStd::function<void(const char*)>;
+
+    struct RedirectOutput
+    {
+        PyObject_HEAD RedirectOutputFunc write;
+    };
+
+    PyObject* RedirectWrite(PyObject* self, PyObject* args)
+    {
+        std::size_t written(0);
+        RedirectOutput* selfimpl = reinterpret_cast<RedirectOutput*>(self);
+        if (selfimpl->write)
+        {
+            char* data;
+            if (!PyArg_ParseTuple(args, "s", &data))
+            {
+                return PyLong_FromSize_t(0);
+            }
+            selfimpl->write(data);
+            written = strlen(data);
+        }
+        return PyLong_FromSize_t(written);
+    }
+
+    PyObject* RedirectFlush([[maybe_unused]] PyObject* self,[[maybe_unused]] PyObject* args)
+    {
+        // no-op
+        return Py_BuildValue("");
+    }
+
+    PyMethodDef RedirectMethods[] = {
+        {"write", RedirectWrite, METH_VARARGS, "sys.stdout.write"},
+        {"flush", RedirectFlush, METH_VARARGS, "sys.stdout.flush"},
+        {"write", RedirectWrite, METH_VARARGS, "sys.stderr.write"},
+        {"flush", RedirectFlush, METH_VARARGS, "sys.stderr.flush"},
+        {0, 0, 0, 0} // sentinel
+    };
+
+    PyTypeObject RedirectOutputType = {
+        PyVarObject_HEAD_INIT(0, 0) "azlmbr_redirect.RedirectOutputType", // tp_name
+        sizeof(RedirectOutput), /* tp_basicsize */
+        0, /* tp_itemsize */
+        0, /* tp_dealloc */
+        0, /* tp_print */
+        0, /* tp_getattr */
+        0, /* tp_setattr */
+        0, /* tp_reserved */
+        0, /* tp_repr */
+        0, /* tp_as_number */
+        0, /* tp_as_sequence */
+        0, /* tp_as_mapping */
+        0, /* tp_hash  */
+        0, /* tp_call */
+        0, /* tp_str */
+        0, /* tp_getattro */
+        0, /* tp_setattro */
+        0, /* tp_as_buffer */
+        Py_TPFLAGS_DEFAULT, /* tp_flags */
+        "azlmbr_redirect objects", /* tp_doc */
+        0, /* tp_traverse */
+        0, /* tp_clear */
+        0, /* tp_richcompare */
+        0, /* tp_weaklistoffset */
+        0, /* tp_iter */
+        0, /* tp_iternext */
+        RedirectMethods, /* tp_methods */
+        0, /* tp_members */
+        0, /* tp_getset */
+        0, /* tp_base */
+        0, /* tp_dict */
+        0, /* tp_descr_get */
+        0, /* tp_descr_set */
+        0, /* tp_dictoffset */
+        0, /* tp_init */
+        0, /* tp_alloc */
+        0 /* tp_new */
+    };
+
+    PyModuleDef RedirectOutputModule = {
+        PyModuleDef_HEAD_INIT, "azlmbr_redirect", 0, -1, 0,
+    };
+
+    // Internal state
+    PyObject* g_redirect_stdout = nullptr;
+    PyObject* g_redirect_stdout_saved = nullptr;
+    PyObject* g_redirect_stderr = nullptr;
+    PyObject* g_redirect_stderr_saved = nullptr;
+
+    PyMODINIT_FUNC PyInit_RedirectOutput(void)
+    {
+        g_redirect_stdout = nullptr;
+        g_redirect_stdout_saved = nullptr;
+        g_redirect_stderr = nullptr;
+        g_redirect_stderr_saved = nullptr;
+
+        RedirectOutputType.tp_new = PyType_GenericNew;
+        if (PyType_Ready(&RedirectOutputType) < 0)
+        {
+            return 0;
+        }
+
+        PyObject* redirectModule = PyModule_Create(&RedirectOutputModule);
+        if (redirectModule)
+        {
+            Py_INCREF(&RedirectOutputType);
+            PyModule_AddObject(redirectModule, "Redirect", reinterpret_cast<PyObject*>(&RedirectOutputType));
+        }
+        return redirectModule;
+    }
+
+    void SetRedirection(const char* funcname, PyObject*& saved, PyObject*& current, RedirectOutputFunc func)
+    {
+        if (PyType_Ready(&RedirectOutputType) < 0)
+        {
+            AZ_Warning("python", false, "RedirectOutputType not ready!");
+            return;
+        }
+
+        if (!current)
+        {
+            saved = PySys_GetObject(funcname); // borrowed
+            current = RedirectOutputType.tp_new(&RedirectOutputType, 0, 0);
+        }
+
+        RedirectOutput* redirectOutput = reinterpret_cast<RedirectOutput*>(current);
+        redirectOutput->write = func;
+        PySys_SetObject(funcname, current);
+    }
+
+    void ResetRedirection(const char* funcname, PyObject*& saved, PyObject*& current)
+    {
+        if (current)
+        {
+            PySys_SetObject(funcname, saved);
+        }
+        Py_XDECREF(current);
+        current = nullptr;
+    }
+
+    PyObject* s_RedirectModule = nullptr;
+
+    void Intialize(PyObject* module)
+    {
+        s_RedirectModule = module;
+
+        SetRedirection("stdout", g_redirect_stdout_saved, g_redirect_stdout, []([[maybe_unused]] const char* msg) {
+            AZ_TracePrintf("Python", msg);
+        });
+
+        SetRedirection("stderr", g_redirect_stderr_saved, g_redirect_stderr, []([[maybe_unused]] const char* msg) {
+            AZ_TracePrintf("Python", msg);
+        });
+
+        PySys_WriteStdout("RedirectOutput installed");
+    }
+
+    void Shutdown()
+    {
+        ResetRedirection("stdout", g_redirect_stdout_saved, g_redirect_stdout);
+        ResetRedirection("stderr", g_redirect_stderr_saved, g_redirect_stderr);
+        Py_XDECREF(s_RedirectModule);
+        s_RedirectModule = nullptr;
+    }
+} // namespace RedirectOutput
+
 namespace O3DE::ProjectManager 
 {
     PythonBindings::PythonBindings(const AZ::IO::PathView& enginePath)
@@ -92,6 +259,8 @@ namespace O3DE::ProjectManager
         AZ_TracePrintf("python", "Py_GetExecPrefix=%ls \n", Py_GetExecPrefix());
         AZ_TracePrintf("python", "Py_GetProgramFullPath=%ls \n", Py_GetProgramFullPath());
 
+        PyImport_AppendInittab("azlmbr_redirect", RedirectOutput::PyInit_RedirectOutput);
+
         try
         {
             // ignore system location for sites site-packages
@@ -100,6 +269,8 @@ namespace O3DE::ProjectManager
 
             const bool initializeSignalHandlers = true;
             pybind11::initialize_interpreter(initializeSignalHandlers);
+
+            RedirectOutput::Intialize(PyImport_ImportModule("azlmbr_redirect"));
 
             // Acquire GIL before calling Python code
             AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
@@ -113,6 +284,7 @@ namespace O3DE::ProjectManager
 
             // import required modules
             m_registration = pybind11::module::import("cmake.Tools.registration");
+            m_engineTemplate = pybind11::module::import("cmake.Tools.engine_template");
 
             return result == 0 && !PyErr_Occurred();
         } catch ([[maybe_unused]] const std::exception& e)
@@ -126,6 +298,7 @@ namespace O3DE::ProjectManager
     {
         if (Py_IsInitialized())
         {
+            RedirectOutput::Shutdown();
             pybind11::finalize_interpreter();
         }
         else
@@ -204,9 +377,28 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<ProjectInfo> PythonBindings::CreateProject([[maybe_unused]] const ProjectTemplateInfo& projectTemplate,[[maybe_unused]]  const ProjectInfo& projectInfo)  
+    AZ::Outcome<ProjectInfo> PythonBindings::CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo)  
     {
-        return AZ::Failure();
+        ProjectInfo createdProjectInfo;
+        bool result = ExecuteWithLock([&] {
+
+            pybind11::str projectPath = projectInfo.m_path.toStdString();
+            pybind11::str templatePath = projectTemplatePath.toStdString();
+            auto createProjectResult = m_engineTemplate.attr("create_project")(projectPath, templatePath);
+            if (createProjectResult.cast<int>() == 0)
+            {
+                createdProjectInfo = ProjectInfoFromPath(projectPath);
+            }
+        });
+
+        if (!result || !createdProjectInfo.IsValid())
+        {
+            return AZ::Failure();
+        }
+        else
+        {
+            return AZ::Success(AZStd::move(createdProjectInfo)); 
+        }
     }
 
     AZ::Outcome<ProjectInfo> PythonBindings::GetProject(const QString& path)  
@@ -275,10 +467,8 @@ namespace O3DE::ProjectManager
         {
             try
             {
-                // required fields
-                projectInfo.m_productName = Py_To_String(projectData["product_name"]); 
                 projectInfo.m_projectName = Py_To_String(projectData["project_name"]); 
-                projectInfo.m_projectId   = AZ::Uuid(Py_To_String(projectData["project_id"])); 
+                projectInfo.m_displayName = Py_To_String_Optional(projectData,"display_name", projectInfo.m_projectName); 
             }
             catch ([[maybe_unused]] const std::exception& e)
             {
