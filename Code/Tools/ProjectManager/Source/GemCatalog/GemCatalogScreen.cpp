@@ -116,40 +116,41 @@ namespace O3DE::ProjectManager
         gem.m_features = QStringList({"Physics", "Gameplay", "Debug", "Assets"});
         result.push_back(gem);
 
-        result.push_back(O3DE::ProjectManager::GemInfo(
-            "Certificate Manager", "O3DE Irvine",
+        result.push_back(O3DE::ProjectManager::GemInfo("Certificate Manager",
+            "O3DE Irvine",
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-            GemInfo::Windows, false));
+            GemInfo::Windows,
+            false));
 
-        result.push_back(O3DE::ProjectManager::GemInfo(
-            "Cloud Gem Framework", "O3DE Seattle",
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-            GemInfo::iOS | GemInfo::Linux, false));
+        result.push_back(O3DE::ProjectManager::GemInfo("Cloud Gem Framework",
+            "O3DE Seattle",
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+            GemInfo::iOS | GemInfo::Linux,
+            false));
 
-        result.push_back(O3DE::ProjectManager::GemInfo(
-            "Cloud Gem Core", "O3DE Foundation", "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-            GemInfo::Android | GemInfo::Windows | GemInfo::Linux, true));
+        result.push_back(O3DE::ProjectManager::GemInfo("Cloud Gem Core",
+            "O3DE Foundation",
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+            GemInfo::Android | GemInfo::Windows | GemInfo::Linux,
+            true));
 
-        result.push_back(O3DE::ProjectManager::GemInfo(
-            "Gestures", "O3DE Foundation", "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-            GemInfo::Android | GemInfo::Windows | GemInfo::Linux, false));
+        result.push_back(O3DE::ProjectManager::GemInfo("Gestures",
+            "O3DE Foundation",
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+            GemInfo::Android | GemInfo::Windows | GemInfo::Linux,
+            false));
 
-        result.push_back(O3DE::ProjectManager::GemInfo(
-            "Effects System", "O3DE Foundation", "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-            GemInfo::Android | GemInfo::Windows | GemInfo::Linux, true));
+        result.push_back(O3DE::ProjectManager::GemInfo("Effects System",
+            "O3DE Foundation",
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+            GemInfo::Android | GemInfo::Windows | GemInfo::Linux,
+            true));
 
-        result.push_back(O3DE::ProjectManager::GemInfo(
-            "Microphone", "O3DE Foundation",
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus euismod ligula vitae dui dictum, a sodales dolor luctus. Sed "
-            "id elit dapibus, finibus neque sed, efficitur mi. Nam facilisis ligula at eleifend pellentesque. Praesent non ex consectetur, "
-            "blandit tellus in, venenatis lacus. Duis nec neque in urna ullamcorper euismod id eu leo. Nam efficitur dolor sed odio "
-            "vehicula venenatis. Suspendisse nec est non velit commodo cursus in sit amet dui. Ut bibendum nisl et libero hendrerit "
-            "dapibus. Vestibulum ultrices ullamcorper urna, placerat porttitor est lobortis in. Interdum et malesuada fames ac ante ipsum "
-            "primis in faucibus. Integer a magna ac tellus sollicitudin porttitor. Phasellus lobortis viverra justo id bibendum. Etiam ac "
-            "pharetra risus. Nulla vitae justo nibh. Nulla viverra leo et molestie interdum. Duis sit amet bibendum nulla, sit amet "
-            "vehicula augue.",
-            GemInfo::Android | GemInfo::Windows | GemInfo::Linux, false));
+        result.push_back(O3DE::ProjectManager::GemInfo("Microphone",
+            "O3DE Foundation",
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus euismod ligula vitae dui dictum, a sodales dolor luctus. Sed id elit dapibus, finibus neque sed, efficitur mi. Nam facilisis ligula at eleifend pellentesque. Praesent non ex consectetur, blandit tellus in, venenatis lacus. Duis nec neque in urna ullamcorper euismod id eu leo. Nam efficitur dolor sed odio vehicula venenatis. Suspendisse nec est non velit commodo cursus in sit amet dui. Ut bibendum nisl et libero hendrerit dapibus. Vestibulum ultrices ullamcorper urna, placerat porttitor est lobortis in. Interdum et malesuada fames ac ante ipsum primis in faucibus. Integer a magna ac tellus sollicitudin porttitor. Phasellus lobortis viverra justo id bibendum. Etiam ac pharetra risus. Nulla vitae justo nibh. Nulla viverra leo et molestie interdum. Duis sit amet bibendum nulla, sit amet vehicula augue.",
+            GemInfo::Android | GemInfo::Windows | GemInfo::Linux,
+            false));
 
         return result;
     }
