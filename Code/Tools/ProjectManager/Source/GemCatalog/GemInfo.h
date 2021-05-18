@@ -42,8 +42,6 @@ namespace O3DE::ProjectManager
 
         bool IsValid() const;
 
-        bool IsValid() const;
-
         QString m_path;
         QString m_name;
         QString m_displayName;
