@@ -29,6 +29,11 @@ ShaderResourceGroupSemantic FloatBufferSemanticId
     FrequencyId = 7;
 };
 
+ShaderResourceGroup FloatBufferSrg : FloatBufferSemanticId
+{
+    StructuredBuffer<FloatBuffer> m_floatBuffer;
+};
+
 ShaderResourceGroup ImageSrg : FrequencyPerScene
 {
     Sampler m_sampler
@@ -42,11 +47,6 @@ ShaderResourceGroup ImageSrg : FrequencyPerScene
     // Array of textures
     Texture2D m_textureArray[];
 }
-
-ShaderResourceGroup FloatBufferSrg : FloatBufferSemanticId
-{
-    StructuredBuffer<FloatBuffer> m_floatBuffer;
-};
 
 // Helper functions to read data from the FloatBuffer. The FloatBuffer is accessed with a descriptor and a index.
 // The descriptor holds the initial offset within the FloatBuffer, and the index is a sub-index, which increments with each property that is being read.
