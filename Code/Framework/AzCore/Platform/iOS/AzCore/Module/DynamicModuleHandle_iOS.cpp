@@ -40,7 +40,7 @@ namespace AZ
             // Afterwards use the AZ::IO::Path Append function append the filename as a child
             // of the framework directory
             AZ::IO::FixedMaxPathString fileName{ fullPath.Filename().Native() };
-            fullPath.ReplaceFilename(AZ::IO::PathView((fileName + ".framework").c_str()));
+            fullPath.ReplaceFilename(AZ::IO::PathView(AZStd::string_view(fileName + ".framework")));
             fullPath /= fileName;
         }
     }
