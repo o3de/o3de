@@ -63,7 +63,7 @@ namespace AzToolsFramework
 
         PrefabOperationResult PrefabPublicHandler::CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath)
         {
-            EntityList inputEntityList, topLevelEntities, topLevelNonContainerEntities;
+            EntityList inputEntityList, topLevelEntities;
             AZ::EntityId commonRootEntityId;
             InstanceOptionalReference commonRootEntityOwningInstance;
             PrefabOperationResult findCommonRootOutcome = FindCommonRootOwningInstance(
@@ -71,14 +71,6 @@ namespace AzToolsFramework
             if (!findCommonRootOutcome.IsSuccess())
             {
                 return findCommonRootOutcome;
-            }
-
-            for (AZ::Entity* toplevelentity : topLevelEntities)
-            {
-                if (!IsInstanceContainerEntity(toplevelentity->GetId()))
-                {
-                    topLevelNonContainerEntities.push_back(toplevelentity);
-                }
             }
 
             InstanceOptionalReference instanceToCreate;
@@ -132,9 +124,12 @@ namespace AzToolsFramework
 
                 // Parent the non-container top level entities to the container entity.
                 // Parenting the top level container entities will be done during the creation of links.
-                for (AZ::Entity* entity : topLevelNonContainerEntities)
+                for (AZ::Entity* topLevelEntity : topLevelEntities)
                 {
-                    AZ::TransformBus::Event(entity->GetId(), &AZ::TransformBus::Events::SetParent, containerEntityId);
+                    if (!IsInstanceContainerEntity(topLevelEntity->GetId()))
+                    {
+                        AZ::TransformBus::Event(topLevelEntity->GetId(), &AZ::TransformBus::Events::SetParent, containerEntityId);
+                    }
                 }
 
                 // Update the template of the instance since the entities are modified since the template creation.
