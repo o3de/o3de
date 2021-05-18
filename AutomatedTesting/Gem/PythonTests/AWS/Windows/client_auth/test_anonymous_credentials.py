@@ -15,6 +15,7 @@ import ly_test_tools.log.log_monitor
 from AWS.Windows.resource_mappings.resource_mappings import resource_mappings
 from AWS.Windows.cdk.cdk import cdk
 from AWS.common.aws_utils import aws_utils
+from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
 
 AWS_PROJECT_NAME = 'AWS-AutomationTest'
 AWS_CLIENT_AUTH_FEATURE_NAME = 'AWSClientAuth'
@@ -27,6 +28,8 @@ logger = logging.getLogger(__name__)
 
 @pytest.mark.SUITE_periodic
 @pytest.mark.usefixtures('automatic_process_killer')
+@pytest.mark.usefixtures('asset_processor')
+@pytest.mark.usefixtures('workspace')
 @pytest.mark.parametrize('project', ['AutomatedTesting'])
 @pytest.mark.parametrize('level', ['AWS/ClientAuth'])
 @pytest.mark.usefixtures('cdk')
@@ -46,7 +49,10 @@ class TestAWSClientAuthAnonymousCredentials(object):
                                    level: str,
                                    launcher: pytest.fixture,
                                    cdk: pytest.fixture,
-                                   resource_mappings: pytest.fixture):
+                                   resource_mappings: pytest.fixture,
+                                   workspace: pytest.fixture,
+                                   asset_processor: pytest.fixture
+                                   ):
         """
         Setup: Deploys cdk and updates resource mapping file.
         Tests: Getting AWS credentials for no signed in user.
@@ -55,15 +61,18 @@ class TestAWSClientAuthAnonymousCredentials(object):
         logger.info(f'Cdk stack names:\n{cdk.list()}')
         stacks = cdk.deploy()
         resource_mappings.populate_output_keys(stacks)
+        asset_processor.start()
+        asset_processor.wait_for_idle()
 
-        # file_to_monitor = os.path.join(launcher.workspace.paths.project_log(), GAME_LOG_NAME)
-        # log_monitor = ly_test_tools.log.log_monitor.LogMonitor(launcher=launcher, log_file_path=file_to_monitor)
-        #
-        # launcher.args = ['+map', level]
+        file_to_monitor = os.path.join(launcher.workspace.paths.project_log(), GAME_LOG_NAME)
+        log_monitor = ly_test_tools.log.log_monitor.LogMonitor(launcher=launcher, log_file_path=file_to_monitor)
 
-        # with launcher.start():
-        #     result = log_monitor.monitor_log_for_lines(
-        #         expected_lines=['(Script) - Success anonymous credentials.'],
-        #         unexpected_lines=['(Script) - Fail anonymous credentials.'],
-        #         halt_on_unexpected=True)
-        #     assert result, 'Anonymous credentials fetched successfully.'
+        launcher.args = ['+LoadLevel', level]
+
+        with launcher.start(launch_ap=False):
+            result = log_monitor.monitor_log_for_lines(
+                expected_lines=['(Script) - Success anonymous credentials'],
+                unexpected_lines=['(Script) - Fail anonymous credentials'],
+                halt_on_unexpected=True,
+                )
+            assert result, 'Anonymous credentials fetched successfully.'
