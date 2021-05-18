@@ -258,11 +258,6 @@ namespace AZ
             InitSkinningAndMorphPass(pipeline->GetRootPass());
         }
 
-        void SkinnedMeshFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* pipeline)
-        {
-            //InitSkinningAndMorphPass();
-        }
-
         void SkinnedMeshFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
         {
             InitSkinningAndMorphPass(renderPipeline->GetRootPass());
@@ -276,6 +271,12 @@ namespace AZ
         void SkinnedMeshFeatureProcessor::OnRenderEnd()
         {
             m_renderProxiesChecker.soft_unlock();
+
+            // Clear any dispatch items that were added but never submitted
+            // in case there were no passes that submitted this frame
+            // because they execute at a lower frequency
+            m_skinningDispatches.clear();
+            m_morphTargetDispatches.clear();
         }
 
         SkinnedMeshRenderProxyHandle SkinnedMeshFeatureProcessor::AcquireRenderProxy(const SkinnedMeshRenderProxyDesc& desc)
