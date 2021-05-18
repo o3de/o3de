@@ -128,4 +128,6 @@ set(FILES
     Source/TestImpactTest.cpp
     Source/TestImpactFailureReport.cpp
     Source/TestImpactChangeListSerializer.cpp
+    Source/TestImpactPath.cpp
+    Source/TestImpactPath.h
 )

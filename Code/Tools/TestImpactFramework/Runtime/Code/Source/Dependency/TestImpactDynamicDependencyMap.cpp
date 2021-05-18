@@ -25,7 +25,7 @@ namespace TestImpact
         {
             for (const auto& source : target->GetSources().m_staticSources)
             {
-                if (auto mapping = m_sourceDependencyMap.find(source);
+                if (auto mapping = m_sourceDependencyMap.find(source.String());
                     mapping != m_sourceDependencyMap.end())
                 {
                     // This is an existing entry in the dependency map so update the parent build targets with this target
@@ -43,7 +43,7 @@ namespace TestImpact
             {
                 for (const auto& output : autogen.m_outputs)
                 {
-                    m_autogenInputToOutputMap[autogen.m_input].push_back(output);
+                    m_autogenInputToOutputMap[autogen.m_input.String()].push_back(output.String());
                 }
             }
         };
@@ -138,11 +138,11 @@ namespace TestImpact
         {
             // Autogen input files are not compiled sources and thus supplying coverage data for them makes no sense
             AZ_TestImpact_Eval(
-                m_autogenInputToOutputMap.find(sourceCoverage.GetPath()) == m_autogenInputToOutputMap.end(),
+                m_autogenInputToOutputMap.find(sourceCoverage.GetPath().c_str()) == m_autogenInputToOutputMap.end(),
                 DependencyException, AZStd::string::format("Couldn't replace source coverage for %s, source file is an autogen input file",
                     sourceCoverage.GetPath().c_str()).c_str());
 
-            auto [it, inserted] = m_sourceDependencyMap.insert(sourceCoverage.GetPath());
+            auto [it, inserted] = m_sourceDependencyMap.insert(sourceCoverage.GetPath().String());
             auto& [key, sourceDependency] = *it;
 
             // Clear any existing coverage for the delta
@@ -188,12 +188,16 @@ namespace TestImpact
                 // Clearing the coverage data of an autogen input source instead clears the coverage data of its output sources
                 for (const auto& outputSource : outputSources->second)
                 {
-                    ReplaceSourceCoverage(SourceCoveringTestsList({ SourceCoveringTests(outputSource) }));
+                    AZStd::vector<SourceCoveringTests> coverage;
+                    coverage.emplace_back(Path(outputSource));
+                    ReplaceSourceCoverage(SourceCoveringTestsList(AZStd::move(coverage)));
                 }
             }
             else
             {
-                ReplaceSourceCoverage(SourceCoveringTestsList({ SourceCoveringTests(path) }));
+                AZStd::vector<SourceCoveringTests> coverage;
+                coverage.emplace_back(Path(path));
+                ReplaceSourceCoverage(SourceCoveringTestsList(AZStd::move(coverage)));
             }
         }
     }
@@ -282,7 +286,7 @@ namespace TestImpact
                 souceCoveringTests.push_back(testTarget->GetName());
             }
 
-            coverage.push_back(SourceCoveringTests(path, AZStd::move(souceCoveringTests)));
+            coverage.push_back(SourceCoveringTests(Path(path), AZStd::move(souceCoveringTests)));
         }
 
         return SourceCoveringTestsList(AZStd::move(coverage));

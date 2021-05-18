@@ -28,7 +28,7 @@ namespace TestImpact
         for (const auto& source : sourceCoveringTestsList.GetCoverage())
         {
             // Sorce file
-            output += source.GetPath();
+            output += source.GetPath().String();
             output += "\n";
 
             // Covering test targets

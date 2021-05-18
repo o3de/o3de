@@ -118,7 +118,7 @@ namespace TestImpact
         const auto& staticSources = sources[Keys[StaticKey]].GetArray();
         if (!staticSources.Empty())
         {
-            buildTargetDescriptor.m_sources.m_staticSources = AZStd::vector<AZStd::string>();
+            buildTargetDescriptor.m_sources.m_staticSources = AZStd::vector<Path>();
 
             for (const auto& source : staticSources)
             {

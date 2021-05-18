@@ -127,7 +127,7 @@ namespace TestImpact
             if (const auto sourcePath = AZ::IO::Path(source);
                 sourcePath.IsRelativeTo(root))
             {
-                sourceCoveringTests.push_back(SourceCoveringTests(sourcePath.LexicallyRelative(root).String(), AZStd::move(testTargets)));
+                sourceCoveringTests.push_back(SourceCoveringTests(Path(sourcePath.LexicallyRelative(root)), AZStd::move(testTargets)));
             }
             else
             {

@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include <TestImpactPath.h>
+
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/optional.h>
@@ -22,8 +24,8 @@ namespace TestImpact
     //! Pairing between a given autogen input source and the generated output source(s).
     struct AutogenPairs
     {
-        AZStd::string m_input;
-        AZStd::vector<AZStd::string> m_outputs;
+        Path m_input;
+        AZStd::vector<Path> m_outputs;
     };
 
     using AutogenSources = AZStd::vector<AutogenPairs>;
@@ -31,7 +33,7 @@ namespace TestImpact
     //! Representation of a given built target's source list.
     struct TargetSources
     {
-        AZStd::vector<AZStd::string> m_staticSources; //!< Source files used to build this target (if any).
+        AZStd::vector<Path> m_staticSources; //!< Source files used to build this target (if any).
         AutogenSources m_autogenSources; //!< Autogen source files (if any).
     };
 
