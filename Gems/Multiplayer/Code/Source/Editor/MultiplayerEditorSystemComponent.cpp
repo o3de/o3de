@@ -126,7 +126,6 @@ namespace Multiplayer
         {
             // If enabled but no process name is supplied, try this project's ServerLauncher
             serverProcess = AZ::Utils::GetProjectName() + ".ServerLauncher";
-
             serverPath = AZ::Utils::GetExecutableDirectory();
             serverPath /= serverProcess + AZ_TRAIT_OS_EXECUTABLE_EXTENSION;
         }
@@ -144,7 +143,10 @@ namespace Multiplayer
         // Launch the Server and give it a few seconds to boot up
         AzFramework::ProcessWatcher* outProcess = AzFramework::ProcessWatcher::LaunchProcess(
             processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE);
-        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(15000));
+        if (outProcess)
+        {
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(15000));
+        }
 
         return outProcess;
     }
