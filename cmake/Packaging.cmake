@@ -13,14 +13,14 @@ if(NOT PAL_TRAIT_BUILD_CPACK_SUPPORTED)
     return()
 endif()
 
-# public facing options will eventually be converted into cpack specific ones below.
-# all variables with the "CPACK_" prefix will automatically be cached for use in any
-# of the build steps cpack runs e.g. pre-build, standard build, post-build.
+# public facing options will be used for conversion into cpack specific ones below.
 set(LY_INSTALLER_DOWNLOAD_URL "" CACHE STRING "URL embded into the installer to download additional artifacts")
 set(LY_INSTALLER_LICENSE_URL "" CACHE STRING "Optionally embed a link to the license instead of raw text")
 
 # set all common cpack variable overrides first so they can be accessible via configure_file
-# when the platform specific settings are applied below
+# when the platform specific settings are applied below.  additionally, any variable with
+# the "CPACK_" prefix will automatically be cached for use in any phase of cpack namely
+# pre/post build
 set(CPACK_PACKAGE_VENDOR "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VERSION "${LY_VERSION_STRING}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installation Tool")
@@ -91,6 +91,7 @@ ly_configure_cpack_component(
 )
 
 if(LY_INSTALLER_DOWNLOAD_URL)
+    # this will set the following variables: CPACK_DOWNLOAD_SITE, CPACK_DOWNLOAD_ALL, and CPACK_UPLOAD_DIRECTORY
     cpack_configure_downloads(
         ${LY_INSTALLER_DOWNLOAD_URL}
         UPLOAD_DIRECTORY ${CMAKE_BINARY_DIR}/_CPack_Uploads # to match the _CPack_Packages directory
