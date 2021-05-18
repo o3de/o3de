@@ -121,19 +121,23 @@ namespace Multiplayer
         for (size_t entityIndex = 0; entityIndex < networkedEntityIds.size(); ++entityIndex) 
         {
             AZ::EntityId entityId = networkedEntityIds[entityIndex];
-            AZ::Entity* netEntity = sourceInstance->DetachEntity(entityId).release();
 
+            AZ::Entity* netEntity = sourceInstance->DetachEntity(entityId).release();
+            // Net entity will need a new ID to avoid IDs collision
+            netEntity->SetId(AZ::Entity::MakeId());
             networkInstance->AddEntity(*netEntity);
 
-            AZ::Entity* breadcrumbEntity = aznew AZ::Entity(netEntity->GetName());
+            // Use the old ID for the breadcrumb entity to keep parent-child relationship in the original spawnable
+            AZ::Entity* breadcrumbEntity = aznew AZ::Entity(entityId, netEntity->GetName());
             breadcrumbEntity->SetRuntimeActiveByDefault(netEntity->IsRuntimeActiveByDefault());
+
             NetBindMarkerComponent* netBindMarkerComponent = breadcrumbEntity->CreateComponent<NetBindMarkerComponent>();
             // Each spawnable has a root meta-data entity at position 0, so starting net indices from 1
             netBindMarkerComponent->SetNetEntityIndex(entityIndex + 1);
             netBindMarkerComponent->SetNetworkSpawnableAsset(networkSpawnableAsset);
             AzFramework::TransformComponent* transformComponent = netEntity->FindComponent<AzFramework::TransformComponent>();
             breadcrumbEntity->CreateComponent<AzFramework::TransformComponent>(*transformComponent);
-            
+
             sourceInstance->AddEntity(*breadcrumbEntity);
         }
 
