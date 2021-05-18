@@ -9,7 +9,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(FILES
-    Source/Editor/MultiplayerEditorDispatcher.cpp
-    Source/Editor/MultiplayerEditorDispatcher.h
-)
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_add_pytest(
+        NAME AutomatedTesting::NvClothTests_Main
+        TEST_SUITE main
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Active.py
+        TIMEOUT 1500
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+        COMPONENT
+            NvCloth
+    )
+endif()

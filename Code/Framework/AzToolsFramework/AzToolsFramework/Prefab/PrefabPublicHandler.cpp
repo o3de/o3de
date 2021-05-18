@@ -122,11 +122,14 @@ namespace AzToolsFramework
 
                 AZ::EntityId containerEntityId = instanceToCreate->get().GetContainerEntityId();
 
-                // Parent the entities to the container entity. Parenting the container entities of the instances passed to createPrefab
-                // will be done during the creation of links below.
-                for (AZ::Entity* topLevelEntity : entities)
+                // Parent the non-container top level entities to the container entity.
+                // Parenting the top level container entities will be done during the creation of links.
+                for (AZ::Entity* topLevelEntity : topLevelEntities)
                 {
-                    AZ::TransformBus::Event(topLevelEntity->GetId(), &AZ::TransformBus::Events::SetParent, containerEntityId);
+                    if (!IsInstanceContainerEntity(topLevelEntity->GetId()))
+                    {
+                        AZ::TransformBus::Event(topLevelEntity->GetId(), &AZ::TransformBus::Events::SetParent, containerEntityId);
+                    }
                 }
 
                 // Update the template of the instance since the entities are modified since the template creation.
@@ -142,11 +145,25 @@ namespace AzToolsFramework
                     AZ_Assert(
                         nestedInstanceContainerEntity, "Invalid container entity found for the nested instance used in prefab creation.");
 
+                    AZ::EntityId parentId;
+                    AZ::TransformBus::EventResult(
+                        parentId, nestedInstanceContainerEntity->get().GetId(), &AZ::TransformBus::Events::GetParentId);
+
+                    auto entityIterator = AZStd::find_if(
+                        entities.begin(), entities.end(), [parentId](AZ::Entity* entity) { return entity->GetId() == parentId; });
+
+                    // If the previous parent entity of the nested instance is not part of the entities of the newly created prefab,
+                    // then set the parent of the nested prefab as the container entity of the newly created prefab.
+                    if (entityIterator == entities.end())
+                    {
+                        parentId = containerEntityId;
+                    }
+
                     // These link creations shouldn't be undone because that would put the template in a non-usable state if a user
                     // chooses to instantiate the template after undoing the creation.
                     CreateLink(
                         {&nestedInstanceContainerEntity->get()}, *nestedInstance, instanceToCreate->get().GetTemplateId(),
-                        undoBatch.GetUndoBatch(), containerEntityId, false);
+                        undoBatch.GetUndoBatch(), parentId, false);
                 });
 
                 // Create a link between the templates of the newly created instance and the instance it's being parented under.
