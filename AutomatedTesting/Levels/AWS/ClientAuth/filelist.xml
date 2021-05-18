@@ -1,6 +1,6 @@
 <download name="ClientAuth" type="Map">
  <index src="filelist.xml" dest="filelist.xml"/>
  <files>
-  <file src="level.pak" dest="level.pak" size="69E" md5="77421bed9db0407e3a138aec319f7290"/>
+  <file src="level.pak" dest="level.pak" size="ED3" md5="3487525589271b5744ca83734fe3baa6"/>
  </files>
 </download>
