@@ -174,19 +174,18 @@ bool ShortcutDispatcher::FindCandidateActionAndFire(QShortcutEvent* shortcutEven
     {
         if (shortcutEvent->key() == m_all_actions[i].second->shortcut())
         {
+            //This method is simpler and we don't need any recursion. There are not many shortcuts so a vector is not that problematic with performance.
+            QObject* p_registered = nullptr;
+            p_registered = m_all_actions[i].second->parent();
 
-            QObject* p_one = nullptr;
-            p_one = m_all_actions[i].second->parent();
-
-            QObject* c_one = nullptr;
-            c_one = qApp->focusObject();
+            QObject* p_focused = nullptr;
+            p_focused = qApp->focusObject();
 
             if (m_all_actions[i].second->isEnabled())
             {
-                if (c_one == p_one)
+                //Checking if the parent is on focus so that we can use it.
+                if (p_registered == p_focused)
                 {
-                    // has to be send, not post, or the dispatcher will get the event again and won't know that it was the one that queued
-                    // it
                     bool isAmbiguous = false;
 
                     QShortcutEvent newEvent(shortcutEvent->key(), isAmbiguous);
@@ -273,93 +272,10 @@ QWidget* ShortcutDispatcher::focusWidget()
 
 bool ShortcutDispatcher::shortcutFilter([[maybe_unused]] QObject* obj, QShortcutEvent* shortcutEvent)
 {
-    //if (m_currentlyHandlingShortcut)
-    //{
-    //    return false;
-    //}
-    //
-    //QScopedValueRollback<bool> recursiveCheck(m_currentlyHandlingShortcut, true);
-    //
-    //// prioritize m_actionOverrideObject if active
-    //if (m_actionOverrideObject != nullptr)
-    //{
-    //    QList<QAction*> childActions =
-    //        m_actionOverrideObject->findChildren<QAction*>(QString(), Qt::FindDirectChildrenOnly);
-    //
-    //    // attempt to find shortcut in override
-    //    const auto childActionIt = AZStd::find_if(
-    //        childActions.begin(), childActions.end(), [shortcutEvent](QAction* child)
-    //    {
-    //        return child->shortcut() == shortcutEvent->key();
-    //    });
-    //
-    //    // trigger shortcut
-    //    if (childActionIt != childActions.end())
-    //    {
-    //        // has to be send, not post, or the dispatcher will get the event again
-    //        // and won't know that it was the one that queued it
-    //        const bool isAmbiguous = false;
-    //        QShortcutEvent newEvent(shortcutEvent->key(), isAmbiguous);
-    //
-    //        QAction* action = *childActionIt;
-    //        QApplication::sendEvent(action, &newEvent);
-    //
-    //        shortcutEvent->accept();
-    //        return true;
-    //    }
-    //}
-    //
-    //QWidget* currentFocusWidget = focusWidget(); // check the widget we tracked last
-    //if (!currentFocusWidget)
-    //{
-    //    qWarning() << Q_FUNC_INFO << "No focus widget"; // Defensive. Doesn't happen.
-    //    return false;
-    //}
-    //
-    //// Shortcut is ambiguous, lets resolve ambiguity and give preference to QActions in the most inner scope
-    //
-    //// Try below the focusWidget first:
-    //QSet<QObject*> previouslyVisited;
-    //QList<QAction*> candidates;
     if (FindCandidateActionAndFire(shortcutEvent))
     {
         return true;
     }
-
-    // Now incrementally try bigger scopes. This handles complex cases several levels docking nesting
-
-    //QWidget* correctedTopLevel = nullptr;
-    //QWidget* p = currentFocusWidget;
-    //while (correctedTopLevel == FindParentScopeRoot(p))
-    //{
-    //    if (FindCandidateActionAndFire(shortcutEvent))
-    //    {
-    //        return true;
-    //    }
-    //
-    //    p = correctedTopLevel;
-    //}
-    //
-    //
-    //// Nothing else to do... shortcut is really ambiguous, or there's no actions, something for the developer to fix.
-    //// Here's some debug info :
-    //
-    //if (candidates.isEmpty())
-    //{
-    //    qWarning() << Q_FUNC_INFO << "No candidate QActions found";
-    //}
-    //else
-    //{
-    //    qWarning() << Q_FUNC_INFO << "Ambiguous shortcut:" << shortcutEvent->key() << "; focusWidget="
-    //        << qApp->focusWidget() << "Candidates=" << candidates << "; obj = " << obj
-    //        << "Focused top-level=" << currentFocusWidget;
-    //    for (auto ambiguousAction : candidates)
-    //    {
-    //        qWarning() << "action=" << ambiguousAction << "; action->parentWidget=" << ambiguousAction->parentWidget()
-    //            << "; associatedWidgets=" << ambiguousAction->associatedWidgets()
-    //            << "; shortcut=" << ambiguousAction->shortcut();
-    //    }
-    //}
 
     return false;
 }

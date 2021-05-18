@@ -220,11 +220,8 @@ void DynamicMenu::AddAction(int id, QAction* action)
     connect(action, SIGNAL(triggered()), m_actionMapper, SLOT(map()));
     m_actionMapper->setMapping(action, id);
 
-    AzToolsFramework::EditorActionRequestBus::Broadcast(&AzToolsFramework::EditorActionRequests::AddActionViaBus, id, action);
+    AzToolsFramework::EditorActionRequestBus::Broadcast(&AzToolsFramework::EditorActionRequests::AddActionViaBus, id, action, m_menu);
 
-    //NEW// 
-    //m_actionManager->m_shortcutDispatcher->AddNewAction(action);
-    //QObject::connect(action, &QAction::triggered, action, action);
 
 }
 
@@ -511,8 +508,6 @@ bool ActionManager::HasAction(int id) const
 
 QAction* ActionManager::GetAction(int id) const
 {
-    //auto it = m_actions.find(id);
-
     for (unsigned i = 0; i < m_shortcutDispatcher->m_all_actions.size(); i++)
     {
         if (m_shortcutDispatcher->m_all_actions[i].second->data().toInt() == id)
@@ -520,17 +515,6 @@ QAction* ActionManager::GetAction(int id) const
     }
 
     return nullptr;
-
-    //if (it == m_actions.cend())
-    //{
-    //    qWarning() << Q_FUNC_INFO << "Couldn't get action " << id;
-    //    Q_ASSERT(false);
-    //    return nullptr;
-    //}
-    //else
-    //{
-    //    return *it;
-    //}
 }
 
 void ActionManager::ActionTriggered(int id)

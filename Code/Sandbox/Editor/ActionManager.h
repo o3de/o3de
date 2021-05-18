@@ -330,8 +330,15 @@ public:
     template<typename T>
     void RegisterUpdateCallback(int id, T* object, void (T::*method)(QAction*))
     {
-        Q_ASSERT(m_actions.contains(id));
-        m_updateCallbacks[id] = [action = m_actions.value(id), object, method] { AZStd::invoke(method, object, action); };
+        unsigned size = m_shortcutDispatcher->m_all_actions.size();
+
+        for (unsigned i = 0; i < size; i++)
+        {
+            if (m_shortcutDispatcher->m_all_actions[i].second->data() == id)
+            {
+                m_updateCallbacks[id] = [action = m_shortcutDispatcher->m_all_actions[i].second, object, method] { AZStd::invoke(method, object, action);};
+            }
+        }
     }
 
     template<typename Fn>
@@ -345,8 +352,6 @@ public:
                 m_updateCallbacks[id] = [action = m_shortcutDispatcher->m_all_actions[i].second, fn] { fn(action); };
             }
         }
-        Q_ASSERT(nullptr);
-        return;
     }
 
     template<typename T>
