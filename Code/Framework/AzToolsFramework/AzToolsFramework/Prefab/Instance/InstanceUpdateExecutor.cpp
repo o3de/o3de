@@ -120,9 +120,13 @@ namespace AzToolsFramework
                             }
                         }
 
-                        auto findInstancesResult = m_templateInstanceMapperInterface->FindInstancesOwnedByTemplate(instanceTemplateId)->get();
+                        auto findInstancesResult = m_templateInstanceMapperInterface->FindInstancesOwnedByTemplate(instanceTemplateId);
+                        AZ_Assert(
+                            findInstancesResult.has_value(), "Prefab Instances corresponding to template with id %llu couldn't be found.",
+                            instanceTemplateId);
 
-                        if (findInstancesResult.find(instanceToUpdate) == findInstancesResult.end())
+                        if (findInstancesResult == AZStd::nullopt ||
+                            findInstancesResult->get().find(instanceToUpdate) == findInstancesResult->get().end())
                         {
                             // Since nested instances get reconstructed during propagation, remove any nested instance that no longer
                             // maps to a template.
