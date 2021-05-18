@@ -91,7 +91,6 @@
 #include <HMDBus.h>
 
 #include <AzFramework/Archive/Archive.h>
-#include <Pak/CryPakUtils.h>
 #include "XConsole.h"
 #include "Log.h"
 #include "XML/xml.h"

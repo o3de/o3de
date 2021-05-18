@@ -80,9 +80,6 @@ namespace Physics
         void OnContactOffsetChanged();
     };
 
-    using ShapeConfigurationPair = AZStd::pair<AZStd::shared_ptr<ColliderConfiguration>, AZStd::shared_ptr<ShapeConfiguration>>;
-    using ShapeConfigurationList = AZStd::vector<ShapeConfigurationPair>;
-
     struct RayCastRequest;
 
     class Shape

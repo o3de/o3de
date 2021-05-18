@@ -30,7 +30,7 @@ namespace PhysXEditorTests
         PhysX::BaseColliderComponent* colliderComponent = gameEntity->FindComponent<PhysX::BaseColliderComponent>();
         ASSERT_TRUE(colliderComponent != nullptr);
 
-        Physics::ShapeConfigurationList shapeConfigList = colliderComponent->GetShapeConfigurations();
+        AzPhysics::ShapeColliderPairList shapeConfigList = colliderComponent->GetShapeConfigurations();
         EXPECT_EQ(shapeConfigList.size(), 1);
 
         for (const auto& shapeConfigPair : shapeConfigList)
