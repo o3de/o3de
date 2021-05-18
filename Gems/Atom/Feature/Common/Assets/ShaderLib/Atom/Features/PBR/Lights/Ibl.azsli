@@ -81,10 +81,11 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
 #ifdef FORCE_IBL_IN_FORWARD_PASS
     bool useDiffuseIbl = true;
     bool useSpecularIbl = true;
-    bool useIbl = true;
+    bool useIbl = o_enableIBL;
 #else
-    bool useDiffuseIbl = (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent);
-    bool useSpecularIbl = (useDiffuseIbl || o_meshUseForwardPassIBLSpecular || o_materialUseForwardPassIBLSpecular);
+    bool isTransparent = (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent);
+    bool useDiffuseIbl = isTransparent;
+    bool useSpecularIbl = (isTransparent || o_meshUseForwardPassIBLSpecular || o_materialUseForwardPassIBLSpecular);
     bool useIbl = o_enableIBL && (useDiffuseIbl || useSpecularIbl);
 #endif
 

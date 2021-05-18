@@ -141,7 +141,7 @@ namespace AZ
             }
 
             // Set new tree depth and path
-            m_flags.m_parentEnabled = m_parent->IsEnabled();
+            m_flags.m_parentEnabled = m_parent->m_flags.m_enabled && (m_parent->m_flags.m_parentEnabled || m_parent->m_parent == nullptr);
             m_treeDepth = m_parent->m_treeDepth + 1;
             m_path = ConcatPassName(m_parent->m_path, m_name);
             m_flags.m_partOfHierarchy = m_parent->m_flags.m_partOfHierarchy;

@@ -16,8 +16,11 @@
 
 #ifdef QUALITY_LOW_END
 
-#define UNIFIED_FORWARD_OUTPUT          1
-#define FORCE_IBL_IN_FORWARD_PASS       1
+    // Unifies the forward output into a single lighting buffer instead of splitting it into a GBuffer
+    #define UNIFIED_FORWARD_OUTPUT          1
+    
+    // Forces IBL lighting to be executed in the forward pass instead of subsequent refleciton passes
+    #define FORCE_IBL_IN_FORWARD_PASS       1
 
 #endif
 

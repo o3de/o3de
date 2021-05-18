@@ -1297,12 +1297,6 @@
                 "textureProperty": "baseColor.textureMap",
                 "useTextureProperty": "baseColor.useTexture",
                 "dependentProperties": ["baseColor.textureMapUv", "baseColor.textureBlendMode"],
-                "shaderTags": [
-                    "ForwardPass",
-                    "ForwardPass_EDS",
-                    "LowEndForward",
-                    "LowEndForward_EDS"
-                ],
                 "shaderOption": "o_baseColor_useTexture"
             }
         },
@@ -1312,12 +1306,6 @@
                 "textureProperty": "metallic.textureMap",
                 "useTextureProperty": "metallic.useTexture",
                 "dependentProperties": ["metallic.textureMapUv"],
-                "shaderTags": [
-                    "ForwardPass",
-                    "ForwardPass_EDS",
-                    "LowEndForward",
-                    "LowEndForward_EDS"
-                ],
                 "shaderOption": "o_metallic_useTexture"
             }
         },
@@ -1327,12 +1315,6 @@
                 "textureProperty": "specularF0.textureMap",
                 "useTextureProperty": "specularF0.useTexture",
                 "dependentProperties": ["specularF0.textureMapUv"],
-                "shaderTags": [
-                    "ForwardPass",
-                    "ForwardPass_EDS",
-                    "LowEndForward",
-                    "LowEndForward_EDS"
-                ],
                 "shaderOption": "o_specularF0_useTexture"
             }
         },
@@ -1342,12 +1324,6 @@
                 "textureProperty": "normal.textureMap",
                 "useTextureProperty": "normal.useTexture",
                 "dependentProperties": ["normal.textureMapUv", "normal.factor", "normal.flipX", "normal.flipY"],
-                "shaderTags": [
-                    "ForwardPass",
-                    "ForwardPass_EDS",
-                    "LowEndForward",
-                    "LowEndForward_EDS"
-                ],
                 "shaderOption": "o_normal_useTexture"    
             }
         },
