@@ -31,7 +31,7 @@ namespace Multiplayer
 {
     using namespace AzNetworking;
 
-    AZ_CVAR(bool, editorsv_enabled, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+    AZ_CVAR(bool, editorsv_enabled, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Whether Editor launching a local server to connect to is supported");
     AZ_CVAR(bool, editorsv_launch, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Whether Editor should launch a server when the server address is localhost");
