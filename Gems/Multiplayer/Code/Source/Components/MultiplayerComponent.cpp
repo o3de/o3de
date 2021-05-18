@@ -59,10 +59,8 @@ namespace Multiplayer
                     MultiplayerComponent* multiplayerComponent = entity->FindComponent<MultiplayerComponent>();
                     if (!multiplayerComponent)
                     {
-                        AZ_Warning(
-                            "MultiplayerComponent", false,
-                            "MultiplayerComponent IsAutonomous failed. Entity '%s' (id: %s) is missing a MultiplayerComponent, make sure this entity contains a component which derives from MultiplayerComponent.",
-                            entity->GetName().c_str(), id.ToString().c_str()) return false;
+                        AZ_Warning("MultiplayerComponent", false, "MultiplayerComponent IsAutonomous failed. Entity '%s' (id: %s) is missing a MultiplayerComponent, make sure this entity contains a component which derives from MultiplayerComponent.", entity->GetName().c_str(), id.ToString().c_str())
+                        return false;
                     }
                     return multiplayerComponent->IsAutonomous();
                 })
