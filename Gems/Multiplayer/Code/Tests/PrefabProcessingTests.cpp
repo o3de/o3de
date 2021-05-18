@@ -16,7 +16,7 @@
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <Prefab/PrefabDomTypes.h>
 #include <Prefab/Spawnable/PrefabProcessorContext.h>
-#include <Multiplayer/NetBindComponent.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 #include <Source/Pipeline/NetworkPrefabProcessor.h>
 
 namespace UnitTest
