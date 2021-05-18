@@ -84,6 +84,7 @@ namespace AzFramework
     };
 
     using EntitySpawnCallback = AZStd::function<void(EntitySpawnTicket&, SpawnableConstEntityContainerView)>;
+    using EntityPreInsertionCallback = AZStd::function<void(EntitySpawnTicket&, SpawnableEntityContainerView)>;
     using EntityDespawnCallback = AZStd::function<void(EntitySpawnTicket&)>;
     using ReloadSpawnableCallback = AZStd::function<void(EntitySpawnTicket&, SpawnableConstEntityContainerView)>;
     using ListEntitiesCallback = AZStd::function<void(EntitySpawnTicket&, SpawnableConstEntityContainerView)>;
@@ -110,7 +111,8 @@ namespace AzFramework
         //! @param completionCallback Optional callback that's called when spawning entities has completed. This can be called from
         //!     a different thread than the one that made the function call. The returned list of entities contains all the newly
         //!     created entities.
-        virtual void SpawnAllEntities(EntitySpawnTicket& ticket, EntitySpawnCallback completionCallback = {}) = 0;
+        virtual void SpawnAllEntities(EntitySpawnTicket& ticket, EntityPreInsertionCallback preInsertionCallback = {},
+            EntitySpawnCallback completionCallback = {}) = 0;
         //! Spawn instances of some entities in the spawnable.
         //! @param ticket Stores the results of the call. Use this ticket to spawn additional entities or to despawn them.
         //! @param entityIndices The indices into the template entities stored in the spawnable that will be used to spawn entities from.
@@ -118,7 +120,7 @@ namespace AzFramework
         //!     a different thread than the one that made this function call. The returned list of entities contains all the newly
         //!     created entities.
         virtual void SpawnEntities(EntitySpawnTicket& ticket, AZStd::vector<size_t> entityIndices,
-            EntitySpawnCallback completionCallback = {}) = 0;
+            EntityPreInsertionCallback preInsertionCallback = {}, EntitySpawnCallback completionCallback = {}) = 0;
         //! Removes all entities in the provided list from the environment.
         //! @param ticket The ticket previously used to spawn entities with.
         //! @param completionCallback Optional callback that's called when despawning entities has completed. This can be called from

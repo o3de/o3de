@@ -9,12 +9,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(FILES
-    ArrayView.cpp
-    ConcurrencyCheckerTests.cpp
-    InstanceDatabase.cpp
-    JsonSerializationUtilsTests.cpp
-    lru_cache.cpp
-    Main.cpp
-    vector_set.cpp
-)
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
+    # Unstable, SPEC-3838 will restore
+    #ly_add_pytest(
+    #    NAME AutomatedTesting::asset_load_benchmark_test
+    #    TEST_SERIAL
+    #    TEST_SUITE benchmark
+    #    PATH ${CMAKE_CURRENT_LIST_DIR}/benchmark/asset_load_benchmark_test.py
+    #    RUNTIME_DEPENDENCIES
+    #        AZ::AssetProcessor
+    #        AZ::AssetProcessorBatch
+    #        AutomatedTesting.GameLauncher
+    #)
+endif()

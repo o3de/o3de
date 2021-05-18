@@ -9,12 +9,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(FILES
-    ArrayView.cpp
-    ConcurrencyCheckerTests.cpp
-    InstanceDatabase.cpp
-    JsonSerializationUtilsTests.cpp
-    lru_cache.cpp
-    Main.cpp
-    vector_set.cpp
-)
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_FOUNDATION_TEST_SUPPORTED)
+    ly_add_pytest(
+        NAME AutomatedTesting::EditorTests_Periodic
+        TEST_SUITE periodic
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}
+        TIMEOUT 1500
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+        COMPONENT
+            Editor
+    )
+endif()

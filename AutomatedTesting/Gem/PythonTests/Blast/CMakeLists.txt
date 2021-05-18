@@ -9,12 +9,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(FILES
-    ArrayView.cpp
-    ConcurrencyCheckerTests.cpp
-    InstanceDatabase.cpp
-    JsonSerializationUtilsTests.cpp
-    lru_cache.cpp
-    Main.cpp
-    vector_set.cpp
-)
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_add_pytest(
+        NAME AutomatedTesting::BlastTests
+        TEST_SUITE main
+        TEST_SERIAL TRUE
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Active.py
+        TIMEOUT 1500
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+        COMPONENT Blast
+    )
+endif()
