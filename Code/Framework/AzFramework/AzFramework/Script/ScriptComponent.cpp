@@ -693,11 +693,11 @@ namespace AzFramework
             // set the __index so we can read values in case we change the script
             // after we export the component
             lua_pushliteral(lua, "__index");
-            lua_pushcclosure(lua, &Internal::Properties__Index, 1);
+            lua_pushcclosure(lua, &Internal::Properties__Index, 0);
             lua_rawset(lua, -3);
 
             lua_pushliteral(lua, "__newindex");
-            lua_pushcclosure(lua, &Internal::Properties__NewIndex, 1);
+            lua_pushcclosure(lua, &Internal::Properties__NewIndex, 0);
             lua_rawset(lua, -3);
         }
         lua_pop(lua, 1); // pop the properties table (or the nil value)
@@ -900,11 +900,11 @@ namespace AzFramework
             // Ensure that this instance of Properties table has the proper __index and __newIndex metamethods.
             lua_newtable(lua);  // This new table will become the Properties instance metatable.  Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} 
             lua_pushliteral(lua, "__index");  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} __index
-            lua_pushcclosure(lua, &Internal::Properties__Index, 1);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} __index function
+            lua_pushcclosure(lua, &Internal::Properties__Index, 0);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} __index function
             lua_rawset(lua, -3);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {__index=Internal::Properties__Index} 
 
             lua_pushliteral(lua, "__newindex");
-            lua_pushcclosure(lua, &Internal::Properties__NewIndex, 1);
+            lua_pushcclosure(lua, &Internal::Properties__NewIndex, 0);
             lua_rawset(lua, -3);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {__index=Internal::Properties__Index __newindex=Internal::Properties__NewIndex} 
             lua_setmetatable(lua, -2);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {Meta{__index=Internal::Properties__Index __newindex=Internal::Properties__NewIndex} } 
 
