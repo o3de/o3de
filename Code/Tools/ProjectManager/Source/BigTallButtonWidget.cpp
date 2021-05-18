@@ -22,7 +22,7 @@ namespace O3DE::ProjectManager
 
     void BigTallButton::SetDefaultStyle()
     {
-        setFixedSize(210, 280);
+        setFixedSize(s_buttonWidth, s_buttonHeight);
         setFlat(true);
         setFocusPolicy(Qt::FocusPolicy::NoFocus);
         setStyleSheet("QPushButton { font-size: 14px; background-color: rgba(0, 0, 0, 191); }");
