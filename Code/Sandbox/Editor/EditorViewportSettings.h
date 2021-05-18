@@ -12,27 +12,31 @@
 
 #pragma once
 
-#include <EditorCoreAPI.h>
+#include <SandboxAPI.h>
 
-namespace Editor
+namespace SandboxEditor
 {
-    EDITOR_CORE_API bool GridSnappingEnabled();
+    SANDBOX_API bool GridSnappingEnabled();
 
-    EDITOR_CORE_API float GridSnappingSize();
+    SANDBOX_API float GridSnappingSize();
 
-    EDITOR_CORE_API bool AngleSnappingEnabled();
+    SANDBOX_API bool AngleSnappingEnabled();
 
-    EDITOR_CORE_API float AngleSnappingSize();
+    SANDBOX_API float AngleSnappingSize();
 
-    EDITOR_CORE_API bool ShowingGrid();
+    SANDBOX_API bool ShowingGrid();
 
-    EDITOR_CORE_API void SetGridSnapping(bool enabled);
+    SANDBOX_API void SetGridSnapping(bool enabled);
 
-    EDITOR_CORE_API void SetGridSnappingSize(float size);
+    SANDBOX_API void SetGridSnappingSize(float size);
 
-    EDITOR_CORE_API void SetAngleSnapping(bool enabled);
+    SANDBOX_API void SetAngleSnapping(bool enabled);
 
-    EDITOR_CORE_API void SetAngleSnappingSize(float size);
+    SANDBOX_API void SetAngleSnappingSize(float size);
 
-    EDITOR_CORE_API void SetShowingGrid(bool showing);
-} // namespace Editor
+    SANDBOX_API void SetShowingGrid(bool showing);
+
+    //! Return if the new editor camera system is enabled or not.
+    //! @note This is implemented in EditorViewportWidget.cpp
+    SANDBOX_API bool UsingNewCameraSystem();
+} // namespace SandboxEditor

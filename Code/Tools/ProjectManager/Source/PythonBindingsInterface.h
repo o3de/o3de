@@ -70,11 +70,11 @@ namespace O3DE::ProjectManager
 
         /**
          * Create a project 
-         * @param projectTemplate the project template to use 
+         * @param projectTemplatePath the path to the project template to use 
          * @param projectInfo the project info to use 
          * @return an outcome with ProjectInfo on success 
          */
-        virtual AZ::Outcome<ProjectInfo> CreateProject(const ProjectTemplateInfo& projectTemplate, const ProjectInfo& projectInfo) = 0;
+        virtual AZ::Outcome<ProjectInfo> CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo) = 0;
         
         /**
          * Get info about a project 
