@@ -12,6 +12,7 @@
 
 
 #include <MorphTargets/MorphTargetComputePass.h>
+#include <SkinnedMesh/SkinnedMeshFeatureProcessor.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshOutputStreamManagerInterface.h>
 
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -38,6 +39,11 @@ namespace AZ
             return m_shader;
         }
 
+        void MorphTargetComputePass::SetFeatureProcessor(SkinnedMeshFeatureProcessor* skinnedMeshFeatureProcessor)
+        {
+            m_skinnedMeshFeatureProcessor = skinnedMeshFeatureProcessor;
+        }
+
         void MorphTargetComputePass::BuildAttachmentsInternal()
         {
             // The same buffer that skinning writes to is used to manage the computed vertex deltas that are passed from the
@@ -45,30 +51,16 @@ namespace AZ
             AttachBufferToSlot(Name{ "MorphTargetDeltaOutput" }, SkinnedMeshOutputStreamManagerInterface::Get()->GetBuffer());
         }
 
-        void MorphTargetComputePass::AddDispatchItem(const RHI::DispatchItem* dispatchItem)
-        {
-            AZ_Assert(dispatchItem != nullptr, "invalid dispatchItem");
-
-            AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-            //using an unordered_set here to prevent redundantly adding the same dispatchItem to the submission queue
-            //(i.e. if the same morph target exists in multiple views, it can call AddDispatchItem multiple times with the same item)
-            m_dispatches.insert(dispatchItem);
-        }
-
         void MorphTargetComputePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
-            RHI::CommandList* commandList = context.GetCommandList();
-
-            SetSrgsForDispatch(commandList);
-
-            AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-            for (const RHI::DispatchItem* dispatchItem : m_dispatches)
+            if (m_skinnedMeshFeatureProcessor)
             {
-                commandList->Submit(*dispatchItem);
-            }
+                RHI::CommandList* commandList = context.GetCommandList();
 
-            // Clear the dispatch items. They will need to be re-populated next frame
-            m_dispatches.clear();
+                SetSrgsForDispatch(commandList);
+
+                m_skinnedMeshFeatureProcessor->SubmitMorphTargetDispatchItems(commandList);
+            }
         }
     }   // namespace Render
 }   // namespace AZ
