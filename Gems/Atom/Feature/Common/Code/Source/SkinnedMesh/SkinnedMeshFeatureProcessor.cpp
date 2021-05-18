@@ -303,9 +303,9 @@ namespace AZ
             return false;
         }
 
-        void SkinnedMeshFeatureProcessor::InitSkinningAndMorphPass(const RPI::Ptr<RPI::ParentPass> rootPass)
+        void SkinnedMeshFeatureProcessor::InitSkinningAndMorphPass(const RPI::Ptr<RPI::ParentPass> pipelineRootPass)
         {
-            RPI::Ptr<RPI::Pass> skinningPass = rootPass->FindPassByNameRecursive(AZ::Name{ "SkinningPass" });
+            RPI::Ptr<RPI::Pass> skinningPass = pipelineRootPass->FindPassByNameRecursive(AZ::Name{ "SkinningPass" });
             if (skinningPass)
             {
                 SkinnedMeshComputePass* skinnedMeshComputePass = azdynamic_cast<SkinnedMeshComputePass*>(skinningPass.get());
@@ -324,7 +324,7 @@ namespace AZ
                 }
             }
 
-            RPI::Ptr<RPI::Pass> morphTargetPass = rootPass->FindPassByNameRecursive(AZ::Name{ "MorphTargetPass" });
+            RPI::Ptr<RPI::Pass> morphTargetPass = pipelineRootPass->FindPassByNameRecursive(AZ::Name{ "MorphTargetPass" });
             if (morphTargetPass)
             {
                 MorphTargetComputePass* morphTargetComputePass = azdynamic_cast<MorphTargetComputePass*>(morphTargetPass.get());

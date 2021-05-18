@@ -71,7 +71,7 @@ namespace AZ
         private:
             AZ_DISABLE_COPY_MOVE(SkinnedMeshFeatureProcessor);
 
-            void InitSkinningAndMorphPass(const RPI::Ptr<RPI::ParentPass> rootPass);
+            void InitSkinningAndMorphPass(const RPI::Ptr<RPI::ParentPass> pipelineRootPass);
 
             SkinnedMeshRenderProxyInterfaceHandle AcquireRenderProxyInterface(const SkinnedMeshRenderProxyDesc& desc) override;
             bool ReleaseRenderProxyInterface(SkinnedMeshRenderProxyInterfaceHandle& handle) override;
