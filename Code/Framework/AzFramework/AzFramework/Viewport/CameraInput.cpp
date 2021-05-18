@@ -30,7 +30,8 @@ namespace AzFramework
     AZ_CVAR(float, ed_cameraSystemOrbitDollyScrollSpeed, 0.02f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, ed_cameraSystemOrbitDollyCursorSpeed, 0.01f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, ed_cameraSystemScrollTranslateSpeed, 0.02f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
-    AZ_CVAR(float, ed_cameraSystemMaxOrbitDistance, 60.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(float, ed_cameraSystemMinOrbitDistance, 6.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(float, ed_cameraSystemMaxOrbitDistance, 50.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, ed_cameraSystemLookSmoothness, 5.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, ed_cameraSystemTranslateSmoothness, 5.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, ed_cameraSystemRotateSpeed, 0.005f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
@@ -532,20 +533,39 @@ namespace AzFramework
 
         if (Beginning())
         {
-            float hit_distance = 0.0f;
-            AZ::Plane::CreateFromNormalAndPoint(AZ::Vector3::CreateAxisZ(), AZ::Vector3::CreateAxisZ(ed_cameraSystemDefaultPlaneHeight))
-                .CastRay(targetCamera.Translation(), targetCamera.Rotation().GetBasisY(), hit_distance);
+            const auto hasLookAt = [&nextCamera, &targetCamera, lookAtFn = m_lookAtFn] {
+                if (lookAtFn)
+                {
+                    if (const auto lookAt = lookAtFn())
+                    {
+                        auto transform = AZ::Transform::CreateLookAt(targetCamera.m_lookAt, *lookAt);
+                        nextCamera.m_lookDist = -lookAt->GetDistance(targetCamera.m_lookAt);
+                        UpdateCameraFromTransform(nextCamera, transform);
 
-            if (hit_distance > 0.0f)
+                        return true;
+                    }
+                }
+                return false;
+            }();
+
+            if (!hasLookAt)
             {
-                hit_distance = AZStd::min<float>(hit_distance, ed_cameraSystemMaxOrbitDistance);
-                nextCamera.m_lookDist = -hit_distance;
-                nextCamera.m_lookAt = targetCamera.Translation() + targetCamera.Rotation().GetBasisY() * hit_distance;
-            }
-            else
-            {
-                nextCamera.m_lookDist = -ed_cameraSystemMaxOrbitDistance;
-                nextCamera.m_lookAt = targetCamera.Translation() + targetCamera.Rotation().GetBasisY() * ed_cameraSystemMaxOrbitDistance;
+                float hit_distance = 0.0f;
+                AZ::Plane::CreateFromNormalAndPoint(AZ::Vector3::CreateAxisZ(), AZ::Vector3::CreateAxisZ(ed_cameraSystemDefaultPlaneHeight))
+                    .CastRay(targetCamera.Translation(), targetCamera.Rotation().GetBasisY(), hit_distance);
+
+                if (hit_distance > 0.0f)
+                {
+                    hit_distance = AZStd::min<float>(hit_distance, ed_cameraSystemMaxOrbitDistance);
+                    nextCamera.m_lookDist = -hit_distance;
+                    nextCamera.m_lookAt = targetCamera.Translation() + targetCamera.Rotation().GetBasisY() * hit_distance;
+                }
+                else
+                {
+                    nextCamera.m_lookDist = -ed_cameraSystemMinOrbitDistance;
+                    nextCamera.m_lookAt =
+                        targetCamera.Translation() + targetCamera.Rotation().GetBasisY() * ed_cameraSystemMinOrbitDistance;
+                }
             }
         }
 

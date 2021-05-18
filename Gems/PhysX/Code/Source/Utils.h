@@ -179,7 +179,7 @@ namespace PhysX
 
         void GetColliderShapeConfigsFromAsset(const Physics::PhysicsAssetShapeConfiguration& assetConfiguration,
             const Physics::ColliderConfiguration& originalColliderConfiguration,
-            bool hasNonUniformScale, AZ::u8 subdivisionLevel, Physics::ShapeConfigurationList& resultingColliderShapes);
+            bool hasNonUniformScale, AZ::u8 subdivisionLevel, AzPhysics::ShapeColliderPairList& resultingColliderShapes);
 
         //! Gets the scale from the entity's Transform component.
         AZ::Vector3 GetTransformScale(AZ::EntityId entityId);

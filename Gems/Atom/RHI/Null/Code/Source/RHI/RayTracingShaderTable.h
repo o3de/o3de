@@ -33,8 +33,8 @@ namespace AZ
             RayTracingShaderTable() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::PipelineState
-            RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::RayTracingShaderTableDescriptor* descriptor, [[maybe_unused]] const RHI::RayTracingBufferPools& bufferPools) override {return RHI::ResultCode::Success;}
+            // RHI::RayTracingShaderTable
+            RHI::ResultCode BuildInternal() override {return RHI::ResultCode::Success;}
             //////////////////////////////////////////////////////////////////////////
         };
     }
