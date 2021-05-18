@@ -12,6 +12,12 @@
 
 #pragma once
 
+#include <Multiplayer/IMultiplayer.h>
+#include <Editor/MultiplayerEditorConnection.h>
+#include <NetworkTime/NetworkTime.h>
+#include <NetworkEntity/NetworkEntityManager.h>
+#include <Source/AutoGen/Multiplayer.AutoPacketDispatcher.h>
+
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/IConsole.h>
@@ -20,11 +26,6 @@
 #include <AzCore/Threading/ThreadSafeDeque.h>
 #include <AzCore/std/string/string.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
-#include <Multiplayer/IMultiplayer.h>
-#include <Source/Editor/MultiplayerEditorConnection.h>
-#include <Source/NetworkTime/NetworkTime.h>
-#include <Source/NetworkEntity/NetworkEntityManager.h>
-#include <Source/AutoGen/Multiplayer.AutoPacketDispatcher.h>
 
 namespace AzNetworking
 {
