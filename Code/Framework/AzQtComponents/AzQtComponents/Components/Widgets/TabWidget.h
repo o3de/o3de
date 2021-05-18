@@ -203,6 +203,9 @@ namespace AzQtComponents
         bool m_movingTab = false;
         QPoint m_lastMousePress;
 
+        QCursor m_dragCursor;
+        QCursor m_hoverCursor;
+
         void resetOverflow();
         void overflowIfNeeded();
         void showCloseButtonAt(int index);

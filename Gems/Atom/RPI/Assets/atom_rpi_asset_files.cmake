@@ -21,7 +21,6 @@ set(FILES
     Shader/ImagePreview.shader
     ShaderLib/Atom/RPI/Math.azsli
     ShaderLib/Atom/RPI/TangentSpace.azsli
-    ShaderLib/Atom/RPI/ShaderResourceGroups/BindlessPrototypeSrg.azsli
     ShaderLib/Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli
     ShaderLib/Atom/RPI/ShaderResourceGroups/DefaultObjectSrg.azsli
 ) 
