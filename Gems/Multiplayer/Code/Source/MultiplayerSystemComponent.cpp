@@ -384,6 +384,19 @@ namespace Multiplayer
         return false;
     }
 
+    bool MultiplayerSystemComponent::HandleRequest( AzNetworking::IConnection* connection,
+        [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::ReadyForEntityUpdates& packet)
+    {
+        IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection->GetUserData());
+        if (connectionData)
+        {
+            connectionData->SetCanSendUpdates(packet.GetReadyForEntityUpdates());
+            return true;
+        }
+
+        return false;
+    }
+
     ConnectResult MultiplayerSystemComponent::ValidateConnect
     (
         [[maybe_unused]] const IpAddress& remoteAddress,
@@ -504,6 +517,15 @@ namespace Multiplayer
     void MultiplayerSystemComponent::AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler)
     {
         handler.Connect(m_shutdownEvent);
+    }
+
+    void MultiplayerSystemComponent::SendReadyForEntityUpdates(bool readyForEntityUpdates)
+    {
+        IConnectionSet& connectionSet = m_networkInterface->GetConnectionSet();
+        connectionSet.VisitConnections([readyForEntityUpdates](IConnection& connection)
+        {
+            connection.SendReliablePacket(MultiplayerPackets::ReadyForEntityUpdates(readyForEntityUpdates));
+        });
     }
 
     const char* MultiplayerSystemComponent::GetComponentGemName(NetComponentId netComponentId) const

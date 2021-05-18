@@ -34,7 +34,6 @@
 #include "EditorViewportWidget.h"
 #include "CryEditDoc.h"
 
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzCore/Console/IConsole.h>
 
 AZ_CVAR(bool, ed_useAtomNativeViewport, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Atom-native Editor viewport (experimental, not yet stable");
@@ -42,7 +41,7 @@ AZ_CVAR(bool, ed_useAtomNativeViewport, true, nullptr, AZ::ConsoleFunctorFlags::
 bool CViewManager::IsMultiViewportEnabled()
 {
     // Enable multi-viewport for legacy renderer, or if we're using the new fully Atom-native viewport
-    return !AZ::Interface<AzFramework::AtomActiveInterface>::Get() || ed_useAtomNativeViewport;
+    return ed_useAtomNativeViewport;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -81,7 +80,7 @@ CViewManager::CViewManager()
     RegisterQtViewPane<C2DViewport_YZ>(GetIEditor(), "Left", LyViewPane::CategoryViewport, viewportOptions);
 
     viewportOptions.viewportType = ET_ViewportCamera;
-    if (ed_useAtomNativeViewport && AZ::Interface<AzFramework::AtomActiveInterface>::Get())
+    if (ed_useAtomNativeViewport)
     {
         RegisterQtViewPaneWithName<EditorViewportWidget>(GetIEditor(), "Perspective", LyViewPane::CategoryViewport, viewportOptions);
     }
@@ -94,13 +93,6 @@ CViewManager::CViewManager()
     RegisterQtViewPane<QTopRendererWnd>(GetIEditor(), "Map", LyViewPane::CategoryViewport, viewportOptions);
 
     GetIEditor()->RegisterNotifyListener(this);
-
-    if (!GetIEditor()->IsNewViewportInteractionModelEnabled())
-    {
-        // if the legacy interaction model is used, this manager will be the main manager
-        m_manipulatorManager =
-            AZStd::make_shared<AzToolsFramework::ManipulatorManager>(AzToolsFramework::g_mainManipulatorManagerId);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

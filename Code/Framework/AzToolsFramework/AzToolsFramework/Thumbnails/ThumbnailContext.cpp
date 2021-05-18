@@ -24,10 +24,9 @@ namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
-        ThumbnailContext::ThumbnailContext(int thumbnailSize)
-            : m_missingThumbnail(new MissingThumbnail(thumbnailSize))
-            , m_loadingThumbnail(new LoadingThumbnail(thumbnailSize))
-            , m_thumbnailSize(thumbnailSize)
+        ThumbnailContext::ThumbnailContext()
+            : m_missingThumbnail(new MissingThumbnail())
+            , m_loadingThumbnail(new LoadingThumbnail())
             , m_threadPool(this)
         {
             ThumbnailContextRequestBus::Handler::BusConnect();
@@ -120,7 +119,6 @@ namespace AzToolsFramework
                 return;
             }
 
-            providerToAdd->SetThumbnailSize(m_thumbnailSize);
             m_providers.insert(providerToAdd);
         }
 

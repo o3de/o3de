@@ -20,8 +20,9 @@
 
 // Editor
 #include "ViewManager.h"
-#include "SurfaceInfoPicker.h"
+#include "Include/IObjectManager.h"
 
+#include <IStatObj.h>
 
 //////////////////////////////////////////////////////////////////////////
 CSelectionGroup::CSelectionGroup()
@@ -238,16 +239,6 @@ void CSelectionGroup::Move(const Vec3& offset, EMoveSelectionFlag moveFlag, [[ma
     }
 
     SRayHitInfo pickedInfo;
-    if (moveFlag == eMS_FollowGeometryPosNorm && bValidFollowGeometryMode)
-    {
-        CSurfaceInfoPicker::CExcludedObjects excludeObjects;
-        for (int i = 0; i < GetFilteredCount(); ++i)
-        {
-            excludeObjects.Add(GetFilteredObject(i));
-        }
-        CSurfaceInfoPicker surfacePicker;
-        bValidFollowGeometryMode = surfacePicker.Pick(point, pickedInfo, &excludeObjects);
-    }
 
     if (moveFlag == eMS_FollowGeometryPosNorm)
     {

@@ -42,7 +42,7 @@ namespace AzToolsFramework
             const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
         /// Responsible for drawing the 2d box representing the selection in screen space.
-        void Display2d(AzFramework::DebugDisplayRequests& debugDisplay);
+        void Display2d(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay);
 
         /// Custom drawing behavior to happen during a box select.
         void DisplayScene(

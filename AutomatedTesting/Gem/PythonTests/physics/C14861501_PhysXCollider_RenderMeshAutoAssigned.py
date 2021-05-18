@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID : C14861501
 Test Case Title : Verify PxMesh is auto-assigned when Collider component is added after Rendering Mesh component
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/14861501
+
 """
 
 

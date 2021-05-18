@@ -189,8 +189,8 @@ namespace PhysX
                     "PhysX Collider", "PhysX shape collider")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/PhysXCollider.svg")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/PhysXCollider.svg")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/PhysXCollider.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "http://docs.aws.amazon.com/console/lumberyard/component/physx/collider")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -345,7 +345,6 @@ namespace PhysX
         AzToolsFramework::BoxManipulatorRequestBus::Handler::BusConnect(
             AZ::EntityComponentIdPair(GetEntityId(), GetId()));
         ColliderShapeRequestBus::Handler::BusConnect(GetEntityId());
-        LmbrCentral::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
         AZ::Render::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
         EditorColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
         m_nonUniformScaleChangedHandler = AZ::NonUniformScaleChangedEvent::Handler(
@@ -394,7 +393,6 @@ namespace PhysX
         m_nonUniformScaleChangedHandler.Disconnect();
         EditorColliderComponentRequestBus::Handler::BusDisconnect();
         AZ::Render::MeshComponentNotificationBus::Handler::BusDisconnect();
-        LmbrCentral::MeshComponentNotificationBus::Handler::BusDisconnect();
         ColliderShapeRequestBus::Handler::BusDisconnect();
         AzToolsFramework::BoxManipulatorRequestBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
@@ -1179,17 +1177,7 @@ namespace PhysX
         AZ::Render::MeshComponentRequestBus::EventResult(atomMeshAsset, GetEntityId(),
             &AZ::Render::MeshComponentRequestBus::Events::GetModelAsset);
 
-        if (atomMeshAsset.GetId().IsValid())
-        {
-            return atomMeshAsset;
-        }
-
-        // Try legacy render MeshComponent
-        AZ::Data::Asset<AZ::Data::AssetData> legacyMeshAsset;
-        LmbrCentral::MeshComponentRequestBus::EventResult(legacyMeshAsset,
-            GetEntityId(), &LmbrCentral::MeshComponentRequests::GetMeshAsset);
-
-        return legacyMeshAsset;
+        return atomMeshAsset;
     }
 
     void EditorColliderComponent::SetCollisionMeshFromRender()
@@ -1262,14 +1250,6 @@ namespace PhysX
                 GetEntity()->GetName().c_str(), 
                 renderMeshAsset.GetId().m_guid.ToString<AZStd::string>().c_str(),
                 renderMeshAsset.GetHint().c_str());
-        }
-    }
-    
-    void EditorColliderComponent::OnMeshCreated([[maybe_unused]] const AZ::Data::Asset<AZ::Data::AssetData>& asset)
-    {
-        if (ShouldUpdateCollisionMeshFromRender())
-        {
-            SetCollisionMeshFromRender();
         }
     }
 

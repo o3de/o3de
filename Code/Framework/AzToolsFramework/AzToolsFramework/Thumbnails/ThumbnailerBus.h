@@ -40,7 +40,7 @@ namespace AzToolsFramework
         {
         public:
             //! Add thumbnail context
-            virtual void RegisterContext(const char* contextName, int thumbnailSize) = 0;
+            virtual void RegisterContext(const char* contextName) = 0;
 
             //! Remove thumbnail context and all associated ThumbnailProviders
             virtual void UnregisterContext(const char* contextName) = 0;
