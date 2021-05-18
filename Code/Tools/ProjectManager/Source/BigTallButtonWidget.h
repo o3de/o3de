@@ -23,7 +23,9 @@ namespace O3DE::ProjectManager
     {
         Q_OBJECT // AUTOMOC
 
-    public: explicit BigTallButton(const QIcon& icon, const QString& text, QWidget* parent = nullptr);
+    public:
+        explicit BigTallButton(QWidget* parent = nullptr);
+        explicit BigTallButton(const QIcon& icon, const QString& text, QWidget* parent = nullptr);
         ~BigTallButton() = default;
 
     private:

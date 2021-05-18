@@ -15,11 +15,6 @@
 #include <ScreenWidget.h>
 #endif
 
-namespace Ui
-{
-    class ProjectsHomeClass;
-}
-
 namespace O3DE::ProjectManager
 {
     class ProjectsHomeScreen
@@ -37,7 +32,8 @@ namespace O3DE::ProjectManager
         void HandleEditProjectButton();
 
     private:
-        QScopedPointer<Ui::ProjectsHomeClass> m_ui;
+        QAction* m_createNewProjectAction;
+        QAction* m_addExistingProjectAction;
     };
 
 } // namespace O3DE::ProjectManager

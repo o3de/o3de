@@ -38,13 +38,14 @@ set(FILES
     Source/ProjectSettingsCtrl.cpp
     Source/ProjectsHomeScreen.h
     Source/ProjectsHomeScreen.cpp
-    Source/ProjectsHomeScreen.ui
     Source/ProjectSettingsScreen.h
     Source/ProjectSettingsScreen.cpp
     Source/ProjectSettingsScreen.ui
     Source/EngineSettingsScreen.h
     Source/EngineSettingsScreen.cpp
     Source/EngineSettingsScreen.ui
+    Source/ProjectButtonWidget.h
+    Source/ProjectButtonWidget.cpp
     Source/BigTallButtonWidget.h
     Source/BigTallButtonWidget.cpp
     Source/LinkWidget.h

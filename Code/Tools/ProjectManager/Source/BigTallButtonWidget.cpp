@@ -14,6 +14,12 @@
 
 namespace O3DE::ProjectManager
 {
+    BigTallButton::BigTallButton(QWidget* parent)
+        : QPushButton(parent)
+    {
+        SetDefaultStyle();
+    }
+
     BigTallButton::BigTallButton(const QIcon& icon, const QString& text, QWidget* parent)
         : QPushButton(icon, text, parent)
     {
@@ -25,6 +31,6 @@ namespace O3DE::ProjectManager
         setFixedSize(210, 280);
         setFlat(true);
         setFocusPolicy(Qt::FocusPolicy::NoFocus);
-        setStyleSheet("QPushButton { font-size: 14px; background-color: rgba(0, 0, 0, 191); }");
+        setStyleSheet("font-size: 14px; background-color: rgba(0, 0, 0, 191);");
     }
 } // namespace O3DE::ProjectManager
