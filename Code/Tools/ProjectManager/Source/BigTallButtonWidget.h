@@ -30,5 +30,8 @@ namespace O3DE::ProjectManager
 
     private:
         void SetDefaultStyle();
+
+        inline constexpr static int s_buttonWidth = 210;
+        inline constexpr static int s_buttonHeight = 280;
     };
 } // namespace O3DE::ProjectManager

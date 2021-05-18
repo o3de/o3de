@@ -5,7 +5,7 @@
     Namespace="Multiplayer" 
     OverrideComponent="true" 
     OverrideController="true" 
-    OverrideInclude="Source/Components/NetworkTransformComponent.h"
+    OverrideInclude="Multiplayer/Components/NetworkTransformComponent.h"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <ComponentRelation Constraint="Weak" HasController="false" Name="TransformComponent" Namespace="AzFramework" Include="AzFramework/Components/TransformComponent.h" />

@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Multiplayer/INetworkTime.h>
+#include <Multiplayer/NetworkTime/INetworkTime.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Console/IConsole.h>
 

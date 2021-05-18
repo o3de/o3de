@@ -296,7 +296,7 @@ DefaultTrafficControl::OnReceived(TrafficControlConnectionId id, DataGramControl
     if (m_maxRecvPackets != 0)
     {
         --cd->m_recvPacketAllowance;
-        if (cd->m_recvPacketAllowance == 0) // hit the limit -> let's blacklist connection
+        if (cd->m_recvPacketAllowance == 0) // hit the limit
         {
             cd->m_canReceiveData = false;
         }

@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Multiplayer/IReplicationWindow.h>
+#include <Multiplayer/ReplicationWindows/IReplicationWindow.h>
 
 namespace Multiplayer
 {

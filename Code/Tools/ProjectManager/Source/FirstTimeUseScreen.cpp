@@ -27,40 +27,40 @@ namespace O3DE::ProjectManager
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
         this->setLayout(vLayout);
-        vLayout->setContentsMargins(80, 80, 80, 80);
+        vLayout->setContentsMargins(s_contentMargins, s_contentMargins, s_contentMargins, s_contentMargins);
 
         QLabel* titleLabel = new QLabel(this);
-        titleLabel->setText("Ready. Set. Create!");
+        titleLabel->setText(tr("Ready. Set. Create!"));
         titleLabel->setStyleSheet("font-size: 60px; font-family: 'Open Sans';");
         vLayout->addWidget(titleLabel);
 
         QLabel* introLabel = new QLabel(this);
         introLabel->setTextFormat(Qt::AutoText);
-        introLabel->setText("<html><head/><body><p>Welcome to O3DE! Start something new by creating a project. Not sure what to create? </p><p>Explore what\342\200\231s available by downloading our sample project.</p></body></html>");
+        introLabel->setText(tr("<html><head/><body><p>Welcome to O3DE! Start something new by creating a project. Not sure what to create? </p><p>Explore what\342\200\231s available by downloading our sample project.</p></body></html>"));
         introLabel->setStyleSheet("font-size: 14px; font-family: 'Open Sans';");
         vLayout->addWidget(introLabel);
 
         QHBoxLayout* buttonLayout = new QHBoxLayout();
-        buttonLayout->setSpacing(30);
+        buttonLayout->setSpacing(s_buttonSpacing);
 
         QIcon createIcon;
         createIcon.addFile(QString::fromUtf8(":/Resources/Add.svg"));
-        m_createProjectButton = new BigTallButton(createIcon, "Create Project", this);
-        m_createProjectButton->setIconSize(QSize(24, 24));
+        m_createProjectButton = new BigTallButton(createIcon, tr("Create Project"), this);
+        m_createProjectButton->setIconSize(QSize(s_iconSize, s_iconSize));
         buttonLayout->addWidget(m_createProjectButton);
 
         QIcon addIcon;
         addIcon.addFile(QString::fromUtf8(":/Resources/Select_Folder.svg"));
-        m_addProjectButton = new BigTallButton(addIcon, "Add a Project", this);
-        m_addProjectButton->setIconSize(QSize(24, 24));
+        m_addProjectButton = new BigTallButton(addIcon, tr("Add a Project"), this);
+        m_addProjectButton->setIconSize(QSize(s_iconSize, s_iconSize));
         buttonLayout->addWidget(m_addProjectButton);
 
-        QSpacerItem* buttonSpacer = new QSpacerItem(20, 40, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        QSpacerItem* buttonSpacer = new QSpacerItem(s_spacerSize, s_spacerSize, QSizePolicy::Expanding, QSizePolicy::Minimum);
         buttonLayout->addItem(buttonSpacer);
 
         vLayout->addItem(buttonLayout);
 
-        QSpacerItem* verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        QSpacerItem* verticalSpacer = new QSpacerItem(s_spacerSize, s_spacerSize, QSizePolicy::Minimum, QSizePolicy::Expanding);
         vLayout->addItem(verticalSpacer);
 
         // Using border-image allows for scaling options background-image does not support

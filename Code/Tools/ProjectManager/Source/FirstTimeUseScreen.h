@@ -34,6 +34,11 @@ namespace O3DE::ProjectManager
     private:
         BigTallButton* m_createProjectButton;
         BigTallButton* m_addProjectButton;
+
+        inline constexpr static int s_contentMargins = 80;
+        inline constexpr static int s_buttonSpacing = 30;
+        inline constexpr static int s_iconSize = 24;
+        inline constexpr static int s_spacerSize = 20;
     };
 
 } // namespace O3DE::ProjectManager

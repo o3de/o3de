@@ -53,6 +53,7 @@ namespace AZ
             void SetBufferViewsOnShaderResourceGroup(const Data::Instance<RPI::ShaderResourceGroup>& perInstanceSRG);
         private:
             RHI::Ptr<RHI::BufferView> m_vertexDeltaBufferView;
+            Data::Instance<RPI::Buffer> m_vertexDeltaBuffer;
         };
 
         struct MorphTargetMetaData
