@@ -42,6 +42,9 @@
 #include <QApplication>
 #include <QRect>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AzToolsFramework
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorTransformComponentSelection, AZ::SystemAllocator, 0)
@@ -1025,6 +1028,8 @@ namespace AzToolsFramework
         EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
         EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusConnect(entityContextId);
+
+        m_clickDetector.m_debugName = "EditorTransformComponentSelection";
 
         CreateTransformModeSelectionCluster();
         RegisterActions();

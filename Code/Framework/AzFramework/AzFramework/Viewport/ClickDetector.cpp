@@ -13,12 +13,30 @@
 #include <AzFramework/Viewport/ClickDetector.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AzFramework
 {
     ClickDetector::ClickOutcome ClickDetector::DetectClick(const ClickEvent clickEvent, const ScreenVector& cursorDelta)
     {
+        const auto previousDetectionState = m_detectionState;
+        if (previousDetectionState == DetectionState::WaitingForMove)
+        {
+            AZ_Printf("AzFramework", "ClickDetector - Moving %s", m_debugName.c_str());
+            // only allow the action to begin if the mouse has been moved a small amount
+            m_moveAccumulator += ScreenVectorLength(cursorDelta);
+            if (m_moveAccumulator > m_deadZone)
+            {
+                AZ_Printf("AzFramework", "ClickDetector - Moved %s", m_debugName.c_str());
+
+                m_detectionState = DetectionState::Moved;
+            }
+        }
+
         if (clickEvent == ClickEvent::Down)
         {
+            AZ_Printf("AzFramework", "ClickDetector - Down %s", m_debugName.c_str());
             const auto now = std::chrono::steady_clock::now();
             if (m_tryBeginTime)
             {
@@ -36,6 +54,8 @@ namespace AzFramework
         }
         else if (clickEvent == ClickEvent::Up)
         {
+            AZ_Printf("AzFramework", "ClickDetector - Up %s", m_debugName.c_str());
+
             const auto clickOutcome = [detectionState = m_detectionState] {
                 if (detectionState == DetectionState::WaitingForMove)
                 {
@@ -52,15 +72,9 @@ namespace AzFramework
             return clickOutcome;
         }
 
-        if (m_detectionState == DetectionState::WaitingForMove)
+        if (previousDetectionState == DetectionState::WaitingForMove && m_detectionState == DetectionState::Moved)
         {
-            // only allow the action to begin if the mouse has been moved a small amount
-            m_moveAccumulator += ScreenVectorLength(cursorDelta);
-            if (m_moveAccumulator > m_deadZone)
-            {
-                m_detectionState = DetectionState::Moved;
-                return ClickOutcome::Move;
-            }
+            return ClickOutcome::Move;
         }
 
         return ClickOutcome::Nil;

@@ -14,6 +14,8 @@
 
 #include <AzCore/std/functional.h>
 #include <AzCore/std/optional.h>
+#include <AzFramework/Viewport/ClickDetector.h>
+#include <AzFramework/Viewport/CursorState.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 
 #include <QRect>
@@ -31,7 +33,7 @@ namespace AzToolsFramework
     class EditorBoxSelect
     {
     public:
-        EditorBoxSelect() = default;
+        EditorBoxSelect();
 
         /// Return if a box select action is currently taking place.
         bool Active() const { return m_boxSelectRegion.has_value(); }
@@ -81,5 +83,8 @@ namespace AzToolsFramework
 
         AZStd::optional<QRect> m_boxSelectRegion; ///< Maybe/optional value to store box select region while active.
         ViewportInteraction::KeyboardModifiers m_previousModifiers; ///< Modifier keys active on the previous frame.
+
+        AzFramework::ClickDetector m_clickDetector;
+        AzFramework::CursorState m_cursorState;
     };
 } // namespace AzToolsFramework

@@ -51,6 +51,9 @@ namespace AzFramework
         ClickOutcome DetectClick(ClickEvent clickEvent, const ScreenVector& cursorDelta);
 
         void SetDoubleClickInterval(float doubleClickInterval);
+        void SetDeadZone(float deadZone);
+
+        AZStd::string m_debugName;
 
     private:
         //! Internal state of ClickDetector based on incoming events.
@@ -71,5 +74,10 @@ namespace AzFramework
     inline void ClickDetector::SetDoubleClickInterval(const float doubleClickInterval)
     {
         m_doubleClickInterval = doubleClickInterval;
+    }
+
+    inline void ClickDetector::SetDeadZone(const float deadZone)
+    {
+        m_deadZone = deadZone;
     }
 } // namespace AzFramework

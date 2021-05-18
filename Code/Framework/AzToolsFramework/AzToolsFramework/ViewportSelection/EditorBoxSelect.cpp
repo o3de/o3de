@@ -17,19 +17,50 @@
 
 #include <QApplication>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AzToolsFramework
 {
     static const AZ::Color s_boxSelectColor = AZ::Color(1.0f, 1.0f, 1.0f, 0.4f);
     static const float s_boxSelectLineWidth = 2.0f;
+
+    EditorBoxSelect::EditorBoxSelect()
+    {
+        m_clickDetector.SetDeadZone(4.0f);
+        m_clickDetector.m_debugName = "BoxSelect";
+    }
 
     void EditorBoxSelect::HandleMouseInteraction(
         const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-        if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
-            mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down)
+        m_cursorState.SetCurrentPosition(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
+
+        const AzFramework::ClickDetector::ClickEvent selectClickEvent = [&mouseInteraction] {
+            if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
+            {
+                if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down)
+                {
+                    return AzFramework::ClickDetector::ClickEvent::Down;
+                }
+
+                if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Up)
+                {
+                    return AzFramework::ClickDetector::ClickEvent::Up;
+                }
+            }
+            return AzFramework::ClickDetector::ClickEvent::Nil;
+        }();
+
+        const auto clickOutcome = m_clickDetector.DetectClick(selectClickEvent, m_cursorState.CursorDelta());
+        if (clickOutcome == AzFramework::ClickDetector::ClickOutcome::Move)
+        //if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
+        //    mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down)
         {
+            AZ_Printf("AzToolsFramework", "Box Select - Begin");
+
             if (m_leftMouseDown)
             {
                 m_leftMouseDown(mouseInteraction);
@@ -47,6 +78,8 @@ namespace AzToolsFramework
         {
             if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Move)
             {
+                AZ_Printf("AzToolsFramework", "Box Select - Continue");
+
                 m_boxSelectRegion->setWidth(
                     mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates.m_x - m_boxSelectRegion->x());
                 m_boxSelectRegion->setHeight(
@@ -58,9 +91,12 @@ namespace AzToolsFramework
                 }
             }
 
-            if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
-                mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Up)
+            if (clickOutcome == AzFramework::ClickDetector::ClickOutcome::Release)
+            //if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
+            //    mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Up)
             {
+                AZ_Printf("AzToolsFramework", "Box Select - End");
+
                 if (m_leftMouseUp)
                 {
                     m_leftMouseUp();
@@ -76,6 +112,8 @@ namespace AzToolsFramework
     void EditorBoxSelect::Display2d(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+
+        m_cursorState.Update();
 
         if (m_boxSelectRegion)
         {

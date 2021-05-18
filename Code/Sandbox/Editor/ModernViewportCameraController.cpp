@@ -23,6 +23,9 @@
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace SandboxEditor
 {
     // debug
@@ -100,8 +103,8 @@ namespace SandboxEditor
     // should the camera system respond to this particular event
     static bool ShouldHandle(const AzFramework::ViewportControllerPriority priority, const bool exclusive)
     {
-        return !exclusive && priority == AzFramework::ViewportControllerPriority::Normal ||
-            exclusive && priority == AzFramework::ViewportControllerPriority::Highest;
+        return (!exclusive && priority == AzFramework::ViewportControllerPriority::Normal) ||
+            (exclusive && priority == AzFramework::ViewportControllerPriority::Highest);
     }
 
     bool ModernViewportCameraControllerInstance::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)

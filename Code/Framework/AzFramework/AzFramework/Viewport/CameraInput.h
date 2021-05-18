@@ -149,7 +149,7 @@ namespace AzFramework
             ResetImpl();
         }
 
-        virtual void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) = 0;
+        virtual bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) = 0;
         virtual Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) = 0;
 
         virtual bool Exclusive() const
@@ -208,7 +208,7 @@ namespace AzFramework
         explicit RotateCameraInput(InputChannelId rotateChannelId);
 
         // CameraInput overrides ...
-        void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
     private:
@@ -249,7 +249,7 @@ namespace AzFramework
         PanCameraInput(InputChannelId panChannelId, PanAxesFn panAxesFn);
 
         // CameraInput overrides ...
-        void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
     private:
@@ -290,7 +290,7 @@ namespace AzFramework
         explicit TranslateCameraInput(TranslationAxesFn translationAxesFn);
 
         // CameraInput overrides ...
-        void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
         void ResetImpl() override;
 
@@ -360,7 +360,7 @@ namespace AzFramework
     {
     public:
         // CameraInput overrides ...
-        void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
     };
 
@@ -370,7 +370,7 @@ namespace AzFramework
         explicit OrbitDollyCursorMoveCameraInput(InputChannelId dollyChannelId);
 
         // CameraInput overrides ...
-        void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
     private:
@@ -381,7 +381,7 @@ namespace AzFramework
     {
     public:
         // CameraInput overrides ...
-        void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
     };
 
@@ -391,7 +391,7 @@ namespace AzFramework
         using LookAtFn = AZStd::function<AZStd::optional<AZ::Vector3>()>;
 
         // CameraInput overrides ...
-        void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
         bool Exclusive() const override;
 
