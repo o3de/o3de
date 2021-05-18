@@ -27,18 +27,17 @@ namespace O3DE::ProjectManager
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
         this->setLayout(vLayout);
-        //setContentsMargins(80, 80, 80, 80);
         vLayout->setContentsMargins(80, 80, 80, 80);
 
         QLabel* titleLabel = new QLabel(this);
         titleLabel->setText("Ready. Set. Create!");
-        titleLabel->setStyleSheet("font-size: 60px; font-family: 'Open Sans'; text-align: left;");
+        titleLabel->setStyleSheet("font-size: 60px; font-family: 'Open Sans';");
         vLayout->addWidget(titleLabel);
 
         QLabel* introLabel = new QLabel(this);
         introLabel->setTextFormat(Qt::AutoText);
         introLabel->setText("<html><head/><body><p>Welcome to O3DE! Start something new by creating a project. Not sure what to create? </p><p>Explore what\342\200\231s available by downloading our sample project.</p></body></html>");
-        introLabel->setStyleSheet("font-size: 14px; font-family: 'Open Sans'; text-align: left;");
+        introLabel->setStyleSheet("font-size: 14px; font-family: 'Open Sans';");
         vLayout->addWidget(introLabel);
 
         QHBoxLayout* buttonLayout = new QHBoxLayout();
