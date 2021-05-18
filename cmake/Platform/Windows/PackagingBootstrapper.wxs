@@ -8,7 +8,7 @@
     <Bundle Name="$(var.CPACK_PACKAGE_NAME) $(var.CPACK_PACKAGE_VERSION)"
         Version="$(var.CPACK_PACKAGE_VERSION)"
         Manufacturer="$(var.CPACK_PACKAGE_VENDOR)"
-        UpgradeCode="$(var.CPACK_WIX_UPGRADE_GUID)"
+        UpgradeCode="$(var.CPACK_BOOTSTRAP_UPGRADE_GUID)"
         DisableModify="yes">
 
         <Variable Name="InstallFolder"
