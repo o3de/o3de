@@ -30,7 +30,7 @@ namespace PhysX
     {
     public:
         //! Gets the collection of collider configuration / shape configuration pairs used to define the collider's shapes.
-        virtual Physics::ShapeConfigurationList GetShapeConfigurations() = 0;
+        virtual AzPhysics::ShapeColliderPairList GetShapeConfigurations() = 0;
 
         //! Gets the collection of physics shapes associated with the collider.
         virtual AZStd::vector<AZStd::shared_ptr<Physics::Shape>> GetShapes() = 0;
