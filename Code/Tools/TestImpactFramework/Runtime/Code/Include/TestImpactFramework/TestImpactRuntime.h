@@ -158,5 +158,6 @@ namespace TestImpact
         AZStd::unique_ptr<TestEngine> m_testEngine;
         AZStd::unordered_set<const TestTarget*> m_testTargetExcludeList;
         AZStd::unordered_set<const TestTarget*> m_testTargetShardList;
+        bool m_hasImpactAnalysisData = false;
     };
 }

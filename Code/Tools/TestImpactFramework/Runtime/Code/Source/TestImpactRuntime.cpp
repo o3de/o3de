@@ -52,6 +52,16 @@ namespace TestImpact
             m_config.m_testEngine.m_testRunner.m_binary,
             m_config.m_testEngine.m_instrumentation.m_binary,
             m_maxConcurrency);
+
+        //try
+        //{
+        //    const auto sparTIA = DeserializeSourceCoveringTestsList(ReadFileContents<Runtime>(m_config.m_workspace.m_persistent.m_sparTIAFile));
+        //    m_dynamicDependencyMap->ReplaceSourceCoverage(sparTIA);
+        //}
+        //catch (const RuntimeException& e)
+        //{
+        //
+        //}
     }
 
     Runtime::~Runtime() = default;
@@ -179,7 +189,7 @@ namespace TestImpact
             }
         }
 
-        //includedTestTargets.push_back(m_dynamicDependencyMap->GetTestTargetList().GetTargetOrThrow("WhiteBox.Editor.Tests"));
+        //includedTestTargets.push_back(m_dynamicDependencyMap->GetTestTargetList().GetTargetOrThrow("AudioSystem.Editor.Tests"));
 
         if (testSequenceStartCallback.has_value())
         {

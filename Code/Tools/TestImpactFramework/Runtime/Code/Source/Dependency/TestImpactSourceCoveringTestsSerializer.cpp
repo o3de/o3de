@@ -28,7 +28,8 @@ namespace TestImpact
         for (const auto& source : sourceCoveringTestsList.GetCoverage())
         {
             // Sorce file
-            output += AZStd::string::format("%s,%u\n", source.GetPath().c_str(), source.GetNumCoveringTestTargets());
+            output += source.GetPath();
+            output += "\n";
 
             // Covering test targets
             for (const auto& testTarget : source.GetCoveringTestTargets())

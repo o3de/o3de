@@ -124,7 +124,15 @@ namespace TestImpact
         sourceCoveringTests.reserve(coverage.size());
         for (auto&& [source, testTargets] : coverage)
         {
-            sourceCoveringTests.push_back(SourceCoveringTests(AZ::IO::Path(source).LexicallyRelative(root).String(), AZStd::move(testTargets)));
+            if (const auto sourcePath = AZ::IO::Path(source);
+                sourcePath.IsRelativeTo(root))
+            {
+                sourceCoveringTests.push_back(SourceCoveringTests(sourcePath.LexicallyRelative(root).String(), AZStd::move(testTargets)));
+            }
+            else
+            {
+                AZ_Warning("TestImpact", false, "Ignoring source, source it outside of repo: %s", sourcePath.c_str());
+            }
         }
 
         return SourceCoveringTestsList(AZStd::move(sourceCoveringTests));
