@@ -12,10 +12,13 @@
 
 #include <ProjectSettingsCtrl.h>
 #include <ScreensCtrl.h>
+#include <PythonBindingsInterface.h>
+#include <NewProjectSettingsScreen.h>
 
 #include <QDialogButtonBox>
 #include <QVBoxLayout>
 #include <QPushButton>
+#include <QMessageBox>
 
 namespace O3DE::ProjectManager
 {
@@ -65,7 +68,8 @@ namespace O3DE::ProjectManager
     }
     void ProjectSettingsCtrl::HandleNextButton()
     {
-        ProjectManagerScreen screenEnum = m_screensCtrl->GetCurrentScreen()->GetScreenEnum();
+        ScreenWidget* currentScreen = m_screensCtrl->GetCurrentScreen();
+        ProjectManagerScreen screenEnum = currentScreen->GetScreenEnum();
         auto screenOrderIter = m_screensOrder.begin();
         for (; screenOrderIter != m_screensOrder.end(); ++screenOrderIter)
         {
@@ -76,6 +80,22 @@ namespace O3DE::ProjectManager
             }
         }
 
+        if (screenEnum == ProjectManagerScreen::NewProjectSettings)
+        {
+            auto newProjectScreen = reinterpret_cast<NewProjectSettingsScreen*>(currentScreen);
+            if (newProjectScreen)
+            {
+                if (!newProjectScreen->Validate())
+                {
+                    QMessageBox::critical(this, tr("Invalid project settings"), tr("Invalid project settings"));
+                    return;
+                }
+
+                m_projectInfo         = newProjectScreen->GetProjectInfo();
+                m_projectTemplatePath = newProjectScreen->GetProjectTemplatePath();
+            }
+        }
+
         if (screenOrderIter != m_screensOrder.end())
         {
             m_screensCtrl->ChangeToScreen(*screenOrderIter);
@@ -83,7 +103,15 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            emit ChangeScreenRequest(ProjectManagerScreen::ProjectsHome);
+            auto result = PythonBindingsInterface::Get()->CreateProject(m_projectTemplatePath, m_projectInfo);
+            if (result.IsSuccess())
+            {
+                emit ChangeScreenRequest(ProjectManagerScreen::ProjectsHome);
+            }
+            else
+            {
+                QMessageBox::critical(this, tr("Project creation failed"), tr("Failed to create project."));
+            }
         }
     }
 

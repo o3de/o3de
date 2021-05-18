@@ -18,6 +18,7 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
@@ -150,7 +151,9 @@ namespace WhiteBox
         bodyConfiguration.m_entityId = GetEntityId();
         bodyConfiguration.m_orientation = GetTransform()->GetWorldRotationQuaternion();
         bodyConfiguration.m_position = GetTransform()->GetWorldTranslation();
-        bodyConfiguration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(&m_physicsColliderConfiguration, &m_meshShapeConfiguration);
+        bodyConfiguration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(
+            AZStd::make_shared<Physics::ColliderConfiguration>(m_physicsColliderConfiguration),
+            AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(m_meshShapeConfiguration));
 
         if (m_sceneInterface)
         {
