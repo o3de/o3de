@@ -102,6 +102,7 @@ namespace AzToolsFramework
             QModelIndexList sourceIndexes;
             for (const auto& index : selectedIndexes())
             {
+                //If we check for more than one column then the model will try to select the same entry several times.
                 if (index.column() == 0)
                 {
                     sourceIndexes.push_back(m_assetBrowserSortFilterProxyModel->mapToSource(index));

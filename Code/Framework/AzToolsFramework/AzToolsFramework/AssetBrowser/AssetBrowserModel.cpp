@@ -27,8 +27,6 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        const int AssetBrowserModel::m_column = static_cast<int>(AssetBrowserEntry::Column::DisplayName);
-
         AssetBrowserModel::AssetBrowserModel(QObject* parent)
             : QAbstractItemModel(parent)
             , m_rootEntry(nullptr)
@@ -143,9 +141,9 @@ namespace AzToolsFramework
             
             if (parent.isValid())
             {
-                if ((parent.column() != static_cast<int>(AssetBrowserEntry::Column::DisplayName)) &&
-                    (parent.column() != static_cast<int>(AssetBrowserEntry::Column::Name)) &&
-                    (parent.column() != static_cast<int>(AssetBrowserEntry::Column::Path)))
+                if ((parent.column() != aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName)) &&
+                    (parent.column() != aznumeric_cast<int>(AssetBrowserEntry::Column::Name)) &&
+                    (parent.column() != aznumeric_cast<int>(AssetBrowserEntry::Column::Path)))
                 {
                     return 0;
                 }
@@ -394,7 +392,7 @@ namespace AzToolsFramework
             }
 
             int row = entry->row();
-            index = createIndex(row, m_column, entry);
+            index = createIndex(row, aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName), entry);
             return true;
         }
 

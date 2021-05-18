@@ -114,7 +114,6 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     }
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
-    //m_ui->m_assetBrowserTreeViewWidget->hideColumn(static_cast<int>(AssetBrowserEntry::Column::Path));
 
     connect(m_ui->m_searchWidget->GetFilter().data(), &AssetBrowserEntryFilter::updatedSignal,
         m_filterModel.data(), &AssetBrowserFilterModel::filterUpdatedSlot);
@@ -232,7 +231,7 @@ void AzAssetBrowserWindow::DoubleClickedItem([[maybe_unused]] const QModelIndex&
     using namespace AzToolsFramework;
     using namespace AzToolsFramework::AssetBrowser;
     // assumption: Double clicking an item selects it before telling us we double clicked it.
-    auto selectedAssets = m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets();
+    const auto& selectedAssets = m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets();
     for (const AssetBrowserEntry* entry : selectedAssets)
     {
         AZ::Data::AssetId assetIdToOpen;
@@ -269,7 +268,7 @@ void AzAssetBrowserWindow::DoubleClickedItemTableModel([[maybe_unused]] const QM
     using namespace AzToolsFramework;
     using namespace AzToolsFramework::AssetBrowser;
     // assumption: Double clicking an item selects it before telling us we double clicked it.
-    auto selectedAssets = m_ui->m_assetBrowserTableViewWidget->GetSelectedAssets();
+    const auto& selectedAssets = m_ui->m_assetBrowserTableViewWidget->GetSelectedAssets();
     for (const AssetBrowserEntry* entry : selectedAssets)
     {
         AZ::Data::AssetId assetIdToOpen;
