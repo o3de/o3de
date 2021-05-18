@@ -59,6 +59,26 @@ ly_add_target(
 )
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_add_target(
+        NAME Multiplayer.Tools.Static STATIC
+        NAMESPACE Gem
+        FILES_CMAKE
+            multiplayer_tools_files.cmake
+        COMPILE_DEFINITIONS
+            PUBLIC
+                MULTIPLAYER_TOOLS
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                .
+                Source
+                ${pal_source_dir}
+            PUBLIC
+                Include
+        BUILD_DEPENDENCIES
+            PUBLIC
+                AZ::AzToolsFramework
+                Gem::Multiplayer.Static
+    )
 
     ly_add_target(
         NAME Multiplayer.Tools MODULE
@@ -74,8 +94,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PRIVATE
-                AZ::AzToolsFramework
-                Gem::Multiplayer.Static
+                Gem::Multiplayer.Tools.Static
     )
     
     ly_add_target(
@@ -145,6 +164,30 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_googletest(
         NAME Gem::Multiplayer.Tests
     )
+    
+    if (PAL_TRAIT_BUILD_HOST_TOOLS)
+        ly_add_target(
+            NAME Multiplayer.Tools.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAMESPACE Gem
+            FILES_CMAKE
+                multiplayer_tools_tests_files.cmake
+            INCLUDE_DIRECTORIES
+                PRIVATE
+                    Tests
+                    Source
+                    .
+            BUILD_DEPENDENCIES
+                PRIVATE
+                    AZ::AzTest
+                    AZ::AzTestShared
+                    AZ::AzToolsFrameworkTestCommon
+                    Gem::Multiplayer.Tools.Static
+        )
+        ly_add_googletest(
+            NAME Gem::Multiplayer.Tools.Tests
+        )
+    endif()
+
 endif()
 
 ly_add_target(

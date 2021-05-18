@@ -22,6 +22,7 @@ set(FILES
     Include/Multiplayer/ConnectionData/IConnectionData.h
     Include/Multiplayer/EntityDomains/IEntityDomain.h
     Include/Multiplayer/NetworkEntity/INetworkEntityManager.h
+    Include/Multiplayer/INetworkSpawnableLibrary.h
     Include/Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h
     Include/Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h
     Include/Multiplayer/NetworkEntity/NetworkEntityHandle.h
