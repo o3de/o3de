@@ -13,13 +13,15 @@
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/IMultiplayerTools.h>
 #include <Multiplayer/MultiplayerConstants.h>
+
+#include <MultiplayerSystemComponent.h>
+#include <Editor/MultiplayerEditorSystemComponent.h>
 #include <Source/AutoGen/Multiplayer.AutoPackets.h>
-#include <Source/MultiplayerSystemComponent.h>
-#include <Source/Editor/MultiplayerEditorSystemComponent.h>
-#include <AzCore/Interface/Interface.h>
+
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzNetworking/Framework/INetworking.h>
@@ -31,11 +33,11 @@ namespace Multiplayer
 
     AZ_CVAR(bool, editorsv_enabled, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Whether Editor launching a local server to connect to is supported");
-    AZ_CVAR(bool, editorsv_launch, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+    AZ_CVAR(bool, editorsv_launch, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Whether Editor should launch a server when the server address is localhost");
     AZ_CVAR(AZ::CVarFixedString, editorsv_process, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "The server executable that should be run. Empty to use the current project's ServerLauncher");
-    AZ_CVAR(AZ::CVarFixedString, editorsv_serveraddr, LocalHost.data(), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The address of the server to connect to");
+    AZ_CVAR(AZ::CVarFixedString, editorsv_serveraddr, AZ::CVarFixedString(LocalHost), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The address of the server to connect to");
     AZ_CVAR(uint16_t, editorsv_port, DefaultServerEditorPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port that the multiplayer editor gem will bind to for traffic");
 
     void MultiplayerEditorSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -115,32 +117,22 @@ namespace Multiplayer
         }
     }
 
-    void LaunchEditorServer(AzFramework::ProcessWatcher* outProcess)
+    AzFramework::ProcessWatcher* LaunchEditorServer()
     {
         // Assemble the server's path
         AZ::CVarFixedString serverProcess = editorsv_process;
+        AZ::IO::FixedMaxPath serverPath;
         if (serverProcess.empty())
         {
             // If enabled but no process name is supplied, try this project's ServerLauncher
             serverProcess = AZ::Utils::GetProjectName() + ".ServerLauncher";
-        }
 
-        AZ::IO::FixedMaxPathString serverPath = AZ::Utils::GetExecutableDirectory();
-        if (!serverProcess.contains(AZ_TRAIT_OS_PATH_SEPARATOR))
-        {
-            // If only the process name is specified, append that as well
-            serverPath.append(AZ_TRAIT_OS_PATH_SEPARATOR + serverProcess);
+            serverPath = AZ::Utils::GetExecutableDirectory();
+            serverPath /= serverProcess + AZ_TRAIT_OS_EXECUTABLE_EXTENSION;
         }
         else
         {
-            // If any path was already specified, then simply assign
             serverPath = serverProcess;
-        }
-
-        if (!serverProcess.ends_with(AZ_TRAIT_OS_EXECUTABLE_EXTENSION))
-        {
-            // Add this platform's exe extension if it's not specified
-            serverPath.append(AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
         }
 
         // Start the configured server if it's available
@@ -150,9 +142,11 @@ namespace Multiplayer
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 
         // Launch the Server and give it a few seconds to boot up
-        outProcess = AzFramework::ProcessWatcher::LaunchProcess(
+        AzFramework::ProcessWatcher* outProcess = AzFramework::ProcessWatcher::LaunchProcess(
             processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE);
         AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(15000));
+
+        return outProcess;
     }
 
     void MultiplayerEditorSystemComponent::OnGameEntitiesStarted()
@@ -188,9 +182,9 @@ namespace Multiplayer
             }
 
             const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
-            if (editorsv_launch && LocalHost.compare(remoteAddress.c_str()) == 0)
+            if (editorsv_launch && LocalHost == remoteAddress)
             {
-                LaunchEditorServer(m_serverProcess);
+                m_serverProcess = LaunchEditorServer();
             }
 
             // Now that the server has launched, attempt to connect the NetworkInterface         

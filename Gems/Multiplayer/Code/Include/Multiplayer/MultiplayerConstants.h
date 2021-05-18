@@ -21,12 +21,12 @@
 
 namespace Multiplayer
 {
-    static constexpr AZStd::string_view MPNetworkInterfaceName("MultiplayerNetworkInterface");
-    static constexpr AZStd::string_view MPEditorInterfaceName("MultiplayerEditorNetworkInterface");
+    constexpr AZStd::string_view MPNetworkInterfaceName("MultiplayerNetworkInterface");
+    constexpr AZStd::string_view MPEditorInterfaceName("MultiplayerEditorNetworkInterface");
 
-    static constexpr AZStd::string_view LocalHost("127.0.0.1");
-    static constexpr uint16_t DefaultServerPort = 30090;
-    static constexpr uint16_t DefaultServerEditorPort = 30091;
+    constexpr AZStd::string_view LocalHost("127.0.0.1");
+    constexpr uint16_t DefaultServerPort = 30090;
+    constexpr uint16_t DefaultServerEditorPort = 30091;
 
 }
 

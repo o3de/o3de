@@ -10,7 +10,11 @@
  *
  */
 
-#include <Source/Pipeline/NetworkPrefabProcessor.h>
+#include <Multiplayer/IMultiplayerTools.h>
+#include <Multiplayer/Components/NetBindComponent.h>
+#include <Pipeline/NetBindMarkerComponent.h>
+#include <Pipeline/NetworkPrefabProcessor.h>
+#include <Pipeline/NetworkSpawnableHolderComponent.h>
 
 #include <AzCore/Serialization/Utils.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -18,10 +22,6 @@
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <Prefab/Spawnable/SpawnableUtils.h>
-#include <Multiplayer/IMultiplayerTools.h>
-#include <Multiplayer/Components/NetBindComponent.h>
-#include <Source/Pipeline/NetBindMarkerComponent.h>
-#include <Source/Pipeline/NetworkSpawnableHolderComponent.h>
 
 namespace Multiplayer
 {
@@ -40,7 +40,7 @@ namespace Multiplayer
             ProcessPrefab(context, prefabName, prefab);
         });
 
-        if (mpTools && context.GetProcessedObjects().size() > 0)
+        if (mpTools && !context.GetProcessedObjects().empty())
         {
             mpTools->SetDidProcessNetworkPrefabs(true);
         }

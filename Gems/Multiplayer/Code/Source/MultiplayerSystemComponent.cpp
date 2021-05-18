@@ -11,15 +11,16 @@
  */
 
 #include <Multiplayer/MultiplayerConstants.h>
-#include <Source/MultiplayerSystemComponent.h>
-#include <Source/AutoGen/AutoComponentTypes.h>
-#include <Source/ConnectionData/ClientToServerConnectionData.h>
-#include <Source/ConnectionData/ServerToClientConnectionData.h>
-#include <Source/ReplicationWindows/NullReplicationWindow.h>
-#include <Source/ReplicationWindows/ServerToClientReplicationWindow.h>
-#include <Source/EntityDomains/FullOwnershipEntityDomain.h>
 #include <Multiplayer/Components/MultiplayerComponent.h>
-#include <AzNetworking/Framework/INetworking.h>
+
+#include <MultiplayerSystemComponent.h>
+#include <ConnectionData/ClientToServerConnectionData.h>
+#include <ConnectionData/ServerToClientConnectionData.h>
+#include <EntityDomains/FullOwnershipEntityDomain.h>
+#include <ReplicationWindows/NullReplicationWindow.h>
+#include <ReplicationWindows/ServerToClientReplicationWindow.h>
+#include <Source/AutoGen/AutoComponentTypes.h>
+
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Interface/Interface.h>
@@ -29,6 +30,7 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Spawnable/Spawnable.h>
+#include <AzNetworking/Framework/INetworking.h>
 
 namespace AZ::ConsoleTypeHelpers
 {
@@ -63,7 +65,7 @@ namespace Multiplayer
     using namespace AzNetworking;
 
     AZ_CVAR(uint16_t, cl_clientport, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port to bind to for game traffic when connecting to a remote host, a value of 0 will select any available port");
-    AZ_CVAR(AZ::CVarFixedString, cl_serveraddr, LocalHost.data(), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The address of the remote server or host to connect to");
+    AZ_CVAR(AZ::CVarFixedString, cl_serveraddr, AZ::CVarFixedString(LocalHost), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The address of the remote server or host to connect to");
     AZ_CVAR(AZ::CVarFixedString, cl_serverpassword, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Optional server password");
     AZ_CVAR(uint16_t, cl_serverport, DefaultServerPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port of the remote host to connect to for game traffic");
     AZ_CVAR(uint16_t, sv_port, DefaultServerPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port that this multiplayer gem will bind to for game traffic");

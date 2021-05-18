@@ -12,16 +12,17 @@
 
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/MultiplayerConstants.h>
-#include <Source/Editor/MultiplayerEditorConnection.h>
+#include <Editor/MultiplayerEditorConnection.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
-#include <AzNetworking/ConnectionLayer/IConnection.h>
-#include <AzNetworking/Framework/INetworking.h>
+
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzFramework/Spawnable/Spawnable.h>
+#include <AzNetworking/ConnectionLayer/IConnection.h>
+#include <AzNetworking/Framework/INetworking.h>
 
 namespace Multiplayer
 {

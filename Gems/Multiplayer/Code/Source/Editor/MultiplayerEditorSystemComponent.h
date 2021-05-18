@@ -14,17 +14,15 @@
 
 #include <IEditor.h>
 
-#include <Source/Editor/MultiplayerEditorConnection.h>
+#include <Editor/MultiplayerEditorConnection.h>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
-
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-
 
 namespace AzNetworking
 {
