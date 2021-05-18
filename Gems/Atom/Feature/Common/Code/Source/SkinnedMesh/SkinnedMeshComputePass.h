@@ -46,7 +46,7 @@ namespace AZ
             void OnShaderReinitialized(const RPI::Shader& shader) override;
             void OnShaderVariantReinitialized(const RPI::Shader& shader, const RPI::ShaderVariantId& shaderVariantId, RPI::ShaderVariantStableId shaderVariantStableId) override;
 
-            SkinnedMeshFeatureProcessor* m_skinnedMeshFeatureProcessor;
+            SkinnedMeshFeatureProcessor* m_skinnedMeshFeatureProcessor = nullptr;
         };
     }
 }
