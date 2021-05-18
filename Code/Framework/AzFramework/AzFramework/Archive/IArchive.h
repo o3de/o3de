@@ -115,7 +115,7 @@ namespace AZ::IO
             // If used, the source path will be treated as the destination path
             // and no transformations will be done. Pass this flag when the path is to be the actual
             // path on the disk/in the packs and doesn't need adjustment (or after it has come through adjustments already)
-            // if this is set, AdjustFileName will not map the input path into the master folder (Ex: Shaders will not be converted to Game\Shaders)
+            // if this is set, AdjustFileName will not map the input path into the folder (Ex: Shaders will not be converted to Game\Shaders)
             FLAGS_PATH_REAL = 1 << 16,
 
             // AdjustFileName will always copy the file path to the destination path:
@@ -318,7 +318,6 @@ namespace AZ::IO
         virtual ArchiveFileIterator FindFirst(AZStd::string_view pDir, uint32_t nFlags = 0, bool bAllowUseFileSystem = false) = 0;
         virtual ArchiveFileIterator FindNext(AZ::IO::ArchiveFileIterator handle) = 0;
         virtual bool FindClose(AZ::IO::ArchiveFileIterator handle) = 0;
-        //  virtual bool IsOutOfDate(const char * szCompiledName, const char * szMasterFile)=0;
         //returns file modification time
         virtual IArchive::FileTime GetModificationTime(AZ::IO::HandleType fileHandle) = 0;
 
