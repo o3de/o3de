@@ -39,6 +39,7 @@ _BOOT_INFO = True
 # built in's
 import inspect
 import traceback
+import sys
 
 # -- DCCsi Extension Modules
 import azpy
@@ -306,6 +307,9 @@ def post_startup():
     server.start_server()
     if len(sys.argv) > 1:
         client.run_script(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+
+    # Prevent bytecode (.pyc files) - which can interfere with development
+    sys.dont_write_bytecode = True
 
     # TODO: manage custom shelf in a sub-module
 
