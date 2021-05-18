@@ -38,6 +38,7 @@ set(FILES
     Materials/Types/StandardMultilayerPBR_ForwardPass_EDS.shader
     Materials/Types/StandardMultilayerPBR_Parallax.lua
     Materials/Types/StandardMultilayerPBR_ParallaxPerLayer.lua
+    Materials/Types/StandardMultilayerPBR_ShaderEnable.lua
     Materials/Types/StandardMultilayerPBR_Shadowmap_WithPS.azsl
     Materials/Types/StandardMultilayerPBR_Shadowmap_WithPS.shader
     Materials/Types/StandardPBR.materialtype
@@ -245,7 +246,6 @@ set(FILES
     ShaderLib/Atom/Features/PBR/Hammersley.azsli
     ShaderLib/Atom/Features/PBR/LightingOptions.azsli
     ShaderLib/Atom/Features/PBR/LightingUtils.azsli
-    ShaderLib/Atom/Features/PBR/LowEndForwardPassOutput.azsli
     ShaderLib/Atom/Features/PBR/TransparentPassSrg.azsli
     ShaderLib/Atom/Features/PBR/Lighting/DualSpecularLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/EnhancedLighting.azsli
@@ -284,6 +284,7 @@ set(FILES
     ShaderLib/Atom/Features/PostProcessing/GlyphData.azsli
     ShaderLib/Atom/Features/PostProcessing/GlyphRender.azsli
     ShaderLib/Atom/Features/PostProcessing/PostProcessUtil.azsli
+    ShaderLib/Atom/Features/RayTracing/RayTracingSceneSrg.azsli
     ShaderLib/Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli
     ShaderLib/Atom/Features/Shadow/BicubicPcfFilters.azsli
     ShaderLib/Atom/Features/Shadow/DirectionalLightShadow.azsli
