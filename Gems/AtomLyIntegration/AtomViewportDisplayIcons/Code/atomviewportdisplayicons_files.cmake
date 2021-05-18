@@ -9,12 +9,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-add_subdirectory(CommonFeatures)
-add_subdirectory(ImguiAtom)
-add_subdirectory(AtomImGuiTools)
-add_subdirectory(EMotionFXAtom)
-add_subdirectory(AtomFont)
-add_subdirectory(TechnicalArt)
-add_subdirectory(AtomBridge)
-add_subdirectory(AtomViewportDisplayInfo)
-add_subdirectory(AtomViewportDisplayIcons)
+set(FILES
+    Source/AtomViewportDisplayIconsSystemComponent.cpp
+    Source/AtomViewportDisplayIconsSystemComponent.h
+    Source/Module.cpp
+)

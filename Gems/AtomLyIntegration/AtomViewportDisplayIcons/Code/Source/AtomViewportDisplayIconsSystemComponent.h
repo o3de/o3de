@@ -1,0 +1,49 @@
+/*
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
+#pragma once
+
+#include <AzCore/Component/Component.h>
+
+#include <AzToolsFramework/API/EditorViewportIconDisplayInterface.h>
+
+namespace AZ
+{
+    class TickRequests;
+
+    namespace Render
+    {
+        class AtomViewportDisplayIconsSystemComponent
+            : public AZ::Component
+            , public AzToolsFramework::EditorViewportIconDisplayInterface
+        {
+        public:
+            AZ_COMPONENT(AtomViewportDisplayIconsSystemComponent, "{AEC1D3E1-1D9A-437A-B4C6-CFAEE620C160}");
+
+            static void Reflect(AZ::ReflectContext* context);
+
+            static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+            static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+            static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+            static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
+
+        protected:
+            // AZ::Component overrides...
+            void Activate() override;
+            void Deactivate() override;
+
+            // AzToolsFramework::EditorViewportIconDisplayInterface overrides...
+            void DrawIcon(const DrawParameters& drawParameters) override;
+            IconId GetOrLoadIconForPath(AZStd::string_view path) override;
+            IconLoadStatus GetIconLoadStatus(IconId icon) override;
+        };
+    } // namespace Render
+} // namespace AZ
