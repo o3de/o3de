@@ -59,7 +59,9 @@ void MainCS(
     uint2 size = PassSrg::m_constantData.m_size;
     float2 previousPosition = -PassSrg::m_motionVectors[pixelCoord];
 
-    float2 uvCoord = pixelCoord / float2(size);
+    float2 halfPixel = rcp(size * 2.0);
+
+    float2 uvCoord = pixelCoord / float2(size) + halfPixel;
     float2 uvOld = float2(uvCoord) + previousPosition;
 
     float3 color = PassSrg::m_inputColor[pixelCoord].rgb;

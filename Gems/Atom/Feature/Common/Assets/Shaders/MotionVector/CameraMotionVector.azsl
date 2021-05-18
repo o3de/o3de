@@ -44,11 +44,7 @@ PSOutput MainPS(VSOutput IN)
     float4 clipPosPrev = mul(ViewSrg::m_viewProjectionPrevMatrix, float4((worldPos / worldPos.w).xyz, 1.0));
     clipPosPrev = (clipPosPrev / clipPosPrev.w);
 
-    float2 size;
-    PassSrg::m_depthStencil.GetDimensions(size.x, size.y);
-    float2 halfPixel = rcp(size * 2.0);
-
-    OUT.m_motion = (clipPos - clipPosPrev.xy) * 0.5 + float2(-halfPixel.x, halfPixel.y);
+    OUT.m_motion = (clipPos - clipPosPrev.xy) * 0.5;
     OUT.m_motion.y = -OUT.m_motion.y;
     return OUT;
 }

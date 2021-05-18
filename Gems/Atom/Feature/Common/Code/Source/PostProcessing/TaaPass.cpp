@@ -59,7 +59,6 @@ namespace AZ::Render
     void TaaPass::FrameBeginInternal(FramePrepareParams params)
     {
         m_lastFrameAccumulationBinding->SetAttachment(m_accumulationAttachments[m_accumulationOuptutIndex]);
-
         m_accumulationOuptutIndex ^= 1; // swap which attachment is the output and last frame
 
         UpdateAttachmentImage(m_accumulationAttachments[m_accumulationOuptutIndex]);
@@ -101,12 +100,20 @@ namespace AZ::Render
         }
         
         m_inputColorBinding = FindAttachmentBinding(Name("InputColor"));
-        AZ_Error("TaaPass", m_lastFrameAccumulationBinding, "TaaPass requires a slot for InputColor.");
+        AZ_Error("TaaPass", m_inputColorBinding, "TaaPass requires a slot for InputColor.");
         m_lastFrameAccumulationBinding = FindAttachmentBinding(Name("LastFrameAccumulation"));
         AZ_Error("TaaPass", m_lastFrameAccumulationBinding, "TaaPass requires a slot for LastFrameAccumulation.");
         m_outputColorBinding = FindAttachmentBinding(Name("OutputColor"));
-        AZ_Error("TaaPass", m_lastFrameAccumulationBinding, "TaaPass requires a slot for OutputColor.");
-        
+        AZ_Error("TaaPass", m_outputColorBinding, "TaaPass requires a slot for OutputColor.");
+
+        // Set up the attachment for last frame accumulation and output color if it's never been done to
+        // ensure SRG indices are set up correctly by the pass system.
+        if (m_lastFrameAccumulationBinding->m_attachment == nullptr)
+        {
+            m_lastFrameAccumulationBinding->SetAttachment(m_accumulationAttachments[0]);
+            m_outputColorBinding->SetAttachment(m_accumulationAttachments[1]);
+        }
+
         Base::BuildAttachmentsInternal();
     }
     
@@ -125,7 +132,7 @@ namespace AZ::Render
 
         if (oldImageDesc.m_size == imageDesc.m_size && attachment->m_importedResource)
         {
-            // If the size didn't change and we have a resource already, just keep using the old AttatchmentImage.
+            // If the size didn't change and we have a resource already, just keep using the old AttachmentImage.
             return;
         }
 
@@ -137,6 +144,8 @@ namespace AZ::Render
 
         //The ImageViewDescriptor must be specified to make sure the frame graph compiler doesn't treat this as a transient image.
         RHI::ImageViewDescriptor viewDesc = RHI::ImageViewDescriptor::Create(imageDesc.m_format, 0, 0);
+        viewDesc.m_aspectFlags = RHI::ImageAspectFlags::Color;
+        viewDesc.m_overrideBindFlags = RHI::ImageBindFlags::ShaderReadWrite;
 
         auto attachmentImage = RPI::AttachmentImage::Create(*pool.get(), imageDesc, Name(attachment->m_path.GetCStr()), nullptr, &viewDesc);
         
