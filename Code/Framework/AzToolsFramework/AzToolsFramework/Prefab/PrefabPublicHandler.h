@@ -68,9 +68,19 @@ namespace AzToolsFramework
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
             bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
-
+            
+            /**
+             * Applies the correct transform changes to the container entity based on the parent and child entities provided, and returns an appropriate patch.
+             * The container will be parented to parentId, moved to the average transform of the future direct children and its cache will be updated.
+             * This helper function won't support undo/redo, update the templates or create any links. All that needs to be done by the caller.
+             * 
+             * \param containerEntityId The container to apply the changes to.
+             * \param parentEntityId The id of the entity the container should be parented to.
+             * \param childEntities A list of entities that will subsequently be parented to this container.
+             * \return The PrefabDom containing the patches that should be stored in the parent link.
+             */
             PrefabDom ApplyContainerTransformAndGeneratePatch(
-                AZ::EntityId containerEntityId, AZ::EntityId commonRootEntityId, const EntityList& topLevelEntities);
+                AZ::EntityId containerEntityId, AZ::EntityId parentEntityId, const EntityList& childEntities);
 
             /**
              * Creates a link between the templates of an instance and its parent.
