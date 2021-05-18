@@ -51,35 +51,47 @@ namespace AZ
             void Deactivate() override;
             void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
             void Render(const FeatureProcessor::RenderPacket& packet) override;
+            void OnRenderEnd() override;
 
             // RPI::SceneNotificationBus overrides ...
             void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
             void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
             void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
             void OnBeginPrepareRender() override;
-            void OnEndPrepareRender() override;
 
             SkinnedMeshRenderProxyHandle AcquireRenderProxy(const SkinnedMeshRenderProxyDesc& desc);
             bool ReleaseRenderProxy(SkinnedMeshRenderProxyHandle& handle);
 
-            RPI::Ptr<SkinnedMeshComputePass> GetSkinningPass() const;
-            RPI::Ptr<MorphTargetComputePass> GetMorphTargetPass() const;
+            Data::Instance<RPI::Shader> GetSkinningShader() const;
+            RPI::ShaderOptionGroup CreateSkinningShaderOptionGroup(const SkinnedMeshShaderOptions shaderOptions, SkinnedMeshShaderOptionNotificationBus::Handler& shaderReinitializedHandler);
+            void OnSkinningShaderReinitialized(const Data::Instance<RPI::Shader> skinningShader);
+            void SubmitSkinningDispatchItems(RHI::CommandList* commandList);
+
+            Data::Instance<RPI::Shader> GetMorphTargetShader() const;
+            void SubmitMorphTargetDispatchItems(RHI::CommandList* commandList);
         private:
             AZ_DISABLE_COPY_MOVE(SkinnedMeshFeatureProcessor);
 
-            void InitSkinningAndMorphPass();
+            void InitSkinningAndMorphPass(const RPI::Ptr<RPI::ParentPass> rootPass);
 
             SkinnedMeshRenderProxyInterfaceHandle AcquireRenderProxyInterface(const SkinnedMeshRenderProxyDesc& desc) override;
             bool ReleaseRenderProxyInterface(SkinnedMeshRenderProxyInterfaceHandle& handle) override;
 
             static const char* s_featureProcessorName;
-            RPI::Ptr<SkinnedMeshComputePass> m_skinningPass;
-            RPI::Ptr<MorphTargetComputePass> m_morphTargetPass;
+
+            Data::Instance<RPI::Shader> m_skinningShader;
+            CachedSkinnedMeshShaderOptions m_cachedSkinningShaderOptions;
+
+            Data::Instance<RPI::Shader> m_morphTargetShader;
+
             AZStd::concurrency_checker m_renderProxiesChecker;
             StableDynamicArray<SkinnedMeshRenderProxy> m_renderProxies;
             AZStd::unique_ptr<SkinnedMeshStatsCollector> m_statsCollector;
 
             MeshFeatureProcessor* m_meshFeatureProcessor = nullptr;
+            AZStd::unordered_set<const RHI::DispatchItem*> m_skinningDispatches;
+            AZStd::unordered_set<const RHI::DispatchItem*> m_morphTargetDispatches;
+            AZStd::mutex m_dispatchItemMutex;
 
         };
     } // namespace Render
