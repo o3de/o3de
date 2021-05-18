@@ -2734,9 +2734,6 @@ void CTrackViewDopeSheetBase::DrawKeys(CTrackViewTrack* pTrack, QPainter* painte
     const int kDefaultWidthForDescription = 200;
     const int kSmallMargin = 10;
 
-    FixedDynArray<float> drawnKeyTimes;
-    drawnKeyTimes.set(ArrayT((float*)alloca(numKeys * sizeof(float)), numKeys));
-
     AZStd::vector<CTrackViewKeyHandle> sortedKeys;
     sortedKeys.reserve(numKeys);
     for (int i = 0; i < numKeys; ++i)
@@ -2751,11 +2748,6 @@ void CTrackViewDopeSheetBase::DrawKeys(CTrackViewTrack* pTrack, QPainter* painte
         CTrackViewKeyHandle keyHandle = sortedKeys[i];
 
         const float time = keyHandle.GetTime();
-        if (!stl::push_back_unique(drawnKeyTimes, time))
-        {
-            continue;
-        }
-
         int x = TimeToClient(time);
         if (x - kSmallMargin > rect.right())
         {

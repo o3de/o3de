@@ -1,0 +1,15 @@
+{
+  "Amazon": {
+    "Gems": {
+      "QtForPython.Editor": {
+        "AutoLoad": false
+      },
+      "EditorPythonBindings.Editor": {
+        "AutoLoad": false
+      },
+      "PythonAssetBuilder.Editor": {
+        "AutoLoad": false
+      }
+    }
+  }
+}

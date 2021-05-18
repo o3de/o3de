@@ -609,14 +609,6 @@ void CComponentEntityObject::InvalidateTM(int nWhyFlags)
         {
             Matrix34 worldTransform = GetWorldTM();
             EBUS_EVENT_ID(m_entityId, AZ::TransformBus, SetWorldTM, LYTransformToAZTransform(worldTransform));
-
-            // When transformed via the editor, make sure the entity is marked dirty for undo capture.
-            EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, AddDirtyEntity, m_entityId);
-
-            if (CheckFlags(OBJFLAG_SELECTED))
-            {
-                EBUS_EVENT(AzToolsFramework::ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
-            }
         }
     }
 }
@@ -915,14 +907,6 @@ void CComponentEntityObject::Display(DisplayContext& dc)
                 m_entityId, &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
                 AzFramework::ViewportInfo{ dc.GetView()->asCViewport()->GetViewportId() },
                 *debugDisplay);
-
-            if (showIcons)
-            {
-                if (!displaySelectionHelper && !IsSelected())
-                {
-                    m_entityIconVisible = DisplayEntityIcon(dc, *debugDisplay);
-                }
-            }
         }
     }
 }
@@ -984,38 +968,6 @@ void CComponentEntityObject::OnContextMenu(QMenu* /*pMenu*/)
     // Deliberately bypass the base class implementation (CEntityObject::OnContextMenu()).
 }
 
-bool CComponentEntityObject::DisplayEntityIcon(
-    DisplayContext& displayContext, AzFramework::DebugDisplayRequests& debugDisplay)
-{
-    if (!m_hasIcon)
-    {
-        return false;
-    }
-
-    const QPoint entityScreenPos = displayContext.GetView()->WorldToView(GetWorldPos());
-
-    const Vec3 worldPos = GetWorldPos();
-    const CCamera& camera = gEnv->pRenderer->GetCamera();
-    const Vec3 cameraToEntity = (worldPos - camera.GetMatrix().GetTranslation());
-    const float distSq = cameraToEntity.GetLengthSquared();
-    if (distSq > square(s_kIconMaxWorldDist))
-    {
-        return false;
-    }
-
-    // Draw component icons on top of meshes (no depth testing)
-    int iconFlags = (int) DisplayContext::ETextureIconFlags::TEXICON_ON_TOP;
-    SetDrawTextureIconProperties(displayContext, worldPos, 1.0f, iconFlags);
-
-    const float iconScale = s_kIconMinScale + (s_kIconMaxScale - s_kIconMinScale) * (1.0f - clamp_tpl(max(0.0f, sqrt_tpl(distSq) - s_kIconCloseDist) / s_kIconFarDist, 0.0f, 1.0f));
-    const float worldDistToScreenScaleFraction = 0.045f;
-    const float screenScale = displayContext.GetView()->GetScreenScaleFactor(GetWorldPos()) * worldDistToScreenScaleFraction;
-
-    debugDisplay.DrawTextureLabel(m_iconTexture, LYVec3ToAZVec3(worldPos), s_kIconSize * iconScale, s_kIconSize * iconScale, GetTextureIconFlags());
-
-    return true;
-}
-
 void CComponentEntityObject::SetupEntityIcon()
 {
     bool hideIconInViewport = false;
@@ -1031,8 +983,9 @@ void CComponentEntityObject::SetupEntityIcon()
         {
             m_hasIcon = true;
 
-            int textureId = GetIEditor()->GetIconManager()->GetIconTexture(m_icon.c_str());
-            m_iconTexture = GetIEditor()->GetRenderer() ? GetIEditor()->GetRenderer()->EF_GetTextureByID(textureId) : nullptr;
+            // ToDo: Get from Atom?
+            // int textureId = GetIEditor()->GetIconManager()->GetIconTexture(m_icon.c_str());
+            m_iconTexture = nullptr;
         }
     }
 }

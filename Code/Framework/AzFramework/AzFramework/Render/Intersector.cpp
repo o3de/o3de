@@ -139,7 +139,8 @@ namespace AzFramework
                     "Implementers of IntersectionRequestBus must also implement BoundsRequestBus to ensure valid "
                     "bounds are returned");
 
-                m_registeredEntities.Update({ entityId, CalculateEntityWorldBoundsUnion(entityId) });
+                AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
+                m_registeredEntities.Update({ entityId, CalculateEntityWorldBoundsUnion(entity) });
             }
 
             m_dirtyEntities.clear();

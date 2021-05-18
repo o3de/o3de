@@ -72,6 +72,8 @@ set(FILES
     AssetCatalog/PlatformAddressedAssetCatalogManager.cpp
     Thumbnails/ThumbnailerComponent.cpp
     Thumbnails/ThumbnailerComponent.h
+    Thumbnails/ThumbnailerNullComponent.cpp
+    Thumbnails/ThumbnailerNullComponent.h
     Thumbnails/LoadingThumbnail.cpp
     Thumbnails/LoadingThumbnail.h
     Thumbnails/MissingThumbnail.cpp
@@ -301,6 +303,8 @@ set(FILES
     ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.cpp
     ToolsComponents/EditorNonUniformScaleComponent.h
     ToolsComponents/EditorNonUniformScaleComponent.cpp
+    ToolsComponents/EditorNonUniformScaleComponentMode.h
+    ToolsComponents/EditorNonUniformScaleComponentMode.cpp
     ToolsMessaging/EntityHighlightBus.h
     UI/Docking/DockWidgetUtils.cpp
     UI/Docking/DockWidgetUtils.h

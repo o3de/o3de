@@ -24,7 +24,14 @@
 #endif
 
 #include "smartptr.h"
-#include <IFlares.h> // <> required for Interfuscator
+#include "Cry_Vector2.h"
+#include "Cry_Vector3.h"
+#include "Cry_Matrix33.h"
+#include "Cry_Color.h"
+#include "smartptr.h"
+#include "StringUtils.h"
+#include <IXml.h> // <> required for Interfuscator
+#include "smartptr.h"
 #include "VertexFormats.h"
 #include <Vertex.h>
 #include <AzCore/Casting/numeric_cast.h>
@@ -33,8 +40,6 @@
 #include "Cry_XOptimise.h"
 #include <CrySizer.h>
 #include <IMaterial.h>
-
-#include <CryThreadSafeRendererContainer.h>
 
 struct IMaterial;
 class CRendElementBase;
@@ -767,7 +772,6 @@ _MS_ALIGN(16) struct SSkinningData
     void*                   pCharInstCB; // used if per char instance cbs are available in renderdll (d3d11+);
     // members below are for Software Skinning
     void*                   pCustomData; // client specific data, used for example for sw-skinning on animation side
-    SSkinningData**         pMasterSkinningDataList;    // used by the SkinningData for a Character Instance, contains a list of all Skin Instances which need SW-Skinning
     SSkinningData*          pNextSkinningData;          // List to the next element which needs SW-Skinning
 } _ALIGN(16);
 
@@ -2236,74 +2240,6 @@ struct SShaderTexSlots
     }
 };
 
-struct SShaderGenBit
-{
-    SShaderGenBit()
-    {
-        m_Mask = 0;
-        m_Flags = 0;
-        m_nDependencySet = 0;
-        m_nDependencyReset = 0;
-        m_NameLength = 0;
-        m_dwToken = 0;
-    }
-    string m_ParamName;
-    string m_ParamProp;
-    string m_ParamDesc;
-    int m_NameLength;
-    uint64 m_Mask;
-    uint32 m_Flags;
-    uint32 m_dwToken;
-    std::vector<uint32> m_PrecacheNames;
-    std::vector<string> m_DependSets;
-    std::vector<string> m_DependResets;
-    uint32 m_nDependencySet;
-    uint32 m_nDependencyReset;
-
-    void GetMemoryUsage(ICrySizer* pSizer) const
-    {
-        pSizer->AddObject(m_ParamName);
-        pSizer->AddObject(m_ParamProp);
-        pSizer->AddObject(m_ParamDesc);
-        pSizer->AddObject(m_PrecacheNames);
-        pSizer->AddObject(m_DependSets);
-        pSizer->AddObject(m_DependResets);
-    }
-};
-
-struct SShaderGen
-{
-    uint32 m_nRefCount;
-    TArray<SShaderGenBit*> m_BitMask;
-    SShaderGen()
-    {
-        m_nRefCount = 1;
-    }
-    ~SShaderGen()
-    {
-        uint32 i;
-        for (i = 0; i < m_BitMask.Num(); i++)
-        {
-            SShaderGenBit* pBit = m_BitMask[i];
-            SAFE_DELETE(pBit);
-        }
-        m_BitMask.Free();
-    }
-    void Release()
-    {
-        m_nRefCount--;
-        if (!m_nRefCount)
-        {
-            delete this;
-        }
-    }
-
-    void GetMemoryUsage(ICrySizer* pSizer) const
-    {
-        pSizer->AddObject(m_BitMask);
-    }
-};
-
 //===================================================================================
 
 enum EShaderType
@@ -2568,7 +2504,6 @@ public:
     virtual void SetFlags2(int Flags) = 0;
     virtual void ClearFlags2(int Flags) = 0;
     virtual bool Reload(int nFlags, const char* szShaderName) = 0;
-    virtual TArray<CRendElementBase*>* GetREs (int nTech) = 0;
     virtual AZStd::vector<SShaderParam>& GetPublicParams() = 0;
     virtual int GetTexId () = 0;
     virtual ITexture* GetBaseTexture(int* nPass, int* nTU) = 0;
@@ -2577,7 +2512,6 @@ public:
     virtual ECull GetCull(void) = 0;
     virtual int Size(int Flags) = 0;
     virtual uint64 GetGenerationMask() = 0;
-    virtual SShaderGen* GetGenerationParams() = 0;
     virtual size_t GetNumberOfUVSets() = 0;
     virtual int GetTechniqueID(int nTechnique, int nRegisteredTechnique) = 0;
     virtual AZ::Vertex::Format GetVertexFormat(void) = 0;
@@ -2828,7 +2762,6 @@ struct SRenderLight
         m_ObjMatrix.SetIdentity();
         m_BaseObjMatrix.SetIdentity();
         m_sName = "";
-        m_pSoftOccQuery = NULL;
         m_pLightAnim = NULL;
         m_fAreaWidth = 1;
         m_fAreaHeight = 1;
@@ -2884,11 +2817,6 @@ struct SRenderLight
         return m_pLightImage ? m_pLightImage : NULL;
     }
 
-    IOpticsElementBase* GetLensOpticsElement() const
-    {
-        return m_pLensOpticsElement;
-    }
-
     void SetOpticsParams(const SOpticsInstanceParameters& params)
     {
         m_opticsParams = params;
@@ -2897,24 +2825,6 @@ struct SRenderLight
     const SOpticsInstanceParameters& GetOpticsParams() const
     {
         return m_opticsParams;
-    }
-
-    void SetLensOpticsElement(IOpticsElementBase* pOptics)
-    {
-        if (m_pLensOpticsElement == pOptics)
-        {
-            return;
-        }
-        if (pOptics && pOptics->GetType() != eFT_Root)
-        {
-            return;
-        }
-        SAFE_RELEASE(m_pLensOpticsElement);
-        m_pLensOpticsElement = pOptics;
-        if (m_pLensOpticsElement)
-        {
-            m_pLensOpticsElement->AddRef();
-        }
     }
 
     void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const { /*LATER*/}
@@ -2937,14 +2847,6 @@ struct SRenderLight
         {
             m_pSpecularCubemap->AddRef();
         }
-        if (m_pLensOpticsElement)
-        {
-            m_pLensOpticsElement->AddRef();
-        }
-        if (m_pSoftOccQuery)
-        {
-            m_pSoftOccQuery->AddRef();
-        }
         if (m_pLightAnim)
         {
             m_pLightAnim->AddRef();
@@ -2961,8 +2863,6 @@ struct SRenderLight
         SAFE_RELEASE(m_pLightImage);
         SAFE_RELEASE(m_pDiffuseCubemap);
         SAFE_RELEASE(m_pSpecularCubemap);
-        SAFE_RELEASE(m_pLensOpticsElement);
-        SAFE_RELEASE(m_pSoftOccQuery);
         SAFE_RELEASE(m_pLightAnim);
         SAFE_RELEASE(m_pLightAttenMap);
     }
@@ -3046,8 +2946,6 @@ struct SRenderLight
     const char* m_sName;                            // Optional name of the light source.
     SShaderItem m_Shader;                           // Shader item
     CRenderObject* m_pObject[MAX_RECURSION_LEVELS]; // Object for light coronas and light flares.
-    IOpticsElementBase* m_pLensOpticsElement;       // Optics element for this shader instance
-    ISoftOcclusionQuery* m_pSoftOccQuery;
     ILightAnimWrapper* m_pLightAnim;
 
     Matrix34 m_BaseObjMatrix;
@@ -3146,9 +3044,7 @@ public:
         m_fShadowSlopeBias = dl.m_fShadowSlopeBias;
         m_fShadowResolutionScale = dl.m_fShadowResolutionScale;
         m_fHDRDynamic = dl.m_fHDRDynamic;
-        m_pLensOpticsElement = dl.m_pLensOpticsElement;
         m_LensOpticsFrustumAngle = dl.m_LensOpticsFrustumAngle;
-        m_pSoftOccQuery = dl.m_pSoftOccQuery;
         m_fLightFrustumAngle = dl.m_fLightFrustumAngle;
         m_fProjectorNearPlane = dl.m_fProjectorNearPlane;
         m_Flags = dl.m_Flags;
@@ -3413,6 +3309,6 @@ struct SShaderGraphBlock
 typedef std::vector<SShaderGraphBlock*> FXShaderGraphBlocks;
 typedef FXShaderGraphBlocks::iterator FXShaderGraphBlocksItor;
 
-#include "RendElement.h"
+#include <CryCommon/StaticInstance.h>
 
 #endif // CRYINCLUDE_CRYCOMMON_ISHADER_H

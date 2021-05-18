@@ -16,11 +16,11 @@
 #include <Source/NetworkEntity/EntityReplication/PropertySubscriber.h>
 #include <Source/NetworkEntity/NetworkEntityAuthorityTracker.h>
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
-#include <Source/NetworkEntity/NetworkEntityRpcMessage.h>
-#include <Source/Components/NetBindComponent.h>
-#include <Source/Components/NetworkTransformComponent.h>
 #include <Source/AutoGen/Multiplayer.AutoPackets.h>
-#include <Include/IMultiplayer.h>
+#include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/Components/NetworkTransformComponent.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h>
 
 #include <AzNetworking/PacketLayer/IPacket.h>
 #include <AzNetworking/Serialization/ISerializer.h>
@@ -448,7 +448,7 @@ namespace Multiplayer
     void EntityReplicator::DeferRpcMessage(NetworkEntityRpcMessage& entityRpcMessage)
     {
         // Received rpc metrics, log rpc sent, number of bytes, and the componentId/rpcId for bandwidth metrics
-        MultiplayerStats& stats = AZ::Interface<IMultiplayer>::Get()->GetStats();
+        MultiplayerStats& stats = GetMultiplayer()->GetStats();
         stats.RecordRpcSent(entityRpcMessage.GetComponentId(), entityRpcMessage.GetRpcIndex(), entityRpcMessage.GetEstimatedSerializeSize());
 
         m_replicationManager.AddDeferredRpcMessage(entityRpcMessage);
@@ -628,10 +628,10 @@ namespace Multiplayer
         return result;
     }
 
-    bool EntityReplicator::HandleRpcMessage(NetworkEntityRpcMessage& entityRpcMessage)
+    bool EntityReplicator::HandleRpcMessage(AzNetworking::IConnection* invokingConnection, NetworkEntityRpcMessage& entityRpcMessage)
     {
         // Received rpc metrics, log rpc received, time spent, number of bytes, and the componentId/rpcId for bandwidth metrics
-        MultiplayerStats& stats = AZ::Interface<IMultiplayer>::Get()->GetStats();
+        MultiplayerStats& stats = GetMultiplayer()->GetStats();
         stats.RecordRpcReceived(entityRpcMessage.GetComponentId(), entityRpcMessage.GetRpcIndex(), entityRpcMessage.GetEstimatedSerializeSize());
 
         if (!m_netBindComponent)
@@ -676,7 +676,7 @@ namespace Multiplayer
         switch (result)
         {
         case RpcValidationResult::HandleRpc:
-            return m_netBindComponent->HandleRpcMessage(GetRemoteNetworkRole(), entityRpcMessage);
+            return m_netBindComponent->HandleRpcMessage(invokingConnection, GetRemoteNetworkRole(), entityRpcMessage);
         case RpcValidationResult::DropRpc:
             return true;
         case RpcValidationResult::DropRpcAndDisconnect:
@@ -703,7 +703,7 @@ namespace Multiplayer
             break;
         }
 
-        AZ_Assert(false, "Unhandled ERpcValidationResult %d", result);
+        AZ_Assert(false, "Unhandled RpcValidationResult %d", result);
         return false;
     }
 }

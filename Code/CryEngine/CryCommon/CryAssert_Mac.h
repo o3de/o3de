@@ -30,7 +30,7 @@ void CryAssertTrace(const char* szFormat, ...)
         return;
     }
 
-    if (!gEnv->bIgnoreAllAsserts || gEnv->bTesting)
+    if (!gEnv->bIgnoreAllAsserts)
     {
         if (szFormat == NULL)
         {
@@ -45,43 +45,6 @@ void CryAssertTrace(const char* szFormat, ...)
         }
     }
 }
-/*
-bool CryAssert(const char* szCondition, const char* szFile,unsigned int line, bool *pIgnore)
-{
-    if (!gEnv) return false;
-
-        gEnv->pSystem->OnAssert(szCondition, gs_szMessage, szFile, line);
-
-        if (!gEnv->bNoAssertDialog && !gEnv->bIgnoreAllAsserts)
-    {
-        EDialogAction action = MacOSXHandleAssert(szCondition, szFile, line, gs_szMessage, gEnv->pRenderer != NULL);
-
-        switch (action) {
-            case eDAStop:
-                raise(SIGABRT);
-                exit(-1);
-            case eDABreak:
-                return true;
-            case eDAIgnoreAll:
-                gEnv->bIgnoreAllAsserts = true;
-                break;
-            case eDAIgnore:
-                *pIgnore = true;
-                break;
-            case eDAReportAsBug:
-                if ( gEnv && gEnv->pSystem)
-                {
-                    gEnv->pSystem->ReportBug("Assert: %s - %s", szCondition,gs_szMessage);
-                }
-
-            case eDAContinue:
-            default:
-                break;
-        }
-    }
-
-    return false;
-}*/
 
 bool CryAssert(const char* szCondition, const char* szFile, unsigned int line, bool* pIgnore)
 {

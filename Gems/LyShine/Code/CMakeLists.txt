@@ -93,6 +93,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 Gem::Atom_RPI.Public
                 Gem::Atom_Utils.Static
+                Gem::Atom_Bootstrap.Headers
     )
 
     ly_add_target(

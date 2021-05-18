@@ -10,11 +10,11 @@
 *
 */
 
-#include <Source/NetworkEntity/NetworkEntityHandle.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityHandle.h>
+#include <Multiplayer/Components/MultiplayerController.h>
+#include <Multiplayer/Components/MultiplayerComponent.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
-#include <Source/Components/NetBindComponent.h>
-#include <Source/Components/MultiplayerController.h>
-#include <Source/Components/MultiplayerComponent.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 

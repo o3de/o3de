@@ -20,6 +20,7 @@
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 
 #include <Atom/Document/MaterialDocumentNotificationBus.h>
+#include <Atom/Window/MaterialEditorWindowSettings.h>
 #endif
 
 namespace MaterialEditor
@@ -41,7 +42,16 @@ namespace MaterialEditor
         // AtomToolsFramework::InspectorRequestBus::Handler overrides...
         void Reset() override;
 
+    protected:
+        bool ShouldGroupAutoExpanded(const AZStd::string& groupNameId) const override;
+        void OnGroupExpanded(const AZStd::string& groupNameId) override;
+        void OnGroupCollapsed(const AZStd::string& groupNameId) override;
+
     private:
+        AZ::Crc32 GetGroupSaveStateKey(const AZStd::string& groupNameId) const;
+        bool CompareInstanceNodeProperties(
+            const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) const;
+
         void AddDetailsGroup();
         void AddUvNamesGroup();
         void AddPropertiesGroup();
@@ -64,6 +74,8 @@ namespace MaterialEditor
         const AtomToolsFramework::DynamicProperty* m_activeProperty = nullptr;
 
         AZ::Uuid m_documentId = AZ::Uuid::CreateNull();
+        AZStd::string m_documentPath;
         AZStd::unordered_map<AZStd::string, AtomToolsFramework::DynamicPropertyGroup> m_groups;
+        AZStd::intrusive_ptr<MaterialEditorWindowSettings> m_windowSettings;
     };
 } // namespace MaterialEditor

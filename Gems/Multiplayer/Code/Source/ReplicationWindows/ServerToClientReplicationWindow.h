@@ -12,9 +12,9 @@
 
 #pragma once
 
-#include <Source/ReplicationWindows/IReplicationWindow.h>
-#include <Source/NetworkEntity/NetworkEntityHandle.h>
-#include <Source/NetworkEntity/INetworkEntityManager.h>
+#include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityHandle.h>
+#include <Multiplayer/ReplicationWindows/IReplicationWindow.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/EBus/ScheduledEvent.h>
@@ -27,7 +27,6 @@ namespace Multiplayer
 
     class ServerToClientReplicationWindow
         : public IReplicationWindow
-        , public AZ::EntitySystemBus::Handler
     {
     public:
 
@@ -56,11 +55,8 @@ namespace Multiplayer
         //! @}
 
     private:
-        //! EntitySystemBus interface
-        //! @{
-        void OnEntityActivated(const AZ::EntityId&) override;
-        void OnEntityDeactivated(const AZ::EntityId&) override;
-        //! @}
+        void OnEntityActivated(AZ::Entity* entity);
+        void OnEntityDeactivated(AZ::Entity* entity);
 
         //void CollectControlledEntitiesRecursive(ReplicationSet& replicationSet, EntityHierarchyComponent::Authority& hierarchyController);
         //void OnAddFilteredEntity(NetEntityId filteredEntityId);
@@ -78,6 +74,9 @@ namespace Multiplayer
 
         NetworkEntityHandle m_controlledEntity;
         AZ::TransformInterface* m_controlledEntityTransform = nullptr;
+
+        AZ::EntityActivatedEvent::Handler m_entityActivatedEventHandler;
+        AZ::EntityDeactivatedEvent::Handler m_entityDeactivatedEventHandler;
 
         //FilteredEntityComponent::Authority* m_controlledFilteredEntityComponent = nullptr;
         //NetBindComponent* m_controlledNetBindComponent = nullptr;

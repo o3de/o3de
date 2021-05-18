@@ -14,13 +14,13 @@
 #include <platform.h>
 #include <StringUtils.h>
 #include <ISystem.h>
-#include <CryExtension/Impl/RegFactoryNode.h>
-#include <CryExtension/Impl/ICryFactoryRegistryImpl.h>
+#include <Random.h>
 #include <UnicodeFunctions.h>
 #include <IConsole.h>
 
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Debug/ProfileModuleInit.h>
+#include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Module/Environment.h>
 
 // Section dictionary
@@ -34,16 +34,13 @@
 #define PLATFORM_IMPL_H_SECTION_VIRTUAL_ALLOCATORS 7
 #endif
 
-SC_API struct SSystemGlobalEnvironment* gEnv = nullptr;
+struct SSystemGlobalEnvironment* gEnv = nullptr;
 
 // Traits
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION PLATFORM_IMPL_H_SECTION_TRAITS
     #include AZ_RESTRICTED_FILE(platform_impl_h)
 #endif
-
-//The reg factory is used for registering the different modules along the whole project
-struct SRegFactoryNode* g_pHeadToRegFactories = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // If not in static library.
@@ -106,16 +103,6 @@ extern "C" AZ_DLL_EXPORT void ModuleInitISystem(ISystem* pSystem, [[maybe_unused
             AZ::AllocatorManager::Instance();  // Force the AllocatorManager to instantiate and register any allocators defined in data sections
         }
         AZ::Debug::ProfileModuleInit();
-
-#if !defined(AZ_MONOLITHIC_BUILD)
-        ICryFactoryRegistryImpl* pCryFactoryImpl = static_cast<ICryFactoryRegistryImpl*>(pSystem->GetCryFactoryRegistry());
-        if (pCryFactoryImpl)
-        {
-            pCryFactoryImpl->RegisterFactories(g_pHeadToRegFactories);
-        }
-
-        AZ_Error("System", pCryFactoryImpl, "Failed to successfully load factory for %s.  You may have a missing or stale DLL that needs to be recompiled.", moduleName);
-#endif
     } // if pSystem
 }
 
@@ -161,7 +148,6 @@ void* GetDetachEnvironmentSymbol()
 #endif // !defined(SOFTCODE)
 
 bool g_bProfilerEnabled = false;
-int g_iTraceAllocations = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // global random number generator used by cry_random functions
@@ -207,11 +193,6 @@ void __stl_debug_message(const char* format_str, ...)
 
 #if defined(WIN32) || defined(WIN64)
 #include <intrin.h>
-#endif
-
-// If we use cry memory manager this should be also included in every module.
-#if defined(USING_CRY_MEMORY_MANAGER)
-#include <CryMemoryManager_impl.h>
 #endif
 
 #if defined(APPLE) || defined(LINUX)

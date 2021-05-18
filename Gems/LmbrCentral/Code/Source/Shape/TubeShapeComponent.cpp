@@ -28,6 +28,7 @@ namespace LmbrCentral
     {
         incompatible.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
         incompatible.push_back(AZ_CRC("TubeShapeService", 0x3fe791b4));
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void TubeShapeComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

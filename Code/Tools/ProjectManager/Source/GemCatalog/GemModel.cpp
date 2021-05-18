@@ -37,6 +37,16 @@ namespace O3DE::ProjectManager
         item->setData(gemInfo.m_summary, RoleSummary);
         item->setData(gemInfo.m_isAdded, RoleIsAdded);
 
+        item->setData(gemInfo.m_directoryLink, RoleDirectoryLink);
+        item->setData(gemInfo.m_documentationLink, RoleDocLink);
+        item->setData(gemInfo.m_dependingGemUuids, RoleDependingGems);
+        item->setData(gemInfo.m_conflictingGemUuids, RoleConflictingGems);
+        item->setData(gemInfo.m_version, RoleVersion);
+        item->setData(gemInfo.m_lastUpdatedDate, RoleLastUpdated);
+        item->setData(gemInfo.m_binarySizeInKB, RoleBinarySize);
+
+        item->setData(gemInfo.m_features, RoleFeatures);
+
         appendRow(item);
     }
 
@@ -45,28 +55,68 @@ namespace O3DE::ProjectManager
         clear();
     }
 
-    QString GemModel::GetName(const QModelIndex& modelIndex) const
+    QString GemModel::GetName(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleName).toString();
     }
 
-    QString GemModel::GetCreator(const QModelIndex& modelIndex) const
+    QString GemModel::GetCreator(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleCreator).toString();
     }
 
-    int GemModel::GetPlatforms(const QModelIndex& modelIndex) const
+    GemInfo::Platforms GemModel::GetPlatforms(const QModelIndex& modelIndex)
     {
         return static_cast<GemInfo::Platforms>(modelIndex.data(RolePlatforms).toInt());
     }
 
-    QString GemModel::GetSummary(const QModelIndex& modelIndex) const
+    QString GemModel::GetSummary(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleSummary).toString();
     }
 
-    bool GemModel::IsAdded(const QModelIndex& modelIndex) const
+    bool GemModel::IsAdded(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleIsAdded).toBool();
+    }
+
+    QString GemModel::GetDirectoryLink(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleDirectoryLink).toString();
+    }
+
+    QString GemModel::GetDocLink(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleDocLink).toString();
+    }
+
+    QStringList GemModel::GetDependingGems(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleDependingGems).toStringList();
+    }
+
+    QStringList GemModel::GetConflictingGems(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleConflictingGems).toStringList();
+    }
+
+    QString GemModel::GetVersion(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleVersion).toString();
+    }
+
+    QString GemModel::GetLastUpdated(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleLastUpdated).toString();
+    }
+
+    int GemModel::GetBinarySizeInKB(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleBinarySize).toInt();
+    }
+
+    QStringList GemModel::GetFeatures(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleFeatures).toStringList();
     }
 } // namespace O3DE::ProjectManager
