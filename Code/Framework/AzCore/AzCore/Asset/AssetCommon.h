@@ -796,6 +796,7 @@ namespace AZ
             , m_assetType(azrtti_typeid<T>())
             , m_loadBehavior(loadBehavior)
         {
+            AZ_Assert(!assetData->m_assetId.IsValid(), "Asset data already has an ID set.");
             assetData->m_assetId = id;
             SetData(assetData);
         }
