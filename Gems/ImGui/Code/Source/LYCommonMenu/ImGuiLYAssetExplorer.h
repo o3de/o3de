@@ -103,7 +103,7 @@ namespace ImGui
         void MeshInstanceList_CheckMeshFilter();
         void MeshInstanceList_CheckEntityFilter();
 
-        // The list of Meshes and Instances of them
+        // The Primary list of Meshes and Instances of them
         AZStd::list<MeshInstanceDisplayList> m_meshInstanceDisplayList;
 
         // Helper functions for the ImGui Update
