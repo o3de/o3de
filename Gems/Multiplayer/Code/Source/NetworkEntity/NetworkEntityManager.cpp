@@ -22,7 +22,7 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <Multiplayer/IMultiplayer.h>
-#include <Multiplayer/NetBindComponent.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 #include <Pipeline/NetworkSpawnableHolderComponent.h>
 
 namespace Multiplayer
