@@ -108,15 +108,7 @@ class Launcher(object):
 
         # Wait for the AssetProcessor to be open.
         if launch_ap:
-            timeout = 10
-            self.workspace.asset_processor.start()
-            ly_test_tools.environment.waiter.wait_for(
-                lambda: ly_test_tools.environment.process_utils.process_exists(
-                    name="AssetProcessor", ignore_extensions=True),
-                exc=ly_test_tools.launchers.exceptions.SetupError(
-                    f'AssetProcessor never opened after {timeout} seconds'),
-                timeout=timeout
-            )
+            self.workspace.asset_processor.start(connect_to_ap=True, connection_timeout=10)  # verify connection
             self.workspace.asset_processor.wait_for_idle()
             log.debug('AssetProcessor started from calling Launcher.setup()')
 

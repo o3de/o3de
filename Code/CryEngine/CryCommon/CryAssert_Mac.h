@@ -30,7 +30,7 @@ void CryAssertTrace(const char* szFormat, ...)
         return;
     }
 
-    if (!gEnv->bIgnoreAllAsserts || gEnv->bTesting)
+    if (!gEnv->bIgnoreAllAsserts)
     {
         if (szFormat == NULL)
         {

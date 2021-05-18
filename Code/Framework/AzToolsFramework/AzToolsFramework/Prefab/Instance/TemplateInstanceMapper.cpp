@@ -14,6 +14,7 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 
 namespace AzToolsFramework
 {
@@ -71,6 +72,12 @@ namespace AzToolsFramework
 
         bool TemplateInstanceMapper::UnregisterInstance(Instance& instance)
         {
+            // The InstanceUpdateExecutor queries the TemplateInstanceMapper for a list of instances related to a template.
+            // Consequently, if an instance gets unregistered for a template, we need to notify the InstanceUpdateExecutor as well
+            // so that it clears any internal associations that it might have in its queue.
+            AZ_Assert(AZ::Interface<InstanceUpdateExecutorInterface>::Get() != nullptr, "InstanceUpdateExecutor doesn't exist");
+            AZ::Interface<InstanceUpdateExecutorInterface>::Get()->RemoveTemplateInstanceFromQueue(&instance);
+
             auto found = m_templateIdToInstancesMap.find(instance.GetTemplateId());
             return found != m_templateIdToInstancesMap.end() &&
                 found->second.erase(&instance) != 0;

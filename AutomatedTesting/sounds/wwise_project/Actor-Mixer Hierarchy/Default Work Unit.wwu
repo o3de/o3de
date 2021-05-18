@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<WwiseDocument Type="WorkUnit" ID="{E49D964A-E630-4580-BB43-C5ECA68306F9}" SchemaVersion="97">
+<WwiseDocument Type="WorkUnit" ID="{E49D964A-E630-4580-BB43-C5ECA68306F9}" SchemaVersion="103">
 	<AudioObjects>
 		<WorkUnit Name="Default Work Unit" ID="{E49D964A-E630-4580-BB43-C5ECA68306F9}" PersistMode="Standalone">
 			<ChildrenList>
@@ -21,6 +21,7 @@
 							</MediaIDList>
 						</AudioFileSource>
 					</ChildrenList>
+					<ObjectLists/>
 					<ActiveSourceList>
 						<ActiveSource Name="AMZ_sfx_NME_wpn_plasma_pistol_fire_impact004" ID="{01769FD2-891B-40BA-98A1-DA38386292D6}" Platform="Linked"/>
 					</ActiveSourceList>
@@ -50,6 +51,7 @@
 							</MediaIDList>
 						</AudioFileSource>
 					</ChildrenList>
+					<ObjectLists/>
 					<ActiveSourceList>
 						<ActiveSource Name="AMZ_sfx_NME_wpn_plasma_pistol_fire003" ID="{6900C554-95EC-48DE-8A04-DEA195AF600C}" Platform="Linked"/>
 					</ActiveSourceList>
@@ -72,6 +74,7 @@
 							</MediaIDList>
 						</AudioFileSource>
 					</ChildrenList>
+					<ObjectLists/>
 					<ActiveSourceList>
 						<ActiveSource Name="AMZN_sfx_env_commsarray_apllyupdate_end" ID="{1F8E90CF-0F22-4A53-AE3B-C2ED6D12F7CB}" Platform="Linked"/>
 					</ActiveSourceList>
@@ -101,6 +104,7 @@
 							</MediaIDList>
 						</AudioFileSource>
 					</ChildrenList>
+					<ObjectLists/>
 					<ActiveSourceList>
 						<ActiveSource Name="env_door_scanner_scan_success" ID="{D60C55A0-E8EC-4940-B4BB-F5B510498E6F}" Platform="Linked"/>
 					</ActiveSourceList>
@@ -130,6 +134,7 @@
 							</MediaIDList>
 						</AudioFileSource>
 					</ChildrenList>
+					<ObjectLists/>
 					<ActiveSourceList>
 						<ActiveSource Name="gun_blaster_no_trigger_shot_1" ID="{D71A53D8-32C8-47DE-9E4C-556992016F8F}" Platform="Linked"/>
 					</ActiveSourceList>
@@ -159,6 +164,7 @@
 							</MediaIDList>
 						</AudioFileSource>
 					</ChildrenList>
+					<ObjectLists/>
 					<ActiveSourceList>
 						<ActiveSource Name="impact_bot_hits_metalelement" ID="{E92CDFBE-632F-4FB5-8A38-D014D25C3645}" Platform="Linked"/>
 					</ActiveSourceList>
@@ -187,6 +193,7 @@
 							<Language>SFX</Language>
 						</SourcePlugin>
 					</ChildrenList>
+					<ObjectLists/>
 					<ActiveSourceList>
 						<ActiveSource Name="Wwise Tone Generator" ID="{E45EE414-F90C-462E-9FB6-3AF940521F4C}" Platform="Linked"/>
 					</ActiveSourceList>
@@ -215,6 +222,7 @@
 							<Language>SFX</Language>
 						</SourcePlugin>
 					</ChildrenList>
+					<ObjectLists/>
 					<ActiveSourceList>
 						<ActiveSource Name="Wwise Tone Generator" ID="{CEC06DF2-6829-4429-AD5E-A75A06524E0C}" Platform="Linked"/>
 					</ActiveSourceList>

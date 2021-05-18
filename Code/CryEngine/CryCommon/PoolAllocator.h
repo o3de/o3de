@@ -36,9 +36,6 @@
 // require a pointer to the bucket be stored, whereas now no memory is used
 // while the block is allocated.
 //
-// This allocator is suitable for use with STL lists - see STLPoolAllocator
-// for an STL-compatible interface.
-//
 // The class can optionally support multi-threading, using the second
 // template parameter. By default it is multithread-safe.
 // See Synchronization.h.

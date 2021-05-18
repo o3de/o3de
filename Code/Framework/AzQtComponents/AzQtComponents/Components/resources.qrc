@@ -372,6 +372,7 @@
     <file>img/UI20/toolbar/Select.svg</file>
     <file>img/UI20/toolbar/select_object.svg</file>
     <file>img/UI20/toolbar/Select_terrain.svg</file>
+    <file>img/UI20/toolbar/Simulate_Physics.svg</file>
     <file>img/UI20/toolbar/Simulate_Physics_on_selected_objects.svg</file>
     <file>img/UI20/toolbar/Terrain.svg</file>
     <file>img/UI20/toolbar/Terrain_Texture.svg</file>
@@ -636,5 +637,7 @@
 </qresource>
   <qresource prefix="/Cursors">
     <file alias="Pointer.svg">img/UI20/Cursors/Pointer.svg</file>
+    <file alias="Grab_release.svg">img/UI20/Cursors/Grab_release.svg</file>
+    <file alias="Grabbing.svg">img/UI20/Cursors/Grabbing.svg</file>
   </qresource>
 </RCC>

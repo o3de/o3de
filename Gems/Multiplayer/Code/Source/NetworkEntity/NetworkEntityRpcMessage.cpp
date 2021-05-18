@@ -10,7 +10,7 @@
 *
 */
 
-#include <Source/NetworkEntity/NetworkEntityRpcMessage.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
 #include <AzCore/Console/ILogger.h>
