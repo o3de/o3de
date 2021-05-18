@@ -1740,7 +1740,10 @@ namespace AZ
                     if (!iter->IsInstantiated())
                     {
                         #if defined(AZ_ENABLE_TRACING)
-                        Data::Asset<SliceAsset> thisAsset = Data::AssetManager::Instance().FindAsset(GetMyAsset()->GetId(), AZ::Data::AssetLoadBehavior::Default);
+                        Data::Asset<SliceAsset> thisAsset = GetMyAsset()
+                            ? Data::Asset<SliceAsset>(Data::AssetManager::Instance().FindAsset(
+                                  GetMyAsset()->GetId(), AZ::Data::AssetLoadBehavior::Default))
+                            : Data::Asset<SliceAsset>();
                         AZ_Warning("Slice", false, "Removing %d instances of slice asset %s from parent asset %s due to failed instantiation. " 
                             "Saving parent asset will result in loss of slice data.", 
                             iter->GetInstances().size(),
