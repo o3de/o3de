@@ -287,6 +287,8 @@ set(FILES
     Utilities/ScreenUtilities.cpp
     Utilities/ScreenGrabber.h
     Utilities/ScopedCleanup.h
+    Utilities/SelectionProxyModel.cpp
+    Utilities/SelectionProxyModel.h
     Utilities/TextUtilities.cpp
     Utilities/TextUtilities.h
 )
