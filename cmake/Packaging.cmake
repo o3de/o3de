@@ -14,7 +14,7 @@ if(NOT PAL_TRAIT_BUILD_CPACK_SUPPORTED)
 endif()
 
 # public facing options will be used for conversion into cpack specific ones below.
-set(LY_INSTALLER_DOWNLOAD_URL "" CACHE STRING "URL embded into the installer to download additional artifacts")
+set(LY_INSTALLER_DOWNLOAD_URL "" CACHE STRING "URL embedded into the installer to download additional artifacts")
 set(LY_INSTALLER_LICENSE_URL "" CACHE STRING "Optionally embed a link to the license instead of raw text")
 
 # set all common cpack variable overrides first so they can be accessible via configure_file
