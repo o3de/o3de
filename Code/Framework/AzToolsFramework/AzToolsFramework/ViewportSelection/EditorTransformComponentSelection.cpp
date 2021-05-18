@@ -436,7 +436,7 @@ namespace AzToolsFramework
         }
     }
 
-    static void DestroyTransformModeSelectionCluster(const ViewportUi::ClusterId clusterId)
+    static void DestroyCluster(const ViewportUi::ClusterId clusterId)
     {
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId,
@@ -482,6 +482,28 @@ namespace AzToolsFramework
             worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
 
         return worldFromLocal.TransformPoint(CalculateCenterOffset(entityId, pivot));
+    }
+
+    void EditorTransformComponentSelection::UpdateSpaceCluster(ReferenceFrame space)
+    {
+        switch (space)
+        {
+        case ReferenceFrame::Local:
+            ViewportUi::ViewportUiRequestBus::Event(
+                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, m_spaceClusterId,
+                m_localButtonId);
+            break;
+        case ReferenceFrame::Parent:
+            ViewportUi::ViewportUiRequestBus::Event(
+                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, m_spaceClusterId,
+                m_parentButtonId);
+            break;
+        case ReferenceFrame::World:
+            ViewportUi::ViewportUiRequestBus::Event(
+                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, m_spaceClusterId,
+                m_worldButtonId);
+            break;
+        }
     }
 
     namespace ETCS
@@ -1028,6 +1050,7 @@ namespace AzToolsFramework
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusConnect(entityContextId);
 
         CreateTransformModeSelectionCluster();
+        CreateSpaceSelectionCluster();
         RegisterActions();
         SetupBoxSelect();
         RefreshSelectedEntityIdsAndRegenerateManipulators();
@@ -1038,7 +1061,9 @@ namespace AzToolsFramework
         m_selectedEntityIds.clear();
         DestroyManipulators(m_entityIdManipulators);
 
-        DestroyTransformModeSelectionCluster(m_transformModeClusterId);
+        DestroyCluster(m_transformModeClusterId);
+        DestroyCluster(m_spaceClusterId);
+
         UnregisterActions();
 
         m_pivotOverrideFrame.Reset();
@@ -2564,6 +2589,41 @@ namespace AzToolsFramework
             m_transformModeSelectionHandler);
     }
 
+    void AzToolsFramework::EditorTransformComponentSelection::CreateSpaceSelectionCluster()
+    {
+        // create the cluster for changing transform mode
+        ViewportUi::ViewportUiRequestBus::EventResult(
+            m_spaceClusterId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
+            ViewportUi::Alignment::TopRight);
+
+        // create and register the buttons (strings correspond to icons even if the values appear different)
+        m_worldButtonId = RegisterClusterButton(m_spaceClusterId, "World");
+        m_parentButtonId = RegisterClusterButton(m_spaceClusterId, "Parent");
+        m_localButtonId = RegisterClusterButton(m_spaceClusterId, "Local");
+
+
+        auto onButtonClicked = [this](ViewportUi::ButtonId buttonId) {
+            if (buttonId == m_localButtonId)
+            {
+                
+            }
+            else if (buttonId == m_parentButtonId)
+            {
+                
+            }
+            else if (buttonId == m_worldButtonId)
+            {
+                
+            }
+        };
+
+        m_SpaceSelectionHandler = AZ::Event<ViewportUi::ButtonId>::Handler(onButtonClicked);
+
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler, m_spaceClusterId,
+            m_SpaceSelectionHandler);
+    }
+
     EditorTransformComponentSelectionRequests::Mode EditorTransformComponentSelection::GetTransformMode()
     {
         return m_mode;
@@ -3274,6 +3334,8 @@ namespace AzToolsFramework
                 QGuiApplication::mouseButtons()), m_boxSelect.Active());
 
         const ReferenceFrame referenceFrame = ReferenceFrameFromModifiers(modifiers);
+
+        UpdateSpaceCluster(referenceFrame);
 
         bool refresh = false;
         if (referenceFrame != m_referenceFrame)

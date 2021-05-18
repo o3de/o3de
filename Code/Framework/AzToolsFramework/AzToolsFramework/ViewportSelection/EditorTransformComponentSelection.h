@@ -158,6 +158,7 @@ namespace AzToolsFramework
         void RegenerateManipulators();
 
         void CreateTransformModeSelectionCluster();
+        void CreateSpaceSelectionCluster();
 
         void ClearManipulatorTranslationOverride();
         void ClearManipulatorOrientationOverride();
@@ -281,6 +282,12 @@ namespace AzToolsFramework
         ViewportUi::ButtonId m_rotateButtonId; ///< Id of the Viewport UI button for rotate mode.
         ViewportUi::ButtonId m_scaleButtonId; ///< Id of the Viewport UI button for scale mode.
         AZ::Event<ViewportUi::ButtonId>::Handler m_transformModeSelectionHandler; ///< Event handler for the Viewport UI cluster.
+
+        ViewportUi::ClusterId m_spaceClusterId; 
+        ViewportUi::ButtonId m_localButtonId; 
+        ViewportUi::ButtonId m_parentButtonId; 
+        ViewportUi::ButtonId m_worldButtonId; 
+        AZ::Event<ViewportUi::ButtonId>::Handler m_SpaceSelectionHandler; 
     };
 
     /// The ETCS (EntityTransformComponentSelection) namespace contains functions and data used exclusively by
