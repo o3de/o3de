@@ -63,13 +63,13 @@ def run():
 
         # undo component addition
         general.undo()
-        TestHelper.wait_for_condition(lambda: not hydra.has_components(new_entity.id, [component_name]), 1.5)
+        TestHelper.wait_for_condition(lambda: not hydra.has_components(new_entity.id, [component_name]), 2.0)
         general.log(f"{component_name}_test: Component removed after UNDO: "
                     f"{not hydra.has_components(new_entity.id, [component_name])}")
 
         # redo component addition
         general.redo()
-        TestHelper.wait_for_condition(lambda: hydra.has_components(new_entity.id, [component_name]), 1.5)
+        TestHelper.wait_for_condition(lambda: hydra.has_components(new_entity.id, [component_name]), 2.0)
         general.log(f"{component_name}_test: Component added after REDO: "
                     f"{hydra.has_components(new_entity.id, [component_name])}")
 
@@ -77,10 +77,10 @@ def run():
 
     def verify_enter_exit_game_mode(component_name):
         general.enter_game_mode()
-        TestHelper.wait_for_condition(lambda: general.is_in_game_mode(), 1.5)
+        TestHelper.wait_for_condition(lambda: general.is_in_game_mode(), 2.0)
         general.log(f"{component_name}_test: Entered game mode: {general.is_in_game_mode()}")
         general.exit_game_mode()
-        TestHelper.wait_for_condition(lambda: not general.is_in_game_mode(), 1.5)
+        TestHelper.wait_for_condition(lambda: not general.is_in_game_mode(), 2/-)
         general.log(f"{component_name}_test: Exit game mode: {not general.is_in_game_mode()}")
 
     def verify_hide_unhide_entity(component_name, entity_obj):
@@ -97,16 +97,16 @@ def run():
 
     def verify_deletion_undo_redo(component_name, entity_obj):
         editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", entity_obj.id)
-        TestHelper.wait_for_condition(lambda: not hydra.find_entity_by_name(entity_obj.name), 1.5)
+        TestHelper.wait_for_condition(lambda: not hydra.find_entity_by_name(entity_obj.name), 2.0)
         general.log(f"{component_name}_test: Entity deleted: {not hydra.find_entity_by_name(entity_obj.name)}")
 
         general.undo()
-        TestHelper.wait_for_condition(lambda: hydra.find_entity_by_name(entity_obj.name) is not None, 1.5)
+        TestHelper.wait_for_condition(lambda: hydra.find_entity_by_name(entity_obj.name) is not None, 2.0)
         general.log(f"{component_name}_test: UNDO entity deletion works: "
                     f"{hydra.find_entity_by_name(entity_obj.name) is not None}")
 
         general.redo()
-        TestHelper.wait_for_condition(lambda: not hydra.find_entity_by_name(entity_obj.name), 1.5)
+        TestHelper.wait_for_condition(lambda: not hydra.find_entity_by_name(entity_obj.name), 2.0)
         general.log(f"{component_name}_test: REDO entity deletion works: "
                     f"{not hydra.find_entity_by_name(entity_obj.name)}")
 
@@ -120,7 +120,7 @@ def run():
             f"{not is_component_enabled(entity_obj.components[0])}")
         for component in components_to_add:
             entity_obj.add_component(component)
-        TestHelper.wait_for_condition(lambda: is_component_enabled(entity_obj.components[0]), 1.5)
+        TestHelper.wait_for_condition(lambda: is_component_enabled(entity_obj.components[0]), 2.0)
         general.log(
             f"{component_name}_test: Entity enabled after adding "
             f"required components: {is_component_enabled(entity_obj.components[0])}"
