@@ -13,27 +13,40 @@ if(NOT PAL_TRAIT_BUILD_CPACK_SUPPORTED)
     return()
 endif()
 
-ly_get_absolute_pal_filename(pal_dir ${CMAKE_SOURCE_DIR}/cmake/Platform/${PAL_HOST_PLATFORM_NAME})
+# public facing options will be used for conversion into cpack specific ones below.
+set(LY_INSTALLER_DOWNLOAD_URL "" CACHE STRING "URL embedded into the installer to download additional artifacts")
+set(LY_INSTALLER_LICENSE_URL "" CACHE STRING "Optionally embed a link to the license instead of raw text")
+
+# set all common cpack variable overrides first so they can be accessible via configure_file
+# when the platform specific settings are applied below.  additionally, any variable with
+# the "CPACK_" prefix will automatically be cached for use in any phase of cpack namely
+# pre/post build
+set(CPACK_PACKAGE_VENDOR "${PROJECT_NAME}")
+set(CPACK_PACKAGE_VERSION "${LY_VERSION_STRING}")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installation Tool")
+
+string(TOLOWER ${PROJECT_NAME} _project_name_lower)
+set(CPACK_PACKAGE_FILE_NAME "${_project_name_lower}_${LY_VERSION_STRING}_installer")
+
+set(DEFAULT_LICENSE_NAME "Apache-2.0")
+set(DEFAULT_LICENSE_FILE "${CMAKE_SOURCE_DIR}/LICENSE.txt")
+
+set(CPACK_RESOURCE_FILE_LICENSE ${DEFAULT_LICENSE_FILE})
+set(CPACK_LICENSE_URL ${LY_INSTALLER_LICENSE_URL})
+
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_VENDOR}/${CPACK_PACKAGE_VERSION}")
+
+# CMAKE_SOURCE_DIR doesn't equate to anything during execution of pre/post build scripts
+set(CPACK_SOURCE_DIR ${CMAKE_SOURCE_DIR}/cmake)
+
+# attempt to apply platform specific settings
+ly_get_absolute_pal_filename(pal_dir ${CPACK_SOURCE_DIR}/Platform/${PAL_HOST_PLATFORM_NAME})
 include(${pal_dir}/Packaging_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 
 # if we get here and the generator hasn't been set, then a non fatal error occurred disabling packaging support
 if(NOT CPACK_GENERATOR)
     return()
 endif()
-
-set(CPACK_PACKAGE_VENDOR "${PROJECT_NAME}")
-set(CPACK_PACKAGE_VERSION "${LY_VERSION_STRING}")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installation Tool")
-
-string(TOLOWER ${PROJECT_NAME} _project_name_lower)
-set(CPACK_PACKAGE_FILE_NAME "${_project_name_lower}_installer")
-
-set(DEFAULT_LICENSE_NAME "Apache-2.0")
-set(DEFAULT_LICENSE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
-
-set(CPACK_RESOURCE_FILE_LICENSE ${DEFAULT_LICENSE_FILE})
-
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_VENDOR}/${CPACK_PACKAGE_VERSION}")
 
 # IMPORTANT: required to be included AFTER setting all property overrides
 include(CPack REQUIRED)
@@ -76,3 +89,12 @@ ly_configure_cpack_component(
     DISPLAY_NAME "${PROJECT_NAME} Core"
     DESCRIPTION "${PROJECT_NAME} Headers, Libraries and Tools"
 )
+
+if(LY_INSTALLER_DOWNLOAD_URL)
+    # this will set the following variables: CPACK_DOWNLOAD_SITE, CPACK_DOWNLOAD_ALL, and CPACK_UPLOAD_DIRECTORY
+    cpack_configure_downloads(
+        ${LY_INSTALLER_DOWNLOAD_URL}
+        UPLOAD_DIRECTORY ${CMAKE_BINARY_DIR}/_CPack_Uploads # to match the _CPack_Packages directory
+        ALL
+    )
+endif()

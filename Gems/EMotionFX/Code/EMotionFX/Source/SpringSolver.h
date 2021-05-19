@@ -87,7 +87,7 @@ namespace EMotionFX
             AZ::Vector3 m_end = AZ::Vector3::CreateZero(); /**< The end position of the primitive. In case of a sphere this is ignored. */
             float m_radius = 1.0f; /**< The radius or thickness. */
             float m_scaledRadius = 1.0f; /**< The scaled radius value, scaled by the joint's world space transform. */
-            const Physics::ShapeConfigurationPair* m_shapePair = nullptr;
+            const AzPhysics::ShapeColliderPair* m_shapePair = nullptr;
         };
 
         struct EMFX_API InitSettings
@@ -151,7 +151,7 @@ namespace EMotionFX
 
     private:
         void InitColliders(const InitSettings& initSettings);
-        void CreateCollider(AZ::u32 skeletonJointIndex, const Physics::ShapeConfigurationPair& shapePair);
+        void CreateCollider(AZ::u32 skeletonJointIndex, const AzPhysics::ShapeColliderPair& shapePair);
         void InitColliderFromColliderSetupShape(CollisionObject& collider);
         void InitCollidersFromColliderSetupShapes();
         bool RecursiveAddJoint(const SimulatedJoint* joint, size_t parentParticleIndex);

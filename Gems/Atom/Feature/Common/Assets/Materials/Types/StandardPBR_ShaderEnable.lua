@@ -29,26 +29,33 @@ function Process(context)
     local depthPass = context:GetShaderByTag("DepthPass")
     local shadowMap = context:GetShaderByTag("Shadowmap")
     local forwardPassEDS = context:GetShaderByTag("ForwardPass_EDS")
+    local lowEndForwardEDS = context:GetShaderByTag("LowEndForward_EDS")
+
     local depthPassWithPS = context:GetShaderByTag("DepthPass_WithPS")
     local shadowMapWitPS = context:GetShaderByTag("Shadowmap_WithPS")
     local forwardPass = context:GetShaderByTag("ForwardPass")
+    local lowEndForward = context:GetShaderByTag("LowEndForward")
     
     if parallaxEnabled and parallaxPdoEnabled then
         depthPass:SetEnabled(false)
         shadowMap:SetEnabled(false)
         forwardPassEDS:SetEnabled(false)
+        lowEndForwardEDS:SetEnabled(false)
         
         depthPassWithPS:SetEnabled(true)
         shadowMapWitPS:SetEnabled(true)
         forwardPass:SetEnabled(true)
+        lowEndForward:SetEnabled(true)
     else
         depthPass:SetEnabled(opacityMode == OpacityMode_Opaque)
         shadowMap:SetEnabled(opacityMode == OpacityMode_Opaque)
         forwardPassEDS:SetEnabled((opacityMode == OpacityMode_Opaque) or (opacityMode == OpacityMode_Blended) or (opacityMode == OpacityMode_TintedTransparent))
+        lowEndForwardEDS:SetEnabled((opacityMode == OpacityMode_Opaque) or (opacityMode == OpacityMode_Blended) or (opacityMode == OpacityMode_TintedTransparent))
         
         depthPassWithPS:SetEnabled(opacityMode == OpacityMode_Cutout)
         shadowMapWitPS:SetEnabled(opacityMode == OpacityMode_Cutout)
         forwardPass:SetEnabled(opacityMode == OpacityMode_Cutout)
+        lowEndForward:SetEnabled(opacityMode == OpacityMode_Cutout)
     end
     
     context:GetShaderByTag("DepthPassTransparentMin"):SetEnabled((opacityMode == OpacityMode_Blended) or (opacityMode == OpacityMode_TintedTransparent))
