@@ -88,7 +88,7 @@ namespace AZ
             }
         }
 
-        AZStd::vector<AZStd::string> ShaderSourceData::SupervariantInfo::GetCombinedListOfMacroDefinitionNames() const
+        AZStd::vector<AZStd::string> ShaderSourceData::SupervariantInfo::GetCombinedListOfMacroDefinitionNamesToRemove() const
         {
             AZStd::vector<AZStd::string> macroDefinitionNames;
             GetListOfMacroDefinitionNames(m_minusArguments, macroDefinitionNames);

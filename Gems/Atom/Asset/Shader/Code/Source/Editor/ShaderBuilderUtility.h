@@ -18,6 +18,7 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 
 #include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
+#include <Atom/RPI.Reflect/Shader/ShaderAsset2.h>
 #include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 
 #include "AzslData.h"
@@ -32,7 +33,6 @@ namespace AZ
         struct RootConstantData;
 
         using ShaderResourceGroupAssets = AZStd::fixed_vector<Data::Asset<RPI::ShaderResourceGroupAsset>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
-        using ShaderResourceGroupLayouts = AZStd::fixed_vector<RHI::Ptr<RHI::ShaderResourceGroupLayout>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
         using MapOfStringToStageType = AZStd::unordered_map<AZStd::string, RPI::ShaderStageType>;
 
         namespace ShaderBuilderUtility
@@ -66,6 +66,7 @@ namespace AZ
                 using Paths = AZStd::fixed_vector<AZStd::string, AZ_ARRAY_SIZE(SubList)>;
             };
 
+            //! [GFX TODO] [ATOM-15472] Deprecated, remove when this ticket is addressed.
             //! Collects and generates the necessary data for compiling a shader.
             //! @azslData must have paths correctly set.
             //! shaderOptionGroupLayout, azslData, srgAssets get the output data.
@@ -79,13 +80,13 @@ namespace AZ
                 RootConstantData& rootConstantData
             );
 
-            //! Collects and generates the necessary data for compiling a shader.
+            //! Collects all the JSON files generated during AZSL compilation and loads the data as objects.
             //! @azslData must have paths correctly set.
-            //! shaderOptionGroupLayout, azslData, srgAssets get the output data.
+            //! @azslData, @srgLayoutList, @shaderOptionGroupLayout, @bindingDependencies and @rootConstantData get the output data.
             AssetBuilderSDK::ProcessJobResultCode PopulateAzslDataFromJsonFiles(
                 const char* builderName, const AzslSubProducts::Paths& pathOfJsonFiles,
                 const bool platformUsesRegisterSpaces, AzslData& azslData,
-                ShaderResourceGroupLayouts& srgLayouts, RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout,
+                RPI::ShaderResourceGroupLayoutList& srgLayoutList, RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout,
                 BindingDependencies& bindingDependencies, RootConstantData& rootConstantData);
 
 
@@ -114,7 +115,7 @@ namespace AZ
             //! object, which is why it is important to call this method before calling shaderPlatformInterface->CompilePlatformInternal().
             RHI::Ptr<RHI::PipelineLayoutDescriptor> BuildPipelineLayoutDescriptorForApi(
                 const char* builderName,
-                const ShaderResourceGroupLayouts& srgLayouts,
+                const RPI::ShaderResourceGroupLayoutList& srgLayoutList,
                 const MapOfStringToStageType& shaderEntryPoints,
                 const RHI::ShaderCompilerArguments& shaderCompilerArguments,
                 const RootConstantData& rootConstantData,
@@ -161,7 +162,7 @@ namespace AZ
                 const AZStd::string& apiTypeString = "");
 
             //! "d:/p/f.e" -> "f"
-            AZStd::string GetFileName(const char* path);
+            AZStd::string ExtracStemName(const char* path);
 
             AZStd::vector<RHI::ShaderPlatformInterface*> DiscoverValidShaderPlatformInterfaces(const AssetBuilderSDK::PlatformInfo& info);
             AZStd::vector<RHI::ShaderPlatformInterface*> DiscoverEnabledShaderPlatformInterfaces(

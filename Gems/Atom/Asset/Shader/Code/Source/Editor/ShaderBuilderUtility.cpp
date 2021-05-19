@@ -171,6 +171,8 @@ namespace AZ
                 return files;
             }
 
+
+            //! [GFX TODO] [ATOM-15472] Deprecated, remove when this ticket is addressed.
             AssetBuilderSDK::ProcessJobResultCode PopulateAzslDataFromJsonFiles(
                 const char* builderName,
                 const AzslSubProducts::Paths& pathOfJsonFiles,
@@ -255,7 +257,7 @@ namespace AZ
                 const AzslSubProducts::Paths& pathOfJsonFiles,
                 const bool platformUsesRegisterSpaces,
                 AzslData& azslData,
-                ShaderResourceGroupLayouts& srgLayouts,
+                RPI::ShaderResourceGroupLayoutList& srgLayoutList,
                 RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout,
                 BindingDependencies& bindingDependencies,
                 RootConstantData& rootConstantData)
@@ -300,7 +302,7 @@ namespace AZ
                 }
 
                 // Add all Shader Resource Group Assets that were defined in the shader code to the shader asset
-                if (!SrgLayoutUtility::LoadShaderResourceGroupLayouts(builderName, azslData.m_srgData, platformUsesRegisterSpaces, srgLayouts))
+                if (!SrgLayoutUtility::LoadShaderResourceGroupLayouts(builderName, azslData.m_srgData, platformUsesRegisterSpaces, srgLayoutList))
                 {
                     AZ_Error(builderName, false, "Failed to obtain shader resource group assets");
                     return AssetBuilderSDK::ProcessJobResult_Failed;
@@ -537,6 +539,7 @@ namespace AZ
                 return finalFilePath;
             }
 
+            // [GFX TODO] Remove 'add2' when [ATOM-15472]
             AZStd::string DumpPreprocessedCode(const char* builderName, const AZStd::string& preprocessedCode, const AZStd::string& tempDirPath, const AZStd::string& stemName, const AZStd::string& apiTypeString, bool add2)
             {
                 if (add2)
@@ -552,7 +555,7 @@ namespace AZ
                 return DumpCode(builderName, nonPreprocessedYetAzslSource, tempDirPath, stemName, apiTypeString, "azslprepend");
             }
 
-            AZStd::string GetFileName(const char* path)
+            AZStd::string ExtracStemName(const char* path)
             {
                 AZStd::string result;
                 AzFramework::StringFunc::Path::GetFileName(path, result);
@@ -588,6 +591,16 @@ namespace AZ
                 return platformInterfaces;
             }
 
+            static bool IsValidSupervariantName(const AZStd::string& supervariantName)
+            {
+                return AZStd::all_of(AZ_BEGIN_END(supervariantName),
+                    [](AZStd::string::value_type ch)
+                    {
+                        return AZStd::is_alnum(ch); // allow alpha numeric only
+                    }
+                );
+            }
+
             AZStd::vector<RPI::ShaderSourceData::SupervariantInfo> GetSupervariantListFromShaderSourceData(
                 const RPI::ShaderSourceData& shaderSourceData)
             {
@@ -602,6 +615,13 @@ namespace AZ
                 bool addedNamelessSupervariant = false;
                 for (const auto& supervariantInfo : shaderSourceData.m_supervariants)
                 {
+                    if (!IsValidSupervariantName(supervariantInfo.m_name.GetStringView()))
+                    {
+                        AZ_Error(
+                            ShaderBuilderUtilityName, false, "The supervariant name: [%s] contains invalid characters. Only [a-zA-Z0-9] are supported",
+                            supervariantInfo.m_name.GetCStr());
+                        return {}; // Return an empty vector.
+                    }
                     if (uniqueSuperVariants.count(supervariantInfo.m_name))
                     {
                         AZ_Error(
@@ -729,7 +749,7 @@ namespace AZ
                     platformId = AzFramework::PlatformId::IOS;
                 }
 
-                uint32_t assetSubId = RPI::ShaderAsset2::MakeAssetProductSubId(rhiUniqueIndex, supervariantIndex, aznumeric_cast<uint32_t>(shaderAssetSubId));
+                uint32_t assetSubId = RPI::ShaderAsset2::MakeProductAssetSubId(rhiUniqueIndex, supervariantIndex, aznumeric_cast<uint32_t>(shaderAssetSubId));
                 auto assetIdOutcome = RPI::AssetUtils::MakeAssetId(shaderJsonPath, assetSubId);
                 if (!assetIdOutcome.IsSuccess())
                 {
@@ -866,7 +886,7 @@ namespace AZ
             }
 
             RHI::Ptr<RHI::PipelineLayoutDescriptor> BuildPipelineLayoutDescriptorForApi(
-                const char* builderName, const ShaderResourceGroupLayouts& srgLayouts, const MapOfStringToStageType& shaderEntryPoints,
+                const char* builderName, const RPI::ShaderResourceGroupLayoutList& srgLayoutList, const MapOfStringToStageType& shaderEntryPoints,
                 const RHI::ShaderCompilerArguments& shaderCompilerArguments, const RootConstantData& rootConstantData,
                 RHI::ShaderPlatformInterface* shaderPlatformInterface, BindingDependencies& bindingDependencies /*inout*/)
             {
@@ -899,7 +919,7 @@ namespace AZ
                 RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor =
                     shaderPlatformInterface->CreatePipelineLayoutDescriptor();
                 RHI::ShaderPlatformInterface::ShaderResourceGroupInfoList srgInfos;
-                for (const auto& srgLayout : srgLayouts)
+                for (const auto& srgLayout : srgLayoutList)
                 {
                     // Search the binding info for a Shader Resource Group.
                     AZStd::string_view srgName = srgLayout->GetName().GetStringView();

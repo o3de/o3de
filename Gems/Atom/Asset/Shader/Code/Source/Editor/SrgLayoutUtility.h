@@ -15,6 +15,7 @@
 #include <AzCore/base.h>
 
 #include "CommonFiles/CommonTypes.h"
+#include <Atom/RPI.Reflect/Shader/ShaderAsset2.h>
 #include "ShaderBuilderUtility.h" 
 
 namespace AZ
@@ -26,7 +27,7 @@ namespace AZ
 
             bool LoadShaderResourceGroupLayouts(
                 [[maybe_unused]] const char* builderName, const SrgDataContainer& resourceGroups, const bool platformUsesRegisterSpaces,
-                ShaderResourceGroupLayouts& srgLayouts);
+                RPI::ShaderResourceGroupLayoutList& srgLayoutList);
 
         }  // SrgLayoutUtility namespace
     } // ShaderBuilder namespace

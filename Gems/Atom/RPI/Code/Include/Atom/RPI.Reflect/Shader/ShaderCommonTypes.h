@@ -18,6 +18,14 @@ namespace AZ
 {
     namespace RPI
     {
+        // Common bit positions for ShaderAsset2 and ShaderVariantAsset2 product SubIds.
+        static constexpr uint32_t RhiIndexBitPosition = 30;
+        static constexpr uint32_t RhiIndexNumBits = 32 - RhiIndexBitPosition;
+        static constexpr uint32_t RhiIndexMaxValue = (1 << RhiIndexNumBits) - 1;
+
+        static constexpr uint32_t SupervariantIndexBitPosition = 22;
+        static constexpr uint32_t SupervariantIndexNumBits = RhiIndexBitPosition - SupervariantIndexBitPosition;
+        static constexpr uint32_t SupervariantIndexMaxValue = (1 << SupervariantIndexNumBits) - 1;
 
         //! A wrapper around a supervariant index for type conformity.
         //! A supervariant index is required to find shader data from

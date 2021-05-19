@@ -11,16 +11,7 @@
 */
 #include "SrgLayoutUtility.h"
 
-//#include <AtomCore/Serialization/Json/JsonUtils.h>
-
-//#include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
-
 #include <Atom/RHI.Edit/Utils.h>
-
-//#include <CommonFiles/Preprocessor.h>
-//#include <AzslCompiler.h>
-
-//#include "AtomShaderConfig.h"
 
 namespace AZ
 {
@@ -161,7 +152,7 @@ namespace AZ
 
             bool LoadShaderResourceGroupLayouts(
                 [[maybe_unused]] const char* builderName, const SrgDataContainer& resourceGroups,
-                const bool platformUsesRegisterSpaces, ShaderResourceGroupLayouts& srgLayouts)
+                const bool platformUsesRegisterSpaces, RPI::ShaderResourceGroupLayoutList& srgLayoutList)
             {
                 // The register number only makes sense if the platform uses "spaces",
                 // since the register Id of the resource will not change even if the pipeline layout changes.
@@ -284,7 +275,7 @@ namespace AZ
                         newSrgLayout->SetShaderVariantKeyFallback(srgData.m_fallbackName, srgData.m_fallbackSize);
                     }
 
-                    srgLayouts.push_back(newSrgLayout);
+                    srgLayoutList.push_back(newSrgLayout);
                 }
 
                 return true;

@@ -102,6 +102,10 @@ namespace AZ
 
             GlobalBuildOptions buildOptions = ReadBuildOptions(ShaderAssetBuilder2Name);
 
+            // [GFX TODO] [ATOM-14966] In principle, based on macro definitions, included files can change per supervariant.
+            //                         So, the list of source asset dependencies must be collected by running MCPP on each supervariant.
+            //                         For now, we will run MCPP only once because CreateJobs() should be as light as possible.
+            // 
             // Regardless of the PlatformInfo and enabled ShaderPlatformInterfaces, the azsl file will be preprocessed
             // with the sole purpose of extracting all included files. For each included file a SourceDependency will be declared.
             PreprocessorData output;
@@ -294,7 +298,8 @@ namespace AZ
             shaderAssetCreator.SetDrawListName(Name(shaderSourceData.m_drawListName));
             shaderAssetCreator.SetShaderAssetBuildTimestamp(shaderAssetBuildTimestamp);
 
-            // The ShaderOptionGroupLayout must be the same across all supervariants.
+            // The ShaderOptionGroupLayout must be the same across all supervariants because
+            // there can be only a single ShaderVariantTreeAsset per ShaderAsset.
             // We will store here the one that results when the *.azslin file is
             // compiled for the default, nameless, supervariant.
             // For all other supervariants we just make sure the hashes are the same
@@ -357,8 +362,7 @@ namespace AZ
                 // The register number only makes sense if the platform uses "spaces",
                 // since the register Id of the resource will not change even if the pipeline layout changes.
                 // We can pass in a default ShaderCompilerArguments because all we care about is whether the shaderPlatformInterface
-                // appends the
-                // "--use-spaces" flag.
+                // appends the "--use-spaces" flag.
                 const bool platformUsesRegisterSpaces =
                     (AzFramework::StringFunc::Find(commonAzslcCompilerParameters, "--use-spaces") != AZStd::string::npos);
 
@@ -377,7 +381,7 @@ namespace AZ
                     // Let's combine the global macro definitions, with the macro definitions particular to this
                     // supervariant. Two steps:
                     // 1- Supervariants can specify which macros to remove from the global definitions.
-                    AZStd::vector<AZStd::string> macroDefinitionNamesToRemove = supervariantInfo.GetCombinedListOfMacroDefinitionNames();
+                    AZStd::vector<AZStd::string> macroDefinitionNamesToRemove = supervariantInfo.GetCombinedListOfMacroDefinitionNamesToRemove();
                     PreprocessorOptions preprocessorOptions = buildOptions.m_preprocessorSettings;
                     preprocessorOptions.RemovePredefinedMacros(macroDefinitionNamesToRemove);
                     // 2- Supervariants can specify which macros to add.
@@ -421,8 +425,7 @@ namespace AZ
                     ShaderBuilderUtility::AzslSubProducts::Paths subProductsPaths = emitFullOutcome.TakeValue();
 
                     // In addition to the hlsl file, there are other json files that were generated.
-                    // Each output file will become a product. Only the HLSL file is of importance for the ShaderVariantAssetBuilder.
-                    // The rest (json files) are kept as collateral products for debugging purposes.
+                    // Each output file will become a product.
                     for (int i = 0; i < subProductsPaths.size(); ++i)
                     {
                         AssetBuilderSDK::JobProduct jobProduct;
@@ -430,7 +433,7 @@ namespace AZ
                         static const AZ::Uuid AzslOutcomeType = "{6977AEB1-17AD-4992-957B-23BB2E85B18B}";
                         jobProduct.m_productAssetType = AzslOutcomeType;
                         // uint32_t rhiApiUniqueIndex, uint32_t supervariantIndex, uint32_t subProductType
-                        jobProduct.m_productSubID = RPI::ShaderAsset2::MakeAssetProductSubId(
+                        jobProduct.m_productSubID = RPI::ShaderAsset2::MakeProductAssetSubId(
                                                                 shaderPlatformInterface->GetAPIUniqueIndex(), supervariantIndex,
                                                                 aznumeric_cast<uint32_t>(ShaderBuilderUtility::AzslSubProducts::SubList[i]));
                         jobProduct.m_dependenciesHandled = true;
@@ -443,12 +446,12 @@ namespace AZ
                     AZStd::shared_ptr<ShaderFiles> files(new ShaderFiles);
                     AzslData azslData(files);
                     azslData.m_preprocessedFullPath = azslinFullPath;
-                    ShaderResourceGroupLayouts srgLayouts;
+                    RPI::ShaderResourceGroupLayoutList srgLayoutList;
                     RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout = RPI::ShaderOptionGroupLayout::Create();
                     BindingDependencies bindingDependencies;
                     RootConstantData rootConstantData;
                     AssetBuilderSDK::ProcessJobResultCode azslJsonReadResult = ShaderBuilderUtility::PopulateAzslDataFromJsonFiles(
-                        ShaderAssetBuilder2Name, subProductsPaths, platformUsesRegisterSpaces, azslData, srgLayouts, shaderOptionGroupLayout,
+                        ShaderAssetBuilder2Name, subProductsPaths, platformUsesRegisterSpaces, azslData, srgLayoutList, shaderOptionGroupLayout,
                         bindingDependencies, rootConstantData);
                     if (azslJsonReadResult != AssetBuilderSDK::ProcessJobResult_Success)
 
@@ -457,7 +460,7 @@ namespace AZ
                         return;
                     }
 
-                    shaderAssetCreator.SetSrgLayouts(srgLayouts);
+                    shaderAssetCreator.SetSrgLayoutList(srgLayoutList);
 
                     if (!finalShaderOptionGroupLayout)
                     {
@@ -518,7 +521,7 @@ namespace AZ
 
                     RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor =
                         ShaderBuilderUtility::BuildPipelineLayoutDescriptorForApi(
-                            ShaderAssetBuilder2Name, srgLayouts, shaderEntryPoints, buildOptions.m_compilerArguments, rootConstantData,
+                            ShaderAssetBuilder2Name, srgLayoutList, shaderEntryPoints, buildOptions.m_compilerArguments, rootConstantData,
                             shaderPlatformInterface, bindingDependencies);
                     if (!pipelineLayoutDescriptor)
                     {
@@ -545,9 +548,7 @@ namespace AZ
 
                     if (hasRasterProgram)
                     {
-                        // Set the various states to what is in the descriptor first as this gives us
-                        // the baseline. Then whatever is specified in the variant overrides the baseline
-                        // and that will be used by the runtime.
+                        // Set the various states to what is in the descriptor.
                         const RHI::TargetBlendState& targetBlendState = shaderSourceData.m_blendState;
                         RHI::RenderStates renderStates;
                         renderStates.m_rasterState = shaderSourceData.m_rasterState;
@@ -561,7 +562,6 @@ namespace AZ
                         shaderAssetCreator.SetRenderStates(renderStates);
                     }
 
-                    //AZStd::string hlslCode = subProductsPaths[ShaderBuilderUtility::AzslSubProducts::hlsl];
                     Outcome<AZStd::string, AZStd::string> hlslSourceCodeOutcome = Utils::ReadFile(hlslFullPath);
                     if (!hlslSourceCodeOutcome.IsSuccess())
                     {
@@ -576,7 +576,7 @@ namespace AZ
                     // The root ShaderVariantAsset needs to be created with the known uuid of the source .shader asset because
                     // the ShaderAsset owns a Data::Asset<> reference that gets serialized. It must have the correct uuid
                     // so the root ShaderVariantAsset is found when the ShaderAsset is deserialized.
-                    uint32_t rootVariantProductSubId = RPI::ShaderAsset2::MakeAssetProductSubId(
+                    uint32_t rootVariantProductSubId = RPI::ShaderAsset2::MakeProductAssetSubId(
                         shaderPlatformInterface->GetAPIUniqueIndex(), supervariantIndex,
                         aznumeric_cast<uint32_t>(RPI::ShaderAsset2ProductSubId::RootShaderVariantAsset));
                     auto assetIdOutcome = RPI::AssetUtils::MakeAssetId(shaderFullPath, rootVariantProductSubId);
@@ -640,7 +640,7 @@ namespace AZ
                             AssetBuilderSDK::JobProduct jobProduct;
                             jobProduct.m_productFileName = byproduct;
                             jobProduct.m_productAssetType = Uuid::CreateName("DebugInfoByProduct-PdbOrDxilTxt");
-                            jobProduct.m_productSubID = RPI::ShaderAsset2::MakeAssetProductSubId(
+                            jobProduct.m_productSubID = RPI::ShaderAsset2::MakeProductAssetSubId(
                                 shaderPlatformInterface->GetAPIUniqueIndex(), supervariantIndex,
                                 subProductType++);
                             response.m_outputProducts.push_back(AZStd::move(jobProduct));

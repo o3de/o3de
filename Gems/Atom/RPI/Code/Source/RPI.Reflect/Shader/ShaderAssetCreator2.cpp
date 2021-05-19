@@ -102,15 +102,15 @@ namespace AZ
             m_currentSupervariant->m_name = name;
         }
 
-        void ShaderAssetCreator2::SetSrgLayouts(const ShaderResourceGroupLayouts& srgLayouts)
+        void ShaderAssetCreator2::SetSrgLayoutList(const ShaderResourceGroupLayoutList& srgLayoutList)
         {
             if (!ValidateIsReady())
             {
                 return;
             }
 
-            m_currentSupervariant->m_srgLayouts = srgLayouts;
-            for (auto srgLayout : m_currentSupervariant->m_srgLayouts)
+            m_currentSupervariant->m_srgLayoutList = srgLayoutList;
+            for (auto srgLayout : m_currentSupervariant->m_srgLayoutList)
             {
                 if (!srgLayout->Finalize())
                 {
@@ -131,7 +131,7 @@ namespace AZ
             {
                 return;
             }
-            if (m_currentSupervariant->m_srgLayouts.empty())
+            if (m_currentSupervariant->m_srgLayoutList.empty())
             {
                 ReportError(
                     "Before setting the pipeline layout, the supervariant [%s] needs the SRG layouts",

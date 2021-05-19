@@ -51,7 +51,7 @@ namespace AZ
             //! supervariant is always the default, nameless, supervariant.
             void BeginSupervariant(const Name& name);
 
-            void SetSrgLayouts(const ShaderResourceGroupLayouts& srgLayouts);
+            void SetSrgLayoutList(const ShaderResourceGroupLayoutList& srgLayoutList);
 
             //! [Required] Assigns the pipeline layout descriptor shared by all variants in the shader. Shader variants
             //! embedded in a single shader asset are required to use the same pipeline layout. It is not necessary to call

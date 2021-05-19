@@ -185,7 +185,7 @@ namespace AZ
                     // we can't use a temporary folder because CreateJobs API does not warrant side effects, and does not prepare a temp folder.
                     // we can't use the OS temp folder anyway, because many includes (eg #include "../RPI/Shadow.h") are relative and will only work from the original location
                     AZStd::string prependedPath = ShaderBuilderUtility::DumpAzslPrependedCode(
-                        BuilderName, prependedAzslSourceCode, originalLocation, ShaderBuilderUtility::GetFileName(fullPath.c_str()),
+                        BuilderName, prependedAzslSourceCode, originalLocation, ShaderBuilderUtility::ExtracStemName(fullPath.c_str()),
                         shaderPlatformInterface->GetAPIName().GetStringView());
                     // run mcpp
                     PreprocessorData preprocessorData = PreprocessSource(prependedPath, fullPath, buildOptions.m_preprocessorSettings);

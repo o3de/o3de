@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/algorithm.h>
 
+#include <Atom/RPI.Reflect/Shader/ShaderCommonTypes.h>
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
 #include <Atom/RHI.Reflect/Limits.h>
 
@@ -25,14 +26,6 @@ namespace AZ
         uint32_t ShaderVariantAsset2::MakeAssetProductSubId(
             uint32_t rhiApiUniqueIndex, uint32_t supervariantIndex, ShaderVariantStableId variantStableId, uint32_t subProductType)
         {
-            static constexpr uint32_t RhiIndexBitPosition = 30;
-            static constexpr uint32_t RhiIndexNumBits = 32 - RhiIndexBitPosition;
-            static constexpr uint32_t RhiIndexMaxValue = (1 << RhiIndexNumBits) - 1;
-
-            static constexpr uint32_t SupervariantIndexBitPosition = 22;
-            static constexpr uint32_t SupervariantIndexNumBits = RhiIndexBitPosition - SupervariantIndexBitPosition;
-            static constexpr uint32_t SupervariantIndexMaxValue = (1 << SupervariantIndexNumBits) - 1;
-
             static constexpr uint32_t SubProductTypeBitPosition = 17;
             static constexpr uint32_t SubProductTypeNumBits = SupervariantIndexBitPosition - SubProductTypeBitPosition;
             static constexpr uint32_t SubProductTypeMaxValue = (1 << SubProductTypeNumBits) - 1;

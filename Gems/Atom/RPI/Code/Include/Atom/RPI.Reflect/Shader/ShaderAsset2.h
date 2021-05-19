@@ -36,19 +36,19 @@ namespace AZ
 {
     namespace RPI
     {
-        using ShaderResourceGroupLayouts = AZStd::fixed_vector<RHI::Ptr<RHI::ShaderResourceGroupLayout>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
+        using ShaderResourceGroupLayoutList = AZStd::fixed_vector<RHI::Ptr<RHI::ShaderResourceGroupLayout>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
 
         enum class ShaderAsset2ProductSubId : uint32_t
         {
-            ShaderAsset2 = 0,
-            RootShaderVariantAsset,
-            PostPreprocessingPureAzsl, // .azslin
-            IaJson,
-            OmJson,
-            SrgJson,
-            OptionsJson,
-            BindingdepJson,
-            GeneratedHlslSource,
+            ShaderAsset2 = 0, // for .azshader file, One per .shader.
+            RootShaderVariantAsset, // for .azshadervariant, one per supervariant and referenced inside the .azshader.
+            AzslFlat, // .azslin, this file contains the result of preprocessing an azsl file with MCPP, along with prepending the per-RHI azsli header.
+            IaJson, // .ia.json, Input Assembly reflection data.
+            OmJson, // .om.json, Output Merger reflection data. 
+            SrgJson, // .srg.json, Shader Resource Group reflection data.
+            OptionsJson, // .options.json, Shader Options reflection data.
+            BindingdepJson, //.bindingdep.json, Binding dependencies.
+            GeneratedHlslSource, //.hlsl code generated with AZSLc.
             FirstByProduct, // This must be last because we use this as a base for adding all the debug byProducts generated
                             // with dxc, or spirv-cross, etc.
         };
@@ -73,8 +73,8 @@ namespace AZ
             static const ShaderVariantStableId RootShaderVariantStableId;
 
             // @subProductType is one of ShaderAsset2ProductSubId, or ShaderAsset2ProductSubId::FirstByProduct+
-            static uint32_t MakeAssetProductSubId(uint32_t rhiApiUniqueIndex, uint32_t supervariantIndex, uint32_t subProductType);
-            static SupervariantIndex GetSupervariantIndexFromAssetProductSubId(uint32_t assetProducSubId);
+            static uint32_t MakeProductAssetSubId(uint32_t rhiApiUniqueIndex, uint32_t supervariantIndex, uint32_t subProductType);
+            static SupervariantIndex GetSupervariantIndexFromProductAssetSubId(uint32_t assetProducSubId);
             static SupervariantIndex GetSupervariantIndexFromAssetId(const Data::AssetId& assetId);
 
 
@@ -232,14 +232,19 @@ namespace AZ
             void OnShaderVariantAssetReady(Data::Asset<ShaderVariantAsset2> /*shaderVariantAsset*/, bool /*isError*/) override {};
             ///////////////////////////////////////////////////////////////////
 
-
+            //! A Supervariant represents a set of static shader compilation parameters.
+            //! Those parameters can be predefined c-preprocessor macros or specific arguments
+            //! for AZSLc.
+            //! For each Supervariant there's a unique Root ShaderVariantAsset, and possibly an N amount
+            //! of ShaderVariantAssets. The 'N' amount is the same across all Supervariants because all Supervariants
+            //! share the same ShaderVariantTreeAsset.
             struct Supervariant
             {
                 AZ_TYPE_INFO(Supervariant, "{850826EF-B267-4752-92F6-A85E4175CAB8}");
                 static void Reflect(AZ::ReflectContext* context);
 
                 AZ::Name m_name;
-                ShaderResourceGroupLayouts m_srgLayouts;
+                ShaderResourceGroupLayoutList m_srgLayoutList;
                 RHI::Ptr<RHI::PipelineLayoutDescriptor> m_pipelineLayoutDescriptor;
                 ShaderInputContract m_inputContract;
                 ShaderOutputContract m_outputContract;
@@ -258,7 +263,7 @@ namespace AZ
 
                 //! RHI API Type for this shader data.
                 RHI::APIType m_APIType;
-                // Index 0, will always be the default Supervariant.
+                // Index 0, will always be the default Supervariant. (see DefaultSupervariantIndex)
                 AZStd::vector<Supervariant> m_supervariants;
             };
 
@@ -285,6 +290,8 @@ namespace AZ
             //! Use to synchronize versions of the ShaderAsset2 and ShaderVariantTreeAsset, especially during hot-reload.
             AZStd::sys_time_t m_shaderAssetBuildTimestamp = 0; 
 
+
+            ///////////////////////////////////////////////////////////////////
             //! Do Not Serialize!
 
             static constexpr size_t InvalidAPITypeIndex = std::numeric_limits<size_t>::max();
