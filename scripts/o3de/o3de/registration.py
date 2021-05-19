@@ -128,7 +128,7 @@ def get_o3de_logs_folder() -> pathlib.Path:
     return restricted_folder
 
 
-def register_shipped_engine_o3de_objects() -> int:
+def register_shipped_engine_o3de_objects(force: bool = False) -> int:
     engine_path = get_this_engine_path()
 
     ret_val = 0
@@ -137,7 +137,7 @@ def register_shipped_engine_o3de_objects() -> int:
     starting_engines_directories = [
     ]
     for engines_directory in sorted(starting_engines_directories, reverse=True):
-        error_code = register_all_engines_in_folder(engines_path=engines_directory)
+        error_code = register_all_engines_in_folder(engines_path=engines_directory, force=force)
         if error_code:
             ret_val = error_code
 
@@ -145,7 +145,7 @@ def register_shipped_engine_o3de_objects() -> int:
     starting_engines = [
     ]
     for engine_path in sorted(starting_engines):
-        error_code = register(engine_path=engine_path)
+        error_code = register(engine_path=engine_path, force=force)
         if error_code:
             ret_val = error_code
 
@@ -162,7 +162,7 @@ def register_shipped_engine_o3de_objects() -> int:
         f'{engine_path}/AutomatedTesting'
     ]
     for project_path in sorted(starting_projects, reverse=True):
-        error_code = register(engine_path=engine_path, project_path=project_path)
+        error_code = register(engine_path=engine_path, project_path=project_path, force=force)
         if error_code:
             ret_val = error_code
 
@@ -179,7 +179,7 @@ def register_shipped_engine_o3de_objects() -> int:
     starting_gems = [
     ]
     for gem_path in sorted(starting_gems, reverse=True):
-        error_code = register(engine_path=engine_path, gem_path=gem_path)
+        error_code = register(engine_path=engine_path, gem_path=gem_path, force=force)
         if error_code:
             ret_val = error_code
 
@@ -196,7 +196,7 @@ def register_shipped_engine_o3de_objects() -> int:
     starting_templates = [
     ]
     for template_path in sorted(starting_templates, reverse=True):
-        error_code = register(engine_path=engine_path, template_path=template_path)
+        error_code = register(engine_path=engine_path, template_path=template_path, force=force)
         if error_code:
             ret_val = error_code
 
@@ -212,7 +212,7 @@ def register_shipped_engine_o3de_objects() -> int:
     starting_restricted = [
     ]
     for restricted_path in sorted(starting_restricted, reverse=True):
-        error_code = register(engine_path=engine_path, restricted_path=restricted_path)
+        error_code = register(engine_path=engine_path, restricted_path=restricted_path, force=force)
         if error_code:
             ret_val = error_code
 
@@ -228,12 +228,12 @@ def register_shipped_engine_o3de_objects() -> int:
     starting_repos = [
     ]
     for repo_uri in sorted(starting_repos, reverse=True):
-        error_code = register(repo_uri=repo_uri)
+        error_code = register(repo_uri=repo_uri, force=force)
         if error_code:
             ret_val = error_code
 
     # register anything in the users default folders globally
-    error_code = register_all_engines_in_folder(get_registered(default_folder='engines'))
+    error_code = register_all_engines_in_folder(get_registered(default_folder='engines'), force=force)
     if error_code:
         ret_val = error_code
     error_code = register_all_projects_in_folder(get_registered(default_folder='projects'))
@@ -266,7 +266,7 @@ def register_shipped_engine_o3de_objects() -> int:
         gem_path = pathlib.Path(gem_path).resolve()
         gem_cmake_lists_txt = gem_path / 'CMakeLists.txt'
         if gem_cmake_lists_txt.is_file():
-            add_gem_to_cmake(engine_path=engine_path, gem_path=gem_path, supress_errors=True)  # don't care about errors
+            add_gem_to_cmake(engine_path=engine_path, gem_path=gem_path, suppress_errors=True)  # don't care about errors
 
     return ret_val
 
@@ -344,7 +344,8 @@ def register_all_in_folder(folder_path: str or pathlib.Path,
 
 
 def register_all_engines_in_folder(engines_path: str or pathlib.Path,
-                                   remove: bool = False) -> int:
+                                   remove: bool = False,
+                                   force: bool = False) -> int:
     if not engines_path:
         logger.error(f'Engines path cannot be empty.')
         return 1
@@ -360,10 +361,10 @@ def register_all_engines_in_folder(engines_path: str or pathlib.Path,
     for root, dirs, files in os.walk(engines_path):
         for name in files:
             if name == 'engine.json':
-                engines_set.add(name)
+                engines_set.add(root)
 
     for engine in sorted(engines_set, reverse=True):
-        error_code = register(engine_path=engine, remove=remove)
+        error_code = register(engine_path=engine, remove=remove, force=force)
         if error_code:
             ret_val = error_code
 
@@ -602,21 +603,65 @@ def save_o3de_manifest(json_data: dict) -> None:
             logger.error(f'Manifest json failed to save: {str(e)}')
 
 
+def remove_engine_name_to_path(json_data: dict,
+                         engine_path: pathlib.Path) -> int:
+    """
+    Remove the engine at the specified path if it exist in the o3de manifest
+    :param json_data in-memory json view of the o3de_manifest.json data
+    :param engine_path path to engine to remove from the manifest data
+
+    returns 0 to indicate no issues has occurred with removal
+    """
+    if engine_path.is_dir() and valid_o3de_engine_json(engine_path):
+        engine_json_data = get_engine_data(engine_path=engine_path)
+        if 'engine_name' in engine_json_data and 'engines_path' in json_data:
+            engine_name = engine_json_data['engine_name']
+            try:
+                del json_data['engines_path'][engine_name]
+            except KeyError:
+                # Attempting to remove a non-existent engine_name is fine
+                pass
+    return 0
+
+
+def add_engine_name_to_path(json_data: dict, engine_path: pathlib.Path, force: bool):
+    # Add an engine path JSON object which maps the "engine_name" -> "engine_path"
+    engine_json_data = get_engine_data(engine_path=engine_path)
+    if not engine_json_data:
+        logger.error(f'Unable to retrieve json data from engine.json at path {engine_path.as_posix()}')
+        return 1
+    engines_path_json = json_data.setdefault('engines_path', {})
+    if 'engine_name' not in engine_json_data:
+        logger.error(f'engine.json at path {engine_path.as_posix()} is missing "engine_name" key')
+        return 1
+
+    engine_name = engine_json_data['engine_name']
+    if not force and engine_name in engines_path_json and \
+            pathlib.PurePath(engines_path_json[engine_name]) != engine_path:
+        logger.error(
+            f'Attempting to register existing engine "{engine_name}" with a new path of {engine_path.as_posix()}.'
+            f' The current path is {pathlib.Path(engines_path_json[engine_name]).as_posix()}.'
+            f' To force registration of a new engine path, specify the -f/--force option.')
+        return 1
+    engines_path_json[engine_name] = engine_path.as_posix()
+    return 0
+
 def register_engine_path(json_data: dict,
                          engine_path: str or pathlib.Path,
-                         remove: bool = False) -> int:
+                         remove: bool = False,
+                         force: bool = False) -> int:
     if not engine_path:
         logger.error(f'Engine path cannot be empty.')
         return 1
     engine_path = pathlib.Path(engine_path).resolve()
 
-    for engine_object in json_data['engines']:
+    for engine_object in json_data.get('engines', {}):
         engine_object_path = pathlib.Path(engine_object['path']).resolve()
         if engine_object_path == engine_path:
             json_data['engines'].remove(engine_object)
 
     if remove:
-        return 0
+        return remove_engine_name_to_path(json_data, engine_path)
 
     if not engine_path.is_dir():
         logger.error(f'Engine path {engine_path} does not exist.')
@@ -635,9 +680,9 @@ def register_engine_path(json_data: dict,
     engine_object.update({'restricted': []})
     engine_object.update({'external_subdirectories': []})
 
-    json_data['engines'].insert(0, engine_object)
+    json_data.setdefault('engines', []).insert(0, engine_object)
 
-    return 0
+    return add_engine_name_to_path(json_data, engine_path, force)
 
 
 def register_gem_path(json_data: dict,
@@ -1234,7 +1279,8 @@ def register(engine_path: str or pathlib.Path = None,
              default_gems_folder: str or pathlib.Path = None,
              default_templates_folder: str or pathlib.Path = None,
              default_restricted_folder: str or pathlib.Path = None,
-             remove: bool = False
+             remove: bool = False,
+             force: bool = False
              ) -> int:
     """
     Adds/Updates entries to the .o3de/o3de_manifest.json
@@ -1251,6 +1297,7 @@ def register(engine_path: str or pathlib.Path = None,
     :param default_templates_folder: default templates folder
     :param default_restricted_folder: default restricted code folder
     :param remove: add/remove the entries
+    :param force: force update of the engine_path for specified "engine_name" from the engine.json file
 
     :return: 0 for success or non 0 failure code
     """
@@ -1312,7 +1359,7 @@ def register(engine_path: str or pathlib.Path = None,
         if not engine_path:
             logger.error(f'Engine path cannot be empty.')
             return 1
-        result = register_engine_path(json_data, engine_path, remove)
+        result = register_engine_path(json_data, engine_path, remove, force)
 
     if not result:
         save_o3de_manifest(json_data)
@@ -2122,23 +2169,23 @@ def get_engine_data(engine_name: str = None,
                     engine_path: str or pathlib.Path = None, ) -> dict or None:
     if not engine_name and not engine_path:
         logger.error('Must specify either a Engine name or Engine Path.')
-        return 1
+        return None
 
     if engine_name and not engine_path:
         engine_path = get_registered(engine_name=engine_name)
 
     if not engine_path:
         logger.error(f'Engine Path {engine_path} has not been registered.')
-        return 1
+        return None
 
     engine_path = pathlib.Path(engine_path).resolve()
     engine_json = engine_path / 'engine.json'
     if not engine_json.is_file():
         logger.error(f'Engine json {engine_json} is not present.')
-        return 1
+        return None
     if not valid_o3de_engine_json(engine_json):
         logger.error(f'Engine json {engine_json} is not valid.')
-        return 1
+        return None
 
     with engine_json.open('r') as f:
         try:
@@ -2155,23 +2202,23 @@ def get_project_data(project_name: str = None,
                      project_path: str or pathlib.Path = None, ) -> dict or None:
     if not project_name and not project_path:
         logger.error('Must specify either a Project name or Project Path.')
-        return 1
+        return None
 
     if project_name and not project_path:
         project_path = get_registered(project_name=project_name)
 
     if not project_path:
         logger.error(f'Project Path {project_path} has not been registered.')
-        return 1
+        return None
 
     project_path = pathlib.Path(project_path).resolve()
     project_json = project_path / 'project.json'
     if not project_json.is_file():
         logger.error(f'Project json {project_json} is not present.')
-        return 1
+        return None
     if not valid_o3de_project_json(project_json):
         logger.error(f'Project json {project_json} is not valid.')
-        return 1
+        return None
 
     with project_json.open('r') as f:
         try:
@@ -2188,23 +2235,23 @@ def get_gem_data(gem_name: str = None,
                  gem_path: str or pathlib.Path = None, ) -> dict or None:
     if not gem_name and not gem_path:
         logger.error('Must specify either a Gem name or Gem Path.')
-        return 1
+        return None
 
     if gem_name and not gem_path:
         gem_path = get_registered(gem_name=gem_name)
 
     if not gem_path:
         logger.error(f'Gem Path {gem_path} has not been registered.')
-        return 1
+        return None
 
     gem_path = pathlib.Path(gem_path).resolve()
     gem_json = gem_path / 'gem.json'
     if not gem_json.is_file():
         logger.error(f'Gem json {gem_json} is not present.')
-        return 1
+        return None
     if not valid_o3de_gem_json(gem_json):
         logger.error(f'Gem json {gem_json} is not valid.')
-        return 1
+        return None
 
     with gem_json.open('r') as f:
         try:
@@ -2221,23 +2268,23 @@ def get_template_data(template_name: str = None,
                       template_path: str or pathlib.Path = None, ) -> dict or None:
     if not template_name and not template_path:
         logger.error('Must specify either a Template name or Template Path.')
-        return 1
+        return None
 
     if template_name and not template_path:
         template_path = get_registered(template_name=template_name)
 
     if not template_path:
         logger.error(f'Template Path {template_path} has not been registered.')
-        return 1
+        return None
 
     template_path = pathlib.Path(template_path).resolve()
     template_json = template_path / 'template.json'
     if not template_json.is_file():
         logger.error(f'Template json {template_json} is not present.')
-        return 1
+        return None
     if not valid_o3de_template_json(template_json):
         logger.error(f'Template json {template_json} is not valid.')
-        return 1
+        return None
 
     with template_json.open('r') as f:
         try:
@@ -2254,23 +2301,23 @@ def get_restricted_data(restricted_name: str = None,
                         restricted_path: str or pathlib.Path = None, ) -> dict or None:
     if not restricted_name and not restricted_path:
         logger.error('Must specify either a Restricted name or Restricted Path.')
-        return 1
+        return None
 
     if restricted_name and not restricted_path:
         restricted_path = get_registered(restricted_name=restricted_name)
 
     if not restricted_path:
         logger.error(f'Restricted Path {restricted_path} has not been registered.')
-        return 1
+        return None
 
     restricted_path = pathlib.Path(restricted_path).resolve()
     restricted_json = restricted_path / 'restricted.json'
     if not restricted_json.is_file():
         logger.error(f'Restricted json {restricted_json} is not present.')
-        return 1
+        return None
     if not valid_o3de_restricted_json(restricted_json):
         logger.error(f'Restricted json {restricted_json} is not valid.')
-        return 1
+        return None
 
     with restricted_json.open('r') as f:
         try:
@@ -3259,30 +3306,30 @@ def get_gem_targets(gem_name: str = None,
 
 def add_external_subdirectory(external_subdir: str or pathlib.Path,
                               engine_path: str or pathlib.Path = None,
-                              supress_errors: bool = False) -> int:
+                              suppress_errors: bool = False) -> int:
     """
     add external subdirectory to a cmake
     :param external_subdir: external subdirectory to add to cmake
     :param engine_path: optional engine path, defaults to this engine
-    :param supress_errors: optional silence errors
+    :param suppress_errors: optional silence errors
     :return: 0 for success or non 0 failure code
     """
     external_subdir = pathlib.Path(external_subdir).resolve()
     if not external_subdir.is_dir():
-        if not supress_errors:
+        if not suppress_errors:
             logger.error(f'Add External Subdirectory Failed: {external_subdir} does not exist.')
         return 1
 
     external_subdir_cmake = external_subdir / 'CMakeLists.txt'
     if not external_subdir_cmake.is_file():
-        if not supress_errors:
+        if not suppress_errors:
             logger.error(f'Add External Subdirectory Failed: {external_subdir} does not contain a CMakeLists.txt.')
         return 1
 
     json_data = load_o3de_manifest()
     engine_object = find_engine_data(json_data, engine_path)
     if not engine_object:
-        if not supress_errors:
+        if not suppress_errors:
             logger.error(f'Add External Subdirectory Failed: {engine_path} not registered.')
         return 1
 
@@ -3290,7 +3337,7 @@ def add_external_subdirectory(external_subdir: str or pathlib.Path,
         engine_object['external_subdirectories'].remove(external_subdir.as_posix())
 
     def parse_cmake_file(cmake: str or pathlib.Path,
-                         files: set()):
+                         files: set):
         cmake_path = pathlib.Path(cmake).resolve()
         cmake_file = cmake_path
         if cmake_path.is_dir():
@@ -3335,7 +3382,7 @@ def add_external_subdirectory(external_subdir: str or pathlib.Path,
 
     if external_subdir in cmake_files:
         save_o3de_manifest(json_data)
-        if not supress_errors:
+        if not suppress_errors:
             logger.error(f'External subdirectory {external_subdir.as_posix()} already included by add_subdirectory().')
         return 1
 
@@ -3374,18 +3421,18 @@ def add_gem_to_cmake(gem_name: str = None,
                      gem_path: str or pathlib.Path = None,
                      engine_name: str = None,
                      engine_path: str or pathlib.Path = None,
-                     supress_errors: bool = False) -> int:
+                     suppress_errors: bool = False) -> int:
     """
     add a gem to a cmake as an external subdirectory for an engine
     :param gem_name: name of the gem to add to cmake
     :param gem_path: the path of the gem to add to cmake
     :param engine_name: name of the engine to add to cmake
     :param engine_path: the path of the engine to add external subdirectory to, default to this engine
-    :param supress_errors: optional silence errors
+    :param suppress_errors: optional silence errors
     :return: 0 for success or non 0 failure code
     """
     if not gem_name and not gem_path:
-        if not supress_errors:
+        if not suppress_errors:
             logger.error('Must specify either a Gem name or Gem Path.')
         return 1
 
@@ -3393,18 +3440,18 @@ def add_gem_to_cmake(gem_name: str = None,
         gem_path = get_registered(gem_name=gem_name)
 
     if not gem_path:
-        if not supress_errors:
+        if not suppress_errors:
             logger.error(f'Gem Path {gem_path} has not been registered.')
         return 1
 
     gem_path = pathlib.Path(gem_path).resolve()
     gem_json = gem_path / 'gem.json'
     if not gem_json.is_file():
-        if not supress_errors:
+        if not suppress_errors:
             logger.error(f'Gem json {gem_json} is not present.')
         return 1
     if not valid_o3de_gem_json(gem_json):
-        if not supress_errors:
+        if not suppress_errors:
             logger.error(f'Gem json {gem_json} is not valid.')
         return 1
 
@@ -3415,21 +3462,21 @@ def add_gem_to_cmake(gem_name: str = None,
         engine_path = get_registered(engine_name=engine_name)
 
     if not engine_path:
-        if not supress_errors:
+        if not suppress_errors:
             logger.error(f'Engine Path {engine_path} has not been registered.')
         return 1
 
     engine_json = engine_path / 'engine.json'
     if not engine_json.is_file():
-        if not supress_errors:
+        if not suppress_errors:
             logger.error(f'Engine json {engine_json} is not present.')
         return 1
     if not valid_o3de_engine_json(engine_json):
-        if not supress_errors:
+        if not suppress_errors:
             logger.error(f'Engine json {engine_json} is not valid.')
         return 1
 
-    return add_external_subdirectory(external_subdir=gem_path, engine_path=engine_path, supress_errors=supress_errors)
+    return add_external_subdirectory(external_subdir=gem_path, engine_path=engine_path, suppress_errors=suppress_errors)
 
 
 def remove_gem_from_cmake(gem_name: str = None,
@@ -3930,13 +3977,13 @@ def _run_register(args: argparse) -> int:
         remove_invalid_o3de_objects()
         return refresh_repos()
     elif args.this_engine:
-        ret_val = register(engine_path=get_this_engine_path())
-        error_code = register_shipped_engine_o3de_objects()
+        ret_val = register(engine_path=get_this_engine_path(), force=args.force)
+        error_code = register_shipped_engine_o3de_objects(force=args.force)
         if error_code:
             ret_val = error_code
         return ret_val
     elif args.all_engines_path:
-        return register_all_engines_in_folder(args.all_engines_path, args.remove)
+        return register_all_engines_in_folder(args.all_engines_path, args.remove, args.force)
     elif args.all_projects_path:
         return register_all_projects_in_folder(args.all_projects_path, args.remove)
     elif args.all_gems_path:
@@ -3959,7 +4006,8 @@ def _run_register(args: argparse) -> int:
                         default_gems_folder=args.default_gems_folder,
                         default_templates_folder=args.default_templates_folder,
                         default_restricted_folder=args.default_restricted_folder,
-                        remove=args.remove)
+                        remove=args.remove,
+                        force=args.force)
 
 
 def _run_add_external_subdirectory(args: argparse) -> int:
@@ -4096,6 +4144,8 @@ def add_args(parser, subparsers) -> None:
     register_subparser.add_argument('-r', '--remove', action='store_true', required=False,
                                     default=False,
                                     help='Remove entry.')
+    register_subparser.add_argument('-f', '--force', action='store_true', default=False,
+                                       help='For the update of the registration field being modified.')
     register_subparser.set_defaults(func=_run_register)
 
     # show
@@ -4366,7 +4416,7 @@ if __name__ == "__main__":
     the_parser = argparse.ArgumentParser()
 
     # add subparsers
-    the_subparsers = the_parser.add_subparsers(help='sub-command help')
+    the_subparsers = the_parser.add_subparsers(help='sub-command help', dest='command', required=True)
 
     # add args to the parser
     add_args(the_parser, the_subparsers)
@@ -4375,7 +4425,7 @@ if __name__ == "__main__":
     the_args = the_parser.parse_args()
 
     # run
-    ret = the_args.func(the_args)
+    ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
 
     # return
     sys.exit(ret)

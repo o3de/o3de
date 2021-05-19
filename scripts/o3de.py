@@ -10,17 +10,24 @@
 #
 
 import argparse
+import pathlib
 import sys
-import os
 
-# Resolve the common python module
-ROOT_DEV_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
-if ROOT_DEV_PATH not in sys.path:
-    sys.path.append(ROOT_DEV_PATH)
+# As o3de.py shares the same name as the o3de package attempting to use a regular
+# from o3de import <module> line tries to import from the current o3de.py script and not the package
+# So the current script directory is removed from the sys.path temporary
+SCRIPT_DIR_REMOVED = False
+SCRIPT_DIR = pathlib.Path(__file__).parent.resolve()
+if str(SCRIPT_DIR) in sys.path:
+    SCRIPT_DIR_REMOVED = True
+    sys.path.remove(str(SCRIPT_DIR))
 
-from cmake.Tools import engine_template
-from cmake.Tools import global_project
-from cmake.Tools import registration
+from o3de import engine_template
+from o3de import global_project
+from o3de import registration
+
+if SCRIPT_DIR_REMOVED:
+    sys.path.insert(0, str(SCRIPT_DIR))
 
 
 def add_args(parser, subparsers) -> None:

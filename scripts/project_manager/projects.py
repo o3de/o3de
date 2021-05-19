@@ -29,12 +29,11 @@ executable_path = ''
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-from cmake.Tools import engine_template
-from cmake.Tools import registration
+from o3de import engine_template, registration
 
 o3de_folder = registration.get_o3de_folder()
 o3de_logs_folder = registration.get_o3de_logs_folder()
-project_manager_log_file_path = o3de_log_folder / "project_manager.log"
+project_manager_log_file_path = o3de_logs_folder / "project_manager.log"
 log_file_handler = RotatingFileHandler(filename=project_manager_log_file_path, maxBytes=1024 * 1024, backupCount=1)
 formatter = logging.Formatter('%(asctime)s | %(levelname)s : %(message)s')
 log_file_handler.setFormatter(formatter)
