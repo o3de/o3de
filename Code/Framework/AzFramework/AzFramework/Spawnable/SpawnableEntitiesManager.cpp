@@ -260,7 +260,16 @@ namespace AzFramework
                 spawnedEntityIndices.push_back(i);
             }
 
-            ticket.m_loadAll = true;
+            // loadAll is true if every entity has been spawned only once
+            if (spawnedEntities.size() == entitiesToSpawnSize)
+            {
+                ticket.m_loadAll = true;
+            }
+            else
+            {
+                // Case where there were already spawns from a previous request
+                ticket.m_loadAll = false;
+            }
 
             // Let other systems know about newly spawned entities for any pre-processing before adding to the scene/game context.
             if (request.m_preInsertionCallback)
