@@ -980,7 +980,6 @@ namespace {{ Component.attrib['Namespace'] }}
     {
         {{ DeclareRemoteProcedureEnumerations(Component)|indent(8) }}
         {{ DeclareNetworkPropertyEnumerations(Component)|indent(8) }}
-        {{ DefineNetworkPropertyDirtyEnumeration(Component, ClassType, 'Authority', 'Authority')|indent(8) }}
         {{ DefineNetworkPropertyDirtyEnumeration(Component, ClassType, 'Authority', 'Client')|indent(8) }}
         {{ DefineNetworkPropertyDirtyEnumeration(Component, ClassType, 'Authority', 'Server')|indent(8) }}
         {{ DefineNetworkPropertyDirtyEnumeration(Component, ClassType, 'Authority', 'Autonomous')|indent(8) }}
@@ -995,20 +994,12 @@ namespace {{ Component.attrib['Namespace'] }}
     {{ RecordName }}::{{ RecordName }}
     (
         [[maybe_unused]] Multiplayer::ReplicationRecord& replicationRecord,
-        [[maybe_unused]] uint32_t authorityToAuthorityStartOffset,
         [[maybe_unused]] uint32_t authorityToClientStartOffset,
         [[maybe_unused]] uint32_t authorityToServerStartOffset,
         [[maybe_unused]] uint32_t authorityToAutonomousStartOffset,
         [[maybe_unused]] uint32_t autonomousToAuthorityStartOffset
     )
 {% set comma = joiner("        ,") %}
-{% set networkPropertyCount = {'value' : 0} %}
-{% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, 'Authority', 'Authority') %}
-{%-      if networkPropertyCount.update({'value': networkPropertyCount.value + 1}) %}{% endif -%} 
-{% endcall %}
-{% if networkPropertyCount.value > 0 %}
-{{ comma()|default("        :", true) }} m_authorityToAuthority(replicationRecord.m_authorityToAuthority, authorityToAuthorityStartOffset, replicationRecord.ContainsAuthorityToAuthorityBits() ? static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Authority') }}::Count) : 0)
-{% endif %}
 {% set networkPropertyCount = {'value' : 0} %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, 'Authority', 'Client') %}
 {%-      if networkPropertyCount.update({'value': networkPropertyCount.value + 1}) %}{% endif -%} 
@@ -1021,7 +1012,7 @@ namespace {{ Component.attrib['Namespace'] }}
 {%-      if networkPropertyCount.update({'value': networkPropertyCount.value + 1}) %}{% endif -%} 
 {% endcall %}
 {% if networkPropertyCount.value > 0 %}
-    {{ comma()|default("        :", true) }} authorityToServer }}(replicationRecord.m_authorityToServer, authorityToServerStartOffset, replicationRecord.ContainsAuthorityToServerBits() ? static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Server') }}::Count) : 0)
+    {{ comma()|default("        :", true) }} m_authorityToServer(replicationRecord.m_authorityToServer, authorityToServerStartOffset, replicationRecord.ContainsAuthorityToServerBits() ? static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Server') }}::Count) : 0)
 {% endif %}
 {% set networkPropertyCount = {'value' : 0} %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, 'Authority', 'Autonomous') %}
@@ -1043,9 +1034,6 @@ namespace {{ Component.attrib['Namespace'] }}
 
     AZStd::unique_ptr<{{ RecordName }}> {{ RecordName }}::AllocateRecord(Multiplayer::ReplicationRecord& replicationRecord)
     {
-        uint32_t authorityToAuthorityStart = replicationRecord.m_authorityToAuthority.GetSize();
-        replicationRecord.m_authorityToAuthority.Resize(authorityToAuthorityStart + static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Authority') }}::Count));
-
         uint32_t authorityToClientStart = replicationRecord.m_authorityToClient.GetSize();
         replicationRecord.m_authorityToClient.Resize(authorityToClientStart + static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Client') }}::Count));
 
@@ -1059,7 +1047,6 @@ namespace {{ Component.attrib['Namespace'] }}
         replicationRecord.m_autonomousToAuthority.Resize(autonomousToAuthorityStart + static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Autonomous', 'Authority') }}::Count));
 
         return AZStd::unique_ptr<{{ RecordName }}>(new {{ RecordName }}(replicationRecord,
-            authorityToAuthorityStart,
             authorityToClientStart,
             authorityToServerStart,
             authorityToAutonomousStart,
@@ -1069,7 +1056,6 @@ namespace {{ Component.attrib['Namespace'] }}
     bool {{ RecordName }}::CanAttachRecord(Multiplayer::ReplicationRecord& replicationRecord)
     {
         bool canAttach{ true };
-        canAttach &= replicationRecord.ContainsAuthorityToAuthorityBits() ? (replicationRecord.GetRemainingAuthorityToAuthorityBits() >= static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Authority') }}::Count)) : true;
         canAttach &= replicationRecord.ContainsAuthorityToClientBits() ? (replicationRecord.GetRemainingAuthorityToClientBits() >= static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Client') }}::Count)) : true;
         canAttach &= replicationRecord.ContainsAuthorityToServerBits() ? (replicationRecord.GetRemainingAuthorityToServerBits() >= static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Server') }}::Count)) : true;
         canAttach &= replicationRecord.ContainsAuthorityToAutonomousBits() ? (replicationRecord.GetRemainingAuthorityToAutonomousBits() >= static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Autonomous') }}::Count)) : true;
@@ -1079,9 +1065,6 @@ namespace {{ Component.attrib['Namespace'] }}
 
     {{ RecordName }} {{ RecordName }}::AttachRecord(Multiplayer::ReplicationRecord& replicationRecord)
     {
-        uint32_t authorityToAuthorityStart = replicationRecord.m_authorityToAuthorityConsumedBits;
-        replicationRecord.ConsumeAuthorityToAuthorityBits(static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Authority') }}::Count));
-
         uint32_t authorityToClientStart = replicationRecord.m_authorityToClientConsumedBits;
         replicationRecord.ConsumeAuthorityToClientBits(static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Client') }}::Count));
 
@@ -1095,7 +1078,6 @@ namespace {{ Component.attrib['Namespace'] }}
         replicationRecord.ConsumeAutonomousToAuthorityBits(static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Autonomous', 'Authority') }}::Count));
 
         return {{ RecordName }}(replicationRecord,
-            authorityToAuthorityStart,
             authorityToClientStart,
             authorityToServerStart,
             authorityToAutonomousStart,
@@ -1169,9 +1151,7 @@ namespace {{ Component.attrib['Namespace'] }}
         return static_cast<{{ ComponentName }}&>(GetOwner());
     }
 
-    {{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Authority', false, ControllerBaseName)|indent(4) -}}
-{{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Authority', true, ControllerBaseName)|indent(4) -}}
-{{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Server', false, ControllerBaseName)|indent(4) -}}
+    {{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Server', false, ControllerBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Server', true, ControllerBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Client', false, ControllerBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Client', true, ControllerBaseName)|indent(4) -}}
@@ -1204,8 +1184,7 @@ namespace {{ Component.attrib['Namespace'] }}
         {
             serializeContext->Class<{{ ComponentBaseName }}, Multiplayer::MultiplayerComponent>()
                 ->Version(1)
-                {{ DefineNetworkPropertyReflection(Component, 'Authority', 'Authority', ComponentBaseName)|indent(16) -}}
-{{ DefineNetworkPropertyReflection(Component, 'Authority', 'Server', ComponentBaseName)|indent(16) -}}
+                {{ DefineNetworkPropertyReflection(Component, 'Authority', 'Server', ComponentBaseName)|indent(16) -}}
 {{ DefineNetworkPropertyReflection(Component, 'Authority', 'Client', ComponentBaseName)|indent(16) -}}
 {{ DefineNetworkPropertyReflection(Component, 'Authority', 'Autonomous', ComponentBaseName)|indent(16) -}}
 {{ DefineNetworkPropertyReflection(Component, 'Autonomous', 'Authority', ComponentBaseName)|indent(16) }}
@@ -1227,8 +1206,7 @@ namespace {{ Component.attrib['Namespace'] }}
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "{{ Component.attrib['Namespace'] }}")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    {{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Authority', ComponentBaseName)|indent(20) -}}
-{{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Server', ComponentBaseName)|indent(20) -}}
+                    {{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Server', ComponentBaseName)|indent(20) -}}
 {{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Client', ComponentBaseName)|indent(20) -}}
 {{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Autonomous', ComponentBaseName)|indent(20) -}}
 {{ DefineNetworkPropertyEditReflection(Component, 'Autonomous', 'Authority', ComponentBaseName)|indent(20) }}
@@ -1254,7 +1232,6 @@ namespace {{ Component.attrib['Namespace'] }}
                 ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }}")
 
                 // Reflect Network Properties Get, Set, and OnChanged methods
-                {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Authority', ComponentName) | indent(16) -}}
                 {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Server', ComponentName) | indent(16) -}}
                 {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Client', ComponentName) | indent(16) -}}
                 {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Autonomous', ComponentName) | indent(16) -}}
@@ -1348,12 +1325,10 @@ namespace {{ Component.attrib['Namespace'] }}
 {% endcall %}
     }
 
-    {{ DefineNetworkPropertyGets(Component, 'Authority', 'Authority', false, ComponentBaseName)|indent(4) -}}
-{{ DefineNetworkPropertyGets(Component, 'Authority', 'Server', false, ComponentBaseName)|indent(4) -}}
+    {{ DefineNetworkPropertyGets(Component, 'Authority', 'Server', false, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Autonomous', false, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Autonomous', 'Authority', false, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Client', false, ComponentBaseName)|indent(4) -}}
-{{ DefineNetworkPropertyGets(Component, 'Authority', 'Authority', true, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Server', true, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Autonomous', true, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Autonomous', 'Authority', true, ComponentBaseName)|indent(4) -}}
@@ -1411,10 +1386,6 @@ namespace {{ Component.attrib['Namespace'] }}
 
         {{ RecordName }} record = {{ RecordName }}::AttachRecord(replicationRecord);
 
-        if (replicationRecord.ContainsAuthorityToAuthorityBits())
-        {
-            SerializeAuthorityToAuthorityProperties(record, serializer);
-        }
         if (replicationRecord.ContainsAuthorityToClientBits())
         {
             SerializeAuthorityToClientProperties(record, serializer);
@@ -1490,8 +1461,7 @@ namespace {{ Component.attrib['Namespace'] }}
     void {{ ComponentBaseName }}::NetworkAttach(Multiplayer::NetBindComponent* netBindComponent, Multiplayer::ReplicationRecord& currentEntityRecord, Multiplayer::ReplicationRecord& predictableEntityRecord)
     {
         m_netBindComponent = netBindComponent;
-        {{ DefineNetworkPropertyEditConstruction(Component, 'Authority', 'Authority', ComponentBaseName)|indent(8) -}}
-{{ DefineNetworkPropertyEditConstruction(Component, 'Authority', 'Server', ComponentBaseName)|indent(8) -}}
+        {{ DefineNetworkPropertyEditConstruction(Component, 'Authority', 'Server', ComponentBaseName)|indent(8) -}}
 {{ DefineNetworkPropertyEditConstruction(Component, 'Authority', 'Client', ComponentBaseName)|indent(8) -}}
 {{ DefineNetworkPropertyEditConstruction(Component, 'Authority', 'Autonomous', ComponentBaseName)|indent(8) -}}
 {{ DefineNetworkPropertyEditConstruction(Component, 'Autonomous', 'Authority', ComponentBaseName)|indent(8) }}
@@ -1504,8 +1474,6 @@ namespace {{ Component.attrib['Namespace'] }}
         m_controller.get()->NetworkAttach(netBindComponent, predictableEntityRecord);
     }
 
-    {{ DeclareNetworkPropertySetSerializer(Component, 'Authority', 'Authority', ComponentBaseName, RecordName)|indent(4) }}
-    {{ DeclareNetworkPropertySetNotifyChanges(Component, 'Authority', 'Authority', ComponentBaseName, RecordName)|indent(4) }}
     {{ DeclareNetworkPropertySetSerializer(Component, 'Authority', 'Server', ComponentBaseName, RecordName)|indent(4) }}
     {{ DeclareNetworkPropertySetNotifyChanges(Component, 'Authority', 'Server', ComponentBaseName, RecordName)|indent(4) }}
     {{ DeclareNetworkPropertySetSerializer(Component, 'Authority', 'Client', ComponentBaseName, RecordName)|indent(4) }}
