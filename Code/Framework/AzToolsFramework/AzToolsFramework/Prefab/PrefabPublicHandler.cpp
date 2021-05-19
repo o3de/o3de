@@ -537,6 +537,10 @@ namespace AzToolsFramework
                         // Note that this will detach entities and instances from beforeInstance
                         RetrieveAndSortPrefabEntitiesAndInstances({entity}, beforeOwningInstance->get(), entities, instances);
 
+                        // Create the Update node
+                        PrefabUndoHelpers::UpdatePrefabInstance(
+                            beforeOwningInstance->get(), "Update prior prefab instance", beforeInstanceDomBeforeRemoval, parentUndoBatch);
+
                         for (auto& nestedInstance : instances)
                         {
                             auto linkRef = m_prefabSystemComponentInterface->FindLink(nestedInstance->GetLinkId());
@@ -551,10 +555,6 @@ namespace AzToolsFramework
                                 RemoveLink(nestedInstance, beforeOwningInstance->get().GetTemplateId(), parentUndoBatch);
                             }
                         }
-
-                        // Create the Update node
-                        PrefabUndoHelpers::UpdatePrefabInstance(
-                            beforeOwningInstance->get(), "Update prior prefab instance", beforeInstanceDomBeforeRemoval, parentUndoBatch);
                     }
 
                     // --- HANDLE NEW INSTANCE ---
