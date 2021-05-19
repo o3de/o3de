@@ -90,25 +90,6 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
         MagFilter = Linear;
         MipFilter = Linear;
     };
-
-    // Parameters for subsurface scattering
-    float m_subsurfaceScatteringFactor;
-    float m_subsurfaceScatteringQuality;
-    float3 m_scatterDistance;
-    Texture2D m_subsurfaceScatteringInfluenceMap;
-    uint m_subsurfaceScatteringInfluenceMapUvIndex;
-
-    // Parameters for transmission
-    
-    // Elements of m_transmissionParams:
-    // Thick object mode: (attenuation coefficient, power, distortion, scale)
-    // Thin  object mode:  (float3 scatter distance, scale)
-    float4 m_transmissionParams;
-    
-    // (float3 TintColor, thickness)
-    float4 m_transmissionTintThickness;
-    Texture2D m_transmissionThicknessMap;
-    uint m_transmissionThicknessMapUvIndex;
 }
 
 // ------ Shader Options ----------------------------------------
@@ -191,9 +172,8 @@ float3 BlendLayers(float3 layer1, float3 layer2, float3 layer3, float3 blendMask
 
 bool ShouldHandleParallax()
 {
-    // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scattering is enabled.
-    // Also, all the debug draw modes avoid parallax (they early-return before parallax code actually) so you can see exactly where the various maps appear on the surface UV space.
-    return !o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_debugDrawMode == DebugDrawMode::None;
+    // All the debug draw modes avoid parallax (they early-return before parallax code actually) so you can see exactly where the various maps appear on the surface UV space.
+    return o_parallax_feature_enabled && o_debugDrawMode == DebugDrawMode::None;
 }
 
 bool ShouldHandleParallaxInDepthShaders()

@@ -55,6 +55,7 @@ class LightingData
     void Init(float3 positionWS, float3 normal, float roughnessLinear);
     void CalculateMultiscatterCompensation(float3 specularF0, bool enabled);
     void FinalizeLighting(float3 transmissionTint);
+    void FinalizeLighting();
 };
 
 void LightingData::Init(float3 positionWS, float3 normal, float roughnessLinear)
@@ -80,10 +81,15 @@ void LightingData::CalculateMultiscatterCompensation(float3 specularF0, bool ena
     multiScatterCompensation = GetMultiScatterCompensation(specularF0, brdf, enabled);
 }
 
-void LightingData::FinalizeLighting(float3 transmissionTint)
+void LightingData::FinalizeLighting()
 {
     specularLighting *= specularOcclusion;
     specularLighting += emissiveLighting;
+}
+
+void LightingData::FinalizeLighting(float3 transmissionTint)
+{
+    FinalizeLighting();
 
     // Transmitted light
     if(o_transmission_mode != TransmissionMode::None)

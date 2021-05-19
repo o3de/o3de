@@ -73,25 +73,6 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
         MagFilter = Linear;
         MipFilter = Linear;
     };
-
-    // Parameters for subsurface scattering
-    float m_subsurfaceScatteringFactor;
-    float m_subsurfaceScatteringQuality;
-    float3 m_scatterDistance;
-    Texture2D m_subsurfaceScatteringInfluenceMap;
-    uint m_subsurfaceScatteringInfluenceMapUvIndex;
-
-    // Parameters for transmission
-    
-    // Elements of m_transmissionParams:
-    // Thick object mode: (attenuation coefficient, power, distortion, scale)
-    // Thin  object mode:  (float3 scatter distance, scale)
-    float4 m_transmissionParams;
-    
-    // (float3 TintColor, thickness)
-    float4 m_transmissionTintThickness;
-    Texture2D m_transmissionThicknessMap;
-    uint m_transmissionThicknessMapUvIndex;
 }
 
 // Callback function for ParallaxMapping.azsli
@@ -105,8 +86,7 @@ COMMON_OPTIONS_PARALLAX()
 
 bool ShouldHandleParallax()
 {
-    // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scattering is enabled.
-    return !o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_useDepthMap;
+    return o_parallax_feature_enabled && o_useDepthMap;
 }
 
 bool ShouldHandleParallaxInDepthShaders()

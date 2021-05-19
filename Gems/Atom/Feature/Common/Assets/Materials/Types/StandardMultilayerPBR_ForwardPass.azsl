@@ -55,8 +55,6 @@ DEFINE_LAYER_OPTIONS(o_layer1_)
 DEFINE_LAYER_OPTIONS(o_layer2_)
 DEFINE_LAYER_OPTIONS(o_layer3_)
 
-#include "MaterialInputs/SubsurfaceInput.azsli"
-#include "MaterialInputs/TransmissionInput.azsli"
 #include "StandardMultilayerPBR_Common.azsli"
 
 
@@ -140,7 +138,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     float3 tangents[UvSetCount] = { IN.m_tangent.xyz, float3(0, 0, 0) };
     float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, float3(0, 0, 0) };
 
-    if ((o_parallax_feature_enabled && !o_enableSubsurfaceScattering && MaterialSrg::m_parallaxUvIndex != 0)
+    if ((o_parallax_feature_enabled && MaterialSrg::m_parallaxUvIndex != 0)
         || (o_layer1_o_normal_useTexture && MaterialSrg::m_layer1_m_normalMapUvIndex != 0)
         || (o_layer2_o_normal_useTexture && MaterialSrg::m_layer2_m_normalMapUvIndex != 0)
         || (o_layer3_o_normal_useTexture && MaterialSrg::m_layer3_m_normalMapUvIndex != 0)
@@ -173,7 +171,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     
     bool displacementIsClipped = false;
 
-    // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scatteirng is enabled
     if(ShouldHandleParallax())
     {
         GetDepth_Setup(IN.m_blendMask);
@@ -258,14 +255,10 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     // ------- Metallic -------
 
-    float metallic = 0;
-    if(!o_enableSubsurfaceScattering)   // If subsurface scattering is enabled skip texture lookup for metallic, as this quantity won't be used anyway
-    {
-        float layer1_metallic = GetMetallicInput(MaterialSrg::m_layer1_m_metallicMap, MaterialSrg::m_sampler, uvLayer1[MaterialSrg::m_layer1_m_metallicMapUvIndex], MaterialSrg::m_layer1_m_metallicFactor, o_layer1_o_metallic_useTexture);
-        float layer2_metallic = GetMetallicInput(MaterialSrg::m_layer2_m_metallicMap, MaterialSrg::m_sampler, uvLayer2[MaterialSrg::m_layer2_m_metallicMapUvIndex], MaterialSrg::m_layer2_m_metallicFactor, o_layer2_o_metallic_useTexture);
-        float layer3_metallic = GetMetallicInput(MaterialSrg::m_layer3_m_metallicMap, MaterialSrg::m_sampler, uvLayer3[MaterialSrg::m_layer3_m_metallicMapUvIndex], MaterialSrg::m_layer3_m_metallicFactor, o_layer3_o_metallic_useTexture);
-        metallic = BlendLayers(layer1_metallic, layer2_metallic, layer3_metallic, blendMaskValues);
-    }
+    float layer1_metallic = GetMetallicInput(MaterialSrg::m_layer1_m_metallicMap, MaterialSrg::m_sampler, uvLayer1[MaterialSrg::m_layer1_m_metallicMapUvIndex], MaterialSrg::m_layer1_m_metallicFactor, o_layer1_o_metallic_useTexture);
+    float layer2_metallic = GetMetallicInput(MaterialSrg::m_layer2_m_metallicMap, MaterialSrg::m_sampler, uvLayer2[MaterialSrg::m_layer2_m_metallicMapUvIndex], MaterialSrg::m_layer2_m_metallicFactor, o_layer2_o_metallic_useTexture);
+    float layer3_metallic = GetMetallicInput(MaterialSrg::m_layer3_m_metallicMap, MaterialSrg::m_sampler, uvLayer3[MaterialSrg::m_layer3_m_metallicMapUvIndex], MaterialSrg::m_layer3_m_metallicFactor, o_layer3_o_metallic_useTexture);
+    float metallic = BlendLayers(layer1_metallic, layer2_metallic, layer3_metallic, blendMaskValues);
     
     // ------- Specular -------
 
@@ -285,19 +278,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     surface.CalculateRoughnessA();
 
-    // ------- Subsurface -------
-
-    float2 subsurfaceUv = IN.m_uv[MaterialSrg::m_subsurfaceScatteringInfluenceMapUvIndex];
-    float surfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, subsurfaceUv, MaterialSrg::m_subsurfaceScatteringFactor);
-
-    // ------- Transmission -------
-
-    float2 transmissionUv = IN.m_uv[MaterialSrg::m_transmissionThicknessMapUvIndex];
-    float4 transmissionTintThickness = GeTransmissionInput(MaterialSrg::m_transmissionThicknessMap, MaterialSrg::m_sampler, transmissionUv, MaterialSrg::m_transmissionTintThickness);
-    surface.transmission.tint = transmissionTintThickness.rgb;
-    surface.transmission.thickness = transmissionTintThickness.w;
-    surface.transmission.transmissionParams = MaterialSrg::m_transmissionParams;
-    
     // ------- Lighting Data -------
 
     LightingData lightingData;
@@ -426,17 +406,10 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     ApplyIBL(surface, lightingData);
 
     // Finalize Lighting
-    lightingData.FinalizeLighting(surface.transmission.tint);
-
+    lightingData.FinalizeLighting();
 
     const float alpha = 1.0;
-
     PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
-
-    // Pack factor and quality, drawback: because of precision limit of float16 cannot represent exact 1, maximum representable value is 0.9961
-    uint factorAndQuality = dot(round(float2(saturate(surfaceScatteringFactor), MaterialSrg::m_subsurfaceScatteringQuality) * 255), float2(256, 1));
-    lightingOutput.m_diffuseColor.w = factorAndQuality * (o_enableSubsurfaceScattering ? 1.0 : -1.0);
-    
 
     return lightingOutput;
 }
