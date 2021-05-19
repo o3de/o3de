@@ -272,6 +272,12 @@ namespace AZ
             ShaderApiDataContainer& GetCurrentShaderApiData();
             const ShaderApiDataContainer& GetCurrentShaderApiData() const;
 
+            //! Returning pointers instead of references to allow for error checking
+            //! and not having to assert. 
+            Supervariant* GetSupervariant(SupervariantIndex supervariantIndex);
+            const Supervariant* GetSupervariant(SupervariantIndex supervariantIndex) const;
+
+
             //! The name is the stem of the source <name>.shader file.
             Name m_name;
 

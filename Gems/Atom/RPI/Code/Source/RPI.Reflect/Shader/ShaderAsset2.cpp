@@ -265,14 +265,23 @@ namespace AZ
 
         Data::Asset<ShaderVariantAsset2> ShaderAsset2::GetRootVariant(SupervariantIndex supervariantIndex) const
         {
-            return GetCurrentShaderApiData().m_supervariants[supervariantIndex.GetIndex()].m_rootShaderVariantAsset;
+            auto supervariant = GetSupervariant(supervariantIndex);
+            if (!supervariant)
+            {
+                return Data::Asset<ShaderVariantAsset2>();
+            }
+            return supervariant->m_rootShaderVariantAsset;
         }
 
         const RHI::Ptr<RHI::ShaderResourceGroupLayout> ShaderAsset2::FindShaderResourceGroupLayout(
             const Name& shaderResourceGroupName, SupervariantIndex supervariantIndex) const
         {
-            const auto& supervariant = GetCurrentShaderApiData().m_supervariants[supervariantIndex.GetIndex()];
-            const auto& srgLayoutList = supervariant.m_srgLayoutList;
+            auto supervariant = GetSupervariant(supervariantIndex);
+            if (!supervariant)
+            {
+                return nullptr;
+            }
+            const auto& srgLayoutList = supervariant->m_srgLayoutList;
             const auto findIt = AZStd::find_if(srgLayoutList.begin(), srgLayoutList.end(), [&](const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
                 {
                     return layout->GetName() == shaderResourceGroupName;
@@ -289,8 +298,12 @@ namespace AZ
         const RHI::Ptr<RHI::ShaderResourceGroupLayout> ShaderAsset2::FindShaderResourceGroupLayout(
             uint32_t bindingSlot, SupervariantIndex supervariantIndex) const
         {
-            const auto& supervariant = GetCurrentShaderApiData().m_supervariants[supervariantIndex.GetIndex()];
-            const auto& srgLayoutList = supervariant.m_srgLayoutList;
+            auto supervariant = GetSupervariant(supervariantIndex);
+            if (!supervariant)
+            {
+                return nullptr;
+            }
+            const auto& srgLayoutList = supervariant->m_srgLayoutList;
             const auto findIt =
                 AZStd::find_if(srgLayoutList.begin(), srgLayoutList.end(), [&](const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
                 {
@@ -308,8 +321,12 @@ namespace AZ
         const RHI::Ptr<RHI::ShaderResourceGroupLayout> ShaderAsset2::FindFallbackShaderResourceGroupLayout(
             SupervariantIndex supervariantIndex) const
         {
-            const auto& supervariant = GetCurrentShaderApiData().m_supervariants[supervariantIndex.GetIndex()];
-            const auto& srgLayoutList = supervariant.m_srgLayoutList;
+            auto supervariant = GetSupervariant(supervariantIndex);
+            if (!supervariant)
+            {
+                return nullptr;
+            }
+            const auto& srgLayoutList = supervariant->m_srgLayoutList;
             const auto findIt =
                 AZStd::find_if(srgLayoutList.begin(), srgLayoutList.end(), [&](const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
                 {
@@ -327,8 +344,12 @@ namespace AZ
         AZStd::array_view<RHI::Ptr<RHI::ShaderResourceGroupLayout>> ShaderAsset2::GetShaderResourceGroupLayouts(
             SupervariantIndex supervariantIndex) const
         {
-            const auto& supervariant = GetCurrentShaderApiData().m_supervariants[supervariantIndex.GetIndex()];
-            return supervariant.m_srgLayoutList;
+            auto supervariant = GetSupervariant(supervariantIndex);
+            if (!supervariant)
+            {
+                return {};
+            }
+            return supervariant->m_srgLayoutList;
         }
 
         
@@ -339,37 +360,45 @@ namespace AZ
 
         const ShaderInputContract& ShaderAsset2::GetInputContract(SupervariantIndex supervariantIndex) const
         {
-            const auto& supervariant = GetCurrentShaderApiData().m_supervariants[supervariantIndex.GetIndex()];
-            return supervariant.m_inputContract;
+            auto supervariant = GetSupervariant(supervariantIndex);
+            return supervariant->m_inputContract;
         }
 
         const ShaderOutputContract& ShaderAsset2::GetOutputContract(SupervariantIndex supervariantIndex) const
         {
-            const auto& supervariant = GetCurrentShaderApiData().m_supervariants[supervariantIndex.GetIndex()];
-            return supervariant.m_outputContract;
+            auto supervariant = GetSupervariant(supervariantIndex);
+            return supervariant->m_outputContract;
         }
 
         const RHI::RenderStates& ShaderAsset2::GetRenderStates(SupervariantIndex supervariantIndex) const
         {
-            const auto& supervariant = GetCurrentShaderApiData().m_supervariants[supervariantIndex.GetIndex()];
-            return supervariant.m_renderStates;
+            auto supervariant = GetSupervariant(supervariantIndex);
+            return supervariant->m_renderStates;
         }
 
         const RHI::PipelineLayoutDescriptor* ShaderAsset2::GetPipelineLayoutDescriptor(SupervariantIndex supervariantIndex) const
         {
-            const auto& supervariant = GetCurrentShaderApiData().m_supervariants[supervariantIndex.GetIndex()];
-            AZ_Assert(supervariant.m_pipelineLayoutDescriptor, "m_pipelineLayoutDescriptor is null");
-            return supervariant.m_pipelineLayoutDescriptor.get();
+            auto supervariant = GetSupervariant(supervariantIndex);
+            if (!supervariant)
+            {
+                return nullptr;
+            }
+            AZ_Assert(supervariant->m_pipelineLayoutDescriptor, "m_pipelineLayoutDescriptor is null");
+            return supervariant->m_pipelineLayoutDescriptor.get();
         }
 
         AZStd::optional<RHI::ShaderStageAttributeArguments> ShaderAsset2::GetAttribute(const RHI::ShaderStage& shaderStage, const Name& attributeName,
             SupervariantIndex supervariantIndex) const
         {
-            const auto& supervariant = GetCurrentShaderApiData().m_supervariants[supervariantIndex.GetIndex()];
+            auto supervariant = GetSupervariant(supervariantIndex);
+            if (!supervariant)
+            {
+                return AZStd::nullopt;
+            }
             const auto stageIndex = static_cast<uint32_t>(shaderStage);
             AZ_Assert(stageIndex < RHI::ShaderStageCount, "Invalid shader stage specified!");
 
-            const auto& attributeMaps = supervariant.m_attributeMaps;
+            const auto& attributeMaps = supervariant->m_attributeMaps;
             const auto& attrPair = attributeMaps[stageIndex].find(attributeName);
             if (attrPair == attributeMaps[stageIndex].end())
             {
@@ -405,6 +434,36 @@ namespace AZ
 
             // We may only endup here when running in a Builder context.
             return m_perAPIShaderData[0];
+        }
+
+        ShaderAsset2::Supervariant* ShaderAsset2::GetSupervariant(SupervariantIndex supervariantIndex)
+        {
+            auto& supervariants = GetCurrentShaderApiData().m_supervariants;
+            auto index = supervariantIndex.GetIndex();
+            if (index >= supervariants.size())
+            {
+                AZ_Error(
+                    "ShaderAsset2", false, "Supervariant index = %u is invalid because there are only %zu supervariants", index,
+                    supervariants.size());
+                return nullptr;
+            }
+
+            return &supervariants[index];
+        }
+
+        const ShaderAsset2::Supervariant* ShaderAsset2::GetSupervariant(SupervariantIndex supervariantIndex) const
+        {
+            const auto& supervariants = GetCurrentShaderApiData().m_supervariants;
+            auto index = supervariantIndex.GetIndex();
+            if (index >= supervariants.size())
+            {
+                AZ_Error(
+                    "ShaderAsset2", false, "Supervariant index = %u is invalid because there are only %zu supervariants", index,
+                    supervariants.size());
+                return nullptr;
+            }
+
+            return &supervariants[index];
         }
 
         bool ShaderAsset2::FinalizeAfterLoad()
