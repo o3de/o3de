@@ -70,7 +70,10 @@ namespace AzPhysics
     using SimulatedBodyHandleList = AZStd::vector<SimulatedBodyHandle>;
 
     //! Helper used for pairing the ShapeConfiguration and ColliderConfiguration together which is used when creating a Simulated Body.
-    using ShapeColliderPair = AZStd::pair<Physics::ColliderConfiguration*, Physics::ShapeConfiguration*>;
+    using ShapeColliderPair = AZStd::pair<
+        AZStd::shared_ptr<Physics::ColliderConfiguration>,
+        AZStd::shared_ptr<Physics::ShapeConfiguration>>;
+    using ShapeColliderPairList = AZStd::vector<ShapeColliderPair>;
 
     //! Flags used to specifying which properties of a body to compute.
     enum class MassComputeFlags : AZ::u8
