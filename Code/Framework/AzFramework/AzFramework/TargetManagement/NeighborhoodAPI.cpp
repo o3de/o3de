@@ -41,7 +41,7 @@ namespace Neighborhood {
     //---------------------------------------------------------------------
     void NeighborReplica::OnReplicaActivate(const GridMate::ReplicaContext& /*rc*/)
     {
-        // TODO: Should we send the message to ourselves as well (master)?
+        // TODO: Should we send the message to ourselves as well?
         if (IsProxy())
         {
             AZ_Assert(m_persistentName.Get().c_str(), "Received NeighborReplica with missing persistent name!");
@@ -52,7 +52,7 @@ namespace Neighborhood {
     //---------------------------------------------------------------------
     void NeighborReplica::OnReplicaDeactivate(const GridMate::ReplicaContext& /*rc*/)
     {
-        // TODO: Should we send the message to ourselves as well (master)?
+        // TODO: Should we send the message to ourselves as well?
         if (IsProxy())
         {
             EBUS_EVENT(NeighborhoodBus, OnNodeLeft, *this);

@@ -18,11 +18,14 @@ set(FILES
     Source/ScreensCtrl.h
     Source/ScreensCtrl.cpp
     Source/ScreenWidget.h
+    Source/EngineInfo.h
+    Source/EngineInfo.cpp
     Source/FirstTimeUseScreen.h
     Source/FirstTimeUseScreen.cpp
-    Source/FirstTimeUseScreen.ui
     Source/ProjectManagerWindow.h
     Source/ProjectManagerWindow.cpp
+    Source/ProjectTemplateInfo.h
+    Source/ProjectTemplateInfo.cpp
     Source/ProjectManagerWindow.ui
     Source/PythonBindings.h
     Source/PythonBindings.cpp
@@ -50,6 +53,8 @@ set(FILES
     Source/GemCatalog/GemCatalogScreen.cpp
     Source/GemCatalog/GemInfo.h
     Source/GemCatalog/GemInfo.cpp
+    Source/GemCatalog/GemInspector.h
+    Source/GemCatalog/GemInspector.cpp
     Source/GemCatalog/GemItemDelegate.h
     Source/GemCatalog/GemItemDelegate.cpp
     Source/GemCatalog/GemListView.h

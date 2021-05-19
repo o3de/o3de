@@ -12,7 +12,7 @@
 
 #include <SkinnedMesh/SkinnedMeshDispatchItem.h>
 #include <SkinnedMesh/SkinnedMeshOutputStreamManager.h>
-#include <SkinnedMesh/SkinnedMeshComputePass.h>
+#include <SkinnedMesh/SkinnedMeshFeatureProcessor.h>
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -34,7 +34,7 @@ namespace AZ
             size_t lodIndex,
             Data::Instance<RPI::Buffer> boneTransforms,
             const SkinnedMeshShaderOptions& shaderOptions,
-            RPI::Ptr<SkinnedMeshComputePass> skinnedMeshComputePass,
+            SkinnedMeshFeatureProcessor* skinnedMeshFeatureProcessor,
             MorphTargetInstanceMetaData morphTargetInstanceMetaData,
             float morphTargetDeltaIntegerEncoding)
             : m_inputBuffers(inputBuffers)
@@ -45,7 +45,7 @@ namespace AZ
             , m_morphTargetInstanceMetaData(morphTargetInstanceMetaData)
             , m_morphTargetDeltaIntegerEncoding(morphTargetDeltaIntegerEncoding)
         {
-            m_skinningShader = skinnedMeshComputePass->GetShader();
+            m_skinningShader = skinnedMeshFeatureProcessor->GetSkinningShader();
 
             // Shader options are generally set per-skinned mesh instance, but morph targets may only exist on some lods. Override the option for applying morph targets here
             if (m_morphTargetInstanceMetaData.m_accumulatedPositionDeltaOffsetInBytes != MorphTargetConstants::s_invalidDeltaOffset)
@@ -58,7 +58,7 @@ namespace AZ
             }
 
             // CreateShaderOptionGroup will also connect to the SkinnedMeshShaderOptionNotificationBus
-            m_shaderOptionGroup = skinnedMeshComputePass->CreateShaderOptionGroup(m_shaderOptions, *this);
+            m_shaderOptionGroup = skinnedMeshFeatureProcessor->CreateSkinningShaderOptionGroup(m_shaderOptions, *this);
         }
 
         SkinnedMeshDispatchItem::~SkinnedMeshDispatchItem()

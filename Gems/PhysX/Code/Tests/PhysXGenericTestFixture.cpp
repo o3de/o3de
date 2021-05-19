@@ -104,12 +104,12 @@ namespace PhysX
         auto colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
         colliderConfig->m_collisionLayer = config.m_layer;
 
-        Physics::ShapeConfigurationList shapeconfigurationList;
+        AzPhysics::ShapeColliderPairList shapeconfigurationList;
 
         struct Visitor
         {
             AZStd::shared_ptr<Physics::ColliderConfiguration>& colliderConfig;
-            Physics::ShapeConfigurationList& shapeconfigurationList;
+            AzPhysics::ShapeColliderPairList& shapeconfigurationList;
 
             void operator()(const MultiShapeConfig::ShapeList::ShapeData::Box& box) const
             {

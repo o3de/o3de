@@ -424,7 +424,6 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     sip.pLogCallback = &m_logFile;
     sip.sLogFileName = "@log@/Editor.log";
     sip.pUserCallback = m_pSystemUserCallback;
-    sip.pValidator = GetIEditor()->GetErrorReport(); // Assign validator from Editor.
 
     if (sInCmdLine)
     {
