@@ -42,9 +42,6 @@
 #include <QApplication>
 #include <QRect>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AzToolsFramework
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorTransformComponentSelection, AZ::SystemAllocator, 0)
@@ -1029,8 +1026,6 @@ namespace AzToolsFramework
         EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusConnect(entityContextId);
 
-        m_clickDetector.m_debugName = "EditorTransformComponentSelection";
-
         CreateTransformModeSelectionCluster();
         RegisterActions();
         SetupBoxSelect();
@@ -1787,22 +1782,7 @@ namespace AzToolsFramework
 
         m_cachedEntityIdUnderCursor = m_editorHelpers->HandleMouseInteraction(cameraState, mouseInteraction);
 
-        const AzFramework::ClickDetector::ClickEvent selectClickEvent = [&mouseInteraction] {
-            if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
-            {
-                if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down)
-                {
-                    return AzFramework::ClickDetector::ClickEvent::Down;
-                }
-
-                if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Up)
-                {
-                    return AzFramework::ClickDetector::ClickEvent::Up;
-                }
-            }
-            return AzFramework::ClickDetector::ClickEvent::Nil;
-        }();
-
+        const auto selectClickEvent = ClickDetectorEventFromViewportInteraction(mouseInteraction);
         m_cursorState.SetCurrentPosition(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
         const auto clickOutcome = m_clickDetector.DetectClick(selectClickEvent, m_cursorState.CursorDelta());
 

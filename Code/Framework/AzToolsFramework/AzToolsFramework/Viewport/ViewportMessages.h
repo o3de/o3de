@@ -18,6 +18,7 @@
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportId.h>
+#include <AzFramework/Viewport/ClickDetector.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 
@@ -303,5 +304,25 @@ namespace AzToolsFramework
             entityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
         return entityContextId;
+    }
+
+    //! Maps a mouse interaction event to a ClickDetector event
+    //! @note Function only cares about up or down events, all other events are mapped to Nil (ignored).
+    inline AzFramework::ClickDetector::ClickEvent ClickDetectorEventFromViewportInteraction(
+        const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+    {
+        if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
+        {
+            if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down)
+            {
+                return AzFramework::ClickDetector::ClickEvent::Down;
+            }
+
+            if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Up)
+            {
+                return AzFramework::ClickDetector::ClickEvent::Up;
+            }
+        }
+        return AzFramework::ClickDetector::ClickEvent::Nil;
     }
 } // namespace AzToolsFramework

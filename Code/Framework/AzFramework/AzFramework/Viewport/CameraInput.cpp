@@ -20,9 +20,6 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Windowing/WindowBus.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AzFramework
 {
     AZ_CVAR(
@@ -281,7 +278,6 @@ namespace AzFramework
     RotateCameraInput::RotateCameraInput(const InputChannelId rotateChannelId)
         : m_rotateChannelId(rotateChannelId)
     {
-        m_clickDetector.m_debugName = "RotateCamera";
     }
 
     bool RotateCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
@@ -307,11 +303,9 @@ namespace AzFramework
         switch (const auto outcome = m_clickDetector.DetectClick(clickEvent, cursorDelta); outcome)
         {
         case ClickDetector::ClickOutcome::Move:
-            AZ_Printf("AzFramework", "RotateCamera - Begin");
             BeginActivation();
             break;
         case ClickDetector::ClickOutcome::Release:
-            AZ_Printf("AzFramework", "RotateCamera - End");
             EndActivation();
             break;
         default:
@@ -319,6 +313,9 @@ namespace AzFramework
             break;
         }
 
+        // note - must also check !ending to ensure the mouse up (release) event
+        // is not consumed and can be propagated to other systems.
+        // (don't swallow mouse up events)
         return !Idle() && !Ending();
     }
 
@@ -447,6 +444,7 @@ namespace AzFramework
                     m_boost = true;
                 }
             }
+            // ensure we don't process end events in the idle state
             else if (input->m_state == InputChannel::State::Ended && !Idle())
             {
                 m_translation &= ~(translationFromKey(input->m_channelId));
