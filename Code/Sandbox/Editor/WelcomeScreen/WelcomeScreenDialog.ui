@@ -24,8 +24,8 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>800</width>
-    <height>16777215</height>
+    <width>945</width>
+    <height>639</height>
    </size>
   </property>
   <property name="focusPolicy">
@@ -53,34 +53,6 @@
    <property name="bottomMargin">
     <number>0</number>
    </property>
-   <item>
-    <widget class="Line" name="line_2">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>1</height>
-      </size>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">color: &quot;black&quot;</string>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Plain</enum>
-     </property>
-     <property name="lineWidth">
-      <number>0</number>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
    <item>
     <layout class="QHBoxLayout" name="bodyContainer">
      <property name="spacing">
@@ -216,31 +188,6 @@
       </widget>
      </item>
      <item>
-      <widget class="Line" name="line_3">
-       <property name="maximumSize">
-        <size>
-         <width>1</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="layoutDirection">
-        <enum>Qt::LeftToRight</enum>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">color: &quot;black&quot;</string>
-       </property>
-       <property name="frameShadow">
-        <enum>QFrame::Plain</enum>
-       </property>
-       <property name="lineWidth">
-        <number>0</number>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QWidget" name="levelViewFTUEContainer" native="true">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -309,7 +256,7 @@
               </size>
              </property>
              <property name="text">
-              <string>Open or create a level</string>
+              <string>Recent Files</string>
              </property>
              <property name="indent">
               <number>-1</number>
@@ -337,16 +284,6 @@
               <property name="bottomMargin">
                <number>0</number>
               </property>
-              <item>
-               <widget class="QListView" name="recentLevelList">
-                <property name="horizontalScrollBarPolicy">
-                 <enum>Qt::ScrollBarAlwaysOff</enum>
-                </property>
-                <property name="spacing">
-                 <number>4</number>
-                </property>
-               </widget>
-              </item>
              </layout>
             </widget>
            </item>
@@ -392,8 +329,26 @@
               </property>
               <item>
                <widget class="QPushButton" name="newLevelButton">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>156</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>156</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
                 <property name="text">
-                 <string>New level...</string>
+                 <string>Create new...</string>
                 </property>
                </widget>
               </item>
@@ -415,8 +370,67 @@
               </item>
               <item>
                <widget class="QPushButton" name="openLevelButton">
+                <property name="minimumSize">
+                 <size>
+                  <width>156</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>156</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
                 <property name="text">
-                 <string>Open level...</string>
+                 <string>Open...</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_2">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QToolButton" name="objectListButton">
+                <property name="text">
+                 <string>...</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+                  <normaloff>:/stylesheet/img/UI20/toolbar/Object_list.svg</normaloff>:/stylesheet/img/UI20/toolbar/Object_list.svg</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>24</width>
+                  <height>24</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="gridButton">
+                <property name="text">
+                 <string>...</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+                  <normaloff>:/stylesheet/img/UI20/toolbar/Grid.svg</normaloff>:/stylesheet/img/UI20/toolbar/Grid.svg</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>24</width>
+                  <height>24</height>
+                 </size>
                 </property>
                </widget>
               </item>
@@ -440,63 +454,43 @@
             </spacer>
            </item>
            <item>
-            <widget class="QWidget" name="horizontalWidget_2" native="true">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <layout class="QHBoxLayout" name="sliceControlContainer">
-              <property name="spacing">
-               <number>0</number>
-              </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
-               <number>0</number>
-              </property>
-              <item>
-               <widget class="QPushButton" name="newSliceButton">
-                <property name="text">
-                 <string>New slice...</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_2">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeType">
-                 <enum>QSizePolicy::Fixed</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>24</width>
-                  <height>0</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QPushButton" name="openSliceButton">
-                <property name="text">
-                 <string>Open slice...</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <item>
+              <widget class="QLabel" name="levelFileLabel">
+               <property name="text">
+                <string>No level file created yet for the project. &lt;a href=&quot;#&quot;&gt;Create one&lt;/a&gt; now.</string>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::RichText</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_3">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
            </item>
           </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QListView" name="recentLevelList">
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
+          <property name="spacing">
+           <number>4</number>
+          </property>
          </widget>
         </item>
         <item>
@@ -526,32 +520,11 @@
      </item>
     </layout>
    </item>
-   <item>
-    <widget class="Line" name="line">
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>1</height>
-      </size>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">color: &quot;black&quot;</string>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Plain</enum>
-     </property>
-     <property name="lineWidth">
-      <number>0</number>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
  <resources>
   <include location="WelcomeScreenDialog.qrc"/>
+  <include location="../../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc"/>
  </resources>
  <connections/>
 </ui>

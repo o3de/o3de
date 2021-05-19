@@ -66,6 +66,7 @@ private:
     void OnShowToolTip(const QModelIndex& index);
     void OnShowContextMenu(const QPoint& point);
     void OnNewLevelBtnClicked(bool checked);
+    void OnNewLevelLabelClicked(const QString& checked);
     void OnOpenLevelBtnClicked(bool checked);
     void OnNewSliceBtnClicked(bool checked);
     void OnOpenSliceBtnClicked(bool checked);

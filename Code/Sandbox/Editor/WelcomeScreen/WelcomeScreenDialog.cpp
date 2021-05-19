@@ -95,6 +95,10 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
 //    ui->currentProjectButton->setMenu(currentProjectButtonMenu);
     auto projectName = AZ::Utils::GetProjectName();
     ui->currentProjectName->setText(projectName.c_str());
+
+    ui->newLevelButton->setDefault(true);
+    ui->gridButton->setCheckable(true);
+    ui->gridButton->setChecked(true);
 //    ui->currentProjectButton->adjustSize();
 //    ui->currentProjectButton->setMinimumWidth(ui->currentProjectButton->width() + 40);
 
@@ -107,10 +111,11 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     connect(ui->recentLevelList, &QListView::clicked, this, &WelcomeScreenDialog::OnRecentLevelListItemClicked);
 
     connect(ui->newLevelButton, &QPushButton::clicked, this, &WelcomeScreenDialog::OnNewLevelBtnClicked);
+    connect(ui->levelFileLabel, &QLabel::linkActivated, this, &WelcomeScreenDialog::OnNewLevelLabelClicked);
     connect(ui->openLevelButton, &QPushButton::clicked, this, &WelcomeScreenDialog::OnOpenLevelBtnClicked);
 
-    connect(ui->newSliceButton, &QPushButton::clicked, this, &WelcomeScreenDialog::OnNewSliceBtnClicked);
-    connect(ui->openSliceButton, &QPushButton::clicked, this, &WelcomeScreenDialog::OnOpenSliceBtnClicked);
+//    connect(ui->newSliceButton, &QPushButton::clicked, this, &WelcomeScreenDialog::OnNewSliceBtnClicked);
+//    connect(ui->openSliceButton, &QPushButton::clicked, this, &WelcomeScreenDialog::OnOpenSliceBtnClicked);
 
 //    connect(ui->documentationButton, &QPushButton::clicked, this, &WelcomeScreenDialog::OnDocumentationBtnClicked);
 //    connect(ui->showOnStartup, &QCheckBox::clicked, this, &WelcomeScreenDialog::OnShowOnStartupBtnClicked);
@@ -129,8 +134,8 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     m_manifest->Sync();
 #endif
 #ifndef ENABLE_SLICE_EDITOR
-    ui->newSliceButton->hide();
-    ui->openSliceButton->hide();
+//    ui->newSliceButton->hide();
+//    ui->openSliceButton->hide();
 #endif
 
     // Adjust the height, if need be
@@ -311,13 +316,16 @@ void WelcomeScreenDialog::OnShowContextMenu(const QPoint& pos)
     }
 }
 
-
 void WelcomeScreenDialog::OnNewLevelBtnClicked([[maybe_unused]] bool checked)
 {
     m_levelPath = "new";
     accept();
 }
 
+void WelcomeScreenDialog::OnNewLevelLabelClicked([[maybe_unused]] const QString& path)
+{
+    OnNewLevelBtnClicked(true);
+}
 
 void WelcomeScreenDialog::OnOpenLevelBtnClicked([[maybe_unused]] bool checked)
 {
