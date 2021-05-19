@@ -43,7 +43,7 @@ set(_candle_command
     "-I${_cpack_wix_out_dir}" # to include cpack_variables.wxi
     ${_addtional_defines}
     ${_ext_flags}
-    "${CPACK_SOURCE_DIR}/Platform/Windows/PackagingBootstrapper.wxs"
+    "${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/Bootstrapper.wxs"
     -o "${_bootstrap_out_dir}/"
 )
 

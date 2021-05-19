@@ -78,7 +78,7 @@ endif()
 set(CPACK_WIX_PRODUCT_GUID ${LY_WIX_PRODUCT_GUID})
 set(CPACK_WIX_UPGRADE_GUID ${LY_WIX_UPGRADE_GUID})
 
-set(CPACK_WIX_TEMPLATE "${CPACK_SOURCE_DIR}/Platform/Windows/PackagingTemplate.wxs.in")
+set(CPACK_WIX_TEMPLATE "${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/Template.wxs.in")
 
 set(_embed_artifacts "yes")
 
