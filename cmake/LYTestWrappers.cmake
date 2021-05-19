@@ -151,12 +151,6 @@ function(ly_add_test)
     set(LY_ADDED_TEST_NAME ${qualified_test_run_name_with_suite}::TEST_RUN)
     set(LY_ADDED_TEST_NAME ${LY_ADDED_TEST_NAME} PARENT_SCOPE)
 
-    # Store the test so we can walk through all of them in LYTestImpactFramework.cmake
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS ${LY_ADDED_TEST_NAME})
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${LY_ADDED_TEST_NAME}_TEST_NAME ${ly_add_test_NAME})
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${LY_ADDED_TEST_NAME}_TEST_SUITE ${ly_add_test_TEST_SUITE})
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${LY_ADDED_TEST_NAME}_TEST_LIBRARY ${ly_add_test_TEST_LIBRARY})
-
     set(final_labels SUITE_${ly_add_test_TEST_SUITE})
 
     if (ly_add_test_TEST_REQUIRES)
@@ -247,6 +241,12 @@ function(ly_add_test)
 
     endif()
 
+    # Store the test so we can walk through all of them in LYTestImpactFramework.cmake
+    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS ${ly_add_test_NAME})
+    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_test_NAME}_TEST_SUITE ${ly_add_test_TEST_SUITE})
+    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_test_NAME}_TEST_LIBRARY ${ly_add_test_TEST_LIBRARY})
+    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_test_NAME}_TEST_TIMEOUT ${ly_add_test_TIMEOUT})
+
 endfunction()
 
 #! ly_add_pytest: registers target PyTest-based test with CTest
@@ -298,8 +298,8 @@ function(ly_add_pytest)
         ${ly_add_pytest_UNPARSED_ARGUMENTS}
     )
 
+    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_pytest_NAME}_SCRIPT_PATH ${ly_add_pytest_PATH})
     set_tests_properties(${LY_ADDED_TEST_NAME} PROPERTIES RUN_SERIAL "${ly_add_pytest_TEST_SERIAL}")
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${LY_ADDED_TEST_NAME}_SCRIPT_PATH ${ly_add_pytest_PATH})
 endfunction()
 
 #! ly_add_editor_python_test: registers target Editor Python Bindings test with CTest
@@ -363,8 +363,8 @@ function(ly_add_editor_python_test)
         COMPONENT ${ly_add_editor_python_test_COMPONENT}
     )
 
+    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_editor_python_test_NAME}_SCRIPT_PATH ${ly_add_editor_python_test_PATH})
     set_tests_properties(${LY_ADDED_TEST_NAME} PROPERTIES RUN_SERIAL "${ly_add_editor_python_test_TEST_SERIAL}")
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${LY_ADDED_TEST_NAME}_SCRIPT_PATH ${ly_add_editor_python_test_PATH})
 endfunction()
 
 #! ly_add_googletest: Adds a new RUN_TEST using for the specified target using the supplied command or fallback to running
@@ -424,8 +424,14 @@ function(ly_add_googletest)
         set(full_test_command $<TARGET_FILE:AZ::AzTestRunner> $<TARGET_FILE:${build_target}> AzRunUnitTests)
         # Add AzTestRunner as a build dependency
         ly_add_dependencies(${build_target} AZ::AzTestRunner)
+        # Ideally, we would populate the full command procedurally but the generator expressions won't be expanded by the time we need this data
+        set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_googletest_NAME}_TEST_COMMAND "AzRunUnitTests")
     else()
         set(full_test_command ${ly_add_googletest_TEST_COMMAND})
+        # Remove the generator expressions so we are left with the argument(s) required to run unit tests for executable targets
+        string(REPLACE ";" "" stripped_test_command ${full_test_command})
+        string(GENEX_STRIP ${stripped_test_command} stripped_test_command)
+        set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_googletest_NAME}_TEST_COMMAND ${stripped_test_command})
     endif()
 
     string(REPLACE "::" "_" report_directory "${GTEST_XML_OUTPUT_DIR}/${ly_add_googletest_NAME}.xml")
@@ -507,8 +513,14 @@ function(ly_add_googlebenchmark)
 
         # If command is not supplied attempts, uses the AzTestRunner to run googlebenchmarks on the supplied TARGET
         set(full_test_command $<TARGET_FILE:AZ::AzTestRunner> $<TARGET_FILE:${build_target}> AzRunBenchmarks ${output_format_args})
+        # Ideally, we would populate the full command procedurally but the generator expressions won't be expanded by the time we need this data
+        set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_googlebenchmark_NAME}_TEST_COMMAND "AzRunUnitTests")
     else()
         set(full_test_command ${ly_add_googlebenchmark_TEST_COMMAND})
+        # Remove the generator expressions so we are left with the argument(s) required to run unit tests for executable targets
+        string(REPLACE ";" "" stripped_test_command ${full_test_command})
+        string(GENEX_STRIP ${stripped_test_command} stripped_test_command)
+        set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_googletest_NAME}_TEST_COMMAND ${stripped_test_command})
     endif()
 
     ly_add_test(
@@ -524,6 +536,5 @@ function(ly_add_googlebenchmark)
             AZ::AzTestRunner
         COMPONENT ${ly_add_googlebenchmark_COMPONENT}
     )
-
 endfunction()
 
