@@ -80,7 +80,7 @@ def run():
         TestHelper.wait_for_condition(lambda: general.is_in_game_mode(), 2.0)
         general.log(f"{component_name}_test: Entered game mode: {general.is_in_game_mode()}")
         general.exit_game_mode()
-        TestHelper.wait_for_condition(lambda: not general.is_in_game_mode(), 2/-)
+        TestHelper.wait_for_condition(lambda: not general.is_in_game_mode(), 2.0)
         general.log(f"{component_name}_test: Exit game mode: {not general.is_in_game_mode()}")
 
     def verify_hide_unhide_entity(component_name, entity_obj):
