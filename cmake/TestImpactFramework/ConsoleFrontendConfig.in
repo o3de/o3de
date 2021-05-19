@@ -9,12 +9,16 @@
   "workspace": {
     "temp": {
       "root": "${temp_dir}",
-      "artifact_dir": "RuntimeArtifact"
+      "relative_paths": {
+        "artifact_dir": "RuntimeArtifact"
+      }
     },
     "persistent": {
       "root": "${persistent_dir}",
-      "test_impact_data_file": "TestImpactData.spartia",
-      "enumeration_cache_dir": "EnumerationCache"
+      "relative_paths": {
+        "test_impact_data_file": "TestImpactData.spartia",
+        "enumeration_cache_dir": "EnumerationCache"
+      }
     }
   },
   "artifacts": {

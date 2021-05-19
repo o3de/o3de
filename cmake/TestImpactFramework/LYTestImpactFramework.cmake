@@ -99,7 +99,7 @@ endfunction()
 # \arg:TEST_NAME name of test
 function(ly_test_impact_extract_google_test COMPOSITE_TEST TEST_NAMESPACE TEST_NAME)
     get_property(test_components GLOBAL PROPERTY LY_ALL_TESTS_${COMPOSITE_TEST}_TEST_NAME)
-    # Namespace and test are mandetory
+    # Namespace and test are mandatory
     string(REPLACE "::" ";" test_components ${test_components})
     list(LENGTH test_components num_test_components)
     if(num_test_components LESS 2)
@@ -134,13 +134,11 @@ endfunction()
 #! ly_test_impact_extract_google_test_params: extracts the google test name and command parameters.
 #
 # \arg:COMPOSITE_TEST test in the form 'namespace::test'
-# \arg:TEST_NAMESPACE namespace for the test
 # \arg:TEST_NAME name of test
-# \arg:TEST_NAME optional command arguments to run the test
-# \arg:TEST_NAME test timeout value
+# \arg:TEST_COMMAND optional command arguments to run the test
 function(ly_test_impact_extract_google_test_params COMPOSITE_TEST TEST_NAME TEST_COMMAND)
     get_property(test_command GLOBAL PROPERTY LY_ALL_TESTS_${COMPOSITE_TEST}_TEST_COMMAND)
-    # Namespace and test are mandetory
+    # Namespace and test are mandatory
     string(REPLACE "::" ";" test_components ${COMPOSITE_TEST})
     list(LENGTH test_components num_test_components)
     if(num_test_components LESS 2)
