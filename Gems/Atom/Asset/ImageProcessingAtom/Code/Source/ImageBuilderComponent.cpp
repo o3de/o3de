@@ -190,16 +190,12 @@ namespace ImageProcessingAtom
         desc->m_sourceAssetId = sourceAssetId;
         
         // Create an image convert process
-        ImageConvertProcess* process = new ImageConvertProcess(AZStd::move(desc));
-        if (process)
+        ImageConvertProcess process(AZStd::move(desc));
+        process.ProcessAll();
+        bool result = process.IsSucceed();
+        if (result)
         {
-            process->ProcessAll();
-            bool result = process->IsSucceed();
-            if (result)
-            {
-                process->GetAppendOutputProducts(outProducts);
-            }
-            delete process;
+            process.GetAppendOutputProducts(outProducts);
         }
 
         return outProducts;
