@@ -559,6 +559,8 @@ namespace AzToolsFramework
 
                     // --- HANDLE NEW INSTANCE ---
                     {
+                        AZStd::vector<AZStd::pair<Instance*, PrefabDom>> addedInstances;
+
                         // Get the previous state of the old instance for undo/redo purposes
                         PrefabDom afterInstanceDomBeforeAdd;
                         m_instanceToTemplateInterface->GenerateDomForInstance(afterInstanceDomBeforeAdd, afterOwningInstance->get());
@@ -569,7 +571,7 @@ namespace AzToolsFramework
                             afterOwningInstance->get().AddEntity(*nestedEntity);
                         }
 
-                        // Add all instances, and recreate the links
+                        // Retrieve previous patches from links, then add instances
                         for (AZStd::unique_ptr<Instance>& instance : instances)
                         {
                             PrefabDom previousPatch;
@@ -580,18 +582,22 @@ namespace AzToolsFramework
                                 previousPatch = AZStd::move(nestedInstanceLinkPatches[instance.get()]);
                             }
 
-                            // Get direct pointer as AddInstance will move the unique one.
-                            Instance* instancePtr = instance.get();
+                            // Add instance to vector to create links after instance has been updated
+                            addedInstances.emplace_back(AZStd::make_pair(instance.get(), AZStd::move(previousPatch));
 
                             afterOwningInstance->get().AddInstance(AZStd::move(instance));
-
-                            // Add a new link with the old dom
-                            CreateLink(*instancePtr, afterOwningInstance->get().GetTemplateId(), parentUndoBatch, previousPatch);
                         }
 
                         // Create the Update node
                         PrefabUndoHelpers::UpdatePrefabInstance(
                             afterOwningInstance->get(), "Update new prefab instance", afterInstanceDomBeforeAdd, parentUndoBatch);
+
+                        // Create the links
+                        for (auto addedInstance : addedInstances)
+                        {
+                            // Add a new link with the old dom
+                            CreateLink(*addedInstance.first, afterOwningInstance->get().GetTemplateId(), parentUndoBatch, AZStd::move(addedInstance.second));
+                        }
                     }
                 }
             }
