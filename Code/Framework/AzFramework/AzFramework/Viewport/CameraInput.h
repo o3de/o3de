@@ -175,7 +175,12 @@ namespace AzFramework
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime);
 
         void AddCamera(AZStd::shared_ptr<CameraInput> cameraInput);
+        //! Reset the state of all cameras.
         void Reset();
+        //! Remove all cameras that were added.
+        void Clear();
+        //! Is one of the cameras in the active camera inputs marked as 'exclusive'
+        //! @note This implies no other sibling cameras can begin while the exclusive camera is running.
         bool Exclusive() const;
 
     private:

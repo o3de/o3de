@@ -264,9 +264,18 @@ namespace AzFramework
         {
             m_activeCameraInputs[i]->Reset();
             m_idleCameraInputs.push_back(m_activeCameraInputs[i]);
-            m_activeCameraInputs[i] = m_activeCameraInputs[m_activeCameraInputs.size() - 1];
+            using AZStd::swap;
+            swap(m_activeCameraInputs[i], m_activeCameraInputs[m_activeCameraInputs.size() - 1]);
             m_activeCameraInputs.pop_back();
         }
+    }
+
+    void Cameras::Clear()
+    {
+        Reset();
+        AZ_Assert(m_activeCameraInputs.empty(), "Active Camera Inputs is not empty");
+
+        m_idleCameraInputs.clear();
     }
 
     RotateCameraInput::RotateCameraInput(const InputChannelId rotateChannelId)
@@ -295,9 +304,6 @@ namespace AzFramework
             return ClickDetector::ClickEvent::Nil;
         }();
 
-        //AZ_Printf("AzFramework", "RotateCamera - HandleEvent");
-
-        const bool wasIdle = Idle();
         switch (const auto outcome = m_clickDetector.DetectClick(clickEvent, cursorDelta); outcome)
         {
         case ClickDetector::ClickOutcome::Move:
