@@ -200,11 +200,11 @@ namespace RedirectOutput
     {
         s_RedirectModule = module;
 
-        SetRedirection("stdout", g_redirect_stdout_saved, g_redirect_stdout, [](const char* msg) {
+        SetRedirection("stdout", g_redirect_stdout_saved, g_redirect_stdout, []([[maybe_unused]] const char* msg) {
             AZ_TracePrintf("Python", msg);
         });
 
-        SetRedirection("stderr", g_redirect_stderr_saved, g_redirect_stderr, [](const char* msg) {
+        SetRedirection("stderr", g_redirect_stderr_saved, g_redirect_stderr, []([[maybe_unused]] const char* msg) {
             AZ_TracePrintf("Python", msg);
         });
 
