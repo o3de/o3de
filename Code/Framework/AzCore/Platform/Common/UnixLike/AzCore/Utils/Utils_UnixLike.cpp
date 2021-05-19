@@ -40,6 +40,7 @@ namespace AZ
 
             if (const char* homePath = std::getenv("HOME"); homePath != nullptr)
             {
+                AZ::IO::FixedMaxPath path{homePaath};
                 return path.Native();
             }
             return {};
