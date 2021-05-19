@@ -134,7 +134,14 @@ namespace AZ
             {
                 m_decalData.GetData(decal.GetIndex()) = m_decalData.GetData(sourceDecal.GetIndex());
                 const auto materialAsset = GetMaterialUsedByDecal(sourceDecal);
-                m_materialToTextureArrayLookupTable.at(materialAsset).m_useCount++;
+                if (materialAsset.IsValid())
+                {
+                    m_materialToTextureArrayLookupTable.at(materialAsset).m_useCount++;
+                }
+                else
+                {
+                    AZ_Warning("DecalTextureArrayFeatureProcessor", false, "CloneDecal called on a decal with no material set.");
+                }
                 m_deviceBufferNeedsUpdate = true;
             }
             return decal;

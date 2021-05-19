@@ -30,34 +30,23 @@ set(CPACK_GENERATOR "WIX")
 
 # CPack will generate the WiX product/upgrade GUIDs further down the chain if they weren't supplied
 # however, they are unique for each run.  instead, let's do the auto generation here and add it to
-# the cache for run persistence.  an additional cache file will be used to store the information on
-# the original generation so we still have the ability to detect if they are still being used.
-set(_guid_cache_file "${CMAKE_BINARY_DIR}/installer/wix_guid_cache.cmake")
-if(NOT EXISTS ${_guid_cache_file})
-    set(_wix_guid_namespace "6D43F57A-2917-4AD9-B758-1F13CDB08593")
+# the cache for run persistence and have the ability to detect if they are still being used.
+set(_wix_guid_namespace "6D43F57A-2917-4AD9-B758-1F13CDB08593")
 
-    # based the ISO-8601 standard (YYYY-MM-DDTHH-mm-ssTZD) e.g., 20210506145533
-    string(TIMESTAMP _guid_gen_timestamp "%Y%m%d%H%M%S")
-
-    file(WRITE ${_guid_cache_file} "set(_wix_guid_gen_timestamp ${_guid_gen_timestamp})\n")
-
-    string(UUID _default_product_guid
+function(generate_wix_guid out_value seed)
+    string(UUID _guid
         NAMESPACE ${_wix_guid_namespace}
-        NAME "ProductID_${_guid_gen_timestamp}"
+        NAME ${seed}
         TYPE SHA1
         UPPER
     )
-    file(APPEND ${_guid_cache_file} "set(_wix_default_product_guid ${_default_product_guid})\n")
 
-    string(UUID _default_upgrade_guid
-        NAMESPACE ${_wix_guid_namespace}
-        NAME "UpgradeCode_${_guid_gen_timestamp}"
-        TYPE SHA1
-        UPPER
-    )
-    file(APPEND ${_guid_cache_file} "set(_wix_default_upgrade_guid ${_default_upgrade_guid})\n")
-endif()
-include(${_guid_cache_file})
+    set(${out_value} ${_guid} PARENT_SCOPE)
+endfunction()
+
+set(_guid_seed_base "${PROJECT_NAME}_${LY_VERSION_STRING}")
+generate_wix_guid(_wix_default_product_guid "${_guid_seed_base}_ProductID" )
+generate_wix_guid(_wix_default_upgrade_guid "${_guid_seed_base}_UpgradeCode")
 
 set(LY_WIX_PRODUCT_GUID "${_wix_default_product_guid}" CACHE STRING "GUID for the Product ID field. Format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX")
 set(LY_WIX_UPGRADE_GUID "${_wix_default_upgrade_guid}" CACHE STRING "GUID for the Upgrade Code field. Format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX")
@@ -89,4 +78,21 @@ endif()
 set(CPACK_WIX_PRODUCT_GUID ${LY_WIX_PRODUCT_GUID})
 set(CPACK_WIX_UPGRADE_GUID ${LY_WIX_UPGRADE_GUID})
 
-set(CPACK_WIX_TEMPLATE "${CMAKE_SOURCE_DIR}/cmake/Platform/Windows/PackagingTemplate.wxs.in")
+set(CPACK_WIX_TEMPLATE "${CPACK_SOURCE_DIR}/Platform/Windows/PackagingTemplate.wxs.in")
+
+set(_embed_artifacts "yes")
+
+if(LY_INSTALLER_DOWNLOAD_URL)
+    set(_embed_artifacts "no")
+
+    # the bootstrapper will at the very least need a different upgrade guid
+    generate_wix_guid(CPACK_WIX_BOOTSTRAP_UPGRADE_GUID "${_guid_seed_base}_Bootstrap_UpgradeCode")
+
+    set(CPACK_POST_BUILD_SCRIPTS
+        ${CPACK_SOURCE_DIR}/Platform/Windows/PackagingPostBuild.cmake
+    )
+endif()
+
+set(CPACK_WIX_CANDLE_EXTRA_FLAGS
+    -dCPACK_EMBED_ARTIFACTS=${_embed_artifacts}
+)

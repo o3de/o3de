@@ -11,7 +11,7 @@
 */
 
 #include <Source/ReplicationWindows/ServerToClientReplicationWindow.h>
-#include <Multiplayer/NetBindComponent.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 #include <AzFramework/Visibility/IVisibilitySystem.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/ILogger.h>

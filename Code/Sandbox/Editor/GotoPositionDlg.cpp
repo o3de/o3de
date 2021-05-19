@@ -106,8 +106,7 @@ void CGotoPositionDlg::OnChangeEdit()
 {
     const int lengthInSw = 8;
     const int strNum = 6;
-    TArray< float > pos(strNum);
-    pos.Set(0);
+    AZStd::vector<float> pos(strNum);
 
     m_sPos = m_ui->m_posEdit->text();
     const QStringList parts = m_sPos.split(QRegularExpression("[\\s,;\\t]"), Qt::SkipEmptyParts);

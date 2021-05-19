@@ -12,17 +12,20 @@
 
 #pragma once
 
+#include <Multiplayer/IMultiplayer.h>
+#include <Editor/MultiplayerEditorConnection.h>
+#include <NetworkTime/NetworkTime.h>
+#include <NetworkEntity/NetworkEntityManager.h>
+#include <Source/AutoGen/Multiplayer.AutoPacketDispatcher.h>
+
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Threading/ThreadSafeDeque.h>
 #include <AzCore/std/string/string.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
-#include <Multiplayer/IMultiplayer.h>
-#include <Source/NetworkTime/NetworkTime.h>
-#include <Source/NetworkEntity/NetworkEntityManager.h>
-#include <Source/AutoGen/Multiplayer.AutoPacketDispatcher.h>
 
 namespace AzNetworking
 {
@@ -72,7 +75,7 @@ namespace Multiplayer
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::NotifyClientMigration& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::EntityMigration& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::ReadyForEntityUpdates& packet);
-
+    
         //! IConnectionListener interface
         //! @{
         AzNetworking::ConnectResult ValidateConnect(const AzNetworking::IpAddress& remoteAddress, const AzNetworking::IPacketHeader& packetHeader, AzNetworking::ISerializer& serializer) override;
@@ -94,10 +97,6 @@ namespace Multiplayer
         AZ::TimeMs GetCurrentHostTimeMs() const override;
         INetworkTime* GetNetworkTime() override;
         INetworkEntityManager* GetNetworkEntityManager() override;
-        const char* GetComponentGemName(NetComponentId netComponentId) const override;
-        const char* GetComponentName(NetComponentId netComponentId) const override;
-        const char* GetComponentPropertyName(NetComponentId netComponentId, PropertyIndex propertyIndex) const override;
-        const char* GetComponentRpcName(NetComponentId netComponentId, RpcIndex rpcIndex) const override;
         //! @}
 
         //! Console commands.
@@ -113,6 +112,7 @@ namespace Multiplayer
         AZ_CONSOLEFUNC(MultiplayerSystemComponent, DumpStats, AZ::ConsoleFunctorFlags::Null, "Dumps stats for the current multiplayer session");
 
         AzNetworking::INetworkInterface* m_networkInterface = nullptr;
+        AzNetworking::INetworkInterface* m_networkEditorInterface = nullptr;
         AZ::ConsoleCommandInvokedEvent::Handler m_consoleCommandHandler;
         AZ::ThreadSafeDeque<AZStd::string> m_cvarCommands;
 
@@ -128,5 +128,9 @@ namespace Multiplayer
 
         AZ::TimeMs m_lastReplicatedHostTimeMs = AZ::TimeMs{ 0 };
         HostFrameId m_lastReplicatedHostFrameId = InvalidHostFrameId;
+
+#if !defined(AZ_RELEASE_BUILD)
+        MultiplayerEditorConnection m_editorConnectionListener;
+#endif
     };
 }

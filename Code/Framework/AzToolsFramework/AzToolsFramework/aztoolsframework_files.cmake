@@ -303,6 +303,8 @@ set(FILES
     ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.cpp
     ToolsComponents/EditorNonUniformScaleComponent.h
     ToolsComponents/EditorNonUniformScaleComponent.cpp
+    ToolsComponents/EditorNonUniformScaleComponentMode.h
+    ToolsComponents/EditorNonUniformScaleComponentMode.cpp
     ToolsMessaging/EntityHighlightBus.h
     UI/Docking/DockWidgetUtils.cpp
     UI/Docking/DockWidgetUtils.h
