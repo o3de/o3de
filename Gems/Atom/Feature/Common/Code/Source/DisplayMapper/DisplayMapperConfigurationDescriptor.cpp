@@ -45,9 +45,9 @@ namespace AZ
             DisplayMapperParameters displayMapperParameters;
             AcesDisplayMapperFeatureProcessor::GetAcesDisplayMapperParameters(&displayMapperParameters, m_preset);
 
-            m_alterSurround = (displayMapperParameters.m_OutputDisplayTransformFlags & 0x1) != 0;
-            m_applyDesaturation = (displayMapperParameters.m_OutputDisplayTransformFlags & 0x2) != 0;
-            m_applyCATD60toD65 = (displayMapperParameters.m_OutputDisplayTransformFlags & 0x4) != 0;
+            m_alterSurround = (displayMapperParameters.m_OutputDisplayTransformFlags & AcesDisplayMapperFeatureProcessor::AlterSurround) != 0;
+            m_applyDesaturation = (displayMapperParameters.m_OutputDisplayTransformFlags & AcesDisplayMapperFeatureProcessor::ApplyDesaturation) != 0;
+            m_applyCATD60toD65 = (displayMapperParameters.m_OutputDisplayTransformFlags & AcesDisplayMapperFeatureProcessor::ApplyCATD60toD65) != 0;
             m_cinemaLimitsBlack = displayMapperParameters.m_cinemaLimits[0];
             m_cinemaLimitsWhite = displayMapperParameters.m_cinemaLimits[1];
             m_minPoint = displayMapperParameters.m_acesSplineParams.minPoint[0];

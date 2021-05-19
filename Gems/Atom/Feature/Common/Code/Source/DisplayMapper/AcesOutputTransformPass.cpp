@@ -108,15 +108,15 @@ namespace AZ
                 m_displayMapperParameters.m_OutputDisplayTransformFlags = 0;
                 if (m_acesParameterOverrides.m_alterSurround)
                 {
-                    m_displayMapperParameters.m_OutputDisplayTransformFlags |= 0x1;
+                    m_displayMapperParameters.m_OutputDisplayTransformFlags |= AcesDisplayMapperFeatureProcessor::AlterSurround;
                 }
                 if (m_acesParameterOverrides.m_applyDesaturation)
                 {
-                    m_displayMapperParameters.m_OutputDisplayTransformFlags |= 0x2;
+                    m_displayMapperParameters.m_OutputDisplayTransformFlags |= AcesDisplayMapperFeatureProcessor::ApplyDesaturation;
                 }
                 if (m_acesParameterOverrides.m_applyCATD60toD65)
                 {
-                    m_displayMapperParameters.m_OutputDisplayTransformFlags |= 0x4;
+                    m_displayMapperParameters.m_OutputDisplayTransformFlags |= AcesDisplayMapperFeatureProcessor::ApplyCATD60toD65;
                 }
 
                 m_displayMapperParameters.m_cinemaLimits[0] = m_acesParameterOverrides.m_cinemaLimitsBlack;
