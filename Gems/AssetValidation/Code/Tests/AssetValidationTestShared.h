@@ -152,7 +152,6 @@ struct AssetValidationTest
         {
             AZ::SettingsRegistry::Register(&m_registry);
 
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(m_registry);
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
             // Set the engine root to the temporary directory and re-update the runtime file paths
             auto enginePathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)

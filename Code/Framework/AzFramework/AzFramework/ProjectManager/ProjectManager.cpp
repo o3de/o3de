@@ -46,7 +46,6 @@ namespace AzFramework::ProjectManager
             // Store the Command line to the Setting Registry
             AZ::SettingsRegistryImpl settingsRegistry;
             AZ::SettingsRegistryMergeUtils::StoreCommandLineToRegistry(settingsRegistry, commandLine);
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(settingsRegistry);
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
             // Retrieve Command Line from Settings Registry, it may have been updated by the call to FindEngineRoot()
             // in MergeSettingstoRegistry_ConfigFile

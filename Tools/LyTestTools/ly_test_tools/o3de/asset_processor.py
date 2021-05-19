@@ -664,8 +664,7 @@ class AssetProcessor(object):
             make_dir = os.path.join(self._temp_asset_root, copy_dir)
             if not os.path.isdir(make_dir):
                 os.makedirs(make_dir)
-        for copyfile_name in ['bootstrap.cfg',
-                              'Registry/AssetProcessorPlatformConfig.setreg',
+        for copyfile_name in ['Registry/AssetProcessorPlatformConfig.setreg',
                               os.path.join(self._workspace.project, "project.json"),
                               os.path.join('Assets', 'Engine', 'exclude.filetag')]:
             shutil.copyfile(os.path.join(self._workspace.paths.engine_root(), copyfile_name),

@@ -109,7 +109,6 @@ namespace AssetBundler
 
             if (!AZ::SettingsRegistry::Get())
             {
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(m_registry);
                 AZ::SettingsRegistry::Register(&m_registry);
             }
 
