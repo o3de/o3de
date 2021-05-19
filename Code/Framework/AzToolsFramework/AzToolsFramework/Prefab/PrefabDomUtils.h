@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/std/optional.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 
@@ -42,7 +43,7 @@ namespace AzToolsFramework
             /**
             * Stores a valid Prefab Instance within a Prefab Dom. Useful for generating Templates
             * @param instance The instance to store
-            * @param prefabDom the prefabDom that will be used to store the Instance data
+            * @param prefabDom The prefabDom that will be used to store the Instance data
             * @return bool on whether the operation succeeded
             */
             bool StoreInstanceInPrefabDom(const Instance& instance, PrefabDom& prefabDom);
@@ -60,8 +61,8 @@ namespace AzToolsFramework
             /**
             * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.
             * @param instance The Instance to load.
-            * @param prefabDom the prefabDom that will be used to load the Instance data.
-            * @param shouldClearContainers whether to clear containers in Instance while loading.
+            * @param prefabDom The prefabDom that will be used to load the Instance data.
+            * @param shouldClearContainers Whether to clear containers in Instance while loading.
             * @return bool on whether the operation succeeded.
             */
             bool LoadInstanceFromPrefabDom(
@@ -70,10 +71,22 @@ namespace AzToolsFramework
             /**
             * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.
             * @param instance The Instance to load.
+            * @param referencedAssets AZ::Assets discovered during json load are added to this list
+            * @param prefabDom The prefabDom that will be used to load the Instance data.
+            * @param shouldClearContainers Whether to clear containers in Instance while loading.
+            * @return bool on whether the operation succeeded.
+            */
+            bool LoadInstanceFromPrefabDom(
+                Instance& instance, const PrefabDom& prefabDom, AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets,
+                LoadInstanceFlags flags = LoadInstanceFlags::None);
+
+            /**
+            * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.
+            * @param instance The Instance to load.
             * @param newlyAddedEntities The new instances added during deserializing the instance. These are the entities found
             *       in the prefabDom.
-            * @param prefabDom the prefabDom that will be used to load the Instance data.
-            * @param shouldClearContainers whether to clear containers in Instance while loading.
+            * @param prefabDom The prefabDom that will be used to load the Instance data.
+            * @param shouldClearContainers Whether to clear containers in Instance while loading.
             * @return bool on whether the operation succeeded.
             */
             bool LoadInstanceFromPrefabDom(
@@ -86,6 +99,20 @@ namespace AzToolsFramework
                     .Append(InstancesName)
                     .Append(instanceName);
             };
+
+            /**
+             * Gets a set of all the template source paths in the given dom.
+             * @param prefabDom The DOM to get the template source paths from.
+             * @param[out] templateSourcePaths The set of template source paths to populate.
+             */
+            void GetTemplateSourcePaths(const PrefabDomValue& prefabDom, AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths);
+
+            /**
+             * Gets the instances DOM value from the given prefab DOM.
+             * 
+             * @return the instances DOM value or AZStd::nullopt if it instances can't be found.
+             */
+            PrefabDomValueConstReference GetInstancesValue(const PrefabDomValue& prefabDom);
 
             /**
              * Prints the contents of the given prefab DOM value to the debug output console in a readable format.

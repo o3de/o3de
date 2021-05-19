@@ -36,6 +36,8 @@ ly_add_target(
             Legacy::CryCommon
             Legacy::EditorLib
             Gem::LmbrCentral
+            AZ::AtomCore
+            Gem::Atom_RPI.Public
 )
 
 ly_add_dependencies(Editor ComponentEntityEditorPlugin)

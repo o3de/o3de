@@ -16,12 +16,15 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/numeric.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Interface/Interface.h>
@@ -30,6 +33,7 @@
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Physics/Material.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzFramework/Visibility/BoundsBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -56,7 +60,13 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
 #include <AzToolsFramework/UI/Layer/NameConflictWarning.hxx>
+#include <AzToolsFramework/ViewportSelection/EditorHelpers.h>
 #include <MathConversion.h>
+
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+
+#include <ModernViewportCameraControllerRequestBus.h>
 
 #include "Objects/ComponentEntityObject.h"
 #include "ISourceControl.h"
@@ -75,6 +85,7 @@
 #include <Editor/Settings.h>
 #include <Editor/StringDlg.h>
 #include <Editor/QtViewPaneManager.h>
+#include <Editor/EditorViewportSettings.h>
 #include <IResourceSelectorHost.h>
 #include "CryEdit.h"
 
@@ -160,7 +171,6 @@ void SandboxIntegrationManager::Setup()
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
 
     AzFramework::DisplayContextRequestBus::Handler::BusConnect();
-    SetupFileExtensionMap();
 
     MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_FILE_SAVE_SLICE_TO_ROOT, [this]() {
         SaveSlice(false);
@@ -1675,32 +1685,77 @@ bool CollectEntityBoundingBoxesForZoom(const AZ::EntityId& entityId, AABB& selec
 //////////////////////////////////////////////////////////////////////////
 void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::EntityIdList& entityIds)
 {
-    if (entityIds.size() == 0)
+    if (entityIds.empty())
     {
         return;
     }
 
-    AABB selectionBounds;
-    selectionBounds.Reset();
-    bool entitiesAvailableForGoTo = false;
-
-    for (const AZ::EntityId& entityId : entityIds)
+    if (SandboxEditor::UsingNewCameraSystem())
     {
-        if(CollectEntityBoundingBoxesForZoom(entityId, selectionBounds))
+        const AZ::Aabb aabb = AZStd::accumulate(
+            AZStd::begin(entityIds), AZStd::end(entityIds), AZ::Aabb::CreateNull(), [](AZ::Aabb acc, const AZ::EntityId entityId) {
+                const AZ::Aabb aabb = AzFramework::CalculateEntityWorldBoundsUnion(AzToolsFramework::GetEntityById(entityId));
+                acc.AddAabb(aabb);
+                return acc;
+            });
+
+        float radius;
+        AZ::Vector3 center;
+        aabb.GetAsSphere(center, radius);
+
+        // minimum center size is 40cm
+        const float minSelectionRadius = 0.4f;
+        const float selectionSize = AZ::GetMax(minSelectionRadius, radius);
+
+        auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+
+        const int viewCount = GetIEditor()->GetViewManager()->GetViewCount(); // legacy call
+        for (int viewIndex = 0; viewIndex < viewCount; ++viewIndex)
         {
-            entitiesAvailableForGoTo = true;
+            if (auto viewportContext = viewportContextManager->GetViewportContextById(viewIndex))
+            {
+                const AZ::Transform cameraTransform = viewportContext->GetCameraTransform();
+                const AZ::Vector3 forward = (center - cameraTransform.GetTranslation()).GetNormalized();
+
+                // move camera 25% further back than required
+                const float centerScale = 1.25f;
+                // compute new camera transform
+                const float fov = AzFramework::RetrieveFov(viewportContext->GetCameraProjectionMatrix());
+                const float fovScale = (1.0f / AZStd::tan(fov * 0.5f));
+                const float distanceToTarget = selectionSize * fovScale * centerScale;
+                const AZ::Transform nextCameraTransform =
+                    AZ::Transform::CreateLookAt(aabb.GetCenter() - (forward * distanceToTarget), aabb.GetCenter());
+
+                SandboxEditor::ModernViewportCameraControllerRequestBus::Event(
+                    viewportContext->GetId(), &SandboxEditor::ModernViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+                    nextCameraTransform);
+            }
         }
     }
-
-    if (entitiesAvailableForGoTo)
+    else
     {
-        int numViews = GetIEditor()->GetViewManager()->GetViewCount();
-        for (int viewIndex = 0; viewIndex < numViews; ++viewIndex)
+        AABB selectionBounds;
+        selectionBounds.Reset();
+        bool entitiesAvailableForGoTo = false;
+
+        for (const AZ::EntityId& entityId : entityIds)
         {
-            CViewport* viewport = GetIEditor()->GetViewManager()->GetView(viewIndex);
-            if (viewport)
+            if (CollectEntityBoundingBoxesForZoom(entityId, selectionBounds))
             {
-                viewport->CenterOnAABB(selectionBounds);
+                entitiesAvailableForGoTo = true;
+            }
+        }
+
+        if (entitiesAvailableForGoTo)
+        {
+            int numViews = GetIEditor()->GetViewManager()->GetViewCount();
+            for (int viewIndex = 0; viewIndex < numViews; ++viewIndex)
+            {
+                CViewport* viewport = GetIEditor()->GetViewManager()->GetView(viewIndex);
+                if (viewport)
+                {
+                    viewport->CenterOnAABB(selectionBounds);
+                }
             }
         }
     }
@@ -1924,30 +1979,6 @@ void SandboxIntegrationManager::MakeSliceFromEntities(const AzToolsFramework::En
     char path[AZ_MAX_PATH_LEN] = { 0 };
     gEnv->pFileIO->ResolvePath(slicesAssetsPath.c_str(), path, AZ_MAX_PATH_LEN);
     AzToolsFramework::SliceUtilities::MakeNewSlice(entitiesAndDescendants, path, inheritSlices, setAsDynamic);
-}
-
-void SandboxIntegrationManager::SetupFileExtensionMap()
-{
-    // There's no central registry for geometry file types.
-    const char* geometryFileExtensions[] =
-    {
-        CRY_GEOMETRY_FILE_EXT,                  // .cgf
-        CRY_SKEL_FILE_EXT,                      // .chr
-        CRY_CHARACTER_DEFINITION_FILE_EXT,      // .cdf
-    };
-
-    // Cry geometry file extensions.
-    for (const char* extension : geometryFileExtensions)
-    {
-        m_extensionToFileType[AZ::Crc32(extension)] = IFileUtil::EFILE_TYPE_GEOMETRY;
-    }
-
-    // Cry image file extensions.
-    for (size_t i = 0; i < IResourceCompilerHelper::GetNumSourceImageFormats(); ++i)
-    {
-        const char* extension = IResourceCompilerHelper::GetSourceImageFormat(i, false);
-        m_extensionToFileType[AZ::Crc32(extension)] = IFileUtil::EFILE_TYPE_TEXTURE;
-    }
 }
 
 void SandboxIntegrationManager::RegisterViewPane(const char* name, const char* category, const AzToolsFramework::ViewPaneOptions& viewOptions, const WidgetCreationFunc& widgetCreationFunc)

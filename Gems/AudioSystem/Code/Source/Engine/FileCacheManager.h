@@ -23,7 +23,6 @@
 #include <ATLEntities.h>
 
 // Forward declarations
-class CCustomMemoryHeap;
 struct IRenderAuxGeom;
 
 namespace Audio
@@ -103,7 +102,7 @@ namespace Audio
         TATLPreloadRequestLookup& m_preloadRequests;
         TAudioFileEntries m_audioFileEntries;
 
-        AZStd::unique_ptr<CCustomMemoryHeap> m_memoryHeap;
+        // AZStd::unique_ptr<???> m_memoryHeap; // ToDo: Update to use non-legacy memory: LYN-3792
         size_t m_currentByteTotal;
         size_t m_maxByteTotal;
     };

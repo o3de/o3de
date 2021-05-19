@@ -236,17 +236,11 @@ namespace ScriptEventsEditor
             moduleConfiguration->RegisterAssetHandler();
         }
 
-        m_propertyHandlers.emplace_back(AzToolsFramework::RegisterGenericComboBoxHandler<ScriptEventData::VersionedProperty>());
+        AzToolsFramework::RegisterGenericComboBoxHandler<ScriptEventData::VersionedProperty>();
     }
 
     void ScriptEventEditorSystemComponent::Deactivate()
     {
-        for (auto&& propertyHandler : m_propertyHandlers)
-        {
-            AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(&AzToolsFramework::PropertyTypeRegistrationMessages::UnregisterPropertyType, propertyHandler.get());
-        }
-        m_propertyHandlers.clear();
-        
         using namespace ScriptEvents;
         ScriptEventsSystemComponentImpl* moduleConfiguration = nullptr;
         ScriptEventModuleConfigurationRequestBus::BroadcastResult(moduleConfiguration, &ScriptEventModuleConfigurationRequests::GetSystemComponentImpl);

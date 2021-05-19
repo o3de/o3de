@@ -21,7 +21,6 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/fixed_string.h>
 
-#include <AzFramework/Network/NetSystemBus.h>
 #include <AzFramework/CommandLine/CommandLine.h>
 #include <AzFramework/API/ApplicationAPI.h>
 
@@ -49,7 +48,6 @@ namespace AzFramework
         : public AZ::ComponentApplication
         , public AZ::UserSettingsFileLocatorBus::Handler
         , public ApplicationRequests::Bus::Handler
-        , public NetSystemRequestBus::Handler
     {
     public:
         // Base class for platform specific implementations of the application.
@@ -137,11 +135,6 @@ namespace AzFramework
 
         // Convenience function that should be called instead of the standard exit() function to ensure platform requirements are met.
         static void Exit(int errorCode) { ApplicationRequests::Bus::Broadcast(&ApplicationRequests::TerminateOnError, errorCode); }
-
-        //////////////////////////////////////////////////////////////////////////
-        //! NetSystemEventBus::Handler
-        //////////////////////////////////////////////////////////////////////////
-        NetworkContext* GetNetworkContext() override;
 
     protected:
 
