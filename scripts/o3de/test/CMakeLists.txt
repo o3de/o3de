@@ -9,8 +9,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-add_subdirectory(detect_file_changes)
-add_subdirectory(commit_validation)
-add_subdirectory(o3de)
-add_subdirectory(project_manager)
-add_subdirectory(ctest)
+if(NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    return()
+endif()
+
+# Add a test to test out the o3de package `o3de.py register` command
+ly_add_pytest(
+    NAME o3de_register
+    PATH ${CMAKE_CURRENT_LIST_DIR}/unit_test_registration.py
+    TEST_SUITE smoke
+    EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+)
