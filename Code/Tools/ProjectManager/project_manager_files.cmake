@@ -22,7 +22,6 @@ set(FILES
     Source/EngineInfo.cpp
     Source/FirstTimeUseScreen.h
     Source/FirstTimeUseScreen.cpp
-    Source/FirstTimeUseScreen.ui
     Source/ProjectManagerWindow.h
     Source/ProjectManagerWindow.cpp
     Source/ProjectTemplateInfo.h

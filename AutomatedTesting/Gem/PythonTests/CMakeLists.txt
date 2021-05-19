@@ -56,5 +56,8 @@ add_subdirectory(editor)
 ## Streaming ##
 add_subdirectory(streaming)
 
-## Streaming ##
+## Smoke ##
 add_subdirectory(smoke)
+
+## AWS ##
+add_subdirectory(AWS)

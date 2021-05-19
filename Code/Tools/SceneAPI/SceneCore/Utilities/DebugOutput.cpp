@@ -19,6 +19,16 @@ namespace AZ::SceneAPI::Utilities
         m_output += AZStd::string::format("\t%s: %s\n", name, data);
     }
 
+    void DebugOutput::WriteArray(const char* name, const unsigned int* data, int size)
+    {
+        m_output += AZStd::string::format("\t%s: ", name);
+        for (int index = 0; index < size; ++index)
+        {
+            m_output += AZStd::string::format("%d, ", data[index]);
+        }
+        m_output += AZStd::string::format("\n");
+    }
+
     void DebugOutput::Write(const char* name, const AZStd::string& data)
     {
         Write(name, data.c_str());
