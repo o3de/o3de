@@ -40,10 +40,10 @@ namespace PhysX
 
         BaseColliderComponent() = default;
 
-        void SetShapeConfigurationList(const Physics::ShapeConfigurationList& shapeConfigList);
+        void SetShapeConfigurationList(const AzPhysics::ShapeColliderPairList& shapeConfigList);
 
         // ColliderComponentRequestBus
-        Physics::ShapeConfigurationList GetShapeConfigurations() override;
+        AzPhysics::ShapeColliderPairList GetShapeConfigurations() override;
         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> GetShapes() override;
 
         // TransformNotificationsBus
@@ -114,7 +114,7 @@ namespace PhysX
         virtual void UpdateScaleForShapeConfigs();
 
         ShapeInfoCache m_shapeInfoCache;
-        Physics::ShapeConfigurationList m_shapeConfigList;
+        AzPhysics::ShapeColliderPairList m_shapeConfigList;
     private:
         bool InitShapes();
         bool IsMeshCollider() const;

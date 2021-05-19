@@ -120,28 +120,6 @@
       <property name="bottomMargin">
        <number>6</number>
       </property>
-      <item>
-       <widget class="QPropertyTree" name="m_connectionProperties" native="true">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>16777215</height>
-         </size>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>
@@ -152,12 +130,6 @@
    <class>QConnectionListWidget</class>
    <extends>QListWidget</extends>
    <header>QConnectionListWidget.h</header>
-  </customwidget>
-  <customwidget>
-   <class>QPropertyTree</class>
-   <extends>QWidget</extends>
-   <header>QPropertyTree/QPropertyTree.h</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

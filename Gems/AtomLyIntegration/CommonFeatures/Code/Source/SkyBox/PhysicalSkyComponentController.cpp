@@ -58,6 +58,7 @@ namespace AZ
         void PhysicalSkyComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC("SkyBoxService", 0x8169a709));
+            incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         void PhysicalSkyComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

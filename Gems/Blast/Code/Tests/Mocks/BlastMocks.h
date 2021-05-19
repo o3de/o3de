@@ -424,7 +424,7 @@ namespace Blast
 
         void SetAngularVelocity([[maybe_unused]] const AZ::Vector3& angularVelocity) override {}
 
-        AZ::Vector3 GetLinearVelocityAtWorldPoint([[maybe_unused]] const AZ::Vector3& worldPoint) override
+        AZ::Vector3 GetLinearVelocityAtWorldPoint([[maybe_unused]] const AZ::Vector3& worldPoint) const override
         {
             return {};
         }

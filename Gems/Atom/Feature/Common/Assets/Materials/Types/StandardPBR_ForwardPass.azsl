@@ -10,6 +10,8 @@
 *
 */
 
+#include "Atom/Features/ShaderQualityOptions.azsli"
+
 #include "StandardPBR_Common.azsli"
 
 // SRGs
@@ -105,7 +107,7 @@ VSOutput StandardPbr_ForwardPassVS(VSInput IN)
 
 // ---------- Pixel Shader ----------
 
-PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depth)
+PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depthNDC)
 {
     // ------- Tangents & Bitangets -------
 
@@ -125,7 +127,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     // ------- Depth & Parallax -------
 
-    depth = IN.m_position.z;
+    depthNDC = IN.m_position.z;
     
     bool displacementIsClipped = false;
 
@@ -137,7 +139,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
         GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_depthFactor, MaterialSrg::m_depthOffset,
                          ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
-                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depth, displacementIsClipped);
+                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depthNDC, IN.m_position.w, displacementIsClipped);
 
         // Adjust directional light shadow coorinates for parallax correction
         if(o_parallax_enablePixelDepthOffset)
@@ -317,13 +319,18 @@ ForwardPassOutputWithDepth StandardPbr_ForwardPassPS(VSOutput IN, bool isFrontFa
 
     PbrLightingOutput lightingOutput = ForwardPassPS_Common(IN, isFrontFace, depth);
 
+#ifdef UNIFIED_FORWARD_OUTPUT
+    OUT.m_color.rgb = lightingOutput.m_diffuseColor.rgb + lightingOutput.m_specularColor.rgb;
+    OUT.m_color.a = lightingOutput.m_diffuseColor.a;
+    OUT.m_depth = depth;
+#else
     OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
     OUT.m_specularColor = lightingOutput.m_specularColor;
     OUT.m_specularF0 = lightingOutput.m_specularF0;
     OUT.m_albedo = lightingOutput.m_albedo;
     OUT.m_normal = lightingOutput.m_normal;
     OUT.m_depth = depth;
-
+#endif
     return OUT;
 }
 
@@ -335,12 +342,16 @@ ForwardPassOutput StandardPbr_ForwardPassPS_EDS(VSOutput IN, bool isFrontFace : 
 
     PbrLightingOutput lightingOutput = ForwardPassPS_Common(IN, isFrontFace, depth);
 
+#ifdef UNIFIED_FORWARD_OUTPUT
+    OUT.m_color.rgb = lightingOutput.m_diffuseColor.rgb + lightingOutput.m_specularColor.rgb;
+    OUT.m_color.a = lightingOutput.m_diffuseColor.a;
+#else
     OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
     OUT.m_specularColor = lightingOutput.m_specularColor;
     OUT.m_specularF0 = lightingOutput.m_specularF0;
     OUT.m_albedo = lightingOutput.m_albedo;
     OUT.m_normal = lightingOutput.m_normal;
-
+#endif
     return OUT;
 }
 

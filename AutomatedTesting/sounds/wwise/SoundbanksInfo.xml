@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<SoundBanksInfo Platform="Windows" BasePlatform="Windows" SchemaVersion="12" SoundbankVersion="135">
+<SoundBanksInfo Platform="Windows" BasePlatform="Windows" SchemaVersion="12" SoundbankVersion="140">
 	<RootPaths>
-		<ProjectRoot>Q:\audio\dev\AutomatedTesting\sounds\wwise_project\</ProjectRoot>
-		<SourceFilesRoot>Q:\audio\dev\AutomatedTesting\sounds\wwise_project\.cache\Windows\</SourceFilesRoot>
-		<SoundBanksRoot>Q:\audio\dev\AutomatedTesting\sounds\wwise\</SoundBanksRoot>
+		<ProjectRoot>D:\code\o3de\AutomatedTesting\sounds\wwise_project\</ProjectRoot>
+		<SourceFilesRoot>D:\code\o3de\AutomatedTesting\sounds\wwise_project\.cache\Windows\</SourceFilesRoot>
+		<SoundBanksRoot>D:\code\o3de\AutomatedTesting\sounds\wwise\</SoundBanksRoot>
 		<ExternalSourcesInputFile></ExternalSourcesInputFile>
-		<ExternalSourcesOutputRoot>Q:\audio\dev\AutomatedTesting\sounds\wwise_project\GeneratedSoundBanks\Windows</ExternalSourcesOutputRoot>
+		<ExternalSourcesOutputRoot>D:\code\o3de\AutomatedTesting\sounds\wwise_project\GeneratedSoundBanks\Windows</ExternalSourcesOutputRoot>
 	</RootPaths>
 	<DialogueEvents/>
 	<StreamedFiles>
@@ -28,7 +28,7 @@
 	</StreamedFiles>
 	<MediaFilesNotInAnyBank/>
 	<SoundBanks>
-		<SoundBank Id="1091743888" Language="SFX" Hash="1749663103">
+		<SoundBank Id="1091743888" Language="SFX" Hash="1442445546">
 			<ObjectPath>\SoundBanks\Default Work Unit\test_bank2</ObjectPath>
 			<ShortName>test_bank2</ShortName>
 			<Path>test_bank2.bnk</Path>
@@ -37,7 +37,7 @@
 				<Event Id="1100037040" Name="test_event_4_bank2_streamed_target" ObjectPath="\Events\Default Work Unit\test_event_4_bank2_streamed_target"/>
 			</IncludedEvents>
 		</SoundBank>
-		<SoundBank Id="1091743889" Language="SFX" Hash="3467851756">
+		<SoundBank Id="1091743889" Language="SFX" Hash="2708915409">
 			<ObjectPath>\SoundBanks\Default Work Unit\test_bank3</ObjectPath>
 			<ShortName>test_bank3</ShortName>
 			<Path>test_bank3.bnk</Path>
@@ -60,7 +60,7 @@
 				</Event>
 			</IncludedEvents>
 		</SoundBank>
-		<SoundBank Id="1091743891" Language="SFX" Hash="1393420309">
+		<SoundBank Id="1091743891" Language="SFX" Hash="3931660247">
 			<ObjectPath>\SoundBanks\Default Work Unit\test_bank1</ObjectPath>
 			<ShortName>test_bank1</ShortName>
 			<Path>test_bank1.bnk</Path>
@@ -83,7 +83,7 @@
 				</Event>
 			</IncludedEvents>
 		</SoundBank>
-		<SoundBank Id="1091743892" Language="SFX" Hash="3409201888">
+		<SoundBank Id="1091743892" Language="SFX" Hash="3991847887">
 			<ObjectPath>\SoundBanks\Default Work Unit\test_bank6</ObjectPath>
 			<ShortName>test_bank6</ShortName>
 			<Path>test_bank6.bnk</Path>
@@ -102,7 +102,7 @@
 				</Event>
 			</IncludedEvents>
 		</SoundBank>
-		<SoundBank Id="1091743893" Language="SFX" Hash="1766491996">
+		<SoundBank Id="1091743893" Language="SFX" Hash="3036863780">
 			<ObjectPath>\SoundBanks\Default Work Unit\test_bank7</ObjectPath>
 			<ShortName>test_bank7</ShortName>
 			<Path>test_bank7.bnk</Path>
@@ -125,7 +125,7 @@
 				</Event>
 			</IncludedEvents>
 		</SoundBank>
-		<SoundBank Id="1091743894" Language="SFX" Hash="1007559976">
+		<SoundBank Id="1091743894" Language="SFX" Hash="3337623278">
 			<ObjectPath>\SoundBanks\Default Work Unit\test_bank4</ObjectPath>
 			<ShortName>test_bank4</ShortName>
 			<Path>test_bank4.bnk</Path>
@@ -136,7 +136,7 @@
 				</File>
 			</IncludedMemoryFiles>
 		</SoundBank>
-		<SoundBank Id="1091743895" Language="SFX" Hash="1346356300">
+		<SoundBank Id="1091743895" Language="SFX" Hash="3368176">
 			<ObjectPath>\SoundBanks\Default Work Unit\test_bank5</ObjectPath>
 			<ShortName>test_bank5</ShortName>
 			<Path>test_bank5.bnk</Path>
@@ -169,7 +169,7 @@
 				</Event>
 			</IncludedEvents>
 		</SoundBank>
-		<SoundBank Id="1355168291" Language="SFX" Hash="2909358977">
+		<SoundBank Id="1355168291" Language="SFX" Hash="4145490603">
 			<ObjectPath>Init</ObjectPath>
 			<ShortName>Init</ShortName>
 			<Path>Init.bnk</Path>

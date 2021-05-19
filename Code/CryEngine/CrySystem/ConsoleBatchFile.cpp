@@ -87,14 +87,6 @@ bool CConsoleBatchFile::ExecuteConfigFile(const char* sFilename)
         filename = PathUtil::ReplaceExtension(filename, "cfg");
     }
 
-#if defined(CVARS_WHITELIST)
-    bool ignoreWhitelist = true;
-    if (_stricmp(sFilename, "autoexec.cfg") == 0)
-    {
-        ignoreWhitelist = false;
-    }
-#endif // defined(CVARS_WHITELIST)
-
     //////////////////////////////////////////////////////////////////////////
     CCryFile file;
 
@@ -179,18 +171,9 @@ bool CConsoleBatchFile::ExecuteConfigFile(const char* sFilename)
             continue;
         }
 
-#if defined(CVARS_WHITELIST)
-        if (ignoreWhitelist || (gEnv->pSystem->GetCVarsWhiteList() && gEnv->pSystem->GetCVarsWhiteList()->IsWhiteListed(strLine, false)))
-#endif // defined(CVARS_WHITELIST)
         {
             m_pConsole->ExecuteString(strLine);
         }
-#if defined(CVARS_WHITELIST)
-        else if (gEnv->IsDedicated())
-        {
-            gEnv->pSystem->GetILog()->LogError("Failed to execute command: '%s' as it is not whitelisted\n", strLine.c_str());
-        }
-#endif // defined(CVARS_WHITELIST)
     }
     // See above
     //  ((CXConsole*)m_pConsole)->SetStatus(bConsoleStatus);

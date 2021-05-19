@@ -54,6 +54,9 @@ namespace AZ
         MOCK_METHOD5(
             MergeSettingsFolder,
             bool(AZStd::string_view, const Specializations&, AZStd::string_view, AZStd::string_view, AZStd::vector<char>*));
+
+        MOCK_METHOD1(SetApplyPatchSettings, void(const JsonApplyPatchSettings&));
+        MOCK_METHOD1(GetApplyPatchSettings, void(JsonApplyPatchSettings&));
     };
 } // namespace AZ
 
