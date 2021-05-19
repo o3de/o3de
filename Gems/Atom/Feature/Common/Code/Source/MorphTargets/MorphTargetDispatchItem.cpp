@@ -11,7 +11,7 @@
 */
 
 #include <MorphTargets/MorphTargetDispatchItem.h>
-#include <MorphTargets/MorphTargetComputePass.h>
+#include <SkinnedMesh/SkinnedMeshFeatureProcessor.h>
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -30,7 +30,7 @@ namespace AZ
         MorphTargetDispatchItem::MorphTargetDispatchItem(
             const AZStd::intrusive_ptr<MorphTargetInputBuffers> inputBuffers,
             const MorphTargetMetaData& morphTargetMetaData,
-            RPI::Ptr<MorphTargetComputePass> morphTargetComputePass,
+            SkinnedMeshFeatureProcessor* skinnedMeshFeatureProcessor,
             MorphTargetInstanceMetaData morphInstanceMetaData,
             float morphDeltaIntegerEncoding)
             : m_inputBuffers(inputBuffers)
@@ -38,7 +38,7 @@ namespace AZ
             , m_morphInstanceMetaData(morphInstanceMetaData)
             , m_accumulatedDeltaIntegerEncoding(morphDeltaIntegerEncoding)
         {
-            m_morphTargetShader = morphTargetComputePass->GetShader();
+            m_morphTargetShader = skinnedMeshFeatureProcessor->GetMorphTargetShader();
             RPI::ShaderReloadNotificationBus::Handler::BusConnect(m_morphTargetShader->GetAssetId());
         }
 
