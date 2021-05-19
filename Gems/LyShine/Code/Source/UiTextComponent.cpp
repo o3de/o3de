@@ -3568,13 +3568,14 @@ UiTextComponent::FontEffectComboBoxVec UiTextComponent::PopulateFontEffectList()
     FontEffectComboBoxVec result;
     AZStd::vector<AZ::EntityId> entityIdList;
 
-    // there is always a valid font since we default to "default-ui"
-    // so just get the effects from the font and add their names to the result list
-    unsigned int numEffects = m_font->GetNumEffects();
-    for (int i = 0; i < numEffects; ++i)
+    if (m_font)
     {
-        const char* name = m_font->GetEffectName(i);
-        result.push_back(AZStd::make_pair(i, name));
+        unsigned int numEffects = m_font->GetNumEffects();
+        for (int i = 0; i < numEffects; ++i)
+        {
+            const char* name = m_font->GetEffectName(i);
+            result.push_back(AZStd::make_pair(i, name));
+        }
     }
 
     return result;

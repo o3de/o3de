@@ -14,11 +14,19 @@
 
 namespace O3DE::ProjectManager
 {
-    ProjectInfo::ProjectInfo(const QString& path, const QString& projectName, const QString& productName, const AZ::Uuid projectId)
+    ProjectInfo::ProjectInfo(const QString& path, const QString& projectName, const QString& displayName,
+        const QString& imagePath, const QString& backgroundImagePath, bool isNew)
         : m_path(path)
         , m_projectName(projectName)
-        , m_productName(productName)
-        , m_projectId(projectId)
+        , m_displayName(displayName)
+        , m_imagePath(imagePath)
+        , m_backgroundImagePath(backgroundImagePath)
+        , m_isNew(isNew)
     {
+    }
+
+    bool ProjectInfo::IsValid() const
+    {
+        return !m_path.isEmpty() && !m_projectName.isEmpty();
     }
 } // namespace O3DE::ProjectManager

@@ -85,7 +85,6 @@ namespace AZ
 
             m_decalData.Clear();
             m_decalBufferHandler.Release();
-            m_materialAssets.clear();
         }
 
         DecalTextureArrayFeatureProcessor::DecalHandle DecalTextureArrayFeatureProcessor::AcquireDecal()
@@ -135,7 +134,14 @@ namespace AZ
             {
                 m_decalData.GetData(decal.GetIndex()) = m_decalData.GetData(sourceDecal.GetIndex());
                 const auto materialAsset = GetMaterialUsedByDecal(sourceDecal);
-                m_materialToTextureArrayLookupTable.at(materialAsset).m_useCount++;
+                if (materialAsset.IsValid())
+                {
+                    m_materialToTextureArrayLookupTable.at(materialAsset).m_useCount++;
+                }
+                else
+                {
+                    AZ_Warning("DecalTextureArrayFeatureProcessor", false, "CloneDecal called on a decal with no material set.");
+                }
                 m_deviceBufferNeedsUpdate = true;
             }
             return decal;
@@ -410,7 +416,7 @@ namespace AZ
             int iter = m_textureArrayList.begin();
             while (iter != -1)
             {
-                const auto packedTexture = m_textureArrayList[iter].second.GetPackedTexture();
+                const auto& packedTexture = m_textureArrayList[iter].second.GetPackedTexture();
                 view->GetShaderResourceGroup()->SetImage(m_decalTextureArrayIndices[iter], packedTexture);
                 iter = m_textureArrayList.next(iter);
             }
@@ -482,22 +488,15 @@ namespace AZ
             return material;
         }
 
-        void DecalTextureArrayFeatureProcessor::QueueMaterialLoadForDecal(const AZ::Data::AssetId material, const DecalHandle handle)
+        void DecalTextureArrayFeatureProcessor::QueueMaterialLoadForDecal(const AZ::Data::AssetId materialId, const DecalHandle handle)
         {
-            // Note that another decal might have already queued this material for loading
-            if (m_materialLoadTracker.IsAssetLoading(material))
-            {
-                m_materialLoadTracker.TrackAssetLoad(handle, material);
-                return;
-            }
+            const auto materialAsset = QueueMaterialAssetLoad(materialId);
 
-            const auto materialAsset = QueueMaterialAssetLoad(material);
-            m_materialAssets.emplace(material, materialAsset);
-            m_materialLoadTracker.TrackAssetLoad(handle, material);
+            m_materialLoadTracker.TrackAssetLoad(handle, materialAsset);
 
             if (materialAsset.IsLoading())
             {
-                AZ::Data::AssetBus::MultiHandler::BusConnect(material);
+                AZ::Data::AssetBus::MultiHandler::BusConnect(materialId);
             }
             else if (materialAsset.IsReady())
             {

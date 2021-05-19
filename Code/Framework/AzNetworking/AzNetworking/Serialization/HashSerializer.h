@@ -56,6 +56,6 @@ namespace AzNetworking
 
     private:
 
-        AZ::HashValue64 m_hash;
+        AZ::HashValue64 m_hash = AZ::HashValue64{ 0 };
     };
 }

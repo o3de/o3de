@@ -135,29 +135,17 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include "XML/xml.h"
 #include "XML/ReadWriteXMLSink.h"
 
-#include "StreamEngine/StreamEngine.h"
-#include "PhysRenderer.h"
-
 #include "LocalizedStringManager.h"
 #include "XML/XmlUtils.h"
 #include "SystemEventDispatcher.h"
-#include "ServerThrottle.h"
-#include "ResourceManager.h"
 #include "HMDBus.h"
 
-#include "IZLibCompressor.h"
-#include "IZlibDecompressor.h"
-#include "ILZ4Decompressor.h"
-#include "IZStdDecompressor.h"
 #include "zlib.h"
 #include "RemoteConsole/RemoteConsole.h"
 
 #include <PNoise3.h>
 #include <StringUtils.h>
-#include "CryWaterMark.h"
-WATERMARKDATA(_m);
 
-#include "ImageHandler.h"
 #include <LyShine/Bus/UiCursorBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemRequestBus.h>
@@ -173,13 +161,8 @@ WATERMARKDATA(_m);
 #include <malloc.h>
 #endif
 
-#if USE_STEAM
-#include "Steamworks/public/steam/steam_api.h"
-#endif
-
 #include <ILevelSystem.h>
 
-#include <CrtDebugStats.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
 // profilers api.
@@ -188,19 +171,6 @@ VTuneFunction VTPause = NULL;
 
 // Define global cvars.
 SSystemCVars g_cvars;
-
-#include "ITextModeConsole.h"
-
-extern int CryMemoryGetAllocatedSize();
-
-// these heaps are used by underlying System structures
-// to allocate, accordingly, small (like elements of std::set<..*>) and big (like memory for reading files) objects
-// hopefully someday we'll have standard MT-safe heap
-//CMTSafeHeap g_pakHeap;
-CMTSafeHeap* g_pPakHeap = 0;// = &g_pakHeap;
-
-//////////////////////////////////////////////////////////////////////////
-#include "Validator.h"
 
 #include <IViewSystem.h>
 
@@ -266,7 +236,6 @@ namespace
 // System Implementation.
 //////////////////////////////////////////////////////////////////////////
 CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
-    : m_imageHandler(std::make_unique<ImageHandler>())
 {
     CrySystemRequestBus::Handler::BusConnect();
 
@@ -307,8 +276,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_env.pSharedEnvironment = pSharedEnvironment;
     //////////////////////////////////////////////////////////////////////////
 
-    m_pStreamEngine = NULL;
-
     m_pIFont = NULL;
     m_pIFontUi = NULL;
     m_rWidth = NULL;
@@ -322,18 +289,10 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_rStencilBits = NULL;
     m_rFullscreen = NULL;
     m_sysNoUpdate = NULL;
-    m_pMemoryManager = NULL;
     m_pProcess = NULL;
-
-    m_pValidator = NULL;
     m_pCmdLine = NULL;
-    m_pDefaultValidator = NULL;
     m_pLevelSystem = NULL;
     m_pViewSystem = NULL;
-    m_pIZLibCompressor = NULL;
-    m_pIZLibDecompressor = NULL;
-    m_pILZ4Decompressor = NULL;
-    m_pIZStdDecompressor = nullptr;
     m_pLocalizationManager = NULL;
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_2
@@ -348,14 +307,12 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_sys_memory_debug = NULL;
     m_sysWarnings = NULL;
     m_sysKeyboard = NULL;
-    m_sys_GraphicsQuality = NULL;
     m_sys_firstlaunch = NULL;
     m_sys_enable_budgetmonitoring = NULL;
     m_sys_preload = NULL;
 
     //  m_sys_filecache = NULL;
     m_gpu_particle_physics = NULL;
-    m_pCpu = NULL;
 
     m_bInitializedSuccessfully = false;
     m_bRelaunch = false;
@@ -387,11 +344,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
 
 
     m_pXMLUtils = new CXmlUtils(this);
-    m_pMemoryManager = CryGetIMemoryManager();
-    m_pResourceManager = new CResourceManager;
-    m_pTextModeConsole = NULL;
-
-    g_pPakHeap = new CMTSafeHeap;
 
     if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
     {
@@ -410,7 +362,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_eRuntimeState = ESYSTEM_EVENT_LEVEL_UNLOAD;
 
     m_bHasRenderedErrorMessage = false;
-    m_bIsSteamInitialized = false;
 
     m_pDataProbe = nullptr;
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_USE_MESSAGE_HANDLER
@@ -433,10 +384,7 @@ CSystem::~CSystem()
     CRY_ASSERT(m_windowMessageHandlers.empty() && "There exists a dangling window message handler somewhere");
 
     SAFE_DELETE(m_pXMLUtils);
-    SAFE_DELETE(m_pResourceManager);
     SAFE_DELETE(m_pSystemEventDispatcher);
-
-    SAFE_DELETE(g_pPakHeap);
 
     AZCoreLogSink::Disconnect();
     if (m_initedSysAllocator)
@@ -475,12 +423,6 @@ void CSystem::FreeLib(AZStd::unique_ptr<AZ::DynamicModuleHandle>& hLibModule)
         }
         hLibModule.release();
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-IStreamEngine* CSystem::GetStreamEngine()
-{
-    return m_pStreamEngine;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -538,14 +480,6 @@ void CSystem::ShutDown()
         GetIRemoteConsole()->Stop();
     }
 
-    // clean up properly the console
-    if (m_pTextModeConsole)
-    {
-        m_pTextModeConsole->OnShutdown();
-    }
-
-    SAFE_DELETE(m_pTextModeConsole);
-
     if (m_sys_firstlaunch)
     {
         m_sys_firstlaunch->Set("0");
@@ -582,9 +516,6 @@ void CSystem::ShutDown()
     // Shutdown any running VR devices.
     EBUS_EVENT(AZ::VR::HMDInitRequestBus, Shutdown);
 
-    // Shutdown resource manager.
-    m_pResourceManager->Shutdown();
-
     if (gEnv && gEnv->pLyShine)
     {
         gEnv->pLyShine->Release();
@@ -598,10 +529,6 @@ void CSystem::ShutDown()
     {
         ((CXConsole*)m_env.pConsole)->FreeRenderResources();
     }
-    SAFE_RELEASE(m_pIZLibCompressor);
-    SAFE_RELEASE(m_pIZLibDecompressor);
-    SAFE_RELEASE(m_pILZ4Decompressor);
-    SAFE_RELEASE(m_pIZStdDecompressor);
     SAFE_RELEASE(m_pViewSystem);
     SAFE_RELEASE(m_pLevelSystem);
 
@@ -628,7 +555,6 @@ void CSystem::ShutDown()
 
     SAFE_RELEASE(m_sysWarnings);
     SAFE_RELEASE(m_sysKeyboard);
-    SAFE_RELEASE(m_sys_GraphicsQuality);
     SAFE_RELEASE(m_sys_firstlaunch);
     SAFE_RELEASE(m_sys_enable_budgetmonitoring);
 
@@ -640,17 +566,7 @@ void CSystem::ShutDown()
     SAFE_RELEASE(m_sys_min_step);
     SAFE_RELEASE(m_sys_max_step);
 
-    SAFE_DELETE(m_pDefaultValidator);
-    m_pValidator = nullptr;
-
     SAFE_DELETE(m_pLocalizationManager);
-
-    //DebugStats(false, false);//true);
-    //CryLogAlways("");
-    //CryLogAlways("release mode memory manager stats:");
-    //DumpMMStats(true);
-
-    SAFE_DELETE(m_pCpu);
 
     delete m_pCmdLine;
     m_pCmdLine = 0;
@@ -659,8 +575,7 @@ void CSystem::ShutDown()
     // Shut down audio as late as possible but before the streaming system and console get released!
     Audio::Gem::AudioSystemGemRequestBus::Broadcast(&Audio::Gem::AudioSystemGemRequestBus::Events::Release);
 
-    // Shut down the streaming system and console as late as possible and after audio!
-    SAFE_DELETE(m_pStreamEngine);
+    // Shut down console as late as possible and after audio!
     SAFE_RELEASE(m_env.pConsole);
 
     // Log must be last thing released.
@@ -904,12 +819,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     }
 #endif //PROFILE_WITH_VTUNE
 
-    if (m_pStreamEngine)
-    {
-        FRAME_PROFILER("StreamEngine::Update()", this, PROFILE_SYSTEM);
-        m_pStreamEngine->Update();
-    }
-
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
     if (m_bIgnoreUpdates)
     {
@@ -986,13 +895,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     m_Time.UpdateOnFrameStart();
 
     //////////////////////////////////////////////////////////////////////
-    // update rate limiter for dedicated server
-    if (m_pServerThrottle.get())
-    {
-        m_pServerThrottle->Update();
-    }
-
-    //////////////////////////////////////////////////////////////////////
     //update console system
     if (m_env.pConsole)
     {
@@ -1022,14 +924,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
                 GetIViewSystem()->UpdateSoundListeners();
             }
         }
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Update Resource Manager.
-    //////////////////////////////////////////////////////////////////////////
-    {
-        FRAME_PROFILER("SysUpdate:ResourceManager", this, PROFILE_SYSTEM);
-        m_pResourceManager->Update();
     }
 
     // Use UI timer for CryMovie, because it should not be affected by pausing game time
@@ -1329,21 +1223,6 @@ void CSystem::WarningV(EValidatorModule module, EValidatorSeverity severity, int
         m_env.pLog->LogWithType(ltype, flags | VALIDATOR_FLAG_SKIP_VALIDATOR, "%s", szBuffer);
     }
 
-    //if(file)
-    //m_env.pLog->LogWithType( ltype, "  ... caused by file '%s'",file);
-
-    if (m_pValidator && (flags & VALIDATOR_FLAG_SKIP_VALIDATOR) == 0)
-    {
-        SValidatorRecord record;
-        record.file = file;
-        record.text = szBuffer;
-        record.module = module;
-        record.severity = severity;
-        record.flags = flags;
-        record.assetScope = m_env.pLog->GetAssetScopeString();
-        m_pValidator->Report(record);
-    }
-
     if (bDbgBreak && g_cvars.sys_error_debugbreak)
     {
         AZ::Debug::Trace::Break();
@@ -1420,21 +1299,9 @@ void CSystem::Relaunch(bool bRelaunch)
 }
 
 //////////////////////////////////////////////////////////////////////////
-uint32 CSystem::GetUsedMemory()
-{
-    return CryMemoryGetAllocatedSize();
-}
-
-//////////////////////////////////////////////////////////////////////////
 ILocalizationManager* CSystem::GetLocalizationManager()
 {
     return m_pLocalizationManager;
-}
-
-//////////////////////////////////////////////////////////////////////////
-IResourceManager* CSystem::GetIResourceManager()
-{
-    return m_pResourceManager;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1476,12 +1343,6 @@ void CSystem::ExecuteCommandLine(bool deferred)
 
     m_executedCommandLine = true;
 
-    // auto detect system spec (overrides profile settings)
-    if (m_pCmdLine->FindArg(eCLAT_Pre, "autodetect"))
-    {
-        AutoDetectSpec(false);
-    }
-
     // execute command line arguments e.g. +g_gametype ASSAULT +map "testy"
 
     ICmdLine* pCmdLine = GetICmdLine();
@@ -1508,50 +1369,6 @@ void CSystem::ExecuteCommandLine(bool deferred)
     }
 
     //gEnv->pConsole->ExecuteString("sys_RestoreSpec test*"); // to get useful debugging information about current spec settings to the log file
-}
-
-ITextModeConsole* CSystem::GetITextModeConsole()
-{
-    if (m_bDedicatedServer)
-    {
-        return m_pTextModeConsole;
-    }
-
-    return 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-ESystemConfigSpec CSystem::GetConfigSpec(bool bClient)
-{
-    if (bClient)
-    {
-        if (m_sys_GraphicsQuality)
-        {
-            return (ESystemConfigSpec)m_sys_GraphicsQuality->GetIVal();
-        }
-        return CONFIG_VERYHIGH_SPEC; // highest spec.
-    }
-    else
-    {
-        return m_nServerConfigSpec;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CSystem::SetConfigSpec(ESystemConfigSpec spec, ESystemConfigPlatform platform, bool bClient)
-{
-    if (bClient)
-    {
-        if (m_sys_GraphicsQuality)
-        {
-            SetConfigPlatform(platform);
-            m_sys_GraphicsQuality->Set(static_cast<int>(spec));
-        }
-    }
-    else
-    {
-        m_nServerConfigSpec = spec;
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1600,49 +1417,6 @@ void CProfilingSystem::VTunePause()
         VTPause();
         CryLogAlways("VTune Pause");
     }
-#endif
-}
-
-bool CSystem::SteamInit()
-{
-#if USE_STEAM
-    if (m_bIsSteamInitialized)
-    {
-        return true;
-    }
-
-    AZStd::string_view exePath;
-    AZ::ComponentApplicationBus::BroadcastResult(exePath, &AZ::ComponentApplicationRequests::GetExecutableFolder);
-
-    ////////////////////////////////////////////////////////////////////////////
-    // ** DEVELOPMENT ONLY ** - creates the appropriate steam_appid.txt file needed to call SteamAPI_Init()
-#if !defined(RELEASE)
-    AZStd::string appidPath = AZStd::string::format("%.*s/steam_appid.txt", aznumeric_cast<int>(exePath.size()), exePath.data());
-    azfopen(&pSteamAppID, appidPath.c_str(), "wt");
-    fprintf(pSteamAppID, "%d", g_cvars.sys_steamAppId);
-    fclose(pSteamAppID);
-#endif // !defined(RELEASE)
-       // ** END DEVELOPMENT ONLY **
-       ////////////////////////////////////////////////////////////////////////////
-
-    if (!SteamAPI_Init())
-    {
-        CryLog("[STEAM] SteamApi_Init failed");
-        return false;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // ** DEVELOPMENT ONLY ** - deletes the appropriate steam_appid.txt file as it's no longer needed
-#if !defined(RELEASE)
-    remove(appidPath.c_str());
-#endif // !defined(RELEASE)
-       // ** END DEVELOPMENT ONLY **
-       ////////////////////////////////////////////////////////////////////////////
-
-    m_bIsSteamInitialized = true;
-    return true;
-#else
-    return false;
 #endif
 }
 
