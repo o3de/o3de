@@ -171,6 +171,16 @@ namespace AZ
             handler.Connect(m_sceneChangedEvent);
         }
 
+        void ViewportContext::ConnectCurrentPipelineChangedHandler(PipelineChangedEvent::Handler& handler)
+        {
+            handler.Connect(m_currentPipelineChangedEvent);
+        }
+
+        void ViewportContext::ConnectDefaultViewChangedHandler(ViewChangedEvent::Handler& handler)
+        {
+            handler.Connect(m_defaultViewChangedEvent);
+        }
+
         const AZ::Matrix4x4& ViewportContext::GetCameraViewMatrix() const
         {
             return GetDefaultView()->GetWorldToViewMatrix();
@@ -214,6 +224,7 @@ namespace AZ
                 m_defaultView = view;
                 UpdatePipelineView();
 
+                m_defaultViewChangedEvent.Signal(view);
                 m_viewMatrixChangedEvent.Signal(view->GetWorldToViewMatrix());
                 m_projectionMatrixChangedEvent.Signal(view->GetViewToClipMatrix());
 
@@ -232,6 +243,7 @@ namespace AZ
             if (!m_currentPipeline)
             {
                 m_currentPipeline = m_rootScene ? m_rootScene->FindRenderPipelineForWindow(m_windowContext->GetWindowHandle()) : nullptr;
+                m_currentPipelineChangedEvent.Signal(m_currentPipeline);
             }
 
             if (auto pipeline = GetCurrentPipeline())
