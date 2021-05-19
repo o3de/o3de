@@ -99,5 +99,23 @@
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "-destination generic/platform=iOS"
     }
+  },
+  "device_test_profile": {
+    "TAGS": [
+      "nightly-clean",
+      "weekly-build-metrics"
+    ],
+    "PIPELINE_ENV":{
+      "NODE_LABEL":"Catalina_DeviceFarm_1"
+    },
+    "COMMAND": "../Mac/build_test_mac.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/mac",
+      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_benchmark",
+      "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\""
+    }
   }
 }
