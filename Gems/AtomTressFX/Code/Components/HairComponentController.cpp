@@ -255,7 +255,7 @@ namespace AZ
                 const size_t numBoneMatrices = m_cachedBoneMatrices.size(); // Resizing of this matrices happens at createHairObject().
                 for (AZ::u32 tressFXBoneIndex = 0; tressFXBoneIndex < numBoneMatrices; ++tressFXBoneIndex)
                 {
-                    const AZ::u32 emfxBoneIndex = m_boneIndexMap[tressFXBoneIndex];
+                    const AZ::u32 emfxBoneIndex = m_boneIndexLookup[tressFXBoneIndex];
                     m_cachedBoneMatrices[tressFXBoneIndex] = matrices[emfxBoneIndex];
                 }
 
@@ -297,31 +297,22 @@ namespace AZ
                     return false;
                 }
 
-                // Fix the bone index in the TressFX asset
-                const size_t numBones = hairAsset->m_boneNames.size();
-                AZ::u32 numMismatchedBone = 0;
-                m_boneIndexMap.resize(numBones);
-                for (AZ::u32 tressFXBoneIndex = 0; tressFXBoneIndex < numBones; ++tressFXBoneIndex)
+                // Fix the bone indices in the tressFX asset skinning data.
+                AMD::BoneNameToIndexMap nameToIndexMap; 
+                const EMotionFX::Skeleton* skeleton = actorInstance->GetActor()->GetSkeleton();
+                const u32 numBones = skeleton->GetNumNodes();
+                nameToIndexMap.reserve(numBones);
+                for (u32 i = 0; i < numBones; ++i)
                 {
-                    const char* boneName = hairAsset->m_boneNames[tressFXBoneIndex].c_str();
-                    const EMotionFX::Node* emfxNode = actorInstance->GetActor()->GetSkeleton()->FindNodeByName(boneName);
-                    if (!emfxNode)
-                    {
-                        // [rhhong-TODO] Add better error handling in the UI, to show the user they have selected an asset that doesn't match the actor.
-                        // If we find any bone name that we do not have in the current actor, that means this is not a suitable actor for the tressFX asset.
-                        // Do not create a hair object in this case because the skinning data won't be correct.
-                        AZ_TracePrintf("Hair Gem", "Cannot find bone name %s under emotionfx actor.", boneName);
-                        numMismatchedBone++;
-                        continue;
-                    }
-                    m_boneIndexMap[tressFXBoneIndex] = emfxNode->GetNodeIndex();
+                    const char* boneName = skeleton->GetNode(i)->GetName();
+                    nameToIndexMap[boneName] = i;
                 }
-                if (numMismatchedBone > 0)
+
+                if (!hairAsset->FixBoneIndices(nameToIndexMap, m_boneIndexLookup))
                 {
-                    AZ_Error("Hair Gem", false, "%zu bones cannot be found under the emotionfx actor. It is likely that the hair asset is incompatible with the actor asset.");
+                    AZ_Error("Hair Gem", false, "");
                     return false;
                 }
-                hairAsset->FixBoneIndices(m_boneIndexMap);
                 
                 // First remove the existing hair object - this can happen if the configuration
                 // or the hair asset selected changes.
@@ -340,7 +331,7 @@ namespace AZ
                 }
 
                 // Resize the bone matrices array. The size should equal to the number of bones in the tressFXAsset.
-                m_cachedBoneMatrices.resize(numBones);
+                m_cachedBoneMatrices.resize(m_boneIndexLookup.size());
 
                 // Feature processor registration that will hold an instance.
                 // Remark: DO NOT remove the TressFX asset - it's data might be required for

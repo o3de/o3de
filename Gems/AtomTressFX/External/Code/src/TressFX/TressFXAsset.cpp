@@ -35,6 +35,7 @@
 
 #include <AzCore/Asset/AssetDataStream.h>
 #include <AzCore/Math/Aabb.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 
 #pragma optimize("", off)
 namespace AMD
@@ -70,6 +71,197 @@ namespace AMD
     static float GetRandom(float Min, float Max)
     {
         return ((float(rand()) / float(RAND_MAX)) * (Max - Min)) + Min;
+    }
+
+    // This function is mimicing LoadTressFXCollisionMeshData in TressFXBoneSkinning with a few tweaks.
+    // 1) It reads from an asset data stream instead of a std file stream.
+    // 2) Reading all data to an array of strings at once instead of reading line by line.
+    // 3) The bone index to engine index fixup is done in a later step (from hair component)
+    bool TressFXCollisionMesh::LoadMeshData(AZ::Data::AssetDataStream* stream)
+    {
+        if (!stream->IsOpen())
+        {
+            return false;
+        }
+
+        int numOfBones;
+        AZStd::vector<AZStd::string> boneNames;
+
+        // Read the stream to a buffer and parse it line by line
+        AZStd::vector<char> charBuffer;
+        charBuffer.resize_no_construct(stream->GetLength() + 1);
+        stream->Read(stream->GetLength(), charBuffer.data());
+
+        AZStd::vector<AZStd::string> sTokens;
+        AZStd::vector<AZStd::string> fileLines;
+        AzFramework::StringFunc::Tokenize(charBuffer.data(), fileLines, "\r\n");
+
+        for (int lineIdx = 0; lineIdx < fileLines.size(); ++lineIdx)
+        {
+            const AZStd::string& line = fileLines[lineIdx];
+
+            if (line.length() == 0)
+                continue;
+
+            // If # is in the very first column in the line, it is a comment.
+            if (line[0] == '#')
+                continue;
+
+            sTokens.clear();
+            AzFramework::StringFunc::Tokenize(line.data(), sTokens, " ");
+
+            AZStd::string token;
+            if (!sTokens.empty())
+            {
+                token = sTokens[0];
+            }
+            else
+            {
+                token = line;
+            }
+
+            // Load bone names.
+            if (token.find("numOfBones") != std::string::npos)
+            {
+                numOfBones = atoi(sTokens[1].c_str());
+                int countBone = 0;
+
+                // Continue reading the file.
+                for (++lineIdx; lineIdx < fileLines.size(); ++lineIdx)
+                {
+                    // Next line
+                    const AZStd::string& sLine = fileLines[lineIdx];
+
+                    if (sLine.length() == 0)
+                        continue;
+
+                    // If # is in the very first column in the line, it is a comment.
+                    if (sLine[0] == '#')
+                        continue;
+
+                    sTokens.clear();
+                    AzFramework::StringFunc::Tokenize(sLine.data(), sTokens, " ");
+                    m_boneNames.push_back(sTokens[1].c_str());
+                    countBone++;
+
+                    if (countBone == numOfBones)
+                        break;
+                }
+            }
+
+            if (token.find("numOfVertices") != std::string::npos) // load bone indices and weights for each strand
+            {
+                const int numVertices = (AMD::uint32)atoi(sTokens[1].c_str());
+                m_boneSkinningData.resize(numVertices);
+                m_vertices.resize(numVertices);
+                m_normals.resize(numVertices);
+                memset(m_boneSkinningData.data(), 0, sizeof(TressFXBoneSkinningData) * numVertices);
+
+                // Continue reading the file.
+                int index = 0;
+                for (++lineIdx; lineIdx < fileLines.size(); ++lineIdx)
+                {
+                    // Next line
+                    const AZStd::string& sLine = fileLines[lineIdx];
+
+                    if (sLine.length() == 0)
+                        continue;
+
+                    // If # is in the very first column in the line, it is a comment.
+                    if (sLine[0] == '#')
+                        continue;
+
+                    sTokens.clear();
+                    AzFramework::StringFunc::Tokenize(sLine.data(), sTokens, " ");
+                    assert(sTokens.size() == 15);
+
+                    int vertexIndex = atoi(sTokens[0].c_str());
+                    AZ_UNUSED(vertexIndex);
+                    assert(vertexIndex == index);
+
+                    AMD::float3& pos = m_vertices[index];
+                    pos.x = (float)atof(sTokens[1].c_str());
+                    pos.y = (float)atof(sTokens[2].c_str());
+                    pos.z = (float)atof(sTokens[3].c_str());
+
+                    AMD::float3& normal = m_normals[index];
+                    normal.x = (float)atof(sTokens[4].c_str());
+                    normal.y = (float)atof(sTokens[5].c_str());
+                    normal.z = (float)atof(sTokens[6].c_str());
+
+                    TressFXBoneSkinningData skinData;
+
+                    // Those indices stored in the skin data are bone indices, not engine indices. We have to fix the bone indices in a later step。
+                    int boneIndex = atoi(sTokens[7].c_str());
+                    skinData.boneIndex[0] = (float)boneIndex;
+
+                    boneIndex = atoi(sTokens[8].c_str());
+                    skinData.boneIndex[1] = (float)boneIndex;
+
+                    boneIndex = atoi(sTokens[9].c_str());
+                    skinData.boneIndex[2] = (float)boneIndex;
+
+                    boneIndex = atoi(sTokens[10].c_str());
+                    skinData.boneIndex[3] = (float)boneIndex;
+
+                    skinData.weight[0] = (float)atof(sTokens[11].c_str());
+                    skinData.weight[1] = (float)atof(sTokens[12].c_str());
+                    skinData.weight[2] = (float)atof(sTokens[13].c_str());
+                    skinData.weight[3] = (float)atof(sTokens[14].c_str());
+
+                    m_boneSkinningData[index] = skinData;
+
+                    ++index;
+
+                    if (index == numVertices)
+                        break;
+                }
+            }
+            else if (token.find("numOfTriangles") != std::string::npos) // triangle indices
+            {
+                const int numTriangles = atoi(sTokens[1].c_str());
+                int numIndices = numTriangles * 3;
+                m_indices.resize(numIndices);
+                int index = 0;
+
+                // Continue reading the file.
+                for (++lineIdx; lineIdx < fileLines.size(); ++lineIdx)
+                {
+                    // next line
+                    const AZStd::string& sLine = fileLines[lineIdx];
+
+                    if (sLine.length() == 0)
+                        continue;
+
+                    // If # is in the very first column in the line, it is a comment.
+                    if (sLine[0] == '#')
+                        continue;
+
+                    sTokens.clear();
+                    AzFramework::StringFunc::Tokenize(sLine.data(), sTokens, " ");
+                    assert(sTokens.size() == 4);
+
+                    int triangleIndex = atoi(sTokens[0].c_str());
+                    AZ_UNUSED(triangleIndex);
+                    assert(triangleIndex == index);
+
+                    m_indices[index * 3 + 0] = atoi(sTokens[1].c_str());
+                    m_indices[index * 3 + 1] = atoi(sTokens[2].c_str());
+                    m_indices[index * 3 + 2] = atoi(sTokens[3].c_str());
+
+                    ++index;
+
+                    if (index == numTriangles)
+                        break;
+                }
+            }
+        }
+
+        // [TO DO] rhhong: Check if follow bone is needed for the collision mesh.
+        // m_pScene = scene;
+        // m_followBone = scene->GetBoneIdByName(skinNumber, followBone);
+
+        return true;
     }
 
     TressFXAsset::TressFXAsset()
@@ -749,34 +941,112 @@ namespace AMD
         }
         m_boneIndicesFixed = false;
 
+        // Seek to the beginning of tfxmesh file
+        stream->Seek(header.offsetTFXMesh, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
+        m_collsionMesh = std::make_unique<TressFXCollisionMesh>();
+        success &= m_collsionMesh->LoadMeshData(stream);
+        if (!success)
+        {
+            AZ_Warning("LoadHairAsset", false, "Hair properties files was not processed properly");
+            return false;
+        }
+
         return true;
     }
 
-    void TressFXAsset::FixBoneIndices(const BoneIndexMap& boneIndexMap)
+    bool TressFXAsset::FixBoneIndices(const BoneNameToIndexMap& boneIndicesMap, BoneIndexToEngineIndexLookup& outLookup)
     {
-        if (boneIndexMap.size() != m_boneNames.size())
+        if (!m_collsionMesh)
         {
-            AZ_Error("TressFXAsset", false, "The bone index map should be the same size as the bone names.");
-            return;
+            AZ_Assert(false, "TressFXAsset should always has a collision mesh with current design.");
+            return false;
         }
 
         if (m_boneIndicesFixed)
         {
-            // Note: In case of reload, the tressFXAsset asset is already loaded unless it is
-            // a different asset.
-             return;
+            ResetSkinning(m_boneSkinningData, m_reservedLookup);
+            ResetSkinning(m_collsionMesh->m_boneSkinningData, m_collsionMesh->m_reservedLookup);
+            m_boneIndicesFixed = false;
         }
 
-        for (TressFXBoneSkinningData& skinData : m_boneSkinningData)
+        // The tressFX asset contain two sets of skinning data, one for the hair bone and one for collision mesh.
+        BoneIndexToEngineIndexLookup hairBoneSkinningLookup;
+        BoneIndexToEngineIndexLookup collisionMeshSkinningLookup;
+        if(!GenerateBoneIndexLookup(boneIndicesMap, m_boneNames, hairBoneSkinningLookup) ||
+            !GenerateBoneIndexLookup(boneIndicesMap, m_collsionMesh->m_boneNames, collisionMeshSkinningLookup))
+        {
+            return false;
+        }
+
+        outLookup = hairBoneSkinningLookup;
+        FixSkinningUsingLookup(m_boneSkinningData, hairBoneSkinningLookup);
+        FixSkinningUsingLookup(m_collsionMesh->m_boneSkinningData, collisionMeshSkinningLookup);
+
+        m_reservedLookup = hairBoneSkinningLookup;
+        m_collsionMesh->m_reservedLookup = collisionMeshSkinningLookup;
+        m_boneIndicesFixed = true;
+
+        return true;
+    }
+
+    bool TressFXAsset::GenerateBoneIndexLookup( const BoneNameToIndexMap& boneIndicesMap,
+        const std::vector<std::string>& boneNames, BoneIndexToEngineIndexLookup& outLookup)
+    {
+        uint32 numMismatchedBone = 0;
+        outLookup.resize(boneNames.size());
+        for (int i = 0; i < m_boneNames.size(); ++i)
+        {
+            const std::string& boneName = m_boneNames[i];
+            if (boneIndicesMap.find(boneName) == boneIndicesMap.end())
+            {
+                // Error handling.
+                numMismatchedBone++;
+                continue;
+            }
+            outLookup[i] = boneIndicesMap.at(boneName);
+        }
+
+        if (numMismatchedBone > 0)
+        {
+            AZ_Error( "Hair Gem", false, "%zu bones cannot be found under the emotionfx actor. "
+                "It is likely that the hair asset is incompatible with the actor asset.", numMismatchedBone);
+            return false;
+        }
+        return true;
+    }
+
+    void TressFXAsset::FixSkinningUsingLookup(std::vector<TressFXBoneSkinningData>& skinningData, const BoneIndexToEngineIndexLookup& lookup)
+    {
+        AZ_Assert(!m_boneIndicesFixed, "Calling to fix skinning data but the bone indices are already fixed.");
+
+        for (TressFXBoneSkinningData& skinData : skinningData)
         {
             for (AMD::int32 index = 0; index < TRESSFX_MAX_INFLUENTIAL_BONE_COUNT; ++index)
             {
                 const uint32 tressFXBoneIndex = static_cast<uint32>(skinData.boneIndex[index]);
-                skinData.boneIndex[index] = static_cast<float>(boneIndexMap[tressFXBoneIndex]);
+                skinData.boneIndex[index] = static_cast<float>(lookup[tressFXBoneIndex]);
             }
         }
+    }
 
-        m_boneIndicesFixed = true;
+    void TressFXAsset::ResetSkinning(std::vector<TressFXBoneSkinningData>& skinningData, const BoneIndexToEngineIndexLookup& reservedLookup)
+    {
+        AZ_Assert(m_boneIndicesFixed, "Calling to reset skinning data but the bone indices have not been fixed.");
+
+        std::unordered_map<int, int> engineIndexToBoneIndex;
+        for (int i = 0; i < reservedLookup.size(); ++i)
+        {
+            engineIndexToBoneIndex.emplace(std::pair<int, int>(reservedLookup[i], i));
+        }
+
+        for (TressFXBoneSkinningData& skinData : skinningData)
+        {
+            for (AMD::int32 index = 0; index < TRESSFX_MAX_INFLUENTIAL_BONE_COUNT; ++index)
+            {
+                const uint32 engineBoneIndex = static_cast<uint32>(skinData.boneIndex[index]);
+                skinData.boneIndex[index] = engineIndexToBoneIndex.at(engineBoneIndex);
+            }
+        }
     }
 } // namespace AMD
 
