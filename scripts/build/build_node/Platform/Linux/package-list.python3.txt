@@ -1,0 +1,7 @@
+# Python3 pip package list
+boto3
+psutil
+requests
+traceback2
+urllib3
+tempfile2
