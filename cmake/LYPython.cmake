@@ -81,7 +81,7 @@ function(update_pip_requirements requirements_file_path unique_name)
 
     set(ENV{PYTHONNOUSERSITE} 1)
     execute_process(COMMAND 
-        ${LY_PYTHON_CMD} -m pip install --no-deps -r "${requirements_file_path}" --disable-pip-version-check --no-warn-script-location
+        ${LY_PYTHON_CMD} -m pip install -r "${requirements_file_path}" --disable-pip-version-check --no-warn-script-location
         WORKING_DIRECTORY ${Python_BINFOLDER}
         RESULT_VARIABLE PIP_RESULT
         OUTPUT_VARIABLE PIP_OUT 
