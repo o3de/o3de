@@ -28,11 +28,9 @@ namespace AZ
          * The ACES display mapper parameter overrides.
          * These parameters override default ACES parameters when m_overrideDefaults is true.
          */
-        struct AcesParameterOverrides
+        struct AcesParameterOverrides final
         {
-            AZ_RTTI(AcesParameterOverrides, "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}");
-            AZ_CLASS_ALLOCATOR(AcesParameterOverrides, SystemAllocator, 0);
-
+            AZ_TYPE_INFO(AcesParameterOverrides, "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}");
             static void Reflect(ReflectContext* context);
 
             void LoadPreset();
