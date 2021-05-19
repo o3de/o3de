@@ -22,6 +22,13 @@ if [ $? -ne 0 ]
 then
     echo Installing Python3
     apt-get install python3
+
+    if [ $? -ne 0 ]
+    then
+        echo Error installing python3
+        exit 1
+    fi
+
 else
     PYTHON_VERSION=$(python3 --version)
     echo Python3 already installed \($PYTHON_VERSION\)
@@ -33,6 +40,13 @@ if [ $? -ne 0 ]
 then
     echo Installing Python3 PIP
     apt-get install -y python3-pip
+
+    if [ $? -ne 0 ]
+    then
+        echo Error installing python3
+        exit 1
+    fi
+
 else
     PYTHON_VERSION=$(pip3 --version | awk '{print $2}')
     echo Python3 Pip already installed \($PYTHON_VERSION\)
@@ -40,18 +54,15 @@ fi
  
  
 # Read from the package list and process each package
-PACKAGE_FILE_LIST=package-list.python3.txt
+PIP_REQUIREMENTS_FILE=requirements.txt
  
-echo Reading python pip package list $PACKAGE_FILE_LIST
- 
-# Read each line (strip out comment tags)
-for LINE in `cat $PACKAGE_FILE_LIST | sed 's/#.*$//g'`
-do
-    PACKAGE=`echo $LINE | awk -F / '{print $1}'`
-    if [ "$PACKAGE" != "" ]  # Skip blank lines
-    then
-         echo Installing $PACKAGE
-         pip3 install $PACKAGE
-    fi
-done
+pip3 install -r $PIP_REQUIREMENTS_FILE
+if [ $? -ne 0 ]
+then
+    echo Error installing python3
+    exit 1
+fi
 
+
+echo Python3 setup complete
+exit 0
