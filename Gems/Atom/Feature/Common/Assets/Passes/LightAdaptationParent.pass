@@ -4,16 +4,12 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "PostProcessParentTemplate",
+            "Name": "LightAdaptationParentTemplate",
             "PassClass": "ParentPass",
             "Slots": [
                 // Inputs...
                 {
                     "Name": "LightingInput",
-                    "SlotType": "Input"
-                },
-                {
-                    "Name": "Depth",
                     "SlotType": "Input"
                 },
                 // SwapChain here is only used to reference the frame height and format
@@ -28,10 +24,6 @@
                 },
                 // Debug Outputs...
                 {
-                    "Name": "RawLightingOutput",
-                    "SlotType": "Output"
-                },
-                {
                     "Name": "LuminanceMipChainOutput",
                     "SlotType": "Output"
                 }
@@ -40,90 +32,103 @@
                 {
                     "LocalSlot": "Output",
                     "AttachmentRef": {
-                        "Pass": "LightAdaptation",
+                        "Pass": "DisplayMapperPass",
                         "Attachment": "Output"
-                    }
-                },
-                {
-                    "LocalSlot": "RawLightingOutput",
-                    "AttachmentRef": {
-                        "Pass": "BloomPass",
-                        "Attachment": "InputOutput"
                     }
                 },
                 {
                     "LocalSlot": "LuminanceMipChainOutput",
                     "AttachmentRef": {
-                        "Pass": "LightAdaptation",
-                        "Attachment": "LuminanceMipChainOutput"
+                        "Pass": "DownsampleLuminanceMipChain",
+                        "Attachment": "MipChainInputOutput"
                     }
                 }
             ],
             "PassRequests": [
                 {
-                    "Name": "SMAA1xApplyLinearHDRColorPass",
-                    "TemplateName": "SMAA1xApplyLinearHDRColorTemplate",
+                    "Name": "DownsampleLuminanceMinAvgMax",
+                    "TemplateName": "DownsampleLuminanceMinAvgMaxCS",
                     "Connections": [
                         {
-                            "LocalSlot": "InputColor",
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LightingInput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "DownsampleLuminanceMipChain",
+                    "TemplateName": "DownsampleMipChainTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "MipChainInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "DownsampleLuminanceMinAvgMax",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "DownsampleMipChainPassData",
+                        "ShaderAsset": {
+                            "FilePath": "Shaders/PostProcessing/DownsampleMinAvgMaxCS.shader"
+                        }
+                    }
+                },
+                {
+                    "Name": "EyeAdaptationPass",
+                    "TemplateName": "EyeAdaptationTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SceneLuminanceInput",
+                            "AttachmentRef": {
+                                "Pass": "DownsampleLuminanceMipChain",
+                                "Attachment": "MipChainInputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "LookModificationTransformPass",
+                    "TemplateName": "LookModificationTransformTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "LightingInput"
                             }
                         },
                         {
-                            "LocalSlot": "InputDepth",
+                            "LocalSlot": "EyeAdaptationDataInput",
                             "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "Depth"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "DepthOfFieldPass",
-                    "TemplateName": "DepthOfFieldTemplate",
-                    "Enabled": true,
-                    "Connections": [
-                        {
-                            "LocalSlot": "DoFColorInput",
-                            "AttachmentRef": {
-                                "Pass": "SMAA1xApplyLinearHDRColorPass",
-                                "Attachment": "OutputColor"
+                                "Pass": "EyeAdaptationPass",
+                                "Attachment": "EyeAdaptationDataInputOutput"
                             }
                         },
                         {
-                            "LocalSlot": "DoFDepthInput",
+                            "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "Depth"
+                                "Attachment": "SwapChainOutput"
                             }
                         }
                     ]
                 },
                 {
-                    "Name": "BloomPass",
-                    "TemplateName": "BloomPassTemplate",
+                    "Name": "DisplayMapperPass",
+                    "TemplateName": "DisplayMapperTemplate",
                     "Enabled": true,
                     "Connections": [
                         {
-                            "LocalSlot": "InputOutput",
+                            "LocalSlot": "Input",
                             "AttachmentRef": {
-                                "Pass": "DepthOfFieldPass",
-                                "Attachment": "DoFOutput"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "Name": "LightAdaptation",
-                    "TemplateName": "LightAdaptationParentTemplate",
-                    "Connections": [
-                        {
-                            "LocalSlot": "LightingInput",
-                            "AttachmentRef": {
-                                "Pass": "BloomPass",
-                                "Attachment": "InputOutput"
+                                "Pass": "LookModificationTransformPass",
+                                "Attachment": "Output"
                             }
                         },
                         {
