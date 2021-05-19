@@ -32,7 +32,7 @@ namespace Multiplayer
                 ->Attribute(AZ::Script::Attributes::Module, "multiplayer")
                 ->Attribute(AZ::Script::Attributes::Category, "Multiplayer")
 
-                ->Method("Is Authority", [](AZ::EntityId id) -> bool {
+                ->Method("IsAuthority", [](AZ::EntityId id) -> bool {
                     AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
                     if (!entity)
                     {
@@ -48,7 +48,7 @@ namespace Multiplayer
                     }
                     return multiplayerComponent->IsAuthority();
                 })
-                ->Method("Is Autonomous", [](AZ::EntityId id) -> bool {
+                ->Method("IsAutonomous", [](AZ::EntityId id) -> bool {
                     AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
                     if (!entity)
                     {
@@ -64,7 +64,7 @@ namespace Multiplayer
                     }
                     return multiplayerComponent->IsAutonomous();
                 })
-                ->Method("Is Client", [](AZ::EntityId id) -> bool {
+                ->Method("IsClient", [](AZ::EntityId id) -> bool {
                     AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
                     if (!entity)
                     {
@@ -80,7 +80,7 @@ namespace Multiplayer
                     }
                     return multiplayerComponent->IsClient();
                 })
-                ->Method("Is Server", [](AZ::EntityId id) -> bool {
+                ->Method("IsServer", [](AZ::EntityId id) -> bool {
                     AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
                     if (!entity)
                     {
