@@ -36,8 +36,8 @@ namespace O3DE::ProjectManager
         const QString uuidString = gemInfo.m_uuid.ToString<AZStd::string>().c_str();
         item->setData(uuidString, RoleUuid);
         item->setData(gemInfo.m_creator, RoleCreator);
-        item->setData(static_cast<int>(gemInfo.m_platforms), RolePlatforms);
-        item->setData(static_cast<int>(gemInfo.m_types), RoleTypes);
+        item->setData(aznumeric_cast<int>(gemInfo.m_platforms), RolePlatforms);
+        item->setData(aznumeric_cast<int>(gemInfo.m_types), RoleTypes);
         item->setData(gemInfo.m_summary, RoleSummary);
         item->setData(gemInfo.m_isAdded, RoleIsAdded);
 
