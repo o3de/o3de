@@ -9,7 +9,7 @@
         <file>Resources/iOS.svg</file>
         <file>Resources/Linux.svg</file>
         <file>Resources/macOS.svg</file>
-        <file>Resources/Arrow Down Line.svg</file>
-        <file>Resources/Arrow Up Line.svg</file>
+        <file>Resources/ArrowDownLine.svg</file>
+        <file>Resources/ArrowUpLine.svg</file>
     </qresource>
 </RCC>
