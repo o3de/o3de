@@ -105,7 +105,7 @@ namespace AZ
                             // An error was already thrown above. Output stub bitangents so
                             // the mesh can still be output in some form, even if the data isn't correct.
                             // The bitangent count needs to match the vertex count on the associated mesh node.
-                            bitangentStream->AppendBitangent(Vector3::CreateAxisX());
+                            bitangentStream->AppendBitangent(Vector3::CreateAxisY());
                         }
                         else
                         {

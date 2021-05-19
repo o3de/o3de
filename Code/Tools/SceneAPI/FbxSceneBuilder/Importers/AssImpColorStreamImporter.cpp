@@ -67,18 +67,14 @@ namespace AZ
                             return scene->mMeshes[meshIndex]->GetNumColorChannels() == expectedColorChannels;
                         });
 
-
-                if(!allMeshesHaveSameNumberOfColorChannels)
-                {
-                    AZ_Error(
-                        Utilities::ErrorWindow,
-                        false,
-                        "Color channel counts for node %s has meshes with different color channel counts. "
-                        "The color channel count for the first mesh will be used, and placeholder incorrect color values "
-                        "will be generated to allow the data to process, but the source art needs to be fixed to correct this. "
-                        "All meshes on this node should have the same number of color channels.",
-                        currentNode->mName.C_Str());
-                }
+                AZ_Error(
+                    Utilities::ErrorWindow,
+                    allMeshesHaveSameNumberOfColorChannels,
+                    "Color channel counts for node %s has meshes with different color channel counts. "
+                    "The color channel count for the first mesh will be used, and placeholder incorrect color values "
+                    "will be generated to allow the data to process, but the source art needs to be fixed to correct this. "
+                    "All meshes on this node should have the same number of color channels.",
+                    currentNode->mName.C_Str());
 
                 if (expectedColorChannels == 0)
                 {
@@ -109,10 +105,10 @@ namespace AZ
                             else
                             {
                                 // An error was already emitted if this mesh has less color channels
-                                // than other meshes on the parent node. Append an arbitrary color value
+                                // than other meshes on the parent node. Append an arbitrary color value, fully opaque black,
                                 // so the mesh can still be processed.
                                 // It's better to let the engine load a partially valid mesh than to completely fail.
-                                vertexColors->AppendColor(AZ::SceneAPI::DataTypes::Color(0,0,0,1));
+                                vertexColors->AppendColor(AZ::SceneAPI::DataTypes::Color(0.0f,0.0f,0.0f,1.0f));
                             }
                         }
                     }

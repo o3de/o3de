@@ -412,7 +412,6 @@ namespace AZ
                 if (boneAnimations.empty() && !meshMorphAnimations.empty())
                 {
                     const aiAnimation* animation = scene->mAnimations[0];
-                    //const aiAnimation* animation = scene->mAnimations[animIndex];
                     for (AZ::u32 channelIndex = 0; channelIndex < animation->mNumMorphMeshChannels; ++channelIndex)
                     {
                         const aiMeshMorphAnim* nodeAnim = animation->mMorphMeshChannels[channelIndex];

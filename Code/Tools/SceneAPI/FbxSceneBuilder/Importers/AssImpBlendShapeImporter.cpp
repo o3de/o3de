@@ -84,7 +84,7 @@ namespace AZ
                 // AssImp separates meshes that have multiple materials.
                 // This code re-combines them to match previous FBX SDK behavior,
                 // so they can be separated by engine code instead.
-                AZStd::map<AZStd::string, AZStd::vector<AZStd::pair<int, int>>> animToMeshToAnimMeshIndices;
+                AZStd::map<AZStd::string_view, AZStd::vector<AZStd::pair<int, int>>> animToMeshToAnimMeshIndices;
                 for (int nodeMeshIdx = 0; nodeMeshIdx < numMesh; nodeMeshIdx++)
                 {
                     int sceneMeshIdx = context.m_sourceNode.GetAssImpNode()->mMeshes[nodeMeshIdx];
