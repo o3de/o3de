@@ -20,7 +20,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         NAME AutomatedTesting::AWSTests
         TEST_SUITE main
         TEST_SERIAL
-        PATH ${CMAKE_CURRENT_LIST_DIR}/AWS/${PAL_PLATFORM_NAME}/
+        PATH ${CMAKE_CURRENT_LIST_DIR}/${PAL_PLATFORM_NAME}/
         RUNTIME_DEPENDENCIES
             Legacy::Editor
             AZ::AssetProcessor
