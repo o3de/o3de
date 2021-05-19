@@ -30,6 +30,7 @@ set(_addtional_defines
     -dCPACK_LOCAL_INSTALLER_DIR=${_cpack_wix_out_dir}
     -dCPACK_PACKAGE_FILE_NAME=${CPACK_PACKAGE_FILE_NAME}
     -dCPACK_PACKAGE_INSTALL_DIRECTORY=${_fixed_package_install_dir}
+    -dCPACK_WIX_PRODUCT_LOGO=${CPACK_WIX_PRODUCT_LOGO}
 )
 
 if(CPACK_LICENSE_URL)

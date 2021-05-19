@@ -78,6 +78,9 @@ endif()
 set(CPACK_WIX_PRODUCT_GUID ${LY_WIX_PRODUCT_GUID})
 set(CPACK_WIX_UPGRADE_GUID ${LY_WIX_UPGRADE_GUID})
 
+set(CPACK_WIX_PRODUCT_LOGO ${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/product_logo.png)
+set(CPACK_WIX_PRODUCT_ICON ${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/product_icon.ico)
+
 set(CPACK_WIX_TEMPLATE "${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/Template.wxs.in")
 
 set(_embed_artifacts "yes")
