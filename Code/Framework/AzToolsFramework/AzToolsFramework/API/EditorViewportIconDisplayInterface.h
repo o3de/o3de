@@ -29,11 +29,11 @@ namespace AzToolsFramework
 
         struct DrawParameters
         {
-            AzFramework::ViewportId viewport = AzFramework::InvalidViewportId;
-            IconId icon = InvalidIconId;
-            AZ::Color color = AZ::Colors::White;
-            AZ::Vector3 position;
-            AZ::Vector2 size;
+            AzFramework::ViewportId m_viewport = AzFramework::InvalidViewportId;
+            IconId m_icon = InvalidIconId;
+            AZ::Color m_color = AZ::Colors::White;
+            AZ::Vector3 m_position;
+            AZ::Vector2 m_size;
         };
 
         enum class IconLoadStatus : AZ::u8

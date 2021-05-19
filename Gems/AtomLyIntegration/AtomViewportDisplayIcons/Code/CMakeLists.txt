@@ -26,5 +26,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AtomCore
                 Gem::Atom_RHI.Reflect
                 Gem::Atom_RPI.Public
+                Gem::Atom_Bootstrap.Headers
     )
 endif()

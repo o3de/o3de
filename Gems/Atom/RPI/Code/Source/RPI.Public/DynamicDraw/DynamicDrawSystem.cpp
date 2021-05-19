@@ -106,6 +106,9 @@ namespace AZ
                 viewportContext->ConnectCurrentPipelineChangedHandler(contextInfo.m_pipelineChangeHandler);
                 viewportContext->ConnectDefaultViewChangedHandler(contextInfo.m_viewChangeHandler);
 
+                contextInfo.m_scene = viewportContext->GetRenderScene().get();
+                contextInfo.m_view = viewportContext->GetDefaultView().get();
+
                 contextInfo.m_initialized = true;
             }
 
@@ -186,7 +189,7 @@ namespace AZ
                     }
                 }
 
-                for (auto namedContextInfo : m_namedDynamicDrawContextInstances)
+                for (auto& namedContextInfo : m_namedDynamicDrawContextInstances)
                 {
                     if (namedContextInfo.second.m_scene == scene)
                     {
@@ -237,6 +240,13 @@ namespace AZ
                     m_dynamicDrawContexts.begin(), m_dynamicDrawContexts.end(), [](const RHI::Ptr<DynamicDrawContext>& drawContext) {
                         drawContext->FrameEnd();
                     });
+                for (auto& namedContextInfo : m_namedDynamicDrawContextInstances)
+                {
+                    for (auto& drawContextData : namedContextInfo.second.m_dynamicDrawContexts)
+                    {
+                        drawContextData.second->FrameEnd();
+                    }
+                }
             }
 
             {

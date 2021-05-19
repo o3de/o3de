@@ -15,6 +15,9 @@
 
 #include <AzToolsFramework/API/EditorViewportIconDisplayInterface.h>
 
+#include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
+#include <Atom/Bootstrap/BootstrapNotificationBus.h>
+
 namespace AZ
 {
     class TickRequests;
@@ -24,6 +27,7 @@ namespace AZ
         class AtomViewportDisplayIconsSystemComponent
             : public AZ::Component
             , public AzToolsFramework::EditorViewportIconDisplayInterface
+            , public AZ::Render::Bootstrap::NotificationBus::Handler
         {
         public:
             AZ_COMPONENT(AtomViewportDisplayIconsSystemComponent, "{AEC1D3E1-1D9A-437A-B4C6-CFAEE620C160}");
@@ -44,6 +48,19 @@ namespace AZ
             void DrawIcon(const DrawParameters& drawParameters) override;
             IconId GetOrLoadIconForPath(AZStd::string_view path) override;
             IconLoadStatus GetIconLoadStatus(IconId icon) override;
+
+            // AZ::Render::Bootstrap::NotificationBus::Handler overrides...
+            void OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene) override;
+
+        private:
+            static constexpr const char* s_drawContextShaderPath = "Shaders/SimpleTextured.azshader";
+
+            RHI::Ptr<RPI::DynamicDrawContext> GetDrawContext(AzFramework::ViewportId id) const;
+
+            Name m_drawContextName = Name("ViewportIconDisplay");
+            bool m_shaderIndexesInitialized = false;
+            RHI::ShaderInputImageIndex m_textureParameterIndex;
+            RHI::ShaderInputConstantIndex m_worldToProjParameterIndex;
         };
     } // namespace Render
 } // namespace AZ

@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/API/EditorViewportIconDisplayInterface.h>
 
 AZ_CVAR(
     bool, ed_visibility_showAggregateEntitySelectionBounds, false, nullptr, AZ::ConsoleFunctorFlags::Null,
@@ -232,10 +233,13 @@ namespace AzToolsFramework
                     return AZ::Color(1.0f, 1.0f, 1.0f, 1.0f);
                 }();
 
-                debugDisplay.SetColor(iconHighlight);
-                debugDisplay.DrawTextureLabel(
-                    iconTextureId, entityPosition, iconSize, iconSize,
-                    /*DisplayContext::ETextureIconFlags::TEXICON_ON_TOP=*/ 0x0008);
+                EditorViewportIconDisplay::Get()->DrawIcon({
+                    viewportInfo.m_viewportId,
+                    -1,
+                    iconHighlight,
+                    entityPosition,
+                    AZ::Vector2{iconSize, iconSize}
+                });
             }
         }
     }
