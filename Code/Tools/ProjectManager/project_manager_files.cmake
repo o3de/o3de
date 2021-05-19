@@ -45,8 +45,6 @@ set(FILES
     Source/EngineSettingsScreen.h
     Source/EngineSettingsScreen.cpp
     Source/EngineSettingsScreen.ui
-    Source/BigTallButtonWidget.h
-    Source/BigTallButtonWidget.cpp
     Source/LinkWidget.h
     Source/LinkWidget.cpp
     Source/TagWidget.h
