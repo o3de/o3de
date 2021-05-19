@@ -17,7 +17,6 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <Atom/ImageProcessing/ImageProcessingBus.h>
-#include <Atom/ImageProcessing/ImageProcessingEditorBus.h>
 
 namespace ImageProcessingAtom
 {

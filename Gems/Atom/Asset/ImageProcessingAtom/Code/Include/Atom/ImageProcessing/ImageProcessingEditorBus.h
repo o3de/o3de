@@ -13,15 +13,8 @@
 
 #include <AzCore/EBus/EBus.h>
 
-namespace ImageProcessingAtom
-{
-    class IImageObject;
-}
-
 namespace ImageProcessingAtomEditor
 {
-    typedef AZStd::shared_ptr<ImageProcessingAtom::IImageObject> IImageObjectPtr;
-
     class ImageProcessingEditorRequests
         : public AZ::EBusTraits
     {
