@@ -305,7 +305,7 @@ namespace DebugDraw
                 transformedAabb.Set(transformedAabb.GetMin() - currentCenter + aabbElement.m_worldLocation, transformedAabb.GetMax() - currentCenter + aabbElement.m_worldLocation);
             }
             debugDisplay.SetColor(aabbElement.m_color);
-            debugDisplay.DrawWireBox(transformedAabb.GetMin(), transformedAabb.GetMax());
+            debugDisplay.DrawSolidBox(transformedAabb.GetMin(), transformedAabb.GetMax());
         }
 
         removeExpiredDebugElementsFromVector(m_activeAabbs);
@@ -378,12 +378,7 @@ namespace DebugDraw
             }
 
             obbElement.m_worldLocation = transformedObb.GetPosition();
-
-            ColorB lyColor(obbElement.m_color.ToU32());
-            Vec3 worldLocation(AZVec3ToLYVec3(obbElement.m_worldLocation));
-            OBB lyOBB(AZObbToLyOBB(transformedObb));
-            lyOBB.c = Vec3(0.f);
-            debugDisplay.DrawOBB(lyOBB, worldLocation, false, lyColor, EBoundingBoxDrawStyle::eBBD_Extremes_Color_Encoded);
+            debugDisplay.DrawSolidOBB(obbElement.m_worldLocation, transformedObb.GetAxisX(), transformedObb.GetAxisY(), transformedObb.GetAxisZ(), transformedObb.GetHalfLengths())
         }
 
         removeExpiredDebugElementsFromVector(m_activeObbs);
@@ -409,16 +404,14 @@ namespace DebugDraw
                 rayElement.m_worldDirection = (endWorldLocation - rayElement.m_worldLocation);
             }
 
-            ColorB lyColor(rayElement.m_color.ToU32());
-            Vec3 start(AZVec3ToLYVec3(rayElement.m_worldLocation));
-            Vec3 end(AZVec3ToLYVec3(endWorldLocation));
-            Vec3 direction(AZVec3ToLYVec3(rayElement.m_worldDirection));
             float conePercentHeight = 0.5f;
-            float coneHeight = direction.GetLength() * conePercentHeight;
-            Vec3 coneBaseLocation = end - direction * conePercentHeight;
+            float coneHeight = rayElement.m_worldDirection.GetLength() * conePercentHeight;
+            Vec3 coneBaseLocation = endWorldLocation - rayElement.m_worldDirection * conePercentHeight;
             float coneRadius = AZ::GetClamp(coneHeight * 0.07f, 0.05f, 0.2f);
-            gEnv->pRenderer->GetIRenderAuxGeom()->DrawLine(start, lyColor, coneBaseLocation, lyColor, 5.0f);
-            gEnv->pRenderer->GetIRenderAuxGeom()->DrawCone(coneBaseLocation, direction, coneRadius, coneHeight, lyColor, false);
+            debugDisplay.SetColor(rayElement.m_color);
+            debugDisplay.SetLineThickness(5.0f);
+            debugDisplay.DrawLine(rayElement.m_worldLocation, coneBaseLocation);
+            debugDisplay.DrawCone(coneBaseLocation, rayElement.m_worldDirection, coneRadius, coneHeight, lyColor, false);
         }
 
         removeExpiredDebugElementsFromVector(m_activeRays);
@@ -436,13 +429,8 @@ namespace DebugDraw
             {
                 AZ::TransformBus::EventResult(sphereElement.m_worldLocation, sphereElement.m_targetEntityId, &AZ::TransformBus::Events::GetWorldTranslation);
             }
-
-            if (gEnv->pRenderer)
-            {
-                ColorB lyColor(sphereElement.m_color.ToU32());
-                Vec3 worldLocation(AZVec3ToLYVec3(sphereElement.m_worldLocation));
-                gEnv->pRenderer->GetIRenderAuxGeom()->DrawSphere(worldLocation, sphereElement.m_radius, lyColor, true);
-            }
+            debugDisplay.SetColor(sphereElement.m_color);
+            debugDisplay.DrawBall(sphereElement.m_worldLocation, sphereElement.m_radius, true);
         }
 
         removeExpiredDebugElementsFromVector(m_activeSpheres);
@@ -474,6 +462,8 @@ namespace DebugDraw
             if (textElement.m_drawMode == DebugDrawTextElement::DrawMode::OnScreen)
             {
                 const AZ::Color textColor = needsGammaConversion ? textElement.m_color.GammaToLinear() : textElement.m_color;
+                debugDisplay.SetColor(textColor);
+                debugDisplay.Draw2dTextLabel(20.0f, 20.f + ((float)numScreenTexts * 15.0f), 1.4f, textElement.m_text.c_str() );
                 gEnv->pRenderer->GetIRenderAuxGeom()->Draw3dLabel(Vec3(20.f, 20.f + ((float)numScreenTexts * 15.0f), 0.5f), 1.4f, AZColorToLYColorF(textColor), textElement.m_text.c_str());
                 ++numScreenTexts;
             }
@@ -525,7 +515,7 @@ namespace DebugDraw
                             newEntry.first->second = 1;
                         }
                     }
-                    gEnv->pRenderer->GetIRenderAuxGeom()->Draw3dLabel(Vec3(screenPos.x, screenPos.y, 0.5f), 1.4f, AZColorToLYColorF(textColor), textElement.m_text.c_str());
+                    debugDisplay.Draw2dTextLabel(screenPos.GetX(), screenPos.GetY(), 1.4f, textElement.m_text.c_str() );
                 }
             }
         }
@@ -544,9 +534,9 @@ namespace DebugDraw
             CreateLineEntryForComponent(lineComponent->GetEntityId(), lineComponent->m_element);
         }
         #ifdef DEBUGDRAW_GEM_EDITOR
-        else if (EditorDebugDrawLineComponent* lineComponent = azrtti_cast<EditorDebugDrawLineComponent*>(component))
+        else if (EditorDebugDrawLineComponent* editorLineComponent = azrtti_cast<EditorDebugDrawLineComponent*>(component))
         {
-            CreateLineEntryForComponent(lineComponent->GetEntityId(), lineComponent->m_element);
+            CreateLineEntryForComponent(editorLineComponent->GetEntityId(), editorLineComponent->m_element);
         }
         #endif // DEBUGDRAW_GEM_EDITOR
         else if (DebugDrawRayComponent* rayComponent = azrtti_cast<DebugDrawRayComponent*>(component))
@@ -554,9 +544,9 @@ namespace DebugDraw
             CreateRayEntryForComponent(rayComponent->GetEntityId(), rayComponent->m_element);
         }
         #ifdef DEBUGDRAW_GEM_EDITOR
-        else if (EditorDebugDrawRayComponent* rayComponent = azrtti_cast<EditorDebugDrawRayComponent*>(component))
+        else if (EditorDebugDrawRayComponent* editorRayComponent = azrtti_cast<EditorDebugDrawRayComponent*>(component))
         {
-            CreateRayEntryForComponent(rayComponent->GetEntityId(), rayComponent->m_element);
+            CreateRayEntryForComponent(editorRayComponent->GetEntityId(), editorRayComponent->m_element);
         }
         #endif // DEBUGDRAW_GEM_EDITOR
         else if (DebugDrawSphereComponent* sphereComponent = azrtti_cast<DebugDrawSphereComponent*>(component))
@@ -564,9 +554,9 @@ namespace DebugDraw
             CreateSphereEntryForComponent(sphereComponent->GetEntityId(), sphereComponent->m_element);
         }
         #ifdef DEBUGDRAW_GEM_EDITOR
-        else if (EditorDebugDrawSphereComponent* sphereComponent = azrtti_cast<EditorDebugDrawSphereComponent*>(component))
+        else if (EditorDebugDrawSphereComponent* editorSphereComponent = azrtti_cast<EditorDebugDrawSphereComponent*>(component))
         {
-            CreateSphereEntryForComponent(sphereComponent->GetEntityId(), sphereComponent->m_element);
+            CreateSphereEntryForComponent(editorSphereComponent->GetEntityId(), editorSphereComponent->m_element);
         }
         #endif // DEBUGDRAW_GEM_EDITOR
         else if (DebugDrawObbComponent* obbComponent = azrtti_cast<DebugDrawObbComponent*>(component))
@@ -575,9 +565,9 @@ namespace DebugDraw
         }
 
         #ifdef DEBUGDRAW_GEM_EDITOR
-        else if (EditorDebugDrawObbComponent* obbComponent = azrtti_cast<EditorDebugDrawObbComponent*>(component))
+        else if (EditorDebugDrawObbComponent* editorObbComponent = azrtti_cast<EditorDebugDrawObbComponent*>(component))
         {
-            CreateObbEntryForComponent(obbComponent->GetEntityId(), obbComponent->m_element);
+            CreateObbEntryForComponent(editorObbComponent->GetEntityId(), editorObbComponent->m_element);
         }
         #endif // DEBUGDRAW_GEM_EDITOR
 
@@ -587,9 +577,9 @@ namespace DebugDraw
         }
 
         #ifdef DEBUGDRAW_GEM_EDITOR
-        else if (EditorDebugDrawTextComponent* textComponent = azrtti_cast<EditorDebugDrawTextComponent*>(component))
+        else if (EditorDebugDrawTextComponent* editorTextComponent = azrtti_cast<EditorDebugDrawTextComponent*>(component))
         {
-            CreateTextEntryForComponent(textComponent->GetEntityId(), textComponent->m_element);
+            CreateTextEntryForComponent(editorTextComponent->GetEntityId(), editorTextComponent->m_element);
         }
         #endif // DEBUGDRAW_GEM_EDITOR
     }
