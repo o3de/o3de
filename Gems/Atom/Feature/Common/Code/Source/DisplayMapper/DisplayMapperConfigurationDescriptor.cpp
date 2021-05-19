@@ -59,8 +59,6 @@ namespace AZ
 
         void DisplayMapperConfigurationDescriptor::Reflect(AZ::ReflectContext* context)
         {
-            AcesParameterOverrides::Reflect(context);
-
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Enum<DisplayMapperOperationType>()
