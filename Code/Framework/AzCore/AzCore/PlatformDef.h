@@ -14,6 +14,8 @@
 
 #if defined(__clang__)
     #define AZ_COMPILER_CLANG   __clang_major__
+#elif defined(__GNUC__)
+    #define AZ_COMPILER_GCC     __GNUC__
 #elif defined(_MSC_VER)
     #define AZ_COMPILER_MSVC    _MSC_VER
 #else
@@ -29,7 +31,7 @@
 #define AZ_DYNAMIC_LIBRARY_PREFIX       AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX
 #define AZ_DYNAMIC_LIBRARY_EXTENSION    AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION
 
-#if defined(AZ_COMPILER_CLANG)
+#if defined(AZ_COMPILER_CLANG) || defined(AZ_COMPILER_GCC)
     #define AZ_DLL_EXPORT               AZ_TRAIT_OS_DLL_EXPORT_CLANG
     #define AZ_DLL_IMPORT               AZ_TRAIT_OS_DLL_IMPORT_CLANG
 #elif defined(AZ_COMPILER_MSVC)
@@ -67,7 +69,7 @@
 #if defined(AZ_COMPILER_MSVC)
 
 /// Disables a warning using push style. For use matched with an AZ_POP_WARNING
-#define AZ_PUSH_DISABLE_WARNING(_msvcOption, __)    \
+#define AZ_PUSH_DISABLE_WARNING_BASE(_msvcOption, _1, _2)    \
     __pragma(warning(push))                         \
     __pragma(warning(disable : _msvcOption))
 
@@ -94,16 +96,42 @@
 #   define AZ_FUNCTION_SIGNATURE    __FUNCSIG__
 
 //////////////////////////////////////////////////////////////////////////
-#elif defined(AZ_COMPILER_CLANG)
+#elif defined(AZ_COMPILER_CLANG) || defined(AZ_COMPILER_GCC)
+
+#if defined(AZ_COMPILER_CLANG)
 
 /// Disables a single warning using push style. For use matched with an AZ_POP_WARNING
-#define AZ_PUSH_DISABLE_WARNING(__, _clangOption)           \
+#define AZ_PUSH_DISABLE_WARNING_BASE(_1, _clangOption, _2)           \
     _Pragma("clang diagnostic push")                        \
     _Pragma(AZ_STRINGIZE(clang diagnostic ignored _clangOption))
 
 /// Pops the warning stack. For use matched with an AZ_PUSH_DISABLE_WARNING
 #define AZ_POP_DISABLE_WARNING                              \
     _Pragma("clang diagnostic pop")
+
+#else
+
+/// Disables a single warning using push style. For use matched with an AZ_POP_WARNING
+#define AZ_PUSH_DISABLE_WARNING_BASE(_1, _2, _gccOption)       
+    //_Pragma("GCC diagnostic push")                        
+    // _Pragma(AZ_STRINGIZE(GCC diagnostic ignored _gccOption))
+
+/// Pops the warning stack. For use matched with an AZ_PUSH_DISABLE_WARNING
+#define AZ_POP_DISABLE_WARNING                              
+    _Pragma("GCC diagnostic pop")
+
+#endif // defined(AZ_COMPILER_CLANG)
+
+#define __NUMARGS(_1, _2, TOTAL, ...) TOTAL
+#define NUMARGS(...) __NUMARGS(__VA_ARGS__, 2, 1)
+#define __VCONCAT(X, Y) X##Y
+#define VCONCAT(MACRO, NUMBER) __VCONCAT(MACRO, NUMBER)
+#define VMACRO(MACRO, ...) VCONCAT(MACRO, NUMARGS(__VA_ARGS__))(__VA_ARGS__)
+
+#define AZ_PUSH_DISABLE_WARNING(...) VMACRO(AZ_PUSH_DISABLE_WARNING, __VA_ARGS__)
+#define AZ_PUSH_DISABLE_WARNING1(_1) AZ_PUSH_DISABLE_WARNING_BASE(_1,,)
+#define AZ_PUSH_DISABLE_WARNING2(_1, _2) AZ_PUSH_DISABLE_WARNING_BASE(_1, _2, "")
+#define AZ_PUSH_DISABLE_WARNING3(_1, _2, _3) AZ_PUSH_DISABLE_WARNING_BASE(_1, _2, _3)
 
 #define AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 #define AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING

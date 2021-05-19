@@ -20,7 +20,10 @@
 #if defined(AZ_COMPILER_CLANG)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#endif // clang
+#elif defined(AZ_COMPILER_GCC)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
 
 #include <benchmark/benchmark.h>
 

@@ -20,6 +20,24 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             -msse4.1
     )
     ly_set(CMAKE_CXX_EXTENSIONS OFF)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+
+    include(cmake/Platform/Common/GNU/Configurations_gnu.cmake)
+
+    ly_append_configurations_options(
+        DEFINES
+            LINUX
+            __linux__
+            LINUX64
+        COMPILATION
+            -fPIC
+            -msse4.1
+        LINK_NON_STATIC
+            -Wl,--no-undefined
+            -lpthread
+    )
+    ly_set(CMAKE_CXX_EXTENSIONS OFF)
+
 else()
 
     message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER_ID} not supported in ${PAL_PLATFORM_NAME}")
