@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/std/typetraits/typetraits.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/mutex.h>

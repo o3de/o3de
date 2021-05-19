@@ -21,6 +21,13 @@
     #define az_clz_u64(x)    __builtin_clzll(x)
     #define az_popcnt_u32(x) __builtin_popcount(x)
     #define az_popcnt_u64(x) __builtin_popcountll(x)
+#elif defined(AZ_COMPILER_GCC)
+    #define az_ctz_u32(x)    __builtin_ctz(x)
+    #define az_ctz_u64(x)    __builtin_ctzll(x)
+    #define az_clz_u32(x)    __builtin_clz(x)
+    #define az_clz_u64(x)    __builtin_clzll(x)
+    #define az_popcnt_u32(x) __builtin_popcount(x)
+    #define az_popcnt_u64(x) __builtin_popcountll(x)
 #else
-    #error Count Leading Zeros, Count Trailing Zeros and Pop Count intrinsics isn't supported for this compiler
+    #error Count Leading Zeros, Count Trailing Zeros and Pop Count intrinsics isnt supported for this compiler
 #endif
