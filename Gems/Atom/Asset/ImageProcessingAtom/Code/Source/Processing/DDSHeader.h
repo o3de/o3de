@@ -15,9 +15,6 @@
 #include <AzCore/std/algorithm.h>
 #include <ImageProcessing_Traits_Platform.h>
 
-//! The following defines and constants are extracted from ImageExtensionHelper.h
-//! Please make sure they are always synced with ImageExtensionHelper.h
-
 #define IMAGE_BUIDER_MAKEFOURCC(ch0, ch1, ch2, ch3)           \
     ((AZ::u32)(AZ::u8)(ch0) | ((AZ::u32)(AZ::u8)(ch1) << 8) | \
      ((AZ::u32)(AZ::u8)(ch2) << 16) | ((AZ::u32)(AZ::u8)(ch3) << 24))

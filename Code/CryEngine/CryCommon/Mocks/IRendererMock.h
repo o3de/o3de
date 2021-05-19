@@ -12,8 +12,6 @@
 #pragma once
 
 #include <IRenderer.h>
-#include <IVideoRenderer.h>
-#include <IImage.h>
 #include <gmock/gmock.h>
 
 struct SRendItemSorter {};
@@ -294,8 +292,6 @@ public:
         bool(const char* szFileName));
     MOCK_METHOD1(EF_ReloadFile_Request,
         bool(const char* szFileName));
-    MOCK_METHOD2(EF_LoadImage,
-        _smart_ptr<IImageFile>(const char* szFileName, uint32 nFlags));
     MOCK_METHOD3(EF_GetRemapedShaderMaskGen,
         uint64(const char*, uint64, bool));
     MOCK_METHOD3(EF_GetShaderGlobalMaskGenFromString,
@@ -330,8 +326,6 @@ public:
         ITexture * (const char* nameTex));
     MOCK_METHOD1(EF_LoadLightmap,
         int(const char* name));
-    MOCK_METHOD3(EF_RenderEnvironmentCubeHDR,
-        bool(int size, Vec3 & Pos, TArray<unsigned short>&vecData));
     MOCK_METHOD1(EF_StartEf,
         void(const SRenderingPassInfo& passInfo));
     MOCK_METHOD3(EF_GetObjData,
@@ -360,8 +354,6 @@ public:
         uint32(eDeferredLightType));
     MOCK_METHOD0(EF_ClearDeferredLightsList,
         void());
-    MOCK_METHOD2(EF_GetDeferredLights,
-        TArray<SRenderLight>*(const SRenderingPassInfo&, const eDeferredLightType));
     MOCK_METHOD1(EF_AddDeferredClipVolume,
         uint8(const IClipVolume * pClipVolume));
     MOCK_METHOD2(EF_SetDeferredClipVolumeBlendData,
@@ -537,8 +529,6 @@ public:
         void(unsigned int TextureId));
     MOCK_METHOD1(DeleteFont,
         void(IFFont * font));
-    MOCK_METHOD2(BakeMesh,
-        bool(const SMeshBakingInputParams * pInputParams, SMeshBakingOutput * pReturnValues));
     MOCK_METHOD3(CaptureFrameBufferFast,
         bool(unsigned char* pDstRGBA8, int destinationWidth, int destinationHeight));
     MOCK_METHOD3(CopyFrameBufferFast,
@@ -585,8 +575,6 @@ public:
         SDepthTexture * (int, int, bool));
     MOCK_METHOD1(DestroyDepthSurface,
         void(SDepthTexture * pDepthSurf));
-    MOCK_CONST_METHOD1(CreateOptics,
-        IOpticsElementBase * (EFlareType type));
     MOCK_METHOD1(PauseTimer,
         void(bool bPause));
     MOCK_METHOD0(CreateShaderPublicParams,
@@ -862,13 +850,6 @@ public:
         void(const char*));
     MOCK_METHOD1(AddProfilerLabel,
         void(const char*));
-
-    MOCK_METHOD1(InitializeVideoRenderer,
-        void(AZ::VideoRenderer::IVideoRenderer* pVideoRenderer));
-    MOCK_METHOD1(CleanupVideoRenderer,
-        void(AZ::VideoRenderer::IVideoRenderer* pVideoRenderer));
-    MOCK_METHOD2(DrawVideoRenderer,
-        void(AZ::VideoRenderer::IVideoRenderer* pVideoRenderer, const AZ::VideoRenderer::DrawArguments& drawArguments));
 
     MOCK_METHOD5(EF_QueryImpl,
         void(ERenderQueryTypes eQuery, void* pInOut0, uint32 nInOutSize0, void* pInOut1, uint32 nInOutSize1));

@@ -297,20 +297,28 @@ namespace AssetProcessor
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, platform, specialization, &scratchBuffer);
 
                 // Merge the Project User and User home settings registry only in non-release builds
+                constexpr bool executeRegDumpCommands = false;
+                AZ::CommandLine* commandLine{};
+                AZ::ComponentApplicationBus::Broadcast([&registry, &commandLine](AZ::ComponentApplicationRequests* appRequests)
+                {
+                    commandLine = appRequests->GetAzCommandLine();
+                });
+
                 if (!specialization.Contains("release"))
                 {
                     AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(registry, platform, specialization, &scratchBuffer);
+                    if (commandLine)
+                    {
+                        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, *commandLine, executeRegDumpCommands);
+                    }
                     AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, platform, specialization, &scratchBuffer);
                 }
 
-                AZ::ComponentApplicationBus::Broadcast([&registry](AZ::ComponentApplicationRequests* appRequests)
+                if (commandLine)
                 {
-                    if (AZ::CommandLine* commandLine = appRequests->GetAzCommandLine(); commandLine != nullptr)
-                    {
-                        constexpr bool executeRegDumpCommands = false;
-                        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, *commandLine, executeRegDumpCommands);
-                    }
-                });
+                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, *commandLine, executeRegDumpCommands);
+                }
+
 
                 if (registry.Visit(exporter, ""))
                 {

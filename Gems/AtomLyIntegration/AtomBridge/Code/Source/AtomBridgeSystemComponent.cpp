@@ -91,13 +91,9 @@ namespace AZ
             AZ_UNUSED(dependent);
         }
 
-        static const AZ::Crc32 mainViewportEntityDebugDisplayId = AZ_CRC_CE("MainViewportEntityDebugDisplayId");
-
         void AtomBridgeSystemComponent::Init()
         {
-#if defined(ENABLE_ATOM_DEBUG_DISPLAY) && ENABLE_ATOM_DEBUG_DISPLAY
             AZ::RPI::ViewportContextManagerNotificationsBus::Handler::BusConnect();
-#endif
         }
 
         void AtomBridgeSystemComponent::Activate()
@@ -112,9 +108,7 @@ namespace AZ
 
         void AtomBridgeSystemComponent::Deactivate()
         { 
-#if defined(ENABLE_ATOM_DEBUG_DISPLAY) && ENABLE_ATOM_DEBUG_DISPLAY
             AZ::RPI::ViewportContextManagerNotificationsBus::Handler::BusDisconnect();
-#endif
             RPI::Scene* scene = RPI::RPISystemInterface::Get()->GetDefaultScene().get();
             // Check if scene is emptry since scene might be released already when running AtomSampleViewer 
             if (scene)
@@ -193,36 +187,32 @@ namespace AZ
 
                 renderPipeline = bootstrapScene->GetDefaultRenderPipeline();
                 renderPipeline->SetDefaultView(m_view);
-
-                auto auxGeomFP = bootstrapScene->GetFeatureProcessor<RPI::AuxGeomFeatureProcessorInterface>();
-                if (auxGeomFP)
-                {
-                    auxGeomFP->GetOrCreateDrawQueueForView(m_view.get());
-                }
-
-#if defined(ENABLE_ATOM_DEBUG_DISPLAY) && ENABLE_ATOM_DEBUG_DISPLAY
-                // Make default AtomDebugDisplayViewportInterface for the scene
-                AZStd::shared_ptr<AtomDebugDisplayViewportInterface> mainEntityDebugDisplay = AZStd::make_shared<AtomDebugDisplayViewportInterface>(mainViewportEntityDebugDisplayId);
-                m_activeViewportsList[mainViewportEntityDebugDisplayId] = mainEntityDebugDisplay;
-#endif
             }
+            else
+            {
+                m_view = renderPipeline->GetDefaultView();
+            }
+            auto auxGeomFP = bootstrapScene->GetFeatureProcessor<RPI::AuxGeomFeatureProcessorInterface>();
+            if (auxGeomFP)
+            {
+                auxGeomFP->GetOrCreateDrawQueueForView(m_view.get());
+            }
+
+            // Make default AtomDebugDisplayViewportInterface for the scene
+            AZStd::shared_ptr<AtomDebugDisplayViewportInterface> mainEntityDebugDisplay = AZStd::make_shared<AtomDebugDisplayViewportInterface>(AzFramework::g_defaultSceneEntityDebugDisplayId);
+            m_activeViewportsList[AzFramework::g_defaultSceneEntityDebugDisplayId] = mainEntityDebugDisplay;
         }
 
         void AtomBridgeSystemComponent::OnViewportContextAdded(AZ::RPI::ViewportContextPtr viewportContext)
         {
-#if defined(ENABLE_ATOM_DEBUG_DISPLAY) && ENABLE_ATOM_DEBUG_DISPLAY
                 AZStd::shared_ptr<AtomDebugDisplayViewportInterface> viewportDebugDisplay = AZStd::make_shared<AtomDebugDisplayViewportInterface>(viewportContext);
                 m_activeViewportsList[viewportContext->GetId()] = viewportDebugDisplay;
-#endif
         }
 
         void AtomBridgeSystemComponent::OnViewportContextRemoved(AzFramework::ViewportId viewportId)
         {
-#if defined(ENABLE_ATOM_DEBUG_DISPLAY) && ENABLE_ATOM_DEBUG_DISPLAY
+            AZ_Assert(viewportId != AzFramework::g_defaultSceneEntityDebugDisplayId, "Error trying to remove the default scene draw instance");
             m_activeViewportsList.erase(viewportId);
-#else
-            AZ_UNUSED(viewportId);
-#endif
         }
 
 

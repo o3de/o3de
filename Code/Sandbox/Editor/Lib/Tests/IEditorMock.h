@@ -102,7 +102,6 @@ public:
     MOCK_METHOD0(GetViewManager, class CViewManager* ());
     MOCK_METHOD0(GetActiveView, class CViewport* ());
     MOCK_METHOD1(SetActiveView, void(CViewport*));
-    MOCK_METHOD0(GetBackgroundTaskManager, struct IBackgroundTaskManager* ());
     MOCK_METHOD0(GetFileMonitor, struct IEditorFileMonitor* ());
     MOCK_METHOD1(RegisterEventLoopHook, void(IEventLoopHook* ));
     MOCK_METHOD1(UnregisterEventLoopHook, void(IEventLoopHook* ));
@@ -184,7 +183,6 @@ public:
     MOCK_CONST_METHOD0(GetEditorConfigPlatform, ESystemConfigPlatform());
     MOCK_METHOD0(ReloadTemplates, void());
     MOCK_METHOD0(GetResourceSelectorHost, IResourceSelectorHost* ());
-    MOCK_METHOD0(GetBackgroundScheduleManager, struct IBackgroundScheduleManager* ());
     MOCK_METHOD1(ShowStatusText, void(bool ));
     MOCK_METHOD1(RegisterObjectContextMenuExtension, void(TContextMenuExtensionFunc ));
     MOCK_METHOD0(GetEnv, SSystemGlobalEnvironment* ());

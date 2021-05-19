@@ -14,14 +14,14 @@
 #include <Source/NetworkEntity/EntityReplication/EntityReplicator.h>
 #include <Source/NetworkEntity/EntityReplication/PropertyPublisher.h>
 #include <Source/NetworkEntity/EntityReplication/PropertySubscriber.h>
-#include <Source/NetworkEntity/NetworkEntityUpdateMessage.h>
-#include <Source/NetworkEntity/NetworkEntityRpcMessage.h>
-#include <Source/Components/NetBindComponent.h>
 #include <Source/AutoGen/Multiplayer.AutoPackets.h>
-#include <Include/IEntityDomain.h>
-#include <Include/IMultiplayer.h>
-#include <Include/INetworkEntityManager.h>
-#include <Include/IReplicationWindow.h>
+#include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/EntityDomains/IEntityDomain.h>
+#include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h>
+#include <Multiplayer/ReplicationWindows/IReplicationWindow.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 #include <AzNetworking/PacketLayer/IPacketHeader.h>
@@ -60,7 +60,11 @@ namespace Multiplayer
         // Start window update events
         m_updateWindow.Enqueue(AZ::TimeMs{ 0 }, true);
 
-        GetNetworkEntityManager()->AddEntityExitDomainHandler(m_entityExitDomainEventHandler);
+        INetworkEntityManager* networkEntityManager = GetNetworkEntityManager();
+        if (networkEntityManager != nullptr)
+        {
+            networkEntityManager->AddEntityExitDomainHandler(m_entityExitDomainEventHandler);
+        }
     }
 
     void EntityReplicationManager::SetRemoteHostId(HostId hostId)
@@ -551,10 +555,10 @@ namespace Multiplayer
             {
                 replicatorEntity = entityList[0];
             }
-            
-            AZ_Assert(replicatorEntity != nullptr, "Failed to create entity from prefab %s", prefabEntityId.m_prefabName.GetCStr());
-            if (replicatorEntity == nullptr)
+            else
             {
+                AZ_Assert(false, "There should be exactly one created entity out of prefab %s, index %d. Got: %d",
+                    prefabEntityId.m_prefabName.GetCStr(), prefabEntityId.m_entityOffset, entityList.size());
                 return false;
             }
         }
@@ -824,12 +828,11 @@ namespace Multiplayer
     {
         if (entityReplicator == nullptr)
         {
-            IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
             AZLOG_INFO
             (
                 "EntityReplicationManager: Dropping remote RPC message for component %s of rpc index %s, entityId %u has already been deleted",
-                multiplayer->GetComponentName(message.GetComponentId()),
-                multiplayer->GetComponentRpcName(message.GetComponentId(), message.GetRpcIndex()),
+                GetMultiplayerComponentRegistry()->GetComponentName(message.GetComponentId()),
+                GetMultiplayerComponentRegistry()->GetComponentRpcName(message.GetComponentId(), message.GetRpcIndex()),
                 message.GetEntityId()
             );
             return false;

@@ -124,8 +124,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include <ILog.h>
 #include <IAudioSystem.h>
 #include <IProcess.h>
-#include <INotificationNetwork.h>
-#include <ISoftCodeMgr.h>
 #include <LyShine/ILyShine.h>
 
 #include <LoadScreenBus.h>
@@ -133,36 +131,21 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include <AzFramework/Archive/Archive.h>
 #include "XConsole.h"
 #include "Log.h"
-#include "NotificationNetwork.h"
-#include "ProfileLog.h"
 
 #include "XML/xml.h"
 #include "XML/ReadWriteXMLSink.h"
 
-#include "StreamEngine/StreamEngine.h"
-#include "PhysRenderer.h"
-
 #include "LocalizedStringManager.h"
 #include "XML/XmlUtils.h"
 #include "SystemEventDispatcher.h"
-#include "ServerThrottle.h"
-#include "ResourceManager.h"
 #include "HMDBus.h"
-#include <IThreadManager.h>
 
-#include "IZLibCompressor.h"
-#include "IZlibDecompressor.h"
-#include "ILZ4Decompressor.h"
-#include "IZStdDecompressor.h"
 #include "zlib.h"
 #include "RemoteConsole/RemoteConsole.h"
 
 #include <PNoise3.h>
 #include <StringUtils.h>
-#include "CryWaterMark.h"
-WATERMARKDATA(_m);
 
-#include "ImageHandler.h"
 #include <LyShine/Bus/UiCursorBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemRequestBus.h>
@@ -178,13 +161,8 @@ WATERMARKDATA(_m);
 #include <malloc.h>
 #endif
 
-#if USE_STEAM
-#include "Steamworks/public/steam/steam_api.h"
-#endif
-
 #include <ILevelSystem.h>
 
-#include <CrtDebugStats.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
 // profilers api.
@@ -193,19 +171,6 @@ VTuneFunction VTPause = NULL;
 
 // Define global cvars.
 SSystemCVars g_cvars;
-
-#include "ITextModeConsole.h"
-
-extern int CryMemoryGetAllocatedSize();
-
-// these heaps are used by underlying System structures
-// to allocate, accordingly, small (like elements of std::set<..*>) and big (like memory for reading files) objects
-// hopefully someday we'll have standard MT-safe heap
-//CMTSafeHeap g_pakHeap;
-CMTSafeHeap* g_pPakHeap = 0;// = &g_pakHeap;
-
-//////////////////////////////////////////////////////////////////////////
-#include "Validator.h"
 
 #include <IViewSystem.h>
 
@@ -267,27 +232,10 @@ namespace
 }
 #endif
 
-#if defined(CVARS_WHITELIST)
-struct SCVarsWhitelistConfigSink
-    : public ILoadConfigurationEntrySink
-{
-    virtual void OnLoadConfigurationEntry(const char* szKey, const char* szValue, const char* szGroup)
-    {
-        ICVarsWhitelist* pCVarsWhitelist = gEnv->pSystem->GetCVarsWhiteList();
-        bool whitelisted = (pCVarsWhitelist) ? pCVarsWhitelist->IsWhiteListed(szKey, false) : true;
-        if (whitelisted)
-        {
-            gEnv->pConsole->LoadConfigVar(szKey, szValue);
-        }
-    }
-} g_CVarsWhitelistConfigSink;
-#endif // defined(CVARS_WHITELIST)
-
 /////////////////////////////////////////////////////////////////////////////////
 // System Implementation.
 //////////////////////////////////////////////////////////////////////////
 CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
-    : m_imageHandler(std::make_unique<ImageHandler>())
 {
     CrySystemRequestBus::Handler::BusConnect();
 
@@ -322,27 +270,11 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_env.pSystem = this;
     m_env.pTimer = &m_Time;
     m_env.pNameTable = &m_nameTable;
-    m_env.bServer = false;
-    m_env.bMultiplayer = false;
-    m_env.bHostMigrating = false;
     m_env.bIgnoreAllAsserts = false;
     m_env.bNoAssertDialog = false;
-    m_env.bTesting = false;
 
     m_env.pSharedEnvironment = pSharedEnvironment;
-
-    m_env.SetFMVIsPlaying(false);
-    m_env.SetCutsceneIsPlaying(false);
-
-    m_env.szDebugStatus[0] = '\0';
-
-#if !defined(CONSOLE)
-    m_env.SetIsClient(false);
-#endif
     //////////////////////////////////////////////////////////////////////////
-
-    m_pStreamEngine = NULL;
-    m_PhysThread = 0;
 
     m_pIFont = NULL;
     m_pIFontUi = NULL;
@@ -357,20 +289,11 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_rStencilBits = NULL;
     m_rFullscreen = NULL;
     m_sysNoUpdate = NULL;
-    m_pMemoryManager = NULL;
     m_pProcess = NULL;
-
-    m_pValidator = NULL;
     m_pCmdLine = NULL;
-    m_pDefaultValidator = NULL;
     m_pLevelSystem = NULL;
     m_pViewSystem = NULL;
-    m_pIZLibCompressor = NULL;
-    m_pIZLibDecompressor = NULL;
-    m_pILZ4Decompressor = NULL;
-    m_pIZStdDecompressor = nullptr;
     m_pLocalizationManager = NULL;
-    m_sys_physics_CPU = 0;
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_2
 #include AZ_RESTRICTED_FILE(System_cpp)
@@ -378,26 +301,18 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_sys_min_step = 0;
     m_sys_max_step = 0;
 
-    m_pNotificationNetwork = NULL;
-
     m_cvAIUpdate = NULL;
 
     m_pUserCallback = NULL;
-#if defined(CVARS_WHITELIST)
-    m_pCVarsWhitelist = NULL;
-    m_pCVarsWhitelistConfigSink = &g_CVarsWhitelistConfigSink;
-#endif // defined(CVARS_WHITELIST)
     m_sys_memory_debug = NULL;
     m_sysWarnings = NULL;
     m_sysKeyboard = NULL;
-    m_sys_GraphicsQuality = NULL;
     m_sys_firstlaunch = NULL;
     m_sys_enable_budgetmonitoring = NULL;
     m_sys_preload = NULL;
 
     //  m_sys_filecache = NULL;
     m_gpu_particle_physics = NULL;
-    m_pCpu = NULL;
 
     m_bInitializedSuccessfully = false;
     m_bRelaunch = false;
@@ -408,13 +323,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_bIgnoreUpdates = false;
     m_bNoCrashDialog = false;
     m_bNoErrorReportWindow = false;
-
-#ifndef _RELEASE
-    m_checkpointLoadCount = 0;
-    m_loadOrigin = eLLO_Unknown;
-    m_hasJustResumed = false;
-    m_expectingMapCommand = false;
-#endif
 
     m_pCVarQuit = NULL;
 
@@ -429,13 +337,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_nServerConfigSpec = CONFIG_VERYHIGH_SPEC;
     m_nMaxConfigSpec = CONFIG_VERYHIGH_SPEC;
 
-    //m_hPhysicsThread = INVALID_HANDLE_VALUE;
-    //m_hPhysicsActive = INVALID_HANDLE_VALUE;
-    //m_bStopPhysics = 0;
-    //m_bPhysicsActive = 0;
-
-    m_pProgressListener = 0;
-
     m_bPaused = false;
     m_bNoUpdate = false;
     m_nUpdateCounter = 0;
@@ -443,14 +344,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
 
 
     m_pXMLUtils = new CXmlUtils(this);
-    m_pMemoryManager = CryGetIMemoryManager();
-    m_pThreadTaskManager = new CThreadTaskManager;
-    m_pResourceManager = new CResourceManager;
-    m_pTextModeConsole = NULL;
-
-    InitThreadSystem();
-
-    g_pPakHeap = new CMTSafeHeap;
 
     if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
     {
@@ -464,13 +357,11 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
         AZ::Debug::Trace::Instance().Init();
     }
 
-    m_UpdateTimesIdx = 0U;
     m_bNeedDoWorkDuringOcclusionChecks = false;
 
     m_eRuntimeState = ESYSTEM_EVENT_LEVEL_UNLOAD;
 
     m_bHasRenderedErrorMessage = false;
-    m_bIsSteamInitialized = false;
 
     m_pDataProbe = nullptr;
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_USE_MESSAGE_HANDLER
@@ -478,15 +369,12 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
 #endif
 
     m_ConfigPlatform = CONFIG_INVALID_PLATFORM;
-
-    AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
 }
 
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 CSystem::~CSystem()
 {
-    AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
     ShutDown();
 
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_USE_MESSAGE_HANDLER
@@ -496,18 +384,7 @@ CSystem::~CSystem()
     CRY_ASSERT(m_windowMessageHandlers.empty() && "There exists a dangling window message handler somewhere");
 
     SAFE_DELETE(m_pXMLUtils);
-    SAFE_DELETE(m_pThreadTaskManager);
-    SAFE_DELETE(m_pResourceManager);
     SAFE_DELETE(m_pSystemEventDispatcher);
-    //  SAFE_DELETE(m_pMemoryManager);
-
-    if (gEnv && gEnv->pThreadManager)
-    {
-        gEnv->pThreadManager->UnRegisterThirdPartyThread("Main");
-    }
-    ShutDownThreadSystem();
-
-    SAFE_DELETE(g_pPakHeap);
 
     AZCoreLogSink::Disconnect();
     if (m_initedSysAllocator)
@@ -546,12 +423,6 @@ void CSystem::FreeLib(AZStd::unique_ptr<AZ::DynamicModuleHandle>& hLibModule)
         }
         hLibModule.release();
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-IStreamEngine* CSystem::GetStreamEngine()
-{
-    return m_pStreamEngine;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -609,16 +480,6 @@ void CSystem::ShutDown()
         GetIRemoteConsole()->Stop();
     }
 
-    // clean up properly the console
-    if (m_pTextModeConsole)
-    {
-        m_pTextModeConsole->OnShutdown();
-    }
-
-    SAFE_DELETE(m_pTextModeConsole);
-
-    KillPhysicsThread();
-
     if (m_sys_firstlaunch)
     {
         m_sys_firstlaunch->Set("0");
@@ -655,16 +516,11 @@ void CSystem::ShutDown()
     // Shutdown any running VR devices.
     EBUS_EVENT(AZ::VR::HMDInitRequestBus, Shutdown);
 
-    // Shutdown resource manager.
-    m_pResourceManager->Shutdown();
-
     if (gEnv && gEnv->pLyShine)
     {
         gEnv->pLyShine->Release();
         gEnv->pLyShine = nullptr;
     }
-
-    SAFE_DELETE(m_env.pResourceCompilerHelper);
 
     SAFE_RELEASE(m_env.pMovieSystem);
     SAFE_RELEASE(m_env.pLyShine);
@@ -673,10 +529,6 @@ void CSystem::ShutDown()
     {
         ((CXConsole*)m_env.pConsole)->FreeRenderResources();
     }
-    SAFE_RELEASE(m_pIZLibCompressor);
-    SAFE_RELEASE(m_pIZLibDecompressor);
-    SAFE_RELEASE(m_pILZ4Decompressor);
-    SAFE_RELEASE(m_pIZStdDecompressor);
     SAFE_RELEASE(m_pViewSystem);
     SAFE_RELEASE(m_pLevelSystem);
 
@@ -703,10 +555,8 @@ void CSystem::ShutDown()
 
     SAFE_RELEASE(m_sysWarnings);
     SAFE_RELEASE(m_sysKeyboard);
-    SAFE_RELEASE(m_sys_GraphicsQuality);
     SAFE_RELEASE(m_sys_firstlaunch);
     SAFE_RELEASE(m_sys_enable_budgetmonitoring);
-    SAFE_RELEASE(m_sys_physics_CPU);
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_3
@@ -716,20 +566,7 @@ void CSystem::ShutDown()
     SAFE_RELEASE(m_sys_min_step);
     SAFE_RELEASE(m_sys_max_step);
 
-    SAFE_RELEASE(m_pNotificationNetwork);
-
-    SAFE_DELETE(m_env.pSoftCodeMgr);
-    SAFE_DELETE(m_pDefaultValidator);
-    m_pValidator = nullptr;
-
     SAFE_DELETE(m_pLocalizationManager);
-
-    //DebugStats(false, false);//true);
-    //CryLogAlways("");
-    //CryLogAlways("release mode memory manager stats:");
-    //DumpMMStats(true);
-
-    SAFE_DELETE(m_pCpu);
 
     delete m_pCmdLine;
     m_pCmdLine = 0;
@@ -738,12 +575,10 @@ void CSystem::ShutDown()
     // Shut down audio as late as possible but before the streaming system and console get released!
     Audio::Gem::AudioSystemGemRequestBus::Broadcast(&Audio::Gem::AudioSystemGemRequestBus::Events::Release);
 
-    // Shut down the streaming system and console as late as possible and after audio!
-    SAFE_DELETE(m_pStreamEngine);
+    // Shut down console as late as possible and after audio!
     SAFE_RELEASE(m_env.pConsole);
 
     // Log must be last thing released.
-    SAFE_RELEASE(m_env.pProfileLogSystem);
     if (m_env.pLog)
     {
         m_env.pLog->FlushAndClose();
@@ -751,10 +586,6 @@ void CSystem::ShutDown()
     SAFE_RELEASE(m_env.pLog);   // creates log backup
 
     ShutdownFileSystem();
-
-#if defined(MAP_LOADING_SLICING)
-    delete gEnv->pSystemScheduler;
-#endif // defined(MAP_LOADING_SLICING)
 
     ShutdownModuleLibraries();
 
@@ -842,273 +673,6 @@ ISystem* CSystem::GetCrySystem()
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Physics thread task
-//////////////////////////////////////////////////////////////////////////
-class CPhysicsThreadTask
-    : public IThreadTask
-{
-public:
-
-    CPhysicsThreadTask()
-    {
-        m_bStopRequested = 0;
-        m_bIsActive = 0;
-        m_stepRequested = 0;
-        m_bProcessing = 0;
-        m_doZeroStep = 0;
-        m_lastStepTimeTaken = 0U;
-        m_lastWaitTimeTaken = 0U;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // IThreadTask implementation.
-    //////////////////////////////////////////////////////////////////////////
-    virtual void OnUpdate()
-    {
-        Run();
-        // At the end.. delete the task
-        delete this;
-    }
-    virtual void Stop()
-    {
-        Cancel();
-    }
-    virtual SThreadTaskInfo* GetTaskInfo() { return &m_TaskInfo; }
-    //////////////////////////////////////////////////////////////////////////
-
-    virtual void Run()
-    {
-        m_bStopRequested = 0;
-        m_bIsActive = 1;
-
-        float step, timeTaken, kSlowdown = 1.0f;
-        int nSlowFrames = 0;
-        int64 timeStart;
-#ifdef ENABLE_LW_PROFILERS
-        LARGE_INTEGER stepStart, stepEnd;
-#endif
-        LARGE_INTEGER waitStart, waitEnd;
-        MarkThisThreadForDebugging("Physics");
-
-#if defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_5
-#include AZ_RESTRICTED_FILE(System_cpp)
-#endif
-        while (true)
-        {
-            QueryPerformanceCounter(&waitStart);
-            m_FrameEvent.Wait(); // Wait untill new frame
-            QueryPerformanceCounter(&waitEnd);
-            m_lastWaitTimeTaken = waitEnd.QuadPart - waitStart.QuadPart;
-
-            if (m_bStopRequested)
-            {
-                UnmarkThisThreadFromDebugging();
-                return;
-            }
-            bool stepped = false;
-#ifdef ENABLE_LW_PROFILERS
-            QueryPerformanceCounter(&stepStart);
-#endif
-            while ((step = m_stepRequested) > 0 || m_doZeroStep)
-            {
-                stepped = true;
-                m_stepRequested = 0;
-                m_bProcessing = 1;
-                m_doZeroStep = 0;
-
-                if (kSlowdown != 1.0f)
-                {
-                    step = max(1, FtoI(step * kSlowdown * 50 - 0.5f)) * 0.02f;
-                }
-                timeStart = CryGetTicks();
-                timeTaken = gEnv->pTimer->TicksToSeconds(CryGetTicks() - timeStart);
-                if (timeTaken > step * 0.9f)
-                {
-                    if (++nSlowFrames > 5)
-                    {
-                        kSlowdown = step * 0.9f / timeTaken;
-                    }
-                }
-                else
-                {
-                    kSlowdown = 1.0f, nSlowFrames = 0;
-                }
-                m_bProcessing = 0;
-                //int timeSleep = (int)((m_timeTarget-gEnv->pTimer->GetAsyncTime()).GetMilliSeconds()*0.9f);
-                //Sleep(max(0,timeSleep));
-            }
-            if (!stepped)
-            {
-                Sleep(0);
-            }
-            m_FrameDone.Set();
-#ifdef ENABLE_LW_PROFILERS
-            QueryPerformanceCounter(&stepEnd);
-            m_lastStepTimeTaken = stepEnd.QuadPart - stepStart.QuadPart;
-#endif
-        }
-    }
-    virtual void Cancel()
-    {
-        Pause();
-        m_bStopRequested = 1;
-        m_FrameEvent.Set();
-        m_bIsActive = 0;
-    }
-
-    int Pause()
-    {
-        if (m_bIsActive)
-        {
-            AZ_PROFILE_FUNCTION_STALL(AZ::Debug::ProfileCategory::System);
-            m_bIsActive = 0;
-            while (m_bProcessing)
-            {
-                ;
-            }
-            return 1;
-        }
-        return 0;
-    }
-    int Resume()
-    {
-        if (!m_bIsActive)
-        {
-            m_bIsActive = 1;
-            return 1;
-        }
-        return 0;
-    }
-    int IsActive() { return m_bIsActive; }
-    int RequestStep(float dt)
-    {
-        if (m_bIsActive && dt > FLT_EPSILON)
-        {
-            m_stepRequested += dt;
-            if (dt <= 0.0f)
-            {
-                m_doZeroStep = 1;
-            }
-            m_FrameEvent.Set();
-        }
-
-        return m_bProcessing;
-    }
-    float GetRequestedStep() { return m_stepRequested; }
-
-    uint64 LastStepTaken() const
-    {
-        return m_lastStepTimeTaken;
-    }
-
-    uint64 LastWaitTime() const
-    {
-        return m_lastWaitTimeTaken;
-    }
-
-    void EnsureStepDone()
-    {
-        FRAME_PROFILER("SysUpdate:PhysicsEnsureDone", gEnv->pSystem, PROFILE_SYSTEM);
-        if (m_bIsActive)
-        {
-            while (m_stepRequested > 0.0f || m_bProcessing)
-            {
-                m_FrameDone.Wait();
-            }
-        }
-    }
-
-protected:
-
-    volatile int m_bStopRequested;
-    volatile int m_bIsActive;
-    volatile float m_stepRequested;
-    volatile int m_bProcessing;
-    volatile int m_doZeroStep;
-    volatile uint64 m_lastStepTimeTaken;
-    volatile uint64 m_lastWaitTimeTaken;
-
-    CryEvent m_FrameEvent;
-    CryEvent m_FrameDone;
-
-    SThreadTaskInfo m_TaskInfo;
-};
-
-void CSystem::CreatePhysicsThread()
-{
-    if (!m_PhysThread)
-    {
-        //////////////////////////////////////////////////////////////////////////
-        SThreadTaskParams threadParams;
-        threadParams.name = "Physics";
-        threadParams.nFlags = THREAD_TASK_BLOCKING;
-        threadParams.nStackSizeKB = PHYSICS_STACK_SIZE >> 10;
-#if defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_6
-#include AZ_RESTRICTED_FILE(System_cpp)
-#endif
-
-        {
-            m_PhysThread = new CPhysicsThreadTask;
-            GetIThreadTaskManager()->RegisterTask(m_PhysThread, threadParams);
-        }
-    }
-
-}
-
-void CSystem::KillPhysicsThread()
-{
-    if (m_PhysThread)
-    {
-        GetIThreadTaskManager()->UnregisterTask(m_PhysThread);
-        m_PhysThread = 0;
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////
-// AzFramework::Terrain::TerrainDataNotificationBus START
-void CSystem::OnTerrainDataCreateBegin()
-{
-    KillPhysicsThread();
-}
-
-void CSystem::OnTerrainDataDestroyBegin()
-{
-    OnTerrainDataCreateBegin();
-}
-
-// AzFramework::Terrain::TerrainDataNotificationBus END
-///////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-int CSystem::SetThreadState(ESubsystem subsys, bool bActive)
-{
-    switch (subsys)
-    {
-    case ESubsys_Physics:
-    {
-        if (m_PhysThread)
-        {
-            return bActive ? ((CPhysicsThreadTask*)m_PhysThread)->Resume() : ((CPhysicsThreadTask*)m_PhysThread)->Pause();
-        }
-    }
-    break;
-    }
-    return 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CSystem::SleepIfInactive()
-{
-    // ProcessSleep()
-    if (m_bDedicatedServer || m_bEditor || gEnv->bMultiplayer)
-    {
-        return;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CSystem::SleepIfNeeded()
 {
     FUNCTION_PROFILER_FAST(this, PROFILE_SYSTEM, g_bProfilerEnabled);
@@ -1180,11 +744,7 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     // do the dedicated sleep earlier than the frame profiler to avoid having it counted
     if (gEnv->IsDedicated())
     {
-#if defined(MAP_LOADING_SLICING)
-        gEnv->pSystemScheduler->SchedulingSleepIfNeeded();
-#else
         SleepIfNeeded();
-#endif // defined(MAP_LOADING_SLICING)
     }
 #endif //EXCLUDE_UPDATE_ON_CONSOLE
 
@@ -1199,9 +759,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
 
     m_nUpdateCounter++;
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
-    // Check if game needs to be sleeping when not active.
-    SleepIfInactive();
-
     if (m_pUserCallback)
     {
         m_pUserCallback->OnUpdate();
@@ -1216,7 +773,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
         prev_sys_float_exceptions = g_cvars.sys_float_exceptions;
 
         EnableFloatExceptions(g_cvars.sys_float_exceptions);
-        UpdateFPExceptionsMaskForThreads();
     }
 #endif //EXCLUDE_UPDATE_ON_CONSOLE
        //////////////////////////////////////////////////////////////////////////
@@ -1263,19 +819,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     }
 #endif //PROFILE_WITH_VTUNE
 
-#ifdef SOFTCODE_SYSTEM_ENABLED
-    if (m_env.pSoftCodeMgr)
-    {
-        m_env.pSoftCodeMgr->PollForNewModules();
-    }
-#endif
-
-    if (m_pStreamEngine)
-    {
-        FRAME_PROFILER("StreamEngine::Update()", this, PROFILE_SYSTEM);
-        m_pStreamEngine->Update();
-    }
-
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
     if (m_bIgnoreUpdates)
     {
@@ -1290,7 +833,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     if (m_sysNoUpdate && m_sysNoUpdate->GetIVal())
     {
         bNoUpdate = true;
-        updateFlags = ESYSUPDATE_IGNORE_PHYSICS;
     }
 
     m_bNoUpdate = bNoUpdate;
@@ -1353,13 +895,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     m_Time.UpdateOnFrameStart();
 
     //////////////////////////////////////////////////////////////////////
-    // update rate limiter for dedicated server
-    if (m_pServerThrottle.get())
-    {
-        m_pServerThrottle->Update();
-    }
-
-    //////////////////////////////////////////////////////////////////////
     //update console system
     if (m_env.pConsole)
     {
@@ -1373,16 +908,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
         return false;
     }
 
-#ifndef EXCLUDE_UPDATE_ON_CONSOLE
-
-    //////////////////////////////////////////////////////////////////////
-    //update notification network system
-    if (m_pNotificationNetwork)
-    {
-        FRAME_PROFILER("SysUpdate:NotificationNetwork", this, PROFILE_SYSTEM);
-        m_pNotificationNetwork->Update();
-    }
-#endif //EXCLUDE_UPDATE_ON_CONSOLE
        //////////////////////////////////////////////////////////////////////
        //update sound system Part 1 if in Editor / in Game Mode Viewsystem updates the Listeners
     if (!m_env.IsEditorGameMode())
@@ -1399,94 +924,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
                 GetIViewSystem()->UpdateSoundListeners();
             }
         }
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Update Threads Task Manager.
-    //////////////////////////////////////////////////////////////////////////
-    if (m_pThreadTaskManager)
-    {
-        FRAME_PROFILER("SysUpdate:ThreadTaskManager", this, PROFILE_SYSTEM);
-        m_pThreadTaskManager->OnUpdate();
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Update Resource Manager.
-    //////////////////////////////////////////////////////////////////////////
-    {
-        FRAME_PROFILER("SysUpdate:ResourceManager", this, PROFILE_SYSTEM);
-        m_pResourceManager->Update();
-    }
-
-    //////////////////////////////////////////////////////////////////////
-    // update physic system
-    //static float time_zero = 0;
-    if (m_sys_physics_CPU->GetIVal() > 0 && !gEnv->IsDedicated())
-    {
-        CreatePhysicsThread();
-    }
-    else
-    {
-        KillPhysicsThread();
-    }
-
-    static int g_iPausedPhys = 0;
-
-    CPhysicsThreadTask* pPhysicsThreadTask = ((CPhysicsThreadTask*)m_PhysThread);
-    if (!pPhysicsThreadTask)
-    {
-        FRAME_PROFILER_LEGACYONLY("SysUpdate:AllAIAndPhysics", this, PROFILE_SYSTEM);
-        AZ_TRACE_METHOD_NAME("SysUpdate::AllAIAndPhysics");
-
-        //////////////////////////////////////////////////////////////////////
-        // update entity system (a little bit) before physics
-        if (nPauseMode != 1)
-        {
-            if (!bNoUpdate)
-            {
-                EBUS_EVENT(CrySystemEventBus, OnCrySystemPrePhysicsUpdate);
-            }
-        }
-
-        // intermingle physics/AI updates so that if we get a big timestep (frame rate glitch etc) the
-        // AI gets to steer entities before they travel over cliffs etc.
-        const float maxTimeStep = 0.25f;
-        int maxSteps = 1;
-        //float fCurTime = m_Time.GetCurrTime();
-        float timeToDo = m_Time.GetFrameTime();//fCurTime - fPrevTime;
-        if (m_env.bMultiplayer)
-        {
-            timeToDo = m_Time.GetRealFrameTime();
-        }
-
-
-
-        while (timeToDo > 0.0001f && maxSteps-- > 0)
-        {
-            float thisStep = min(maxTimeStep, timeToDo);
-            timeToDo -= thisStep;
-
-
-            EBUS_EVENT(CrySystemEventBus, OnCrySystemPostPhysicsUpdate);
-        }
-
-    }
-    else
-    {
-
-        // In multithreaded physics mode, post physics fires after physics events are dispatched on the main thread.
-        EBUS_EVENT(CrySystemEventBus, OnCrySystemPostPhysicsUpdate);
-
-        //////////////////////////////////////////////////////////////////////
-        // update entity system (a little bit) before physics
-        if (nPauseMode != 1)
-        {
-            if (!bNoUpdate)
-            {
-                EBUS_EVENT(CrySystemEventBus, OnCrySystemPrePhysicsUpdate);
-            }
-        }
-
     }
 
     // Use UI timer for CryMovie, because it should not be affected by pausing game time
@@ -1549,8 +986,6 @@ bool CSystem::UpdatePostTickBus(int updateFlags, int /*nPauseMode*/)
         float updateTime = (cur_time - updateStart).GetMilliSeconds();
         m_updateTimes.push_back(std::make_pair(cur_time, updateTime));
     }
-
-    UpdateUpdateTimes();
 
     {
         FRAME_PROFILER("SysUpdate - SystemEventDispatcher::Update", this, PROFILE_SYSTEM);
@@ -1788,21 +1223,6 @@ void CSystem::WarningV(EValidatorModule module, EValidatorSeverity severity, int
         m_env.pLog->LogWithType(ltype, flags | VALIDATOR_FLAG_SKIP_VALIDATOR, "%s", szBuffer);
     }
 
-    //if(file)
-    //m_env.pLog->LogWithType( ltype, "  ... caused by file '%s'",file);
-
-    if (m_pValidator && (flags & VALIDATOR_FLAG_SKIP_VALIDATOR) == 0)
-    {
-        SValidatorRecord record;
-        record.file = file;
-        record.text = szBuffer;
-        record.module = module;
-        record.severity = severity;
-        record.flags = flags;
-        record.assetScope = m_env.pLog->GetAssetScopeString();
-        m_pValidator->Report(record);
-    }
-
     if (bDbgBreak && g_cvars.sys_error_debugbreak)
     {
         AZ::Debug::Trace::Break();
@@ -1879,27 +1299,9 @@ void CSystem::Relaunch(bool bRelaunch)
 }
 
 //////////////////////////////////////////////////////////////////////////
-uint32 CSystem::GetUsedMemory()
-{
-    return CryMemoryGetAllocatedSize();
-}
-
-//////////////////////////////////////////////////////////////////////////
 ILocalizationManager* CSystem::GetLocalizationManager()
 {
     return m_pLocalizationManager;
-}
-
-//////////////////////////////////////////////////////////////////////////
-IThreadTaskManager* CSystem::GetIThreadTaskManager()
-{
-    return m_pThreadTaskManager;
-}
-
-//////////////////////////////////////////////////////////////////////////
-IResourceManager* CSystem::GetIResourceManager()
-{
-    return m_pResourceManager;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1941,12 +1343,6 @@ void CSystem::ExecuteCommandLine(bool deferred)
 
     m_executedCommandLine = true;
 
-    // auto detect system spec (overrides profile settings)
-    if (m_pCmdLine->FindArg(eCLAT_Pre, "autodetect"))
-    {
-        AutoDetectSpec(false);
-    }
-
     // execute command line arguments e.g. +g_gametype ASSAULT +map "testy"
 
     ICmdLine* pCmdLine = GetICmdLine();
@@ -1960,10 +1356,6 @@ void CSystem::ExecuteCommandLine(bool deferred)
         if (pCmd->GetType() == eCLAT_Post)
         {
             string sLine = pCmd->GetName();
-
-#if defined(CVARS_WHITELIST)
-            if (!GetCVarsWhiteList() || GetCVarsWhiteList()->IsWhiteListed(sLine, false))
-#endif
             {
                 if (pCmd->GetValue())
                 {
@@ -1973,60 +1365,10 @@ void CSystem::ExecuteCommandLine(bool deferred)
                 GetILog()->Log("Executing command from command line: \n%s\n", sLine.c_str()); // - the actual command might be executed much later (e.g. level load pause)
                 GetIConsole()->ExecuteString(sLine.c_str(), false, deferred);
             }
-#if defined(CVARS_WHITELIST)
-            else if (gEnv->IsDedicated())
-            {
-                GetILog()->LogError("Failed to execute command: '%s' as it is not whitelisted\n", sLine.c_str());
-            }
-#endif
         }
     }
 
     //gEnv->pConsole->ExecuteString("sys_RestoreSpec test*"); // to get useful debugging information about current spec settings to the log file
-}
-
-ITextModeConsole* CSystem::GetITextModeConsole()
-{
-    if (m_bDedicatedServer)
-    {
-        return m_pTextModeConsole;
-    }
-
-    return 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-ESystemConfigSpec CSystem::GetConfigSpec(bool bClient)
-{
-    if (bClient)
-    {
-        if (m_sys_GraphicsQuality)
-        {
-            return (ESystemConfigSpec)m_sys_GraphicsQuality->GetIVal();
-        }
-        return CONFIG_VERYHIGH_SPEC; // highest spec.
-    }
-    else
-    {
-        return m_nServerConfigSpec;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CSystem::SetConfigSpec(ESystemConfigSpec spec, ESystemConfigPlatform platform, bool bClient)
-{
-    if (bClient)
-    {
-        if (m_sys_GraphicsQuality)
-        {
-            SetConfigPlatform(platform);
-            m_sys_GraphicsQuality->Set(static_cast<int>(spec));
-        }
-    }
-    else
-    {
-        m_nServerConfigSpec = spec;
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2075,136 +1417,6 @@ void CProfilingSystem::VTunePause()
         VTPause();
         CryLogAlways("VTune Pause");
     }
-#endif
-}
-
-//////////////////////////////////////////////////////////////////////////
-sUpdateTimes& CSystem::GetCurrentUpdateTimeStats()
-{
-    return m_UpdateTimes[m_UpdateTimesIdx];
-}
-
-//////////////////////////////////////////////////////////////////////////
-const sUpdateTimes* CSystem::GetUpdateTimeStats(uint32& index, uint32& num)
-{
-    index = m_UpdateTimesIdx;
-    num = NUM_UPDATE_TIMES;
-    return m_UpdateTimes;
-}
-
-void CSystem::UpdateUpdateTimes()
-{
-    sUpdateTimes& sample = m_UpdateTimes[m_UpdateTimesIdx];
-    if (m_PhysThread)
-    {
-        static uint64 lastPhysTime = 0U;
-        static uint64 lastMainTime = 0U;
-        static uint64 lastYields = 0U;
-        static uint64 lastPhysWait = 0U;
-        uint64 physTime = 0, mainTime = 0;
-        uint32 yields = 0;
-        physTime = ((CPhysicsThreadTask*)m_PhysThread)->LastStepTaken();
-        mainTime = CryGetTicks() - lastMainTime;
-        lastMainTime = mainTime;
-        lastPhysWait = ((CPhysicsThreadTask*)m_PhysThread)->LastWaitTime();
-        sample.PhysStepTime = physTime;
-        sample.SysUpdateTime = mainTime;
-        sample.PhysYields = yields;
-        sample.physWaitTime = lastPhysWait;
-    }
-    ++m_UpdateTimesIdx;
-    if (m_UpdateTimesIdx >= NUM_UPDATE_TIMES)
-    {
-        m_UpdateTimesIdx = 0;
-    }
-}
-
-
-#ifndef _RELEASE
-void CSystem::GetCheckpointData(ICheckpointData& data)
-{
-    data.m_totalLoads = m_checkpointLoadCount;
-    data.m_loadOrigin = m_loadOrigin;
-}
-
-void CSystem::IncreaseCheckpointLoadCount()
-{
-    if (!m_hasJustResumed)
-    {
-        ++m_checkpointLoadCount;
-    }
-
-    m_hasJustResumed = false;
-}
-
-void CSystem::SetLoadOrigin(LevelLoadOrigin origin)
-{
-    switch (origin)
-    {
-    case eLLO_NewLevel: // Intentional fall through
-    case eLLO_Level2Level:
-        m_expectingMapCommand = true;
-        break;
-
-    case eLLO_Resumed:
-        m_hasJustResumed = true;
-        break;
-
-    case eLLO_MapCmd:
-        if (m_expectingMapCommand)
-        {
-            // We knew a map command was coming, so don't process this.
-            m_expectingMapCommand = false;
-            return;
-        }
-        break;
-    }
-
-    m_loadOrigin = origin;
-    m_checkpointLoadCount = 0;
-}
-#endif
-
-bool CSystem::SteamInit()
-{
-#if USE_STEAM
-    if (m_bIsSteamInitialized)
-    {
-        return true;
-    }
-
-    AZStd::string_view exePath;
-    AZ::ComponentApplicationBus::BroadcastResult(exePath, &AZ::ComponentApplicationRequests::GetExecutableFolder);
-
-    ////////////////////////////////////////////////////////////////////////////
-    // ** DEVELOPMENT ONLY ** - creates the appropriate steam_appid.txt file needed to call SteamAPI_Init()
-#if !defined(RELEASE)
-    AZStd::string appidPath = AZStd::string::format("%.*s/steam_appid.txt", aznumeric_cast<int>(exePath.size()), exePath.data());
-    azfopen(&pSteamAppID, appidPath.c_str(), "wt");
-    fprintf(pSteamAppID, "%d", g_cvars.sys_steamAppId);
-    fclose(pSteamAppID);
-#endif // !defined(RELEASE)
-       // ** END DEVELOPMENT ONLY **
-       ////////////////////////////////////////////////////////////////////////////
-
-    if (!SteamAPI_Init())
-    {
-        CryLog("[STEAM] SteamApi_Init failed");
-        return false;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // ** DEVELOPMENT ONLY ** - deletes the appropriate steam_appid.txt file as it's no longer needed
-#if !defined(RELEASE)
-    remove(appidPath.c_str());
-#endif // !defined(RELEASE)
-       // ** END DEVELOPMENT ONLY **
-       ////////////////////////////////////////////////////////////////////////////
-
-    m_bIsSteamInitialized = true;
-    return true;
-#else
-    return false;
 #endif
 }
 

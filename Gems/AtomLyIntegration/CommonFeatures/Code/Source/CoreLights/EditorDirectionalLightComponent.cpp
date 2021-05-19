@@ -163,10 +163,10 @@ namespace AZ
                         ->DataElement(
                             Edit::UIHandlers::ComboBox, &DirectionalLightComponentConfig::m_pcfMethod, "Pcf Method",
                             "Type of Pcf to use.\n"
-                            "  Boundary search: do several taps to first determine if we are on a shadow boundary\n"
-                            "  Bicubic: a smooth, fixed-size kernel \n")
-                        ->EnumAttribute(PcfMethod::BoundarySearch, "Boundary Search")
+                            "  Bicubic: a smooth, fixed-size kernel \n"
+                            "  Boundary search: do several taps to first determine if we are on a shadow boundary\n")
                         ->EnumAttribute(PcfMethod::Bicubic, "Bicubic")
+                        ->EnumAttribute(PcfMethod::BoundarySearch, "Boundary Search")
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled);
                             ;

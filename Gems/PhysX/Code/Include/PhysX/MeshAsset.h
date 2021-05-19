@@ -58,7 +58,7 @@ namespace PhysX
             static constexpr AZ::u16 TriangleMeshMaterialIndex = (std::numeric_limits<AZ::u16>::max)();
 
             using ShapeConfigurationPair = AZStd::pair<AZStd::shared_ptr<AssetColliderConfiguration>, 
-                AZStd::shared_ptr<Physics::ShapeConfiguration>>; // Have to use shared_ptr here because Physics::ShapeConfigurationList uses it
+                AZStd::shared_ptr<Physics::ShapeConfiguration>>; // Have to use shared_ptr here because AzPhysics::ShapeColliderPairList uses it
             using ShapeConfigurationList = AZStd::vector<ShapeConfigurationPair>;
 
             ShapeConfigurationList m_colliderShapes; //!< Shapes data with optional collider configuration override.

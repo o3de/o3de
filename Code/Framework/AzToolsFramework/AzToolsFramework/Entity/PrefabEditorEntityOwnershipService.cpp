@@ -282,14 +282,6 @@ namespace AzToolsFramework
             containerEntity->AddComponent(aznew Prefab::EditorPrefabComponent());
             HandleEntitiesAdded({containerEntity});
             HandleEntitiesAdded(entities);
-            
-            // Update the template of the instance since we modified the entities of the instance by calling HandleEntitiesAdded.
-            Prefab::PrefabDom serializedInstance;
-            if (Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(addedInstance, serializedInstance))
-            {
-                m_prefabSystemComponent->UpdatePrefabTemplate(addedInstance.GetTemplateId(), serializedInstance);
-            }
-            
             return addedInstance;
         }
 
@@ -320,6 +312,11 @@ namespace AzToolsFramework
     {
         AZ_Assert(m_rootInstance, "A valid root prefab instance couldn't be found in PrefabEditorEntityOwnershipService.");
         return *m_rootInstance;
+    }
+
+    const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& PrefabEditorEntityOwnershipService::GetPlayInEditorAssetData()
+    {
+        return m_playInEditorData.m_assets;
     }
 
     void PrefabEditorEntityOwnershipService::OnEntityRemoved(AZ::EntityId entityId)
