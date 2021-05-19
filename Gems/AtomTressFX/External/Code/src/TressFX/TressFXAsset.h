@@ -132,7 +132,7 @@ namespace AMD
         AMD::int32 m_numFollowStrandsPerGuide;
 
         // Collision mesh
-        std::unique_ptr<TressFXCollisionMesh> m_collsionMesh = nullptr;
+        std::unique_ptr<TressFXCollisionMesh> m_collisionMesh = nullptr;
 
         // Loads *.tfx hair data 
         bool LoadHairData(FILE* ioObject);

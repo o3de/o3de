@@ -506,7 +506,7 @@ void TressFXBoneSkinning::Update(EI_CommandContext& commandContext, double fTime
 // Adi: this is only the mesh debug render - not the actual skinned mesh
 void TressFXBoneSkinning::DrawMesh(EI_CommandContext& commandContext)
 {
-    // draw the collsion mesh
+    // draw the collision mesh
     if (m_NumVertices > 0)
     {
         EI_Marker marker(commandContext, "BoneSkinningDrawMesh");
