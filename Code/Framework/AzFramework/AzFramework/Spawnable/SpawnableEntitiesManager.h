@@ -83,7 +83,6 @@ namespace AzFramework
 
             AZStd::vector<AZ::Entity*> m_spawnedEntities;
             AZStd::vector<size_t> m_spawnedEntityIndices;
-
             AZ::Data::Asset<Spawnable> m_spawnable;
             uint32_t m_nextTicketId{ 0 }; //!< Next id for this ticket.
             uint32_t m_currentTicketId{ 0 }; //!< The id for the command that should be executed.
