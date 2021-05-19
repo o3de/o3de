@@ -162,6 +162,12 @@ namespace AzToolsFramework
                     classElement.RemoveElementByName(AZ_CRC("InterpolateScale", 0x9d00b831));
                 }
 
+                if (classElement.GetVersion() < 10)
+                {
+                    // The "Sync Enabled" flag is no longer needed.
+                    classElement.RemoveElementByName(AZ_CRC_CE("Sync Enabled"));
+                }
+
                 return true;
             }
         } // namespace Internal
@@ -254,7 +260,7 @@ namespace AzToolsFramework
             m_localTransformDirty = true;
             m_worldTransformDirty = true;
 
-            if (GetEntity())
+            if (const AZ::Entity* entity = GetEntity())
             {
                 SetDirty();
 
@@ -272,6 +278,22 @@ namespace AzToolsFramework
                 if (boundsUnion != nullptr)
                 {
                     boundsUnion->OnTransformUpdated(GetEntity());
+                }
+                // Fire a property changed notification for this component
+                if (const AZ::Component* component = entity->FindComponent<Components::TransformComponent>())
+                {
+                    PropertyEditorEntityChangeNotificationBus::Event(
+                        GetEntityId(), &PropertyEditorEntityChangeNotifications::OnEntityComponentPropertyChanged, component->GetId());
+                }
+
+                // Refresh the property editor if we're selected
+                bool selected = false;
+                ToolsApplicationRequestBus::BroadcastResult(
+                    selected, &AzToolsFramework::ToolsApplicationRequests::IsSelected, GetEntityId());
+                if (selected)
+                {
+                    ToolsApplicationEvents::Bus::Broadcast(
+                        &ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
                 }
             }
         }
@@ -1289,7 +1311,7 @@ namespace AzToolsFramework
                     Field("IsStatic", &TransformComponent::m_isStatic)->
                     Field("InterpolatePosition", &TransformComponent::m_interpolatePosition)->
                     Field("InterpolateRotation", &TransformComponent::m_interpolateRotation)->
-                    Version(9, &Internal::TransformComponentDataConverter);
+                    Version(10, &Internal::TransformComponentDataConverter);
 
                 if (AZ::EditContext* ptrEdit = serializeContext->GetEditContext())
                 {

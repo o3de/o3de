@@ -33,7 +33,6 @@
 #include <Cry_Vector3.h>
 #include <Cry_Quat.h>
 #include <Cry_Color.h>
-#include <CryArray2d.h>
 #include <smartptr.h>
 
 // forward declarations for overloads
@@ -248,12 +247,6 @@ public:
     void AddObject(const SPipTangents&) {}
     void AddObject([[maybe_unused]] const AZ::Vector3& rObj) {}
     void AddObject(void*) {}
-
-    template<typename T>
-    void AddObject(const Array2d<T>& array2d)
-    {
-        this->AddObject(array2d.m_pData, array2d.GetDataSize());
-    }
 
     // overloads for container, will automaticly traverse the content
     template<typename T, typename Alloc>

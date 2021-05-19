@@ -207,11 +207,11 @@ namespace {{ Component.attrib['Namespace'] }}
     public:
         AZ_MULTIPLAYER_COMPONENT({{ Component.attrib['Namespace'] }}::{{ ComponentName }}, s_{{ LowerFirst(ComponentName) }}ConcreteUuid, {{ Component.attrib['Namespace'] }}::{{ ComponentNameBase }});
 
-        static void Reflect([[maybe_unused]] AZ::ReflectContext* context);
+        static void Reflect(AZ::ReflectContext* context);
 
-        void OnInit() override {}
-        void OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating) override {}
-        void OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating) override {}
+        void OnInit() override;
+        void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+        void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 
         {{ DeclareRpcHandlers(Component, 'Authority', 'Client', true)|indent(8) }}
     };
@@ -222,15 +222,15 @@ namespace {{ Component.attrib['Namespace'] }}
         : public {{ ControllerNameBase }}
     {
     public:
-        {{ ControllerName }}({{ ComponentName }}& parent) : {{ ControllerNameBase }}(parent) {}
+        {{ ControllerName }}({{ ComponentName }}& parent);
 
-        void OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating) override {}
-        void OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating) override {}
+        void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+        void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
 {% if NetworkInputCount > 0 %}
         //! Common input processing logic for the NetworkInput.
         //! @param input  input structure to process
         //! @param deltaTime amount of time to integrate the provided inputs over
-        void ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override {}
+        void ProcessInput(Multiplayer::NetworkInput& input, float deltaTime) override;
 {%endif %}
         {{ DeclareRpcHandlers(Component, 'Server', 'Authority', true)|indent(8) }}
         {{ DeclareRpcHandlers(Component, 'Client', 'Authority', true)|indent(8) }}
@@ -239,10 +239,12 @@ namespace {{ Component.attrib['Namespace'] }}
     };
 {% endif %}
 }
-{% if ComponentDerived %}
 /// Place in your .cpp
+#include <{{ Component.attrib['OverrideInclude'] }}>
+
 namespace {{ Component.attrib['Namespace'] }}
 {
+{% if ComponentDerived %}
     void {{ ComponentName }}::{{ ComponentName }}::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -251,9 +253,43 @@ namespace {{ Component.attrib['Namespace'] }}
             serializeContext->Class<{{ ComponentName }}, {{ ComponentNameBase }}>()
                 ->Version(1);
         }
+        {{ ComponentNameBase }}::Reflect(context);
     }
-}
+
+    void {{ ComponentName }}::OnInit()
+    {
+    }
+
+    void {{ ComponentName }}::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    {
+    }
+
+    void {{ ComponentName }}::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    {
+    }
+
 {% endif %}
+{% if ControllerDerived %}
+    {{ ControllerName }}::{{ ControllerName }}({{ ComponentName }}& parent)
+        : {{ ControllerNameBase }}(parent)
+    {
+    }
+
+    void {{ ControllerName }}::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    {
+    }
+
+    void {{ ControllerName }}::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    {
+    }
+{%     if NetworkInputCount > 0 %}
+
+    void {{ ControllerName }}::ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
+    {
+    }
+{%     endif %}
+{% endif %}
+}
 */
 {% else %}
 // NOTE:
