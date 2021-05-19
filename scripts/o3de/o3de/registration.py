@@ -4416,7 +4416,7 @@ if __name__ == "__main__":
     the_parser = argparse.ArgumentParser()
 
     # add subparsers
-    the_subparsers = the_parser.add_subparsers(help='sub-command help')
+    the_subparsers = the_parser.add_subparsers(help='sub-command help', dest='command', required=True)
 
     # add args to the parser
     add_args(the_parser, the_subparsers)
@@ -4425,7 +4425,7 @@ if __name__ == "__main__":
     the_args = the_parser.parse_args()
 
     # run
-    ret = the_args.func(the_args)
+    ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
 
     # return
     sys.exit(ret)
