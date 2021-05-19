@@ -987,15 +987,6 @@
         {
             "file": "Shaders/MotionVector/SkinnedMeshMotionVector.shader",
             "tag": "SkinnedMeshMotionVector"
-        },
-        // Used by the light culling system to produce accurate depth bounds for this object when it uses blended transparency
-        {
-            "file": "Shaders/Depth/DepthPassTransparentMin.shader",
-            "tag": "DepthPassTransparentMin"
-        },
-        {
-            "file": "Shaders/Depth/DepthPassTransparentMax.shader",
-            "tag": "DepthPassTransparentMax"
         }
     ],
     "functors": [
