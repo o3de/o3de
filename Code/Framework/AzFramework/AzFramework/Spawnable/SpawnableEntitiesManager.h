@@ -83,7 +83,6 @@ namespace AzFramework
 
             AZStd::vector<AZ::Entity*> m_spawnedEntities;
             AZStd::vector<size_t> m_spawnedEntityIndices;
-            EntityIdMap           m_spawnableToInstanceEntityIdMap;
 
             AZ::Data::Asset<Spawnable> m_spawnable;
             uint32_t m_nextTicketId{ 0 }; //!< Next id for this ticket.
@@ -146,7 +145,10 @@ namespace AzFramework
         using Requests = AZStd::variant<SpawnAllEntitiesCommand, SpawnEntitiesCommand, DespawnAllEntitiesCommand, ReloadSpawnableCommand,
             ListEntitiesCommand, ClaimEntitiesCommand, BarrierCommand, DestroyTicketCommand>;
 
-        AZ::Entity* SpawnSingleEntity(const AZ::Entity& entityTemplate, EntityIdMap& spawnableToInstanceEntityIdMap,
+        AZ::Entity* SpawnSingleEntity(const AZ::Entity& entityTemplate,
+            AZ::SerializeContext& serializeContext);
+
+        Spawnable::EntityList* CloneAllEntities(const Spawnable::EntityList& entitiesTemplate,
             AZ::SerializeContext& serializeContext);
 
         bool ProcessRequest(SpawnAllEntitiesCommand& request, AZ::SerializeContext& serializeContext);
