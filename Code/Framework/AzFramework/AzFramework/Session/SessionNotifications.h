@@ -43,4 +43,5 @@ namespace AzFramework
         // @return The result of all OnDestroySessionBegin notifications
         virtual bool OnDestroySessionBegin() = 0;
     };
+    using SessionNotificationBus = AZ::EBus<SessionNotifications>;
 } // namespace AzFramework

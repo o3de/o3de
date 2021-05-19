@@ -38,7 +38,7 @@ namespace AzFramework
     struct PlayerConnectionConfig
     {
         // A unique identifier for player connection.
-        AZStd::string m_playerConnectionId;
+        uint32_t m_playerConnectionId;
 
         // A unique identifier for registered player in session.
         AZStd::string m_playerSessionId;

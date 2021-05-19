@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Outcome/Outcome.h>
@@ -25,6 +26,9 @@ namespace AzFramework
     //! The container for CreateSession request parameters.
     struct CreateSessionRequest
     {
+        AZ_RTTI(CreateSessionRequest, "{E39C2A45-89C9-4CFB-B337-9734DC798930}");
+        static void Reflect(AZ::ReflectContext* context);
+
         // A unique identifier for a player or entity creating the session.
         AZStd::string m_creatorId;
 
@@ -42,6 +46,9 @@ namespace AzFramework
     //! The container for SearchSessions request parameters.
     struct SearchSessionsRequest
     {
+        AZ_RTTI(SearchSessionsRequest, "{B49207A8-8549-4ADB-B7D9-D7A4932F9B4B}");
+        static void Reflect(AZ::ReflectContext* context);
+
         // String containing the search criteria for the session search. If no filter expression is included, the request returns results
         // for all active sessions.
         AZStd::string m_filterExpression;
@@ -60,6 +67,9 @@ namespace AzFramework
     //! The container for SearchSession request results.
     struct SearchSessionsResponse
     {
+        AZ_RTTI(SearchSessionsResponse, "{F93DE7DC-D381-4E08-8A3B-0B08F7C38714}");
+        static void Reflect(AZ::ReflectContext* context);
+
         // A collection of sessions that match the search criteria and sorted in specific order.
         AZStd::vector<SessionConfig> m_sessionConfigs;
 
@@ -71,6 +81,9 @@ namespace AzFramework
     //! The container for JoinSession request parameters.
     struct JoinSessionRequest
     {
+        AZ_RTTI(JoinSessionRequest, "{519769E8-3CDE-4385-A0D7-24DBB3685657}");
+        static void Reflect(AZ::ReflectContext* context);
+
         // A unique identifier for the session.
         AZStd::string m_sessionId;
 
@@ -86,35 +99,54 @@ namespace AzFramework
     class ISessionRequests
     {
     public:
+        AZ_RTTI(ISessionRequests, "{D6C41A71-DD8D-47FE-8515-FAF90670AE2F}");
+
+        ISessionRequests() = default;
+        virtual ~ISessionRequests() = default;
+
         // Create a session for players to find and join.
         // @param  createSessionRequest The request of CreateSession operation
-        // @return Outcome of CreateSession operation
-        virtual AZ::Outcome<void, AZStd::string> CreateSession(const CreateSessionRequest& createSessionRequest) = 0;
-
-        // CreateSession Async
-        // @param  createSessionRequest The request of CreateSession operation
-        virtual void CreateSessionAsync(const CreateSessionRequest& createSessionRequest) = 0;
+        // @return The request id if session creation request succeeds; empty if it fails
+        virtual AZStd::string CreateSession(const CreateSessionRequest& createSessionRequest) = 0;
 
         // Retrieve all active sessions that match the given search criteria and sorted in specific order.
         // @param  searchSessionsRequest The request of SearchSessions operation
         // @return The response of SearchSessions operation
         virtual SearchSessionsResponse SearchSessions(const SearchSessionsRequest& searchSessionsRequest) const = 0;
 
+        // Reserve an open player slot in a session, and perform connection from client to server.
+        // @param  joinSessionRequest The request of JoinSession operation
+        // @return True if joining session succeeds; False otherwise
+        virtual bool JoinSession(const JoinSessionRequest& joinSessionRequest) = 0;
+
+        // Disconnect player from session.
+        virtual void LeaveSession() = 0;
+    };
+
+    //! ISessionAsyncRequests
+    //! Async version of ISessionRequests
+    class ISessionAsyncRequests
+    {
+    public:
+        AZ_RTTI(ISessionAsyncRequests, "{471542AF-96B9-4930-82FE-242A4E68432D}");
+
+        ISessionAsyncRequests() = default;
+        virtual ~ISessionAsyncRequests() = default;
+
+        // CreateSession Async
+        // @param  createSessionRequest The request of CreateSession operation
+        virtual void CreateSessionAsync(const CreateSessionRequest& createSessionRequest) = 0;
+
         // SearchSessions Async
         // @param  searchSessionsRequest The request of SearchSessions operation
         virtual void SearchSessionsAsync(const SearchSessionsRequest& searchSessionsRequest) const = 0;
-
-        // Reserve an open player slot in a session, and perform connection from client to server.
-        // @param  joinSessionRequest The request of JoinSession operation
-        // @return Outcome of JoinSession operation
-        virtual AZ::Outcome<void, AZStd::string> JoinSession(const JoinSessionRequest& joinSessionRequest) = 0;
 
         // JoinSession Async
         // @param  joinSessionRequest The request of JoinSession operation
         virtual void JoinSessionAsync(const JoinSessionRequest& joinSessionRequest) = 0;
 
-        // Disconnect player from session.
-        virtual void LeaveSession() = 0;
+        // LeaveSession Async
+        virtual void LeaveSessionAsync() = 0;
     };
 
     //! SessionAsyncRequestNotifications
@@ -130,15 +162,19 @@ namespace AzFramework
         //////////////////////////////////////////////////////////////////////////
 
         // OnCreateSessionAsyncComplete is fired once CreateSessionAsync completes
-        // @param createSessionResponse The response of CreateSession call
-        virtual void OnCreateSessionAsyncComplete(const AZ::Outcome<void, AZStd::string>& createSessionResponse) = 0;
+        // @param createSessionResponse The request id if session creation request succeeds; empty if it fails
+        virtual void OnCreateSessionAsyncComplete(const AZStd::string& createSessionReponse) = 0;
 
         // OnSearchSessionsAsyncComplete is fired once SearchSessionsAsync completes
         // @param searchSessionsResponse The response of SearchSessions call
         virtual void OnSearchSessionsAsyncComplete(const SearchSessionsResponse& searchSessionsResponse) = 0;
 
         // OnJoinSessionAsyncComplete is fired once JoinSessionAsync completes
-        // @param joinSessionsResponse The response of JoinSession call
-        virtual void OnJoinSessionAsyncComplete(const AZ::Outcome<void, AZStd::string>& joinSessionsResponse) = 0;
+        // @param joinSessionsResponse True if joining session succeeds; False otherwise
+        virtual void OnJoinSessionAsyncComplete(bool joinSessionsResponse) = 0;
+
+        // OnLeaveSessionAsyncComplete is fired once LeaveSessionAsync completes
+        virtual void OnLeaveSessionAsyncComplete() = 0;
     };
+    using SessionAsyncRequestNotificationBus = AZ::EBus<SessionAsyncRequestNotifications>;
 } // namespace AzFramework
