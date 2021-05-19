@@ -511,11 +511,10 @@ namespace AzToolsFramework
                 }
             }
 
-            InstanceOptionalReference beforeOwningInstance;
             if (beforeParentId != afterParentId)
             {
                 // If the entity parent changed, verify if the owning instance changed too
-                beforeOwningInstance = m_instanceEntityMapperInterface->FindOwningInstance(beforeParentId);
+                InstanceOptionalReference beforeOwningInstance = m_instanceEntityMapperInterface->FindOwningInstance(beforeParentId);
                 InstanceOptionalReference afterOwningInstance = m_instanceEntityMapperInterface->FindOwningInstance(afterParentId);
 
                 // TODO - See if we need to error out / do something special if either instance can't be found.
@@ -526,7 +525,7 @@ namespace AzToolsFramework
 
                     EntityList entities;
                     AZStd::vector<AZStd::unique_ptr<Instance>> instances;
-                    AZStd::vector<LinkId> links;
+                    AZStd::unordered_map<Instance*, PrefabDom> nestedInstanceLinkPatches;
 
                     // --- HANDLE PREVIOUS INSTANCE ---
                     {
@@ -537,6 +536,21 @@ namespace AzToolsFramework
                         // Retrieve all descendants of this entity, be them entities of container entities
                         // Note that this will detach entities and instances from beforeInstance
                         RetrieveAndSortPrefabEntitiesAndInstances({entity}, beforeOwningInstance->get(), entities, instances);
+
+                        for (auto& nestedInstance : instances)
+                        {
+                            auto linkRef = m_prefabSystemComponentInterface->FindLink(nestedInstance->GetLinkId());
+
+                            if (linkRef.has_value())
+                            {
+                                PrefabDom oldLinkPatches;
+                                oldLinkPatches.CopyFrom(linkRef->get().GetLinkDom(), oldLinkPatches.GetAllocator());
+
+                                nestedInstanceLinkPatches.emplace(nestedInstance.get(), AZStd::move(oldLinkPatches));
+
+                                RemoveLink(nestedInstance, beforeOwningInstance->get().GetTemplateId(), parentUndoBatch);
+                            }
+                        }
 
                         // Create the Update node
                         PrefabUndoHelpers::UpdatePrefabInstance(
@@ -558,21 +572,13 @@ namespace AzToolsFramework
                         // Add all instances, and recreate the links
                         for (AZStd::unique_ptr<Instance>& instance : instances)
                         {
+                            PrefabDom previousPatch;
 
-                            // Retrieve Link reference
-                            auto linkRef = m_prefabSystemComponentInterface->FindLink(afterOwningInstance->get().GetLinkId());
-                            if (!linkRef.has_value())
+                            // Retrieve the previous patch if it exists
+                            if (nestedInstanceLinkPatches.contains(instance.get()))
                             {
-                                // TODO - is this a problem?
-                                continue;
+                                previousPatch = AZStd::move(nestedInstanceLinkPatches[instance.get()]);
                             }
-                            
-                            // Store link dom
-                            PrefabDom linkDom;
-                            linkDom.CopyFrom(linkRef->get().GetLinkDom(), linkDom.GetAllocator());
-
-                            // Remove old link
-                            RemoveLink(instance, beforeOwningInstance->get().GetTemplateId(), parentUndoBatch);
 
                             // Get direct pointer as AddInstance will move the unique one.
                             Instance* instancePtr = instance.get();
@@ -580,8 +586,7 @@ namespace AzToolsFramework
                             afterOwningInstance->get().AddInstance(AZStd::move(instance));
 
                             // Add a new link with the old dom
-                            // TODO - needs a change to CreateLink, will address that separately and merge it here...
-                            CreateLink(*instancePtr, afterOwningInstance->get().GetTemplateId(), parentUndoBatch, linkDom);
+                            CreateLink(*instancePtr, afterOwningInstance->get().GetTemplateId(), parentUndoBatch, previousPatch);
                         }
 
                         // Create the Update node
