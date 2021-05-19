@@ -84,7 +84,7 @@ namespace AzToolsFramework
 
                 AZStd::vector<AZ::Entity*> entities;
                 AZStd::vector<AZStd::unique_ptr<Instance>> instances;
-                AZStd::unordered_map<Instance*, PrefabDom> nestedInstanceLinkPatches;
+                AZStd::unordered_map<Instance*, PrefabDom> nestedInstanceLinkPatchesMap;
 
                 // Retrieve all entities affected and identify Instances
                 if (!RetrieveAndSortPrefabEntitiesAndInstances(inputEntityList, commonRootEntityOwningInstance->get(), entities, instances))
@@ -104,7 +104,7 @@ namespace AzToolsFramework
                         PrefabDom oldLinkPatches;
                         oldLinkPatches.CopyFrom(linkRef->get().GetLinkDom(), oldLinkPatches.GetAllocator());
 
-                        nestedInstanceLinkPatches.emplace(nestedInstance.get(), AZStd::move(oldLinkPatches));
+                        nestedInstanceLinkPatchesMap.emplace(nestedInstance.get(), AZStd::move(oldLinkPatches));
                     }
                     
                     RemoveLink(nestedInstance, commonRootEntityOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch());
@@ -164,9 +164,9 @@ namespace AzToolsFramework
                     PrefabDom previousPatch;
 
                     // Retrieve the previous patch if it exists
-                    if (nestedInstanceLinkPatches.contains(nestedInstance.get()))
+                    if (nestedInstanceLinkPatchesMap.contains(nestedInstance.get()))
                     {
-                        previousPatch = AZStd::move(nestedInstanceLinkPatches[nestedInstance.get()]);
+                        previousPatch = AZStd::move(nestedInstanceLinkPatchesMap[nestedInstance.get()]);
                     }
 
                     // These link creations shouldn't be undone because that would put the template in a non-usable state if a user
