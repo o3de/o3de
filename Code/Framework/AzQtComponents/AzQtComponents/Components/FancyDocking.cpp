@@ -1888,7 +1888,6 @@ namespace AzQtComponents
 
         if (!QApplication::overrideCursor())
         {
-            AZ_Printf("sjr", "set 1\n");
             QApplication::setOverrideCursor(m_dragCursor);
         }
 
