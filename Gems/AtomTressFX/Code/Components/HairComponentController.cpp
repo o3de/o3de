@@ -310,7 +310,7 @@ namespace AZ
 
                 if (!hairAsset->FixBoneIndices(nameToIndexMap, m_boneIndexLookup))
                 {
-                    AZ_Error("Hair Gem", false, "");
+                    AZ_Error("Hair Gem", false, "Cannot convert bone index to engine index. The hair asset may not be compatible with the actor.");
                     return false;
                 }
                 
