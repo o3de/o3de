@@ -12,6 +12,7 @@
 
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/containers/array.h>
 #include <AzCore/std/numeric.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
@@ -64,11 +65,11 @@ namespace AZ
                 // This code re-combines them to match previous FBX SDK behavior,
                 // so they can be separated by engine code instead.
                 bool foundTextureCoordinates = false;
-                int meshesPerTextureCoordinateIndex[AI_MAX_NUMBER_OF_TEXTURECOORDS] = {};
+                AZStd::array<int, AI_MAX_NUMBER_OF_TEXTURECOORDS> meshesPerTextureCoordinateIndex = {};
                 for (int localMeshIndex = 0; localMeshIndex < currentNode->mNumMeshes; ++localMeshIndex)
                 {
                     aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[localMeshIndex]];
-                    for (int texCoordIndex = 0; texCoordIndex < AI_MAX_NUMBER_OF_TEXTURECOORDS; ++texCoordIndex)
+                    for (int texCoordIndex = 0; texCoordIndex < meshesPerTextureCoordinateIndex.size(); ++texCoordIndex)
                     {
                         if (!mesh->mTextureCoords[texCoordIndex])
                         {
@@ -86,7 +87,7 @@ namespace AZ
 
                 const uint64_t vertexCount = GetVertexCountForAllMeshesOnNode(*currentNode, *scene);
 
-                for (int texCoordIndex = 0; texCoordIndex < AI_MAX_NUMBER_OF_TEXTURECOORDS; ++texCoordIndex)
+                for (int texCoordIndex = 0; texCoordIndex < meshesPerTextureCoordinateIndex.size(); ++texCoordIndex)
                 {
                     int meshesWithIndex = meshesPerTextureCoordinateIndex[texCoordIndex];
                     AZ_Error(
@@ -100,7 +101,7 @@ namespace AZ
                 }
 
                 Events::ProcessingResultCombiner combinedUvMapResults;
-                for (int texCoordIndex = 0; texCoordIndex < AI_MAX_NUMBER_OF_TEXTURECOORDS; ++texCoordIndex)
+                for (int texCoordIndex = 0; texCoordIndex < meshesPerTextureCoordinateIndex.size(); ++texCoordIndex)
                 {
                     // No meshes have this texture coordinate index, skip it.
                     if (meshesPerTextureCoordinateIndex[texCoordIndex] == 0)
