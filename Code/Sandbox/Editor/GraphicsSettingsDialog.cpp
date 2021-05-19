@@ -779,36 +779,6 @@ bool GraphicsSettingsDialog::CVarChanged(AZStd::any val, const char* cvarName, i
         m_cVarTracker[cvarName].fileVals[specLevel].editedValue = val;
     }
 
-    // If changing cvar from the platform cfg file currently running, set cvar
-    if (GetISystem()->GetConfigPlatform() == m_currentPlatform && GetISystem()->GetConfigSpec() == specLevel + 1)
-    {
-        if (ICVar* cvar = gEnv->pConsole->GetCVar(cvarName))
-        {
-            int type = cvar->GetType();
-            if (type == CVAR_INT)
-            {
-                int newValue;
-                if (AZStd::any_numeric_cast<int>(&val, newValue))
-                {
-                    cvar->Set(newValue);
-                }
-            }
-            else if (type == CVAR_FLOAT)
-            {
-                float newValue;
-                if (AZStd::any_numeric_cast<float>(&val, newValue))
-                {
-                    cvar->Set(newValue);
-                }
-            }
-            else
-            {
-                AZStd::string* currValue = AZStd::any_cast<AZStd::string>(&val);
-                cvar->Set(currValue->c_str());
-            }
-        }
-    }
-
     // Checking if the newly edited value is equal to the overwritten value
     cvarInfo = AZStd::make_pair(azcvarName, m_cVarTracker[cvarName]);
     if (CheckCVarStatesForDiff(&cvarInfo, specLevel, EDITED_OVERWRITTEN_COMPARE))

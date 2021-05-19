@@ -22,7 +22,6 @@
 #include <ISystem.h>
 #include "System.h"
 #include "CryPath.h"                    // PathUtil::ReplaceExtension()
-#include <Pak/CryPakUtils.h>
 #include "UnicodeFunctions.h"
 
 #include <AzFramework/IO/FileOperations.h>
@@ -237,7 +236,6 @@ void CLog::CloseLogFile([[maybe_unused]] bool forceClose)
 //////////////////////////////////////////////////////////////////////////
 AZ::IO::HandleType CLog::OpenLogFile(const char* filename, const char* mode)
 {
-    CDebugAllowFileAccess ignoreInvalidFileAccess;
     using namespace AZ::IO;
 
     AZ_Assert(m_logFileHandle == AZ::IO::InvalidHandle, "Attempt to open log file when one is already open.  This would lead to a handle leak.");
@@ -417,7 +415,7 @@ void CLog::LogV(const ELogType type, const char* szFormat, va_list args)
     LogV(type, 0, szFormat, args);
 }
 
-void CLog::LogV(const ELogType type, int flags, const char* szFormat, va_list args)
+void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFormat, va_list args)
 {
     // this is here in case someone called LogV directly, with an invalid formatter.
     if (!CheckLogFormatter(szFormat))
@@ -594,28 +592,6 @@ void CLog::LogV(const ELogType type, int flags, const char* szFormat, va_list ar
     case eErrorAlways:
         GetISystem()->GetIRemoteConsole()->AddLogError(szString);
         break;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    if (type == eWarningAlways || type == eWarning || type == eError || type == eErrorAlways)
-    {
-        IValidator* pValidator = m_pSystem->GetIValidator();
-        if (pValidator && (flags & VALIDATOR_FLAG_SKIP_VALIDATOR) == 0)
-        {
-            CryAutoCriticalSection scope_lock(m_logCriticalSection);
-
-            SValidatorRecord record;
-            record.text = szBuffer;
-            record.module = VALIDATOR_MODULE_SYSTEM;
-            record.severity = VALIDATOR_WARNING;
-            record.assetScope = GetAssetScopeString();
-            record.flags = flags;
-            if (type == eError || type == eErrorAlways)
-            {
-                record.severity = VALIDATOR_ERROR;
-            }
-            pValidator->Report(record);
-        }
     }
 }
 
@@ -1138,8 +1114,6 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
 
     if (logToFile)
     {
-        CDebugAllowFileAccess dafa;
-
         if (m_logFileHandle == AZ::IO::InvalidHandle)
         {
             OpenLogFile(m_szFilename, "w+t");
