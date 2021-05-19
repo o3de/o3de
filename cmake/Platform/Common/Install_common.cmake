@@ -125,7 +125,7 @@ function(ly_setup_target ALIAS_TARGET_NAME)
         endforeach()
     endif()
 
-    get_target_property(RUNTIME_DEPENDENCIES_PLACEHOLDER ${TARGET_NAME} MANUALLY_ADDED_DEPENDENCIES)
+    get_target_property(RUNTIME_DEPENDENCIES_PLACEHOLDER ${TARGET_NAME} LY_ORIGINAL_MANUALLY_ADDED_DEPENDENCIES)
     if(RUNTIME_DEPENDENCIES_PLACEHOLDER) # not found properties return the name of the variable with a "-NOTFOUND" at the end, here we set it to empty if not found
         string(REPLACE ";" "\n" RUNTIME_DEPENDENCIES_PLACEHOLDER "${RUNTIME_DEPENDENCIES_PLACEHOLDER}")
     else()

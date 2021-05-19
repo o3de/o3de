@@ -124,7 +124,7 @@ endif()
 # The following steps have to be done after all targets are registered:
 # 1. generate a settings registry .setreg file for all ly_add_project_dependencies() and ly_add_target_dependencies() calls
 #    to provide applications with the filenames of gem modules to load
-#    This must be done before ly_delayed_target_link_libraries() as that inserts BUILD_DEPENDENCIE as MANUALLY_ADDED_DEPENDENCIES
+#    This must be done before ly_delayed_target_link_libraries() as that inserts BUILD_DEPENDENCIES as MANUALLY_ADDED_DEPENDENCIES
 #    if the build dependency is a MODULE_LIBRARY. That would cause a false load dependency to be generated
 ly_delayed_generate_settings_registry()
 # 2. link targets where the dependency was yet not declared, we need to have the declaration so we do different
