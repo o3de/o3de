@@ -129,7 +129,7 @@ namespace AZ
             }
         }
 
-        void AcesOutputTransformPass::SetAcesParameterOverrides(const DisplayMapperAcesParameters& acesParameterOverrides)
+        void AcesOutputTransformPass::SetAcesParameterOverrides(const AcesParameterOverrides& acesParameterOverrides)
         {
             m_acesParameterOverrides = acesParameterOverrides;
         }

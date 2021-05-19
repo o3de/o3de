@@ -46,7 +46,7 @@ namespace AZ
             static RPI::Ptr<AcesOutputTransformPass> Create(const RPI::PassDescriptor& descriptor);
 
             void SetDisplayBufferFormat(RHI::Format format);
-            void SetAcesParameterOverrides(const DisplayMapperAcesParameters& acesParameterOverrides);
+            void SetAcesParameterOverrides(const AcesParameterOverrides& acesParameterOverrides);
 
         private:
             explicit AcesOutputTransformPass(const RPI::PassDescriptor& descriptor);
@@ -67,7 +67,7 @@ namespace AZ
 
             RHI::Format m_displayBufferFormat = RHI::Format::Unknown;
 
-            DisplayMapperAcesParameters m_acesParameterOverrides;
+            AcesParameterOverrides m_acesParameterOverrides;
         };
     }   // namespace Render
 }   // namespace AZ

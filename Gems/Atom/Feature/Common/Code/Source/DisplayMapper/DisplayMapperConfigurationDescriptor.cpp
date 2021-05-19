@@ -19,28 +19,28 @@ namespace AZ
 {
     namespace Render
     {
-        void DisplayMapperAcesParameters::Reflect(ReflectContext* context)
+        void AcesParameterOverrides::Reflect(ReflectContext* context)
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<DisplayMapperAcesParameters>()
+                serializeContext->Class<AcesParameterOverrides>()
                     ->Version(0)
-                    ->Field("OverrideDefaults", &DisplayMapperAcesParameters::m_overrideDefaults)
-                    ->Field("AlterSurround", &DisplayMapperAcesParameters::m_alterSurround)
-                    ->Field("ApplyDesaturation", &DisplayMapperAcesParameters::m_applyDesaturation)
-                    ->Field("ApplyCATD60toD65", &DisplayMapperAcesParameters::m_applyCATD60toD65)
-                    ->Field("PresetODT", &DisplayMapperAcesParameters::m_preset)
-                    ->Field("CinemaLimitsBlack", &DisplayMapperAcesParameters::m_cinemaLimitsBlack)
-                    ->Field("CinemaLimitsWhite", &DisplayMapperAcesParameters::m_cinemaLimitsWhite)
-                    ->Field("MinPoint", &DisplayMapperAcesParameters::m_minPoint)
-                    ->Field("MidPoint", &DisplayMapperAcesParameters::m_midPoint)
-                    ->Field("MaxPoint", &DisplayMapperAcesParameters::m_maxPoint)
-                    ->Field("SurroundGamma", &DisplayMapperAcesParameters::m_surroundGamma)
-                    ->Field("Gamma", &DisplayMapperAcesParameters::m_gamma);
+                    ->Field("OverrideDefaults", &AcesParameterOverrides::m_overrideDefaults)
+                    ->Field("AlterSurround", &AcesParameterOverrides::m_alterSurround)
+                    ->Field("ApplyDesaturation", &AcesParameterOverrides::m_applyDesaturation)
+                    ->Field("ApplyCATD60toD65", &AcesParameterOverrides::m_applyCATD60toD65)
+                    ->Field("PresetODT", &AcesParameterOverrides::m_preset)
+                    ->Field("CinemaLimitsBlack", &AcesParameterOverrides::m_cinemaLimitsBlack)
+                    ->Field("CinemaLimitsWhite", &AcesParameterOverrides::m_cinemaLimitsWhite)
+                    ->Field("MinPoint", &AcesParameterOverrides::m_minPoint)
+                    ->Field("MidPoint", &AcesParameterOverrides::m_midPoint)
+                    ->Field("MaxPoint", &AcesParameterOverrides::m_maxPoint)
+                    ->Field("SurroundGamma", &AcesParameterOverrides::m_surroundGamma)
+                    ->Field("Gamma", &AcesParameterOverrides::m_gamma);
             }
         }
 
-        void DisplayMapperAcesParameters::LoadPreset()
+        void AcesParameterOverrides::LoadPreset()
         {
             DisplayMapperParameters displayMapperParameters;
             AcesDisplayMapperFeatureProcessor::GetAcesDisplayMapperParameters(&displayMapperParameters, m_preset);
@@ -59,7 +59,7 @@ namespace AZ
 
         void DisplayMapperConfigurationDescriptor::Reflect(AZ::ReflectContext* context)
         {
-            DisplayMapperAcesParameters::Reflect(context);
+            AcesParameterOverrides::Reflect(context);
 
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {

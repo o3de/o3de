@@ -27,7 +27,7 @@ namespace AZ
                     ->Field("DisplayMapperOperationType", &DisplayMapperComponentConfig::m_displayMapperOperation)
                     ->Field("LdrColorGradingLutEnabled", &DisplayMapperComponentConfig::m_ldrColorGradingLutEnabled)
                     ->Field("LdrColorGradingLut", &DisplayMapperComponentConfig::m_ldrColorGradingLut)
-                    ->Field("AcesParameters", &DisplayMapperComponentConfig::m_acesParameterOverrides)
+                    ->Field("AcesParameterOverrides", &DisplayMapperComponentConfig::m_acesParameterOverrides)
                     ;
             }
         }

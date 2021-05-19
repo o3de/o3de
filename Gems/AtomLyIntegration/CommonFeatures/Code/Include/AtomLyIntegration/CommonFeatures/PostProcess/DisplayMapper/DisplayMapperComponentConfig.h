@@ -32,7 +32,7 @@ namespace AZ
             DisplayMapperOperationType m_displayMapperOperation = DisplayMapperOperationType::Aces;
             bool m_ldrColorGradingLutEnabled = false;
             Data::Asset<RPI::AnyAsset> m_ldrColorGradingLut = {};
-            DisplayMapperAcesParameters m_acesParameterOverrides;
+            AcesParameterOverrides m_acesParameterOverrides;
         };
     }
 }

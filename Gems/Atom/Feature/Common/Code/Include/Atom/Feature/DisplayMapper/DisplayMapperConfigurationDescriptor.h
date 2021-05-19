@@ -25,13 +25,13 @@ namespace AZ
     namespace Render
     {
         /**
-         * The ACES display mapper parameters.
-         * These parameters are input to the display mapper shader on the DisplayMapperPass.
+         * The ACES display mapper parameter overrides.
+         * These parameters override default ACES parameters when m_overrideDefaults is true.
          */
-        struct DisplayMapperAcesParameters
+        struct AcesParameterOverrides
         {
-            AZ_RTTI(DisplayMapperAcesParameters, "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}");
-            AZ_CLASS_ALLOCATOR(DisplayMapperAcesParameters, SystemAllocator, 0);
+            AZ_RTTI(AcesParameterOverrides, "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}");
+            AZ_CLASS_ALLOCATOR(AcesParameterOverrides, SystemAllocator, 0);
 
             static void Reflect(ReflectContext* context);
 
@@ -39,11 +39,11 @@ namespace AZ
             bool m_overrideDefaults = false;
 
             // Apply gamma adjustment to compensate for dim surround
-            bool m_alterSurround;
+            bool m_alterSurround = true;
             // Apply desaturation to compensate for luminance difference
-            bool m_applyDesaturation;
+            bool m_applyDesaturation = true;
             // Apply Color appearance transform (CAT) from ACES white point to assumed observer adapted white point
-            bool m_applyCATD60toD65;
+            bool m_applyCATD60toD65 = true;
             
             // Reference white and black luminance values
             float m_cinemaLimitsBlack = 0.02f;
@@ -82,7 +82,7 @@ namespace AZ
             bool m_ldrGradingLutEnabled = false;
             Data::Asset<RPI::AnyAsset> m_ldrColorGradingLut;
 
-            DisplayMapperAcesParameters m_acesParameterOverrides;
+            AcesParameterOverrides m_acesParameterOverrides;
         };
 
         //! Custom pass data for DisplayMapperPass.
