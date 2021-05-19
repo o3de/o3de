@@ -10,6 +10,6 @@
 #
 
 set(FILES
-    Source/Editor/MultiplayerEditorDispatcher.cpp
-    Source/Editor/MultiplayerEditorDispatcher.h
+    Tests/MainTools.cpp
+    Tests/PrefabProcessingTests.cpp
 )
