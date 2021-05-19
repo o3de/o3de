@@ -216,16 +216,11 @@ namespace AzFramework
         return clone;
     }
 
-    Spawnable::EntityList* SpawnableEntitiesManager::CloneAllEntities(const Spawnable::EntityList& entitiesTemplate,
-        AZ::SerializeContext& serializeContext)
+    AZ::Entity* SpawnableEntitiesManager::CloneSingleEntity(const AZ::Entity& entityTemplate,
+        EntityIdMap& templateToCloneEntityIdMap, AZ::SerializeContext& serializeContext)
     {
-        // Map keeps track of ids from template (spawnable) to clone (instance)
-        // Allowing patch ups of fields referring to entityIds outside of a given entity
-        EntityIdMap templateToCloneIdMap;
-        templateToCloneIdMap.reserve(entitiesTemplate.size());
-
         return AZ::IdUtils::Remapper<AZ::EntityId>::CloneObjectAndGenerateNewIdsAndFixRefs(
-                &entitiesTemplate, templateToCloneIdMap, &serializeContext);
+                &entityTemplate, templateToCloneEntityIdMap, &serializeContext);
     }
 
     bool SpawnableEntitiesManager::ProcessRequest(SpawnAllEntitiesCommand& request, AZ::SerializeContext& serializeContext)
@@ -243,19 +238,25 @@ namespace AzFramework
             const Spawnable::EntityList& entitiesToSpawn = ticket.m_spawnable->GetEntities();
             size_t entitiesToSpawnSize = entitiesToSpawn.size();
 
+            // Map keeps track of ids from template (spawnable) to clone (instance)
+            // Allowing patch ups of fields referring to entityIds outside of a given entity
+            EntityIdMap templateToCloneEntityIdMap;
+
             // Reserve buffers
             spawnedEntities.reserve(spawnedEntities.size() + entitiesToSpawnSize);
-            ticket.m_spawnedEntityIndices.reserve(ticket.m_spawnedEntityIndices.size() + entitiesToSpawnSize);
-
-            // Clone the entities from Spawnable
-            Spawnable::EntityList* clonedEntities = CloneAllEntities(entitiesToSpawn, serializeContext);
-            AZ_Assert(clonedEntities != nullptr, "Failed to clone entities while processing a SpawnAllEntitiesCommand");
-
-            spawnedEntities.insert(spawnedEntities.end(), clonedEntities->begin(), clonedEntities->end());
+            spawnedEntityIndices.reserve(spawnedEntityIndices.size() + entitiesToSpawnSize);
+            templateToCloneEntityIdMap.reserve(entitiesToSpawnSize);
 
             // Mark all indices as spawned
             for (size_t i = 0; i < entitiesToSpawnSize; ++i)
             {
+                const AZ::Entity& entityTemplate = *entitiesToSpawn[i];
+
+                AZ::Entity* clone = CloneSingleEntity(entityTemplate, templateToCloneEntityIdMap, serializeContext);
+
+                AZ_Assert(clone != nullptr, "Failed to clone spawnable entity.");
+
+                spawnedEntities.emplace_back(clone);
                 spawnedEntityIndices.push_back(i);
             }
 
@@ -422,16 +423,23 @@ namespace AzFramework
                 // to load every, simply start over.
                 ticket.m_spawnedEntityIndices.clear();
 
-                // Clone the entities from Spawnable
-                Spawnable::EntityList* clonedEntities = CloneAllEntities(entities, serializeContext);
-                AZ_Assert(clonedEntities != nullptr, "Failed to clone entities while processing a SpawnAllEntitiesCommand");
+                size_t entitiesToSpawnSize = entities.size();
 
-                ticket.m_spawnedEntities.insert(ticket.m_spawnedEntities.end(), clonedEntities->begin(), clonedEntities->end());
+                // Map keeps track of ids from template (spawnable) to clone (instance)
+                // Allowing patch ups of fields referring to entityIds outside of a given entity
+                EntityIdMap templateToCloneEntityIdMap;
+                templateToCloneEntityIdMap.reserve(entitiesToSpawnSize);
 
                 // Mark all indices as spawned
-                size_t entitiesSize = entities.size();
-                for (size_t i = 0; i < entitiesSize; ++i)
+                for (size_t i = 0; i < entitiesToSpawnSize; ++i)
                 {
+                    const AZ::Entity& entityTemplate = *entities[i];
+
+                    AZ::Entity* clone = CloneSingleEntity(entityTemplate, templateToCloneEntityIdMap, serializeContext);
+
+                    AZ_Assert(clone != nullptr, "Failed to clone spawnable entity.");
+
+                    ticket.m_spawnedEntities.emplace_back(clone);
                     ticket.m_spawnedEntityIndices.push_back(i);
                 }
             }

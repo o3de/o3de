@@ -147,8 +147,8 @@ namespace AzFramework
         AZ::Entity* SpawnSingleEntity(const AZ::Entity& entityTemplate,
             AZ::SerializeContext& serializeContext);
 
-        Spawnable::EntityList* CloneAllEntities(const Spawnable::EntityList& entitiesTemplate,
-            AZ::SerializeContext& serializeContext);
+        AZ::Entity* CloneSingleEntity(const AZ::Entity& entityTemplate,
+            EntityIdMap& templateToCloneEntityIdMap, AZ::SerializeContext& serializeContext);
 
         bool ProcessRequest(SpawnAllEntitiesCommand& request, AZ::SerializeContext& serializeContext);
         bool ProcessRequest(SpawnEntitiesCommand& request, AZ::SerializeContext& serializeContext);
