@@ -943,8 +943,8 @@ namespace AMD
 
         // Seek to the beginning of tfxmesh file
         stream->Seek(header.offsetTFXMesh, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
-        m_collsionMesh = std::make_unique<TressFXCollisionMesh>();
-        success &= m_collsionMesh->LoadMeshData(stream);
+        m_collisionMesh = std::make_unique<TressFXCollisionMesh>();
+        success &= m_collisionMesh->LoadMeshData(stream);
         if (!success)
         {
             AZ_Warning("LoadHairAsset", false, "Hair properties files was not processed properly");
@@ -956,7 +956,7 @@ namespace AMD
 
     bool TressFXAsset::FixBoneIndices(const BoneNameToIndexMap& boneIndicesMap, BoneIndexToEngineIndexLookup& outLookup)
     {
-        if (!m_collsionMesh)
+        if (!m_collisionMesh)
         {
             AZ_Assert(false, "TressFXAsset should always has a collision mesh with current design.");
             return false;
@@ -965,7 +965,7 @@ namespace AMD
         if (m_boneIndicesFixed)
         {
             ResetSkinning(m_boneSkinningData, m_reservedLookup);
-            ResetSkinning(m_collsionMesh->m_boneSkinningData, m_collsionMesh->m_reservedLookup);
+            ResetSkinning(m_collisionMesh->m_boneSkinningData, m_collisionMesh->m_reservedLookup);
             m_boneIndicesFixed = false;
         }
 
@@ -973,17 +973,17 @@ namespace AMD
         BoneIndexToEngineIndexLookup hairBoneSkinningLookup;
         BoneIndexToEngineIndexLookup collisionMeshSkinningLookup;
         if(!GenerateBoneIndexLookup(boneIndicesMap, m_boneNames, hairBoneSkinningLookup) ||
-            !GenerateBoneIndexLookup(boneIndicesMap, m_collsionMesh->m_boneNames, collisionMeshSkinningLookup))
+            !GenerateBoneIndexLookup(boneIndicesMap, m_collisionMesh->m_boneNames, collisionMeshSkinningLookup))
         {
             return false;
         }
 
         outLookup = hairBoneSkinningLookup;
         FixSkinningUsingLookup(m_boneSkinningData, hairBoneSkinningLookup);
-        FixSkinningUsingLookup(m_collsionMesh->m_boneSkinningData, collisionMeshSkinningLookup);
+        FixSkinningUsingLookup(m_collisionMesh->m_boneSkinningData, collisionMeshSkinningLookup);
 
         m_reservedLookup = hairBoneSkinningLookup;
-        m_collsionMesh->m_reservedLookup = collisionMeshSkinningLookup;
+        m_collisionMesh->m_reservedLookup = collisionMeshSkinningLookup;
         m_boneIndicesFixed = true;
 
         return true;
