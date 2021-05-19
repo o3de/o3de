@@ -55,7 +55,7 @@ def backup_folder(folder: str or pathlib.Path) -> None:
 
 
 def get_this_engine_path() -> pathlib.Path:
-    return pathlib.Path(os.path.realpath(__file__)).parents[2].resolve()
+    return pathlib.Path(os.path.realpath(__file__)).parents[3].resolve()
 
 
 override_home_folder = None
@@ -123,9 +123,9 @@ def get_o3de_restricted_folder() -> pathlib.Path:
 
 
 def get_o3de_logs_folder() -> pathlib.Path:
-    restricted_folder = get_o3de_folder() / 'Logs'
-    restricted_folder.mkdir(parents=True, exist_ok=True)
-    return restricted_folder
+    logs_folder = get_o3de_folder() / 'Logs'
+    logs_folder.mkdir(parents=True, exist_ok=True)
+    return logs_folder
 
 
 def register_shipped_engine_o3de_objects(force: bool = False) -> int:
