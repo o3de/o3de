@@ -420,7 +420,6 @@ namespace stl
             {
                 nInterval++;
                 nCount = 0;
-                assert(CryMemory::IsHeapValid());
             }
         #endif
         }

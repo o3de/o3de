@@ -10,9 +10,6 @@
  *
  */
 
-#include <CrySystemBus.h>
-#include <ISystem.h>
-
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
 
@@ -31,7 +28,6 @@ namespace NvCloth
 {
     class Module
         : public AZ::Module
-        , protected CrySystemEventBus::Handler
     {
     public:
         AZ_RTTI(Module, "{34C529D4-688F-4B51-BF60-75425754A7E6}", AZ::Module);
@@ -46,8 +42,6 @@ namespace NvCloth
             // at both runtime and asset build time.
             m_fabricCooker = AZStd::make_unique<FabricCooker>();
             m_tangentSpaceHelper = AZStd::make_unique<TangentSpaceHelper>();
-
-            CrySystemEventBus::Handler::BusConnect();
 
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             m_descriptors.insert(m_descriptors.end(), {
@@ -64,8 +58,6 @@ namespace NvCloth
 
         ~Module()
         {
-            CrySystemEventBus::Handler::BusDisconnect();
-
             m_tangentSpaceHelper.reset();
             m_fabricCooker.reset();
 
@@ -85,33 +77,10 @@ namespace NvCloth
             };
         }
 
-    protected:
-        // CrySystemEventBus ...
-        void OnCrySystemPreInitialize(ISystem& system, const SSystemInitParams& systemInitParams) override;
-        void OnCrySystemPostShutdown() override;
-
     private:
         AZStd::unique_ptr<FabricCooker> m_fabricCooker;
         AZStd::unique_ptr<TangentSpaceHelper> m_tangentSpaceHelper;
     };
-
-    void Module::OnCrySystemPreInitialize(
-        [[maybe_unused]] ISystem& system,
-        [[maybe_unused]] const SSystemInitParams& systemInitParams)
-    {
-#if !defined(AZ_MONOLITHIC_BUILD)
-        // When module is linked dynamically, we must set our gEnv pointer.
-        // When module is linked statically, we'll share the application's gEnv pointer.
-        gEnv = system.GetGlobalEnvironment();
-#endif
-    }
-
-    void Module::OnCrySystemPostShutdown()
-    {
-#if !defined(AZ_MONOLITHIC_BUILD)
-        gEnv = nullptr;
-#endif
-    }
 } // namespace NvCloth
 
 // DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM

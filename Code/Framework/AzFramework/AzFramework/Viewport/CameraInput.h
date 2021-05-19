@@ -17,6 +17,8 @@
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/optional.h>
 #include <AzFramework/Input/Channels/InputChannel.h>
+#include <AzFramework/Viewport/ClickDetector.h>
+#include <AzFramework/Viewport/CursorState.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Viewport/ViewportId.h>
 
@@ -188,26 +190,22 @@ namespace AzFramework
         Cameras m_cameras;
 
     private:
+        CursorState m_cursorState;
         float m_scrollDelta = 0.0f;
-        AZStd::optional<ScreenPoint> m_lastCursorPosition;
-        AZStd::optional<ScreenPoint> m_currentCursorPosition;
     };
 
     class RotateCameraInput : public CameraInput
     {
     public:
-        explicit RotateCameraInput(const InputChannelId rotateChannelId)
-            : m_rotateChannelId(rotateChannelId)
-        {
-        }
+        explicit RotateCameraInput(InputChannelId rotateChannelId);
 
+        // CameraInput overrides ...
         void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
     private:
         InputChannelId m_rotateChannelId;
-        float m_moveAccumulator = 0.0f;
-        bool m_tryingToBegin = false;
+        ClickDetector m_clickDetector;
     };
 
     struct PanAxes
@@ -240,11 +238,9 @@ namespace AzFramework
     class PanCameraInput : public CameraInput
     {
     public:
-        PanCameraInput(const InputChannelId panChannelId, PanAxesFn panAxesFn)
-            : m_panAxesFn(AZStd::move(panAxesFn))
-            , m_panChannelId(panChannelId)
-        {
-        }
+        PanCameraInput(InputChannelId panChannelId, PanAxesFn panAxesFn);
+
+        // CameraInput overrides ...
         void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
@@ -283,10 +279,9 @@ namespace AzFramework
     class TranslateCameraInput : public CameraInput
     {
     public:
-        explicit TranslateCameraInput(TranslationAxesFn translationAxesFn)
-            : m_translationAxesFn(AZStd::move(translationAxesFn))
-        {
-        }
+        explicit TranslateCameraInput(TranslationAxesFn translationAxesFn);
+
+        // CameraInput overrides ...
         void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
         void ResetImpl() override;
@@ -356,6 +351,7 @@ namespace AzFramework
     class OrbitDollyScrollCameraInput : public CameraInput
     {
     public:
+        // CameraInput overrides ...
         void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
     };
@@ -363,9 +359,9 @@ namespace AzFramework
     class OrbitDollyCursorMoveCameraInput : public CameraInput
     {
     public:
-        explicit OrbitDollyCursorMoveCameraInput(const InputChannelId dollyChannelId)
-            : m_dollyChannelId(dollyChannelId) {}
+        explicit OrbitDollyCursorMoveCameraInput(InputChannelId dollyChannelId);
 
+        // CameraInput overrides ...
         void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
@@ -376,6 +372,7 @@ namespace AzFramework
     class ScrollTranslationCameraInput : public CameraInput
     {
     public:
+        // CameraInput overrides ...
         void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
     };
@@ -383,15 +380,31 @@ namespace AzFramework
     class OrbitCameraInput : public CameraInput
     {
     public:
+        using LookAtFn = AZStd::function<AZStd::optional<AZ::Vector3>()>;
+
+        // CameraInput overrides ...
         void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
-        bool Exclusive() const override
-        {
-            return true;
-        }
+        bool Exclusive() const override;
 
         Cameras m_orbitCameras;
+
+        //! Override the default behavior for how a look-at point is calculated.
+        void SetLookAtFn(const LookAtFn& lookAtFn);
+
+    private:
+        LookAtFn m_lookAtFn;
     };
+
+    inline void OrbitCameraInput::SetLookAtFn(const LookAtFn& lookAtFn)
+    {
+        m_lookAtFn = lookAtFn;
+    }
+
+    inline bool OrbitCameraInput::Exclusive() const
+    {
+        return true;
+    }
 
     struct WindowSize;
 
