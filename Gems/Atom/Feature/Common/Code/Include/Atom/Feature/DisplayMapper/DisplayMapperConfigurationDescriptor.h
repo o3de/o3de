@@ -35,6 +35,8 @@ namespace AZ
 
             static void Reflect(ReflectContext* context);
 
+            void LoadPreset();
+
             // When enabled allows parameter overrides for ACES configuration
             bool m_overrideDefaults = false;
 
@@ -64,8 +66,6 @@ namespace AZ
 
             // Allows specifying default preset for different ODT modes
             OutputDeviceTransformType m_preset = OutputDeviceTransformType_48Nits;
-
-            void LoadPreset();
         };
 
         //! A descriptor used to configure the DisplayMapper
