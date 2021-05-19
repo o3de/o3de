@@ -38,7 +38,7 @@ namespace AZ
             static constexpr const char* DisplayName = "ShaderVariant";
             static constexpr const char* Group = "Shader";
 
-            static constexpr uint32_t ShaderVariantAsset2SubProductType = 0;
+            static constexpr uint32_t ShaderVariantAsset2SubProductType = 1;
             //! @rhiApiUniqueIndex comes from RHI::Factory::GetAPIUniqueIndex()
             //! @subProductType is always 0 for a regular ShaderVariantAsset2, for all other debug subProducts created
             //!                by ShaderVariantAssetBuilder2 this is 1+.

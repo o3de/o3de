@@ -270,12 +270,6 @@ namespace AZ
                 return LoadResult2{LoadResult2::Code::DeferredError, AZStd::string::format("ShaderSourceData file does not exist: %s.", shaderSourceFileFullPath.c_str())};
             }
 
-            // Let's open the shader source, because We need to know how many supervariants were defined.
-            auto outcomeShaderData = ShaderBuilderUtility::LoadShaderDataJson(shaderSourceFileFullPath);
-            if (!outcomeShaderData.IsSuccess())
-            {
-                return LoadResult2{LoadResult2::Code::DeferredError, AZStd::string::format("Failed to parse Shader Descriptor JSON: %s", outcomeShaderData.GetError().c_str())};
-            }
             return LoadResult2{LoadResult2::Code::Success};
         } // LoadShaderVariantListAndAzslSource
 
@@ -477,8 +471,6 @@ namespace AZ
             }
 
             auto functionsJsonPath = functionsJsonPathOutcome.TakeValue();
-            // The shader options define what options are available, what are the allowed values/range
-            // for each option and what is its default value.
             auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(functionsJsonPath);
             if (!jsonOutcome.IsSuccess())
             {
@@ -571,7 +563,7 @@ namespace AZ
                 auto thisLoopApiName = shaderPlatformInterface->GetAPIName().GetStringView();
                 RPI::Ptr<RPI::ShaderOptionGroupLayout> loopLocal_ShaderOptionGroupLayout =
                     LoadShaderOptionsGroupLayoutFromShaderAssetBuilder2(
-                        shaderPlatformInterface, request.m_platformInfo, azslc, shaderSourceFileFullPath, RPI::SupervariantIndex{0});
+                        shaderPlatformInterface, request.m_platformInfo, azslc, shaderSourceFileFullPath, RPI::DefaultSupervariantIndex);
                 if (!loopLocal_ShaderOptionGroupLayout)
                 {
                     response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
@@ -787,7 +779,7 @@ namespace AZ
                     if (outputByproducts)
                     {
                         // add byproducts as job output products:
-                        uint32_t subProductType = RPI::ShaderVariantAsset2::ShaderVariantAsset2SubProductType + 1;
+                        uint32_t subProductType = RPI::ShaderVariantAsset2::ShaderVariantAsset2SubProductType;
                         for (const AZStd::string& byproduct : outputByproducts.value().m_intermediatePaths)
                         {
                             AssetBuilderSDK::JobProduct jobProduct;
@@ -934,7 +926,7 @@ namespace AZ
             RPI::ShaderVariantAssetCreator2 variantCreator;
             RPI::ShaderOptionGroup shaderOptions{&creationContext.m_shaderOptionGroupLayout, optionGroup.GetShaderVariantId()};
             variantCreator.Begin(
-                creationContext.m_assetId, optionGroup.GetShaderVariantId(), shaderVariantStableId,
+                creationContext.m_shaderVariantAssetId, optionGroup.GetShaderVariantId(), shaderVariantStableId,
                 shaderOptions.IsFullySpecified());
 
             const AZStd::unordered_map<AZStd::string, RPI::ShaderStageType>& shaderEntryPoints = creationContext.m_shaderEntryPoints;

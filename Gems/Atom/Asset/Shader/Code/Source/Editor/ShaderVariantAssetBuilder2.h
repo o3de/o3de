@@ -46,8 +46,8 @@ namespace AZ
             const RPI::ShaderSourceData& m_shaderSourceDataDescriptor;
             const RPI::ShaderOptionGroupLayout& m_shaderOptionGroupLayout;
             const MapOfStringToStageType& m_shaderEntryPoints;
-            const Data::AssetId m_assetId;
-            const AZStd::string& m_shaderStemNamePrefix; //<shaderName>-<variantName>
+            const Data::AssetId m_shaderVariantAssetId;
+            const AZStd::string& m_shaderStemNamePrefix; //<shaderName>-<supervariantName>
             const AZStd::string& m_hlslSourcePath;
             const AZStd::string& m_hlslSourceContent;
         };

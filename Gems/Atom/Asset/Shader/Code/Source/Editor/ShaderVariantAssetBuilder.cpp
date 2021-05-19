@@ -276,12 +276,6 @@ namespace AZ
                 return LoadResult{LoadResult::Code::DeferredError, AZStd::string::format("ShaderSourceData file does not exist: %s.", shaderSourceFileFullPath.c_str())};
             }
 
-            // Let's open the shader source, because We need the source code of its AZSL file
-            auto outcomeShaderData = ShaderBuilderUtility::LoadShaderDataJson(shaderSourceFileFullPath);
-            if (!outcomeShaderData.IsSuccess())
-            {
-                return LoadResult{LoadResult::Code::DeferredError, AZStd::string::format("Failed to parse Shader Descriptor JSON: %s", outcomeShaderData.GetError().c_str())};
-            }
             return LoadResult{LoadResult::Code::Success};
         } // LoadShaderVariantListAndAzslSource
 
