@@ -20,7 +20,6 @@ namespace AZ
 {
     namespace Render
     {
-
         class DisplayMapperComponentConfig final
             : public ComponentConfig
         {
@@ -33,6 +32,7 @@ namespace AZ
             DisplayMapperOperationType m_displayMapperOperation = DisplayMapperOperationType::Aces;
             bool m_ldrColorGradingLutEnabled = false;
             Data::Asset<RPI::AnyAsset> m_ldrColorGradingLut = {};
+            DisplayMapperAcesParameters m_acesParameterOverrides;
         };
     }
 }

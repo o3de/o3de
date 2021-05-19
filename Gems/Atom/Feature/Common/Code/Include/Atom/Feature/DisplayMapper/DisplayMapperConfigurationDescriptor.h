@@ -24,6 +24,50 @@ namespace AZ
 
     namespace Render
     {
+        /**
+         * The ACES display mapper parameters.
+         * These parameters are input to the display mapper shader on the DisplayMapperPass.
+         */
+        struct DisplayMapperAcesParameters
+        {
+            AZ_RTTI(DisplayMapperAcesParameters, "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}");
+            AZ_CLASS_ALLOCATOR(DisplayMapperAcesParameters, SystemAllocator, 0);
+
+            static void Reflect(ReflectContext* context);
+
+            // When enabled allows parameter overrides for ACES configuration
+            bool m_overrideDefaults = false;
+
+            // Apply gamma adjustment to compensate for dim surround
+            bool m_alterSurround;
+            // Apply desaturation to compensate for luminance difference
+            bool m_applyDesaturation;
+            // Apply Color appearance transform (CAT) from ACES white point to assumed observer adapted white point
+            bool m_applyCATD60toD65;
+            
+            // Reference white and black luminance values
+            float m_cinemaLimitsBlack = 0.02f;
+            float m_cinemaLimitsWhite = 48.0f;
+
+            // luminance linear extension below this
+            float m_minPoint = 0.0028798957f;
+            // luminance mid grey
+            float m_midPoint = 4.8f;
+            // luminance linear extension above this
+            float m_maxPoint = 1005.71912f;
+
+            // Gamma adjustment to be applied to compensate for the condition of the viewing environment.
+            // Note that ACES uses a value of 0.9811 for adjusting from dark to dim surrounding.
+            float m_surroundGamma = 0.9811f;
+            // Optional gamma value that is applied as basic gamma curve OETF
+            float m_gamma = 2.2f;
+
+            // Allows specifying default preset for different ODT modes
+            OutputDeviceTransformType m_preset = OutputDeviceTransformType_48Nits;
+
+            void LoadPreset();
+        };
+
         //! A descriptor used to configure the DisplayMapper
         struct DisplayMapperConfigurationDescriptor final
         {
@@ -37,6 +81,8 @@ namespace AZ
 
             bool m_ldrGradingLutEnabled = false;
             Data::Asset<RPI::AnyAsset> m_ldrColorGradingLut;
+
+            DisplayMapperAcesParameters m_acesParameterOverrides;
         };
 
         //! Custom pass data for DisplayMapperPass.

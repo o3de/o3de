@@ -23,13 +23,13 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<DisplayMapperComponentConfig, ComponentConfig>()
-                    ->Version(0)
+                    ->Version(1)
                     ->Field("DisplayMapperOperationType", &DisplayMapperComponentConfig::m_displayMapperOperation)
                     ->Field("LdrColorGradingLutEnabled", &DisplayMapperComponentConfig::m_ldrColorGradingLutEnabled)
                     ->Field("LdrColorGradingLut", &DisplayMapperComponentConfig::m_ldrColorGradingLut)
+                    ->Field("AcesParameters", &DisplayMapperComponentConfig::m_acesParameterOverrides)
                     ;
             }
         }
-
     } // namespace Render
 } // namespace AZ

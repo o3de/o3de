@@ -102,6 +102,36 @@ namespace AZ
                     AcesDisplayMapperFeatureProcessor::GetAcesDisplayMapperParameters(&m_displayMapperParameters, OutputDeviceTransformType_48Nits);
                 }
             }
+
+            if (m_acesParameterOverrides.m_overrideDefaults)
+            {
+                m_displayMapperParameters.m_OutputDisplayTransformFlags = 0;
+                if (m_acesParameterOverrides.m_alterSurround)
+                {
+                    m_displayMapperParameters.m_OutputDisplayTransformFlags |= 0x1;
+                }
+                if (m_acesParameterOverrides.m_applyDesaturation)
+                {
+                    m_displayMapperParameters.m_OutputDisplayTransformFlags |= 0x2;
+                }
+                if (m_acesParameterOverrides.m_applyCATD60toD65)
+                {
+                    m_displayMapperParameters.m_OutputDisplayTransformFlags |= 0x4;
+                }
+
+                m_displayMapperParameters.m_cinemaLimits[0] = m_acesParameterOverrides.m_cinemaLimitsBlack;
+                m_displayMapperParameters.m_cinemaLimits[1] = m_acesParameterOverrides.m_cinemaLimitsWhite;
+                m_displayMapperParameters.m_acesSplineParams.minPoint[0] = m_acesParameterOverrides.m_minPoint;
+                m_displayMapperParameters.m_acesSplineParams.midPoint[0] = m_acesParameterOverrides.m_midPoint;
+                m_displayMapperParameters.m_acesSplineParams.maxPoint[0] = m_acesParameterOverrides.m_maxPoint;
+                m_displayMapperParameters.m_surroundGamma = m_acesParameterOverrides.m_surroundGamma;
+                m_displayMapperParameters.m_gamma = m_acesParameterOverrides.m_gamma;
+            }
+        }
+
+        void AcesOutputTransformPass::SetAcesParameterOverrides(const DisplayMapperAcesParameters& acesParameterOverrides)
+        {
+            m_acesParameterOverrides = acesParameterOverrides;
         }
     }   // namespace Render
 }   // namespace AZ

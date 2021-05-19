@@ -34,6 +34,7 @@ namespace AZ
 
             //! EditorRenderComponentAdapter overrides...
             AZ::u32 OnConfigurationChanged() override;
+
         };
 
     } // namespace Render

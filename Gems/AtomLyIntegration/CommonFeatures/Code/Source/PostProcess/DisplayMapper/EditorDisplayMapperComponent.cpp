@@ -10,6 +10,8 @@
 *
 */
 
+#include "Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h"
+
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <PostProcess/DisplayMapper/EditorDisplayMapperComponent.h>
 
@@ -47,6 +49,76 @@ namespace AZ
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
 
+                    editContext->Class<DisplayMapperAcesParameters>(
+                        "DisplayMapperAcesParameters", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::CheckBox, &DisplayMapperAcesParameters::m_overrideDefaults, "Override Defaults",
+                            "When enabled allows parameter overrides for ACES configuration")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::CheckBox, &DisplayMapperAcesParameters::m_alterSurround, "Alter Surround",
+                            "Apply gamma adjustment to compensate for dim surround")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::CheckBox, &DisplayMapperAcesParameters::m_applyDesaturation, "Alter Desaturation",
+                            "Apply desaturation to compensate for luminance difference")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::CheckBox, &DisplayMapperAcesParameters::m_applyCATD60toD65, "Alter CAT D60 to D65",
+                            "Apply Color appearance transform (CAT) from ACES white point to assumed observer adapted white point")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                        
+                        ->DataElement(
+                            Edit::UIHandlers::Default, &DisplayMapperAcesParameters::m_cinemaLimitsBlack,
+                            "Cinema Limit (black)",
+                            "Reference black luminance value")
+                        ->DataElement(
+                            Edit::UIHandlers::Default, &DisplayMapperAcesParameters::m_cinemaLimitsWhite,
+                            "Cinema Limit (white)",
+                            "Reference white luminance value")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+
+                        ->DataElement(
+                            Edit::UIHandlers::Vector2, &DisplayMapperAcesParameters::m_minPoint, "Min Point (luminance)",
+                            "Linear extension below this")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->DataElement(
+                            Edit::UIHandlers::Vector2, &DisplayMapperAcesParameters::m_midPoint, "Mid Point (luminance)",
+                            "Middle gray")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->DataElement(
+                            Edit::UIHandlers::Vector2, &DisplayMapperAcesParameters::m_maxPoint, "Max Point (luminance)",
+                            "Linear extension above this")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::Default, &DisplayMapperAcesParameters::m_surroundGamma, "Surround Gamma",
+                            "Gamma adjustment to be applied to compensate for the condition of the viewing environment")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::Default, &DisplayMapperAcesParameters::m_gamma, "Gamma",
+                            "Optional gamma value that is applied as basic gamma curve OETF")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+
+                        // Load preset group
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Load Preset")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->DataElement(
+                            Edit::UIHandlers::ComboBox, &DisplayMapperAcesParameters::m_preset, "Preset Selection",
+                            "Allows specifying default preset for different ODT modes")
+                        ->EnumAttribute(OutputDeviceTransformType::OutputDeviceTransformType_48Nits, "48 Nits")
+                        ->EnumAttribute(OutputDeviceTransformType::OutputDeviceTransformType_1000Nits, "1000 Nits")
+                        ->EnumAttribute(OutputDeviceTransformType::OutputDeviceTransformType_2000Nits, "2000 Nits")
+                        ->EnumAttribute(OutputDeviceTransformType::OutputDeviceTransformType_4000Nits, "4000 Nits")
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "Load", "Load default preset")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &DisplayMapperAcesParameters::LoadPreset)
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Load")
+                        ;
+
                     editContext->Class<DisplayMapperComponentConfig>("ToneMapperComponentConfig", "")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->DataElement(Edit::UIHandlers::ComboBox,
@@ -64,7 +136,10 @@ namespace AZ
                             &DisplayMapperComponentConfig::m_ldrColorGradingLutEnabled,
                             "Enable LDR color grading LUT",
                             "Enable LDR color grading LUT.")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &DisplayMapperComponentConfig::m_ldrColorGradingLut, "LDR color Grading LUT", "LDR color grading LUT");
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &DisplayMapperComponentConfig::m_ldrColorGradingLut, "LDR color Grading LUT", "LDR color grading LUT")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &DisplayMapperComponentConfig::m_acesParameterOverrides, "ACES Parameters", "Parameter overrides for ACES.")
+                    ;
+
                 }
             }
 

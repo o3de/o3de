@@ -9,16 +9,58 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  */
 
+
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <Atom/Feature/DisplayMapper/DisplayMapperConfigurationDescriptor.h>
+#include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 
 namespace AZ
 {
     namespace Render
     {
+        void DisplayMapperAcesParameters::Reflect(ReflectContext* context)
+        {
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<DisplayMapperAcesParameters>()
+                    ->Version(0)
+                    ->Field("OverrideDefaults", &DisplayMapperAcesParameters::m_overrideDefaults)
+                    ->Field("AlterSurround", &DisplayMapperAcesParameters::m_alterSurround)
+                    ->Field("ApplyDesaturation", &DisplayMapperAcesParameters::m_applyDesaturation)
+                    ->Field("ApplyCATD60toD65", &DisplayMapperAcesParameters::m_applyCATD60toD65)
+                    ->Field("PresetODT", &DisplayMapperAcesParameters::m_preset)
+                    ->Field("CinemaLimitsBlack", &DisplayMapperAcesParameters::m_cinemaLimitsBlack)
+                    ->Field("CinemaLimitsWhite", &DisplayMapperAcesParameters::m_cinemaLimitsWhite)
+                    ->Field("MinPoint", &DisplayMapperAcesParameters::m_minPoint)
+                    ->Field("MidPoint", &DisplayMapperAcesParameters::m_midPoint)
+                    ->Field("MaxPoint", &DisplayMapperAcesParameters::m_maxPoint)
+                    ->Field("SurroundGamma", &DisplayMapperAcesParameters::m_surroundGamma)
+                    ->Field("Gamma", &DisplayMapperAcesParameters::m_gamma);
+            }
+        }
+
+        void DisplayMapperAcesParameters::LoadPreset()
+        {
+            DisplayMapperParameters displayMapperParameters;
+            AcesDisplayMapperFeatureProcessor::GetAcesDisplayMapperParameters(&displayMapperParameters, m_preset);
+
+            m_alterSurround = (displayMapperParameters.m_OutputDisplayTransformFlags & 0x1) != 0;
+            m_applyDesaturation = (displayMapperParameters.m_OutputDisplayTransformFlags & 0x2) != 0;
+            m_applyCATD60toD65 = (displayMapperParameters.m_OutputDisplayTransformFlags & 0x4) != 0;
+            m_cinemaLimitsBlack = displayMapperParameters.m_cinemaLimits[0];
+            m_cinemaLimitsWhite = displayMapperParameters.m_cinemaLimits[1];
+            m_minPoint = displayMapperParameters.m_acesSplineParams.minPoint[0];
+            m_midPoint = displayMapperParameters.m_acesSplineParams.midPoint[0];
+            m_maxPoint = displayMapperParameters.m_acesSplineParams.maxPoint[0];
+            m_surroundGamma = displayMapperParameters.m_surroundGamma;
+            m_gamma = displayMapperParameters.m_gamma;
+        }
+
         void DisplayMapperConfigurationDescriptor::Reflect(AZ::ReflectContext* context)
         {
+            DisplayMapperAcesParameters::Reflect(context);
+
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Enum<DisplayMapperOperationType>()
