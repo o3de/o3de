@@ -196,7 +196,6 @@ SEditorSettings::SEditorSettings()
     enableSceneInspector = false;
 
     strStandardTempDirectory = "Temp";
-    strEditorEnv = "Editor/Editor.env";
 
     // Init source safe params.
     enableSourceControl = true;
@@ -252,10 +251,6 @@ SEditorSettings::SEditorSettings()
     gui.hSystemFont = QFont("Ms Shell Dlg 2", lfHeight, QFont::Normal);
     gui.hSystemFontBold = QFont("Ms Shell Dlg 2", lfHeight, QFont::Bold);
     gui.hSystemFontItalic = QFont("Ms Shell Dlg 2", lfHeight, QFont::Normal, true);
-
-    bForceSkyUpdate = true;
-
-    bIsSearchFilterActive = false;
 
     backgroundUpdatePeriod = 0;
     g_TemporaryLevelName = nullptr;
@@ -532,7 +527,6 @@ void SEditorSettings::Save()
     SaveValue("Settings", "editorConfigSpec", editorConfigSpec);
 
     SaveValue("Settings", "TemporaryDirectory", strStandardTempDirectory);
-    SaveValue("Settings", "EditorEnv", strEditorEnv);
 
     SaveValue("Settings", "ConsoleBackgroundColorThemeV2", (int)consoleBackgroundColorTheme);
 
@@ -651,8 +645,6 @@ void SEditorSettings::Save()
     SaveValue("Settings\\ObjectColors", "GeometryAlpha", objectColorSettings.fGeomAlpha);
     SaveValue("Settings\\ObjectColors", "ChildGeometryAlpha", objectColorSettings.fChildGeomAlpha);
 
-    SaveValue("Settings", "ForceSkyUpdate", gSettings.bForceSkyUpdate);
-
     //////////////////////////////////////////////////////////////////////////
     // Smart file open settings
     //////////////////////////////////////////////////////////////////////////
@@ -747,7 +739,6 @@ void SEditorSettings::Load()
 
 
     LoadValue("Settings", "TemporaryDirectory", strStandardTempDirectory);
-    LoadValue("Settings", "EditorEnv", strEditorEnv);
 
     int consoleBackgroundColorThemeInt = (int)consoleBackgroundColorTheme;
     LoadValue("Settings", "ConsoleBackgroundColorThemeV2", consoleBackgroundColorThemeInt);
@@ -760,7 +751,7 @@ void SEditorSettings::Load()
     LoadValue("Settings", "ShowTimeInConsole", bShowTimeInConsole);
 
     LoadValue("Settings", "EnableSceneInspector", enableSceneInspector);
-    
+
     //////////////////////////////////////////////////////////////////////////
     // Viewport Settings.
     //////////////////////////////////////////////////////////////////////////
@@ -877,8 +868,6 @@ void SEditorSettings::Load()
     LoadValue("Settings\\ObjectColors", "SolidBrushGeometryHighlightColor", objectColorSettings.solidBrushGeometryColor);
     LoadValue("Settings\\ObjectColors", "GeometryAlpha", objectColorSettings.fGeomAlpha);
     LoadValue("Settings\\ObjectColors", "ChildGeometryAlpha", objectColorSettings.fChildGeomAlpha);
-
-    LoadValue("Settings", "ForceSkyUpdate", gSettings.bForceSkyUpdate);
 
     //////////////////////////////////////////////////////////////////////////
     // Smart file open settings

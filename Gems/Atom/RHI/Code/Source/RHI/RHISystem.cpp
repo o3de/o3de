@@ -60,7 +60,7 @@ namespace AZ
                 AZ_Assert(false, "RHISystem", "Unable to initialize RHI! \n");
                 return;
             }
-            
+
             m_drawListTagRegistry = RHI::DrawListTagRegistry::Create();
             m_pipelineStateCache = RHI::PipelineStateCache::Create(*m_device);
 
@@ -199,11 +199,13 @@ namespace AZ
             m_frameScheduler.Shutdown();
 
             m_platformLimitsDescriptor = nullptr;
-            m_drawListTagRegistry = nullptr;
             m_pipelineStateCache = nullptr;
-            m_device->PreShutdown();
-            AZ_Assert(m_device->use_count()==1, "The ref count for Device is %i but it should be 1 here to ensure all the resources are released", m_device->use_count());
-            m_device = nullptr;
+            if (m_device)
+            {            
+                m_device->PreShutdown();
+                AZ_Assert(m_device->use_count()==1, "The ref count for Device is %i but it should be 1 here to ensure all the resources are released", m_device->use_count());
+                m_device = nullptr;
+            }
 
             m_cpuProfiler.Shutdown();
         }
@@ -288,5 +290,9 @@ namespace AZ
             return m_platformLimitsDescriptor;
         }
 
+        void RHISystem::QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable)
+        {
+            m_frameScheduler.QueueRayTracingShaderTableForBuild(rayTracingShaderTable);
+        }
     } //namespace RPI
 } //namespace AZ

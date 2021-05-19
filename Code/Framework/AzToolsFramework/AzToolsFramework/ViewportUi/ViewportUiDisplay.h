@@ -13,7 +13,7 @@
 #pragma once
 
 #include <AzToolsFramework/ViewportUi/Button.h>
-#include <AzToolsFramework/ViewportUi/Cluster.h>
+#include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/TextField.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiDisplayLayout.h>
@@ -56,10 +56,16 @@ namespace AzToolsFramework::ViewportUi::Internal
         ViewportUiDisplay(QWidget* parent, QWidget* renderOverlay);
         ~ViewportUiDisplay();
 
-        void AddCluster(AZStd::shared_ptr<Cluster> cluster);
+        void AddCluster(AZStd::shared_ptr<ButtonGroup> buttonGroup, Alignment align);
         void AddClusterButton(ViewportUiElementId clusterId, Button* button);
         void RemoveClusterButton(ViewportUiElementId clusterId, ButtonId buttonId);
         void UpdateCluster(const ViewportUiElementId clusterId);
+
+        void AddSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup, Alignment align);
+        void AddSwitcherButton(ViewportUiElementId switcherId, Button* button);
+        void RemoveSwitcherButton(ViewportUiElementId switcherId, ButtonId buttonId);
+        void UpdateSwitcher(ViewportUiElementId switcherId);
+        void SetSwitcherActiveButton(ViewportUiElementId switcherId, ButtonId buttonId);
 
         void AddTextField(AZStd::shared_ptr<TextField> textField);
         void UpdateTextField(ViewportUiElementId textFieldId);

@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C6321601
 # Test Case Title : Check that very high values of direction axes of forces do not throw error
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/6321601
+
 
 
 # fmt: off
@@ -239,7 +239,7 @@ def C6321601_Force_HighValuesDirectionAxes():
         force_notification_handler.add_callback("OnCalculateNetForce", on_calc_net_force)
 
         # Wait for 3 secs, because there is a known bug identified and filed in
-        # JIRA https://jira.agscollab.com/browse/LY-107677
+        # JIRA LY-107677
         # The error "[Error] Huge object being added to a COctreeNode, name: 'MeshComponentRenderNode', objBox:"
         # will show (if occured) in about 3 sec into the game mode.
         helper.wait_for_condition(has_physx_error, 3.0)

@@ -90,9 +90,9 @@ namespace AZ
             AddDrawPacket(drawPacket, depth);
         }
 
-        void View::AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemKeyPair& drawItemKeyPair)
+        void View::AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties)
         {
-            m_drawListContext.AddDrawItem(drawListTag, drawItemKeyPair);
+            m_drawListContext.AddDrawItem(drawListTag, drawItemProperties);
         }
 
         void View::SetWorldToViewMatrix(const AZ::Matrix4x4& worldToView)
@@ -104,7 +104,19 @@ namespace AZ
             m_worldToClipMatrix = m_viewToClipMatrix * m_worldToViewMatrix;
             m_worldToClipMatrixChanged = true;
 
+            m_onWorldToViewMatrixChange.Signal(m_worldToViewMatrix);
+            m_onWorldToClipMatrixChange.Signal(m_worldToClipMatrix);
+
             InvalidateSrg();
+        }
+
+        AZ::Transform View::GetCameraTransform() const
+        {
+            static const Quaternion yUpToZUp = Quaternion::CreateRotationX(-AZ::Constants::HalfPi);
+            return AZ::Transform::CreateFromQuaternionAndTranslation(
+                Quaternion::CreateFromMatrix4x4(m_viewToWorldMatrix) * yUpToZUp,
+                m_viewToWorldMatrix.GetTranslation()
+            ).GetOrthogonalized();
         }
 
         void View::SetCameraTransform(const AZ::Matrix3x4& cameraTransform)
@@ -115,7 +127,7 @@ namespace AZ
             // is in a Z-up world and an identity matrix means that it faces along the positive-Y axis and Z is up.
             // An identity view matrix on the other hand looks along the negative Z-axis.
             // So we adjust for this by rotating the camera world matrix by 90 degrees around the X axis.
-            AZ::Matrix3x4 zUpToYUp = AZ::Matrix3x4::CreateRotationX(AZ::Constants::HalfPi);
+            static AZ::Matrix3x4 zUpToYUp = AZ::Matrix3x4::CreateRotationX(AZ::Constants::HalfPi);
             AZ::Matrix3x4 yUpWorld = cameraTransform * zUpToYUp;
 
             float viewToWorldMatrixRaw[16] = {
@@ -131,6 +143,9 @@ namespace AZ
             m_worldToClipMatrix = m_viewToClipMatrix * m_worldToViewMatrix;
             m_clipToWorldMatrix = m_viewToWorldMatrix * m_clipToViewMatrix;
             m_worldToClipMatrixChanged = true;
+
+            m_onWorldToViewMatrixChange.Signal(m_worldToViewMatrix);
+            m_onWorldToClipMatrixChange.Signal(m_worldToClipMatrix);
 
             InvalidateSrg();
         }        
@@ -165,6 +180,8 @@ namespace AZ
             m_unprojectionConstants.SetY(float(-2.0 * tanHalfFovY));
             m_unprojectionConstants.SetZ(float(-tanHalfFovX));
             m_unprojectionConstants.SetW(float(tanHalfFovY));
+
+            m_onWorldToClipMatrixChange.Signal(m_worldToClipMatrix);
 
             InvalidateSrg();
         }
@@ -223,6 +240,16 @@ namespace AZ
         {
             const Pass* passWithDrawListTag = (*m_passesByDrawList)[tag];
             passWithDrawListTag->SortDrawList(drawList);
+        }
+
+        void View::ConnectWorldToViewMatrixChangedHandler(View::MatrixChangedEvent::Handler& handler)
+        {
+            handler.Connect(m_onWorldToViewMatrixChange);
+        }
+
+        void View::ConnectWorldToClipMatrixChangedHandler(View::MatrixChangedEvent::Handler& handler)
+        {
+            handler.Connect(m_onWorldToClipMatrixChange);
         }
 
         // [GFX TODO] This function needs unit tests and might need to be reworked 

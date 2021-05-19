@@ -21,7 +21,6 @@
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 
 // Component descriptors
-#include "Animation/AttachmentComponent.h"
 #include "Audio/AudioAreaEnvironmentComponent.h"
 #include "Audio/AudioEnvironmentComponent.h"
 #include "Audio/AudioListenerComponent.h"
@@ -33,14 +32,6 @@
 #include "Audio/AudioSystemComponent.h"
 #include "Audio/AudioTriggerComponent.h"
 #include "Bundling/BundlingSystemComponent.h"
-#include "Rendering/DecalComponent.h"
-#include "Rendering/StereoRendererComponent.h"
-#include "Rendering/LensFlareComponent.h"
-#include "Rendering/LightComponent.h"
-#include "Rendering/HighQualityShadowComponent.h"
-#include "Rendering/MeshComponent.h"
-#include "Rendering/FogVolumeComponent.h"
-#include "Rendering/GeomCacheComponent.h"
 #include "Ai/NavigationComponent.h"
 #include "Scripting/TagComponent.h"
 #include "Scripting/SimpleStateComponent.h"
@@ -72,19 +63,12 @@
 #include "Unhandled/UI/FontAssetTypeInfo.h"
 #include "Unhandled/UI/UICanvasAssetTypeInfo.h"
 
-#include <LoadScreenComponent.h>
-
 // Asset types
 #include <AzCore/Slice/SliceAsset.h>
 #include <AzCore/Script/ScriptAsset.h>
 #include <LmbrCentral/Rendering/MaterialAsset.h>
-#include <LmbrCentral/Rendering/LensFlareAsset.h>
 #include <LmbrCentral/Rendering/MeshAsset.h>
 #include <LmbrCentral/Rendering/MaterialHandle.h>
-
-// Asset handlers
-#include <Rendering/LensFlareAssetHandler.h>
-#include <Rendering/MeshAssetHandler.h>
 
 // Scriptable Ebus Registration
 #include "Events/ReflectScriptableEvents.h"
@@ -100,9 +84,6 @@
 #include "Shape/CompoundShapeComponent.h"
 #include "Shape/SplineComponent.h"
 #include "Shape/PolygonPrismShapeComponent.h"
-
-// Cry interfaces.
-#include <I3DEngine.h>
 
 namespace LmbrCentral
 {
@@ -203,7 +184,6 @@ namespace LmbrCentral
         : AZ::Module()
     {
         m_descriptors.insert(m_descriptors.end(), {
-            AttachmentComponent::CreateDescriptor(),
             AudioAreaEnvironmentComponent::CreateDescriptor(),
             AudioEnvironmentComponent::CreateDescriptor(),
             AudioListenerComponent::CreateDescriptor(),
@@ -215,14 +195,9 @@ namespace LmbrCentral
             AudioSystemComponent::CreateDescriptor(),
             AudioTriggerComponent::CreateDescriptor(),
             BundlingSystemComponent::CreateDescriptor(),
-            DecalComponent::CreateDescriptor(),
-            LensFlareComponent::CreateDescriptor(),
-            LightComponent::CreateDescriptor(),
             LmbrCentralAllocatorComponent::CreateDescriptor(),
             LmbrCentralAssetBuilderAllocatorComponent::CreateDescriptor(),
             LmbrCentralSystemComponent::CreateDescriptor(),
-            HighQualityShadowComponent::CreateDescriptor(),
-            MeshComponent::CreateDescriptor(),
             NavigationComponent::CreateDescriptor(),
             SimpleStateComponent::CreateDescriptor(),
             SpawnerComponent::CreateDescriptor(),
@@ -238,12 +213,9 @@ namespace LmbrCentral
             CompoundShapeComponent::CreateDescriptor(),
             SplineComponent::CreateDescriptor(),
             PolygonPrismShapeComponent::CreateDescriptor(),
-            StereoRendererComponent::CreateDescriptor(),
             NavigationSystemComponent::CreateDescriptor(),
             GeometrySystemComponent::CreateDescriptor(),
-            FogVolumeComponent::CreateDescriptor(),
             RandomTimedSpawnerComponent::CreateDescriptor(),
-            GeometryCacheComponent::CreateDescriptor(),
             SphereShapeDebugDisplayComponent::CreateDescriptor(),
             DiskShapeDebugDisplayComponent::CreateDescriptor(),
             BoxShapeDebugDisplayComponent::CreateDescriptor(),
@@ -277,7 +249,6 @@ namespace LmbrCentral
                    azrtti_typeid<LmbrCentralAllocatorComponent>(),
                    azrtti_typeid<LmbrCentralAssetBuilderAllocatorComponent>(),
                    azrtti_typeid<LmbrCentralSystemComponent>(),
-                   azrtti_typeid<StereoRendererComponent>(),
                    azrtti_typeid<NavigationSystemComponent>(),
                    azrtti_typeid<GeometrySystemComponent>(),
                    azrtti_typeid<AudioSystemComponent>(),
@@ -346,13 +317,6 @@ namespace LmbrCentral
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                 ;
             }
-
-            MaterialHandle::Reflect(serializeContext);
-        }
-
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            MaterialHandle::Reflect(behaviorContext);
         }
 
         ReflectScriptableEvents::Reflect(context);
@@ -396,29 +360,15 @@ namespace LmbrCentral
         // Register asset handlers. Requires "AssetDatabaseService"
         AZ_Assert(AZ::Data::AssetManager::IsReady(), "Asset manager isn't ready!");
 
-        auto lensFlareAssetHandler = aznew LensFlareAssetHandler;
-        lensFlareAssetHandler->Register(); // registers self with AssetManager
-        m_assetHandlers.emplace_back(lensFlareAssetHandler);
-
-        auto meshAssetHandler = aznew MeshAssetHandler();
-        meshAssetHandler->Register(); // registers self with AssetManager
-        m_assetHandlers.emplace_back(meshAssetHandler);
-
-        auto geomCacheAssetHandler = aznew GeomCacheAssetHandler();
-        geomCacheAssetHandler->Register(); // registers self with AssetManager
-        m_assetHandlers.emplace_back(geomCacheAssetHandler);
-
         // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
         auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler();
         if (assetCatalog)
         {
             assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid());
-            assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<LensFlareAsset>::Uuid());
             assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<MaterialAsset>::Uuid());
             assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<DccMaterialAsset>::Uuid());
             assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<MeshAsset>::Uuid());
             assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<CharacterDefinitionAsset>::Uuid());
-            assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<GeomCacheAsset>::Uuid());
 
             assetCatalog->AddExtension("cgf");
             assetCatalog->AddExtension("chr");
@@ -517,20 +467,6 @@ namespace LmbrCentral
         m_allocatorShutdowns.clear();
     }
 
-    void LmbrCentralSystemComponent::OnAssetEventsDispatchEnd()
-    {
-        AZ_Assert((!gEnv) || (gEnv->mMainThreadId == CryGetCurrentThreadId()), "OnAssetEventsDispatchEnd from a non-main thread - the AssetBus should only be called from the main thread!");
-
-        // Pump deferred engine loading events.
-        if (gEnv && gEnv->mMainThreadId == CryGetCurrentThreadId())
-        {
-            if (gEnv->p3DEngine)
-            {
-                gEnv->p3DEngine->ProcessAsyncStaticObjectLoadRequests();
-            }
-        }
-    }
-
     void LmbrCentralSystemComponent::OnCrySystemPreInitialize([[maybe_unused]] ISystem& system, [[maybe_unused]] const SSystemInitParams& systemInitParams)
     {
         EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, StartMonitoringAssets);
@@ -543,8 +479,6 @@ namespace LmbrCentral
         // When module is linked statically, we'll share the application's gEnv pointer.
         gEnv = system.GetGlobalEnvironment();
 #endif
-
-        REGISTER_INT(s_meshAssetHandler_AsyncCvar, 1, 0, "Enables asynchronous loading of legacy mesh formats");
 
         // Enable catalog now that application's asset root is set.
         if (system.GetGlobalEnvironment()->IsEditor())
@@ -562,11 +496,6 @@ namespace LmbrCentral
 
     void LmbrCentralSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)
     {
-        if (gEnv->pConsole)
-        {
-            gEnv->pConsole->UnregisterVariable(s_meshAssetHandler_AsyncCvar, true);
-        }
-
         EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, StopMonitoringAssets);
 
 #if !defined(AZ_MONOLITHIC_BUILD)

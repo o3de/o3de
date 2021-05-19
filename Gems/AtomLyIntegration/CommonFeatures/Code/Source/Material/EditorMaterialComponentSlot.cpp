@@ -98,7 +98,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::DefaultAsset, &EditorMaterialComponentSlot::GetDefaultAssetId)
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &EditorMaterialComponentSlot::GetLabel)
                             ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, true)
-                            ->Attribute("ThumbnailWithDropDown", &EditorMaterialComponentSlot::OpenPopupMenu)
+                            ->Attribute("ThumbnailCallback", &EditorMaterialComponentSlot::OpenPopupMenu)
                         ;
                 }
             }
@@ -269,7 +269,8 @@ namespace AZ
 
             QAction* action = nullptr;
 
-            menu.addAction("Open Material Editor", [this]() { EditorMaterialSystemComponentRequestBus::Broadcast(&EditorMaterialSystemComponentRequestBus::Events::OpenInMaterialEditor, ""); });
+            action = menu.addAction("Open Material Editor...", [this]() { EditorMaterialSystemComponentRequestBus::Broadcast(&EditorMaterialSystemComponentRequestBus::Events::OpenInMaterialEditor, ""); });
+            action->setVisible(!m_materialAsset.GetId().IsValid());
 
             action = menu.addAction("Clear", [this]() { Clear(); });
             action->setEnabled(m_materialAsset.GetId().IsValid() || !m_propertyOverrides.empty() || !m_matModUvOverrides.empty());

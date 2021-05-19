@@ -34,6 +34,7 @@
 #include <Atom/Feature/PostProcessing/PostProcessingConstants.h>
 #include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
 #include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h>
+#include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 #include <Atom/Component/DebugCamera/NoClipControllerComponent.h>
 
 #include <Atom/Document/MaterialDocumentRequestBus.h>
@@ -41,6 +42,7 @@
 #include <Atom/Feature/Utils/ModelPreset.h>
 #include <Atom/Viewport/MaterialViewportRequestBus.h>
 #include <Atom/Viewport/PerformanceMonitorRequestBus.h>
+#include <Atom/Viewport/MaterialViewportSettings.h>
 
 #include <AtomLyIntegration/CommonFeatures/Grid/GridComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/Grid/GridComponentConfig.h>
@@ -89,10 +91,13 @@ namespace MaterialEditor
         m_scene->SetShaderResourceGroupCallback(callback);
 
         // Bind m_defaultScene to the GameEntityContext's AzFramework::Scene
-        AZStd::vector<AzFramework::Scene*> scenes;
-        AzFramework::SceneSystemRequestBus::BroadcastResult(scenes, &AzFramework::SceneSystemRequests::GetAllScenes);
-        AZ_Assert(scenes.size() > 0, "Error: Scenes missing during system component initialization"); // This should never happen unless scene creation has changed.
-        scenes.at(0)->SetSubsystem(m_scene.get());
+        auto sceneSystem = AzFramework::SceneSystemInterface::Get();
+        AZ_Assert(sceneSystem, "MaterialViewportRenderer was unable to get the scene system during construction.");
+        AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
+
+        // This should never happen unless scene creation has changed.
+        AZ_Assert(mainScene, "Main scenes missing during system component initialization");
+        mainScene->SetSubsystem(m_scene);
 
         // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
         AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(m_defaultPipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
@@ -136,7 +141,6 @@ namespace MaterialEditor
         m_renderPipeline->SetDefaultViewFromEntity(m_cameraEntity->GetId());
 
         // Configure tone mapper
-
         AzFramework::EntityContextRequestBus::EventResult(m_postProcessEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "postProcessEntity");
         AZ_Assert(m_postProcessEntity != nullptr, "Failed to create post process entity.");
 
@@ -146,17 +150,17 @@ namespace MaterialEditor
         m_postProcessEntity->Activate();
 
         // Init directional light processor
-
         m_directionalLightFeatureProcessor = m_scene->GetFeatureProcessor<AZ::Render::DirectionalLightFeatureProcessorInterface>();
 
-        // Init Skybox
+        // Init display mapper processor
+        m_displayMapperFeatureProcessor = m_scene->GetFeatureProcessor<Render::DisplayMapperFeatureProcessorInterface>();
 
+        // Init Skybox
         m_skyboxFeatureProcessor = m_scene->GetFeatureProcessor<AZ::Render::SkyBoxFeatureProcessorInterface>();
         m_skyboxFeatureProcessor->Enable(true);
         m_skyboxFeatureProcessor->SetSkyboxMode(AZ::Render::SkyBoxMode::Cubemap);
 
         // Create IBL
-
         AzFramework::EntityContextRequestBus::EventResult(m_iblEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "IblEntity");
         AZ_Assert(m_iblEntity != nullptr, "Failed to create ibl entity.");
 
@@ -172,8 +176,8 @@ namespace MaterialEditor
         m_modelEntity->CreateComponent(AZ::Render::MaterialComponentTypeId);
         m_modelEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
         m_modelEntity->Activate();
-        // Create shadow catcher
 
+        // Create shadow catcher
         AzFramework::EntityContextRequestBus::EventResult(m_shadowCatcherEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "ViewportShadowCatcher");
         AZ_Assert(m_shadowCatcherEntity != nullptr, "Failed to create shadow catcher entity.");
         m_shadowCatcherEntity->CreateComponent(AZ::Render::MeshComponentTypeId);
@@ -205,7 +209,6 @@ namespace MaterialEditor
         }
 
         // Create grid
-
         AzFramework::EntityContextRequestBus::EventResult(m_gridEntity, entityContextId, &AzFramework::EntityContextRequestBus::Events::CreateEntity, "ViewportGrid");
         AZ_Assert(m_gridEntity != nullptr, "Failed to create grid entity.");
 
@@ -232,13 +235,23 @@ namespace MaterialEditor
         MaterialViewportRequestBus::BroadcastResult(modelPreset, &MaterialViewportRequestBus::Events::GetModelPresetSelection);
         OnModelPresetSelected(modelPreset);
 
+        m_viewportController->Init(m_cameraEntity->GetId(), m_modelEntity->GetId(), m_iblEntity->GetId());
+
+        // Apply user settinngs restored since last run
+        AZStd::intrusive_ptr<MaterialViewportSettings> viewportSettings =
+            AZ::UserSettings::CreateFind<MaterialViewportSettings>(AZ::Crc32("MaterialViewportSettings"), AZ::UserSettings::CT_GLOBAL);
+
+        OnGridEnabledChanged(viewportSettings->m_enableGrid);
+        OnShadowCatcherEnabledChanged(viewportSettings->m_enableShadowCatcher);
+        OnAlternateSkyboxEnabledChanged(viewportSettings->m_enableAlternateSkybox);
+        OnFieldOfViewChanged(viewportSettings->m_fieldOfView);
+        OnDisplayMapperOperationTypeChanged(viewportSettings->m_displayMapperOperationType);
+
         MaterialDocumentNotificationBus::Handler::BusConnect();
         MaterialViewportNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
         AZ::TransformNotificationBus::MultiHandler::BusConnect(m_cameraEntity->GetId());
         AzFramework::WindowSystemRequestBus::Handler::BusConnect();
-
-        m_viewportController->Init(m_cameraEntity->GetId(), m_modelEntity->GetId(), m_iblEntity->GetId());
     }
 
     MaterialViewportRenderer::~MaterialViewportRenderer()
@@ -276,6 +289,13 @@ namespace MaterialEditor
             m_directionalLightFeatureProcessor->ReleaseLight(handle);
         }
         m_lightHandles.clear();
+
+        auto sceneSystem = AzFramework::SceneSystemInterface::Get();
+        AZ_Assert(sceneSystem, "MaterialViewportRenderer was unable to get the scene system during destruction.");
+        AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
+        // This should never happen unless scene creation has changed.
+        AZ_Assert(mainScene, "Main scenes missing during system component destruction");
+        mainScene->UnsetSubsystem(m_scene);
 
         m_swapChainPass = nullptr;
         AZ::RPI::RPISystemInterface::Get()->UnregisterScene(m_scene);
@@ -414,6 +434,13 @@ namespace MaterialEditor
     void MaterialViewportRenderer::OnFieldOfViewChanged(float fieldOfView)
     {
         MaterialEditorViewportInputControllerRequestBus::Broadcast(&MaterialEditorViewportInputControllerRequestBus::Handler::SetFieldOfView, fieldOfView);
+    }
+
+    void MaterialViewportRenderer::OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType)
+    {
+        AZ::Render::DisplayMapperConfigurationDescriptor desc;
+        desc.m_operationType = operationType;
+        m_displayMapperFeatureProcessor->RegisterDisplayMapperConfiguration(desc);
     }
 
     void MaterialViewportRenderer::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)

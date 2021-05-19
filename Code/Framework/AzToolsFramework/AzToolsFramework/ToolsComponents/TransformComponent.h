@@ -23,6 +23,7 @@
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
+#include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 
 #include "EditorComponentBase.h"
 #include "TransformComponentBus.h"
@@ -217,6 +218,10 @@ namespace AzToolsFramework
 
             void CheckApplyCachedWorldTransform(const AZ::Transform& parentWorld);
 
+            AZ::Component* FindPresentOrPendingComponent(AZ::Uuid componentUuid);
+            bool IsAddNonUniformScaleButtonReadOnly();
+            AZ::Crc32 OnAddNonUniformScaleButtonPressed();
+
             // Drives transform behavior when parent activates. See AZ::TransformConfig::ParentActivationTransformMode for details.
             AZ::TransformConfig::ParentActivationTransformMode m_parentActivationTransformMode;
 
@@ -248,6 +253,10 @@ namespace AzToolsFramework
             bool m_localTransformDirty = true;
             bool m_worldTransformDirty = true;
             bool m_isStatic = false;
+
+            // This is a workaround for a bug which causes the button to appear with incorrect placement if a UI
+            // element is used rather than a data element.
+            bool m_addNonUniformScaleButton = false;
 
             // Deprecated
             AZ::InterpolationMode m_interpolatePosition;

@@ -11,10 +11,12 @@
 */
 
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzFramework/Visibility/EntityBoundsUnionBus.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Quaternion.h>
 
@@ -597,9 +599,8 @@ namespace AzFramework
             parentId = handler->GetParentId();
         }
 #endif
-
-        AZ::Entity* parentEntity = nullptr;
-        EBUS_EVENT_RESULT(parentEntity, AZ::ComponentApplicationBus, FindEntity, parentEntityId);
+        AZ::ComponentApplicationRequests* componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+        AZ::Entity* parentEntity = (componentApplication != nullptr) ? componentApplication->FindEntity(parentEntityId) : nullptr;
         AZ_Assert(parentEntity, "We expect to have a parent entity associated with the provided parent's entity Id.");
         if (parentEntity)
         {
@@ -648,8 +649,8 @@ namespace AzFramework
         m_parentId = parentId;
         if (m_parentId.IsValid())
         {
-            AZ::Entity* parentEntity = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(parentEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_parentId);
+            AZ::ComponentApplicationRequests* componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
+            AZ::Entity* parentEntity = (componentApplication != nullptr) ? componentApplication->FindEntity(m_parentId) : nullptr;
             m_parentActive = parentEntity && (parentEntity->GetState() == AZ::Entity::State::Active);
 
             m_onNewParentKeepWorldTM = isKeepWorldTM;
@@ -736,6 +737,12 @@ namespace AzFramework
 
         EBUS_EVENT_PTR(m_notificationBus, AZ::TransformNotificationBus, OnTransformChanged, m_localTM, m_worldTM);
         m_transformChangedEvent.Signal(m_localTM, m_worldTM);
+
+        AzFramework::IEntityBoundsUnion* boundsUnion = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get();
+        if (boundsUnion != nullptr)
+        {
+            boundsUnion->OnTransformUpdated(GetEntity());
+        }
     }
 
     void TransformComponent::ComputeWorldTM()
@@ -775,15 +782,15 @@ namespace AzFramework
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);
         if (serializeContext)
         {
-            serializeContext->Class<TransformComponent, AZ::Component, NetBindable>()
-                ->Version(4, &TransformComponentVersionConverter)
+            serializeContext->ClassDeprecate("NetBindable", "{80206665-D429-4703-B42E-94434F82F381}");
+
+            serializeContext->Class<TransformComponent, AZ::Component>()
+                ->Version(5, &TransformComponentVersionConverter)
                 ->Field("Parent", &TransformComponent::m_parentId)
                 ->Field("Transform", &TransformComponent::m_worldTM)
                 ->Field("LocalTransform", &TransformComponent::m_localTM)
                 ->Field("ParentActivationTransformMode", &TransformComponent::m_parentActivationTransformMode)
                 ->Field("IsStatic", &TransformComponent::m_isStatic)
-                ->Field("InterpolatePosition", &TransformComponent::m_interpolatePosition)
-                ->Field("InterpolateRotation", &TransformComponent::m_interpolateRotation)
                 ;
         }
 

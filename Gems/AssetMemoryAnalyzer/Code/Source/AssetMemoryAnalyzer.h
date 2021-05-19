@@ -12,7 +12,7 @@
 #pragma once
 
 #include <AzCore/Debug/AssetTrackingTypes.h>
-#include <Common/Memory/VRAMDriller.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AssetMemoryAnalyzer
 {
@@ -48,13 +48,6 @@ namespace AssetMemoryAnalyzer
                     AZ::IAllocator* m_allocator;
                 }
                 m_heapInfo;
-
-                struct
-                {
-                    Render::Debug::VRAMAllocationCategory m_category;
-                    Render::Debug::VRAMAllocationSubcategory m_subcategories;
-                }
-                m_vramInfo;
             };
 
             CodePoint* m_codePoint;

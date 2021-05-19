@@ -40,10 +40,10 @@ namespace PhysX
 
         BaseColliderComponent() = default;
 
-        void SetShapeConfigurationList(const Physics::ShapeConfigurationList& shapeConfigList);
+        void SetShapeConfigurationList(const AzPhysics::ShapeColliderPairList& shapeConfigList);
 
         // ColliderComponentRequestBus
-        Physics::ShapeConfigurationList GetShapeConfigurations() override;
+        AzPhysics::ShapeColliderPairList GetShapeConfigurations() override;
         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> GetShapes() override;
 
         // TransformNotificationsBus
@@ -100,10 +100,9 @@ namespace PhysX
             required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
         }
 
-        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+        static void GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            // Not compatible with cry engine colliders
-            incompatible.push_back(AZ_CRC("ColliderService", 0x902d4e93));
+            
         }
 
         // AZ::Component
@@ -115,7 +114,7 @@ namespace PhysX
         virtual void UpdateScaleForShapeConfigs();
 
         ShapeInfoCache m_shapeInfoCache;
-        Physics::ShapeConfigurationList m_shapeConfigList;
+        AzPhysics::ShapeColliderPairList m_shapeConfigList;
     private:
         bool InitShapes();
         bool IsMeshCollider() const;

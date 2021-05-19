@@ -190,7 +190,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     struct ReplicaMgrDesc
     {
-        // Single-master roles that replica managers can have
+        // Single-primary roles that replica managers can have
         enum Roles
         {
             Role_SyncHost = 1 << 0,
@@ -421,13 +421,13 @@ namespace GridMate
         size_t ReleaseIdBlock(PeerId requestor);
 
         void _Unmarshal(ReadBuffer& rb, ReplicaPeer* from);
-        void RegisterReplica(const ReplicaPtr& pReplica, bool isMaster, ReplicaContext& rc);
+        void RegisterReplica(const ReplicaPtr& pReplica, bool isPrimary, ReplicaContext& rc);
         void UnregisterReplica(const ReplicaPtr& replica, const ReplicaContext& rc);
         void RemoveReplicaFromDownstream(const ReplicaPtr& replica, const ReplicaContext& rc);
         void MigrateReplica(ReplicaPtr replica, PeerId newOwnerId);
         void AnnounceReplicaMigrated(ReplicaId replicaId, PeerId newOwnerId);
         void OnReplicaMigrated(ReplicaPtr replica, bool isOwner, const ReplicaContext& rc);
-        void ChangeReplicaOwnership(ReplicaPtr replica, const ReplicaContext& rc, bool isMaster);
+        void ChangeReplicaOwnership(ReplicaPtr replica, const ReplicaContext& rc, bool isPrimary);
         void AckUpstreamSuspended(ReplicaId replicaId, PeerId sendTo, AZ::u32 requestTime);
         void OnAckUpstreamSuspended(ReplicaId replicaId, PeerId from, AZ::u32 requestTime);
         void AckDownstream(ReplicaId replicaId, PeerId sendTo, AZ::u32 requestTime);
@@ -595,7 +595,7 @@ namespace GridMate
          * Replicas
          */
         virtual ReplicaPtr FindReplica(ReplicaId replicaId);
-        ReplicaId AddMaster(const ReplicaPtr& pMaster);
+        ReplicaId AddPrimary(const ReplicaPtr& pPrimary);
 
         /*
         * Tasks

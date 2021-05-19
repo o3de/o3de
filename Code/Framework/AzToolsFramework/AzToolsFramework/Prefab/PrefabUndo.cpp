@@ -113,7 +113,7 @@ namespace AzToolsFramework
             , m_sourceId(InvalidTemplateId)
             , m_instanceAlias("")
             , m_linkId(InvalidLinkId)
-            , m_linkDom(PrefabDom())
+            , m_linkPatches(PrefabDom())
             , m_linkStatus(LinkStatus::LINKSTATUS)
         {
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
@@ -124,7 +124,7 @@ namespace AzToolsFramework
             const TemplateId& targetId,
             const TemplateId& sourceId,
             const InstanceAlias& instanceAlias,
-            PrefabDomReference linkDom,
+            PrefabDom linkPatches,
             const LinkId linkId)
         {
             m_targetId = targetId;
@@ -132,10 +132,7 @@ namespace AzToolsFramework
             m_instanceAlias = instanceAlias;
             m_linkId = linkId;
 
-            if (linkDom.has_value())
-            {
-                m_linkDom = AZStd::move(linkDom->get());
-            }
+            m_linkPatches = AZStd::move(linkPatches);
 
             //if linkId is invalid, set as ADD
             if (m_linkId == InvalidLinkId)
@@ -193,7 +190,7 @@ namespace AzToolsFramework
 
         void PrefabUndoInstanceLink::AddLink()
         {
-            m_linkId = m_prefabSystemComponentInterface->CreateLink(m_targetId, m_sourceId, m_instanceAlias, m_linkDom, m_linkId);
+            m_linkId = m_prefabSystemComponentInterface->CreateLink(m_targetId, m_sourceId, m_instanceAlias, m_linkPatches, m_linkId);
         }
 
         void PrefabUndoInstanceLink::RemoveLink()
@@ -228,7 +225,7 @@ namespace AzToolsFramework
 
             if (link.has_value())
             {
-                m_linkDomPrevious = AZStd::move(link->get().GetLinkDom());
+                m_linkDomPrevious.CopyFrom(link->get().GetLinkDom(), m_linkDomPrevious.GetAllocator());
             }
 
             //get source templateDom
@@ -275,7 +272,7 @@ namespace AzToolsFramework
             if (patchesIter == m_linkDomNext.MemberEnd())
             {
                 m_linkDomNext.AddMember(
-                    rapidjson::GenericStringRef(PrefabDomUtils::PatchesName), patchLinkCopy, m_linkDomNext.GetAllocator());
+                    rapidjson::GenericStringRef(PrefabDomUtils::PatchesName), AZStd::move(patchLinkCopy), m_linkDomNext.GetAllocator());
             }
             else
             {
@@ -303,9 +300,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            PrefabDom moveLink;
-            moveLink.CopyFrom(linkDom, linkDom.GetAllocator());
-            link->get().GetLinkDom() = AZStd::move(moveLink);
+            link->get().SetLinkDom(linkDom);
 
             //propagate the link changes
             link->get().UpdateTarget();

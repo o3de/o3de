@@ -36,6 +36,9 @@ namespace NvCloth
     AZ_CVAR(float, cloth_DistanceToTeleport, 0.5f, nullptr, AZ::ConsoleFunctorFlags::Null,
         "The amount of meters the entity has to move in a frame to consider it a teleport for cloth.");
 
+    AZ_CVAR(float, cloth_SecondsToDelaySimulationOnActorSpawned, 0.25f, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "The amount of time in seconds the cloth simulation will be delayed to avoid sudden impulses when actors are spawned.");
+
     // Helper class to map an RPI buffer from a buffer asset view.
     template<typename T>
     class MappedBuffer
@@ -166,6 +169,13 @@ namespace NvCloth
 
         // Initialize render data
         m_renderDataBufferIndex = 0;
+        {
+            auto& renderData = GetRenderData();
+            renderData.m_particles = m_meshClothInfo.m_particles;
+            renderData.m_tangents = m_meshClothInfo.m_tangents;
+            renderData.m_bitangents = m_meshClothInfo.m_bitangents;
+            renderData.m_normals = m_meshClothInfo.m_normals;
+        }
         UpdateRenderData(m_cloth->GetParticles());
         // Copy the first initialized element to the rest of the buffer
         for (AZ::u32 i = 1; i < RenderDataBufferSize; ++i)
@@ -177,8 +187,13 @@ namespace NvCloth
         m_actorClothColliders = ActorClothColliders::Create(m_entityId);
 
         // It will return a valid instance if it's an actor with skinning data.
-        m_actorClothSkinning = ActorClothSkinning::Create(m_entityId, m_config.m_meshNode, m_cloth->GetParticles().size(), m_meshRemappedVertices);
-        m_numberOfClothSkinningUpdates = 0;
+        m_actorClothSkinning = ActorClothSkinning::Create(
+            m_entityId,
+            m_meshNodeInfo,
+            m_meshClothInfo.m_particles,
+            m_cloth->GetParticles().size(),
+            m_meshRemappedVertices);
+        m_timeClothSkinningUpdates = 0.0f;
 
         m_clothConstraints = ClothConstraints::Create(
             m_meshClothInfo.m_motionConstraints,
@@ -236,7 +251,7 @@ namespace NvCloth
 
     void ClothComponentMesh::OnPreSimulation(
         [[maybe_unused]] ClothId clothId,
-        [[maybe_unused]] float deltaTime)
+        float deltaTime)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
 
@@ -244,7 +259,7 @@ namespace NvCloth
 
         if (m_actorClothSkinning)
         {
-            UpdateSimulationSkinning();
+            UpdateSimulationSkinning(deltaTime);
 
             UpdateSimulationConstraints();
         }
@@ -326,7 +341,7 @@ namespace NvCloth
         }
     }
 
-    void ClothComponentMesh::UpdateSimulationSkinning()
+    void ClothComponentMesh::UpdateSimulationSkinning(float deltaTime)
     {
         if (m_actorClothSkinning)
         {
@@ -337,22 +352,21 @@ namespace NvCloth
             // Since component activation order is not trivial, the actor's pose might not be updated
             // immediately. Because of this cloth will receive a sudden impulse when changing from
             // T pose to animated pose. To avoid this undesired effect we will override cloth simulation during
-            // a short amount of frames.
-            const AZ::u32 numberOfTicksToDoFullSkinning = 10;
-            m_numberOfClothSkinningUpdates++;
+            // a short amount of time.
+            m_timeClothSkinningUpdates += deltaTime;
 
             // While the actor is not visible the skinned joints are not updated. Then when
             // it becomes visible the jump to the new skinned positions causes a sudden
             // impulse to cloth simulation. To avoid this undesired effect we will override cloth simulation during
-            // a short amount of frames.
+            // a short amount of time.
             m_actorClothSkinning->UpdateActorVisibility();
             if (!m_actorClothSkinning->WasActorVisible() &&
                 m_actorClothSkinning->IsActorVisible())
             {
-                m_numberOfClothSkinningUpdates = 0;
+                m_timeClothSkinningUpdates = 0.0f;
             }
 
-            if (m_numberOfClothSkinningUpdates <= numberOfTicksToDoFullSkinning)
+            if (m_timeClothSkinningUpdates <= cloth_SecondsToDelaySimulationOnActorSpawned)
             {
                 // Update skinning for all particles and apply it to cloth 
                 AZStd::vector<SimParticleFormat> particles = m_cloth->GetParticles();
@@ -392,6 +406,14 @@ namespace NvCloth
             return;
         }
 
+        auto& renderData = GetRenderData();
+
+        if (m_actorClothSkinning)
+        {
+            // Apply skinning to the non-simulated part of the mesh.
+            m_actorClothSkinning->ApplySkinningOnNonSimulatedVertices(m_meshClothInfo, renderData);
+        }
+
         // Calculate normals of the cloth particles (simplified mesh).
         AZStd::vector<AZ::Vector3> normals;
         [[maybe_unused]] bool normalsCalculated =
@@ -401,22 +423,21 @@ namespace NvCloth
         // Copy particles and normals to render data.
         // Since cloth's vertices were welded together,
         // the full mesh will result in smooth normals.
-        auto& renderData = GetRenderData();
-        renderData.m_particles.resize_no_construct(m_meshRemappedVertices.size());
-        renderData.m_normals.resize_no_construct(m_meshRemappedVertices.size());
         for (size_t index = 0; index < m_meshRemappedVertices.size(); ++index)
         {
             const int remappedIndex = m_meshRemappedVertices[index];
-            if (remappedIndex < 0)
-            {
-                // Removed particle. Assign initial values to have something valid during tangents and bitangents calculation.
-                renderData.m_particles[index] = m_meshClothInfo.m_particles[index];
-                renderData.m_normals[index] = AZ::Vector3::CreateAxisZ();
-            }
-            else
+            if (remappedIndex >= 0)
             {
                 renderData.m_particles[index] = particles[remappedIndex];
-                renderData.m_normals[index] = normals[remappedIndex];
+
+                // For static particles only use the updated normal when indicated in the configuration.
+                const bool useSimulatedClothParticleNormal =
+                    m_meshClothInfo.m_particles[index].GetW() != 0.0f ||
+                    m_config.m_updateNormalsOfStaticParticles;
+                if (useSimulatedClothParticleNormal)
+                {
+                    renderData.m_normals[index] = normals[remappedIndex];
+                }
             }
         }
 
@@ -505,8 +526,8 @@ namespace NvCloth
             }
             const AZ::RPI::ModelLodAsset::Mesh& subMesh = modelLodAsset->GetMeshes()[subMeshInfo.m_primitiveIndex];
 
-            int numVertices = subMeshInfo.m_numVertices;
-            int firstVertex = subMeshInfo.m_verticesFirstIndex;
+            const int numVertices = subMeshInfo.m_numVertices;
+            const int firstVertex = subMeshInfo.m_verticesFirstIndex;
             if (subMesh.GetVertexCount() != numVertices)
             {
                 AZ_Error("ClothComponentMesh", false,
@@ -539,12 +560,6 @@ namespace NvCloth
             for (size_t index = 0; index < numVertices; ++index)
             {
                 const int renderVertexIndex = firstVertex + index;
-
-                if (m_meshRemappedVertices[renderVertexIndex] < 0)
-                {
-                    // Removed particle from simulation
-                    continue;
-                }
 
                 const SimParticleFormat& renderParticle = renderParticles[renderVertexIndex];
                 destVerticesBuffer[index].Set(
@@ -604,10 +619,7 @@ namespace NvCloth
             m_meshClothInfo.m_particles, m_meshClothInfo.m_indices,
             meshSimplifiedParticles, meshSimplifiedIndices,
             m_meshRemappedVertices,
-            // [TODO LYN-1890]
-            // Since blend weights cannot be controlled per instance with Atom,
-            // this additional mesh optimization is not possible at the moment.
-            false /*m_config.m_removeStaticTriangles*/);
+            m_config.m_removeStaticTriangles);
         if (meshSimplifiedParticles.empty() ||
             meshSimplifiedIndices.empty())
         {

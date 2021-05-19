@@ -39,13 +39,13 @@
 									<Class name="Vector3" field="Scale" value="1.0000000 1.0000000 1.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 									<Class name="bool" field="Locked" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 								</Class>
+								<Class name="bool" field="AddNonUniformScaleButton" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 								<Class name="Transform" field="Cached World Transform" value="0.0000000 0.0000000 0.0000000 1.0000000 1.0000000 1.0000000 1.0000000 0.0000000 0.0000000 0.0000000" version="1" type="{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}"/>
 								<Class name="EntityId" field="Cached World Transform Parent" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
 									<Class name="AZ::u64" field="id" value="4294967295" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 								</Class>
 								<Class name="unsigned int" field="Parent Activation Transform Mode" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 								<Class name="bool" field="IsStatic" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-								<Class name="bool" field="Sync Enabled" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 								<Class name="unsigned int" field="InterpolatePosition" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 								<Class name="unsigned int" field="InterpolateRotation" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 							</Class>
@@ -188,6 +188,7 @@
 									<Class name="float" field="Solver Frequency" value="0.5000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 									<Class name="unsigned int" field="Acceleration Filter Iterations" value="30" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 									<Class name="bool" field="Remove Static Triangles" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+									<Class name="bool" field="Update Normals of Static Particles" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
 								</Class>
 							</Class>
 							<Class name="AZ::Render::EditorMeshComponent" field="element" version="2" type="{DCE68F6E-2E16-4CB4-A834-B6C2F900A7E9}">
@@ -200,7 +201,7 @@
 										</Class>
 										<Class name="AZ::Render::MeshComponentController" field="Controller" type="{D0F35FAC-4194-4C89-9487-D000DDB8B272}">
 											<Class name="AZ::Render::MeshComponentConfig" field="Configuration" version="1" type="{63737345-51B1-472B-9355-98F99993909B}">
-												<Class name="Asset" field="ModelAsset" value="id={23C6817F-0B79-5CAD-B861-9E6F5E55927D}:10ba54b2,type={2C7477B6-69C5-45BE-8163-BCD6A275B6D8},hint={objects/cloth/environment/cloth_locked_corners_two.azmodel},loadBehavior=0" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
+												<Class name="Asset" field="ModelAsset" value="id={23C6817F-0B79-5CAD-B861-9E6F5E55927D}:10ba54b2,type={2C7477B6-69C5-45BE-8163-BCD6A275B6D8},hint={objects/cloth/environment/cloth_locked_corners_two.azmodel},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
 												<Class name="AZ::s64" field="SortKey" value="0" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
 												<Class name="unsigned char" field="LodOverride" value="255" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
 												<Class name="bool" field="ExcludeFromReflectionCubeMaps" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
@@ -228,7 +229,7 @@
 															<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 															<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 																<Class name="AZ::Uuid" field="guid" value="{23C6817F-0B79-5CAD-B861-9E6F5E55927D}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																<Class name="unsigned int" field="subId" value="3644789410" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+																<Class name="unsigned int" field="subId" value="902256226" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 															</Class>
 														</Class>
 														<Class name="AZ::Render::MaterialAssignment" field="value2" version="1" type="{C66E5214-A24B-4722-B7F0-5991E6F8F163}">
@@ -260,7 +261,7 @@
 											<Class name="AZ::u64" field="lodIndex" value="18446744073709551615" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 											<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 												<Class name="AZ::Uuid" field="guid" value="{23C6817F-0B79-5CAD-B861-9E6F5E55927D}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-												<Class name="unsigned int" field="subId" value="3644789410" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+												<Class name="unsigned int" field="subId" value="902256226" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 											</Class>
 										</Class>
 										<Class name="Asset" field="materialAsset" value="id={A56F28DD-6082-50B6-9B44-9EF3E03E95BB}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={objects/cloth/environment/cloth_locked_corners_two.azmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
@@ -276,7 +277,7 @@
 												<Class name="AZ::u64" field="lodIndex" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 												<Class name="AssetId" field="materialAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 													<Class name="AZ::Uuid" field="guid" value="{23C6817F-0B79-5CAD-B861-9E6F5E55927D}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													<Class name="unsigned int" field="subId" value="3644789410" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+													<Class name="unsigned int" field="subId" value="902256226" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 												</Class>
 											</Class>
 											<Class name="Asset" field="materialAsset" value="id={00000000-0000-0000-0000-000000000000}:0,type={522C7BE0-501D-463E-92C6-15184A2B7AD8},hint={},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>

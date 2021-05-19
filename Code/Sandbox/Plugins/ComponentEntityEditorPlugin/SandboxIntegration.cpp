@@ -16,12 +16,15 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/numeric.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Interface/Interface.h>
@@ -30,7 +33,7 @@
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Physics/Material.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/API/AtomActiveInterface.h>
+#include <AzFramework/Visibility/BoundsBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -57,10 +60,15 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
 #include <AzToolsFramework/UI/Layer/NameConflictWarning.hxx>
+#include <AzToolsFramework/ViewportSelection/EditorHelpers.h>
 #include <MathConversion.h>
 
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+
+#include <ModernViewportCameraControllerRequestBus.h>
+
 #include "Objects/ComponentEntityObject.h"
-#include "ComponentEntityDebugPrinter.h"
 #include "ISourceControl.h"
 #include "UI/QComponentEntityEditorMainWindow.h"
 
@@ -73,11 +81,11 @@
 #include <Editor/CryEditDoc.h>
 #include <Editor/GameEngine.h>
 #include <Editor/DisplaySettings.h>
-#include <Editor/Util/CubemapUtils.h>
 #include <Editor/IconManager.h>
 #include <Editor/Settings.h>
 #include <Editor/StringDlg.h>
 #include <Editor/QtViewPaneManager.h>
+#include <Editor/EditorViewportSettings.h>
 #include <IResourceSelectorHost.h>
 #include "CryEdit.h"
 
@@ -142,7 +150,6 @@ SandboxIntegrationManager::SandboxIntegrationManager()
     , m_startedUndoRecordingNestingLevel(0)
     , m_dc(nullptr)
     , m_notificationWindowManager(new AzToolsFramework::SliceOverridesNotificationWindowManager())
-    , m_entityDebugPrinter(aznew ComponentEntityDebugPrinter())
 {
     // Required to receive events from the Cry Engine undo system
     GetIEditor()->GetUndoManager()->AddListener(this);
@@ -159,32 +166,11 @@ void SandboxIntegrationManager::Setup()
     AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
     AzToolsFramework::EditorRequests::Bus::Handler::BusConnect();
     AzToolsFramework::EditorWindowRequests::Bus::Handler::BusConnect();
-
-    // if the new viewport interaction model is enabled, then object picking is handled via
-    // EditorPickEntitySelection and SandboxIntegrationManager is not required
-    if (!IsNewViewportInteractionModelEnabled())
-    {
-        AzFramework::EntityContextId pickModeEntityContextId = GetEntityContextId();
-        if (!pickModeEntityContextId.IsNull())
-        {
-            AzToolsFramework::EditorPickModeNotificationBus::Handler::BusConnect(pickModeEntityContextId);
-        }
-    }
-
     AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
-    // turn on the this debug display request bus implementation if no other implementation is active
-    if( !(AZ::Interface<AzFramework::AtomActiveInterface>::Get() && AzFramework::DebugDisplayRequestBus::HasHandlers()))
-    {
-        m_debugDisplayBusImplementationActive = true;
-        AzFramework::DebugDisplayRequestBus::Handler::BusConnect(
-            AzToolsFramework::ViewportInteraction::g_mainViewportEntityDebugDisplayId);
-    }
 
     AzFramework::DisplayContextRequestBus::Handler::BusConnect();
-    SetupFileExtensionMap();
-    AzToolsFramework::NewViewportInteractionModelEnabledRequestBus::Handler::BusConnect();
 
     MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_FILE_SAVE_SLICE_TO_ROOT, [this]() {
         SaveSlice(false);
@@ -315,12 +301,15 @@ void SandboxIntegrationManager::OnCatalogAssetAdded(const AZ::Data::AssetId& ass
 // operation writing to shared resource is queued on main thread.
 void SandboxIntegrationManager::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo)
 {
+    bool isPrefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
     // Check to see if the removed slice asset has any instance in the level, then check if 
     // those dangling instances are directly under the root slice (not sub-slices). If yes,
     // detach them and save necessary information so they can be restored when their slice asset
     // comes back.
 
-    if (assetInfo.m_assetType == AZ::AzTypeInfo<AZ::SliceAsset>::Uuid())
+    if (!isPrefabSystemEnabled && assetInfo.m_assetType == AZ::AzTypeInfo<AZ::SliceAsset>::Uuid())
     {
         AZ::SliceComponent* rootSlice = nullptr;
         AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(rootSlice,
@@ -388,7 +377,6 @@ void SandboxIntegrationManager::GetEntitiesInSlices(
 void SandboxIntegrationManager::Teardown()
 {
     AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler::BusDisconnect();
-    AzToolsFramework::NewViewportInteractionModelEnabledRequestBus::Handler::BusDisconnect();
     AzFramework::DisplayContextRequestBus::Handler::BusDisconnect();
     if( m_debugDisplayBusImplementationActive)
     {
@@ -398,12 +386,6 @@ void SandboxIntegrationManager::Teardown()
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-
-    if (!IsNewViewportInteractionModelEnabled())
-    {
-        AzToolsFramework::EditorPickModeNotificationBus::Handler::BusDisconnect();
-    }
-
     AzToolsFramework::EditorWindowRequests::Bus::Handler::BusDisconnect();
     AzToolsFramework::EditorRequests::Bus::Handler::BusDisconnect();
     AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusDisconnect();
@@ -1243,21 +1225,14 @@ void SandboxIntegrationManager::CloneSelection(bool& handled)
     }
 }
 
-void SandboxIntegrationManager::DeleteSelectedEntities(const bool includeDescendants)
+void SandboxIntegrationManager::DeleteSelectedEntities([[maybe_unused]] const bool includeDescendants)
 {
-    if (IsNewViewportInteractionModelEnabled())
-    {
-        AzToolsFramework::EntityIdList selectedEntityIds;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-            selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+    AzToolsFramework::EntityIdList selectedEntityIds;
+    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+        selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
-        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-            &AzToolsFramework::ToolsApplicationRequests::DeleteEntitiesAndAllDescendants, selectedEntityIds);
-    }
-    else
-    {
-        CCryEditApp::instance()->DeleteSelectedEntities(includeDescendants);
-    }
+    AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+        &AzToolsFramework::ToolsApplicationRequests::DeleteEntitiesAndAllDescendants, selectedEntityIds);
 }
 
 AZ::EntityId SandboxIntegrationManager::CreateNewEntity(AZ::EntityId parentId)
@@ -1710,32 +1685,77 @@ bool CollectEntityBoundingBoxesForZoom(const AZ::EntityId& entityId, AABB& selec
 //////////////////////////////////////////////////////////////////////////
 void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::EntityIdList& entityIds)
 {
-    if (entityIds.size() == 0)
+    if (entityIds.empty())
     {
         return;
     }
 
-    AABB selectionBounds;
-    selectionBounds.Reset();
-    bool entitiesAvailableForGoTo = false;
-
-    for (const AZ::EntityId& entityId : entityIds)
+    if (SandboxEditor::UsingNewCameraSystem())
     {
-        if(CollectEntityBoundingBoxesForZoom(entityId, selectionBounds))
+        const AZ::Aabb aabb = AZStd::accumulate(
+            AZStd::begin(entityIds), AZStd::end(entityIds), AZ::Aabb::CreateNull(), [](AZ::Aabb acc, const AZ::EntityId entityId) {
+                const AZ::Aabb aabb = AzFramework::CalculateEntityWorldBoundsUnion(AzToolsFramework::GetEntityById(entityId));
+                acc.AddAabb(aabb);
+                return acc;
+            });
+
+        float radius;
+        AZ::Vector3 center;
+        aabb.GetAsSphere(center, radius);
+
+        // minimum center size is 40cm
+        const float minSelectionRadius = 0.4f;
+        const float selectionSize = AZ::GetMax(minSelectionRadius, radius);
+
+        auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+
+        const int viewCount = GetIEditor()->GetViewManager()->GetViewCount(); // legacy call
+        for (int viewIndex = 0; viewIndex < viewCount; ++viewIndex)
         {
-            entitiesAvailableForGoTo = true;
+            if (auto viewportContext = viewportContextManager->GetViewportContextById(viewIndex))
+            {
+                const AZ::Transform cameraTransform = viewportContext->GetCameraTransform();
+                const AZ::Vector3 forward = (center - cameraTransform.GetTranslation()).GetNormalized();
+
+                // move camera 25% further back than required
+                const float centerScale = 1.25f;
+                // compute new camera transform
+                const float fov = AzFramework::RetrieveFov(viewportContext->GetCameraProjectionMatrix());
+                const float fovScale = (1.0f / AZStd::tan(fov * 0.5f));
+                const float distanceToTarget = selectionSize * fovScale * centerScale;
+                const AZ::Transform nextCameraTransform =
+                    AZ::Transform::CreateLookAt(aabb.GetCenter() - (forward * distanceToTarget), aabb.GetCenter());
+
+                SandboxEditor::ModernViewportCameraControllerRequestBus::Event(
+                    viewportContext->GetId(), &SandboxEditor::ModernViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+                    nextCameraTransform);
+            }
         }
     }
-
-    if (entitiesAvailableForGoTo)
+    else
     {
-        int numViews = GetIEditor()->GetViewManager()->GetViewCount();
-        for (int viewIndex = 0; viewIndex < numViews; ++viewIndex)
+        AABB selectionBounds;
+        selectionBounds.Reset();
+        bool entitiesAvailableForGoTo = false;
+
+        for (const AZ::EntityId& entityId : entityIds)
         {
-            CViewport* viewport = GetIEditor()->GetViewManager()->GetView(viewIndex);
-            if (viewport)
+            if (CollectEntityBoundingBoxesForZoom(entityId, selectionBounds))
             {
-                viewport->CenterOnAABB(selectionBounds);
+                entitiesAvailableForGoTo = true;
+            }
+        }
+
+        if (entitiesAvailableForGoTo)
+        {
+            int numViews = GetIEditor()->GetViewManager()->GetViewCount();
+            for (int viewIndex = 0; viewIndex < numViews; ++viewIndex)
+            {
+                CViewport* viewport = GetIEditor()->GetViewManager()->GetView(viewIndex);
+                if (viewport)
+                {
+                    viewport->CenterOnAABB(selectionBounds);
+                }
             }
         }
     }
@@ -1961,30 +1981,6 @@ void SandboxIntegrationManager::MakeSliceFromEntities(const AzToolsFramework::En
     AzToolsFramework::SliceUtilities::MakeNewSlice(entitiesAndDescendants, path, inheritSlices, setAsDynamic);
 }
 
-void SandboxIntegrationManager::SetupFileExtensionMap()
-{
-    // There's no central registry for geometry file types.
-    const char* geometryFileExtensions[] =
-    {
-        CRY_GEOMETRY_FILE_EXT,                  // .cgf
-        CRY_SKEL_FILE_EXT,                      // .chr
-        CRY_CHARACTER_DEFINITION_FILE_EXT,      // .cdf
-    };
-
-    // Cry geometry file extensions.
-    for (const char* extension : geometryFileExtensions)
-    {
-        m_extensionToFileType[AZ::Crc32(extension)] = IFileUtil::EFILE_TYPE_GEOMETRY;
-    }
-
-    // Cry image file extensions.
-    for (size_t i = 0; i < IResourceCompilerHelper::GetNumSourceImageFormats(); ++i)
-    {
-        const char* extension = IResourceCompilerHelper::GetSourceImageFormat(i, false);
-        m_extensionToFileType[AZ::Crc32(extension)] = IFileUtil::EFILE_TYPE_TEXTURE;
-    }
-}
-
 void SandboxIntegrationManager::RegisterViewPane(const char* name, const char* category, const AzToolsFramework::ViewPaneOptions& viewOptions, const WidgetCreationFunc& widgetCreationFunc)
 {
     QtViewPaneManager::instance()->RegisterPane(name, category, widgetCreationFunc, viewOptions);
@@ -2028,92 +2024,6 @@ void SandboxIntegrationManager::CloseViewPane(const char* paneName)
 void SandboxIntegrationManager::BrowseForAssets(AssetSelectionModel& selection)
 {
     AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, GetMainWindow());
-}
-
-void SandboxIntegrationManager::GenerateCubemapForEntity(AZ::EntityId entityId, AZStd::string* cubemapOutputPath, bool hideEntity)
-{
-    GenerateCubemapWithIDForEntity(entityId, AZ::Uuid::CreateNull(), cubemapOutputPath, hideEntity, false);
-}
-
-void SandboxIntegrationManager::GenerateCubemapWithIDForEntity(AZ::EntityId entityId, AZ::Uuid cubemapId,
-                                                         AZStd::string* cubemapOutputPath, bool hideEntity, bool hasCubemapId)
-{
-    AZ::u32 resolution = 0;
-    EBUS_EVENT_ID_RESULT(resolution, entityId, LmbrCentral::EditorLightComponentRequestBus, GetCubemapResolution);
-
-    if (resolution > 0)
-    {
-        CComponentEntityObject* componentEntity = CComponentEntityObject::FindObjectForEntity(entityId);
-
-        if (componentEntity)
-        {
-            QString levelfolder = GetIEditor()->GetGameEngine()->GetLevelPath();
-            QString levelname = Path::GetFile(levelfolder).toLower();
-            QString fullGameFolder = QString(Path::GetEditingGameDataFolder().c_str());
-            QString texturename;
-            if (hasCubemapId)
-            {
-                texturename = QStringLiteral("%1_cm.tif").arg(cubemapId.ToString<QString>(false, false));
-            }
-            else
-            {
-                texturename = QStringLiteral("%1_cm.tif").arg(static_cast<qulonglong>(componentEntity->GetAssociatedEntityId()));
-            }
-            texturename = texturename.toLower();
-
-            QString fullFolder = Path::SubDirectoryCaseInsensitive(fullGameFolder, {"textures", "cubemaps", levelname});
-            QString fullFilename = QDir(fullFolder).absoluteFilePath(texturename);
-            QString relFilename = QDir(fullGameFolder).relativeFilePath(fullFilename);
-
-            bool directlyExists = CFileUtil::CreateDirectory(fullFolder.toUtf8().data());
-            if (!directlyExists)
-            {
-                QMessageBox::warning(GetMainWindow(), QObject::tr("Cubemap Generation Failed"), QString(QObject::tr("Failed to create destination path '%1'")).arg(fullFolder));
-                return;
-            }
-
-            if (CubemapUtils::GenCubemapWithObjectPathAndSize(fullFilename, componentEntity, static_cast<int>(resolution), hideEntity))
-            {
-                AZStd::string assetPath = relFilename.toUtf8().data();
-                AzFramework::StringFunc::Path::ReplaceExtension(assetPath, ".dds");
-
-                EBUS_EVENT_ID(entityId, LmbrCentral::EditorLightComponentRequestBus, SetCubemap, assetPath);
-
-                if (cubemapOutputPath)
-                {
-                    *cubemapOutputPath = AZStd::move(assetPath);
-                }
-            }
-            else
-            {
-                QMessageBox::warning(GetMainWindow(), QObject::tr("Cubemap Generation Failed"), QObject::tr("Unspecified error"));
-            }
-        }
-    }
-}
-
-void SandboxIntegrationManager::GenerateAllCubemaps()
-{
-    AZStd::string cubemapOutputPath;
-
-    std::vector<CBaseObject*> results;
-    results.reserve(128);
-    GetIEditor()->GetObjectManager()->FindObjectsOfType(OBJTYPE_AZENTITY, results);
-    for (std::vector<CBaseObject*>::iterator end = results.end(), item = results.begin(); item != end; ++item)
-    {
-        CComponentEntityObject* componentEntity = static_cast<CComponentEntityObject*>(*item);
-
-        //check if it's customized cubemap, only generate it if it's not.
-        bool isCustomizedCubemap = true;
-        EBUS_EVENT_ID_RESULT(isCustomizedCubemap, componentEntity->GetAssociatedEntityId(), LmbrCentral::EditorLightComponentRequestBus, UseCustomizedCubemap);
-
-        if (isCustomizedCubemap)
-        {
-            continue;
-        }
-
-        GenerateCubemapForEntity(componentEntity->GetAssociatedEntityId(), nullptr, true);
-    }
 }
 
 void SandboxIntegrationManager::SetColor(float r, float g, float b, float a)
@@ -2607,19 +2517,6 @@ void SandboxIntegrationManager::Draw2dTextLabel(float x, float y, float size, co
     }
 }
 
-void SandboxIntegrationManager::DrawTextOn2DBox(const AZ::Vector3& pos, const char* text, float textScale, const AZ::Vector4& textColor, const AZ::Vector4& textBackColor)
-{
-    if (m_dc)
-    {
-        m_dc->DrawTextOn2DBox(
-            AZVec3ToLYVec3(pos),
-            text,
-            textScale,
-            ColorF(AZVec3ToLYVec3(textColor.GetAsVector3()), textColor.GetW()),
-            ColorF(AZVec3ToLYVec3(textBackColor.GetAsVector3()), textBackColor.GetW()));
-    }
-}
-
 void SandboxIntegrationManager::DrawTextureLabel(ITexture* texture, const AZ::Vector3& pos, float sizeX, float sizeY, int texIconFlags)
 {
     if (m_dc)
@@ -2646,8 +2543,12 @@ void SandboxIntegrationManager::DrawTextureLabel(ITexture* texture, const AZ::Ve
 
 void SandboxIntegrationManager::DrawTextureLabel(int textureId, const AZ::Vector3& pos, float sizeX, float sizeY, int texIconFlags)
 {
-    ITexture* texture = GetIEditor()->GetRenderer()->EF_GetTextureByID(textureId);
-    DrawTextureLabel(texture, pos, sizeX, sizeY, texIconFlags);
+    // ToDo: With Atom?
+    AZ_UNUSED(textureId);
+    AZ_UNUSED(pos);
+    AZ_UNUSED(sizeX);
+    AZ_UNUSED(sizeY);
+    AZ_UNUSED(texIconFlags);
 }
 
 void SandboxIntegrationManager::SetLineWidth(float width)
@@ -2795,11 +2696,6 @@ void SandboxIntegrationManager::PopMatrix()
     {
         m_dc->PopMatrix();
     }
-}
-
-bool SandboxIntegrationManager::IsNewViewportInteractionModelEnabled()
-{
-    return GetIEditor()->IsNewViewportInteractionModelEnabled();
 }
 
 bool SandboxIntegrationManager::DisplayHelpersVisible()

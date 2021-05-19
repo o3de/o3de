@@ -13,10 +13,10 @@
 #include <Source/Multiplayer_precompiled.h>
 #include <Source/MultiplayerGem.h>
 #include <Source/MultiplayerSystemComponent.h>
-#include <Source/Components/NetBindComponent.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
 #include <Source/Pipeline/NetBindMarkerComponent.h>
 #include <Source/Pipeline/NetworkSpawnableHolderComponent.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 
 namespace Multiplayer
@@ -45,4 +45,6 @@ namespace Multiplayer
     }
 }
 
+#if !defined(MULTIPLAYER_EDITOR)
 AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer, Multiplayer::MultiplayerModule);
+#endif

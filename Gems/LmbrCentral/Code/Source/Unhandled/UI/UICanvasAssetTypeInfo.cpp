@@ -49,6 +49,6 @@ namespace LmbrCentral
 
     const char * UICanvasAssetTypeInfo::GetBrowserIcon() const
     {
-        return "Editor/Icons/Components/UiCanvasAssetRef.svg";
+        return "Icons/Components/UiCanvasAssetRef.svg";
     }
 } // namespace LmbrCentral

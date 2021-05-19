@@ -366,7 +366,7 @@ namespace GridMate
 
         auto replica = Replica::CreateReplica("BitmaskInterestHandlerRules");
         m_rulesReplica = CreateAndAttachReplicaChunk<BitmaskInterestChunk>(replica);
-        m_rm->AddMaster(replica);
+        m_rm->AddPrimary(replica);
     }
 
     void BitmaskInterestHandler::OnRulesHandlerUnregistered(InterestManager* manager)

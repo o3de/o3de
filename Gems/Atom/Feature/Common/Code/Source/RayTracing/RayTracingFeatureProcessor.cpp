@@ -67,7 +67,7 @@ namespace AZ
 
             // load the RayTracingSceneSrg asset
             Data::Asset<RPI::ShaderResourceGroupAsset> rayTracingSceneSrgAsset =
-                RPI::AssetUtils::LoadAssetByProductPath<RPI::ShaderResourceGroupAsset>("shaderlib/raytracingscenesrg_raytracingscenesrg.azsrg", RPI::AssetUtils::TraceLevel::Error);
+                RPI::AssetUtils::LoadAssetByProductPath<RPI::ShaderResourceGroupAsset>("shaderlib/atom/features/raytracing/raytracingscenesrg_raytracingscenesrg.azsrg", RPI::AssetUtils::TraceLevel::Error);
             AZ_Assert(rayTracingSceneSrgAsset.IsReady(), "Failed to load RayTracingSceneSrg asset");
 
             m_rayTracingSceneSrg = RPI::ShaderResourceGroup::Create(rayTracingSceneSrgAsset);
@@ -118,6 +118,7 @@ namespace AZ
 
             // set initial transform
             mesh.m_transform = m_transformServiceFeatureProcessor->GetTransformForId(objectId);
+            mesh.m_nonUniformScale = m_transformServiceFeatureProcessor->GetNonUniformScaleForId(objectId);
 
             m_revision++;
             m_subMeshCount += aznumeric_cast<uint32_t>(subMeshes.size());

@@ -17,12 +17,8 @@
 #include "LevelSystem.h"
 #include <IAudioSystem.h>
 #include "IMovieSystem.h"
-#include "IMaterialEffects.h"
-#include <IResourceManager.h>
 #include <ILocalizationManager.h>
-#include "IDeferredCollisionEvent.h"
 #include "CryPath.h"
-#include <Pak/CryPakUtils.h>
 
 #include <LoadScreenBus.h>
 
@@ -108,10 +104,11 @@ bool CLevelInfo::ReadInfo()
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
         usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
 
+    // Set up a default game type for legacy code.
+    m_defaultGameTypeName = "Mission0";
+
     if (usePrefabSystemForLevels)
     {
-        // Set up a default game type for legacy code.
-        m_defaultGameTypeName = "Mission0";
         return true;
     }
 
@@ -193,10 +190,6 @@ static void UnloadMap([[maybe_unused]] IConsoleCmdArgs* args)
     if (gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
     {
         gEnv->pSystem->GetILevelSystem()->UnloadLevel();
-        if (gEnv->p3DEngine)
-        {
-            gEnv->p3DEngine->LoadEmptyLevel();
-        }
     }
 }
 
@@ -266,16 +259,6 @@ void CLevelSystem::Rescan(const char* levelsFolder)
 {
     if (levelsFolder)
     {
-        if (const ICmdLineArg* pModArg = m_pSystem->GetICmdLine()->FindArg(eCLAT_Pre, "MOD"))
-        {
-            if (m_pSystem->IsMODValid(pModArg->GetValue()))
-            {
-                m_levelsFolder.format("Mods/%s/%s", pModArg->GetValue(), levelsFolder);
-                m_levelInfos.clear();
-                ScanFolder(0, true);
-            }
-        }
-
         m_levelsFolder = levelsFolder;
     }
 
@@ -652,38 +635,12 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
 
         AZStd::string levelPath(pLevelInfo->GetPath());
 
-        /*
-        ICVar *pFileCache = gEnv->pConsole->GetCVar("sys_FileCache");       CRY_ASSERT(pFileCache);
-
-        if(pFileCache->GetIVal())
-        {
-        if(pPak->OpenPack("",pLevelInfo->GetPath()+string("/FileCache.dat")))
-        gEnv->pLog->Log("FileCache.dat loaded");
-        else
-        gEnv->pLog->Log("FileCache.dat not loaded");
-        }
-        */
-
-        m_pSystem->SetThreadState(ESubsys_Physics, false);
-
         ICVar* pSpamDelay = gEnv->pConsole->GetCVar("log_SpamDelay");
         float spamDelay = 0.0f;
         if (pSpamDelay)
         {
             spamDelay = pSpamDelay->GetFVal();
             pSpamDelay->Set(0.0f);
-        }
-
-        if (gEnv->p3DEngine)
-        {
-            bool is3DEngineLoaded = gEnv->IsEditor() ? gEnv->p3DEngine->InitLevelForEditor(pLevelInfo->GetPath(), pLevelInfo->m_defaultGameTypeName.c_str())
-                : gEnv->p3DEngine->LoadLevel(pLevelInfo->GetPath(), pLevelInfo->m_defaultGameTypeName.c_str());
-            if (!is3DEngineLoaded)
-            {
-                OnLoadingError(levelName, "3DEngine failed to handle loading the level");
-
-                return 0;
-            }
         }
 
         // Parse level specific config data.
@@ -761,14 +718,6 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
         gEnv->pSystem->SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_START_PRECACHE);
 
         //////////////////////////////////////////////////////////////////////////
-        // Notify 3D engine that loading finished
-        //////////////////////////////////////////////////////////////////////////
-        if (gEnv->p3DEngine)
-        {
-            gEnv->p3DEngine->PostLoadLevel();
-        }
-
-        //////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////
         gEnv->pConsole->SetScrollMax(600 / 2);
 
@@ -791,8 +740,6 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
     }
 
     gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_PRECACHE_START, 0, 0);
-
-    m_pSystem->SetThreadState(ESubsys_Physics, true);
 
     return m_pCurrentLevel;
 }
@@ -819,9 +766,6 @@ void CLevelSystem::PrepareNextLevel(const char* levelName)
         // switched to level heap, so now imm start the loading screen (renderer will be reinitialized in the levelheap)
         gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_START_LOADINGSCREEN, 0, 0);
         gEnv->pSystem->SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_START_PREPARE);
-
-        // Inform resource manager about loading of the new level.
-        GetISystem()->GetIResourceManager()->PrepareLevel(pLevelInfo->GetPath(), pLevelInfo->GetName());
     }
 
     for (AZStd::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
@@ -867,11 +811,6 @@ void CLevelSystem::OnLoadingError(const char* levelName, const char* error)
     {
         CRY_ASSERT(false);
         return;
-    }
-
-    if (gEnv->pRenderer)
-    {
-        gEnv->pRenderer->SetTexturePrecaching(false);
     }
 
     for (AZStd::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
@@ -991,45 +930,6 @@ void CLevelSystem::UnloadLevel()
 
     CTimeValue tBegin = gEnv->pTimer->GetAsyncTime();
 
-    I3DEngine* p3DEngine = gEnv->p3DEngine;
-    if (p3DEngine)
-    {
-        IDeferredPhysicsEventManager* pPhysEventManager = p3DEngine->GetDeferredPhysicsEventManager();
-        if (pPhysEventManager)
-        {
-            // clear deferred physics queues before renderer, since we could have jobs running
-            // which access a rendermesh
-            pPhysEventManager->ClearDeferredEvents();
-        }
-    }
-
-    //AM: Flush render thread (Flush is not exposed - using EndFrame())
-    //We are about to delete resources that could be in use
-    if (gEnv->pRenderer)
-    {
-        gEnv->pRenderer->EndFrame();
-
-
-        bool isLoadScreenPlaying = false;
-#if AZ_LOADSCREENCOMPONENT_ENABLED
-        LoadScreenBus::BroadcastResult(isLoadScreenPlaying, &LoadScreenBus::Events::IsPlaying);        
-#endif // if AZ_LOADSCREENCOMPONENT_ENABLED
-
-        // force a black screen as last render command. 
-        //if load screen is playing do not call this draw as it may lead to a crash due to UI loading code getting
-        //pumped while loading the shaders for this draw.
-        if (!isLoadScreenPlaying)
-        {
-            gEnv->pRenderer->BeginFrame();
-            gEnv->pRenderer->SetState(GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA | GS_NODEPTHTEST);
-            gEnv->pRenderer->Draw2dImage(0, 0, 800, 600, -1, 0.0f, 0.0f, 1.0f, 1.0f, 0.f, 0.0f, 0.0f, 0.0f, 1.0, 0.f);
-            gEnv->pRenderer->EndFrame();
-        }
-
-        //flush any outstanding texture requests
-        gEnv->pRenderer->FlushPendingTextureTasks();
-    }
-
     // Clear level entities and prefab instances.
     EBUS_EVENT(AzFramework::GameEntityContextRequestBus, ResetGameContext);
 
@@ -1072,49 +972,11 @@ void CLevelSystem::UnloadLevel()
 
     m_lastLevelName.clear();
 
-    GetISystem()->GetIResourceManager()->UnloadLevel();
-
     SAFE_RELEASE(m_pCurrentLevel);
     
-    /*
-        Force Lua garbage collection before p3DEngine->UnloadLevel() and pRenderer->FreeResources(flags) are called.
-        p3DEngine->UnloadLevel() will destroy particle emitters even if they're still referenced by Lua objects that are yet to be collected.
-        (as per comment in 3dEngineLoad.cpp (line 501) - "Force to clean all particles that are left, even if still referenced.").
-        Then, during the next GC cycle, Lua finally cleans up, the particle emitter smart pointers will be pointing to invalid memory).
-        Normally the GC step is triggered at the end of this method (by the ESYSTEM_EVENT_LEVEL_POST_UNLOAD event), which is too late
-        (after the render resources have been purged).
-        This extra GC step takes a few ms more level unload time, which is a small price for fixing nasty crashes.
-        If, however, we wanted to claim it back, we could potentially get rid of the GC step that is triggered by ESYSTEM_EVENT_LEVEL_POST_UNLOAD to break even.
-    */
-
+    // Force Lua garbage collection (may no longer be needed now the legacy renderer has been removed).
+    // Normally the GC step is triggered at the end of this method (by the ESYSTEM_EVENT_LEVEL_POST_UNLOAD event).
     EBUS_EVENT(AZ::ScriptSystemRequestBus, GarbageCollect);
-
-    // Delete engine resources
-    if (p3DEngine)
-    {
-        p3DEngine->UnloadLevel();
-
-    }
-    // Force to clean render resources left after deleting all objects and materials.
-    IRenderer* pRenderer = gEnv->pRenderer;
-    if (pRenderer)
-    {
-        pRenderer->FlushRTCommands(true, true, true);
-
-        CryComment("Deleting Render meshes, render resources and flush texture streaming");
-        // This may also release some of the materials.
-        int flags = FRR_DELETED_MESHES | FRR_FLUSH_TEXTURESTREAMING | FRR_OBJECTS | FRR_RENDERELEMENTS | FRR_RP_BUFFERS | FRR_POST_EFFECTS;
-
-        // Always keep the system resources around in the editor.
-        // If a level load fails for any reason, then do not unload the system resources, otherwise we will not have any system resources to continue rendering the console and debug output text.
-        if (!gEnv->IsEditor() && !GetLevelLoadFailed())
-        {
-            flags |= FRR_SYSTEM_RESOURCES;
-        }
-
-        pRenderer->FreeResources(flags);
-        CryComment("done");
-    }
 
     // Perform level unload procedures for the LyShine UI system
     if (gEnv && gEnv->pLyShine)

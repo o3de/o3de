@@ -22,7 +22,6 @@
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
 #include <AzFramework/Physics/CharacterPhysicsDataBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 
 #include <Integration/Assets/ActorAsset.h>
 #include <Integration/ActorComponentBus.h>
@@ -130,17 +129,14 @@ namespace EMotionFX
                 provided.push_back(AZ_CRC("EMotionFXActorService", 0xd6e8f48d));
                 provided.push_back(AZ_CRC("MeshService", 0x71d8a455));
                 provided.push_back(AZ_CRC("CharacterPhysicsDataService", 0x34757927));
-
-                if (AZ::Interface<AzFramework::AtomActiveInterface>::Get())
-                {
-                    provided.push_back(AZ_CRC("MaterialReceiverService", 0x0d1a6a74));
-                }
+                provided.push_back(AZ_CRC("MaterialReceiverService", 0x0d1a6a74));
             }
 
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
             {
                 incompatible.push_back(AZ_CRC("EMotionFXActorService", 0xd6e8f48d));
                 incompatible.push_back(AZ_CRC("MeshService", 0x71d8a455));
+                incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
             }
 
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)

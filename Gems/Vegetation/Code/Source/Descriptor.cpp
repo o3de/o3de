@@ -22,8 +22,6 @@
 #include <Vegetation/DynamicSliceInstanceSpawner.h>
 #include <Vegetation/EmptyInstanceSpawner.h>
 
-#include <I3DEngine.h>
-
 //////////////////////////////////////////////////////////////////////
 // #pragma inline_depth(0)
 

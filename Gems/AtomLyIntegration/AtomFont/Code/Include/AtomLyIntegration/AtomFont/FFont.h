@@ -207,11 +207,15 @@ namespace AZ
         // AzFramework::FontDrawInterface implementation
         void DrawScreenAlignedText2d(
             const AzFramework::TextDrawParameters& params,
-            const AZStd::string_view& string) override;
+            AZStd::string_view text) override;
 
         void DrawScreenAlignedText3d(
             const AzFramework::TextDrawParameters& params,
-            const AZStd::string_view& string) override;
+            AZStd::string_view text) override;
+
+        AZ::Vector2 GetTextSize(
+            const AzFramework::TextDrawParameters& params,
+            AZStd::string_view text) override;
 
     public:
         FFont(AtomFont* atomFont, const char* fontName);
@@ -226,14 +230,14 @@ namespace AZ
 
     private:
         virtual ~FFont();
-        bool InitFont();
+        bool InitFont(AZ::RPI::Scene* renderScene);
         bool InitTexture();
         bool InitCache();
 
         void Prepare(const char* str, bool updateTexture, const AtomFont::GlyphSize& glyphSize = AtomFont::defaultGlyphSize);
         void DrawStringUInternal(
             const RHI::Viewport& viewport, 
-            RPI::ViewportContext* viewportContext, 
+            RPI::ViewportContextPtr viewportContext, 
             float x, 
             float y, 
             float z, 
@@ -281,6 +285,16 @@ namespace AZ
 
         RPI::WindowContextSharedPtr GetDefaultWindowContext() const;
         RPI::ViewportContextPtr GetDefaultViewportContext() const;
+
+        struct DrawParameters
+        {
+            TextDrawContext m_ctx;
+            AZ::Vector2 m_position;
+            AZ::Vector2 m_size;
+            AZ::RPI::ViewportContextPtr m_viewportContext;
+            const AZ::RHI::Viewport* m_viewport;
+        };
+        DrawParameters ExtractDrawParameters(const AzFramework::TextDrawParameters& params, AZStd::string_view text, bool forceCalculateSize);
 
     private:
         static constexpr uint32_t NumBuffers = 2;

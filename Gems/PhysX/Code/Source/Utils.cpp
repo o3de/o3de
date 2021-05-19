@@ -770,7 +770,7 @@ namespace PhysX
                     return worldPosAabb;
                 }
 
-                Physics::ShapeConfigurationList colliderShapes;
+                AzPhysics::ShapeColliderPairList colliderShapes;
                 GetColliderShapeConfigsFromAsset(physicsAssetConfig,
                     colliderConfiguration,
                     hasNonUniformScale,
@@ -812,7 +812,7 @@ namespace PhysX
 
         void GetColliderShapeConfigsFromAsset(const Physics::PhysicsAssetShapeConfiguration& assetConfiguration,
             const Physics::ColliderConfiguration& originalColliderConfiguration, bool hasNonUniformScale,
-            AZ::u8 subdivisionLevel, Physics::ShapeConfigurationList& resultingColliderShapes)
+            AZ::u8 subdivisionLevel, AzPhysics::ShapeColliderPairList& resultingColliderShapes)
         {
             if (!assetConfiguration.m_asset.IsReady())
             {
@@ -896,13 +896,13 @@ namespace PhysX
             const Physics::ColliderConfiguration& originalColliderConfiguration, bool hasNonUniformScale,
             AZ::u8 subdivisionLevel, AZStd::vector<AZStd::shared_ptr<Physics::Shape>>& resultingShapes)
         {
-            Physics::ShapeConfigurationList resultingColliderShapeConfigs;
+            AzPhysics::ShapeColliderPairList resultingColliderShapeConfigs;
             GetColliderShapeConfigsFromAsset(assetConfiguration, originalColliderConfiguration,
                 hasNonUniformScale, subdivisionLevel, resultingColliderShapeConfigs);
 
             resultingShapes.reserve(resultingShapes.size() + resultingColliderShapeConfigs.size());
 
-            for (const Physics::ShapeConfigurationPair& shapeConfigPair : resultingColliderShapeConfigs)
+            for (const AzPhysics::ShapeColliderPair& shapeConfigPair : resultingColliderShapeConfigs)
             {
                 // Scale the collider offset
                 shapeConfigPair.first->m_position *= shapeConfigPair.second->m_scale;

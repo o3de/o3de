@@ -37,7 +37,7 @@ namespace DebugDraw
                     "DebugDraw Sphere", "Draws debug ray on the screen from this entity's location to specified end entity's location.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/DebugDrawSphere.svg")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/DebugDrawSphere.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->DataElement(0, &EditorDebugDrawSphereComponent::m_element, "Sphere element settings", "Settings for the sphere element.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugDrawSphereComponent::OnPropertyUpdate)

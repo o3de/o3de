@@ -284,12 +284,12 @@ namespace Blast
             return m_transform;
         }
 
-        AzPhysics::SimulatedBody* GetWorldBody() override
+        AzPhysics::SimulatedBody* GetSimulatedBody() override
         {
             return m_worldBody.get();
         }
 
-        const AzPhysics::SimulatedBody* GetWorldBody() const override
+        const AzPhysics::SimulatedBody* GetSimulatedBody() const override
         {
             return m_worldBody.get();
         }
@@ -424,7 +424,7 @@ namespace Blast
 
         void SetAngularVelocity([[maybe_unused]] const AZ::Vector3& angularVelocity) override {}
 
-        AZ::Vector3 GetLinearVelocityAtWorldPoint([[maybe_unused]] const AZ::Vector3& worldPoint) override
+        AZ::Vector3 GetLinearVelocityAtWorldPoint([[maybe_unused]] const AZ::Vector3& worldPoint) const override
         {
             return {};
         }

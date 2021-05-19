@@ -18,6 +18,7 @@
 
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
 
@@ -36,7 +37,7 @@ namespace Physics
         static void Reflect(AZ::ReflectContext* context);
 
         AZStd::string m_name;
-        ShapeConfigurationList m_shapes;
+        AzPhysics::ShapeColliderPairList m_shapes;
     };
 
     class CharacterColliderConfiguration
@@ -78,7 +79,7 @@ namespace Physics
         float m_minimumMovementDistance = 0.001f; //!< To avoid jittering, the controller will not attempt to move distances below this.
         float m_maximumSpeed = 100.0f; //!< If the accumulated requested velocity for a tick exceeds this magnitude, it will be clamped.
         AZStd::string m_colliderTag; //!< Used to identify the collider associated with the character controller.
-        AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfig = nullptr; //!< The shape to use when creating the character controller.
+        AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfig; //!< The shape to use when creating the character controller.
         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> m_colliders; //!< The list of colliders to attach to the character controller.
     };
 

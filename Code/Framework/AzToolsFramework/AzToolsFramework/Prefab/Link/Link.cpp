@@ -108,11 +108,9 @@ namespace AzToolsFramework
             m_targetTemplateId = id;
         }
 
-        void Link::SetTemplatePatches(const PrefabDomValue& patches)
+        void Link::SetLinkDom(const PrefabDomValue& linkDom)
         {
-            PrefabDom newPatches;
-            newPatches.CopyFrom(patches, newPatches.GetAllocator());
-            m_linkDom.Swap(newPatches);
+            m_linkDom.CopyFrom(linkDom, m_linkDom.GetAllocator());
         }
 
         void Link::SetInstanceName(const char* instanceName)
@@ -184,16 +182,16 @@ namespace AzToolsFramework
             else
             {
                 AZ::JsonSerializationResult::ResultCode applyPatchResult = AZ::JsonSerialization::ApplyPatch(
-                    linkedInstanceDom,
+                    sourceTemplateDomCopy,
                     targetTemplatePrefabDom.GetAllocator(),
-                    sourceTemplatePrefabDom,
                     patchesReference->get(),
                     AZ::JsonMergeApproach::JsonPatch);
+                linkedInstanceDom.CopyFrom(sourceTemplateDomCopy, targetTemplatePrefabDom.GetAllocator());
                 if (applyPatchResult.GetProcessing() != AZ::JsonSerializationResult::Processing::Completed)
                 {
-                    AZ_Error("Prefab", false,
-                        "Link::UpdateTarget - "
-                        "ApplyPatches failed for Prefab DOM from source Template '%u' and target Template '%u'.",
+                    AZ_Error(
+                        "Prefab", false,
+                        "Link::UpdateTarget - ApplyPatches failed for Prefab DOM from source Template '%u' and target Template '%u'.",
                         m_sourceTemplateId, m_targetTemplateId);
                     return false;
                 }
@@ -229,6 +227,10 @@ namespace AzToolsFramework
             {
                 AZ_Assert(instanceDom.IsObject(), "Link Id '%u' cannot be added because the DOM of the instance is not an object.", m_id);
                 instanceDom.AddMember(rapidjson::StringRef(PrefabDomUtils::LinkIdName), rapidjson::Value().SetUint64(m_id), allocator);
+            }
+            else
+            {
+                linkIdReference->get().SetUint64(m_id);
             }
         }
 

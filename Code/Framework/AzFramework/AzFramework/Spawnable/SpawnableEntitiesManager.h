@@ -47,8 +47,8 @@ namespace AzFramework
         // The following functions are thread safe
         //
 
-        void SpawnAllEntities(EntitySpawnTicket& ticket, EntitySpawnCallback completionCallback = {}) override;
-        void SpawnEntities(EntitySpawnTicket& ticket, AZStd::vector<size_t> entityIndices,
+        void SpawnAllEntities(EntitySpawnTicket& ticket, EntityPreInsertionCallback preInsertionCallback = {}, EntitySpawnCallback completionCallback = {}) override;
+        void SpawnEntities(EntitySpawnTicket& ticket, AZStd::vector<size_t> entityIndices, EntityPreInsertionCallback preInsertionCallback = {},
             EntitySpawnCallback completionCallback = {}) override;
         void DespawnAllEntities(EntitySpawnTicket& ticket, EntityDespawnCallback completionCallback = {}) override;
 
@@ -59,6 +59,9 @@ namespace AzFramework
         void ClaimEntities(EntitySpawnTicket& ticket, ClaimEntitiesCallback listCallback) override;
 
         void Barrier(EntitySpawnTicket& spawnInfo, BarrierCallback completionCallback) override;
+
+        void AddOnSpawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>>::Handler& handler) override;
+        void AddOnDespawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>>::Handler& handler) override;
 
         //
         // The following function is thread safe but intended to be run from the main thread.
@@ -87,6 +90,7 @@ namespace AzFramework
         struct SpawnAllEntitiesCommand
         {
             EntitySpawnCallback m_completionCallback;
+            EntityPreInsertionCallback m_preInsertionCallback;
             EntitySpawnTicket* m_ticket;
             uint32_t m_ticketId;
         };
@@ -94,6 +98,7 @@ namespace AzFramework
         {
             AZStd::vector<size_t> m_entityIndices;
             EntitySpawnCallback m_completionCallback;
+            EntityPreInsertionCallback m_preInsertionCallback;
             EntitySpawnTicket* m_ticket;
             uint32_t m_ticketId;
         };
@@ -156,5 +161,8 @@ namespace AzFramework
         AZStd::deque<Requests> m_delayedQueue; //!< Requests that were processed before, but couldn't be completed.
         AZStd::queue<Requests> m_pendingRequestQueue;
         AZStd::mutex m_pendingRequestQueueMutex;
+
+        AZ::Event<AZ::Data::Asset<Spawnable>> m_onSpawnedEvent;
+        AZ::Event<AZ::Data::Asset<Spawnable>> m_onDespawnedEvent;
     };
 } // namespace AzFramework

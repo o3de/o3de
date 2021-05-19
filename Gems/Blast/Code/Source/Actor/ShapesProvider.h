@@ -11,7 +11,6 @@
  */
 #pragma once
 
-#include <AzFramework/Physics/WorldBodyBus.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <PhysX/ColliderComponentBus.h>
 
@@ -29,7 +28,7 @@ namespace Blast
         void AddShape(AZStd::shared_ptr<Physics::Shape> shape);
 
         // This class is not supposed to provide shape configurations, only shapes themselves.
-        Physics::ShapeConfigurationList GetShapeConfigurations() override;
+        AzPhysics::ShapeColliderPairList GetShapeConfigurations() override;
 
         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> GetShapes() override;
 

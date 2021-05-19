@@ -12,26 +12,66 @@
 
 #pragma once
 
+#include <ModernViewportCameraControllerRequestBus.h>
+
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Viewport/MultiViewportController.h>
 
 namespace SandboxEditor
 {
-    class ModernViewportCameraControllerInstance final : public AzFramework::MultiViewportControllerInstanceInterface
+    class ModernViewportCameraControllerInstance;
+    class ModernViewportCameraController : public AzFramework::MultiViewportController<ModernViewportCameraControllerInstance>
     {
     public:
-        explicit ModernViewportCameraControllerInstance(AzFramework::ViewportId viewportId);
+        using CameraListBuilder = AZStd::function<void(AzFramework::Cameras&)>;
+
+        //! Sets the camera list builder callback used to populate new ModernViewportCameraControllerInstances
+        void SetCameraListBuilderCallback(const CameraListBuilder& builder);
+        //! Sets up a camera list based on this controller's CameraListBuilderCallback
+        void SetupCameras(AzFramework::Cameras& cameras);
+
+    private:
+        CameraListBuilder m_cameraListBuilder;
+    };
+
+    class ModernViewportCameraControllerInstance final
+        : public AzFramework::MultiViewportControllerInstanceInterface<ModernViewportCameraController>,
+          public ModernViewportCameraControllerRequestBus::Handler,
+          private AzFramework::ViewportDebugDisplayEventBus::Handler
+    {
+    public:
+        explicit ModernViewportCameraControllerInstance(AzFramework::ViewportId viewportId, ModernViewportCameraController* controller);
+        ~ModernViewportCameraControllerInstance() override;
 
         // MultiViewportControllerInstanceInterface overrides ...
         bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
         void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
 
+        // ModernViewportCameraControllerRequestBus overrides ...
+        void InterpolateToTransform(const AZ::Transform& worldFromLocal) override;
+
     private:
+        // AzFramework::ViewportDebugDisplayEventBus overrides ...
+        void DisplayViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
+
+        enum class CameraMode
+        {
+            Control,
+            Animation
+        };
+
         AzFramework::Camera m_camera;
         AzFramework::Camera m_targetCamera;
-        AzFramework::SmoothProps m_smoothProps;
         AzFramework::CameraSystem m_cameraSystem;
-    };
 
-    using ModernViewportCameraController = AzFramework::MultiViewportController<ModernViewportCameraControllerInstance>;
+        AZ::Transform m_transformStart = AZ::Transform::CreateIdentity();
+        AZ::Transform m_transformEnd = AZ::Transform::CreateIdentity();
+        float m_animationT = 0.0f;
+        CameraMode m_cameraMode = CameraMode::Control;
+        bool m_updatingTransform = false;
+
+        AZ::RPI::ViewportContext::MatrixChangedEvent::Handler m_cameraViewMatrixChangeHandler;
+    };
 } // namespace SandboxEditor

@@ -17,6 +17,8 @@ set(FILES
     Dumper.h
     Dumper.cpp
     main.cpp
+    SliceConverter.h
+    SliceConverter.cpp
     Utilities.h
     Utilities.cpp
 )

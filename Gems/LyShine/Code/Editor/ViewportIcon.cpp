@@ -17,6 +17,8 @@
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
+float ViewportIcon::m_dpiScaleFactor = 1.0f;
+
 ViewportIcon::ViewportIcon(const char* textureFilename)
 {
     m_image = CDraw2d::LoadTexture(textureFilename);
@@ -31,7 +33,12 @@ AZ::Vector2 ViewportIcon::GetTextureSize() const
     if (m_image)
     {
         AZ::RHI::Size size = m_image->GetDescriptor().m_size;
-        return AZ::Vector2(size.m_width, size.m_height);
+        AZ::Vector2 scaledSize(size.m_width, size.m_height);
+        if (m_applyDpiScaleFactorToSize)
+        {
+            scaledSize *= m_dpiScaleFactor;
+        }
+        return scaledSize;
     }
 
     return AZ::Vector2(0.0f, 0.0f);
@@ -344,7 +351,7 @@ void ViewportIcon::DrawDistanceLineWithTransform(Draw2dHelper& draw2d, AZ::Vecto
     DrawDistanceLine(draw2d, start2, end2, value, suffix);
 }
 
-void ViewportIcon::DrawElementRectOutline([[maybe_unused]] Draw2dHelper& draw2d, AZ::EntityId entityId, AZ::Color color)
+void ViewportIcon::DrawElementRectOutline(Draw2dHelper& draw2d, AZ::EntityId entityId, AZ::Color color)
 {
     // get the transformed rect for the element
     UiTransformInterface::RectPoints points;
@@ -380,109 +387,6 @@ void ViewportIcon::DrawElementRectOutline([[maybe_unused]] Draw2dHelper& draw2d,
     rightVec.NormalizeSafe();
     downVec.NormalizeSafe();
 
-    // calculate the transformed width and height of the rect
-    // (in case it is smaller than the texture height)
-    AZ::Vector2 widthVec = points.TopRight() - points.TopLeft();
-    AZ::Vector2 heightVec = points.BottomLeft() - points.TopLeft();
-    float rectWidth = widthVec.GetLength();
-    float rectHeight = heightVec.GetLength();
-
-    // the outline "width" will be based on the texture height
-    float textureHeight = GetTextureSize().GetY();
-    if (textureHeight <= 0)
-    {
-        return; // should never happen - avoiding possible divide by zero later
-    }
-
-    // the outline is centered on the element rect so half the outline is outside
-    // the rect and half is inside the rect
-    float outerOffset = -textureHeight * 0.5f;
-    float innerOffset = textureHeight * 0.5f;
-    float outerV = 0.0f;
-    float innerV = 1.0f;
-
-    // if the rect is small there may not be space for the half of the outline that
-    // is inside the rect. If this is the case reduce the innerOffset so the inner
-    // points are coincident. Adjust the UVs according to keep a 1-1 texel to pixel ratio.
-    float minDimension = min(rectWidth, rectHeight);
-    if (innerOffset > minDimension * 0.5f)
-    {
-        float oldInnerOffset = innerOffset;
-        innerOffset = minDimension * 0.5f;
-        // note oldInnerOffset can't be zero because of early return if textureHeight is zero
-        innerV = 0.5f + 0.5f * innerOffset / oldInnerOffset;
-    }
-
-    // fill out the 8 verts to define the 2 rectangles - outer and inner
-    // The vertices are in the order of outer rect then inner rect. e.g.:
-    //  0        1
-    //     4  5
-    //     6  7
-    //  2        3
-    //
-    const int32 NUM_VERTS = 8;
-    AZ::Vector2 verts2d[NUM_VERTS] = {
-        // four verts of outer rect
-        points.pt[0] + rightVec * outerOffset + downVec * outerOffset,
-        points.pt[1] - rightVec * outerOffset + downVec * outerOffset,
-        points.pt[3] + rightVec * outerOffset - downVec * outerOffset,
-        points.pt[2] - rightVec * outerOffset - downVec * outerOffset,
-        // four verts of inner rect
-        points.pt[0] + rightVec * innerOffset + downVec * innerOffset,
-        points.pt[1] - rightVec * innerOffset + downVec * innerOffset,
-        points.pt[3] + rightVec * innerOffset - downVec * innerOffset,
-        points.pt[2] - rightVec * innerOffset - downVec * innerOffset,
-    };
-
-    // and define the UV coordinates for these 8 verts
-    AZ::Vector2 uvs[NUM_VERTS] = {
-        AZ::Vector2(0.0f, outerV), AZ::Vector2(1.0f, outerV), AZ::Vector2(1.0f, outerV), AZ::Vector2(0.0f, outerV),
-        AZ::Vector2(0.0f, innerV), AZ::Vector2(1.0f, innerV), AZ::Vector2(1.0f, innerV), AZ::Vector2(0.0f, innerV),
-    };
-
-    // Now create the 8 verts in the right vertex format for DrawDynVB
-    SVF_P3F_C4B_T2F vertices[NUM_VERTS];
-    const float z = 1.0f;   // depth test disabled, if writing Z this will write at far plane
-    uint32 packedColor = (color.GetA8() << 24) | (color.GetR8() << 16) | (color.GetG8() << 8) | color.GetB8();
-    for (int i = 0; i < NUM_VERTS; ++i)
-    {
-        vertices[i].xyz = Vec3(verts2d[i].GetX(), verts2d[i].GetY(), z);
-        vertices[i].color.dcolor = packedColor;
-        vertices[i].st = Vec2(uvs[i].GetX(), uvs[i].GetY());
-    }
-
-    // The indicies are for four quads (one for each side of the rect).
-    // The quads are drawn using a triangle list (simpler than a tri-strip)
-    // We draw each quad in the same order that the image component draws quads to
-    // maximize chances of things lining up so each quad is drawn as two triangles:
-    // top-left, top-right, bottom-left / bottom-left, top-right, bottom-right
-    // e.g. for a quad like this:
-    //
-    // 0   1
-    //  |/|
-    // 2   3
-    //
-    // The two triangles would be 0,1,2 and 2,1,3
-    //
-    const int32 NUM_INDICES = 24;
-    uint16 indicies[NUM_INDICES] =
-    {
-        0, 1, 4,    4, 1, 5,    // top quad
-        6, 7, 2,    2, 7, 3,    // bottom quad
-        0, 4, 2,    2, 4, 6,    // left quad
-        5, 1, 7,    1, 7, 3,    // right quad
-    };
-
-#ifdef LYSHINE_ATOM_TODO
-    IRenderer* renderer = gEnv->pRenderer;
-    renderer->SetTexture(m_texture->GetTextureID());
-
-    renderer->SetState(GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA | GS_NODEPTHTEST);
-    renderer->SetColorOp(eCO_MODULATE, eCO_MODULATE, DEF_TEXARG0, DEF_TEXARG0);
-
-    // This will end up using DrawIndexedPrimitive to render the quad
-    renderer->DrawDynVB(vertices, indicies, NUM_VERTS, NUM_INDICES, prtTriangleList);
-#else
-    // LYSHINE_ATOM_TODO - add option in Draw2d to draw indexed primitive for this textured element outline
-#endif
+    uint32_t lineThickness = aznumeric_cast<uint32_t>(GetTextureSize().GetY());
+    draw2d.DrawRectOutlineTextured(m_image, points, rightVec, downVec, color, lineThickness);
 }

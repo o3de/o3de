@@ -888,37 +888,6 @@ namespace UnitTest
         const char* m_objectStreamBuffer = nullptr;
     };
 
-    class TransformComponentConvertFromV2
-        : public TransformComponentVersionConverter
-    {
-    public:
-        TransformComponentConvertFromV2()
-        {
-            m_objectStreamBuffer =
-                R"DELIMITER(<ObjectStream version="1">
-    <Class name="TransformComponent" field="element" version="2" type="{22B10178-39B6-4C12-BB37-77DB45FDD3B6}">
-        <Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
-            <Class name="AZ::u64" field="Id" value="18023671824091307142" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-        </Class>
-        <Class name="NetBindable" field="BaseClass2" type="{80206665-D429-4703-B42E-94434F82F381}">
-            <Class name="bool" field="m_isSyncEnabled" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-        </Class>
-        <Class name="EntityId" field="Parent" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-            <Class name="AZ::u64" field="id" value="4294967295" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-        </Class>
-        <Class name="Transform" field="Transform" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}"/>
-        <Class name="Transform" field="LocalTransform" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}"/>
-        <Class name="unsigned int" field="ParentActivationTransformMode" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-    </Class>
-</ObjectStream>)DELIMITER";
-        }
-    };
-
-    TEST_F(TransformComponentConvertFromV2, IsStatic_False)
-    {
-        EXPECT_FALSE(m_transformInterface->IsStaticTransform());
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     // TransformConfig
 

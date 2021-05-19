@@ -52,8 +52,6 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/IO/RemoteStorageDrive.h>
-#include <AzFramework/Network/NetBindingComponent.h>
-#include <AzFramework/Network/NetBindingSystemComponent.h>
 #include <AzFramework/Physics/Utils.h>
 #include <AzFramework/Render/GameIntersectorComponent.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
@@ -66,7 +64,6 @@
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Driller/RemoteDrillerInterface.h>
-#include <AzFramework/Network/NetworkContext.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
@@ -175,7 +172,7 @@ namespace AzFramework
         }
 
         // Initializes the IArchive for reading archive(.pak) files
-        if (auto archive = AZ::Interface<AZ::IO::IArchive>::Get(); !archive)
+        if (auto archive = AZ::Interface<AZ::IO::IArchive>::Get(); archive == nullptr)
         {
             m_archive = AZStd::make_unique<AZ::IO::Archive>();
             AZ::Interface<AZ::IO::IArchive>::Register(m_archive.get());
@@ -189,9 +186,14 @@ namespace AzFramework
             SetFileIOAliases();
         }
 
+        if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI == nullptr)
+        {
+            m_nativeUI = AZStd::make_unique<AZ::NativeUI::NativeUISystem>();
+            AZ::Interface<AZ::NativeUI::NativeUIRequests>::Register(m_nativeUI.get());
+        }
+
         ApplicationRequests::Bus::Handler::BusConnect();
         AZ::UserSettingsFileLocatorBus::Handler::BusConnect();
-        NetSystemRequestBus::Handler::BusConnect();
     }
 
     Application::~Application()
@@ -201,16 +203,20 @@ namespace AzFramework
             Stop();
         }
 
-        NetSystemRequestBus::Handler::BusDisconnect();
         AZ::UserSettingsFileLocatorBus::Handler::BusDisconnect();
         ApplicationRequests::Bus::Handler::BusDisconnect();
+
+        if (AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get() == m_nativeUI.get())
+        {
+            AZ::Interface<AZ::NativeUI::NativeUIRequests>::Unregister(m_nativeUI.get());
+        }
+        m_nativeUI.reset();
 
         // Unset the Archive file IO if it is set as the direct instance
         if (AZ::IO::FileIOBase::GetInstance() == m_archiveFileIO.get())
         {
             AZ::IO::FileIOBase::SetInstance(nullptr);
         }
-
         m_archiveFileIO.reset();
 
         // Destroy the IArchive instance
@@ -230,8 +236,6 @@ namespace AzFramework
         // Archive classes relies on the FileIOBase DirectInstance to close
         // files properly
         m_directFileIO.reset();
-
-        // The AZ::Console skips destruction and always leaks to allow it to be used in static memory
     }
 
     void Application::Start(const Descriptor& descriptor, const StartupParameters& startupParameters)
@@ -274,13 +278,6 @@ namespace AzFramework
 
             m_pimpl.reset();
 
-            /* The following line of code is a temporary fix.
-             * GridMate's ReplicaChunkDescriptor is stored in a global environment variable 'm_globalDescriptorTable'
-             * which does not get cleared when Application shuts down. We need to un-reflect here to clear ReplicaChunkDescriptor
-             * so that ReplicaChunkDescriptor::m_vdt doesn't get flooded when we repeatedly instantiate Application in unit tests.
-             */
-            AZ::ReflectionEnvironment::GetReflectionManager()->RemoveReflectContext<NetworkContext>();
-
             // Free any memory owned by the command line container.
             m_commandLine = CommandLine();
 
@@ -303,15 +300,12 @@ namespace AzFramework
             azrtti_typeid<AZ::AssetManagerComponent>(),
             azrtti_typeid<AZ::UserSettingsComponent>(),
             azrtti_typeid<AZ::Debug::FrameProfilerComponent>(),
-            azrtti_typeid<AZ::NativeUI::NativeUISystemComponent>(),
             azrtti_typeid<AZ::SliceComponent>(),
             azrtti_typeid<AZ::SliceSystemComponent>(),
 
             azrtti_typeid<AzFramework::AssetCatalogComponent>(),
             azrtti_typeid<AzFramework::CustomAssetTypeComponent>(),
             azrtti_typeid<AzFramework::FileTag::ExcludeFileComponent>(),
-            azrtti_typeid<AzFramework::NetBindingComponent>(),
-            azrtti_typeid<AzFramework::NetBindingSystemComponent>(),
             azrtti_typeid<AzFramework::TransformComponent>(),
             azrtti_typeid<AzFramework::SceneSystemComponent>(),
             azrtti_typeid<AzFramework::AzFrameworkConfigurationSystemComponent>(),
@@ -372,7 +366,6 @@ namespace AzFramework
             azrtti_typeid<AZ::UserSettingsComponent>(),
             azrtti_typeid<AZ::ScriptSystemComponent>(),
             azrtti_typeid<AZ::JobManagerComponent>(),
-            azrtti_typeid<AZ::NativeUI::NativeUISystemComponent>(),
             azrtti_typeid<AZ::SliceSystemComponent>(),
 
             azrtti_typeid<AzFramework::AssetCatalogComponent>(),
@@ -448,9 +441,6 @@ namespace AzFramework
     void Application::CreateReflectionManager()
     {
         ComponentApplication::CreateReflectionManager();
-
-        // Setup NetworkContext
-        AZ::ReflectionEnvironment::GetReflectionManager()->AddReflectContext<NetworkContext>();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -468,19 +458,6 @@ namespace AzFramework
             }
         }
         return uuid;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    NetworkContext* Application::GetNetworkContext()
-    {
-        NetworkContext* result = nullptr;
-
-        if (auto reflectionManager = AZ::ReflectionEnvironment::GetReflectionManager())
-        {
-            result = reflectionManager->GetReflectContext<NetworkContext>();
-        }
-
-        return result;
     }
 
     void Application::ResolveEnginePath(AZStd::string& engineRelativePath) const

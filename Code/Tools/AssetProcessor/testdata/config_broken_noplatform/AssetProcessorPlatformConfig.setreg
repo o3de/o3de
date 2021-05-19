@@ -1,0 +1,18 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder Game": {
+                    "watch": "@PROJECTROOT@",
+                    "recursive": 1,
+                    "order": 0
+                },
+                "RC i_caf": {
+                    "glob": "*.i_caf",
+                    "params": "copy",
+                    "priority": 5
+                }
+            }
+        }
+    }
+}

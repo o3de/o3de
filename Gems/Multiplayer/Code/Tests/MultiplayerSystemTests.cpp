@@ -14,6 +14,8 @@
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/Name/Name.h>
+#include <AzFramework/Spawnable/SpawnableSystemComponent.h>
+#include <AzNetworking/Framework/NetworkingSystemComponent.h>
 #include <AzTest/AzTest.h>
 #include <MultiplayerSystemComponent.h>
 #include <IMultiplayerConnectionMock.h>
@@ -28,6 +30,8 @@ namespace UnitTest
         {
             SetupAllocator();
             AZ::NameDictionary::Create();
+            m_spawnableComponent = new AzFramework::SpawnableSystemComponent();
+            m_netComponent = new AzNetworking::NetworkingSystemComponent();
             m_mpComponent = new Multiplayer::MultiplayerSystemComponent();
 
             m_initHandler = Multiplayer::SessionInitEvent::Handler([this](AzNetworking::INetworkInterface* value) { TestInitEvent(value); });
@@ -41,6 +45,8 @@ namespace UnitTest
         void TearDown() override
         {
             delete m_mpComponent;
+            delete m_netComponent;
+            delete m_spawnableComponent;
             AZ::NameDictionary::Destroy();
             TeardownAllocator();
         }
@@ -68,7 +74,9 @@ namespace UnitTest
         Multiplayer::SessionShutdownEvent::Handler m_shutdownHandler;
         Multiplayer::ConnectionAcquiredEvent::Handler m_connAcquiredHandler;
 
+        AzNetworking::NetworkingSystemComponent* m_netComponent = nullptr;
         Multiplayer::MultiplayerSystemComponent* m_mpComponent = nullptr;
+        AzFramework::SpawnableSystemComponent* m_spawnableComponent = nullptr;
     };
 
     TEST_F(MultiplayerSystemTests, TestInitEvent)

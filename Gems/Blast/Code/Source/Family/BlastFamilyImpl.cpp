@@ -179,7 +179,7 @@ namespace Blast
         {
             return;
         }
-        parentBody = parentActor->GetWorldBody();
+        parentBody = parentActor->GetSimulatedBody();
 
         const bool parentStatic = parentActor->IsStatic();
 
@@ -241,7 +241,7 @@ namespace Blast
         configuration.m_orientation = transform.GetRotation();
         configuration.m_scale = transform.GetScale();
         configuration.m_ccdEnabled = m_actorConfiguration.m_isCcdEnabled;
-        configuration.m_simulated = m_actorConfiguration.m_isSimulated;
+        configuration.m_startSimulationEnabled = m_actorConfiguration.m_isSimulated;
         configuration.m_initialAngularVelocity = AZ::Vector3::CreateZero();
 
         BlastActorDesc actorDesc;
@@ -493,7 +493,7 @@ namespace Blast
             }
 
             // transform all added lines from local to global
-            AZ::Transform localToGlobal = blastActor->GetWorldBody()->GetTransform();
+            AZ::Transform localToGlobal = blastActor->GetSimulatedBody()->GetTransform();
             for (uint32_t i = lineStartIndex; i < debugRenderBuffer.m_lines.size(); i++)
             {
                 DebugLine& line = debugRenderBuffer.m_lines[i];

@@ -23,42 +23,15 @@
                                                     {
                                                         "Visible": true,
                                                         "Position": [
-                                                            -0.08505599945783615,
-                                                            0.0,
-                                                            0.009370899759232998
-                                                        ],
-                                                        "Rotation": [
-                                                            0.7071437239646912,
-                                                            0.0,
-                                                            0.0,
-                                                            0.708984375
-                                                        ],
-                                                        "propertyVisibilityFlags": 248
-                                                    },
-                                                    {
-                                                        "$type": "CapsuleShapeConfiguration",
-                                                        "Height": 0.191273495554924,
-                                                        "Radius": 0.05063670128583908
-                                                    }
-                                                ]
-                                            ]
-                                        },
-                                        {
-                                            "name": "def_c_neck_joint",
-                                            "shapes": [
-                                                [
-                                                    {
-                                                        "Visible": true,
-                                                        "Position": [
-                                                            0.08189810067415238,
-                                                            -2.4586914726398847e-9,
-                                                            -0.4713243842124939
+                                                            -0.03709467500448227,
+                                                            -3.725290298461914e-9,
+                                                            0.013427333906292916
                                                         ],
                                                         "propertyVisibilityFlags": 248
                                                     },
                                                     {
                                                         "$type": "SphereShapeConfiguration",
-                                                        "Radius": 0.2406993955373764
+                                                        "Radius": 0.12945009768009187
                                                     }
                                                 ]
                                             ]
@@ -70,42 +43,22 @@
                                                     {
                                                         "Visible": true,
                                                         "Position": [
-                                                            -2.0000000233721949e-7,
-                                                            0.012646200135350228,
-                                                            -0.24104370176792146
-                                                        ],
-                                                        "propertyVisibilityFlags": 248
-                                                    },
-                                                    {
-                                                        "$type": "SphereShapeConfiguration",
-                                                        "Radius": 0.24875959753990174
-                                                    }
-                                                ]
-                                            ]
-                                        },
-                                        {
-                                            "name": "def_c_feather2_joint",
-                                            "shapes": [
-                                                [
-                                                    {
-                                                        "Visible": true,
-                                                        "Position": [
-                                                            0.06151500344276428,
-                                                            0.1300000101327896,
-                                                            7.729977369308472e-8
+                                                            0.0,
+                                                            0.09497000277042389,
+                                                            -0.19093050062656403
                                                         ],
                                                         "Rotation": [
                                                             0.0,
-                                                            0.7071062922477722,
-                                                            0.0,
-                                                            0.7071072459220886
+                                                            0.662880003452301,
+                                                            0.7487256526947022,
+                                                            0.0
                                                         ],
                                                         "propertyVisibilityFlags": 248
                                                     },
                                                     {
                                                         "$type": "CapsuleShapeConfiguration",
-                                                        "Height": 0.5730299949645996,
-                                                        "Radius": 0.06151498109102249
+                                                        "Height": 0.8597599267959595,
+                                                        "Radius": 0.27968019247055056
                                                     }
                                                 ]
                                             ]
@@ -132,16 +85,20 @@
                     "RootNode.chicken_skeleton.transform",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint",
                     "RootNode.chicken_feet_skin.SkinWeight_0",
+                    "RootNode.chicken_feet_skin.transform",
                     "RootNode.chicken_feet_skin.map1",
                     "RootNode.chicken_feet_skin.chicken_body_mat",
                     "RootNode.chicken_eyes_skin.SkinWeight_0",
+                    "RootNode.chicken_eyes_skin.transform",
                     "RootNode.chicken_eyes_skin.uvSet1",
                     "RootNode.chicken_eyes_skin.chicken_eye_mat",
                     "RootNode.chicken_body_skin.SkinWeight_0",
+                    "RootNode.chicken_body_skin.transform",
                     "RootNode.chicken_body_skin.map1",
                     "RootNode.chicken_body_skin.chicken_body_mat",
+                    "RootNode.chicken_mohawk.Col0",
                     "RootNode.chicken_mohawk.SkinWeight_0",
-                    "RootNode.chicken_mohawk.colorSet1",
+                    "RootNode.chicken_mohawk.transform",
                     "RootNode.chicken_mohawk.map1",
                     "RootNode.chicken_mohawk.mohawkMat",
                     "RootNode.chicken_skeleton.def_c_chickenRoot_joint.transform",
@@ -228,7 +185,7 @@
                     {
                         "$type": "ClothRule",
                         "meshNodeName": "RootNode.chicken_mohawk",
-                        "inverseMassesStreamName": "colorSet1",
+                        "inverseMassesStreamName": "Col0",
                         "motionConstraintsStreamName": "Default: 1.0",
                         "backstopStreamName": "None"
                     }

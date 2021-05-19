@@ -17,7 +17,6 @@
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/EBus/Event.h>
-#include <AzFramework/Network/NetBindable.h>
 
 namespace AzToolsFramework
 {
@@ -41,10 +40,9 @@ namespace AzFramework
         , public AZ::TransformBus::Handler
         , public AZ::TransformNotificationBus::Handler
         , private AZ::TransformHierarchyInformationBus::Handler
-        , public NetBindable
     {
     public:
-        AZ_COMPONENT(TransformComponent, AZ::TransformComponentTypeId, NetBindable, AZ::TransformInterface);
+        AZ_COMPONENT(TransformComponent, AZ::TransformComponentTypeId, AZ::TransformInterface);
 
         friend class AzToolsFramework::Components::TransformComponent;
 
@@ -208,11 +206,5 @@ namespace AzFramework
         bool m_parentActive = false; ///< Keeps track of the state of the parent entity.
         bool m_onNewParentKeepWorldTM = true; ///< If set, recompute localTM instead of worldTM when parent becomes active.
         bool m_isStatic = false; ///< If true, the transform is static and doesn't move while entity is active.
-
-        //! @deprecated
-        //! @{
-        AZ::InterpolationMode m_interpolatePosition = AZ::InterpolationMode::NoInterpolation;
-        AZ::InterpolationMode m_interpolateRotation = AZ::InterpolationMode::NoInterpolation;
-        //! @}
     };
 }   // namespace AZ

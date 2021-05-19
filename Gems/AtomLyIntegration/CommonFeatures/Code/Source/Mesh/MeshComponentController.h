@@ -83,17 +83,16 @@ namespace AZ
             const MeshComponentConfig& GetConfiguration() const;
 
         private:
-
             AZ_DISABLE_COPY(MeshComponentController);
 
             // MeshComponentRequestBus::Handler overrides ...
             void SetModelAsset(Data::Asset<RPI::ModelAsset> modelAsset) override;
-            const Data::Asset<RPI::ModelAsset>& GetModelAsset() const override;
+            Data::Asset<const RPI::ModelAsset> GetModelAsset() const override;
             void SetModelAssetId(Data::AssetId modelAssetId) override;
             Data::AssetId GetModelAssetId() const override;
             void SetModelAssetPath(const AZStd::string& modelAssetPath) override;
             AZStd::string GetModelAssetPath() const override;
-            const AZ::Data::Instance<RPI::Model> GetModel() const override;
+            AZ::Data::Instance<RPI::Model> GetModel() const override;
 
             void SetSortKey(RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey() const override;
@@ -117,6 +116,13 @@ namespace AZ
 
             // MaterialComponentNotificationBus::Handler overrides ...
             void OnMaterialsUpdated(const MaterialAssignmentMap& materials) override;
+
+            //! Check if the model asset requires to be cloned (e.g. cloth) for unique model instances.
+            //! @param modelAsset The model asset to check.
+            //! @result True in case the model asset needs to be cloned before creating the model. False if there is a 1:1 relationship between
+            //! the model asset and the model and it is static and shared. In the second case the m_originalModelAsset of the mesh handle is
+            //! equal to the model asset that the model is linked to.
+            static bool RequiresCloning(const Data::Asset<RPI::ModelAsset>& modelAsset);
 
             void HandleModelChange(Data::Instance<RPI::Model> model);
             void RegisterModel();

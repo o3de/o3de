@@ -18,6 +18,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Math/Uuid.h>
+#include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/std/containers/bitset.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
@@ -216,16 +217,14 @@ namespace AZ
         /**
          * Setting for each reference (Asset<T>) to control loading of referenced assets during serialization.
          */
-        enum class AssetLoadBehavior : u8
-        {
-            PreLoad     = 0,        ///< Serializer will "Pre load" dependencies, asset containers may load in parallel but will not signal AssetReady
-            QueueLoad   = 1,        ///< Serializer will queue an asynchronous load of the referenced asset and return the object to the user. User code should use the \ref AZ::Data::AssetBus to monitor for when it's ready.
-            NoLoad      = 2,        ///< Serializer will load reference information, but asset loading will be left to the user. User code should call Asset<T>::QueueLoad and use the \ref AZ::Data::AssetBus to monitor for when it's ready.
-                                    ///< AssetContainers will skip NoLoad dependencies
-            
+        AZ_ENUM_WITH_UNDERLYING_TYPE(AssetLoadBehavior, u8,
+            (PreLoad, 0),          ///< Serializer will "Pre load" dependencies, asset containers may load in parallel but will not signal AssetReady
+            (QueueLoad, 1),        ///< Serializer will queue an asynchronous load of the referenced asset and return the object to the user. User code should use the \ref AZ::Data::AssetBus to monitor for when it's ready.
+            (NoLoad, 2),           ///< Serializer will load reference information, but asset loading will be left to the user. User code should call Asset<T>::QueueLoad and use the \ref AZ::Data::AssetBus to monitor for when it's ready.
+                                   ///< AssetContainers will skip NoLoad dependencies
             Count,
-            Default = QueueLoad,
-        };
+            (Default, QueueLoad)
+        );
 
         struct AssetFilterInfo
         {
@@ -308,6 +307,8 @@ namespace AZ
             Asset(AssetLoadBehavior loadBehavior = AssetLoadBehavior::Default);
             /// Create an asset from a valid asset data (created asset), might not be loaded or currently loading.
             Asset(AssetData* assetData, AssetLoadBehavior loadBehavior);
+            /// Create an asset from a valid asset data (created asset) and set the asset id for both, might not be loaded or currently loading.
+            Asset(const AZ::Data::AssetId& id, AssetData* assetData, AssetLoadBehavior loadBehavior);
             /// Initialize asset pointer with id, type, and hint. No data construction will occur until QueueLoad is called.
             Asset(const AZ::Data::AssetId& id, const AZ::Data::AssetType& type, const AZStd::string& hint = AZStd::string());
 
@@ -790,6 +791,18 @@ namespace AZ
 
         //=========================================================================
         template<class T>
+        Asset<T>::Asset(const AssetId& id, AssetData* assetData, AssetLoadBehavior loadBehavior)
+            : m_assetId(id)
+            , m_assetType(azrtti_typeid<T>())
+            , m_loadBehavior(loadBehavior)
+        {
+            AZ_Assert(!assetData->m_assetId.IsValid(), "Asset data already has an ID set.");
+            assetData->m_assetId = id;
+            SetData(assetData);
+        }
+
+        //=========================================================================
+        template<class T>
         Asset<T>::Asset(const AssetId& id, const AZ::Data::AssetType& type, const AZStd::string& hint)
             : m_assetId(id)
             , m_assetType(type)
@@ -1104,8 +1117,11 @@ namespace AZ
             // If we either already had valid asset data, or just created it via FindOrCreateAsset, try to queue the load.
             if (m_assetData && m_assetData->GetId().IsValid())
             {
-                // Only try to queue if the asset isn't already loading or loaded.
-                if (m_assetData->GetStatus() == AZ::Data::AssetData::AssetStatus::NotLoaded)
+                // Try to queue if the asset isn't already loading or loaded.
+                // Also try to queue if the asset *is* already loading or loaded, but we're the only one with a strong reference
+                // (i.e. use count == 1), because that means it was in the process of being garbage-collected.
+                if ((m_assetData->GetStatus() == AZ::Data::AssetData::AssetStatus::NotLoaded) ||
+                    (m_assetData->GetUseCount() == 1))
                 {
                     *this = AssetInternal::GetAsset(m_assetData->GetId(), m_assetData->GetType(), loadBehavior, loadParams);
                 }
@@ -1219,6 +1235,7 @@ namespace AZ
         } // namespace ProductDependencyInfo
     }  // namespace Data
 
+    AZ_TYPE_INFO_SPECIALIZE(Data::AssetLoadBehavior, "{DAF9ECED-FEF3-4D7A-A220-8CFD6A5E6DA1}");
     AZ_TYPE_INFO_TEMPLATE_WITH_NAME(AZ::Data::Asset, "Asset", "{C891BF19-B60C-45E2-BFD0-027D15DDC939}", AZ_TYPE_INFO_CLASS);
 
 }   // namespace AZ

@@ -19,9 +19,12 @@ namespace AzNetworking
     static const int32_t FloatHashMinValue = (INT_MIN >> 7);
     static const int32_t FloatHashMaxValue = (INT_MAX >> 7);
 
-    AZ::HashValue64 HashSerializer::GetHash() const
+    AZ::HashValue32 HashSerializer::GetHash() const
     {
-        return m_hash;
+        // Just truncate the upper bits
+        const AZ::HashValue32 lower = static_cast<AZ::HashValue32>(m_hash);
+        const AZ::HashValue32 upper = static_cast<AZ::HashValue32>(m_hash >> 32);
+        return lower ^ upper;
     }
 
     SerializerMode HashSerializer::GetSerializerMode() const

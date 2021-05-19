@@ -14,6 +14,7 @@
 
 #include <Atom/Document/MaterialDocumentNotificationBus.h>
 #include <Atom/Document/MaterialDocumentRequestBus.h>
+#include <Atom/Document/MaterialDocumentSettings.h>
 #include <Atom/Document/MaterialDocumentSystemRequestBus.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
@@ -40,12 +41,13 @@ AZ_POP_DISABLE_WARNING
 namespace MaterialEditor
 {
     MaterialDocumentSystemComponent::MaterialDocumentSystemComponent()
-        : m_settings(aznew MaterialEditorSettings)
     {
     }
 
     void MaterialDocumentSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        MaterialDocumentSettings::Reflect(context);
+
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<MaterialDocumentSystemComponent, AZ::Component>()
@@ -109,7 +111,6 @@ namespace MaterialEditor
 
     void MaterialDocumentSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TargetManagerService", 0x6d5708bc));
         required.push_back(AZ_CRC("AssetProcessorToolsConnection", 0x734669bc));
         required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
         required.push_back(AZ_CRC("PropertyManagerService", 0x63a3d7ad));
@@ -133,31 +134,17 @@ namespace MaterialEditor
     void MaterialDocumentSystemComponent::Activate()
     {
         m_documentMap.clear();
+        m_settings = AZ::UserSettings::CreateFind<MaterialDocumentSettings>(AZ::Crc32("MaterialDocumentSettings"), AZ::UserSettings::CT_GLOBAL);
         MaterialDocumentSystemRequestBus::Handler::BusConnect();
         MaterialDocumentNotificationBus::Handler::BusConnect();
-        AzFramework::TmMsgBus::Handler::BusConnect(AZ_CRC("OpenInMaterialEditor", 0x9f92aac8));
     }
 
     void MaterialDocumentSystemComponent::Deactivate()
     {
         AZ::TickBus::Handler::BusDisconnect();
-        AzFramework::TmMsgBus::Handler::BusDisconnect();
         MaterialDocumentNotificationBus::Handler::BusDisconnect();
         MaterialDocumentSystemRequestBus::Handler::BusDisconnect();
         m_documentMap.clear();
-    }
-
-    void MaterialDocumentSystemComponent::OnReceivedMsg(AzFramework::TmMsgPtr msg)
-    {
-        if (msg->GetId() == AZ_CRC("OpenInMaterialEditor", 0x9f92aac8))
-        {
-            const char* documentPath = reinterpret_cast<const char*>(msg->GetCustomBlob());
-            MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::OpenDocument, documentPath);
-        }
-        else
-        {
-            AZ_Assert(false, "We received a message of an unrecognized class type!");
-        }
     }
 
     AZ::Uuid MaterialDocumentSystemComponent::CreateDocument()
@@ -204,22 +191,25 @@ namespace MaterialEditor
             AZStd::string documentPath;
             MaterialDocumentRequestBus::EventResult(documentPath, documentId, &MaterialDocumentRequestBus::Events::GetAbsolutePath);
 
-            if (QMessageBox::question(QApplication::activeWindow(),
+            if (m_settings->m_showReloadDocumentPrompt &&
+                (QMessageBox::question(QApplication::activeWindow(),
                 QString("Material document was externally modified"),
                 QString("Would you like to reopen the document:\n%1?").arg(documentPath.c_str()),
-                QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
+                QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes))
             {
-                AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
+                continue;
+            }
 
-                bool openResult = false;
-                MaterialDocumentRequestBus::EventResult(openResult, documentId, &MaterialDocumentRequestBus::Events::Open, documentPath);
-                if (!openResult)
-                {
-                    QMessageBox::critical(
-                        QApplication::activeWindow(), QString("Material document could not be opened"),
-                        QString("Failed to open: \n%1\n\n%2").arg(documentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
-                    MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CloseDocument, documentId);
-                }
+            AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
+
+            bool openResult = false;
+            MaterialDocumentRequestBus::EventResult(openResult, documentId, &MaterialDocumentRequestBus::Events::Open, documentPath);
+            if (!openResult)
+            {
+                QMessageBox::critical(
+                    QApplication::activeWindow(), QString("Material document could not be opened"),
+                    QString("Failed to open: \n%1\n\n%2").arg(documentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
+                MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CloseDocument, documentId);
             }
         }
 
@@ -228,22 +218,25 @@ namespace MaterialEditor
             AZStd::string documentPath;
             MaterialDocumentRequestBus::EventResult(documentPath, documentId, &MaterialDocumentRequestBus::Events::GetAbsolutePath);
 
-            if (QMessageBox::question(QApplication::activeWindow(),
+            if (m_settings->m_showReloadDocumentPrompt &&
+                (QMessageBox::question(QApplication::activeWindow(),
                 QString("Material document dependencies have changed"),
                 QString("Would you like to update the document with these changes:\n%1?").arg(documentPath.c_str()),
-                QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
+                QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes))
             {
-                AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
+                continue;
+            }
 
-                bool openResult = false;
-                MaterialDocumentRequestBus::EventResult(openResult, documentId, &MaterialDocumentRequestBus::Events::Rebuild);
-                if (!openResult)
-                {
-                    QMessageBox::critical(
-                        QApplication::activeWindow(), QString("Material document could not be opened"),
-                        QString("Failed to open: \n%1\n\n%2").arg(documentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
-                    MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CloseDocument, documentId);
-                }
+            AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
+
+            bool openResult = false;
+            MaterialDocumentRequestBus::EventResult(openResult, documentId, &MaterialDocumentRequestBus::Events::Rebuild);
+            if (!openResult)
+            {
+                QMessageBox::critical(
+                    QApplication::activeWindow(), QString("Material document could not be opened"),
+                    QString("Failed to open: \n%1\n\n%2").arg(documentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
+                MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CloseDocument, documentId);
             }
         }
 

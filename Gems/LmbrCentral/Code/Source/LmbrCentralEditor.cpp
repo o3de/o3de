@@ -16,7 +16,6 @@
 
 #include "Ai/EditorNavigationAreaComponent.h"
 #include "Ai/EditorNavigationSeedComponent.h"
-#include "Animation/EditorAttachmentComponent.h"
 #include "Audio/EditorAudioAreaEnvironmentComponent.h"
 #include "Audio/EditorAudioEnvironmentComponent.h"
 #include "Audio/EditorAudioListenerComponent.h"
@@ -25,17 +24,6 @@
 #include "Audio/EditorAudioRtpcComponent.h"
 #include "Audio/EditorAudioSwitchComponent.h"
 #include "Audio/EditorAudioTriggerComponent.h"
-#include "Rendering/EditorDecalComponent.h"
-#include "Rendering/EditorLensFlareComponent.h"
-#include "Rendering/EditorLightComponent.h"
-#include "Rendering/EditorPointLightComponent.h"
-#include "Rendering/EditorAreaLightComponent.h"
-#include "Rendering/EditorProjectorLightComponent.h"
-#include "Rendering/EditorEnvProbeComponent.h"
-#include "Rendering/EditorHighQualityShadowComponent.h"
-#include "Rendering/EditorMeshComponent.h"
-#include "Rendering/EditorFogVolumeComponent.h"
-#include "Rendering/EditorGeomCacheComponent.h"
 #include "Scripting/EditorLookAtComponent.h"
 #include "Scripting/EditorRandomTimedSpawnerComponent.h"
 #include "Scripting/EditorSpawnerComponent.h"
@@ -71,7 +59,6 @@ namespace LmbrCentral
         : LmbrCentralModule()
     {
         m_descriptors.insert(m_descriptors.end(), {
-            EditorAttachmentComponent::CreateDescriptor(),
             EditorAudioAreaEnvironmentComponent::CreateDescriptor(),
             EditorAudioEnvironmentComponent::CreateDescriptor(),
             EditorAudioListenerComponent::CreateDescriptor(),
@@ -80,15 +67,6 @@ namespace LmbrCentral
             EditorAudioRtpcComponent::CreateDescriptor(),
             EditorAudioSwitchComponent::CreateDescriptor(),
             EditorAudioTriggerComponent::CreateDescriptor(),
-            EditorDecalComponent::CreateDescriptor(),
-            EditorLensFlareComponent::CreateDescriptor(),
-            EditorLightComponent::CreateDescriptor(),
-            EditorPointLightComponent::CreateDescriptor(),
-            EditorAreaLightComponent::CreateDescriptor(),
-            EditorProjectorLightComponent::CreateDescriptor(),
-            EditorEnvProbeComponent::CreateDescriptor(),
-            EditorHighQualityShadowComponent::CreateDescriptor(),
-            EditorMeshComponent::CreateDescriptor(),
             EditorTagComponent::CreateDescriptor(),
             EditorSphereShapeComponent::CreateDescriptor(),
             EditorDiskShapeComponent::CreateDescriptor(),
@@ -104,9 +82,7 @@ namespace LmbrCentral
             EditorCommentComponent::CreateDescriptor(),
             EditorNavigationAreaComponent::CreateDescriptor(),
             EditorNavigationSeedComponent::CreateDescriptor(),
-            EditorFogVolumeComponent::CreateDescriptor(),
             EditorRandomTimedSpawnerComponent::CreateDescriptor(),
-            EditorGeometryCacheComponent::CreateDescriptor(),
             EditorSpawnerComponent::CreateDescriptor(),            
             CopyDependencyBuilder::CopyDependencyBuilderComponent::CreateDescriptor(),
             DependencyBuilder::DependencyBuilderComponent::CreateDescriptor(),
@@ -127,8 +103,6 @@ namespace LmbrCentral
             typeIds.emplace_back(descriptor->GetUuid());
         }
         EBUS_EVENT(AzFramework::MetricsPlainTextNameRegistrationBus, RegisterForNameSending, typeIds);
-
-        EditorMeshBus::Handler::BusConnect();
     }
 
     LmbrCentralEditorModule::~LmbrCentralEditorModule()
@@ -142,11 +116,6 @@ namespace LmbrCentral
         requiredComponents.push_back(azrtti_typeid<AzToolsFramework::Components::EditorSelectionAccentSystemComponent>());
 
         return requiredComponents;
-    }
-
-    bool LmbrCentralEditorModule::AddMeshComponentWithAssetId(const AZ::EntityId& targetEntity, const AZ::Uuid& meshAssetId)
-    {
-        return AddMeshComponentWithMesh(targetEntity, meshAssetId);
     }
 } // namespace LmbrCentral
 

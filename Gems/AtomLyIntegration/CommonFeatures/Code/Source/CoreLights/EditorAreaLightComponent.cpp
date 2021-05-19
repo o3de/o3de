@@ -49,8 +49,8 @@ namespace AZ
                         "Light", "A light which emits from a point or goemetric shape.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::Category, "Atom")
-                            ->Attribute(Edit::Attributes::Icon, "Editor/Icons/Components/Component_Placeholder.svg")
-                            ->Attribute(Edit::Attributes::ViewportIcon, "editor/icons/components/viewport/component_placeholder.png")
+                            ->Attribute(Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
+                            ->Attribute(Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.png")
                             ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-light.html")
@@ -173,10 +173,10 @@ namespace AZ
                         ->DataElement(
                             Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_pcfMethod, "Pcf method",
                             "Type of PCF to use.\n"
-                            "  Boundary search: do several taps to first determine if we are on a shadow boundary\n"
-                            "  Bicubic: a smooth, fixed-size kernel \n")
-                            ->EnumAttribute(PcfMethod::BoundarySearch, "Boundary search")
+                            "  Bicubic: a smooth, fixed-size kernel \n"
+                            "  Boundary search: do several taps to first determine if we are on a shadow boundary\n")
                             ->EnumAttribute(PcfMethod::Bicubic, "Bicubic")
+                            ->EnumAttribute(PcfMethod::BoundarySearch, "Boundary search")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsShadowPcfDisabled);
@@ -336,6 +336,7 @@ namespace AZ
             bool needsFullRefresh = HandleLightTypeChange();
 
             LmbrCentral::EditorShapeComponentRequestsBus::Event(GetEntityId(), &LmbrCentral::EditorShapeComponentRequests::SetShapeColor, m_controller.m_configuration.m_color);
+            LmbrCentral::EditorShapeComponentRequestsBus::Event(GetEntityId(), &LmbrCentral::EditorShapeComponentRequests::SetShapeWireframeColor, m_controller.m_configuration.m_color);
 
             // If photometric unit changes, convert the intensities so the actual intensity doesn't change.
             m_controller.ConvertToIntensityMode(m_controller.m_configuration.m_intensityMode);

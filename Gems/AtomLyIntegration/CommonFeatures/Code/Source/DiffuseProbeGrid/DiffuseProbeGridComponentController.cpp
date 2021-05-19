@@ -25,7 +25,7 @@
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/Scene/Scene.h>
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
 
@@ -73,6 +73,7 @@ namespace AZ
         void DiffuseProbeGridComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC("DiffuseProbeGridService", 0x63d32042));
+            incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         void DiffuseProbeGridComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

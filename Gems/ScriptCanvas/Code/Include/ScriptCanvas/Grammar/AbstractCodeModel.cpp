@@ -234,7 +234,7 @@ namespace ScriptCanvas
             AZStd::set<const GraphVariable*, GraphVariable::Comparator> sortedVariables;
             for (const auto& variablePair : sourceVariables)
             {
-                if (variablePair.second.GetScope() == VariableFlags::Scope::Graph)
+                if (variablePair.second.GetScope() != VariableFlags::Scope::FunctionReadOnly)
                 {
                     sortedVariables.insert(&variablePair.second);
                 }
@@ -244,14 +244,19 @@ namespace ScriptCanvas
                     // #functions2 slot<->variable consider getting all variables from the UX variable manager, or from the ACM and looking them up in the variable manager for ordering
                     m_sourceVariableByDatum.insert(AZStd::make_pair(datum, &variablePair.second));
                 }
+                
             }
 
             for (auto& sourceVariable : sortedVariables)
             {
                 auto datum = sourceVariable->GetDatum();
                 AZ_Assert(datum != nullptr, "the datum must be valid");
+
                 // #functions2 slot<->variable check to verify if it is a member variable
-                auto variable = AddMemberVariable(*datum, sourceVariable->GetVariableName(), sourceVariable->GetVariableId());
+                auto variable = sourceVariable->GetScope() == VariableFlags::Scope::Graph
+                    ? AddMemberVariable(*datum, sourceVariable->GetVariableName(), sourceVariable->GetVariableId())
+                    : AddVariable(*datum, sourceVariable->GetVariableName(), sourceVariable->GetVariableId());
+
                 variable->m_isExposedToConstruction = sourceVariable->IsComponentProperty();
                 // also, all nodeables with !empty editor data have to be exposed
                 // \todo future optimizations will involve checking equality against a default constructed object   
@@ -1205,7 +1210,13 @@ namespace ScriptCanvas
             }
 
             auto& variableNamesInStart = ModStaticVariablesNames(startNode);
-            variableNamesInStart.insert(variableNamesInStart.end(), m_staticVariableNames.begin(), m_staticVariableNames.end());
+            for (auto& staticVariable : m_staticVariableNames)
+            {
+                if (AZStd::find(variableNamesInStart.begin(), variableNamesInStart.end(), staticVariable) == variableNamesInStart.end())
+                {
+                    variableNamesInStart.push_back(staticVariable);
+                }
+            }
         }
 
         void AbstractCodeModel::CreateUserFunctionDefinition(const Node& node, const Slot& entrySlot)
@@ -1598,7 +1609,7 @@ namespace ScriptCanvas
         const AZStd::pair<VariableConstPtr, AZStd::string>* AbstractCodeModel::FindStaticVariable(VariableConstPtr variable) const
         {
             auto iter = AZStd::find_if
-            (m_staticVariableNames.begin()
+                ( m_staticVariableNames.begin()
                 , m_staticVariableNames.end()
                 , [&](const auto& candidate) { return candidate.first == variable; });
 
@@ -2701,15 +2712,20 @@ namespace ScriptCanvas
                 AZStd::string name = AddTranslationVariableName(AZStd::string::format("s_%sCloneSource", staticVariable->m_name.c_str()));
                 staticVariableNames.push_back({ staticVariable, name });
 
-                if (!staticVariable->m_isMember)
+                if (!staticVariable->m_isMember && !staticVariable->m_isFromFunctionDefinitionSlot)
                 {
                     if (staticVariable->m_source)
                     {
-                        ModStaticVariablesNames(staticVariable->m_source).push_back({ staticVariable, name });
-                    }
-                    else
-                    {
-                        AddError(nullptr, aznew Internal::ParseError(AZ::EntityId(), "Missing source for local variable that requires static initializer"));
+                        auto& localStatics = ModStaticVariablesNames(staticVariable->m_source);
+                        auto iter = AZStd::find_if
+                            ( localStatics.begin()
+                            , localStatics.end()
+                            , [&](const auto& candidate) { return candidate.first == staticVariable; });
+
+                        if (iter == localStatics.end())
+                        {
+                            localStatics.push_back({ staticVariable, name });
+                        }
                     }
                 }
             }
@@ -3098,7 +3114,7 @@ namespace ScriptCanvas
             /// NOTE: after basic iteration works correctly
             /// \todo when subsequent input (from nodes connected to the break slot) looks up the slot from the node with key or the value,
             /// it is going to have to find the output of the get/key value functions in BOTH the child outs of break and loop
-            /// https://jira.agscollab.com/browse/LY-109862 may be required for this
+            /// LY-109862 may be required for this
 
             ExecutionTreePtr lastExecution = forEachLoopBody;
 
@@ -3257,13 +3273,12 @@ namespace ScriptCanvas
                                 return;
                             }
 
-                            execution->SetNodeable(iter->second->m_nodeable);
+                            child->SetNodeable(iter->second->m_nodeable);
 
                             for (auto& childOutSlot : childOutSlots)
                             {
                                 AZ_Assert(childOutSlot, "null slot in child out slot list");
                                 ExecutionTreePtr internalOut = OpenScope(child, node, childOutSlot);
-                                internalOut->SetNodeable(execution->GetNodeable());
 
                                 const size_t outIndex = node->GetOutIndex(*childOutSlot);
                                 if (outIndex == std::numeric_limits<size_t>::max())
@@ -4393,6 +4408,7 @@ namespace ScriptCanvas
 
                     // Scope and name are initialized later
                     variable->m_sourceSlotId = slot->GetId();
+                    variable->m_isFromFunctionDefinitionSlot = true;
                     variablesBySlots.insert({ slot, variable });
                     m_variables.push_back(variable);
                 }
@@ -4998,6 +5014,24 @@ namespace ScriptCanvas
 
             m_variableUse.localVariables.insert(usage.localVariables.begin(), usage.localVariables.end());
             m_variableUse.memberVariables.insert(usage.memberVariables.begin(), usage.memberVariables.end());
+
+            for (auto variable : m_variableUse.localVariables)
+            {
+                if (const AZStd::pair<VariableConstPtr, AZStd::string>* pair = FindStaticVariable(variable))
+                {
+                    auto& localStatics = ModStaticVariablesNames(execution);
+                    auto iter = AZStd::find_if
+                        (localStatics.begin()
+                        , localStatics.end()
+                        , [&](const auto& candidate) { return candidate.first == variable; });
+
+                    if (iter == localStatics.end())
+                    {
+                        localStatics.push_back(*pair);
+                    }
+                }
+            }
+
             m_variableUseByExecution.emplace(execution, listener.MoveUsedVariables());
             return (!usage.usesExternallyInitializedVariables) && usesOnlyLocalVariables && listener.IsPure();
         }

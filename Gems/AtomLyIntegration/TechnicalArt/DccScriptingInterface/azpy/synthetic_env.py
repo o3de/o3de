@@ -667,7 +667,7 @@ if __name__ == '__main__':
         try:
             import azpy.test.entry_test
             print('SUCCESS: import azpy.test.entry_test')
-            azpy.test.entry_test.main(verbose=True, connectDebugger=True)            
+            azpy.test.entry_test.main(verbose=True, connect_debugger=True)            
         except ImportError as e:
             print('ERROR: {0}'.format(e))
             raise e  

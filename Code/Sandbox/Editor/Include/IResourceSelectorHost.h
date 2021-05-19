@@ -26,17 +26,7 @@
 //     ...
 //     return previousValue;
 //   }
-//   REGISTER_RESOURCE_SELECTOR("Sound", SoundFileSelector, "Editor/icons/sound_16x16.png")
-//
-// To expose it to serialization:
-//
-//   #include "Serialization/Decorators/Resources.h"
-//   template<class TString>
-//   ResourceSelector<TString> SoundName(TString& s) { return ResourceSelector<TString>(s, "Sound"); }
-//
-// To use in serialization:
-//
-//   ar(Serialization::SoundName(soundString), "soundString", "Sound String");
+//   REGISTER_RESOURCE_SELECTOR("Sound", SoundFileSelector, "Icons/sound_16x16.png")
 //
 // Here is how it can be invoked directly:
 //
@@ -56,19 +46,7 @@
 //
 //   QString SoundFileSelector(const SResourceSelectorContext& x, const QString& previousValue,
 //                             SoundFileList* list) // your context argument
-//
-// And provide this value through serialization context:
-//
-// struct SourceFileList
-// {
-//   void Serialize(IArchive& ar)
-//   {
-//     Serialization::SContext<SourceFileList> context(ar, this);
-//     ...
-//   }
-// }
 
-#include <Serialization/TypeID.h>
 #include <QString>
 
 class QWidget;
@@ -82,7 +60,6 @@ struct SResourceSelectorContext
 
     unsigned int entityId;
     void* contextObject;
-    Serialization::TypeID contextObjectType;
 
     SResourceSelectorContext()
         : parentWidget(0)
@@ -107,7 +84,6 @@ struct IResourceSelectorHost
     virtual ~IResourceSelectorHost() = default;
     virtual QString SelectResource(const SResourceSelectorContext& context, const QString& previousValue) = 0;
     virtual const char* ResourceIconPath(const char* typeName) const = 0;
-    virtual Serialization::TypeID ResourceContextType(const char* typeName) const = 0;
 
     virtual void RegisterResourceSelector(const SStaticResourceSelectorEntry* entry) = 0;
 
@@ -128,7 +104,6 @@ struct SStaticResourceSelectorEntry
     TResourceSelectionFunction function;
     TResourceSelectionFunctionWithContext functionWithContext;
     const char* iconPath;
-    Serialization::TypeID contextType;
 
     static SStaticResourceSelectorEntry*& GetFirst() { static SStaticResourceSelectorEntry* first; return first; }
     SStaticResourceSelectorEntry* next;
@@ -150,7 +125,6 @@ struct SStaticResourceSelectorEntry
         , functionWithContext(TResourceSelectionFunctionWithContext(function))
         , iconPath(icon)
     {
-        contextType = Serialization::TypeID::get<T>();
         next = GetFirst();
         GetFirst() = this;
     }

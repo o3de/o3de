@@ -14,11 +14,9 @@
 
 namespace Multiplayer
 {
-    static constexpr uint32_t Uint32Max = AZStd::numeric_limits<uint32_t>::max();
-
     // This can be used to help mitigate client side performance when large numbers of entities are created off the network
-    AZ_CVAR(uint32_t, sv_ClientMaxRemoteEntitiesPendingCreationCount, Uint32Max, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximum number of entities that we have sent to the client, but have not had a confirmation back from the client");
-    AZ_CVAR(uint32_t, sv_ClientMaxRemoteEntitiesPendingCreationCountPostInit, Uint32Max, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximum number of entities that we will send to clients after gameplay has begun");
+    AZ_CVAR(uint32_t, sv_ClientMaxRemoteEntitiesPendingCreationCount, AZStd::numeric_limits<uint32_t>::max(), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximum number of entities that we have sent to the client, but have not had a confirmation back from the client");
+    AZ_CVAR(uint32_t, sv_ClientMaxRemoteEntitiesPendingCreationCountPostInit, AZStd::numeric_limits<uint32_t>::max(), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximum number of entities that we will send to clients after gameplay has begun");
     AZ_CVAR(AZ::TimeMs, sv_ClientEntityReplicatorPendingRemovalTimeMs, AZ::TimeMs{ 10000 }, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "How long should wait prior to removing an entity for the client through a change in the replication window, entity deletes are still immediate");
 
     ServerToClientConnectionData::ServerToClientConnectionData
@@ -37,7 +35,7 @@ namespace Multiplayer
         if (netBindComponent != nullptr)
         {
             netBindComponent->AddEntityStopEventHandler(m_controlledEntityRemovedHandler);
-            netBindComponent->AddEntityMigrationEventHandler(m_controlledEntityMigrationHandler);
+            netBindComponent->AddEntityServerMigrationEventHandler(m_controlledEntityMigrationHandler);
         }
 
         m_entityReplicationManager.SetMaxRemoteEntitiesPendingCreationCount(sv_ClientMaxRemoteEntitiesPendingCreationCount);
@@ -65,7 +63,7 @@ namespace Multiplayer
         return m_entityReplicationManager;
     }
 
-    void ServerToClientConnectionData::Update(AZ::TimeMs serverGameTimeMs)
+    void ServerToClientConnectionData::Update(AZ::TimeMs hostTimeMs)
     {
         m_entityReplicationManager.ActivatePendingEntities();
 
@@ -75,7 +73,7 @@ namespace Multiplayer
             // potentially false if we just migrated the player, if that is the case, don't send any more updates
             if (netBindComponent != nullptr && (netBindComponent->GetNetEntityRole() == NetEntityRole::Authority))
             {
-                m_entityReplicationManager.SendUpdates(serverGameTimeMs);
+                m_entityReplicationManager.SendUpdates(hostTimeMs);
             }
         }
     }

@@ -28,6 +28,8 @@
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobEmpty.h>
 
+#include <AzFramework/Entity/EntityContext.h>
+
 namespace AZ
 {
     namespace RPI
@@ -71,12 +73,15 @@ namespace AZ
         Scene* Scene::GetSceneForEntityContextId(AzFramework::EntityContextId entityContextId)
         {
             // Find the scene for this entity context.
-            AzFramework::Scene* scene = nullptr;
-            AzFramework::SceneSystemRequestBus::BroadcastResult(scene, &AzFramework::SceneSystemRequestBus::Events::GetSceneFromEntityContextId, entityContextId);
+            AZStd::shared_ptr<AzFramework::Scene> scene = AzFramework::EntityContext::FindContainingScene(entityContextId);
             if (scene)
             {
                 // Get the RPI::Scene subsystem from the AZFramework Scene.
-                return scene->GetSubsystem<RPI::Scene>();
+                RPI::ScenePtr* scenePtr = scene->FindSubsystem<RPI::ScenePtr>();
+                if (scenePtr)
+                {
+                    return scenePtr->get();
+                }
             }
             return nullptr;
         }
@@ -87,13 +92,13 @@ namespace AZ
             m_id = Uuid::CreateRandom();
             m_cullingScene = aznew CullingScene();
             SceneRequestBus::Handler::BusConnect(m_id);
+            m_drawFilterTagRegistry = RHI::DrawFilterTagRegistry::Create();
         }
 
         Scene::~Scene()
         {
             WaitAndCleanCompletionJob(m_simulationCompletion);
             SceneRequestBus::Handler::BusDisconnect();
-            DisableAllFeatureProcessors();
 
             // Remove all the render pipelines. Need to process queued changes with pass system before and after remove render pipelines
             AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
@@ -104,6 +109,8 @@ namespace AZ
             }
             m_pipelines.clear();
             AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
+
+            Deactivate();
 
             delete m_cullingScene;
         }
@@ -132,8 +139,11 @@ namespace AZ
 
         void Scene::Deactivate()
         {
-            AZ_Assert(m_activated, "Not activated");
-
+            if (!m_activated)
+            {
+                return;
+            }
+            
             for (auto& fp : m_featureProcessors)
             {
                 fp->Deactivate();
@@ -234,7 +244,6 @@ namespace AZ
                 fp->Deactivate();
             }
             m_featureProcessors.clear();
-            m_pipelineStatesLookup.clear();
         }
         
         FeatureProcessor* Scene::GetFeatureProcessor(const FeatureProcessorId& featureProcessorId) const
@@ -269,6 +278,8 @@ namespace AZ
                 return;
             }
 
+            pipeline->SetDrawFilterTag(m_drawFilterTagRegistry->AcquireTag(pipelineId));
+
             m_pipelines.push_back(pipeline);
 
             // Set this pipeline as default if the default pipeline was empty. This pipeline should be the first pipeline be added to the scene
@@ -302,6 +313,8 @@ namespace AZ
                     {
                         m_defaultPipeline = nullptr;
                     }
+
+                    m_drawFilterTagRegistry->ReleaseTag(pipelineToRemove->GetDrawFilterTag());
 
                     pipelineToRemove->OnRemovedFromScene(this);
                     m_pipelines.erase(it);

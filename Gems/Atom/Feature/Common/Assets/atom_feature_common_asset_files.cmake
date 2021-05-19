@@ -38,6 +38,7 @@ set(FILES
     Materials/Types/StandardMultilayerPBR_ForwardPass_EDS.shader
     Materials/Types/StandardMultilayerPBR_Parallax.lua
     Materials/Types/StandardMultilayerPBR_ParallaxPerLayer.lua
+    Materials/Types/StandardMultilayerPBR_ShaderEnable.lua
     Materials/Types/StandardMultilayerPBR_Shadowmap_WithPS.azsl
     Materials/Types/StandardMultilayerPBR_Shadowmap_WithPS.shader
     Materials/Types/StandardPBR.materialtype
@@ -52,6 +53,9 @@ set(FILES
     Materials/Types/StandardPBR_ForwardPass_EDS.shader
     Materials/Types/StandardPBR_HandleOpacityDoubleSided.lua
     Materials/Types/StandardPBR_HandleOpacityMode.lua
+    Materials/Types/StandardPBR_LowEndForward.azsl
+    Materials/Types/StandardPBR_LowEndForward.shader
+    Materials/Types/StandardPBR_LowEndForward_EDS.shader
     Materials/Types/StandardPBR_ParallaxState.lua
     Materials/Types/StandardPBR_Roughness.lua
     Materials/Types/StandardPBR_ShaderEnable.lua
@@ -116,6 +120,7 @@ set(FILES
     Passes/DiffuseProbeGridBlendDistance.pass
     Passes/DiffuseProbeGridBlendIrradiance.pass
     Passes/DiffuseProbeGridBorderUpdate.pass
+    Passes/DiffuseProbeGridClassification.pass
     Passes/DiffuseProbeGridDownsample.pass
     Passes/DiffuseProbeGridRayTracing.pass
     Passes/DiffuseProbeGridRelocation.pass
@@ -140,9 +145,11 @@ set(FILES
     Passes/Forward.pass
     Passes/ForwardCheckerboard.pass
     Passes/ForwardMSAA.pass
+    Passes/ForwardSubsurfaceMSAA.pass
     Passes/FullscreenCopy.pass
     Passes/FullscreenOutputOnly.pass
     Passes/ImGui.pass
+    Passes/LightAdaptationParent.pass
     Passes/LightCulling.pass
     Passes/LightCullingHeatmap.pass
     Passes/LightCullingParent.pass
@@ -151,6 +158,8 @@ set(FILES
     Passes/LightCullingTilePrepareMSAA.pass
     Passes/LookModificationComposite.pass
     Passes/LookModificationTransform.pass
+    Passes/LowEndForward.pass
+    Passes/LowEndPipeline.pass
     Passes/LuminanceHeatmap.pass
     Passes/LuminanceHistogramGenerator.pass
     Passes/MainPipeline.pass
@@ -164,6 +173,7 @@ set(FILES
     Passes/MSAAResolveDepth.pass
     Passes/OpaqueParent.pass
     Passes/PostProcessParent.pass
+    Passes/ProjectedShadowmaps.pass
     Passes/RayTracingAccelerationStructure.pass
     Passes/ReflectionComposite.pass
     Passes/ReflectionCopyFrameBuffer.pass
@@ -177,20 +187,22 @@ set(FILES
     Passes/ReflectionScreenSpace.pass
     Passes/ReflectionScreenSpaceBlur.pass
     Passes/ReflectionScreenSpaceBlurHorizontal.pass
+    Passes/ReflectionScreenSpaceBlurMobile.pass
     Passes/ReflectionScreenSpaceBlurVertical.pass
     Passes/ReflectionScreenSpaceComposite.pass
+    Passes/ReflectionScreenSpaceMobile.pass
     Passes/ReflectionScreenSpaceTrace.pass
     Passes/Reflections_nomsaa.pass
     Passes/ShadowParent.pass
     Passes/Skinning.pass
     Passes/SkyBox.pass
+    Passes/SkyBox_TwoOutputs.pass
     Passes/SMAA1xApplyLinearHDRColor.pass
     Passes/SMAA1xApplyPerceptualColor.pass
     Passes/SMAABlendingWeightCalculation.pass
     Passes/SMAAConvertToPerceptualColor.pass
     Passes/SMAAEdgeDetection.pass
     Passes/SMAANeighborhoodBlending.pass
-    Passes/ProjectedShadowmaps.pass
     Passes/SsaoCompute.pass
     Passes/SsaoHalfRes.pass
     Passes/SsaoParent.pass
@@ -204,6 +216,7 @@ set(FILES
     ShaderLib/Atom/Features/IndirectRendering.azsli
     ShaderLib/Atom/Features/MatrixUtility.azsli
     ShaderLib/Atom/Features/ParallaxMapping.azsli
+    ShaderLib/Atom/Features/ShaderQualityOptions.azsli
     ShaderLib/Atom/Features/SphericalHarmonicsUtility.azsli
     ShaderLib/Atom/Features/SrgSemantics.azsli
     ShaderLib/Atom/Features/ColorManagement/TransformColor.azsli
@@ -229,14 +242,15 @@ set(FILES
     ShaderLib/Atom/Features/PBR/DefaultObjectSrg.azsli
     ShaderLib/Atom/Features/PBR/ForwardPassOutput.azsli
     ShaderLib/Atom/Features/PBR/ForwardPassSrg.azsli
+    ShaderLib/Atom/Features/PBR/ForwardSubsurfacePassOutput.azsli
     ShaderLib/Atom/Features/PBR/Hammersley.azsli
-    ShaderLib/Atom/Features/PBR/LightingModel.azsli
     ShaderLib/Atom/Features/PBR/LightingOptions.azsli
     ShaderLib/Atom/Features/PBR/LightingUtils.azsli
-    ShaderLib/Atom/Features/PBR/Surface.azsli
     ShaderLib/Atom/Features/PBR/TransparentPassSrg.azsli
     ShaderLib/Atom/Features/PBR/Lighting/DualSpecularLighting.azsli
+    ShaderLib/Atom/Features/PBR/Lighting/EnhancedLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/LightingData.azsli
+    ShaderLib/Atom/Features/PBR/Lighting/SkinLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/StandardLighting.azsli
     ShaderLib/Atom/Features/PBR/Lights/CapsuleLight.azsli
     ShaderLib/Atom/Features/PBR/Lights/DirectionalLight.azsli
@@ -248,6 +262,8 @@ set(FILES
     ShaderLib/Atom/Features/PBR/Lights/PointLight.azsli
     ShaderLib/Atom/Features/PBR/Lights/PolygonLight.azsli
     ShaderLib/Atom/Features/PBR/Lights/QuadLight.azsli
+    ShaderLib/Atom/Features/PBR/Lights/SimplePointLight.azsli
+    ShaderLib/Atom/Features/PBR/Lights/SimpleSpotLight.azsli
     ShaderLib/Atom/Features/PBR/Microfacet/Brdf.azsli
     ShaderLib/Atom/Features/PBR/Microfacet/Fresnel.azsli
     ShaderLib/Atom/Features/PBR/Microfacet/Ggx.azsli
@@ -255,6 +271,8 @@ set(FILES
     ShaderLib/Atom/Features/PBR/Surfaces/BasePbrSurfaceData.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/ClearCoatSurfaceData.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/DualSpecularSurface.azsli
+    ShaderLib/Atom/Features/PBR/Surfaces/EnhancedSurface.azsli
+    ShaderLib/Atom/Features/PBR/Surfaces/SkinSurface.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/StandardSurface.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/TransmissionSurfaceData.azsli
     ShaderLib/Atom/Features/PostProcessing/Aces.azsli
@@ -266,13 +284,15 @@ set(FILES
     ShaderLib/Atom/Features/PostProcessing/GlyphData.azsli
     ShaderLib/Atom/Features/PostProcessing/GlyphRender.azsli
     ShaderLib/Atom/Features/PostProcessing/PostProcessUtil.azsli
+    ShaderLib/Atom/Features/RayTracing/RayTracingSceneSrg.azsli
     ShaderLib/Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli
     ShaderLib/Atom/Features/Shadow/BicubicPcfFilters.azsli
     ShaderLib/Atom/Features/Shadow/DirectionalLightShadow.azsli
     ShaderLib/Atom/Features/Shadow/JitterTablePcf.azsli
+    ShaderLib/Atom/Features/Shadow/ProjectedShadow.azsli
     ShaderLib/Atom/Features/Shadow/Shadow.azsli
     ShaderLib/Atom/Features/Shadow/ShadowmapAtlasLib.azsli
-    ShaderLib/Atom/Features/Shadow/ProjectedShadow.azsli
+    ShaderLib/Atom/Features/Vertex/VertexHelper.azsli
     ShaderResourceGroups/SceneSrg.azsli
     ShaderResourceGroups/SceneSrgAll.azsli
     ShaderResourceGroups/SceneTimeSrg.azsli
@@ -464,4 +484,6 @@ set(FILES
     Shaders/SkinnedMesh/LinearSkinningPassSRG.azsli
     Shaders/SkyBox/SkyBox.azsl
     Shaders/SkyBox/SkyBox.shader
+    Shaders/SkyBox/SkyBox_TwoOutputs.azsl
+    Shaders/SkyBox/SkyBox_TwoOutputs.shader
 ) 

@@ -18,6 +18,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Entity/SliceGameEntityOwnershipService.h>
+#include <AzFramework/Visibility/EntityVisibilityBoundsUnionSystem.h>
 
 #include "EntityContext.h"
 
@@ -51,6 +52,7 @@ namespace AzFramework
         //////////////////////////////////////////////////////////////////////////
         // GameEntityContextRequestBus
         AZ::Uuid GetGameEntityContextId() override { return GetContextId(); }
+        EntityContext* GetGameEntityContextInstance() override { return this; }
         void ResetGameContext() override;
         AZ::Entity* CreateGameEntity(const char* name) override;
         BehaviorEntity CreateGameEntityForBehaviorContext(const char* name) override;
@@ -90,6 +92,9 @@ namespace AzFramework
         {
             required.push_back(AZ_CRC("SliceSystemService", 0x1a5b7aad));
         }
+
+    private:
+        AzFramework::EntityVisibilityBoundsUnionSystem m_entityVisibilityBoundsUnionSystem;
     };
 } // namespace AzFramework
 

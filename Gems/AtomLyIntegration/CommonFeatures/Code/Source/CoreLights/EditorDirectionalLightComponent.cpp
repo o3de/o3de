@@ -44,8 +44,8 @@ namespace AZ
                         "Directional Light", "A directional light to cast a shadow of meshes onto meshes.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Atom")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Component_Placeholder.svg") // [GFX TODO][ATOM-1998] create icons.
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "editor/icons/components/viewport/component_placeholder.png") // [GFX TODO][ATOM-1998] create icons.
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO][ATOM-1998] create icons.
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.png") // [GFX TODO][ATOM-1998] create icons.
                         ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                         ->Attribute(Edit::Attributes::HelpPageURL, "https://") // [GFX TODO][ATOM-1998] create page
@@ -163,10 +163,10 @@ namespace AZ
                         ->DataElement(
                             Edit::UIHandlers::ComboBox, &DirectionalLightComponentConfig::m_pcfMethod, "Pcf Method",
                             "Type of Pcf to use.\n"
-                            "  Boundary search: do several taps to first determine if we are on a shadow boundary\n"
-                            "  Bicubic: a smooth, fixed-size kernel \n")
-                        ->EnumAttribute(PcfMethod::BoundarySearch, "Boundary Search")
+                            "  Bicubic: a smooth, fixed-size kernel \n"
+                            "  Boundary search: do several taps to first determine if we are on a shadow boundary\n")
                         ->EnumAttribute(PcfMethod::Bicubic, "Bicubic")
+                        ->EnumAttribute(PcfMethod::BoundarySearch, "Boundary Search")
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled);
                             ;

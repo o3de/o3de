@@ -12,8 +12,8 @@
 
 #pragma once
 
-#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
@@ -45,7 +45,7 @@ namespace AzToolsFramework
 
             // PrefabPublicInterface...
             PrefabOperationResult CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath) override;
-            PrefabOperationResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, AZ::Vector3 position) override;
+            PrefabOperationResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
             PrefabOperationResult SavePrefab(AZ::IO::Path filePath) override;
             PrefabEntityResult CreateEntity(AZ::EntityId parentId, const AZ::Vector3& position) override;
             
@@ -77,10 +77,21 @@ namespace AzToolsFramework
              * \param targetInstance The id of the target template.
              * \param undoBatch The undo batch to set as parent for this create link action.
              * \param commonRootEntityId The id of the entity that the source instance should be parented under.
+             * \param isUndoRedoSupportNeeded The flag indicating whether the link should be created with undo/redo support or not.
              */
             void CreateLink(
                 const EntityList& topLevelEntities, Instance& sourceInstance, TemplateId targetTemplateId,
-                UndoSystem::URSequencePoint* undoBatch, AZ::EntityId commonRootEntityId);
+                UndoSystem::URSequencePoint* undoBatch, AZ::EntityId commonRootEntityId, const bool isUndoRedoSupportNeeded = true);
+
+            /**
+             * Removes the link between template of the sourceInstance and the template corresponding to targetTemplateId.
+             *
+             * \param sourceInstance The instance corresponding to the source template of the link to be removed.
+             * \param targetTemplateId The id of the target template of the link to be removed.
+             * \param undoBatch The undo batch to set as parent for this remove link action.
+             */
+            void RemoveLink(
+                AZStd::unique_ptr<Instance>& sourceInstance, TemplateId targetTemplateId, UndoSystem::URSequencePoint* undoBatch);
 
             /**
              * Given a list of entityIds, finds the prefab instance that owns the common root entity of the entityIds.
@@ -96,6 +107,16 @@ namespace AzToolsFramework
                 const AZStd::vector<AZ::EntityId>& entityIds, EntityList& inputEntityList, EntityList& topLevelEntities,
                 AZ::EntityId& commonRootEntityId, InstanceOptionalReference& commonRootEntityOwningInstance);
 
+            /* Checks whether the template source path of any of the ancestors in the instance hierarchy matches with one of the
+             * paths provided in a set.
+             *
+             * \param instance The instance whose ancestor hierarchy the provided set of template source paths will be tested against.
+             * \param templateSourcePaths The template source paths provided to be checked against the instance ancestor hierarchy.
+             * \return true if any of the template source paths could be found in the ancestor hierarchy of instance, false otherwise.
+             */
+            bool IsCyclicalDependencyFound(
+                InstanceOptionalConstReference instance, const AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths);
+
             static Instance* GetParentInstance(Instance* instance);
             static Instance* GetAncestorOfInstanceThatIsChildOfRoot(const Instance* ancestor, Instance* descendant);
             static void GenerateContainerEntityTransform(const EntityList& topLevelEntities, AZ::Vector3& translation, AZ::Quaternion& rotation);
@@ -110,5 +131,5 @@ namespace AzToolsFramework
 
             uint64_t m_newEntityCounter = 1;
         };
-    }
-}
+    } // namespace Prefab
+} // namespace AzToolsFramework

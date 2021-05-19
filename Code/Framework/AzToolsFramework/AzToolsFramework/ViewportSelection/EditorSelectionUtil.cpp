@@ -13,7 +13,9 @@
 #include "EditorSelectionUtil.h"
 
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/IntersectSegment.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -28,7 +30,8 @@ namespace AzToolsFramework
     {
         if (Centered(pivot))
         {
-            if (const AZ::Aabb localBound = AzFramework::CalculateEntityLocalBoundsUnion(entityId);
+            const AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
+            if (const AZ::Aabb localBound = AzFramework::CalculateEntityLocalBoundsUnion(entity);
                 localBound.IsValid())
             {
                 return localBound.GetCenter();
@@ -53,11 +56,11 @@ namespace AzToolsFramework
         return AZ::GetMax(projectedCameraDistance, cameraState.m_nearClip) / apparentDistance;
     }
 
-    QPoint GetScreenPosition(const int viewportId, const AZ::Vector3& worldTranslation)
+     AzFramework::ScreenPoint GetScreenPosition(const int viewportId, const AZ::Vector3& worldTranslation)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-        QPoint screenPosition = QPoint();
+        auto screenPosition = AzFramework::ScreenPoint(0, 0);
         ViewportInteraction::ViewportInteractionRequestBus::EventResult(
             screenPosition, viewportId,
             &ViewportInteraction::ViewportInteractionRequestBus::Events::ViewportWorldToScreen,

@@ -1911,9 +1911,6 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
 
     for (RenderCacheBatch* batch : m_renderCache.m_batches)
     {
-        const char* profileMarker = "UI_TEXT";
-        gEnv->pRenderer->PushProfileMarker(profileMarker);
-
         AZ::FFont* font = static_cast<AZ::FFont*>(batch->m_font); // LYSHINE_ATOM_TODO - find a different solution from downcasting FFont to IFont
         AZ::Data::Instance<AZ::RPI::Image> fontImage = font->GetFontImage();
         if (fontImage)
@@ -1944,8 +1941,6 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
                     isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
             }
         }
-
-        gEnv->pRenderer->PopProfileMarker(profileMarker);
     }
 }
 
@@ -3573,13 +3568,14 @@ UiTextComponent::FontEffectComboBoxVec UiTextComponent::PopulateFontEffectList()
     FontEffectComboBoxVec result;
     AZStd::vector<AZ::EntityId> entityIdList;
 
-    // there is always a valid font since we default to "default-ui"
-    // so just get the effects from the font and add their names to the result list
-    unsigned int numEffects = m_font->GetNumEffects();
-    for (int i = 0; i < numEffects; ++i)
+    if (m_font)
     {
-        const char* name = m_font->GetEffectName(i);
-        result.push_back(AZStd::make_pair(i, name));
+        unsigned int numEffects = m_font->GetNumEffects();
+        for (int i = 0; i < numEffects; ++i)
+        {
+            const char* name = m_font->GetEffectName(i);
+            result.push_back(AZStd::make_pair(i, name));
+        }
     }
 
     return result;

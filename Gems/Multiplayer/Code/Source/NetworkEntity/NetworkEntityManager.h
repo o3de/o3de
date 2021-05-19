@@ -15,13 +15,13 @@
 #include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
-#include <Source/NetworkEntity/INetworkEntityManager.h>
 #include <Source/NetworkEntity/NetworkEntityAuthorityTracker.h>
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
-#include <Source/NetworkEntity/NetworkEntityRpcMessage.h>
-#include <Source/EntityDomains/IEntityDomain.h>
 #include <Source/NetworkEntity/NetworkSpawnableLibrary.h>
-
+#include <Multiplayer/Components/MultiplayerComponentRegistry.h>
+#include <Multiplayer/EntityDomains/IEntityDomain.h>
+#include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h>
 
 namespace Multiplayer
 {
@@ -42,14 +42,27 @@ namespace Multiplayer
         //! @{
         NetworkEntityTracker* GetNetworkEntityTracker() override;
         NetworkEntityAuthorityTracker* GetNetworkEntityAuthorityTracker() override;
+        MultiplayerComponentRegistry* GetMultiplayerComponentRegistry() override;
         HostId GetHostId() const override;
         ConstNetworkEntityHandle GetEntity(NetEntityId netEntityId) const override;
 
         EntityList CreateEntitiesImmediate(const AzFramework::Spawnable& spawnable, NetEntityRole netEntityRole);
+        EntityList CreateEntitiesImmediate
+        (
+            const PrefabEntityId& prefabEntryId,
+            NetEntityRole netEntityRole,
+            const AZ::Transform& transform
+        ) override;
+        EntityList CreateEntitiesImmediate
+        (
+            const PrefabEntityId& prefabEntryId,
+            NetEntityId netEntityId,
+            NetEntityRole netEntityRole,
+            AutoActivate autoActivate,
+            const AZ::Transform& transform
+        ) override;
 
-        EntityList CreateEntitiesImmediate(
-            const PrefabEntityId& prefabEntryId, NetEntityId netEntityId, NetEntityRole netEntityRole,
-            const AZ::Transform& transform) override;
+        void SetupNetEntity(AZ::Entity* netEntity, PrefabEntityId prefabEntityId, NetEntityRole netEntityRole) override;
 
         uint32_t GetEntityCount() const override;
         NetworkEntityHandle AddEntityToEntityMap(NetEntityId netEntityId, AZ::Entity* entity) override;
@@ -80,11 +93,12 @@ namespace Multiplayer
 
     private:
         void RemoveEntities();
-
         NetEntityId NextId();
 
         NetworkEntityTracker m_networkEntityTracker;
         NetworkEntityAuthorityTracker m_networkEntityAuthorityTracker;
+        MultiplayerComponentRegistry m_multiplayerComponentRegistry;
+
         AZ::ScheduledEvent m_removeEntitiesEvent;
         AZStd::vector<NetEntityId> m_removeList;
         AZStd::unique_ptr<IEntityDomain> m_entityDomain;
@@ -108,6 +122,5 @@ namespace Multiplayer
         DeferredRpcMessages m_localDeferredRpcMessages;
 
         NetworkSpawnableLibrary m_networkPrefabLibrary;
-        AZ::Data::Asset<AzFramework::Spawnable> m_rootSpawnableAsset;
     };
 }

@@ -284,6 +284,10 @@ namespace AzToolsFramework
     void ToolsApplication::Start(const Descriptor& descriptor, const StartupParameters& startupParameters/* = StartupParameters()*/)
     {
         Application::Start(descriptor, startupParameters);
+        if (!m_isStarted)
+        {
+            return;
+        }
 
         m_editorEntityManager.Start();
 
@@ -395,6 +399,7 @@ namespace AzToolsFramework
                 ->Event("MarkEntityDeselected", &ToolsApplicationRequests::MarkEntityDeselected)
                 ->Event("IsSelected", &ToolsApplicationRequests::IsSelected)
                 ->Event("AreAnyEntitiesSelected", &ToolsApplicationRequests::AreAnyEntitiesSelected)
+                ->Event("GetSelectedEntitiesCount", &ToolsApplicationRequests::GetSelectedEntitiesCount)
                 ;
 
             behaviorContext->EBus<ToolsApplicationNotificationBus>("ToolsApplicationNotificationBus")
@@ -670,20 +675,8 @@ namespace AzToolsFramework
         // if the new viewport interaction model is enabled we do not want to
         // filter out locked entities as this breaks with the logic of being
         // able to select locked entities in the entity outliner
-        if (IsNewViewportInteractionModelEnabled())
-        {
-            selectedEntitiesFiltered.insert(
-                selectedEntitiesFiltered.begin(), selectedEntities.begin(), selectedEntities.end());
-        }
-        else
-        {
-            for (AZ::EntityId nowSelectedId : selectedEntities)
-            {
-                AZ_Assert(nowSelectedId.IsValid(), "Invalid entity Id being marked as selected.");
-
-                selectedEntitiesFiltered.push_back(nowSelectedId);
-            }
-        }
+        selectedEntitiesFiltered.insert(
+            selectedEntitiesFiltered.begin(), selectedEntities.begin(), selectedEntities.end());
 
         EntityIdList newlySelectedIds;
         EntityIdList newlyDeselectedIds;

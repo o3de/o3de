@@ -168,7 +168,7 @@ class TestAbstractResourceLocator(object):
     def test_AssetProcessorConfigFile_IsCalled_ReturnsAssetProcessorConfigFilePath(self):
         mock_abstract_resource_locator = abstract_resource_locator.AbstractResourceLocator(
             mock_build_directory, mock_project)
-        expected_path = os.path.join(mock_abstract_resource_locator.engine_root(), 'AssetProcessorPlatformConfig.setreg')
+        expected_path = os.path.join(mock_abstract_resource_locator.engine_root(), 'Registry', 'AssetProcessorPlatformConfig.setreg')
 
         assert mock_abstract_resource_locator.asset_processor_config_file() == expected_path
 

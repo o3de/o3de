@@ -43,9 +43,16 @@ namespace AtomToolsFramework
         //! Creates a RenderViewportWidget.
         //! Requires the Atom RPI to be initialized in order
         //! to internally construct an RPI::ViewportContext.
-        explicit RenderViewportWidget(AzFramework::ViewportId id = AzFramework::InvalidViewportId, QWidget* parent = nullptr);
+        //! If initializeViewportContext is set to false, nothing will be displayed on-screen until InitiliazeViewportContext is called.
+        explicit RenderViewportWidget(QWidget* parent = nullptr, bool shouldInitializeViewportContext = true);
         ~RenderViewportWidget();
 
+        //! Initializes the underlying ViewportContext, if it hasn't already been.
+        //! If id is specified, the target ViewportContext will be overridden.
+        //! NOTE: ViewportContext IDs must be unique.
+        //! Returns true if the ViewportContext is available
+        //! (i.e. GetViewportContext will return a valid pointer).
+        bool InitializeViewportContext(AzFramework::ViewportId id = AzFramework::InvalidViewportId);
         //! Gets the name associated with this viewport's ViewportContext.
         //! This context name can be used to adjust the current Camera
         //! independently of the underlying viewport.
@@ -75,7 +82,7 @@ namespace AtomToolsFramework
         AZ::RPI::ConstViewportContextPtr GetViewportContext() const;
         //! Creates an AZ::RPI::ScenePtr for the given scene and assigns it to the current ViewportContext.
         //! If useDefaultRenderPipeline is specified, this will initialize the scene with a rendering pipeline.
-        void SetScene(AzFramework::Scene* scene, bool useDefaultRenderPipeline = true);
+        void SetScene(const AZStd::shared_ptr<AzFramework::Scene>& scene, bool useDefaultRenderPipeline = true);
         //! Gets the default camera that's been automatically registered to our ViewportContext.
         AZ::RPI::ViewPtr GetDefaultCamera();
         AZ::RPI::ConstViewPtr GetDefaultCamera() const;
@@ -87,15 +94,20 @@ namespace AtomToolsFramework
         bool ShowGrid() override;
         bool AngleSnappingEnabled() override;
         float AngleStep() override;
-        QPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) override;
-        AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const QPoint& screenPosition, float depth) override;
-        AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportScreenToWorldRay(const QPoint& screenPosition) override;
+        AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) override;
+        AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition, float depth) override;
+        AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportScreenToWorldRay(
+            const AzFramework::ScreenPoint& screenPosition) override;
+
+        //! Set interface for providing viewport specific settings (e.g. snapping properties).
+        void SetViewportSettings(const AzToolsFramework::ViewportInteraction::ViewportSettings* viewportSettings);
 
         // AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler ...
         void BeginCursorCapture() override;
         void EndCursorCapture() override;
         AzFramework::ScreenPoint ViewportCursorScreenPosition() override;
         AZStd::optional<AzFramework::ScreenPoint> PreviousViewportCursorScreenPosition() override;
+        bool IsMouseOver() const override;
 
         // AzFramework::WindowRequestBus::Handler ...
         void SetWindowTitle(const AZStd::string& title) override;
@@ -147,5 +159,7 @@ namespace AtomToolsFramework
         bool m_capturingCursor = false;
         // The last known position of the mouse cursor, if one is available.
         AZStd::optional<QPoint> m_lastCursorPosition;
+        // The viewport settings (e.g. grid snapping, grid size) for this viewport.
+        const AzToolsFramework::ViewportInteraction::ViewportSettings* m_viewportSettings = nullptr;
     };
 } //namespace AtomToolsFramework

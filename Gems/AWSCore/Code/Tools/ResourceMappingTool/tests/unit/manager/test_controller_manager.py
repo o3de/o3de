@@ -55,5 +55,5 @@ class TestControllerManager(TestCase):
         TestControllerManager._expected_controller_manager.setup()
         mocked_view_edit_controller.setup.assert_called_once()
         mocked_import_resources_controller.setup.assert_called_once()
-        mocked_import_resources_controller.add_import_resources.connect.assert_called_once_with(
-            mocked_view_edit_controller.add_import_resources)
+        mocked_import_resources_controller.add_import_resources_sender.connect.assert_called_once_with(
+            mocked_view_edit_controller.add_import_resources_receiver)

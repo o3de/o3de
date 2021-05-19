@@ -1353,7 +1353,7 @@ namespace AzToolsFramework
                             // Iterate over the entities left in the instance and if none of them have this
                             // asset entity as its ancestor, then we want to remove it.
                             // \todo - Investigate ways to make this non-linear time. Tricky since removed entities
-                            // obviously aren't maintained in any maps. (https://jira.agscollab.com/browse/LY-88218)
+                            // obviously aren't maintained in any maps. (LY-88218)
                             bool foundAsAncestor = false;
                             for (const AZ::Entity* instanceEntity : instanceEntities)
                             {

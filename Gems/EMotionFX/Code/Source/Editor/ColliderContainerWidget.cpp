@@ -266,7 +266,7 @@ namespace EMotionFX
         connect(this, &AzQtComponents::Card::contextMenuRequested, this, &ColliderWidget::OnCardContextMenu);
     }
 
-    void ColliderWidget::Update(Actor* actor, Node* joint, size_t colliderIndex, PhysicsSetup::ColliderConfigType colliderType, const Physics::ShapeConfigurationPair& collider)
+    void ColliderWidget::Update(Actor* actor, Node* joint, size_t colliderIndex, PhysicsSetup::ColliderConfigType colliderType, const AzPhysics::ShapeColliderPair& collider)
     {
         m_actor = actor;
         m_joint = joint;
@@ -276,7 +276,7 @@ namespace EMotionFX
         if (!collider.first || !collider.second)
         {
             m_editor->ClearInstances(true);
-            m_collider = Physics::ShapeConfigurationPair();
+            m_collider = AzPhysics::ShapeColliderPair();
             return;
         }
 
@@ -520,7 +520,7 @@ namespace EMotionFX
         CommandSystem::GetCommandManager()->RemoveCommandCallback(m_commandCallback, /*delFromMem=*/true);
     }
 
-    void ColliderContainerWidget::Update(Actor* actor, Node* joint, PhysicsSetup::ColliderConfigType colliderType, const Physics::ShapeConfigurationList& colliders, AZ::SerializeContext* serializeContext)
+    void ColliderContainerWidget::Update(Actor* actor, Node* joint, PhysicsSetup::ColliderConfigType colliderType, const AzPhysics::ShapeColliderPairList& colliders, AZ::SerializeContext* serializeContext)
     {
         m_actor = actor;
         m_joint = joint;
@@ -557,7 +557,7 @@ namespace EMotionFX
         for (size_t i = numColliders; i < numAvailableColliderWidgets; ++i)
         {
             m_colliderWidgets[i]->hide();
-            m_colliderWidgets[i]->Update(nullptr, nullptr, MCORE_INVALIDINDEX32, PhysicsSetup::ColliderConfigType::Unknown, Physics::ShapeConfigurationPair());
+            m_colliderWidgets[i]->Update(nullptr, nullptr, MCORE_INVALIDINDEX32, PhysicsSetup::ColliderConfigType::Unknown, AzPhysics::ShapeColliderPair());
         }
     }
 
@@ -571,7 +571,7 @@ namespace EMotionFX
 
     void ColliderContainerWidget::Reset()
     {
-        Update(nullptr, nullptr, PhysicsSetup::ColliderConfigType::Unknown, Physics::ShapeConfigurationList(), nullptr);
+        Update(nullptr, nullptr, PhysicsSetup::ColliderConfigType::Unknown, AzPhysics::ShapeColliderPairList(), nullptr);
     }
 
     void ColliderContainerWidget::contextMenuEvent(QContextMenuEvent* event)
@@ -614,7 +614,7 @@ namespace EMotionFX
         return QWidget::sizeHint() + QSize(0, s_layoutSpacing);
     }
 
-    void ColliderContainerWidget::RenderColliders(const Physics::ShapeConfigurationList& colliders,
+    void ColliderContainerWidget::RenderColliders(const AzPhysics::ShapeColliderPairList& colliders,
         const ActorInstance* actorInstance,
         const Node* node,
         EMStudio::EMStudioPlugin::RenderInfo* renderInfo,
@@ -704,7 +704,7 @@ namespace EMotionFX
                     if (joint)
                     {
                         const bool jointSelected = selectedJointIndices.empty() || selectedJointIndices.find(joint->GetNodeIndex()) != selectedJointIndices.end();
-                        const Physics::ShapeConfigurationList& colliders = nodeConfig.m_shapes;
+                        const AzPhysics::ShapeColliderPairList& colliders = nodeConfig.m_shapes;
                         RenderColliders(colliders, actorInstance, joint, renderInfo, jointSelected ? selectedColor : defaultColor);
                     }
                 }

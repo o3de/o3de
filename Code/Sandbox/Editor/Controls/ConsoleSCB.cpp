@@ -26,6 +26,7 @@
 // AzQtComponents
 #include <AzQtComponents/Components/StyledLineEdit.h>
 #include <AzQtComponents/Components/StyleManager.h>
+#include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzQtComponents/Components/Widgets/ScrollBar.h>
 #include <AzQtComponents/Components/Widgets/SliderCombo.h>
 
@@ -314,7 +315,10 @@ CConsoleSCB::CConsoleSCB(QWidget* parent)
     setMinimumHeight(120);
 
     ui->findBar->setVisible(false);
-    
+    ui->lineEditFind->setPlaceholderText(QObject::tr("Search..."));
+    ui->lineEditFind->setClearButtonEnabled(true);
+    AzQtComponents::LineEdit::applySearchStyle(ui->lineEditFind);
+
     // Setup the color table for the default (light) theme
     m_colorTable << QColor(0, 0, 0)
         << QColor(0, 0, 0)

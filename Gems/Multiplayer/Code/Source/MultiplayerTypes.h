@@ -33,6 +33,9 @@ namespace Multiplayer
     AZ_TYPE_SAFE_INTEGRAL(NetComponentId, uint16_t);
     static constexpr NetComponentId InvalidNetComponentId = static_cast<NetComponentId>(-1);
 
+    AZ_TYPE_SAFE_INTEGRAL(PropertyIndex, uint16_t);
+    AZ_TYPE_SAFE_INTEGRAL(RpcIndex, uint16_t);
+
     using LongNetworkString = AZ::CVarFixedString;
     using ReliabilityType = AzNetworking::ReliabilityType;
 
@@ -68,6 +71,12 @@ namespace Multiplayer
     {
         False,
         True
+    };
+
+    enum class AutoActivate : uint8_t
+    {
+        DoNotActivate,
+        Activate
     };
 
     // This is just a placeholder
@@ -111,3 +120,5 @@ namespace Multiplayer
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::HostId);
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::NetEntityId);
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::NetComponentId);
+AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::PropertyIndex);
+AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::RpcIndex);

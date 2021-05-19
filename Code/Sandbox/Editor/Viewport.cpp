@@ -21,13 +21,15 @@
 // AzQtComponents
 #include <AzQtComponents/DragAndDrop/ViewportDragAndDrop.h>
 
+#include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+
 // Editor
 #include "ViewManager.h"
 #include "Include/ITransformManipulator.h"
 #include "Include/HitContext.h"
 #include "Objects/ObjectManager.h"
 #include "Util/3DConnexionDriver.h"
-#include "Util/Ruler.h"
 #include "PluginManager.h"
 #include "Include/IRenderListener.h"
 #include "GameEngine.h"
@@ -1091,6 +1093,13 @@ void QtViewport::SetAxisConstrain(int axis)
     m_activeAxis = axis;
 };
 
+AzToolsFramework::ViewportInteraction::MouseInteraction QtViewport::BuildMouseInteraction(
+    [[maybe_unused]] Qt::MouseButtons buttons, [[maybe_unused]] Qt::KeyboardModifiers modifiers, [[maybe_unused]] const QPoint& point)
+{
+    // Implemented by sub-class
+    return AzToolsFramework::ViewportInteraction::MouseInteraction();
+}
+
 //////////////////////////////////////////////////////////////////////////
 bool QtViewport::HitTest(const QPoint& point, HitContext& hitInfo)
 {
@@ -1103,7 +1112,51 @@ bool QtViewport::HitTest(const QPoint& point, HitContext& hitInfo)
         hitInfo.bUseSelectionHelpers = true;
     }
 
-    return GetIEditor()->GetObjectManager()->HitTest(hitInfo);
+    const int viewportId = GetViewportId();
+
+    AzToolsFramework::EntityIdList visibleEntityIds;
+    AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Event(
+        viewportId,
+        &AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequests::FindVisibleEntities,
+        visibleEntityIds);
+
+    // Look through all visible entities to find the closest one to the specified mouse point
+    using namespace AzToolsFramework::ViewportInteraction;
+    AZ::EntityId entityIdUnderCursor;
+    float closestDistance = std::numeric_limits<float>::max();
+    MouseInteraction mouseInteraction = BuildMouseInteraction(QGuiApplication::mouseButtons(),
+        QGuiApplication::queryKeyboardModifiers(),
+        point);
+    for (auto entityId : visibleEntityIds)
+    {
+        using AzFramework::ViewportInfo;
+        // Check if components provide an aabb
+        if (const AZ::Aabb aabb = AzToolsFramework::CalculateEditorEntitySelectionBounds(entityId, ViewportInfo{ viewportId });
+            aabb.IsValid())
+        {
+            // Coarse grain check
+            if (AzToolsFramework::AabbIntersectMouseRay(mouseInteraction, aabb))
+            {
+                // If success, pick against specific component
+                if (AzToolsFramework::PickEntity(
+                    entityId, mouseInteraction,
+                    closestDistance, viewportId))
+                {
+                    entityIdUnderCursor = entityId;
+                }
+            }
+        }
+    }
+
+    // If we hit a valid Entity, then store the distance in the HitContext
+    // so that the caller can use this for calculations
+    if (entityIdUnderCursor.IsValid())
+    {
+        hitInfo.dist = closestDistance;
+        return true;
+    }
+
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1129,12 +1182,12 @@ float QtViewport::GetZoomFactor() const
 //////////////////////////////////////////////////////////////////////////
 Vec3 QtViewport::SnapToGrid(const Vec3& vec)
 {
-    return m_viewManager->GetGrid()->Snap(vec, m_fGridZoom);
+    return vec;
 }
 
 float QtViewport::GetGridStep() const
 {
-    return m_viewManager->GetGrid()->scale * m_viewManager->GetGrid()->size;
+    return 0.0f;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1360,17 +1413,7 @@ bool QtViewport::MouseCallback(EMouseEvent event, const QPoint& point, Qt::Keybo
         break;
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    // Asks Ruler to handle mouse callback.
-    CRuler* pRuler = GetIEditor()->GetRuler();
     QPoint tempPoint(point.x(), point.y());
-    if (pRuler)
-    {
-        if (pRuler->MouseCallback(this, event, tempPoint, flags))
-        {
-            return true;
-        }
-    }
 
     //////////////////////////////////////////////////////////////////////////
     // Handle viewport manipulators.
