@@ -34,6 +34,8 @@ namespace AZ
         //! A map matches the UV shader inputs of this material to the custom UV names from the model.
         using MaterialModelUvOverrideMap = AZStd::unordered_map<RHI::ShaderSemantic, AZ::Name>;
 
+        class UvStreamTangentIndex;
+
         class ModelLod final
             : public Data::InstanceData
         {
@@ -115,6 +117,7 @@ namespace AZ
             bool GetStreamsForMesh(
                 RHI::InputStreamLayout& layoutOut,
                 ModelLod::StreamBufferViewList& streamBufferViewsOut,
+                UvStreamTangentIndex& uvStreamTangentIndexOut,
                 const ShaderInputContract& contract,
                 size_t meshIndex,
                 const MaterialModelUvOverrideMap& materialModelUvMap = {},
@@ -130,6 +133,8 @@ namespace AZ
                 const ModelLodAsset::Mesh::StreamBufferInfo& streamBufferInfo,
                 Mesh& meshInstance);
 
+            StreamInfoList::const_iterator FindFirstUvStreamFromMesh(size_t meshIndex) const;
+
             StreamInfoList::const_iterator FindDefaultUvStream(size_t meshIndex, const MaterialUvNameMap& materialUvNameMap) const;
 
             // Finds a mesh vertex input stream that is the best match for a contracted stream channel.
@@ -137,12 +142,16 @@ namespace AZ
             // @param materialModelUvMap a map of UV name overrides, which can be supplied to bind a specific mesh stream name to a different material shader stream name.
             // @param materialUvNameMap the UV name map that came from a MaterialTypeAsset, which defines the default set of material shader stream names.
             // @param defaultUv the default UV stream to use if a matching UV stream could not be found. Use FindDefaultUvStream() to populate this.
+            // @param firstUv the first UV stream from the mesh, which, by design, the tangent/bitangent stream belongs to.
+            // @param uvStreamTangentIndex a bitset indicating which tangent/bitangent stream (including generated ones) a UV stream will be using.
             StreamInfoList::const_iterator FindMatchingStream(
                 size_t meshIndex,
                 const MaterialModelUvOverrideMap& materialModelUvMap,
                 const MaterialUvNameMap& materialUvNameMap,
                 const ShaderInputContract::StreamChannelInfo& contractStreamChannel,
-                StreamInfoList::const_iterator defaultUv) const;
+                StreamInfoList::const_iterator defaultUv,
+                StreamInfoList::const_iterator firstUv,
+                UvStreamTangentIndex& uvStreamTangentIndexOut) const;
 
             // Meshes may share index/stream buffers in an LOD or they may have 
             // unique buffers. Often the asset builder will prioritize shared buffers
@@ -164,6 +173,37 @@ namespace AZ
             bool m_isUploadPending = false;
 
             AZStd::mutex m_callbackMutex;
+        };
+
+        //! An encoded bitset for tangent used by a UV stream.
+        //! It will be passed through DefaultDrawSrg.
+        class UvStreamTangentIndex
+        {
+        public:
+            uint32_t GetFullFlag() const;
+            uint32_t GetNextAvailableUvIndex() const;
+            uint32_t GetTangentIndexAtUv(uint32_t uvIndex) const;
+
+            void ApplyTangentIndex(uint32_t tangentIndex);
+
+            void Reset();
+
+            // The flag indicating generated tangent/bitangent will be used.
+            static constexpr uint32_t UnassignedTangentIndex = 0b1111u;
+
+        private:
+            // Flag composition:
+            // The next available slot index (highest 4 bits) + tangent index (4 bits each) * 7
+            // e.g. 0x200000F0 means there are 2 UV streams,
+            //      the first UV stream uses 0th tangent stream,
+            //      the second UV stream uses the generated tangent stream (0xF).
+            uint32_t m_flag = 0;
+
+            static constexpr uint32_t BitsPerTangentIndex = 4;
+            static constexpr uint32_t BitsForUvIndex = 4;
+
+        public:
+            static constexpr uint32_t MaxTangents = (sizeof(m_flag) * CHAR_BIT - BitsForUvIndex) / BitsPerTangentIndex;
         };
     } // namespace RPI
 } // namespace AZ

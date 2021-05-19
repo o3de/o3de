@@ -117,6 +117,17 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
+        ModelLod::StreamInfoList::const_iterator ModelLod::FindFirstUvStreamFromMesh(size_t meshIndex) const
+        {
+            const Mesh& mesh = m_meshes[meshIndex];
+
+            auto firstUv = AZStd::find_if(mesh.m_streamInfo.begin(), mesh.m_streamInfo.end(), [](const StreamBufferInfo& info) {
+                return info.m_semantic.m_name.GetStringView().starts_with(RHI::ShaderSemantic::UvStreamSemantic);
+            });
+
+            return firstUv;
+        }
+
         ModelLod::StreamInfoList::const_iterator ModelLod::FindDefaultUvStream(size_t meshIndex, const MaterialUvNameMap& materialUvNameMap) const
         {
             const Mesh& mesh = m_meshes[meshIndex];
@@ -160,7 +171,9 @@ namespace AZ
             const MaterialModelUvOverrideMap& materialModelUvMap,
             const MaterialUvNameMap& materialUvNameMap,
             const ShaderInputContract::StreamChannelInfo& contractStreamChannel,
-            StreamInfoList::const_iterator defaultUv) const
+            StreamInfoList::const_iterator defaultUv,
+            StreamInfoList::const_iterator firstUv,
+            UvStreamTangentIndex& uvStreamTangentIndexOut) const
         {
             const Mesh& mesh = m_meshes[meshIndex];
             auto iter = mesh.m_streamInfo.end();
@@ -229,12 +242,18 @@ namespace AZ
                 iter = defaultUv;
             }
 
+            if (IsUv)
+            {
+                uvStreamTangentIndexOut.ApplyTangentIndex(iter == firstUv ? 0 : UvStreamTangentIndex::UnassignedTangentIndex);
+            }
+
             return iter;
         }
 
         bool ModelLod::GetStreamsForMesh(
             RHI::InputStreamLayout& layoutOut,
             StreamBufferViewList& streamBufferViewsOut,
+            UvStreamTangentIndex& uvStreamTangentIndexOut,
             const ShaderInputContract& contract,
             size_t meshIndex,
             const MaterialModelUvOverrideMap& materialModelUvMap,
@@ -250,11 +269,14 @@ namespace AZ
 
             bool success = true;
 
+            // Searching for the first UV in the mesh, so it can be used to paired with tangent/bitangent stream
+            auto firstUv = FindFirstUvStreamFromMesh(meshIndex);
             auto defaultUv = FindDefaultUvStream(meshIndex, materialUvNameMap);
+            uvStreamTangentIndexOut.Reset();
 
             for (auto& contractStreamChannel : contract.m_streamChannels)
             {
-                auto iter = FindMatchingStream(meshIndex, materialModelUvMap, materialUvNameMap, contractStreamChannel, defaultUv);
+                auto iter = FindMatchingStream(meshIndex, materialModelUvMap, materialUvNameMap, contractStreamChannel, defaultUv, firstUv, uvStreamTangentIndexOut);
 
                 if (iter == mesh.m_streamInfo.end())
                 {
@@ -340,6 +362,8 @@ namespace AZ
             const Mesh& mesh = m_meshes[meshIndex];
 
             auto defaultUv = FindDefaultUvStream(meshIndex, materialUvNameMap);
+            auto firstUv = FindFirstUvStreamFromMesh(meshIndex);
+            UvStreamTangentIndex dummyUvStreamTangentIndex;
 
             for (auto& contractStreamChannel : contract.m_streamChannels)
             {
@@ -350,7 +374,7 @@ namespace AZ
 
                 AZ_Assert(contractStreamChannel.m_streamBoundIndicatorIndex.IsValid(), "m_streamBoundIndicatorIndex was invalid for an optional shader input stream");
 
-                auto iter = FindMatchingStream(meshIndex, materialModelUvMap, materialUvNameMap, contractStreamChannel, defaultUv);
+                auto iter = FindMatchingStream(meshIndex, materialModelUvMap, materialUvNameMap, contractStreamChannel, defaultUv, firstUv, dummyUvStreamTangentIndex);
 
                 ShaderOptionValue isStreamBound = (iter == mesh.m_streamInfo.end()) ? ShaderOptionValue{0} : ShaderOptionValue{1};
                 shaderOptions.SetValue(contractStreamChannel.m_streamBoundIndicatorIndex, isStreamBound);
@@ -412,6 +436,57 @@ namespace AZ
 
             m_buffers.emplace_back(buffer);
             return static_cast<uint32_t>(m_buffers.size() - 1);
+        }
+
+        uint32_t UvStreamTangentIndex::GetFullFlag() const
+        {
+            return m_flag;
+        }
+
+        uint32_t UvStreamTangentIndex::GetNextAvailableUvIndex() const
+        {
+            return m_flag >> (sizeof(m_flag) * CHAR_BIT - BitsForUvIndex);
+        }
+
+        uint32_t UvStreamTangentIndex::GetTangentIndexAtUv(uint32_t uvIndex) const
+        {
+            return (m_flag >> (BitsPerTangentIndex * uvIndex)) & 0b1111u;
+        }
+
+        void UvStreamTangentIndex::ApplyTangentIndex(uint32_t tangentIndex)
+        {
+            uint32_t currentSlot = GetNextAvailableUvIndex();
+            if (currentSlot >= MaxTangents)
+            {
+                AZ_Error("UV Stream", false, "Reaching the max of avaiblable stream slots.");
+                return;
+            }
+
+            if (tangentIndex > UnassignedTangentIndex)
+            {
+                AZ_Warning(
+                    "UV Stream", false,
+                    "Tangent index must use %d bits as defined in UvStreamTangentIndex::m_flag. Unassigned index will be applied.",
+                    BitsPerTangentIndex);
+                tangentIndex = UnassignedTangentIndex;
+            }
+
+            uint32_t mask = 0b1111u << (BitsPerTangentIndex * currentSlot);
+            mask = ~mask;
+
+            // Clear the writing bits in case
+            m_flag &= mask;
+
+            // Write the bits to the slot
+            m_flag |= (tangentIndex << (BitsPerTangentIndex * currentSlot));
+
+            // Increase the index
+            m_flag += (1u << (sizeof(m_flag) * CHAR_BIT - BitsForUvIndex));
+        }
+
+        void UvStreamTangentIndex::Reset()
+        {
+            m_flag = 0;
         }
     } // namespace RPI
 } // namespace AZ

@@ -181,16 +181,19 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
 
     // ------- Tangents & Bitangets -------
 
-    // We support two UV streams, but only a single stream of tangent/bitangent. So for UV[1+] we generated the tangent/bitangent in screen-space.
-    float3 tangents[UvSetCount] = { IN.m_tangent.xyz, float3(0, 0, 0) };
-    float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, float3(0, 0, 0) };
+    // We support two UV streams, but only a single stream of tangent/bitangent.
+    // By default, the first UV stream is applied and the default tangent/bitangent are used.
+    // If anything uses the second UV stream, and it is not a duplication of the first stream,
+    // generated tangent/bitangent will be applied.
+    // (As it implies, cases may occur where all/none of the UV steams use the default TB.)
+    // Whether a UV stream can use the tangent/bitangent are encoded in DrawSrg.
+    float3 tangents[UvSetCount] = { IN.m_tangent.xyz, IN.m_tangent.xyz };
+    float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, IN.m_bitangent.xyz };
 
     if ( (o_normal_useTexture && MaterialSrg::m_normalMapUvIndex != 0) || 
          (o_detail_normal_useTexture && MaterialSrg::m_detail_allMapsUvIndex != 0))
     {
-        // Generate the tangent/bitangent for UV[1+]
-        const int startIndex = 1;
-        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents, startIndex);
+        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
     }
     
     Surface surface;

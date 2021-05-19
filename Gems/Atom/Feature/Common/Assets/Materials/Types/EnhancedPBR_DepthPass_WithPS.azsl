@@ -77,10 +77,15 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
     
     if(ShouldHandleParallaxInDepthShaders())
     {
-        // We support two UV streams, but only a single stream of tangent/bitangent. So for UV[1+] we generated the tangent/bitangent in screen-space.
-        float3 tangents[UvSetCount] = { IN.m_tangent.xyz, float3(0, 0, 0) };
-        float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, float3(0, 0, 0) };
-        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents, 1);
+        // We support two UV streams, but only a single stream of tangent/bitangent.
+        // By default, the first UV stream is applied and the default tangent/bitangent are used.
+        // If anything uses the second UV stream, and it is not a duplication of the first stream,
+        // generated tangent/bitangent will be applied.
+        // (As it implies, cases may occur where all/none of the UV steams use the default TB.)
+        // Whether a UV stream can use the tangent/bitangent are encoded in DrawSrg.
+        float3 tangents[UvSetCount] = { IN.m_tangent.xyz, IN.m_tangent.xyz };
+        float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, IN.m_bitangent.xyz };
+        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
 
         float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
         float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();

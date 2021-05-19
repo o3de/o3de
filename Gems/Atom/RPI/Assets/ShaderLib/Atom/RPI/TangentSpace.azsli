@@ -190,12 +190,16 @@ void SurfaceGradientNormalMapping_GenerateTB(float2 uv, out float3 tangentWS, ou
 }
 
 //! Utility macro to nest SGBNM setup processes.
-#define PrepareGeneratedTangent(normal, worldPos, isFrontFace, uvSets, uvSetCount, outTangents, outBitangents, startIndex)  \
+#define PrepareGeneratedTangent(normal, worldPos, isFrontFace, uvSets, uvSetCount, outTangents, outBitangents)              \
 {                                                                                                                           \
     SurfaceGradientNormalMapping_Init(normal, worldPos, !isFrontFace);                                                      \
     [unroll]                                                                                                                \
-    for (int i = startIndex; i < uvSetCount; ++i)                                                                           \
+    for (uint i = 0; i < uvSetCount; ++i)                                                                                   \
     {                                                                                                                       \
+        if (DrawSrg::GetTangentIndexAtUv(i) == 0)                                                                           \
+        {                                                                                                                   \
+            continue;                                                                                                       \
+        }                                                                                                                   \
         SurfaceGradientNormalMapping_GenerateTB(uvSets[i], outTangents[i], outBitangents[i]);                               \
     }                                                                                                                       \
 }
