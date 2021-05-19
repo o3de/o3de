@@ -99,9 +99,9 @@ namespace AzToolsFramework
 
                 style->drawItemText(
                     painter, remainingRect, option.displayAlignment, actualPalette, isEnabled,
-                    index.column() == static_cast<int>(AssetBrowserEntry::Column::Name)
-                        ? qvariant_cast<QString>(entry->data(static_cast<int>(AssetBrowserEntry::Column::Name)))
-                        : qvariant_cast<QString>(entry->data(static_cast<int>(AssetBrowserEntry::Column::Path))),
+                    index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name)
+                        ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Name)))
+                        : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path))),
                     isSelected ? QPalette::HighlightedText : QPalette::Text);
             }
         }

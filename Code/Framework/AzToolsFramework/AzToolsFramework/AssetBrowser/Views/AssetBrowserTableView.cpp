@@ -60,11 +60,13 @@ namespace AzToolsFramework
             AssetBrowserViewRequestBus::Handler::BusConnect();
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
         }
+
         AssetBrowserTableView::~AssetBrowserTableView()
         {
             AssetBrowserViewRequestBus::Handler::BusDisconnect();
             AssetBrowserComponentNotificationBus::Handler::BusDisconnect();
         }
+
         void AssetBrowserTableView::setModel(QAbstractItemModel* model)
         {
             m_tableModel = qobject_cast<AssetBrowserTableModel*>(model);
@@ -76,6 +78,7 @@ namespace AzToolsFramework
             horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeMode::Stretch);
             horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeMode::Stretch);
         }
+
         void AssetBrowserTableView::SetName(const QString& name)
         {
             m_name = name;
@@ -86,6 +89,7 @@ namespace AzToolsFramework
                 OnAssetBrowserComponentReady();
             }
         }
+
         AZStd::vector<AssetBrowserEntry*> AssetBrowserTableView::GetSelectedAssets() const
         {
             QModelIndexList sourceIndexes;
@@ -101,11 +105,13 @@ namespace AzToolsFramework
             AssetBrowserModel::SourceIndexesToAssetDatabaseEntries(sourceIndexes, entries);
             return entries;
         }
+
         void AssetBrowserTableView::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
         {
             QTableView::selectionChanged(selected, deselected);
             Q_EMIT selectionChangedSignal(selected, deselected);
         }
+
         void AssetBrowserTableView::rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end)
         {
             // if selected entry is being removed, clear selection so not to select (and attempt to preview) other entries potentially
@@ -121,10 +127,12 @@ namespace AzToolsFramework
             }
             QTableView::rowsAboutToBeRemoved(parent, start, end);
         }
+
         void AssetBrowserTableView::layoutChangedSlot([[maybe_unused]] const QList<QPersistentModelIndex>& parents,[[maybe_unused]]  QAbstractItemModel::LayoutChangeHint hint)
         {
             scrollToTop();
         }
+
         void AssetBrowserTableView::SelectProduct([[maybe_unused]] AZ::Data::AssetId assetID)
         {
         }

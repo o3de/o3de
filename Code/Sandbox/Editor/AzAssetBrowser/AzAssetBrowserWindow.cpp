@@ -312,9 +312,13 @@ void AzAssetBrowserWindow::LockToDefaultView(bool state)
     using namespace AzToolsFramework::AssetBrowser;
     SwitchDisplayView(!state);
     if (state == true)
+    {
         disconnect(m_filterModel.data(), &AssetBrowserFilterModel::stringFilterPopulated, this, &AzAssetBrowserWindow::SwitchDisplayView);
+    }
     else
+    {
         connect(m_filterModel.data(), &AssetBrowserFilterModel::stringFilterPopulated, this, &AzAssetBrowserWindow::SwitchDisplayView);
+    }
 }
 
 #include <AzAssetBrowser/moc_AzAssetBrowserWindow.cpp>

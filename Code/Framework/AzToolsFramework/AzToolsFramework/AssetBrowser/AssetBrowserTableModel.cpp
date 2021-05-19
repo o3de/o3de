@@ -22,10 +22,11 @@ namespace AzToolsFramework
         {
             setDynamicSortFilter(false);
         }
+
         void AssetBrowserTableModel::setSourceModel(QAbstractItemModel* sourceModel)
         {
             m_filterModel = qobject_cast<AssetBrowserFilterModel*>(sourceModel);
-            AZ_Assert(m_filterModel, "Expecting AssetBrowserFilterModel");
+            AZ_Assert(m_filterModel, "Error in AssetBrowserTableModel initialization, class expects source model to be an AssetBrowserFilterModel.");
             QSortFilterProxyModel::setSourceModel(sourceModel);
         }
 
@@ -47,9 +48,9 @@ namespace AzToolsFramework
                 switch (columnRole)
                 {
                 case AssetBrowserEntry::Column::Name:
-                    return QString("Name");
+                    return tr("Name");
                 case AssetBrowserEntry::Column::Path:
-                    return QString("Path");
+                    return tr("Path");
                 default:
                     return QString::number(section);
                 }
@@ -68,8 +69,8 @@ namespace AzToolsFramework
             AssetBrowserEntry* entry = GetAssetEntry(sourceIndex);
             if (entry == nullptr)
             {
-                AZ_Assert(false, "ERROR - index internal pointer not pointing to an AssetEntry. Tree provided by the AssetBrowser invalid?");
-                return Qt::PartiallyChecked;
+                AZ_Assert(false, "AssetBrowserTableModel - QModelIndex does not reference an AssetEntry. Source model is not valid.");
+                return QVariant();
             }
 
             return sourceIndex.data(role);
@@ -113,6 +114,7 @@ namespace AzToolsFramework
             }
             return row;
         }
+
         AssetBrowserEntry* AssetBrowserTableModel::GetAssetEntry(QModelIndex index) const
         {
             if (index.isValid())
@@ -125,6 +127,7 @@ namespace AzToolsFramework
                 return nullptr;
             }
         }
+
         void AssetBrowserTableModel::UpdateTableModelMaps()
         {
             emit layoutAboutToBeChanged();

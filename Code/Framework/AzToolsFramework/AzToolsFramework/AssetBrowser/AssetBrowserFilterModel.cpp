@@ -184,7 +184,6 @@ namespace AzToolsFramework
             invalidateFilter();
             Q_EMIT filterChanged();
             emit stringFilterPopulated(!m_stringFilter.isNull());
-
         }
 
         void AssetBrowserFilterModel::filterUpdatedSlot()
