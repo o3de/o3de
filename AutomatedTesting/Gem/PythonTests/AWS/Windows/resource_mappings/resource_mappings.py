@@ -39,6 +39,7 @@ class ResourceMappings:
         self._region = region
         self._feature_name = feature_name
         self._account_id = account_id
+        self._resource_mappings = {}
 
         assert os.path.exists(self._resource_mapping_file_path), \
             f'Invalid resource mapping file path {self._resource_mapping_file_path}'
@@ -79,6 +80,7 @@ class ResourceMappings:
             resource_mappings[AWS_RESOURCE_MAPPINGS_KEY][resource_key]['Name/ID'] = output.get('OutputValue',
                                                                                                'InvalidId')
 
+        self._resource_mappings = resource_mappings
         with open(self._resource_mapping_file_path, 'w') as file_content:
             json.dump(resource_mappings, file_content, indent=4)
 
@@ -102,6 +104,9 @@ class ResourceMappings:
         self._resource_mapping_file_path = ''
         self._region = ''
         self._client = None
+
+    def get_resource_name_id(self, resource_key: str):
+        return self._resource_mappings[AWS_RESOURCE_MAPPINGS_KEY][resource_key]['Name/ID']
 
 
 @pytest.fixture(scope='function')
