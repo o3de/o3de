@@ -15,10 +15,11 @@
 #include <ScreenWidget.h>
 #endif
 
+QT_FORWARD_DECLARE_CLASS(QIcon)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
+
 namespace O3DE::ProjectManager
 {
-    class BigTallButton;
-
     class FirstTimeUseScreen
         : public ScreenWidget
     {
@@ -32,13 +33,17 @@ namespace O3DE::ProjectManager
         void HandleAddProjectButton();
 
     private:
-        BigTallButton* m_createProjectButton;
-        BigTallButton* m_addProjectButton;
+        QPushButton* CreateLargeBoxButton(const QIcon& icon, const QString& text, QWidget* parent = nullptr);
+
+        QPushButton* m_createProjectButton;
+        QPushButton* m_addProjectButton;
 
         inline constexpr static int s_contentMargins = 80;
         inline constexpr static int s_buttonSpacing = 30;
         inline constexpr static int s_iconSize = 24;
         inline constexpr static int s_spacerSize = 20;
+        inline constexpr static int s_boxButtonWidth = 210;
+        inline constexpr static int s_boxButtonHeight = 280;
     };
 
 } // namespace O3DE::ProjectManager
