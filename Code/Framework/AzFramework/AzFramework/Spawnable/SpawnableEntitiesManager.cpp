@@ -260,6 +260,8 @@ namespace AzFramework
                 spawnedEntityIndices.push_back(i);
             }
 
+            ticket.m_loadAll = true;
+
             // Let other systems know about newly spawned entities for any pre-processing before adding to the scene/game context.
             if (request.m_preInsertionCallback)
             {
