@@ -15,6 +15,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
 namespace AZ::RPI
 {
@@ -55,6 +56,9 @@ namespace AZ::RPI
             //! The output position will be calculated by interpolating between the minimum and maximum value.
             float m_minPositionDelta; 
             float m_maxPositionDelta;
+
+            //! Reference to the wrinkle mask, if it exists
+            AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_wrinkleMask;
 
             //! Boolean to indicate the presence or absence of color deltas
             bool m_hasColorDeltas = false;

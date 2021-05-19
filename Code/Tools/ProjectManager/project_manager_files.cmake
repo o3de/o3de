@@ -22,7 +22,6 @@ set(FILES
     Source/EngineInfo.cpp
     Source/FirstTimeUseScreen.h
     Source/FirstTimeUseScreen.cpp
-    Source/FirstTimeUseScreen.ui
     Source/ProjectManagerWindow.h
     Source/ProjectManagerWindow.cpp
     Source/ProjectTemplateInfo.h
@@ -54,6 +53,8 @@ set(FILES
     Source/GemCatalog/GemCatalogScreen.cpp
     Source/GemCatalog/GemInfo.h
     Source/GemCatalog/GemInfo.cpp
+    Source/GemCatalog/GemInspector.h
+    Source/GemCatalog/GemInspector.cpp
     Source/GemCatalog/GemItemDelegate.h
     Source/GemCatalog/GemItemDelegate.cpp
     Source/GemCatalog/GemListView.h

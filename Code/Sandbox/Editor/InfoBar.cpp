@@ -33,8 +33,6 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 #include <AzQtComponents/Components/Style.h>
 
-#include "CryPhysicsDeprecation.h"
-
 void BeautifyEulerAngles(Vec3& v)
 {
     if (v.x + v.y + v.z >= 360.0f)
@@ -334,7 +332,6 @@ void CInfoBar::OnBnClickedPhysics()
 
 void CInfoBar::OnBnClickedSingleStepPhys()
 {
-    CRY_PHYSICS_REPLACEMENT_ASSERT();
 }
 
 void CInfoBar::OnBnClickedDoStepPhys()
