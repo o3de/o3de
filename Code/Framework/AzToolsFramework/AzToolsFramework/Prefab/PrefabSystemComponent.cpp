@@ -705,14 +705,14 @@ namespace AzToolsFramework
                 "Prefab - PrefabSystemComponent::RemoveLink - "
                 "Failed to remove Link with Id '%llu' for Instance '%s' of source Template with Id '%llu' "
                 "from TemplateToLinkIdsMap.",
-                linkId, link.GetSourceTemplateId(), link.GetInstanceName().c_str());
+                linkId, link.GetInstanceName().c_str(), link.GetSourceTemplateId());
 
             result = RemoveLinkFromTargetTemplate(linkId, link);
             AZ_Assert(result,
                 "Prefab - PrefabSystemComponent::RemoveLink - "
                 "Failed to remove Link with Id '%llu' for Instance '%s' of source Template with Id '%llu' "
                 "from target Template with Id '%llu'.",
-                linkId, link.GetSourceTemplateId(), link.GetInstanceName().c_str(), link.GetTargetTemplateId());
+                linkId, link.GetInstanceName().c_str(), link.GetSourceTemplateId(), link.GetTargetTemplateId());
 
             m_linkIdMap.erase(linkId);
 
