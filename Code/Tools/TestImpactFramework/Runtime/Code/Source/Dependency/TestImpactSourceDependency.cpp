@@ -59,7 +59,7 @@ namespace TestImpact
     {        
     }
 
-    const AZStd::string& SourceDependency::GetPath() const
+    const RepoPath& SourceDependency::GetPath() const
     {
         return m_path;
     }

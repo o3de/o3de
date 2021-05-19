@@ -189,14 +189,14 @@ namespace TestImpact
                 for (const auto& outputSource : outputSources->second)
                 {
                     AZStd::vector<SourceCoveringTests> coverage;
-                    coverage.emplace_back(Path(outputSource));
+                    coverage.emplace_back(RepoPath(outputSource));
                     ReplaceSourceCoverage(SourceCoveringTestsList(AZStd::move(coverage)));
                 }
             }
             else
             {
                 AZStd::vector<SourceCoveringTests> coverage;
-                coverage.emplace_back(Path(path));
+                coverage.emplace_back(RepoPath(path));
                 ReplaceSourceCoverage(SourceCoveringTestsList(AZStd::move(coverage)));
             }
         }
@@ -286,7 +286,7 @@ namespace TestImpact
                 souceCoveringTests.push_back(testTarget->GetName());
             }
 
-            coverage.push_back(SourceCoveringTests(Path(path), AZStd::move(souceCoveringTests)));
+            coverage.push_back(SourceCoveringTests(RepoPath(path), AZStd::move(souceCoveringTests)));
         }
 
         return SourceCoveringTestsList(AZStd::move(coverage));

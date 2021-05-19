@@ -12,16 +12,17 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactRepoPath.h>
+
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/string/string.h>
 
 namespace TestImpact
 {
     //! Artifact produced by the unified diff parsing process representing the file CRUD operations of a given diff.
     struct ChangeList
     {
-        AZStd::vector<AZStd::string> m_createdFiles;
-        AZStd::vector<AZStd::string> m_updatedFiles;
-        AZStd::vector<AZStd::string> m_deletedFiles;
+        AZStd::vector<RepoPath> m_createdFiles;
+        AZStd::vector<RepoPath> m_updatedFiles;
+        AZStd::vector<RepoPath> m_deletedFiles;
     };
 } // namespace TestImpact

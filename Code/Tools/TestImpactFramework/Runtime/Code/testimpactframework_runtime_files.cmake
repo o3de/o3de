@@ -11,6 +11,7 @@
 
 set(FILES
     Include/TestImpactFramework/TestImpactException.h
+    Include/TestImpactFramework/TestImpactRepoPath.h
     Include/TestImpactFramework/TestImpactRuntime.h
     Include/TestImpactFramework/TestImpactRuntimeException.h
     Include/TestImpactFramework/TestImpactConfiguration.h
@@ -128,6 +129,5 @@ set(FILES
     Source/TestImpactTest.cpp
     Source/TestImpactFailureReport.cpp
     Source/TestImpactChangeListSerializer.cpp
-    Source/TestImpactPath.cpp
-    Source/TestImpactPath.h
+    Source/TestImpactRepoPath.cpp
 )

@@ -33,14 +33,15 @@ set(FILES
     Tests/TestEngine/TestImpactTestCoverageTest.cpp
     Tests/TestEngine/TestImpactTestEngineTest.cpp
     Tests/TestEngine/TestImpactTestJobInfoGeneratorTest.cpp
+    Tests/TestImpactRuntimeTestMain.cpp
     Tests/TestImpactExceptionTest.cpp
     Tests/TestImpactTestJobRunnerCommon.h
-    Tests/TestImpactRuntimeTestMain.cpp
     Tests/TestImpactTestUtils.cpp
     Tests/TestImpactTestUtils.h
     Tests/TestImpactMicroRepo.cpp
     Tests/TestImpactMicroRepo.h
     Tests/TestImpactRuntimeTest.cpp
+    Tests/TestImpactRepoPathTest.cpp
     Tests/TestImpactRuntimeUtilsTest.cpp
     Tests/TestImpactChangeListSerializerTest.cpp
 )

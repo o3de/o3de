@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <TestImpactPath.h>
+#include <TestImpactRepoPath.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/containers/vector.h>
@@ -24,8 +24,8 @@ namespace TestImpact
     //! Pairing between a given autogen input source and the generated output source(s).
     struct AutogenPairs
     {
-        Path m_input;
-        AZStd::vector<Path> m_outputs;
+        RepoPath m_input;
+        AZStd::vector<RepoPath> m_outputs;
     };
 
     using AutogenSources = AZStd::vector<AutogenPairs>;
@@ -33,7 +33,7 @@ namespace TestImpact
     //! Representation of a given built target's source list.
     struct TargetSources
     {
-        AZStd::vector<Path> m_staticSources; //!< Source files used to build this target (if any).
+        AZStd::vector<RepoPath> m_staticSources; //!< Source files used to build this target (if any).
         AutogenSources m_autogenSources; //!< Autogen source files (if any).
     };
 
@@ -42,7 +42,7 @@ namespace TestImpact
     {
         AZStd::string m_name; //!< Build target name.
         AZStd::string m_outputName; //!< Output name (sans extension) of build target binary.
-        AZ::IO::Path m_path; //!< Path to build target location in source tree (relative to repository root).
+        RepoPath m_path; //!< Path to build target location in source tree (relative to repository root).
     };
 
     //! Artifact produced by the build system for each build target. Contains source and output information about said targets.

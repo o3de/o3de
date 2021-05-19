@@ -75,7 +75,7 @@ namespace TestImpact
             DependencyData&& dependencyData);
 
         //! Returns the path of this source file.
-        const AZStd::string& GetPath() const;
+        const RepoPath& GetPath() const;
 
         //! Returns the number of parent build targets this source belongs to.
         size_t GetNumParentTargets() const;
@@ -89,7 +89,7 @@ namespace TestImpact
         //! Returns the test targets covering this source file.
         const AZStd::unordered_set<const TestTarget*>& GetCoveringTestTargets() const;
     private:
-        AZStd::string m_path; //!< The path of this source file.
+        RepoPath m_path; //!< The path of this source file.
         DependencyData m_dependencyData; //!< The dependency data for this source file.
     };
 } // namespace TestImpact

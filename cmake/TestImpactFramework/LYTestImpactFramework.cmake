@@ -279,12 +279,7 @@ function(ly_test_impact_export_source_target_mappings MAPPING_TEMPLATE_FILE)
         endif()
 
         # Static source file mappings
-        get_target_property(target_type ${target} TYPE)
-        if("${target_type}" STREQUAL "INTERFACE_LIBRARY")
-            get_target_property(static_sources ${target}_HEADERS SOURCES)
-        else()
-            get_target_property(static_sources ${target} SOURCES)
-        endif()
+        get_target_property(static_sources ${target} SOURCES)
 
         # Rebase static source files to repo root
         ly_test_impact_rebase_files_to_repo_root(

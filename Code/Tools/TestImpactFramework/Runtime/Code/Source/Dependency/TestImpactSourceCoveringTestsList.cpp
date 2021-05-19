@@ -33,24 +33,24 @@ namespace TestImpact
         return testTargets;
     }
 
-    SourceCoveringTests::SourceCoveringTests(const Path& path)
+    SourceCoveringTests::SourceCoveringTests(const RepoPath& path)
         : m_path(path)
     {
     }
 
-    SourceCoveringTests::SourceCoveringTests(const Path& path, AZStd::vector<AZStd::string>&& coveringTestTargets)
+    SourceCoveringTests::SourceCoveringTests(const RepoPath& path, AZStd::vector<AZStd::string>&& coveringTestTargets)
         : m_path(path)
         , m_coveringTestTargets(AZStd::move(coveringTestTargets))
     {
     }
 
-    SourceCoveringTests::SourceCoveringTests(const Path& path, AZStd::unordered_set<AZStd::string>&& coveringTestTargets)
+    SourceCoveringTests::SourceCoveringTests(const RepoPath& path, AZStd::unordered_set<AZStd::string>&& coveringTestTargets)
         : m_path(path)
         , m_coveringTestTargets(ExtractTargetsFromSet(AZStd::move(coveringTestTargets)))
     {
     }
 
-    const Path& SourceCoveringTests::GetPath() const
+    const RepoPath& SourceCoveringTests::GetPath() const
     {
         return m_path;
     }

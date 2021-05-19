@@ -10,43 +10,55 @@
  *
  */
 
-#include <TestImpactPath.h>
+#include <TestImpactRepoPath.h>
 
 #include <AzCore/StringFunc/StringFunc.h>
 
 namespace TestImpact
 {
-    Path::Path(AZStd::string&& path)
+    RepoPath::RepoPath(AZStd::string&& path)
         : AZ::IO::Path(AZStd::move(path), AZ_CORRECT_FILESYSTEM_SEPARATOR)
     {
     }
 
-    Path::Path(const AZStd::string& path)
+    RepoPath::RepoPath(const AZStd::string& path)
         : AZ::IO::Path(path, AZ_CORRECT_FILESYSTEM_SEPARATOR)
     {
     }
 
-    Path::Path(AZ::IO::Path&& path)
+    RepoPath::RepoPath(const char* path)
+        : AZ::IO::Path(path, AZ_CORRECT_FILESYSTEM_SEPARATOR)
+    {
+    }
+
+    RepoPath::RepoPath(AZ::IO::Path&& path)
         : AZ::IO::Path(AZStd::move(path.MakePreferred()))
     {
     }
 
-    Path::Path(const AZ::IO::Path& path)
+    RepoPath::RepoPath(const AZ::IO::Path& path)
         : AZ::IO::Path(AZ::IO::Path(path).MakePreferred())
     {
     }
 
-    Path& Path::operator=(const AZStd::string& other) noexcept
+    RepoPath& RepoPath::operator=(const AZStd::string& other) noexcept
     {
-        this->~Path();
-        new(this) Path(other);
+        this->~RepoPath();
+        new(this) RepoPath(other);
         return *this;
     }
 
-    Path& Path::operator=(const AZ::IO::Path& other) noexcept
+    RepoPath& RepoPath::operator=(const char* other) noexcept
     {
-        this->~Path();
-        new(this) Path(other);
+        this->~RepoPath();
+        new(this) RepoPath(other);
+        return *this;
+    }
+
+    RepoPath& RepoPath::operator=(const AZ::IO::Path& other) noexcept
+    {
+        this->~RepoPath();
+        new(this) RepoPath(other);
         return *this;
     }
 } // namespace TestImpact

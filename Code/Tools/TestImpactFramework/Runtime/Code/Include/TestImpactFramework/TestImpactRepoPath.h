@@ -17,20 +17,22 @@
 
 namespace TestImpact
 {
-    class Path
+    class RepoPath
         : public AZ::IO::Path
     {
     public:
-        constexpr Path() = default;
-        explicit Path(AZStd::string&&);
-        explicit Path(const AZStd::string&);
-        explicit Path(AZ::IO::Path&&);
-        explicit Path(const AZ::IO::Path&);
-        explicit Path(Path&) = default;
-        explicit Path(Path&&) noexcept = default;
+        constexpr RepoPath() = default;
+        explicit RepoPath(AZStd::string&&);
+        explicit RepoPath(const AZStd::string&);
+        explicit RepoPath(const char*);
+        explicit RepoPath(AZ::IO::Path&&);
+        explicit RepoPath(const AZ::IO::Path&);
+        explicit RepoPath(RepoPath&) = default;
+        explicit RepoPath(RepoPath&&) noexcept = default;
 
-        Path& operator=(const Path&) noexcept = default;
-        Path& operator=(const AZStd::string&) noexcept;
-        Path& operator=(const AZ::IO::Path& str) noexcept;
+        RepoPath& operator=(const RepoPath&) noexcept = default;
+        RepoPath& operator=(const AZStd::string&) noexcept;
+        RepoPath& operator=(const char*) noexcept;
+        RepoPath& operator=(const AZ::IO::Path& str) noexcept;
     };
 } // namespace TestImpact

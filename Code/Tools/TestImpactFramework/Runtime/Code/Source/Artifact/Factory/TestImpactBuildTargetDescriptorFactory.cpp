@@ -118,11 +118,11 @@ namespace TestImpact
         const auto& staticSources = sources[Keys[StaticKey]].GetArray();
         if (!staticSources.Empty())
         {
-            buildTargetDescriptor.m_sources.m_staticSources = AZStd::vector<Path>();
+            buildTargetDescriptor.m_sources.m_staticSources = AZStd::vector<RepoPath>();
 
             for (const auto& source : staticSources)
             {
-                const AZ::IO::Path sourcePath = AZ::IO::Path(source.GetString());
+                const RepoPath sourcePath = source.GetString();
                 if (AZStd::find(
                         staticSourceExtensionIncludes.begin(), staticSourceExtensionIncludes.end(), sourcePath.Extension().Native()) !=
                     staticSourceExtensionIncludes.end())
