@@ -17,9 +17,6 @@
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Windowing/WindowBus.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace UnitTest
 {
     class CameraInputFixture : public AllocatorsTestFixture

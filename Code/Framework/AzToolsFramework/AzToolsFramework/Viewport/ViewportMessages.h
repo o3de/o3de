@@ -306,7 +306,7 @@ namespace AzToolsFramework
         return entityContextId;
     }
 
-    //! Maps a mouse interaction event to a ClickDetector event
+    //! Maps a mouse interaction event to a ClickDetector event.
     //! @note Function only cares about up or down events, all other events are mapped to Nil (ignored).
     inline AzFramework::ClickDetector::ClickEvent ClickDetectorEventFromViewportInteraction(
         const ViewportInteraction::MouseInteractionEvent& mouseInteraction)

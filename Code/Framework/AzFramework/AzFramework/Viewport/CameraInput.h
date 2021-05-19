@@ -179,7 +179,7 @@ namespace AzFramework
         void Reset();
         //! Remove all cameras that were added.
         void Clear();
-        //! Is one of the cameras in the active camera inputs marked as 'exclusive'
+        //! Is one of the cameras in the active camera inputs marked as 'exclusive'.
         //! @note This implies no other sibling cameras can begin while the exclusive camera is running.
         bool Exclusive() const;
 

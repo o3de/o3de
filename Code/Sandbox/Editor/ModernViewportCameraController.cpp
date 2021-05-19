@@ -100,6 +100,9 @@ namespace SandboxEditor
     // should the camera system respond to this particular event
     static bool ShouldHandle(const AzFramework::ViewportControllerPriority priority, const bool exclusive)
     {
+        // ModernViewportCameraControllerInstance receives events at all priorities, it should only respond
+        // to normal priority events if it is not in 'exclusive' mode and when in 'exclusive' mode it should
+        // only respond to the highest priority events
         return !exclusive && priority == AzFramework::ViewportControllerPriority::Normal ||
             exclusive && priority == AzFramework::ViewportControllerPriority::Highest;
     }
@@ -120,6 +123,7 @@ namespace SandboxEditor
 
     void ModernViewportCameraControllerInstance::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
     {
+        // only update for a single priority (normal is the default)
         if (event.m_priority != AzFramework::ViewportControllerPriority::Normal)
         {
             return;
