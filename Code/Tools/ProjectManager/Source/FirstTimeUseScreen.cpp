@@ -12,11 +12,10 @@
 
 #include <FirstTimeUseScreen.h>
 
-#include <BigTallButtonWidget.h>
-
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QPushButton>
 #include <QIcon>
 #include <QSpacerItem>
 
@@ -26,32 +25,28 @@ namespace O3DE::ProjectManager
         : ScreenWidget(parent)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
-        this->setLayout(vLayout);
+        setLayout(vLayout);
         vLayout->setContentsMargins(s_contentMargins, s_contentMargins, s_contentMargins, s_contentMargins);
 
         QLabel* titleLabel = new QLabel(this);
         titleLabel->setText(tr("Ready. Set. Create!"));
-        titleLabel->setStyleSheet("font-size: 60px; font-family: 'Open Sans';");
+        titleLabel->setStyleSheet("font-size: 60px");
         vLayout->addWidget(titleLabel);
 
         QLabel* introLabel = new QLabel(this);
         introLabel->setTextFormat(Qt::AutoText);
         introLabel->setText(tr("<html><head/><body><p>Welcome to O3DE! Start something new by creating a project. Not sure what to create? </p><p>Explore what\342\200\231s available by downloading our sample project.</p></body></html>"));
-        introLabel->setStyleSheet("font-size: 14px; font-family: 'Open Sans';");
+        introLabel->setStyleSheet("font-size: 14px");
         vLayout->addWidget(introLabel);
 
         QHBoxLayout* buttonLayout = new QHBoxLayout();
         buttonLayout->setSpacing(s_buttonSpacing);
 
-        QIcon createIcon;
-        createIcon.addFile(QString::fromUtf8(":/Resources/Add.svg"));
-        m_createProjectButton = new BigTallButton(createIcon, tr("Create Project"), this);
+        m_createProjectButton = CreateLargeBoxButton(QIcon(":/Resources/Add.svg"), tr("Create Project"), this);
         m_createProjectButton->setIconSize(QSize(s_iconSize, s_iconSize));
         buttonLayout->addWidget(m_createProjectButton);
 
-        QIcon addIcon;
-        addIcon.addFile(QString::fromUtf8(":/Resources/Select_Folder.svg"));
-        m_addProjectButton = new BigTallButton(addIcon, tr("Add a Project"), this);
+        m_addProjectButton = CreateLargeBoxButton(QIcon(":/Resources/Select_Folder.svg"), tr("Add a Project"), this);
         m_addProjectButton->setIconSize(QSize(s_iconSize, s_iconSize));
         buttonLayout->addWidget(m_addProjectButton);
 
@@ -83,6 +78,18 @@ namespace O3DE::ProjectManager
     void FirstTimeUseScreen::HandleAddProjectButton()
     {
         emit ChangeScreenRequest(ProjectManagerScreen::ProjectsHome);
+    }
+
+    QPushButton* FirstTimeUseScreen::CreateLargeBoxButton(const QIcon& icon, const QString& text, QWidget* parent)
+    {
+        QPushButton* largeBoxButton = new QPushButton(icon, text, parent);
+
+        largeBoxButton->setFixedSize(s_boxButtonWidth, s_boxButtonHeight);
+        largeBoxButton->setFlat(true);
+        largeBoxButton->setFocusPolicy(Qt::FocusPolicy::NoFocus);
+        largeBoxButton->setStyleSheet("QPushButton { font-size: 14px; background-color: rgba(0, 0, 0, 191); }");
+
+        return largeBoxButton;
     }
 
 } // namespace O3DE::ProjectManager
