@@ -92,6 +92,7 @@ namespace AMD
         std::vector<std::string> m_boneNames;
         BoneIndexToEngineIndexLookup m_reservedLookup; // Used to reset the skinning data back to bone index in case the engine index changed.
 
+        // This function is mimicking LoadTressFXCollisionMeshData in TressFXBoneSkinnin
         bool LoadMeshData(AZ::Data::AssetDataStream* stream);
     };
 
@@ -131,6 +132,7 @@ namespace AMD
         AMD::int32 m_numGuideVertices;
         AMD::int32 m_numFollowStrandsPerGuide;
 
+        // [TO DO] rhhong - handle multiple collision meshes.
         // Collision mesh
         std::unique_ptr<TressFXCollisionMesh> m_collisionMesh = nullptr;
 

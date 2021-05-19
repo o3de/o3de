@@ -73,7 +73,7 @@ namespace AMD
         return ((float(rand()) / float(RAND_MAX)) * (Max - Min)) + Min;
     }
 
-    // This function is mimicing LoadTressFXCollisionMeshData in TressFXBoneSkinning with a few tweaks.
+    // This function is mimicking LoadTressFXCollisionMeshData in TressFXBoneSkinning with a few tweaks.
     // 1) It reads from an asset data stream instead of a std file stream.
     // 2) Reading all data to an array of strings at once instead of reading line by line.
     // 3) The bone index to engine index fixup is done in a later step (from hair component)
@@ -191,7 +191,9 @@ namespace AMD
 
                     TressFXBoneSkinningData skinData;
 
-                    // Those indices stored in the skin data are bone indices, not engine indices. We have to fix the bone indices in a later step。
+                    // Those indices stored in the skin data are bone indices, not engine indices.
+                    // Bone indices are local to the skinning data (start from 0), while engine indices are local to the entire model.
+                    // We will need fix the bone indices (aka convert them to engine indices) later in the hair component.
                     int boneIndex = atoi(sTokens[7].c_str());
                     skinData.boneIndex[0] = (float)boneIndex;
 
@@ -912,7 +914,7 @@ namespace AMD
         bool success = LoadHairData(stream);
         if (!success)
         {
-            AZ_Warning("LoadHairAsset", false, "Hair properties files was not processed properly");
+            AZ_Warning("Hair Gem", false, "Loading: Hair properties files was not processed properly");
             return false;
         }
 
@@ -925,7 +927,7 @@ namespace AMD
         success &= ProcessAsset();
         if (!success)
         {
-            AZ_Warning("LoadHairAsset", false, "Hair properties files was not processed properly");
+            AZ_Warning("Hair Gem", false, "Loading: Hair properties files was not processed properly");
             return false;
         }
 
@@ -936,7 +938,7 @@ namespace AMD
         success &= LoadBoneData(stream);
         if (!success)
         {
-            AZ_Warning("LoadHairAsset", false, "Hair properties files was not processed properly");
+            AZ_Warning("Hair Gem", false, "Loading: Hair properties files was not processed properly");
             return false;
         }
         m_boneIndicesFixed = false;
@@ -947,7 +949,7 @@ namespace AMD
         success &= m_collisionMesh->LoadMeshData(stream);
         if (!success)
         {
-            AZ_Warning("LoadHairAsset", false, "Hair properties files was not processed properly");
+            AZ_Warning("Hair Gem", false, "Loading: Hair properties files was not processed properly");
             return false;
         }
 
@@ -958,7 +960,7 @@ namespace AMD
     {
         if (!m_collisionMesh)
         {
-            AZ_Assert(false, "TressFXAsset should always has a collision mesh with current design.");
+            AZ_Error("Hair Gem", false, "TressFXAsset should always has a collision mesh with current design.");
             return false;
         }
 
@@ -1017,7 +1019,11 @@ namespace AMD
 
     void TressFXAsset::FixSkinningUsingLookup(std::vector<TressFXBoneSkinningData>& skinningData, const BoneIndexToEngineIndexLookup& lookup)
     {
-        AZ_Assert(!m_boneIndicesFixed, "Calling to fix skinning data but the bone indices are already fixed.");
+        if (m_boneIndicesFixed)
+        {
+            AZ_Error("Hair Gem", !m_boneIndicesFixed, "Calling to fix skinning data but the bone indices are already fixed.");
+            return;
+        }
 
         for (TressFXBoneSkinningData& skinData : skinningData)
         {
@@ -1031,7 +1037,11 @@ namespace AMD
 
     void TressFXAsset::ResetSkinning(std::vector<TressFXBoneSkinningData>& skinningData, const BoneIndexToEngineIndexLookup& reservedLookup)
     {
-        AZ_Assert(m_boneIndicesFixed, "Calling to reset skinning data but the bone indices have not been fixed.");
+        if (!m_boneIndicesFixed)
+        {
+            AZ_Error("Hair Gem", false, "Calling to reset skinning data but the bone indices have not been fixed.");
+            return;
+        }
 
         std::unordered_map<int, int> engineIndexToBoneIndex;
         for (int i = 0; i < reservedLookup.size(); ++i)
