@@ -29,6 +29,9 @@ namespace AzFramework
         AZ_RTTI(CreateSessionRequest, "{E39C2A45-89C9-4CFB-B337-9734DC798930}");
         static void Reflect(AZ::ReflectContext* context);
 
+        CreateSessionRequest() = default;
+        virtual ~CreateSessionRequest() = default;
+
         // A unique identifier for a player or entity creating the session.
         AZStd::string m_creatorId;
 
@@ -48,6 +51,9 @@ namespace AzFramework
     {
         AZ_RTTI(SearchSessionsRequest, "{B49207A8-8549-4ADB-B7D9-D7A4932F9B4B}");
         static void Reflect(AZ::ReflectContext* context);
+
+        SearchSessionsRequest() = default;
+        virtual ~SearchSessionsRequest() = default;
 
         // String containing the search criteria for the session search. If no filter expression is included, the request returns results
         // for all active sessions.
@@ -70,6 +76,9 @@ namespace AzFramework
         AZ_RTTI(SearchSessionsResponse, "{F93DE7DC-D381-4E08-8A3B-0B08F7C38714}");
         static void Reflect(AZ::ReflectContext* context);
 
+        SearchSessionsResponse() = default;
+        virtual ~SearchSessionsResponse() = default;
+
         // A collection of sessions that match the search criteria and sorted in specific order.
         AZStd::vector<SessionConfig> m_sessionConfigs;
 
@@ -83,6 +92,9 @@ namespace AzFramework
     {
         AZ_RTTI(JoinSessionRequest, "{519769E8-3CDE-4385-A0D7-24DBB3685657}");
         static void Reflect(AZ::ReflectContext* context);
+
+        JoinSessionRequest() = default;
+        virtual ~JoinSessionRequest() = default;
 
         // A unique identifier for the session.
         AZStd::string m_sessionId;

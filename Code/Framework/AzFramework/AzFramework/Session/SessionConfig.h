@@ -25,6 +25,9 @@ namespace AzFramework
         AZ_RTTI(SessionConfig, "{992DD4BE-8BA5-4071-8818-B99FD2952086}");
         static void Reflect(AZ::ReflectContext* context);
 
+        SessionConfig() = default;
+        virtual ~SessionConfig() = default;
+
         // A time stamp indicating when this session was created. Format is a number expressed in Unix time as milliseconds.
         uint64_t m_creationTime;
         
