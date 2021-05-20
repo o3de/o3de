@@ -232,6 +232,7 @@ namespace AZ
 
                             for (const AZStd::unique_ptr<SkinnedMeshDispatchItem>& skinnedMeshDispatchItem : renderProxy.m_dispatchItemsByLod[lodIndex])
                             {
+                                // Add one skinning dispatch item for each mesh in the lod
                                 m_skinningDispatches.insert(&skinnedMeshDispatchItem->GetRHIDispatchItem());
                             }
                             for (size_t morphTargetIndex = 0; morphTargetIndex < renderProxy.m_morphTargetDispatchItemsByLod[lodIndex].size(); morphTargetIndex++)

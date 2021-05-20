@@ -236,7 +236,7 @@ namespace AZ
 
                 Data::Asset<RPI::ModelLodAsset> modelLodAsset = modelAsset->GetLodAssets()[lodIndex];
 
-                // Clear out the vector for re-mapped joint data that will be populated by values from EMotionFX
+                // Do a pass over the lod to find the number of sub-meshes, the offset and size of each sub-mesh, and total number of vertices in the lod.
                 blendIndexBufferData.clear();
                 blendWeightBufferData.clear();
                 blendIndexBufferData.reserve(skinnedMeshLod.GetVertexCountForStream(SkinnedMeshOutputVertexStreams::Position) * MaxSupportedSkinInfluences / 2);
