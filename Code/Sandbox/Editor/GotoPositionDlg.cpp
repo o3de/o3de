@@ -34,6 +34,7 @@ CGotoPositionDlg::CGotoPositionDlg(QWidget* pParent /*=NULL*/)
 {
     m_ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    setFixedSize(size());
     OnInitDialog();
 
     auto doubleValueChanged = static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged);
