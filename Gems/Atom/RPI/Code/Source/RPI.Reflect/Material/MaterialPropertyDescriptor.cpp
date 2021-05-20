@@ -124,12 +124,6 @@ namespace AZ
                     ->Value(ToString(MaterialPropertyOutputType::ShaderOption), MaterialPropertyOutputType::ShaderOption)
                     ;
 
-                serializeContext->Enum<MaterialPropertyVisibility>()
-                    ->Value("Enabled", MaterialPropertyVisibility::Enabled)
-                    ->Value("Disabled", MaterialPropertyVisibility::Disabled)
-                    ->Value("Hidden", MaterialPropertyVisibility::Hidden)
-                    ;
-
                 serializeContext->Enum<MaterialPropertyDataType>()
                     ->Value(ToString(MaterialPropertyDataType::Invalid), MaterialPropertyDataType::Invalid)
                     ->Value(ToString(MaterialPropertyDataType::Bool), MaterialPropertyDataType::Bool)
@@ -151,14 +145,6 @@ namespace AZ
                     ->Field("OutputConnections", &MaterialPropertyDescriptor::m_outputConnections)
                     ->Field("EnumNames", &MaterialPropertyDescriptor::m_enumNames)
                     ;
-            }
-
-            if (auto* behaviorContext = azrtti_cast<BehaviorContext*>(context))
-            {
-                behaviorContext
-                    ->Enum<(int)MaterialPropertyVisibility::Enabled>("MaterialPropertyVisibility_Enabled")
-                    ->Enum<(int)MaterialPropertyVisibility::Disabled>("MaterialPropertyVisibility_Disabled")
-                    ->Enum<(int)MaterialPropertyVisibility::Hidden>("MaterialPropertyVisibility_Hidden");
             }
 
             MaterialPropertyIndex::Reflect(context);
