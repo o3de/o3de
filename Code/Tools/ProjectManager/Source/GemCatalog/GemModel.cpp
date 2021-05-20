@@ -10,7 +10,8 @@
 *
 */
 
-#include "GemModel.h"
+#include <AzCore/std/string/string.h>
+#include <GemCatalog/GemModel.h>
 
 namespace O3DE::ProjectManager
 {
@@ -32,8 +33,11 @@ namespace O3DE::ProjectManager
         item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 
         item->setData(gemInfo.m_name, RoleName);
+        const QString uuidString = gemInfo.m_uuid.ToString<AZStd::string>().c_str();
+        item->setData(uuidString, RoleUuid);
         item->setData(gemInfo.m_creator, RoleCreator);
-        item->setData(static_cast<int>(gemInfo.m_platforms), RolePlatforms);
+        item->setData(aznumeric_cast<int>(gemInfo.m_platforms), RolePlatforms);
+        item->setData(aznumeric_cast<int>(gemInfo.m_types), RoleTypes);
         item->setData(gemInfo.m_summary, RoleSummary);
         item->setData(gemInfo.m_isAdded, RoleIsAdded);
 
@@ -48,6 +52,8 @@ namespace O3DE::ProjectManager
         item->setData(gemInfo.m_features, RoleFeatures);
 
         appendRow(item);
+
+        m_uuidToNameMap[uuidString] = gemInfo.m_displayName;
     }
 
     void GemModel::Clear()
@@ -65,9 +71,19 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RoleCreator).toString();
     }
 
+    QString GemModel::GetUuidString(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleUuid).toString();
+    }
+
     GemInfo::Platforms GemModel::GetPlatforms(const QModelIndex& modelIndex)
     {
         return static_cast<GemInfo::Platforms>(modelIndex.data(RolePlatforms).toInt());
+    }
+
+    GemInfo::Types GemModel::GetTypes(const QModelIndex& modelIndex)
+    {
+        return static_cast<GemInfo::Types>(modelIndex.data(RoleTypes).toInt());
     }
 
     QString GemModel::GetSummary(const QModelIndex& modelIndex)
@@ -90,9 +106,35 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RoleDocLink).toString();
     }
 
+    AZ::Outcome<QString> GemModel::FindGemNameByUuidString(const QString& uuidString) const
+    {
+        const auto iterator = m_uuidToNameMap.find(uuidString);
+        if (iterator != m_uuidToNameMap.end())
+        {
+            return AZ::Success(iterator.value());
+        }
+
+        return AZ::Failure();
+    }
+
     QStringList GemModel::GetDependingGems(const QModelIndex& modelIndex)
     {
-        return modelIndex.data(RoleDependingGems).toStringList();
+        QStringList result = modelIndex.data(RoleDependingGems).toStringList();
+        if (result.isEmpty())
+        {
+            return {};
+        }
+
+        for (QString& dependingGemString : result)
+        {
+            AZ::Outcome<QString> gemNameOutcome = FindGemNameByUuidString(dependingGemString);
+            if (gemNameOutcome.IsSuccess())
+            {
+                dependingGemString = gemNameOutcome.GetValue();
+            }
+        }
+
+        return result;
     }
 
     QStringList GemModel::GetConflictingGems(const QModelIndex& modelIndex)
