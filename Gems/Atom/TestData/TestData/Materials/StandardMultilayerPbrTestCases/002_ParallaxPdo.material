@@ -4,6 +4,10 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
+        "blend": {
+            "enableLayer2": true,
+            "enableLayer3": true
+        },
         "layer1_baseColor": {
             "textureMap": "TestData/Textures/cc0/bark1_col.jpg"
         },
@@ -30,6 +34,7 @@
         "layer2_parallax": {
             "enable": true,
             "factor": 0.05299999937415123,
+            "offset": -0.024000000208616258,
             "textureMap": "TestData/Textures/cc0/Rock030_2K_Displacement.jpg"
         },
         "layer2_roughness": {
