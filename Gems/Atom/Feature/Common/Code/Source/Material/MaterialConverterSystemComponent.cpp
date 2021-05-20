@@ -77,12 +77,16 @@ namespace AZ
                 }
             };
 
+            // If PBR material properties aren't in use, fall back to legacy properties. Don't do that if some PBR material properties are set, though.
+            bool anyPBRInUse = false;
+
             handleTexture("specularF0", SceneAPI::DataTypes::IMaterialData::TextureMapType::Specular);
             handleTexture("normal", SceneAPI::DataTypes::IMaterialData::TextureMapType::Normal);
             AZStd::optional<bool> useColorMap = materialData.GetUseColorMap();
             // If the useColorMap property exists, this is a PBR material and the color should be set to baseColor.
             if (useColorMap.has_value())
             {
+                anyPBRInUse = true;
                 handleTexture("baseColor", SceneAPI::DataTypes::IMaterialData::TextureMapType::BaseColor);
             }
             else
@@ -97,17 +101,19 @@ namespace AZ
             AZStd::optional<AZ::Vector3> baseColor = materialData.GetBaseColor();
             if (baseColor.has_value())
             {
+                anyPBRInUse = true;
                 sourceData.m_properties["baseColor"]["color"].m_value = toColor(baseColor.value());
             }
 
             sourceData.m_properties["opacity"]["factor"].m_value = materialData.GetOpacity();
 
-            auto applyOptionalPropertiesFunc = [&sourceData](const auto& propertyGroup, const auto& propertyName, const auto& propertyOptional)
+            auto applyOptionalPropertiesFunc = [&sourceData, &anyPBRInUse](const auto& propertyGroup, const auto& propertyName, const auto& propertyOptional)
             {
                 // Only set PBR settings if they were specifically set in the scene's data.
                 // Otherwise, leave them unset so the data driven default properties are used.
                 if (propertyOptional.has_value())
                 {
+                    anyPBRInUse = true;
                     sourceData.m_properties[propertyGroup][propertyName].m_value = propertyOptional.value();
                 }
             };
@@ -127,6 +133,13 @@ namespace AZ
 
             handleTexture("ambientOcclusion", SceneAPI::DataTypes::IMaterialData::TextureMapType::AmbientOcclusion);
             applyOptionalPropertiesFunc("ambientOcclusion", "useTexture", materialData.GetUseAOMap());
+
+            if (!anyPBRInUse)
+            {
+                // If it doesn't have the useColorMap property, then it's a non-PBR material and the baseColor
+                // texture needs to be set to the diffuse color.
+                sourceData.m_properties["baseColor"]["color"].m_value = toColor(materialData.GetDiffuseColor());
+            }
             return true;
         }
 
