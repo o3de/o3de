@@ -46,14 +46,14 @@ namespace AzNetworking
 
     void TcpSocketManager::ProcessEvents(AZ::TimeMs maxBlockMs, const SocketEventCallback& readCallback, const SocketEventCallback& writeCallback)
     {
-        m_readerFdSet = m_sourceFdSet;
-        m_writerFdSet = m_sourceFdSet;
-
         if(static_cast<int32_t>(m_maxFd) <= 0 && m_socketFds.empty())
         {
             // There are no available sockets to process
             return;
         }
+
+        m_readerFdSet = m_sourceFdSet;
+        m_writerFdSet = m_sourceFdSet;
 
         struct timeval tv = { 0, static_cast<int32_t>(maxBlockMs) * 1000 };
         const int32_t selectResult = ::select(static_cast<int32_t>(m_maxFd) + 1, &m_readerFdSet, &m_writerFdSet, nullptr, &tv);
