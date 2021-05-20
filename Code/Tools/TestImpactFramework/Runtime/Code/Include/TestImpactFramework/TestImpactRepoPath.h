@@ -12,27 +12,31 @@
 
 #pragma once
 
-#include <AzCore/std/string/string.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/std/string/string.h>
 
 namespace TestImpact
 {
+    //! Wrapper class to ensure that all paths have the same path separator regardless of how they are sourced. This is critical
+    //! to the test impact analysis data as otherwise querying/retrieving test impact analysis data for the same source albeit
+    //! with different path separators will be considered different files entirely.
     class RepoPath
         : public AZ::IO::Path
     {
     public:
         constexpr RepoPath() = default;
-        explicit RepoPath(AZStd::string&&);
-        explicit RepoPath(const AZStd::string&);
-        explicit RepoPath(const char*);
-        explicit RepoPath(AZ::IO::Path&&);
-        explicit RepoPath(const AZ::IO::Path&);
-        explicit RepoPath(RepoPath&) = default;
-        explicit RepoPath(RepoPath&&) noexcept = default;
+        constexpr RepoPath(const RepoPath&) = default;
+        constexpr RepoPath(RepoPath&&) = default;
+        constexpr RepoPath(const string_type&) noexcept;
+        constexpr RepoPath(const value_type*) noexcept;
+        constexpr RepoPath(const AZ::IO::PathView&);
+        constexpr RepoPath(const AZ::IO::Path&);
 
         RepoPath& operator=(const RepoPath&) noexcept = default;
-        RepoPath& operator=(const AZStd::string&) noexcept;
-        RepoPath& operator=(const char*) noexcept;
+        RepoPath& operator=(const string_type&) noexcept;
+        RepoPath& operator=(const value_type*) noexcept;
         RepoPath& operator=(const AZ::IO::Path& str) noexcept;
+
+        using AZ::IO::Path::operator AZ::IO::PathView;
     };
 } // namespace TestImpact

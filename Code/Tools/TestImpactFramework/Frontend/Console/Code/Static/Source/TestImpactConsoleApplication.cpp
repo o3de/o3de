@@ -19,14 +19,14 @@
 #include <TestImpactFramework/TestImpactChangeList.h>
 #include <TestImpactFramework/TestImpactRuntime.h>
 #include <TestImpactFramework/TestImpactUtils.h>
-#include <TestImpactFramework/TestImpactTestSelection.h>
+#include <TestImpactFramework/TestImpactClientTestSelection.h>
+#include <TestImpactFramework/TestImpactRuntime.h>
 
 #include <TestImpactChangeListFactory.h>
 #include <TestImpactCommandLineOptions.h>
 #include <TestImpactConfigurationFactory.h>
 #include <TestImpactCommandLineOptionsException.h>
 
-#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
@@ -41,7 +41,7 @@ namespace TestImpact
         {
             AZStd::string output;
 
-            const auto& outputFiles = [&output](const AZStd::vector<AZStd::string>& files)
+            const auto& outputFiles = [&output](const AZStd::vector<RepoPath>& files)
             {
                 for (const auto& file : files)
                 {
@@ -154,7 +154,7 @@ namespace TestImpact
                 size_t numTests = 0;
                 size_t testsComplete = 0;
 
-                const auto sequenceStart = [&options, &numTests](TestSelection&& testSelection)
+                const auto sequenceStart = [&options, &numTests](Client::TestRunSelection&& testSelection)
                 {
                     std::cout << "Test suite filter:\n";
                     if (const auto& suiteFilter = options.GetSuitesFilter(); suiteFilter.empty())
@@ -169,19 +169,19 @@ namespace TestImpact
                         }
                     }
 
-                    numTests = testSelection.GetIncludededTests().size();
-                    std::cout << numTests << " tests selected, " << testSelection.GetExcludedTests().size() << " excluded\n";
+                    numTests = testSelection.GetNumIncludedTestRuns();
+                    std::cout << numTests << " tests selected, " << testSelection.GetNumNumExcludedTestRuns() << " excluded\n";
                 };
 
-                const auto testComplete = [&numTests, &testsComplete](Test&& test)
+                const auto testComplete = [&numTests, &testsComplete](Client::TestRun&& test)
                 {
                     testsComplete++;
                     const auto progress = AZStd::string::format("(%02u/%02u)", testsComplete, numTests, test.GetTargetName().c_str());
-                    const auto result = (test.GetTestResult() == TestResult::AllTestsPass) ? "\033[37;42mPASS\033[0m" : "\033[37;41mFAIL\033[0m";
+                    const auto result = (test.GetResult() == Client::TestRunResult::AllTestsPass) ? "\033[37;42mPASS\033[0m" : "\033[37;41mFAIL\033[0m";
                     std::wcout << progress.c_str() << " " << result << " "  << test.GetTargetName().c_str() << " (" << (test.GetDuration().count() / 1000.f) << "s)\n";
                 };
 
-                const auto sequenceComplete = []([[maybe_unused]] FailureReport&& failureReport, AZStd::chrono::milliseconds duration)
+                const auto sequenceComplete = []([[maybe_unused]] Client::FailureReport&& failureReport, AZStd::chrono::milliseconds duration)
                 {
                     std::cout << "DURATION: " << (duration.count() / 1000.f) << "s\n";
                 };

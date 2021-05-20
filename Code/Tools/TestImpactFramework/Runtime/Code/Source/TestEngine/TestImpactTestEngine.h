@@ -12,8 +12,9 @@
 
 #pragma once
 
-#include <TestImpactFramework/TestImpactTestEnginePolicy.h>
-#include <TestImpactFramework/TestImpactTest.h>
+#include <TestImpactFramework/TestImpactTestSequence.h>
+#include <TestImpactFramework/TestImpactClientTestRun.h>
+#include <TestImpactFramework/TestImpactRuntime.h>
 
 #include <TestEngine/TestImpactTestEngineEnumeration.h>
 #include <TestEngine/TestImpactTestEngineInstrumentedRun.h>
@@ -21,7 +22,6 @@
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/IO/Path/Path.h>
 
 namespace TestImpact
 {
@@ -29,34 +29,34 @@ namespace TestImpact
     class TestJobInfoGenerator;
 
     using TestEngineEnumerationCallback = AZStd::function<void(const TestEngineJob& testJob)>;
-    using TestEngineRunCallback = AZStd::function<void(const TestEngineJob& testJob, TestResult testResult)>;
+    using TestEngineRunCallback = AZStd::function<void(const TestEngineJob& testJob, Client::TestRunResult testResult)>;
 
     class TestEngine
     {
     public:
         TestEngine(
-            const AZ::IO::Path& sourceDir,
-            const AZ::IO::Path& targetBinaryDir,
-            const AZ::IO::Path& cacheDir,
-            const AZ::IO::Path& artifactDir,
-            const AZ::IO::Path& testRunnerBinary,
-            const AZ::IO::Path& instrumentBinary,
+            const RepoPath& sourceDir,
+            const RepoPath& targetBinaryDir,
+            const RepoPath& cacheDir,
+            const RepoPath& artifactDir,
+            const RepoPath& testRunnerBinary,
+            const RepoPath& instrumentBinary,
             size_t maxConcurrentRuns);
 
         ~TestEngine();
 
         AZStd::vector<TestEngineEnumeration> UpdateEnumerationCache(
             const AZStd::vector<const TestTarget*> testTargets,
-            ExecutionFailurePolicy executionFailurePolicy,
+            Policy::ExecutionFailure executionFailurePolicy,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<TestEngineEnumerationCallback> callback);
 
         [[nodiscard]]AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun>> RegularRun(
             const AZStd::vector<const TestTarget*> testTargets,
-            TestShardingPolicy testShardingPolicy,
-            ExecutionFailurePolicy executionFailurePolicy,
-            TestFailurePolicy testFailurePolicy,
+            Policy::TestSharding testShardingPolicy,
+            Policy::ExecutionFailure executionFailurePolicy,
+            Policy::TestFailure testFailurePolicy,
             TargetOutputCapture targetOutputCapture,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
@@ -64,10 +64,10 @@ namespace TestImpact
 
         [[nodiscard]]AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun>> InstrumentedRun(
             const AZStd::vector<const TestTarget*> testTargets,
-            TestShardingPolicy testShardingPolicy,
-            ExecutionFailurePolicy executionFailurePolicy,
-            IntegrityFailurePolicy integrityFailurePolicy,
-            TestFailurePolicy testFailurePolicy,
+            Policy::TestSharding testShardingPolicy,
+            Policy::ExecutionFailure executionFailurePolicy,
+            Policy::IntegrityFailure integrityFailurePolicy,
+            Policy::TestFailure testFailurePolicy,
             TargetOutputCapture targetOutputCapture,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,

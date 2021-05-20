@@ -10,24 +10,31 @@
  *
  */
 
-#pragma once
-
 #include <TestImpactFramework/TestImpactClientTestRun.h>
-
-#include <TestEngine/TestImpactTestEngineJob.h>
-#include <TestEngine/Run/TestImpactTestRun.h>
-
 namespace TestImpact
 {
-    class TestEngineRegularRun
-        : public TestEngineJob
+    namespace Client
     {
-    public:
-        TestEngineRegularRun(TestEngineJob&& testJob, AZStd::optional<TestRun>&& testRun, Client::TestRunResult testResult);
-        Client::TestRunResult GetTestResult() const;
-        const AZStd::optional<TestRun>& GetTestRun() const;
-    private:
-        AZStd::optional<TestRun> m_testRun;
-        Client::TestRunResult m_testResult;
-    };
-} // namespace TestImpact
+        TestRun::TestRun(const AZStd::string& name, TestRunResult result, AZStd::chrono::milliseconds duration)
+            : m_targetName(name)
+            , m_result(result)
+            , m_duration(duration)
+        {
+        }
+
+        const AZStd::string& TestRun::GetTargetName() const
+        {
+            return m_targetName;
+        }
+
+        AZStd::chrono::milliseconds TestRun::GetDuration() const
+        {
+            return m_duration;
+        }
+
+        TestRunResult TestRun::GetResult() const
+        {
+            return m_result;
+        }
+    }
+}

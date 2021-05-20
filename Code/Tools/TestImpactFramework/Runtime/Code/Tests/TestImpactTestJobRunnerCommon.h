@@ -95,7 +95,7 @@ namespace UnitTest
     template<typename Job>
     void ValidateJobTimeout(const Job& job)
     {
-        EXPECT_EQ(job.GetJobResult(), TestImpact::JobResult::Terminated);
+        EXPECT_EQ(job.GetJobResult(), TestImpact::JobResult::Timeout);
         EXPECT_TRUE(job.GetDuration() > AZStd::chrono::milliseconds(0));
         EXPECT_TRUE(job.GetReturnCode().has_value());
         EXPECT_EQ(job.GetReturnCode().value(), TestImpact::ProcessTimeoutErrorCode);

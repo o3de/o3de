@@ -32,7 +32,7 @@ namespace UnitTest
             return AZStd::string::format("Output%u", index);
         }
 
-        AZ::IO::Path GenerateBuildTargetPath(size_t index)
+        TestImpact::RepoPath GenerateBuildTargetPath(size_t index)
         {
             return AZStd::string::format("C:\\Repo\\Dir%u", index);
         }
@@ -47,7 +47,7 @@ namespace UnitTest
             return index % 2 == 0 ? TestImpact::LaunchMethod::StandAlone : TestImpact::LaunchMethod::TestRunner;
         }
 
-        AZStd::string GenerateStaticSourceFile(size_t index)
+        TestImpact::RepoPath GenerateStaticSourceFile(size_t index)
         {
             return AZStd::string::format("StaticSource%u", index);
         }
@@ -107,7 +107,7 @@ namespace UnitTest
                 },
                 TestImpact::TestTargetMeta
                 {
-                    GenerateTestTargetSuite(index), GenerateLaunchMethod(index)
+                    GenerateTestTargetSuite(index), "", AZStd::chrono::milliseconds{0}, GenerateLaunchMethod(index)
                 });
         }
     } // namespace

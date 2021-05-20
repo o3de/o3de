@@ -92,11 +92,11 @@ namespace UnitTest
     {
         const AZStd::vector<TestImpact::ModuleCoverage> expectedCoverage = GetTestTargetALineModuleCoverages();
 
-        const auto binPath = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_A_BIN).MakePreferred();
+        const auto binPath = TestImpact::RepoPath(LY_TEST_IMPACT_TEST_TARGET_A_BIN);
         AZStd::string root = binPath.RootName().Native();
 
-        const auto srcPath = AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
-            / "Tests\\TestTargetA\\Code\\Tests\\TestImpactTestTargetA.cpp").MakePreferred();
+        const auto srcPath = TestImpact::RepoPath(TestImpact::RepoPath(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+            / "Tests\\TestTargetA\\Code\\Tests\\TestImpactTestTargetA.cpp");
         AZStd::string srcRelativePath = srcPath.RelativePath().Native();
 
         // Given the raw line coverage output of TestTargetA
@@ -171,11 +171,11 @@ namespace UnitTest
     {
         const AZStd::vector<TestImpact::ModuleCoverage> expectedCoverage = GetTestTargetASourceModuleCoverages();
 
-        const auto binPath = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_A_BIN).MakePreferred();
+        const auto binPath = TestImpact::RepoPath(LY_TEST_IMPACT_TEST_TARGET_A_BIN);
         AZStd::string root = binPath.RootName().Native();
 
-        const auto srcPath = AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
-            / "Tests\\TestTargetA\\Code\\Tests\\TestImpactTestTargetA.cpp").MakePreferred();
+        const auto srcPath = TestImpact::RepoPath(TestImpact::RepoPath(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+            / "Tests\\TestTargetA\\Code\\Tests\\TestImpactTestTargetA.cpp");
         AZStd::string srcRelativePath = srcPath.RelativePath().Native();
 
         // Given the raw source coverage output of TestTargetA
@@ -208,11 +208,11 @@ namespace UnitTest
     {
         const AZStd::vector<TestImpact::ModuleCoverage> expectedCoverage = GetTestTargetBLineModuleCoverages();
 
-        const auto binPath = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_B_BIN).MakePreferred();
+        const auto binPath = TestImpact::RepoPath(LY_TEST_IMPACT_TEST_TARGET_B_BIN);
         AZStd::string root = binPath.RootName().Native();
 
-        const auto srcPath = AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
-            / "Tests\\TestTargetB\\Code\\Tests\\TestImpactTestTargetB.cpp").MakePreferred();
+        const auto srcPath = TestImpact::RepoPath(TestImpact::RepoPath(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+            / "Tests\\TestTargetB\\Code\\Tests\\TestImpactTestTargetB.cpp");
         AZStd::string srcRelativePath = srcPath.RelativePath().Native();
 
         // Given the raw line coverage output of TestTargetB
@@ -275,11 +275,11 @@ namespace UnitTest
     {
         const AZStd::vector<TestImpact::ModuleCoverage> expectedCoverage = GetTestTargetBSourceModuleCoverages();
 
-        const auto binPath = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_B_BIN).MakePreferred();
+        const auto binPath = TestImpact::RepoPath(LY_TEST_IMPACT_TEST_TARGET_B_BIN);
         AZStd::string root = binPath.RootName().Native();
 
-        const auto srcPath = AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
-            / "Tests\\TestTargetB\\Code\\Tests\\TestImpactTestTargetB.cpp").MakePreferred();
+        const auto srcPath = TestImpact::RepoPath(TestImpact::RepoPath(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+            / "Tests\\TestTargetB\\Code\\Tests\\TestImpactTestTargetB.cpp");
         AZStd::string srcRelativePath = srcPath.RelativePath().Native();
 
         // Given the raw source coverage output of TestTargetB
@@ -312,11 +312,11 @@ namespace UnitTest
     {
         const AZStd::vector<TestImpact::ModuleCoverage> expectedCoverage = GetTestTargetCLineModuleCoverages();
 
-        const auto binPath = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_C_BIN).MakePreferred();
+        const auto binPath = TestImpact::RepoPath(LY_TEST_IMPACT_TEST_TARGET_C_BIN);
         AZStd::string root = binPath.RootName().Native();
 
-        const auto srcPath = AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
-            / "Tests\\TestTargetC\\Code\\Tests\\TestImpactTestTargetC.cpp").MakePreferred();
+        const auto srcPath = TestImpact::RepoPath(TestImpact::RepoPath(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+            / "Tests\\TestTargetC\\Code\\Tests\\TestImpactTestTargetC.cpp");
         AZStd::string srcRelativePath = srcPath.RelativePath().Native();
 
         // Given the raw line coverage output of TestTargetC
@@ -375,11 +375,11 @@ namespace UnitTest
     {
         const AZStd::vector<TestImpact::ModuleCoverage> expectedCoverage = GetTestTargetCSourceModuleCoverages();
 
-        const auto binPath = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_C_BIN).MakePreferred();
+        const auto binPath = TestImpact::RepoPath(LY_TEST_IMPACT_TEST_TARGET_C_BIN);
         AZStd::string root = binPath.RootName().Native();
 
-        const auto srcPath = AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
-            / "Tests\\TestTargetC\\Code\\Tests\\TestImpactTestTargetC.cpp").MakePreferred();
+        const auto srcPath = TestImpact::RepoPath(TestImpact::RepoPath(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+            / "Tests\\TestTargetC\\Code\\Tests\\TestImpactTestTargetC.cpp");
         AZStd::string srcRelativePath = srcPath.RelativePath().Native();
 
         // Given the raw source coverage output of TestTargetC
@@ -412,11 +412,11 @@ namespace UnitTest
     {
         const AZStd::vector<TestImpact::ModuleCoverage> expectedCoverage = GetTestTargetDLineModuleCoverages();
 
-        const auto binPath = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_D_BIN).MakePreferred();
+        const auto binPath = TestImpact::RepoPath(LY_TEST_IMPACT_TEST_TARGET_D_BIN);
         AZStd::string root = binPath.RootName().Native();
 
-        const auto srcPath = AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
-            / "Tests\\TestTargetD\\Code\\Tests\\TestImpactTestTargetD.cpp").MakePreferred();
+        const auto srcPath = TestImpact::RepoPath(TestImpact::RepoPath(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+            / "Tests\\TestTargetD\\Code\\Tests\\TestImpactTestTargetD.cpp");
         AZStd::string srcRelativePath = srcPath.RelativePath().Native();
 
         // Given the raw line coverage output of TestTargetD
@@ -535,11 +535,11 @@ namespace UnitTest
     {
         const AZStd::vector<TestImpact::ModuleCoverage> expectedCoverage = GetTestTargetDSourceModuleCoverages();
 
-        const auto binPath = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_D_BIN).MakePreferred();
+        const auto binPath = TestImpact::RepoPath(LY_TEST_IMPACT_TEST_TARGET_D_BIN);
         AZStd::string root = binPath.RootName().Native();
 
-        const auto srcPath = AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
-            / "Tests\\TestTargetD\\Code\\Tests\\TestImpactTestTargetD.cpp").MakePreferred();
+        const auto srcPath = TestImpact::RepoPath(TestImpact::RepoPath(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+            / "Tests\\TestTargetD\\Code\\Tests\\TestImpactTestTargetD.cpp");
         AZStd::string srcRelativePath = srcPath.RelativePath().Native();
 
         // Given the raw source coverage output of TestTargetD

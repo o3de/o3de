@@ -25,11 +25,11 @@ namespace TestImpact
 {
     Runtime::Runtime(
         RuntimeConfig&& config,
-        ExecutionFailurePolicy executionFailurePolicy,
-        ExecutionFailureDraftingPolicy executionFailureDraftingPolicy,
-        TestFailurePolicy testFailurePolicy,
-        IntegrityFailurePolicy integrationFailurePolicy,
-        TestShardingPolicy testShardingPolicy,
+        Policy::ExecutionFailure executionFailurePolicy,
+        Policy::ExecutionFailureDrafting executionFailureDraftingPolicy,
+        Policy::TestFailure testFailurePolicy,
+        Policy::IntegrityFailure integrationFailurePolicy,
+        Policy::TestSharding testShardingPolicy,
         TargetOutputCapture targetOutputCapture,
         AZStd::optional<size_t> maxConcurrency)
         : m_config(AZStd::move(config))
@@ -47,8 +47,8 @@ namespace TestImpact
         m_testEngine = AZStd::make_unique<TestEngine>(
             m_config.m_repo.m_root,
             m_config.m_target.m_outputDirectory,
-            m_config.m_workspace.m_persistent.m_enumerationCacheDirectory,
-            m_config.m_workspace.m_temp.m_artifactDirectory,
+            m_config.m_workspace.m_persistent.m_relativePaths.m_enumerationCacheDirectory,
+            m_config.m_workspace.m_temp.m_relativePaths.m_artifactDirectory,
             m_config.m_testEngine.m_testRunner.m_binary,
             m_config.m_testEngine.m_instrumentation.m_binary,
             m_maxConcurrency);
@@ -78,7 +78,7 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
-        AZStd::optional<TestSequenceEndCallback> testSequenceEndCallback,
+        AZStd::optional<TestSequenceCompleteCallback> testSequenceEndCallback,
         AZStd::optional<TestCompleteCallback> testCompleteCallback)
     {
         AZStd::vector<const TestTarget*> includedTestTargets;
@@ -113,11 +113,11 @@ namespace TestImpact
             (*testSequenceStartCallback)(CreateTestSelection(includedTestTargets, excludedTestTargets));
         }
 
-        const auto testComplete = [testCompleteCallback](const TestEngineJob& testJob, TestResult testResult)
+        const auto testComplete = [testCompleteCallback](const TestEngineJob& testJob, Client::TestRunResult testResult)
         {
             if (testCompleteCallback.has_value())
             {
-                (*testCompleteCallback)(Test(testJob.GetTestTarget()->GetName(), testResult, testJob.GetDuration()));
+                (*testCompleteCallback)(Client::TestRun(testJob.GetTestTarget()->GetName(), testResult, testJob.GetDuration()));
             }
         };
 
@@ -144,11 +144,11 @@ namespace TestImpact
 
     TestSequenceResult Runtime::ImpactAnalysisTestSequence(
         [[maybe_unused]]const ChangeList& changeList,
-        [[maybe_unused]]TestPrioritizationPolicy testPrioritizationPolicy,
+        [[maybe_unused]]Policy::TestPrioritization testPrioritizationPolicy,
         [[maybe_unused]]AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         [[maybe_unused]]AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         [[maybe_unused]]AZStd::optional<ImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
-        [[maybe_unused]]AZStd::optional<ImpactAnalysisTestSequenceEndCallback> testSequenceEndCallback,
+        [[maybe_unused]]AZStd::optional<ImpactAnalysisTestSequenceCompleteCallback> testSequenceEndCallback,
         [[maybe_unused]]AZStd::optional<TestCompleteCallback> testCompleteCallback)
     {
         return TestSequenceResult::Success;
@@ -156,12 +156,12 @@ namespace TestImpact
 
     TestSequenceResult Runtime::SafeImpactAnalysisTestSequence(
         [[maybe_unused]]const ChangeList& changeList,
-        [[maybe_unused]] const AZStd::unordered_set<AZStd::string> suitesFilter,
-        [[maybe_unused]]TestPrioritizationPolicy testPrioritizationPolicy,
+        [[maybe_unused]]const AZStd::unordered_set<AZStd::string> suitesFilter,
+        [[maybe_unused]]Policy::TestPrioritization testPrioritizationPolicy,
         [[maybe_unused]]AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         [[maybe_unused]]AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         [[maybe_unused]]AZStd::optional<SafeImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
-        [[maybe_unused]]AZStd::optional<ImpactAnalysisTestSequenceEndCallback> testSequenceEndCallback,
+        [[maybe_unused]]AZStd::optional<ImpactAnalysisTestSequenceCompleteCallback> testSequenceEndCallback,
         [[maybe_unused]]AZStd::optional<TestCompleteCallback> testCompleteCallback)
     {
         return TestSequenceResult::Success;
@@ -170,7 +170,7 @@ namespace TestImpact
     TestSequenceResult Runtime::SeededTestSequence(
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
-        AZStd::optional<TestSequenceEndCallback> testSequenceEndCallback,
+        AZStd::optional<TestSequenceCompleteCallback> testSequenceEndCallback,
         AZStd::optional<TestCompleteCallback> testCompleteCallback)
     {        
         AZStd::vector<const TestTarget*> includedTestTargets;
@@ -196,11 +196,11 @@ namespace TestImpact
             (*testSequenceStartCallback)(CreateTestSelection(includedTestTargets, excludedTestTargets));
         }
 
-        const auto testComplete = [testCompleteCallback](const TestEngineJob& testJob, TestResult testResult)
+        const auto testComplete = [testCompleteCallback](const TestEngineJob& testJob, Client::TestRunResult testResult)
         {
             if (testCompleteCallback.has_value())
             {
-                (*testCompleteCallback)(Test(testJob.GetTestTarget()->GetName(), testResult, testJob.GetDuration()));
+                (*testCompleteCallback)(Client::TestRun(testJob.GetTestTarget()->GetName(), testResult, testJob.GetDuration()));
             }
         };
 
@@ -208,7 +208,7 @@ namespace TestImpact
             includedTestTargets,
             m_testShardingPolicy,
             m_executionFailurePolicy,
-            IntegrityFailurePolicy::Continue,
+            Policy::IntegrityFailure::Continue,
             m_testFailurePolicy,
             m_targetOutputCapture,
             AZStd::nullopt,
@@ -219,7 +219,7 @@ namespace TestImpact
         m_dynamicDependencyMap->ReplaceSourceCoverage(coverage);
         const auto sparTIA = m_dynamicDependencyMap->ExportSourceCoverage();
         const auto sparTIAData = SerializeSourceCoveringTestsList(sparTIA);
-        WriteFileContents<RuntimeException>(sparTIAData, m_config.m_workspace.m_persistent.m_sparTIAFile);
+        WriteFileContents<RuntimeException>(sparTIAData, m_config.m_workspace.m_persistent.m_relativePaths.m_sparTIAFile);
 
         const AZStd::chrono::high_resolution_clock::time_point endTime = AZStd::chrono::high_resolution_clock::now();
         const auto duration = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(endTime - startTime);

@@ -11,8 +11,8 @@
  */
 
 #include <TestImpactFramework/TestImpactException.h>
+#include <TestImpactFramework/TestImpactRuntime.h>
 
-#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
@@ -21,8 +21,12 @@
 
 namespace TestImpact
 {
+    //! Attempts to read the contents of the specified file into a string.
+    //! @tparam ExceptionType The exception type to throw upon failure.
+    //! @param path The path to the file to read the contents of.
+    //! @returns The contents of the file.
     template<typename ExceptionType>
-    AZStd::string ReadFileContents(const AZ::IO::Path& path)
+    AZStd::string ReadFileContents(const RepoPath& path)
     {
         const auto fileSize = AZ::IO::SystemFile::Length(path.c_str());
         AZ_TestImpact_Eval(fileSize > 0, ExceptionType, AZStd::string::format("File %s does not exist", path.c_str()));
@@ -34,8 +38,12 @@ namespace TestImpact
         return AZStd::string(buffer.begin(), buffer.end());
     }
 
+    //! Attempts to write the contents of the specified string to a file.
+    //! @tparam ExceptionType The exception type to throw upon failure.
+    //! @param contents The contents to write to the file.
+    //! @param path The path to the file to write the contents to.
     template<typename ExceptionType>
-    void WriteFileContents(const AZStd::string& contents, const AZ::IO::Path& path)
+    void WriteFileContents(const AZStd::string& contents, const RepoPath& path)
     {
         AZ::IO::SystemFile file;
         const AZStd::vector<char> bytes(contents.begin(), contents.end());

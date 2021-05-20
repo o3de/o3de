@@ -49,7 +49,7 @@ namespace UnitTest
             },
             TestImpact::TestTargetMeta
             {
-                "main", TestImpact::LaunchMethod::TestRunner
+                "main", "--args", AZStd::chrono::milliseconds{10}, TestImpact::LaunchMethod::TestRunner
             }));
 
         const auto enumJobInfo = m_testJobInfoGenerator.GenerateTestEnumerationJobInfo(&testTarget, { 1 }, TestImpact::TestEnumerator::JobData::CachePolicy::Read);

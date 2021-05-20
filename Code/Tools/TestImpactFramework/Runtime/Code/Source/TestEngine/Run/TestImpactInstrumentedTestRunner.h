@@ -24,13 +24,13 @@ namespace TestImpact
         : public TestRunJobData
     {
     public:
-        InstrumentedTestRunJobData(const AZ::IO::Path& resultsArtifact, const AZ::IO::Path& coverageArtifact);
+        InstrumentedTestRunJobData(const RepoPath& resultsArtifact, const RepoPath& coverageArtifact);
 
         //! Returns the path to the coverage artifact produced by the test target.
-        const AZ::IO::Path& GetCoverageArtifactPath() const;
+        const RepoPath& GetCoverageArtifactPath() const;
 
     private:
-        AZ::IO::Path m_coverageArtifact; //!< Path to coverage data.
+        RepoPath m_coverageArtifact; //!< Path to coverage data.
     };
 
     namespace Bitwise

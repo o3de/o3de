@@ -19,10 +19,9 @@ namespace TestImpact
 {
     namespace Utils
     {
-        template<typename C>
-        auto split(C&& str, const AZStd::string& delimiter)
+        AZStd::vector<AZStd::string> split(const AZStd::string& str, const AZStd::string& delimiter)
         {
-            AZStd::vector<C> strings;
+            AZStd::vector<AZStd::string> strings;
 
             for (auto p = str.data(), end = p + str.length(); p != end; p += ((p == end) ? 0 : delimiter.length()))
             {
@@ -47,10 +46,10 @@ namespace TestImpact
             ChangeList Parse(const AZStd::string& unifiedDiff);
 
         private:
-            AZStd::optional<AZStd::string_view> GetTargetFile(const AZStd::string_view& targetFile);
+            AZStd::optional<AZStd::string> GetTargetFile(const AZStd::string& targetFile);
             ChangeList GenerateChangelist(
-                const AZStd::vector<AZStd::optional<AZStd::string_view>>& src,
-                const AZStd::vector<AZStd::optional<AZStd::string_view>>& dst);
+                const AZStd::vector<AZStd::optional<AZStd::string>>& src,
+                const AZStd::vector<AZStd::optional<AZStd::string>>& dst);
 
             const AZStd::string m_srcFilePrefix = "--- ";
             const AZStd::string m_dstFilePrefix = "+++ ";
@@ -62,7 +61,7 @@ namespace TestImpact
             bool m_hasGitHeader = false;
         };
 
-        AZStd::optional<AZStd::string_view> UnifiedDiffParser::GetTargetFile(const AZStd::string_view& targetFile)
+        AZStd::optional<AZStd::string> UnifiedDiffParser::GetTargetFile(const AZStd::string& targetFile)
         {
             size_t startIndex = 0;
 
@@ -95,7 +94,7 @@ namespace TestImpact
         }
 
         ChangeList UnifiedDiffParser::GenerateChangelist(
-            const AZStd::vector<AZStd::optional<AZStd::string_view>>& src, const AZStd::vector<AZStd::optional<AZStd::string_view>>& dst)
+            const AZStd::vector<AZStd::optional<AZStd::string>>& src, const AZStd::vector<AZStd::optional<AZStd::string>>& dst)
         {
             AZ_TestImpact_Eval(src.size() == dst.size(), Exception, "Change list source and destination file count mismatch");
             ChangeList changelist;
@@ -127,10 +126,10 @@ namespace TestImpact
         ChangeList UnifiedDiffParser::Parse(const AZStd::string& unifiedDiff)
         {
             const AZStd::string GitHeader = "diff --git";
-            const auto lines = Utils::split<AZStd::string_view>(unifiedDiff, "\n");
+            const auto lines = Utils::split(unifiedDiff, "\n");
 
-            AZStd::vector<AZStd::optional<AZStd::string_view>> src;
-            AZStd::vector<AZStd::optional<AZStd::string_view>> dst;
+            AZStd::vector<AZStd::optional<AZStd::string>> src;
+            AZStd::vector<AZStd::optional<AZStd::string>> dst;
 
             for (const auto& line : lines)
             {

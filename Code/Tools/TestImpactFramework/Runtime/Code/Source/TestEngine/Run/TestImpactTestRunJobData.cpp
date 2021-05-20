@@ -14,12 +14,12 @@
 
 namespace TestImpact
 {
-    TestRunJobData::TestRunJobData(const AZ::IO::Path& resultsArtifact)
+    TestRunJobData::TestRunJobData(const RepoPath& resultsArtifact)
         : m_runArtifact(resultsArtifact)
     {
     }
 
-    const AZ::IO::Path& TestRunJobData::GetRunArtifactPath() const
+    const RepoPath& TestRunJobData::GetRunArtifactPath() const
     {
         return m_runArtifact;
     }

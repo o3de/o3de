@@ -19,7 +19,7 @@ namespace TestImpact
 {
     namespace
     {
-        AZ::IO::Path ParseConfigurationFile(const AZ::CommandLine& cmd)
+        RepoPath ParseConfigurationFile(const AZ::CommandLine& cmd)
         {
             const auto numSwitchValues = cmd.GetNumSwitchValues("config");
             if (numSwitchValues)
@@ -33,7 +33,7 @@ namespace TestImpact
             return LY_TEST_IMPACT_DEFAULT_CONFIG_FILE;
         }
 
-        AZStd::optional<AZ::IO::Path> ParseUnifiedDiffFile(const AZ::CommandLine& cmd)
+        AZStd::optional<RepoPath> ParseUnifiedDiffFile(const AZ::CommandLine& cmd)
         {
             const auto numSwitchValues = cmd.GetNumSwitchValues("unidiff");
             if (numSwitchValues)
@@ -108,7 +108,7 @@ namespace TestImpact
             return AZStd::nullopt;
         }
 
-        TestPrioritizationPolicy ParseTestPrioritizationPolicy(const AZ::CommandLine& cmd)
+        Policy::TestPrioritization ParseTestPrioritizationPolicy(const AZ::CommandLine& cmd)
         {
             const auto numSwitchValues = cmd.GetNumSwitchValues("ppolicy");
             if (numSwitchValues)
@@ -117,20 +117,20 @@ namespace TestImpact
                 const auto option = cmd.GetSwitchValue("ppolicy", 0);
                 if (option == "none")
                 {
-                    return TestPrioritizationPolicy::None;
+                    return Policy::TestPrioritization::None;
                 }
                 else if (option == "locality")
                 {
-                    return TestPrioritizationPolicy::DependencyLocality;
+                    return Policy::TestPrioritization::DependencyLocality;
                 }
 
                 throw CommandLineOptionsException(AZStd::string::format("Unexpected value for test prioritization policy option: %s", option.c_str()));
             }
 
-            return TestPrioritizationPolicy::None;
+            return Policy::TestPrioritization::None;
         }
 
-        ExecutionFailurePolicy ParseExecutionFailurePolicy(const AZ::CommandLine& cmd)
+        Policy::ExecutionFailure ParseExecutionFailurePolicy(const AZ::CommandLine& cmd)
         {
             const auto numSwitchValues = cmd.GetNumSwitchValues("epolicy");
             if (numSwitchValues)
@@ -139,24 +139,24 @@ namespace TestImpact
                 const auto option = cmd.GetSwitchValue("epolicy", 0);
                 if (option == "abort")
                 {
-                    return ExecutionFailurePolicy::Abort;
+                    return Policy::ExecutionFailure::Abort;
                 }
                 else if (option == "continue")
                 {
-                    return ExecutionFailurePolicy::Continue;
+                    return Policy::ExecutionFailure::Continue;
                 }
                 else if (option == "ignore")
                 {
-                    return ExecutionFailurePolicy::Ignore;
+                    return Policy::ExecutionFailure::Ignore;
                 }
 
                 throw CommandLineOptionsException(AZStd::string::format("Unexpected value for test execution failure policy option: %s", option.c_str()));
             }
 
-            return ExecutionFailurePolicy::Continue;
+            return Policy::ExecutionFailure::Continue;
         }
 
-        ExecutionFailureDraftingPolicy ParseExecutionFailureDraftingPolicy(const AZ::CommandLine& cmd)
+        Policy::ExecutionFailureDrafting ParseExecutionFailureDraftingPolicy(const AZ::CommandLine& cmd)
         {
             const auto numSwitchValues = cmd.GetNumSwitchValues("rexecfailures");
             if (numSwitchValues)
@@ -165,20 +165,20 @@ namespace TestImpact
                 const auto option = cmd.GetSwitchValue("rexecfailures", 0);
                 if (option == "on")
                 {
-                    return ExecutionFailureDraftingPolicy::Always;
+                    return Policy::ExecutionFailureDrafting::Always;
                 }
                 else if (option == "off")
                 {
-                    return ExecutionFailureDraftingPolicy::Never;
+                    return Policy::ExecutionFailureDrafting::Never;
                 }
 
                 throw CommandLineOptionsException(AZStd::string::format("Unexpected value for test execution failure drafting policy option: %s", option.c_str()));
             }
 
-            return ExecutionFailureDraftingPolicy::Always;
+            return Policy::ExecutionFailureDrafting::Always;
         }
 
-        TestFailurePolicy ParseTestFailurePolicy(const AZ::CommandLine& cmd)
+        Policy::TestFailure ParseTestFailurePolicy(const AZ::CommandLine& cmd)
         {
             const auto numSwitchValues = cmd.GetNumSwitchValues("fpolicy");
             if (numSwitchValues)
@@ -187,20 +187,20 @@ namespace TestImpact
                 const auto option = cmd.GetSwitchValue("fpolicy", 0);
                 if (option == "abort")
                 {
-                    return TestFailurePolicy::Abort;
+                    return Policy::TestFailure::Abort;
                 }
                 else if (option == "continue")
                 {
-                    return TestFailurePolicy::Continue;
+                    return Policy::TestFailure::Continue;
                 }
 
                 throw CommandLineOptionsException(AZStd::string::format("Unexpected value for test failure policy option: %s", option.c_str()));
             }
 
-            return TestFailurePolicy::Abort;
+            return Policy::TestFailure::Abort;
         }
 
-        IntegrityFailurePolicy ParseIntegrityFailurePolicy(const AZ::CommandLine& cmd)
+        Policy::IntegrityFailure ParseIntegrityFailurePolicy(const AZ::CommandLine& cmd)
         {
             const auto numSwitchValues = cmd.GetNumSwitchValues("ipolicy");
             if (numSwitchValues)
@@ -209,20 +209,20 @@ namespace TestImpact
                 const auto option = cmd.GetSwitchValue("ipolicy", 0);
                 if (option == "abort")
                 {
-                    return IntegrityFailurePolicy::Abort;
+                    return Policy::IntegrityFailure::Abort;
                 }
                 else if (option == "continue")
                 {
-                    return IntegrityFailurePolicy::Continue;
+                    return Policy::IntegrityFailure::Continue;
                 }
 
                 throw CommandLineOptionsException(AZStd::string::format("Unexpected value for integrity failure policy option: %s", option.c_str()));
             }
 
-            return IntegrityFailurePolicy::Abort;
+            return Policy::IntegrityFailure::Abort;
         }
 
-        TestShardingPolicy ParseTestShading(const AZ::CommandLine& cmd)
+        Policy::TestSharding ParseTestShading(const AZ::CommandLine& cmd)
         {
             const auto numSwitchValues = cmd.GetNumSwitchValues("shard");
             if (numSwitchValues)
@@ -231,17 +231,17 @@ namespace TestImpact
                 const auto option = cmd.GetSwitchValue("shard", 0);
                 if (option == "on")
                 {
-                    return TestShardingPolicy::Always;
+                    return Policy::TestSharding::Always;
                 }
                 else if (option == "off")
                 {
-                    return TestShardingPolicy::Never;
+                    return Policy::TestSharding::Never;
                 }
 
                 throw CommandLineOptionsException(AZStd::string::format("Unexpected value for test sharding option: %s", option.c_str()));
             }
 
-            return TestShardingPolicy::Never;
+            return Policy::TestSharding::Never;
         }
 
         TargetOutputCapture ParseTargetOutputCapture(const AZ::CommandLine& cmd)
@@ -501,7 +501,7 @@ namespace TestImpact
         return m_safeMode;
     }
 
-    const AZStd::optional<AZ::IO::Path>& CommandLineOptions::GetUnifiedDiffFile() const
+    const AZStd::optional<RepoPath>& CommandLineOptions::GetUnifiedDiffFile() const
     {
         return m_unifiedDiffFile;
     }
@@ -511,7 +511,7 @@ namespace TestImpact
         return m_outputChangeList;
     }
 
-    const AZ::IO::Path& CommandLineOptions::GetConfigurationFile() const
+    const RepoPath& CommandLineOptions::GetConfigurationFile() const
     {
         return m_configurationFile;
     }
@@ -521,32 +521,32 @@ namespace TestImpact
         return m_testSequenceType;
     }
     
-    TestPrioritizationPolicy CommandLineOptions::GetTestPrioritizationPolicy() const
+    Policy::TestPrioritization CommandLineOptions::GetTestPrioritizationPolicy() const
     {
         return m_testPrioritizationPolicy;
     }
     
-    ExecutionFailurePolicy CommandLineOptions::GetExecutionFailurePolicy() const
+    Policy::ExecutionFailure CommandLineOptions::GetExecutionFailurePolicy() const
     {
         return m_executionFailurePolicy;
     }
     
-    ExecutionFailureDraftingPolicy CommandLineOptions::GetExecutionFailureDraftingPolicy() const
+    Policy::ExecutionFailureDrafting CommandLineOptions::GetExecutionFailureDraftingPolicy() const
     {
         return m_executionFailureDraftingPolicy;
     }
     
-    TestFailurePolicy CommandLineOptions::GetTestFailurePolicy() const
+    Policy::TestFailure CommandLineOptions::GetTestFailurePolicy() const
     {
         return m_testFailurePolicy;
     }
 
-    IntegrityFailurePolicy CommandLineOptions::GetIntegrityFailurePolicy() const
+    Policy::IntegrityFailure CommandLineOptions::GetIntegrityFailurePolicy() const
     {
         return m_integrityFailurePolicy;
     }
     
-    TestShardingPolicy CommandLineOptions::GetTestShardingPolicy() const
+    Policy::TestSharding CommandLineOptions::GetTestShardingPolicy() const
     {
         return m_testShardingPolicy;
     }

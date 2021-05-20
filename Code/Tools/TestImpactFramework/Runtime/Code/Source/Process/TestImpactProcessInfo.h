@@ -12,7 +12,8 @@
 
 #pragma once
 
-#include <AzCore/IO/Path/Path.h>
+#include <TestImpactFramework/TestImpactRuntime.h>
+
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/string.h>
 
@@ -64,9 +65,9 @@ namespace TestImpact
             ProcessId processId,
             StdOutputRouting stdOut,
             StdErrorRouting stdErr,
-            const AZ::IO::Path& processPath,
+            const RepoPath& processPath,
             const AZStd::string& startupArgs = "");
-        ProcessInfo(ProcessId processId, const AZ::IO::Path& processPath, const AZStd::string& startupArgs = "");
+        ProcessInfo(ProcessId processId, const RepoPath& processPath, const AZStd::string& startupArgs = "");
 
         //! Returns the identifier of this process.
         ProcessId GetId() const;
@@ -78,7 +79,7 @@ namespace TestImpact
         bool ParentHasStdError() const;
 
         // Returns the path to the process binary.
-        const AZ::IO::Path& GetProcessPath() const;
+        const RepoPath& GetProcessPath() const;
 
         //! Returns the command line arguments used to launch the process.
         const AZStd::string& GetStartupArgs() const;
@@ -87,7 +88,7 @@ namespace TestImpact
         const ProcessId m_id;
         const bool m_parentHasStdOutput;
         const bool m_parentHasStdErr;
-        const AZ::IO::Path m_processPath;
+        const RepoPath m_processPath;
         const AZStd::string m_startupArgs;
     };
 } // namespace TestImpact

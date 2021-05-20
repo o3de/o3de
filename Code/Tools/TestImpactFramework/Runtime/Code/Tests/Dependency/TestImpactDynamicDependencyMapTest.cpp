@@ -386,8 +386,8 @@ namespace UnitTest
 
         // Given a list of source covering test targets with two covered sources that will have no parents in the dependency map
         auto sourceCoveringTestList = MicroRepo::CreateSourceCoveringTestList();
-        sourceCoveringTestList.push_back({ "Orphan.cpp", {"Test A", "Test B"} });
-        sourceCoveringTestList.push_back({ "Orphan.h", {"Test Aux", "Test Core"} });
+        sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("Orphan.cpp"), AZStd::vector<AZStd::string>{"Test A", "Test B"}));
+        sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("Orphan.h"), AZStd::vector<AZStd::string>{"Test Aux", "Test Core"}));
 
         // When applying the source coverage test list to the dynamic dependency map
         m_dynamicDependencyMap->ReplaceSourceCoverage(TestImpact::SourceCoveringTestsList(AZStd::move(sourceCoveringTestList))                                                                                                                                                                                          );
@@ -421,8 +421,8 @@ namespace UnitTest
         validateOrphan("Orphan.h", { "Test Aux", "Test Core" });
 
         sourceCoveringTestList = MicroRepo::CreateSourceCoveringTestList();
-        sourceCoveringTestList.push_back({ "Orphan.cpp", {"Test A", "Test B"} });
-        sourceCoveringTestList.push_back({ "Orphan.h", {"Test Aux", "Test Core"} });
+        sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("Orphan.cpp"), AZStd::vector<AZStd::string>{ "Test A", "Test B" }));
+        sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("Orphan.h"), AZStd::vector<AZStd::string>{ "Test Aux", "Test Core" }));
 
         // Expect each production source's parent and covering tests to match that of the corresponding source dependency
         for (const auto& productionTarget : m_dynamicDependencyMap->GetProductionTargetList().GetTargets())

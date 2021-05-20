@@ -12,9 +12,10 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactRuntime.h>
+
 #include <Process/TestImpactProcessInfo.h>
 
-#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/std/containers/vector.h>

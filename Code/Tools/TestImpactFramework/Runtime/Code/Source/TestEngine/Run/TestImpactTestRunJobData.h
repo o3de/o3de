@@ -20,12 +20,12 @@ namespace TestImpact
     class TestRunJobData
     {
     public:
-        TestRunJobData(const AZ::IO::Path& resultsArtifact);
+        TestRunJobData(const RepoPath& resultsArtifact);
 
         //! Returns the path to the test run artifact produced by the test target.
-        const AZ::IO::Path& GetRunArtifactPath() const;
+        const RepoPath& GetRunArtifactPath() const;
 
     private:
-        AZ::IO::Path m_runArtifact; //!< Path to results data.
+        RepoPath m_runArtifact; //!< Path to results data.
     };
 } // namespace TestImpact

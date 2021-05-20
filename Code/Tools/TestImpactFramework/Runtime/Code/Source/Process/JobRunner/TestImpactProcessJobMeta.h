@@ -24,7 +24,7 @@ namespace TestImpact
     {
         NotExecuted, //!< The job was not executed (e.g. the job runner terminated before the job could be executed).
         FailedToExecute, //!< The job failed to execute (e.g. due to the arguments used to execute the job being invalid).
-        TimedOut, //!< The job was terminated by the job runner (e.g. job timeout exceeded while job was in-flight).
+        Timeout, //!< The job was terminated by the job runner (e.g. job timeout exceeded while job was in-flight).
         Terminated, //!< The job was terminated by the job runner (e.g. global timeout exceeded while job was in-flight).
         ExecutedWithFailure, //!< The job was executed but exited in an erroneous state (the underlying process returned non-zero).
         ExecutedWithSuccess //!< The job was executed and exited in a successful state (the underlying processes returned zero).

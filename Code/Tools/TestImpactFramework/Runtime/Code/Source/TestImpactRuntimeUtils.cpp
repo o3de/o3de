@@ -24,14 +24,14 @@ namespace TestImpact
 {
     TestTargetMetaMap ReadTestTargetMetaMapFile(const TestTargetMetaConfig& testTargetMetaConfig)
     {
-        const auto masterTestListData = ReadFileContents<RuntimeException>(testTargetMetaConfig.m_file);
+        const auto masterTestListData = ReadFileContents<RuntimeException>(testTargetMetaConfig.m_metaFile);
         return TestTargetMetaMapFactory(masterTestListData);
     }
 
     AZStd::vector<TestImpact::BuildTargetDescriptor> ReadBuildTargetDescriptorFiles(const BuildTargetDescriptorConfig& buildTargetDescriptorConfig)
     {
         AZStd::vector<TestImpact::BuildTargetDescriptor> buildTargetDescriptors;
-        for (const auto& buildTargetDescriptorFile : std::filesystem::directory_iterator(buildTargetDescriptorConfig.m_outputDirectory.c_str()))
+        for (const auto& buildTargetDescriptorFile : std::filesystem::directory_iterator(buildTargetDescriptorConfig.m_mappingDirectory.c_str()))
         {
             const auto buildTargetDescriptorContents = ReadFileContents<RuntimeException>(buildTargetDescriptorFile.path().string().c_str());
             auto buildTargetDescriptor = TestImpact::BuildTargetDescriptorFactory(
@@ -70,7 +70,7 @@ namespace TestImpact
         return testTargetExcludeList;
     }
 
-    TestSelection CreateTestSelection(
+    Client::TestRunSelection CreateTestSelection(
         const AZStd::vector<const TestTarget*>& includedTestTargets,
         const AZStd::vector<const TestTarget*>& excludedTestTargets)
     {
@@ -85,18 +85,18 @@ namespace TestImpact
             return testNames;
         };
 
-        return TestSelection(populateTestTargetNames(includedTestTargets), populateTestTargetNames(excludedTestTargets));
+        return Client::TestRunSelection(populateTestTargetNames(includedTestTargets), populateTestTargetNames(excludedTestTargets));
     }
 
-    SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(const AZStd::vector<TestEngineInstrumentedRun>& jobs, const AZ::IO::Path& root)
+    SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(const AZStd::vector<TestEngineInstrumentedRun>& jobs, const RepoPath& root)
     {
         AZStd::unordered_map<AZStd::string, AZStd::unordered_set<AZStd::string>> coverage;
         for (const auto& job : jobs)
         {
             if (const auto testResult = job.GetTestResult();
-                testResult == TestResult::AllTestsPass || testResult == TestResult::TestFailures)
+                testResult == Client::TestRunResult::AllTestsPass || testResult == Client::TestRunResult::TestFailures)
             {
-                if (testResult == TestResult::AllTestsPass)
+                if (testResult == Client::TestRunResult::AllTestsPass)
                 {
                     // Passing tests should have coverage data, otherwise something is very wrong
                     AZ_TestImpact_Eval(
@@ -124,10 +124,10 @@ namespace TestImpact
         sourceCoveringTests.reserve(coverage.size());
         for (auto&& [source, testTargets] : coverage)
         {
-            if (const auto sourcePath = AZ::IO::Path(source);
+            if (const auto sourcePath = RepoPath(source);
                 sourcePath.IsRelativeTo(root))
             {
-                sourceCoveringTests.push_back(SourceCoveringTests(Path(sourcePath.LexicallyRelative(root)), AZStd::move(testTargets)));
+                sourceCoveringTests.push_back(SourceCoveringTests(RepoPath(sourcePath.LexicallyRelative(root)), AZStd::move(testTargets)));
             }
             else
             {

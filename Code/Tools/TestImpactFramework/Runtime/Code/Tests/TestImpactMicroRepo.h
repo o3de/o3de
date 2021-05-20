@@ -10,6 +10,8 @@
  *
  */
 
+#include <TestImpactFramework/TestImpactRepoPath.h>
+
 #include <TestImpactTestUtils.h>
 
 #include <Artifact/Factory/TestImpactBuildTargetDescriptorFactory.h>
@@ -185,13 +187,13 @@ namespace UnitTest
 
         template<typename TargetDescriptor>
         AZStd::vector<TargetDescriptor> CreateTargetDescriptorWithoutSpecifiedSource(
-            AZStd::vector<TargetDescriptor> targetDescriptors, const AZStd::string& sourceToRemove)
+            AZStd::vector<TargetDescriptor> targetDescriptors, const TestImpact::RepoPath& sourceToRemove)
         {
             for (auto& targetDescriptor : targetDescriptors)
             {
                 auto& staticSources = targetDescriptor.m_sources.m_staticSources;
                 auto& autogenSources = targetDescriptor.m_sources.m_autogenSources;
-                AZStd::erase_if(staticSources, [&sourceToRemove](const AZStd::string& staticSource)
+                AZStd::erase_if(staticSources, [&sourceToRemove](const TestImpact::RepoPath& staticSource)
                 {
                     return sourceToRemove == staticSource;
                 });
@@ -205,7 +207,7 @@ namespace UnitTest
                     {
                         for (const auto& output : pairs.m_outputs)
                         {
-                            AZStd::erase_if(staticSources, [&output](const AZStd::string& staticSource)
+                            AZStd::erase_if(staticSources, [&output](const TestImpact::RepoPath& staticSource)
                             {
                                 return output == staticSource;
                             });
@@ -220,7 +222,7 @@ namespace UnitTest
         }
 
         AZStd::vector<TestImpact::SourceCoveringTests> CreateSourceCoverageTestsWithoutSpecifiedSource(
-            AZStd::vector<TestImpact::SourceCoveringTests> sourceCoveringTestsList, const AZStd::string& sourceToRemove);
+            AZStd::vector<TestImpact::SourceCoveringTests> sourceCoveringTestsList, const TestImpact::RepoPath& sourceToRemove);
 
         using SelectedTests = std::vector<std::string>;
 

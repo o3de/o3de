@@ -13,8 +13,8 @@
 #pragma once
 
 #include <TestImpactFramework/TestImpactRuntime.h> // MOVE THESE ENUMS ETC. OUT OF THIS FILE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#include <TestImpactFramework/TestImpactRuntime.h>
 
-#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_set.h>
@@ -35,7 +35,7 @@ namespace TestImpact
         struct OutputChangeList
         {
             bool m_stdOut;
-            AZStd::optional<AZ::IO::Path> m_file;
+            AZStd::optional<RepoPath> m_file;
         };
 
         CommandLineOptions(int argc, char** argv);
@@ -46,16 +46,16 @@ namespace TestImpact
         bool HasTestSequence() const;
         bool HasSafeMode() const;
 
-        const AZ::IO::Path& GetConfigurationFile() const;
-        const AZStd::optional<AZ::IO::Path>& GetUnifiedDiffFile() const;
+        const RepoPath& GetConfigurationFile() const;
+        const AZStd::optional<RepoPath>& GetUnifiedDiffFile() const;
         const AZStd::optional<OutputChangeList>& GetOutputChangeList() const;
         const AZStd::optional<TestSequenceType>& GetTestSequenceType() const;
-        TestPrioritizationPolicy GetTestPrioritizationPolicy() const;
-        ExecutionFailurePolicy GetExecutionFailurePolicy() const;
-        ExecutionFailureDraftingPolicy GetExecutionFailureDraftingPolicy() const;
-        TestFailurePolicy GetTestFailurePolicy() const;
-        IntegrityFailurePolicy GetIntegrityFailurePolicy() const;
-        TestShardingPolicy GetTestShardingPolicy() const;
+        Policy::TestPrioritization GetTestPrioritizationPolicy() const;
+        Policy::ExecutionFailure GetExecutionFailurePolicy() const;
+        Policy::ExecutionFailureDrafting GetExecutionFailureDraftingPolicy() const;
+        Policy::TestFailure GetTestFailurePolicy() const;
+        Policy::IntegrityFailure GetIntegrityFailurePolicy() const;
+        Policy::TestSharding GetTestShardingPolicy() const;
         TargetOutputCapture GetTargetOutputCapture() const;
         const AZStd::optional<size_t>& GetMaxConcurrency() const;
         const AZStd::optional<AZStd::chrono::milliseconds>& GetTestTargetTimeout() const;
@@ -63,16 +63,16 @@ namespace TestImpact
         const AZStd::unordered_set<AZStd::string>& GetSuitesFilter() const;
 
     private:
-        AZ::IO::Path m_configurationFile;
-        AZStd::optional<AZ::IO::Path> m_unifiedDiffFile;
+        RepoPath m_configurationFile;
+        AZStd::optional<RepoPath> m_unifiedDiffFile;
         AZStd::optional<OutputChangeList> m_outputChangeList;
         AZStd::optional<TestSequenceType> m_testSequenceType;
-        TestPrioritizationPolicy m_testPrioritizationPolicy = TestPrioritizationPolicy::None;
-        ExecutionFailurePolicy m_executionFailurePolicy = ExecutionFailurePolicy::Continue;
-        ExecutionFailureDraftingPolicy m_executionFailureDraftingPolicy = ExecutionFailureDraftingPolicy::Always;
-        TestFailurePolicy m_testFailurePolicy = TestFailurePolicy::Abort;
-        IntegrityFailurePolicy m_integrityFailurePolicy = IntegrityFailurePolicy::Abort;
-        TestShardingPolicy m_testShardingPolicy = TestShardingPolicy::Never;
+        Policy::TestPrioritization m_testPrioritizationPolicy = Policy::TestPrioritization::None;
+        Policy::ExecutionFailure m_executionFailurePolicy = Policy::ExecutionFailure::Continue;
+        Policy::ExecutionFailureDrafting m_executionFailureDraftingPolicy = Policy::ExecutionFailureDrafting::Always;
+        Policy::TestFailure m_testFailurePolicy = Policy::TestFailure::Abort;
+        Policy::IntegrityFailure m_integrityFailurePolicy = Policy::IntegrityFailure::Abort;
+        Policy::TestSharding m_testShardingPolicy = Policy::TestSharding::Never;
         TargetOutputCapture m_targetOutputCapture = TargetOutputCapture::None;
         AZStd::optional<size_t> m_maxConcurrency;
         AZStd::optional<AZStd::chrono::milliseconds> m_testTargetTimeout;

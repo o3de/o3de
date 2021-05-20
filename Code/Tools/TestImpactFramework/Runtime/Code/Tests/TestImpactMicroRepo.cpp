@@ -17,7 +17,7 @@ namespace UnitTest
     namespace MicroRepo
     {
         TestImpact::BuildTargetDescriptor CreateBuildTargetDescriptor(
-            const AZStd::string& name, const AZStd::vector<AZStd::string>& staticSources, const TestImpact::AutogenSources& autogenSources = {})
+            const AZStd::string& name, const AZStd::vector<TestImpact::RepoPath>& staticSources, const TestImpact::AutogenSources& autogenSources = {})
         {
             TestImpact::BuildMetaData buildMetaData;
             buildMetaData.m_name = name;
@@ -83,28 +83,28 @@ namespace UnitTest
         AZStd::vector<TestImpact::SourceCoveringTests> CreateSourceCoveringTestList()
         {
             AZStd::vector<TestImpact::SourceCoveringTests> sourceCoveringTestList;
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibA_1.cpp", {"Test A"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibA_2.cpp", {"Test A", "Test C"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibB_1.cpp", {"Test B", "Test C"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibB_2.cpp", {"Test B"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibB_3.cpp", {"Test C"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibC_1.cpp", {"Test C"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibC_2.cpp", {"Test C"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibC_3.cpp", {"Test C"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibMisc_1.cpp", {"Test Misc"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibMisc_2.cpp", {"Test Misc"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibCore_1.cpp", {"Test Core", "Test C"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibCore_2.cpp", {"Test Core", "Test A", "Test B", "Test C"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibAux_1.cpp", {"Test Aux", "Test B", "Test Misc"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibAux_2.cpp", {"Test Aux", "Test C", "Test Misc"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibAux_3.cpp", {"Test Aux", "Test B", "Test C", "Test Misc"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "TestA.cpp", {"Test A"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "TestB.cpp", {"Test B"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "TestC.cpp", {"Test C"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "TestCore.cpp", {"Test Core"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "TestMisc.cpp", {"Test Misc"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "TestAux.cpp", {"Test Aux"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "ProdAndTest.cpp", {"Test A"} });
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibA_1.cpp"), AZStd::vector<AZStd::string>{"Test A"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibA_2.cpp"), AZStd::vector<AZStd::string>{"Test A", "Test C"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibB_1.cpp"), AZStd::vector<AZStd::string>{"Test B", "Test C"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibB_2.cpp"), AZStd::vector<AZStd::string>{"Test B"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibB_3.cpp"), AZStd::vector<AZStd::string>{"Test C"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibC_1.cpp"), AZStd::vector<AZStd::string>{"Test C"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibC_2.cpp"), AZStd::vector<AZStd::string>{"Test C"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibC_3.cpp"), AZStd::vector<AZStd::string>{"Test C"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibMisc_1.cpp"), AZStd::vector<AZStd::string>{"Test Misc"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibMisc_2.cpp"), AZStd::vector<AZStd::string>{"Test Misc"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibCore_1.cpp"), AZStd::vector<AZStd::string>{"Test Core", "Test C"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibCore_2.cpp"), AZStd::vector<AZStd::string>{"Test Core", "Test A", "Test B", "Test C"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibAux_1.cpp"), AZStd::vector<AZStd::string>{"Test Aux", "Test B", "Test Misc"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibAux_2.cpp"), AZStd::vector<AZStd::string>{"Test Aux", "Test C", "Test Misc"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibAux_3.cpp"), AZStd::vector<AZStd::string>{"Test Aux", "Test B", "Test C", "Test Misc"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("TestA.cpp"), AZStd::vector<AZStd::string>{"Test A"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("TestB.cpp"), AZStd::vector<AZStd::string>{"Test B"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("TestC.cpp"), AZStd::vector<AZStd::string>{"Test C"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("TestCore.cpp"), AZStd::vector<AZStd::string>{"Test Core"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("TestMisc.cpp"), AZStd::vector<AZStd::string>{"Test Misc"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("TestAux.cpp"), AZStd::vector<AZStd::string>{"Test Aux"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("ProdAndTest.cpp"), AZStd::vector<AZStd::string>{"Test A"}));
 
             return sourceCoveringTestList;
         }
@@ -112,36 +112,36 @@ namespace UnitTest
         AZStd::vector<TestImpact::SourceCoveringTests> CreateSourceCoveringTestListWithSharedSources()
         {
             AZStd::vector<TestImpact::SourceCoveringTests> sourceCoveringTestList;
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibA_1.cpp", {"Test A"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibA_2.cpp", {"Test A", "Test C"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibB_1.cpp", {"Test B", "Test C"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibB_2.cpp", {"Test B"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibB_3.cpp", {"Test C"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibC_1.cpp", {"Test C"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibC_2.cpp", {"Test C"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibC_3.cpp", {"Test C"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibMisc_1.cpp", {"Test Misc"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibMisc_2.cpp", {"Test Misc"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibCore_1.cpp", {"Test Core", "Test C"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibCore_2.cpp", {"Test Core", "Test A", "Test B", "Test C"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibAux_1.cpp", {"Test Aux", "Test B", "Test Misc"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibAux_2.cpp", {"Test Aux", "Test C", "Test Misc", "Test Shared"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibAux_3.cpp", {"Test Aux", "Test B", "Test C", "Test Misc"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "TestA.cpp", {"Test A"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "TestB.cpp", {"Test B"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "TestC.cpp", {"Test C"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "TestCore.cpp", {"Test Core"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "TestMisc.cpp", {"Test Misc"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "TestAux.cpp", {"Test Aux"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "ProdAndTest.cpp", {"Test A"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "LibShared.cpp", {"Test Aux", "Test Misc", "Test B", "Test C", "Test Shared"} });
-            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests{ "TestShared.cpp", {"Test Shared"} });
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibA_1.cpp"), AZStd::vector<AZStd::string>{"Test A"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibA_2.cpp"), AZStd::vector<AZStd::string>{"Test A", "Test C"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibB_1.cpp"), AZStd::vector<AZStd::string>{"Test B", "Test C"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibB_2.cpp"), AZStd::vector<AZStd::string>{"Test B"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibB_3.cpp"), AZStd::vector<AZStd::string>{"Test C"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibC_1.cpp"), AZStd::vector<AZStd::string>{"Test C"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibC_2.cpp"), AZStd::vector<AZStd::string>{"Test C"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibC_3.cpp"), AZStd::vector<AZStd::string>{"Test C"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibMisc_1.cpp"), AZStd::vector<AZStd::string>{"Test Misc"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibMisc_2.cpp"), AZStd::vector<AZStd::string>{"Test Misc"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibCore_1.cpp"), AZStd::vector<AZStd::string>{"Test Core", "Test C"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibCore_2.cpp"), AZStd::vector<AZStd::string>{"Test Core", "Test A", "Test B", "Test C"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibAux_1.cpp"), AZStd::vector<AZStd::string>{"Test Aux", "Test B", "Test Misc"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibAux_2.cpp"), AZStd::vector<AZStd::string>{"Test Aux", "Test C", "Test Misc", "Test Shared"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibAux_3.cpp"), AZStd::vector<AZStd::string>{"Test Aux", "Test B", "Test C", "Test Misc"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("TestA.cpp"), AZStd::vector<AZStd::string>{"Test A"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("TestB.cpp"), AZStd::vector<AZStd::string>{"Test B"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("TestC.cpp"), AZStd::vector<AZStd::string>{"Test C"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("TestCore.cpp"), AZStd::vector<AZStd::string>{"Test Core"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("TestMisc.cpp"), AZStd::vector<AZStd::string>{"Test Misc"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("TestAux.cpp"), AZStd::vector<AZStd::string>{"Test Aux"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("ProdAndTest.cpp"), AZStd::vector<AZStd::string>{"Test A"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("LibShared.cpp"), AZStd::vector<AZStd::string>{"Test Aux", "Test Misc", "Test B", "Test C", "Test Shared"}));
+            sourceCoveringTestList.push_back(TestImpact::SourceCoveringTests(TestImpact::RepoPath("TestShared.cpp"), AZStd::vector<AZStd::string>{"Test Shared"}));
 
             return sourceCoveringTestList;
         }
 
         AZStd::vector<TestImpact::SourceCoveringTests> CreateSourceCoverageTestsWithoutSpecifiedSource(
-            AZStd::vector<TestImpact::SourceCoveringTests> sourceCoveringTestsList, const AZStd::string& sourceToRemove)
+            AZStd::vector<TestImpact::SourceCoveringTests> sourceCoveringTestsList, const TestImpact::RepoPath& sourceToRemove)
         {
             AZStd::erase_if(sourceCoveringTestsList, [&sourceToRemove](const TestImpact::SourceCoveringTests& sourceCoveringTests)
             {

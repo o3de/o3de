@@ -9,6 +9,7 @@
 // * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // *
 // */
+//#include <TestImpactFramework/TestImpactRuntime.h>
 //
 //#include <TestImpactTestJobRunnerCommon.h>
 //#include <TestImpactTestUtils.h>
@@ -17,7 +18,6 @@
 //#include <Testengine/Run/TestImpactInstrumentedTestRunner.h>
 //#include <Testengine/Run/TestImpactTestRunException.h>
 //
-//#include <AzCore/IO/Path/Path.h>
 //#include <AzCore/UnitTest/TestTypes.h>
 //#include <AzCore/std/containers/array.h>
 //#include <AzCore/std/containers/vector.h>
@@ -34,9 +34,9 @@
 //
 //    struct TargetPaths
 //    {
-//        AZ::IO::Path m_targetBinary;
-//        AZ::IO::Path m_testRunArtifact;
-//        AZ::IO::Path m_testCoverageArtifact;
+//        RepoPath m_targetBinary;
+//        RepoPath m_testRunArtifact;
+//        RepoPath m_testCoverageArtifact;
 //    };
 //
 //    // Indices for looking up job command arguments for the different coverage levels

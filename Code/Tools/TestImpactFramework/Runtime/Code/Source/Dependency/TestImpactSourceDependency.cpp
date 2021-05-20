@@ -52,7 +52,7 @@ namespace TestImpact
     }
 
     SourceDependency::SourceDependency(
-        const AZStd::string& path,
+        const RepoPath& path,
         DependencyData&& dependencyData)
         : m_path(path)
         , m_dependencyData(AZStd::move(dependencyData))

@@ -12,12 +12,12 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactRuntime.h>
+
 #include <Artifact/Dynamic/TestImpactCoverage.h>
 #include <TestEngine/Enumeration/TestImpactTestEnumerator.h>
 #include <TestEngine/Run/TestImpactInstrumentedTestRunner.h>
 #include <TestEngine/Run/TestImpactTestRunner.h>
-
-#include <AzCore/IO/Path/Path.h>
 
 namespace TestImpact
 {
@@ -27,15 +27,15 @@ namespace TestImpact
     {
     public:
         TestJobInfoGenerator(
-            const AZ::IO::Path& sourceDir,
-            const AZ::IO::Path& targetBinaryDir,
-            const AZ::IO::Path& cacheDir,
-            const AZ::IO::Path& artifactDir,
-            const AZ::IO::Path& testRunnerBinary,
-            const AZ::IO::Path& instrumentBinary);
+            const RepoPath& sourceDir,
+            const RepoPath& targetBinaryDir,
+            const RepoPath& cacheDir,
+            const RepoPath& artifactDir,
+            const RepoPath& testRunnerBinary,
+            const RepoPath& instrumentBinary);
 
-        const AZ::IO::Path& GetCacheDir() const;
-        const AZ::IO::Path& GetArtifactDir() const;
+        const RepoPath& GetCacheDir() const;
+        const RepoPath& GetArtifactDir() const;
 
         TestEnumerator::JobInfo GenerateTestEnumerationJobInfo(
             const TestTarget* testTarget,
@@ -52,16 +52,16 @@ namespace TestImpact
             CoverageLevel coverageLevel) const;
     private:
         AZStd::string GenerateLaunchArgument(const TestTarget* testTarget) const;
-        AZ::IO::Path GenerateTargetEnumerationCacheFilePath(const TestTarget* testTarget) const;
-        AZ::IO::Path GenerateTargetEnumerationArtifactFilePath(const TestTarget* testTarget) const;
-        AZ::IO::Path GenerateTargetRunArtifactFilePath(const TestTarget* testTarget) const;
-        AZ::IO::Path GenerateTargetCoverageArtifactFilePath(const TestTarget* testTarget) const;
+        RepoPath GenerateTargetEnumerationCacheFilePath(const TestTarget* testTarget) const;
+        RepoPath GenerateTargetEnumerationArtifactFilePath(const TestTarget* testTarget) const;
+        RepoPath GenerateTargetRunArtifactFilePath(const TestTarget* testTarget) const;
+        RepoPath GenerateTargetCoverageArtifactFilePath(const TestTarget* testTarget) const;
         
-        AZ::IO::Path m_sourceDir;
-        AZ::IO::Path m_targetBinaryDir;
-        AZ::IO::Path m_cacheDir;
-        AZ::IO::Path m_artifactDir;
-        AZ::IO::Path m_testRunnerBinary;
-        AZ::IO::Path m_instrumentBinary;
+        RepoPath m_sourceDir;
+        RepoPath m_targetBinaryDir;
+        RepoPath m_cacheDir;
+        RepoPath m_artifactDir;
+        RepoPath m_testRunnerBinary;
+        RepoPath m_instrumentBinary;
     };
 }

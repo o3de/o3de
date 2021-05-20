@@ -12,9 +12,8 @@
 
 #pragma once
 
-#include <TestImpactRepoPath.h>
+#include <TestImpactFramework/TestImpactRepoPath.h>
 
-#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/string.h>

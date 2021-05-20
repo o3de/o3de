@@ -19,19 +19,6 @@
 
 namespace UnitTest
 {
-    void WriteTextToFile(const AZStd::string& text, const AZ::IO::Path& path)
-    {
-        const AZStd::vector<char> textBytes(text.begin(), text.end());
-        AZ::IO::SystemFile textFile;
-        AZ_TestImpact_Eval(
-            textFile.Open(
-                path.c_str(),
-                AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY),
-            TestImpact::Exception, "Couldn't open cache file for writing");
-        const auto bytesWritten = textFile.Write(textBytes.data(), textBytes.size());
-        AZ_TestImpact_Eval(bytesWritten == textBytes.size(), TestImpact::Exception, "Couldn't write text file data");
-    }
-
     AZStd::string ConstructTestProcessArgs(TestImpact::ProcessId pid, AZStd::chrono::milliseconds sleepTime)
     {
         return AZStd::string::format("--id %i --sleep %u", pid, sleepTime.count());
@@ -77,7 +64,7 @@ namespace UnitTest
         return AZStd::string::format("%s/%u", name.c_str(), testNum);
     }
 
-    AZStd::string StringVectorToJSONElements(const AZStd::vector<AZStd::string> strings)
+    AZStd::string StringVectorToJSONElements(const AZStd::vector<TestImpact::RepoPath> strings)
     {
         AZStd::string output;
 
@@ -99,10 +86,10 @@ namespace UnitTest
     AZStd::string GenerateBuildTargetDescriptorString(
         const AZStd::string& name,
         const AZStd::string& outputName,
-        const AZStd::string& path,
-        const AZStd::vector<AZStd::string>& staticSources,
-        const AZStd::vector<AZStd::string>& autogenInputs,
-        const AZStd::vector<AZStd::string>& autogenOutputs)
+        const TestImpact::RepoPath& path,
+        const AZStd::vector<TestImpact::RepoPath>& staticSources,
+        const AZStd::vector<TestImpact::RepoPath>& autogenInputs,
+        const AZStd::vector<TestImpact::RepoPath>& autogenOutputs)
     {
         constexpr const char* const targetTemplate =
             "{\n"
@@ -139,8 +126,8 @@ namespace UnitTest
     TestImpact::BuildTargetDescriptor GenerateBuildTargetDescriptor(
         const AZStd::string& name,
         const AZStd::string& outputName,
-        const AZStd::string& path,
-        const AZStd::vector<AZStd::string>& staticSources,
+        const TestImpact::RepoPath& path,
+        const AZStd::vector<TestImpact::RepoPath>& staticSources,
         const TestImpact::AutogenSources& autogenSources)
     {
         TestImpact::BuildTargetDescriptor targetDescriptor;
@@ -1071,12 +1058,12 @@ namespace UnitTest
         AZStd::vector<TestImpact::ModuleCoverage> moduleCoverages;
 
         TestImpact::ModuleCoverage moduleCoverage;
-        moduleCoverage.m_path = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_A_BIN).MakePreferred().c_str();
+        moduleCoverage.m_path = TestImpact::RepoPath(LY_TEST_IMPACT_TEST_TARGET_A_BIN).c_str();
 
         TestImpact::SourceCoverage sourceCoverage;
         sourceCoverage.m_path =
-            AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
-                / "Tests\\TestTargetA\\Code\\Tests\\TestImpactTestTargetA.cpp").MakePreferred().c_str();
+            TestImpact::RepoPath(TestImpact::RepoPath(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+                / "Tests\\TestTargetA\\Code\\Tests\\TestImpactTestTargetA.cpp").c_str();
 
         moduleCoverage.m_sources.push_back(AZStd::move(sourceCoverage));
         moduleCoverages.push_back(AZStd::move(moduleCoverage));
@@ -1088,12 +1075,12 @@ namespace UnitTest
         AZStd::vector<TestImpact::ModuleCoverage> moduleCoverages;
 
         TestImpact::ModuleCoverage moduleCoverage;
-        moduleCoverage.m_path = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_B_BIN).MakePreferred().c_str();
+        moduleCoverage.m_path = TestImpact::RepoPath(LY_TEST_IMPACT_TEST_TARGET_B_BIN).c_str();
 
         TestImpact::SourceCoverage sourceCoverage;
         sourceCoverage.m_path =
-            AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
-                / "Tests\\TestTargetB\\Code\\Tests\\TestImpactTestTargetB.cpp").MakePreferred().c_str();
+            TestImpact::RepoPath(TestImpact::RepoPath(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+                / "Tests\\TestTargetB\\Code\\Tests\\TestImpactTestTargetB.cpp").c_str();
 
         moduleCoverage.m_sources.push_back(AZStd::move(sourceCoverage));
         moduleCoverages.push_back(AZStd::move(moduleCoverage));
@@ -1105,12 +1092,12 @@ namespace UnitTest
         AZStd::vector<TestImpact::ModuleCoverage> moduleCoverages;
 
         TestImpact::ModuleCoverage moduleCoverage;
-        moduleCoverage.m_path = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_C_BIN).MakePreferred().c_str();
+        moduleCoverage.m_path = TestImpact::RepoPath(LY_TEST_IMPACT_TEST_TARGET_C_BIN).String();
 
         TestImpact::SourceCoverage sourceCoverage;
         sourceCoverage.m_path =
-            AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
-                / "Tests\\TestTargetC\\Code\\Tests\\TestImpactTestTargetC.cpp").MakePreferred().c_str();
+            TestImpact::RepoPath(TestImpact::RepoPath(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+                / "Tests\\TestTargetC\\Code\\Tests\\TestImpactTestTargetC.cpp").String();
 
         moduleCoverage.m_sources.push_back(AZStd::move(sourceCoverage));
         moduleCoverages.push_back(AZStd::move(moduleCoverage));
@@ -1122,12 +1109,12 @@ namespace UnitTest
         AZStd::vector<TestImpact::ModuleCoverage> moduleCoverages;
 
         TestImpact::ModuleCoverage moduleCoverage;
-        moduleCoverage.m_path = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_D_BIN).MakePreferred().c_str();
+        moduleCoverage.m_path = TestImpact::RepoPath(LY_TEST_IMPACT_TEST_TARGET_D_BIN).c_str();
 
         TestImpact::SourceCoverage sourceCoverage;
         sourceCoverage.m_path =
-            AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
-                / "Tests\\TestTargetD\\Code\\Tests\\TestImpactTestTargetD.cpp").MakePreferred().c_str();
+            TestImpact::RepoPath(TestImpact::RepoPath(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+                / "Tests\\TestTargetD\\Code\\Tests\\TestImpactTestTargetD.cpp").c_str();
 
         moduleCoverage.m_sources.push_back(AZStd::move(sourceCoverage));
         moduleCoverages.push_back(AZStd::move(moduleCoverage));
@@ -1139,12 +1126,12 @@ namespace UnitTest
         AZStd::vector<TestImpact::ModuleCoverage> moduleCoverages;
 
         TestImpact::ModuleCoverage moduleCoverage;
-        moduleCoverage.m_path = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_A_BIN).MakePreferred().c_str();
+        moduleCoverage.m_path = TestImpact::RepoPath(LY_TEST_IMPACT_TEST_TARGET_A_BIN).c_str();
 
         TestImpact::SourceCoverage sourceCoverage;
         sourceCoverage.m_path =
-            AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
-                / "Tests\\TestTargetA\\Code\\Tests\\TestImpactTestTargetA.cpp").MakePreferred().c_str();
+            TestImpact::RepoPath(TestImpact::RepoPath(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+                / "Tests\\TestTargetA\\Code\\Tests\\TestImpactTestTargetA.cpp").c_str();
         sourceCoverage.m_coverage = AZStd::vector<TestImpact::LineCoverage>();
 
         auto& lines = sourceCoverage.m_coverage;
@@ -1200,12 +1187,12 @@ namespace UnitTest
         AZStd::vector<TestImpact::ModuleCoverage> moduleCoverages;
 
         TestImpact::ModuleCoverage moduleCoverage;
-        moduleCoverage.m_path = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_B_BIN).MakePreferred().c_str();
+        moduleCoverage.m_path = TestImpact::RepoPath(LY_TEST_IMPACT_TEST_TARGET_B_BIN).String();
 
         TestImpact::SourceCoverage sourceCoverage;
         sourceCoverage.m_path =
-            AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
-                / "Tests\\TestTargetB\\Code\\Tests\\TestImpactTestTargetB.cpp").MakePreferred().c_str();
+            TestImpact::RepoPath(TestImpact::RepoPath(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+                / "Tests\\TestTargetB\\Code\\Tests\\TestImpactTestTargetB.cpp").String();
         sourceCoverage.m_coverage = AZStd::vector<TestImpact::LineCoverage>();
 
         auto& lines = sourceCoverage.m_coverage;
@@ -1249,12 +1236,12 @@ namespace UnitTest
         AZStd::vector<TestImpact::ModuleCoverage> moduleCoverages;
 
         TestImpact::ModuleCoverage moduleCoverage;
-        moduleCoverage.m_path = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_C_BIN).MakePreferred().c_str();
+        moduleCoverage.m_path = TestImpact::RepoPath(LY_TEST_IMPACT_TEST_TARGET_C_BIN).String();
 
         TestImpact::SourceCoverage sourceCoverage;
         sourceCoverage.m_path =
-            AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
-                / "Tests\\TestTargetC\\Code\\Tests\\TestImpactTestTargetC.cpp").MakePreferred().c_str();
+            TestImpact::RepoPath(TestImpact::RepoPath(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+                / "Tests\\TestTargetC\\Code\\Tests\\TestImpactTestTargetC.cpp").String();
         sourceCoverage.m_coverage = AZStd::vector<TestImpact::LineCoverage>();
 
         auto& lines = sourceCoverage.m_coverage;
@@ -1294,12 +1281,12 @@ namespace UnitTest
         AZStd::vector<TestImpact::ModuleCoverage> moduleCoverages;
 
         TestImpact::ModuleCoverage moduleCoverage;
-        moduleCoverage.m_path = AZ::IO::Path(LY_TEST_IMPACT_TEST_TARGET_D_BIN).MakePreferred().c_str();
+        moduleCoverage.m_path = TestImpact::RepoPath(LY_TEST_IMPACT_TEST_TARGET_D_BIN).String();
 
         TestImpact::SourceCoverage sourceCoverage;
         sourceCoverage.m_path =
-            AZ::IO::Path(AZ::IO::Path(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
-                / "Tests\\TestTargetD\\Code\\Tests\\TestImpactTestTargetD.cpp").MakePreferred().c_str();
+            TestImpact::RepoPath(TestImpact::RepoPath(LY_TEST_IMPACT_COVERAGE_SOURCES_DIR)
+                / "Tests\\TestTargetD\\Code\\Tests\\TestImpactTestTargetD.cpp").String();
         sourceCoverage.m_coverage = AZStd::vector<TestImpact::LineCoverage>();
 
         auto& lines = sourceCoverage.m_coverage;

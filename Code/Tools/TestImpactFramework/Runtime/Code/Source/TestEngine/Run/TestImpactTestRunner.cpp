@@ -21,7 +21,7 @@
 
 namespace TestImpact
 {
-    TestRun ParseTestRunFile(const AZ::IO::Path& runFile, AZStd::chrono::milliseconds duration)
+    TestRun ParseTestRunFile(const RepoPath& runFile, AZStd::chrono::milliseconds duration)
     {
         return TestRun(GTest::TestRunSuitesFactory(ReadFileContents<TestRunException>(runFile)), duration);
     }

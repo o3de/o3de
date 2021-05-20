@@ -15,7 +15,7 @@
 
 namespace TestImpact
 {
-    ProcessInfo::ProcessInfo(ProcessId id, const AZ::IO::Path& processPath, const AZStd::string& startupArgs)
+    ProcessInfo::ProcessInfo(ProcessId id, const RepoPath& processPath, const AZStd::string& startupArgs)
         : m_id(id)
         , m_parentHasStdOutput(false)
         , m_parentHasStdErr(false)
@@ -29,7 +29,7 @@ namespace TestImpact
         ProcessId id,
         StdOutputRouting stdOut,
         StdErrorRouting stdErr,
-        const AZ::IO::Path& processPath,
+        const RepoPath& processPath,
         const AZStd::string& startupArgs)
         : m_id(id)
         , m_processPath(processPath)
@@ -45,7 +45,7 @@ namespace TestImpact
         return m_id;
     }
 
-    const AZ::IO::Path& ProcessInfo::GetProcessPath() const
+    const RepoPath& ProcessInfo::GetProcessPath() const
     {
         return m_processPath;
     }

@@ -10,6 +10,8 @@
 // *
 // */
 //
+//#include <TestImpactFramework/TestImpactRuntime.h>
+//
 //#include <TestImpactTestJobRunnerCommon.h>
 //#include <TestImpactTestUtils.h>
 //
@@ -17,7 +19,6 @@
 //#include <TestEngine/Enumeration/TestImpactTestEnumerationSerializer.h>
 //#include <TestEngine/Enumeration/TestImpactTestEnumerator.h>
 //
-//#include <AzCore/IO/Path/Path.h>
 //#include <AzCore/UnitTest/TestTypes.h>
 //#include <AzCore/std/containers/array.h>
 //#include <AzCore/std/containers/vector.h>
@@ -32,7 +33,7 @@
 //    using CacheExceptionPolicy = TestImpact::TestEnumerator::CacheExceptionPolicy;
 //
 //    // Generates the command to run the given test target through AzTestRunner and get gtest to output the enumeration file
-//    TestImpact::TestEnumerator::Command GetEnumerateCommandForTarget(AZStd::pair<AZ::IO::Path, AZ::IO::Path> testTarget)
+//    TestImpact::TestEnumerator::Command GetEnumerateCommandForTarget(AZStd::pair<RepoPath, RepoPath> testTarget)
 //    {
 //        return TestImpact::TestEnumerator::Command{ AZStd::string::format(
 //            "%s %s AzRunUnitTests --gtest_list_tests --gtest_output=xml:%s",
@@ -56,7 +57,7 @@
 //        AZStd::vector<JobInfo> m_jobInfos;
 //        AZStd::unique_ptr<TestImpact::TestEnumerator> m_testEnumerator;
 //        AZStd::vector<Command> m_testTargetJobArgs;
-//        AZStd::vector<AZStd::pair<AZ::IO::Path, AZ::IO::Path>> m_testTargetPaths;
+//        AZStd::vector<AZStd::pair<RepoPath, RepoPath>> m_testTargetPaths;
 //        AZStd::vector<TestImpact::TestEnumeration> m_expectedTestTargetEnumerations;
 //        AZStd::vector<AZStd::string> m_cacheFiles;
 //        size_t m_maxConcurrency = 0;
@@ -205,7 +206,7 @@
 //    }
 //
 //    // Validates that the specified test enumeration cache matches the expected output
-//    void ValidateTestEnumerationCache(const AZ::IO::Path& cacheFile, const TestImpact::TestEnumeration& expectedEnumeration)
+//    void ValidateTestEnumerationCache(const RepoPath& cacheFile, const TestImpact::TestEnumeration& expectedEnumeration)
 //    {
 //        // Cache file must exist
 //        const auto fileSize = AZ::IO::SystemFile::Length(cacheFile.c_str());
@@ -225,7 +226,7 @@
 //    }
 //
 //    // Validates that the specified cache file does not exist
-//    void ValidateInvalidTestEnumerationCache(const AZ::IO::Path& cacheFile)
+//    void ValidateInvalidTestEnumerationCache(const RepoPath& cacheFile)
 //    {
 //        EXPECT_FALSE(AZ::IO::SystemFile::Exists(cacheFile.c_str()));
 //    }

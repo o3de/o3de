@@ -10,6 +10,8 @@
  *
  */
 
+#include <TestImpactFramework/TestImpactRuntime.h>
+    
 #include <TestImpactTestJobRunnerCommon.h>
 #include <TestImpactTestUtils.h>
 
@@ -17,7 +19,6 @@
 #include <TestEngine/Run/TestImpactTestRunException.h>
 #include <TestEngine/Run/TestImpactTestRunner.h>
 
-#include <AzCore/IO/Path/Path.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
@@ -30,7 +31,7 @@ namespace UnitTest
 {
     using JobExceptionPolicy = TestImpact::TestRunner::JobExceptionPolicy;
 
-    TestImpact::TestRunner::Command GetRunCommandForTarget(AZStd::pair<AZ::IO::Path, AZ::IO::Path> testTarget)
+    TestImpact::TestRunner::Command GetRunCommandForTarget(AZStd::pair<TestImpact::RepoPath, TestImpact::RepoPath> testTarget)
     {
         return TestImpact::TestRunner::Command{ AZStd::string::format(
             "%s %s AzRunUnitTests --gtest_output=xml:%s", LY_TEST_IMPACT_AZ_TESTRUNNER_BIN, testTarget.first.c_str(),
@@ -51,7 +52,7 @@ namespace UnitTest
         AZStd::vector<JobInfo> m_jobInfos;
         AZStd::unique_ptr<TestImpact::TestRunner> m_testRunner;
         AZStd::vector<Command> m_testTargetJobArgs;
-        AZStd::vector<AZStd::pair<AZ::IO::Path, AZ::IO::Path>> m_testTargetPaths;
+        AZStd::vector<AZStd::pair<TestImpact::RepoPath, TestImpact::RepoPath>> m_testTargetPaths;
         AZStd::vector<TestImpact::TestRun> m_expectedTestTargetRuns;
         AZStd::vector<TestImpact::TestRunResult> m_expectedTestTargetResult;
         size_t m_maxConcurrency = 0;
@@ -244,7 +245,7 @@ namespace UnitTest
         //}        
     }
 
-    TEST_F(TestRunnerFixture, EmptyArtifact_ExpectTestRunnerException)
+    TEST_F(TestRunnerFixture, EmptyArtifact_ExpectCompletedTestWithEmptyArtifact)
     {
         // Given a test runner with no client callback, concurrency, run timeout or runner timeout
         m_testRunner = AZStd::make_unique<TestImpact::TestRunner>(AZStd::nullopt, OneConcurrentProcess, AZStd::nullopt, AZStd::nullopt);
@@ -252,30 +253,18 @@ namespace UnitTest
         // Given an test runner job that will return successfully but with an empty artifact string
         m_jobInfos.emplace_back(JobInfo({0}, m_testTargetJobArgs[0], JobData("")));
 
-        try
-        {
-            // When the test runner job is executed
-            const auto runnerJobs = m_testRunner->RunTests(m_jobInfos, JobExceptionPolicy::Never);
+        // When the test runner job is executed
+        const auto runnerJobs = m_testRunner->RunTests(m_jobInfos, JobExceptionPolicy::Never);
 
-            // Do not expect this statement to be reachable
-            FAIL();
-        }
-        catch ([[maybe_unused]] const TestImpact::TestRunException& e)
-        {
-            // Expect an runner exception
-            SUCCEED();
-        }
-        catch (...)
-        {
-            // Do not expect any other exceptions
-            FAIL();
-        }
+        // Expect each job to have completed with test failures albeit with an empty payload
+        ValidateJobExecutedWithFailure(runnerJobs[0]);
+        EXPECT_FALSE(runnerJobs[0].GetPayload().has_value());
     }
 
     TEST_F(TestRunnerFixture, InvalidRunArtifact_ExpectArtifactException)
     {
         // Given a test run artifact with invalid contents
-        WriteTextToFile("There is nothing valid here", m_testTargetPaths[TestTargetA].second);
+        TestImpact::WriteFileContents<TestImpact::Exception>("There is nothing valid here", m_testTargetPaths[TestTargetA].second);
 
         // Given a job command that will write the test run artifact to a different location that what we will read from
         auto invalidRunArtifact = m_testTargetPaths[TestTargetA];
@@ -289,29 +278,12 @@ namespace UnitTest
         JobData jobData(m_testTargetPaths[TestTargetA].second);
         m_jobInfos.emplace_back(JobInfo({TestTargetA}, args, AZStd::move(jobData)));
 
-        try
-        {
-            // When the test runner job is executed
-            const auto runnerJobs = m_testRunner->RunTests(m_jobInfos, JobExceptionPolicy::Never);
+        // When the test runner job is executed
+        const auto runnerJobs = m_testRunner->RunTests(m_jobInfos, JobExceptionPolicy::Never);
 
-            // Do not expect this statement to be reachable
-            FAIL();
-        }
-        catch ([[maybe_unused]] const TestImpact::ArtifactException& e)
-        {
-            // Expect an runner exception
-            SUCCEED();
-        }
-        catch (const TestImpact::Exception& e)
-        {
-            std::cout << e.what();
-            FAIL();
-        }
-        catch (...)
-        {
-            // Do not expect any other exceptions
-            FAIL();
-        }
+        // Expect each job to have completed with test failures albeit with an empty payload
+        ValidateJobExecutedWithFailure(runnerJobs[0]);
+        EXPECT_FALSE(runnerJobs[0].GetPayload().has_value());
     }
 
     TEST_P(TestRunnerFixtureWithConcurrencyParams, RunTestTargets_RunsMatchTestSuitesInTarget)

@@ -10,18 +10,19 @@
  *
  */
 
+#include <TestImpactFramework/TestImpactRuntime.h>
+
 #include <Artifact/Factory/TestImpactBuildTargetDescriptorFactory.h>
 #include <Artifact/TestImpactArtifactException.h>
 
-#include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/document.h>
 #include <AzCore/std/string/regex.h>
 
 namespace TestImpact
 {
     AutogenSources PairAutogenSources(
-        const AZStd::vector<AZ::IO::Path>& inputSources,
-        const AZStd::vector<AZ::IO::Path>& outputSources,
+        const AZStd::vector<RepoPath>& inputSources,
+        const AZStd::vector<RepoPath>& outputSources,
         const AZStd::string& autogenMatcher)
     {
         AutogenSources autogenSources;
@@ -122,7 +123,7 @@ namespace TestImpact
 
             for (const auto& source : staticSources)
             {
-                const RepoPath sourcePath = source.GetString();
+                const RepoPath sourcePath = RepoPath(source.GetString());
                 if (AZStd::find(
                         staticSourceExtensionIncludes.begin(), staticSourceExtensionIncludes.end(), sourcePath.Extension().Native()) !=
                     staticSourceExtensionIncludes.end())
@@ -139,14 +140,14 @@ namespace TestImpact
             AZ_TestImpact_Eval(
                 !inputSources.Empty() && !outputSources.Empty(), ArtifactException, "Autogen malformed, input or output sources are empty");
 
-            AZStd::vector<AZ::IO::Path> inputPaths;
-            AZStd::vector<AZ::IO::Path> outputPaths;
+            AZStd::vector<RepoPath> inputPaths;
+            AZStd::vector<RepoPath> outputPaths;
             inputPaths.reserve(inputSources.Size());
             outputPaths.reserve(outputSources.Size());
 
             for (const auto& source : inputSources)
             {
-                const AZ::IO::Path sourcePath = AZ::IO::Path(source.GetString());
+                const RepoPath sourcePath = RepoPath(source.GetString());
                 if (AZStd::find(
                         autogenInputExtensionIncludes.begin(), autogenInputExtensionIncludes.end(), sourcePath.Extension().Native()) !=
                     autogenInputExtensionIncludes.end())
@@ -157,7 +158,7 @@ namespace TestImpact
 
             for (const auto& source : outputSources)
             {
-                outputPaths.emplace_back(AZStd::move(AZ::IO::Path(source.GetString())));
+                outputPaths.emplace_back(AZStd::move(RepoPath(source.GetString())));
             }
 
             buildTargetDescriptor.m_sources.m_autogenSources = PairAutogenSources(inputPaths, outputPaths, autogenMatcher);

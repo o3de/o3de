@@ -12,11 +12,11 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactRuntime.h>
+
 #include <Artifact/TestImpactArtifactException.h>
 #include <TestEngine/Enumeration/TestImpactTestEnumeration.h>
 #include <TestEngine/JobRunner/TestImpactTestJobRunner.h>
-
-#include <AzCore/IO/Path/Path.h>
 
 namespace TestImpact
 {
@@ -35,19 +35,19 @@ namespace TestImpact
         struct Cache
         {
             CachePolicy m_policy;
-            AZ::IO::Path m_file;
+            RepoPath m_file;
         };
 
-        TestEnumerationJobData(const AZ::IO::Path& enumerationArtifact, AZStd::optional<Cache>&& cache);
+        TestEnumerationJobData(const RepoPath& enumerationArtifact, AZStd::optional<Cache>&& cache);
 
         //! Returns the path to the enumeration artifact produced by the test target.
-        const AZ::IO::Path& GetEnumerationArtifactPath() const;
+        const RepoPath& GetEnumerationArtifactPath() const;
 
         //! Returns the cache details for this job.
         const AZStd::optional<Cache>& GetCache() const;
 
     private:
-        AZ::IO::Path m_enumerationArtifact; //!< Path to enumeration artifact to be processed.
+        RepoPath m_enumerationArtifact; //!< Path to enumeration artifact to be processed.
         AZStd::optional<Cache> m_cache = AZStd::nullopt; //!< No caching takes place if cache is empty.
     };
 

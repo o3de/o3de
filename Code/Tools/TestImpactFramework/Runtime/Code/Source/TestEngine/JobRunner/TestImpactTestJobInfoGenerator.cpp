@@ -21,12 +21,12 @@ namespace TestImpact
     // SPLIT INTO COMMAND GENERATOR (INSTRUMENT, RUNNER, ENUM, RESULTS)
 
     TestJobInfoGenerator::TestJobInfoGenerator(
-        const AZ::IO::Path& sourceDir,
-        const AZ::IO::Path& targetBinaryDir,
-        const AZ::IO::Path& cacheDir,
-        const AZ::IO::Path& artifactDir,
-        const AZ::IO::Path& testRunnerBinary,
-        const AZ::IO::Path& instrumentBinary)
+        const RepoPath& sourceDir,
+        const RepoPath& targetBinaryDir,
+        const RepoPath& cacheDir,
+        const RepoPath& artifactDir,
+        const RepoPath& testRunnerBinary,
+        const RepoPath& instrumentBinary)
         : m_sourceDir(sourceDir)
         , m_targetBinaryDir(targetBinaryDir)
         , m_cacheDir(cacheDir)
@@ -49,7 +49,7 @@ namespace TestImpact
         else
         {
             return AZStd::string::format(
-                "\"%s\" \"%s%s\" %s AzRunUnitTests",
+                "\"%s\" \"%s%s\" %s",
                 m_testRunnerBinary.c_str(),
                 (m_targetBinaryDir / testTarget->GetOutputName()).c_str(),
                 testRunnerExtension,
@@ -57,32 +57,32 @@ namespace TestImpact
         }
     }
 
-    AZ::IO::Path TestJobInfoGenerator::GenerateTargetEnumerationCacheFilePath(const TestTarget* testTarget) const
+    RepoPath TestJobInfoGenerator::GenerateTargetEnumerationCacheFilePath(const TestTarget* testTarget) const
     {
         return AZStd::string::format("%s.cache", (m_artifactDir / testTarget->GetName()).c_str());
     }
 
-    AZ::IO::Path TestJobInfoGenerator::GenerateTargetEnumerationArtifactFilePath(const TestTarget* testTarget) const
+    RepoPath TestJobInfoGenerator::GenerateTargetEnumerationArtifactFilePath(const TestTarget* testTarget) const
     {
         return AZStd::string::format("%s.Enumeration.xml", (m_artifactDir / testTarget->GetName()).c_str());
     }
 
-    AZ::IO::Path TestJobInfoGenerator::GenerateTargetRunArtifactFilePath(const TestTarget* testTarget) const
+    RepoPath TestJobInfoGenerator::GenerateTargetRunArtifactFilePath(const TestTarget* testTarget) const
     {
         return AZStd::string::format("%s.Run.xml", (m_artifactDir / testTarget->GetName()).c_str());
     }
 
-    AZ::IO::Path TestJobInfoGenerator::GenerateTargetCoverageArtifactFilePath(const TestTarget* testTarget) const
+    RepoPath TestJobInfoGenerator::GenerateTargetCoverageArtifactFilePath(const TestTarget* testTarget) const
     {
         return AZStd::string::format("%s.Coverage.xml", (m_artifactDir / testTarget->GetName()).c_str());
     }
 
-    const AZ::IO::Path& TestJobInfoGenerator::GetCacheDir() const
+    const RepoPath& TestJobInfoGenerator::GetCacheDir() const
     {
         return m_cacheDir;
     }
 
-    const AZ::IO::Path& TestJobInfoGenerator::GetArtifactDir() const
+    const RepoPath& TestJobInfoGenerator::GetArtifactDir() const
     {
         return m_artifactDir;
     }

@@ -12,6 +12,9 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactRepoPath.h>
+#include <TestImpactFramework/TestImpactUtils.h>
+
 #include <Artifact/Dynamic/TestImpactCoverage.h>
 #include <Artifact/Dynamic/TestImpactTestEnumerationSuite.h>
 #include <Artifact/Dynamic/TestImpactTestRunSuite.h>
@@ -37,9 +40,6 @@ namespace UnitTest
     inline constexpr const size_t LargeTextSize = 0xFFFF - 1; // 65,535 chars less the null terminator
     inline constexpr const AZStd::chrono::milliseconds ShortSleep = AZStd::chrono::milliseconds(500);
     inline constexpr const AZStd::chrono::milliseconds NoSleep = AZStd::chrono::milliseconds(0);
-
-    // Writes the specified text string to the specified file
-    void WriteTextToFile(const AZStd::string& text, const AZ::IO::Path& path);
 
     // Construct the arguments for launcing the test process
     AZStd::string ConstructTestProcessArgs(TestImpact::ProcessId pid, AZStd::chrono::milliseconds sleepTime);
@@ -71,18 +71,18 @@ namespace UnitTest
     AZStd::string GenerateBuildTargetDescriptorString(
         const AZStd::string& name,
         const AZStd::string& outputName,
-        const AZStd::string& path,
-        const AZStd::vector<AZStd::string>& staticSources,
-        const AZStd::vector<AZStd::string>& autogenInputs,
-        const AZStd::vector<AZStd::string>& autogenOutputs);
+        const TestImpact::RepoPath& path,
+        const AZStd::vector<TestImpact::RepoPath>& staticSources,
+        const AZStd::vector<TestImpact::RepoPath>& autogenInputs,
+        const AZStd::vector<TestImpact::RepoPath>& autogenOutputs);
 
     // Generate a build target descriptor from the specified build target description
     // Note: no check for correctness of arguments is peformed
     TestImpact::BuildTargetDescriptor GenerateBuildTargetDescriptor(
         const AZStd::string& name,
         const AZStd::string& outputName,
-        const AZStd::string& path,
-        const AZStd::vector<AZStd::string>& staticSources,
+        const TestImpact::RepoPath& path,
+        const AZStd::vector<TestImpact::RepoPath>& staticSources,
         const TestImpact::AutogenSources& autogenSources);
 
     // Procedurally generate a parameterized test suite based on the supplied parameters

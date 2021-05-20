@@ -13,8 +13,8 @@
 #pragma once
 
 #include <TestImpactFramework/TestImpactConfiguration.h>
-#include <TestImpactFramework/TestImpactTestSelection.h>
-#include <TestImpactFramework/TestImpactFailureReport.h>
+#include <TestImpactFramework/TestImpactClientTestSelection.h>
+#include <TestImpactFramework/TestImpactClientFailureReport.h>
 
 #include <Artifact/Static/TestImpactTestTargetMeta.h>
 #include <Artifact/Static/TestImpactBuildTargetDescriptor.h>
@@ -38,19 +38,19 @@ namespace TestImpact
 
     AZStd::unordered_set<const TestTarget*> ConstructTestTargetExcludeList(const TestTargetList& testTargets, const TargetConfig& targetConfig);
 
-    TestSelection CreateTestSelection(
+    Client::TestRunSelection CreateTestSelection(
         const AZStd::vector<const TestTarget*>& includedTestTargets,
         const AZStd::vector<const TestTarget*>& excludedTestTargets);
 
-    SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(const AZStd::vector<TestEngineInstrumentedRun>& jobs, const AZ::IO::Path& root);
+    SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(const AZStd::vector<TestEngineInstrumentedRun>& jobs, const RepoPath& root);
 
     template<typename TestJob>
-    FailureReport CreateFailureReport([[maybe_unused]] const AZStd::vector<TestJob>& testJobs)
+    Client::RegularSequenceFailure CreateFailureReport([[maybe_unused]] const AZStd::vector<TestJob>& testJobs)
     {
-        AZStd::vector<ExecutionFailure> executionFailures;
-        AZStd::vector<LauncherFailure> launcherFailures;
-        AZStd::vector<TestRunFailure> testRunFailures;
-        AZStd::vector<TargetFailure> unexecutedTestRsuns;
+        AZStd::vector<Client::ExecutionFailure> executionFailures;
+        AZStd::vector<Client::LauncherFailure> launcherFailures;
+        AZStd::vector<Client::TestRunFailure> testRunFailures;
+        AZStd::vector<Client::TargetFailure> unexecutedTestRsuns;
 
         //for (const auto& testJob : testJobs)
         //{
@@ -63,6 +63,6 @@ namespace TestImpact
         //    //}
         //}
 
-        return FailureReport(AZStd::move(executionFailures), AZStd::move(launcherFailures), AZStd::move(testRunFailures), AZStd::move(unexecutedTestRsuns));
+        return Client::RegularSequenceFailure(AZStd::move(executionFailures), AZStd::move(launcherFailures), AZStd::move(testRunFailures), AZStd::move(unexecutedTestRsuns));
     }
 }

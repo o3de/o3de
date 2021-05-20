@@ -74,7 +74,7 @@ namespace TestImpact
         m_targets.reserve(descriptors.size());
         for (auto&& descriptor : descriptors)
         {
-            m_targets.emplace_back(Target(AZStd::move(descriptor)));
+            m_targets.emplace_back(AZStd::move(Target(AZStd::move(descriptor))));
         }
     }
 

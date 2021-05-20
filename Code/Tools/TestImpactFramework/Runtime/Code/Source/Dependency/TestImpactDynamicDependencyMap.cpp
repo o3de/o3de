@@ -178,11 +178,11 @@ namespace TestImpact
         }
     }
 
-    void DynamicDependencyMap::ClearSourceCoverage(const AZStd::vector<AZStd::string>& paths)
+    void DynamicDependencyMap::ClearSourceCoverage(const AZStd::vector<RepoPath>& paths)
     {
         for (const auto& path : paths)
         {
-            if (const auto outputSources = m_autogenInputToOutputMap.find(path);
+            if (const auto outputSources = m_autogenInputToOutputMap.find(path.String());
                 outputSources != m_autogenInputToOutputMap.end())
             {
                 // Clearing the coverage data of an autogen input source instead clears the coverage data of its output sources
@@ -225,7 +225,7 @@ namespace TestImpact
         return coveringTestTargets;
     }
 
-    AZStd::optional<SourceDependency> DynamicDependencyMap::GetSourceDependency(const AZStd::string& path) const
+    AZStd::optional<SourceDependency> DynamicDependencyMap::GetSourceDependency(const RepoPath& path) const
     {
         AZStd::unordered_set<ParentTarget> parentTargets;
         AZStd::unordered_set<const TestTarget*> coveringTestTargets;
@@ -247,7 +247,7 @@ namespace TestImpact
             }
         };
 
-        if (const auto outputSources = m_autogenInputToOutputMap.find(path); outputSources != m_autogenInputToOutputMap.end())
+        if (const auto outputSources = m_autogenInputToOutputMap.find(path.String()); outputSources != m_autogenInputToOutputMap.end())
         {
             // Consolidate the parentage and coverage of each of the autogen input file's generated output files
             for (const auto& outputSource : outputSources->second)
@@ -257,7 +257,7 @@ namespace TestImpact
         }
         else
         {
-            getSourceDependency(path);
+            getSourceDependency(path.String());
         }
 
         if (!parentTargets.empty() || !coveringTestTargets.empty())
@@ -268,7 +268,7 @@ namespace TestImpact
         return AZStd::nullopt;
     }
 
-    SourceDependency DynamicDependencyMap::GetSourceDependencyOrThrow(const AZStd::string& path) const
+    SourceDependency DynamicDependencyMap::GetSourceDependencyOrThrow(const RepoPath& path) const
     {
         auto sourceDependency = GetSourceDependency(path);
         AZ_TestImpact_Eval(sourceDependency.has_value(), DependencyException, AZStd::string::format("Couldn't find source %s", path.c_str()).c_str());
@@ -314,7 +314,7 @@ namespace TestImpact
 
         // Keep track of the coverage to delete as a post step rather than deleting it in situ so that erroneous change lists
         // do not corrupt the dynamic dependency map
-        AZStd::vector<AZStd::string> coverageToDelete;
+        AZStd::vector<RepoPath> coverageToDelete;
 
         // Create operations
         for (const auto& createdFile : changeList.m_createdFiles)

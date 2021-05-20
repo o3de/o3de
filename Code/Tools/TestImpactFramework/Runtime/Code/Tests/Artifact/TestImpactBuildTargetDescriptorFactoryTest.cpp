@@ -28,7 +28,7 @@ namespace UnitTest
         const AZStd::vector<AZStd::string> m_inputInclude = {".xml"};
         const AZStd::string m_autogenMatcher = {"(.*)\\..*"};
 
-        const AZStd::vector<AZStd::string> m_autogenInputs =
+        const AZStd::vector<TestImpact::RepoPath> m_autogenInputs =
         {
             "Gems/ScriptCanvasDiagnosticLibrary/Code/Source/Log.ScriptCanvasNode.xml",
             "Gems/ScriptCanvasDiagnosticLibrary/Code/Source/DrawText.ScriptCanvasNode.xml",
@@ -36,7 +36,7 @@ namespace UnitTest
             "Gems/ScriptCanvas/Code/Include/ScriptCanvas/AutoGen/ScriptCanvasNode_Source.jinja"
         };
 
-        const AZStd::vector<AZStd::string> m_autogenOutputs =
+        const AZStd::vector<TestImpact::RepoPath> m_autogenOutputs =
         {
             "windows_vs2019/Gems/ScriptCanvasDiagnosticLibrary/Code/Azcg/Generated/Source/Log.generated.h",
             "windows_vs2019/Gems/ScriptCanvasDiagnosticLibrary/Code/Azcg/Generated/Source/DrawText.generated.h",
@@ -44,7 +44,7 @@ namespace UnitTest
             "windows_vs2019/Gems/ScriptCanvasDiagnosticLibrary/Code/Azcg/Generated/Source/DrawText.generated.cpp"
         };
 
-        const AZStd::vector<AZStd::string> m_staticSources =
+        const AZStd::vector<TestImpact::RepoPath> m_staticSources =
         {
             "Gems/ScriptCanvasDiagnosticLibrary/Code/Source/precompiled.cpp",
             "Gems/ScriptCanvasDiagnosticLibrary/Code/Source/precompiled.h",
@@ -55,7 +55,7 @@ namespace UnitTest
             "windows_vs2019/Gems/ScriptCanvasDiagnosticLibrary/Code/Azcg/Generated/Source/DrawText.generated.cpp"
         };
 
-        const AZStd::vector<AZStd::string> m_expectedStaticSources =
+        const AZStd::vector<TestImpact::RepoPath> m_expectedStaticSources =
         {
             "Gems/ScriptCanvasDiagnosticLibrary/Code/Source/precompiled.cpp",
             "Gems/ScriptCanvasDiagnosticLibrary/Code/Source/precompiled.h",

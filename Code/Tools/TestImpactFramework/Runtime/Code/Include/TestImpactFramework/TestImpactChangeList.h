@@ -18,11 +18,11 @@
 
 namespace TestImpact
 {
-    //! Artifact produced by the unified diff parsing process representing the file CRUD operations of a given diff.
+    //! Representation of the file CRUD operations of a given set of source changes.
     struct ChangeList
     {
-        AZStd::vector<RepoPath> m_createdFiles;
-        AZStd::vector<RepoPath> m_updatedFiles;
-        AZStd::vector<RepoPath> m_deletedFiles;
+        AZStd::vector<RepoPath> m_createdFiles; //!< Files that were newly created.
+        AZStd::vector<RepoPath> m_updatedFiles; //!< Files that were updated.
+        AZStd::vector<RepoPath> m_deletedFiles; //!< Files that were deleted.
     };
 } // namespace TestImpact

@@ -75,10 +75,10 @@ namespace TestImpact
         //! Gets the source dependency for the specified source file.
         //! @note Autogen input source dependencies are the consolidated source dependencies of all of their generated output sources.
         //! @returns If found, the source dependency information for the specified source file, otherwise empty.
-        AZStd::optional<SourceDependency> GetSourceDependency(const AZStd::string& path) const;
+        AZStd::optional<SourceDependency> GetSourceDependency(const RepoPath& path) const;
 
         //! Gets the source dependency for the specified source file or throw DependencyException.
-        SourceDependency GetSourceDependencyOrThrow(const AZStd::string& path) const;
+        SourceDependency GetSourceDependencyOrThrow(const RepoPath& path) const;
 
         //! Replaces the source coverage of the specified sources with the specified source coverage.
         //! @note The covering targets for the parent test target(s) will not be pruned if those covering targets are removed.
@@ -100,7 +100,7 @@ namespace TestImpact
     private:
         //! Clears the source coverage of the specified sources.
         //! @note The covering targets for the parent test target(s) will not be pruned if those covering targets are removed.
-        void ClearSourceCoverage(const AZStd::vector<AZStd::string>& paths);
+        void ClearSourceCoverage(const AZStd::vector<RepoPath>& paths);
 
         //! The sorted list of unique production targets in the repository.
         ProductionTargetList m_productionTargets;

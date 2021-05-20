@@ -71,7 +71,7 @@ namespace TestImpact
     {
     public:
         SourceDependency(
-            const AZStd::string& path,
+            const RepoPath& path,
             DependencyData&& dependencyData);
 
         //! Returns the path of this source file.

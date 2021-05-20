@@ -25,7 +25,7 @@ namespace TestImpact
     namespace
     {
         void WriteCacheFile(
-            const TestEnumeration& enumeration, const AZ::IO::Path& path, Bitwise::CacheExceptionPolicy cacheExceptionPolicy)
+            const TestEnumeration& enumeration, const RepoPath& path, Bitwise::CacheExceptionPolicy cacheExceptionPolicy)
         {
             const AZStd::string cacheJSON = SerializeTestEnumeration(enumeration);
             const AZStd::vector<char> cacheBytes(cacheJSON.begin(), cacheJSON.end());
@@ -50,7 +50,7 @@ namespace TestImpact
             }
         }
 
-        AZStd::optional<TestEnumeration> ReadCacheFile(const AZ::IO::Path& path, Bitwise::CacheExceptionPolicy cacheExceptionPolicy)
+        AZStd::optional<TestEnumeration> ReadCacheFile(const RepoPath& path, Bitwise::CacheExceptionPolicy cacheExceptionPolicy)
         {
             AZ::IO::SystemFile cacheFile;
             AZStd::string cacheJSON;
@@ -85,18 +85,18 @@ namespace TestImpact
         }
     } // namespace
 
-    TestEnumeration ParseTestEnumerationFile(const AZ::IO::Path& enumerationFile)
+    TestEnumeration ParseTestEnumerationFile(const RepoPath& enumerationFile)
     {
         return TestEnumeration(GTest::TestEnumerationSuitesFactory(ReadFileContents<TestEnumerationException>(enumerationFile)));
     }
 
-    TestEnumerationJobData::TestEnumerationJobData(const AZ::IO::Path& enumerationArtifact, AZStd::optional<Cache>&& cache)
+    TestEnumerationJobData::TestEnumerationJobData(const RepoPath& enumerationArtifact, AZStd::optional<Cache>&& cache)
         : m_enumerationArtifact(enumerationArtifact)
         , m_cache(AZStd::move(cache))
     {
     }
 
-    const AZ::IO::Path& TestEnumerationJobData::GetEnumerationArtifactPath() const
+    const RepoPath& TestEnumerationJobData::GetEnumerationArtifactPath() const
     {
         return m_enumerationArtifact;
     }

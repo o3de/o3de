@@ -22,20 +22,20 @@
 
 namespace TestImpact
 {
-    InstrumentedTestRunJobData::InstrumentedTestRunJobData(const AZ::IO::Path& resultsArtifact, const AZ::IO::Path& coverageArtifact)
+    InstrumentedTestRunJobData::InstrumentedTestRunJobData(const RepoPath& resultsArtifact, const RepoPath& coverageArtifact)
         : TestRunJobData(resultsArtifact)
         , m_coverageArtifact(coverageArtifact)
     {
     }
 
-    const AZ::IO::Path& InstrumentedTestRunJobData::GetCoverageArtifactPath() const
+    const RepoPath& InstrumentedTestRunJobData::GetCoverageArtifactPath() const
     {
         return m_coverageArtifact;
     }
 
     InstrumentedTestRunner::JobPayload ParseTestRunAndCoverageFiles(
-        const AZ::IO::Path& runFile,
-        const AZ::IO::Path& coverageFile,
+        const RepoPath& runFile,
+        const RepoPath& coverageFile,
         AZStd::chrono::milliseconds duration,
         InstrumentedTestRunner::CoverageExceptionPolicy coverageExceptionPolicy)
     {

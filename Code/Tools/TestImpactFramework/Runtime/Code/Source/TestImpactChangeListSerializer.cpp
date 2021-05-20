@@ -43,7 +43,7 @@ namespace TestImpact
         rapidjson::StringBuffer stringBuffer;
         rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(stringBuffer);
 
-        const auto serializeFileList = [&writer](const char* key, const AZStd::vector<AZStd::string>& fileList)
+        const auto serializeFileList = [&writer](const char* key, const AZStd::vector<RepoPath>& fileList)
         {
             writer.Key(key);
             writer.StartArray();
@@ -77,7 +77,7 @@ namespace TestImpact
 
         const auto deserializeFileList = [&doc](const char* key)
         {
-            AZStd::vector<AZStd::string> fileList;
+            AZStd::vector<RepoPath> fileList;
 
             for (const auto& file : doc[key].GetArray())
             {

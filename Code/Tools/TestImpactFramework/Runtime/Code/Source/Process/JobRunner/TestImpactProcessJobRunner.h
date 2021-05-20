@@ -158,7 +158,7 @@ namespace TestImpact
             }
             else if (exitCondition == ExitCondition::Timeout)
             {
-                meta.m_result = JobResult::TimedOut;
+                meta.m_result = JobResult::Timeout;
             }
             else
             {
