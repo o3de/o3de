@@ -456,15 +456,6 @@ void EditorViewportWidget::Update()
         return;
     }
 
-    static bool sentOnWindowCreated = false;
-    if (!sentOnWindowCreated && windowHandle()->isActive())
-    {
-        sentOnWindowCreated = true;
-        AzFramework::WindowSystemNotificationBus::Broadcast(
-            &AzFramework::WindowSystemNotificationBus::Handler::OnWindowCreated,
-            reinterpret_cast<AzFramework::NativeWindowHandle>(winId()));
-    }
-
     m_updatingCameraPosition = true;
     if (!ed_useNewCameraSystem)
     {
