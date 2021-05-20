@@ -143,7 +143,7 @@ namespace AZ
                 if (packOpened)
                 {
                     [[maybe_unused]] bool closeResult = archiveInterface->ClosePack(filePath);
-                    AZ_Warning("Convert-Slice", !closeResult, "Failed to close '%s'.", filePath.c_str());
+                    AZ_Warning("Convert-Slice", closeResult, "Failed to close '%s'.", filePath.c_str());
                 }
 
                 AZ_Printf("Convert-Slice", "Finished converting '%s' to '%s'\n", filePath.c_str(), outputPath.c_str());
@@ -166,13 +166,14 @@ namespace AZ
             }
 
             // Get all of the entities from the slice.
-            SliceComponent::EntityList sliceEntities;
-            bool getEntitiesResult = sliceComponent->GetEntities(sliceEntities);
-            if ((!getEntitiesResult) || (sliceEntities.empty()))
+            SliceComponent::EntityList sliceEntities = sliceComponent->GetNewEntities();
+            if (sliceEntities.empty())
             {
                 AZ_Printf("Convert-Slice", "  File not converted: Slice entities could not be retrieved.\n");
                 return false;
             }
+
+            AZ_Warning("Convert-Slice", sliceComponent->GetSlices().empty(), "  Slice depends on other slices, this conversion will lose data.\n");
 
             // Create the Prefab with the entities from the slice
             AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> sourceInstance(

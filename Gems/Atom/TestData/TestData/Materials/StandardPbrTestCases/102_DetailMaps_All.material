@@ -5,7 +5,7 @@
     "propertyLayoutVersion": 3,
     "properties": {
         "baseColor": {
-            "textureMap": "Objects/Lucy/Lucy_brass_baseColor.tif",
+            "textureMap": "Objects/Lucy/Lucy_bronze_baseColor.png",
             "textureMapUv": "Unwrapped"
         },
         "detailLayerGroup": {
@@ -22,16 +22,16 @@
             "scale": 10.0
         },
         "metallic": {
-            "textureMap": "Objects/Lucy/Lucy_brass_metalness.tif",
+            "textureMap": "Objects/Lucy/Lucy_bronze_metallic.png",
             "textureMapUv": "Unwrapped"
         },
         "normal": {
             "flipY": true,
-            "textureMap": "Objects/Lucy/Lucy_normal.tif",
+            "textureMap": "Objects/Lucy/Lucy_normal.png",
             "textureMapUv": "Unwrapped"
         },
         "roughness": {
-            "textureMap": "Objects/Lucy/Lucy_brass_roughness.tif",
+            "textureMap": "Objects/Lucy/Lucy_bronze_roughness.png",
             "textureMapUv": "Unwrapped"
         }
     }

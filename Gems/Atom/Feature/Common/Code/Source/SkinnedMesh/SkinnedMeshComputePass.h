@@ -20,6 +20,8 @@ namespace AZ
 {
     namespace Render
     {
+        class SkinnedMeshFeatureProcessor;
+
         //! The skinned mesh compute pass submits dispatch items for skinning. The dispatch items are cleared every frame, so it needs to be re-populated.
         class SkinnedMeshComputePass
             : public RPI::ComputePass
@@ -33,10 +35,9 @@ namespace AZ
 
             static RPI::Ptr<SkinnedMeshComputePass> Create(const RPI::PassDescriptor& descriptor);
 
-            //! Thread-safe function for adding a dispatch item to the current frame.
-            void AddDispatchItem(const RHI::DispatchItem* dispatchItem);
             Data::Instance<RPI::Shader> GetShader() const;
-            RPI::ShaderOptionGroup CreateShaderOptionGroup(const SkinnedMeshShaderOptions shaderOptions, SkinnedMeshShaderOptionNotificationBus::Handler& shaderReinitializedHandler);
+
+            void SetFeatureProcessor(SkinnedMeshFeatureProcessor* m_skinnedMeshFeatureProcessor);
 
         private:
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
@@ -45,9 +46,7 @@ namespace AZ
             void OnShaderReinitialized(const RPI::Shader& shader) override;
             void OnShaderVariantReinitialized(const RPI::Shader& shader, const RPI::ShaderVariantId& shaderVariantId, RPI::ShaderVariantStableId shaderVariantStableId) override;
 
-            AZStd::mutex m_mutex;
-            AZStd::unordered_set<const RHI::DispatchItem*> m_dispatches;
-            CachedSkinnedMeshShaderOptions m_cachedShaderOptions;
+            SkinnedMeshFeatureProcessor* m_skinnedMeshFeatureProcessor = nullptr;
         };
     }
 }
