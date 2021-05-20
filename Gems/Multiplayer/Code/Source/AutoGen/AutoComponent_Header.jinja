@@ -390,11 +390,25 @@ namespace {{ Component.attrib['Namespace'] }}
         {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Client', 'Authority', false)|indent(8) }}
         {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Autonomous', 'Authority', false)|indent(8) }}
         {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Authority', 'Autonomous', false)|indent(8) }}
+        {{ AutoComponentMacros.DeclareRpcSignals(Component, 'Server', 'Authority')|indent(8) }}
+        {{ AutoComponentMacros.DeclareRpcSignals(Component, 'Client', 'Authority')|indent(8) }}
+        {{ AutoComponentMacros.DeclareRpcSignals(Component, 'Autonomous', 'Authority')|indent(8) }}
+        {{ AutoComponentMacros.DeclareRpcSignals(Component, 'Authority', 'Autonomous')|indent(8) }}
+        {{ AutoComponentMacros.DeclareRpcEventGetters(Component, 'Server', 'Authority')|indent(8) }}
+        {{ AutoComponentMacros.DeclareRpcEventGetters(Component, 'Client', 'Authority')|indent(8) }}
+        {{ AutoComponentMacros.DeclareRpcEventGetters(Component, 'Autonomous', 'Authority')|indent(8) }}
+        {{ AutoComponentMacros.DeclareRpcEventGetters(Component, 'Authority', 'Autonomous')|indent(8) }}
 {% for Service in Component.iter('ComponentRelation') %}
 {%      if (Service.attrib['HasController']|booleanTrue) and (Service.attrib['Constraint'] != 'Incompatible') %}
         {{ Service.attrib['Namespace'] }}::{{ Service.attrib['Name'] }}Controller* Get{{ Service.attrib['Name'] }}Controller();
 {%      endif %}
 {% endfor %}
+        
+    protected:
+        {{ AutoComponentMacros.DeclareRpcEvents(Component, 'Server', 'Authority')|indent(8) }}
+        {{ AutoComponentMacros.DeclareRpcEvents(Component, 'Client', 'Authority')|indent(8) }}
+        {{ AutoComponentMacros.DeclareRpcEvents(Component, 'Autonomous', 'Authority')|indent(8) }}
+        {{ AutoComponentMacros.DeclareRpcEvents(Component, 'Authority', 'Autonomous')|indent(8) }}
     };
 
     static const AZ::Uuid s_{{ LowerFirst(ComponentName) }}ConcreteUuid = "{{ (ComponentName) | createHashGuid }}";
@@ -438,6 +452,7 @@ namespace {{ Component.attrib['Namespace'] }}
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Client', false)|indent(8) }}
         {{ DeclareArchetypePropertyGetters(Component)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Server', 'Authority', false)|indent(8) }}
+        {{ AutoComponentMacros.DeclareRpcEventGetters(Component, 'Authority', 'Client')|indent(8) }}
 
         //! MultiplayerComponent interface
         //! @{
@@ -464,6 +479,8 @@ namespace {{ Component.attrib['Namespace'] }}
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Client', true)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Server', 'Authority', true)|indent(8) -}}
         {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Authority', 'Client', false)|indent(8) }}
+        {{ AutoComponentMacros.DeclareRpcSignals(Component, 'Authority', 'Client')|indent(8) }}
+        {{ AutoComponentMacros.DeclareRpcEvents(Component, 'Authority', 'Client')|indent(8) }}
 {% for Service in Component.iter('ComponentRelation') %}
 {%      if Service.attrib['Constraint'] != 'Incompatible' %}
         const {{ Service.attrib['Namespace'] }}::{{ Service.attrib['Name'] }}* Get{{ Service.attrib['Name'] }}() const;

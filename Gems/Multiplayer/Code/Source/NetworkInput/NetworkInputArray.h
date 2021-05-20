@@ -24,6 +24,8 @@ namespace Multiplayer
     class NetworkInputArray final
     {
     public:
+        AZ_RTTI(NetworkInputArray, "{4908CE9F-8BCD-47C8-837F-09DC695ED2D7}");
+
         static constexpr uint32_t MaxElements = 8; // Never try to replicate a list larger than this amount
 
         NetworkInputArray();

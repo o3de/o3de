@@ -316,10 +316,24 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(par
 {#
 
 #}
+{% macro DefineRpcSignal(Component, ClassName, Property, InvokeFrom) %}
+{%     set paramNames   = [] %}
+{%     set paramTypes   = [] %}
+{%     set paramDefines = [] %}
+{{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
+void {{ ClassName }}::Signal{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramDefines) }})
+{
+    m_{{ UpperFirst(Property.attrib['Name']) }}Event.Signal({{ ', '.join(paramNames) }});
+}
+{% endmacro %}
+{#
+
+#}
 {% macro DefineRpcInvocations(Component, ClassName, InvokeFrom, HandleOn, ProctectedSection) %}
 {% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
 {%    if Property.attrib['IsPublic']|booleanTrue == ProctectedSection %}
 {{ DefineRpcInvocation(Component, ClassName, Property, InvokeFrom, HandleOn) }}
+{{ DefineRpcSignal(Component, ClassName, Property, InvokeFrom) }}
 {%    endif %}
 {% endcall %}
 {% endmacro %}
@@ -342,6 +356,42 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(par
 {#
 
 #}
+{% macro ReflectRpcEventDescs(Component, ClassName, InvokeFrom, HandleOn) %}
+{% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
+{%     set paramNames   = [] %}
+{%     set paramTypes   = [] %}
+{%     set paramDefines = [] %}
+{{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
+
+    // Create the BehaviorAZEventDescription needed to reflect the
+    // Get{{ UpperFirst(Property.attrib['Name']) }}Event method to the BehaviorContext without errors
+    AZ::BehaviorAzEventDescription {{ LowerFirst(Property.attrib['Name']) }}EventDesc;
+    {{ LowerFirst(Property.attrib['Name']) }}EventDesc.m_eventName = "{{ UpperFirst(Property.attrib['Name']) }} Notify Event";
+    {% for Param in Property.iter('Param') %}
+    {{ LowerFirst(Property.attrib['Name']) }}EventDesc.m_parameterNames.push_back("{{ LowerFirst(Param.attrib['Name']) }}");
+    {% endfor %}
+
+{% endcall %}
+{% endmacro %}
+{#
+
+#}
+{% macro ReflectRpcEvents(Component, ClassName, InvokeFrom, HandleOn) %}
+{% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
+{%     set paramNames   = [] %}
+{%     set paramTypes   = [] %}
+{%     set paramDefines = [] %}
+{{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
+        ->Method("Get{{ UpperFirst(Property.attrib['Name']) }}Event", [](const {{ ClassName }}* self) -> AZ::Event<{{ ', '.join(paramTypes) }}>&
+        {
+            return self->m_controller->Get{{ UpperFirst(Property.attrib['Name']) }}Event();
+        })
+            ->Attribute(AZ::Script::Attributes::AzEventDescription, AZStd::move({{ LowerFirst(Property.attrib['Name']) }}EventDesc))
+{% endcall %}
+{% endmacro %}
+{#
+ 
+#}
 {% macro DeclareRpcHandleCases(Component, ComponentDerived, InvokeFrom, HandleOn, ValidationFunction) %}
 {% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
 case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ UpperFirst(Property.attrib['Name']) }}:
@@ -363,6 +413,7 @@ case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ Upp
             {
                 AZ_Assert(GetNetBindComponent()->GetNetEntityRole() == Multiplayer::NetEntityRole::Authority, "Entity proxy does not have authority");
                 m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection, {{ ', '.join(rpcParamList) }});
+                m_controller->Signal{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(rpcParamList) }});
             }
 {% if Property.attrib['IsReliable']|booleanTrue %}
 {# if the rpc is not reliable we can simply drop it, also note message reliability type is default reliable in EntityRpcMessage #}
@@ -377,6 +428,7 @@ case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ Upp
             {
                 AZ_Assert(GetNetBindComponent()->GetNetEntityRole() == Multiplayer::NetEntityRole::Autonomous, "Entity proxy does not have autonomy");
                 m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection, {{ ', '.join(rpcParamList) }});
+                m_controller->Signal{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(rpcParamList) }});
             }
 {% else %}
             Handle{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(rpcParamList) }});
@@ -1302,6 +1354,11 @@ namespace {{ Component.attrib['Namespace'] }}
         AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
         if (behaviorContext)
         {
+            {{ ReflectRpcEventDescs(Component, ComponentName, 'Server', 'Authority')|indent(4) -}}
+            {{ ReflectRpcEventDescs(Component, ComponentName, 'Autonomous', 'Authority')|indent(4) -}}
+            {{ ReflectRpcEventDescs(Component, ComponentName, 'Authority', 'Autonomous')|indent(4) -}}
+            {{ ReflectRpcEventDescs(Component, ComponentName, 'Authority', 'Client')|indent(4) -}}
+
             behaviorContext->Class<{{ ComponentName }}>("{{ ComponentName }}")
                 ->Attribute(AZ::Script::Attributes::Module, "{{ LowerFirst(Component.attrib['Namespace']) }}")
                 ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }}")
@@ -1318,6 +1375,11 @@ namespace {{ Component.attrib['Namespace'] }}
                 {{ ReflectRpcInvocations(Component, ComponentName, 'Autonomous', 'Authority')|indent(4) -}}
                 {{ ReflectRpcInvocations(Component, ComponentName, 'Authority', 'Autonomous')|indent(4) -}}
                 {{ ReflectRpcInvocations(Component, ComponentName, 'Authority', 'Client')|indent(4) -}}
+
+                {{ ReflectRpcEvents(Component, ComponentName, 'Server', 'Authority')|indent(4) -}}
+                {{ ReflectRpcEvents(Component, ComponentName, 'Autonomous', 'Authority')|indent(4) -}}
+                {{ ReflectRpcEvents(Component, ComponentName, 'Authority', 'Autonomous')|indent(4) -}}
+                {{ ReflectRpcEvents(Component, ComponentName, 'Authority', 'Client')|indent(4) -}}
 
                 {{- DefineArchetypePropertyBehaviorReflection(Component, ComponentName) | indent(16) }}
                 ;
@@ -1418,7 +1480,7 @@ namespace {{ Component.attrib['Namespace'] }}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Autonomous', true, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Autonomous', 'Authority', true, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Client', true, ComponentBaseName)|indent(4) }}
-    {{ DefineArchetypePropertyGets(Component, ClassType, ComponentBaseName)|indent(4) -}}
+{{ DefineArchetypePropertyGets(Component, ClassType, ComponentBaseName)|indent(4) -}}
 {{ DefineRpcInvocations(Component, ComponentBaseName, 'Server', 'Authority', false)|indent(4) -}}
 {{ DefineRpcInvocations(Component, ComponentBaseName, 'Server', 'Authority', true)|indent(4) }}
 
