@@ -44,11 +44,16 @@ namespace AZ
 
         namespace FbxSceneBuilder
         {
-            bool BuildSceneMeshFromAssImpMesh(aiNode* currentNode, const aiScene* scene, const FbxSceneSystem& sceneSystem, AZStd::vector<AZStd::shared_ptr<DataTypes::IGraphObject>>& meshes,
+            bool BuildSceneMeshFromAssImpMesh(const aiNode* currentNode, const aiScene* scene, const FbxSceneSystem& sceneSystem, AZStd::vector<AZStd::shared_ptr<DataTypes::IGraphObject>>& meshes,
                 const AZStd::function<AZStd::shared_ptr<SceneData::GraphData::MeshData>()>& makeMeshFunc);
 
             typedef AZ::Outcome<const SceneData::GraphData::MeshData* const, Events::ProcessingResult> GetMeshDataFromParentResult;
             GetMeshDataFromParentResult GetMeshDataFromParent(AssImpSceneNodeAppendedContext& context);
+
+            // If a node in the original scene file has a mesh with multiple materials on it, the associated AssImp
+            // node will have multiple meshes on it, broken apart per material. This returns the total number
+            // of vertices on all meshes on the given node.
+            uint64_t GetVertexCountForAllMeshesOnNode(const aiNode& node, const aiScene& scene);
         }
     }
 }

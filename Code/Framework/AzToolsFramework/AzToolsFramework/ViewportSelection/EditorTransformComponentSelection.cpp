@@ -237,16 +237,15 @@ namespace AzToolsFramework
                 mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Alt();
         }
 
-        static bool IndividualSelect(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+        static bool IndividualSelect(const AzFramework::ClickDetector::ClickOutcome clickOutcome)
         {
-            return mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
-                mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down;
+            return clickOutcome == AzFramework::ClickDetector::ClickOutcome::Click;
         }
 
-        static bool AdditiveIndividualSelect(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+        static bool AdditiveIndividualSelect(
+            const AzFramework::ClickDetector::ClickOutcome clickOutcome, const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
         {
-            return mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
-                mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down &&
+            return clickOutcome == AzFramework::ClickDetector::ClickOutcome::Click &&
                 mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl() &&
                 !mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Alt();
         }
@@ -1824,6 +1823,25 @@ namespace AzToolsFramework
 
         m_cachedEntityIdUnderCursor = m_editorHelpers->HandleMouseInteraction(cameraState, mouseInteraction);
 
+        const AzFramework::ClickDetector::ClickEvent selectClickEvent = [&mouseInteraction] {
+            if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
+            {
+                if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down)
+                {
+                    return AzFramework::ClickDetector::ClickEvent::Down;
+                }
+
+                if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Up)
+                {
+                    return AzFramework::ClickDetector::ClickEvent::Up;
+                }
+            }
+            return AzFramework::ClickDetector::ClickEvent::Nil;
+        }();
+
+        m_cursorState.SetCurrentPosition(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
+        const auto clickOutcome = m_clickDetector.DetectClick(selectClickEvent, m_cursorState.CursorDelta());
+
         // for entities selected with no bounds of their own (just TransformComponent)
         // check selection against the selection indicator aabb
         for (AZ::EntityId entityId : m_selectedEntityIds)
@@ -1882,7 +1900,7 @@ namespace AzToolsFramework
         if (!m_selectedEntityIds.empty())
         {
             // select/deselect (add/remove) entities with ctrl held
-            if (Input::AdditiveIndividualSelect(mouseInteraction))
+            if (Input::AdditiveIndividualSelect(clickOutcome, mouseInteraction))
             {
                 if (SelectDeselect(entityIdUnderCursor))
                 {
@@ -2064,7 +2082,7 @@ namespace AzToolsFramework
         }
 
         // standard toggle selection
-        if (Input::IndividualSelect(mouseInteraction))
+        if (Input::IndividualSelect(clickOutcome))
         {
             SelectDeselect(entityIdUnderCursor);
         }
@@ -3369,6 +3387,8 @@ namespace AzToolsFramework
 
         const auto modifiers = ViewportInteraction::KeyboardModifiers(
             ViewportInteraction::TranslateKeyboardModifiers(QApplication::queryKeyboardModifiers()));
+
+        m_cursorState.Update();
 
         HandleAccents(
             !m_selectedEntityIds.empty(), m_cachedEntityIdUnderCursor,

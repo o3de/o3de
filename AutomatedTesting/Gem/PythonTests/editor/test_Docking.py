@@ -40,7 +40,7 @@ class TestDocking(object):
 
     @pytest.mark.test_case_id("C6376081")
     @pytest.mark.SUITE_periodic
-    def test_basic_docked_tools(self, request, editor, level, launcher_platform):
+    def test_Docking_BasicDockedTools(self, request, editor, level, launcher_platform):
         expected_lines = [
             "The tools are all docked together in a tabbed widget",
             "Entity Outliner works when docked, can select an Entity",

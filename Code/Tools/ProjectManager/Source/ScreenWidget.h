@@ -12,27 +12,44 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <ProjectManagerWindow.h>
+#include <ScreenDefs.h>
 
 #include <QWidget>
+#include <QStyleOption>
+#include <QPainter>
 #endif
 
 namespace O3DE::ProjectManager
 {
     class ScreenWidget
-        : public QWidget
+        : public QFrame
     {
+        Q_OBJECT
+
     public:
-        explicit ScreenWidget(ProjectManagerWindow* window)
-            : QWidget(window->GetScreenStack())
-            , m_projectManagerWindow(window)
+        explicit ScreenWidget(QWidget* parent = nullptr)
+            : QFrame(parent)
         {
         }
+        ~ScreenWidget() = default;
 
-    protected:
-        virtual void ConnectSlotsAndSignals() {}
+        virtual ProjectManagerScreen GetScreenEnum()
+        {
+            return ProjectManagerScreen::Empty;
+        }
+        virtual bool IsReadyForNextScreen()
+        {
+            return true;
+        }
+        virtual QString GetNextButtonText()
+        {
+            return "Next";
+        }
 
-        ProjectManagerWindow* m_projectManagerWindow;
+    signals:
+        void ChangeScreenRequest(ProjectManagerScreen screen);
+        void GotoPreviousScreenRequest();
+        void ResetScreenRequest(ProjectManagerScreen screen);
     };
 
 } // namespace O3DE::ProjectManager

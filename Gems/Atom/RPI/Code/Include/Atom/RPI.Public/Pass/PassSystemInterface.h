@@ -64,7 +64,10 @@ namespace AZ
             //! initializing a scene;
             virtual void ProcessQueuedChanges() = 0;
             
-            //! Load pass templates listed in a name-assetid mapping asset 
+            //! Load pass templates listed in a name-assetid mapping asset
+            //! This function should be called before the render pipelines which use templates from this mappings are created.
+            //! To load pass template mapping before any render pipelines are created, use OnReadyLoadTemplatesEvent::Handler to
+            //! load desired pass template mappings
             virtual bool LoadPassTemplateMappings(const AZStd::string& templateMappingPath) = 0;
             
             //! Writes a pass template to a .pass file which can then be used as a pass asset. Useful for
@@ -148,6 +151,12 @@ namespace AZ
             //! Find the SwapChainPass associated with window Handle
             virtual SwapChainPass* FindSwapChainPass(AzFramework::NativeWindowHandle windowHandle) const = 0;
 
+            using OnReadyLoadTemplatesEvent = AZ::Event<>;
+            //! Connect a handler to listen to the event that the pass system is ready to load pass templates
+            //! The event is triggered when pass system is initialized and asset system is ready.
+            //! The handler can add new pass templates or load pass template mappings from assets
+            virtual void ConnectEvent(OnReadyLoadTemplatesEvent::Handler& handler) = 0;
+
         private:
             // These functions are only meant to be used by the Pass class
 
@@ -164,17 +173,10 @@ namespace AZ
             virtual void UnregisterPass(Pass* pass) = 0;
 
         };
-
-        //! Notifications of the pass system such attachments were rebuilt, pass tree changes
-        class PassSystemNotificiations
-            : public AZ::EBusTraits
+                
+        namespace PassSystemEvents
         {
-        public:
+        }
 
-            //! Notify when any pass's attachment was rebuilt
-            virtual void OnPassAttachmentsBuilt() = 0;
-        };
-
-        using PassSystemNotificiationBus = AZ::EBus<PassSystemNotificiations>;
     }   // namespace RPI
 }   // namespace AZ

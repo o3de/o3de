@@ -37,14 +37,5 @@ CUiAnimViewAnimNode* CUiAnimViewAnimNodeFactory::BuildAnimNode(IUiAnimSequence* 
 CUiAnimViewTrack* CUiAnimViewTrackFactory::BuildTrack(IUiAnimTrack* pTrack, CUiAnimViewAnimNode* pTrackAnimNode,
     CUiAnimViewNode* pParentNode, bool bIsSubTrack, unsigned int subTrackIndex)
 {
-#if UI_ANIMATION_REMOVED    // don't support geom cache
-#if defined(USE_GEOM_CACHES)
-    if (pTrack->GetParameterType() == eUiAnimParamType_TimeRanges && pTrackAnimNode->GetType() == eUiAnimNodeType_GeomCache)
-    {
-        return new CUiAnimViewGeomCacheUiAnimationTrack(pTrack, pTrackAnimNode, pParentNode, bIsSubTrack, subTrackIndex);
-    }
-#endif
-#endif
-
     return new CUiAnimViewTrack(pTrack, pTrackAnimNode, pParentNode, bIsSubTrack, subTrackIndex);
 }

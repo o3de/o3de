@@ -13,11 +13,6 @@
                     "ScopeAttachmentUsage": "RenderTarget"
                 },
                 {
-                    "Name": "ReflectionInputOutput",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "RenderTarget"
-                },
-                {
                     "Name": "SkyBoxDepth",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "DepthStencil"

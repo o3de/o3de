@@ -111,7 +111,7 @@ namespace AZ
                         ShaderMetricsSystem::Get()->RequestShaderVariant(pairItor->m_shaderAsset.Get(), pairItor->m_shaderVariantId, searchResult);
 
                         uint32_t shaderVariantProductSubId =
-                            ShaderVariantAsset::GetAssetSubId(RHI::Factory::Get().GetAPIUniqueIndex(), searchResult.GetStableId());
+                            ShaderVariantAsset::MakeAssetProductSubId(RHI::Factory::Get().GetAPIUniqueIndex(), searchResult.GetStableId());
                         Data::AssetId shaderVariantAssetId(shaderVariantTreeAsset.GetId().m_guid, shaderVariantProductSubId);
                         shaderVariantPendingRequests.insert(shaderVariantAssetId);
                         pairItor = newShaderVariantPendingRequests.erase(pairItor);
@@ -211,7 +211,7 @@ namespace AZ
             AZ_Assert(variantStableId != RootShaderVariantStableId, "Root Variants Are Found inside ShaderAssets");
 
             uint32_t shaderVariantProductSubId =
-                ShaderVariantAsset::GetAssetSubId(RHI::Factory::Get().GetAPIUniqueIndex(), variantStableId);
+                ShaderVariantAsset::MakeAssetProductSubId(RHI::Factory::Get().GetAPIUniqueIndex(), variantStableId);
             Data::AssetId shaderVariantAssetId(shaderVariantTreeAssetId.m_guid, shaderVariantProductSubId);
             {
                 AZStd::unique_lock<decltype(m_mutex)> lock(m_mutex);
@@ -299,7 +299,7 @@ namespace AZ
         {
             AZ_Assert(variantStableId != RootShaderVariantStableId, "Root Variants Are Found inside ShaderAssets");
 
-            uint32_t shaderVariantProductSubId = ShaderVariantAsset::GetAssetSubId(RHI::Factory::Get().GetAPIUniqueIndex(), variantStableId);
+            uint32_t shaderVariantProductSubId = ShaderVariantAsset::MakeAssetProductSubId(RHI::Factory::Get().GetAPIUniqueIndex(), variantStableId);
             Data::AssetId shaderVariantAssetId(shaderVariantTreeAssetId.m_guid, shaderVariantProductSubId);
 
             AZStd::unique_lock<decltype(m_mutex)> lock(m_mutex);

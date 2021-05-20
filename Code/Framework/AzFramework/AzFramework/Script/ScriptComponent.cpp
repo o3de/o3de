@@ -264,12 +264,12 @@ namespace AzFramework
     //          SampleRPC =
     //          {
     //              // Two callbacks can be registered to the NetRPC
-    //              // A function to be invoked on the Master - OnMaster
+    //              // A function to be invoked on the main server - OnServer
     //              // and a function to be invoked on the Proxy - OnProxy
     //              //
-    //              // Every NetRPC needs to  have a valid OnMaster function, while OnProxy is optional.
-    //              OnMaster = function()
-    //                  Debug.Log("Function to be invoked on the Master.");
+    //              // Every NetRPC needs to  have a valid OnServer function, while OnProxy is optional.
+    //              OnServer = function()
+    //                  Debug.Log("Function to be invoked on the server.");
     //              end
     //
     //              OnProxy = function()
@@ -979,7 +979,7 @@ namespace AzFramework
                 };
 
                 serializeContext->Class<ScriptComponent, AZ::Component>()
-                    ->Version(3, converter)
+                    ->Version(4, converter)
                     ->Field("ContextID", &ScriptComponent::m_contextId)
                     ->Field("Properties", &ScriptComponent::m_properties)
                     ->Field("Script", &ScriptComponent::m_script)
