@@ -88,6 +88,41 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
+        bool ShaderResourceGroup::ReplaceSrgLayoutUsingShaderAsset(
+            Data::Asset<ShaderAsset2> shaderAsset, const Name& supervariantName, const Name& srgName)
+        {
+            AZ_TRACE_METHOD();
+
+            SupervariantIndex supervariantIndex = shaderAsset->GetSupervariantIndex(supervariantName);
+            if (supervariantIndex == InvalidSupervariantIndex)
+            {
+                AZ_Assert(
+                    false, "Supervariant with name [%s] not found in shader asset [%s]", supervariantName.GetCStr(),
+                    shaderAsset->GetName().GetCStr());
+                return false;
+            }
+
+            m_layout = shaderAsset->FindShaderResourceGroupLayout(srgName, supervariantIndex).get();
+
+            if (!m_layout)
+            {
+                AZ_Assert(false, "ShaderResourceGroup cannot be initialized due to invalid ShaderResourceGroupLayout");
+                return false;
+            }
+
+            m_shaderResourceGroup->SetName(m_layout->GetName());
+            m_data = RHI::ShaderResourceGroupData(m_layout);
+            m_shaderAsset = shaderAsset;
+
+            // The RPI groups match the same dimensions as the RHI group.
+            m_imageGroup.clear();
+            m_imageGroup.resize(m_layout->GetGroupSizeForImages());
+            m_bufferGroup.clear();
+            m_bufferGroup.resize(m_layout->GetGroupSizeForBuffers());
+
+            return true;
+        }
+
         void ShaderResourceGroup::Compile()
         {
             m_shaderResourceGroup->Compile(m_data);

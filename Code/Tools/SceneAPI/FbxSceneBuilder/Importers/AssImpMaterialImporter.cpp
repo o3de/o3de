@@ -62,7 +62,7 @@ namespace AZ
                 for (int idx = 0; idx < context.m_sourceNode.m_assImpNode->mNumMeshes; ++idx)
                 {
                     int meshIndex = context.m_sourceNode.m_assImpNode->mMeshes[idx];
-                    aiMesh* assImpMesh = context.m_sourceScene.GetAssImpScene()->mMeshes[meshIndex];
+                    const aiMesh* assImpMesh = context.m_sourceScene.GetAssImpScene()->mMeshes[meshIndex];
                     AZ_Assert(assImpMesh, "Asset Importer Mesh should not be null.");
                     int materialIndex = assImpMesh->mMaterialIndex;
                     AZ_TraceContext("Material Index", materialIndex);
