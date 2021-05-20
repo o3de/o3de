@@ -9,7 +9,7 @@
         <file>Resources/iOS.svg</file>
         <file>Resources/Linux.svg</file>
         <file>Resources/macOS.svg</file>
-        <file>Resources/FirstTimeBackgroundImage.jpg</file>
         <file>Resources/DefaultProjectImage.png</file>
+        <file>Resources/Backgrounds/FirstTimeBackgroundImage.jpg</file>
     </qresource>
 </RCC>
