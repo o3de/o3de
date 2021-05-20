@@ -23,6 +23,9 @@ namespace AZ
     {
         struct MorphTargetInstanceMetaData;
 
+        using SkinnedMeshOutputVertexOffsets = AZStd::array<uint32_t, static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::NumVertexStreams)>;
+        using SkinnedMeshOutputVertexCounts  = AZStd::array<uint32_t, static_cast<uint8_t>(SkinnedMeshOutputVertexStreams::NumVertexStreams)>;
+
         //! SkinnedMeshInstance contains the data that is needed to represent the output from skinning a single instance of a skinned mesh.
         //! It does not contain the actual skinned vertex data, but rather views into the buffers that do contain the data, which are owned by the SkinnedMeshOutputStreamManager
         class SkinnedMeshInstance
@@ -35,7 +38,7 @@ namespace AZ
             Data::Instance<RPI::Model> m_model;
 
             //! Offsets into the skinned vertex data which are used by SkinnedMeshDispatchItem to target the correct location to store the skinning results
-            AZStd::vector<AZStd::vector<uint32_t>> m_outputStreamOffsetsInBytes;
+            AZStd::vector<AZStd::vector<SkinnedMeshOutputVertexOffsets>> m_outputStreamOffsetsInBytes;
 
             //! Virtual addresses that represent the location of the data within the skinned mesh output stream.
             //! When they are released, they automatically mark the memory as freed so the SkinnedMeshOutputStreamManager can re-purpose the memory

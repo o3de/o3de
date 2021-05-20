@@ -232,7 +232,12 @@ namespace AZ
                         //Note that this supports overlapping lod ranges (to support cross-fading lods, for example)
                         if (approxScreenPercentage >= lod.m_screenCoverageMin && approxScreenPercentage <= lod.m_screenCoverageMax)
                         {
-                            m_skinningPass->AddDispatchItem(&renderProxy.m_dispatchItemsByLod[lodIndex]->GetRHIDispatchItem());
+                            for (const AZStd::unique_ptr<SkinnedMeshDispatchItem>& skinnedMeshDispatchItem : renderProxy.m_dispatchItemsByLod[lodIndex])
+                            {
+                                // Add one skinning dispatch item for each mesh in the lod
+                                m_skinningPass->AddDispatchItem(&skinnedMeshDispatchItem->GetRHIDispatchItem());
+                            }
+
                             for (size_t morphTargetIndex = 0; morphTargetIndex < renderProxy.m_morphTargetDispatchItemsByLod[lodIndex].size(); morphTargetIndex++)
                             {
                                 const MorphTargetDispatchItem* dispatchItem = renderProxy.m_morphTargetDispatchItemsByLod[lodIndex][morphTargetIndex].get();

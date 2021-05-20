@@ -72,6 +72,10 @@ namespace AZ
             Name m_shaderResourceGroupName;
             //! The shader semantic used for the target skinned model (not used by streams that are input-only)
             RHI::ShaderSemantic m_semantic;
+            //! Whether or not the channel is optional as input to the skinning compute shader
+            bool m_isOptional;
+            //! The enum this info is associated with
+            SkinnedMeshInputVertexStreams m_enum;
         };
 
         struct SkinnedMeshOutputVertexStreamInfo
@@ -113,8 +117,17 @@ namespace AZ
 
             // Note that you have to delete these for safety reasons, you will trip a static_assert if you do not
             AZ_DISABLE_COPY_MOVE(SkinnedMeshVertexStreamPropertyInterface);
+
+            //! Get the vertex stream info if it exists
+            //! Returns nullptr if there is no input stream associated with this semantic
+            virtual const SkinnedMeshVertexStreamInfo* GetInputStreamInfo(const RHI::ShaderSemantic& shaderSemantic) const = 0;
+            //! Get the vertex stream info
             virtual const SkinnedMeshVertexStreamInfo& GetInputStreamInfo(SkinnedMeshInputVertexStreams stream) const = 0;
             virtual const SkinnedMeshVertexStreamInfo& GetStaticStreamInfo(SkinnedMeshStaticVertexStreams stream) const = 0;
+            //! Get the output stream info if it exists
+            //! Returns nullptr if there is no input stream associated with this semantic
+            virtual const SkinnedMeshOutputVertexStreamInfo* GetOutputStreamInfo(const RHI::ShaderSemantic& shaderSemantic) const = 0;
+            //! Get the output stream info
             virtual const SkinnedMeshOutputVertexStreamInfo& GetOutputStreamInfo(SkinnedMeshOutputVertexStreams stream) const = 0;
 
             virtual Data::Asset<RPI::ResourcePoolAsset> GetInputStreamResourcePool() const = 0;
@@ -122,6 +135,9 @@ namespace AZ
             virtual Data::Asset<RPI::ResourcePoolAsset> GetOutputStreamResourcePool() const = 0;
             
             virtual uint32_t GetMaxSupportedVertexCount() const = 0;
+
+            //! Get an input contract that describes the streams used as input to the skinning compute shader
+            virtual const RPI::ShaderInputContract& GetComputeShaderInputContract() const = 0;
         };
     }
 }

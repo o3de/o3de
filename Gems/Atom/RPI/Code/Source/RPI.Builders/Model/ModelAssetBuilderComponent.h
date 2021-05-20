@@ -149,7 +149,8 @@ namespace AZ
                 size_t m_clothDataFloatCount = 0;
                 AZStd::vector<size_t> m_uvSetFloatCounts;
                 AZStd::vector<size_t> m_colorSetFloatCounts;
-                size_t m_skinInfluencesCount = 0;
+                size_t m_jointIdsCount = 0;
+                size_t m_jointWeightsCount = 0;
                 size_t m_morphTargetVertexDeltaCount = 0;
             };
 
@@ -215,7 +216,7 @@ namespace AZ
             //! This also produces a ProductMeshViewList that contains views to all
             //! the original meshes described in the lodMeshList collection.
             void MergeMeshesToCommonBuffers(
-                const ProductMeshContentList& lodMeshList,
+                ProductMeshContentList& lodMeshList,
                 ProductMeshContent& lodMeshContent,
                 ProductMeshViewList& meshViewsPerLodBuffer);
 

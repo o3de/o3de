@@ -114,7 +114,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(26);  // [ATOM-14992]
+                    ->Version(27);  // [ATOM-14975]
             }
         }
 
@@ -1227,7 +1227,7 @@ namespace AZ
         }
 
         void ModelAssetBuilderComponent::MergeMeshesToCommonBuffers(
-            const ProductMeshContentList& lodMeshList,
+            ProductMeshContentList& lodMeshList,
             ProductMeshContent& lodMeshContent,
             ProductMeshViewList& meshViews)
         {
@@ -1238,7 +1238,7 @@ namespace AZ
             // rather than a Mesh in the LOD.
             ProductMeshContentAllocInfo lodBufferInfo;
             
-            for (const ProductMeshContent& mesh : lodMeshList)
+            for (ProductMeshContent& mesh : lodMeshList)
             {
                 if (lodBufferInfo.m_uvSetFloatCounts.size() < mesh.m_uvSets.size())
                 {
@@ -1357,13 +1357,37 @@ namespace AZ
                         "The number of skin influences per vertex (%d) is not a multiple of the total number of skinning weights (%d). This means that not every vertex has exactly (%d) skinning weights and invalidates the data.",
                         mesh.m_skinWeights.size(), m_numSkinJointInfluencesPerVertex, m_numSkinJointInfluencesPerVertex);
 
-                    const size_t numPrevSkinInfluences = lodBufferInfo.m_skinInfluencesCount;
-                    const size_t numNewSkinInfluences = mesh.m_skinWeights.size();
+                    uint32_t prevJointIdCount = lodBufferInfo.m_jointIdsCount;
+                    uint32_t newJointIdCount = mesh.m_skinJointIndices.size();
 
-                    meshView.m_skinJointIndicesView = RHI::BufferViewDescriptor::CreateRaw(/*byteOffset=*/numPrevSkinInfluences * sizeof(uint16_t), numNewSkinInfluences  * sizeof(uint16_t));
-                    meshView.m_skinWeightsView = RHI::BufferViewDescriptor::CreateTyped(/*elementOffset=*/numPrevSkinInfluences, numNewSkinInfluences, SkinWeightFormat);
+                    // Joint Ids use raw views into the buffer, and raw views
+                    // must begin on 16-byte aligned boundaries.
+                    // Pad the joint id buffer if it ends too soon, so the next view can start aligned
 
-                    lodBufferInfo.m_skinInfluencesCount += numNewSkinInfluences;
+                    // For a two byte unit16_t, we need to round up to a multiple of 8 elements
+                    size_t roundUpTo = 16 / sizeof(mesh.m_skinJointIndices[0]);
+                    // Round up
+                    size_t paddedNewJointIdCount = newJointIdCount;
+                    paddedNewJointIdCount += roundUpTo - 1;
+                    paddedNewJointIdCount = paddedNewJointIdCount - paddedNewJointIdCount % roundUpTo;
+                    // Determine how many padding id's we need to add, if any
+                    size_t extraIdCount = paddedNewJointIdCount - newJointIdCount;
+
+                    // Pad the buffer
+                    AZStd::vector<uint16_t> extraIds(extraIdCount, 0);
+                    mesh.m_skinJointIndices.insert(
+                        mesh.m_skinJointIndices.end(), extraIds.begin(), extraIds.end());
+
+                    // For the view itself, we only want a view that includes the real ids, not the padding, so use newJointIdCount
+                    meshView.m_skinJointIndicesView = RHI::BufferViewDescriptor::CreateRaw(/*byteOffset=*/prevJointIdCount, newJointIdCount * sizeof(uint16_t));
+                    // For the purpose of tracking the size of the buffer, include the padding
+                    lodBufferInfo.m_jointIdsCount += (newJointIdCount + extraIdCount);
+
+                    // Weights are more straightforward, just add any new weights
+                    const uint32_t prevJointWeightCount = lodBufferInfo.m_jointWeightsCount;
+                    const uint32_t newJointWeightCount = mesh.m_skinWeights.size();
+                    meshView.m_skinWeightsView = RHI::BufferViewDescriptor::CreateTyped(/*elementOffset=*/prevJointWeightCount, newJointWeightCount, SkinWeightFormat);
+                    lodBufferInfo.m_jointWeightsCount += newJointWeightCount;
                 }
 
                 if (!mesh.m_morphTargetVertexData.empty())

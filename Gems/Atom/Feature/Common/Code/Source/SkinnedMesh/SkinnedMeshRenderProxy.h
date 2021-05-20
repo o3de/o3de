@@ -49,7 +49,8 @@ namespace AZ
             void SetSkinningMatrices(const AZStd::vector<float>& data) override;
             void SetMorphTargetWeights(uint32_t lodIndex, const AZStd::vector<float>& weights) override;
 
-            AZStd::array_view< AZStd::unique_ptr<SkinnedMeshDispatchItem>> GetDispatchItems() const;
+            size_t GetLodCount() const;
+            AZStd::array_view< AZStd::unique_ptr<SkinnedMeshDispatchItem>> GetDispatchItems(size_t lodIndex) const;
         private:
 
             AZ_DISABLE_COPY_MOVE(SkinnedMeshRenderProxy);
@@ -58,7 +59,7 @@ namespace AZ
             bool BuildDispatchItem(const RPI::Scene& scene, size_t modelLodIndex, const SkinnedMeshShaderOptions& shaderOptions);
 
             Vector3 m_position = Vector3(0.0f, 0.0f, 0.0f); //!< Cached position so SkinnedMeshFeatureProcessor can make faster LOD calculations
-            AZStd::fixed_vector<AZStd::unique_ptr<SkinnedMeshDispatchItem>, RPI::ModelLodAsset::LodCountMax> m_dispatchItemsByLod;
+            AZStd::fixed_vector<AZStd::vector<AZStd::unique_ptr<SkinnedMeshDispatchItem>>, RPI::ModelLodAsset::LodCountMax> m_dispatchItemsByLod;
             AZStd::fixed_vector<AZStd::vector<AZStd::unique_ptr<MorphTargetDispatchItem>>, RPI::ModelLodAsset::LodCountMax> m_morphTargetDispatchItemsByLod;
             Data::Instance<SkinnedMeshInputBuffers> m_inputBuffers;
             Data::Instance<MorphTargetInputBuffers> m_morphTargetInputBuffers;

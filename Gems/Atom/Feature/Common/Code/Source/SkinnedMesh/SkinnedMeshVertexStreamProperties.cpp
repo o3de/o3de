@@ -31,7 +31,9 @@ namespace AZ
                 sizeof(AZ::PackedVector3f),
                 Name{"SkinnedMeshInputPositions"},
                 Name{"m_sourcePositions"},
-                RHI::ShaderSemantic{Name{"UNUSED"}}
+                RHI::ShaderSemantic{Name{"POSITION"}},
+                false, // isOptional
+                SkinnedMeshInputVertexStreams::Position
             };
 
             m_inputStreamInfo[static_cast<uint8_t>(SkinnedMeshInputVertexStreams::Normal)] = SkinnedMeshVertexStreamInfo{
@@ -39,7 +41,9 @@ namespace AZ
                 sizeof(AZ::PackedVector3f),
                 Name{"SkinnedMeshInputNormals"},
                 Name{"m_sourceNormals"},
-                RHI::ShaderSemantic{Name{"UNUSED"}}
+                RHI::ShaderSemantic{Name{"NORMAL"}},
+                false, // isOptional
+                SkinnedMeshInputVertexStreams::Normal
             };
 
             m_inputStreamInfo[static_cast<uint8_t>(SkinnedMeshInputVertexStreams::Tangent)] = SkinnedMeshVertexStreamInfo{
@@ -47,7 +51,9 @@ namespace AZ
                 sizeof(AZ::Vector4),
                 Name{"SkinnedMeshInputTangents"},
                 Name{"m_sourceTangents"},
-                RHI::ShaderSemantic{Name{"UNUSED"}}
+                RHI::ShaderSemantic{Name{"TANGENT"}},
+                false, // isOptional
+                SkinnedMeshInputVertexStreams::Tangent
             };
 
             m_inputStreamInfo[static_cast<uint8_t>(SkinnedMeshInputVertexStreams::BiTangent)] = SkinnedMeshVertexStreamInfo{
@@ -55,23 +61,29 @@ namespace AZ
                 sizeof(AZ::PackedVector3f),
                 Name{"SkinnedMeshInputBiTangents"},
                 Name{"m_sourceBiTangents"},
-                RHI::ShaderSemantic{Name{"UNUSED"}}
+                RHI::ShaderSemantic{Name{"BITANGENT"}},
+                false, // isOptional
+                SkinnedMeshInputVertexStreams::BiTangent
             };
 
             m_inputStreamInfo[static_cast<uint8_t>(SkinnedMeshInputVertexStreams::BlendIndices)] = SkinnedMeshVertexStreamInfo{
-                RHI::Format::R32G32B32A32_UINT,
+                RHI::Format::R32_UINT,
                 sizeof(AZ::Vector4),
                 Name{"SkinnedMeshInputBlendIndices"},
                 Name{"m_sourceBlendIndices"},
-                RHI::ShaderSemantic{Name{"UNUSED"}}
+                RHI::ShaderSemantic{Name{"SKIN_JOINTINDICES"}},
+                false, // isOptional
+                SkinnedMeshInputVertexStreams::BlendIndices
             };
 
             m_inputStreamInfo[static_cast<uint8_t>(SkinnedMeshInputVertexStreams::BlendWeights)] = SkinnedMeshVertexStreamInfo{
-                RHI::Format::R32G32B32A32_FLOAT,
+                RHI::Format::R32_FLOAT,
                 sizeof(AZ::Vector4),
                 Name{"SkinnedMeshInputBlendWeights"},
                 Name{"m_sourceBlendWeights"},
-                RHI::ShaderSemantic{Name{"UNUSED"}}
+                RHI::ShaderSemantic{Name{"SKIN_WEIGHTS"}},
+                false, // isOptional
+                SkinnedMeshInputVertexStreams::BlendWeights
             };
 
             m_inputStreamInfo[static_cast<uint8_t>(SkinnedMeshInputVertexStreams::Color)] = SkinnedMeshVertexStreamInfo{
@@ -79,7 +91,9 @@ namespace AZ
                 sizeof(AZ::Vector4),
                 Name{"SkinnedMeshInputColors"},
                 Name{"m_sourceColors"},
-                RHI::ShaderSemantic{Name{"UNUSED"}}
+                RHI::ShaderSemantic{Name{"COLOR"}},
+                true, // isOptional
+                SkinnedMeshInputVertexStreams::Color
             };
 
             // Attributes of the vertex buffers that are not used or modified during skinning, but are shared between all target models that share the same source
@@ -183,7 +197,37 @@ namespace AZ
                 creator.SetPoolName("SkinnedMeshOutputStreamPool");
                 creator.End(m_outputStreamResourcePool);
             }
+
+            // Set the required and optional input streams for the skinned mesh compute shader
+            // in a ShaderInputContract for retrieving the streams from the model
+            for (const SkinnedMeshVertexStreamInfo& inputStreamInfo : m_inputStreamInfo)
+            {
+                RPI::ShaderInputContract::StreamChannelInfo channelInfo;
+                channelInfo.m_semantic = inputStreamInfo.m_semantic;
+                channelInfo.m_isOptional = inputStreamInfo.m_isOptional;
+                channelInfo.m_componentCount = RHI::GetFormatComponentCount(inputStreamInfo.m_elementFormat);
+
+                m_computeShaderInputContract.m_streamChannels.push_back(channelInfo);
+            }
         };
+
+        const SkinnedMeshVertexStreamInfo* SkinnedMeshVertexStreamProperties::GetInputStreamInfo(const RHI::ShaderSemantic& shaderSemantic) const
+        {
+            auto FindVertexStreamInfo = [shaderSemantic](const SkinnedMeshVertexStreamInfo& vertexStreamInfo)
+            {
+                return shaderSemantic == vertexStreamInfo.m_semantic;
+            };
+
+            if (auto foundIt = AZStd::find_if(m_inputStreamInfo.begin(), m_inputStreamInfo.end(), FindVertexStreamInfo);
+                foundIt != m_inputStreamInfo.end())
+            {
+                return foundIt;
+            }
+            else
+            {
+                return nullptr;
+            }
+        }
 
         const SkinnedMeshVertexStreamInfo& SkinnedMeshVertexStreamProperties::GetInputStreamInfo(SkinnedMeshInputVertexStreams stream) const
         {
@@ -193,6 +237,24 @@ namespace AZ
         const SkinnedMeshVertexStreamInfo& SkinnedMeshVertexStreamProperties::GetStaticStreamInfo(SkinnedMeshStaticVertexStreams stream) const
         {
             return m_staticStreamInfo[static_cast<uint8_t>(stream)];
+        }
+
+        const SkinnedMeshOutputVertexStreamInfo* SkinnedMeshVertexStreamProperties::GetOutputStreamInfo(const RHI::ShaderSemantic& shaderSemantic) const
+        {
+            auto FindVertexStreamInfo = [shaderSemantic](const SkinnedMeshOutputVertexStreamInfo& vertexStreamInfo)
+            {
+                return shaderSemantic == vertexStreamInfo.m_semantic;
+            };
+
+            if (auto foundIt = AZStd::find_if(m_outputStreamInfo.begin(), m_outputStreamInfo.end(), FindVertexStreamInfo);
+                foundIt != m_outputStreamInfo.end())
+            {
+                return foundIt;
+            }
+            else
+            {
+                return nullptr;
+            }
         }
 
         const SkinnedMeshOutputVertexStreamInfo& SkinnedMeshVertexStreamProperties::GetOutputStreamInfo(SkinnedMeshOutputVertexStreams stream) const
@@ -218,6 +280,11 @@ namespace AZ
         uint32_t SkinnedMeshVertexStreamProperties::GetMaxSupportedVertexCount() const
         {
             return aznumeric_cast<uint32_t>(std::numeric_limits<uint16_t>::max()) * aznumeric_cast<uint32_t>(std::numeric_limits<uint16_t>::max());
+        }
+
+        const RPI::ShaderInputContract& SkinnedMeshVertexStreamProperties::GetComputeShaderInputContract() const
+        {
+            return m_computeShaderInputContract;
         }
 
     }// namespace Render

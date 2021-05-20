@@ -350,20 +350,16 @@ namespace AZ
                 for (size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
                 {
                     const SkinnedMeshInputLod& inputLod = m_skinnedMeshInputBuffers->GetLod(lodIndex);
-                    const AZStd::vector< SkinnedSubMeshProperties>& subMeshProperties = inputLod.GetSubMeshProperties();
-                    for (const SkinnedSubMeshProperties& submesh : subMeshProperties)
+                    Data::Asset<RPI::ModelLodAsset> modelLodAsset = inputLod.GetModelLodAsset();
+                    for (const RPI::ModelLodAsset::Mesh& submesh : modelLodAsset->GetMeshes())
                     {
-                        AZ_Error("AtomActorInstance", submesh.m_material, "Actor does not have a valid default material in lod %d", lodIndex);
-                        if (submesh.m_material)
+                        if (submesh.GetMaterialAsset() && !submesh.GetMaterialAsset()->IsReady())
                         {
-                            if (!submesh.m_material->IsReady())
-                            {
-                                // Start listening for the material's OnAssetReady event.
-                                // AtomActorInstance::Create is called on the main thread, so there should be no need to synchronize with the OnAssetReady event handler
-                                // since those events will also come from the main thread
-                                m_waitForMaterialLoadIds.insert(submesh.m_material->GetId());
-                                Data::AssetBus::MultiHandler::BusConnect(submesh.m_material->GetId());
-                            }
+                            // Start listening for the material's OnAssetReady event.
+                            // AtomActorInstance::Create is called on the main thread, so there should be no need to synchronize with the OnAssetReady event handler
+                            // since those events will also come from the main thread
+                            m_waitForMaterialLoadIds.insert(submesh.GetMaterialAsset()->GetId());
+                            Data::AssetBus::MultiHandler::BusConnect(submesh.GetMaterialAsset()->GetId());
                         }
                     }
                 }
@@ -532,20 +528,22 @@ namespace AZ
             for (size_t lodIndex = 0; lodIndex < m_skinnedMeshInputBuffers->GetLodCount(); ++lodIndex)
             {
                 const SkinnedMeshInputLod& inputSkinnedMeshLod = m_skinnedMeshInputBuffers->GetLod(lodIndex);
-                const AZStd::vector<uint32_t>& outputBufferOffsetsInBytes = m_skinnedMeshInstance->m_outputStreamOffsetsInBytes[lodIndex];
-                uint32_t lodVertexCount = inputSkinnedMeshLod.GetVertexCount();
+                const SkinnedMeshOutputVertexOffsets& outputBufferOffsetsInBytes = m_skinnedMeshInstance->m_outputStreamOffsetsInBytes[lodIndex][0];
 
                 auto updateSkinnedMeshInstance =
-                    [&inputSkinnedMeshLod, &outputBufferOffsetsInBytes, &lodVertexCount](SkinnedMeshInputVertexStreams inputStream, SkinnedMeshOutputVertexStreams outputStream)
+                    [&inputSkinnedMeshLod, &outputBufferOffsetsInBytes](SkinnedMeshOutputVertexStreams outputStream)
                 {
-                    const Data::Asset<RPI::BufferAsset>& inputBufferAsset = inputSkinnedMeshLod.GetSkinningInputBufferAsset(inputStream);
+                    const SkinnedMeshOutputVertexStreamInfo& outputStreamInfo = SkinnedMeshVertexStreamPropertyInterface::Get()->GetOutputStreamInfo(outputStream);
+
+                    const Data::Asset<RPI::BufferAsset>& inputBufferAsset = inputSkinnedMeshLod.GetSkinningInputBufferAsset(outputStreamInfo.m_correspondingInputVertexStream);
                     const RHI::BufferViewDescriptor& inputBufferViewDescriptor = inputBufferAsset->GetBufferViewDescriptor();
 
                     const uint64_t inputByteCount = aznumeric_cast<uint64_t>(inputBufferViewDescriptor.m_elementCount) * aznumeric_cast<uint64_t>(inputBufferViewDescriptor.m_elementSize);
                     const uint64_t inputByteOffset = aznumeric_cast<uint64_t>(inputBufferViewDescriptor.m_elementOffset) * aznumeric_cast<uint64_t>(inputBufferViewDescriptor.m_elementSize);
 
-                    const uint32_t outputElementSize = SkinnedMeshVertexStreamPropertyInterface::Get()->GetOutputStreamInfo(outputStream).m_elementSize;
-                    const uint64_t outputByteCount = aznumeric_cast<uint64_t>(lodVertexCount) * aznumeric_cast<uint64_t>(outputElementSize);
+                    const uint32_t outputElementSize = outputStreamInfo.m_elementSize;
+                    const uint32_t outputElementCount = inputSkinnedMeshLod.GetVertexCountForStream(outputStream);
+                    const uint64_t outputByteCount = aznumeric_cast<uint64_t>(outputElementCount) * aznumeric_cast<uint64_t>(outputElementSize);
                     const uint64_t outputByteOffset = aznumeric_cast<uint64_t>(outputBufferOffsetsInBytes[static_cast<uint8_t>(outputStream)]);
 
                     // The byte count from input and output buffers doesn't have to match necessarily.
@@ -562,10 +560,10 @@ namespace AZ
                         outputByteOffset);
                 };
 
-                updateSkinnedMeshInstance(SkinnedMeshInputVertexStreams::Position, SkinnedMeshOutputVertexStreams::Position);
-                updateSkinnedMeshInstance(SkinnedMeshInputVertexStreams::Normal, SkinnedMeshOutputVertexStreams::Normal);
-                updateSkinnedMeshInstance(SkinnedMeshInputVertexStreams::Tangent, SkinnedMeshOutputVertexStreams::Tangent);
-                updateSkinnedMeshInstance(SkinnedMeshInputVertexStreams::BiTangent, SkinnedMeshOutputVertexStreams::BiTangent);
+                updateSkinnedMeshInstance(SkinnedMeshOutputVertexStreams::Position);
+                updateSkinnedMeshInstance(SkinnedMeshOutputVertexStreams::Normal);
+                updateSkinnedMeshInstance(SkinnedMeshOutputVertexStreams::Tangent);
+                updateSkinnedMeshInstance(SkinnedMeshOutputVertexStreams::BiTangent);
             }
         }
 

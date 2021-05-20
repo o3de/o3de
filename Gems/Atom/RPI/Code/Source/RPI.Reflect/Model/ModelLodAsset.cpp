@@ -30,6 +30,8 @@ namespace AZ
                     ->Version(0)
                     ->Field("Meshes", &ModelLodAsset::m_meshes)
                     ->Field("Aabb", &ModelLodAsset::m_aabb)
+                    ->Field("StreamBuffers", &ModelLodAsset::m_streamBuffers)
+                    ->Field("IndexBufferView", &ModelLodAsset::m_indexBuffer)
                     ;
             }
 
