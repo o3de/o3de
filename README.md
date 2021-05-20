@@ -100,6 +100,8 @@ If you have the Git credential manager core or other credential helpers installe
 ### Quick Start Build Steps
 
 1.  Create a writable folder to cache 3rd Party dependencies. You can also use this to store other redistributable SDKs.
+    
+    > For the 0.5 branch - Create an empty text file named `3rdParty.txt` in this folder, to allow a legacy CMake validator to pass
 
 1.  Install the following redistributables to the following:
     - Visual Studio and VC++ redistributable can be installed to any location
@@ -107,6 +109,12 @@ If you have the Git credential manager core or other credential helpers installe
     - WWise can be installed anywhere, but you will need to set an environment variable for CMake to detect it:  `set LY_WWISE_INSTALL_PATH=<path to WWise>`
     
 1.  Navigate into the repo folder, then download the python runtime with this command
+    
+    > For the 0.5 branch - Set this environment variable prior to the `get_python` command below:
+    > ```
+    > set LY_PACKAGE_SERVER_URLS=https://d2c171ws20a1rv.cloudfront.net
+    > ```
+
     ```
     python\get_python.bat
     ```
@@ -148,7 +156,7 @@ If you have the Git credential manager core or other credential helpers installe
     ```
 1.  Once you're ready to build the project, run the same set of commands to configure and build:
     ```
-    cmake -B <your project build path> -S <your new project source path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=<3rdParty cache path>
+    cmake -B <your project build path> -S <your new project source path> -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH=<3rdParty cache path>
 
     cmake --build <your project build path> --target <New Project Name> --config profile -- /m
     ```
