@@ -22,6 +22,9 @@ namespace O3DE::ProjectManager
         : QWidget(parent)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
+        vLayout->setMargin(0);
+        vLayout->setSpacing(0);
+        vLayout->setContentsMargins(0, 0, 0, 0);
         setLayout(vLayout);
 
         m_screenStack = new QStackedWidget();

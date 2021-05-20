@@ -32,18 +32,33 @@ namespace O3DE::ProjectManager
     {
         switch (platform)
         {
-        case O3DE::ProjectManager::GemInfo::Android:
+        case Android:
             return "Android";
-        case O3DE::ProjectManager::GemInfo::iOS:
+        case iOS:
             return "iOS";
-        case O3DE::ProjectManager::GemInfo::Linux:
+        case Linux:
             return "Linux";
-        case O3DE::ProjectManager::GemInfo::macOS:
+        case macOS:
             return "macOS";
-        case O3DE::ProjectManager::GemInfo::Windows:
+        case Windows:
             return "Windows";
         default:
             return "<Unknown Platform>";
+        }
+    }
+
+    QString GemInfo::GetTypeString(Type type)
+    {
+        switch (type)
+        {
+        case Asset:
+            return "Asset";
+        case Code:
+            return "Code";
+        case Tool:
+            return "Tool";
+        default:
+            return "<Unknown Type>";
         }
     }
 
