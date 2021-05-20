@@ -32,6 +32,9 @@ namespace UnitTest
         m_prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
         EXPECT_TRUE(m_prefabLoaderInterface);
 
+        m_prefabPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabPublicInterface>::Get();
+        EXPECT_TRUE(m_prefabPublicInterface);
+
         m_instanceUpdateExecutorInterface = AZ::Interface<AzToolsFramework::Prefab::InstanceUpdateExecutorInterface>::Get();
         EXPECT_TRUE(m_instanceUpdateExecutorInterface);
 

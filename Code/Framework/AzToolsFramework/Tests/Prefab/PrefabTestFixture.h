@@ -57,6 +57,7 @@ namespace UnitTest
 
         PrefabSystemComponent* m_prefabSystemComponent = nullptr;
         PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
+        PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
         InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
     };
