@@ -121,6 +121,10 @@
 #   include <AzFramework/Network/AssetProcessorConnection.h>
 #endif
 
+#ifdef WIN32
+extern LONG WINAPI CryEngineExceptionFilterWER(struct _EXCEPTION_POINTERS* pExceptionPointers);
+#endif
+
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_14
 #include AZ_RESTRICTED_FILE(SystemInit_cpp)
@@ -1484,6 +1488,13 @@ AZ_POP_DISABLE_WARNING
 
         InlineInitializationProcessing("CSystem::Init LoadConfigurations");
 
+#ifdef WIN32
+        if (g_cvars.sys_WER)
+        {
+            SetUnhandledExceptionFilter(CryEngineExceptionFilterWER);
+        }
+#endif
+
         //////////////////////////////////////////////////////////////////////////
         // Localization
         //////////////////////////////////////////////////////////////////////////
@@ -2020,6 +2031,14 @@ void CSystem::CreateSystemVars()
     REGISTER_CVAR2("sys_update_profile_time", &g_cvars.sys_update_profile_time, 1.0f, 0, "Time to keep updates timings history for.");
     REGISTER_CVAR2("sys_no_crash_dialog", &g_cvars.sys_no_crash_dialog, m_bNoCrashDialog, VF_NULL, "Whether to disable the crash dialog window");
     REGISTER_CVAR2("sys_no_error_report_window", &g_cvars.sys_no_error_report_window, m_bNoErrorReportWindow, VF_NULL, "Whether to disable the error report list");
+#if defined(_RELEASE)
+    if (!gEnv->IsDedicated())
+    {
+        REGISTER_CVAR2("sys_WER", &g_cvars.sys_WER, 1, 0, "Enables Windows Error Reporting");
+    }
+#else
+    REGISTER_CVAR2("sys_WER", &g_cvars.sys_WER, 0, 0, "Enables Windows Error Reporting");
+#endif
 
 #ifdef USE_HTTP_WEBSOCKETS
     REGISTER_CVAR2("sys_simple_http_base_port", &g_cvars.sys_simple_http_base_port, 1880, VF_REQUIRE_APP_RESTART,

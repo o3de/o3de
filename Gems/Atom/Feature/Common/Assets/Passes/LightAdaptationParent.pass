@@ -1,0 +1,146 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "LightAdaptationParentTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                // Inputs...
+                {
+                    "Name": "LightingInput",
+                    "SlotType": "Input"
+                },
+                // SwapChain here is only used to reference the frame height and format
+                {
+                    "Name": "SwapChainOutput",
+                    "SlotType": "InputOutput"
+                },
+                // Outputs...
+                {
+                    "Name": "Output",
+                    "SlotType": "Output"
+                },
+                // Debug Outputs...
+                {
+                    "Name": "LuminanceMipChainOutput",
+                    "SlotType": "Output"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "DisplayMapperPass",
+                        "Attachment": "Output"
+                    }
+                },
+                {
+                    "LocalSlot": "LuminanceMipChainOutput",
+                    "AttachmentRef": {
+                        "Pass": "DownsampleLuminanceMipChain",
+                        "Attachment": "MipChainInputOutput"
+                    }
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "DownsampleLuminanceMinAvgMax",
+                    "TemplateName": "DownsampleLuminanceMinAvgMaxCS",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LightingInput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "DownsampleLuminanceMipChain",
+                    "TemplateName": "DownsampleMipChainTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "MipChainInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "DownsampleLuminanceMinAvgMax",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "DownsampleMipChainPassData",
+                        "ShaderAsset": {
+                            "FilePath": "Shaders/PostProcessing/DownsampleMinAvgMaxCS.shader"
+                        }
+                    }
+                },
+                {
+                    "Name": "EyeAdaptationPass",
+                    "TemplateName": "EyeAdaptationTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SceneLuminanceInput",
+                            "AttachmentRef": {
+                                "Pass": "DownsampleLuminanceMipChain",
+                                "Attachment": "MipChainInputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "LookModificationTransformPass",
+                    "TemplateName": "LookModificationTransformTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LightingInput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "EyeAdaptationDataInput",
+                            "AttachmentRef": {
+                                "Pass": "EyeAdaptationPass",
+                                "Attachment": "EyeAdaptationDataInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SwapChainOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SwapChainOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "DisplayMapperPass",
+                    "TemplateName": "DisplayMapperTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "LookModificationTransformPass",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SwapChainOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SwapChainOutput"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
