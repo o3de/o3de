@@ -27,6 +27,7 @@ TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
 @pytest.mark.parametrize("level", ["auto_test"])
 class TestAtomEditorComponentsMain(object):
 
+    @pytest.mark.xfail(reason="Timing out sporadically, LYN-3956")
     @pytest.mark.test_case_id(
         "C32078130",  # Display Mapper
         "C32078129",  # Light

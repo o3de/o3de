@@ -83,23 +83,41 @@ namespace AZ
             AZStd::string    m_azslFileName;         //!< Name for the source .azsl file
         };
 
-        struct AzslCodeTopData
-        {
-            SrgDataContainer m_srgData;
-            AzslFunctions    m_functions;
-            StructContainer  m_structs;
-            RootConstantData m_rootConstantData;
-        };
 
+        //! DEPRECATED [ATOM-15472]
+        //! This class is used to collect all the json files produced by the compilation
+        //! of an AZSL file as objects.
         struct AzslData
         {
             AzslData(const AZStd::shared_ptr<ShaderFiles>& a_sources) : m_sources(a_sources) { }
 
             AZStd::shared_ptr<ShaderFiles> m_sources;
             AZStd::string    m_preprocessedFullPath; // Full path to a preprocessed version of the original AZSL file
-            AZStd::string    m_shaderCodePrefix;     // AssetProcessor generated shader code which is added to the 
-                                                     // AZSLc emitted code prior to invoking the native shader compiler
-            AzslCodeTopData  m_topData;
+            AZStd::string m_shaderCodePrefix; // AssetProcessor generated shader code which is added to the
+                                              // AZSLc emitted code prior to invoking the native shader compiler
+
+            SrgDataContainer m_srgData;
+            AzslFunctions m_functions;
+            StructContainer m_structs;
+            RootConstantData m_rootConstantData;
+        };
+
+        //! This class is used to collect all the json files produced by the compilation
+        //! of an AZSL file as objects.
+        struct AzslData2
+        {
+            AzslData2(const AZStd::shared_ptr<ShaderFiles>& a_sources)
+                : m_sources(a_sources)
+            {
+            }
+
+            AZStd::shared_ptr<ShaderFiles> m_sources;
+            AZStd::string m_preprocessedFullPath; // Full path to a preprocessed version of the original AZSL file
+
+            SrgDataContainer m_srgData;
+            AzslFunctions m_functions;
+            StructContainer m_structs;
+            RootConstantData m_rootConstantData;
         };
     } // ShaderBuilder
 } // AZ
