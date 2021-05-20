@@ -11,8 +11,10 @@
 */
 
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetJsonSerializer.h>
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
@@ -146,6 +148,48 @@ namespace AzToolsFramework
             }
 
             bool LoadInstanceFromPrefabDom(
+                Instance& instance, const PrefabDom& prefabDom, AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets, LoadInstanceFlags flags)
+            {
+                // When entities are rebuilt they are first destroyed. As a result any assets they were exclusively holding on to will
+                // be released and reloaded once the entities are built up again. By suspending asset release temporarily the asset reload
+                // is avoided.
+                AZ::Data::AssetManager::Instance().SuspendAssetRelease();
+
+                InstanceEntityIdMapper entityIdMapper;
+                entityIdMapper.SetLoadingInstance(instance);
+                if ((flags & LoadInstanceFlags::AssignRandomEntityId) == LoadInstanceFlags::AssignRandomEntityId)
+                {
+                    entityIdMapper.SetEntityIdGenerationApproach(InstanceEntityIdMapper::EntityIdGenerationApproach::Random);
+                }
+
+                AZ::JsonDeserializerSettings settings;
+                // The InstanceEntityIdMapper is registered twice because it's used in several places during deserialization where one is
+                // specific for the InstanceEntityIdMapper and once for the generic JsonEntityIdMapper. Because the Json Serializer's meta
+                // data has strict typing and doesn't look for inheritance both have to be explicitly added so they're found both locations.
+                settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
+                settings.m_metadata.Add(&entityIdMapper);
+                settings.m_metadata.Create<AZ::Data::SerializedAssetTracker>();
+
+                AZ::JsonSerializationResult::ResultCode result =
+                    AZ::JsonSerialization::Load(instance, prefabDom, settings);
+
+                AZ::Data::AssetManager::Instance().ResumeAssetRelease();
+
+                if (result.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                {
+                    AZ_Error("Prefab", false,
+                        "Failed to de-serialize Prefab Instance from Prefab DOM. "
+                        "Unable to proceed.");
+
+                    return false;
+                }
+                AZ::Data::SerializedAssetTracker* assetTracker = settings.m_metadata.Find<AZ::Data::SerializedAssetTracker>();
+
+                referencedAssets = AZStd::move(assetTracker->GetTrackedAssets());
+                return true;
+            }
+
+            bool LoadInstanceFromPrefabDom(
                 Instance& instance, Instance::EntityList& newlyAddedEntities, const PrefabDom& prefabDom, LoadInstanceFlags flags)
             {
                 // When entities are rebuilt they are first destroyed. As a result any assets they were exclusively holding on to will
@@ -183,6 +227,43 @@ namespace AzToolsFramework
                 }
 
                 return true;
+            }
+
+            void GetTemplateSourcePaths(const PrefabDomValue& prefabDom, AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths)
+            {
+                PrefabDomValueConstReference findSourceResult = PrefabDomUtils::FindPrefabDomValue(prefabDom, PrefabDomUtils::SourceName);
+                if (!findSourceResult.has_value() || !(findSourceResult->get().IsString()) ||
+                    findSourceResult->get().GetStringLength() == 0)
+                {
+                    AZ_Assert(
+                        false,
+                        "PrefabDomUtils::GetDependentTemplatePath - Source value of prefab in the provided DOM is not a valid string.");
+                    return;
+                }
+
+                templateSourcePaths.emplace(findSourceResult->get().GetString());
+                PrefabDomValueConstReference instancesReference = GetInstancesValue(prefabDom);
+                if (instancesReference.has_value())
+                {
+                    const PrefabDomValue& instances = instancesReference->get();
+
+                    for (PrefabDomValue::ConstMemberIterator instanceIterator = instances.MemberBegin();
+                         instanceIterator != instances.MemberEnd(); ++instanceIterator)
+                    {
+                        GetTemplateSourcePaths(instanceIterator->value, templateSourcePaths);
+                    }
+                }
+            }
+
+            PrefabDomValueConstReference GetInstancesValue(const PrefabDomValue& prefabDom)
+            {
+                PrefabDomValueConstReference findInstancesResult = FindPrefabDomValue(prefabDom, PrefabDomUtils::InstancesName);
+                if (!findInstancesResult.has_value() || !(findInstancesResult->get().IsObject()))
+                {
+                    return AZStd::nullopt;
+                }
+
+                return findInstancesResult->get();
             }
 
             void PrintPrefabDomValue(

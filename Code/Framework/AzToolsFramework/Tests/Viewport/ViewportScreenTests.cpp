@@ -211,6 +211,15 @@ namespace UnitTest
         EXPECT_EQ(screenPoint, ScreenPoint(45, 170));
     }
 
+    TEST(ViewportScreen, ScreenVectorLengthReturned)
+    {
+        using AzFramework::ScreenVector;
+
+        EXPECT_NEAR(AzFramework::ScreenVectorLength(ScreenVector(1, 1)), 1.41421f, 0.001f);
+        EXPECT_NEAR(AzFramework::ScreenVectorLength(ScreenVector(3, 4)), 5.0f, 0.001f);
+        EXPECT_NEAR(AzFramework::ScreenVectorLength(ScreenVector(12, 15)), 19.20937f, 0.001f);
+    }
+
     TEST(ViewportScreen, CanGetCameraTransformFromCameraViewAndBack)
     {
         const auto screenDimensions = AZ::Vector2(1024.0f, 768.0f);
@@ -227,5 +236,24 @@ namespace UnitTest
 
         EXPECT_THAT(cameraTransform, IsClose(cameraTransformFromView));
         EXPECT_THAT(cameraView, IsClose(cameraViewFromTransform));
+    }
+
+    TEST(ViewportScreen, FovCanBeRetrievedFromProjectionMatrix)
+    {
+        using ::testing::FloatNear;
+
+        auto cameraState = AzFramework::CreateIdentityDefaultCamera(AZ::Vector3::CreateZero(), AZ::Vector2(800.0f, 600.0f));
+
+        {
+            const float fovRadians = AZ::DegToRad(45.0f);
+            AzFramework::SetCameraClippingVolume(cameraState, 0.1f, 100.0f, fovRadians);
+            EXPECT_THAT(AzFramework::RetrieveFov(AzFramework::CameraProjection(cameraState)), FloatNear(fovRadians, 0.001f));
+        }
+
+        {
+            const float fovRadians = AZ::DegToRad(90.0f);
+            AzFramework::SetCameraClippingVolume(cameraState, 0.1f, 100.0f, fovRadians);
+            EXPECT_THAT(AzFramework::RetrieveFov(AzFramework::CameraProjection(cameraState)), FloatNear(fovRadians, 0.001f));
+        }
     }
 } // namespace UnitTest

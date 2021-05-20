@@ -156,7 +156,7 @@ namespace AzToolsFramework
                 const TemplateId& linkTargetId,
                 const TemplateId& linkSourceId,
                 const InstanceAlias& instanceAlias,
-                const PrefabDomReference linkPatch,
+                const PrefabDomConstReference linkPatches,
                 const LinkId& linkId = InvalidLinkId) override;
 
             /**

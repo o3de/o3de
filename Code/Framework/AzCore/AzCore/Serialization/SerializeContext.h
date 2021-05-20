@@ -14,8 +14,6 @@
 
 #include <limits>
 
-#include <AzCore/Asset/AssetCommon.h>
-
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/SystemAllocator.h>
 

@@ -16,7 +16,6 @@
 
 #include "CrySystem_precompiled.h"
 #include "IDebugCallStack.h"
-#include <Pak/CryPakUtils.h>
 #include "System.h"
 #include <AzFramework/IO/FileOperations.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
@@ -238,8 +237,6 @@ void IDebugCallStack::FatalError(const char* description)
 
 void IDebugCallStack::WriteLineToLog(const char* format, ...)
 {
-    CDebugAllowFileAccess allowFileAccess;
-
     va_list ArgList;
     char        szBuffer[MAX_WARNING_LENGTH];
     va_start(ArgList, format);
@@ -255,28 +252,6 @@ void IDebugCallStack::WriteLineToLog(const char* format, ...)
         AZ::IO::FileIOBase::GetDirectInstance()->Write(fileHandle, szBuffer, strlen(szBuffer));
         AZ::IO::FileIOBase::GetDirectInstance()->Flush(fileHandle);
         AZ::IO::FileIOBase::GetDirectInstance()->Close(fileHandle);
-    }
-}
-
-void IDebugCallStack::Screenshot(const char* szFileName)
-{
-    WriteLineToLog("Attempting to create error screenshot \"%s\"", szFileName);
-
-    static int g_numScreenshots = 0;
-    if (gEnv->pRenderer && !g_numScreenshots++)
-    {
-        if (gEnv->pRenderer->ScreenShot(szFileName))
-        {
-            WriteLineToLog("Successfully created screenshot.");
-        }
-        else
-        {
-            WriteLineToLog("Error creating screenshot.");
-        }
-    }
-    else
-    {
-        WriteLineToLog("Ignoring multiple calls to Screenshot");
     }
 }
 

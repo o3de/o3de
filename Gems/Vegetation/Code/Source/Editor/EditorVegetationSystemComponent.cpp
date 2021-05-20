@@ -58,14 +58,11 @@ namespace Vegetation
     void EditorVegetationSystemComponent::Activate()
     {
         // This is necessary for the m_spawnerType in Descriptor.cpp to display properly as a ComboBox
-        m_propertyHandler = aznew AzToolsFramework::GenericComboBoxHandler<AZ::TypeId>();
-        AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(&AzToolsFramework::PropertyTypeRegistrationMessages::RegisterPropertyType, m_propertyHandler);
+        AzToolsFramework::RegisterGenericComboBoxHandler<AZ::TypeId>();
     }
 
     void EditorVegetationSystemComponent::Deactivate()
     {
-        AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(&AzToolsFramework::PropertyTypeRegistrationMessages::UnregisterPropertyType, m_propertyHandler);
-        delete m_propertyHandler;
     }
 
 }

@@ -26,16 +26,33 @@ namespace O3DE::ProjectManager
     public:
         enum Platform
         {
-            Android = 0x0,
-            iOS = 0x1,
-            Linux = 0x2,
-            macOS = 0x3,
-            Windows = 0x4
+            Android = 1 << 0,
+            iOS = 1 << 1,
+            Linux = 1 << 2,
+            macOS = 1 << 3,
+            Windows = 1 << 4,
+            NumPlatforms = 5
         };
         Q_DECLARE_FLAGS(Platforms, Platform)
+        static QString GetPlatformString(Platform platform);
 
+        enum Type
+        {
+            Asset = 1 << 0,
+            Code = 1 << 1,
+            Tool = 1 << 2,
+            NumTypes = 3
+        };
+        Q_DECLARE_FLAGS(Types, Type)
+        static QString GetTypeString(Type type);
+
+        GemInfo() = default;
         GemInfo(const QString& name, const QString& creator, const QString& summary, Platforms platforms, bool isAdded);
+        bool IsPlatformSupported(Platform platform) const;
 
+        bool IsValid() const;
+
+        QString m_path;
         QString m_name;
         QString m_displayName;
         AZ::Uuid m_uuid;
@@ -43,13 +60,17 @@ namespace O3DE::ProjectManager
         bool m_isAdded = false; //! Is the gem currently added and enabled in the project?
         QString m_summary;
         Platforms m_platforms;
+        Types m_types; //! Asset and/or Code and/or Tool
         QStringList m_features;
+        QString m_directoryLink;
+        QString m_documentationLink;
         QString m_version;
         QString m_lastUpdatedDate;
-        QString m_documentationUrl;
-        QVector<AZ::Uuid> m_dependingGemUuids;
-        QVector<AZ::Uuid> m_conflictingGemUuids;
+        int m_binarySizeInKB = 0;
+        QStringList m_dependingGemUuids;
+        QStringList m_conflictingGemUuids;
     };
 } // namespace O3DE::ProjectManager
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(O3DE::ProjectManager::GemInfo::Platforms)
+Q_DECLARE_OPERATORS_FOR_FLAGS(O3DE::ProjectManager::GemInfo::Types)

@@ -1486,7 +1486,7 @@ namespace GridMate
 
         // Only support a single cipher suite in OpenSSL that supports:
         //
-        //  ECDHE       Master key exchange using ephemeral elliptic curve diffie-hellman.
+        //  ECDHE       Key exchange using ephemeral elliptic curve diffie-hellman.
         //  RSA         Authentication (public and private key) used to sign ECDHE parameters and can be checked against a CA.
         //  AES256      AES cipher for symmetric key encryption using a 256-bit key.
         //  GCM         Mode of operation for symmetric key encryption.

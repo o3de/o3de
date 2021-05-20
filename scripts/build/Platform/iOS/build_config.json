@@ -19,14 +19,15 @@
   },
   "debug": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "../Mac/build_mac.sh",
     "PARAMETERS": {
       "CONFIGURATION": "debug",
       "OUTPUT_DIRECTORY": "build/ios",
-      "CMAKE_OPTIONS": "-G Xcode -DCMAKE_TOOLCHAIN_FILE=cmake/Platform/iOS/Toolchain_ios.cmake -DLY_MONOLITHIC_GAME=TRUE -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=FALSE -DLY_IOS_CODE_SIGNING_IDENTITY=\"\" -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS=\"\" -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=FALSE -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS": "-G Xcode -DCMAKE_TOOLCHAIN_FILE=cmake/Platform/iOS/Toolchain_ios.cmake -DLY_MONOLITHIC_GAME=TRUE -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=FALSE -DLY_IOS_CODE_SIGNING_IDENTITY=\"\" -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS=\"\" -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=FALSE -DLY_UNITY_BUILD=TRUE -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "-destination generic/platform=iOS"
@@ -34,7 +35,8 @@
   },
   "profile": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "daily-pipeline-metrics",
       "weekly-build-metrics"
     ],
@@ -42,7 +44,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/ios",
-      "CMAKE_OPTIONS": "-G Xcode -DCMAKE_TOOLCHAIN_FILE=cmake/Platform/iOS/Toolchain_ios.cmake -DLY_MONOLITHIC_GAME=TRUE -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=FALSE -DLY_IOS_CODE_SIGNING_IDENTITY=\"\"  -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS=\"\" -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=FALSE -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS": "-G Xcode -DCMAKE_TOOLCHAIN_FILE=cmake/Platform/iOS/Toolchain_ios.cmake -DLY_MONOLITHIC_GAME=TRUE -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=FALSE -DLY_IOS_CODE_SIGNING_IDENTITY=\"\"  -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS=\"\" -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=FALSE -DLY_UNITY_BUILD=TRUE -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "-destination generic/platform=iOS"
@@ -50,14 +52,15 @@
   },
   "profile_nounity": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "../Mac/build_mac.sh",
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/ios",
-      "CMAKE_OPTIONS": "-G Xcode -DCMAKE_TOOLCHAIN_FILE=cmake/Platform/iOS/Toolchain_ios.cmake -DLY_MONOLITHIC_GAME=TRUE -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=FALSE -DLY_IOS_CODE_SIGNING_IDENTITY=\"\"  -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS=\"\" -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=FALSE -DLY_UNITY_BUILD=FALSE",
+      "CMAKE_OPTIONS": "-G Xcode -DCMAKE_TOOLCHAIN_FILE=cmake/Platform/iOS/Toolchain_ios.cmake -DLY_MONOLITHIC_GAME=TRUE -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=FALSE -DLY_IOS_CODE_SIGNING_IDENTITY=\"\"  -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS=\"\" -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=FALSE -DLY_UNITY_BUILD=FALSE -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "-destination generic/platform=iOS"
@@ -65,14 +68,15 @@
   },
   "asset_profile": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "../Mac/build_asset_mac.sh",
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/mac",
-      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "AssetProcessorBatch",
       "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
@@ -80,28 +84,17 @@
       "ASSET_PROCESSOR_PLATFORMS": "ios"
     }
   },
-  "asset_clean_profile": {
-    "TAGS": [
-      "nightly"
-    ],
-    "PIPELINE_ENV": {
-      "CLEAN_ASSETS": "true"
-    },
-    "steps": [
-        "clean",
-        "asset_profile"
-    ]
-  },
   "release": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "../Mac/build_mac.sh",
     "PARAMETERS": {
       "CONFIGURATION": "release",
       "OUTPUT_DIRECTORY": "build/ios",
-      "CMAKE_OPTIONS": "-G Xcode -DCMAKE_TOOLCHAIN_FILE=cmake/Platform/iOS/Toolchain_ios.cmake -DLY_MONOLITHIC_GAME=TRUE -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=FALSE -DLY_IOS_CODE_SIGNING_IDENTITY=\"\"  -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS=\"\" -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=FALSE -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS": "-G Xcode -DCMAKE_TOOLCHAIN_FILE=cmake/Platform/iOS/Toolchain_ios.cmake -DLY_MONOLITHIC_GAME=TRUE -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED=FALSE -DLY_IOS_CODE_SIGNING_IDENTITY=\"\"  -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS=\"\" -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=FALSE -DLY_UNITY_BUILD=TRUE -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "-destination generic/platform=iOS"

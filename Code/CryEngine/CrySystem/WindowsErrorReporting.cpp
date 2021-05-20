@@ -98,18 +98,6 @@ LONG WINAPI CryEngineExceptionFilterMiniDump(struct _EXCEPTION_POINTERS* pExcept
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
-/*
-struct AutoSetCryEngineExceptionFilter
-{
-    AutoSetCryEngineExceptionFilter()
-    {
-        WCHAR * psz = GetFullPathToFaultrepDll();
-        SetUnhandledExceptionFilter(CryEngineExceptionFilterWER);
-    }
-};
-AutoSetCryEngineExceptionFilter g_AutoSetCryEngineExceptionFilter;
-*/
-
 //////////////////////////////////////////////////////////////////////////
 LONG WINAPI CryEngineExceptionFilterWER(struct _EXCEPTION_POINTERS* pExceptionPointers)
 {
@@ -146,6 +134,4 @@ LONG WINAPI CryEngineExceptionFilterWER(struct _EXCEPTION_POINTERS* pExceptionPo
     return lRet;
 }
 
-
 #endif // WIN32
-

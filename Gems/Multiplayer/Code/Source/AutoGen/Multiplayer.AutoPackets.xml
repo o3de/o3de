@@ -2,9 +2,10 @@
 
 <PacketGroup Name="MultiplayerPackets" PacketStart="CorePackets::PacketType::MAX">
     <Include File="AzNetworking/AutoGen/CorePackets.AutoPackets.h" />
-    <Include File="Include/MultiplayerTypes.h" />
-    <Include File="Source/NetworkEntity/NetworkEntityRpcMessage.h" />
-    <Include File="Source/NetworkEntity/NetworkEntityUpdateMessage.h" />
+    <Include File="Multiplayer/MultiplayerTypes.h" />
+    <Include File="Multiplayer/NetworkTime/INetworkTime.h" />
+    <Include File="Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h" />
+    <Include File="Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h" />
 
     <Packet Name="Connect" Desc="Client connection packet, on success the server will reply with an Accept">
         <Member Type="uint16_t" Name="networkProtocolVersion" Init="0" />
@@ -35,6 +36,7 @@
 
     <Packet Name="EntityUpdates" Desc="A packet that contains multiple entity updates">
         <Member Type="AZ::TimeMs" Name="hostTimeMs" Init="AZ::TimeMs{ 0 }" />
+        <Member Type="Multiplayer::HostFrameId" Name="hostFrameId" Init="Multiplayer::InvalidHostFrameId" />
         <Member Type="Multiplayer::NetworkEntityUpdateMessage" Name="entityMessages" Container="Vector" Count="Multiplayer::MaxAggregateEntityMessages" SuppressFromInitializerList="true" />
     </Packet>
 
@@ -57,4 +59,5 @@
         <Member Type="Multiplayer::PrefabEntityId"        Name="prefabEntityId"     Init="" />
         <Member Type="AzNetworking::PacketEncodingBuffer" Name="propertyUpdateData" Init="" SuppressFromInitializerList="true" />
     </Packet>
+    
 </PacketGroup>

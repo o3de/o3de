@@ -14,7 +14,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
-#include <AzCore/std/containers/queue.h>
+#include <AzCore/std/containers/deque.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
@@ -37,6 +37,7 @@ namespace AzToolsFramework
 
             void AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt) override;
             bool UpdateTemplateInstancesInQueue() override;
+            virtual void RemoveTemplateInstanceFromQueue(const Instance* instance) override;
 
             void RegisterInstanceUpdateExecutorInterface();
             void UnregisterInstanceUpdateExecutorInterface();
@@ -45,7 +46,7 @@ namespace AzToolsFramework
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
             TemplateInstanceMapperInterface* m_templateInstanceMapperInterface = nullptr;
             int m_instanceCountToUpdateInBatch = 0;
-            AZStd::queue<Instance*> m_instancesUpdateQueue;
+            AZStd::deque<Instance*> m_instancesUpdateQueue;
             bool m_updatingTemplateInstancesInQueue { false };
         };
     }

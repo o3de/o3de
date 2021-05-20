@@ -80,9 +80,17 @@ namespace AzToolsFramework
             {
                 if (instance != instanceToExcludePtr)
                 {
-                    m_instancesUpdateQueue.emplace(instance);
+                    m_instancesUpdateQueue.emplace_back(instance);
                 }
             }
+        }
+
+        void InstanceUpdateExecutor::RemoveTemplateInstanceFromQueue(const Instance* instance)
+        {
+            AZStd::erase_if(m_instancesUpdateQueue, [instance](Instance* entry)
+            {
+                return entry == instance;
+            });
         }
 
         bool InstanceUpdateExecutor::UpdateTemplateInstancesInQueue()
@@ -106,9 +114,16 @@ namespace AzToolsFramework
                     ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
                     PrefabDom instanceDomFromRootDoc;
 
-                    for (int i = 0; i < instanceCountToUpdateInBatch; ++i)
+                    // Process all instances in the queue, capped to the batch size.
+                    // Even though we potentially initialized the batch size to the queue, it's possible for the queue size to shrink
+                    // during instance processing if the instance gets deleted and it was queued multiple times.  To handle this, we
+                    // make sure to end the loop once the queue is empty, regardless of what the initial size was.
+                    for (int i = 0; (i < instanceCountToUpdateInBatch) && !m_instancesUpdateQueue.empty(); ++i)
                     {
                         Instance* instanceToUpdate = m_instancesUpdateQueue.front();
+                        m_instancesUpdateQueue.pop_front();
+                        AZ_Assert(instanceToUpdate != nullptr, "Invalid instance on update queue.");
+
                         TemplateId instanceTemplateId = instanceToUpdate->GetTemplateId();
                         if (currentTemplateId != instanceTemplateId)
                         {
@@ -124,19 +139,21 @@ namespace AzToolsFramework
 
                                 // Remove the instance from update queue if its corresponding template couldn't be found
                                 isUpdateSuccessful = false;
-                                m_instancesUpdateQueue.pop();
                                 continue;
                             }
                         }
 
-                        auto findInstancesResult = m_templateInstanceMapperInterface->FindInstancesOwnedByTemplate(instanceTemplateId)->get();
+                        auto findInstancesResult = m_templateInstanceMapperInterface->FindInstancesOwnedByTemplate(instanceTemplateId);
+                        AZ_Assert(
+                            findInstancesResult.has_value(), "Prefab Instances corresponding to template with id %llu couldn't be found.",
+                            instanceTemplateId);
 
-                        if (findInstancesResult.find(instanceToUpdate) == findInstancesResult.end())
+                        if (findInstancesResult == AZStd::nullopt ||
+                            findInstancesResult->get().find(instanceToUpdate) == findInstancesResult->get().end())
                         {
                             // Since nested instances get reconstructed during propagation, remove any nested instance that no longer
                             // maps to a template.
                             isUpdateSuccessful = false;
-                            m_instancesUpdateQueue.pop();
                             continue;
                         }
 
@@ -193,8 +210,6 @@ namespace AzToolsFramework
 
                             isUpdateSuccessful = false;
                         }
-
-                        m_instancesUpdateQueue.pop();
                     }
 
                     ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);

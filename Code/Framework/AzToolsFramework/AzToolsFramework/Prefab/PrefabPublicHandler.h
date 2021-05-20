@@ -12,8 +12,8 @@
 
 #pragma once
 
-#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
@@ -68,19 +68,32 @@ namespace AzToolsFramework
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
             bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
+            
+            /**
+             * Applies the correct transform changes to the container entity based on the parent and child entities provided, and returns an appropriate patch.
+             * The container will be parented to parentId, moved to the average transform of the future direct children and its cache will be updated.
+             * This helper function won't support undo/redo, update the templates or create any links. All that needs to be done by the caller.
+             * 
+             * \param containerEntityId The container to apply the changes to.
+             * \param parentEntityId The id of the entity the container should be parented to.
+             * \param childEntities A list of entities that will subsequently be parented to this container.
+             * \return The PrefabDom containing the patches that should be stored in the parent link.
+             */
+            PrefabDom ApplyContainerTransformAndGeneratePatch(
+                AZ::EntityId containerEntityId, AZ::EntityId parentEntityId, const EntityList& childEntities);
 
             /**
              * Creates a link between the templates of an instance and its parent.
              * 
-             * \param topLevelEntities The list of entities that are immediate children to the container entity of the instance.
              * \param sourceInstance The instance that corresponds to the source template of the link.
              * \param targetInstance The id of the target template.
              * \param undoBatch The undo batch to set as parent for this create link action.
-             * \param commonRootEntityId The id of the entity that the source instance should be parented under.
+             * \param patch The patch to store in the newly created link dom.
+             * \param isUndoRedoSupportNeeded The flag indicating whether the link should be created with undo/redo support or not.
              */
             void CreateLink(
-                const EntityList& topLevelEntities, Instance& sourceInstance, TemplateId targetTemplateId,
-                UndoSystem::URSequencePoint* undoBatch, AZ::EntityId commonRootEntityId);
+                Instance& sourceInstance, TemplateId targetTemplateId, UndoSystem::URSequencePoint* undoBatch,
+                PrefabDom patch, const bool isUndoRedoSupportNeeded = true);
 
             /**
              * Removes the link between template of the sourceInstance and the template corresponding to targetTemplateId.
@@ -106,6 +119,16 @@ namespace AzToolsFramework
                 const AZStd::vector<AZ::EntityId>& entityIds, EntityList& inputEntityList, EntityList& topLevelEntities,
                 AZ::EntityId& commonRootEntityId, InstanceOptionalReference& commonRootEntityOwningInstance);
 
+            /* Checks whether the template source path of any of the ancestors in the instance hierarchy matches with one of the
+             * paths provided in a set.
+             *
+             * \param instance The instance whose ancestor hierarchy the provided set of template source paths will be tested against.
+             * \param templateSourcePaths The template source paths provided to be checked against the instance ancestor hierarchy.
+             * \return true if any of the template source paths could be found in the ancestor hierarchy of instance, false otherwise.
+             */
+            bool IsCyclicalDependencyFound(
+                InstanceOptionalConstReference instance, const AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths);
+
             static Instance* GetParentInstance(Instance* instance);
             static Instance* GetAncestorOfInstanceThatIsChildOfRoot(const Instance* ancestor, Instance* descendant);
             static void GenerateContainerEntityTransform(const EntityList& topLevelEntities, AZ::Vector3& translation, AZ::Quaternion& rotation);
@@ -120,5 +143,5 @@ namespace AzToolsFramework
 
             uint64_t m_newEntityCounter = 1;
         };
-    }
-}
+    } // namespace Prefab
+} // namespace AzToolsFramework
