@@ -256,8 +256,8 @@ namespace PhysX
         }
         else
         {
-            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetRotationQuaternion, m_rigidBody->GetOrientation());
-            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTranslation, m_rigidBody->GetPosition());
+            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetRotationQuaternion, rigidBody->GetOrientation());
+            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTranslation, rigidBody->GetPosition());
         }
         m_isLastMovementFromKinematicSource = false;
     }
