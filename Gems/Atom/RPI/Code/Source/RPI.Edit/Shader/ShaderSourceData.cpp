@@ -11,19 +11,19 @@
 */
 
 #include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
+#include <AzCore/std/string/regex.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 
 namespace AZ
 {
     namespace RPI
     {
-        const char* ShaderSourceData::Extension = "shader";
-
         void ShaderSourceData::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderSourceData>()
-                    ->Version(3)
+                    ->Version(4)
                     ->Field("Source", &ShaderSourceData::m_source)
                     ->Field("DrawList", &ShaderSourceData::m_drawListName)
                     ->Field("DepthStencilState", &ShaderSourceData::m_depthStencilState)
@@ -31,8 +31,8 @@ namespace AZ
                     ->Field("BlendState", &ShaderSourceData::m_blendState)
                     ->Field("ProgramSettings", &ShaderSourceData::m_programSettings)
                     ->Field("CompilerHints", &ShaderSourceData::m_compiler)
-                    ->Field("ShaderVariantHints", &ShaderSourceData::m_shaderOptionGroupHints)
                     ->Field("DisabledRHIBackends", &ShaderSourceData::m_disabledRhiBackends)
+                    ->Field("Supervariants", &ShaderSourceData::m_supervariants)
                     ;
 
                 serializeContext->Class<ShaderSourceData::ProgramSettings>()
@@ -45,15 +45,145 @@ namespace AZ
                     ->Field("Name", &EntryPoint::m_name)
                     ->Field("Type", &EntryPoint::m_type)
                     ;
+
+                serializeContext->Class<ShaderSourceData::SupervariantInfo>()
+                    ->Version(1)
+                    ->Field("Name", &SupervariantInfo::m_name)
+                    ->Field("PlusArguments", &SupervariantInfo::m_plusArguments)
+                    ->Field("MinusArguments", &SupervariantInfo::m_minusArguments);
+
             }
         }
 
-        bool ShaderSourceData::IsRhiBackendDisabled(const AZ::Name& rhiName)
+        bool ShaderSourceData::IsRhiBackendDisabled(const AZ::Name& rhiName) const
         {
             return AZStd::any_of(m_disabledRhiBackends.begin(), m_disabledRhiBackends.end(), [&](const AZStd::string& currentRhiName)
                 {
                     return currentRhiName == rhiName.GetStringView();
                 });
         }
+
+
+        //! Helper function.
+        //! Parses a string of command line arguments looking for c-preprocessor macro definitions and appends the name of macro definition arguments.
+        //! Example:
+        //! Input string: "--switch1 -DMACRO1 -v -DMACRO2=23"
+        //! append the following items: ["MACRO1", "MACRO2"]
+        static void GetListOfMacroDefinitionNames( 
+            const AZStd::string& stringWithArguments, AZStd::vector<AZStd::string>& macroDefinitionNames)
+        {
+            static const AZStd::regex macroRegex("-D\\s*(\\w+)", AZStd::regex::ECMAScript);
+
+            AZStd::cmatch match;
+            if (AZStd::regex_search(stringWithArguments.c_str(), match, macroRegex))
+            {
+                // First pattern is always the entire string
+                for (unsigned i = 1; i < match.size(); ++i)
+                {
+                    if (match[i].matched)
+                    {
+                        macroDefinitionNames.push_back(match[i].str().c_str());
+                    }
+                }
+            }
+        }
+
+        AZStd::vector<AZStd::string> ShaderSourceData::SupervariantInfo::GetCombinedListOfMacroDefinitionNamesToRemove() const
+        {
+            AZStd::vector<AZStd::string> macroDefinitionNames;
+            GetListOfMacroDefinitionNames(m_minusArguments, macroDefinitionNames);
+            GetListOfMacroDefinitionNames(m_plusArguments, macroDefinitionNames);
+            return macroDefinitionNames;
+        }
+
+
+        //! Helper function.
+        //! Parses a string of command line arguments looking for c-preprocessor macro definitions and appends macro definition
+        //! arguments. Example: Input string: "--switch1 -DMACRO1 -v -DMACRO2=23" append the following items: ["MACRO1", "MACRO2=23"]
+        static void GetListOfMacroDefinitions(
+            const AZStd::string& stringWithArguments, AZStd::vector<AZStd::string>& macroDefinitions)
+        {
+            static const AZStd::regex macroRegex("-D\\s*(\\w+(=\\w+)?)", AZStd::regex::ECMAScript);
+
+            AZStd::cmatch match;
+            if (AZStd::regex_search(stringWithArguments.c_str(), match, macroRegex))
+            {
+                // First pattern is always the entire string
+                for (unsigned i = 1; i < match.size(); ++i)
+                {
+                    if (match[i].matched)
+                    {
+                        macroDefinitions.push_back(match[i].str().c_str());
+                    }
+                }
+            }
+        }
+
+        AZStd::vector<AZStd::string> ShaderSourceData::SupervariantInfo::GetMacroDefinitionsToAdd() const
+        {
+            AZStd::vector<AZStd::string> parsedMacroDefinitions;
+            GetListOfMacroDefinitions(m_plusArguments, parsedMacroDefinitions);
+            return parsedMacroDefinitions;
+        }
+
+
+        // Helper.
+        // @arguments: A string with command line arguments for a console application of the form:
+        //             "-<arg1> --<arg2> --<arg3>[=<value3>] ..."
+        //             Example: "--use-spaces --namespace=vk"
+        // Returns: A list with just the [-|--]<argument name>:
+        //          ["-<arg1>", "--<arg2>", "--arg3"]
+        //          For the example shown above it will return this vector:
+        //          ["--use-spaces", "--namespace"]
+        AZStd::vector<AZStd::string> GetListOfArgumentNames(const AZStd::string& arguments)
+        {
+            AZStd::vector<AZStd::string> listOfTokens;
+            AzFramework::StringFunc::Tokenize(arguments, listOfTokens);
+            AZStd::vector<AZStd::string> listOfArguments;
+            for (const AZStd::string& token : listOfTokens)
+            {
+                AZStd::vector<AZStd::string> splitArguments;
+                AzFramework::StringFunc::Tokenize(token, splitArguments, "=");
+                listOfArguments.push_back(splitArguments[0]);
+            }
+            return listOfArguments;
+        }
+
+        AZStd::string ShaderSourceData::SupervariantInfo::GetCustomizedArgumentsForAzslc(
+            const AZStd::string& initialAzslcCompilerArguments) const
+        {
+            static const AZStd::regex macroRegex("-D\\s*(\\w+(=\\S+)?)", AZStd::regex::ECMAScript);
+
+            // We are only concerned with AZSLc arguments. Let's remove the C-Preprocessor macro definitions
+            // from @minusArguments.
+            const AZStd::string minusArguments = AZStd::regex_replace(m_minusArguments, macroRegex, "");
+            const AZStd::string plusArguments = AZStd::regex_replace(m_plusArguments, macroRegex, "");
+            AZStd::string azslcArgumentsToRemove = minusArguments + " " + plusArguments;
+            AZStd::vector<AZStd::string> azslcArgumentNamesToRemove = GetListOfArgumentNames(azslcArgumentsToRemove);
+
+            // At this moment @azslcArgumentsToRemove contains arguments for AZSLc that can be of the form:
+            // -<arg>
+            // --<arg>[=<value>]
+            // We need to remove those from @initialAzslcCompilerArguments.
+            AZStd::string customizedArguments = initialAzslcCompilerArguments;
+            for (const AZStd::string& azslcArgumentName : azslcArgumentNamesToRemove)
+            {
+                AZStd::string regexStr = AZStd::string::format("%s(=\\S+)?", azslcArgumentName.c_str());
+                AZStd::regex replaceRegex(regexStr, AZStd::regex::ECMAScript);
+                customizedArguments = AZStd::regex_replace(customizedArguments, replaceRegex, "");
+            }
+
+            customizedArguments += " " + plusArguments;
+
+            // Will contain the results that will be joined by a space.
+            // This is used to get a clean string to return without excess spaces.
+            AZStd::vector<AZStd::string> argumentList;
+            AzFramework::StringFunc::Tokenize(customizedArguments, argumentList, " \t\n");
+            customizedArguments.clear(); // Need to clear because Join appends.
+            AzFramework::StringFunc::Join(customizedArguments, argumentList.begin(), argumentList.end(), " ");
+            return customizedArguments;
+        }
+
+
     } // namespace RPI
 } // namespace AZ
