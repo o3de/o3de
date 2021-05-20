@@ -10,7 +10,6 @@
 *
 */
 
-#include "ImageProcessing_precompiled.h"
 #include "AtlasBuilderWorker.h"
 
 #include <AzCore/Math/MathIntrinsics.h>
@@ -25,16 +24,10 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
-#include <ImageProcessing/ImageObject.h>
-#include <Processing/ImageConvert.h>
-#include <Processing/ImageConvertJob.h>
-#include <ImageLoader/ImageLoaders.h>
-#include <Processing/ImageObjectImpl.h>
-#include <Processing/PixelFormatInfo.h>
-
-#include <BuilderSettings/PresetSettings.h>
-#include <BuilderSettings/TextureSettings.h>
-#include <BuilderSettings/BuilderSettingManager.h>
+#include <Atom/ImageProcessing/ImageObject.h>
+#include <Atom/ImageProcessing/ImageProcessingBus.h>
+#include <Atom/ImageProcessing/PixelFormats.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
 #include <qimage.h>
 #include <QString>
@@ -44,13 +37,13 @@
 namespace TextureAtlasBuilder
 {
     //! Counts leading zeros
-    uint32 CountLeadingZeros32(uint32 x)
+    uint32_t CountLeadingZeros32(uint32_t x)
     {
         return x == 0 ? 32 : az_clz_u32(x);
     }
 
     //! Integer log2
-    uint32 IntegerLog2(uint32 x)
+    uint32_t IntegerLog2(uint32_t x)
     {
         return 31 - CountLeadingZeros32(x);
     }
@@ -138,23 +131,6 @@ namespace TextureAtlasBuilder
             AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePathKeepCase, absoluteSourcePathOut);
         }
         return result;
-    }
-
-    const ImageProcessing::PresetSettings* GetImageProcessPresetSettings(const AZStd::string& presetName, const AZStd::string& platformIdentifier)
-    {
-        // Get the specified presetId
-        AZ::Uuid presetId = ImageProcessing::BuilderSettingManager::Instance()->GetPresetIdFromName(presetName);
-        if (presetId.IsNull())
-        {
-            AZ_Error("Texture Editor", false, "Texture Preset %s has no associated UUID.", presetName.c_str());
-            return nullptr;
-        }
-
-        // Get the preset settings for the platform this job is building for
-        const ImageProcessing::PresetSettings* presetSettings = ImageProcessing::BuilderSettingManager::Instance()->GetPreset(
-            presetId, platformIdentifier);
-
-        return presetSettings;
     }
 
     // Reflect the input parameters
@@ -474,7 +450,7 @@ namespace TextureAtlasBuilder
             {
                 AZStd::string ext;
                 AzFramework::StringFunc::Path::GetExtension(candidates[i].c_str(), ext, false);
-                if (ImageProcessing::IsExtensionSupported(ext.c_str()) && ext != "dds")
+                if (ext != "dds")
                 {
                     bool duplicate = false;
                     for (size_t j = 0; j < paths.size() && !duplicate; ++j)
@@ -589,7 +565,7 @@ namespace TextureAtlasBuilder
                 {
                     AddFolderContents(paths, child, valid);
                 }
-                else if (ImageProcessing::IsExtensionSupported(ext.c_str()) && ext != "dds")
+                else if (ext != "dds")
                 {
                     AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePathKeepCase, child);
                     bool duplicate = false;
@@ -652,7 +628,11 @@ namespace TextureAtlasBuilder
         // We process the same file for all platforms
         for (const AssetBuilderSDK::PlatformInfo& info : request.m_enabledPlatforms)
         {
-            if (ImageProcessing::BuilderSettingManager::Instance()->DoesSupportPlatform(info.m_identifier))
+            bool doesSupportPlatform = false;
+            ImageProcessingAtom::ImageBuilderRequestBus::BroadcastResult(doesSupportPlatform,
+                &ImageProcessingAtom::ImageBuilderRequests::DoesSupportPlatform,
+                info.m_identifier);
+            if (doesSupportPlatform)
             {
                 AssetBuilderSDK::JobDescriptor descriptor = GetJobDescriptor(request.m_sourceFile, input);
                 descriptor.SetPlatformIdentifier(info.m_identifier.c_str());
@@ -707,11 +687,7 @@ namespace TextureAtlasBuilder
         // Before we begin, let's make sure we are not meant to abort.
         AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
 
-        AZStd::vector<AZStd::string> productFilepaths;
-
         const AZStd::string path = request.m_fullPath;
-
-        bool imageProcessingSuccessful = false;
 
         // read in settings/filepaths
         AtlasBuilderInput input;
@@ -752,43 +728,37 @@ namespace TextureAtlasBuilder
             // Default to the TextureAtlas preset which is currently set to use compression for all platforms except for iOS.
             // Currently the only fully supported compression for iOS is PVRTC which requires the texture to be square and a power of 2.
             // Due to this limitation, we default to using no compression for iOS until ASTC is fully supported
-            const AZStd::string defaultPresetName = "TextureAtlas";
+            const AZStd::string defaultPresetName = "UserInterface_Compressed";
             input.m_presetName = defaultPresetName;
         }
 
-        // Get a preset to use for the output image
-        const ImageProcessing::PresetSettings* preset = GetImageProcessPresetSettings(input.m_presetName, request.m_platformInfo.m_identifier);
-        if (preset)
+        bool isFormatSquarePow2 = false;
+        ImageProcessingAtom::ImageBuilderRequestBus::BroadcastResult(isFormatSquarePow2,
+            &ImageProcessingAtom::ImageBuilderRequests::IsPresetFormatSquarePow2,
+            input.m_presetName, request.m_platformInfo.m_identifier);
+
+        if (isFormatSquarePow2)
         {
-            // Check the preset's pixel format requirements
-            const ImageProcessing::PixelFormatInfo* pixelFormatInfo = ImageProcessing::CPixelFormats::GetInstance().GetPixelFormatInfo(preset->m_pixelFormat);
-            if (pixelFormatInfo && pixelFormatInfo->bSquarePow2)
-            {
-                // Override the user config settings to force square and power of 2.
-                // Otherwise the image conversion process will stretch the image to satisfy these requirements
-                input.m_forceSquare = true;
-                input.m_forcePowerOf2 = true;
-            }
-        }
-        else
-        {
-            AZ_Error("AtlasBuilder", false, "Could not find a preset setting for the output image.");
-            return;
+            // Override the user config settings to force square and power of 2.
+            // Otherwise the image conversion process will stretch the image to satisfy these requirements
+            input.m_forceSquare = true;
+            input.m_forcePowerOf2 = true;
         }
 
         // Read in images
-        AZStd::vector<ImageProcessing::IImageObjectPtr> images;
+        AZStd::vector<ImageProcessingAtom::IImageObjectPtr> images;
         AZ::u64 totalArea = 0;
         int maxArea = input.m_maxDimension * input.m_maxDimension;
         bool sizeFailure = false;
         for (int i = 0; i < input.m_filePaths.size() && !jobCancelListener.IsCancelled(); ++i)
         {
-            ImageProcessing::IImageObject* inputImage = ImageProcessing::LoadImageFromFile(input.m_filePaths[i]);
+            ImageProcessingAtom::IImageObjectPtr inputImage;
+            ImageProcessingAtom::ImageProcessingRequestBus::BroadcastResult(inputImage, &ImageProcessingAtom::ImageProcessingRequests::LoadImage, input.m_filePaths[i]);
+
             // Check if we were able to load the image
             if (inputImage)
             {
-                ImageProcessing::IImageObjectPtr image = ImageProcessing::IImageObjectPtr(inputImage);
-                images.push_back(image);
+                images.push_back(inputImage);
                 totalArea += inputImage->GetWidth(0) * inputImage->GetHeight(0);
             }
             else
@@ -837,8 +807,13 @@ namespace TextureAtlasBuilder
         // Add white texture if we need to
         if (input.m_includeWhiteTexture)
         {
-            ImageProcessing::IImageObjectPtr texture(ImageProcessing::IImageObject::CreateImage(
-                cellSize, cellSize, 1, ImageProcessing::EPixelFormat::ePixelFormat_R8G8B8A8));
+            ImageProcessingAtom::IImageObjectPtr texture;
+            ImageProcessingAtom::ImageBuilderRequestBus::BroadcastResult(texture,
+                &ImageProcessingAtom::ImageBuilderRequests::CreateImage,
+                aznumeric_cast<AZ::u32>(cellSize),
+                aznumeric_cast<AZ::u32>(cellSize),
+                1,
+                ImageProcessingAtom::EPixelFormat::ePixelFormat_R8G8B8A8);
 
             // Make the texture white
             texture->ClearColor(1, 1, 1, 1);
@@ -897,8 +872,8 @@ namespace TextureAtlasBuilder
         }
         if (input.m_forcePowerOf2)
         {
-            resultWidth = aznumeric_cast<int>(pow(2, 1 + IntegerLog2(static_cast<uint32>(resultWidth - 1))));
-            resultHeight = aznumeric_cast<int>(pow(2, 1 + IntegerLog2(static_cast<uint32>(resultHeight - 1))));
+            resultWidth = aznumeric_cast<int>(pow(2, 1 + IntegerLog2(static_cast<uint32_t>(resultWidth - 1))));
+            resultHeight = aznumeric_cast<int>(pow(2, 1 + IntegerLog2(static_cast<uint32_t>(resultHeight - 1))));
         }
         else
         {
@@ -918,8 +893,13 @@ namespace TextureAtlasBuilder
         }
 
         // Process texture sheet
-        ImageProcessing::IImageObjectPtr outImage(ImageProcessing::IImageObject::CreateImage(
-            resultWidth, resultHeight, 1, ImageProcessing::EPixelFormat::ePixelFormat_R8G8B8A8));
+        ImageProcessingAtom::IImageObjectPtr outImage;
+        ImageProcessingAtom::ImageBuilderRequestBus::BroadcastResult(outImage,
+            &ImageProcessingAtom::ImageBuilderRequests::CreateImage,
+            aznumeric_cast<AZ::u32>(resultWidth),
+            aznumeric_cast<AZ::u32>(resultHeight),
+            1,
+            ImageProcessingAtom::EPixelFormat::ePixelFormat_R8G8B8A8);
 
         // Clear the sheet
         outImage->ClearColor(input.m_unusedColor.GetR(), input.m_unusedColor.GetG(), input.m_unusedColor.GetB(), input.m_unusedColor.GetA());
@@ -1010,54 +990,21 @@ namespace TextureAtlasBuilder
         // Output texture sheet
         AZStd::string imageFileName, imageOutputPath;
         AzFramework::StringFunc::Path::GetFileName(request.m_sourceFile.c_str(), imageFileName);
-        imageFileName += ".dds";
+        imageFileName += ".texatlas";
         AzFramework::StringFunc::Path::Join(
             request.m_tempDirPath.c_str(), imageFileName.c_str(), imageOutputPath, true, true);
 
-        // Let the ImageProcessor do the rest of the work.
-        ImageProcessing::TextureSettings textureSettings;
-        textureSettings.m_preset = preset->m_uuid;
+        AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
+        ImageProcessingAtom::ImageBuilderRequestBus::BroadcastResult(outProducts,
+            &ImageProcessingAtom::ImageBuilderRequests::ConvertImageObject,
+            outImage,
+            input.m_presetName,
+            request.m_platformInfo.m_identifier,
+            imageOutputPath,
+            request.m_sourceFileUUID,
+            request.m_sourceFile);
 
-        // Mipmaps for the texture atlas would require more work than the Image Processor does. This is because if we
-        // let the Image Processor make mipmaps, it might bleed the textures in the atlas together.
-        textureSettings.m_enableMipmap = false;
-
-        // Check if the ImageBuilder wants to enable streaming
-        bool isStreaming = ImageProcessing::BuilderSettingManager::Instance()
-            ->GetBuilderSetting(request.m_platformInfo.m_identifier)
-            ->m_enableStreaming;
-
-        bool canOverridePreset = false;
-        ImageProcessing::ImageConvertProcess* process =
-            new ImageProcessing::ImageConvertProcess(outImage,
-                textureSettings,
-                *preset,
-                false,
-                isStreaming,
-                canOverridePreset,
-                imageOutputPath,
-                request.m_platformInfo.m_identifier);
-
-        if (process != nullptr)
-        {
-            // the process can be stopped if the job is cancelled or the worker is shutting down
-            while (!process->IsFinished() && !m_isShuttingDown && !jobCancelListener.IsCancelled())
-            {
-                process->UpdateProcess();
-            }
-
-            // get process result
-            imageProcessingSuccessful = process->IsSucceed();
-            process->GetAppendOutputFilePaths(productFilepaths);
-
-            delete process;
-        }
-        else
-        {
-            imageProcessingSuccessful = false;
-        }
-
-        if (imageProcessingSuccessful)
+        if (!outProducts.empty())
         {
             TextureAtlasNamespace::TextureAtlasRequestBus::Broadcast(
                 &TextureAtlasNamespace::TextureAtlasRequests::SaveAtlasToFile, outputPath, output, resultWidth, resultHeight);
@@ -1067,27 +1014,23 @@ namespace TextureAtlasBuilder
 
             // The Image Processing Gem can produce multiple output files under certain
             // circumstances, but the texture atlas is not expected to produce such output
-            if (productFilepaths.size() > 1)
+            if (outProducts.size() > 1)
             {
                 AZ_Error("AtlasBuilder", false, "Image processing resulted in multiple output files. Texture atlas is expected to produce one output.");
                 response.m_outputProducts.clear();
                 return;
             }
 
-            if (productFilepaths.size() > 0)
-            {
-                response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(productFilepaths[0]));
-                response.m_outputProducts.back().m_productAssetType = azrtti_typeid<TextureAtlasNamespace::TextureAtlasAsset>();
-                response.m_outputProducts.back().m_productSubID = 1;
+            response.m_outputProducts.push_back(outProducts[0]);
 
-                // The texatlasidx file is a data file that indicates where the original parts are inside the atlas, 
-                // and this would usually imply that it refers to its dds file in some way or needs it to function.
-                // The texatlasidx file should be the one that depends on the DDS because its possible to use the DDS
-                // without the texatlasid, but not the other way around
-                AZ::Data::AssetId productAssetId(request.m_sourceFileUUID, response.m_outputProducts.back().m_productSubID);
-                response.m_outputProducts[static_cast<int>(Product::TexatlasidxProduct)].m_dependencies.push_back(AssetBuilderSDK::ProductDependency(productAssetId, 0));
-                response.m_outputProducts[static_cast<int>(Product::TexatlasidxProduct)].m_dependenciesHandled = true; // We've populated the dependencies immediately above so it's OK to tell the AP we've handled dependencies
-            }
+            // The texatlasidx file is a data file that indicates where the original parts are inside the atlas, 
+            // and this would usually imply that it refers to its dds file in some way or needs it to function.
+            // The texatlasidx file should be the one that depends on the DDS because it's possible to use the DDS
+            // without the texatlasid, but not the other way around
+            AZ::Data::AssetId productAssetId(request.m_sourceFileUUID, response.m_outputProducts.back().m_productSubID);
+            response.m_outputProducts[static_cast<int>(Product::TexatlasidxProduct)].m_dependencies.push_back(AssetBuilderSDK::ProductDependency(productAssetId, 0));
+            response.m_outputProducts[static_cast<int>(Product::TexatlasidxProduct)].m_dependenciesHandled = true; // We've populated the dependencies immediately above so it's OK to tell the AP we've handled dependencies
+
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
         }
     }
@@ -1315,7 +1258,7 @@ namespace TextureAtlasBuilder
         if (powerOfTwo)
         {
             // Starting dimension needs to be rounded up to the nearest power of two
-            dimension = aznumeric_cast<int>(pow(2, 1 + IntegerLog2(static_cast<uint32>(dimension - 1))));
+            dimension = aznumeric_cast<int>(pow(2, 1 + IntegerLog2(static_cast<uint32_t>(dimension - 1))));
         }
 
         AZStd::vector<AtlasCoordinates> track;
@@ -1363,7 +1306,7 @@ namespace TextureAtlasBuilder
         if (powerOfTwo)
         {
             // Starting dimension needs to be rounded up to the nearest power of two
-            minWidth = aznumeric_cast<AZ::u32>(pow(2, 1 + IntegerLog2(static_cast<uint32>(minWidth - 1))));
+            minWidth = aznumeric_cast<AZ::u32>(pow(2, 1 + IntegerLog2(static_cast<uint32_t>(minWidth - 1))));
         }
 
         // Round min width up to the nearest compression unit
@@ -1400,7 +1343,7 @@ namespace TextureAtlasBuilder
         // Find the height of the solution
         for (int i = 0; i < track.size(); ++i)
         {
-            uint32 bottom = static_cast<uint32>(AZStd::max(0, track[i].GetBottom()));
+            uint32_t bottom = static_cast<uint32_t>(AZStd::max(0, track[i].GetBottom()));
             if (height < bottom)
             {
                 height = bottom;
@@ -1411,7 +1354,7 @@ namespace TextureAtlasBuilder
         if (powerOfTwo)
         {
             // Starting dimensions need to be rounded up to the nearest power of two
-            height = aznumeric_cast<AZ::u32>(pow(2, 1 + IntegerLog2(static_cast<uint32>(height - 1))));
+            height = aznumeric_cast<AZ::u32>(pow(2, 1 + IntegerLog2(static_cast<uint32_t>(height - 1))));
         }
 
         AZ::u32 resultArea = height * width;
