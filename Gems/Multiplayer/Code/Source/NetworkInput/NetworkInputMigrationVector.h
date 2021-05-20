@@ -24,7 +24,6 @@ namespace Multiplayer
     class NetworkInputMigrationVector final
     {
     public:
-        AZ_RTTI(NetworkInputMigrationVector, "{BDF19B57-A11F-4185-9FA9-86AC12E67414}");
         static constexpr uint32_t MaxElements = 90; // Never try to migrate a list larger than this amount, bumped up to handle DTLS connection time
 
         NetworkInputMigrationVector();

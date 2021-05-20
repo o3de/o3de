@@ -23,8 +23,6 @@ namespace AzNetworking
     class ByteBuffer
     {
     public:
-        AZ_RTTI(ByteBuffer, "{CD6BFA48-290D-44B4-B376-2463F526BF1F}");
-
         ByteBuffer() = default;
         ~ByteBuffer() = default;
 
