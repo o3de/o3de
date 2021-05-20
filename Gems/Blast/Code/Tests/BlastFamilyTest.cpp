@@ -137,7 +137,7 @@ namespace Blast
                 .Times(1)
                 .WillOnce(Return(false));
 
-            AZ::Transform transform = AZ::Transform::CreateScale(AZ::Vector3::CreateOne());
+            AZ::Transform transform = AZ::Transform::CreateIdentity();
             blastFamily->Spawn(transform);
         }
 
