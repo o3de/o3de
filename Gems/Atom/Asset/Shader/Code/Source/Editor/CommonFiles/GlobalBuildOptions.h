@@ -33,6 +33,9 @@ namespace AZ
             RHI::ShaderCompilerArguments m_compilerArguments;
         };
 
-        GlobalBuildOptions ReadBuildOptions(const char* builderName);
+        //! Reads the global options used when compiling shaders. The options are defined in <GameProject>/Config/shader_global_build_options.json
+        //! @param builderName: A string with the name of the builder calling this API. Used for trace debugging.
+        //! @param optionalIncludeFolder: An additional directory to add to the list of include folders for the C-preprocessor.
+        GlobalBuildOptions ReadBuildOptions(const char* builderName, const char* optionalIncludeFolder = nullptr);
     }
 }

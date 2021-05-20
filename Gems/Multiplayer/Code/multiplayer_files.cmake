@@ -11,6 +11,8 @@
 
 set(FILES
     Include/Multiplayer/IMultiplayer.h
+    Include/Multiplayer/IMultiplayerTools.h
+    Include/Multiplayer/MultiplayerConstants.h
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
     Include/Multiplayer/Components/LocalPredictionPlayerInputComponent.h
@@ -22,6 +24,7 @@ set(FILES
     Include/Multiplayer/ConnectionData/IConnectionData.h
     Include/Multiplayer/EntityDomains/IEntityDomain.h
     Include/Multiplayer/NetworkEntity/INetworkEntityManager.h
+    Include/Multiplayer/INetworkSpawnableLibrary.h
     Include/Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h
     Include/Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h
     Include/Multiplayer/NetworkEntity/NetworkEntityHandle.h
@@ -45,6 +48,7 @@ set(FILES
     Source/AutoGen/AutoComponentTypes_Source.jinja
     Source/AutoGen/LocalPredictionPlayerInputComponent.AutoComponent.xml
     Source/AutoGen/Multiplayer.AutoPackets.xml
+    Source/AutoGen/MultiplayerEditor.AutoPackets.xml
     Source/AutoGen/NetworkTransformComponent.AutoComponent.xml
     Source/Components/LocalPredictionPlayerInputComponent.cpp
     Source/Components/MultiplayerComponent.cpp
@@ -58,6 +62,8 @@ set(FILES
     Source/ConnectionData/ServerToClientConnectionData.cpp
     Source/ConnectionData/ServerToClientConnectionData.h
     Source/ConnectionData/ServerToClientConnectionData.inl
+    Source/Editor/MultiplayerEditorConnection.cpp
+    Source/Editor/MultiplayerEditorConnection.h
     Source/EntityDomains/FullOwnershipEntityDomain.cpp
     Source/EntityDomains/FullOwnershipEntityDomain.h
     Source/NetworkEntity/EntityReplication/EntityReplicationManager.cpp
