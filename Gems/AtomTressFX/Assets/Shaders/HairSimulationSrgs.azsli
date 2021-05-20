@@ -76,11 +76,11 @@ struct BoneSkinningData
 ShaderResourceGroup HairGenerationSrg : SRG_PerDraw
 {
     // Buffers containing hair generation properties.
-    StructuredBuffer<float4>                m_initialHairPositions;
-    StructuredBuffer<float>                 m_hairRestLengthSRV;
-    StructuredBuffer<float>                 m_hairStrandType;
-    StructuredBuffer<float4>                m_followHairRootOffset;
-    StructuredBuffer<BoneSkinningData>      m_boneSkinningData;
+    StructuredBuffer<float4>            m_initialHairPositions;
+    Buffer<float>                       m_hairRestLengthSRV;
+    Buffer<float>                       m_hairStrandType;
+    Buffer<float4>                      m_followHairRootOffset;
+    StructuredBuffer<BoneSkinningData>  m_boneSkinningData;
 
     // Constant buffer structure reflected in code as 'TressFXSimulationParams' 
     TressFXSimulationParams                 m_tressfxSimParameters; 

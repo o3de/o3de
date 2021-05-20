@@ -201,7 +201,7 @@ namespace AZ
                 // Seems that the PerView and PerScene are gathered through RenderPass::CollectSrgs()
                 // The PerPass is gathered through the RasterPass::m_shaderResourceGroup
                 AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-                return hairObject->BuildPPLLDrawPacket(m_shaderResourceGroup.get(), drawRequest);
+                return hairObject->BuildPPLLDrawPacket(drawRequest);
             }
 
 
