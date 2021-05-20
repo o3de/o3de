@@ -748,12 +748,15 @@ namespace UnitTest
             MaterialPropertyDataType::UInt, "general.mode",
             MaterialPropertyDataType::Float, "general.value",
             functorScript);
-
+        
         AZStd::unordered_set<AZ::Name> changedPropertyNames;
-
         AZStd::unordered_map<Name, MaterialPropertyDynamicMetadata> propertyDynamicMetadata;
         propertyDynamicMetadata[Name{"general.mode"}] = {};
         propertyDynamicMetadata[Name{"general.value"}] = {};
+        
+        AZStd::unordered_set<AZ::Name> changedPropertyGroupNames;
+        AZStd::unordered_map<Name, MaterialPropertyGroupDynamicMetadata> propertyGroupDynamicMetadata;
+        propertyGroupDynamicMetadata[Name{"general"}] = {};
 
         Ptr<MaterialFunctor> functor = testData.GetMaterialTypeAsset()->GetMaterialFunctors()[0];
 
@@ -761,7 +764,9 @@ namespace UnitTest
             testData.GetMaterial()->GetPropertyValues(),
             testData.GetMaterial()->GetMaterialPropertiesLayout(),
             propertyDynamicMetadata,
+            propertyGroupDynamicMetadata,
             changedPropertyNames,
+            changedPropertyGroupNames,
             &functor->GetMaterialPropertyDependencies()
         );
 
@@ -814,10 +819,13 @@ namespace UnitTest
             functorScript);
 
         AZStd::unordered_set<AZ::Name> changedPropertyNames;
-
         AZStd::unordered_map<Name, MaterialPropertyDynamicMetadata> propertyDynamicMetadata;
         propertyDynamicMetadata[Name{"general.units"}] = {};
         propertyDynamicMetadata[Name{"general.distance"}] = {};
+        
+        AZStd::unordered_set<AZ::Name> changedPropertyGroupNames;
+        AZStd::unordered_map<Name, MaterialPropertyGroupDynamicMetadata> propertyGroupDynamicMetadata;
+        propertyGroupDynamicMetadata[Name{"general"}] = {};
 
         Ptr<MaterialFunctor> functor = testData.GetMaterialTypeAsset()->GetMaterialFunctors()[0];
 
@@ -825,7 +833,9 @@ namespace UnitTest
             testData.GetMaterial()->GetPropertyValues(),
             testData.GetMaterial()->GetMaterialPropertiesLayout(),
             propertyDynamicMetadata,
+            propertyGroupDynamicMetadata,
             changedPropertyNames,
+            changedPropertyGroupNames,
             &functor->GetMaterialPropertyDependencies()
         );
 
@@ -844,6 +854,66 @@ namespace UnitTest
         EXPECT_EQ(1000.0f, propertyDynamicMetadata[Name{"general.distance"}].m_propertyRange.m_max.GetValue<float>());
         EXPECT_EQ(-100.0f, propertyDynamicMetadata[Name{"general.distance"}].m_propertyRange.m_softMin.GetValue<float>());
         EXPECT_EQ(100.0f, propertyDynamicMetadata[Name{"general.distance"}].m_propertyRange.m_softMax.GetValue<float>());
+    }
+    
+    TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_EditorContext_SetMaterialPropertyGroupVisibility)
+    {
+        using namespace AZ::RPI;
+
+        const char* functorScript =
+            R"(
+                function GetMaterialPropertyDependencies()
+                    return { "general.mode" }
+                end
+
+                function ProcessEditor(context)
+                    local mode = context:GetMaterialPropertyValue_uint("general.mode")
+
+                    if (mode == 1) then
+                        context:SetMaterialPropertyGroupVisibility("otherGroup", MaterialPropertyGroupVisibility_Enabled)
+                    else
+                        context:SetMaterialPropertyGroupVisibility("otherGroup", MaterialPropertyGroupVisibility_Hidden)
+                    end
+                end
+            )";
+
+        TestMaterialData testData;
+        testData.Setup(
+            MaterialPropertyDataType::UInt, "general.mode",
+            MaterialPropertyDataType::Float, "otherGroup.value",
+            functorScript);
+        
+        AZStd::unordered_set<AZ::Name> changedPropertyNames;
+        AZStd::unordered_map<Name, MaterialPropertyDynamicMetadata> propertyDynamicMetadata;
+        propertyDynamicMetadata[Name{"general.mode"}] = {};
+        propertyDynamicMetadata[Name{"otherGroup.value"}] = {};
+        
+        AZStd::unordered_set<AZ::Name> changedPropertyGroupNames;
+        AZStd::unordered_map<Name, MaterialPropertyGroupDynamicMetadata> propertyGroupDynamicMetadata;
+        propertyGroupDynamicMetadata[Name{"general"}] = {};
+        propertyGroupDynamicMetadata[Name{"otherGroup"}] = {};
+
+        Ptr<MaterialFunctor> functor = testData.GetMaterialTypeAsset()->GetMaterialFunctors()[0];
+
+        AZ::RPI::MaterialFunctor::EditorContext context = AZ::RPI::MaterialFunctor::EditorContext(
+            testData.GetMaterial()->GetPropertyValues(),
+            testData.GetMaterial()->GetMaterialPropertiesLayout(),
+            propertyDynamicMetadata,
+            propertyGroupDynamicMetadata,
+            changedPropertyNames,
+            changedPropertyGroupNames,
+            &functor->GetMaterialPropertyDependencies()
+        );
+
+        testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{0u});
+        functor->Process(context);
+        EXPECT_EQ(MaterialPropertyGroupVisibility::Enabled, propertyGroupDynamicMetadata[Name{"general"}].m_visibility);
+        EXPECT_EQ(MaterialPropertyGroupVisibility::Hidden, propertyGroupDynamicMetadata[Name{"otherGroup"}].m_visibility);
+
+        testData.GetMaterial()->SetPropertyValue(testData.GetMaterialPropertyIndex(), MaterialPropertyValue{1u});
+        functor->Process(context);
+        EXPECT_EQ(MaterialPropertyGroupVisibility::Enabled, propertyGroupDynamicMetadata[Name{"general"}].m_visibility);
+        EXPECT_EQ(MaterialPropertyGroupVisibility::Enabled, propertyGroupDynamicMetadata[Name{"otherGroup"}].m_visibility);
     }
 
     TEST_F(LuaMaterialFunctorTests, LuaMaterialFunctor_RuntimeContext_SetRenderStates)

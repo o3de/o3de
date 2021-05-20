@@ -18,6 +18,7 @@
 
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
+#include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
 
@@ -36,7 +37,7 @@ namespace Physics
         static void Reflect(AZ::ReflectContext* context);
 
         AZStd::string m_name;
-        ShapeConfigurationList m_shapes;
+        AzPhysics::ShapeColliderPairList m_shapes;
     };
 
     class CharacterColliderConfiguration

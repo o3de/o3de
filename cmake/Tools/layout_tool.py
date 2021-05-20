@@ -333,7 +333,9 @@ def create_link(src:pathlib.Path, tgt:pathlib.Path, copy):
                 import _winapi
                 _winapi.CreateJunction(str(src), str(tgt))
             else:
-                src.symlink_to(tgt, target_is_directory=True)
+                if tgt.exists():
+                    tgt.unlink()
+                tgt.symlink_to(src, target_is_directory=True)
         except OSError as e:
             raise common.LmbrCmdError(f"Error trying to create {link_type} {src} => {tgt} : {e}", e.errno)
 

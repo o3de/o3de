@@ -422,7 +422,7 @@ namespace AZ
                             const MaterialPropertyDescriptor* propertyDescriptor = materialTypeAssetCreator.GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex);
 
                             AZ::Name enumName = AZ::Name(property.m_value.GetValue<AZStd::string>());
-                            uint32_t enumValue = propertyDescriptor->GetEnumValue(enumName);
+                            uint32_t enumValue = propertyDescriptor ? propertyDescriptor->GetEnumValue(enumName) : MaterialPropertyDescriptor::InvalidEnumValue;
                             if (enumValue == MaterialPropertyDescriptor::InvalidEnumValue)
                             {
                                 materialTypeAssetCreator.ReportError("Enum value '%s' couldn't be found in the 'enumValues' list", enumName.GetCStr());

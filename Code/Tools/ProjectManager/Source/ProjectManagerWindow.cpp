@@ -27,6 +27,12 @@ namespace O3DE::ProjectManager
         , m_ui(new Ui::ProjectManagerWindowClass())
     {
         m_ui->setupUi(this);
+        QLayout* layout = m_ui->centralWidget->layout();
+        layout->setMargin(0);
+        layout->setSpacing(0);
+        layout->setContentsMargins(0, 0, 0, 0);
+
+        setFixedSize(this->geometry().width(), this->geometry().height());
 
         m_pythonBindings = AZStd::make_unique<PythonBindings>(engineRootPath);
 

@@ -98,7 +98,6 @@ ly_add_target(
             Gem::Atom_RPI.Edit
     RUNTIME_DEPENDENCIES
         3rdParty::DirectXShaderCompilerDxc
-        3rdParty::DirectXShaderCompilerDxcAz
         3rdParty::SPIRVCross
         3rdParty::azslc
 )
