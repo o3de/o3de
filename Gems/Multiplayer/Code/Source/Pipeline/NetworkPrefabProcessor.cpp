@@ -122,6 +122,12 @@ namespace Multiplayer
         AZStd::vector<AZStd::pair<AZ::Entity*, AzToolsFramework::Prefab::Instance*>> netEntities;
         GatherNetEntities(sourceInstance.get(), netEntities);
 
+        if (netEntities.empty())
+        {
+            // No networked entities in the prefab, no need to do anything in this processor.
+            return;
+        }
+
         // Instance container for net entities
         AZStd::unique_ptr<Instance> networkInstance(aznew Instance());
 
@@ -129,12 +135,6 @@ namespace Multiplayer
         AZ::Data::Asset<AzFramework::Spawnable> networkSpawnableAsset;
         networkSpawnableAsset.Create(networkSpawnable->GetId());
         networkSpawnableAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
-        
-        if (netEntities.empty())
-        {
-            // No networked entities in the prefab, no need to do anything in this processor.
-            return;
-        }
 
         // Each spawnable has a root meta-data entity at position 0, so starting net indices from 1
         size_t netEntitiesIndexCounter = 1;
