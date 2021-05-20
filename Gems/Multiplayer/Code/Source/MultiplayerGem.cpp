@@ -16,7 +16,7 @@
 #include <Source/AutoGen/AutoComponentTypes.h>
 #include <Source/Pipeline/NetBindMarkerComponent.h>
 #include <Source/Pipeline/NetworkSpawnableHolderComponent.h>
-#include <Multiplayer/NetBindComponent.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 
 namespace Multiplayer

@@ -46,6 +46,8 @@
 #include <shlobj.h>
 #endif
 
+#include "IDebugCallStack.h"
+
 #if defined(APPLE) || defined(LINUX)
 #include <pwd.h>
 #endif
@@ -53,7 +55,6 @@
 #include "XConsole.h"
 #include "LocalizedStringManager.h"
 #include "XML/XmlUtils.h"
-#include "AutoDetectSpec.h"
 
 #if defined(WIN32)
 __pragma(comment(lib, "wininet.lib"))
@@ -356,6 +357,7 @@ void CSystem::FatalError(const char* format, ...)
     }
 
     // Dump callstack.
+    IDebugCallStack::instance()->FatalError(szBuffer);
 #endif
 
     CryDebugBreak();
@@ -397,6 +399,8 @@ void CSystem::ReportBug([[maybe_unused]] const char* format, ...)
     va_start(ArgList, format);
     azvsnprintf(szBuffer + strlen(sPrefix), MAX_WARNING_LENGTH - strlen(sPrefix), format, ArgList);
     va_end(ArgList);
+
+    IDebugCallStack::instance()->ReportBug(szBuffer);
 #endif
 }
 

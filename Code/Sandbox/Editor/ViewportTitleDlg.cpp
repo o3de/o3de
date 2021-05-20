@@ -13,7 +13,7 @@
 
 // Description : CViewportTitleDlg implementation file
 
-
+#if !defined(Q_MOC_RUN)
 #include "EditorDefs.h"
 
 #include "ViewportTitleDlg.h"
@@ -36,10 +36,13 @@
 #include "UsedResources.h"
 #include "Include/IObjectManager.h"
 
+#include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
+
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include "ui_ViewportTitleDlg.h"
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
+#endif //!defined(Q_MOC_RUN)
 
 
 // CViewportTitleDlg dialog
@@ -62,6 +65,32 @@ inline namespace Helpers
         return GetIEditor()->GetDisplaySettings()->IsDisplayHelpers();
     }
 }
+
+namespace
+{
+    class CViewportTitleDlgDisplayInfoHelper
+        : public QObject
+        , public AZ::AtomBridge::AtomViewportInfoDisplayNotificationBus::Handler
+    {
+        Q_OBJECT
+
+    public:
+        CViewportTitleDlgDisplayInfoHelper(CViewportTitleDlg* parent)
+            : QObject(parent)
+        {
+            AZ::AtomBridge::AtomViewportInfoDisplayNotificationBus::Handler::BusConnect();
+        }
+
+    signals:
+        void ViewportInfoStatusUpdated(int newIndex);
+
+    private:
+        void OnViewportInfoDisplayStateChanged(AZ::AtomBridge::ViewportInfoDisplayState state)
+        {
+            emit ViewportInfoStatusUpdated(static_cast<int>(state));
+        }
+    };
+} //end anonymous namespace
 
 CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     : QWidget(pParent)
@@ -115,14 +144,11 @@ void CViewportTitleDlg::OnInitDialog()
 
     m_ui->m_toggleHelpersBtn->setChecked(GetIEditor()->GetDisplaySettings()->IsDisplayHelpers());
 
-    ICVar*  pDisplayInfo(gEnv->pConsole->GetCVar("r_displayInfo"));
-    if (pDisplayInfo)
-    {
-        SFunctor oFunctor;
-        oFunctor.Set(OnChangedDisplayInfo, pDisplayInfo, m_ui->m_toggleDisplayInfoBtn);
-        m_displayInfoCallbackIndex = pDisplayInfo->AddOnChangeFunctor(oFunctor);
-        OnChangedDisplayInfo(pDisplayInfo, m_ui->m_toggleDisplayInfoBtn);
-    }
+
+    // Add a child parented to us that listens for r_displayInfo changes.
+    auto displayInfoHelper = new CViewportTitleDlgDisplayInfoHelper(this);
+    connect(displayInfoHelper, &CViewportTitleDlgDisplayInfoHelper::ViewportInfoStatusUpdated, this, &CViewportTitleDlg::UpdateDisplayInfo);
+    UpdateDisplayInfo();
 
     connect(m_ui->m_toggleHelpersBtn, &QToolButton::clicked, this, &CViewportTitleDlg::OnToggleHelpers);
     connect(m_ui->m_toggleDisplayInfoBtn, &QToolButton::clicked, this, &CViewportTitleDlg::OnToggleDisplayInfo);
@@ -156,6 +182,29 @@ void CViewportTitleDlg::OnToggleHelpers()
 //////////////////////////////////////////////////////////////////////////
 void CViewportTitleDlg::OnToggleDisplayInfo()
 {
+    AZ::AtomBridge::ViewportInfoDisplayState state = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
+    AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
+        state,
+        &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState
+    );
+    state = aznumeric_cast<AZ::AtomBridge::ViewportInfoDisplayState>(
+        (aznumeric_cast<int>(state)+1) % aznumeric_cast<int>(AZ::AtomBridge::ViewportInfoDisplayState::Invalid));
+    // SetDisplayState will fire OnViewportInfoDisplayStateChanged and notify us, no need to call UpdateDisplayInfo.
+    AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Broadcast(
+        &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::SetDisplayState,
+        state
+    );
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CViewportTitleDlg::UpdateDisplayInfo()
+{
+    AZ::AtomBridge::ViewportInfoDisplayState state = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
+    AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
+        state,
+        &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState
+    );
+    m_ui->m_toggleDisplayInfoBtn->setChecked(state != AZ::AtomBridge::ViewportInfoDisplayState::NoInfo);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -544,10 +593,6 @@ void CViewportTitleDlg::UpdateCustomPresets(const QString& text, QStringList& cu
     }
 }
 
-void CViewportTitleDlg::OnChangedDisplayInfo([[maybe_unused]] ICVar* pDisplayInfo, [[maybe_unused]] QAbstractButton* pDisplayInfoButton)
-{
-}
-
 bool CViewportTitleDlg::eventFilter(QObject* object, QEvent* event)
 {
     bool consumeEvent = false;
@@ -609,4 +654,5 @@ namespace AzToolsFramework
     }
 }
 
+#include "ViewportTitleDlg.moc"
 #include <moc_ViewportTitleDlg.cpp>

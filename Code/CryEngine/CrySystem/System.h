@@ -23,12 +23,10 @@
 #include "CmdLine.h"
 #include "CryName.h"
 
-#include "CPUDetect.h"
 #include <AzFramework/Archive/ArchiveVars.h>
 #include "RenderBus.h"
 
 #include <LoadScreenBus.h>
-#include <ThermalInfo.h>
 
 #include <AzCore/Module/DynamicModuleHandle.h>
 
@@ -38,8 +36,6 @@ namespace AzFramework
 }
 
 struct IConsoleCmdArgs;
-class CServerThrottle;
-struct IZLibCompressor;
 class CWatchdogThread;
 
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -48,18 +44,6 @@ class CWatchdogThread;
 #define SYSTEM_H_SECTION_2 2
 #define SYSTEM_H_SECTION_3 3
 #define SYSTEM_H_SECTION_4 4
-#endif
-
-#if defined(ANDROID)
-#define USE_ANDROIDCONSOLE
-#elif defined(MAC) // || defined(LINUX)
-#define USE_UNIXCONSOLE
-#elif defined(IOS)
-#define USE_IOSCONSOLE
-#elif defined(WIN32) || defined(WIN64)
-#define USE_WINDOWSCONSOLE
-#else
-#define USE_NULLCONSOLE
 #endif
 
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -185,20 +169,12 @@ typedef void* WIN_HMODULE;
 typedef void* WIN_HMODULE;
 #endif
 
-#if !defined(CRY_ASYNC_MEMCPY_DELEGATE_TO_CRYSYSTEM)
-CRY_ASYNC_MEMCPY_API void cryAsyncMemcpy(void* dst, const void* src, size_t size, int nFlags, volatile int* sync);
-#else
-CRY_ASYNC_MEMCPY_API void cryAsyncMemcpyDelegate(void* dst, const void* src, size_t size, int nFlags, volatile int* sync);
-#endif
-
-
 //forward declarations
 namespace Audio
 {
     struct IAudioSystem;
     struct IMusicSystem;
 } // namespace Audio
-struct SDefaultValidator;
 struct IDataProbe;
 
 #define PHSYICS_OBJECT_ENTITY 0
@@ -255,12 +231,6 @@ struct SSystemCVars
     int sys_FilesystemCaseSensitivity;
 
     int sys_deferAudioUpdateOptim;
-#if USE_STEAM
-#ifndef RELEASE
-    int sys_steamAppId;
-#endif // RELEASE
-    int sys_useSteamCloudForPlatformSaving;
-#endif // USE_STEAM
 
     AZ::IO::ArchiveVars archiveVars;
 
@@ -343,15 +313,10 @@ public:
     virtual void DoWorkDuringOcclusionChecks();
     virtual bool NeedDoWorkDuringOcclusionChecks() { return m_bNeedDoWorkDuringOcclusionChecks; }
 
-    //Called when the renderer finishes rendering the scene
-    void OnScene3DEnd() override;
-
     ////////////////////////////////////////////////////////////////////////
     // CrySystemRequestBus interface implementation
     ISystem* GetCrySystem() override;
     ////////////////////////////////////////////////////////////////////////
-
-    virtual bool SteamInit();
 
     void Relaunch(bool bRelaunch);
     bool IsRelaunch() const { return m_bRelaunch; };
@@ -374,17 +339,11 @@ public:
     ICryFont* GetICryFont(){ return m_env.pCryFont; }
     ILog* GetILog(){ return m_env.pLog; }
     ICmdLine* GetICmdLine(){ return m_pCmdLine; }
-    IValidator* GetIValidator() { return m_pValidator; };
     INameTable* GetINameTable() { return m_env.pNameTable; };
     IViewSystem* GetIViewSystem();
     ILevelSystem* GetILevelSystem();
     ISystemEventDispatcher* GetISystemEventDispatcher() { return m_pSystemEventDispatcher; }
-    ITextModeConsole* GetITextModeConsole();
     IProfilingSystem* GetIProfilingSystem() { return &m_ProfilingSystem; }
-    IZLibCompressor* GetIZLibCompressor() { return m_pIZLibCompressor; }
-    IZLibDecompressor* GetIZLibDecompressor() { return m_pIZLibDecompressor; }
-    ILZ4Decompressor* GetLZ4Decompressor() { return m_pILZ4Decompressor; }
-    IZStdDecompressor* GetZStdDecompressor() { return m_pIZStdDecompressor; }
     //////////////////////////////////////////////////////////////////////////
     // retrieves the perlin noise singleton instance
     CPNoise3* GetNoiseGen();
@@ -406,45 +365,6 @@ public:
     void SetViewCamera(CCamera& Camera){ m_ViewCamera = Camera; }
     CCamera& GetViewCamera() { return m_ViewCamera; }
 
-    virtual int GetCPUFlags()
-    {
-        int Flags = 0;
-        if (!m_pCpu)
-        {
-            return Flags;
-        }
-        if (m_pCpu->hasMMX())
-        {
-            Flags |= CPUF_MMX;
-        }
-        if (m_pCpu->hasSSE())
-        {
-            Flags |= CPUF_SSE;
-        }
-        if (m_pCpu->hasSSE2())
-        {
-            Flags |= CPUF_SSE2;
-        }
-        if (m_pCpu->has3DNow())
-        {
-            Flags |= CPUF_3DNOW;
-        }
-        if (m_pCpu->hasF16C())
-        {
-            Flags |= CPUF_F16C;
-        }
-
-        return Flags;
-    }
-    virtual int GetLogicalCPUCount()
-    {
-        if (m_pCpu)
-        {
-            return m_pCpu->GetLogicalCPUCount();
-        }
-        return 0;
-    }
-
     void IgnoreUpdates(bool bIgnore) { m_bIgnoreUpdates = bIgnore; };
 
     void SetIProcess(IProcess* process);
@@ -454,8 +374,6 @@ public:
     //@}
 
     void SleepIfNeeded();
-
-    virtual void DisplayErrorMessage(const char* acMessage, float fTime, const float* pfColor = 0, bool bHardError = true);
 
     virtual void FatalError(const char* format, ...) PRINTF_PARAMS(2, 3);
     virtual void ReportBug(const char* format, ...) PRINTF_PARAMS(2, 3);
@@ -471,8 +389,6 @@ public:
     //////////////////////////////////////////////////////////////////////////
     virtual void SaveConfiguration();
     virtual void LoadConfiguration(const char* sFilename, ILoadConfigurationEntrySink* pSink = 0, bool warnIfMissing = true);
-    virtual ESystemConfigSpec GetConfigSpec(bool bClient = true);
-    virtual void SetConfigSpec(ESystemConfigSpec spec, ESystemConfigPlatform platform, bool bClient);
     virtual ESystemConfigSpec GetMaxConfigSpec() const;
     virtual ESystemConfigPlatform GetConfigPlatform() const;
     virtual void SetConfigPlatform(ESystemConfigPlatform platform);
@@ -567,24 +483,7 @@ public:
     virtual bool GetForceNonDevMode() const;
     virtual bool WasInDevMode() const { return m_bWasInDevMode; };
     virtual bool IsDevMode() const { return m_bInDevMode && !GetForceNonDevMode(); }
-    virtual bool IsMODValid(const char* szMODName) const
-    {
-        if (!szMODName || strstr(szMODName, ".") || strstr(szMODName, "\\"))
-        {
-            return (false);
-        }
-        return (true);
-    }
-    virtual void AutoDetectSpec(bool detectResolution);
 
-    virtual void AsyncMemcpy(void* dst, const void* src, size_t size, int nFlags, volatile int* sync)
-    {
-#if !defined(CRY_ASYNC_MEMCPY_DELEGATE_TO_CRYSYSTEM)
-        cryAsyncMemcpy(dst, src, size, nFlags, sync);
-#else
-        cryAsyncMemcpyDelegate(dst, src, size, nFlags, sync);
-#endif
-    }
     virtual void SetConsoleDrawEnabled(bool enabled) { m_bDrawConsole = enabled; }
     virtual void SetUIDrawEnabled(bool enabled) { m_bDrawUI = enabled; }
 
@@ -594,17 +493,10 @@ public:
     //! recreates the variable if necessary
     ICVar* attachVariable (const char* szVarName, int* pContainer, const char* szComment, int dwFlags = 0);
 
-    CCpuFeatures* GetCPUFeatures() { return m_pCpu; };
-
     const CTimeValue& GetLastTickTime(void) const { return m_lastTickTime; }
     const ICVar* GetDedicatedMaxRate(void) const { return m_svDedicatedMaxRate; }
 
     std::shared_ptr<AZ::IO::FileIOBase> CreateLocalFileIO();
-
-    // Gets the dimensions (in pixels) of the primary physical display.
-    // Returns true if this info is available, returns false otherwise.
-    bool GetPrimaryPhysicalDisplayDimensions(int& o_widthPixels, int& o_heightPixels);
-    bool IsTablet();
 
 private: // ------------------------------------------------------
 
@@ -623,13 +515,10 @@ private: // ------------------------------------------------------
     bool                  m_bPreviewMode;       //!< If running in Preview mode.
     bool                                    m_bDedicatedServer;     //!< If running as Dedicated server.
     bool                                    m_bIgnoreUpdates;           //!< When set to true will ignore Update and Render calls,
-    IValidator*                    m_pValidator;                    //!< Pointer to validator interface.
     bool                                    m_bForceNonDevMode;     //!< true when running on a cheat protected server or a client that is connected to it (not used in singlplayer)
     bool                                    m_bWasInDevMode;            //!< Set to true if was in dev mode.
     bool                                    m_bInDevMode;                   //!< Set to true if was in dev mode.
     bool                  m_bGameFolderWritable;//!< True when verified that current game folder have write access.
-    SDefaultValidator*     m_pDefaultValidator;     //!<
-    CCpuFeatures*                m_pCpu;                            //!< CPU features
     int                                     m_ttMemStatSS;              //!< Time to memstat screenshot
     bool                                    m_bDrawConsole;              //!< Set to true if OK to draw the console.
     bool                                    m_bDrawUI;                   //!< Set to true if OK to draw UI.
@@ -660,18 +549,6 @@ private: // ------------------------------------------------------
 
     //! System to manage views.
     IViewSystem* m_pViewSystem;
-
-    //! System to access zlib compressor
-    IZLibCompressor* m_pIZLibCompressor;
-
-    //! System to access zlib decompressor
-    IZLibDecompressor* m_pIZLibDecompressor;
-
-    //! System to access lz4 hc decompressor
-    ILZ4Decompressor* m_pILZ4Decompressor;
-
-    //! System access to zstd decompressor
-    IZStdDecompressor* m_pIZStdDecompressor;
 
     // XML Utils interface.
     class CXmlUtils* m_pXMLUtils;
@@ -736,7 +613,6 @@ private: // ------------------------------------------------------
     ICVar* m_sysWarnings;                                       //!< might be 0, "sys_warnings" - Treat warning as errors.
     ICVar* m_cvSSInfo;                                          //!< might be 0, "sys_SSInfo" 0/1 - get file sourcesafe info
     ICVar* m_svDedicatedMaxRate;
-    ICVar* m_sys_GraphicsQuality;
     ICVar* m_sys_firstlaunch;
     ICVar* m_sys_asset_processor;
     ICVar* m_sys_load_files_to_memory;
@@ -777,8 +653,6 @@ private: // ------------------------------------------------------
     ESystemConfigSpec m_nMaxConfigSpec;
     ESystemConfigPlatform m_ConfigPlatform;
 
-    std::unique_ptr<CServerThrottle> m_pServerThrottle;
-
     CProfilingSystem m_ProfilingSystem;
 
     // Pause mode.
@@ -802,9 +676,6 @@ public:
     virtual const SFileVersion& GetFileVersion();
     virtual const SFileVersion& GetProductVersion();
     virtual const SFileVersion& GetBuildVersion();
-
-    bool CompressDataBlock(const void* input, size_t inputSize, void* output, size_t& outputSize, int level);
-    bool DecompressDataBlock(const void* input, size_t inputSize, void* output, size_t& outputSize);
 
     bool InitVTuneProfiler();
 
@@ -856,7 +727,6 @@ public:
 protected: // -------------------------------------------------------------
 
     CCmdLine*                                      m_pCmdLine;
-    ITextModeConsole*             m_pTextModeConsole;
 
     string  m_currentLanguageAudio;
     string  m_systemConfigName; // computed from system_(hardwareplatform)_(assetsPlatform) - eg, system_android_es3.cfg or system_android_opengl.cfg or system_windows_pc.cfg
@@ -878,15 +748,7 @@ protected: // -------------------------------------------------------------
     ESystemEvent m_eRuntimeState;
     bool m_bIsAsserting;
 
-    friend struct SDefaultValidator;
-    friend struct SCryEngineFoldersLoader;
-    //  friend void ScreenshotCmd( IConsoleCmdArgs *pParams );
-
-    bool m_bIsSteamInitialized;
-
     std::vector<IWindowMessageHandler*> m_windowMessageHandlers;
     bool m_initedOSAllocator = false;
     bool m_initedSysAllocator = false;
-
-    AZStd::unique_ptr<ThermalInfoHandler> m_thermalInfoHandler;
 };

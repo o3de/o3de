@@ -290,5 +290,9 @@ namespace AZ
             return m_platformLimitsDescriptor;
         }
 
+        void RHISystem::QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable)
+        {
+            m_frameScheduler.QueueRayTracingShaderTableForBuild(rayTracingShaderTable);
+        }
     } //namespace RPI
 } //namespace AZ
