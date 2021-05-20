@@ -157,7 +157,7 @@ namespace Multiplayer
             AZ::Entity* breadcrumbEntity = aznew AZ::Entity(entityId, netEntity->GetName());
             breadcrumbEntity->SetRuntimeActiveByDefault(netEntity->IsRuntimeActiveByDefault());
 
-            // Marker component is what is responsible to spawning entities based on the index.
+            // Marker component is responsible to spawning entities based on the index.
             NetBindMarkerComponent* netBindMarkerComponent = breadcrumbEntity->CreateComponent<NetBindMarkerComponent>();
             netBindMarkerComponent->SetNetEntityIndex(netEntitiesIndexCounter);
             netBindMarkerComponent->SetNetworkSpawnableAsset(networkSpawnableAsset);
