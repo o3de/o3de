@@ -85,8 +85,8 @@ namespace TestImpact
     //! Result of a test sequence that was run.
     enum class TestSequenceResult
     {
-        Success, //! All tests ran with no failures.
-        Failure, //! One or more tests failed and/or timed out and/or failed to launch (if execution failure policy is not Ignore) and/or an integrity failure was encountered.
-        Timeout //! The global timeout for the sequence was exceeded.
+        Success, //!< All tests ran with no failures.
+        Failure, //!< One or more tests failed and/or timed out and/or failed to launch and/or an integrity failure was encountered.
+        Timeout //!< The global timeout for the sequence was exceeded.
     };
 } // namespace TestImpact

@@ -73,7 +73,7 @@ namespace TestImpact
     //! @param duration The total duration of this test sequence.
     using ImpactAnalysisTestSequenceCompleteCallback = AZStd::function<void(Client::ImpactAnalysisSequenceFailure&& failureReport, AZStd::chrono::milliseconds duration)>;
 
-    //! Callback for test runs that have completed for any reason
+    //! Callback for test runs that have completed for any reason.
     //! test The test that has completed.
     using TestCompleteCallback = AZStd::function<void(Client::TestRun&& test)>;
 
@@ -106,7 +106,7 @@ namespace TestImpact
         //! @param testTargetTimeout The maximum duration the entire test sequence may run for (infinite if empty).
         //! @param testSequenceStartCallback The client function to be called after the test targets have been selected but prior to running the tests.
         //! @param testSequenceCompleteCallback The client function to be called after the test sequence has completed.
-        //! @param testRunCompleteCallback The client function to be called after an individual test run has compelted.
+        //! @param testRunCompleteCallback The client function to be called after an individual test run has completed.
         TestSequenceResult RegularTestSequence(
             const AZStd::unordered_set<AZStd::string> suitesFilter,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
@@ -122,7 +122,7 @@ namespace TestImpact
         //! @param testTargetTimeout The maximum duration the entire test sequence may run for (infinite if empty).
         //! @param testSequenceStartCallback The client function to be called after the test targets have been selected but prior to running the tests.
         //! @param testSequenceCompleteCallback The client function to be called after the test sequence has completed.
-        //! @param testRunCompleteCallback The client function to be called after an individual test run has compelted.
+        //! @param testRunCompleteCallback The client function to be called after an individual test run has completed.
         TestSequenceResult ImpactAnalysisTestSequence(
             const ChangeList& changeList,
             Policy::TestPrioritization testPrioritizationPolicy,
@@ -140,7 +140,7 @@ namespace TestImpact
         //! @param testTargetTimeout The maximum duration the entire test sequence may run for (infinite if empty).
         //! @param testSequenceStartCallback The client function to be called after the test targets have been selected but prior to running the tests.
         //! @param testSequenceCompleteCallback The client function to be called after the test sequence has completed.
-        //! @param testRunCompleteCallback The client function to be called after an individual test run has compelted.
+        //! @param testRunCompleteCallback The client function to be called after an individual test run has completed.
         TestSequenceResult SafeImpactAnalysisTestSequence(
             const ChangeList& changeList,
             const AZStd::unordered_set<AZStd::string> suitesFilter,
@@ -155,7 +155,7 @@ namespace TestImpact
         //! @param testTargetTimeout The maximum duration the entire test sequence may run for (infinite if empty).
         //! @param testSequenceStartCallback The client function to be called after the test targets have been selected but prior to running the tests.
         //! @param testSequenceCompleteCallback The client function to be called after the test sequence has completed.
-        //! @param testRunCompleteCallback The client function to be called after an individual test run has compelted.
+        //! @param testRunCompleteCallback The client function to be called after an individual test run has completed.
         TestSequenceResult SeededTestSequence(
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
@@ -173,7 +173,7 @@ namespace TestImpact
         Policy::IntegrityFailure m_integrationFailurePolicy;
         Policy::TestSharding m_testShardingPolicy;
         TargetOutputCapture m_targetOutputCapture;
-        size_t m_maxConcurrency;
+        size_t m_maxConcurrency = 0;
         AZStd::unique_ptr<DynamicDependencyMap> m_dynamicDependencyMap;
         AZStd::unique_ptr<TestEngine> m_testEngine;
         AZStd::unordered_set<const TestTarget*> m_testTargetExcludeList;

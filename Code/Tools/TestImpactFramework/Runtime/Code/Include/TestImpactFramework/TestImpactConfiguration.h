@@ -48,7 +48,8 @@ namespace TestImpact
             RelativePaths m_relativePaths;
         };
 
-        struct Persistent
+        //! Active persistent data workspace configuration.
+        struct Active
         {
             //! Paths relative to root.
             struct RelativePaths
@@ -62,7 +63,7 @@ namespace TestImpact
         };
 
         Temp m_temp;
-        Persistent m_persistent;
+        Active m_active;
     };
 
     //! Build target descriptor configuration.
