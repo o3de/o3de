@@ -24,8 +24,10 @@
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 
 #include <Atom/RHI/CpuProfiler.h>
+#include <Atom/RHI/CommandList.h>
 
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Jobs/JobCompletion.h>
@@ -69,25 +71,10 @@ namespace AZ
 
         }
 
-        void SkinnedMeshFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
-        {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("SkinnedMesh", "SkinnedMeshFeatureProcessor: Simulate");
-            AZ_UNUSED(packet);
-
-            SkinnedMeshFeatureProcessorNotificationBus::Broadcast(&SkinnedMeshFeatureProcessorNotificationBus::Events::OnUpdateSkinningMatrices);
-
-        }
-
         void SkinnedMeshFeatureProcessor::Render(const FeatureProcessor::RenderPacket& packet)
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
             AZ_ATOM_PROFILE_FUNCTION("SkinnedMesh", "SkinnedMeshFeatureProcessor: Render");
-
-            if (!m_skinningPass)
-            {
-                return;
-            }
 
 #if 0 //[GFX_TODO][ATOM-13564] Temporarily disable skinning culling until we figure out how to hook up visibility & lod selection with skinning:
             //Setup the culling workgroup (it will be re-used for each view)
@@ -132,7 +119,7 @@ namespace AZ
                 //Dispatch the workgroup to each view
                 for (const RPI::ViewPtr& viewPtr : packet.m_views)
                 {
-                    Job *processWorkgroupJob = AZ::CreateJobFunction(
+                    Job* processWorkgroupJob = AZ::CreateJobFunction(
                         [this, cullingSystem, viewPtr](AZ::Job& thisJob)
                         {
                             AZ_PROFILE_SCOPE_DYNAMIC(Debug::ProfileCategory::AzRender, "skinningMeshFP processWorkgroupJob - View: %s", viewPtr->GetName().GetCStr());
@@ -167,7 +154,16 @@ namespace AZ
                                         float maxScreenPercentage(lod.m_range.m_max);
                                         if (approxScreenPercentage >= minScreenPercentage && approxScreenPercentage <= maxScreenPercentage)
                                         {
-                                            m_skinningPass->AddDispatchItem(&renderProxy->m_dispatchItemsByLod[lodIndex]->GetRHIDispatchItem());
+                                            AZStd::lock_guard lock(m_dispatchItemMutex);
+                                            m_skinningDispatches.insert(&renderProxy->m_dispatchItemsByLod[lodIndex]->GetRHIDispatchItem());
+                                            for (size_t morphTargetIndex = 0; morphTargetIndex < renderProxy->m_morphTargetDispatchItemsByLod[lodIndex].size(); morphTargetIndex++)
+                                            {
+                                                const MorphTargetDispatchItem* dispatchItem = renderProxy->m_morphTargetDispatchItemsByLod[lodIndex][morphTargetIndex].get();
+                                                if (dispatchItem && dispatchItem->GetWeight() > AZ::Constants::FloatEpsilon)
+                                                {
+                                                    m_morphTargetDispatches.insert(&dispatchItem->GetRHIDispatchItem());
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -232,13 +228,14 @@ namespace AZ
                         //Note that this supports overlapping lod ranges (to support cross-fading lods, for example)
                         if (approxScreenPercentage >= lod.m_screenCoverageMin && approxScreenPercentage <= lod.m_screenCoverageMax)
                         {
-                            m_skinningPass->AddDispatchItem(&renderProxy.m_dispatchItemsByLod[lodIndex]->GetRHIDispatchItem());
+                            AZStd::lock_guard lock(m_dispatchItemMutex);
+                            m_skinningDispatches.insert(&renderProxy.m_dispatchItemsByLod[lodIndex]->GetRHIDispatchItem());
                             for (size_t morphTargetIndex = 0; morphTargetIndex < renderProxy.m_morphTargetDispatchItemsByLod[lodIndex].size(); morphTargetIndex++)
                             {
                                 const MorphTargetDispatchItem* dispatchItem = renderProxy.m_morphTargetDispatchItemsByLod[lodIndex][morphTargetIndex].get();
                                 if (dispatchItem && dispatchItem->GetWeight() > AZ::Constants::FloatEpsilon)
                                 {
-                                    m_morphTargetPass->AddDispatchItem(&dispatchItem->GetRHIDispatchItem());
+                                    m_morphTargetDispatches.insert(&dispatchItem->GetRHIDispatchItem());
                                 }
                             }
                         }
@@ -248,29 +245,32 @@ namespace AZ
 #endif
         }
 
-        void SkinnedMeshFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]] RPI::RenderPipelinePtr pipeline)
+        void SkinnedMeshFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
-            InitSkinningAndMorphPass();
+            InitSkinningAndMorphPass(pipeline->GetRootPass());
         }
 
-        void SkinnedMeshFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* pipeline)
+        void SkinnedMeshFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
         {
-            InitSkinningAndMorphPass();
-        }
-
-        void SkinnedMeshFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
-        {
-            InitSkinningAndMorphPass();
+            InitSkinningAndMorphPass(renderPipeline->GetRootPass());
         }
 
         void SkinnedMeshFeatureProcessor::OnBeginPrepareRender()
         {
             m_renderProxiesChecker.soft_lock();
+
+            SkinnedMeshFeatureProcessorNotificationBus::Broadcast(&SkinnedMeshFeatureProcessorNotificationBus::Events::OnUpdateSkinningMatrices);
         }
 
-        void SkinnedMeshFeatureProcessor::OnEndPrepareRender()
+        void SkinnedMeshFeatureProcessor::OnRenderEnd()
         {
             m_renderProxiesChecker.soft_unlock();
+
+            // Clear any dispatch items that were added but never submitted
+            // in case there were no passes that submitted this frame
+            // because they execute at a lower frequency
+            m_skinningDispatches.clear();
+            m_morphTargetDispatches.clear();
         }
 
         SkinnedMeshRenderProxyHandle SkinnedMeshFeatureProcessor::AcquireRenderProxy(const SkinnedMeshRenderProxyDesc& desc)
@@ -295,61 +295,73 @@ namespace AZ
             return false;
         }
 
-        void SkinnedMeshFeatureProcessor::InitSkinningAndMorphPass()
+        void SkinnedMeshFeatureProcessor::InitSkinningAndMorphPass(const RPI::Ptr<RPI::ParentPass> pipelineRootPass)
         {
-            m_skinningPass = nullptr;   //reset it to null, just in case it fails to load the assets properly
-            m_morphTargetPass = nullptr;
-
-            RPI::PassSystemInterface* passSystem = RPI::PassSystemInterface::Get();
-            if (passSystem->HasPassesForTemplateName(AZ::Name{ "SkinningPassTemplate" }))
+            RPI::Ptr<RPI::Pass> skinningPass = pipelineRootPass->FindPassByNameRecursive(AZ::Name{ "SkinningPass" });
+            if (skinningPass)
             {
-                auto& skinningPasses = passSystem->GetPassesForTemplateName(AZ::Name{ "SkinningPassTemplate" });
+                SkinnedMeshComputePass* skinnedMeshComputePass = azdynamic_cast<SkinnedMeshComputePass*>(skinningPass.get());
+                skinnedMeshComputePass->SetFeatureProcessor(this);
 
-                // For now, assume one skinning pass
-                if (!skinningPasses.empty() && skinningPasses[0])
+                // There may be multiple skinning passes in the scene due to multiple pipelines, but there is only one skinning shader
+                m_skinningShader = skinnedMeshComputePass->GetShader();
+
+                if (!m_skinningShader)
                 {
-                    m_skinningPass = static_cast<SkinnedMeshComputePass*>(skinningPasses[0]);
-                    const Data::Instance<RPI::Shader> shader = m_skinningPass->GetShader();
-
-                    if (!shader)
-                    {
-                        AZ_Error(s_featureProcessorName, false, "Failed to get skinning pass shader. It may need to finish processing.");
-                    }
+                    AZ_Error(s_featureProcessorName, false, "Failed to get skinning pass shader. It may need to finish processing.");
                 }
                 else
                 {
-                    AZ_Error(s_featureProcessorName, false, "\"SkinningPassTemplate\" does not have any valid passes. Check your game project's .pass assets.");
+                    m_cachedSkinningShaderOptions.SetShader(m_skinningShader);
                 }
             }
-            else
-            {
-                AZ_Error(s_featureProcessorName, false, "Failed to find passes for \"SkinningPassTemplate\". Check your game project's .pass assets.");
-            }
 
-            if (passSystem->HasPassesForTemplateName(AZ::Name{ "MorphTargetPassTemplate" }))
+            RPI::Ptr<RPI::Pass> morphTargetPass = pipelineRootPass->FindPassByNameRecursive(AZ::Name{ "MorphTargetPass" });
+            if (morphTargetPass)
             {
-                auto& morphTargetPasses = passSystem->GetPassesForTemplateName(AZ::Name{ "MorphTargetPassTemplate" });
+                MorphTargetComputePass* morphTargetComputePass = azdynamic_cast<MorphTargetComputePass*>(morphTargetPass.get());
+                morphTargetComputePass->SetFeatureProcessor(this);
 
-                // For now, assume one skinning pass
-                if (!morphTargetPasses.empty() && morphTargetPasses[0])
+                // There may be multiple morph target passes in the scene due to multiple pipelines, but there is only one morph target shader
+                m_morphTargetShader = morphTargetComputePass->GetShader();
+
+                if (!m_morphTargetShader)
                 {
-                    m_morphTargetPass = static_cast<MorphTargetComputePass*>(morphTargetPasses[0]);
-                    const Data::Instance<RPI::Shader> shader = m_morphTargetPass->GetShader();
+                    AZ_Error(s_featureProcessorName, false, "Failed to get morph target pass shader. It may need to finish processing.");
+                }
+            }
+        }
 
-                    if (!shader)
-                    {
-                        AZ_Error(s_featureProcessorName, false, "Failed to get morph target pass shader. It may need to finish processing.");
-                    }
-                }
-                else
-                {
-                    AZ_Error(s_featureProcessorName, false, "\"MorphTargetPassTemplate\" does not have any valid passes. Check your game project's .pass assets.");
-                }
-            }
-            else
+        RPI::ShaderOptionGroup SkinnedMeshFeatureProcessor::CreateSkinningShaderOptionGroup(const SkinnedMeshShaderOptions shaderOptions, SkinnedMeshShaderOptionNotificationBus::Handler& shaderReinitializedHandler)
+        {
+            m_cachedSkinningShaderOptions.ConnectToShaderReinitializedEvent(shaderReinitializedHandler);
+            return m_cachedSkinningShaderOptions.CreateShaderOptionGroup(shaderOptions);
+        }
+
+        void SkinnedMeshFeatureProcessor::OnSkinningShaderReinitialized(const Data::Instance<RPI::Shader> skinningShader)
+        {
+            m_skinningShader = skinningShader;
+            m_cachedSkinningShaderOptions.SetShader(m_skinningShader);
+        }
+
+        void SkinnedMeshFeatureProcessor::SubmitSkinningDispatchItems(RHI::CommandList* commandList)
+        {
+            AZStd::lock_guard lock(m_dispatchItemMutex);
+            for (const RHI::DispatchItem* dispatchItem : m_skinningDispatches)
             {
-                AZ_Error(s_featureProcessorName, false, "Failed to find passes for \"MorphTargetPassTemplate\". Check your game project's .pass assets.");
+                commandList->Submit(*dispatchItem);
             }
+            m_skinningDispatches.clear();
+        }
+
+        void SkinnedMeshFeatureProcessor::SubmitMorphTargetDispatchItems(RHI::CommandList* commandList)
+        {
+            AZStd::lock_guard lock(m_dispatchItemMutex);
+            for (const RHI::DispatchItem* dispatchItem : m_morphTargetDispatches)
+            {
+                commandList->Submit(*dispatchItem);
+            }
+            m_morphTargetDispatches.clear();
         }
 
         SkinnedMeshRenderProxyInterfaceHandle SkinnedMeshFeatureProcessor::AcquireRenderProxyInterface(const SkinnedMeshRenderProxyDesc& desc)
@@ -363,14 +375,14 @@ namespace AZ
             return ReleaseRenderProxy(handle);
         }
 
-        RPI::Ptr<SkinnedMeshComputePass> SkinnedMeshFeatureProcessor::GetSkinningPass() const
+        Data::Instance<RPI::Shader> SkinnedMeshFeatureProcessor::GetSkinningShader() const
         {
-            return m_skinningPass;
+            return m_skinningShader;
         }
 
-        RPI::Ptr<MorphTargetComputePass> SkinnedMeshFeatureProcessor::GetMorphTargetPass() const
+        Data::Instance<RPI::Shader> SkinnedMeshFeatureProcessor::GetMorphTargetShader() const
         {
-            return m_morphTargetPass;
+            return m_morphTargetShader;
         }
     } // namespace Render
 } // namespace AZ

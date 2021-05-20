@@ -7,25 +7,25 @@
 {% macro DeclareNetworkPropertyGetter(Property) %}
 {% set PropertyName = UpperFirst(Property.attrib['Name']) %}
 {%     if Property.attrib['Container'] == 'Array' %}
-{%          if Property.attrib['GenerateEventBindings']|booleanTrue %}
-void {{ PropertyName }}AddEvent(AZ::Event<int32_t, {{ Property.attrib['Type'] }}>::Handler& handler);
-{%          endif %}
 const AZStd::array<{% if Property.attrib['IsRewindable']|booleanTrue %}Multiplayer::RewindableObject<{% endif %}{{ Property.attrib['Type'] }}{% if Property.attrib['IsRewindable']|booleanTrue %}, Multiplayer::k_RewindHistorySize>{% endif %}, {{ Property.attrib['Count'] }}> &Get{{ PropertyName }}Array() const;
 const {{ Property.attrib['Type'] }} &Get{{ PropertyName }}(int32_t index) const;
-{%     elif Property.attrib['Container'] == 'Vector' %}
 {%          if Property.attrib['GenerateEventBindings']|booleanTrue %}
 void {{ PropertyName }}AddEvent(AZ::Event<int32_t, {{ Property.attrib['Type'] }}>::Handler& handler);
-void {{ PropertyName }}SizeChangedAddEvent(AZ::Event<uint32_t>::Handler& handler);
 {%          endif %}
+{%     elif Property.attrib['Container'] == 'Vector' %}
 const AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> &Get{{ PropertyName }}Vector() const;
 const {{ Property.attrib['Type'] }} &Get{{ PropertyName }}(int32_t index) const;
 const {{ Property.attrib['Type'] }} &{{ PropertyName }}GetBack() const;
 uint32_t {{ PropertyName }}GetSize() const;
+{%          if Property.attrib['GenerateEventBindings']|booleanTrue %}
+void {{ PropertyName }}AddEvent(AZ::Event<int32_t, {{ Property.attrib['Type'] }}>::Handler& handler);
+void {{ PropertyName }}SizeChangedAddEvent(AZ::Event<uint32_t>::Handler& handler);
+{%          endif %}
 {%     else %}
+const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}() const;
 {%          if Property.attrib['GenerateEventBindings']|booleanTrue %}
 void {{ PropertyName }}AddEvent(AZ::Event<{{ Property.attrib['Type'] }}>::Handler& handler);
 {%          endif %}
-const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}() const;
 {%     endif %}
 {% endmacro %}
 {#
@@ -221,13 +221,14 @@ AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }
 #include <AzCore/EBus/Event.h>
 #include <AzCore/EBus/ScheduledEvent.h>
 #include <AzNetworking/DataStructures/FixedSizeBitsetView.h>
-#include <Include/IMultiplayerComponentInput.h>
-#include <Include/NetworkEntityHandle.h>
-#include <Source/NetworkEntity/EntityReplication/ReplicationRecord.h>
-#include <Source/Components/MultiplayerComponent.h>
-#include <Source/Components/MultiplayerController.h>
-#include <Source/NetworkTime/RewindableObject.h>
-#include <Include/MultiplayerTypes.h>
+#include <Multiplayer/MultiplayerTypes.h>
+#include <Multiplayer/Components/MultiplayerComponent.h>
+#include <Multiplayer/Components/MultiplayerController.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityHandle.h>
+#include <Multiplayer/NetworkEntity/EntityReplication/ReplicationRecord.h>
+#include <Multiplayer/NetworkInput/IMultiplayerComponentInput.h>
+#include <Multiplayer/NetworkInput/NetworkInput.h>
+#include <Multiplayer/NetworkTime/RewindableObject.h>
 {% call(Include) AutoComponentMacros.ParseIncludes(Component) %}
 #include <{{ Include.attrib['File'] }}>
 {% endcall %}
@@ -322,17 +323,20 @@ namespace {{ Component.attrib['Namespace'] }}
     };
 
 {% if NetworkInputCount > 0 %}
-    class NetworkInput
+    class {{ ComponentName }}NetworkInput
         : public Multiplayer::IMultiplayerComponentInput
     {
     public:
-        Multiplayer::NetComponentId GetComponentId() const override;
-        INetworkInput& operator=(const INetworkInput& rhs) override;
-        bool Serialize(AzNetworking::ISerializer& serializer);
+        Multiplayer::NetComponentId GetNetComponentId() const override;
+        bool Serialize(AzNetworking::ISerializer& serializer) override;
+        Multiplayer::IMultiplayerComponentInput& operator =(const Multiplayer::IMultiplayerComponentInput& rhs) override;
 
 {% call(Input) AutoComponentMacros.ParseNetworkInputs(Component) %}
         {{ Input.attrib['Type'] }} m_{{ LowerFirst(Input.attrib['Name']) }} = {{ Input.attrib['Type'] }}({{ Input.attrib['Init'] }});
 {% endcall %}
+
+        static Multiplayer::NetComponentId s_netComponentId;
+        friend void RegisterMultiplayerComponents();
     };
 
 {% endif %}
@@ -359,7 +363,6 @@ namespace {{ Component.attrib['Namespace'] }}
         //! MultiplayerController interface
         //! @{
         Multiplayer::MultiplayerController::InputPriorityOrder GetInputOrder() const override { return Multiplayer::MultiplayerController::InputPriorityOrder::Default; }
-        AZ::Aabb GetRewindBoundsForInput([[maybe_unused]] const NetworkInput& networkInput, [[maybe_unused]] float deltaTime) const override { return AZ::Aabb::CreateNull(); }
         void CreateInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override {}
         void ProcessInput([[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime) override {}
         //! @}
@@ -410,10 +413,13 @@ namespace {{ Component.attrib['Namespace'] }}
 
         static void Reflect(AZ::ReflectContext* context);
         static void ReflectToEditContext(AZ::ReflectContext* context);
+        static void ReflectToBehaviorContext(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+
+        static AZStd::unique_ptr<Multiplayer::IMultiplayerComponentInput> AllocateComponentInput();
 
         {{ ComponentBaseName }}() = default;
         ~{{ ComponentBaseName }}() override = default;
@@ -428,18 +434,20 @@ namespace {{ Component.attrib['Namespace'] }}
 {% endif %}
 
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Server', false)|indent(8) -}}
+        {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Autonomous', false)|indent(8) -}}
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Client', false)|indent(8) }}
         {{ DeclareArchetypePropertyGetters(Component)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Server', 'Authority', false)|indent(8) }}
 
         //! MultiplayerComponent interface
         //! @{
-        NetComponentId GetNetComponentId() const override;
+        void SetOwningConnectionId(AzNetworking::ConnectionId connectionId) override;
+        Multiplayer::NetComponentId GetNetComponentId() const override;
         bool HandleRpcMessage(AzNetworking::IConnection* invokingConnection, Multiplayer::NetEntityRole remoteRole, Multiplayer::NetworkEntityRpcMessage& rpcMessage) override;
         bool SerializeStateDeltaMessage(Multiplayer::ReplicationRecord& replicationRecord, AzNetworking::ISerializer& serializer) override;
         void NotifyStateDeltaChanges(Multiplayer::ReplicationRecord& replicationRecord) override;
         bool HasController() const override;
-        MultiplayerController* GetController() override;
+        Multiplayer::MultiplayerController* GetController() override;
 
     protected:
         void ConstructController() override;
@@ -484,8 +492,8 @@ namespace {{ Component.attrib['Namespace'] }}
         void NotifyChangesAutonomousToAuthorityProperties(const {{ RecordName }}& replicationRecord) const;
 
         //! Debug name helpers
-        static const char* GetNetworkPropertyName(PropertyIndex propertyIndex);
-        static const char* GetRpcName(RpcIndex rpcIndex);
+        static const char* GetNetworkPropertyName(Multiplayer::PropertyIndex propertyIndex);
+        static const char* GetRpcName(Multiplayer::RpcIndex rpcIndex);
 
         AZStd::unique_ptr<{{ RecordName }}> m_currentRecord;
         AZStd::unique_ptr<{{ ControllerName }}> m_controller;
@@ -514,10 +522,10 @@ namespace {{ Component.attrib['Namespace'] }}
         //! Archetype Properties
         {{ DeclareArchetypePropertyVars(Component)|indent(8) }}
 {% call(Type, Name) AutoComponentMacros.ParseComponentServiceTypeAndName(Component) %}
-	    {{ Type }}* {{ Name }} = nullptr;
+        {{ Type }}* {{ Name }} = nullptr;
 {% endcall %}
 
-        static NetComponentId s_netComponentId;
+        static Multiplayer::NetComponentId s_netComponentId;
         friend void RegisterMultiplayerComponents();
     };
 }

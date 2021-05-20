@@ -12,9 +12,9 @@
 
 #pragma once
 
-#include <Include/INetworkEntityManager.h>
-#include <Include/IReplicationWindow.h>
-#include <Include/NetworkEntityHandle.h>
+#include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityHandle.h>
+#include <Multiplayer/ReplicationWindows/IReplicationWindow.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/EBus/ScheduledEvent.h>

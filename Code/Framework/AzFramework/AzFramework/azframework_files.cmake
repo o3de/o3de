@@ -103,6 +103,9 @@ set(FILES
     Viewport/CameraState.cpp
     Viewport/CameraInput.h
     Viewport/CameraInput.cpp
+    Viewport/ClickDetector.h
+    Viewport/ClickDetector.cpp
+    Viewport/CursorState.h
     Viewport/DisplayContextRequestBus.h
     Entity/BehaviorEntity.cpp
     Entity/BehaviorEntity.h
@@ -185,6 +188,12 @@ set(FILES
     Script/ScriptDebugMsgReflection.h
     Script/ScriptRemoteDebugging.cpp
     Script/ScriptRemoteDebugging.h
+    Session/ISessionHandlingRequests.h
+    Session/ISessionRequests.cpp
+    Session/ISessionRequests.h
+    Session/SessionConfig.cpp
+    Session/SessionConfig.h
+    Session/SessionNotifications.h
     StreamingInstall/StreamingInstall.h
     StreamingInstall/StreamingInstall.cpp
     StreamingInstall/StreamingInstallRequests.h
@@ -293,6 +302,7 @@ set(FILES
     Spawnable/SpawnableSystemComponent.cpp
     Terrain/TerrainDataRequestBus.h
     Terrain/TerrainDataRequestBus.cpp
+    Thermal/ThermalInfo.h
     Platform/PlatformDefaults.h
     Windowing/WindowBus.h
     Windowing/NativeWindow.cpp

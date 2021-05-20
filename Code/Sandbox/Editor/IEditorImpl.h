@@ -48,7 +48,6 @@ class CEditorFileMonitor;
 class AzAssetWindow;
 class AzAssetBrowserRequestHandler;
 class AssetEditorRequestsHandler;
-class CAlembicCompiler;
 struct IEditorFileMonitor;
 class CVegetationMap;
 
@@ -356,7 +355,6 @@ protected:
     CAnimationContext* m_pAnimationContext;
     CTrackViewSequenceManager* m_pSequenceManager;
     CToolBoxManager* m_pToolBoxManager;
-    CAlembicCompiler* m_pAlembicCompiler;
     CMusicManager* m_pMusicManager;
     CErrorReport* m_pErrorReport;
     //! Contains the error reports for the last loaded level.

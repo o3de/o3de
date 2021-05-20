@@ -10,8 +10,7 @@
 *
 */
 
-#ifndef DRILLER_WORKSPACE_SETTINGS_MASTER_H
-#define DRILLER_WORKSPACE_SETTINGS_MASTER_H
+#pragma once
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -77,7 +76,3 @@ namespace Driller
         SavedWorkspaceMap m_WorkspaceSaveData;
     };
 }
-
-#pragma once
-
-#endif  // DRILLER_WORKSPACE_SETTINGS_MASTER_H
