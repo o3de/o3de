@@ -72,6 +72,7 @@ namespace TestImpact
         StdOutAndFile //!< Send captured output to standard output and write to file.
     };
 
+    //! Configuration for test targets that opt in to test sharding.
     enum class ShardConfiguration
     {
         Never, //!< Never shard this test target.
