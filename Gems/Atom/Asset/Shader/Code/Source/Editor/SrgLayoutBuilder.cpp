@@ -345,16 +345,20 @@ namespace AZ
                 for(const SrgDataEntry& srgDataEntry : entry.second)
                 {
                     RHI::ShaderPlatformInterface* shaderPlatformInterface = srgDataEntry.first;
+
+                    // The register number only makes sense if the platform uses "spaces",
+                    // since the register Id of the resource will not change even if the pipeline layout changes.
+                    // We can pass in a default ShaderCompilerArguments because all we care about is whether the shaderPlatformInterface
+                    // appends the
+                    // "--use-spaces" flag.
+                    AZStd::string azslCompilerParameters =
+                        shaderPlatformInterface->GetAzslCompilerParameters(RHI::ShaderCompilerArguments{});
+                    bool useRegisterId = (AzFramework::StringFunc::Find(azslCompilerParameters, "--use-spaces") != AZStd::string::npos);
+
                     const SrgData& srgData = srgDataEntry.second;
 
                     srgAssetCreator.BeginAPI(shaderPlatformInterface->GetAPIType());
                     srgAssetCreator.SetBindingSlot(srgData.m_bindingSlot.m_index);
-
-                    // The register number only makes sense if the platform uses "spaces",
-                    // since the register Id of the resource will not change even if the pipeline layout changes.
-                    // We can pass in a default ShaderCompilerArguments because all we care about is whether the shaderPlatformInterface appends the "--use-spaces" flag.
-                    AZStd::string azslCompilerParameters = shaderPlatformInterface->GetAzslCompilerParameters(RHI::ShaderCompilerArguments{});
-                    bool useRegisterId = (AzFramework::StringFunc::Find(azslCompilerParameters, "--use-spaces") != AZStd::string::npos);
 
                     // Samplers
                     for (const SamplerSrgData& samplerData : srgData.m_samplers)
