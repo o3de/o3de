@@ -20,24 +20,9 @@ set(GEM_DEPENDENCIES
     Gem::EditorPythonBindings.Editor
     Gem::Camera.Editor
     Gem::CameraFramework
-    Gem::Atom_RHI.Private
     Gem::EMotionFX.Editor
-    Gem::Atom_RPI.Builders
-    Gem::Atom_RPI.Editor
-    Gem::Atom_Feature_Common.Builders
-    Gem::Atom_Feature_Common.Editor
     Gem::ImGui.Editor
-    Gem::Atom_Bootstrap
-    Gem::Atom_Asset_Shader.Builders
-    Gem::Atom_Component_DebugCamera
-    Gem::AtomImGuiTools
-    Gem::AtomLyIntegration_CommonFeatures.Editor
-    Gem::EMotionFX_Atom.Editor
-    Gem::ImageProcessingAtom.Editor
     Gem::Atom_AtomBridge.Editor
-    Gem::ImguiAtom
-    Gem::AtomFont
-    Gem::AtomToolsFramework.Editor
     Gem::GradientSignal.Editor
     Gem::WhiteBox.Editor
 )
