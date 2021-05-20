@@ -20,6 +20,17 @@
 
 namespace UnitTest
 {
+    PrefabTestToolsApplication::PrefabTestToolsApplication(AZStd::string appName)
+        : ToolsTestApplication(AZStd::move(appName))
+    {
+    }
+
+    bool PrefabTestToolsApplication::IsPrefabSystemEnabled() const
+    {
+        // Make sure our prefab tests always run with prefabs enabled
+        return true;
+    }
+
     void PrefabTestFixture::SetUpEditorFixtureImpl()
     {
         // Acquire the system entity
@@ -42,6 +53,11 @@ namespace UnitTest
         EXPECT_TRUE(m_instanceToTemplateInterface);
 
         GetApplication()->RegisterComponentDescriptor(PrefabTestComponent::CreateDescriptor());
+    }
+
+    AZStd::unique_ptr<ToolsTestApplication> PrefabTestFixture::CreateTestApplication()
+    {
+        return AZStd::make_unique<PrefabTestToolsApplication>("PrefabTestApplication");
     }
 
     AZ::Entity* PrefabTestFixture::CreateEntity(const char* entityName, const bool shouldActivate)

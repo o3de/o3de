@@ -705,7 +705,7 @@ namespace AzToolsFramework
 
                 if (!success)
                 {
-                    return AZ::Failure(AZStd::string("DuplicateEntitiesInInstance"));
+                    return AZ::Failure(AZStd::string("Cannot duplicate multiple entities belonging to different instances with one operation"));
                 }
 
                 // Make a copy of our before instance DOM where we will add our duplicated entities

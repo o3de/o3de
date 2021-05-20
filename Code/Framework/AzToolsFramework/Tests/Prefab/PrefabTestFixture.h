@@ -31,6 +31,16 @@ namespace UnitTest
     using namespace AzToolsFramework::Prefab;
     using namespace PrefabTestUtils;
 
+    class PrefabTestToolsApplication
+        : public ToolsTestApplication
+    {
+    public:
+        PrefabTestToolsApplication(AZStd::string appName);
+
+        // Make sure our prefab tests always run with prefabs enabled
+        bool IsPrefabSystemEnabled() const override;
+    };
+
     class PrefabTestFixture
         : public ToolsApplicationFixture,
           public UnitTest::TraceBusRedirector
@@ -44,6 +54,8 @@ namespace UnitTest
         inline static const char* CarPrefabMockFilePath = "SomePathToCar";
 
         void SetUpEditorFixtureImpl() override;
+
+        AZStd::unique_ptr<ToolsTestApplication> CreateTestApplication() override;
 
         AZ::Entity* CreateEntity(const char* entityName, const bool shouldActivate = true);
 
