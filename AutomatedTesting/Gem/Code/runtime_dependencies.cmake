@@ -43,6 +43,7 @@ set(GEM_DEPENDENCIES
     Gem::GradientSignal
     Gem::Vegetation
     Gem::Atom_AtomBridge
+    Gem::AtomFont
     Gem::NvCloth
     Gem::Blast
     Gem::AWSCore
