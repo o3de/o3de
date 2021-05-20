@@ -23,6 +23,7 @@ namespace AzNetworking
     class ByteBuffer
     {
     public:
+
         ByteBuffer() = default;
         ~ByteBuffer() = default;
 
