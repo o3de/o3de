@@ -163,6 +163,11 @@ namespace AZ
                             binding.m_shaderInputIndex = idx.IsValid() ? static_cast<int16_t>(idx.GetIndex()) : PassAttachmentBinding::ShaderInputNoBind;
                         }
                     }
+                    else
+                    {
+                        AZ_Error("Pass System", false, "[Pass %s] Could not bind shader buffer index '%s' because it has no attachment.", GetName().GetCStr(), shaderName.GetCStr());
+                        binding.m_shaderInputIndex = PassAttachmentBinding::ShaderInputNoBind;
+                    }
                 }
             }
 

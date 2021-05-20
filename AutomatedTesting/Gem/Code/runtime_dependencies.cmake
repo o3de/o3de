@@ -45,4 +45,7 @@ set(GEM_DEPENDENCIES
     Gem::Atom_AtomBridge
     Gem::NvCloth
     Gem::Blast
+    Gem::AWSCore
+    Gem::AWSClientAuth
+    Gem::AWSMetrics
 )

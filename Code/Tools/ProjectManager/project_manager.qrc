@@ -11,5 +11,6 @@
         <file>Resources/macOS.svg</file>
         <file>Resources/ArrowDownLine.svg</file>
         <file>Resources/ArrowUpLine.svg</file>
+        <file>Resources/Backgrounds/FirstTimeBackgroundImage.jpg</file>
     </qresource>
 </RCC>
