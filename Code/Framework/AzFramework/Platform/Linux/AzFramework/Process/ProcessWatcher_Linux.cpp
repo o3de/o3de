@@ -220,36 +220,52 @@ namespace AzFramework
         // this is so that the callers (which could be numerous) do not have to worry about this and sprinkle ifdefs
         // all over their code.
         // We'll convert this to UNIX style command line parameters by counting and eliminating quotes:
-        
-        AZStd::vector<AZStd::string> commandTokens;
-        
-        AZStd::string outputString;
-        bool inQuotes = false;
-        for (const char currentChar : processLaunchInfo.m_commandlineParameters)
-        {
-            if (currentChar == '"')
-            {
-                inQuotes = !inQuotes;
-            }
-            else if ((currentChar == ' ') && (!inQuotes))
-            {
-                // its a space outside of quotes, so it ends the current parameter
-                commandTokens.push_back(outputString);
-                outputString.clear();
-            }
-            else
-            {
-                // Its a normal character, or its a space inside quotes
-                outputString.push_back(currentChar);
-            }
-        }
 
-        if (!outputString.empty())
+        // Struct uses overloaded operator() to quote command line arguments based
+        // on whether a string or a vector<string> was supplied
+        struct EscapeCommandArguments
         {
-            commandTokens.push_back(outputString);
-            outputString.clear();
-        }
-        
+            void operator()(const AZStd::string& commandParameterString)
+            {
+                AZStd::string outputString;
+                bool inQuotes = false;
+                for (size_t pos = 0; pos < commandParameterString.size(); ++pos)
+                {
+                    char currentChar = commandParameterString[pos];
+                    if (currentChar == '"')
+                    {
+                        inQuotes = !inQuotes;
+                    }
+                    else if ((currentChar == ' ') && (!inQuotes))
+                    {
+                        // its a space outside of quotes, so it ends the current parameter
+                        commandArray.push_back(outputString);
+                        outputString.clear();
+                    }
+                    else
+                    {
+                        // Its a normal character, or its a space inside quotes
+                        outputString.push_back(currentChar);
+                    }
+                }
+
+                if (!outputString.empty())
+                {
+                    commandArray.push_back(outputString);
+                    outputString.clear();
+                }
+            }
+
+            void operator()(const AZStd::vector<AZStd::string>& commandParameterArray)
+            {
+                commandArray = commandParameterArray;
+            }
+            AZStd::vector<AZStd::string>& commandArray;
+        };
+
+        AZStd::vector<AZStd::string> commandTokens;
+        AZStd::visit(EscapeCommandArguments{ commandTokens }, processLaunchInfo.m_commandlineParameters);
+
         if (!processLaunchInfo.m_processExecutableString.empty())
         {
             commandTokens.insert(commandTokens.begin(), processLaunchInfo.m_processExecutableString);

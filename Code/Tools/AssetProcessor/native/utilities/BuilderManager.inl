@@ -82,10 +82,12 @@ namespace AssetProcessor
         }
 
         auto params = BuildParams(task.c_str(), modulePath.c_str(), "", jobRequestFile, jobResponseFile);
+        AZStd::string paramString;
+        AzFramework::StringFunc::Join(paramString, params.begin(), params.end(), " ");
 
         AZ_TracePrintf(AssetProcessor::DebugChannel, "Job request written to %s\n", jobRequestFile.c_str());
         AZ_TracePrintf(AssetProcessor::DebugChannel, "To re-run this request manually, run AssetBuilder with the following parameters:\n");
-        AZ_TracePrintf(AssetProcessor::DebugChannel, "%s\n", params.c_str());
+        AZ_TracePrintf(AssetProcessor::DebugChannel, "%s\n", paramString.c_str());
 
         return true;
     }
