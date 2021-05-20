@@ -106,9 +106,7 @@ namespace O3DE::ProjectManager
             auto result = PythonBindingsInterface::Get()->CreateProject(m_projectTemplatePath, m_projectInfo);
             if (result.IsSuccess())
             {
-                // adding gems doesn't currently work because we don't know what targets belong to
-                // which dependencies .. could guess if we have to do something
-                //PythonBindingsInterface::Get()->AddGemToProject("d:/git/o3de-dev/gems/FastNoise", m_projectInfo.m_path);
+                // adding gems is not implemented yet because we don't know what targets to add or how to add them
                 emit ChangeScreenRequest(ProjectManagerScreen::ProjectsHome);
             }
             else
