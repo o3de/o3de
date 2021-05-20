@@ -56,11 +56,21 @@ namespace AZ
             static constexpr const char* s_drawContextShaderPath = "Shaders/SimpleTextured.azshader";
 
             RHI::Ptr<RPI::DynamicDrawContext> GetDrawContext(AzFramework::ViewportId id) const;
+            bool CheckIfFileExists(AZStd::string_view sourceRelativePath, AZStd::string_view cacheRelativePath);
 
             Name m_drawContextName = Name("ViewportIconDisplay");
             bool m_shaderIndexesInitialized = false;
             RHI::ShaderInputImageIndex m_textureParameterIndex;
             RHI::ShaderInputConstantIndex m_worldToProjParameterIndex;
+
+            struct IconData
+            {
+                AZStd::string m_path;
+                Data::Asset<RPI::StreamingImageAsset> m_asset;
+                AZ::Data::Instance<AZ::RPI::Image> m_image = nullptr;
+            };
+            AZStd::unordered_map<IconId, IconData> m_iconData;
+            IconId m_currentId = 0;
         };
     } // namespace Render
 } // namespace AZ

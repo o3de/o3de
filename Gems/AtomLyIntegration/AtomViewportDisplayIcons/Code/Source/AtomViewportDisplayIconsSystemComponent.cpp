@@ -16,6 +16,8 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 
+#include <AzFramework/Asset/AssetSystemBus.h>
+
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <Atom/RPI.Public/View.h>
@@ -25,6 +27,8 @@
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+
+#pragma optimize("", off)
 
 namespace AZ::Render
 {
@@ -134,7 +138,24 @@ namespace AZ::Render
             }
         }
 
-        auto image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
+        AZ::Data::Instance<AZ::RPI::Image> image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Grey);
+        if (auto iconIt = m_iconData.find(drawParameters.m_icon); iconIt != m_iconData.end())
+        {
+            auto& iconData = iconIt->second;
+            if (!iconData.m_image)
+            {
+                if (iconData.m_asset.IsReady())
+                {
+                    iconData.m_image = AZ::RPI::StreamingImage::FindOrCreate(iconData.m_asset); 
+                }
+            }
+
+            if (iconData.m_image)
+            {
+                image = iconData.m_image;
+            }
+        }
+
         drawSrg->SetConstant(m_worldToProjParameterIndex, view->GetWorldToClipMatrix());
         drawSrg->SetImageView(m_textureParameterIndex, image->GetImageView());
         drawSrg->Compile();
@@ -168,25 +189,140 @@ namespace AZ::Render
         dynamicDraw->DrawIndexed(&vertices, 4, &indices, 6, RHI::IndexFormat::Uint16, drawSrg);
     }
 
+    // Check if a file exists. This does not go through the AssetCatalog so that it can identify files that exist but aren't processed yet,
+    // and so that it will work before the AssetCatalog has loaded
+    bool AtomViewportDisplayIconsSystemComponent::CheckIfFileExists(
+        AZStd::string_view sourceRelativePath, AZStd::string_view cacheRelativePath)
+    {
+        // If the file exists, it has already been processed and does not need to be modified
+        bool fileExists = AZ::IO::FileIOBase::GetInstance()->Exists(cacheRelativePath.data());
+
+        if (!fileExists)
+        {
+            // If the texture doesn't exist check if it's queued or being compiled.
+            AzFramework::AssetSystem::AssetStatus status;
+            AzFramework::AssetSystemRequestBus::BroadcastResult(
+                status, &AzFramework::AssetSystemRequestBus::Events::GetAssetStatus, sourceRelativePath);
+
+            switch (status)
+            {
+            case AzFramework::AssetSystem::AssetStatus_Queued:
+            case AzFramework::AssetSystem::AssetStatus_Compiling:
+            case AzFramework::AssetSystem::AssetStatus_Compiled:
+            case AzFramework::AssetSystem::AssetStatus_Failed: {
+                // The file is queued, in progress, or finished processing after the initial FileIO check
+                fileExists = true;
+                break;
+            }
+            case AzFramework::AssetSystem::AssetStatus_Unknown:
+            case AzFramework::AssetSystem::AssetStatus_Missing:
+            default: {
+                // The file does not exist
+                fileExists = false;
+                break;
+            }
+            }
+        }
+
+        return fileExists;
+    }
+
     AzToolsFramework::EditorViewportIconDisplayInterface::IconId AtomViewportDisplayIconsSystemComponent::GetOrLoadIconForPath(
         AZStd::string_view path)
     {
-        (void)path;
-        return IconId();
+        AZ_Error(
+            "AtomViewportDisplayIconsSystemComponent", AzFramework::StringFunc::Path::IsRelative(path.data()),
+            "GetOrLoadIconForPath assumes that it will always be given a relative path, but got '%s'", path.data());
+
+        AZStd::string sourceRelativePath(path);
+        AZStd::string cacheRelativePath = sourceRelativePath + ".streamingimage";
+
+        bool textureExists = false;
+        textureExists = CheckIfFileExists(sourceRelativePath, cacheRelativePath);
+
+        if (!textureExists)
+        {
+            // A lot of cry code uses the .dds extension even when the actual source file is .tif.
+            // For the .streamingimage file we need the correct source extension before .streamingimage
+            // So if the file doesn't exist and the extension was .dds then try replacing it with .tif
+            AZStd::string extension;
+            AzFramework::StringFunc::Path::GetExtension(path.data(), extension, false);
+            if (extension == "dds")
+            {
+                sourceRelativePath = path;
+
+                constexpr const char* textureExtensions[] = {"png", "tif", "tiff", "tga", "jpg", "jpeg", "bmp", "gif"};
+
+                for (const char* extensionReplacement : textureExtensions)
+                {
+                    AzFramework::StringFunc::Path::ReplaceExtension(sourceRelativePath, extensionReplacement);
+                    cacheRelativePath = sourceRelativePath + ".streamingimage";
+
+                    textureExists = CheckIfFileExists(sourceRelativePath, cacheRelativePath);
+                    if (textureExists)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!textureExists)
+        {
+            AZ_Error("AtomViewportDisplayIconsSystemComponent", false, "Attempted to load '%s', but it does not exist.", path.data());
+            // Since neither the given extension nor the .dds version exist, we'll default to the given extension for hot-reloading in case
+            // the file is added to the source folder later
+            sourceRelativePath = path.data();
+            cacheRelativePath = sourceRelativePath + ".streamingimage";
+        }
+
+        // The file may not be in the AssetCatalog at this point if it is still processing or doesn't exist on disk.
+        // Use GenerateAssetIdTEMP instead of GetAssetIdByPath so that it will return a valid AssetId anyways
+        Data::AssetId streamingImageAssetId;
+        Data::AssetCatalogRequestBus::BroadcastResult(
+            streamingImageAssetId, &Data::AssetCatalogRequestBus::Events::GenerateAssetIdTEMP, sourceRelativePath.c_str());
+        streamingImageAssetId.m_subId = RPI::StreamingImageAsset::GetImageAssetSubId();
+
+        auto streamingImageAsset = Data::AssetManager::Instance().FindOrCreateAsset<RPI::StreamingImageAsset>(
+            streamingImageAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+        streamingImageAsset.QueueLoad();
+        //streamingImageAsset.BlockUntilLoadComplete();
+
+        IconId id = m_currentId++;
+        IconData& iconData = m_iconData[id];
+        iconData.m_path = AZStd::move(sourceRelativePath);
+        iconData.m_asset = AZStd::move(streamingImageAsset);
+        return id;
     }
 
     AzToolsFramework::EditorViewportIconDisplayInterface::IconLoadStatus AtomViewportDisplayIconsSystemComponent::GetIconLoadStatus(
         IconId icon)
     {
-        (void)icon;
-        return IconLoadStatus();
+        auto iconIt = m_iconData.find(icon);
+        if (iconIt == m_iconData.end())
+        {
+            return IconLoadStatus::Unloaded;
+        }
+        if (iconIt->second.m_image)
+        {
+            return IconLoadStatus::Loaded;
+        }
+        const auto& asset = iconIt->second.m_asset;
+        switch (asset.GetStatus())
+        {
+        case Data::AssetData::AssetStatus::Ready:
+            return IconLoadStatus::Loaded;
+        case Data::AssetData::AssetStatus::Error:
+            return IconLoadStatus::Error;
+        }
+        return IconLoadStatus::Loading;
     }
 
     void AtomViewportDisplayIconsSystemComponent::OnBootstrapSceneReady([[maybe_unused]]AZ::RPI::Scene* bootstrapScene)
     {
         Interface<RPI::DynamicDrawInterface>::Get()->RegisterNamedDynamicDrawContext(m_drawContextName, [](RPI::Ptr<RPI::DynamicDrawContext> drawContext)
         {
-            Data::Instance<RPI::Shader> shader = RPI::LoadShader(s_drawContextShaderPath);
+            auto shader = RPI::LoadShader(s_drawContextShaderPath);
             RPI::ShaderOptionList shaderOptions;
             shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("true")));
             shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("true")));

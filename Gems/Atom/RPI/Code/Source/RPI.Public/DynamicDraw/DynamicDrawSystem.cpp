@@ -39,6 +39,7 @@ namespace AZ
                 m_bufferAlloc->Init(descriptor.m_dynamicBufferPoolSize);
                 Interface<DynamicDrawInterface>::Register(this);
             }
+            ViewportContextManagerNotificationsBus::Handler::BusConnect();
         }
 
         void  DynamicDrawSystem::Shutdown()
@@ -50,6 +51,7 @@ namespace AZ
                 m_bufferAlloc = nullptr;
             }
             m_dynamicDrawContexts.clear();
+            ViewportContextManagerNotificationsBus::Handler::BusDisconnect();
         }
 
         void DynamicDrawSystem::RegisterNamedDynamicDrawContext(AZ::Name name, DrawContextFactory contextInitializer)

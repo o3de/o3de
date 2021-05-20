@@ -235,7 +235,7 @@ namespace AzToolsFramework
 
                 EditorViewportIconDisplay::Get()->DrawIcon({
                     viewportInfo.m_viewportId,
-                    -1,
+                    iconTextureId,
                     iconHighlight,
                     entityPosition,
                     AZ::Vector2{iconSize, iconSize}
