@@ -82,7 +82,7 @@ namespace UnitTest
         const bool consumed5 = HandleEventAndUpdate(
             AzFramework::DiscreteInputEvent{AzFramework::InputDeviceMouse::Button::Left, AzFramework::InputChannel::State::Ended});
 
-        const auto allConsumed = AZStd::vector{consumed1, consumed2, consumed3, consumed4, consumed5};
+        const auto allConsumed = AZStd::vector<bool>{consumed1, consumed2, consumed3, consumed4, consumed5};
 
         using ::testing::ElementsAre;
         EXPECT_THAT(allConsumed, ElementsAre(false, true, false, true, false));
