@@ -22,7 +22,7 @@ end
  
 function Process(context)
     local enable = context:GetMaterialPropertyValue_bool("parallax.enable")
-    local textureMap = context:GetMaterialPropertyValue_image("parallax.textureMap")
+    local textureMap = context:GetMaterialPropertyValue_Image("parallax.textureMap")
     context:SetShaderOptionValue_bool("o_parallax_feature_enabled", enable)
     context:SetShaderOptionValue_bool("o_useDepthMap", enable and textureMap ~= nil)
 end
@@ -36,7 +36,7 @@ function ProcessEditor(context)
         context:SetMaterialPropertyVisibility("parallax.textureMap", MaterialPropertyVisibility_Hidden)
     end
     
-    local textureMap = context:GetMaterialPropertyValue_image("parallax.textureMap")
+    local textureMap = context:GetMaterialPropertyValue_Image("parallax.textureMap")
     local visibility = MaterialPropertyVisibility_Enabled
     if(not enable or textureMap == nil) then
         visibility = MaterialPropertyVisibility_Hidden
