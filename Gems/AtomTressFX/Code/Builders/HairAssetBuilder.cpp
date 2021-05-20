@@ -31,7 +31,7 @@ namespace AZ
                 builderDesc.m_patterns.emplace_back(AssetBuilderSDK::AssetBuilderPattern(
                     AZStd::string::format("*.%s", AMD::TFXFileExtension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
                 builderDesc.m_busId = azrtti_typeid<HairAssetBuilder>();
-                builderDesc.m_version = 1;
+                builderDesc.m_version = 2;
                 builderDesc.m_createJobFunction =
                     AZStd::bind(&HairAssetBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
                 builderDesc.m_processJobFunction =
@@ -73,10 +73,9 @@ namespace AZ
                 AZ::StringFunc::Path::ReplaceExtension(sourceFileDependency.m_sourceFileDependencyPath, AMD::TFXBoneFileExtension);
                 response.m_sourceFileDependencyList.push_back(sourceFileDependency);
 
-                // [rhhong-TODO] add source dependency for tfxmesh
-                // sourceFileDependency.m_sourceFileDependencyPath = request.m_sourceFile;
-                // AZ::StringFunc::Path::ReplaceExtension(sourceFileDependency.m_sourceFileDependencyPath, AMD::TFXMeshFileExtension);
-                // response.m_sourceFileDependencyList.push_back(sourceFileDependency);
+                sourceFileDependency.m_sourceFileDependencyPath = request.m_sourceFile;
+                AZ::StringFunc::Path::ReplaceExtension(sourceFileDependency.m_sourceFileDependencyPath, AMD::TFXMeshFileExtension);
+                response.m_sourceFileDependencyList.push_back(sourceFileDependency);
 
                 response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
             }
@@ -119,12 +118,15 @@ namespace AZ
                 outStream.Write(sizeof(AMD::TressFXCombinedHairFileHeader), &header);
 
                 // Combine .tfx, .tfxbone, .tfxmesh file into .tfxhair file
-                auto writeToStream = [](const AZStd::string& fullpath, AZ::IO::FileIOStream& outStream) {
+                auto writeToStream = [](const AZStd::string& fullpath, AZ::IO::FileIOStream& outStream, bool required) {
                     IO::FileIOStream inStream;
                     if (!inStream.Open(fullpath.c_str(), IO::OpenMode::ModeRead))
                     {
-                        AZ_TracePrintf(
-                            AssetBuilderSDK::ErrorWindow, "Error: Failed job %s because the file is either missing or cannot be opened.\n", fullpath.c_str());
+                        if (required)
+                        {
+                            AZ_TracePrintf(AssetBuilderSDK::ErrorWindow,
+                                "Error: Failed job %s because the file is either missing or cannot be opened.\n", fullpath.c_str());
+                        }
                         return (AZ::IO::SizeType)0;
                     }
                     const AZ::IO::SizeType dataSize = inStream.GetLength();
@@ -135,19 +137,19 @@ namespace AZ
 
                 // Write .tfx file to the combined .tfxhair file.
                 AZStd::string sourcePath = request.m_fullPath;
-                const AZ::IO::SizeType tfxSize = writeToStream(sourcePath, outStream);
+                const AZ::IO::SizeType tfxSize = writeToStream(sourcePath, outStream, true);
 
                 // Move on to .tfxbone file.
                 AZ::StringFunc::Path::ReplaceExtension(sourcePath, AMD::TFXBoneFileExtension);
-                const AZ::IO::SizeType tfxBoneSize = writeToStream(sourcePath, outStream);
+                const AZ::IO::SizeType tfxBoneSize = writeToStream(sourcePath, outStream, true);
 
                 // Move on to .tfxmesh file.
                 AZ::StringFunc::Path::ReplaceExtension(sourcePath, AMD::TFXMeshFileExtension);
-                const AZ::IO::SizeType tfxMeshSize = writeToStream(sourcePath, outStream);
+                writeToStream(sourcePath, outStream, false);
 
-                if (tfxSize == 0 || tfxBoneSize == 0 || tfxMeshSize == 0)
+                if (tfxSize == 0 || tfxBoneSize == 0)
                 {
-                    // Fail the job if any .tfx, .tfxbone or .tfxmesh file is missing.
+                    // Fail the job if the .tfx file or the .tfxbone file is missing.
                     response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                     return;
                 }
