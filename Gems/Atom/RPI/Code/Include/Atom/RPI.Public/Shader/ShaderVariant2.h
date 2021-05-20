@@ -11,7 +11,7 @@
 */
 #pragma once
 
-#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
+#include <Atom/RPI.Reflect/Shader/ShaderAsset2.h>
 
 #include <Atom/RHI/DrawListTagRegistry.h>
 
@@ -19,26 +19,20 @@ namespace AZ
 {
     namespace RPI
     {
-        //! Represents the concrete state to configure a PipelineStateDescriptor. ShaderVariant's match
+        //! Represents the concrete state to configure a PipelineStateDescriptor. ShaderVariant2's match
         //! the RHI::PipelineStateType of the parent Shader instance. For shaders on the raster
         //! pipeline, the RHI::DrawFilterTag is also provided.
-        class ShaderVariant final
+        class ShaderVariant2 final
         {
-            friend class Shader;
+            friend class Shader2;
         public:
-            ShaderVariant() = default;
-            AZ_DEFAULT_COPY_MOVE(ShaderVariant);
+            ShaderVariant2() = default;
+            AZ_DEFAULT_COPY_MOVE(ShaderVariant2);
 
-            //! Fills a pipeline state descriptor with settings provided by the ShaderVariant. (Note that
+            //! Fills a pipeline state descriptor with settings provided by the ShaderVariant2. (Note that
             //! this does not fill the InputStreamLayout or OutputAttachmentLayout as that also requires 
             //! information from the mesh data and pass system and must be done as a separate step).
             void ConfigurePipelineState(RHI::PipelineStateDescriptor& descriptor) const;
-            
-            //! Returns the ShaderInputContract which describes which inputs the shader requires
-            const ShaderInputContract& GetInputContract() const;
-
-            //! Returns the ShaderOutputContract which describes which outputs the shader requires
-            const ShaderOutputContract& GetOutputContract() const;
 
             const ShaderVariantId& GetShaderVariantId() const { return m_shaderVariantAsset->GetShaderVariantId(); }
 
@@ -47,9 +41,10 @@ namespace AZ
             //! If the shader variant is not fully baked, the ShaderVariantKeyFallbackValue must be correctly set when drawing.
             bool IsFullyBaked() const { return m_shaderVariantAsset->IsFullyBaked(); }
 
-            //! Return the timestamp when the associated ShaderAsset was built.
+            //! Return the timestamp when this asset was built.
             //! This is used to synchronize versions of the ShaderAsset and ShaderVariantAsset, especially during hot-reload.
-            AZStd::sys_time_t GetShaderAssetBuildTimestamp() const { return m_shaderVariantAsset->GetShaderAssetBuildTimestamp(); }
+            //! This timestamp must be >= than the ShaderAsset timestamp.
+            AZStd::sys_time_t GetBuildTimestamp() const { return m_shaderVariantAsset->GetBuildTimestamp(); }
 
             bool IsRootVariant() const { return m_shaderVariantAsset->IsRootVariant(); }
 
@@ -58,8 +53,9 @@ namespace AZ
         private:
             // Called by Shader. Initializes runtime data from asset data. Returns whether the call succeeded.
             bool Init(
-                const ShaderAsset& shaderAsset,
-                Data::Asset<ShaderVariantAsset> shaderVariantAsset);
+                const ShaderAsset2& shaderAsset,
+                Data::Asset<ShaderVariantAsset2> shaderVariantAsset,
+                SupervariantIndex supervariantIndex);
 
             // Cached state from the asset to avoid an indirection.
             RHI::PipelineStateType m_pipelineStateType = RHI::PipelineStateType::Count;
@@ -67,7 +63,9 @@ namespace AZ
             // State assigned to the pipeline state descriptor.
             RHI::ConstPtr<RHI::PipelineLayoutDescriptor> m_pipelineLayoutDescriptor;
             
-            Data::Asset<ShaderVariantAsset> m_shaderVariantAsset;
+            Data::Asset<ShaderVariantAsset2> m_shaderVariantAsset;
+
+            const RHI::RenderStates* m_renderStates = nullptr; // Cached from ShaderAsset2.
         };
     }
 }
