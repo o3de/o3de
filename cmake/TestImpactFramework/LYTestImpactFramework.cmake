@@ -15,6 +15,9 @@ option(LY_TEST_IMPACT_ACTIVE "Enable test impact framework" OFF)
 # Path to test instrumentation binary
 option(LY_TEST_IMPACT_INSTRUMENTATION_BIN "Path to test impact framework instrumentation binary" OFF)
 
+# Name of test impact framework console static library target
+set(LY_TEST_IMPACT_CONSOLE_STATIC_TARGET "TestImpact.Frontend.Console.Static")
+
 # Name of test impact framework console target
 set(LY_TEST_IMPACT_CONSOLE_TARGET "TestImpact.Frontend.Console")
 
@@ -33,11 +36,8 @@ set(LY_TEST_IMPACT_SOURCE_TARGET_MAPPING_DIR "${LY_TEST_IMPACT_ARTIFACT_DIR}/Map
 # Directory for build target dependency/depender graphs
 set(LY_TEST_IMPACT_TARGET_DEPENDENCY_DIR "${LY_TEST_IMPACT_ARTIFACT_DIR}/Dependency")
 
-# Directory for test type enumeration files
-set(LY_TEST_IMPACT_TEST_TYPE_DIR "${LY_TEST_IMPACT_ARTIFACT_DIR}/TestType")
-
 # Master test enumeration file for all test types
-set(LY_TEST_IMPACT_TEST_TYPE_FILE "${LY_TEST_IMPACT_TEST_TYPE_DIR}/All.tests")
+set(LY_TEST_IMPACT_TEST_TYPE_FILE "${LY_TEST_IMPACT_ARTIFACT_DIR}/TestType/All.tests")
 
 #! ly_test_impact_rebase_file_to_repo_root: rebases the relative and/or absolute path to be relative to repo root directory and places the resulting path in quotes.
 #
@@ -93,14 +93,13 @@ function(ly_test_impact_get_test_launch_method TARGET_NAME LAUNCH_METHOD)
     endif()
 endfunction()
 
-#! ly_test_impact_extract_google_test: explodes a composite google test string into namespace, test and suite components.
+#! ly_test_impact_extract_google_test_name: extracts the google test name from the composite 'namespace::test_name' string
 #
 # \arg:COMPOSITE_TEST test in the form 'namespace::test'
-# \arg:TEST_NAMESPACE namespace for the test
 # \arg:TEST_NAME name of test
 function(ly_test_impact_extract_google_test COMPOSITE_TEST TEST_NAMESPACE TEST_NAME)
     get_property(test_components GLOBAL PROPERTY LY_ALL_TESTS_${COMPOSITE_TEST}_TEST_NAME)
-    # Namespace and test are mandetiry
+    # Namespace and test are mandatory
     string(REPLACE "::" ";" test_components ${test_components})
     list(LENGTH test_components num_test_components)
     if(num_test_components LESS 2)
@@ -113,37 +112,72 @@ function(ly_test_impact_extract_google_test COMPOSITE_TEST TEST_NAMESPACE TEST_N
     set(${TEST_NAME} ${test_name} PARENT_SCOPE)
 endfunction()
 
-#! ly_test_impact_extract_python_test: explodes a composite python test string into filename, namespace, test and suite components.
+#! ly_test_impact_extract_python_test_name: extracts the python test name from the composite 'namespace::test_name' string
 #
 # \arg:COMPOSITE_TEST test in form 'namespace::test' or 'test'
-# \arg:TEST_NAMESPACE namespace for the test (optional)
 # \arg:TEST_NAME name of test
-# \arg:TEST_FILE the Python script path for this test
-function(ly_test_impact_extract_python_test COMPOSITE_TEST TEST_NAMESPACE TEST_NAME TEST_FILE)
+function(ly_test_impact_extract_python_test COMPOSITE_TEST TEST_NAME)
     get_property(test_components GLOBAL PROPERTY LY_ALL_TESTS_${COMPOSITE_TEST}_TEST_NAME)
-    get_property(test_file GLOBAL PROPERTY LY_ALL_TESTS_${COMPOSITE_TEST}_SCRIPT_PATH)
     
     # namespace is optional, in which case this component will be simply the test name
     string(REPLACE "::" ";" test_components ${test_components})
     list(LENGTH test_components num_test_components)
     if(num_test_components GREATER 1)
-        list(GET test_components 0 test_namespace)
         list(GET test_components 1 test_name)
     else()
-        set(test_namespace "")
+        set(test_name ${test_components})
+    endif()
+
+    set(${TEST_NAME} ${test_name} PARENT_SCOPE)
+endfunction()
+
+#! ly_test_impact_extract_google_test_params: extracts the google test name and command parameters.
+#
+# \arg:COMPOSITE_TEST test in the form 'namespace::test'
+# \arg:TEST_NAME name of test
+# \arg:TEST_COMMAND optional command arguments to run the test
+function(ly_test_impact_extract_google_test_params COMPOSITE_TEST TEST_NAME TEST_COMMAND)
+    get_property(test_command GLOBAL PROPERTY LY_ALL_TESTS_${COMPOSITE_TEST}_TEST_COMMAND)
+    # Namespace and test are mandatory
+    string(REPLACE "::" ";" test_components ${COMPOSITE_TEST})
+    list(LENGTH test_components num_test_components)
+    if(num_test_components LESS 2)
+        message(FATAL_ERROR "The test ${test_components} appears to have been specified without a namespace, i.e.:\ly_add_googletest/benchmark(NAME ${test_components})\nInstead of (perhaps):\ly_add_googletest/benchmark(NAME Gem::${test_components})\nPlease add the missing namespace before proceeding.")
+    endif()
+
+    list(GET test_components 0 test_namespace)
+    list(GET test_components 1 test_name)
+    set(${TEST_NAMESPACE} ${test_namespace} PARENT_SCOPE)
+    set(${TEST_NAME} ${test_name} PARENT_SCOPE)
+    set(${TEST_COMMAND} ${test_command} PARENT_SCOPE)
+endfunction()
+
+#! ly_test_impact_extract_python_test_params: extracts the python test name and relative script path parameters.
+#
+# \arg:COMPOSITE_TEST test in form 'namespace::test' or 'test'
+# \arg:TEST_NAME name of test
+# \arg:SCRIPT_PATH name of test
+function(ly_test_impact_extract_python_test_params COMPOSITE_TEST TEST_NAME SCRIPT_PATH)
+    get_property(script_path GLOBAL PROPERTY LY_ALL_TESTS_${COMPOSITE_TEST}_SCRIPT_PATH)
+    
+    # namespace is optional, in which case this component will be simply the test name
+    string(REPLACE "::" ";" test_components ${COMPOSITE_TEST})
+    list(LENGTH test_components num_test_components)
+    if(num_test_components GREATER 1)
+        list(GET test_components 1 test_name)
+    else()
         set(test_name ${test_components})
     endif()
 
     # Get python script path relative to repo root
     ly_test_impact_rebase_file_to_repo_root(
-        ${test_file}
-        test_file
+        ${script_path}
+        script_path
         ${LY_ROOT_FOLDER}
     )
 
-    set(${TEST_NAMESPACE} ${test_namespace} PARENT_SCOPE)
     set(${TEST_NAME} ${test_name} PARENT_SCOPE)
-    set(${TEST_FILE} ${test_file} PARENT_SCOPE)
+    set(${SCRIPT_PATH} ${script_path} PARENT_SCOPE)
 endfunction()
 
 #! ly_test_impact_write_test_enumeration_file: exports the master test lists to file.
@@ -164,25 +198,26 @@ function(ly_test_impact_write_test_enumeration_file TEST_ENUMERATION_TEMPLATE_FI
         message(TRACE "Parsing ${test}")
         get_property(test_type GLOBAL PROPERTY LY_ALL_TESTS_${test}_TEST_LIBRARY)
         get_property(test_suite GLOBAL PROPERTY LY_ALL_TESTS_${test}_TEST_SUITE)
+        get_property(test_timeout GLOBAL PROPERTY LY_ALL_TESTS_${test}_TEST_TIMEOUT)
         if("${test_type}" STREQUAL "pytest")
             # Python tests
-            ly_test_impact_extract_python_test(${test} test_namespace test_name test_file)
-            list(APPEND python_tests "        { \"name\": \"${test_name}\", \"namespace\": \"${test_namespace}\", \"suite\": \"${test_suite}\", \"path\": \"${test_file}\" }")
+            ly_test_impact_extract_python_test_params(${test} test_name script_path)
+            list(APPEND python_tests "        { \"name\": \"${test_name}\", \"suite\": \"${test_suite}\", \"script\": \"${script_path}\", \"timeout\":${test_timeout} }")
         elseif("${test_type}" STREQUAL "pytest_editor")
             # Python editor tests
-            ly_test_impact_extract_python_test(${test} test_namespace test_name test_file)
-            list(APPEND python_editor_tests "        { \"name\": \"${test_name}\", \"namespace\": \"${test_namespace}\", \"suite\": \"${test_suite}\", \"path\": \"${test_file}\" }")
+            ly_test_impact_extract_python_test_params(${test} test_name script_path)
+            list(APPEND python_editor_tests "        { \"name\": \"${test_name}\",  \"suite\": \"${test_suite}\", \"script\": \"${script_path}\", \"timeout\":${test_timeout} }")
         elseif("${test_type}" STREQUAL "googletest")
             # Google tests
-            ly_test_impact_extract_google_test(${test} test_namespace test_name)
+            ly_test_impact_extract_google_test_params(${test} test_name test_command)
             ly_test_impact_get_test_launch_method(${test_name} launch_method)
-            list(APPEND google_tests "        { \"name\": \"${test_name}\", \"namespace\": \"${test_namespace}\", \"suite\": \"${test_suite}\", \"launch_method\": \"${launch_method}\" }")
+            list(APPEND google_tests "        { \"name\": \"${test_name}\", \"suite\": \"${test_suite}\", \"command\": \"${test_command}\", \"timeout\":${test_timeout}, \"launch_method\": \"${launch_method}\" }")
         elseif("${test_type}" STREQUAL "googlebenchmark")
             # Google benchmarks
-            ly_test_impact_extract_google_test(${test} test_namespace test_name)
-            list(APPEND google_benchmarks "        { \"name\": \"${test_name}\", \"namespace\": \"${test_namespace}\", \"suite\": \"${test_suite}\" }")
+            ly_test_impact_extract_google_test_params(${test} test_name test_command)
+            list(APPEND google_benchmarks "        { \"name\": \"${test_name}\", \"suite\": \"${test_suite}\",  \"command\": \"${test_command}\", \"timeout\":${test_timeout} }")
         else()
-            message("${test} is of unknown type (TEST_LIBRARY property is empty)")
+            message("${test_name} is of unknown type (TEST_LIBRARY property is empty)")
             list(APPEND unknown_tests "        { \"name\": \"${test}\" }")
         endif()
     endforeach()
@@ -242,12 +277,7 @@ function(ly_test_impact_export_source_target_mappings MAPPING_TEMPLATE_FILE)
         endif()
 
         # Static source file mappings
-        get_target_property(target_type ${target} TYPE)
-        if("${target_type}" STREQUAL "INTERFACE_LIBRARY")
-            get_target_property(static_sources ${target}_HEADERS SOURCES)
-        else()
-            get_target_property(static_sources ${target} SOURCES)
-        endif()
+        get_target_property(static_sources ${target} SOURCES)
 
         # Rebase static source files to repo root
         ly_test_impact_rebase_files_to_repo_root(
@@ -271,75 +301,52 @@ endfunction()
 # 
 # \arg:CONFIG_TEMPLATE_FILE path to the runtime configuration template file
 # \arg:PERSISTENT_DATA_DIR path to the test impact framework persistent data directory
-# \arg:RUNTIME_BIN_DIR path to repo binary ourput directory
-function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE PERSISTENT_DATA_DIR RUNTIME_BIN_DIR)
-    set(repo_dir ${LY_ROOT_FOLDER})
+# \arg:BIN_DIR path to repo binary output directory
+function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE PERSISTENT_DATA_DIR BIN_DIR)
+    # Platform this config file is being generated for
+    set(platform ${PAL_PLATFORM_NAME})
 
-    # SparTIA instrumentation binary
+    # Timestamp this config file was generated at
+    string(TIMESTAMP timestamp "%Y-%m-%d %H:%M:%S")
+
+    # Instrumentation binary
     if(NOT LY_TEST_IMPACT_INSTRUMENTATION_BIN)
         message(FATAL_ERROR "No test impact framework instrumentation binary was specified, please provide the path with option LY_TEST_IMPACT_INSTRUMENTATION_BIN")
     endif()
     file(TO_CMAKE_PATH ${LY_TEST_IMPACT_INSTRUMENTATION_BIN} instrumentation_bin)
-    
-    # test impact framework working dir
-    ly_test_impact_rebase_file_to_repo_root(
-        ${LY_TEST_IMPACT_WORKING_DIR}
-        working_dir
-        ${LY_ROOT_FOLDER}
-    )
-    
-    # test impact framework console binary dir
-    ly_test_impact_rebase_file_to_repo_root(
-        ${RUNTIME_BIN_DIR}
-        runtime_bin_dir
-        ${LY_ROOT_FOLDER}
-    )
 
-    # Test dir
-    ly_test_impact_rebase_file_to_repo_root(
-        "${PERSISTENT_DATA_DIR}/Tests"
-        tests_dir
-        ${LY_ROOT_FOLDER}
-    )
+    # Testrunner binary
+    set(test_runner_bin $<TARGET_FILE:AzTestRunner>)
+
+    # Repository root
+    set(repo_dir ${LY_ROOT_FOLDER})
+    
+    # Test impact framework output binary dir
+    set(bin_dir ${BIN_DIR})
     
     # Temp dir
-    ly_test_impact_rebase_file_to_repo_root(
-        "${LY_TEST_IMPACT_TEMP_DIR}"
-        temp_dir
-        ${LY_ROOT_FOLDER}
-    )
-    
+    set(temp_dir "${LY_TEST_IMPACT_TEMP_DIR}")
+
+    # Persistent dir
+    set(persistent_dir "${PERSISTENT_DATA_DIR}")
+
     # Source to target mappings dir
-    ly_test_impact_rebase_file_to_repo_root(
-        "${LY_TEST_IMPACT_SOURCE_TARGET_MAPPING_DIR}"
-        source_target_mapping_dir
-        ${LY_ROOT_FOLDER}
-    )
+    set(source_target_mapping_dir "${LY_TEST_IMPACT_SOURCE_TARGET_MAPPING_DIR}")
     
-    # Test type artifact dir
-    ly_test_impact_rebase_file_to_repo_root(
-        "${LY_TEST_IMPACT_TEST_TYPE_DIR}"
-        test_type_dir
-        ${LY_ROOT_FOLDER}
-    )
+    # Test type artifact file
+    set(test_target_type_file "${LY_TEST_IMPACT_TEST_TYPE_FILE}")
     
     # Build dependency artifact dir
-    ly_test_impact_rebase_file_to_repo_root(
-        "${LY_TEST_IMPACT_TARGET_DEPENDENCY_DIR}"
-        target_dependency_dir
-        ${LY_ROOT_FOLDER}
-    )
+    set(target_dependency_dir "${LY_TEST_IMPACT_TARGET_DEPENDENCY_DIR}")
     
     # Substitute config file template with above vars
     file(READ "${CONFIG_TEMPLATE_FILE}" config_file)
     string(CONFIGURE ${config_file} config_file)
     
     # Write out entire config contents to a file in the build directory of the test impact framework console target
-    string(TIMESTAMP timestamp "%Y-%m-%d %H:%M:%S")
-    set(header "# Test Impact Framework configuration file for Lumberyard\n# Platform: ${CMAKE_SYSTEM_NAME}\n# Build: $<CONFIG>\n# ${timestamp}")
     file(GENERATE
-        OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/$<TARGET_FILE_BASE_NAME:${LY_TEST_IMPACT_CONSOLE_TARGET}>.$<CONFIG>.cfg" 
-        CONTENT "${header}\n\n${config_file}"
+        OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/$<TARGET_FILE_BASE_NAME:${LY_TEST_IMPACT_CONSOLE_TARGET}>.$<CONFIG>.json" 
+        CONTENT ${config_file}
     )
 endfunction()
 
@@ -353,7 +360,7 @@ function(ly_test_impact_post_step)
     set(persistent_data_dir "${LY_ROOT_FOLDER}/Tests/test_impact_framework/${CMAKE_SYSTEM_NAME}/$<CONFIG>")
 
     # Directory for binaries built for this profile
-    set(runtime_bin_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
+    set(bin_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
 
     # Erase any existing non-persistent data to avoid getting test impact framework out of sync with current repo state
     file(REMOVE_RECURSE "${LY_TEST_IMPACT_WORKING_DIR}")
@@ -372,7 +379,7 @@ function(ly_test_impact_post_step)
     ly_test_impact_write_config_file(
         "cmake/TestImpactFramework/ConsoleFrontendConfig.in"
         ${persistent_data_dir}
-        ${runtime_bin_dir}
+        ${bin_dir}
     )
     
     # Copy over the graphviz options file for the build dependency graphs
@@ -380,6 +387,6 @@ function(ly_test_impact_post_step)
     file(COPY "cmake/TestImpactFramework/CMakeGraphVizOptions.cmake" DESTINATION ${CMAKE_BINARY_DIR})
 
     # Set the above config file as the default config file to use for the test impact framework console target
-    target_compile_definitions(${LY_TEST_IMPACT_CONSOLE_TARGET} PRIVATE "LY_TEST_IMPACT_DEFAULT_CONFIG_FILE=\"$<TARGET_FILE_BASE_NAME:${LY_TEST_IMPACT_CONSOLE_TARGET}>.$<CONFIG>.cfg\"")
+    target_compile_definitions(${LY_TEST_IMPACT_CONSOLE_STATIC_TARGET} PUBLIC "LY_TEST_IMPACT_DEFAULT_CONFIG_FILE=\"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/$<TARGET_FILE_BASE_NAME:${LY_TEST_IMPACT_CONSOLE_TARGET}>.$<CONFIG>.json\"")
     message(DEBUG "Test impact framework post steps complete")
 endfunction()
