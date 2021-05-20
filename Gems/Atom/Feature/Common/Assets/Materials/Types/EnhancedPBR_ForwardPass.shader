@@ -31,7 +31,7 @@
     },
 
     "CompilerHints" : { 
-        "DisableOptimizations" : false,
+        "DisableOptimizations" : false
     },
 
     "ProgramSettings":
