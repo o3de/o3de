@@ -4,7 +4,7 @@
     "parentMaterial": "TestData/Materials/StandardMultilayerPbrTestCases/002_ParallaxPdo.material",
     "propertyLayoutVersion": 3,
     "properties": {
-        "general": {
+        "blend": {
             "debugDrawMode": "FinalBlendWeights"
         }
     }

@@ -4,11 +4,6 @@
         "version": 3,
         "groups": [
             {
-                "id": "general",
-                "displayName": "General",
-                "description": "General settings."
-            },
-            {
                 "id": "blend",
                 "displayName": "Blend Settings",
                 "description": "Properties for configuring how layers are blended together."
@@ -28,6 +23,11 @@
                 "id": "irradiance",
                 "displayName": "Irradiance",
                 "description": "Properties for configuring the irradiance used in global illumination."
+            },
+            {
+                "id": "general",
+                "displayName": "General",
+                "description": "General settings."
             },
             //##############################################################################################
             // Layer 1 Groups 
@@ -195,18 +195,6 @@
             //##############################################################################################
             "general": [
                 {
-                    "id": "debugDrawMode",
-                    "displayName": "Debug Draw Mode",
-                    "description": "Enables various debug view features.",
-                    "type": "Enum",
-                    "enumValues": [ "None", "BlendMask", "Displacement", "FinalBlendWeights" ],
-                    "defaultValue": "None",
-                    "connection": {
-                        "type": "ShaderOption",
-                        "id": "o_debugDrawMode"
-                    }
-                },
-                {
                     "id": "applySpecularAA",
                     "displayName": "Apply Specular AA",
                     "description": "Whether to apply specular anti-aliasing in the shader.",
@@ -365,8 +353,19 @@
                         "type": "ShaderInput",
                         "id": "m_displacementBlendDistance"
                     }
+                },
+                {
+                    "id": "debugDrawMode",
+                    "displayName": "Debug Draw Mode",
+                    "description": "Enables various debug view features.",
+                    "type": "Enum",
+                    "enumValues": [ "None", "BlendMask", "Displacement", "FinalBlendWeights" ],
+                    "defaultValue": "None",
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_debugDrawMode"
+                    }
                 }
-
             ],
             "parallax": [
                 {
