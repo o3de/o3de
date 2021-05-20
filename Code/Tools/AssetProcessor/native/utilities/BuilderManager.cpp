@@ -155,7 +155,7 @@ namespace AssetProcessor
             return false;
         }
 
-        const AZStd::string params = BuildParams("resident", buildersFolder.c_str(), UuidString(), "", "");
+        const AZStd::vector<AZStd::string> params = BuildParams("resident", buildersFolder.c_str(), UuidString(), "", "");
 
         m_processWatcher = LaunchProcess(fullExePathString.c_str(), params);
 
@@ -179,7 +179,7 @@ namespace AssetProcessor
         return !m_processWatcher || (m_processWatcher && m_processWatcher->IsProcessRunning(exitCode));
     }
 
-    AZStd::string Builder::BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile) const
+    AZStd::vector<AZStd::string> Builder::BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile) const
     {
         QDir projectCacheRoot;
         AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
@@ -191,35 +191,24 @@ namespace AssetProcessor
         int portNumber = 0;
         ApplicationServerBus::BroadcastResult(portNumber, &ApplicationServerBus::Events::GetServerListeningPort);
 
-        AZStd::string params;
-#if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-        params = AZStd::string::format(
-            R"(-task=%s -id="%s" -project-name="%s" -project-cache-path="%s" -project-path="%s" -engine-path="%s" -port %d)",
-            task, builderGuid.c_str(), projectName.c_str(), projectCacheRoot.absolutePath().toUtf8().constData(),
-            projectPath.c_str(), enginePath.c_str(), portNumber);
-#else
-        params = AZStd::string::format(
-            R"(-task=%s -id="%s" -project-name="\"%s\"" -project-cache-path="\"%s\"" -project-path="\"%s\"" -engine-path="\"%s\"" -port %d)",
-            task, builderGuid.c_str(), projectName.c_str(), projectCacheRoot.absolutePath().toUtf8().constData(),
-            projectPath.c_str(), enginePath.c_str(), portNumber);
-#endif // !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
+        AZStd::vector<AZStd::string> params;
+        params.emplace_back(AZStd::string::format(R"(-task="%s")", task));
+        params.emplace_back(AZStd::string::format(R"(-id="%s")", builderGuid.c_str()));
+        params.emplace_back(AZStd::string::format(R"(-project-name="%s")", projectName.c_str()));
+        params.emplace_back(AZStd::string::format(R"(-project-cache-path="%s")", projectCacheRoot.absolutePath().toUtf8().constData()));
+        params.emplace_back(AZStd::string::format(R"(-project-path="%s")", projectPath.c_str()));
+        params.emplace_back(AZStd::string::format(R"(-engine-path="%s")", enginePath.c_str()));
+        params.emplace_back(AZStd::string::format("-port=%d", portNumber));
 
         if (moduleFilePath && moduleFilePath[0])
         {
-        #if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-            params.append(AZStd::string::format(R"( -module="%s")", moduleFilePath).c_str());
-        #else
-            params.append(AZStd::string::format(R"( -module="\"%s\"")", moduleFilePath).c_str());
-        #endif // !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
+            params.emplace_back(AZStd::string::format(R"(-module="%s")", moduleFilePath));
         }
 
         if (!jobDescriptionFile.empty() && !jobResponseFile.empty())
         {
-        #if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-            params = AZStd::string::format(R"(%s -input="%s" -output="%s")", params.c_str(), jobDescriptionFile.c_str(), jobResponseFile.c_str());
-        #else
-            params = AZStd::string::format(R"(%s -input="\"%s\"" -output="\"%s\"")", params.c_str(), jobDescriptionFile.c_str(), jobResponseFile.c_str());
-        #endif // !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
+            params.emplace_back(AZStd::string::format(R"(-input="%s")", jobDescriptionFile.c_str()));
+            params.emplace_back(AZStd::string::format(R"(-output="%s")", jobResponseFile.c_str()));
         }
 
         auto settingsRegistry = AZ::SettingsRegistry::Get();
@@ -232,7 +221,7 @@ namespace AssetProcessor
             for (size_t optionIndex = 0; optionIndex < commandOptionCount; ++optionIndex)
             {
                 const AZStd::string& optionValue = commandLine.GetSwitchValue(optionKey, optionIndex);
-                params.append(AZStd::string::format(
+                params.emplace_back(AZStd::string::format(
 #if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
                     R"( --%s="%s")",
 #else
@@ -245,15 +234,17 @@ namespace AssetProcessor
         return params;
     }
 
-    AZStd::unique_ptr<AzFramework::ProcessWatcher> Builder::LaunchProcess(const char* fullExePath, const AZStd::string& params) const
+    AZStd::unique_ptr<AzFramework::ProcessWatcher> Builder::LaunchProcess(const char* fullExePath, const AZStd::vector<AZStd::string>& params) const
     {
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
         processLaunchInfo.m_processExecutableString = fullExePath;
-        processLaunchInfo.m_commandlineParameters = AZStd::string::format("\"%s\" %s", fullExePath, params.c_str());
+        processLaunchInfo.m_commandlineParameters = AZStd::vector<AZStd::string>{ fullExePath };
+        auto& commandLineArray = AZStd::get<AZStd::vector<AZStd::string>>(processLaunchInfo.m_commandlineParameters);
+        commandLineArray.insert(commandLineArray.end(), params.begin(), params.end());
         processLaunchInfo.m_showWindow = false;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_IDLE;
 
-        AZ_TracePrintf(AssetProcessor::DebugChannel, "Executing AssetBuilder with parameters: %s\n", processLaunchInfo.m_commandlineParameters.c_str());
+        AZ_TracePrintf(AssetProcessor::DebugChannel, "Executing AssetBuilder with parameters: %s\n", processLaunchInfo.GetCommandLineParametersAsString().c_str());
 
         auto processWatcher = AZStd::unique_ptr<AzFramework::ProcessWatcher>(AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT));
 

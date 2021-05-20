@@ -99,7 +99,7 @@ namespace AzFramework
         AZStd::wstring editableCommandLine;
         AZStd::wstring processExecutableString;
         AZStd::wstring workingDirectory;
-        AZStd::to_wstring(editableCommandLine, processLaunchInfo.m_commandlineParameters);
+        AZStd::to_wstring(editableCommandLine, processLaunchInfo.GetCommandLineParametersAsString());
         AZStd::to_wstring(processExecutableString, processLaunchInfo.m_processExecutableString);
         AZStd::to_wstring(workingDirectory, processLaunchInfo.m_workingDirectory);
 
