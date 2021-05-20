@@ -110,6 +110,10 @@ namespace AssetBundler
             if (!AZ::SettingsRegistry::Get())
             {
                 AZ::SettingsRegistry::Register(&m_registry);
+                auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
+                    + "/project_path";
+                m_registry.Set(projectPathKey, "AutomatedTesting");
+                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
             }
 
             AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
