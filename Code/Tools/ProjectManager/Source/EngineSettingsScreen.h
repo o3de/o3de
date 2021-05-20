@@ -28,13 +28,15 @@ namespace O3DE::ProjectManager
         ~EngineSettingsScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
-    private:
+    protected slots:
+        void OnTextChanged();
 
-        FormLineEditWidget* m_engineVersionLineEdit;
-        FormBrowseEditWidget* m_thirdPartyPathLineEdit;
-        FormBrowseEditWidget* m_restrictedPathLineEdit;
-        FormBrowseEditWidget* m_defaultGemsPathLineEdit;
-        FormBrowseEditWidget* m_defaultProjectTemplatesPathLineEdit;
+    private:
+        FormLineEditWidget* m_engineVersion;
+        FormBrowseEditWidget* m_thirdParty;
+        FormBrowseEditWidget* m_defaultProjects;
+        FormBrowseEditWidget* m_defaultGems;
+        FormBrowseEditWidget* m_defaultProjectTemplates;
     };
 
 } // namespace O3DE::ProjectManager

@@ -14,6 +14,7 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMessageBox>
 #include "FormLineEditWidget.h"
 #include "FormBrowseEditWidget.h"
 #include "PythonBindingsInterface.h"
@@ -41,29 +42,37 @@ namespace O3DE::ProjectManager
         formTitleLabel->setObjectName("formTitleLabel");
         layout->addWidget(formTitleLabel);
 
-        m_engineVersionLineEdit = new FormLineEditWidget(tr("Engine Version"), engineInfo.m_version, this);
-        m_engineVersionLineEdit->lineEdit()->setReadOnly(true);
-        layout->addWidget(m_engineVersionLineEdit);
+        m_engineVersion = new FormLineEditWidget(tr("Engine Version"), engineInfo.m_version, this);
+        m_engineVersion->lineEdit()->setReadOnly(true);
+        layout->addWidget(m_engineVersion);
 
-        m_thirdPartyPathLineEdit = new FormBrowseEditWidget(tr("3rd Party Software Folder"), engineInfo.m_thirdPartyPath, this);
-        m_thirdPartyPathLineEdit->lineEdit()->setValidator(new PathValidator(PathValidator::PathMode::ExistingFolder, this));
-        m_thirdPartyPathLineEdit->setErrorLabelText(tr("Please provide a valid path to a folder that exists"));
-        layout->addWidget(m_thirdPartyPathLineEdit);
+        m_thirdParty = new FormBrowseEditWidget(tr("3rd Party Software Folder"), engineInfo.m_thirdPartyPath, this);
+        m_thirdParty->lineEdit()->setValidator(new PathValidator(PathValidator::PathMode::ExistingFolder, this));
+        m_thirdParty->lineEdit()->setReadOnly(true);
+        m_thirdParty->setErrorLabelText(tr("Please provide a valid path to a folder that exists"));
+        connect(m_thirdParty->lineEdit(), &QLineEdit::textChanged, this, &EngineSettingsScreen::OnTextChanged);
+        layout->addWidget(m_thirdParty);
 
-        m_restrictedPathLineEdit = new FormBrowseEditWidget(tr("Restricted Folder"), engineInfo.m_defaultRestrictedFolder, this);
-        m_restrictedPathLineEdit->lineEdit()->setValidator(new PathValidator(PathValidator::PathMode::ExistingFolder, this));
-        m_restrictedPathLineEdit->setErrorLabelText(tr("Please provide a valid path to a folder that exists"));
-        layout->addWidget(m_restrictedPathLineEdit);
+        m_defaultProjects = new FormBrowseEditWidget(tr("Default Projects Folder"), engineInfo.m_defaultProjectsFolder, this);
+        m_defaultProjects->lineEdit()->setValidator(new PathValidator(PathValidator::PathMode::ExistingFolder, this));
+        m_defaultProjects->lineEdit()->setReadOnly(true);
+        m_defaultProjects->setErrorLabelText(tr("Please provide a valid path to a folder that exists"));
+        connect(m_defaultProjects->lineEdit(), &QLineEdit::textChanged, this, &EngineSettingsScreen::OnTextChanged);
+        layout->addWidget(m_defaultProjects);
 
-        m_defaultGemsPathLineEdit = new FormBrowseEditWidget(tr("Default Gems Folder"), engineInfo.m_defaultGemsFolder, this);
-        m_defaultGemsPathLineEdit->lineEdit()->setValidator(new PathValidator(PathValidator::PathMode::ExistingFolder, this));
-        m_defaultGemsPathLineEdit->setErrorLabelText(tr("Please provide a valid path to a folder that exists"));
-        layout->addWidget(m_defaultGemsPathLineEdit);
+        m_defaultGems = new FormBrowseEditWidget(tr("Default Gems Folder"), engineInfo.m_defaultGemsFolder, this);
+        m_defaultGems->lineEdit()->setValidator(new PathValidator(PathValidator::PathMode::ExistingFolder, this));
+        m_defaultGems->lineEdit()->setReadOnly(true);
+        m_defaultGems->setErrorLabelText(tr("Please provide a valid path to a folder that exists"));
+        connect(m_defaultGems->lineEdit(), &QLineEdit::textChanged, this, &EngineSettingsScreen::OnTextChanged);
+        layout->addWidget(m_defaultGems);
 
-        m_defaultProjectTemplatesPathLineEdit = new FormBrowseEditWidget(tr("Default Project Templates Folder"), engineInfo.m_defaultTemplatesFolder, this);
-        m_defaultProjectTemplatesPathLineEdit->lineEdit()->setValidator(new PathValidator(PathValidator::PathMode::ExistingFolder, this));
-        m_defaultProjectTemplatesPathLineEdit->setErrorLabelText(tr("Please provide a valid path to a folder that exists"));
-        layout->addWidget(m_defaultProjectTemplatesPathLineEdit);
+        m_defaultProjectTemplates = new FormBrowseEditWidget(tr("Default Project Templates Folder"), engineInfo.m_defaultTemplatesFolder, this);
+        m_defaultProjectTemplates->lineEdit()->setValidator(new PathValidator(PathValidator::PathMode::ExistingFolder, this));
+        m_defaultProjectTemplates->lineEdit()->setReadOnly(true);
+        m_defaultProjectTemplates->setErrorLabelText(tr("Please provide a valid path to a folder that exists"));
+        connect(m_defaultProjectTemplates->lineEdit(), &QLineEdit::textChanged, this, &EngineSettingsScreen::OnTextChanged);
+        layout->addWidget(m_defaultProjectTemplates);
 
         setLayout(layout);
     }
@@ -71,5 +80,31 @@ namespace O3DE::ProjectManager
     ProjectManagerScreen EngineSettingsScreen::GetScreenEnum()
     {
         return ProjectManagerScreen::EngineSettings;
+    }
+
+    void EngineSettingsScreen::OnTextChanged()
+    {
+        // save engine settings
+        EngineInfo engineInfo;
+
+        auto engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+        if (engineInfoResult.IsSuccess())
+        {
+            engineInfo = engineInfoResult.GetValue();
+            engineInfo.m_thirdPartyPath         = m_thirdParty->lineEdit()->text();
+            engineInfo.m_defaultProjectsFolder  = m_defaultProjects->lineEdit()->text();
+            engineInfo.m_defaultGemsFolder      = m_defaultGems->lineEdit()->text();
+            engineInfo.m_defaultTemplatesFolder = m_defaultProjectTemplates->lineEdit()->text();
+
+            bool result = PythonBindingsInterface::Get()->SetEngineInfo(engineInfo);
+            if (!result)
+            {
+                QMessageBox::critical(this, tr("Engine Settings"), tr("Failed to save engine settings."));
+            }
+        }
+        else
+        {
+            QMessageBox::critical(this, tr("Engine Settings"), tr("Failed to get engine settings."));
+        }
     }
 } // namespace O3DE::ProjectManager

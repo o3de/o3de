@@ -340,6 +340,7 @@ namespace O3DE::ProjectManager
                 engineInfo.m_defaultProjectsFolder   = Py_To_String(o3deData["default_projects_folder"]); 
                 engineInfo.m_defaultRestrictedFolder = Py_To_String(o3deData["default_restricted_folder"]); 
                 engineInfo.m_defaultTemplatesFolder  = Py_To_String(o3deData["default_templates_folder"]); 
+                engineInfo.m_thirdPartyPath          = Py_To_String_Optional(o3deData,"third_party_path",""); 
             }
 
             auto engineData = m_registration.attr("get_engine_data")(pybind11::none(), enginePath);
@@ -372,20 +373,43 @@ namespace O3DE::ProjectManager
     bool PythonBindings::SetEngineInfo(const EngineInfo& engineInfo)  
     {
         bool result = ExecuteWithLock([&] {
-            pybind11::str enginePath = engineInfo.m_path.toStdString();
+            pybind11::str enginePath             = engineInfo.m_path.toStdString();
+            pybind11::str defaultProjectsFolder  = engineInfo.m_defaultProjectsFolder.toStdString();
+            pybind11::str defaultGemsFolder      = engineInfo.m_defaultGemsFolder.toStdString();
+            pybind11::str defaultTemplatesFolder = engineInfo.m_defaultTemplatesFolder.toStdString();
 
-            pybind11::dict engineData;
-            engineData["engine_name"] = engineInfo.m_name.toStdString();
-            engineData["O3DEVersion"] = engineInfo.m_version.toStdString();
-            engineData["third_party_path"] = engineInfo.m_thirdPartyPath.toStdString();
-
-            m_registration.attr("set_engine_data")(
-                pybind11::none(), // engine_name
-                enginePath,
-                engineData 
+            auto registrationResult = m_registration.attr("register")(
+                enginePath,       // engine_path 
+                pybind11::none(), // project_path 
+                pybind11::none(), // gem_path 
+                pybind11::none(), // template_path 
+                pybind11::none(), // restricted_path 
+                pybind11::none(), // repo_uri 
+                pybind11::none(), // default_engines_folder
+                defaultProjectsFolder,
+                defaultGemsFolder, 
+                defaultTemplatesFolder 
                 );
 
-            // TODO get o3de_manifest and update it the default folders
+            if (registrationResult.cast<int>() != 0)
+            {
+                result = false;
+            }
+
+            auto manifest = m_registration.attr("load_o3de_manifest")();
+            if (pybind11::isinstance<pybind11::dict>(manifest))
+            {
+                try
+                {
+                    manifest["third_party_path"] = engineInfo.m_thirdPartyPath.toStdString();
+                    m_registration.attr("save_o3de_manifest")(manifest);
+                }
+                catch ([[maybe_unused]] const std::exception& e)
+                {
+                    AZ_Warning("PythonBindings", false, "Failed to set third party path.");
+                }
+            }
+
         });
 
         return result;
