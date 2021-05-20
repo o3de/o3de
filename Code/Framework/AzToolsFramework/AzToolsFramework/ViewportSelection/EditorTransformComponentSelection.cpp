@@ -812,13 +812,21 @@ namespace AzToolsFramework
         EntityIdManipulators& entityIdManipulators,
         OptionalFrame& pivotOverrideFrame,
         ViewportInteraction::KeyboardModifiers& prevModifiers,
-        bool& transformChangedInternally)
+        bool& transformChangedInternally, bool spaceLock, ReferenceFrame currentSpace)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         entityIdManipulators.m_manipulators->SetLocalPosition(action.LocalPosition());
 
-        const ReferenceFrame referenceFrame = ReferenceFrameFromModifiers(action.m_modifiers);
+        ReferenceFrame referenceFrame;
+        if (spaceLock)
+        {
+            referenceFrame = currentSpace;
+        }
+        else
+        {
+            referenceFrame = ReferenceFrameFromModifiers(action.m_modifiers);
+        }
 
         if (action.m_modifiers.Ctrl())
         {
@@ -1301,7 +1309,7 @@ namespace AzToolsFramework
         {
             UpdateTranslationManipulator(
                 action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators,
-                m_pivotOverrideFrame, prevModifiers, m_transformChangedInternally);
+                m_pivotOverrideFrame, prevModifiers, m_transformChangedInternally, m_spaceLock, m_currentSpace);
         });
 
         translationManipulators->InstallLinearManipulatorMouseUpCallback(
@@ -1331,8 +1339,8 @@ namespace AzToolsFramework
             [this, prevModifiers, manipulatorEntityIds](const PlanarManipulator::Action& action) mutable -> void
         {
             UpdateTranslationManipulator(
-                action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators,
-                m_pivotOverrideFrame, prevModifiers, m_transformChangedInternally);
+                action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators, m_pivotOverrideFrame, prevModifiers,
+                    m_transformChangedInternally, m_spaceLock, m_currentSpace);
         });
 
         translationManipulators->InstallPlanarManipulatorMouseUpCallback(
@@ -1361,8 +1369,8 @@ namespace AzToolsFramework
             [this, prevModifiers, manipulatorEntityIds](const SurfaceManipulator::Action& action) mutable -> void
         {
             UpdateTranslationManipulator(
-                action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators,
-                m_pivotOverrideFrame, prevModifiers, m_transformChangedInternally);
+                action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators, m_pivotOverrideFrame, prevModifiers,
+                    m_transformChangedInternally, m_spaceLock, m_currentSpace);
         });
 
         translationManipulators->InstallSurfaceManipulatorMouseUpCallback(
@@ -1440,7 +1448,15 @@ namespace AzToolsFramework
             [this, prevModifiers, sharedRotationState]
             (const AngularManipulator::Action& action) mutable -> void
         {
-            const ReferenceFrame referenceFrame = ReferenceFrameFromModifiers(action.m_modifiers);
+            ReferenceFrame referenceFrame;
+            if (m_spaceLock)
+            {
+                referenceFrame = m_currentSpace;
+            }
+            else
+            {
+                referenceFrame = ReferenceFrameFromModifiers(action.m_modifiers);
+            }
 
             const AZ::Quaternion manipulatorOrientation = action.m_start.m_rotation * action.m_current.m_delta;
             // store the pivot override frame when positioning the manipulator manually (ctrl)
@@ -2605,15 +2621,42 @@ namespace AzToolsFramework
         auto onButtonClicked = [this](ViewportUi::ButtonId buttonId) {
             if (buttonId == m_localButtonId)
             {
-                
+                // Unlock
+                if (m_spaceLock && m_currentSpace == ReferenceFrame::Local)
+                {
+                    m_spaceLock = false;
+                }
+                else
+                {
+                    m_spaceLock = true;
+                    m_currentSpace = ReferenceFrame::Local;
+                }
             }
             else if (buttonId == m_parentButtonId)
             {
-                
+                // Unlock
+                if (m_spaceLock && m_currentSpace == ReferenceFrame::Parent)
+                {
+                    m_spaceLock = false;
+                }
+                else
+                {
+                    m_spaceLock = true;
+                    m_currentSpace = ReferenceFrame::Parent;
+                }
             }
             else if (buttonId == m_worldButtonId)
             {
-                
+                // Unlock
+                if (m_spaceLock && m_currentSpace == ReferenceFrame::World)
+                {
+                    m_spaceLock = false;
+                }
+                else
+                {
+                    m_spaceLock = true;
+                    m_currentSpace = ReferenceFrame::World;
+                }
             }
         };
 
@@ -3333,7 +3376,15 @@ namespace AzToolsFramework
             ViewportInteraction::BuildMouseButtons(
                 QGuiApplication::mouseButtons()), m_boxSelect.Active());
 
-        const ReferenceFrame referenceFrame = ReferenceFrameFromModifiers(modifiers);
+        ReferenceFrame referenceFrame;
+        if (m_spaceLock)
+        {
+            referenceFrame = m_currentSpace;
+        }
+        else
+        {
+            referenceFrame = ReferenceFrameFromModifiers(modifiers);
+        }
 
         UpdateSpaceCluster(referenceFrame);
 

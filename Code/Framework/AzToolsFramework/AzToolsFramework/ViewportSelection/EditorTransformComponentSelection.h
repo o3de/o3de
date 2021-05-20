@@ -287,7 +287,10 @@ namespace AzToolsFramework
         ViewportUi::ButtonId m_localButtonId; 
         ViewportUi::ButtonId m_parentButtonId; 
         ViewportUi::ButtonId m_worldButtonId; 
-        AZ::Event<ViewportUi::ButtonId>::Handler m_SpaceSelectionHandler; 
+        AZ::Event<ViewportUi::ButtonId>::Handler m_SpaceSelectionHandler;
+        void UpdateSpaceCluster(ReferenceFrame space);
+        ReferenceFrame m_currentSpace = ReferenceFrame::Parent;
+        bool m_spaceLock = false;
     };
 
     /// The ETCS (EntityTransformComponentSelection) namespace contains functions and data used exclusively by
