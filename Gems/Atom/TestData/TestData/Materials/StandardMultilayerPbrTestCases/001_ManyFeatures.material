@@ -4,6 +4,10 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
+        "blend": {
+            "enableLayer2": true,
+            "enableLayer3": true
+        },
         "layer1_baseColor": {
             "color": [
                 0.3495536744594574,
@@ -134,8 +138,14 @@
             "enable": true
         },
         "uv": {
-            "offsetU": -0.2800000011920929,
-            "rotateDegrees": 39.599998474121097
+            "center": [
+                0.10000000149011612,
+                0.20000000298023225
+            ],
+            "offsetU": 0.23000000417232514,
+            "offsetV": -0.23999999463558198,
+            "rotateDegrees": 39.599998474121097,
+            "scale": 1.100000023841858
         }
     }
 }
