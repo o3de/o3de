@@ -53,7 +53,7 @@ namespace AZ
             void OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene) override;
 
         private:
-            static constexpr const char* s_drawContextShaderPath = "Shaders/SimpleTextured.azshader";
+            static constexpr const char* s_drawContextShaderPath = "Shaders/TexturedIcon.azshader";
 
             RHI::Ptr<RPI::DynamicDrawContext> GetDrawContext(AzFramework::ViewportId id) const;
             bool CheckIfFileExists(AZStd::string_view sourceRelativePath, AZStd::string_view cacheRelativePath);

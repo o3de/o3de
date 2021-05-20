@@ -323,10 +323,7 @@ namespace AZ::Render
         Interface<RPI::DynamicDrawInterface>::Get()->RegisterNamedDynamicDrawContext(m_drawContextName, [](RPI::Ptr<RPI::DynamicDrawContext> drawContext)
         {
             auto shader = RPI::LoadShader(s_drawContextShaderPath);
-            RPI::ShaderOptionList shaderOptions;
-            shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("true")));
-            shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("true")));
-            drawContext->InitShaderWithVariant(shader, &shaderOptions);
+            drawContext->InitShader(shader);
             drawContext->InitVertexFormat(
                 {{"POSITION", RHI::Format::R32G32B32_FLOAT},
                  {"COLOR", RHI::Format::R8G8B8A8_UNORM},
