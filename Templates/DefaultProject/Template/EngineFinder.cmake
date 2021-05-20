@@ -20,13 +20,14 @@ if(json_error)
     message(FATAL_ERROR "Unable to read key 'engine' from 'project.json', error: ${json_error}")
 endif()
 
-# Read the list of paths from ~.o3de/o3de_manifest.json
-if($ENV{USERPROFILE} AND EXISTS $ENV{USERPROFILE})
+if(DEFINED ENV{USERPROFILE} AND EXISTS $ENV{USERPROFILE})
     set(manifest_path $ENV{USERPROFILE}/.o3de/o3de_manifest.json) # Windows
 else()
     set(manifest_path $ENV{HOME}/.o3de/o3de_manifest.json) # Unix
 endif()
 
+# Read the ~/.o3de/o3de_manifest.json file and look through the 'engines_path' object.
+# Find a key that matches LY_ENGINE_NAME_TO_USE and use that as the engine path.
 if(EXISTS ${manifest_path})
     file(READ ${manifest_path} manifest_json)
 
