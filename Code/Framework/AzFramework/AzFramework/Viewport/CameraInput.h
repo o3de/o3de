@@ -18,7 +18,6 @@
 #include <AzCore/std/optional.h>
 #include <AzFramework/Input/Channels/InputChannel.h>
 #include <AzFramework/Viewport/ClickDetector.h>
-#include <AzFramework/Viewport/CursorState.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Viewport/ViewportId.h>
 
@@ -74,7 +73,7 @@ namespace AzFramework
 
     struct HorizontalMotionEvent
     {
-        int m_delta;;
+        int m_delta;
     };
 
     struct VerticalMotionEvent
