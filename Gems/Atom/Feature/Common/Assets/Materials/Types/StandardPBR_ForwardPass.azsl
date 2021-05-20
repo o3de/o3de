@@ -10,6 +10,8 @@
 *
 */
 
+#include "Atom/Features/ShaderQualityOptions.azsli"
+
 #include "StandardPBR_Common.azsli"
 
 // SRGs
@@ -317,13 +319,18 @@ ForwardPassOutputWithDepth StandardPbr_ForwardPassPS(VSOutput IN, bool isFrontFa
 
     PbrLightingOutput lightingOutput = ForwardPassPS_Common(IN, isFrontFace, depth);
 
+#ifdef UNIFIED_FORWARD_OUTPUT
+    OUT.m_color.rgb = lightingOutput.m_diffuseColor.rgb + lightingOutput.m_specularColor.rgb;
+    OUT.m_color.a = lightingOutput.m_diffuseColor.a;
+    OUT.m_depth = depth;
+#else
     OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
     OUT.m_specularColor = lightingOutput.m_specularColor;
     OUT.m_specularF0 = lightingOutput.m_specularF0;
     OUT.m_albedo = lightingOutput.m_albedo;
     OUT.m_normal = lightingOutput.m_normal;
     OUT.m_depth = depth;
-
+#endif
     return OUT;
 }
 
@@ -335,12 +342,16 @@ ForwardPassOutput StandardPbr_ForwardPassPS_EDS(VSOutput IN, bool isFrontFace : 
 
     PbrLightingOutput lightingOutput = ForwardPassPS_Common(IN, isFrontFace, depth);
 
+#ifdef UNIFIED_FORWARD_OUTPUT
+    OUT.m_color.rgb = lightingOutput.m_diffuseColor.rgb + lightingOutput.m_specularColor.rgb;
+    OUT.m_color.a = lightingOutput.m_diffuseColor.a;
+#else
     OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
     OUT.m_specularColor = lightingOutput.m_specularColor;
     OUT.m_specularF0 = lightingOutput.m_specularF0;
     OUT.m_albedo = lightingOutput.m_albedo;
     OUT.m_normal = lightingOutput.m_normal;
-
+#endif
     return OUT;
 }
 

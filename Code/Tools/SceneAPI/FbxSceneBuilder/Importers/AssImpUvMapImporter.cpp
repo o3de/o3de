@@ -12,17 +12,19 @@
 
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/containers/array.h>
+#include <AzCore/std/numeric.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/FbxSceneBuilder/ImportContexts/AssImpImportContexts.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpUvMapImporter.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/ImporterUtilities.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/Utilities/AssImpMeshImporterUtilities.h>
-#include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
-#include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>
+#include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneData/GraphData/MeshData.h>
 #include <SceneAPI/SceneData/GraphData/MeshVertexUVData.h>
-#include <SceneAPI/SceneCore/Utilities/Reporting.h>
+#include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
+#include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>
 
 #include <assimp/scene.h>
 #include <assimp/mesh.h>
@@ -45,7 +47,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<AssImpUvMapImporter, SceneCore::LoadingComponent>()->Version(3); // LYN-2506
+                    serializeContext->Class<AssImpUvMapImporter, SceneCore::LoadingComponent>()->Version(4); // LYN-3250
                 }
             }
 
@@ -56,28 +58,53 @@ namespace AZ
                 {
                     return Events::ProcessingResult::Ignored;
                 }
-                aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
+                const aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
-                GetMeshDataFromParentResult meshDataResult(GetMeshDataFromParent(context));
-                if (!meshDataResult.IsSuccess())
+                // AssImp separates meshes that have multiple materials.
+                // This code re-combines them to match previous FBX SDK behavior,
+                // so they can be separated by engine code instead.
+                bool foundTextureCoordinates = false;
+                AZStd::array<int, AI_MAX_NUMBER_OF_TEXTURECOORDS> meshesPerTextureCoordinateIndex = {};
+                for (int localMeshIndex = 0; localMeshIndex < currentNode->mNumMeshes; ++localMeshIndex)
                 {
-                    return meshDataResult.GetError();
+                    aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[localMeshIndex]];
+                    for (int texCoordIndex = 0; texCoordIndex < meshesPerTextureCoordinateIndex.size(); ++texCoordIndex)
+                    {
+                        if (!mesh->mTextureCoords[texCoordIndex])
+                        {
+                            continue;
+                        }
+                        ++meshesPerTextureCoordinateIndex[texCoordIndex];
+                        foundTextureCoordinates = true;
+                    }
                 }
-                const SceneData::GraphData::MeshData* const parentMeshData(meshDataResult.GetValue());
 
-                size_t vertexCount = parentMeshData->GetVertexCount();
+                if (!foundTextureCoordinates)
+                {
+                    return Events::ProcessingResult::Ignored;
+                }
 
-                int sdkMeshIndex = parentMeshData->GetSdkMeshIndex();
-                AZ_Assert(sdkMeshIndex >= 0,
-                    "Tried to construct uv stream attribute for invalid or non-mesh parent data, mesh index is missing");
+                const uint64_t vertexCount = GetVertexCountForAllMeshesOnNode(*currentNode, *scene);
 
-                aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
+                for (int texCoordIndex = 0; texCoordIndex < meshesPerTextureCoordinateIndex.size(); ++texCoordIndex)
+                {
+                    int meshesWithIndex = meshesPerTextureCoordinateIndex[texCoordIndex];
+                    AZ_Error(
+                        Utilities::ErrorWindow,
+                        meshesWithIndex == 0 || meshesWithIndex == currentNode->mNumMeshes,
+                        "Texture coordinate index %d for node %s is not on all meshes on this node. "
+                        "Placeholder arbitrary texture values will be generated to allow the data to process, but the source art "
+                        "needs to be fixed to correct this. All meshes on this node should have the same number of texture coordinate channels.",
+                        texCoordIndex,
+                        currentNode->mName.C_Str());
+                }
 
                 Events::ProcessingResultCombiner combinedUvMapResults;
-                for (int texCoordIndex = 0; texCoordIndex < AI_MAX_NUMBER_OF_TEXTURECOORDS; ++texCoordIndex)
+                for (int texCoordIndex = 0; texCoordIndex < meshesPerTextureCoordinateIndex.size(); ++texCoordIndex)
                 {
-                    if (!mesh->mTextureCoords[texCoordIndex])
+                    // No meshes have this texture coordinate index, skip it.
+                    if (meshesPerTextureCoordinateIndex[texCoordIndex] == 0)
                     {
                         continue;
                     }
@@ -85,24 +112,55 @@ namespace AZ
                     AZStd::shared_ptr<SceneData::GraphData::MeshVertexUVData> uvMap =
                         AZStd::make_shared<AZ::SceneData::GraphData::MeshVertexUVData>();
                     uvMap->ReserveContainerSpace(vertexCount);
-
+                    bool customNameFound = false;
                     AZStd::string name(AZStd::string::format("%s%d", m_defaultNodeName, texCoordIndex));
-                    if (mesh->mTextureCoordsNames[texCoordIndex].length)
+                    for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
                     {
-                        name = mesh->mTextureCoordsNames[texCoordIndex].C_Str();
+                        const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
+                        if(mesh->mTextureCoords[texCoordIndex])
+                        {
+                            if (mesh->mTextureCoordsNames[texCoordIndex].length > 0)
+                            {
+                                if (!customNameFound)
+                                {
+                                    name = mesh->mTextureCoordsNames[texCoordIndex].C_Str();
+                                    customNameFound = true;
+                                }
+                                else
+                                {
+                                    AZ_Warning(Utilities::WarningWindow,
+                                        strcmp(name.c_str(), mesh->mTextureCoordsNames[texCoordIndex].C_Str()) == 0,
+                                        "Node %s has conflicting mesh coordinate names at index %d, %s and %s. Using %s.",
+                                        currentNode->mName.C_Str(),
+                                        texCoordIndex,
+                                        name.c_str(),
+                                        mesh->mTextureCoordsNames[texCoordIndex].C_Str(),
+                                        name.c_str());
+                                }
+                            }
+                        }
+
+                        for (int v = 0; v < mesh->mNumVertices; ++v)
+                        {
+                            if (mesh->mTextureCoords[texCoordIndex])
+                            {
+                                AZ::Vector2 vertexUV(
+                                    mesh->mTextureCoords[texCoordIndex][v].x,
+                                    // The engine's V coordinate is reverse of how it's stored in the FBX file.
+                                    1.0f - mesh->mTextureCoords[texCoordIndex][v].y);
+                                uvMap->AppendUV(vertexUV);
+                            }
+                            else
+                            {
+                                // An error was already emitted if the UV channels for all meshes on this node do not match.
+                                // Append an arbitrary UV value so that the mesh can still be processed.
+                                // It's better to let the engine load a partially valid mesh than to completely fail.
+                                uvMap->AppendUV(AZ::Vector2::CreateZero());
+                            }
+                        }
                     }
 
                     uvMap->SetCustomName(name.c_str());
-
-                    for (int v = 0; v < mesh->mNumVertices; ++v)
-                    {
-                        AZ::Vector2 vertexUV(
-                            mesh->mTextureCoords[texCoordIndex][v].x,
-                            // The engine's V coordinate is reverse of how it's stored in the FBX file.
-                            1.0f - mesh->mTextureCoords[texCoordIndex][v].y);
-                        uvMap->AppendUV(vertexUV);
-                    }
-
                     Containers::SceneGraph::NodeIndex newIndex =
                         context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, name.c_str());
 
@@ -116,6 +174,7 @@ namespace AZ
                     }
 
                     combinedUvMapResults += uvMapResults;
+
                 }
 
                 return combinedUvMapResults.GetResult();

@@ -15,10 +15,8 @@
 #include <ScreenWidget.h>
 #endif
 
-namespace Ui
-{
-    class FirstTimeUseClass;
-}
+QT_FORWARD_DECLARE_CLASS(QIcon)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
 
 namespace O3DE::ProjectManager
 {
@@ -32,10 +30,13 @@ namespace O3DE::ProjectManager
 
     protected slots:
         void HandleNewProjectButton();
-        void HandleOpenProjectButton();
+        void HandleAddProjectButton();
 
     private:
-        QScopedPointer<Ui::FirstTimeUseClass> m_ui;
+        QPushButton* CreateLargeBoxButton(const QIcon& icon, const QString& text, QWidget* parent = nullptr);
+
+        QPushButton* m_createProjectButton;
+        QPushButton* m_addProjectButton;
     };
 
 } // namespace O3DE::ProjectManager
