@@ -22,11 +22,11 @@ namespace O3DE::ProjectManager
         : QStyledItemDelegate(parent)
         , m_gemModel(gemModel)
     {
-        AddPlatformIcon(GemInfo::Android, ":/Resources/Android.svg");
-        AddPlatformIcon(GemInfo::iOS, ":/Resources/iOS.svg");
-        AddPlatformIcon(GemInfo::Linux, ":/Resources/Linux.svg");
-        AddPlatformIcon(GemInfo::macOS, ":/Resources/macOS.svg");
-        AddPlatformIcon(GemInfo::Windows, ":/Resources/Windows.svg");
+        AddPlatformIcon(GemInfo::Android, ":/Android.svg");
+        AddPlatformIcon(GemInfo::iOS, ":/iOS.svg");
+        AddPlatformIcon(GemInfo::Linux, ":/Linux.svg");
+        AddPlatformIcon(GemInfo::macOS, ":/macOS.svg");
+        AddPlatformIcon(GemInfo::Windows, ":/Windows.svg");
     }
 
     void GemItemDelegate::AddPlatformIcon(GemInfo::Platform platform, const QString& iconPath)
