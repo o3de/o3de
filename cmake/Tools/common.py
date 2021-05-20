@@ -147,7 +147,6 @@ def get_bootstrap_values(bootstrap_dir, keys_to_extract):
     bootstrap_file = os.path.join(bootstrap_dir, 'bootstrap.setreg')
     if not os.path.isfile(bootstrap_file):
         raise logging.error(f'Bootstrap.setreg file {bootstrap_file} does not exist.')
-        return None
     
     result_map = {}
     with bootstrap_file.open('r') as f:
@@ -159,7 +158,7 @@ def get_bootstrap_values(bootstrap_dir, keys_to_extract):
             for search_key in keys_to_extract:
                 try:
                     search_result = json_data["Amazon"]["AzCore"]["Bootstrap"][f'"{search_key}"']
-                except Exception as e:
+                except KeyError as e:
                     logging.error(f'Bootstrap.setreg cannot find Amazon:AzCore:Bootstrap:{search_result}: {str(e)}')
                 else:
                     result_map[search_key] = search_result
