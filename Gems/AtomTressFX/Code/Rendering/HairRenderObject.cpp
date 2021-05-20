@@ -295,7 +295,6 @@ namespace AZ
                 };
             }
 
-            // Based on SkinnedMeshInputLod::CreateStaticBuffer
             bool HairRenderObject::CreateAndBindHairGenerationBuffers(uint32_t vertexCount, uint32_t strandsCount)
             {
                 PrepareHairGenerationSrgDescriptors(vertexCount, strandsCount);
@@ -1035,12 +1034,29 @@ namespace AZ
             }
 
             // Move this to be built by the raster fill pass per object in the list during the Simulate?
-            bool HairRenderObject::BuildPPLLDrawPacket(RPI::ShaderResourceGroup* perPassSrg, RHI::DrawPacketBuilder::DrawRequest& drawRequest)
+            bool HairRenderObject::BuildPPLLDrawPacket(RHI::DrawPacketBuilder::DrawRequest& drawRequest)
             {
                 RHI::DrawPacketBuilder drawPacketBuilder;
-
                 RHI::DrawIndexed drawIndexed;
-                drawIndexed.m_indexCount = m_TotalIndices;
+
+                uint32_t numPrimsToRender = m_TotalIndices;
+                if (m_LODHairDensity < 1.0f)
+                {
+                    numPrimsToRender /= 3;
+                    numPrimsToRender = uint32_t(float(numPrimsToRender) * m_LODHairDensity);
+
+                    // Calculate a new number of Primitives to draw. Keep it aligned to number of primitives per strand (i.e. don't cut strands in half or anything)
+                    uint32_t numPrimsPerStrand = (m_NumVerticesPerStrand - 1) * 2;
+                    uint32_t remainderPrims = numPrimsToRender % numPrimsPerStrand;
+
+                    numPrimsToRender = (remainderPrims > 0) ? numPrimsToRender + numPrimsPerStrand - remainderPrims : numPrimsToRender;
+
+                    // Force prims to be on (guide hair + its follow hairs boundary... no partial groupings)
+                    numPrimsToRender = numPrimsToRender - (numPrimsToRender % (numPrimsPerStrand * (m_NumFollowHairsPerGuideHair + 1)));
+                    numPrimsToRender *= 3;
+                }
+
+                drawIndexed.m_indexCount = numPrimsToRender;
                 drawIndexed.m_indexOffset = 0;
                 drawIndexed.m_vertexOffset = 0;
 
@@ -1052,15 +1068,14 @@ namespace AZ
                 RPI::ShaderResourceGroup* renderMaterialSrg = m_hairRenderSrg.get();
                 RPI::ShaderResourceGroup* simSrg = m_dynamicHairData.GetSimSRG().get();
 
-                if (!renderMaterialSrg || !simSrg || !perPassSrg)
+                if (!renderMaterialSrg || !simSrg)
                 {
-                    AZ_Error("Hair Gem", false, "Failed to get per pass or hair material Srg for the raster pass.");
+                    AZ_Error("Hair Gem", false, "Failed to get thre hair material Srg for the raster pass.");
                     return false;
                 }
                 // No need to compile the simSrg since it was compiled already by the Compute pass this frame
                 drawPacketBuilder.AddShaderResourceGroup(renderMaterialSrg->GetRHIShaderResourceGroup());
                 drawPacketBuilder.AddShaderResourceGroup(simSrg->GetRHIShaderResourceGroup());
-
                 drawPacketBuilder.AddDrawItem(drawRequest);
 
                 // [To Do] Adi: avoid doing the following every frame. 
@@ -1079,9 +1094,9 @@ namespace AZ
                 return true;
             }
 
-            const RHI::DispatchItem* HairRenderObject::GetDispatchItem(RPI::ShaderResourceGroup* perPassSrg)
+            const RHI::DispatchItem* HairRenderObject::GetDispatchItem(RPI::Shader* computeShader)
             {
-                auto dispatchIter = m_dispatchItems.find(perPassSrg);
+                auto dispatchIter = m_dispatchItems.find(computeShader);
                 if (dispatchIter == m_dispatchItems.end())
                 {
                     AZ_Error("Hair Gem", false, "GetDispatchItem could not find the dispatch item based on the given shader resource group");
@@ -1090,10 +1105,7 @@ namespace AZ
                 return dispatchIter->second->GetDispatchItem();
             }
 
-            bool HairRenderObject::BuildDispatchItem(
-                RPI::Shader* computeShader,
-                RPI::ShaderResourceGroup* perPassSrg,
-                DispatchLevel dispatchLevel)
+            bool HairRenderObject::BuildDispatchItem(RPI::Shader* computeShader, DispatchLevel dispatchLevel)
             {
                 RPI::ShaderResourceGroup* simSrg = m_dynamicHairData.GetSimSRG().get();
                 RPI::ShaderResourceGroup* hairGenerationSrg = m_hairGenerationSrg.get();
@@ -1108,8 +1120,8 @@ namespace AZ
                     m_numGuideVertices : //, m_NumTotalVertices
                     m_NumTotalStrands;
 
-                m_dispatchItems[perPassSrg] = aznew HairDispatchItem;
-                m_dispatchItems[perPassSrg]->InitSkinningDispatch(
+                m_dispatchItems[computeShader] = aznew HairDispatchItem;
+                m_dispatchItems[computeShader]->InitSkinningDispatch(
                     computeShader, hairGenerationSrg, simSrg, elementsAmount );
 
                 return true;

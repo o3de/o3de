@@ -201,19 +201,12 @@ namespace AZ
                     return m_fillDrawPacket;
                 }
 
-                bool BuildPPLLDrawPacket(RPI::ShaderResourceGroup* perPassSrg, RHI::DrawPacketBuilder::DrawRequest& drawRequest);
+                bool BuildPPLLDrawPacket(RHI::DrawPacketBuilder::DrawRequest& drawRequest);
 
-                //! Creates and fill the dispatch item associated with the current per pass Srg
-                //!  based on this hair object.  
-                //!  Since per pass srg is unique to a shader, it will serve specifically for this
-                //!  object only and for the calling shader
-                bool BuildDispatchItem(
-                    RPI::Shader* computeShader,
-                    RPI::ShaderResourceGroup* perPassSrg,   
-                    DispatchLevel dispatchLevel
-                );
+                //! Creates and fill the dispatch item associated with the compute shader
+                bool BuildDispatchItem(RPI::Shader* computeShader, DispatchLevel dispatchLevel);
 
-                const RHI::DispatchItem* GetDispatchItem(RPI::ShaderResourceGroup* perPassSrg);
+                const RHI::DispatchItem* GetDispatchItem(RPI::Shader* computeShader);
 
                 void PrepareHairGenerationSrgDescriptors(uint32_t vertexCount, uint32_t numStrands);
 
@@ -312,7 +305,7 @@ namespace AZ
 
                 //! Array of pointers to the various dispatch items per the various passes
                 //! CURRENTLY NOT USED
-                AZStd::map<RPI::ShaderResourceGroup*, Data::Instance<HairDispatchItem>> m_dispatchItems;
+                AZStd::map<RPI::Shader*, Data::Instance<HairDispatchItem>> m_dispatchItems;
 
                 //! Skinning compute shader used for creation of the compute Srgs and dispatch item
                 Data::Instance<RPI::Shader> m_skinningShader = nullptr;

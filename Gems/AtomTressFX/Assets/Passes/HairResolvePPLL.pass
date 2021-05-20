@@ -35,7 +35,7 @@
                 {
                     "Name": "PerPixelListHead",
                     "ShaderInputName": "m_fragmentListHead",
-                    "SlotType": "InputOutput", // Read/Write since we reset the pixels in the shader
+                    "SlotType": "Input", // Read only - the reset is done in a copy before the fill pass
                     "ScopeAttachmentUsage": "Shader",
                     "LoadStoreAction": {
                         "LoadAction": "Load",
@@ -46,7 +46,7 @@
                     "Name": "PerPixelLinkedList",
                     "ShaderInputName": "m_linkedListNodes",
                     "SlotType": "Input",
-                    //                    "SlotType": "InputOutput",
+//                    "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "Shader",
                     "LoadStoreAction": {
                         "LoadAction": "Load",

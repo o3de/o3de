@@ -23,6 +23,10 @@
 // THE SOFTWARE.
 //
 
+// The following line is required in order to manually strip the per object Srg
+// that is not used and by doing that avoid the need to pointlessly bind it.
+#define _IGNORE_PER_OBJECT_SRG_
+
 #include <HairLighting.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
@@ -62,9 +66,8 @@ float4 GatherLinkedList(float2 vfScreenAddress )//, inout float outDepth )
     uint pointer = FragmentListHead[vScreenAddress];
 
 
-    if ((pointer == FRAGMENT_LIST_NULL) || (pointer == 0))  // [To Do] Adibugbug - skip very first hair counter: allows reset to 0
+    if (pointer == FRAGMENT_LIST_NULL)  // [To Do] Adibugbug - skip very first hair counter: allows reset to 0
     {
-        FragmentListHead[vScreenAddress] = FRAGMENT_LIST_NULL;  // Clear for next frame (if 0)
         discard;
     }
 
@@ -98,8 +101,6 @@ float4 GatherLinkedList(float2 vfScreenAddress )//, inout float outDepth )
             pointer = NODE_NEXT(pointer);
         }
     }
-    // [To Do: Adibugbug: reset for next frame - can it be switched with 0 and put outside?
-    FragmentListHead[vScreenAddress] = FRAGMENT_LIST_NULL;  // Clear for next frame
 
     float4 fcolor = float4(0, 0, 0, 1);
 
@@ -328,19 +329,14 @@ float4 CombineFragments(float2 vfScreenAddress, inout float closestDepth )
     uint pointer = FragmentListHead[vScreenAddress];
 
     // Discard any pixel without hair
-    if ((pointer == FRAGMENT_LIST_NULL) || (pointer == 0))
+    if (pointer == FRAGMENT_LIST_NULL)
     {
-        if (pointer == 0)
-        {   // Very first frame
-            FragmentListHead[vScreenAddress] = FRAGMENT_LIST_NULL;  // Clear for next frame
-        }
         discard;
     }
 
     // Build indirect indexing table and sort it by depth
     IndexArray indexArray;
     uint fragmentsAmount = FillFragmentArray(indexArray, pointer);
-    FragmentListHead[vScreenAddress] = FRAGMENT_LIST_NULL;  // Clear for next frame
     SortFragmentArray(indexArray, fragmentsAmount);
 
     // Retrieve the base color of hair fragments that are the furthest away from the 
@@ -361,19 +357,15 @@ float4 GetClosestFragment(float2 vfScreenAddress, inout float3 tangent, inout fl
     uint2 vScreenAddress = uint2(vfScreenAddress);
     uint pointer = FragmentListHead[vScreenAddress];
 
-    if ((pointer == FRAGMENT_LIST_NULL) || (pointer == 0))
+    if (pointer == FRAGMENT_LIST_NULL)
     {
-        if (pointer == 0)
-        {   // Very first frame
-            FragmentListHead[vScreenAddress] = FRAGMENT_LIST_NULL;  // Clear for next frame
-        }
         discard;
     }
 
     float4 fcolor = float4(0, 0, 0, 1);
     float maxDepth = 0;
     uint curColor, curData;
-    for ( ; (pointer!=FRAGMENT_LIST_NULL) && (pointer != 0) ; )
+    for ( ; (pointer!=FRAGMENT_LIST_NULL) ; )
     {
         float depth = asfloat(NODE_DEPTH(pointer));
         if (depth > maxDepth)
@@ -384,7 +376,6 @@ float4 GetClosestFragment(float2 vfScreenAddress, inout float3 tangent, inout fl
         }
         pointer = NODE_NEXT(pointer);
     }
-    FragmentListHead[vScreenAddress] = FRAGMENT_LIST_NULL;  // Clear for next frame
 
     float curDepth = closestDepth = maxDepth;
     float4 vData = UnpackUintIntoFloat4(curData);

@@ -46,7 +46,7 @@
 #define AMD_TRESSFX_KERNEL_SIZE 5
 #define KBUFFER_SIZE 8
 #define MAX_FRAGMENTS 512
-#define FRAGMENT_LIST_NULL 0xffffffff   //0    // [To Do] Adi: adibugbug - skipping first hair to allow clear screen value (0) 0xffffffff
+#define FRAGMENT_LIST_NULL 0    // [To Do] Adi: adibugbug - skipping first hair to allow clear screen value (0) 0xffffffff
 
 //!=============================================================================
 //!

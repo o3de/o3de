@@ -106,7 +106,8 @@ void LengthConstriantsWindAndCollision(uint GIndex : SV_GroupIndex,
         {
             // combining four winds.
             float a = ((float)(globalStrandIndex % 20))/20.0f;
-            float3  w = a*g_Wind.xyz + (1.0f-a)*g_Wind1.xyz + a*g_Wind2.xyz + (1.0f-a)*g_Wind3.xyz;
+            float3  w =  a* g_Wind.xyz + (1.0f - a) * g_Wind1.xyz + a * g_Wind2.xyz + (1.0f - a) * g_Wind3.xyz;
+//            float3  w = float3(5.2, 0, 0);
 
             uint sharedIndex = localVertexIndex * numOfStrandsPerThreadGroup + localStrandIndex;
 

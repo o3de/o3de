@@ -147,7 +147,7 @@ struct StrandLevelData
     float4 vspTranslation;
 };
 
-
+#ifndef _IGNORE_PER_OBJECT_SRG_
 //!------------------------------ SRG Structure --------------------------------
 //! Per instance/draw SRG representing dynamic read-write set of buffers
 //!  that are unique per instance and are shared and changed between passes due 
@@ -297,16 +297,4 @@ float3 GetSharedTangent(int tangentIndex)
     );
 }
 
-/*
-//! Same as the above only using the dynamic (per object) buffer and not the per pass
-void SetSharedDynamicPosition(int vertexIndex, float3 currentPos)
-{
-    HairDynamicDataSrg::m_hairVertexPositions[vertexIndex] = float4(currentPos, 1.0);
-}
-
-float3 GetSharedDynamicPosition(int vertexIndex)
-{
-    return HairDynamicDataSrg::m_hairVertexPositions[vertexIndex].xyz;
-}
-*/
-//------------------------------------------------------------------------------
+#endif // _IGNORE_PER_OBJECT_SRG_
