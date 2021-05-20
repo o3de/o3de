@@ -338,7 +338,7 @@
                             "LocalSlot": "MotionVectors",
                             "AttachmentRef": {
                                 "Pass": "MotionVectorPass",
-                                "Attachment": "CameraMotionVectorOutput"
+                                "Attachment": "MotionVectorOutput"
                             }
                         },
                         {

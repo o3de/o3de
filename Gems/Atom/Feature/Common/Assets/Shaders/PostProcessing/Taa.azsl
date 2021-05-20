@@ -54,30 +54,33 @@ void MainCS(
     uint3 groupID : SV_GroupID, 
     uint groupIndex : SV_GroupIndex)
 {
+    // Get color / depth / motion for current frame.
     uint2 pixelCoord = dispatchThreadID.xy;
-
-    uint2 size = PassSrg::m_constantData.m_size;
+    float3 color = PassSrg::m_inputColor[pixelCoord].rgb;
+    float depth = PassSrg::m_inputDepth[pixelCoord].r;
     float2 previousPosition = -PassSrg::m_motionVectors[pixelCoord];
 
+    // Get the uv coordinate for the previous frame.
+    uint2 size = PassSrg::m_constantData.m_size;
     float2 halfPixel = rcp(size * 2.0);
-
     float2 uvCoord = pixelCoord / float2(size) + halfPixel;
     float2 uvOld = float2(uvCoord) + previousPosition;
 
-    float3 color = PassSrg::m_inputColor[pixelCoord].rgb;
-    float depth = PassSrg::m_inputDepth[pixelCoord].r;
-
-    // Depth stored in a.
+    // For now just rely on hardware bilinear filtering but this is something that will be improved.
+    // Color in rgb, Depth in a
     float4 lastFrameColorDepth = PassSrg::m_lastFrameAccumulation.SampleLevel(PassSrg::LinearSampler, uvOld, 0.0);
 
     float weight = PassSrg::m_minContribution;
 
     // Very basic depth rejection
-    if (abs(depth - lastFrameColorDepth.a) > 0.01)
+    if (abs(depth - lastFrameColorDepth.a) > 0.001)
     {
         weight = 1.0f;
     }
 
     PassSrg::m_outputColor[pixelCoord].rgb = lerp(lastFrameColorDepth.rgb, color, weight);
+
+    // Output depth to check against next frame. This is much higher precision than necessary for a depth rejection, so we'll either move this to a
+    // separate buffer or stuff some additional data useful to taa in the same spot.
     PassSrg::m_outputColor[pixelCoord].a = depth;
 }

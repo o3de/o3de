@@ -41,5 +41,7 @@ PSOutput MainPS(VSOutput IN)
     float2 motion = (clipPos.xy / clipPos.w - clipPosPrev.xy / clipPosPrev.w) * 0.5;
 
     OUT.m_motion = motion;
+    OUT.m_motion.y = -OUT.m_motion.y;
+    
     return OUT;
 }

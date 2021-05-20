@@ -22,27 +22,16 @@
                     "SlotType": "InputOutput"
                 },
                 {
-                    "Name": "CameraMotionVectorOutput",
-                    "SlotType": "Output"
-                },
-                {
-                    "Name": "MeshMotionVectorOutput",
+                    "Name": "MotionVectorOutput",
                     "SlotType": "Output"
                 }
             ],
             "Connections": [
                 {
-                    "LocalSlot": "CameraMotionVectorOutput",
-                    "AttachmentRef": {
-                        "Pass": "CameraMotionVectorPass",
-                        "Attachment": "Output"
-                    }
-                },
-                {
-                    "LocalSlot": "MeshMotionVectorOutput",
+                    "LocalSlot": "MotionVectorOutput",
                     "AttachmentRef": {
                         "Pass": "MeshMotionVectorPass",
-                        "Attachment": "Output"
+                        "Attachment": "MotionInputOutput"
                     }
                 }
             ],

@@ -87,6 +87,7 @@
                 {
                     "Name": "TaaPass",
                     "TemplateName": "TaaTemplate",
+                    "Enabled": true,
                     "Connections": [
                         {
                             "LocalSlot": "InputColor",

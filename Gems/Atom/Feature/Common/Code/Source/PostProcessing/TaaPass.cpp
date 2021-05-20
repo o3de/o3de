@@ -16,6 +16,7 @@
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Reflect/Pass/PassName.h>
 
 namespace AZ::Render
 {
@@ -42,7 +43,7 @@ namespace AZ::Render
         };
 
         TaaConstants cb;
-        RHI::Size inputSize = m_inputColorBinding->m_attachment->m_descriptor.m_image.m_size;
+        RHI::Size inputSize = m_lastFrameAccumulationBinding->m_attachment->m_descriptor.m_image.m_size;
         cb.m_size[0] = inputSize.m_width;
         cb.m_size[1] = inputSize.m_height;
         
@@ -124,30 +125,30 @@ namespace AZ::Render
             return;
         }
 
-        // add field to attachment for manual update
         // update the image attachment descriptor to sync up size and format
-        RHI::ImageDescriptor oldImageDesc = attachment->m_descriptor.m_image;
         attachment->Update(true);
         RHI::ImageDescriptor& imageDesc = attachment->m_descriptor.m_image;
+        RPI::AttachmentImage* currentImage = azrtti_cast<RPI::AttachmentImage*>(attachment->m_importedResource.get());
 
-        if (oldImageDesc.m_size == imageDesc.m_size && attachment->m_importedResource)
+        if (attachment->m_importedResource && imageDesc.m_size == currentImage->GetDescriptor().m_size)
         {
-            // If the size didn't change and we have a resource already, just keep using the old AttachmentImage.
+            // If there's a resource already and the size didn't change, just keep using the old AttachmentImage.
             return;
         }
-
-        // set the bind flags
-        attachment->m_lifetime = RHI::AttachmentLifetimeType::Imported;
-        imageDesc.m_bindFlags |= RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite;
         
         Data::Instance<RPI::AttachmentImagePool> pool = RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
 
-        //The ImageViewDescriptor must be specified to make sure the frame graph compiler doesn't treat this as a transient image.
+        // set the bind flags
+        imageDesc.m_bindFlags |= RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite;
+        
+        // The ImageViewDescriptor must be specified to make sure the frame graph compiler doesn't treat this as a transient image.
         RHI::ImageViewDescriptor viewDesc = RHI::ImageViewDescriptor::Create(imageDesc.m_format, 0, 0);
         viewDesc.m_aspectFlags = RHI::ImageAspectFlags::Color;
         viewDesc.m_overrideBindFlags = RHI::ImageBindFlags::ShaderReadWrite;
 
-        auto attachmentImage = RPI::AttachmentImage::Create(*pool.get(), imageDesc, Name(attachment->m_path.GetCStr()), nullptr, &viewDesc);
+        // The full path name is needed for the attachment image so it's not deduplicated from accumulation images in different pipelines.
+        AZStd::string imageName = RPI::ConcatPassString(GetPathName(), attachment->m_path);
+        auto attachmentImage = RPI::AttachmentImage::Create(*pool.get(), imageDesc, Name(imageName), nullptr, &viewDesc);
         
         attachment->m_path = attachmentImage->GetAttachmentId();
         attachment->m_importedResource = attachmentImage;
