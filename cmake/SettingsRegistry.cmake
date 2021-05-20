@@ -124,12 +124,13 @@ function(ly_delayed_generate_settings_registry)
                 message(FATAL_ERROR "Dependency ${gem_target} from ${target} does not exist")
             endif()
             get_property(gem_relative_source_dir TARGET ${gem_target} PROPERTY SOURCE_DIR)
+
             if(gem_relative_source_dir)
-                # Most gems SOURCE dir is nested in the path, we need to find the path to the gem.json or project.json file
-                while(NOT EXISTS ${gem_relative_source_dir}/gem.json AND NOT EXISTS ${gem_relative_source_dir}/project.json)
+                # Most gems SOURCE dir is nested in the path, we need to find the path where an 'Assets' or 'Code' folder resides
+                while(NOT EXISTS ${gem_relative_source_dir}/Assets AND NOT EXISTS ${gem_relative_source_dir}/Code)
                     get_filename_component(parent_dir ${gem_relative_source_dir} DIRECTORY)
                     if (${parent_dir} STREQUAL ${gem_relative_source_dir})
-                        message(FATAL_ERROR "Did not find gem.json or project.json while processing target ${gem_target}!")
+                        message(FATAL_ERROR "Did not find a Gem source dir while processing target ${gem_target}!")
                     endif()
                     set(gem_relative_source_dir ${parent_dir})
                 endwhile()
