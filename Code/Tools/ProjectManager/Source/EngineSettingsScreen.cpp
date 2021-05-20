@@ -85,11 +85,10 @@ namespace O3DE::ProjectManager
     void EngineSettingsScreen::OnTextChanged()
     {
         // save engine settings
-        EngineInfo engineInfo;
-
         auto engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
         if (engineInfoResult.IsSuccess())
         {
+            EngineInfo engineInfo;
             engineInfo = engineInfoResult.GetValue();
             engineInfo.m_thirdPartyPath         = m_thirdParty->lineEdit()->text();
             engineInfo.m_defaultProjectsFolder  = m_defaultProjects->lineEdit()->text();
