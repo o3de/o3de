@@ -31,11 +31,11 @@ namespace AZ
             };
 
             class FbxImportRequestHandler
-                : public SceneCore::BehaviorComponent
+                : public AZ::Component
                 , public Events::AssetImportRequestBus::Handler
             {
             public:
-                AZ_COMPONENT(FbxImportRequestHandler, "{9F4B189C-0A96-4F44-A5F0-E087FF1561F8}", SceneCore::BehaviorComponent);
+                AZ_COMPONENT(FbxImportRequestHandler, "{9F4B189C-0A96-4F44-A5F0-E087FF1561F8}");
 
                 ~FbxImportRequestHandler() override = default;
 

@@ -61,7 +61,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<FbxImportRequestHandler, SceneCore::BehaviorComponent>()->Version(1)->Attribute(
+                    serializeContext->Class<FbxImportRequestHandler, AZ::Component>()->Version(1)->Attribute(
                         AZ::Edit::Attributes::SystemComponentTags,
                         AZStd::vector<AZ::Crc32>({AssetBuilderSDK::ComponentTags::AssetBuilder}));
                     
