@@ -26,5 +26,6 @@ set(FILES
     Packaging_windows.cmake
     PackagingPostBuild.cmake
     Packaging/Bootstrapper.wxs
+    Packaging/Shortcuts.wxs
     Packaging/Template.wxs.in
 )
