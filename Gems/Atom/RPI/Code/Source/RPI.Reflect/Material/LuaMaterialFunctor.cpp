@@ -63,6 +63,7 @@ namespace AZ
             behaviorContext->Class<Image>(); 
 
             MaterialPropertyDescriptor::Reflect(behaviorContext);
+            ReflectMaterialDynamicMetadata(behaviorContext);
 
             LuaMaterialFunctorRenderStates::Reflect(behaviorContext);
             LuaMaterialFunctorShaderItem::Reflect(behaviorContext);
@@ -255,7 +256,7 @@ namespace AZ
 
         // Specialize for type Image* because that will be more intuitive within Lua.
         // The script can then check the result for nil without calling "get()".
-        // For example, "GetMaterialPropertyValue_image(name) == nil" rather than "GetMaterialPropertyValue_image(name):get() == nil"
+        // For example, "GetMaterialPropertyValue_Image(name) == nil" rather than "GetMaterialPropertyValue_Image(name):get() == nil"
         template<>
         Image* LuaMaterialFunctorCommonContext::GetMaterialPropertyValue(const char* name) const
         {
@@ -278,7 +279,7 @@ namespace AZ
                 ->Method("GetMaterialPropertyValue_Vector3", &LuaMaterialFunctorRuntimeContext::GetMaterialPropertyValue<Vector3>)
                 ->Method("GetMaterialPropertyValue_Vector4", &LuaMaterialFunctorRuntimeContext::GetMaterialPropertyValue<Vector4>)
                 ->Method("GetMaterialPropertyValue_Color", &LuaMaterialFunctorRuntimeContext::GetMaterialPropertyValue<Color>)
-                ->Method("GetMaterialPropertyValue_image", &LuaMaterialFunctorRuntimeContext::GetMaterialPropertyValue<Image*>)
+                ->Method("GetMaterialPropertyValue_Image", &LuaMaterialFunctorRuntimeContext::GetMaterialPropertyValue<Image*>)
                 ->Method("SetShaderConstant_bool", &LuaMaterialFunctorRuntimeContext::SetShaderConstant<bool>)
                 ->Method("SetShaderConstant_int", &LuaMaterialFunctorRuntimeContext::SetShaderConstant<int32_t>)
                 ->Method("SetShaderConstant_uint", &LuaMaterialFunctorRuntimeContext::SetShaderConstant<uint32_t>)
@@ -436,7 +437,7 @@ namespace AZ
                 ->Method("GetMaterialPropertyValue_Vector3", &LuaMaterialFunctorEditorContext::GetMaterialPropertyValue<Vector3>)
                 ->Method("GetMaterialPropertyValue_Vector4", &LuaMaterialFunctorEditorContext::GetMaterialPropertyValue<Vector4>)
                 ->Method("GetMaterialPropertyValue_Color", &LuaMaterialFunctorEditorContext::GetMaterialPropertyValue<Color>)
-                ->Method("GetMaterialPropertyValue_image", &LuaMaterialFunctorEditorContext::GetMaterialPropertyValue<Image*>)
+                ->Method("GetMaterialPropertyValue_Image", &LuaMaterialFunctorEditorContext::GetMaterialPropertyValue<Image*>)
                 ->Method("SetMaterialPropertyVisibility", &LuaMaterialFunctorEditorContext::SetMaterialPropertyVisibility)
                 ->Method("SetMaterialPropertyDescription", &LuaMaterialFunctorEditorContext::SetMaterialPropertyDescription)
                 ->Method("SetMaterialPropertyMinValue_int", &LuaMaterialFunctorEditorContext::SetMaterialPropertyMinValue<int32_t>)
@@ -451,6 +452,7 @@ namespace AZ
                 ->Method("SetMaterialPropertySoftMaxValue_int", &LuaMaterialFunctorEditorContext::SetMaterialPropertySoftMaxValue<int32_t>)
                 ->Method("SetMaterialPropertySoftMaxValue_uint", &LuaMaterialFunctorEditorContext::SetMaterialPropertySoftMaxValue<uint32_t>)
                 ->Method("SetMaterialPropertySoftMaxValue_float", &LuaMaterialFunctorEditorContext::SetMaterialPropertySoftMaxValue<float>)
+                ->Method("SetMaterialPropertyGroupVisibility", &LuaMaterialFunctorEditorContext::SetMaterialPropertyGroupVisibility)
                 ;
         }
 
@@ -523,6 +525,15 @@ namespace AZ
             }
 
             return m_editorContextImpl->SetMaterialPropertySoftMaxValue(index, value);
+        }
+        
+        bool LuaMaterialFunctorEditorContext::SetMaterialPropertyGroupVisibility(const char* name, MaterialPropertyGroupVisibility visibility)
+        {
+            if (m_editorContextImpl)
+            {
+                return m_editorContextImpl->SetMaterialPropertyGroupVisibility(Name{m_propertyNamePrefix + name}, visibility);
+            }
+            return false;
         }
 
         bool LuaMaterialFunctorEditorContext::SetMaterialPropertyVisibility(const char* name, MaterialPropertyVisibility visibility)
