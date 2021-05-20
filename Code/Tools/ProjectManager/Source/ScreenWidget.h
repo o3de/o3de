@@ -15,18 +15,20 @@
 #include <ScreenDefs.h>
 
 #include <QWidget>
+#include <QStyleOption>
+#include <QPainter>
 #endif
 
 namespace O3DE::ProjectManager
 {
     class ScreenWidget
-        : public QWidget
+        : public QFrame
     {
         Q_OBJECT
 
     public:
         explicit ScreenWidget(QWidget* parent = nullptr)
-            : QWidget(parent)
+            : QFrame(parent)
         {
         }
         ~ScreenWidget() = default;
