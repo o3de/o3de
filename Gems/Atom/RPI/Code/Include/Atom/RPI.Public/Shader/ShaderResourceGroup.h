@@ -305,10 +305,10 @@ namespace AZ
             /// The shader resource group that can be submitted to the renderer
             RHI::Ptr<RHI::ShaderResourceGroup> m_shaderResourceGroup;
 
-            /// A reference to the parent template asset used to initialize and manipulate this group.
+            /// A reference to the SRG asset used to initialize and manipulate this group.
             AZ::Data::Asset<ShaderResourceGroupAsset> m_asset;
 
-            /// A reference to the parent template asset used to initialize and manipulate this group.
+            /// A reference to the shader asset used to initialize and manipulate this group.
             AZ::Data::Asset<ShaderAsset2> m_shaderAsset;
 
             /// A pointer to the layout inside of m_srgAsset

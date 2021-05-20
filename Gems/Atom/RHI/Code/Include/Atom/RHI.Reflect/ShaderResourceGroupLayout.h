@@ -76,7 +76,7 @@ namespace AZ
             bool Finalize();
 
             void SetName(const Name& name) {  m_name = name; }
-            const Name& GetName() { return m_name; }
+            const Name& GetName() const { return m_name; }
 
             /**
              * Designates this SRG as ShaderVariantKey fallback by providing the generated
@@ -110,8 +110,6 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // The following methods are only permitted on a finalized layout.
-
-            Name GetName() const { return m_name; }
 
             /// Returns the full list of static samplers descriptors declared on the layout.
             AZStd::array_view<ShaderInputStaticSamplerDescriptor> GetStaticSamplers() const;

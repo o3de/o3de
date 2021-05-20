@@ -100,7 +100,7 @@ namespace AZ
                 AZStd::string m_minusArguments;
 
                 //! Helper function. Parses @m_minusArguments and @m_plusArguments, looks for arguments of type -D<name>[=<value>] and returns
-                //! a list of <name>.
+                //! a list of <name> to remove.
                 AZStd::vector<AZStd::string> GetCombinedListOfMacroDefinitionNamesToRemove() const;
 
                 //! Helper function. Parses @m_plusArguments, looks for arguments of type "-D<name>[=<value>]" and returns

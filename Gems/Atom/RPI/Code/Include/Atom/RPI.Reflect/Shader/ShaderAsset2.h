@@ -40,17 +40,17 @@ namespace AZ
 
         enum class ShaderAsset2ProductSubId : uint32_t
         {
-            ShaderAsset2 = 0, // for .azshader file, One per .shader.
-            RootShaderVariantAsset, // for .azshadervariant, one per supervariant and referenced inside the .azshader.
-            AzslFlat, // .azslin, this file contains the result of preprocessing an azsl file with MCPP, along with prepending the per-RHI azsli header.
-            IaJson, // .ia.json, Input Assembly reflection data.
-            OmJson, // .om.json, Output Merger reflection data. 
-            SrgJson, // .srg.json, Shader Resource Group reflection data.
-            OptionsJson, // .options.json, Shader Options reflection data.
-            BindingdepJson, //.bindingdep.json, Binding dependencies.
-            GeneratedHlslSource, //.hlsl code generated with AZSLc.
-            FirstByProduct, // This must be last because we use this as a base for adding all the debug byProducts generated
-                            // with dxc, or spirv-cross, etc.
+            ShaderAsset2 = 0, //!< for .azshader file, One per .shader.
+            RootShaderVariantAsset, //!< for .azshadervariant, one per supervariant and referenced inside the .azshader.
+            AzslFlat, //!< .azslin, this file contains the result of preprocessing an azsl file with MCPP, along with prepending the per-RHI azsli header.
+            IaJson, //!< .ia.json, Input Assembly reflection data.
+            OmJson, //!< .om.json, Output Merger reflection data. 
+            SrgJson, //!< .srg.json, Shader Resource Group reflection data.
+            OptionsJson, //!< .options.json, Shader Options reflection data.
+            BindingdepJson, //!<.bindingdep.json, Binding dependencies.
+            GeneratedHlslSource, //!<.hlsl code generated with AZSLc.
+            FirstByProduct, //!< This must be last because we use this as a base for adding all the debug byProducts generated
+                            //!< with dxc, or spirv-cross, etc.
         };
 
         class ShaderAsset2 final

@@ -555,7 +555,7 @@ namespace AZ
                 return DumpCode(builderName, nonPreprocessedYetAzslSource, tempDirPath, stemName, apiTypeString, "azslprepend");
             }
 
-            AZStd::string ExtracStemName(const char* path)
+            AZStd::string ExtractStemName(const char* path)
             {
                 AZStd::string result;
                 AzFramework::StringFunc::Path::GetFileName(path, result);

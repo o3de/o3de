@@ -32,7 +32,7 @@ namespace AZ
         //! Shader2 and ShaderAsset2 related APIs.
         using SupervariantIndex = RHI::Handle<uint32_t, class ShaderAsset2>;
         static const SupervariantIndex DefaultSupervariantIndex(0);
-        static const SupervariantIndex InvalidSupervariantIndex(aznumeric_cast<uint32_t>(-1));
+        static const SupervariantIndex InvalidSupervariantIndex;
 
         enum class ShaderStageType : uint32_t
         {

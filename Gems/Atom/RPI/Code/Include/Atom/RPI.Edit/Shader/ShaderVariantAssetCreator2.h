@@ -41,8 +41,9 @@ namespace AZ
             /////////////////////////////////////////////////////////////////////
             // Methods for all shader variant types
 
-            //! Set the timestamp value of ShaderAsset that matches this ShaderVariantAsset.
+            //! Set the timestamp value when the ProcessJob() started.
             //! This is needed to synchronize between the ShaderAsset and ShaderVariantAsset when hot-reloading shaders.
+            //! The idea is that this timestamp must be greater or equal than the ShaderAsset. 
             void SetBuildTimestamp(AZStd::sys_time_t buildTimestamp);
 
             //! Assigns a shaderStageFunction, which contains the byte code, to the slot dictated by the shader stage.

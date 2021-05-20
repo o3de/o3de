@@ -133,7 +133,7 @@ namespace AZ
         //             Example: "--use-spaces --namespace=vk"
         // Returns: A list with just the [-|--]<argument name>:
         //          ["-<arg1>", "--<arg2>", "--arg3"]
-        //          For the example shown bove it will return this vector:
+        //          For the example shown above it will return this vector:
         //          ["--use-spaces", "--namespace"]
         AZStd::vector<AZStd::string> GetListOfArgumentNames(const AZStd::string& arguments)
         {

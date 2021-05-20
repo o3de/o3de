@@ -162,7 +162,7 @@ namespace AZ
                 const AZStd::string& apiTypeString = "");
 
             //! "d:/p/f.e" -> "f"
-            AZStd::string ExtracStemName(const char* path);
+            AZStd::string ExtractStemName(const char* path);
 
             AZStd::vector<RHI::ShaderPlatformInterface*> DiscoverValidShaderPlatformInterfaces(const AssetBuilderSDK::PlatformInfo& info);
             AZStd::vector<RHI::ShaderPlatformInterface*> DiscoverEnabledShaderPlatformInterfaces(

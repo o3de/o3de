@@ -110,18 +110,6 @@ namespace AZ
                 return false;
             }
 
-            //m_pool =
-            //    ShaderResourceGroupPool::FindOrCreate(AZ::Data::Asset<ShaderAsset2>(&shaderAsset, AZ::Data::AssetLoadBehavior::PreLoad));
-            //if (!m_pool)
-            //{
-            //    return RHI::ResultCode::Fail;
-            //}
-            //
-            //m_shaderResourceGroup = m_pool->CreateRHIShaderResourceGroup();
-            //if (!m_shaderResourceGroup)
-            //{
-            //    return RHI::ResultCode::Fail;
-            //}
             m_shaderResourceGroup->SetName(m_layout->GetName());
             m_data = RHI::ShaderResourceGroupData(m_layout);
             m_shaderAsset = shaderAsset;

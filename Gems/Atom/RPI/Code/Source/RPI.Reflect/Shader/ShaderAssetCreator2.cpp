@@ -71,6 +71,18 @@ namespace AZ
                 return;
             }
 
+            if (m_currentSupervariant)
+            {
+                ReportError("Call EndSupervariant() before calling BeginSupervariant again.");
+                return;
+            }
+
+            if (m_asset->m_currentAPITypeIndex == ShaderAsset2::InvalidAPITypeIndex)
+            {
+                ReportError("Can not begin supervariant with name [%s] because this function must be called between BeginAPI()/EndAPI()", name.GetCStr());
+                return;
+            }
+
             if (m_asset->m_perAPIShaderData.empty())
             {
                 ReportError("Can not add supervariant with name [%s] because there's no per API shader data", name.GetCStr());
@@ -109,6 +121,12 @@ namespace AZ
                 return;
             }
 
+            if (!m_currentSupervariant)
+            {
+                ReportError("BeginSupervariant() should be called first before calling %s", __FUNCTION__);
+                return;
+            }
+
             m_currentSupervariant->m_srgLayoutList = srgLayoutList;
             for (auto srgLayout : m_currentSupervariant->m_srgLayoutList)
             {
@@ -131,6 +149,11 @@ namespace AZ
             {
                 return;
             }
+            if (!m_currentSupervariant)
+            {
+                ReportError("BeginSupervariant() should be called first before calling %s", __FUNCTION__);
+                return;
+            }
             if (m_currentSupervariant->m_srgLayoutList.empty())
             {
                 ReportError(
@@ -148,7 +171,11 @@ namespace AZ
             {
                 return;
             }
-
+            if (!m_currentSupervariant)
+            {
+                ReportError("BeginSupervariant() should be called first before calling %s", __FUNCTION__);
+                return;
+            }
             m_currentSupervariant->m_inputContract = contract;
         }
 
@@ -159,7 +186,11 @@ namespace AZ
             {
                 return;
             }
-
+            if (!m_currentSupervariant)
+            {
+                ReportError("BeginSupervariant() should be called first before calling %s", __FUNCTION__);
+                return;
+            }
             m_currentSupervariant->m_outputContract = contract;
         }
 
@@ -170,7 +201,11 @@ namespace AZ
             {
                 return;
             }
-
+            if (!m_currentSupervariant)
+            {
+                ReportError("BeginSupervariant() should be called first before calling %s", __FUNCTION__);
+                return;
+            }
             m_currentSupervariant->m_renderStates = renderStates;
         }
 
@@ -181,7 +216,11 @@ namespace AZ
             {
                 return;
             }
-
+            if (!m_currentSupervariant)
+            {
+                ReportError("BeginSupervariant() should be called first before calling %s", __FUNCTION__);
+                return;
+            }
             m_currentSupervariant->m_attributeMaps = shaderStageAttributeMapList;
         }
 
@@ -192,7 +231,11 @@ namespace AZ
             {
                 return;
             }
-
+            if (!m_currentSupervariant)
+            {
+                ReportError("BeginSupervariant() should be called first before calling %s", __FUNCTION__);
+                return;
+            }
             m_currentSupervariant->m_rootShaderVariantAsset = shaderVariantAsset;
         }
 
@@ -222,6 +265,12 @@ namespace AZ
         {
             if (!ValidateIsReady())
             {
+                return false;
+            }
+
+            if (!m_currentSupervariant)
+            {
+                ReportError("Can not end a supervariant that has not started");
                 return false;
             }
 

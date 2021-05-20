@@ -41,8 +41,9 @@ namespace AZ
             //! If the shader variant is not fully baked, the ShaderVariantKeyFallbackValue must be correctly set when drawing.
             bool IsFullyBaked() const { return m_shaderVariantAsset->IsFullyBaked(); }
 
-            //! Return the timestamp when the associated ShaderAsset was built.
+            //! Return the timestamp when this asset was built.
             //! This is used to synchronize versions of the ShaderAsset and ShaderVariantAsset, especially during hot-reload.
+            //! This timestamp must be >= than the ShaderAsset timestamp.
             AZStd::sys_time_t GetBuildTimestamp() const { return m_shaderVariantAsset->GetBuildTimestamp(); }
 
             bool IsRootVariant() const { return m_shaderVariantAsset->IsRootVariant(); }

@@ -141,7 +141,7 @@ namespace AZ
                         AZStd::string originalLocation;
                         AzFramework::StringFunc::Path::GetFullPath(fullPath.c_str(), originalLocation);
                         AZStd::string prependedPath = ShaderBuilderUtility::DumpAzslPrependedCode(
-                            ShaderAssetBuilderName, prependedAzslSourceCode, originalLocation, ShaderBuilderUtility::ExtracStemName(fullPath.c_str()), shaderPlatformInterface->GetAPIName().GetStringView());
+                            ShaderAssetBuilderName, prependedAzslSourceCode, originalLocation, ShaderBuilderUtility::ExtractStemName(fullPath.c_str()), shaderPlatformInterface->GetAPIName().GetStringView());
                         PreprocessorData output;
                         buildOptions.m_compilerArguments.Merge(descriptorParseOutput.GetValue().m_compiler);
                         PreprocessFile(azslFullPath, output, buildOptions.m_preprocessorSettings, true, true);

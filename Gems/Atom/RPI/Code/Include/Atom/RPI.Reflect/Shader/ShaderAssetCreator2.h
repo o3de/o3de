@@ -89,8 +89,9 @@ namespace AZ
             Name m_defaultDrawList;
 
             // The current supervariant is cached here to facilitate asset
-            // construction.
+            // construction. Additionally, prevents BeginSupervariant to be called more than once before calling EndSupervariant.
             ShaderAsset2::Supervariant* m_currentSupervariant = nullptr;
+
         };
     } // namespace RPI
 } // namespace AZ

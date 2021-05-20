@@ -95,61 +95,6 @@ namespace AZ
                 }
             }
 
-            // FIXME REMOVE ME
-            //static RHI::ShaderInputBufferAccess ToShaderInputBufferAccess(BufferType bufferType)
-            //{
-            //    switch (bufferType)
-            //    {
-            //    case BufferType::Buffer:
-            //    case BufferType::ByteAddressBuffer:
-            //    case BufferType::ConsumeStructuredBuffer:
-            //    case BufferType::StructuredBuffer:
-            //        return RHI::ShaderInputBufferAccess::Read;
-            //    case BufferType::AppendStructuredBuffer:
-            //    case BufferType::RasterizerOrderedStructuredBuffer:
-            //    case BufferType::RasterizerOrderedByteAddressBuffer:
-            //    case BufferType::RasterizerOrderedBuffer:
-            //    case BufferType::RwByteAddressBuffer:
-            //    case BufferType::RwStructuredBuffer:
-            //    case BufferType::RwBuffer:
-            //        return RHI::ShaderInputBufferAccess::ReadWrite;
-            //    default:
-            //        AZ_Assert(false, "Unhandled BufferType");
-            //        return RHI::ShaderInputBufferAccess::Read;
-            //    }
-            //}
-
-            // FIXME REMOVE ME
-            //static RHI::ShaderInputImageAccess ToShaderInputImageAccess(TextureType textureType)
-            //{
-            //    switch (textureType)
-            //    {
-            //    case TextureType::Texture1D:
-            //    case TextureType::Texture1DArray:
-            //    case TextureType::Texture2D:
-            //    case TextureType::Texture2DArray:
-            //    case TextureType::Texture2DMS:
-            //    case TextureType::Texture2DMSArray:
-            //    case TextureType::Texture3D:
-            //    case TextureType::TextureCube:
-            //        return RHI::ShaderInputImageAccess::Read;
-            //    case TextureType::RwTexture1D:
-            //    case TextureType::RwTexture1DArray:
-            //    case TextureType::RwTexture2D:
-            //    case TextureType::RwTexture2DArray:
-            //    case TextureType::RwTexture3D:
-            //    case TextureType::RasterizerOrderedTexture1D:
-            //    case TextureType::RasterizerOrderedTexture1DArray:
-            //    case TextureType::RasterizerOrderedTexture2D:
-            //    case TextureType::RasterizerOrderedTexture2DArray:
-            //    case TextureType::RasterizerOrderedTexture3D:
-            //        return RHI::ShaderInputImageAccess::ReadWrite;
-            //    default:
-            //        AZ_Assert(false, "Unhandled TextureType");
-            //        return RHI::ShaderInputImageAccess::Read;
-            //    }
-            //}
-
             bool LoadShaderResourceGroupLayouts(
                 [[maybe_unused]] const char* builderName, const SrgDataContainer& resourceGroups,
                 const bool platformUsesRegisterSpaces, RPI::ShaderResourceGroupLayoutList& srgLayoutList)
