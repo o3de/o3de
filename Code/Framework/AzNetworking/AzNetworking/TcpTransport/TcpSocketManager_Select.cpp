@@ -49,6 +49,12 @@ namespace AzNetworking
         m_readerFdSet = m_sourceFdSet;
         m_writerFdSet = m_sourceFdSet;
 
+        if(static_cast<int32_t>(m_maxFd) <= 0 && m_socketFds.empty())
+        {
+            // There are no available sockets to process
+            return;
+        }
+
         struct timeval tv = { 0, static_cast<int32_t>(maxBlockMs) * 1000 };
         const int32_t selectResult = ::select(static_cast<int32_t>(m_maxFd) + 1, &m_readerFdSet, &m_writerFdSet, nullptr, &tv);
         if (selectResult < 0)
