@@ -72,9 +72,14 @@ namespace AzFramework
 
     void UpdateCameraFromTransform(Camera& camera, const AZ::Transform& transform);
 
-    struct CursorEvent
+    struct HorizontalMotionEvent
     {
-        ScreenPoint m_position;
+        int m_delta;;
+    };
+
+    struct VerticalMotionEvent
+    {
+        int m_delta;
     };
 
     struct ScrollEvent
@@ -88,7 +93,7 @@ namespace AzFramework
         InputChannel::State m_state; //!< Channel state. (e.g. Begin/update/end event).
     };
 
-    using InputEvent = AZStd::variant<AZStd::monostate, CursorEvent, ScrollEvent, DiscreteInputEvent>;
+    using InputEvent = AZStd::variant<AZStd::monostate, HorizontalMotionEvent, VerticalMotionEvent, ScrollEvent, DiscreteInputEvent>;
 
     class CameraInput
     {
@@ -203,7 +208,7 @@ namespace AzFramework
         Cameras m_cameras;
 
     private:
-        CursorState m_cursorState;
+        ScreenVector m_cursorDelta;
         float m_scrollDelta = 0.0f;
     };
 
@@ -419,8 +424,6 @@ namespace AzFramework
         return true;
     }
 
-    struct WindowSize;
-
     //! Map from a generic InputChannel event to a camera specific InputEvent.
-    InputEvent BuildInputEvent(const InputChannel& inputChannel, const WindowSize& windowSize);
+    InputEvent BuildInputEvent(const InputChannel& inputChannel);
 } // namespace AzFramework
