@@ -13,29 +13,24 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <QString>
+#include "FormLineEditWidget.h" 
 #endif
+
+QT_FORWARD_DECLARE_CLASS(QButton)
 
 namespace O3DE::ProjectManager
 {
-    class EngineInfo
+    class FormBrowseEditWidget
+        : public FormLineEditWidget 
     {
+        Q_OBJECT
+
     public:
-        EngineInfo() = default;
-        EngineInfo(const QString& path, const QString& name, const QString& version, const QString& thirdPartyPath);
+        explicit FormBrowseEditWidget(const QString& labelText, const QString& valueText = "", QWidget* parent = nullptr);
+        ~FormBrowseEditWidget() = default;
 
-        // from engine.json
-        QString m_version;
-        QString m_name;
-        QString m_thirdPartyPath;
-
-        // from o3de_manifest.json
-        QString m_path;
-        QString m_defaultProjectsFolder;
-        QString m_defaultGemsFolder;
-        QString m_defaultTemplatesFolder;
-        QString m_defaultRestrictedFolder;
-
-        bool IsValid() const;
+    private:
+        void HandleBrowseButton();
+        QButton* m_browseButton = nullptr;
     };
 } // namespace O3DE::ProjectManager

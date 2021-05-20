@@ -15,13 +15,11 @@
 #include <ScreenWidget.h>
 #endif
 
-namespace Ui
-{
-    class EngineSettingsClass;
-}
-
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(FormLineEditWidget)
+    QT_FORWARD_DECLARE_CLASS(FormBrowseEditWidget)
+
     class EngineSettingsScreen
         : public ScreenWidget
     {
@@ -31,7 +29,12 @@ namespace O3DE::ProjectManager
         ProjectManagerScreen GetScreenEnum() override;
 
     private:
-        QScopedPointer<Ui::EngineSettingsClass> m_ui;
+
+        FormLineEditWidget* m_engineVersionLineEdit;
+        FormBrowseEditWidget* m_thirdPartyPathLineEdit;
+        FormBrowseEditWidget* m_restrictedPathLineEdit;
+        FormBrowseEditWidget* m_defaultGemsPathLineEdit;
+        FormBrowseEditWidget* m_defaultProjectTemplatesPathLineEdit;
     };
 
 } // namespace O3DE::ProjectManager
