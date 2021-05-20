@@ -21,9 +21,24 @@
 
 #include <PxPhysicsAPI.h>
 
+// only enable physx timestep warning when not running debug or in Release
+#if !defined(DEBUG) && !defined(RELEASE)
+#define ENABLE_PHYSX_TIMESTEP_WARNING
+#endif
+
 namespace PhysX
 {
     AZ_CLASS_ALLOCATOR_IMPL(PhysXSystem, AZ::SystemAllocator, 0);
+
+#ifdef ENABLE_PHYSX_TIMESTEP_WARNING
+    namespace FrameTimeWarning
+    {
+        static constexpr int MaxSamples = 1000;
+        static int NumSamples = 0;
+        static int NumSamplesOverLimit = 0;
+        static float LostTime = 0.0f;
+    }
+#endif
 
     PhysXSystem::MaterialLibraryAssetHelper::MaterialLibraryAssetHelper(PhysXSystem* physXSystem)
         : m_physXSystem(physXSystem)
@@ -140,11 +155,25 @@ namespace PhysX
             }
         };
 
-//disable this warning in debug as it will trigger all the time.
-#ifndef DEBUG
-        AZ_Warning("PhysXSystem", deltaTime <= m_systemConfig.m_maxTimestep,
-            "Frame delta time of [%.6f seconds] exceeds Physics max frame timestep, physics timestep will be clamped to [%.6f seconds].",
-            deltaTime, m_systemConfig.m_maxTimestep);
+#ifdef ENABLE_PHYSX_TIMESTEP_WARNING
+        if (FrameTimeWarning::NumSamples < FrameTimeWarning::MaxSamples)
+        {
+            FrameTimeWarning::NumSamples++;
+            if (deltaTime > m_systemConfig.m_maxTimestep)
+            {
+                FrameTimeWarning::NumSamplesOverLimit++;
+                FrameTimeWarning::LostTime += deltaTime - m_systemConfig.m_maxTimestep;
+            }
+        }
+        else
+        {
+            AZ_Warning("PhysXSystem", FrameTimeWarning::NumSamplesOverLimit <= 0,
+                "[%d] of [%d] frames had a deltatime over the Max physics timestep[%.6f]. Physx timestep was clamped on those frames, losing [%.6f] seconds.",
+                FrameTimeWarning::NumSamplesOverLimit, FrameTimeWarning::NumSamples, m_systemConfig.m_maxTimestep, FrameTimeWarning::LostTime);
+            FrameTimeWarning::NumSamples = 0;
+            FrameTimeWarning::NumSamplesOverLimit = 0;
+            FrameTimeWarning::LostTime = 0.0f;
+        }
 #endif
         deltaTime = AZ::GetClamp(deltaTime, 0.0f, m_systemConfig.m_maxTimestep);
 
