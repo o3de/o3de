@@ -103,7 +103,7 @@ struct LightParams
 //===========================================================================
 // [To Do] Adi: replace with Atom lighting pass
 //===========================================================================
-*/
+
 // https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md#inner-and-outer-cone-angles
 float SpotAttenuation(float3 pointToLight, float3 spotDirection, float outerConeCos, float innerConeCos)
 {
@@ -130,7 +130,6 @@ float RangeAttenuation(float range, float distance)
     return max(lerp(1, 0, distance / range), 0);//max(min(1.0 - pow(distance / range, 4.0), 1.0), 0.0) / pow(distance, 2.0);
 }
 
-/*
 //===========================================================================
 // [To Do] Adi: replace with Atom lighting pass
 //===========================================================================
@@ -219,7 +218,10 @@ float3 ComputeDiffuseSpecFactors(
     float sinTRL_tip = sqrt(1 - cosTRL_tip * cosTRL_tip);
     float specular_tip = max(0, cosTRL_tip * cosTE + sinTRL_tip * sinTE);
 
-    return float3(params.m_Kd * diffuse, params.m_Ks1 * pow(specular_root, params.m_Ex1), params.m_Ks2 * pow(specular_tip, params.m_Ex2));
+    return float3( 
+        params.m_Kd * diffuse, 
+        params.m_Ks1 * pow(specular_root, params.m_Ex1), 
+        params.m_Ks2 * pow(specular_tip, params.m_Ex2));
 }
 
 float LinearizeDepth(float depthNDC, float fNear, float fFar)
@@ -365,35 +367,44 @@ float3 AccumulateHairLight(float3 vTangent, float3 vPositionWS, float3 vViewDirW
                 return color;
 }
 
-
-/*
-void ApplyPbrLighting(
-    float3 positionScr, float3 positionWS, float3 tangentWS, float3 vViewDirWS, 
-    inout LightingData lightingData)
+float3 SimlifiedHairLighting(float3 vTangent, float3 vPositionWS, float3 vViewDirWS, in HairShadeParams params, float3 vNDC)
 {
-    // Light iterator
-    lightingData.tileIterator.Init(positionScr, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    // Initialize information needed for all lights
+    float3 V = normalize(vViewDirWS);
+    float3 T = normalize(vTangent);
 
-    float roughness = 0.5;
-    float specularF0 = 
-    lightingData.Init(positionWS, tangentWS, roughness);
+    float3 accumulatedHairColor = float3(0.0, 0.0, 0.0);
 
-    // Diffuse and Specular response (used in IBL calculations)
-    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, roughness );
-    lightingData.diffuseResponse = 1.0 - lightingData.specularResponse;
+    float3 lightPosWSVec[2] = {
+        float3(4, -1, 2),
+        g_vEye.xyz // + float3(0,0,0.2)    // camera light located a bit above the camera.
+    };
 
-    // ------- Lighting Calculation -------
+    // Right now we fake two lights - one is fixed and the other one 
+    // is at to the camera and moving with it.
+    for (int l = 0; l < 2; l++)
+    {
+        float3 lightPosWS = lightPosWSVec[l];
+        float3 LightVector = normalize( vPositionWS - lightPosWS );
+        float3 lightColor = float3(1.0, 1.0, 1.0);
+        float lightIntensity = 0.5;
 
-    // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData);
+        float3 L = LightVector;
+        float3 LightColor = lightColor; 
 
-    // Apply Image Based Lighting (IBL)
-    ApplyIBL(surface, lightingData);
-
-    // Finalize Lighting
-    lightingData.FinalizeLighting(surface.transmission.tint);
+        float3 lightSurfaceCoeffs = ComputeDiffuseSpecFactors(V, L, T, params);
+        float3 diffuseCompoenent = lightSurfaceCoeffs.x * params.m_color;
+        float3 specularAtPos = lightSurfaceCoeffs.y;
+        float3 specularAtBase = lightSurfaceCoeffs.z* params.m_color;  // [To Do] Adi: why is specualr taking the base color?
+        float3 curHairColor = (diffuseCompoenent + specularAtPos + specularAtBase) * lightIntensity * LightColor;
+ 
+        accumulatedHairColor += saturate(curHairColor);
+    }
+    return accumulatedHairColor;
 }
-*/
+
+
+
 float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, float3 baseColor, int shaderParamIndex)
 {
  //   float3 vNDC = ScreenPosToNDC(float3(pixelCoord, depth), g_vViewport);
@@ -423,6 +434,11 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
     params.m_Ks2 = HairParams[shaderParamIndex].m_hairKs2;
     params.m_Ex2 = HairParams[shaderParamIndex].m_hairEx2;
 
+    // Next I calculate the notmal along the view-tangent plane in order to 
+    // get the best fitting normal from the normal disk around the hair cylinder.
+    float3 biNormal = cross(vTangent, vViewDirWS);
+    float3 projectedNormal = normalize(cross(biNormal, vTangent));
+
     //------------------------------------------------------------------
     // [To DO] Adi: this is where you need to plug in Arom lighting pass
     // 
@@ -437,5 +453,6 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
 //    return vNDC;
 //    return vPositionWS;
 //    return float3( float2(0, 1) + pixelCoord * float2(0.00071, -0.00081), depth);
+    return SimlifiedHairLighting(vTangent, vPositionWS, vViewDirWS, params, vNDC);    
     return AccumulateHairLight(vTangent, vPositionWS, vViewDirWS, params, vNDC);
 }
