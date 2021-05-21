@@ -106,7 +106,9 @@
       "weekly-build-metrics"
     ],
     "PIPELINE_ENV":{
-      "NODE_LABEL":"Catalina_DeviceFarm_1"
+      "NODE_LABEL":"Catalina_DeviceFarm_1",
+      "LY_3RDPARTY_PATH": "/Volumes/Data/jenkins/3rdParty",
+      "WORKSPACE": "/Volumes/Data/jenkins/workspace"
     },
     "COMMAND": "../Mac/build_test_mac.sh",
     "PARAMETERS": {
