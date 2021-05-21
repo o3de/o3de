@@ -342,8 +342,11 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     
     if(o_debugDrawMode == DebugDrawMode::Displacement)
     {
-        float depth = GetNormalizedDepth(-MaterialSrg::m_displacementMax, -MaterialSrg::m_displacementMin, IN.m_uv[MaterialSrg::m_parallaxUvIndex], float2(0,0), float2(0,0));
-        return DebugOutput(float3(depth,depth,depth));
+        float startDepth = -MaterialSrg::m_displacementMax;
+        float stopDepth = -MaterialSrg::m_displacementMin;
+        float depth = GetNormalizedDepth(startDepth, stopDepth, IN.m_uv[MaterialSrg::m_parallaxUvIndex], float2(0,0), float2(0,0));
+        float height = 1 - saturate(depth);
+        return DebugOutput(float3(height,height,height));
     }
     
     if(o_debugDrawMode == DebugDrawMode::FinalBlendWeights)
