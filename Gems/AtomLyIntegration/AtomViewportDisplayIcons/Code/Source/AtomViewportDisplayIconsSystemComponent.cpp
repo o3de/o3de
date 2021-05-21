@@ -84,7 +84,7 @@ namespace AZ::Render
             Interface<RPI::DynamicDrawInterface>::Get();
         if (dynamicDrawInterface)
         {
-            dynamicDrawInterface->UnregisterNamedDynamicDrawContext(m_drawContextName);
+            dynamicDrawInterface->UnregisterPerViewportDynamicDrawContext(m_drawContextName);
         }
 
         AzToolsFramework::EditorViewportIconDisplay::Unregister(this);
@@ -107,7 +107,7 @@ namespace AZ::Render
         } 
 
         RHI::Ptr<RPI::DynamicDrawContext> dynamicDraw =
-            dynamicDrawInterface->GetNamedDynamicDrawContext(m_drawContextName, drawParameters.m_viewport);
+            dynamicDrawInterface->GetDynamicDrawContextForViewport(m_drawContextName, drawParameters.m_viewport);
         if (dynamicDraw == nullptr)
         {
             return;
@@ -317,7 +317,7 @@ namespace AZ::Render
 
     void AtomViewportDisplayIconsSystemComponent::OnBootstrapSceneReady([[maybe_unused]]AZ::RPI::Scene* bootstrapScene)
     {
-        Interface<RPI::DynamicDrawInterface>::Get()->RegisterNamedDynamicDrawContext(m_drawContextName, [](RPI::Ptr<RPI::DynamicDrawContext> drawContext)
+        Interface<RPI::DynamicDrawInterface>::Get()->RegisterPerViewportDynamicDrawContext(m_drawContextName, [](RPI::Ptr<RPI::DynamicDrawContext> drawContext)
         {
             auto shader = RPI::LoadShader(s_drawContextShaderPath);
             drawContext->InitShader(shader);

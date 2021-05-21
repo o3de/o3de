@@ -68,15 +68,15 @@ namespace AZ
             //! Register a named dynamic draw context that can be retrieved on a per-viewport basis.
             //! GetNamedDynamicDraw context can be called on a registered context name to retrieve a
             //! valid DynamicDrawContext for a given viewport.
-            virtual void RegisterNamedDynamicDrawContext(AZ::Name name, DrawContextFactory contextInitializer) = 0;
+            virtual void RegisterPerViewportDynamicDrawContext(AZ::Name name, DrawContextFactory contextInitializer) = 0;
 
             //! Unregister a previously registered named per-viewport dynamic draw context.
             //! This will dispose of all dynamic draw contexts currently associated with this name.
-            virtual void UnregisterNamedDynamicDrawContext(AZ::Name name) = 0;
+            virtual void UnregisterPerViewportDynamicDrawContext(AZ::Name name) = 0;
 
             //! Get a dynamic draw context associated with the specified viewport based on a factory registered with
             //! RegisterNamedDynamicDrawContext. This dynamic draw context will be created if it does not already exist.
-            virtual RHI::Ptr<DynamicDrawContext> GetNamedDynamicDrawContext(AZ::Name name, AzFramework::ViewportId viewportId) = 0;
+            virtual RHI::Ptr<DynamicDrawContext> GetDynamicDrawContextForViewport(AZ::Name name, AzFramework::ViewportId viewportId) = 0;
 
             //! Get a DynamicBuffer from DynamicDrawSystem.
             //! The returned buffer will be invalidated every time the RPISystem's RenderTick is called

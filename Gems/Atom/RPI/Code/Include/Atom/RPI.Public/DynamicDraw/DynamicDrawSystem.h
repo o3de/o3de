@@ -40,9 +40,9 @@ namespace AZ
             // DynamicDrawInterface overrides...
             RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext(Scene* scene) override;
             RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext(RenderPipeline* pipeline) override;
-            void RegisterNamedDynamicDrawContext(AZ::Name name, DrawContextFactory contextInitializer) override;
-            void UnregisterNamedDynamicDrawContext(AZ::Name name) override;
-            RHI::Ptr<DynamicDrawContext> GetNamedDynamicDrawContext(AZ::Name name, AzFramework::ViewportId viewportId) override;
+            void RegisterPerViewportDynamicDrawContext(AZ::Name name, DrawContextFactory contextInitializer) override;
+            void UnregisterPerViewportDynamicDrawContext(AZ::Name name) override;
+            RHI::Ptr<DynamicDrawContext> GetDynamicDrawContextForViewport(AZ::Name name, AzFramework::ViewportId viewportId) override;
             RHI::Ptr<DynamicBuffer> GetDynamicBuffer(uint32_t size, uint32_t alignment = 1) override;
             void DrawGeometry(Data::Instance<Material> material, const GeometryData& geometry, ScenePtr scene) override;
             void AddDrawPacket(Scene* scene, AZStd::unique_ptr<const RHI::DrawPacket> drawPacket) override;
@@ -73,7 +73,6 @@ namespace AZ
 
                 // Cached state
                 Scene* m_scene = nullptr;
-                View* m_view = nullptr;
                 bool m_initialized = false;
             };
             AZStd::map<AzFramework::ViewportId, NamedDrawContextViewportInfo> m_namedDynamicDrawContextInstances;

@@ -95,6 +95,11 @@ namespace AZ
             //! This should be called after the last frame is done and before any draw calls.
             void SetRenderPipeline(RenderPipeline* pipeline);
 
+            //! If set to a view, this DynamicDrawContext will only submit its draw calls to the
+            //! specified view. If set to null, this DynamicDrawContext will draw to all views
+            //! using its pipeline.
+            void SetExclusiveToView(ViewPtr view);
+
             //! Return if this DynamicDrawContext is ready to add draw calls
             bool IsReady();
 
@@ -232,6 +237,9 @@ namespace AZ
             // All draw items use this filter when submit them to views
             // It's set to RenderPipeline's draw filter mask if the DynamicDrawContext was created for a render pipeline.
             RHI::DrawFilterMask m_drawFilter = RHI::DrawFilterMaskDefaultValue;
+
+            //! If set, we will only submit draw calls to this view.
+            View* m_viewFilter = nullptr;
 
             // Cached draw data
             AZStd::vector<RHI::StreamBufferView> m_cachedStreamBufferViews;

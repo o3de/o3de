@@ -54,19 +54,19 @@ namespace AZ
             ViewportContextManagerNotificationsBus::Handler::BusDisconnect();
         }
 
-        void DynamicDrawSystem::RegisterNamedDynamicDrawContext(AZ::Name name, DrawContextFactory contextInitializer)
+        void DynamicDrawSystem::RegisterPerViewportDynamicDrawContext(AZ::Name name, DrawContextFactory contextInitializer)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawContext);
             m_registeredNamedDrawContexts[name] = contextInitializer;
         }
 
-        void DynamicDrawSystem::UnregisterNamedDynamicDrawContext(AZ::Name name)
+        void DynamicDrawSystem::UnregisterPerViewportDynamicDrawContext(AZ::Name name)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawContext);
             m_registeredNamedDrawContexts.erase(name);
         }
 
-        RHI::Ptr<DynamicDrawContext> DynamicDrawSystem::GetNamedDynamicDrawContext(AZ::Name name, AzFramework::ViewportId viewportId)
+        RHI::Ptr<DynamicDrawContext> DynamicDrawSystem::GetDynamicDrawContextForViewport(AZ::Name name, AzFramework::ViewportId viewportId)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawContext);
 
@@ -102,14 +102,16 @@ namespace AZ
                 {
                     AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawContext);
                     NamedDrawContextViewportInfo& contextInfo = m_namedDynamicDrawContextInstances[viewportId];
-                    contextInfo.m_view = view.get();
+                    for (auto& context : contextInfo.m_dynamicDrawContexts)
+                    {
+                        context.second->SetExclusiveToView(view);
+                    }
                 });
 
                 viewportContext->ConnectCurrentPipelineChangedHandler(contextInfo.m_pipelineChangeHandler);
                 viewportContext->ConnectDefaultViewChangedHandler(contextInfo.m_viewChangeHandler);
 
                 contextInfo.m_scene = viewportContext->GetRenderScene().get();
-                contextInfo.m_view = viewportContext->GetDefaultView().get();
 
                 contextInfo.m_initialized = true;
             }
@@ -124,6 +126,7 @@ namespace AZ
                 }
                 context = aznew DynamicDrawContext();
                 context->SetRenderPipeline(pipeline.get());
+                context->SetExclusiveToView(viewportContext->GetDefaultView());
                 contextFactoryIt->second(context);
             }
 
@@ -197,12 +200,9 @@ namespace AZ
                     {
                         for (auto& view : views)
                         {
-                            if (view.get() == namedContextInfo.second.m_view)
+                            for (auto& drawContextData : namedContextInfo.second.m_dynamicDrawContexts)
                             {
-                                for (auto& drawContextData : namedContextInfo.second.m_dynamicDrawContexts)
-                                {
-                                    drawContextData.second->SubmitDrawData(view);
-                                }
+                                drawContextData.second->SubmitDrawData(view);
                             }
                         }
                     }
