@@ -71,15 +71,15 @@ namespace AzFramework
 
     void UpdateCameraFromTransform(Camera& camera, const AZ::Transform& transform);
 
-    struct HorizontalMotionEvent
+    //! Generic motion type
+    template<typename MotionTag>
+    struct MotionEvent
     {
         int m_delta;
     };
 
-    struct VerticalMotionEvent
-    {
-        int m_delta;
-    };
+    using HorizontalMotionEvent = MotionEvent<struct HorizontalMotionTag>;
+    using VerticalMotionEvent = MotionEvent<struct VerticalMotionTag>;
 
     struct ScrollEvent
     {
