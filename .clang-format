@@ -30,7 +30,7 @@ BreakInheritanceList: BeforeComma
 ColumnLimit: 140
 ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4
-Cpp11BracedListStyle: true
+Cpp11BracedListStyle: false
 FixNamespaceComments: true
 IncludeBlocks: Preserve
 IndentCaseBlocks: true
@@ -46,7 +46,7 @@ SortIncludes: true
 SpaceAfterLogicalNot: false
 SpaceAfterTemplateKeyword: false
 SpaceBeforeAssignmentOperators: true
-SpaceBeforeCpp11BracedList: false
+SpaceBeforeCpp11BracedList: true
 SpaceBeforeCtorInitializerColon: true
 SpaceBeforeInheritanceColon: true
 SpaceBeforeParens: ControlStatements
