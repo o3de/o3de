@@ -466,7 +466,6 @@ namespace DebugDraw
         #endif // DEBUGDRAW_GEM_EDITOR
 
         // Draw text elements and remove any that are expired
-        AZStd::unordered_map<AZ::EntityId, AZ::u32> textPerEntityCount;
         int numScreenTexts = 0;
         AZ::EntityId lastTargetEntityId;
 
@@ -476,8 +475,7 @@ namespace DebugDraw
             debugDisplay.SetColor(textColor);
             if (textElement.m_drawMode == DebugDrawTextElement::DrawMode::OnScreen)
             {
-                debugDisplay.Draw2dTextLabel(20.0f, 20.f + ((float)numScreenTexts * 15.0f), 1.4f, textElement.m_text.c_str() );
-                // gEnv->pRenderer->GetIRenderAuxGeom()->Draw3dLabel(Vec3(20.f, 20.f + ((float)numScreenTexts * 15.0f), 0.5f), 1.4f, AZColorToLYColorF(textColor), textElement.m_text.c_str());
+                debugDisplay.Draw2dTextLabel(100.0f, 20.f + ((float)numScreenTexts * 15.0f), 1.4f, textElement.m_text.c_str() );
                 ++numScreenTexts;
             }
             else if (textElement.m_drawMode == DebugDrawTextElement::DrawMode::InWorld)
