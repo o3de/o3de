@@ -1065,13 +1065,13 @@ namespace AZ
             auto nativeUI = AZ::Interface<NativeUI::NativeUIRequests>::Get();
             if (jsonPatch.GetParseError() == rapidjson::kParseErrorDocumentEmpty)
             {
-                AZ_Warning("Settings Registry", false, R"(Unable to parse registry file "%s" due to json error "%s" at offset %llu.)",
+                AZ_Warning("Settings Registry", false, R"(Unable to parse registry file "%s" due to json error "%s" at offset %zu.)",
                     path, GetParseError_En(jsonPatch.GetParseError()), jsonPatch.GetErrorOffset());
             }
             else
             {
                 using ErrorString = AZStd::fixed_string<4096>;
-                auto jsonError = ErrorString::format(R"(Unable to parse registry file "%s" due to json error "%s" at offset %llu.)", path,
+                auto jsonError = ErrorString::format(R"(Unable to parse registry file "%s" due to json error "%s" at offset %zu.)", path,
                     GetParseError_En(jsonPatch.GetParseError()), jsonPatch.GetErrorOffset());
                 AZ_Error("Settings Registry", false, "%s", jsonError.c_str());
 
