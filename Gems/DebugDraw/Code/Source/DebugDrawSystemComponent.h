@@ -32,6 +32,9 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #endif // DEBUGDRAW_GEM_EDITOR
 
+#include <Atom/RPI.Public/SceneBus.h>
+#include <Atom/Bootstrap/BootstrapNotificationBus.h>
+
 namespace DebugDraw
 {
     // DebugDraw elements that don't have corresponding component representations yet
@@ -61,10 +64,11 @@ namespace DebugDraw
 
     class DebugDrawSystemComponent
         : public AZ::Component
-        , public AZ::TickBus::Handler
         , public AZ::EntityBus::MultiHandler
         , protected DebugDrawRequestBus::Handler
         , protected DebugDrawInternalRequestBus::Handler
+        , public AZ::RPI::SceneNotificationBus::Handler
+        , public AZ::Render::Bootstrap::NotificationBus::Handler
 
 #ifdef DEBUGDRAW_GEM_EDITOR
         , protected AzToolsFramework::EditorEntityContextNotificationBus::Handler
@@ -113,9 +117,11 @@ namespace DebugDraw
         void Activate() override;
         void Deactivate() override;
 
-        // TickBus
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        int GetTickOrder() override { return AZ::ComponentTickBus::TICK_DEFAULT; }
+        // SceneNotificationBus
+        void OnBeginPrepareRender() override;
+
+        // AZ::Render::Bootstrap::NotificationBus
+        void OnBootstrapSceneReady(AZ::RPI::Scene* scene);
 
         // EntityBus
         void OnEntityDeactivated(const AZ::EntityId& entityId) override;

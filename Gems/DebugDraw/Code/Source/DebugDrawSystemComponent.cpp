@@ -19,10 +19,8 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/parallel/lock.h>
 
-#include <IRenderAuxGeom.h>
-
-#include <Cry_Camera.h>
-#include <MathConversion.h>
+// #include <Cry_Camera.h>
+// #include <MathConversion.h>
 
 #include "DebugDrawSystemComponent.h"
 
@@ -36,6 +34,9 @@
 #include "EditorDebugDrawTextComponent.h"
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #endif // DEBUGDRAW_GEM_EDITOR
+
+#include <Atom/RPI.Public/RPISystemInterface.h>
+#include <Atom/RPI.Public/Scene.h>
 
 namespace DebugDraw
 {
@@ -96,7 +97,7 @@ namespace DebugDraw
 
     void DebugDrawSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        (void)required;
+        required.push_back(AZ_CRC("RPISystem", 0xf2add773));
     }
 
     void DebugDrawSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -112,7 +113,7 @@ namespace DebugDraw
     {
         DebugDrawInternalRequestBus::Handler::BusConnect();
         DebugDrawRequestBus::Handler::BusConnect();
-        AZ::TickBus::Handler::BusConnect();
+        AZ::Render::Bootstrap::NotificationBus::Handler::BusConnect();
 
         #ifdef DEBUGDRAW_GEM_EDITOR
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
@@ -125,7 +126,7 @@ namespace DebugDraw
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
         #endif // DEBUGDRAW_GEM_EDITOR
 
-        AZ::TickBus::Handler::BusDisconnect();
+        AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
         DebugDrawRequestBus::Handler::BusDisconnect();
         DebugDrawInternalRequestBus::Handler::BusDisconnect();
 
@@ -153,6 +154,13 @@ namespace DebugDraw
             AZStd::lock_guard<AZStd::mutex> locker(m_activeTextsMutex);
             m_activeTexts.clear();
         }
+    }
+
+    void DebugDrawSystemComponent::OnBootstrapSceneReady(AZ::RPI::Scene* scene)
+    {
+        AZ_Assert(scene, "Invalid scene received in OnBootstrapSceneReady");
+        AZ::RPI::SceneNotificationBus::Handler::BusConnect(scene->GetId());
+        AZ::Render::Bootstrap::NotificationBus::Handler::BusDisconnect();
     }
 
     #ifdef DEBUGDRAW_GEM_EDITOR
@@ -255,13 +263,15 @@ namespace DebugDraw
     }
     #endif // DEBUGDRAW_GEM_EDITOR
 
-    void DebugDrawSystemComponent::OnTick([[maybe_unused]] float deltaTime, AZ::ScriptTimePoint time)
+    void DebugDrawSystemComponent::OnBeginPrepareRender()
     {
+        AZ::ScriptTimePoint time;
+        AZ::TickRequestBus::BroadcastResult(time, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
         m_currentTime = time.GetSeconds();
 
         AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
         AzFramework::DebugDisplayRequestBus::Bind(
-            debugDisplayBus, AzToolsFramework::ViewportInteraction::g_mainViewportEntityDebugDisplayId);
+            debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
         AZ_Assert(debugDisplayBus, "Invalid DebugDisplayRequestBus.");
 
         AzFramework::DebugDisplayRequests* debugDisplay =
@@ -376,9 +386,12 @@ namespace DebugDraw
                     transformedObb.SetHalfLength(i, obbElement.m_scale.GetElement(i));
                 }
             }
-
-            obbElement.m_worldLocation = transformedObb.GetPosition();
-            debugDisplay.DrawSolidOBB(obbElement.m_worldLocation, transformedObb.GetAxisX(), transformedObb.GetAxisY(), transformedObb.GetAxisZ(), transformedObb.GetHalfLengths())
+            else
+            {
+                obbElement.m_worldLocation = transformedObb.GetPosition();
+            }
+            debugDisplay.SetColor(obbElement.m_color);
+            debugDisplay.DrawSolidOBB(obbElement.m_worldLocation, transformedObb.GetAxisX(), transformedObb.GetAxisY(), transformedObb.GetAxisZ(), transformedObb.GetHalfLengths());
         }
 
         removeExpiredDebugElementsFromVector(m_activeObbs);
@@ -406,12 +419,12 @@ namespace DebugDraw
 
             float conePercentHeight = 0.5f;
             float coneHeight = rayElement.m_worldDirection.GetLength() * conePercentHeight;
-            Vec3 coneBaseLocation = endWorldLocation - rayElement.m_worldDirection * conePercentHeight;
+            AZ::Vector3 coneBaseLocation = endWorldLocation - rayElement.m_worldDirection * conePercentHeight;
             float coneRadius = AZ::GetClamp(coneHeight * 0.07f, 0.05f, 0.2f);
             debugDisplay.SetColor(rayElement.m_color);
-            debugDisplay.SetLineThickness(5.0f);
+            debugDisplay.SetLineWidth(5.0f);
             debugDisplay.DrawLine(rayElement.m_worldLocation, coneBaseLocation);
-            debugDisplay.DrawCone(coneBaseLocation, rayElement.m_worldDirection, coneRadius, coneHeight, lyColor, false);
+            debugDisplay.DrawSolidCone(coneBaseLocation, rayElement.m_worldDirection, coneRadius, coneHeight, false);
         }
 
         removeExpiredDebugElementsFromVector(m_activeRays);
@@ -459,26 +472,16 @@ namespace DebugDraw
 
         for (auto& textElement : m_activeTexts)
         {
+            const AZ::Color textColor = needsGammaConversion ? textElement.m_color.GammaToLinear() : textElement.m_color;
+            debugDisplay.SetColor(textColor);
             if (textElement.m_drawMode == DebugDrawTextElement::DrawMode::OnScreen)
             {
-                const AZ::Color textColor = needsGammaConversion ? textElement.m_color.GammaToLinear() : textElement.m_color;
-                debugDisplay.SetColor(textColor);
                 debugDisplay.Draw2dTextLabel(20.0f, 20.f + ((float)numScreenTexts * 15.0f), 1.4f, textElement.m_text.c_str() );
-                gEnv->pRenderer->GetIRenderAuxGeom()->Draw3dLabel(Vec3(20.f, 20.f + ((float)numScreenTexts * 15.0f), 0.5f), 1.4f, AZColorToLYColorF(textColor), textElement.m_text.c_str());
+                // gEnv->pRenderer->GetIRenderAuxGeom()->Draw3dLabel(Vec3(20.f, 20.f + ((float)numScreenTexts * 15.0f), 0.5f), 1.4f, AZColorToLYColorF(textColor), textElement.m_text.c_str());
                 ++numScreenTexts;
             }
             else if (textElement.m_drawMode == DebugDrawTextElement::DrawMode::InWorld)
             {
-                SDrawTextInfo ti;
-                ti.xscale = ti.yscale = 1.4f;
-                ti.flags = eDrawText_2D | eDrawText_FixedSize | eDrawText_Monospace | eDrawText_Center;
-
-                const AZ::Color textColor = needsGammaConversion ? textElement.m_color.GammaToLinear() : textElement.m_color;
-                ti.color[0] = textColor.GetR();
-                ti.color[1] = textColor.GetG();
-                ti.color[2] = textColor.GetB();
-                ti.color[3] = textColor.GetA();
-
                 AZ::Vector3 worldLocation;
                 if (textElement.m_targetEntityId.IsValid())
                 {
@@ -491,32 +494,7 @@ namespace DebugDraw
                     worldLocation = textElement.m_worldLocation;
                 }
 
-                const CCamera& camera = gEnv->pSystem->GetViewCamera();
-                const AZ::Vector3 cameraTranslation = LYVec3ToAZVec3(camera.GetPosition());
-                Vec3 lyWorldLoc = AZVec3ToLYVec3(worldLocation);
-                Vec3 screenPos(0.f);
-                if (camera.Project(lyWorldLoc, screenPos, Vec2i(0, 0), Vec2i(0, 0)))
-                {
-                    // Handle spacing for world text so it doesn't draw on top of each other
-                    // This works for text drawing on entities (considered one block), but not for world text.
-                    // World text will get handled when we have screen-aware positioning of text elements
-                    if (textElement.m_targetEntityId.IsValid())
-                    {
-                        auto iter = textPerEntityCount.find(textElement.m_targetEntityId);
-                        if (iter != textPerEntityCount.end())
-                        {
-                            AZ::u32 count = iter->second;
-                            screenPos.y += ((float)count * 15.0f);
-                            iter->second = count + 1;
-                        }
-                        else
-                        {
-                            auto newEntry = textPerEntityCount.insert_key(textElement.m_targetEntityId);
-                            newEntry.first->second = 1;
-                        }
-                    }
-                    debugDisplay.Draw2dTextLabel(screenPos.GetX(), screenPos.GetY(), 1.4f, textElement.m_text.c_str() );
-                }
+                debugDisplay.DrawTextLabel(worldLocation, 1.4f, textElement.m_text.c_str() );
             }
         }
 
