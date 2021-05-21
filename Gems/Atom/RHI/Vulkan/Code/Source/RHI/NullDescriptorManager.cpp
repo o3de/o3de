@@ -180,6 +180,7 @@ namespace AZ
             for (uint32_t imageIndex = static_cast<uint32_t>(NullDescriptorManager::ImageTypes::General2D); imageIndex < static_cast<uint32_t>(NullDescriptorManager::ImageTypes::Count); imageIndex++)
             {
                 // different options for the images
+                imageCreateInfo.imageType = (imageIndex >= static_cast<uint32_t>(NullDescriptorManager::ImageTypes::General3D)) ? VK_IMAGE_TYPE_3D : VK_IMAGE_TYPE_2D;
                 imageCreateInfo.extent = { m_imageNullDescriptor.m_images[imageIndex].m_dimension, m_imageNullDescriptor.m_images[imageIndex].m_dimension, 1 };
                 imageCreateInfo.samples = m_imageNullDescriptor.m_images[imageIndex].m_sampleCountFlag;
                 imageCreateInfo.format = m_imageNullDescriptor.m_images[imageIndex].m_format;
