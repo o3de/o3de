@@ -18,6 +18,11 @@
 #include <QStack>
 #endif
 
+namespace AzQtComponents
+{
+    class TabWidget;
+}
+
 namespace O3DE::ProjectManager
 {
     class ScreenWidget;
@@ -48,6 +53,7 @@ namespace O3DE::ProjectManager
         QStackedWidget* m_screenStack;
         QHash<ProjectManagerScreen, ScreenWidget*> m_screenMap;
         QStack<ProjectManagerScreen> m_screenVisitOrder;
+        AzQtComponents::TabWidget* m_tabWidget;
     };
 
 } // namespace O3DE::ProjectManager

@@ -41,6 +41,10 @@ namespace O3DE::ProjectManager
         {
             return true;
         }
+        virtual bool IsTab()
+        {
+            return false;
+        }
         virtual QString GetNextButtonText()
         {
             return "Next";

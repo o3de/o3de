@@ -14,6 +14,8 @@
 #include <ScreenFactory.h>
 #include <ScreenWidget.h>
 
+#include <AzQtComponents/Components/Widgets/TabWidget.h>
+
 #include <QVBoxLayout>
 
 namespace O3DE::ProjectManager
@@ -22,13 +24,16 @@ namespace O3DE::ProjectManager
         : QWidget(parent)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
-        vLayout->setMargin(0);
-        vLayout->setSpacing(0);
-        vLayout->setContentsMargins(0, 0, 0, 0);
+        //vLayout->setMargin(0);
+        //vLayout->setSpacing(0);
+        //vLayout->setContentsMargins(0, 0, 0, 0);
         setLayout(vLayout);
 
         m_screenStack = new QStackedWidget();
         vLayout->addWidget(m_screenStack);
+
+        m_tabWidget = new AzQtComponents::TabWidget();
+        m_screenStack->addWidget(m_tabWidget);
 
         //Track the bottom of the stack
         m_screenVisitOrder.push(ProjectManagerScreen::Invalid);
@@ -79,13 +84,27 @@ namespace O3DE::ProjectManager
         if (iterator != m_screenMap.end())
         {
             ScreenWidget* currentScreen = GetCurrentScreen();
-            if (currentScreen != iterator.value())
+            ScreenWidget* newScreen = iterator.value();
+
+            if (currentScreen != newScreen)
             {
-                if (addVisit)
+                if (newScreen->IsTab())
                 {
-                    m_screenVisitOrder.push(currentScreen->GetScreenEnum());
+                    m_screenStack->setCurrentWidget(m_tabWidget);
+                    int tabIndex = m_tabWidget->indexOf(newScreen);
+                    if (tabIndex > -1)
+                    {
+                        m_tabWidget->setTabVisible(tabIndex, true);
+                    }
                 }
-                m_screenStack->setCurrentWidget(iterator.value());
+                else
+                {
+                    if (addVisit)
+                    {
+                        m_screenVisitOrder.push(currentScreen->GetScreenEnum());
+                    }
+                    m_screenStack->setCurrentWidget(iterator.value());
+                }
                 return true;
             }
         }
@@ -111,7 +130,15 @@ namespace O3DE::ProjectManager
 
         // Add new screen
         ScreenWidget* newScreen = BuildScreen(this, screen);
-        m_screenStack->addWidget(newScreen);
+        if (newScreen->IsTab())
+        {
+            m_tabWidget->addTab(newScreen, "test");
+        }
+        else
+        {
+            m_screenStack->addWidget(newScreen);
+        }
+
         m_screenMap.insert(screen, newScreen);
 
         connect(newScreen, &ScreenWidget::ChangeScreenRequest, this, &ScreensCtrl::ChangeToScreen);
@@ -133,8 +160,20 @@ namespace O3DE::ProjectManager
         const auto iter = m_screenMap.find(screen);
         if (iter != m_screenMap.end())
         {
-            m_screenStack->removeWidget(iter.value());
-            iter.value()->deleteLater();
+            ScreenWidget* screen = iter.value();
+            if (screen->IsTab())
+            {
+                int tabIndex = m_tabWidget->indexOf(screen);
+                if (tabIndex > -1)
+                {
+                    m_tabWidget->removeTab(tabIndex);
+                }
+            }
+            else
+            {
+                m_screenStack->removeWidget(screen);
+            }
+            screen->deleteLater();
 
             // Erase does not cause a rehash so interators remain valid
             m_screenMap.erase(iter);

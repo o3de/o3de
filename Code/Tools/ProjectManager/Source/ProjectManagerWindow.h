@@ -13,19 +13,13 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QMainWindow>
-
-#include <ScreensCtrl.h>
-
-#include <PythonBindings.h>
+#include "PythonBindings.h"
 #endif
-
-namespace Ui
-{
-    class ProjectManagerWindowClass;
-}
 
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(ScreensCtrl)
+
     class ProjectManagerWindow
         : public QMainWindow
     {
@@ -40,7 +34,6 @@ namespace O3DE::ProjectManager
         void HandleEngineMenu();
 
     private:
-        QScopedPointer<Ui::ProjectManagerWindowClass> m_ui;
         ScreensCtrl* m_screensCtrl;
         AZStd::unique_ptr<PythonBindings> m_pythonBindings;
     };

@@ -32,6 +32,9 @@ namespace O3DE::ProjectManager
         void HandleNewProjectButton();
         void HandleAddProjectButton();
 
+    protected:
+        bool IsTab() override;
+
     private:
         QPushButton* CreateLargeBoxButton(const QIcon& icon, const QString& text, QWidget* parent = nullptr);
 

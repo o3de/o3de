@@ -10,45 +10,36 @@
  *
  */
 
-#include <ProjectManagerWindow.h>
-#include <ScreenFactory.h>
+#include "ProjectManagerWindow.h"
+#include "ScreenFactory.h"
+#include "ScreensCtrl.h"
 
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzCore/IO/Path/Path.h>
 
 #include <QDir>
 
-#include <Source/ui_ProjectManagerWindow.h>
 
 namespace O3DE::ProjectManager
 {
     ProjectManagerWindow::ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& engineRootPath)
         : QMainWindow(parent)
-        , m_ui(new Ui::ProjectManagerWindowClass())
     {
-        m_ui->setupUi(this);
-        QLayout* layout = m_ui->centralWidget->layout();
-        layout->setMargin(0);
-        layout->setSpacing(0);
-        layout->setContentsMargins(0, 0, 0, 0);
-
-        setFixedSize(this->geometry().width(), this->geometry().height());
-
         m_pythonBindings = AZStd::make_unique<PythonBindings>(engineRootPath);
 
-        m_screensCtrl = new ScreensCtrl();
-        m_ui->verticalLayout->addWidget(m_screensCtrl);
+        setWindowTitle(tr("O3DE Project Manager"));
 
-        connect(m_ui->projectsMenu, &QMenu::aboutToShow, this, &ProjectManagerWindow::HandleProjectsMenu);
-        connect(m_ui->engineMenu, &QMenu::aboutToShow, this, &ProjectManagerWindow::HandleEngineMenu);
-
+        // setup stylesheets and hot reloading
         QDir rootDir = QString::fromUtf8(engineRootPath.Native().data(), aznumeric_cast<int>(engineRootPath.Native().size()));
         const auto pathOnDisk = rootDir.absoluteFilePath("Code/Tools/ProjectManager/Resources");
         const auto qrcPath = QStringLiteral(":/ProjectManager/style");
         AzQtComponents::StyleManager::addSearchPaths("style", pathOnDisk, qrcPath, engineRootPath);
-
         AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("style:ProjectManager.qss"));
 
+
+        m_screensCtrl = new ScreensCtrl();
+
+        // modal screens
         QVector<ProjectManagerScreen> screenEnums =
         {
             ProjectManagerScreen::FirstTimeUse,
@@ -57,6 +48,8 @@ namespace O3DE::ProjectManager
             ProjectManagerScreen::ProjectSettings,
             ProjectManagerScreen::EngineSettings
         };
+
+        // tab screens
         m_screensCtrl->BuildScreens(screenEnums);
         m_screensCtrl->ForceChangeToScreen(ProjectManagerScreen::FirstTimeUse, false);
     }

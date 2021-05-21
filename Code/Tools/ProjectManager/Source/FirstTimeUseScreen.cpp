@@ -72,6 +72,11 @@ namespace O3DE::ProjectManager
         connect(m_addProjectButton, &QPushButton::pressed, this, &FirstTimeUseScreen::HandleAddProjectButton);
     }
 
+    bool FirstTimeUseScreen::IsTab()
+    {
+        return true;
+    }
+
     ProjectManagerScreen FirstTimeUseScreen::GetScreenEnum()
     {
         return ProjectManagerScreen::FirstTimeUse;
