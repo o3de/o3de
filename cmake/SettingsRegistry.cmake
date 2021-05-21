@@ -108,11 +108,11 @@ function(ly_delayed_generate_settings_registry)
         # Get the gem dependencies for the given project and target combination
         get_property(gem_dependencies GLOBAL PROPERTY LY_DELAYED_LOAD_"${prefix_target}")
         list(REMOVE_DUPLICATES gem_dependencies) # Strip out any duplicate gem targets
-        set(all_gem_dependencies ${gem_dependencies})
+        unset(all_gem_dependencies)
 
         foreach(gem_target ${gem_dependencies})
             ly_get_gem_load_dependencies(gem_load_gem_dependencies ${gem_target})
-            list(APPEND all_gem_dependencies ${gem_load_gem_dependencies})
+            list(APPEND all_gem_dependencies ${gem_load_gem_dependencies} ${gem_target})
         endforeach()
         list(REMOVE_DUPLICATES all_gem_dependencies)
 

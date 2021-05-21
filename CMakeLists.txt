@@ -25,31 +25,12 @@ include(cmake/LySet.cmake)
 include(cmake/Version.cmake)
 include(cmake/OutputDirectory.cmake)
 
-# Set the engine_path and engine_json
-set(o3de_engine_path ${CMAKE_CURRENT_LIST_DIR})
-set(o3de_engine_json ${o3de_engine_path}/engine.json)
-
 if(NOT PROJECT_NAME)
     project(O3DE
         LANGUAGES C CXX
         VERSION ${LY_VERSION_STRING}
     )
 endif()
-
-################################################################################
-# Resolve this engines name and restricted path
-################################################################################
-include(cmake/o3de_manifest.cmake)
-o3de_engine_name(${o3de_engine_json} o3de_engine_name)
-o3de_restricted_path(${o3de_engine_json} o3de_engine_restricted_path)
-message(STATUS "O3DE Engine Name: ${o3de_engine_name}")
-message(STATUS "O3DE Engine Path: ${o3de_engine_path}")
-if(o3de_engine_restricted_path)
-    message(STATUS "O3DE Engine Restricted Path: ${o3de_engine_restricted_path}")
-endif()
-
-# add the engines cmake folder to the CMAKE_MODULE_PATH
-list(APPEND CMAKE_MODULE_PATH "${o3de_engine_path}/cmake")
 
 ################################################################################
 # Initialize
@@ -92,12 +73,11 @@ if(NOT INSTALLED_ENGINE)
         add_subdirectory(Tools/RemoteConsole/ly_remote_console/tests/)
     endif()
 
-    # Add any engine restricted platforms as external subdirs
-    o3de_add_engine_restricted_platform_external_subdirs()
-
-    # Add external subdirectories listed in the manifest. LY_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
+    include(cmake/EngineJson.cmake)
+    # Add external subdirectories listed in the engine.json. LY_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
     # external subdirectories
-    list(APPEND LY_EXTERNAL_SUBDIRS ${o3de_engine_external_subdirectories})
+    read_engine_external_subdirs(engine_external_subdirectories)
+    list(APPEND LY_EXTERNAL_SUBDIRS ${engine_external_subdirectories})
 
     # Loop over the additional external subdirectories and invoke add_subdirectory on them
     foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
@@ -111,7 +91,7 @@ if(NOT INSTALLED_ENGINE)
         string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
         # Use the last directory as the suffix path to use for the Binary Directory
         get_filename_component(directory_name ${external_directory} NAME)
-        add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/${directory_name}-${full_directory_hash})
+        add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/External/${directory_name}-${full_directory_hash})
     endforeach()
 
 else()
