@@ -16,6 +16,7 @@
 #include <QValidator>
 #endif
 
+QT_FORWARD_DECLARE_CLASS(QWidget)
 
 namespace O3DE::ProjectManager
 {
@@ -23,7 +24,7 @@ namespace O3DE::ProjectManager
         : public QValidator
     {
     public:
-        enum PathMode {
+        enum class PathMode {
             ExistingFile,   //!< A single, existings file. Useful for "Open file"
             ExistingFolder, //!< A single, existing directory. Useful for "Open Folder"
             AnyFile         //!< A single, valid file, doesn't have to exist but the directory must.  Useful for "Save File"
@@ -35,7 +36,7 @@ namespace O3DE::ProjectManager
         void setAllowEmpty(bool allowEmpty);
         void setPathMode(PathMode pathMode);
 
-        QValidator::State PathValidator::validate(QString &text, int &) const override;
+        QValidator::State validate(QString &text, int &) const override;
 
     private:
         PathMode m_pathMode = PathMode::AnyFile;

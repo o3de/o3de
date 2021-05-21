@@ -12,6 +12,7 @@
 
 #include "PathValidator.h"
 
+#include <QWidget>
 #include <QFileInfo>
 #include <QDir>
 

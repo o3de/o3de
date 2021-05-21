@@ -16,8 +16,6 @@
 #include "FormLineEditWidget.h" 
 #endif
 
-QT_FORWARD_DECLARE_CLASS(QButton)
-
 namespace O3DE::ProjectManager
 {
     class FormBrowseEditWidget
@@ -29,8 +27,7 @@ namespace O3DE::ProjectManager
         explicit FormBrowseEditWidget(const QString& labelText, const QString& valueText = "", QWidget* parent = nullptr);
         ~FormBrowseEditWidget() = default;
 
-    private:
+    private slots:
         void HandleBrowseButton();
-        QButton* m_browseButton = nullptr;
     };
 } // namespace O3DE::ProjectManager
