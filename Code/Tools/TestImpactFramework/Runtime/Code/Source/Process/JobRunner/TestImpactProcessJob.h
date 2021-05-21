@@ -38,7 +38,8 @@ namespace TestImpact
         const AZStd::optional<Payload>& GetPayload() const;
 
         //! Facilitates the client consuming the payload.
-        AZStd::optional<Payload>&& ReleasePayload();
+        //! @note It is valid for a job life cycle to continue after having released its payload.
+        AZStd::optional<Payload> ReleasePayload();
 
     private:
         Info m_jobInfo;
@@ -66,8 +67,8 @@ namespace TestImpact
     }
 
     template<typename JobInfoT, typename JobPayloadT>
-    AZStd::optional<JobPayloadT>&& Job<JobInfoT, JobPayloadT>::ReleasePayload()
+    AZStd::optional<JobPayloadT> Job<JobInfoT, JobPayloadT>::ReleasePayload()
     {
-        return AZStd::move(m_payload);
+        return AZStd::exchange(m_payload, AZStd::nullopt);
     }
 } // namespace TestImpact
