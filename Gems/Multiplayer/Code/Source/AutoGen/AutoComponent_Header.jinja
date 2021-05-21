@@ -125,7 +125,7 @@ void {{ PropertyName }}({{ ', '.join(paramDefines) }});
 {% macro DeclareRpcInvocations(Component, Section, HandleOn, ProctectedSection) %}
 {% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, Section, HandleOn) %}
 {%    if Property.attrib['IsPublic']|booleanTrue == ProctectedSection %}
-{{- DeclareRpcInvocation(Property, HandleOn) -}}
+{{ DeclareRpcInvocation(Property, HandleOn) -}}
 {%    endif %}
 {% endcall %}
 {% endmacro %}
@@ -363,8 +363,8 @@ namespace {{ Component.attrib['Namespace'] }}
         {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Server', true)|indent(8) -}}
         {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Client', false)|indent(8) -}}
         {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Client', true)|indent(8) -}}
-        {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Autonomous', false)|indent(8) }}
-        {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Autonomous', true)|indent(8) }}
+        {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Autonomous', false)|indent(8) -}}
+        {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Autonomous', true)|indent(8) -}}
         {{ DeclareArchetypePropertyGetters(Component)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Server', 'Authority', false)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Server', 'Authority', true)|indent(8) -}}
@@ -374,17 +374,31 @@ namespace {{ Component.attrib['Namespace'] }}
         {{ DeclareRpcInvocations(Component, 'Autonomous', 'Authority', true)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Authority', 'Autonomous', false)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Authority', 'Autonomous', true)|indent(8) -}}
-        {{ DeclareRpcInvocations(Component, 'Authority', 'Client', false)|indent(8) }}
-        {{ DeclareRpcInvocations(Component, 'Authority', 'Client', true)|indent(8) }}
-        {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Server', 'Authority', false)|indent(8) }}
-        {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Client', 'Authority', false)|indent(8) }}
-        {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Autonomous', 'Authority', false)|indent(8) }}
-        {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Authority', 'Autonomous', false)|indent(8) }}
+        {{ DeclareRpcInvocations(Component, 'Authority', 'Client', false)|indent(8) -}}
+        {{ DeclareRpcInvocations(Component, 'Authority', 'Client', true)|indent(8) -}}
+        {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Server', 'Authority', false)|indent(8) -}}
+        {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Client', 'Authority', false)|indent(8) -}}
+        {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Autonomous', 'Authority', false)|indent(8) -}}
+        {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Authority', 'Autonomous', false)|indent(8) -}}
+        {{ AutoComponentMacros.DeclareRpcSignals(Component, 'Server', 'Authority')|indent(8) -}}
+        {{ AutoComponentMacros.DeclareRpcSignals(Component, 'Client', 'Authority')|indent(8) -}}
+        {{ AutoComponentMacros.DeclareRpcSignals(Component, 'Autonomous', 'Authority')|indent(8) -}}
+        {{ AutoComponentMacros.DeclareRpcSignals(Component, 'Authority', 'Autonomous')|indent(8) -}}
+        {{ AutoComponentMacros.DeclareRpcEventGetters(Component, 'Server', 'Authority')|indent(8) -}}
+        {{ AutoComponentMacros.DeclareRpcEventGetters(Component, 'Client', 'Authority')|indent(8) -}}
+        {{ AutoComponentMacros.DeclareRpcEventGetters(Component, 'Autonomous', 'Authority')|indent(8) -}}
+        {{ AutoComponentMacros.DeclareRpcEventGetters(Component, 'Authority', 'Autonomous')|indent(8) }}
 {% for Service in Component.iter('ComponentRelation') %}
 {%      if (Service.attrib['HasController']|booleanTrue) and (Service.attrib['Constraint'] != 'Incompatible') %}
         {{ Service.attrib['Namespace'] }}::{{ Service.attrib['Name'] }}Controller* Get{{ Service.attrib['Name'] }}Controller();
 {%      endif %}
 {% endfor %}
+        
+    protected:
+        {{ AutoComponentMacros.DeclareRpcEvents(Component, 'Server', 'Authority')|indent(8) -}}
+        {{ AutoComponentMacros.DeclareRpcEvents(Component, 'Client', 'Authority')|indent(8) -}}
+        {{ AutoComponentMacros.DeclareRpcEvents(Component, 'Autonomous', 'Authority')|indent(8) -}}
+        {{ AutoComponentMacros.DeclareRpcEvents(Component, 'Authority', 'Autonomous')|indent(8) }}
     };
 
     static const AZ::Uuid s_{{ LowerFirst(ComponentName) }}ConcreteUuid = "{{ (ComponentName) | createHashGuid }}";
@@ -425,9 +439,10 @@ namespace {{ Component.attrib['Namespace'] }}
 
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Server', false)|indent(8) -}}
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Autonomous', false)|indent(8) -}}
-        {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Client', false)|indent(8) }}
+        {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Client', false)|indent(8) -}}
         {{ DeclareArchetypePropertyGetters(Component)|indent(8) -}}
-        {{ DeclareRpcInvocations(Component, 'Server', 'Authority', false)|indent(8) }}
+        {{ DeclareRpcInvocations(Component, 'Server', 'Authority', false)|indent(8) -}}
+        {{ AutoComponentMacros.DeclareRpcEventGetters(Component, 'Authority', 'Client')|indent(8) -}}
 
         //! MultiplayerComponent interface
         //! @{
@@ -452,7 +467,9 @@ namespace {{ Component.attrib['Namespace'] }}
         {{ DeclareNetworkPropertyGetters(Component, 'Autonomous', 'Authority', true)|indent(8) -}}
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Client', true)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Server', 'Authority', true)|indent(8) -}}
-        {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Authority', 'Client', false)|indent(8) }}
+        {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Authority', 'Client', false)|indent(8) -}}
+        {{ AutoComponentMacros.DeclareRpcSignals(Component, 'Authority', 'Client')|indent(8) -}}
+        {{ AutoComponentMacros.DeclareRpcEvents(Component, 'Authority', 'Client')|indent(8) }}
 {% for Service in Component.iter('ComponentRelation') %}
 {%      if Service.attrib['Constraint'] != 'Incompatible' %}
         const {{ Service.attrib['Namespace'] }}::{{ Service.attrib['Name'] }}* Get{{ Service.attrib['Name'] }}() const;
