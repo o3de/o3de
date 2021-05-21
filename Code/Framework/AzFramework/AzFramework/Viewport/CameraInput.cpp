@@ -18,7 +18,6 @@
 #include <AzCore/std/numeric.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
-#include <AzFramework/Windowing/WindowBus.h>
 
 namespace AzFramework
 {
@@ -160,24 +159,27 @@ namespace AzFramework
 
     bool CameraSystem::HandleEvents(const InputEvent& event)
     {
-        if (const auto& cursor = AZStd::get_if<CursorEvent>(&event))
+        if (const auto& horizonalMotion = AZStd::get_if<HorizontalMotionEvent>(&event))
         {
-            m_cursorState.SetCurrentPosition(cursor->m_position);
+            m_motionDelta.m_x = horizonalMotion->m_delta;
+        }
+        else if (const auto& verticalMotion = AZStd::get_if<VerticalMotionEvent>(&event))
+        {
+            m_motionDelta.m_y = verticalMotion->m_delta;
         }
         else if (const auto& scroll = AZStd::get_if<ScrollEvent>(&event))
         {
             m_scrollDelta = scroll->m_delta;
         }
 
-        return m_cameras.HandleEvents(event, m_cursorState.CursorDelta(), m_scrollDelta);
+        return m_cameras.HandleEvents(event, m_motionDelta, m_scrollDelta);
     }
 
     Camera CameraSystem::StepCamera(const Camera& targetCamera, const float deltaTime)
     {
-        const auto nextCamera = m_cameras.StepCamera(targetCamera, m_cursorState.CursorDelta(), m_scrollDelta, deltaTime);
+        const auto nextCamera = m_cameras.StepCamera(targetCamera, m_motionDelta, m_scrollDelta, deltaTime);
 
-        m_cursorState.Update();
-
+        m_motionDelta = ScreenVector{0, 0};
         m_scrollDelta = 0.0f;
 
         return nextCamera;
@@ -720,7 +722,7 @@ namespace AzFramework
         return camera;
     }
 
-    InputEvent BuildInputEvent(const InputChannel& inputChannel, const WindowSize& windowSize)
+    InputEvent BuildInputEvent(const InputChannel& inputChannel)
     {
         const auto& inputChannelId = inputChannel.GetInputChannelId();
         const auto& inputDeviceId = inputChannel.GetInputDevice().GetInputDeviceId();
@@ -730,13 +732,13 @@ namespace AzFramework
                 return button == inputChannelId;
             });
 
-        if (inputChannelId == InputDeviceMouse::Movement::X || inputChannelId == InputDeviceMouse::Movement::Y)
+        if (inputChannelId == InputDeviceMouse::Movement::X)
         {
-            const auto* position = inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>();
-            AZ_Assert(position, "Expected PositionData2D but found nullptr");
-
-            return CursorEvent{ScreenPoint(
-                position->m_normalizedPosition.GetX() * windowSize.m_width, position->m_normalizedPosition.GetY() * windowSize.m_height)};
+            return HorizontalMotionEvent{(int)inputChannel.GetValue()};
+        }
+        else if (inputChannelId == InputDeviceMouse::Movement::Y)
+        {
+            return VerticalMotionEvent{(int)inputChannel.GetValue()};
         }
         else if (inputChannelId == InputDeviceMouse::Movement::Z)
         {
