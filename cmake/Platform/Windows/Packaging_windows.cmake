@@ -48,29 +48,28 @@ set(_guid_seed_base "${PROJECT_NAME}_${LY_VERSION_STRING}")
 generate_wix_guid(_wix_default_product_guid "${_guid_seed_base}_ProductID" )
 generate_wix_guid(_wix_default_upgrade_guid "${_guid_seed_base}_UpgradeCode")
 
-set(LY_WIX_PRODUCT_GUID "${_wix_default_product_guid}" CACHE STRING "GUID for the Product ID field. Format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX")
-set(LY_WIX_UPGRADE_GUID "${_wix_default_upgrade_guid}" CACHE STRING "GUID for the Upgrade Code field. Format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX")
+set(LY_WIX_PRODUCT_GUID "" CACHE STRING "GUID for the Product ID field. Format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX")
+set(LY_WIX_UPGRADE_GUID "" CACHE STRING "GUID for the Upgrade Code field. Format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX")
 
-set(_uses_default_product_guid FALSE)
-if(NOT LY_WIX_PRODUCT_GUID OR LY_WIX_PRODUCT_GUID STREQUAL ${_wix_default_product_guid})
-    set(_uses_default_product_guid TRUE)
-    set(LY_WIX_PRODUCT_GUID ${_wix_default_product_guid})
+# clear previously cached default values to correct future runs.  this will
+# unfortunately only work if the seed properties still haven't changed
+if(LY_WIX_PRODUCT_GUID STREQUAL ${_wix_default_product_guid})
+    unset(LY_WIX_PRODUCT_GUID CACHE)
+endif()
+if(LY_WIX_UPGRADE_GUID STREQUAL ${_wix_default_upgrade_guid})
+    unset(LY_WIX_UPGRADE_GUID CACHE)
 endif()
 
-set(_uses_default_upgrade_guid FALSE)
-if(NOT LY_WIX_UPGRADE_GUID OR LY_WIX_UPGRADE_GUID STREQUAL ${_wix_default_upgrade_guid})
-    set(_uses_default_upgrade_guid TRUE)
-    set(LY_WIX_UPGRADE_GUID ${_wix_default_upgrade_guid})
-endif()
-
-if(_uses_default_product_guid OR _uses_default_upgrade_guid)
+if(NOT (LY_WIX_PRODUCT_GUID AND LY_WIX_UPGRADE_GUID))
     message(STATUS "One or both WiX GUIDs were auto generated.  It is recommended you supply your own GUIDs through LY_WIX_PRODUCT_GUID and LY_WIX_UPGRADE_GUID.")
 
-    if(_uses_default_product_guid)
+    if(NOT LY_WIX_PRODUCT_GUID)
+        set(LY_WIX_PRODUCT_GUID ${_wix_default_product_guid})
         message(STATUS "-> Default LY_WIX_PRODUCT_GUID = ${LY_WIX_PRODUCT_GUID}")
     endif()
 
-    if(_uses_default_upgrade_guid)
+    if(NOT LY_WIX_UPGRADE_GUID)
+        set(LY_WIX_UPGRADE_GUID ${_wix_default_upgrade_guid})
         message(STATUS "-> Default LY_WIX_UPGRADE_GUID = ${LY_WIX_UPGRADE_GUID}")
     endif()
 endif()
@@ -78,7 +77,14 @@ endif()
 set(CPACK_WIX_PRODUCT_GUID ${LY_WIX_PRODUCT_GUID})
 set(CPACK_WIX_UPGRADE_GUID ${LY_WIX_UPGRADE_GUID})
 
-set(CPACK_WIX_TEMPLATE "${CPACK_SOURCE_DIR}/Platform/Windows/PackagingTemplate.wxs.in")
+set(CPACK_WIX_PRODUCT_LOGO ${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/product_logo.png)
+set(CPACK_WIX_PRODUCT_ICON ${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/product_icon.ico)
+
+set(CPACK_WIX_TEMPLATE "${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/Template.wxs.in")
+
+set(CPACK_WIX_EXTRA_SOURCES
+    "${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/Shortcuts.wxs"
+)
 
 set(_embed_artifacts "yes")
 

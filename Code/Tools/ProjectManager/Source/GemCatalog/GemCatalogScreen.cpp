@@ -58,13 +58,6 @@ namespace O3DE::ProjectManager
 
         hLayout->addWidget(m_gemListView);
         hLayout->addWidget(m_gemInspector);
-
-
-        // Select the first entry after everything got correctly sized
-        QTimer::singleShot(100, [=]{
-            QModelIndex firstModelIndex = m_gemListView->model()->index(0,0);
-            m_gemListView->selectionModel()->select(firstModelIndex, QItemSelectionModel::ClearAndSelect);
-            });
     }
 
     QVector<GemInfo> GemCatalogScreen::GenerateTestData()

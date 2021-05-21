@@ -52,10 +52,9 @@ set(GEM_DEPENDENCIES
     Gem::LandscapeCanvas.Editor
     Gem::EMotionFX.Editor
     Gem::ImGui.Editor
+    Gem::Atom_RHI.Private
+    Gem::Atom_Feature_Common.Editor
     Gem::Atom_AtomBridge.Editor
     Gem::NvCloth.Editor
     Gem::Blast.Editor
-    Gem::AWSCore.Editor
-    Gem::AWSClientAuth
-    Gem::AWSMetrics
 )

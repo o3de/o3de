@@ -66,21 +66,21 @@ namespace AZ
             }
         }
 
-        RHI::ConstPtr<RHI::ShaderResourceGroupLayout> PipelineLayout::MergeShaderResourceGroupLayouts(const AZStd::vector<const RHI::ShaderResourceGroupLayout*>& srgLayouts) const
+        RHI::ConstPtr<RHI::ShaderResourceGroupLayout> PipelineLayout::MergeShaderResourceGroupLayouts(const AZStd::vector<const RHI::ShaderResourceGroupLayout*>& srgLayoutList) const
         {
-            if (srgLayouts.empty())
+            if (srgLayoutList.empty())
             {
                 return nullptr;
             }
 
-            if (srgLayouts.size() == 1)
+            if (srgLayoutList.size() == 1)
             {
-                return srgLayouts.front();
+                return srgLayoutList.front();
             }
 
             RHI::Ptr<RHI::ShaderResourceGroupLayout> mergedLayout = RHI::ShaderResourceGroupLayout::Create();
-            mergedLayout->SetBindingSlot(srgLayouts.front()->GetBindingSlot());
-            for (const RHI::ShaderResourceGroupLayout* srgLayout : srgLayouts)
+            mergedLayout->SetBindingSlot(srgLayoutList.front()->GetBindingSlot());
+            for (const RHI::ShaderResourceGroupLayout* srgLayout : srgLayoutList)
             {
                 const uint32_t bindingSlot = srgLayout->GetBindingSlot();
                 const auto& srgBindingInfo = m_layoutDescriptor->GetShaderResourceGroupBindingInfo(m_layoutDescriptor->GetShaderResourceGroupIndexFromBindingSlot(bindingSlot));

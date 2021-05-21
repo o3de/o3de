@@ -597,7 +597,7 @@ class AssetProcessor(object):
         run_result = subprocess.run(command, close_fds=True, timeout=timeout, capture_output=capture_output)
         output_list = None
         if capture_output:
-            output_list = run_result.stdout.split(b"\r\n")
+            output_list = run_result.stdout.splitlines()
             if decode:
                 output_list = [line.decode('utf-8') for line in output_list]
 

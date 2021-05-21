@@ -138,7 +138,7 @@ namespace UnitTest
             if (!GetApplication())
             {
                 // Create & Start a new ToolsApplication if there's no existing one
-                m_app = AZStd::make_unique<ToolsTestApplication>("ToolsApplication");
+                m_app = CreateTestApplication();
                 m_app->Start(AzFramework::Application::Descriptor());
             }
 
@@ -215,6 +215,12 @@ namespace UnitTest
     protected:
         TestEditorActions m_editorActions;
         ToolsApplicationMessageHandler m_messageHandler; // used to suppress trace messages in test output
+
+        // Override this if your test fixture needs to use a custom TestApplication
+        virtual AZStd::unique_ptr<ToolsTestApplication> CreateTestApplication()
+        {
+            return AZStd::make_unique<ToolsTestApplication>("ToolsApplication");
+        }
 
     private:
         AZStd::unique_ptr<ToolsTestApplication> m_app;

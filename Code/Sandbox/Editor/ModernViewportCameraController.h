@@ -22,7 +22,9 @@
 namespace SandboxEditor
 {
     class ModernViewportCameraControllerInstance;
-    class ModernViewportCameraController : public AzFramework::MultiViewportController<ModernViewportCameraControllerInstance>
+    class ModernViewportCameraController
+        : public AzFramework::MultiViewportController<
+              ModernViewportCameraControllerInstance, AzFramework::ViewportControllerPriority::DispatchToAllPriorities>
     {
     public:
         using CameraListBuilder = AZStd::function<void(AzFramework::Cameras&)>;
