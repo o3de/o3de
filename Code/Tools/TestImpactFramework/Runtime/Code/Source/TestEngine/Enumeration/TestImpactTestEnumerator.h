@@ -73,22 +73,23 @@ namespace TestImpact
         using CacheExceptionPolicy = Bitwise::CacheExceptionPolicy;
 
         //! Constructs a test enumerator with the specified parameters common to all enumeration job runs of this enumerator.
-        //! @param clientCallback The optional client callback to be called whenever an enumeration job changes state.
         //! @param maxConcurrentEnumerations The maximum number of enumerations to be in flight at any given time.
-        //! @param enumerationTimeout The maximum duration an enumeration may be in-flight for before being forcefully terminated.
-        //! @param enumeratorTimeout The maximum duration the enumerator may run before forcefully terminating all in-flight enumerations.
-        TestEnumerator(
-            AZStd::optional<ClientJobCallback> clientCallback,
-            size_t maxConcurrentEnumerations,
-            AZStd::optional<AZStd::chrono::milliseconds> enumerationTimeout,
-            AZStd::optional<AZStd::chrono::milliseconds> enumeratorTimeout);
+        TestEnumerator(size_t maxConcurrentEnumerations);
 
         //! Executes the specified test enumeration jobs according to the specified cache and job exception policies.
         //! @param jobInfos The enumeration jobs to execute.
         //! @param cacheExceptionPolicy The cache exception policy to be used for this run.
         //! @param jobExceptionPolicy The enumeration job exception policy to be used for this run.
-        //! @return the test enumeration jobs with their associated test enumeration payloads.
-        AZStd::vector<Job> Enumerate(
-            const AZStd::vector<JobInfo>& jobInfos, CacheExceptionPolicy cacheExceptionPolicy, JobExceptionPolicy jobExceptionPolicy);
+        //! @param enumerationTimeout The maximum duration an enumeration may be in-flight for before being forcefully terminated.
+        //! @param enumeratorTimeout The maximum duration the enumerator may run before forcefully terminating all in-flight enumerations.
+        //! @param clientCallback The optional client callback to be called whenever an enumeration job changes state.
+        //! @return The result of the run sequence and the enumeration jobs with their associated test enumeration payloads.
+        AZStd::pair<ProcessSchedulerResult, AZStd::vector<Job>> Enumerate(
+            const AZStd::vector<JobInfo>& jobInfos,
+            CacheExceptionPolicy cacheExceptionPolicy,
+            JobExceptionPolicy jobExceptionPolicy,
+            AZStd::optional<AZStd::chrono::milliseconds> enumerationTimeout,
+            AZStd::optional<AZStd::chrono::milliseconds> enumeratorTimeout,
+            AZStd::optional<ClientJobCallback> clientCallback);
     };
 } // namespace TestImpact
