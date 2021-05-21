@@ -17,7 +17,7 @@
 
 namespace AZ::NativeUI
 {
-    enum AssertAction
+    enum class AssertAction
     {
         IGNORE_ASSERT = 0,
         IGNORE_ALL_ASSERTS,
@@ -31,21 +31,30 @@ namespace AZ::NativeUI
         AZ_RTTI(NativeUIRequests, "{48361EE6-C1E7-4965-A13A-7425B2691817}");
         virtual ~NativeUIRequests() = default;
 
-        // Waits for user to select an option before execution continues
-        // Returns the option string selected by the user
-        virtual AZStd::string DisplayBlockingDialog(const AZStd::string& /*title*/, const AZStd::string& /*message*/, const AZStd::vector<AZStd::string>& /*options*/) const { return ""; };
+        //! Waits for user to select an option before execution continues
+        //! Returns the option string selected by the user
+        virtual AZStd::string DisplayBlockingDialog(
+            [[maybe_unused]] const AZStd::string& title,
+            [[maybe_unused]] const AZStd::string& message,
+            [[maybe_unused]] const AZStd::vector<AZStd::string>& options) const { return {}; }
 
-        // Waits for user to select an option ('Ok' or optionally 'Cancel') before execution continues
-        // Returns the option string selected by the user
-        virtual AZStd::string DisplayOkDialog(const AZStd::string& /*title*/, const AZStd::string& /*message*/, bool /*showCancel*/) const { return ""; };
+        //! Waits for user to select an option ('Ok' or optionally 'Cancel') before execution continues
+        //! Returns the option string selected by the user
+        virtual AZStd::string DisplayOkDialog(
+            [[maybe_unused]] const AZStd::string& title,
+            [[maybe_unused]] const AZStd::string& message,
+            [[maybe_unused]] bool showCancel) const { return {}; }
 
-        // Waits for user to select an option ('Yes', 'No' or optionally 'Cancel') before execution continues
-        // Returns the option string selected by the user
-        virtual AZStd::string DisplayYesNoDialog(const AZStd::string& /*title*/, const AZStd::string& /*message*/, bool /*showCancel*/) const { return ""; };
+        //! Waits for user to select an option ('Yes', 'No' or optionally 'Cancel') before execution continues
+        //! Returns the option string selected by the user
+        virtual AZStd::string DisplayYesNoDialog(
+            [[maybe_unused]] const AZStd::string& title,
+            [[maybe_unused]] const AZStd::string& message,
+            [[maybe_unused]] bool showCancel) const { return {}; }
 
-        // Displays an assert dialog box
-        // Returns the action selected by the user
-        virtual AssertAction DisplayAssertDialog(const AZStd::string& /*message*/) const { return AssertAction::NONE; };
+        //! Displays an assert dialog box
+        //! Returns the action selected by the user
+        virtual AssertAction DisplayAssertDialog([[maybe_unused]] const AZStd::string& message) const { return AssertAction::NONE; }
     };
 
     class NativeUIEBusTraits
