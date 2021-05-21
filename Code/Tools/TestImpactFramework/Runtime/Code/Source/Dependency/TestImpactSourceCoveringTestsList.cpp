@@ -16,18 +16,36 @@
 
 namespace TestImpact
 {
-    SourceCoveringTests::SourceCoveringTests(const AZStd::string& path)
+    AZStd::vector<AZStd::string> ExtractTargetsFromSet(AZStd::unordered_set<AZStd::string>&& coveringTestTargets)
+    {
+        AZStd::vector<AZStd::string> testTargets;
+        testTargets.reserve(coveringTestTargets.size());
+        for (auto it = coveringTestTargets.begin(); it != coveringTestTargets.end(); )
+        {
+            testTargets.push_back(std::move(coveringTestTargets.extract(it++).value()));
+        }
+
+        return testTargets;
+    }
+
+    SourceCoveringTests::SourceCoveringTests(const RepoPath& path)
         : m_path(path)
     {
     }
 
-    SourceCoveringTests::SourceCoveringTests(const AZStd::string& path, AZStd::vector<AZStd::string>&& coveringTestTargets)
+    SourceCoveringTests::SourceCoveringTests(const RepoPath& path, AZStd::vector<AZStd::string>&& coveringTestTargets)
         : m_path(path)
         , m_coveringTestTargets(AZStd::move(coveringTestTargets))
     {
     }
 
-    const AZStd::string& SourceCoveringTests::GetPath() const
+    SourceCoveringTests::SourceCoveringTests(const RepoPath& path, AZStd::unordered_set<AZStd::string>&& coveringTestTargets)
+        : m_path(path)
+        , m_coveringTestTargets(ExtractTargetsFromSet(AZStd::move(coveringTestTargets)))
+    {
+    }
+
+    const RepoPath& SourceCoveringTests::GetPath() const
     {
         return m_path;
     }

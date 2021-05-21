@@ -12,11 +12,10 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactRuntime.h>
+
 #include <Process/TestImpactProcessInfo.h>
 
-#include <TestImpactFramework/TestImpactCallback.h>
-
-#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/std/containers/vector.h>
@@ -43,12 +42,19 @@ namespace TestImpact
         Timeout = ProcessTimeoutErrorCode //!< The process was terminated by the scheduler due to exceeding runtime limit.
     };
 
+    //! Client result for process scheduler callbacks.
+    enum class ProcessCallbackResult : bool
+    {
+        Continue, //!< Continune scheduling.
+        Abort //!< Abort scheduling immediately.
+    };
+
     //! Callback for process launch attempt.
     //! @param processId The id of the process that attempted to launch.
     //! @param launchResult The result of the process launch attempt.
     //! @param createTime The timestamp of the process launch attempt.
     using ProcessLaunchCallback =
-        AZStd::function<CallbackResult(
+        AZStd::function<ProcessCallbackResult(
             ProcessId processId,
             LaunchResult launchResult,
             AZStd::chrono::high_resolution_clock::time_point createTime)>;
@@ -60,7 +66,7 @@ namespace TestImpact
     //! @param std The standard output and standard error of the process.
     //! @param createTime The timestamp of the process exit.
     using ProcessExitCallback =
-        AZStd::function<CallbackResult(
+        AZStd::function<ProcessCallbackResult(
             ProcessId processId,
             ExitCondition exitStatus,
             ReturnCode returnCode,
@@ -94,7 +100,7 @@ namespace TestImpact
         struct ProcessInFlight;
 
         void MonitorProcesses();
-        CallbackResult PopAndLaunch(ProcessInFlight& processInFlight);
+        ProcessCallbackResult PopAndLaunch(ProcessInFlight& processInFlight);
         void TerminateAllProcesses(ExitCondition exitStatus);
         StdContent ConsumeProcessStdContent(ProcessInFlight& processInFlight);
         void AccumulateProcessStdContent(ProcessInFlight& processInFlight);

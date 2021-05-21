@@ -49,7 +49,7 @@ namespace TestImpact
         const AZStd::string& GetOutputName() const;
 
         //! Returns the path in the source tree to the build target location.
-        const AZ::IO::Path& GetPath() const;
+        const RepoPath& GetPath() const;
 
         //! Returns the build target's sources.
         const TargetSources& GetSources() const;

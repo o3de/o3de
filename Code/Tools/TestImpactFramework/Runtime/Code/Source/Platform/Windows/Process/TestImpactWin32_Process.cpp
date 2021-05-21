@@ -69,7 +69,7 @@ namespace TestImpact
             NULL, NULL,
             &si, &pi))
         {
-            throw ProcessException("Couldn't create process");
+            throw ProcessException(AZStd::string::format("Couldn't create process with args: %s", args.c_str()));
         }
 
         ReleaseChildPipes();

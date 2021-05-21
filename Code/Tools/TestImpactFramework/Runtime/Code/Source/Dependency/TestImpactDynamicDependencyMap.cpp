@@ -25,7 +25,7 @@ namespace TestImpact
         {
             for (const auto& source : target->GetSources().m_staticSources)
             {
-                if (auto mapping = m_sourceDependencyMap.find(source);
+                if (auto mapping = m_sourceDependencyMap.find(source.String());
                     mapping != m_sourceDependencyMap.end())
                 {
                     // This is an existing entry in the dependency map so update the parent build targets with this target
@@ -43,7 +43,7 @@ namespace TestImpact
             {
                 for (const auto& output : autogen.m_outputs)
                 {
-                    m_autogenInputToOutputMap[autogen.m_input].push_back(output);
+                    m_autogenInputToOutputMap[autogen.m_input.String()].push_back(output.String());
                 }
             }
         };
@@ -138,11 +138,11 @@ namespace TestImpact
         {
             // Autogen input files are not compiled sources and thus supplying coverage data for them makes no sense
             AZ_TestImpact_Eval(
-                m_autogenInputToOutputMap.find(sourceCoverage.GetPath()) == m_autogenInputToOutputMap.end(),
+                m_autogenInputToOutputMap.find(sourceCoverage.GetPath().String()) == m_autogenInputToOutputMap.end(),
                 DependencyException, AZStd::string::format("Couldn't replace source coverage for %s, source file is an autogen input file",
                     sourceCoverage.GetPath().c_str()).c_str());
 
-            auto [it, inserted] = m_sourceDependencyMap.insert(sourceCoverage.GetPath());
+            auto [it, inserted] = m_sourceDependencyMap.insert(sourceCoverage.GetPath().String());
             auto& [key, sourceDependency] = *it;
 
             // Clear any existing coverage for the delta
@@ -178,22 +178,22 @@ namespace TestImpact
         }
     }
 
-    void DynamicDependencyMap::ClearSourceCoverage(const AZStd::vector<AZStd::string>& paths)
+    void DynamicDependencyMap::ClearSourceCoverage(const AZStd::vector<RepoPath>& paths)
     {
         for (const auto& path : paths)
         {
-            if (const auto outputSources = m_autogenInputToOutputMap.find(path);
+            if (const auto outputSources = m_autogenInputToOutputMap.find(path.String());
                 outputSources != m_autogenInputToOutputMap.end())
             {
                 // Clearing the coverage data of an autogen input source instead clears the coverage data of its output sources
                 for (const auto& outputSource : outputSources->second)
                 {
-                    ReplaceSourceCoverage(SourceCoveringTestsList({ SourceCoveringTests(outputSource) }));
+                    ReplaceSourceCoverage(SourceCoveringTestsList(AZStd::vector<SourceCoveringTests>{ SourceCoveringTests(RepoPath(outputSource)) }));
                 }
             }
             else
             {
-                ReplaceSourceCoverage(SourceCoveringTestsList({ SourceCoveringTests(path, { }) }));
+                ReplaceSourceCoverage(SourceCoveringTestsList(AZStd::vector<SourceCoveringTests>{ SourceCoveringTests(RepoPath(path)) }));
             }
         }
     }
@@ -221,7 +221,7 @@ namespace TestImpact
         return coveringTestTargets;
     }
 
-    AZStd::optional<SourceDependency> DynamicDependencyMap::GetSourceDependency(const AZStd::string& path) const
+    AZStd::optional<SourceDependency> DynamicDependencyMap::GetSourceDependency(const RepoPath& path) const
     {
         AZStd::unordered_set<ParentTarget> parentTargets;
         AZStd::unordered_set<const TestTarget*> coveringTestTargets;
@@ -243,7 +243,7 @@ namespace TestImpact
             }
         };
 
-        if (const auto outputSources = m_autogenInputToOutputMap.find(path); outputSources != m_autogenInputToOutputMap.end())
+        if (const auto outputSources = m_autogenInputToOutputMap.find(path.String()); outputSources != m_autogenInputToOutputMap.end())
         {
             // Consolidate the parentage and coverage of each of the autogen input file's generated output files
             for (const auto& outputSource : outputSources->second)
@@ -253,7 +253,7 @@ namespace TestImpact
         }
         else
         {
-            getSourceDependency(path);
+            getSourceDependency(path.String());
         }
 
         if (!parentTargets.empty() || !coveringTestTargets.empty())
@@ -264,7 +264,7 @@ namespace TestImpact
         return AZStd::nullopt;
     }
 
-    SourceDependency DynamicDependencyMap::GetSourceDependencyOrThrow(const AZStd::string& path) const
+    SourceDependency DynamicDependencyMap::GetSourceDependencyOrThrow(const RepoPath& path) const
     {
         auto sourceDependency = GetSourceDependency(path);
         AZ_TestImpact_Eval(sourceDependency.has_value(), DependencyException, AZStd::string::format("Couldn't find source %s", path.c_str()).c_str());
@@ -282,7 +282,7 @@ namespace TestImpact
                 souceCoveringTests.push_back(testTarget->GetName());
             }
 
-            coverage.push_back(SourceCoveringTests(path, AZStd::move(souceCoveringTests)));
+            coverage.push_back(SourceCoveringTests(RepoPath(path), AZStd::move(souceCoveringTests)));
         }
 
         return SourceCoveringTestsList(AZStd::move(coverage));
@@ -310,7 +310,7 @@ namespace TestImpact
 
         // Keep track of the coverage to delete as a post step rather than deleting it in situ so that erroneous change lists
         // do not corrupt the dynamic dependency map
-        AZStd::vector<AZStd::string> coverageToDelete;
+        AZStd::vector<RepoPath> coverageToDelete;
 
         // Create operations
         for (const auto& createdFile : changeList.m_createdFiles)

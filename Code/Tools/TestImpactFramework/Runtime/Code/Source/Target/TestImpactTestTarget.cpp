@@ -25,6 +25,16 @@ namespace TestImpact
         return m_testMetaData.m_suite;
     }
 
+    const AZStd::string& TestTarget::GetCustomArgs() const
+    {
+        return m_testMetaData.m_customArgs;
+    }
+
+    AZStd::chrono::milliseconds TestTarget::GetTimeout() const
+    {
+        return m_testMetaData.m_timeout;
+    }
+
     LaunchMethod TestTarget::GetLaunchMethod() const
     {
         return m_testMetaData.m_launchMethod;

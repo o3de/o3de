@@ -31,7 +31,7 @@ namespace TestImpact
         return m_buildMetaData.m_outputName;
     }
 
-    const AZ::IO::Path& BuildTarget::GetPath() const
+    const RepoPath& BuildTarget::GetPath() const
     {
         return m_buildMetaData.m_path;
     }

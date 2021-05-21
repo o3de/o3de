@@ -12,7 +12,10 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactRepoPath.h>
+
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
 
 namespace TestImpact
@@ -21,11 +24,13 @@ namespace TestImpact
     class SourceCoveringTests
     {
     public:
-        explicit SourceCoveringTests(const AZStd::string& path);
-        SourceCoveringTests(const AZStd::string& path, AZStd::vector<AZStd::string>&& coveringTestTargets);
+        //SourceCoveringTests(const SourceCoveringTests&);
+        explicit SourceCoveringTests(const RepoPath& path);
+        SourceCoveringTests(const RepoPath& path, AZStd::vector<AZStd::string>&& coveringTestTargets);
+        SourceCoveringTests(const RepoPath& path, AZStd::unordered_set<AZStd::string>&& coveringTestTargets);
 
         //! Returns the path of this source file.
-        const AZStd::string& GetPath() const;
+        const RepoPath& GetPath() const;
 
         //! Returns the number of unresolved test targets covering this source file.
         size_t GetNumCoveringTestTargets() const;
@@ -33,7 +38,7 @@ namespace TestImpact
         //! Returns the unresolved test targets covering this source file.
         const AZStd::vector<AZStd::string>& GetCoveringTestTargets() const;
     private:
-        AZStd::string m_path; //!< The path of this source file.
+        RepoPath m_path; //!< The path of this source file.
         AZStd::vector<AZStd::string> m_coveringTestTargets; //!< The unresolved test targets that cover this source file.
     };
 
