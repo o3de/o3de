@@ -185,7 +185,8 @@ namespace AZ
                     // we can't use a temporary folder because CreateJobs API does not warrant side effects, and does not prepare a temp folder.
                     // we can't use the OS temp folder anyway, because many includes (eg #include "../RPI/Shadow.h") are relative and will only work from the original location
                     AZStd::string prependedPath = ShaderBuilderUtility::DumpAzslPrependedCode(
-                        BuilderName, prependedAzslSourceCode, originalLocation, ShaderBuilderUtility::ExtractStemName(fullPath.c_str()), shaderPlatformInterface->GetAPIName().GetStringView());
+                        BuilderName, prependedAzslSourceCode, originalLocation, ShaderBuilderUtility::ExtractStemName(fullPath.c_str()),
+                        shaderPlatformInterface->GetAPIName().GetStringView());
                     // run mcpp
                     PreprocessorData preprocessorData = PreprocessSource(prependedPath, fullPath, buildOptions.m_preprocessorSettings);
                     jobDescriptor.m_jobParameters[(u32)JobParameterIndices::PreprocessorError] = preprocessorData.diagnostics;  // save for ProcessJob
@@ -221,7 +222,7 @@ namespace AZ
         }
 
         // eg: ("D:/p/x.a", "D:/p/x.b") -> yes
-        static bool HasSameStemName(const AZStd::string& lhsPath, const AZStd::string& rhsPath)
+        static bool HasSameFileName(const AZStd::string& lhsPath, const AZStd::string& rhsPath)
         {
             using namespace StringFunc::Path;
             AZStd::string stem1;
@@ -307,7 +308,8 @@ namespace AZ
                 buildOptions.m_compilerArguments.Merge(shaderAssetSource.m_compiler);
 
                 // Earlier, we declared a job dependency on the .azsl's job, let's access the produced assets:
-                uint32_t subId = ShaderBuilderUtility::MakeAzslBuildProductSubId(RPI::ShaderAssetSubId::GeneratedSource, platformInterface->GetAPIType());
+                uint32_t subId = ShaderBuilderUtility::MakeAzslBuildProductSubId(
+                    RPI::ShaderAssetSubId::GeneratedHlslSource, platformInterface->GetAPIType());
                 auto assetIdOutcome = RPI::AssetUtils::MakeAssetId(inputFiles->m_azslSourceFullPath, subId);
                 AZ_Warning(BuilderName, assetIdOutcome.IsSuccess(), "Product of dependency %s not found: this is an oddity but build can continue.", inputFiles->m_azslSourceFullPath.c_str());
                 if (assetIdOutcome.IsSuccess())
@@ -325,7 +327,7 @@ namespace AZ
                     AZ_TracePrintf(BuilderName, "Product output already built by %s is not reusable because of incompatible azslc CompilerHints: launching independent build", inputFiles->m_azslSourceFullPath.c_str());
                 }
 
-                if (HasSameStemName(fullSourcePath, inputFiles->m_azslSourceFullPath))
+                if (HasSameFileName(fullSourcePath, inputFiles->m_azslSourceFullPath))
                 {
                     // let's add a "distinguisher" to the names of the outproduct artifacts of this build round.*
                     // Because otherwise the asset processor is not going to accept an overwrite of the ones output by the .azsl job
