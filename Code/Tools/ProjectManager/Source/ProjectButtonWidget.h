@@ -13,37 +13,31 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <BigTallButtonWidget.h>
-
 #include <QFrame>
 #include <QLabel>
 #endif
 
-QT_FORWARD_DECLARE_CLASS(QResizeEvent)
-QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QPixmap)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QAction)
 
 namespace O3DE::ProjectManager
 {
-    /*class ProjectImageLabel
+    class LabelButton
         : public QLabel
     {
         Q_OBJECT // AUTOMOC
 
     public:
-        explicit ProjectImageLabel(QPixmap* imagesPixmap, QWidget* parent = nullptr);
-        ~ProjectImageLabel();
+        explicit LabelButton(QWidget* parent = nullptr);
+        ~LabelButton() = default;
+
+    signals:
+        void triggered();
 
     public slots:
-        //void resizeEvent(QResizeEvent* event) override;
-
-    private:
-        void ResizeImage();
-
-        QPixmap* m_imagePixmap;
-    };*/
+        void mousePressEvent(QMouseEvent* event) override;
+    };
 
     class ProjectButton
         : public QFrame
@@ -52,11 +46,23 @@ namespace O3DE::ProjectManager
 
     public:
         explicit ProjectButton(const QString& projectName, QWidget* parent = nullptr);
+        explicit ProjectButton(const QString& projectName, const QString& projectImage, QWidget* parent = nullptr);
         ~ProjectButton() = default;
 
+    signals:
+        void OpenProject(const QString& projectName);
+        void EditProject(const QString& projectName);
+        void EditProjectGems(const QString& projectName);
+        void CopyProject(const QString& projectName);
+        void RemoveProject(const QString& projectName);
+        void DeleteProject(const QString& projectName);
+
     private:
+        void Setup();
+
         QString m_projectName;
-        QLabel* m_projectImageLabel;
+        QString m_projectImagePath;
+        LabelButton* m_projectImageLabel;
         QPushButton* m_projectSettingsMenuButton;
         QAction* m_editProjectAction;
         QAction* m_editProjectGemsAction;

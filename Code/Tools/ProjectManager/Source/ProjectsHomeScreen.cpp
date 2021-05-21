@@ -13,32 +13,44 @@
 #include <ProjectsHomeScreen.h>
 
 #include <ProjectButtonWidget.h>
+#include <PythonBindingsInterface.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QPushButton>
 #include <QMenu>
+#include <QListView>
 #include <QSpacerItem>
-
-#include <PythonBindingsInterface.h>
+#include <QListWidget>
+#include <QListWidgetItem>
+#include <QFileInfo>
 
 namespace O3DE::ProjectManager
 {
+    inline constexpr static int s_contentMargins = 80;
+    inline constexpr static int s_projectButtonSpacing = 30;
+    inline constexpr static int s_spacerSize = 20;
+    inline constexpr static int s_newProjectButtonWidth = 156;
+    inline constexpr static int s_projectListAdditionalHeight = 40;
+
+    static QString s_projectPreviewImagePath = "/preview.png";
+
     ProjectsHomeScreen::ProjectsHomeScreen(QWidget* parent)
         : ScreenWidget(parent)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
-        this->setLayout(vLayout);
-        vLayout->setContentsMargins(80, 80, 80, 80);
+        setLayout(vLayout);
+        vLayout->setContentsMargins(s_contentMargins, s_contentMargins, s_contentMargins, s_contentMargins);
 
         QHBoxLayout* topLayout = new QHBoxLayout();
 
         QLabel* titleLabel = new QLabel(this);
         titleLabel->setText("My Projects");
-        titleLabel->setStyleSheet("font-size: 24px; font-family: 'Open Sans';");
+        titleLabel->setStyleSheet("font-size: 24px");
         topLayout->addWidget(titleLabel);
 
-        QSpacerItem* topSpacer = new QSpacerItem(20, 40, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        QSpacerItem* topSpacer = new QSpacerItem(s_spacerSize, s_spacerSize, QSizePolicy::Expanding, QSizePolicy::Minimum);
         topLayout->addItem(topSpacer);
 
         QMenu* newProjectMenu = new QMenu(this);
@@ -46,35 +58,69 @@ namespace O3DE::ProjectManager
         m_addExistingProjectAction = newProjectMenu->addAction("Add Existing Project");
 
         QPushButton* newProjectMenuButton = new QPushButton(this);
-        newProjectMenuButton->setText("New Project");
+        newProjectMenuButton->setText("New Project...");
         newProjectMenuButton->setMenu(newProjectMenu);
+        newProjectMenuButton->setFixedWidth(s_newProjectButtonWidth);
+        newProjectMenuButton->setStyleSheet("font-size: 14px;");
         topLayout->addWidget(newProjectMenuButton);
 
         vLayout->addLayout(topLayout);
 
-        QHBoxLayout* buttonLayout = new QHBoxLayout();
-        buttonLayout->setSpacing(30);
+        QSpacerItem* topVerticalSpacer = new QSpacerItem(s_spacerSize, s_spacerSize, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        vLayout->addItem(topVerticalSpacer);
 
-        ProjectButton* tempProjectButton1 = new ProjectButton("Project 1", this);
-        buttonLayout->addWidget(tempProjectButton1);
+        // Get all projects and create a horizontal scrolling list of them
+        auto projectsResult = PythonBindingsInterface::Get()->GetProjects();
+        if (projectsResult.IsSuccess() && !projectsResult.GetValue().isEmpty())
+        {
+            QListWidget* projectsButtonList = new QListWidget;
+            projectsButtonList->setFlow(QListView::Flow::LeftToRight);
+            projectsButtonList->setSpacing(s_projectButtonSpacing);
+            projectsButtonList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-        ProjectButton* tempProjectButton2 = new ProjectButton("Project 2", this);
-        buttonLayout->addWidget(tempProjectButton2);
+            for (auto project : projectsResult.GetValue())
+            {
+                QListWidgetItem* projectListItem;
+                projectListItem = new QListWidgetItem(projectsButtonList);
+                projectListItem->setBackground(Qt::transparent);
+                projectsButtonList->addItem(projectListItem);
+                ProjectButton* projectButton;
+                QString projectPreviewPath = project.m_path + s_projectPreviewImagePath;
+                QFileInfo doesPreviewExist(projectPreviewPath);
+                if (doesPreviewExist.exists() && doesPreviewExist.isFile())
+                {
+                    projectButton = new ProjectButton(project.m_projectName, projectPreviewPath, this);
+                }
+                else
+                {
+                    projectButton = new ProjectButton(project.m_projectName, this);
+                }
+                projectListItem->setSizeHint(projectButton->minimumSizeHint());
+                projectsButtonList->setItemWidget(projectListItem, projectButton);
 
-        QSpacerItem* buttonSpacer = new QSpacerItem(20, 40, QSizePolicy::Expanding, QSizePolicy::Minimum);
-        buttonLayout->addItem(buttonSpacer);
+                connect(projectButton, &ProjectButton::OpenProject, this, &ProjectsHomeScreen::HandleOpenProject);
+                connect(projectButton, &ProjectButton::EditProject, this, &ProjectsHomeScreen::HandleEditProject);
 
-        vLayout->addLayout(buttonLayout);
+#ifdef SHOW_ALL_PROJECT_ACTIONS
+                connect(projectButton, &ProjectButton::EditProjectGems, this, &ProjectsHomeScreen::HandleEditProjectGems);
+                connect(projectButton, &ProjectButton::CopyProject, this, &ProjectsHomeScreen::HandleCopyProject);
+                connect(projectButton, &ProjectButton::RemoveProject, this, &ProjectsHomeScreen::HandleRemoveProject);
+                connect(projectButton, &ProjectButton::DeleteProject, this, &ProjectsHomeScreen::HandleDeleteProject);
+#endif
+            }
 
-        //QSpacerItem* verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
-        //vLayout->addItem(verticalSpacer);
+            projectsButtonList->setFixedHeight(projectsButtonList->sizeHintForRow(0) + s_projectListAdditionalHeight);
+            vLayout->addWidget(projectsButtonList);
+        }
+
+        QSpacerItem* bottomVerticalSpacer = new QSpacerItem(s_spacerSize, s_spacerSize, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        vLayout->addItem(bottomVerticalSpacer);
 
         // Using border-image allows for scaling options background-image does not support
-        setStyleSheet("O3DE--ProjectManager--ScreenWidget { border-image: url(:/Resources/FirstTimeBackgroundImage.jpg) repeat repeat; }");
+        setStyleSheet("O3DE--ProjectManager--ScreenWidget { border-image: url(:/Resources/Backgrounds/FirstTimeBackgroundImage.jpg) repeat repeat; }");
 
         connect(m_createNewProjectAction, &QAction::triggered, this, &ProjectsHomeScreen::HandleNewProjectButton);
         connect(m_addExistingProjectAction, &QAction::triggered, this, &ProjectsHomeScreen::HandleAddProjectButton);
-        //connect(m_ui->editProjectButton, &QPushButton::pressed, this, &ProjectsHomeScreen::HandleEditProjectButton);
     }
 
     ProjectManagerScreen ProjectsHomeScreen::GetScreenEnum()
@@ -91,9 +137,34 @@ namespace O3DE::ProjectManager
     {
         // Do nothing for now
     }
-    void ProjectsHomeScreen::HandleEditProjectButton()
+    void ProjectsHomeScreen::HandleOpenProject(const QString& projectName)
     {
-        emit ChangeScreenRequest(ProjectManagerScreen::ProjectSettings);
+        // Open the editor with this project open
+        emit NotifyCurrentProject(projectName);
+    }
+    void ProjectsHomeScreen::HandleEditProject(const QString& projectName)
+    {
+        emit NotifyCurrentProject(projectName);
+        emit ResetScreenRequest(ProjectManagerScreen::ProjectSettingsCore);
+        emit ChangeScreenRequest(ProjectManagerScreen::ProjectSettingsCore);
+    }
+    void ProjectsHomeScreen::HandleEditProjectGems(const QString& projectName)
+    {
+        emit NotifyCurrentProject(projectName);
+        emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
+    }
+    void ProjectsHomeScreen::HandleCopyProject([[maybe_unused]] const QString& projectName)
+    {
+        // Open file dialog and choose location for copied project then register copy with O3DE
+    }
+    void ProjectsHomeScreen::HandleRemoveProject([[maybe_unused]] const QString& projectName)
+    {
+        // Unregister Project from O3DE 
+    }
+    void ProjectsHomeScreen::HandleDeleteProject([[maybe_unused]] const QString& projectName)
+    {
+        // Remove project from 03DE and delete from disk
+        ProjectsHomeScreen::HandleRemoveProject(projectName);
     }
 
 } // namespace O3DE::ProjectManager

@@ -22,7 +22,7 @@
 
 namespace O3DE::ProjectManager
 {
-    ProjectSettingsCtrl::ProjectSettingsCtrl(QWidget* parent)
+    ProjectSettingsCtrl::ProjectSettingsCtrl(QWidget* parent, const QString& projectName)
         : ScreenWidget(parent)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
@@ -40,19 +40,45 @@ namespace O3DE::ProjectManager
         connect(m_backButton, &QPushButton::pressed, this, &ProjectSettingsCtrl::HandleBackButton);
         connect(m_nextButton, &QPushButton::pressed, this, &ProjectSettingsCtrl::HandleNextButton);
 
-        m_screensOrder =
+        // If a projectName was not passed in then we setting up a new project
+        if (projectName.isEmpty())
         {
-            ProjectManagerScreen::NewProjectSettings,
-            ProjectManagerScreen::GemCatalog
-        };
-        m_screensCtrl->BuildScreens(m_screensOrder);
-        m_screensCtrl->ForceChangeToScreen(ProjectManagerScreen::NewProjectSettings, false);
+            m_screensOrder =
+            {
+                ProjectManagerScreen::NewProjectSettings,
+                ProjectManagerScreen::GemCatalog
+            };
+            m_screensCtrl->BuildScreens(m_screensOrder);
+            m_screensCtrl->ForceChangeToScreen(ProjectManagerScreen::NewProjectSettings, false);
+
+            m_screenEnum = ProjectManagerScreen::NewProjectSettingsCore;
+        }
+        // If a projectName was passed in then we editing an exising project, gather it's info
+        else
+        {
+            auto projectResult = PythonBindingsInterface::Get()->GetProject(projectName);
+            if (projectResult.IsSuccess())
+            {
+                m_projectInfo = projectResult.GetValue();
+            }
+
+            m_screensOrder =
+            {
+                ProjectManagerScreen::ProjectSettings,
+                ProjectManagerScreen::GemCatalog
+            };
+            m_screensCtrl->BuildScreens(m_screensOrder);
+            m_screensCtrl->ForceChangeToScreen(ProjectManagerScreen::ProjectSettings, false);
+
+            m_screenEnum = ProjectManagerScreen::ProjectSettingsCore;
+        }
+
         UpdateNextButtonText();
     }
 
     ProjectManagerScreen ProjectSettingsCtrl::GetScreenEnum()
     {
-        return ProjectManagerScreen::NewProjectSettingsCore;
+        return m_screenEnum;
     }
 
     void ProjectSettingsCtrl::HandleBackButton()

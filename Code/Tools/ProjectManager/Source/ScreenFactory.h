@@ -19,5 +19,6 @@ namespace O3DE::ProjectManager
 {
     class ScreenWidget;
 
-    ScreenWidget* BuildScreen(QWidget* parent = nullptr, ProjectManagerScreen screen = ProjectManagerScreen::Empty);
+    ScreenWidget* BuildScreen(QWidget* parent = nullptr, ProjectManagerScreen screen = ProjectManagerScreen::Empty,
+        const QString& projectName = "");
 } // namespace O3DE::ProjectManager

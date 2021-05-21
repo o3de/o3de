@@ -45,9 +45,14 @@ namespace O3DE::ProjectManager
         void DeleteAllScreens();
 
     private:
+        void SetCurrentProject(const QString& projectName);
+
         QStackedWidget* m_screenStack;
         QHash<ProjectManagerScreen, ScreenWidget*> m_screenMap;
         QStack<ProjectManagerScreen> m_screenVisitOrder;
+
+        // Used to specify which project to edit when changing settings
+        QString m_currentProject;
     };
 
 } // namespace O3DE::ProjectManager

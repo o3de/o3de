@@ -21,7 +21,7 @@
 
 namespace O3DE::ProjectManager
 {
-    ScreenWidget* BuildScreen(QWidget* parent, ProjectManagerScreen screen)
+    ScreenWidget* BuildScreen(QWidget* parent, ProjectManagerScreen screen, const QString& projectName)
     {
         ScreenWidget* newScreen;
 
@@ -41,6 +41,9 @@ namespace O3DE::ProjectManager
             break;
         case (ProjectManagerScreen::ProjectsHome):
             newScreen = new ProjectsHomeScreen(parent);
+            break;
+        case (ProjectManagerScreen::ProjectSettingsCore):
+            newScreen = new ProjectSettingsCtrl(parent, projectName);
             break;
         case (ProjectManagerScreen::ProjectSettings):
             newScreen = new ProjectSettingsScreen(parent);

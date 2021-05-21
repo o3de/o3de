@@ -54,7 +54,7 @@ namespace O3DE::ProjectManager
             ProjectManagerScreen::FirstTimeUse,
             ProjectManagerScreen::NewProjectSettingsCore,
             ProjectManagerScreen::ProjectsHome,
-            ProjectManagerScreen::ProjectSettings,
+            ProjectManagerScreen::ProjectSettingsCore,
             ProjectManagerScreen::EngineSettings
         };
         m_screensCtrl->BuildScreens(screenEnums);

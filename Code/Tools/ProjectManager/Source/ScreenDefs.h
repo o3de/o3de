@@ -22,6 +22,7 @@ namespace O3DE::ProjectManager
         NewProjectSettings,
         GemCatalog,
         ProjectsHome,
+        ProjectSettingsCore,
         ProjectSettings,
         EngineSettings
     };

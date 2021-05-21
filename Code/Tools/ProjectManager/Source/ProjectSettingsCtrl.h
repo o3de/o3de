@@ -25,7 +25,7 @@ namespace O3DE::ProjectManager
         : public ScreenWidget
     {
     public:
-        explicit ProjectSettingsCtrl(QWidget* parent = nullptr);
+        explicit ProjectSettingsCtrl(QWidget* parent = nullptr, const QString& projectName = nullptr);
         ~ProjectSettingsCtrl() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
@@ -43,6 +43,8 @@ namespace O3DE::ProjectManager
 
         QString m_projectTemplatePath;
         ProjectInfo m_projectInfo;
+
+        ProjectManagerScreen m_screenEnum;
     };
 
 } // namespace O3DE::ProjectManager

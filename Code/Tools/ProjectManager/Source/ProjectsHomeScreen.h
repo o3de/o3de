@@ -29,7 +29,12 @@ namespace O3DE::ProjectManager
     protected slots:
         void HandleNewProjectButton();
         void HandleAddProjectButton();
-        void HandleEditProjectButton();
+        void HandleOpenProject(const QString& projectName);
+        void HandleEditProject(const QString& projectName);
+        void HandleEditProjectGems(const QString& projectName);
+        void HandleCopyProject(const QString& projectName);
+        void HandleRemoveProject(const QString& projectName);
+        void HandleDeleteProject(const QString& projectName);
 
     private:
         QAction* m_createNewProjectAction;

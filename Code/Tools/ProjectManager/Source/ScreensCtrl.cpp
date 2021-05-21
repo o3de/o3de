@@ -20,6 +20,7 @@ namespace O3DE::ProjectManager
 {
     ScreensCtrl::ScreensCtrl(QWidget* parent)
         : QWidget(parent)
+        , m_currentProject("")
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setMargin(0);
@@ -110,13 +111,14 @@ namespace O3DE::ProjectManager
         DeleteScreen(screen);
 
         // Add new screen
-        ScreenWidget* newScreen = BuildScreen(this, screen);
+        ScreenWidget* newScreen = BuildScreen(this, screen, m_currentProject);
         m_screenStack->addWidget(newScreen);
         m_screenMap.insert(screen, newScreen);
 
         connect(newScreen, &ScreenWidget::ChangeScreenRequest, this, &ScreensCtrl::ChangeToScreen);
         connect(newScreen, &ScreenWidget::GotoPreviousScreenRequest, this, &ScreensCtrl::GotoPreviousScreen);
         connect(newScreen, &ScreenWidget::ResetScreenRequest, this, &ScreensCtrl::ResetScreen);
+        connect(newScreen, &ScreenWidget::NotifyCurrentProject, this, &ScreensCtrl::SetCurrentProject);
     }
 
     void ScreensCtrl::ResetAllScreens()
@@ -147,6 +149,11 @@ namespace O3DE::ProjectManager
         {
             DeleteScreen(iter.key());
         }
+    }
+
+    void ScreensCtrl::SetCurrentProject(const QString& projectName)
+    {
+        m_currentProject = projectName;
     }
 
 } // namespace O3DE::ProjectManager
