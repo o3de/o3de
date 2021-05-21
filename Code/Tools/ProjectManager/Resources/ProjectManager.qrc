@@ -11,6 +11,7 @@
         <file>iOS.svg</file>
         <file>Linux.svg</file>
         <file>macOS.svg</file>
+        <file>o3de.svg</file>
         <file>Backgrounds/FirstTimeBackgroundImage.jpg</file>
     </qresource>
 </RCC>
