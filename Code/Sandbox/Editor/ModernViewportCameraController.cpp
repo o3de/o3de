@@ -109,13 +109,9 @@ namespace SandboxEditor
 
     bool ModernViewportCameraControllerInstance::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
-        AzFramework::WindowSize windowSize;
-        AzFramework::WindowRequestBus::EventResult(
-            windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
-
         if (ShouldHandle(event.m_priority, m_cameraSystem.m_cameras.Exclusive()))
         {
-            return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel, windowSize));
+            return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel));
         }
 
         return false;
