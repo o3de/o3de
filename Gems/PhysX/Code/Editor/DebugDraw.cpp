@@ -415,11 +415,18 @@ namespace PhysX
             {
             case GlobalCollisionDebugColorMode::MaterialColor:
             {
-                Physics::MaterialFromAssetConfiguration materialConfiguration;
-                const Physics::MaterialId materialId = colliderConfig.m_materialSelection.GetMaterialId(elementDebugInfo.m_materialSlotIndex);
-                if (colliderConfig.m_materialSelection.GetMaterialConfiguration(materialConfiguration, materialId))
+                if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
                 {
-                    debugColor = materialConfiguration.m_configuration.m_debugColor;
+                    if (auto* materialLibrary = physicsSystem->GetDefaultMaterialLibrary().Get())
+                    {
+                        Physics::MaterialFromAssetConfiguration materialConfiguration;
+                        const Physics::MaterialId materialId = colliderConfig.m_materialSelection.GetMaterialId(elementDebugInfo.m_materialSlotIndex);
+
+                        if (materialLibrary->GetDataForMaterialId(materialId, materialConfiguration))
+                        {
+                            debugColor = materialConfiguration.m_configuration.m_debugColor;
+                        }
+                    }
                 }
                 break;
             }

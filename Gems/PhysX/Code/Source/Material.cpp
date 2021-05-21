@@ -15,6 +15,7 @@
 #include "Material.h"
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <PxPhysicsAPI.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
 
 namespace PhysX
 {
@@ -271,10 +272,16 @@ namespace PhysX
         // Ensure PxMaterial instances are initialized if possible.
         InitializeMaterials(materialSelection);
 
+        Physics::MaterialLibraryAsset* materialLibrary = nullptr;
+        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+        {
+            materialLibrary = physicsSystem->GetDefaultMaterialLibrary().Get();
+        }
+
         for (const auto& id : materialSelection.GetMaterialIdsAssignedToSlots())
         {
             Physics::MaterialFromAssetConfiguration configuration;
-            if (materialSelection.GetMaterialConfiguration(configuration, id))
+            if (materialLibrary && materialLibrary->GetDataForMaterialId(id, configuration))
             {
                 auto iterator = m_materialsFromAssets.find(id.GetUuid());
                 if (iterator != m_materialsFromAssets.end())
@@ -316,25 +323,29 @@ namespace PhysX
     {
         const AZ::u32 defaultMaterialIndex = 0;
 
-        if (!materialSelection.IsMaterialLibraryValid())
-        {
-            return defaultMaterialIndex;
-        }
-
-        auto materialAsset = AZ::Data::AssetManager::Instance().GetAsset<Physics::MaterialLibraryAsset>(materialSelection.GetMaterialLibraryAssetId(), AZ::Data::AssetLoadBehavior::Default);
-
-        materialAsset.BlockUntilLoadComplete();
-
-        AZStd::vector<Physics::MaterialFromAssetConfiguration> materialList = materialAsset.Get()->GetMaterialsData();
-        
         const AZStd::vector<Physics::MaterialId>& selectedMaterials = materialSelection.GetMaterialIdsAssignedToSlots();
-        if (selectedMaterials.size() == 0)
+        if (selectedMaterials.empty())
         {
             return defaultMaterialIndex;
         }
+        const Physics::MaterialId& firstSelectedMaterialId = selectedMaterials[0];
+
+        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        if (!physicsSystem)
+        {
+            return defaultMaterialIndex;
+        }
+
+        auto* materialLibrary = physicsSystem->GetDefaultMaterialLibrary().Get();
+        if (!materialLibrary)
+        {
+            return defaultMaterialIndex;
+        }
+
+        const AZStd::vector<Physics::MaterialFromAssetConfiguration> materialList = materialLibrary->GetMaterialsData();
         for (AZ::u32 i=0; i < materialList.size(); ++i)
         {
-            if (materialList[i].m_id == selectedMaterials[0])
+            if (materialList[i].m_id == firstSelectedMaterialId)
             {
                 return i + 1; // Index 0 is reserved for Default material.
             }
@@ -359,10 +370,16 @@ namespace PhysX
         // Ensure PxMaterial instances are initialized if possible.
         InitializeMaterials(materialSelection);
 
+        Physics::MaterialLibraryAsset* materialLibrary = nullptr;
+        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+        {
+            materialLibrary = physicsSystem->GetDefaultMaterialLibrary().Get();
+        }
+
         for (const auto& id : materialSelection.GetMaterialIdsAssignedToSlots())
         {
             Physics::MaterialFromAssetConfiguration configuration;
-            if (materialSelection.GetMaterialConfiguration(configuration, id))
+            if (materialLibrary && materialLibrary->GetDataForMaterialId(id, configuration))
             {
                 auto iterator = m_materialsFromAssets.find(id.GetUuid());
                 if (iterator != m_materialsFromAssets.end())
@@ -409,11 +426,23 @@ namespace PhysX
 
     void MaterialsManager::InitializeMaterials(const Physics::MaterialSelection& materialSelection)
     {
+        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        if (!physicsSystem)
+        {
+            return;
+        }
+
+        auto* materialLibrary = physicsSystem->GetDefaultMaterialLibrary().Get();
+        if (!materialLibrary)
+        {
+            return;
+        }
+
         const AZStd::vector<Physics::MaterialId>& materialIds = materialSelection.GetMaterialIdsAssignedToSlots();
         for (const auto& id : materialIds)
         {
             Physics::MaterialFromAssetConfiguration configuration;
-            if (!materialSelection.GetMaterialConfiguration(configuration, id))
+            if (!materialLibrary->GetDataForMaterialId(id, configuration))
             {
                 continue; // Default material skips code below.
             }

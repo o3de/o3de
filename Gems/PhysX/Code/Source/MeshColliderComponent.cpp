@@ -85,11 +85,6 @@ namespace PhysX
         UpdateMeshAsset();
     }
 
-    void MeshColliderComponent::SetMaterialAsset(const AZ::Data::AssetId& id)
-    {
-        m_colliderConfiguration->m_materialSelection.SetMaterialLibrary(id);
-    }
-
     void MeshColliderComponent::SetMaterialId(const Physics::MaterialId& id)
     {
         m_colliderConfiguration->m_materialSelection.SetMaterialId(id);

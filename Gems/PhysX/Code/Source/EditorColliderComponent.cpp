@@ -681,11 +681,6 @@ namespace PhysX
         }
     }
 
-    void EditorColliderComponent::SetMaterialAsset(const AZ::Data::AssetId& id)
-    {
-        m_configuration.m_materialSelection.SetMaterialLibrary(id);
-    }
-
     void EditorColliderComponent::SetMaterialId(const Physics::MaterialId& id)
     {
         m_configuration.m_materialSelection.SetMaterialId(id);

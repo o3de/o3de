@@ -150,8 +150,6 @@ namespace Blast
         colliderConfiguration.m_position = transform.GetTranslation();
         colliderConfiguration.m_rotation = transform.GetRotation();
         colliderConfiguration.m_isExclusive = true;
-        colliderConfiguration.m_materialSelection.SetMaterialLibrary(
-            AZ::Interface<AzPhysics::SystemInterface>::Get()->GetDefaultMaterialLibrary()->GetId());
         colliderConfiguration.m_materialSelection.SetMaterialId(material);
         colliderConfiguration.m_collisionGroupId = actorConfiguration.m_collisionGroupId;
         colliderConfiguration.m_collisionLayer = actorConfiguration.m_collisionLayer;

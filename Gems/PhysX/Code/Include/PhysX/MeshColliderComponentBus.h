@@ -38,10 +38,6 @@ namespace PhysX
         /// @param id The asset ID to set it to.
         virtual void SetMeshAsset(const AZ::Data::AssetId& id) = 0;
 
-        /// Sets the material library asset to the collider.
-        /// @param id The asset ID to set it to.
-        virtual void SetMaterialAsset(const AZ::Data::AssetId& id) = 0;
-
         /// Sets the material id from the material library.
         /// @param id The asset ID to set it to.
         virtual void SetMaterialId(const Physics::MaterialId& id) = 0;

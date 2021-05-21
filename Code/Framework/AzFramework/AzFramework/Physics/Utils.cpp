@@ -119,7 +119,6 @@ namespace Physics
             AzPhysics::SceneConfiguration::Reflect(context);
             MaterialConfiguration::Reflect(context);
             MaterialLibraryAsset::Reflect(context);
-            MaterialLibraryAssetReflectionWrapper::Reflect(context);
             DefaultMaterialLibraryAssetReflectionWrapper::Reflect(context);
             JointLimitConfiguration::Reflect(context);
             AzPhysics::SimulatedBodyConfiguration::Reflect(context);

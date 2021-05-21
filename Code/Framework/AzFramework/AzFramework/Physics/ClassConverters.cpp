@@ -264,6 +264,11 @@ namespace Physics
                 }
             }
 
+            if (success && dataElement.GetVersion() <= 2)
+            {
+                success = success && dataElement.RemoveElementByName(AZ_CRC_CE("Material"));
+            }
+
             return success;
         }
     } // namespace ClassConverters

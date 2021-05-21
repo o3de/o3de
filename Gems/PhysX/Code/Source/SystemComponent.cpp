@@ -487,43 +487,6 @@ namespace PhysX
     bool SystemComponent::UpdateMaterialSelection(const Physics::ShapeConfiguration& shapeConfiguration,
         Physics::ColliderConfiguration& colliderConfiguration)
     {
-        Physics::MaterialSelection& materialSelection = colliderConfiguration.m_materialSelection;
-
-        // If the material library is still not set, we can't update the material selection
-        if (!materialSelection.IsMaterialLibraryValid())
-        {
-            AZ_Warning("PhysX", false,
-                "UpdateMaterialSelection: Material Selection tried to use an invalid/non-existing Physics material library: \"%s\". "
-                "Please make sure the file exists or re-assign another library", materialSelection.GetMaterialLibraryAssetHint().c_str());
-            return false;
-        }
-
-        // If there's no material library data loaded, try to load it
-        if (materialSelection.GetMaterialLibraryAssetData() == nullptr)
-        {
-            AZ::Data::AssetId materialLibraryAssetId = materialSelection.GetMaterialLibraryAssetId();
-            materialSelection.SetMaterialLibrary(materialLibraryAssetId);
-        }
-
-        // If there's still not material library data, we can't update the material selection 
-        if (materialSelection.GetMaterialLibraryAssetData() == nullptr)
-        {
-            AZ::Data::AssetId materialLibraryAssetId = materialSelection.GetMaterialLibraryAssetId();
-
-            auto materialLibraryAsset =
-                AZ::Data::AssetManager::Instance().GetAsset<Physics::MaterialLibraryAsset>(materialLibraryAssetId, AZ::Data::AssetLoadBehavior::Default);
-
-            materialLibraryAsset.BlockUntilLoadComplete();
-
-            // Log the asset path to help find out the incorrect library reference
-            AZStd::string assetPath = materialLibraryAsset.GetHint();
-            AZ_Warning("PhysX", false,
-                "UpdateMaterialSelection: Unable to load the material library for a material selection."
-                " Please check if the asset %s exists in the asset cache.", assetPath.c_str());
-
-            return false;
-        }
-
         if (shapeConfiguration.GetShapeType() == Physics::ShapeType::PhysicsAsset)
         {
             const Physics::PhysicsAssetShapeConfiguration& assetConfiguration =
@@ -648,10 +611,22 @@ namespace PhysX
 
         if (!assetConfiguration.m_useMaterialsFromAsset)
         {
+            // Not using the materials from the asset, nothing else to do.
+            return true;
+        }
+
+        if (!m_physXSystem)
+        {
             return false;
         }
 
-        const Physics::MaterialLibraryAsset* materialLibrary = materialSelection.GetMaterialLibraryAssetData();
+        const Physics::MaterialLibraryAsset* materialLibrary = m_physXSystem->GetDefaultMaterialLibrary().Get();
+        if (!materialLibrary)
+        {
+            AZ_Warning("PhysX", false, "UpdateMaterialSelectionFromPhysicsAsset: Material library is invalid");
+            return false;
+        }
+
         const AZStd::vector<AZStd::string>& meshMaterialNames = meshAsset->m_assetData.m_materialNames;
 
         // Update material IDs in the selection for each slot
