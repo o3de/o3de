@@ -1652,10 +1652,45 @@ def create_project(project_path: str,
                             d.write('# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n')
                             d.write('# {END_LICENSE}\n')
 
-    # copy the o3de_manifest.cmake into the project root
-    engine_path = registration.get_this_engine_path()
-    o3de_manifest_cmake = f'{engine_path}/cmake/o3de_manifest.cmake'
-    shutil.copy(o3de_manifest_cmake, project_path)
+    # set the "engine" element of the project.json
+    engine_json = f'{registration.get_this_engine_path()}/engine.json'
+    if not registration.valid_o3de_engine_json(engine_json):
+        logger.error(f"Engine json {engine_json} is not valid.")
+        return 1
+
+    with open(engine_json) as s:
+        try:
+            engine_json_data = json.load(s)
+        except Exception as e:
+            logger.error(f"Failed to read engine json {engine_json}: {str(e)}")
+            return 1
+
+        try:
+            engine_name = engine_json_data['engine_name']
+        except Exception as e:
+            logger.error(f"Engine json {engine_json} engine_name not found.")
+            return 1
+
+    project_json = f"{project_path}/project.json".replace('//', '/')
+    if not registration.valid_o3de_project_json(project_json):
+        logger.error(f'Project json {project_json} is not valid.')
+        return 1
+
+    with open(project_json, 'r') as s:
+        try:
+            project_json_data = json.load(s)
+        except Exception as e:
+            logger.error(f'Failed to load project json {project_json}.')
+            return 1
+
+    project_json_data.update({"engine": engine_name})
+    os.unlink(project_json)
+    with open(project_json, 'w') as s:
+        try:
+            s.write(json.dumps(project_json_data, indent=4))
+        except Exception as e:
+            logger.error(f'Failed to write project json {project_json}.')
+            return 1
 
     return 0
 
