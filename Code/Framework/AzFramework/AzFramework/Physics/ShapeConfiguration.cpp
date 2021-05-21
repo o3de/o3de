@@ -158,6 +158,18 @@ namespace Physics
         m_radius = AZ::GetMin(m_radius, (0.5f - AZ::Constants::FloatEpsilon) * m_height);
     }
 
+    static bool ShapeConfigurationVersionConverter(
+        [[maybe_unused]] AZ::SerializeContext& context,
+        AZ::SerializeContext::DataElementNode& classElement)
+    {
+        if (classElement.GetVersion() <= 1)
+        {
+            classElement.RemoveElementByName(AZ_CRC_CE("UseMaterialsFromAsset"));
+        }
+
+        return true;
+    }
+
     void PhysicsAssetShapeConfiguration::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -166,10 +178,9 @@ namespace Physics
                 ->RegisterGenericType<AZStd::shared_ptr<PhysicsAssetShapeConfiguration>>();
 
             serializeContext->Class<PhysicsAssetShapeConfiguration, ShapeConfiguration>()
-                ->Version(1)
+                ->Version(2, &ShapeConfigurationVersionConverter)
                 ->Field("PhysicsAsset", &PhysicsAssetShapeConfiguration::m_asset)
                 ->Field("AssetScale", &PhysicsAssetShapeConfiguration::m_assetScale)
-                ->Field("UseMaterialsFromAsset", &PhysicsAssetShapeConfiguration::m_useMaterialsFromAsset)
                 ->Field("SubdivisionLevel", &PhysicsAssetShapeConfiguration::m_subdivisionLevel)
                 ;
 
@@ -182,7 +193,6 @@ namespace Physics
                     ->DataElement(AZ::Edit::UIHandlers::Default, &PhysicsAssetShapeConfiguration::m_assetScale, "Asset Scale", "The scale of the asset shape")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &PhysicsAssetShapeConfiguration::m_useMaterialsFromAsset, "Physics Materials from Mesh", "Auto-set physics materials using Mesh's material surfaces names")
                     ;
             }
         }
