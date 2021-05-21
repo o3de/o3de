@@ -9,12 +9,9 @@
         <file>Resources/iOS.svg</file>
         <file>Resources/Linux.svg</file>
         <file>Resources/macOS.svg</file>
-<<<<<<< HEAD
         <file>Resources/DefaultProjectImage.png</file>
-=======
         <file>Resources/ArrowDownLine.svg</file>
         <file>Resources/ArrowUpLine.svg</file>
->>>>>>> main
         <file>Resources/Backgrounds/FirstTimeBackgroundImage.jpg</file>
     </qresource>
 </RCC>
