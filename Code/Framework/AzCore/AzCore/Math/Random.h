@@ -103,7 +103,7 @@ namespace AZ
         {
             fraction = fraction / base;
             result += fraction * (index % base);
-            index = floor(index / base);
+            index = aznumeric_cast<uint32_t>(index / base);
         }
 
         return result;
@@ -119,12 +119,12 @@ namespace AZ
     public:
 
         //! Initializes a Halton sequence with some bases. By default there is no
-        //! offset and the index increments by one between each number.
+        //! offset and the index increments by 1 between each number.
         HaltonSequence(AZStd::array<uint32_t, Dimensions> bases)
             : m_bases(bases)
         {
             m_offsets.fill(1); // Halton sequences start at index 1.
-            m_increments.fill(1);
+            m_increments.fill(1); // By default increment by 1 between each number.
         }
 
         //! Returns a Halton sequence in an array of N length
