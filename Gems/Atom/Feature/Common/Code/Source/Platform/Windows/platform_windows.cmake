@@ -18,5 +18,5 @@ set(LY_BUILD_DEPENDENCIES
 # [GFX-TODO] Add macro defintion in OpenImageIO 3rd party find cmake file
 set(LY_COMPILE_DEFINITIONS
     PRIVATE
-        OPEN_IMAGE_IO_ENABLED
+        #OPEN_IMAGE_IO_ENABLED
 )

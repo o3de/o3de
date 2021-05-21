@@ -209,12 +209,12 @@ namespace AZ
                 streamBufferViewsPerShader.push_back();
                 auto& streamBufferViews = streamBufferViewsPerShader.back();
 
-                UvStreamTangentIndex uvStreamTangentIndex;
+                UvStreamTangentBitmask uvStreamTangentBitmask;
 
                 if (!m_modelLod->GetStreamsForMesh(
                     pipelineStateDescriptor.m_inputStreamLayout,
                     streamBufferViews,
-                    uvStreamTangentIndex,
+                    &uvStreamTangentBitmask,
                     variant.GetInputContract(),
                     m_modelLodMeshIndex,
                     m_materialModelUvMap,
@@ -235,9 +235,16 @@ namespace AZ
                         drawSrg->SetShaderVariantKeyFallbackValue(shaderOptions.GetShaderVariantKeyFallbackValue());
                     }
 
-                    RHI::ShaderInputNameIndex shaderUvStreamTangentIndex = "m_uvStreamTangentIndex";
+                    // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
+                    {
+                        AZ::Name shaderUvStreamTangentBitmask = AZ::Name(UvStreamTangentBitmask::SrgName);
+                        auto index = drawSrg->FindShaderInputConstantIndex(shaderUvStreamTangentBitmask);
 
-                    drawSrg->SetConstant(shaderUvStreamTangentIndex, uvStreamTangentIndex.GetFullFlag());
+                        if (index.IsValid())
+                        {
+                            drawSrg->SetConstant(index, uvStreamTangentBitmask.GetFullTangentBitmask());
+                        }
+                    }
 
                     drawSrg->Compile();
                 }

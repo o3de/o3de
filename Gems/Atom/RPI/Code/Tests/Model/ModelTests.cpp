@@ -920,29 +920,39 @@ namespace UnitTest
 
     TEST_F(ModelTests, UvStream)
     {
-        AZ::RPI::UvStreamTangentIndex uvStreamTangentIndex;
-        EXPECT_EQ(uvStreamTangentIndex.GetFullFlag(), 0u);
+        AZ::RPI::UvStreamTangentBitmask uvStreamTangentBitmask;
+        EXPECT_EQ(uvStreamTangentBitmask.GetFullTangentBitmask(), 0u);
 
-        uvStreamTangentIndex.ApplyTangentIndex(1u);
-        EXPECT_EQ(uvStreamTangentIndex.GetTangentIndexAtUv(0u), 1u);
-        EXPECT_EQ(uvStreamTangentIndex.GetNextAvailableUvIndex(), 1u);
+        uvStreamTangentBitmask.ApplyTangent(1u);
+        EXPECT_EQ(uvStreamTangentBitmask.GetTangentAtUv(0u), 1u);
+        EXPECT_EQ(uvStreamTangentBitmask.GetFullTangentBitmask(), 0x10000001);
+        EXPECT_EQ(uvStreamTangentBitmask.GetUvStreamCount(), 1u);
 
-        uvStreamTangentIndex.ApplyTangentIndex(5u);
-        EXPECT_EQ(uvStreamTangentIndex.GetTangentIndexAtUv(1u), 5u);
-        EXPECT_EQ(uvStreamTangentIndex.GetNextAvailableUvIndex(), 2u);
+        uvStreamTangentBitmask.ApplyTangent(5u);
+        EXPECT_EQ(uvStreamTangentBitmask.GetTangentAtUv(0u), 1u);
+        EXPECT_EQ(uvStreamTangentBitmask.GetTangentAtUv(1u), 5u);
+        EXPECT_EQ(uvStreamTangentBitmask.GetFullTangentBitmask(), 0x20000051);
+        EXPECT_EQ(uvStreamTangentBitmask.GetUvStreamCount(), 2u);
 
-        uvStreamTangentIndex.ApplyTangentIndex(100u);
-        EXPECT_EQ(uvStreamTangentIndex.GetTangentIndexAtUv(2u), AZ::RPI::UvStreamTangentIndex::UnassignedTangentIndex);
-        EXPECT_EQ(uvStreamTangentIndex.GetNextAvailableUvIndex(), 3u);
+        uvStreamTangentBitmask.ApplyTangent(100u);
+        EXPECT_EQ(uvStreamTangentBitmask.GetTangentAtUv(0u), 1u);
+        EXPECT_EQ(uvStreamTangentBitmask.GetTangentAtUv(1u), 5u);
+        EXPECT_EQ(uvStreamTangentBitmask.GetTangentAtUv(2u), AZ::RPI::UvStreamTangentBitmask::UnassignedTangent);
+        EXPECT_EQ(uvStreamTangentBitmask.GetFullTangentBitmask(), 0x30000F51);
+        EXPECT_EQ(uvStreamTangentBitmask.GetUvStreamCount(), 3u);
 
-        for (uint32_t i = 3; i < AZ::RPI::UvStreamTangentIndex::MaxTangents; ++i)
+        for (uint32_t i = 3; i < AZ::RPI::UvStreamTangentBitmask::MaxUvSlots; ++i)
         {
-            uvStreamTangentIndex.ApplyTangentIndex(0u);
+            uvStreamTangentBitmask.ApplyTangent(0u);
         }
 
+        EXPECT_EQ(uvStreamTangentBitmask.GetFullTangentBitmask(), 0x70000F51);
+
         AZ_TEST_START_TRACE_SUPPRESSION;
-        uvStreamTangentIndex.ApplyTangentIndex(0u);
+        uvStreamTangentBitmask.ApplyTangent(0u);
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+
+        EXPECT_EQ(uvStreamTangentBitmask.GetFullTangentBitmask(), 0x70000F51);
     }
 
     // This class creates a Model with one LOD, whose mesh contains 2 planes. Plane 1 is in the XY plane at Z=-0.5, and

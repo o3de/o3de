@@ -108,20 +108,10 @@ VSOutput StandardPbr_ForwardPassVS(VSInput IN)
 PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depthNDC)
 {
     // ------- Tangents & Bitangets -------
-
-    // We support two UV streams, but only a single stream of tangent/bitangent.
-    // By default, the first UV stream is applied and the default tangent/bitangent are used.
-    // If anything uses the second UV stream, and it is not a duplication of the first stream,
-    // generated tangent/bitangent will be applied.
-    // (As it implies, cases may occur where all/none of the UV steams use the default TB.)
-    // Whether a UV stream can use the tangent/bitangent are encoded in DrawSrg.
     float3 tangents[UvSetCount] = { IN.m_tangent.xyz, IN.m_tangent.xyz };
     float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, IN.m_bitangent.xyz };
 
-    if ((o_parallax_feature_enabled && !o_enableSubsurfaceScattering && MaterialSrg::m_parallaxUvIndex != 0)
-        || (o_normal_useTexture && MaterialSrg::m_normalMapUvIndex != 0)
-        || (o_clearCoat_enabled && o_clearCoat_normal_useTexture && MaterialSrg::m_clearCoatNormalMapUvIndex != 0)
-        )
+    if ((o_parallax_feature_enabled && !o_enableSubsurfaceScattering) || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture))
     {
         PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
     }

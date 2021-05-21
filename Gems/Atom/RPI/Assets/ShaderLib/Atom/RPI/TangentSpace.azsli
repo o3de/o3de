@@ -190,13 +190,19 @@ void SurfaceGradientNormalMapping_GenerateTB(float2 uv, out float3 tangentWS, ou
 }
 
 //! Utility macro to nest SGBNM setup processes.
+//! We support two UV streams, but only a single stream of tangent/bitangent.
+//! By default, the first UV stream is applied and the default tangent/bitangent are used.
+//! If anything uses the second UV stream, and it is not a duplication of the first stream,
+//! generated tangent/bitangent will be applied.
+//! (As it implies, cases may occur where all/none of the UV steams use the default TB.)
+//! What tangent/bitangent a UV stream uses is encoded in MaterialDrawSrg.
 #define PrepareGeneratedTangent(normal, worldPos, isFrontFace, uvSets, uvSetCount, outTangents, outBitangents)              \
 {                                                                                                                           \
     SurfaceGradientNormalMapping_Init(normal, worldPos, !isFrontFace);                                                      \
     [unroll]                                                                                                                \
     for (uint i = 0; i < uvSetCount; ++i)                                                                                   \
     {                                                                                                                       \
-        if (DrawSrg::GetTangentIndexAtUv(i) == 0)                                                                           \
+        if (DrawSrg::GetTangentAtUv(i) == 0)                                                                                \
         {                                                                                                                   \
             continue;                                                                                                       \
         }                                                                                                                   \

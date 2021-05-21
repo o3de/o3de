@@ -34,7 +34,7 @@ namespace AZ
         //! A map matches the UV shader inputs of this material to the custom UV names from the model.
         using MaterialModelUvOverrideMap = AZStd::unordered_map<RHI::ShaderSemantic, AZ::Name>;
 
-        class UvStreamTangentIndex;
+        class UvStreamTangentBitmask;
 
         class ModelLod final
             : public Data::InstanceData
@@ -110,6 +110,7 @@ namespace AZ
                 const MaterialUvNameMap& materialUvNameMap = {}) const;
 
             //! Fills a InputStreamLayout and StreamBufferViewList for the set of streams that satisfy a ShaderInputContract.
+            // @param uvStreamTangentBitmaskOut a mask processed during UV stream matching, and later to determine which tangent/bitangent stream to use.
             // @param contract the contract that defines the expected inputs for a shader, used to determine which streams are optional.
             // @param meshIndex the index of the mesh to search in.
             // @param materialModelUvMap a map of UV name overrides, which can be supplied to bind a specific mesh stream name to a different material shader stream name.
@@ -117,7 +118,7 @@ namespace AZ
             bool GetStreamsForMesh(
                 RHI::InputStreamLayout& layoutOut,
                 ModelLod::StreamBufferViewList& streamBufferViewsOut,
-                UvStreamTangentIndex& uvStreamTangentIndexOut,
+                UvStreamTangentBitmask* uvStreamTangentBitmaskOut,
                 const ShaderInputContract& contract,
                 size_t meshIndex,
                 const MaterialModelUvOverrideMap& materialModelUvMap = {},
@@ -151,7 +152,7 @@ namespace AZ
                 const ShaderInputContract::StreamChannelInfo& contractStreamChannel,
                 StreamInfoList::const_iterator defaultUv,
                 StreamInfoList::const_iterator firstUv,
-                UvStreamTangentIndex& uvStreamTangentIndexOut) const;
+                UvStreamTangentBitmask* uvStreamTangentBitmaskOut) const;
 
             // Meshes may share index/stream buffers in an LOD or they may have 
             // unique buffers. Often the asset builder will prioritize shared buffers
@@ -175,35 +176,53 @@ namespace AZ
             AZStd::mutex m_callbackMutex;
         };
 
-        //! An encoded bitset for tangent used by a UV stream.
-        //! It will be passed through DefaultDrawSrg.
-        class UvStreamTangentIndex
+        //! An encoded bitmask for tangent used by UV streams.
+        //! It contains the information about number of UV streams and which tangent/bitangent is used by each UV stream.
+        //! See m_mask for more details.
+        //! The mask will be passed through per draw SRG.
+        class UvStreamTangentBitmask
         {
         public:
-            uint32_t GetFullFlag() const;
-            uint32_t GetNextAvailableUvIndex() const;
-            uint32_t GetTangentIndexAtUv(uint32_t uvIndex) const;
+            //! Get the full mask including number of UVs and tangent/bitangent assignment to each UV.
+            uint32_t GetFullTangentBitmask() const;
 
-            void ApplyTangentIndex(uint32_t tangentIndex);
+            //! Get number of UVs that have tangent/bitangent assigned.
+            uint32_t GetUvStreamCount() const;
 
+            //! Get tangent/bitangent assignment to the specified UV in the material.
+            //! @param uvIndex the index of the UV from the material, in default order as in the shader code.
+            uint32_t GetTangentAtUv(uint32_t uvIndex) const;
+
+            //! Apply the tangent to the next UV, whose index is the same as GetUvStreamCount.
+            //! @param tangent the tangent/bitangent to be assigned. Ranged in [0, 0xF)
+            //!        It comes from the model in order, e.g. 0 means the first available tangent stream from the model.
+            //!        Specially, value 0xF(=UnassignedTangent) means generated tangent/bitangent will be used in shader.
+            //!        If ranged out of definition, unassigned tangent will be applied.
+            void ApplyTangent(uint32_t tangent);
+
+            //! Reset the bitmask to clear state.
             void Reset();
 
-            // The flag indicating generated tangent/bitangent will be used.
-            static constexpr uint32_t UnassignedTangentIndex = 0b1111u;
+            //! The bit mask indicating generated tangent/bitangent will be used.
+            static constexpr uint32_t UnassignedTangent = 0b1111u;
 
+            //! The variable name defined in the SRG shader code.
+            static constexpr const char* SrgName = "m_uvStreamTangentBitmask";
         private:
-            // Flag composition:
-            // The next available slot index (highest 4 bits) + tangent index (4 bits each) * 7
-            // e.g. 0x200000F0 means there are 2 UV streams,
-            //      the first UV stream uses 0th tangent stream,
-            //      the second UV stream uses the generated tangent stream (0xF).
-            uint32_t m_flag = 0;
+            //! Mask composition:
+            //! The number of UV slots (highest 4 bits) + tangent mask (4 bits each) * 7
+            //! e.g. 0x200000F0 means there are 2 UV streams,
+            //!      the first UV stream uses 0th tangent stream (0x0),
+            //!      the second UV stream uses the generated tangent stream (0xF).
+            uint32_t m_mask = 0;
 
-            static constexpr uint32_t BitsPerTangentIndex = 4;
+            //! Bit size in the mask composition.
+            static constexpr uint32_t BitsPerTangent = 4;
             static constexpr uint32_t BitsForUvIndex = 4;
 
         public:
-            static constexpr uint32_t MaxTangents = (sizeof(m_flag) * CHAR_BIT - BitsForUvIndex) / BitsPerTangentIndex;
+            //! Max UV slots available in this bit mask.
+            static constexpr uint32_t MaxUvSlots = (sizeof(m_mask) * CHAR_BIT - BitsForUvIndex) / BitsPerTangent;
         };
     } // namespace RPI
 } // namespace AZ

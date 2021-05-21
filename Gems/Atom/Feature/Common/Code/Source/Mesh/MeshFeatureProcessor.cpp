@@ -728,8 +728,7 @@ namespace AZ
 
                 // retrieve vertex/index buffers
                 RPI::ModelLod::StreamBufferViewList streamBufferViews;
-                AZ::RPI::UvStreamTangentIndex dummyUvStreamTangentIndex;
-                [[maybe_unused]] bool result = modelLod->GetStreamsForMesh(inputStreamLayout, streamBufferViews, dummyUvStreamTangentIndex, shaderInputContract, meshIndex);
+                [[maybe_unused]] bool result = modelLod->GetStreamsForMesh(inputStreamLayout, streamBufferViews, nullptr, shaderInputContract, meshIndex);
                 AZ_Assert(result, "Failed to retrieve mesh stream buffer views");
 
                 // note that the element count is the size of the entire buffer, even though this mesh may only
