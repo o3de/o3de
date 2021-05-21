@@ -769,6 +769,14 @@ namespace AzToolsFramework
         // Request the AssetBrowser Dialog and set a type filter
         AssetSelectionModel selection = GetAssetSelectionModel();
         selection.SetSelectedAssetId(m_selectedAssetID);
+
+        AZStd::string defaultDirectory;
+        if (m_defaultDirectoryCallback)
+        {
+            m_defaultDirectoryCallback->Invoke(m_editNotifyTarget, defaultDirectory);
+            selection.SetDefaultDirectory(defaultDirectory);
+        }
+
         AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, parentWidget());
         if (selection.IsValid())
         {
@@ -1080,6 +1088,11 @@ namespace AzToolsFramework
         m_editNotifyCallback = editNotifyCallback;
     }
 
+    void PropertyAssetCtrl::SetDefaultDirectoryCallback(DefaultDirectoryCallbackType* callback)
+    {
+        m_defaultDirectoryCallback = callback;
+    }
+
     void PropertyAssetCtrl::SetClearNotifyCallback(ClearCallbackType* clearNotifyCallback)
     {
         m_clearNotifyCallback = clearNotifyCallback;
@@ -1213,6 +1226,10 @@ namespace AzToolsFramework
             {
                 GUI->SetTitle(title.c_str());
             }
+        }
+        else if (attrib == AZ_CRC_CE("DefaultStartingDirectoryCallback"))
+        {
+            GUI->SetDefaultDirectoryCallback(azdynamic_cast<PropertyAssetCtrl::DefaultDirectoryCallbackType*>(attrValue->GetAttribute()));
         }
         else if (attrib == AZ_CRC("EditCallback", 0xb74f2ee1))
         {

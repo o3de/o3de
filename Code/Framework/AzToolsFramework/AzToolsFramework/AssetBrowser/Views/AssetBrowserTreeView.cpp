@@ -270,6 +270,10 @@ namespace AzToolsFramework
             return false;
         }
 
+        void AssetBrowserTreeView::SelectFolder([[maybe_unused]] const AZStd::string& folderPath)
+        {
+        }
+
         bool AssetBrowserTreeView::SelectEntry(const QModelIndex& idxParent, const AZStd::vector<AZStd::string>& entries, const uint32_t entryPathIndex)
         {
             if (entries.empty())

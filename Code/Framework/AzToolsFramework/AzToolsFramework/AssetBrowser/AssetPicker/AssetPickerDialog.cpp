@@ -81,9 +81,16 @@ namespace AzToolsFramework
 
             m_ui->m_assetBrowserTreeViewWidget->SetName("AssetBrowserTreeView_" + name);
 
-            for (auto& assetId : selection.GetSelectedAssetIds())
+            if (selection.GetSelectedAssetIds().size() == 0)
             {
-                m_ui->m_assetBrowserTreeViewWidget->SelectProduct(assetId);
+                m_ui->m_assetBrowserTreeViewWidget->SelectFolder(selection.GetDefaultDirectory());
+            }
+            else
+            {
+                for (auto& assetId : selection.GetSelectedAssetIds())
+                {
+                    m_ui->m_assetBrowserTreeViewWidget->SelectProduct(assetId);
+                }
             }
 
             setWindowTitle(tr("Pick %1").arg(m_selection.GetTitle()));

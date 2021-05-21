@@ -60,6 +60,8 @@ namespace AzToolsFramework
 
             AZStd::vector<AssetBrowserEntry*> GetSelectedAssets() const;
 
+            void SelectFolder(const AZStd::string& folderPath);
+
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserViewRequestBus
             void SelectProduct(AZ::Data::AssetId assetID) override;
@@ -67,6 +69,7 @@ namespace AzToolsFramework
             void ClearFilter() override;
 
             void Update() override;
+
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
