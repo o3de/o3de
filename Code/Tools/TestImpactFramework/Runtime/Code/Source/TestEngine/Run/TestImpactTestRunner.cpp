@@ -10,17 +10,18 @@
  *
  */
 
+#include <TestImpactFramework/TestImpactUtils.h>
+
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
-#include <Test/Job/TestImpactTestJobCommon.h>
-#include <Test/Run/TestImpactTestRunException.h>
-#include <Test/Run/TestImpactTestRunSerializer.h>
-#include <Test/Run/TestImpactTestRunner.h>
+#include <TestEngine/Run/TestImpactTestRunException.h>
+#include <TestEngine/Run/TestImpactTestRunSerializer.h>
+#include <TestEngine/Run/TestImpactTestRunner.h>
 
 #include <AzCore/IO/SystemFile.h>
 
 namespace TestImpact
 {
-    TestRun ParseTestRunFile(const AZ::IO::Path& runFile, AZStd::chrono::milliseconds duration)
+    TestRun ParseTestRunFile(const RepoPath& runFile, AZStd::chrono::milliseconds duration)
     {
         return TestRun(GTest::TestRunSuitesFactory(ReadFileContents<TestRunException>(runFile)), duration);
     }
@@ -46,7 +47,15 @@ namespace TestImpact
                 const auto& [meta, jobInfo] = jobData;
                 if (meta.m_result == JobResult::ExecutedWithSuccess || meta.m_result == JobResult::ExecutedWithFailure)
                 {
-                    runs[jobId] = ParseTestRunFile(jobInfo->GetRunArtifactPath(), meta.m_duration.value());
+                    try
+                    {
+                        runs[jobId] = ParseTestRunFile(jobInfo->GetRunArtifactPath(), meta.m_duration.value());
+                    }
+                    catch (const Exception& e)
+                    {
+                        AZ_Warning("RunTests", false, e.what());
+                        runs[jobId] = AZStd::nullopt;
+                    }
                 }
             }
 

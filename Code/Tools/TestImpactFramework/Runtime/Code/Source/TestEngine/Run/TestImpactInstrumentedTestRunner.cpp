@@ -10,31 +10,32 @@
  *
  */
 
+#include <TestImpactFramework/TestImpactUtils.h>
+
 #include <Artifact/Factory/TestImpactModuleCoverageFactory.h>
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
-#include <Test/Job/TestImpactTestJobCommon.h>
-#include <Test/Run/TestImpactInstrumentedTestRunner.h>
-#include <Test/Run/TestImpactTestRunException.h>
-#include <Test/Run/TestImpactTestRunSerializer.h>
+#include <TestEngine/Run/TestImpactInstrumentedTestRunner.h>
+#include <TestEngine/Run/TestImpactTestRunException.h>
+#include <TestEngine/Run/TestImpactTestRunSerializer.h>
 
 #include <AzCore/IO/SystemFile.h>
 
 namespace TestImpact
 {
-    InstrumentedTestRunJobData::InstrumentedTestRunJobData(const AZ::IO::Path& resultsArtifact, const AZ::IO::Path& coverageArtifact)
+    InstrumentedTestRunJobData::InstrumentedTestRunJobData(const RepoPath& resultsArtifact, const RepoPath& coverageArtifact)
         : TestRunJobData(resultsArtifact)
         , m_coverageArtifact(coverageArtifact)
     {
     }
 
-    const AZ::IO::Path& InstrumentedTestRunJobData::GetCoverageArtifactPath() const
+    const RepoPath& InstrumentedTestRunJobData::GetCoverageArtifactPath() const
     {
         return m_coverageArtifact;
     }
 
     InstrumentedTestRunner::JobPayload ParseTestRunAndCoverageFiles(
-        const AZ::IO::Path& runFile,
-        const AZ::IO::Path& coverageFile,
+        const RepoPath& runFile,
+        const RepoPath& coverageFile,
         AZStd::chrono::milliseconds duration,
         InstrumentedTestRunner::CoverageExceptionPolicy coverageExceptionPolicy)
     {
@@ -44,7 +45,7 @@ namespace TestImpact
         {
             AZ_TestImpact_Eval(
                 !IsFlagSet(coverageExceptionPolicy, Bitwise::CoverageExceptionPolicy::OnEmptyCoverage), TestRunException,
-                "No coverage data generated");
+                AZStd::string::format("No coverage data generated for '%s'", coverageFile.c_str()));
         }
 
         TestCoverage coverage(AZStd::move(moduleCoverages));
@@ -73,11 +74,24 @@ namespace TestImpact
                 const auto& [meta, jobInfo] = jobData;
                 if (meta.m_result == JobResult::ExecutedWithSuccess || meta.m_result == JobResult::ExecutedWithFailure)
                 {
-                    runs[jobId] = ParseTestRunAndCoverageFiles(
-                        jobInfo->GetRunArtifactPath(),
-                        jobInfo->GetCoverageArtifactPath(),
-                        meta.m_duration.value(),
-                        coverageExceptionPolicy);
+                    try
+                    {
+                        runs[jobId] = ParseTestRunAndCoverageFiles(
+                            jobInfo->GetRunArtifactPath(),
+                            jobInfo->GetCoverageArtifactPath(),
+                            meta.m_duration.value(),
+                            coverageExceptionPolicy);
+                    }
+                    catch (const Exception& e)
+                    {
+                        AZ_Warning("RunInstrumentedTests", false, e.what());
+                        runs[jobId] = AZStd::nullopt;
+
+                        if (coverageExceptionPolicy == CoverageExceptionPolicy::OnEmptyCoverage)
+                        {
+                            break;
+                        }
+                    }
                 }
             }
 

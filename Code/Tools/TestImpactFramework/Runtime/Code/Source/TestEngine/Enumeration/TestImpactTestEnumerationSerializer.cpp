@@ -10,8 +10,8 @@
  *
  */
 
-#include <Test/Enumeration/TestImpactTestEnumerationException.h>
-#include <Test/Enumeration/TestImpactTestEnumerationSerializer.h>
+#include <TestEngine/Enumeration/TestImpactTestEnumerationException.h>
+#include <TestEngine/Enumeration/TestImpactTestEnumerationSerializer.h>
 
 #include <AzCore/JSON/document.h>
 #include <AzCore/JSON/prettywriter.h>

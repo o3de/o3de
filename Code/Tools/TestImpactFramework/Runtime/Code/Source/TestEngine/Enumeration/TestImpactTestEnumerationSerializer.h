@@ -12,15 +12,15 @@
 
 #pragma once
 
-#include <TestImpactFramework/TestImpactException.h>
+#include <TestEngine/Enumeration/TestImpactTestEnumeration.h>
+
+#include <AzCore/std/string/string.h>
 
 namespace TestImpact
 {
-    //! Exception for test job related operations.
-    class TestJobException
-        : public Exception
-    {
-    public:
-        using Exception::Exception;
-    };
+    //! Serializes the specified test enumeration to JSON format.
+    AZStd::string SerializeTestEnumeration(const TestEnumeration& testEnumeration);
+
+    //! Deserializes a test enumeration from the specified test enumeration data in JSON format.
+    TestEnumeration DeserializeTestEnumeration(const AZStd::string& testEnumerationString);
 } // namespace TestImpact

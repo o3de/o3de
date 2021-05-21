@@ -10,8 +10,8 @@
  *
  */
 
-#include <Test/Run/TestImpactTestRunException.h>
-#include <Test/Run/TestImpactTestRunSerializer.h>
+#include <TestEngine/Run/TestImpactTestRunException.h>
+#include <TestEngine/Run/TestImpactTestRunSerializer.h>
 
 #include <AzCore/JSON/document.h>
 #include <AzCore/JSON/prettywriter.h>

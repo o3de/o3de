@@ -10,16 +10,75 @@
  *
  */
 
-#include <Test/Run/TestImpactTestCoverage.h>
+#include <TestEngine/Run/TestImpactTestCoverage.h>
 
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/sort.h>
 
 namespace TestImpact
 {
-    TestCoverage::TestCoverage(AZStd::vector<ModuleCoverage>&& moduleCoverages)
+    TestCoverage::TestCoverage(const TestCoverage& other)
+        : m_modules(other.m_modules)
+        , m_sourcesCovered(other.m_sourcesCovered)
+        , m_coverageLevel(other.m_coverageLevel)
+    {
+    }
+
+    TestCoverage::TestCoverage(TestCoverage&& other) noexcept
+        : m_modules(AZStd::move(other.m_modules))
+        , m_sourcesCovered(AZStd::move(other.m_sourcesCovered))
+    {
+        AZStd::swap(m_coverageLevel, other.m_coverageLevel);
+        other.~TestCoverage();
+    }
+
+    TestCoverage::TestCoverage(const AZStd::vector<ModuleCoverage>& moduleCoverages)
+        : m_modules(moduleCoverages)
+    {
+        CalculateTestMetrics();
+    }
+
+    TestCoverage::TestCoverage(AZStd::vector<ModuleCoverage>&& moduleCoverages) noexcept
         : m_modules(AZStd::move(moduleCoverages))
     {
+        CalculateTestMetrics();
+    }
+
+    TestCoverage::~TestCoverage()
+    {
+        m_modules.clear();
+        m_coverageLevel.reset();
+        m_sourcesCovered.clear();
+    }
+
+    TestCoverage& TestCoverage::operator=(const TestCoverage& other)
+    {
+        if (this != &other)
+        {
+            this->~TestCoverage();
+            new(this)TestCoverage(other);
+        }
+
+        return *this;
+    }
+
+    TestCoverage& TestCoverage::operator=(TestCoverage&& other) noexcept
+    {
+        if (this != &other)
+        {
+            this->~TestCoverage();
+            new(this)TestCoverage(AZStd::move(other));
+            other.~TestCoverage();
+        }
+
+        return *this;
+    }
+
+    void TestCoverage::CalculateTestMetrics()
+    {
+        m_coverageLevel.reset();
+        m_sourcesCovered.clear();
+
         for (const auto& moduleCovered : m_modules)
         {
             for (const auto& sourceCovered : moduleCovered.m_sources)

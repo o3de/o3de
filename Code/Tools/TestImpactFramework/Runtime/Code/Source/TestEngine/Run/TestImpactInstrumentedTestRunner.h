@@ -12,24 +12,25 @@
 
 #pragma once
 
-#include <Test/Job/TestImpactTestJobRunner.h>
-#include <Test/Run/TestImpactTestCoverage.h>
-#include <Test/Run/TestImpactTestRun.h>
-#include <Test/Run/TestImpactTestRunJobData.h>
+#include <TestEngine/JobRunner/TestImpactTestJobRunner.h>
+#include <TestEngine/Run/TestImpactTestCoverage.h>
+#include <TestEngine/Run/TestImpactTestRun.h>
+#include <TestEngine/Run/TestImpactTestRunJobData.h>
 
 namespace TestImpact
 {
     //! Per-job data for instrumented test runs.
-    class InstrumentedTestRunJobData : public TestRunJobData
+    class InstrumentedTestRunJobData
+        : public TestRunJobData
     {
     public:
-        InstrumentedTestRunJobData(const AZ::IO::Path& resultsArtifact, const AZ::IO::Path& coverageArtifact);
+        InstrumentedTestRunJobData(const RepoPath& resultsArtifact, const RepoPath& coverageArtifact);
 
         //! Returns the path to the coverage artifact produced by the test target.
-        const AZ::IO::Path& GetCoverageArtifactPath() const;
+        const RepoPath& GetCoverageArtifactPath() const;
 
     private:
-        AZ::IO::Path m_coverageArtifact; //!< Path to coverage data.
+        RepoPath m_coverageArtifact; //!< Path to coverage data.
     };
 
     namespace Bitwise
@@ -43,7 +44,8 @@ namespace TestImpact
     } // namespace Bitwise
 
     //! Runs a batch of test targets to determine the test coverage and passes/failures.
-    class InstrumentedTestRunner : public TestJobRunner<InstrumentedTestRunJobData, AZStd::pair<TestRun, TestCoverage>>
+    class InstrumentedTestRunner
+        : public TestJobRunner<InstrumentedTestRunJobData, AZStd::pair<TestRun, TestCoverage>>
     {
         using JobRunner = TestJobRunner<InstrumentedTestRunJobData, AZStd::pair<TestRun, TestCoverage>>;
 

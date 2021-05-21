@@ -22,7 +22,14 @@ namespace TestImpact
     class TestSuiteContainer
     {
     public:
-        TestSuiteContainer(AZStd::vector<TestSuite>&& testSuites);
+        TestSuiteContainer(const TestSuiteContainer&);
+        TestSuiteContainer(TestSuiteContainer&&) noexcept;
+        TestSuiteContainer(const AZStd::vector<TestSuite>& testSuites);
+        TestSuiteContainer(AZStd::vector<TestSuite>&& testSuites) noexcept;
+        virtual ~TestSuiteContainer();
+
+        TestSuiteContainer& operator=(const TestSuiteContainer&);
+        TestSuiteContainer& operator=(TestSuiteContainer&&) noexcept;
 
         //! Returns the test suites in this container.
         const AZStd::vector<TestSuite>& GetTestSuites() const;
@@ -39,6 +46,9 @@ namespace TestImpact
         //! Returns the total number of disabled tests across all test suites.
         size_t GetNumDisabledTests() const;
 
+    private:
+        void CalculateTestMetrics();
+
     protected:
         AZStd::vector<TestSuite> m_testSuites;
         size_t m_numDisabledTests = 0;
@@ -46,9 +56,75 @@ namespace TestImpact
     };
 
     template<typename TestSuite>
-    TestSuiteContainer<TestSuite>::TestSuiteContainer(AZStd::vector<TestSuite>&& testSuites)
+    TestSuiteContainer<TestSuite>::TestSuiteContainer(TestSuiteContainer&& other) noexcept
+        : m_testSuites(AZStd::move(other.m_testSuites))
+        , m_numDisabledTests(other.m_numDisabledTests)
+        , m_numEnabledTests(other.m_numEnabledTests)
+    {
+        other.~TestSuiteContainer();
+    }
+
+    template<typename TestSuite>
+    TestSuiteContainer<TestSuite>::TestSuiteContainer(const TestSuiteContainer& other)
+        : m_testSuites(other.m_testSuites.begin(), other.m_testSuites.end())
+        , m_numDisabledTests(other.m_numDisabledTests)
+        , m_numEnabledTests(other.m_numEnabledTests)
+    {
+    }
+
+    template<typename TestSuite>
+    TestSuiteContainer<TestSuite>::~TestSuiteContainer()
+    {
+        m_testSuites.clear();
+        m_numDisabledTests = 0;
+        m_numEnabledTests = 0;
+    }
+
+    template<typename TestSuite>
+    TestSuiteContainer<TestSuite>::TestSuiteContainer(AZStd::vector<TestSuite>&& testSuites) noexcept
         : m_testSuites(std::move(testSuites))
     {
+        CalculateTestMetrics();
+    }
+
+    template<typename TestSuite>
+    TestSuiteContainer<TestSuite>::TestSuiteContainer(const AZStd::vector<TestSuite>& testSuites)
+        : m_testSuites(testSuites)
+    {
+        CalculateTestMetrics();
+    }
+
+    template<typename TestSuite>
+    TestSuiteContainer<TestSuite>& TestSuiteContainer<TestSuite>::operator=(TestSuiteContainer&& other) noexcept
+    {
+        if (this != &other)
+        {
+            this->~TestSuiteContainer();
+            new(this)TestSuiteContainer(AZStd::move(other));
+            other.~TestSuiteContainer();
+        }
+
+        return *this;
+    }
+
+    template<typename TestSuite>
+    TestSuiteContainer<TestSuite>& TestSuiteContainer<TestSuite>::operator=(const TestSuiteContainer& other)
+    {
+        if (this != &other)
+        {
+            this->~TestSuiteContainer();
+            new(this)TestSuiteContainer(other);
+        }
+
+        return *this;
+    }
+
+    template<typename TestSuite>
+    void TestSuiteContainer<TestSuite>::CalculateTestMetrics()
+    {
+        m_numDisabledTests = 0;
+        m_numEnabledTests = 0;
+
         for (const auto& suite : m_testSuites)
         {
             if (suite.m_enabled)
