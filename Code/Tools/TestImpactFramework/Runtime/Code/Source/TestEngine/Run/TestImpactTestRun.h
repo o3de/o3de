@@ -55,6 +55,6 @@ namespace TestImpact
         size_t m_numNotRuns = 0;
         size_t m_numPasses = 0;
         size_t m_numFailures = 0;
-        AZStd::chrono::milliseconds m_duration = AZStd::chrono::milliseconds{0}; // this might be removed...
+        AZStd::chrono::milliseconds m_duration = AZStd::chrono::milliseconds{0};
     };
 } // namespace TestImpact
