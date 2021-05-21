@@ -76,6 +76,9 @@ namespace AZ
             //! Whether Ray Tracing support is available.
             bool m_rayTracing = false;
 
+            //! Whether Unbounded Array support is available.
+            bool m_unboundedArrays = false;
+
             /// Additional features here.
         };
     }

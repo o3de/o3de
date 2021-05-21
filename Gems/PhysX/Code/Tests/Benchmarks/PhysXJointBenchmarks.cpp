@@ -136,9 +136,8 @@ namespace PhysX::Benchmarks
         {
             AZStd::vector<JointGroup> joints;
 
-            Physics::ColliderConfiguration colliderConfig;
-            Physics::SphereShapeConfiguration shapeConfiguration = Physics::SphereShapeConfiguration(JointConstants::CreateJointDefaults::ColliderRadius);
-            AzPhysics::ShapeColliderPair shapeColliderConfig(&colliderConfig, &shapeConfiguration);
+            auto shapeConfiguration = AZStd::make_shared<Physics::SphereShapeConfiguration>(JointConstants::CreateJointDefaults::ColliderRadius);
+            AzPhysics::ShapeColliderPair shapeColliderConfig(AZStd::make_shared<Physics::ColliderConfiguration>(), shapeConfiguration);
             for (int i = 0; i < numJoints; i++)
             {
                 JointGroup newJoint;
@@ -340,13 +339,13 @@ namespace PhysX::Benchmarks
         const int numSegments = aznumeric_cast<int>(state.range(0));
 
         //create the collider shape config to use on the whole snake
-        Physics::SphereShapeConfiguration snakePartShapeConfiguration = Physics::SphereShapeConfiguration(JointConstants::CreateJointDefaults::ColliderRadius);
-        Physics::ColliderConfiguration snakeHeadcolliderConfig;
+        auto snakePartShapeConfiguration = AZStd::make_shared<Physics::SphereShapeConfiguration>(JointConstants::CreateJointDefaults::ColliderRadius);
 
         //create the had of the snake this is the only static part.
         AzPhysics::StaticRigidBodyConfiguration snakeHeadBodyConfig;
         snakeHeadBodyConfig.m_position = AZ::Vector3::CreateZero();
-        snakeHeadBodyConfig.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(&snakeHeadcolliderConfig, &snakePartShapeConfiguration);
+        snakeHeadBodyConfig.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(
+            AZStd::make_shared<Physics::ColliderConfiguration>(), snakePartShapeConfiguration);
 
         AzPhysics::SimulatedBody* snakeHead = nullptr;
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
@@ -358,7 +357,7 @@ namespace PhysX::Benchmarks
         //create the body
         Utils::GenerateColliderFuncPtr colliderGenerator = [&snakePartShapeConfiguration]([[maybe_unused]] int idx) -> auto
         {
-            return &snakePartShapeConfiguration;
+            return snakePartShapeConfiguration;
         };
         Utils::GenerateSpawnPositionFuncPtr posGenerator = [](int idx) -> auto
         {
@@ -404,10 +403,7 @@ namespace PhysX::Benchmarks
         }
         subTickTracker.Stop();
 
-        for (auto handle : snakeRigidBodyHandles)
-        {
-            m_defaultScene->RemoveSimulatedBody(handle);
-        }
+        m_defaultScene->RemoveSimulatedBodies(snakeRigidBodyHandles);
         snakeRigidBodyHandles.clear();
 
         //sort the frame times and get the P50, P90, P99 percentiles

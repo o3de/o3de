@@ -15,6 +15,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
@@ -122,6 +123,12 @@ namespace AZ
 
                     m_windowHandle = m_nativeWindow->GetWindowHandle();
                 }
+                else
+                {
+                    // Disable default scene creation for non-games projects
+                    // This can be manually overridden via the DefaultWindowBus.
+                    m_createDefaultScene = false;
+                }
 
                 AzFramework::AssetCatalogEventBus::Handler::BusConnect();
                 TickBus::Handler::BusConnect();
@@ -165,6 +172,18 @@ namespace AZ
                 m_isAssetCatalogLoaded = true;
 
                 RPI::RPISystemInterface::Get()->InitializeSystemAssets();
+
+                if (!RPI::RPISystemInterface::Get()->IsInitialized())
+                {
+                    AZ::OSString msgBoxMessage;
+                    msgBoxMessage.append("RPI System could not initialize correctly. Check log for detail.");
+
+                    AZ::NativeUI::NativeUIRequestBus::Broadcast(
+                        &AZ::NativeUI::NativeUIRequestBus::Events::DisplayOkDialog, "O3DE Fatal Error", msgBoxMessage.c_str(), false);
+                    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+                                        
+                    return;
+                }
 
                 // In the case of the game we want to call create and register the scene as a soon as we can
                 // because a level could be loaded in autoexec.cfg and that will assert if there is no scene registered
@@ -338,6 +357,17 @@ namespace AZ
                     scene->AddRenderPipeline(brdfTexturePipeline);
                 }
 
+                // Send notification when the scene and its pipeline are ready.
+                // Use the first created pipeline's scene as our default scene for now to allow
+                // consumers waiting on scene availability to initialize.
+                if (!m_defaultSceneReady)
+                {
+                    m_defaultScene = scene;
+                    Render::Bootstrap::NotificationBus::Broadcast(
+                        &Render::Bootstrap::NotificationBus::Handler::OnBootstrapSceneReady, m_defaultScene.get());
+                    m_defaultSceneReady = true;
+                }
+
                 return true;
             }
 
@@ -351,9 +381,6 @@ namespace AZ
                 {
                     m_renderPipelineId = pipeline->GetId();
                 }
-
-                // Send notification when the scene and its pipeline are ready
-                Render::Bootstrap::NotificationBus::Broadcast(&Render::Bootstrap::NotificationBus::Handler::OnBootstrapSceneReady, m_defaultScene.get());
             }
 
             void BootstrapSystemComponent::DestroyDefaultScene()

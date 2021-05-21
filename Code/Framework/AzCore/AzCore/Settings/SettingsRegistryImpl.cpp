@@ -11,8 +11,10 @@
 */
 
 #include <cctype>
+#include <cerrno>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/JSON/error/en.h>
+#include <AzCore/NativeUI//NativeUIRequests.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/StackedString.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
@@ -419,9 +421,6 @@ namespace AZ
     bool SettingsRegistryImpl::MergeCommandLineArgument(AZStd::string_view argument, AZStd::string_view rootKey,
         const CommandLineArgumentSettings& commandLineSettings)
     {
-        const char* front = argument.begin();
-        const char* back = argument.end();
-
         if (!commandLineSettings.m_delimiterFunc)
         {
             AZ_Error("SettingsRegistry", false,
@@ -429,87 +428,40 @@ namespace AZ
                 aznumeric_cast<int>(argument.size()), argument.data());
             return false;
         }
-        const char* split = AZStd::find_if(front, back, commandLineSettings.m_delimiterFunc);
-        if (split == front || // There is no key
-            split == (back-1) || // There is no value
-            split == back) // Split character not found. 
+
+        auto [key, value] = commandLineSettings.m_delimiterFunc(argument);
+        if (key.empty())
         {
+            // They key where to set the JSON value cannot be empty
+            // The value of the JSON can be though
+            // This is so that a key can be set to empty string using "/KeyPath="
             return false;
         }
 
-        const char* keyStart = front;
-        while (std::isspace(*keyStart)) // This is safe because it will eventually stop on =
+        // Prepend the rootKey as an anchor to the argument key
+        SettingsRegistryInterface::FixedValueString keyPath{ rootKey.ends_with('/')
+            ? rootKey.substr(0, rootKey.size() - 1)
+            : rootKey };
+        // Append the JSON reference token prefix of '/' to the keyPath
+        if (!key.starts_with('/'))
         {
-            keyStart++;
+            keyPath.push_back('/');
         }
-        if (keyStart == split) // Key is just white spaces
+        if ((key.size() + keyPath.size()) > keyPath.max_size())
         {
+            // The key portion is longer than the FixedValueString max size that can be stored
+            // This limitation is arbitrary, if an AZStd::string is used or if the C++17 std::to_chars
+            // function is used, there wouldn't need to be a limitation
             return false;
         }
-        const char* keyEnd = split;
-        while (std::isspace(*--keyEnd));
-        keyEnd++;
+        keyPath += key;
+        key = keyPath;
 
-        char buffer[MaxJsonPathLength];
-        AZStd::string_view key;
-        bool keyHasDivider = *keyStart == '/';
-        if (!rootKey.empty())
+        if (value.empty())
         {
-            bool rootKeyHasDivider = (rootKey[rootKey.length() - 1]) == '/';
-            size_t count;
-            if (!rootKeyHasDivider && !keyHasDivider)
-            {
-                count = azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "%.*s/%.*s",
-                    aznumeric_cast<int>(rootKey.length()), rootKey.data(),
-                    aznumeric_cast<int>(keyEnd - keyStart), keyStart);
-            }
-            else if (rootKeyHasDivider && keyHasDivider)
-            {
-                count = azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "%.*s%.*s",
-                    aznumeric_cast<int>(rootKey.length()) - 1, rootKey.data(),
-                    aznumeric_cast<int>(keyEnd - keyStart), keyStart);
-            }
-            else
-            {
-                count = azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "%.*s%.*s",
-                    aznumeric_cast<int>(rootKey.length()), rootKey.data(),
-                    aznumeric_cast<int>(keyEnd - keyStart), keyStart);
-            }
-            if (count >= AZ_ARRAY_SIZE(buffer) - 1)
-            {
-                return false;
-            }
-            key = AZStd::string_view(buffer, count);
-        }
-        else if (!keyHasDivider)
-        {
-            size_t count = azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "/%.*s",
-                aznumeric_cast<int>(keyEnd - keyStart), keyStart);
-            if (count >= AZ_ARRAY_SIZE(buffer) - 1)
-            {
-                return false;
-            }
-            key = AZStd::string_view(buffer, count);
-        }
-        else
-        {
-            key = AZStd::string_view(keyStart, keyEnd);
+            return Set(key, value);
         }
 
-        const char* valueStart = split + 1;
-        while (std::isspace(*valueStart) && valueStart < back)
-        {
-            valueStart++;
-        }
-        if (valueStart == back)
-        {
-            return false; // The value is empty
-        }
-        const char* valueEnd = back;
-        while (std::isspace(*(--valueEnd)));
-        valueEnd++;
-
-        AZStd::string_view value(valueStart, valueEnd);
         if (value == "true")
         {
             return Set(key, true);
@@ -519,23 +471,35 @@ namespace AZ
             return Set(key, false);
         }
 
-        if (value.length() - 1 >= MaxCommandLineArgumentLength)
+        SettingsRegistryInterface::FixedValueString valueString;
+        if (value.size() > valueString.max_size())
         {
+            // The value portion is longer than the FixedValueString max size that can be stored
+            // This limitation is arbitrary, if an AZStd::string is used or if the C++17 std::to_chars
+            // function is used, there wouldn't need to be a limitation
             return false;
         }
-        char argumentString[MaxCommandLineArgumentLength];
-        snprintf(argumentString, AZ_ARRAY_SIZE(argument), "%.*s", aznumeric_cast<int>(value.length()), value.data());
-        char* argumentStringEnd = argumentString + value.length();
+        valueString = value;
+        const char* valueStringEnd = valueString.c_str() + valueString.size();
 
+        errno = 0;
         char* convertEnd = nullptr;
-        s64 intValue = strtoll(argumentString, &convertEnd, 0);
-        if (convertEnd == argumentStringEnd)
+        s64 intValue = strtoll(valueString.c_str(), &convertEnd, 0);
+        if (errno != ERANGE && convertEnd == valueStringEnd)
         {
             return Set(key, intValue);
         }
+        errno = 0;
         convertEnd = nullptr;
-        double floatingPointValue = strtod(argumentString, &convertEnd);
-        if (convertEnd == argumentStringEnd)
+        u64 uintValue = strtoull(valueString.c_str(), &convertEnd, 0);
+        if (errno != ERANGE && convertEnd == valueStringEnd)
+        {
+            return Set(key, uintValue);
+        }
+        errno = 0;
+        convertEnd = nullptr;
+        double floatingPointValue = strtod(valueString.c_str(), &convertEnd);
+        if (errno != ERANGE && convertEnd == valueStringEnd)
         {
             return Set(key, floatingPointValue);
         }
@@ -611,7 +575,7 @@ namespace AZ
         }
         else
         {
-            if (MaxFilePathLength < path.length() + 1)
+            if (AZ::IO::MaxPathLength < path.length() + 1)
             {
                 AZ_Error("Settings Registry", false,
                     R"(Path "%.*s" is too long. Either make sure that the provided path is terminated or use a shorter path.)",
@@ -623,10 +587,8 @@ namespace AZ
                     .AddMember(StringRef("Path"), AZStd::move(pathValue), m_settings.GetAllocator());
                 return false;
             }
-            char filePath[MaxFilePathLength];
-            azstrncpy(filePath, AZ_ARRAY_SIZE(filePath), path.data(), path.length());
-            filePath[path.length()] = 0;
-            result = MergeSettingsFileInternal(filePath, format, rootKey, *scratchBuffer);
+            AZ::IO::FixedMaxPathString filePath(path);
+            result = MergeSettingsFileInternal(filePath.c_str(), format, rootKey, *scratchBuffer);
         }
 
         scratchBuffer->clear();
@@ -660,7 +622,7 @@ namespace AZ
             additionalSpaceRequired += AZ_ARRAY_SIZE(PlatformFolder) + platform.length() + 2; // +2 for the two slashes.
         }
 
-        if (path.length() + additionalSpaceRequired > MaxFilePathLength)
+        if (path.length() + additionalSpaceRequired > AZ::IO::MaxPathLength)
         {
             AZ_Error("Settings Registry", false, "Folder path for the Setting Registry is too long: %.*s",
                 static_cast<int>(path.size()), path.data());
@@ -673,7 +635,7 @@ namespace AZ
         RegistryFileList fileList;
         scratchBuffer->clear();
 
-        AZStd::fixed_string<MaxFilePathLength> folderPath{ path };
+        AZ::IO::FixedMaxPathString folderPath{ path };
         constexpr AZStd::string_view pathSeparators{ AZ_CORRECT_AND_WRONG_DATABASE_SEPARATOR };
         if (pathSeparators.find_first_of(folderPath.back()) == AZStd::string_view::npos)
         {
@@ -919,6 +881,13 @@ namespace AZ
         const Specializations& specializations, const rapidjson::Pointer& historyPointer, AZStd::string_view folderPath)
     {
         using namespace rapidjson;
+        
+        if (&lhs == &rhs)
+        {
+            // Early return to avoid setting the collisionFound reference to true
+            // std::sort is allowed to pass in the same memory address for the left and right elements
+            return false;
+        }
 
         AZ_Assert(!lhs.m_tags.empty(), "Comparing a settings file without at least a name tag.");
         AZ_Assert(!rhs.m_tags.empty(), "Comparing a settings file without at least a name tag.");
@@ -926,7 +895,7 @@ namespace AZ
         // Sort by the name first so the registry file gets applied with all its specializations.
         if (lhs.m_tags[0] != rhs.m_tags[0])
         {
-            return strcmp(lhs.m_relativePath, rhs.m_relativePath) < 0;
+            return lhs.m_relativePath < rhs.m_relativePath;
         }
 
         // Then sort by size first so the files with the fewest specializations get applied first.
@@ -956,14 +925,14 @@ namespace AZ
         }
 
         collisionFound = true;
-        AZ_Error("Settings Registry", false, R"(Two registry files point to the same specialization: "%s" and "%s")",
-            lhs.m_relativePath, rhs.m_relativePath);
+        AZ_Error("Settings Registry", false, R"(Two registry files in "%.*s" point to the same specialization: "%s" and "%s")",
+            AZ_STRING_ARG(folderPath), lhs.m_relativePath.c_str(), rhs.m_relativePath.c_str());
         historyPointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
             .AddMember(StringRef("Error"), StringRef("Too many files in registry folder."), m_settings.GetAllocator())
             .AddMember(StringRef("Path"),
                 Value(folderPath.data(), aznumeric_caster(folderPath.length()), m_settings.GetAllocator()), m_settings.GetAllocator())
-            .AddMember(StringRef("File1"), Value(lhs.m_relativePath, m_settings.GetAllocator()), m_settings.GetAllocator())
-            .AddMember(StringRef("File2"), Value(rhs.m_relativePath, m_settings.GetAllocator()), m_settings.GetAllocator());
+            .AddMember(StringRef("File1"), Value(lhs.m_relativePath.c_str(), m_settings.GetAllocator()), m_settings.GetAllocator())
+            .AddMember(StringRef("File2"), Value(rhs.m_relativePath.c_str(), m_settings.GetAllocator()), m_settings.GetAllocator());
         return false;
     }
 
@@ -1036,9 +1005,9 @@ namespace AZ
         // thats the name tag.
         AZStd::sort(AZStd::next(output.m_tags.begin()), output.m_tags.end());
 
-        if (filePathSize < AZ_ARRAY_SIZE(output.m_relativePath))
+        if (filePathSize < output.m_relativePath.max_size())
         {
-            azstrcpy(output.m_relativePath, AZ_ARRAY_SIZE(output.m_relativePath), filename);
+            output.m_relativePath = filename;
             return true;
         }
         else
@@ -1093,15 +1062,23 @@ namespace AZ
         jsonPatch.ParseInsitu<flags>(scratchBuffer.data());
         if (jsonPatch.HasParseError())
         {
+            auto nativeUI = AZ::Interface<NativeUI::NativeUIRequests>::Get();
             if (jsonPatch.GetParseError() == rapidjson::kParseErrorDocumentEmpty)
             {
-                AZ_Warning("Settings Registry", false, R"(Unable to parse registry file "%s" due to json error "%s" at offset %llu.)",
+                AZ_Warning("Settings Registry", false, R"(Unable to parse registry file "%s" due to json error "%s" at offset %zu.)",
                     path, GetParseError_En(jsonPatch.GetParseError()), jsonPatch.GetErrorOffset());
             }
             else
             {
-                AZ_Error("Settings Registry", false, R"(Unable to parse registry file "%s" due to json error "%s" at offset %llu.)", path,
+                using ErrorString = AZStd::fixed_string<4096>;
+                auto jsonError = ErrorString::format(R"(Unable to parse registry file "%s" due to json error "%s" at offset %zu.)", path,
                     GetParseError_En(jsonPatch.GetParseError()), jsonPatch.GetErrorOffset());
+                AZ_Error("Settings Registry", false, "%s", jsonError.c_str());
+
+                if (nativeUI)
+                {
+                    nativeUI->DisplayOkDialog("Setreg(Patch) Merge Issue", AZStd::string_view(jsonError), false);
+                }
             }
             
             pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
@@ -1145,7 +1122,7 @@ namespace AZ
         JsonSerializationResult::ResultCode mergeResult(JsonSerializationResult::Tasks::Merge);
         if (rootKey.empty())
         {
-            mergeResult = JsonSerialization::ApplyPatch(m_settings, m_settings.GetAllocator(), jsonPatch, mergeApproach);
+            mergeResult = JsonSerialization::ApplyPatch(m_settings, m_settings.GetAllocator(), jsonPatch, mergeApproach, m_applyPatchSettings);
         }
         else
         {
@@ -1153,7 +1130,7 @@ namespace AZ
             if (root.IsValid())
             {
                 Value& rootValue = root.Create(m_settings, m_settings.GetAllocator());
-                mergeResult = JsonSerialization::ApplyPatch(rootValue, m_settings.GetAllocator(), jsonPatch, mergeApproach);
+                mergeResult = JsonSerialization::ApplyPatch(rootValue, m_settings.GetAllocator(), jsonPatch, mergeApproach, m_applyPatchSettings);
             }
             else
             {
@@ -1179,5 +1156,14 @@ namespace AZ
         m_notifiers.Signal("", Type::Object);
 
         return true;
+    }
+
+    void SettingsRegistryImpl::SetApplyPatchSettings(const AZ::JsonApplyPatchSettings& applyPatchSettings)
+    {
+        m_applyPatchSettings = applyPatchSettings;
+    }
+    void SettingsRegistryImpl::GetApplyPatchSettings(AZ::JsonApplyPatchSettings& applyPatchSettings)
+    {
+        applyPatchSettings = m_applyPatchSettings;
     }
 } // namespace AZ

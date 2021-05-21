@@ -38,8 +38,8 @@ namespace AtomToolsFramework
         Count
     };
 
-    // Configures the initial state, data type, attributes, and values that describe
-    // the dynamic property and how it is presented
+    //! Configures the initial state, data type, attributes, and values that describe
+    //! the dynamic property and how it is presented
     struct DynamicPropertyConfig
     {
         AZ_TYPE_INFO(DynamicPropertyConfig, "{9CA40E92-7F03-42BE-B6AA-51F30EE5796C}");
@@ -98,7 +98,7 @@ namespace AtomToolsFramework
         //! Returns true if the property has a valid value.
         bool IsValid() const;
 
-        //! Returns the ID of the  property.
+        //! Returns the ID of the property.
         const AZ::Name GetId() const;
 
         //! Returns the current property visibility.

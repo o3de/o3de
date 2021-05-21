@@ -70,7 +70,7 @@ class Launcher(object):
 
         return config_dict
 
-    def setup(self, backupFiles = True, launch_ap = True):
+    def setup(self, backupFiles=True, launch_ap=True):
         """
         Perform setup of this launcher, must be called before launching.
         Subclasses should call its parent's setup() before calling its own code, unless it changes configuration files
@@ -108,15 +108,7 @@ class Launcher(object):
 
         # Wait for the AssetProcessor to be open.
         if launch_ap:
-            timeout = 10
-            self.workspace.asset_processor.start()
-            ly_test_tools.environment.waiter.wait_for(
-                lambda: ly_test_tools.environment.process_utils.process_exists(
-                    name="AssetProcessor", ignore_extensions=True),
-                exc=ly_test_tools.launchers.exceptions.SetupError(
-                    f'AssetProcessor never opened after {timeout} seconds'),
-                timeout=timeout
-            )
+            self.workspace.asset_processor.start(connect_to_ap=True, connection_timeout=10)  # verify connection
             self.workspace.asset_processor.wait_for_idle()
             log.debug('AssetProcessor started from calling Launcher.setup()')
 
@@ -193,7 +185,7 @@ class Launcher(object):
         """
         raise NotImplementedError("There is no binary file for this launcher")
 
-    def start(self, backupFiles = True, launch_ap = True):
+    def start(self, backupFiles=True, launch_ap=None):
         """
         Automatically prepare and launch the application
         When called using "with launcher.start():" it will automatically call stop() when block exits
@@ -203,14 +195,14 @@ class Launcher(object):
         """
         return _Application(self, backupFiles, launch_ap=launch_ap)
 
-    def _start_impl(self, backupFiles = True, launch_ap=True):
+    def _start_impl(self, backupFiles = True, launch_ap=None):
         """
         Implementation of start(), intended to be called via context manager in _Application
 
         :param backupFiles: Bool to backup settings files
         :return None:
         """
-        self.setup(backupFiles, launch_ap=launch_ap)
+        self.setup(backupFiles=backupFiles, launch_ap=launch_ap)
         self.launch()
 
     def stop(self):
@@ -326,7 +318,7 @@ class _Application(object):
     """
     Context-manager for opening an application, enables using both "launcher.start()" and "with launcher.start()"
     """
-    def __init__(self, launcher, backupFiles = True, launch_ap = True):
+    def __init__(self, launcher, backupFiles = True, launch_ap=None):
         """
         Called during both "launcher.start()" and "with launcher.start()"
 
@@ -334,7 +326,7 @@ class _Application(object):
         :return None:
         """
         self.launcher = launcher
-        launcher._start_impl(backupFiles, launch_ap=launch_ap)
+        launcher._start_impl(backupFiles, launch_ap)
 
     def __enter__(self):
         """

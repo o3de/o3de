@@ -41,7 +41,8 @@ namespace AZ
 
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
-            
+            static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+
             // CameraControllerRequestBus::Handler overrides
             void Enable(TypeId typeId) override final;
             void Reset() override final;

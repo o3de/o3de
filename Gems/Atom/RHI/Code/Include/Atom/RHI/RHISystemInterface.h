@@ -26,6 +26,7 @@ namespace AZ
         class PipelineState;
         class PipelineStateCache;
         class PlatformLimitsDescriptor;
+        class RayTracingShaderTable;
         struct CpuTimingStatistics;
         struct FrameSchedulerCompileRequest;
         struct TransientAttachmentStatistics;
@@ -61,6 +62,8 @@ namespace AZ
             virtual const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const = 0;
 
             virtual ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor() const = 0;
+
+            virtual void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) = 0;
         };
 
         //! This bus exists to give RHI samples the ability to slot in scopes manually

@@ -10,6 +10,21 @@
 *
 */
 
+#ifdef UNIFIED_FORWARD_OUTPUT
+
+struct ForwardPassOutput
+{
+    float4 m_color  : SV_Target0;
+};
+
+struct ForwardPassOutputWithDepth
+{
+    float4 m_color  : SV_Target0;
+    float m_depth : SV_Depth;
+};
+
+#else
+
 struct ForwardPassOutput
 {
     float4 m_diffuseColor  : SV_Target0;     //!< RGB = Diffuse Lighting, A = Blend Alpha (for blended surfaces) OR A = special encoding of surfaceScatteringFactor, m_subsurfaceScatteringQuality, o_enableSubsurfaceScattering
@@ -30,3 +45,5 @@ struct ForwardPassOutputWithDepth
     float4 m_normal : SV_Target4;
     float m_depth : SV_Depth;
 };
+
+#endif

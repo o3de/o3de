@@ -5,12 +5,12 @@
     Namespace="Multiplayer" 
     OverrideComponent="true" 
     OverrideController="true" 
-    OverrideInclude="Source/Components/NetworkTransformComponent.h"
+    OverrideInclude="Multiplayer/Components/NetworkTransformComponent.h"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <ComponentRelation Constraint="Weak" HasController="false" Name="TransformComponent" Namespace="AzFramework" Include="AzFramework/Components/TransformComponent.h" />
 
-    <Include File="Include/MultiplayerTypes.h"/>
+    <Include File="Multiplayer/MultiplayerTypes.h"/>
 
     <NetworkProperty Type="AZ::Quaternion" Name="rotation" Init="AZ::Quaternion::CreateIdentity()" ReplicateFrom="Authority" ReplicateTo="Client" IsRewindable="true" IsPredictable="true" IsPublic="true" Container="Object" ExposeToEditor="false" GenerateEventBindings="true" />
     <NetworkProperty Type="AZ::Vector3" Name="translation" Init="AZ::Vector3::CreateZero()" ReplicateFrom="Authority" ReplicateTo="Client" IsRewindable="true" IsPredictable="true" IsPublic="true" Container="Object" ExposeToEditor="false" GenerateEventBindings="true" />

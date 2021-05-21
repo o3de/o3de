@@ -63,7 +63,7 @@ namespace PhysX
         void SetLinearVelocity(const AZ::Vector3& velocity) override;
         AZ::Vector3 GetAngularVelocity() const override;
         void SetAngularVelocity(const AZ::Vector3& angularVelocity) override;
-        AZ::Vector3 GetLinearVelocityAtWorldPoint(const AZ::Vector3& worldPoint) override;
+        AZ::Vector3 GetLinearVelocityAtWorldPoint(const AZ::Vector3& worldPoint) const override;
         void ApplyLinearImpulse(const AZ::Vector3& impulse) override;
         void ApplyLinearImpulseAtWorldPoint(const AZ::Vector3& impulse, const AZ::Vector3& worldPoint) override;
         void ApplyAngularImpulse(const AZ::Vector3& angularImpulse) override;

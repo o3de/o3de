@@ -17,6 +17,9 @@ set(FILES
     BinToTextEncode.cpp
     ComponentAddRemove.cpp
     ComponentAdapterTests.cpp
+    CameraInputTests.cpp
+    ClickDetectorTests.cpp
+    CursorStateTests.cpp
     EntityContext.cpp
     EntityTestbed.h
     FileFunc.cpp
@@ -26,8 +29,6 @@ set(FILES
     GenAppDescriptors.cpp
     GenericComponentWrapperTest.cpp
     InstanceDataHierarchy.cpp
-    NetBinding.cpp
-    NetworkContext.cpp
     OctreePerformanceTests.cpp
     OctreeTests.cpp
     Slices.cpp
@@ -35,12 +36,8 @@ set(FILES
     Script/ScriptEntityTests.cpp
     AssetCatalog.cpp
     AssetProcessorConnection.cpp
-    NetBindingSystemImplTest.cpp
-    NetBindingMocks.h
     NativeWindow.cpp
     TransformComponent.cpp
-    GridMocks.h
-    InterestManagerComponentTests.cpp
     SQLiteConnectionTests.cpp
     ProcessLaunchParseTests.cpp
     Application.cpp

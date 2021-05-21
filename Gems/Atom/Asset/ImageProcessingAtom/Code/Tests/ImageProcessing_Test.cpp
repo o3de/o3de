@@ -95,32 +95,32 @@ namespace UnitTest
     class ImageProcessingTest
         : public ::testing::Test
         , public AllocatorsBase
-        , public ComponentApplicationBus::Handler
+        , public AZ::ComponentApplicationBus::Handler
     {
     public:
         //////////////////////////////////////////////////////////////////////////
         // ComponentApplicationMessages.
-        ComponentApplication* GetApplication() override { return nullptr; }
-        void RegisterComponentDescriptor(const ComponentDescriptor*) override { }
-        void UnregisterComponentDescriptor(const ComponentDescriptor*) override { }
-        void RegisterEntityAddedEventHandler(EntityAddedEvent::Handler&) override { }
-        void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler&) override { }
-        void RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler&) override { }
-        void RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler&) override { }
-        void SignalEntityActivated(Entity*) override { }
-        void SignalEntityDeactivated(Entity*) override { }
-        bool AddEntity(Entity*) override { return false; }
-        bool RemoveEntity(Entity*) override { return false; }
-        bool DeleteEntity(const EntityId&) override { return false; }
-        Entity* FindEntity(const EntityId&) override { return nullptr; }
-        SerializeContext* GetSerializeContext() override { return m_context.get(); }
-        BehaviorContext*  GetBehaviorContext() override { return nullptr; }
+        AZ::ComponentApplication* GetApplication() override { return nullptr; }
+        void RegisterComponentDescriptor(const AZ::ComponentDescriptor*) override { }
+        void UnregisterComponentDescriptor(const AZ::ComponentDescriptor*) override { }
+        void RegisterEntityAddedEventHandler(AZ::EntityAddedEvent::Handler&) override { }
+        void RegisterEntityRemovedEventHandler(AZ::EntityRemovedEvent::Handler&) override { }
+        void RegisterEntityActivatedEventHandler(AZ::EntityActivatedEvent::Handler&) override { }
+        void RegisterEntityDeactivatedEventHandler(AZ::EntityDeactivatedEvent::Handler&) override { }
+        void SignalEntityActivated(AZ::Entity*) override { }
+        void SignalEntityDeactivated(AZ::Entity*) override { }
+        bool AddEntity(AZ::Entity*) override { return false; }
+        bool RemoveEntity(AZ::Entity*) override { return false; }
+        bool DeleteEntity(const AZ::EntityId&) override { return false; }
+        Entity* FindEntity(const AZ::EntityId&) override { return nullptr; }
+        AZ::SerializeContext* GetSerializeContext() override { return m_context.get(); }
+        AZ::BehaviorContext*  GetBehaviorContext() override { return nullptr; }
         AZ::JsonRegistrationContext* GetJsonRegistrationContext() override { return m_jsonRegistrationContext.get(); }
         const char* GetAppRoot() const override { return nullptr; }
         const char* GetEngineRoot() const override { return nullptr; }
         const char* GetExecutableFolder() const override { return nullptr; }
-        Debug::DrillerManager* GetDrillerManager() override { return nullptr; }
-        void EnumerateEntities(const EntityCallback& /*callback*/) override {}
+        AZ::Debug::DrillerManager* GetDrillerManager() override { return nullptr; }
+        void EnumerateEntities(const AZ::ComponentApplicationRequests::EntityCallback& /*callback*/) override {}
         void QueryApplicationType(AZ::ApplicationTypeQuery& /*appType*/) const override {}
         //////////////////////////////////////////////////////////////////////////
 

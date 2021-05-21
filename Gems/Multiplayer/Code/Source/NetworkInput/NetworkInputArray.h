@@ -12,8 +12,8 @@
 
 #pragma once
 
-#include <Source/NetworkInput/NetworkInput.h>
-#include <Include/NetworkEntityHandle.h>
+#include <Multiplayer/NetworkInput/NetworkInput.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityHandle.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/fixed_vector.h>
 
@@ -33,9 +33,6 @@ namespace Multiplayer
         NetworkInput& operator[](uint32_t index);
         const NetworkInput& operator[](uint32_t index) const;
 
-        void SetPreviousInputId(ClientInputId previousInputId);
-        ClientInputId GetPreviousInputId() const;
-
         bool Serialize(AzNetworking::ISerializer& serializer);
 
     private:
@@ -49,6 +46,5 @@ namespace Multiplayer
 
         ConstNetworkEntityHandle m_owner;
         AZStd::array<Wrapper, MaxElements> m_inputs;
-        ClientInputId m_previousInputId;
     };
 }

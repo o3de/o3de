@@ -16,7 +16,6 @@
 
 #include "CrySystem_precompiled.h"
 #include "IDebugCallStack.h"
-#include <Pak/CryPakUtils.h>
 #include "System.h"
 #include <AzFramework/IO/FileOperations.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
@@ -238,8 +237,6 @@ void IDebugCallStack::FatalError(const char* description)
 
 void IDebugCallStack::WriteLineToLog(const char* format, ...)
 {
-    CDebugAllowFileAccess allowFileAccess;
-
     va_list ArgList;
     char        szBuffer[MAX_WARNING_LENGTH];
     va_start(ArgList, format);
