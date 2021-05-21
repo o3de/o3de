@@ -13,8 +13,6 @@
 
 #include <AzCore/EBus/EBus.h>
 
-class QString;
-
 namespace ImageProcessingAtomEditor
 {
     class ImageProcessingEditorRequests

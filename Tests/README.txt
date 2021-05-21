@@ -1,1 +1,0 @@
-This folder contains integration tests which do not ship with Lumberyard.  Tests that ship with the product can be found in folders adjacent to the code that they test.

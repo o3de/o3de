@@ -101,7 +101,7 @@ struct VSOutput
     float2 m_uv[UvSetCount] : UV1;
     float2 m_detailUv : UV3;
     
-    float4 m_blendMask : UV8;
+    float4 m_wrinkleBlendFactors : UV8;
 };
 
 #include <Atom/Features/Vertex/VertexHelper.azsli>
@@ -132,11 +132,11 @@ VSOutput SkinVS(VSInput IN)
     
     if(o_blendMask_isBound)
     {
-        OUT.m_blendMask = IN.m_optional_blendMask;
+        OUT.m_wrinkleBlendFactors = IN.m_optional_blendMask;
     }
     else
     {
-        OUT.m_blendMask = float4(0,1,0,0);
+        OUT.m_wrinkleBlendFactors = float4(0,0,0,0);
     }
 
     VertexHelper(IN, OUT, worldPosition, false);
@@ -209,7 +209,22 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
     
     float2 normalUv = IN.m_uv[MaterialSrg::m_normalMapUvIndex];
     float detailLayerNormalFactor = MaterialSrg::m_detail_normal_factor * detailLayerBlendFactor;
-    
+
+    // ------- Wrinkle Map Setup -------
+
+    // Combine the optional per-morph target wrinkle masks
+    float4 wrinkleBlendFactors = float4(0.0, 0.0, 0.0, 0.0);
+    for(uint wrinkleMaskIndex = 0; wrinkleMaskIndex < ObjectSrg::m_wrinkle_mask_count; ++wrinkleMaskIndex)
+    {
+        wrinkleBlendFactors += ObjectSrg::m_wrinkle_masks[wrinkleMaskIndex].Sample(MaterialSrg::m_sampler, normalUv) * ObjectSrg::GetWrinkleMaskWeight(wrinkleMaskIndex);
+    }
+
+    // If texture based morph target driven masks are being used, use those values instead of the per-vertex colors
+    if(ObjectSrg::m_wrinkle_mask_count)
+    {
+        IN.m_wrinkleBlendFactors = saturate(wrinkleBlendFactors);
+    }
+
     // Since the wrinkle normal maps should all be in the same tangent space as the main normal map, we should be able to blend the raw normal map
     // texture values before doing all the tangent space transforms, so we only have to do the transforms once, for better performance.
     
@@ -218,12 +233,12 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
     {
         normalMapSample = SampleNormalXY(MaterialSrg::m_normalMap, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY);
     }
-    if(o_wrinkleLayers_enabled && o_blendMask_isBound && o_wrinkleLayers_normal_enabled)
+    if(o_wrinkleLayers_enabled && o_wrinkleLayers_normal_enabled)
     {
-        normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture1, normalMapSample, MaterialSrg::m_wrinkle_normal_texture1, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, IN.m_blendMask.r);
-        normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture2, normalMapSample, MaterialSrg::m_wrinkle_normal_texture2, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, IN.m_blendMask.g);
-        normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture3, normalMapSample, MaterialSrg::m_wrinkle_normal_texture3, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, IN.m_blendMask.b);
-        normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture4, normalMapSample, MaterialSrg::m_wrinkle_normal_texture4, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, IN.m_blendMask.a);
+        normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture1, normalMapSample, MaterialSrg::m_wrinkle_normal_texture1, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, IN.m_wrinkleBlendFactors.r);
+        normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture2, normalMapSample, MaterialSrg::m_wrinkle_normal_texture2, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, IN.m_wrinkleBlendFactors.g);
+        normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture3, normalMapSample, MaterialSrg::m_wrinkle_normal_texture3, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, IN.m_wrinkleBlendFactors.b);
+        normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture4, normalMapSample, MaterialSrg::m_wrinkle_normal_texture4, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, IN.m_wrinkleBlendFactors.a);
     }
 
     if(o_detail_normal_useTexture)
@@ -250,7 +265,7 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
     float3 baseColor = GetBaseColorInput(MaterialSrg::m_baseColorMap, MaterialSrg::m_sampler, baseColorUv, MaterialSrg::m_baseColor, o_baseColor_useTexture);
     
     bool useSampledBaseColor = o_baseColor_useTexture;
-    if(o_wrinkleLayers_enabled && o_blendMask_isBound && o_wrinkleLayers_baseColor_enabled)
+    if(o_wrinkleLayers_enabled && o_wrinkleLayers_baseColor_enabled)
     {
         // If any of the wrinkle maps are applied, we will use the Base Color blend settings to apply the MaterialSrg::m_baseColor tint to the wrinkle maps,
         // even if the main base color map is not used.
@@ -267,10 +282,10 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
             baseColor = float3(1,1,1);
         }
 
-        baseColor = ApplyBaseColorWrinkleMap(o_wrinkleLayers_baseColor_useTexture1, baseColor, MaterialSrg::m_wrinkle_baseColor_texture1, MaterialSrg::m_sampler, baseColorUv, IN.m_blendMask.r);
-        baseColor = ApplyBaseColorWrinkleMap(o_wrinkleLayers_baseColor_useTexture2, baseColor, MaterialSrg::m_wrinkle_baseColor_texture2, MaterialSrg::m_sampler, baseColorUv, IN.m_blendMask.g);
-        baseColor = ApplyBaseColorWrinkleMap(o_wrinkleLayers_baseColor_useTexture3, baseColor, MaterialSrg::m_wrinkle_baseColor_texture3, MaterialSrg::m_sampler, baseColorUv, IN.m_blendMask.b);
-        baseColor = ApplyBaseColorWrinkleMap(o_wrinkleLayers_baseColor_useTexture4, baseColor, MaterialSrg::m_wrinkle_baseColor_texture4, MaterialSrg::m_sampler, baseColorUv, IN.m_blendMask.a);
+        baseColor = ApplyBaseColorWrinkleMap(o_wrinkleLayers_baseColor_useTexture1, baseColor, MaterialSrg::m_wrinkle_baseColor_texture1, MaterialSrg::m_sampler, baseColorUv, IN.m_wrinkleBlendFactors.r);
+        baseColor = ApplyBaseColorWrinkleMap(o_wrinkleLayers_baseColor_useTexture2, baseColor, MaterialSrg::m_wrinkle_baseColor_texture2, MaterialSrg::m_sampler, baseColorUv, IN.m_wrinkleBlendFactors.g);
+        baseColor = ApplyBaseColorWrinkleMap(o_wrinkleLayers_baseColor_useTexture3, baseColor, MaterialSrg::m_wrinkle_baseColor_texture3, MaterialSrg::m_sampler, baseColorUv, IN.m_wrinkleBlendFactors.b);
+        baseColor = ApplyBaseColorWrinkleMap(o_wrinkleLayers_baseColor_useTexture4, baseColor, MaterialSrg::m_wrinkle_baseColor_texture4, MaterialSrg::m_sampler, baseColorUv, IN.m_wrinkleBlendFactors.a);
     
     }
     
@@ -278,13 +293,13 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
     
     baseColor = ApplyTextureOverlay(o_detail_baseColor_useTexture, baseColor, MaterialSrg::m_detail_baseColor_texture, MaterialSrg::m_sampler, IN.m_detailUv, detailLayerBaseColorFactor);
 
-    if(o_wrinkleLayers_enabled && o_wrinkleLayers_showBlendMaskValues && o_blendMask_isBound)
+    if(o_wrinkleLayers_enabled && o_wrinkleLayers_showBlendMaskValues)
     {
         // Overlay debug colors to highlight the different blend weights coming from the vertex color stream.
-        if(o_wrinkleLayers_count > 0) { baseColor = lerp(baseColor, float3(1,0,0), IN.m_blendMask.r); }
-        if(o_wrinkleLayers_count > 1) { baseColor = lerp(baseColor, float3(0,1,0), IN.m_blendMask.g); }
-        if(o_wrinkleLayers_count > 2) { baseColor = lerp(baseColor, float3(0,0,1), IN.m_blendMask.b); }
-        if(o_wrinkleLayers_count > 3) { baseColor = lerp(baseColor, float3(1,1,1), IN.m_blendMask.a); }
+        if(o_wrinkleLayers_count > 0) { baseColor = lerp(baseColor, float3(1,0,0), IN.m_wrinkleBlendFactors.r); }
+        if(o_wrinkleLayers_count > 1) { baseColor = lerp(baseColor, float3(0,1,0), IN.m_wrinkleBlendFactors.g); }
+        if(o_wrinkleLayers_count > 2) { baseColor = lerp(baseColor, float3(0,0,1), IN.m_wrinkleBlendFactors.b); }
+        if(o_wrinkleLayers_count > 3) { baseColor = lerp(baseColor, float3(1,1,1), IN.m_wrinkleBlendFactors.a); }
     }
 
     // ------- Specular -------

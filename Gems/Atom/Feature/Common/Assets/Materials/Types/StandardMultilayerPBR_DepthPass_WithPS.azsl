@@ -108,7 +108,7 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
 
         PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
 
-        GetDepth_Setup(IN.m_blendMask);
+        s_blendMaskFromVertexStream = IN.m_blendMask;
         
         float depth;
 

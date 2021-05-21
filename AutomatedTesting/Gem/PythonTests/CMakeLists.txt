@@ -56,5 +56,9 @@ add_subdirectory(editor)
 ## Streaming ##
 add_subdirectory(streaming)
 
-## Streaming ##
+## Smoke ##
 add_subdirectory(smoke)
+
+## AWS ##
+# Enable when AWS Gems work on Linux and Android.
+# add_subdirectory(AWS)
