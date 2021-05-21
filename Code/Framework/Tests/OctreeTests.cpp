@@ -97,11 +97,11 @@ namespace UnitTest
 
     void ValidateEntryCountEqualsExpectedCount(const IVisibilityScene* visScene, uint32_t expectedEntryCount)
     {
-        // GetEntryCount assumes that updating an existing entry won't change the count
-        // so it doesn't modify the entry count. If an entry is removed from the octree
-        // as an unintended side effect of updating an existing entry, GetEntryCount
-        // can't be relied upon to report the actual entry count. So manually count the entries
-        // when using the entry count for validation
+        // InsertOrUpdateEntry assumes that updating an existing entry won't change the count
+        // so it doesn't modify the counter used by GetEntryCount.
+        // If an entry is removed from the octree as an unintended side effect of updating an existing entry,
+        // GetEntryCount can't be relied upon to report the actual entry count.
+        // So manually count the entries when using the entry count for validation.
         uint32_t manualEntryCount = 0;
         visScene->EnumerateNoCull([&manualEntryCount](const AzFramework::IVisibilityScene::NodeData& nodeData) { manualEntryCount += nodeData.m_entries.size(); });
 
