@@ -191,7 +191,7 @@ namespace AZ::Render
     // Check if a file exists. This does not go through the AssetCatalog so that it can identify files that exist but aren't processed yet,
     // and so that it will work before the AssetCatalog has loaded
     bool AtomViewportDisplayIconsSystemComponent::CheckIfFileExists(
-        AZStd::string_view sourceRelativePath, AZStd::string_view cacheRelativePath)
+        AZStd::string_view sourceRelativePath, AZStd::string_view cacheRelativePath) const
     {
         // If the file exists, it has already been processed and does not need to be modified
         bool fileExists = AZ::IO::FileIOBase::GetInstance()->Exists(cacheRelativePath.data());
@@ -328,11 +328,5 @@ namespace AZ::Render
                  {"TEXCOORD", RHI::Format::R32G32_FLOAT}});
             drawContext->EndInit();
         });
-    }
-
-    RHI::Ptr<RPI::DynamicDrawContext> AtomViewportDisplayIconsSystemComponent::GetDrawContext(AzFramework::ViewportId id) const
-    {
-        (void)id;
-        return nullptr;
     }
 } // namespace AZ::Render

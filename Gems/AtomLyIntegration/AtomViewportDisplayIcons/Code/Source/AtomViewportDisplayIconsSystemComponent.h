@@ -55,8 +55,7 @@ namespace AZ
         private:
             static constexpr const char* s_drawContextShaderPath = "Shaders/TexturedIcon.azshader";
 
-            RHI::Ptr<RPI::DynamicDrawContext> GetDrawContext(AzFramework::ViewportId id) const;
-            bool CheckIfFileExists(AZStd::string_view sourceRelativePath, AZStd::string_view cacheRelativePath);
+            bool CheckIfFileExists(AZStd::string_view sourceRelativePath, AZStd::string_view cacheRelativePath) const;
 
             Name m_drawContextName = Name("ViewportIconDisplay");
             bool m_shaderIndexesInitialized = false;
