@@ -135,28 +135,29 @@ namespace AzToolsFramework
             auto compFilter = qobject_cast<QSharedPointer<const CompositeFilter> >(m_filter);
             if (compFilter)
             {
-                auto& subFilters = compFilter->GetSubFilters();
+                const auto& subFilters = compFilter->GetSubFilters();
 
-                auto it = AZStd::find_if(subFilters.begin(), subFilters.end(), [subFilters](FilterConstType filter) -> bool
+                auto compositeFilterIterator = AZStd::find_if(subFilters.begin(), subFilters.end(), [subFilters](FilterConstType filter) -> bool
                 {
-                    auto assetTypeFilter = qobject_cast<QSharedPointer<const CompositeFilter> >(filter);
+                    const auto assetTypeFilter = qobject_cast<QSharedPointer<const CompositeFilter> >(filter);
                     return !assetTypeFilter.isNull();
                 });
-                if (it != subFilters.end())
+                if (compositeFilterIterator != subFilters.end())
                 {
-                    m_assetTypeFilter = qobject_cast<QSharedPointer<const CompositeFilter> >(*it);
+                    m_assetTypeFilter = qobject_cast<QSharedPointer<const CompositeFilter> >(*compositeFilterIterator);
                 }
 
                 auto compStringFilterIter = AZStd::find_if(subFilters.begin(), subFilters.end(), [](FilterConstType filter) -> bool
                 {
                     //The real StringFilter is really a CompositeFilter with just one StringFilter in its subfilter list
                     //To know if it is actually a StringFilter we have to get that subfilter and check if it is a Stringfilter.
-                    auto stringCompositeFilter = qobject_cast<QSharedPointer<const CompositeFilter> >(filter);
+                    const auto stringCompositeFilter = qobject_cast<QSharedPointer<const CompositeFilter> >(filter);
                     bool isStringFilter = false;
                     if (stringCompositeFilter)
                     {
                         const auto& stringSubfilters = stringCompositeFilter->GetSubFilters();
-                        auto canBeCasted = [](FilterConstType filt) -> bool {
+                        auto canBeCasted = [](FilterConstType filt) -> bool
+                        {
                             auto strFilter = qobject_cast<QSharedPointer<const StringFilter>>(filt);
                             return !strFilter.isNull();
                         };
@@ -173,7 +174,7 @@ namespace AzToolsFramework
                 });
                 if (compStringFilterIter != subFilters.end())
                 {
-                    auto compStringFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(*compStringFilterIter);
+                    const auto compStringFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(*compStringFilterIter);
                     if (!compStringFilter->GetSubFilters().isEmpty() && compStringFilter->GetSubFilters()[0])
                     {
                         m_stringFilter = qobject_cast<QSharedPointer<const StringFilter>>(compStringFilter->GetSubFilters()[0]);

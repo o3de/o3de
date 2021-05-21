@@ -176,7 +176,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::OnAssetBrowserComponentReady()
         {
-            hideColumn(static_cast<int>(AssetBrowserEntry::Column::Path));
+            hideColumn(aznumeric_cast<int>(AssetBrowserEntry::Column::Path));
             if (!m_name.isEmpty())
             {
                 auto crc = AZ::Crc32(m_name.toUtf8().data());

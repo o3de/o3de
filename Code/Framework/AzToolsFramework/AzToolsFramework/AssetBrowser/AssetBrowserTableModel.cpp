@@ -81,11 +81,6 @@ namespace AzToolsFramework
             return parent.isValid() ? QModelIndex() : createIndex(row, column, m_indexMap[row].internalPointer());
         }
 
-        QModelIndex AssetBrowserTableModel::parent([[maybe_unused]] const QModelIndex& child) const
-        {
-            return QModelIndex();
-        }
-
         int AssetBrowserTableModel::rowCount(const QModelIndex& parent) const
         {
             return !parent.isValid() ? m_indexMap.size() : 0;

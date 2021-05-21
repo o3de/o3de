@@ -110,7 +110,6 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
         connect(m_filterModel.data(), &AssetBrowserFilterModel::stringFilterPopulated, this, &AzAssetBrowserWindow::SwitchDisplayView);
         connect(m_ui->m_viewSwitcherCheckBox, &QCheckBox::stateChanged, this, &AzAssetBrowserWindow::LockToDefaultView);
-
     }
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
@@ -124,16 +123,13 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_assetBrowserTreeViewWidget->UpdateAfterFilter(hasFilter, selectFirstFilteredIndex);
     });
 
-
     connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::selectionChangedSignal,
         this, &AzAssetBrowserWindow::SelectionChangedSlot);
 
     connect(m_ui->m_assetBrowserTreeViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
 
-
     connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::ClearStringFilter, m_ui->m_searchWidget, &SearchWidget::ClearStringFilter);
     connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::ClearTypeFilter, m_ui->m_searchWidget, &SearchWidget::ClearTypeFilter);
-
 
     m_ui->m_assetBrowserTreeViewWidget->SetName("AssetBrowserTreeView_main");
 }

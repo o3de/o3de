@@ -163,7 +163,7 @@ namespace AzToolsFramework
 
         int AssetBrowserModel::columnCount(const QModelIndex& /*parent*/) const
         {
-            return static_cast<int>(AssetBrowserEntry::Column::Count);
+            return aznumeric_cast<int>(AssetBrowserEntry::Column::Count);
         }
 
         QVariant AssetBrowserModel::data(const QModelIndex& index, int role) const

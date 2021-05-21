@@ -68,7 +68,7 @@ namespace AzToolsFramework
         protected:
             //set for filtering columns
             //if the column is in the set the column is not filtered and is shown
-            AZStd::fixed_unordered_set<int, 3, static_cast<int>(AssetBrowserEntry::Column::Count)> m_showColumn;
+            AZStd::fixed_unordered_set<int, 3, aznumeric_cast<int>(AssetBrowserEntry::Column::Count)> m_showColumn;
             bool m_alreadyRecomputingFilters = false;
             //asset source name match filter
             FilterConstType m_filter;

@@ -75,7 +75,7 @@ namespace AzToolsFramework
 
                 auto sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry);
                 QPalette actualPalette(option.palette);
-                if (index.column() == static_cast<int>(AssetBrowserEntry::Column::Name))
+                if (index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
                 {
                     int thumbX = DrawThumbnail(painter, iconTopLeft, iconSize, entry->GetThumbnailKey());
                     if (sourceEntry)
