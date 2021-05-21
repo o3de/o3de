@@ -247,11 +247,6 @@ namespace AZ
             m_drawFilter = pipeline->GetDrawFilterMask();
         }
 
-        void DynamicDrawContext::SetExclusiveToView(ViewPtr view)
-        {
-            m_viewFilter = view.get();
-        }
-
         bool DynamicDrawContext::IsReady()
         {
             return m_initialized;
@@ -633,11 +628,6 @@ namespace AZ
         void DynamicDrawContext::SubmitDrawData(ViewPtr view)
         {
             if (!m_initialized)
-            {
-                return;
-            }
-
-            if (m_viewFilter && m_viewFilter != view.get())
             {
                 return;
             }

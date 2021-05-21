@@ -98,19 +98,7 @@ namespace AZ
                     }
                 });
 
-                contextInfo.m_viewChangeHandler = AZ::Event<ViewPtr>::Handler([this, viewportId](ViewPtr view)
-                {
-                    AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawContext);
-                    NamedDrawContextViewportInfo& contextInfo = m_namedDynamicDrawContextInstances[viewportId];
-                    for (auto& context : contextInfo.m_dynamicDrawContexts)
-                    {
-                        context.second->SetExclusiveToView(view);
-                    }
-                });
-
                 viewportContext->ConnectCurrentPipelineChangedHandler(contextInfo.m_pipelineChangeHandler);
-                viewportContext->ConnectDefaultViewChangedHandler(contextInfo.m_viewChangeHandler);
-
                 contextInfo.m_scene = viewportContext->GetRenderScene().get();
 
                 contextInfo.m_initialized = true;
@@ -126,7 +114,6 @@ namespace AZ
                 }
                 context = aznew DynamicDrawContext();
                 context->SetRenderPipeline(pipeline.get());
-                context->SetExclusiveToView(viewportContext->GetDefaultView());
                 contextFactoryIt->second(context);
             }
 

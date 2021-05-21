@@ -69,7 +69,6 @@ namespace AZ
 
                 // Event handlers
                 AZ::Event<RenderPipelinePtr>::Handler m_pipelineChangeHandler;
-                AZ::Event<ViewPtr>::Handler m_viewChangeHandler;
 
                 // Cached state
                 Scene* m_scene = nullptr;
