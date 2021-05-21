@@ -60,7 +60,7 @@ namespace AZ
             Name m_drawContextName = Name("ViewportIconDisplay");
             bool m_shaderIndexesInitialized = false;
             RHI::ShaderInputImageIndex m_textureParameterIndex;
-            RHI::ShaderInputConstantIndex m_worldToProjParameterIndex;
+            RHI::ShaderInputConstantIndex m_viewportSizeIndex;
 
             struct IconData
             {

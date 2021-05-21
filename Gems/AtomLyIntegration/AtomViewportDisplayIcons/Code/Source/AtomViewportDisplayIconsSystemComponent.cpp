@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzCore/std/containers/array.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 
@@ -91,14 +92,6 @@ namespace AZ::Render
 
     void AtomViewportDisplayIconsSystemComponent::DrawIcon(const DrawParameters& drawParameters)
     {
-        struct Vertex
-        {
-            float m_position[3];
-            AZ::u32 m_color;
-            float m_uv[2];
-        };
-        using Indice = AZ::u16;
-
         auto viewportContext = RPI::ViewportContextRequests::Get()->GetViewportContextById(drawParameters.m_viewport);
         if (viewportContext == nullptr)
         {
@@ -125,11 +118,11 @@ namespace AZ::Render
         {
             auto layout = drawSrg->GetAsset()->GetLayout();
             m_textureParameterIndex = layout->FindShaderInputImageIndex(AZ::Name("m_texture"));
-            m_worldToProjParameterIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_worldToProj"));
+            m_viewportSizeIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_viewportSize"));
 
             m_shaderIndexesInitialized =
                 m_textureParameterIndex.IsValid() &&
-                m_worldToProjParameterIndex.IsValid();
+                m_viewportSizeIndex.IsValid();
             if (!m_shaderIndexesInitialized)
             {
                 return;
@@ -154,38 +147,44 @@ namespace AZ::Render
             }
         }
 
-        drawSrg->SetConstant(m_worldToProjParameterIndex, view->GetWorldToClipMatrix());
+        auto viewportSize = viewportContext->GetViewportSize();
+        drawSrg->SetConstant(m_viewportSizeIndex, AZ::Vector2(aznumeric_cast<float>(viewportSize.m_width), aznumeric_cast<float>(viewportSize.m_height)));
         drawSrg->SetImageView(m_textureParameterIndex, image->GetImageView());
         drawSrg->Compile();
 
         AzFramework::ScreenPoint screenPosition;
         using ViewportRequestBus = AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus;
         ViewportRequestBus::EventResult(screenPosition, drawParameters.m_viewport, &ViewportRequestBus::Events::ViewportWorldToScreen, drawParameters.m_position);
-        // Create a vertex offset from the world position to draw from based on the icon size
+
+        struct Vertex
+        {
+            float m_position[3];
+            AZ::u32 m_color;
+            float m_uv[2];
+        };
+        using Indice = AZ::u16;
+
+        // Create a vertex offset from the position to draw from based on the icon size
         auto createVertex = [&](float offsetX, float offsetY, float u, float v) -> Vertex
         {
-            int dx = aznumeric_cast<int>(offsetX * drawParameters.m_size.GetX());
-            int dy = aznumeric_cast<int>(offsetY * drawParameters.m_size.GetY());
-            AzFramework::ScreenPoint offsetScreenPosition(screenPosition.m_x + dx, screenPosition.m_y + dy);
-            AZStd::optional<AZ::Vector3> position;
-            ViewportRequestBus::EventResult(position, drawParameters.m_viewport, &ViewportRequestBus::Events::ViewportScreenToWorld, offsetScreenPosition, 0.f);
-
             Vertex vertex;
-            position.value().StoreToFloat3(vertex.m_position);
+            vertex.m_position[0] = aznumeric_cast<float>(screenPosition.m_x) + offsetX * drawParameters.m_size.GetX();
+            vertex.m_position[1] = aznumeric_cast<float>(screenPosition.m_y) + offsetY * drawParameters.m_size.GetY();
+            vertex.m_position[2] = 0.f;
             vertex.m_color = drawParameters.m_color.ToU32();
             vertex.m_uv[0] = u;
             vertex.m_uv[1] = v;
             return vertex;
         };
 
-        Vertex vertices[4] = {
+        AZStd::array<Vertex, 4> vertices = {
             createVertex(-0.5f, -0.5f, 0.f, 0.f),
             createVertex(0.5f,  -0.5f, 1.f, 0.f),
             createVertex(0.5f,  0.5f,  1.f, 1.f),
             createVertex(-0.5f, 0.5f,  0.f, 1.f)
         };
-        Indice indices[6] = {0, 1, 2, 0, 2, 3};
-        dynamicDraw->DrawIndexed(&vertices, 4, &indices, 6, RHI::IndexFormat::Uint16, drawSrg);
+        AZStd::array<Indice, 6> indices = {0, 1, 2, 0, 2, 3};
+        dynamicDraw->DrawIndexed(&vertices, vertices.size(), &indices, indices.size(), RHI::IndexFormat::Uint16, drawSrg);
     }
 
     // Check if a file exists. This does not go through the AssetCatalog so that it can identify files that exist but aren't processed yet,

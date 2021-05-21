@@ -14,7 +14,7 @@
 
 ShaderResourceGroup InstanceSrg : SRG_PerDraw
 {
-    row_major float4x4 m_worldToProj;
+    float2 m_viewportSize;
     Texture2D m_texture;
     
     Sampler m_sampler
@@ -42,8 +42,10 @@ struct VSOutput
 
 VSOutput MainVS(VSInput IN)
 {
-    float4x4 worldToProj = InstanceSrg::m_worldToProj;
-    float4 posPS = mul(worldToProj, float4(IN.m_position, 1.0f));
+    // Convert from screen space to clip space
+    float2 posXY = float2(IN.m_position.xy) / InstanceSrg::m_viewportSize * 2.0f - float2(1.0f, 1.0f);
+    posXY.y *= -1.0f;
+    float4 posPS = float4(posXY, IN.m_position.z, 1.0f);
 
     VSOutput OUT;
     OUT.m_position = posPS;
