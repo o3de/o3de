@@ -32,8 +32,6 @@ namespace O3DE::ProjectManager
         layout->setSpacing(0);
         layout->setContentsMargins(0, 0, 0, 0);
 
-        setFixedSize(this->geometry().width(), this->geometry().height());
-
         m_pythonBindings = AZStd::make_unique<PythonBindings>(engineRootPath);
 
         m_screensCtrl = new ScreensCtrl();
