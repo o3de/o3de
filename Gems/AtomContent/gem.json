@@ -1,0 +1,14 @@
+{
+    "gem_name": "AtomContent",
+    "origin": "The primary repo for Atom goes here: i.e. http://www.mydomain.com",
+    "license": "What license Atom uses goes here: i.e. https://opensource.org/licenses/MIT",
+    "display_name": "Atom Content",
+    "summary": "ontains multiple packages containing source Assets that can be used with Atom",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "AtomConent"
+    ],
+    "icon_path": "preview.png"
+}
