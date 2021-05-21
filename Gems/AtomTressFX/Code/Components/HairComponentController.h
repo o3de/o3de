@@ -109,9 +109,8 @@ namespace AZ
 
                 Data::Asset<HairAsset> m_hairAsset;
 
-                // Store a cache of the boneIndexMap we generated during the creation of hair object. The index of this map is the local bone index
-                // from the tressFX asset, and the value is the bone index from the emotionfx actor.
-                AMD::TressFXAsset::BoneIndexMap m_boneIndexMap;
+                // Store a cache of the bone index lookup we generated during the creation of hair object.
+                AMD::BoneIndexToEngineIndexLookup m_boneIndexLookup;
 
                 // Cache the bone matrices array to avoid frequent allocation.
                 AZStd::vector<AZ::Matrix3x4> m_cachedBoneMatrices;
