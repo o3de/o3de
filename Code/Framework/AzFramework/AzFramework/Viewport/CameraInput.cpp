@@ -161,25 +161,25 @@ namespace AzFramework
     {
         if (const auto& horizonalMotion = AZStd::get_if<HorizontalMotionEvent>(&event))
         {
-            m_cursorDelta.m_x = horizonalMotion->m_delta;
+            m_motionDelta.m_x = horizonalMotion->m_delta;
         }
         else if (const auto& verticalMotion = AZStd::get_if<VerticalMotionEvent>(&event))
         {
-            m_cursorDelta.m_y = verticalMotion->m_delta;
+            m_motionDelta.m_y = verticalMotion->m_delta;
         }
         else if (const auto& scroll = AZStd::get_if<ScrollEvent>(&event))
         {
             m_scrollDelta = scroll->m_delta;
         }
 
-        return m_cameras.HandleEvents(event, m_cursorDelta, m_scrollDelta);
+        return m_cameras.HandleEvents(event, m_motionDelta, m_scrollDelta);
     }
 
     Camera CameraSystem::StepCamera(const Camera& targetCamera, const float deltaTime)
     {
-        const auto nextCamera = m_cameras.StepCamera(targetCamera, m_cursorDelta, m_scrollDelta, deltaTime);
+        const auto nextCamera = m_cameras.StepCamera(targetCamera, m_motionDelta, m_scrollDelta, deltaTime);
 
-        m_cursorDelta = ScreenVector{0, 0};
+        m_motionDelta = ScreenVector{0, 0};
         m_scrollDelta = 0.0f;
 
         return nextCamera;

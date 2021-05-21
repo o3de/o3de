@@ -198,6 +198,7 @@ namespace AzFramework
             m_activeCameraInputs.begin(), m_activeCameraInputs.end(), [](const auto& cameraInput) { return cameraInput->Exclusive(); });
     }
 
+    //! Responsible for updating a series of cameras given various inputs.
     class CameraSystem
     {
     public:
@@ -207,8 +208,8 @@ namespace AzFramework
         Cameras m_cameras;
 
     private:
-        ScreenVector m_cursorDelta;
-        float m_scrollDelta = 0.0f;
+        ScreenVector m_motionDelta; //!< The delta used for look/orbit/pan (rotation + translation) - two dimensional.
+        float m_scrollDelta = 0.0f; //!< The delta used for dolly/movement (translation) - one dimensional. 
     };
 
     class RotateCameraInput : public CameraInput
