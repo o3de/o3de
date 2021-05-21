@@ -190,12 +190,14 @@ def CheckoutBootstrapScripts(String branchName) {
         doGenerateSubmoduleConfigurations: false,
         extensions: [
             [$class: 'PruneStaleBranch'],
+            [$class: 'AuthorInChangelog'],
             [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [
                 [ $class: 'SparseCheckoutPath', path: 'scripts/build/Jenkins/' ],
                 [ $class: 'SparseCheckoutPath', path: 'scripts/build/bootstrap/' ],
                 [ $class: 'SparseCheckoutPath', path: 'scripts/build/Platform' ]
             ]],
-            [$class: 'CloneOption', depth: 1, noTags: false, reference: '', shallow: true]
+            // Shallow checkouts break changelog computation. Do not enable.
+            [$class: 'CloneOption', noTags: false, reference: '', shallow: false]
         ],
         submoduleCfg: [],
         userRemoteConfigs: scm.userRemoteConfigs
@@ -234,6 +236,7 @@ def CheckoutRepo(boolean disableSubmodules = false) {
             branches: scm.branches,
             extensions: [
                 [$class: 'PruneStaleBranch'],
+                [$class: 'AuthorInChangelog'],
                 [$class: 'SubmoduleOption', disableSubmodules: disableSubmodules, recursiveSubmodules: true],
                 [$class: 'CheckoutOption', timeout: 60]
             ],
@@ -339,7 +342,10 @@ def TestMetrics(Map pipelineConfig, String workspace, String branchName, String 
             checkout scm: [
                 $class: 'GitSCM',
                 branches: [[name: '*/main']],
-                extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'mars']],
+                extensions: [
+                    [$class: 'AuthorInChangelog'],
+                    [$class: 'RelativeTargetDirectory', relativeTargetDir: 'mars']
+                ],
                 userRemoteConfigs: [[url: "${env.MARS_REPO}", name: 'mars', credentialsId: "${env.GITHUB_USER}"]]
             ]
             withCredentials([usernamePassword(credentialsId: "${env.SERVICE_USER}", passwordVariable: 'apitoken', usernameVariable: 'username')]) {

@@ -507,7 +507,7 @@ namespace EMotionFX
                 const Physics::CharacterColliderNodeConfiguration* colliderNodeConfig = colliderConfig.FindNodeConfigByName(joint->GetNameString());
                 if (colliderNodeConfig)
                 {
-                    const Physics::ShapeConfigurationList& colliders = colliderNodeConfig->m_shapes;
+                    const AzPhysics::ShapeColliderPairList& colliders = colliderNodeConfig->m_shapes;
                     ColliderContainerWidget::RenderColliders(colliders, actorInstance, joint, renderInfo, finalColor);
                 }
             }

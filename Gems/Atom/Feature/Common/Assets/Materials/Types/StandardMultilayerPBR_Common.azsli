@@ -42,7 +42,7 @@ COMMON_SRG_INPUTS_PARALLAX(prefix)
 
 ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {
-    Texture2D m_blendMaskTexture;
+    Texture2D m_blendMaskTexture; 
     uint m_blendMaskUvIndex;
     
     // Auto-generate material SRG fields for common inputs for each layer
@@ -91,29 +91,14 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
         MipFilter = Linear;
     };
 
-    // Parameters for subsurface scattering
-    float m_subsurfaceScatteringFactor;
-    float m_subsurfaceScatteringQuality;
-    float3 m_scatterDistance;
-    Texture2D m_subsurfaceScatteringInfluenceMap;
-    uint m_subsurfaceScatteringInfluenceMapUvIndex;
-
-    // Parameters for transmission
-    
-    // Elements of m_transmissionParams:
-    // Thick object mode: (attenuation coefficient, power, distortion, scale)
-    // Thin  object mode:  (float3 scatter distance, scale)
-    float4 m_transmissionParams;
-    
-    // (float3 TintColor, thickness)
-    float4 m_transmissionTintThickness;
-    Texture2D m_transmissionThicknessMap;
-    uint m_transmissionThicknessMapUvIndex;
 }
 
 // ------ Shader Options ----------------------------------------
 
-enum class DebugDrawMode { None, BlendMaskValues, DepthMaps };
+option bool o_layer2_enabled;
+option bool o_layer3_enabled;
+
+enum class DebugDrawMode { None, BlendSource, DepthMaps };
 option DebugDrawMode o_debugDrawMode;
 
 enum class BlendMaskSource { TextureMap, VertexColors, Fallback };
@@ -126,6 +111,10 @@ option BlendMaskSource o_blendSource;
 option bool o_blendMask_isBound;
 
 // ------ Blend Utilities ----------------------------------------
+
+// This is mainly used to pass extra data to the GetDepth callback function during the parallax depth search.
+// But since we have it, we use it in some other functions as well rather than passing it around.
+static float3 s_blendMaskFromVertexStream;
 
 //! Returns the BlendMaskSource that will actually be used when rendering (not necessarily the same BlendMaskSource specified by the user)
 BlendMaskSource GetFinalBlendMaskSource()
@@ -151,40 +140,84 @@ BlendMaskSource GetFinalBlendMaskSource()
     }
 }
 
-//! Return the final blend mask values to be used for rendering, based on the available data and configuration.
-float3 GetBlendMaskValues(float2 uv, float3 vertexBlendMask)
+//! Return the raw blend source values directly from the blend mask or vertex colors, depending on the available data and configuration.
+//!     layer1 is an implicit base layer
+//!     layer2 is weighted by r
+//!     layer3 is weighted by g
+//!     b is reserved for perhaps a dedicated puddle layer
+float3 GetBlendSourceValues(float2 uv)
 {
-    float3 blendMaskValues;
+    float3 blendSourceValues = float3(0,0,0);
 
-    switch(GetFinalBlendMaskSource())
+    if(o_layer2_enabled || o_layer3_enabled)
     {
-        case BlendMaskSource::TextureMap:
-            blendMaskValues = MaterialSrg::m_blendMaskTexture.Sample(MaterialSrg::m_sampler, uv).rgb;
-            break;
-        case BlendMaskSource::VertexColors:
-            blendMaskValues = vertexBlendMask;
-            break;
-        case BlendMaskSource::Fallback:
-            blendMaskValues = float3(1,1,1);
-            break;
+        switch(GetFinalBlendMaskSource())
+        {
+            case BlendMaskSource::TextureMap:
+                blendSourceValues = MaterialSrg::m_blendMaskTexture.Sample(MaterialSrg::m_sampler, uv).rgb;
+                break;
+            case BlendMaskSource::VertexColors:
+                blendSourceValues = s_blendMaskFromVertexStream;
+                break;
+        }
+
+        if(!o_layer2_enabled)
+        {
+            blendSourceValues.r = 0.0;
+        }
+
+        if(!o_layer3_enabled)
+        {
+            blendSourceValues.g = 0.0;
+        }
     }
 
-    blendMaskValues = blendMaskValues / (blendMaskValues.r + blendMaskValues.g + blendMaskValues.b);
-
-    return blendMaskValues;
+    return blendSourceValues;
 }
 
-float BlendLayers(float layer1, float layer2, float layer3, float3 blendMaskValues)
+//! Return the final blend mask values to be used for rendering, based on the available data and configuration.
+//! @return The blend weights for each layer.
+//!         Even though layer1 not explicitly specified in the blend source data, it is explicitly included with the returned values.
+//!         layer1 = r
+//!         layer2 = g
+//!         layer3 = b
+float3 GetBlendWeights(float2 uv)
 {
-    return dot(float3(layer1, layer2, layer3), blendMaskValues);
+    float3 blendWeights;
+    
+    if(o_layer2_enabled || o_layer3_enabled)
+    {
+        float3 blendSourceValues = GetBlendSourceValues(uv);
+
+        // Calculate blend weights such that multiplying and adding them with layer data is equivalent
+        // to lerping between each layer.
+        //     final = lerp(final, layer1, blendWeights.r)
+        //     final = lerp(final, layer2, blendWeights.g)
+        //     final = lerp(final, layer3, blendWeights.b)
+
+        blendWeights.b = blendSourceValues.g;
+        blendWeights.g = (1.0 - blendSourceValues.g) * blendSourceValues.r;
+        blendWeights.r = (1.0 - blendSourceValues.g) * (1.0 - blendSourceValues.r);
+    }
+    else
+    {
+        blendWeights = float3(1,0,0);
+    }
+
+    return blendWeights;
 }
-float2 BlendLayers(float2 layer1, float2 layer2, float2 layer3, float3 blendMaskValues)
+
+float BlendLayers(float layer1, float layer2, float layer3, float3 blendWeights)
 {
-    return layer1 * blendMaskValues.r + layer2 * blendMaskValues.g + layer3 * blendMaskValues.b;
+    return dot(float3(layer1, layer2, layer3), blendWeights);
 }
-float3 BlendLayers(float3 layer1, float3 layer2, float3 layer3, float3 blendMaskValues)
+float2 BlendLayers(float2 layer1, float2 layer2, float2 layer3, float3 blendWeights)
 {
-    return layer1 * blendMaskValues.r + layer2 * blendMaskValues.g + layer3 * blendMaskValues.b;
+    return layer1 * blendWeights.r + layer2 * blendWeights.g + layer3 * blendWeights.b;
+}
+float3 BlendLayers(float3 layer1, float3 layer2, float3 layer3, float3 blendWeights)
+{
+    return layer1 * blendWeights.r + layer2 * blendWeights.g + layer3 * blendWeights.b;
 }
 
 // ------ Parallax Utilities ----------------------------------------
@@ -201,16 +234,6 @@ bool ShouldHandleParallaxInDepthShaders()
     // The depth pass shaders need to calculate parallax when the result could affect the depth buffer (or when
     // parallax could affect texel clipping but we don't have alpha/clipping support in multilayer PBR).
     return ShouldHandleParallax() && o_parallax_enablePixelDepthOffset;
-}
-
-// These static values are used to pass extra data to the GetDepth callback function during the parallax depth search.
-static float3 s_blendMaskFromVertexStream;
-
-//! Setup static variables that are needed by the GetDepth callback function
-//! @param vertexBlendMask the blend mask values from the vertex input stream.
-void GetDepth_Setup(float3 vertexBlendMask)
-{
-    s_blendMaskFromVertexStream = vertexBlendMask;
 }
 
 // Callback function for ParallaxMapping.azsli
@@ -231,7 +254,7 @@ DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
         layerDepthValues.r -= MaterialSrg::m_layer1_m_depthOffset;
     }
     
-    if(o_layer2_o_useDepthMap)
+    if(o_layer2_enabled && o_layer2_o_useDepthMap)
     {
         float2 layerUv = uv;
         if(MaterialSrg::m_parallaxUvIndex == 0)
@@ -244,7 +267,7 @@ DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
         layerDepthValues.g -= MaterialSrg::m_layer2_m_depthOffset;
     }
     
-    if(o_layer3_o_useDepthMap)
+    if(o_layer3_enabled && o_layer3_o_useDepthMap)
     {
         float2 layerUv = uv;
         if(MaterialSrg::m_parallaxUvIndex == 0)
@@ -260,8 +283,8 @@ DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
     // Note, when the blend source is BlendMaskSource::VertexColors, parallax will not be able to blend correctly between layers. It will end up using the same blend mask values
     // for every UV position when searching for the intersection. This leads to smearing artifacts at the transition point, but these won't be so noticeable as long as
     // you have a small depth factor relative to the size of the blend transition.
-    float3 blendMaskValues = GetBlendMaskValues(uv, s_blendMaskFromVertexStream);
+    float3 blendWeights = GetBlendWeights(uv);
 
-    float depth = BlendLayers(layerDepthValues.r, layerDepthValues.g, layerDepthValues.b, blendMaskValues);
+    float depth = BlendLayers(layerDepthValues.r, layerDepthValues.g, layerDepthValues.b, blendWeights);
     return DepthResultAbsolute(depth);
 }

@@ -10,8 +10,8 @@
 *
 */
 
-#include <Multiplayer/MultiplayerComponent.h>
-#include <Multiplayer/NetBindComponent.h>
+#include <Multiplayer/Components/MultiplayerComponent.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace Multiplayer
@@ -23,6 +23,80 @@ namespace Multiplayer
         {
             serializeContext->Class<MultiplayerComponent, AZ::Component>()
                 ->Version(1);
+        }
+
+        AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
+        if (behaviorContext)
+        {
+            behaviorContext->Class<MultiplayerComponent>("MultiplayerComponent")
+                ->Attribute(AZ::Script::Attributes::Module, "multiplayer")
+                ->Attribute(AZ::Script::Attributes::Category, "Multiplayer")
+
+                ->Method("IsAuthority", [](AZ::EntityId id) -> bool {
+                    AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
+                    if (!entity)
+                    {
+                        AZ_Warning( "MultiplayerComponent", false, "MultiplayerComponent IsAuthority failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str())
+                        return false;
+                    }
+
+                    MultiplayerComponent* multiplayerComponent = entity->FindComponent<MultiplayerComponent>();
+                    if (!multiplayerComponent)
+                    {
+                        AZ_Warning( "MultiplayerComponent", false, "MultiplayerComponent IsAuthority failed. Entity '%s' (id: %s) is missing a MultiplayerComponent, make sure this entity contains a component which derives from MultiplayerComponent.", entity->GetName().c_str(), id.ToString().c_str())
+                        return false;
+                    }
+                    return multiplayerComponent->IsAuthority();
+                })
+                ->Method("IsAutonomous", [](AZ::EntityId id) -> bool {
+                    AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
+                    if (!entity)
+                    {
+                        AZ_Warning( "MultiplayerComponent", false, "MultiplayerComponent IsAutonomous failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str())
+                        return false;
+                    }
+
+                    MultiplayerComponent* multiplayerComponent = entity->FindComponent<MultiplayerComponent>();
+                    if (!multiplayerComponent)
+                    {
+                        AZ_Warning("MultiplayerComponent", false, "MultiplayerComponent IsAutonomous failed. Entity '%s' (id: %s) is missing a MultiplayerComponent, make sure this entity contains a component which derives from MultiplayerComponent.", entity->GetName().c_str(), id.ToString().c_str())
+                        return false;
+                    }
+                    return multiplayerComponent->IsAutonomous();
+                })
+                ->Method("IsClient", [](AZ::EntityId id) -> bool {
+                    AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
+                    if (!entity)
+                    {
+                        AZ_Warning( "MultiplayerComponent", false, "MultiplayerComponent IsClient failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str())
+                        return false;
+                    }
+
+                    MultiplayerComponent* multiplayerComponent = entity->FindComponent<MultiplayerComponent>();
+                    if (!multiplayerComponent)
+                    {
+                        AZ_Warning("MultiplayerComponent", false, "MultiplayerComponent IsClient failed. Entity '%s' (id: %s) is missing a MultiplayerComponent, make sure this entity contains a component which derives from MultiplayerComponent.", entity->GetName().c_str(), id.ToString().c_str())
+                        return false;
+                    }
+                    return multiplayerComponent->IsClient();
+                })
+                ->Method("IsServer", [](AZ::EntityId id) -> bool {
+                    AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
+                    if (!entity)
+                    {
+                        AZ_Warning( "MultiplayerComponent", false, "MultiplayerComponent IsServer failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str())
+                        return false;
+                    }
+
+                    MultiplayerComponent* multiplayerComponent = entity->FindComponent<MultiplayerComponent>();
+                    if (!multiplayerComponent)
+                    {
+                        AZ_Warning("MultiplayerComponent", false, "MultiplayerComponent IsServer failed. Entity '%s' (id: %s) is missing a MultiplayerComponent, make sure this entity contains a component which derives from MultiplayerComponent.", entity->GetName().c_str(), id.ToString().c_str())
+                        return false;
+                    }
+                    return multiplayerComponent->IsServer();
+                })
+            ;
         }
     }
 
@@ -46,9 +120,24 @@ namespace Multiplayer
         return m_netBindComponent ? m_netBindComponent->GetNetEntityId() : InvalidNetEntityId;
     }
 
-    NetEntityRole MultiplayerComponent::GetNetEntityRole() const
+    bool MultiplayerComponent::IsAuthority() const
     {
-        return m_netBindComponent ? m_netBindComponent->GetNetEntityRole() : NetEntityRole::InvalidRole;
+        return m_netBindComponent ? m_netBindComponent->IsAuthority() : false;
+    }
+
+    bool MultiplayerComponent::IsAutonomous() const
+    {
+        return m_netBindComponent ? m_netBindComponent->IsAutonomous() : false;
+    }
+
+    bool MultiplayerComponent::IsServer() const
+    {
+        return m_netBindComponent ? m_netBindComponent->IsServer() : false;
+    }
+
+    bool MultiplayerComponent::IsClient() const
+    {
+        return m_netBindComponent ? m_netBindComponent->IsClient() : false;
     }
 
     ConstNetworkEntityHandle MultiplayerComponent::GetEntityHandle() const

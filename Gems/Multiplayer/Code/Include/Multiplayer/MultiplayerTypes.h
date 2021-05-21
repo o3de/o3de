@@ -18,6 +18,7 @@
 #include <AzCore/std/string/fixed_string.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/ConnectionLayer/ConnectionEnums.h>
+#include <AzNetworking/DataStructures/ByteBuffer.h>
 
 namespace Multiplayer
 {
@@ -85,8 +86,7 @@ namespace Multiplayer
         Activate
     };
 
-    // This is just a placeholder
-    // The level/prefab cooking will devise the actual solution for identifying a dynamically spawnable entity within a prefab
+    // Structure for identifying a specific entity within a spawnable
     struct PrefabEntityId
     {
         AZ_TYPE_INFO(PrefabEntityId, "{EFD37465-CCAC-4E87-A825-41B4010A2C75}");
@@ -121,6 +121,13 @@ namespace Multiplayer
             return serializer.IsValid();
         }
     };
+
+    struct EntityMigrationMessage
+    {
+        NetEntityId m_entityId;
+        PrefabEntityId m_prefabEntityId;
+        AzNetworking::PacketEncodingBuffer m_propertyUpdateData;
+    };
 }
 
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::HostId);
@@ -130,3 +137,14 @@ AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::PropertyIndex);
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::RpcIndex);
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::ClientInputId);
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::HostFrameId);
+
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(Multiplayer::HostId, "{D04B3363-8E1B-4193-8B2B-D2140389C9D5}");
+    AZ_TYPE_INFO_SPECIALIZE(Multiplayer::NetEntityId, "{05E4C08B-3A1B-4390-8144-3767D8E56A81}");
+    AZ_TYPE_INFO_SPECIALIZE(Multiplayer::NetComponentId, "{8AF3B382-F187-4323-9014-B380638767E3}");
+    AZ_TYPE_INFO_SPECIALIZE(Multiplayer::PropertyIndex, "{F4460210-024D-4B3B-A10A-04B669C34230}");
+    AZ_TYPE_INFO_SPECIALIZE(Multiplayer::RpcIndex, "{EBB1C475-FA03-4111-8C84-985377434B9B}");
+    AZ_TYPE_INFO_SPECIALIZE(Multiplayer::ClientInputId, "{35BF3504-CEC9-4406-A275-C633A17FBEFB}");
+    AZ_TYPE_INFO_SPECIALIZE(Multiplayer::HostFrameId, "{DF17F6F3-48C6-4B4A-BBD9-37DA03162864}");
+} // namespace AZ

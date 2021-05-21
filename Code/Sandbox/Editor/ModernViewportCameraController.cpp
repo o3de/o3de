@@ -25,7 +25,8 @@
 
 namespace SandboxEditor
 {
-    static void DrawPreviewAxis(AzFramework::DebugDisplayRequests& display, const AZ::Transform& transform, const float axisLength)
+    // debug
+    void DrawPreviewAxis(AzFramework::DebugDisplayRequests& display, const AZ::Transform& transform, const float axisLength)
     {
         display.SetColor(AZ::Colors::Red);
         display.DrawLine(transform.GetTranslation(), transform.GetTranslation() + transform.GetBasisX().GetNormalizedSafe() * axisLength);
@@ -87,45 +88,43 @@ namespace SandboxEditor
         }
 
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
+        ModernViewportCameraControllerRequestBus::Handler::BusConnect(viewportId);
     }
 
     ModernViewportCameraControllerInstance::~ModernViewportCameraControllerInstance()
     {
+        ModernViewportCameraControllerRequestBus::Handler::BusDisconnect();
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
+    }
+
+    // should the camera system respond to this particular event
+    static bool ShouldHandle(const AzFramework::ViewportControllerPriority priority, const bool exclusive)
+    {
+        // ModernViewportCameraControllerInstance receives events at all priorities, it should only respond
+        // to normal priority events if it is not in 'exclusive' mode and when in 'exclusive' mode it should
+        // only respond to the highest priority events
+        return !exclusive && priority == AzFramework::ViewportControllerPriority::Normal ||
+            exclusive && priority == AzFramework::ViewportControllerPriority::Highest;
     }
 
     bool ModernViewportCameraControllerInstance::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
-        AzFramework::WindowSize windowSize;
-        AzFramework::WindowRequestBus::EventResult(
-            windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
-
-        if (m_cameraMode == CameraMode::Control)
+        if (ShouldHandle(event.m_priority, m_cameraSystem.m_cameras.Exclusive()))
         {
-            if (AzFramework::InputDeviceKeyboard::IsKeyboardDevice(event.m_inputChannel.GetInputDevice().GetInputDeviceId()))
-            {
-                if (event.m_inputChannel.GetInputChannelId() == AzFramework::InputDeviceKeyboard::Key::AlphanumericR)
-                {
-                    m_transformEnd = m_camera.Transform();
-
-                    return true;
-                }
-                else if (event.m_inputChannel.GetInputChannelId() == AzFramework::InputDeviceKeyboard::Key::AlphanumericP)
-                {
-                    m_animationT = 0.0f;
-                    m_cameraMode = CameraMode::Animation;
-                    m_transformStart = m_camera.Transform();
-
-                    return true;
-                }
-            }
+            return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel));
         }
 
-        return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel, windowSize));
+        return false;
     }
 
     void ModernViewportCameraControllerInstance::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
     {
+        // only update for a single priority (normal is the default)
+        if (event.m_priority != AzFramework::ViewportControllerPriority::Normal)
+        {
+            return;
+        }
+
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
             m_updatingTransform = true;
@@ -174,7 +173,13 @@ namespace SandboxEditor
             debugDisplay.SetColor(1.0f, 1.0f, 1.0f, alpha);
             debugDisplay.DrawWireSphere(m_camera.m_lookAt, 0.5f);
         }
+    }
 
-        DrawPreviewAxis(debugDisplay, m_transformEnd, 2.0f);
+    void ModernViewportCameraControllerInstance::InterpolateToTransform(const AZ::Transform& worldFromLocal)
+    {
+        m_animationT = 0.0f;
+        m_cameraMode = CameraMode::Animation;
+        m_transformStart = m_camera.Transform();
+        m_transformEnd = worldFromLocal;
     }
 } // namespace SandboxEditor
