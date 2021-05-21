@@ -32,6 +32,7 @@ namespace AZ
             MaterialPropertiesLayout::Reflect(context);
             MaterialFunctor::Reflect(context);
             LuaMaterialFunctor::Reflect(context);
+            ReflectMaterialDynamicMetadata(context);
         }
 
         void MaterialSystem::GetAssetHandlers(AssetHandlerPtrList& assetHandlers)

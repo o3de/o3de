@@ -426,7 +426,7 @@ namespace O3DE::ProjectManager
             {
                 // required
                 gemInfo.m_name        = Py_To_String(data["Name"]); 
-                gemInfo.m_uuid        = AZ::Uuid(Py_To_String(data["Uuid"])); 
+                gemInfo.m_uuid        = AZ::Uuid(Py_To_String(data["Uuid"]));
 
                 // optional
                 gemInfo.m_displayName = Py_To_String_Optional(data, "DisplayName", gemInfo.m_name); 
@@ -437,7 +437,8 @@ namespace O3DE::ProjectManager
                 {
                     for (auto dependency : data["Dependencies"])
                     {
-                        gemInfo.m_dependingGemUuids.push_back(Py_To_String(dependency["Uuid"]));
+                        const AZ::Uuid uuid = Py_To_String(dependency["Uuid"]);
+                        gemInfo.m_dependingGemUuids.push_back(uuid.ToString<AZStd::string>().c_str());
                     }
                 }
                 if (data.contains("Tags"))
@@ -506,6 +507,42 @@ namespace O3DE::ProjectManager
         {
             return AZ::Success(AZStd::move(projects)); 
         }
+    }
+
+    bool PythonBindings::AddGemToProject(const QString& gemPath, const QString& projectPath)
+    {
+        bool result = ExecuteWithLock([&] {
+            pybind11::str pyGemPath     = gemPath.toStdString();
+            pybind11::str pyProjectPath = projectPath.toStdString();
+
+            m_registration.attr("add_gem_to_project")(
+                pybind11::none(), // gem_name
+                pyGemPath,
+                pybind11::none(), // gem_target
+                pybind11::none(), // project_name
+                pyProjectPath
+                );
+        });
+
+        return result;
+    }
+
+    bool PythonBindings::RemoveGemFromProject(const QString& gemPath, const QString& projectPath)
+    {
+        bool result = ExecuteWithLock([&] {
+            pybind11::str pyGemPath     = gemPath.toStdString();
+            pybind11::str pyProjectPath = projectPath.toStdString();
+
+            m_registration.attr("remove_gem_to_project")(
+                pybind11::none(), // gem_name
+                pyGemPath,
+                pybind11::none(), // gem_target
+                pybind11::none(), // project_name
+                pyProjectPath
+                );
+        });
+
+        return result;
     }
 
     bool PythonBindings::UpdateProject([[maybe_unused]] const ProjectInfo& projectInfo)  

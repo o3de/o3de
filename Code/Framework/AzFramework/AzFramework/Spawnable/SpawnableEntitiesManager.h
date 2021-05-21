@@ -29,6 +29,8 @@ namespace AZ
 
 namespace AzFramework
 {
+    using EntityIdMap = AZStd::unordered_map<AZ::EntityId, AZ::EntityId>;
+
     class SpawnableEntitiesManager
         : public SpawnableEntitiesInterface::Registrar
     {
@@ -142,7 +144,11 @@ namespace AzFramework
         using Requests = AZStd::variant<SpawnAllEntitiesCommand, SpawnEntitiesCommand, DespawnAllEntitiesCommand, ReloadSpawnableCommand,
             ListEntitiesCommand, ClaimEntitiesCommand, BarrierCommand, DestroyTicketCommand>;
 
-        AZ::Entity* SpawnSingleEntity(const AZ::Entity& entityTemplate, AZ::SerializeContext& serializeContext);
+        AZ::Entity* SpawnSingleEntity(const AZ::Entity& entityTemplate,
+            AZ::SerializeContext& serializeContext);
+
+        AZ::Entity* CloneSingleEntity(const AZ::Entity& entityTemplate,
+            EntityIdMap& templateToCloneEntityIdMap, AZ::SerializeContext& serializeContext);
 
         bool ProcessRequest(SpawnAllEntitiesCommand& request, AZ::SerializeContext& serializeContext);
         bool ProcessRequest(SpawnEntitiesCommand& request, AZ::SerializeContext& serializeContext);

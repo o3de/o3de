@@ -154,10 +154,16 @@ namespace Multiplayer
 
     void NetBindComponent::SetOwningConnectionId(AzNetworking::ConnectionId connectionId)
     {
+        m_owningConnectionId = connectionId;
         for (MultiplayerComponent* multiplayerComponent : m_multiplayerInputComponentVector)
         {
             multiplayerComponent->SetOwningConnectionId(connectionId);
         }
+    }
+
+    AzNetworking::ConnectionId NetBindComponent::GetOwningConnectionId() const
+    {
+        return m_owningConnectionId;
     }
 
     void NetBindComponent::SetAllowAutonomy(bool value)
@@ -290,6 +296,11 @@ namespace Multiplayer
         m_localNotificationRecord.Clear();
     }
 
+    void NetBindComponent::NotifySyncRewindState()
+    {
+        m_syncRewindEvent.Signal();
+    }
+
     void NetBindComponent::NotifyMigrationStart(ClientInputId migratedInputId)
     {
         m_entityMigrationStartEvent.Signal(migratedInputId);
@@ -313,6 +324,11 @@ namespace Multiplayer
     void NetBindComponent::AddEntityDirtiedEventHandler(EntityDirtiedEvent::Handler& eventHandler)
     {
         eventHandler.Connect(m_dirtiedEvent);
+    }
+
+    void NetBindComponent::AddEntitySyncRewindEventHandler(EntitySyncRewindEvent::Handler& eventHandler)
+    {
+        eventHandler.Connect(m_syncRewindEvent);
     }
 
     void NetBindComponent::AddEntityMigrationStartEventHandler(EntityMigrationStartEvent::Handler& eventHandler)
