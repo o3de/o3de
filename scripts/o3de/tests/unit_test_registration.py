@@ -16,7 +16,7 @@ import pytest
 import pathlib
 from unittest.mock import patch
 
-from .. import registration
+from o3de import register
 
 string_manifest_data = '{}'
 
@@ -38,7 +38,7 @@ def test_register_engine_path(engine_path, engine_name, force, expected_result):
     subparser = parser.add_subparsers(help='sub-command help')
 
     # Register the registration script subparsers with the current argument parser
-    registration.add_args(parser, subparser)
+    register.add_args(parser, subparser)
     arg_list = ['register', '--engine-path', str(engine_path)]
     if force:
         arg_list += ['--force']
@@ -56,11 +56,11 @@ def test_register_engine_path(engine_path, engine_name, force, expected_result):
         string_manifest_data = json.dumps(manifest_json)
 
     engine_json_data = {'engine_name': engine_name}
-    with patch('o3de.registration.load_o3de_manifest', side_effect=load_manifest_from_string) as load_manifest_mock, \
-         patch('o3de.registration.save_o3de_manifest', side_effect=save_manifest_to_string) as save_manifest_mock, \
-         patch('o3de.registration.get_engine_data', return_value=engine_json_data) as engine_paths_mock, \
-         patch('o3de.registration.valid_o3de_engine_json', return_value=True) as valid_engine_mock, \
+    with patch('o3de.manifest.load_o3de_manifest', side_effect=load_manifest_from_string) as load_manifest_mock, \
+         patch('o3de.manifest.save_o3de_manifest', side_effect=save_manifest_to_string) as save_manifest_mock, \
+         patch('o3de.manifest.get_engine_json_data', return_value=engine_json_data) as engine_paths_mock, \
+         patch('o3de.validation.valid_o3de_engine_json', return_value=True) as valid_engine_mock, \
          patch('pathlib.Path.is_dir', return_value=True) as pathlib_is_dir_mock:
-        result = registration._run_register(args)
+        result = register._run_register(args)
         assert result == expected_result
 

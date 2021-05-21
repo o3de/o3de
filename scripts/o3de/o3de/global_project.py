@@ -16,7 +16,7 @@ import sys
 import re
 import pathlib
 import json
-from o3de import registration
+from o3de import manifest
 
 logger = logging.getLogger()
 logging.basicConfig()
@@ -39,7 +39,7 @@ def set_global_project(project_name: str or None,
         return 1
 
     if project_name and not project_path:
-        project_path = registration.get_registered(project_name=project_name)
+        project_path = manifest.get_registered(project_name=project_name)
 
     if not project_path:
         logger.error(f'Project Path {project_path} has not been registered.')
@@ -47,7 +47,7 @@ def set_global_project(project_name: str or None,
 
     project_path = pathlib.Path(project_path).resolve()
 
-    bootstrap_setreg_file = registration.get_o3de_registry_folder() / 'bootstrap.setreg'
+    bootstrap_setreg_file = manifest.get_o3de_registry_folder() / 'bootstrap.setreg'
     if bootstrap_setreg_file.is_file():
         with bootstrap_setreg_file.open('r') as f:
             try:
@@ -80,7 +80,7 @@ def get_global_project() -> pathlib.Path or None:
     get what the current project set is
     :return: project_path or None on failure
     """
-    bootstrap_setreg_file = registration.get_o3de_registry_folder() / 'bootstrap.setreg'
+    bootstrap_setreg_file = manifest.get_o3de_registry_folder() / 'bootstrap.setreg'
     if not bootstrap_setreg_file.is_file():
         logger.error(f'Bootstrap.setreg file {bootstrap_setreg_file} does not exist.')
         return None
@@ -101,7 +101,7 @@ def get_global_project() -> pathlib.Path or None:
 
 def _run_get_global_project(args: argparse) -> int:
     if args.override_home_folder:
-        registration.override_home_folder = args.override_home_folder
+        manifest.override_home_folder = args.override_home_folder
 
     project_path = get_global_project()
     if project_path:
@@ -112,7 +112,7 @@ def _run_get_global_project(args: argparse) -> int:
 
 def _run_set_global_project(args: argparse) -> int:
     if args.override_home_folder:
-        registration.override_home_folder = args.override_home_folder
+        manifest.override_home_folder = args.override_home_folder
 
     return set_global_project(args.project_name,
                                args.project_path)

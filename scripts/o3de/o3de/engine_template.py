@@ -21,7 +21,7 @@ import uuid
 import re
 
 
-from o3de import utils, registration
+from o3de import manifest, validation, utils
 
 logger = logging.getLogger()
 logging.basicConfig()
@@ -321,7 +321,7 @@ def _instantiate_template(template_json_data: dict,
             platform_json = f'{template_restricted_platform_path_rel}/{template_file_name}'.replace('//', '/')
 
             if os.path.isfile(platform_json):
-                if not registration.valid_o3de_template_json(platform_json):
+                if not validation.valid_o3de_template_json(platform_json):
                     logger.error(f'Template json {platform_json} is invalid.')
                     return 1
 
@@ -403,7 +403,7 @@ def create_template(source_path: str,
         template_path = source_name
     template_path = template_path.replace('\\', '/')
     if not os.path.isabs(template_path):
-        default_templates_folder = registration.get_registered(default_folder='templates')
+        default_templates_folder = manifest.get_registered(default_folder='templates')
         template_path = f'{default_templates_folder}/{template_path}'
         logger.info(f'Template path not a full path. Using default templates folder {template_path}')
     if os.path.isdir(template_path):
@@ -419,14 +419,14 @@ def create_template(source_path: str,
         return 1
 
     if source_restricted_name and not source_restricted_path:
-        source_restricted_path = registration.get_registered(restricted_name=source_restricted_name)
+        source_restricted_path = manifest.get_registered(restricted_name=source_restricted_name)
 
     # source_restricted_path
     if source_restricted_path:
         source_restricted_path = source_restricted_path.replace('\\', '/')
         if not os.path.isabs(source_restricted_path):
-            engine_json = f'{registration.get_this_engine_path()}/engine.json'
-            if not registration.valid_o3de_engine_json(engine_json):
+            engine_json = f'{manifest.get_this_engine_path()}/engine.json'
+            if not validation.valid_o3de_engine_json(engine_json):
                 logger.error(f"Engine json {engine_json} is not valid.")
                 return 1
             with open(engine_json) as s:
@@ -436,11 +436,11 @@ def create_template(source_path: str,
                     logger.error(f"Failed to read engine json {engine_json}: {str(e)}")
                     return 1
                 try:
-                    engine_restricted = engine_json_data['restricted']
+                    engine_restricted = engine_json_data['restricted_name']
                 except Exception as e:
                     logger.error(f"Engine json {engine_json} restricted not found.")
                     return 1
-            engine_restricted_folder = registration.get_registered(restricted_name=engine_restricted)
+            engine_restricted_folder = manifest.get_registered(restricted_name=engine_restricted)
             new_source_restricted_path = f'{engine_restricted_folder}/{source_restricted_path}'
             logger.info(f'Source restricted path {source_restricted_path} not a full path. We must assume this engines'
                         f' restricted folder {new_source_restricted_path}')
@@ -449,7 +449,7 @@ def create_template(source_path: str,
             return 1
 
     if template_restricted_name and not template_restricted_path:
-        template_restricted_path = registration.get_registered(restricted_name=template_restricted_name)
+        template_restricted_path = manifest.get_registered(restricted_name=template_restricted_name)
 
     if not template_restricted_name:
         template_restricted_name = template_name
@@ -458,7 +458,7 @@ def create_template(source_path: str,
     if template_restricted_path:
         template_restricted_path = template_restricted_path.replace('\\', '/')
         if not os.path.isabs(template_restricted_path):
-            default_templates_restricted_folder = registration.get_registered(restricted_name='templates')
+            default_templates_restricted_folder = manifest.get_registered(restricted_name='templates')
             new_template_restricted_path = f'{default_templates_restricted_folder}/{template_restricted_path}'
             logger.info(f'Template restricted path {template_restricted_path} not a full path. We must assume the'
                         f' default templates restricted folder {new_template_restricted_path}')
@@ -466,10 +466,10 @@ def create_template(source_path: str,
 
         if os.path.isdir(template_restricted_path):
             # see if this is already a restricted path, if it is get the "restricted_name" from the restricted json
-            # so we can set "restricted" to it for this template
+            # so we can set "restricted_name" to it for this template
             restricted_json = f'{template_restricted_path}/restricted.json'
             if os.path.isfile(restricted_json):
-                if not registration.valid_o3de_restricted_json(restricted_json):
+                if not validation.valid_o3de_restricted_json(restricted_json):
                     logger.error(f'{restricted_json} is not valid.')
                     return 1
                 with open(restricted_json, 'r') as s:
@@ -928,7 +928,7 @@ def create_template(source_path: str,
     json_data.update({'user_tags': [f"{template_name}"]})
     json_data.update({'icon_path': "preview.png"})
     if template_restricted_path:
-        json_data.update({'restricted': template_restricted_name})
+        json_data.update({'restricted_name': template_restricted_name})
         if template_restricted_platform_relative_path != '':
             json_data.update({'template_restricted_platform_relative_path': template_restricted_platform_relative_path})
     json_data.update({'copyFiles': copy_files})
@@ -1048,7 +1048,7 @@ def create_from_template(destination_path: str,
         return 1
 
     if template_name:
-        template_path = registration.get_registered(template_name=template_name)
+        template_path = manifest.get_registered(template_name=template_name)
 
     if not os.path.isdir(template_path):
         logger.error(f'Could not find the template {template_name}=>{template_path}')
@@ -1059,7 +1059,7 @@ def create_from_template(destination_path: str,
 
     # the template.json should be in the template_path, make sure it's there a nd valid
     template_json = f'{template_path}/template.json'
-    if not registration.valid_o3de_template_json(template_json):
+    if not validation.valid_o3de_template_json(template_json):
         logger.error(f'Template json {template_path} is invalid.')
         return 1
 
@@ -1082,57 +1082,57 @@ def create_from_template(destination_path: str,
     # see if the template itself specifies a restricted name
     if not template_restricted_name and not template_restricted_path:
         try:
-            template_json_restricted_name = template_json_data['restricted']
+            template_json_restricted_name = template_json_data['restricted_name']
         except Exception as e:
-            # the template json doesn't have a 'restricted' element warn and use it
-            logger.info(f'The template does not specify a "restricted".')
+            # the template json doesn't have a 'restricted_name' element warn and use it
+            logger.info(f'The template does not specify a "restricted_name".')
         else:
             template_restricted_name = template_json_restricted_name
 
     # if no restricted name or path we continue on as if there is no template restricted files.
     if template_restricted_name or template_restricted_path:
         # If the user specified a --template-restricted-name we need to check that against the templates
-        # 'restricted' if it has one and see if they match. If they match then we don't have a problem.
+        # 'restricted_name' if it has one and see if they match. If they match then we don't have a problem.
         # If they don't then we error out. If supplied but not present in the template we warn and use it.
         # If not supplied we set what's in the template. If not supplied and not in the template we continue
         # on as if there is no template restricted files.
         if template_restricted_name:
             # The user specified a --template-restricted-name
             try:
-                template_json_restricted_name = template_json_data['restricted']
+                template_json_restricted_name = template_json_data['restricted_name']
             except Exception as e:
-                # the template json doesn't have a 'restricted' element warn and use it
-                logger.info(f'The template does not specify a "restricted".'
+                # the template json doesn't have a 'restricted_name' element warn and use it
+                logger.info(f'The template does not specify a "restricted_name".'
                             f' Using supplied {template_restricted_name}')
             else:
                 if template_json_restricted_name != template_restricted_name:
                     logger.error(
                         f'The supplied --template-restricted-name {template_restricted_name} does not match the'
-                        f' templates "restricted". Either the the --template-restricted-name is incorrect or the'
-                        f' templates "restricted" is wrong. Note that since this template specifies "restricted" as'
+                        f' templates "restricted_name". Either the the --template-restricted-name is incorrect or the'
+                        f' templates "restricted_name" is wrong. Note that since this template specifies "restricted_name" as'
                         f' {template_json_restricted_name}, --template-restricted-name need not be supplied.')
 
-            template_restricted_path = registration.get_registered(restricted_name=template_restricted_name)
+            template_restricted_path = manifest.get_registered(restricted_name=template_restricted_name)
         else:
             # The user has supplied the --template-restricted-path, see if that matches the template specifies.
             # If it does then we do not have a problem. If it doesn't match then error out. If not specified
             # in the template then warn and use the --template-restricted-path
             template_restricted_path = template_restricted_path.replace('\\', '/')
             try:
-                template_json_restricted_name = template_json_data['restricted']
+                template_json_restricted_name = template_json_data['restricted_name']
             except Exception as e:
-                # the template json doesn't have a 'restricted' element warn and use it
-                logger.info(f'The template does not specify a "restricted".'
+                # the template json doesn't have a 'restricted_name' element warn and use it
+                logger.info(f'The template does not specify a "restricted_name".'
                             f' Using supplied {template_restricted_path}')
             else:
-                template_json_restricted_path = registration.get_registered(
+                template_json_restricted_path = manifest.get_registered(
                     restricted_name=template_json_restricted_name)
                 if template_json_restricted_path != template_restricted_path:
                     logger.error(
                         f'The supplied --template-restricted-path {template_restricted_path} does not match the'
-                        f' templates "restricted" {template_restricted_name} => {template_json_restricted_path}.'
+                        f' templates "restricted_name" {template_restricted_name} => {template_json_restricted_path}.'
                         f' Either the the supplied --template-restricted-path is incorrect or the templates'
-                        f' "restricted" is wrong. Note that since this template specifies "restricted" as'
+                        f' "restricted_name" is wrong. Note that since this template specifies "restricted_name" as'
                         f' {template_json_restricted_name} --template-restricted-path need not be supplied'
                         f' and {template_json_restricted_path} will be used.')
                     return 1
@@ -1203,19 +1203,19 @@ def create_from_template(destination_path: str,
 
     # destination restricted name
     if destination_restricted_name:
-        destination_restricted_path = registration.get_registered(restricted_name=destination_restricted_name)
+        destination_restricted_path = manifest.get_registered(restricted_name=destination_restricted_name)
 
     # destination restricted path
     elif destination_restricted_path:
         destination_restricted_path = destination_restricted_path.replace('\\', '/')
         if os.path.isabs(destination_restricted_path):
-            restricted_default_path = registration.get_registered(default='restricted')
+            restricted_default_path = manifest.get_registered(default='restricted')
             new_destination_restricted_path = f'{restricted_default_path}/{destination_restricted_path}'
             logger.info(f'{destination_restricted_path} is not a full path, making it relative'
                         f' to default restricted path = {new_destination_restricted_path}')
             destination_restricted_path = new_destination_restricted_path
     elif template_restricted_path:
-        restricted_default_path = registration.get_registered(default='restricted')
+        restricted_default_path = manifest.get_registered(default='restricted')
         logger.info(f'--destination-restricted-path is not specified, using default restricted path / destination name'
                     f' = {restricted_default_path}')
         destination_restricted_path = restricted_default_path
@@ -1337,7 +1337,7 @@ def create_project(project_path: str,
         template_name = 'DefaultProject'
 
     if template_name and not template_path:
-        template_path = registration.get_registered(template_name=template_name)
+        template_path = manifest.get_registered(template_name=template_name)
 
     if not os.path.isdir(template_path):
         logger.error(f'Could not find the template {template_name}=>{template_path}')
@@ -1348,7 +1348,7 @@ def create_project(project_path: str,
 
     # the template.json should be in the template_path, make sure it's there and valid
     template_json = f'{template_path}/template.json'
-    if not registration.valid_o3de_template_json(template_json):
+    if not validation.valid_o3de_template_json(template_json):
         logger.error(f'Template json {template_path} is not valid.')
         return 1
 
@@ -1371,57 +1371,57 @@ def create_project(project_path: str,
     # see if the template itself specifies a restricted name
     if not template_restricted_name and not template_restricted_path:
         try:
-            template_json_restricted_name = template_json_data['restricted']
+            template_json_restricted_name = template_json_data['restricted_name']
         except Exception as e:
-            # the template json doesn't have a 'restricted' element warn and use it
-            logger.info(f'The template does not specify a "restricted".')
+            # the template json doesn't have a 'restricted_name' element warn and use it
+            logger.info(f'The template does not specify a "restricted_name".')
         else:
             template_restricted_name = template_json_restricted_name
 
     # if no restricted name or path we continue on as if there is no template restricted files.
     if template_restricted_name or template_restricted_path:
         # If the user specified a --template-restricted-name we need to check that against the templates
-        # 'restricted' if it has one and see if they match. If they match then we don't have a problem.
+        # 'restricted_name' if it has one and see if they match. If they match then we don't have a problem.
         # If they don't then we error out. If supplied but not present in the template we warn and use it.
         # If not supplied we set what's in the template. If not supplied and not in the template we continue
         # on as if there is no template restricted files.
         if template_restricted_name and not template_restricted_path:
             # The user specified a --template-restricted-name
             try:
-                template_json_restricted_name = template_json_data['restricted']
+                template_json_restricted_name = template_json_data['restricted_name']
             except Exception as e:
-                # the template json doesn't have a 'restricted' element warn and use it
-                logger.info(f'The template does not specify a "restricted".'
+                # the template json doesn't have a 'restricted_name' element warn and use it
+                logger.info(f'The template does not specify a "restricted_name".'
                             f' Using supplied {template_restricted_name}')
             else:
                 if template_json_restricted_name != template_restricted_name:
                     logger.error(
                         f'The supplied --template-restricted-name {template_restricted_name} does not match the'
-                        f' templates "restricted". Either the the --template-restricted-name is incorrect or the'
-                        f' templates "restricted" is wrong. Note that since this template specifies "restricted" as'
+                        f' templates "restricted_name". Either the the --template-restricted-name is incorrect or the'
+                        f' templates "restricted_name" is wrong. Note that since this template specifies "restricted_name" as'
                         f' {template_json_restricted_name}, --template-restricted-name need not be supplied.')
 
-            template_restricted_path = registration.get_registered(restricted_name=template_restricted_name)
+            template_restricted_path = manifest.get_registered(restricted_name=template_restricted_name)
         else:
             # The user has supplied the --template-restricted-path, see if that matches the template specifies.
             # If it does then we do not have a problem. If it doesn't match then error out. If not specified
             # in the template then warn and use the --template-restricted-path
             template_restricted_path = template_restricted_path.replace('\\', '/')
             try:
-                template_json_restricted_name = template_json_data['restricted']
+                template_json_restricted_name = template_json_data['restricted_name']
             except Exception as e:
-                # the template json doesn't have a 'restricted' element warn and use it
-                logger.info(f'The template does not specify a "restricted".'
+                # the template json doesn't have a 'restricted_name' element warn and use it
+                logger.info(f'The template does not specify a "restricted_name".'
                             f' Using supplied {template_restricted_path}')
             else:
-                template_json_restricted_path = registration.get_registered(
+                template_json_restricted_path = manifest.get_registered(
                     restricted_name=template_json_restricted_name)
                 if template_json_restricted_path != template_restricted_path:
                     logger.error(
                         f'The supplied --template-restricted-path {template_restricted_path} does not match the'
-                        f' templates "restricted" {template_restricted_name} => {template_json_restricted_path}.'
+                        f' templates "restricted_name" {template_restricted_name} => {template_json_restricted_path}.'
                         f' Either the the supplied --template-restricted-path is incorrect or the templates'
-                        f' "restricted" is wrong. Note that since this template specifies "restricted" as'
+                        f' "restricted_name" is wrong. Note that since this template specifies "restricted_name" as'
                         f' {template_json_restricted_name} --template-restricted-path need not be supplied'
                         f' and {template_json_restricted_path} will be used.')
                     return 1
@@ -1475,7 +1475,7 @@ def create_project(project_path: str,
         return 1
     project_path = project_path.replace('\\', '/')
     if not os.path.isabs(project_path):
-        default_projects_folder = registration.get_registered(default_folder='projects')
+        default_projects_folder = manifest.get_registered(default_folder='projects')
         new_project_path = f'{default_projects_folder}/{project_path}'
         logger.info(f'Project Path {project_path} is not a full path, we must assume its relative'
                     f' to default projects path = {new_project_path}')
@@ -1496,19 +1496,19 @@ def create_project(project_path: str,
 
     # project restricted name
     if project_restricted_name and not project_restricted_path:
-        project_restricted_path = registration.get_registered(restricted_name=project_restricted_name)
+        project_restricted_path = manifest.get_registered(restricted_name=project_restricted_name)
 
     # project restricted path
     elif project_restricted_path:
         project_restricted_path = project_restricted_path.replace('\\', '/')
         if not os.path.isabs(project_restricted_path):
-            default_projects_restricted_folder = registration.get_registered(restricted_name='projects')
+            default_projects_restricted_folder = manifest.get_registered(restricted_name='projects')
             new_project_restricted_path = f'{default_projects_restricted_folder}/{project_restricted_path}'
             logger.info(f'Project restricted path {project_restricted_path} is not a full path, we must assume its'
                         f' relative to default projects restricted path = {new_project_restricted_path}')
             project_restricted_path = new_project_restricted_path
     elif template_restricted_path:
-        project_restricted_default_path = registration.get_registered(restricted_name='projects')
+        project_restricted_default_path = manifest.get_registered(restricted_name='projects')
         logger.info(f'--project-restricted-path is not specified, using default project restricted path / project name'
                     f' = {project_restricted_default_path}')
         project_restricted_path = project_restricted_default_path
@@ -1585,7 +1585,7 @@ def create_project(project_path: str,
             # read the restricted_name from the projects restricted.json
             restricted_json = f"{project_restricted_path}/restricted.json".replace('//', '/')
             if os.path.isfile(restricted_json):
-                if not registration.valid_o3de_restricted_json(restricted_json):
+                if not validation.valid_o3de_restricted_json(restricted_json):
                     logger.error(f'Restricted json {restricted_json} is not valid.')
                     return 1
             else:
@@ -1607,9 +1607,9 @@ def create_project(project_path: str,
                 logger.error(f'Failed to read "restricted_name" from restricted json {restricted_json}.')
                 return 1
 
-            # set the "restricted": "restricted_name" element of the project.json
+            # set the "restricted_name": "restricted_name" element of the project.json
             project_json = f"{project_path}/project.json".replace('//', '/')
-            if not registration.valid_o3de_project_json(project_json):
+            if not validation.valid_o3de_project_json(project_json):
                 logger.error(f'Project json {project_json} is not valid.')
                 return 1
 
@@ -1620,7 +1620,7 @@ def create_project(project_path: str,
                     logger.error(f'Failed to load project json {project_json}.')
                     return 1
 
-            project_json_data.update({"restricted": restricted_name})
+            project_json_data.update({"restricted_name": restricted_name})
             os.unlink(project_json)
             with open(project_json, 'w') as s:
                 try:
@@ -1653,7 +1653,7 @@ def create_project(project_path: str,
                             d.write('# {END_LICENSE}\n')
 
     # copy the o3de_manifest.cmake into the project root
-    engine_path = registration.get_this_engine_path()
+    engine_path = manifest.get_this_engine_path()
     o3de_manifest_cmake = f'{engine_path}/cmake/o3de_manifest.cmake'
     shutil.copy(o3de_manifest_cmake, project_path)
 
@@ -1718,7 +1718,7 @@ def create_gem(gem_path: str,
         template_name = 'DefaultGem'
 
     if template_name and not template_path:
-        template_path = registration.get_registered(template_name=template_name)
+        template_path = manifest.get_registered(template_name=template_name)
 
     if not os.path.isdir(template_path):
         logger.error(f'Could not find the template {template_name}=>{template_path}')
@@ -1729,7 +1729,7 @@ def create_gem(gem_path: str,
 
     # the template.json should be in the template_path, make sure it's there and valid
     template_json = f'{template_path}/template.json'
-    if not registration.valid_o3de_template_json(template_json):
+    if not validation.valid_o3de_template_json(template_json):
         logger.error(f'Template json {template_path} is not valid.')
         return 1
 
@@ -1752,56 +1752,56 @@ def create_gem(gem_path: str,
     # see if the template itself specifies a restricted name
     if not template_restricted_name and not template_restricted_path:
         try:
-            template_json_restricted_name = template_json_data['restricted']
+            template_json_restricted_name = template_json_data['restricted_name']
         except Exception as e:
-            # the template json doesn't have a 'restricted' element warn and use it
-            logger.info(f'The template does not specify a "restricted".')
+            # the template json doesn't have a 'restricted_name' element warn and use it
+            logger.info(f'The template does not specify a "restricted_name".')
         else:
             template_restricted_name = template_json_restricted_name
 
     # if no restricted name or path we continue on as if there is no template restricted files.
     if template_restricted_name or template_restricted_path:
-        # if the user specified a --template-restricted-name we need to check that against the templates 'restricted'
+        # if the user specified a --template-restricted-name we need to check that against the templates 'restricted_name'
         # if it has one and see if they match. If they match then we don't have a problem. If they don't then we error
         # out. If supplied but not present in the template we warn and use it. If not supplied we set what's in the
         # template. If not supplied and not in the template we continue on as if there is no template restricted files.
         if template_restricted_name and not template_restricted_path:
             # The user specified a --template-restricted-name
             try:
-                template_json_restricted_name = template_json_data['restricted']
+                template_json_restricted_name = template_json_data['restricted_name']
             except Exception as e:
-                # the template json doesn't have a 'restricted' element warn and use it
-                logger.info(f'The template does not specify a "restricted".'
+                # the template json doesn't have a 'restricted_name' element warn and use it
+                logger.info(f'The template does not specify a "restricted_name".'
                             f' Using supplied {template_restricted_name}')
             else:
                 if template_json_restricted_name != template_restricted_name:
                     logger.error(
                         f'The supplied --template-restricted-name {template_restricted_name} does not match the'
-                        f' templates "restricted". Either the the --template-restricted-name is incorrect or the'
-                        f' templates "restricted" is wrong. Note that since this template specifies "restricted" as'
+                        f' templates "restricted_name". Either the the --template-restricted-name is incorrect or the'
+                        f' templates "restricted_name" is wrong. Note that since this template specifies "restricted_name" as'
                         f' {template_json_restricted_name}, --template-restricted-name need not be supplied.')
 
-            template_restricted_path = registration.get_registered(restricted_name=template_restricted_name)
+            template_restricted_path = manifest.get_registered(restricted_name=template_restricted_name)
         else:
             # The user has supplied the --template-restricted-path, see if that matches the template specifies.
             # If it does then we do not have a problem. If it doesn't match then error out. If not specified
             # in the template then warn and use the --template-restricted-path
             template_restricted_path = template_restricted_path.replace('\\', '/')
             try:
-                template_json_restricted_name = template_json_data['restricted']
+                template_json_restricted_name = template_json_data['restricted_name']
             except Exception as e:
-                # the template json doesn't have a 'restricted' element warn and use it
-                logger.info(f'The template does not specify a "restricted".'
+                # the template json doesn't have a 'restricted_name' element warn and use it
+                logger.info(f'The template does not specify a "restricted_name".'
                             f' Using supplied {template_restricted_path}')
             else:
-                template_json_restricted_path = registration.get_registered(
+                template_json_restricted_path = manifest.get_registered(
                     restricted_name=template_json_restricted_name)
                 if template_json_restricted_path != template_restricted_path:
                     logger.error(
                         f'The supplied --template-restricted-path {template_restricted_path} does not match the'
-                        f' templates "restricted" {template_restricted_name} => {template_json_restricted_path}.'
+                        f' templates "restricted_name" {template_restricted_name} => {template_json_restricted_path}.'
                         f' Either the the supplied --template-restricted-path is incorrect or the templates'
-                        f' "restricted" is wrong. Note that since this template specifies "restricted" as'
+                        f' "restricted_name" is wrong. Note that since this template specifies "restricted_name" as'
                         f' {template_json_restricted_name} --template-restricted-path need not be supplied'
                         f' and {template_json_restricted_path} will be used.')
                     return 1
@@ -1854,7 +1854,7 @@ def create_gem(gem_path: str,
         return 1
     gem_path = gem_path.replace('\\', '/')
     if not os.path.isabs(gem_path):
-        default_gems_folder = registration.get_registered(default_folder='gems')
+        default_gems_folder = manifest.get_registered(default_folder='gems')
         new_gem_path = f'{default_gems_folder}/{gem_path}'
         logger.info(f'Gem Path {gem_path} is not a full path, we must assume its relative'
                     f' to default gems path = {new_gem_path}')
@@ -1875,19 +1875,19 @@ def create_gem(gem_path: str,
 
     # gem restricted name
     if gem_restricted_name and not gem_restricted_path:
-        gem_restricted_path = registration.get_registered(restricted_name=gem_restricted_name)
+        gem_restricted_path = manifest.get_registered(restricted_name=gem_restricted_name)
 
     # gem restricted path
     elif gem_restricted_path:
         gem_restricted_path = gem_restricted_path.replace('\\', '/')
         if not os.path.isabs(gem_restricted_path):
-            default_gems_restricted_folder = registration.get_registered(restricted_name='gems')
+            default_gems_restricted_folder = manifest.get_registered(restricted_name='gems')
             new_gem_restricted_path = f'{default_gems_restricted_folder}/{gem_restricted_path}'
             logger.info(f'Gem restricted path {gem_restricted_path} is not a full path, we must assume its'
                         f' relative to default gems restricted path = {new_gem_restricted_path}')
             gem_restricted_path = new_gem_restricted_path
     elif template_restricted_path:
-        gem_restricted_default_path = registration.get_registered(restricted_name='gems')
+        gem_restricted_default_path = manifest.get_registered(restricted_name='gems')
         logger.info(f'--gem-restricted-path is not specified, using default gem restricted path / gem name'
                     f' = {gem_restricted_default_path}')
         gem_restricted_path = gem_restricted_default_path
@@ -1964,7 +1964,7 @@ def create_gem(gem_path: str,
             # read the restricted_name from the gems restricted.json
             restricted_json = f"{gem_restricted_path}/restricted.json".replace('//', '/')
             if os.path.isfile(restricted_json):
-                if not registration.valid_o3de_restricted_json(restricted_json):
+                if not validation.valid_o3de_restricted_json(restricted_json):
                     logger.error(f'Restricted json {restricted_json} is not valid.')
                     return 1
             else:
@@ -1986,9 +1986,9 @@ def create_gem(gem_path: str,
                     logger.error(f'Failed to read "restricted_name" from restricted json {restricted_json}.')
                     return 1
 
-                # set the "restricted": "restricted_name" element of the gem.json
+                # set the "restricted_name": "restricted_name" element of the gem.json
                 gem_json = f"{gem_path}/gem.json".replace('//', '/')
-                if not registration.valid_o3de_gem_json(gem_json):
+                if not validation.valid_o3de_gem_json(gem_json):
                     logger.error(f'Gem json {gem_json} is not valid.')
                     return 1
 
@@ -1999,7 +1999,7 @@ def create_gem(gem_path: str,
                         logger.error(f'Failed to load gem json {gem_json}.')
                         return 1
 
-                gem_json_data.update({"restricted": restricted_name})
+                gem_json_data.update({"restricted_name": restricted_name})
                 os.unlink(gem_json)
                 with open(gem_json, 'w') as s:
                     try:
@@ -2116,7 +2116,7 @@ def add_args(parser, subparsers) -> None:
     create_template_subparser.add_argument('-tp', '--template-path', type=str, required=False,
                                            help='The path to the template to create, can be absolute or relative'
                                                 ' to default templates path')
-    group = create_template_subparser.add_mutually_exclusive_group(required=True)
+    group = create_template_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-srp', '--source-restricted-path', type=str, required=False,
                        default=None,
                        help='The path to the source restricted folder.')
@@ -2125,7 +2125,7 @@ def add_args(parser, subparsers) -> None:
                        help='The name of the source restricted folder. If supplied this will resolve'
                             ' the --source-restricted-path.')
 
-    group = create_template_subparser.add_mutually_exclusive_group(required=True)
+    group = create_template_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-trp', '--template-restricted-path', type=str, required=False,
                        default=None,
                        help='The path to the templates restricted folder.')

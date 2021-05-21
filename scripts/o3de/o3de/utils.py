@@ -45,3 +45,28 @@ def validate_uuid4(uuid_string: str) -> bool:
     except ValueError:
         return False
     return str(val) == uuid_string
+
+def backup_file(file_name: str or pathlib.Path) -> None:
+    index = 0
+    renamed = False
+    while not renamed:
+        backup_file_name = pathlib.Path(str(file_name) + '.bak' + str(index)).resolve()
+        index += 1
+        if not backup_file_name.is_file():
+            file_name = pathlib.Path(file_name).resolve()
+            file_name.rename(backup_file_name)
+            if backup_file_name.is_file():
+                renamed = True
+
+
+def backup_folder(folder: str or pathlib.Path) -> None:
+    index = 0
+    renamed = False
+    while not renamed:
+        backup_folder_name = pathlib.Path(str(folder) + '.bak' + str(index)).resolve()
+        index += 1
+        if not backup_folder_name.is_dir():
+            folder = pathlib.Path(folder).resolve()
+            folder.rename(backup_folder_name)
+            if backup_folder_name.is_dir():
+                renamed = True

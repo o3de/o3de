@@ -18,7 +18,7 @@ import sys
 # So the current script directory is removed from the sys.path temporary
 SCRIPT_DIR_REMOVED = False
 SCRIPT_DIR = pathlib.Path(__file__).parent.resolve()
-if str(SCRIPT_DIR) in sys.path:
+while str(SCRIPT_DIR) in sys.path:
     SCRIPT_DIR_REMOVED = True
     sys.path.remove(str(SCRIPT_DIR))
 
