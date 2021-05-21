@@ -209,7 +209,7 @@ namespace AzFramework
 
     private:
         ScreenVector m_motionDelta; //!< The delta used for look/orbit/pan (rotation + translation) - two dimensional.
-        float m_scrollDelta = 0.0f; //!< The delta used for dolly/movement (translation) - one dimensional. 
+        float m_scrollDelta = 0.0f; //!< The delta used for dolly/movement (translation) - one dimensional.
     };
 
     class RotateCameraInput : public CameraInput
@@ -398,7 +398,7 @@ namespace AzFramework
     class OrbitCameraInput : public CameraInput
     {
     public:
-        using LookAtFn = AZStd::function<AZStd::optional<AZ::Vector3>()>;
+        using LookAtFn = AZStd::function<AZStd::optional<AZ::Vector3>(const AZ::Vector3& position, const AZ::Vector3& direction)>;
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;

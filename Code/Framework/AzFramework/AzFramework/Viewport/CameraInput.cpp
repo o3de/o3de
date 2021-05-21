@@ -558,7 +558,7 @@ namespace AzFramework
             const auto hasLookAt = [&nextCamera, &targetCamera, &lookAtFn = m_lookAtFn] {
                 if (lookAtFn)
                 {
-                    if (const auto lookAt = lookAtFn())
+                    if (const auto lookAt = lookAtFn(targetCamera.Translation(), targetCamera.Rotation().GetBasisY()))
                     {
                         auto transform = AZ::Transform::CreateLookAt(targetCamera.m_lookAt, *lookAt);
                         nextCamera.m_lookDist = -lookAt->GetDistance(targetCamera.m_lookAt);

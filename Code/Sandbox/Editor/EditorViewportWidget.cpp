@@ -1230,16 +1230,30 @@ void EditorViewportWidget::SetViewportId(int id)
             auto firstPersonWheelCamera = AZStd::make_shared<AzFramework::ScrollTranslationCameraInput>();
 
             auto orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>();
-            orbitCamera->SetLookAtFn([]() -> AZStd::optional<AZ::Vector3> {
-                AZStd::optional<AZ::Transform> manipulatorTransform;
-                AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
-                    manipulatorTransform, AzToolsFramework::GetEntityContextId(),
-                    &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
+            orbitCamera->SetLookAtFn([](const AZ::Vector3& position, const AZ::Vector3& direction) -> AZStd::optional<AZ::Vector3> {
+                AzFramework::RenderGeometry::RayRequest ray;
+                ray.m_startWorldPosition = position;
+                ray.m_endWorldPosition = position + direction * 1000.0f;
+                ray.m_onlyVisible = true;
 
-                if (manipulatorTransform)
+                AzFramework::RenderGeometry::RayResult result;
+                AzFramework::RenderGeometry::IntersectorBus::EventResult(
+                    result, AzToolsFramework::GetEntityContextId(), &AzFramework::RenderGeometry::IntersectorInterface::RayIntersect, ray);
+
+                if (result)
                 {
-                    return manipulatorTransform->GetTranslation();
+                    return result.m_worldPosition;
                 }
+
+                // AZStd::optional<AZ::Transform> manipulatorTransform;
+                // AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
+                //    manipulatorTransform, AzToolsFramework::GetEntityContextId(),
+                //    &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
+
+                // if (manipulatorTransform)
+                //{
+                //    return manipulatorTransform->GetTranslation();
+                //}
 
                 return {};
             });
