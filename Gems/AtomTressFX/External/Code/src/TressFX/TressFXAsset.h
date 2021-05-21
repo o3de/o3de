@@ -88,7 +88,10 @@ namespace AMD
         std::vector<AMD::float3> m_vertices;
         std::vector<AMD::float3> m_normals;
         std::vector<int> m_indices;
+
+        // The skinning for the collision mesh only. Do not confuse it with hair skinning or the object skinning.
         std::vector<TressFXBoneSkinningData> m_boneSkinningData;
+
         std::vector<std::string> m_boneNames;
         BoneIndexToEngineIndexLookup m_reservedLookup; // Used to reset the skinning data back to bone index in case the engine index changed.
 
