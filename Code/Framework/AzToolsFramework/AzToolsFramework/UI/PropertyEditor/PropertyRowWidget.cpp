@@ -27,6 +27,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: con
 #include <QtGui/QTextLayout>
 #include <QtGui/QPainter>
 #include <QMessageBox>
+#include <QStylePainter>
 AZ_POP_DISABLE_WARNING
 
 static const int LabelColumnStretch = 2;
@@ -119,6 +120,19 @@ namespace AzToolsFramework
         m_containerSize = 0;
 
         setLayout(m_mainLayout);
+    }
+
+    void PropertyRowWidget::paintEvent(QPaintEvent* event)
+    {
+        QStylePainter p(this);
+
+        if (CanBeReordered())
+        {
+            const QPen linePen(QColor(0x3B3E3F));
+            p.setPen(linePen);
+            int indent = m_treeDepth * m_treeIndentation;
+            p.drawLine(event->rect().topLeft() + QPoint(indent, 0), event->rect().topRight());
+        }
     }
 
     bool PropertyRowWidget::HasChildWidgetAlready() const

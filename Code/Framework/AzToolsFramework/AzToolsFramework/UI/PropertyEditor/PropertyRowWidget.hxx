@@ -44,6 +44,7 @@ namespace AzToolsFramework
         Q_PROPERTY(bool hasChildRows READ HasChildRows);
         Q_PROPERTY(bool isTopLevel READ IsTopLevel);
         Q_PROPERTY(int getLevel READ GetLevel);
+        Q_PROPERTY(bool canBeReordered READ CanBeReordered);
         Q_PROPERTY(bool appendDefaultLabelToName READ GetAppendDefaultLabelToName WRITE AppendDefaultLabelToName)
     public:
         AZ_CLASS_ALLOCATOR(PropertyRowWidget, AZ::SystemAllocator, 0)
@@ -136,6 +137,7 @@ namespace AzToolsFramework
         void SetSelected(bool selected);
         bool GetSelected();
         bool eventFilter(QObject *watched, QEvent *event) override;
+        void paintEvent(QPaintEvent*) override;
 
         /// Apply tooltip to widget and some of its children.
         void SetDescription(const QString& text);
@@ -159,6 +161,7 @@ namespace AzToolsFramework
 
         bool CanChildrenBeReordered() const;
         bool CanBeReordered() const;
+
         bool CanMoveUp() const;
         bool CanMoveDown() const;
 

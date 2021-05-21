@@ -16,6 +16,7 @@
 #include <AzCore/std/any.h>
 #include <AzCore/std/string/string_view.h>
 
+#include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
 #include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
 
