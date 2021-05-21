@@ -13,6 +13,7 @@
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <DiffuseProbeGrid/DiffuseProbeGrid.h>
+#include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/Factory.h>
@@ -23,6 +24,11 @@ namespace AZ
 {
     namespace Render
     {
+        DiffuseProbeGrid::DiffuseProbeGrid()
+            : m_textureReadback(this)
+        {
+        }
+
         DiffuseProbeGrid::~DiffuseProbeGrid()
         {
             m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
@@ -166,6 +172,84 @@ namespace AZ
             m_updateRenderObjectSrg = true;
         }
 
+        void DiffuseProbeGrid::SetMode(DiffuseProbeGridMode mode)
+        {
+            // handle auto-select
+            if (mode == DiffuseProbeGridMode::AutoSelect)
+            {
+                RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
+                m_mode = (device->GetFeatures().m_rayTracing) ? DiffuseProbeGridMode::RealTime : DiffuseProbeGridMode::Baked;
+            }
+            else
+            {
+                m_mode = mode;
+            }
+
+            m_updateTextures = true;
+        }
+
+        void DiffuseProbeGrid::SetBakedTextures(const DiffuseProbeGridBakedTextures& bakedTextures)
+        {
+            AZ_Assert(bakedTextures.m_irradianceImage.get(), "Invalid Irradiance image passed to SetBakedTextures");
+            AZ_Assert(bakedTextures.m_distanceImage.get(), "Invalid Distance image passed to SetBakedTextures");
+            AZ_Assert(bakedTextures.m_relocationImageData.size() > 0, "Invalid Relocation image data passed to SetBakedTextures");
+            AZ_Assert(bakedTextures.m_classificationImageData.size() > 0, "Invalid Classification image data passed to SetBakedTextures");
+
+            m_bakedIrradianceImage = bakedTextures.m_irradianceImage;
+            m_bakedDistanceImage = bakedTextures.m_distanceImage;
+
+            m_bakedIrradianceRelativePath = bakedTextures.m_irradianceImageRelativePath;
+            m_bakedDistanceRelativePath = bakedTextures.m_distanceImageRelativePath;
+            m_bakedRelocationRelativePath = bakedTextures.m_relocationImageRelativePath;
+            m_bakedClassificationRelativePath = bakedTextures.m_classificationImageRelativePath;
+
+            m_bakedRelocationImageData.resize(bakedTextures.m_relocationImageData.size());
+            memcpy(m_bakedRelocationImageData.data(), bakedTextures.m_relocationImageData.data(), bakedTextures.m_relocationImageData.size());
+
+            m_bakedClassificationImageData.resize(bakedTextures.m_classificationImageData.size());
+            memcpy(m_bakedClassificationImageData.data(), bakedTextures.m_classificationImageData.data(), bakedTextures.m_classificationImageData.size());
+
+            // create the relocation and distance RW textures now, these are needed for shader compatibility
+            // (image data is copied in UpdateTextures)
+            {
+                m_bakedRelocationImage = RHI::Factory::Get().CreateImage();
+                RHI::ImageInitRequest initRequest;
+                initRequest.m_image = m_bakedRelocationImage.get();
+                initRequest.m_descriptor = RHI::ImageDescriptor::Create2D(
+                    RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead,
+                    bakedTextures.m_relocationImageDescriptor.m_size.m_width,
+                    bakedTextures.m_relocationImageDescriptor.m_size.m_height,
+                    bakedTextures.m_relocationImageDescriptor.m_format);
+
+                [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(initRequest);
+                AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize Relocation image");
+            }
+            
+            {
+                m_bakedClassificationImage = RHI::Factory::Get().CreateImage();
+                RHI::ImageInitRequest initRequest;
+                initRequest.m_image = m_bakedClassificationImage.get();
+                initRequest.m_descriptor = RHI::ImageDescriptor::Create2D(
+                    RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead,
+                    bakedTextures.m_classificationImageDescriptor.m_size.m_width,
+                    bakedTextures.m_classificationImageDescriptor.m_size.m_height,
+                    bakedTextures.m_classificationImageDescriptor.m_format);
+
+                [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(initRequest);
+                AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize Classification image");
+            }
+
+            m_updateTextures = true;
+        }
+
+        bool DiffuseProbeGrid::HasValidBakedTextures() const
+        {
+            return m_bakedIrradianceImage.get() &&
+                m_bakedDistanceImage.get() &&
+                m_bakedRelocationImage.get() &&
+                m_bakedClassificationImage.get();
+        }
+
         uint32_t DiffuseProbeGrid::GetTotalProbeCount() const
         {
             return m_probeCountX * m_probeCountY * m_probeCountZ;
@@ -188,83 +272,117 @@ namespace AZ
 
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
 
-            // advance to the next image in the frame image array
-            m_currentImageIndex = (m_currentImageIndex + 1) % ImageFrameCount;
-
-            // probe raytrace
-            {
-                uint32_t width = m_numRaysPerProbe;
-                uint32_t height = GetTotalProbeCount();
-
-                m_rayTraceImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
-
-                RHI::ImageInitRequest request;
-                request.m_image = m_rayTraceImage[m_currentImageIndex].get();
-                request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, DiffuseProbeGridRenderData::RayTraceImageFormat);
-                [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
-                AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeRayTraceImage image");
-            }
-
             uint32_t probeCountX;
             uint32_t probeCountY;
             GetTexture2DProbeCount(probeCountX, probeCountY);
 
-            // probe irradiance
+            if (m_mode == DiffuseProbeGridMode::RealTime)
             {
-                uint32_t width = probeCountX * (DefaultNumIrradianceTexels + 2);
-                uint32_t height = probeCountY * (DefaultNumIrradianceTexels + 2);
+                // advance to the next image in the frame image array
+                m_currentImageIndex = (m_currentImageIndex + 1) % ImageFrameCount;
 
-                m_irradianceImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
+                // probe raytrace
+                {
+                    uint32_t width = m_numRaysPerProbe;
+                    uint32_t height = GetTotalProbeCount();
 
-                RHI::ImageInitRequest request;
-                request.m_image = m_irradianceImage[m_currentImageIndex].get();
-                request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, DiffuseProbeGridRenderData::IrradianceImageFormat);
-                RHI::ClearValue clearValue = RHI::ClearValue::CreateVector4Float(0.0f, 0.0f, 0.0f, 0.0f);
-                request.m_optimizedClearValue = &clearValue;
-                [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
-                AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeIrradianceImage image");
+                    m_rayTraceImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
+
+                    RHI::ImageInitRequest request;
+                    request.m_image = m_rayTraceImage[m_currentImageIndex].get();
+                    request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::RayTraceImageFormat);
+                    [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
+                    AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeRayTraceImage image");
+                }
+
+                // probe irradiance
+                {
+                    uint32_t width = probeCountX * (DefaultNumIrradianceTexels + 2);
+                    uint32_t height = probeCountY * (DefaultNumIrradianceTexels + 2);
+
+                    m_irradianceImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
+
+                    RHI::ImageInitRequest request;
+                    request.m_image = m_irradianceImage[m_currentImageIndex].get();
+                    request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::IrradianceImageFormat);
+                    RHI::ClearValue clearValue = RHI::ClearValue::CreateVector4Float(0.0f, 0.0f, 0.0f, 0.0f);
+                    request.m_optimizedClearValue = &clearValue;
+                    [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
+                    AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeIrradianceImage image");
+                }
+
+                // probe distance
+                {
+                    uint32_t width = probeCountX * (DefaultNumDistanceTexels + 2);
+                    uint32_t height = probeCountY * (DefaultNumDistanceTexels + 2);
+
+                    m_distanceImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
+
+                    RHI::ImageInitRequest request;
+                    request.m_image = m_distanceImage[m_currentImageIndex].get();
+                    request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::DistanceImageFormat);
+                    [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
+                    AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeDistanceImage image");
+                }
+
+                // probe relocation
+                {
+                    uint32_t width = probeCountX;
+                    uint32_t height = probeCountY;
+
+                    m_relocationImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
+
+                    RHI::ImageInitRequest request;
+                    request.m_image = m_relocationImage[m_currentImageIndex].get();
+                    request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::RelocationImageFormat);
+                    [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
+                    AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeRelocationImage image");
+                }
+
+                // probe classification
+                {
+                    uint32_t width = probeCountX;
+                    uint32_t height = probeCountY;
+
+                    m_classificationImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
+
+                    RHI::ImageInitRequest request;
+                    request.m_image = m_classificationImage[m_currentImageIndex].get();
+                    request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::ClassificationImageFormat);
+                    [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
+                    AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeClassificationImage image");
+                }
             }
-
-            // probe distance
+            else if (m_mode == DiffuseProbeGridMode::Baked && HasValidBakedTextures())
             {
-                uint32_t width = probeCountX * (DefaultNumDistanceTexels + 2);
-                uint32_t height = probeCountY * (DefaultNumDistanceTexels + 2);
+                // copy the baked relocation and classification texture data to the RW textures
+                // (these need to be RW for shader compatibility)
+                RHI::ImageSubresourceRange range{ 0, 0, 0 ,0 };
+                RHI::ImageSubresourceLayoutPlaced layout;
 
-                m_distanceImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
+                // relocation
+                {
+                    m_bakedRelocationImage->GetSubresourceLayouts(range, &layout, nullptr);
 
-                RHI::ImageInitRequest request;
-                request.m_image = m_distanceImage[m_currentImageIndex].get();
-                request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, DiffuseProbeGridRenderData::DistanceImageFormat);
-                [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
-                AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeDistanceImage image");
-            }
+                    RHI::ImageUpdateRequest updateRequest;
+                    updateRequest.m_image = m_bakedRelocationImage.get();
+                    updateRequest.m_sourceSubresourceLayout = layout;
+                    updateRequest.m_sourceData = m_bakedRelocationImageData.data();
+                    updateRequest.m_imageSubresourcePixelOffset = RHI::Origin(0, 0, 0);
+                    m_renderData->m_imagePool->UpdateImageContents(updateRequest);
+                }
 
-            // probe relocation
-            {
-                uint32_t width = probeCountX;
-                uint32_t height = probeCountY;
+                // classification
+                {
+                    m_bakedClassificationImage->GetSubresourceLayouts(range, &layout, nullptr);
 
-                m_relocationImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
-
-                RHI::ImageInitRequest request;
-                request.m_image = m_relocationImage[m_currentImageIndex].get();
-                request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, DiffuseProbeGridRenderData::RelocationImageFormat);
-                [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
-                AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeRelocationImage image");
-            }
-
-            // probe classification
-            {
-                uint32_t width = probeCountX;
-                uint32_t height = probeCountY;
-
-                m_classificationImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
-
-                RHI::ImageInitRequest request;
-                request.m_image = m_classificationImage[m_currentImageIndex].get();
-                request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite, width, height, DiffuseProbeGridRenderData::ClassificationImageFormat);
-                [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
-                AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize m_probeClassificationImage image");
+                    RHI::ImageUpdateRequest updateRequest;
+                    updateRequest.m_image = m_bakedClassificationImage.get();
+                    updateRequest.m_sourceSubresourceLayout = layout;
+                    updateRequest.m_sourceData = m_bakedClassificationImageData.data();
+                    updateRequest.m_imageSubresourcePixelOffset = RHI::Origin(0, 0, 0);
+                    m_renderData->m_imagePool->UpdateImageContents(updateRequest);
+                }
             }
 
             m_updateTextures = false;
@@ -639,16 +757,16 @@ namespace AZ
             m_renderObjectSrg->SetConstant(constantIndex, m_ambientMultiplier);
 
             imageIndex = srgLayout->FindShaderInputImageIndex(Name("m_probeIrradiance"));
-            m_renderObjectSrg->SetImageView(imageIndex, m_irradianceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
+            m_renderObjectSrg->SetImageView(imageIndex, GetIrradianceImage()->GetImageView(m_renderData->m_probeIrradianceImageViewDescriptor).get());
 
             imageIndex = srgLayout->FindShaderInputImageIndex(Name("m_probeDistance"));
-            m_renderObjectSrg->SetImageView(imageIndex, m_distanceImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
+            m_renderObjectSrg->SetImageView(imageIndex, GetDistanceImage()->GetImageView(m_renderData->m_probeDistanceImageViewDescriptor).get());
 
             imageIndex = srgLayout->FindShaderInputImageIndex(Name("m_probeOffsets"));
-            m_renderObjectSrg->SetImageView(imageIndex, m_relocationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeRelocationImageViewDescriptor).get());
+            m_renderObjectSrg->SetImageView(imageIndex, GetRelocationImage()->GetImageView(m_renderData->m_probeRelocationImageViewDescriptor).get());
 
             imageIndex = srgLayout->FindShaderInputImageIndex(Name("m_probeStates"));
-            m_renderObjectSrg->SetImageView(imageIndex, m_classificationImage[m_currentImageIndex]->GetImageView(m_renderData->m_probeClassificationImageViewDescriptor).get());
+            m_renderObjectSrg->SetImageView(imageIndex, GetClassificationImage()->GetImageView(m_renderData->m_probeClassificationImageViewDescriptor).get());
 
             SetGridConstants(m_renderObjectSrg);
 

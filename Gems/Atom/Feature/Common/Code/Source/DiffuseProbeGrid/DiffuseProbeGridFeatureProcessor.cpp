@@ -45,6 +45,7 @@ namespace AZ
             RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
 
             m_diffuseProbeGrids.reserve(InitialProbeGridAllocationSize);
+            m_realTimeDiffuseProbeGrids.reserve(InitialProbeGridAllocationSize);
 
             RHI::BufferPoolDescriptor desc;
             desc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
@@ -61,7 +62,7 @@ namespace AZ
             // image pool
             {
                 RHI::ImagePoolDescriptor imagePoolDesc;
-                imagePoolDesc.m_bindFlags = RHI::ImageBindFlags::ShaderReadWrite;
+                imagePoolDesc.m_bindFlags = RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead;
 
                 m_probeGridRenderData.m_imagePool = RHI::Factory::Get().CreateImagePool();
                 [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_imagePool->Init(*rhiSystem->GetDevice(), imagePoolDesc);
@@ -123,6 +124,32 @@ namespace AZ
                 m_needUpdatePipelineStates = false;
             }
 
+            // check pending textures and connect bus for notifications
+            for (auto& notificationEntry : m_notifyTextureAssets)
+            {
+                if (notificationEntry.m_assetId.IsValid())
+                {
+                    // asset already has an assetId
+                    continue;
+                }
+
+                // query for the assetId
+                AZ::Data::AssetId assetId;
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    assetId,
+                    &AZ::Data::AssetCatalogRequests::GetAssetIdByPath,
+                    notificationEntry.m_relativePath.c_str(),
+                    azrtti_typeid<AZ::RPI::StreamingImageAsset>(),
+                    false);
+
+                if (assetId.IsValid())
+                {
+                    notificationEntry.m_assetId = assetId;
+                    notificationEntry.m_asset.Create(assetId, true);
+                    Data::AssetBus::MultiHandler::BusConnect(assetId);
+                }
+            }
+
             // if the volumes changed we need to re-sort the probe list
             if (m_probeGridSortRequired)
             {
@@ -139,6 +166,7 @@ namespace AZ
                 };
 
                 AZStd::sort(m_diffuseProbeGrids.begin(), m_diffuseProbeGrids.end(), sortFn);
+                AZStd::sort(m_realTimeDiffuseProbeGrids.begin(), m_realTimeDiffuseProbeGrids.end(), sortFn);
                 m_probeGridSortRequired = false;
             }
 
@@ -160,6 +188,9 @@ namespace AZ
             diffuseProbeGrid->SetExtents(extents);
             diffuseProbeGrid->SetProbeSpacing(probeSpacing);
             m_diffuseProbeGrids.push_back(diffuseProbeGrid);
+
+            UpdateRealTimeList(diffuseProbeGrid);
+
             m_probeGridSortRequired = true;
 
             return diffuseProbeGrid;
@@ -169,6 +200,7 @@ namespace AZ
         {
             AZ_Assert(probeGrid.get(), "RemoveProbeGrid called with an invalid handle");
 
+            // remove from main list
             auto itEntry = AZStd::find_if(m_diffuseProbeGrids.begin(), m_diffuseProbeGrids.end(), [&](AZStd::shared_ptr<DiffuseProbeGrid> const& entry)
             {
                 return (entry == probeGrid);
@@ -176,6 +208,18 @@ namespace AZ
 
             AZ_Assert(itEntry != m_diffuseProbeGrids.end(), "RemoveProbeGrid called with a probe grid that is not in the probe list");
             m_diffuseProbeGrids.erase(itEntry);
+
+            // remove from side list of real-time grids
+            itEntry = AZStd::find_if(m_realTimeDiffuseProbeGrids.begin(), m_realTimeDiffuseProbeGrids.end(), [&](AZStd::shared_ptr<DiffuseProbeGrid> const& entry)
+            {
+                return (entry == probeGrid);
+            });
+
+            if (itEntry != m_realTimeDiffuseProbeGrids.end())
+            {
+                m_realTimeDiffuseProbeGrids.erase(itEntry);
+            }
+
             probeGrid = nullptr;
         }
 
@@ -245,6 +289,133 @@ namespace AZ
         {
             AZ_Assert(probeGrid.get(), "SetUseDiffuseIbl called with an invalid handle");
             probeGrid->SetUseDiffuseIbl(useDiffuseIbl);
+        }
+
+        void DiffuseProbeGridFeatureProcessor::BakeTextures(
+            const DiffuseProbeGridHandle& probeGrid,
+            DiffuseProbeGridBakeTexturesCallback callback,
+            const AZStd::string& irradianceTextureRelativePath,
+            const AZStd::string& distanceTextureRelativePath,
+            const AZStd::string& relocationTextureRelativePath,
+            const AZStd::string& classificationTextureRelativePath)
+        {
+            AZ_Assert(probeGrid.get(), "BakeTextures called with an invalid handle");
+
+            AddNotificationEntry(irradianceTextureRelativePath);
+            AddNotificationEntry(distanceTextureRelativePath);
+            AddNotificationEntry(relocationTextureRelativePath);
+            AddNotificationEntry(classificationTextureRelativePath);
+
+            probeGrid->GetTextureReadback().BeginTextureReadback(callback);
+        }
+
+        void DiffuseProbeGridFeatureProcessor::UpdateRealTimeList(const DiffuseProbeGridHandle& diffuseProbeGrid)
+        {
+            if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::RealTime)
+            {
+                // add to side list of real-time grids
+                auto itEntry = AZStd::find_if(m_realTimeDiffuseProbeGrids.begin(), m_realTimeDiffuseProbeGrids.end(), [&](AZStd::shared_ptr<DiffuseProbeGrid> const& entry)
+                {
+                    return (entry == diffuseProbeGrid);
+                });
+
+                if (itEntry == m_realTimeDiffuseProbeGrids.end())
+                {
+                    m_realTimeDiffuseProbeGrids.push_back(diffuseProbeGrid);
+                }
+            }
+            else
+            {
+                // remove from side list of real-time grids
+                auto itEntry = AZStd::find_if(m_realTimeDiffuseProbeGrids.begin(), m_realTimeDiffuseProbeGrids.end(), [&](AZStd::shared_ptr<DiffuseProbeGrid> const& entry)
+                {
+                    return (entry == diffuseProbeGrid);
+                });
+
+                if (itEntry != m_realTimeDiffuseProbeGrids.end())
+                {
+                    m_realTimeDiffuseProbeGrids.erase(itEntry);
+                }
+            }
+        }
+
+        void DiffuseProbeGridFeatureProcessor::AddNotificationEntry(const AZStd::string& relativePath)
+        {
+            AZStd::string assetPath = relativePath + ".streamingimage";
+
+            // check to see if this is an existing asset
+            AZ::Data::AssetId assetId;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                assetId,
+                &AZ::Data::AssetCatalogRequests::GetAssetIdByPath,
+                assetPath.c_str(),
+                azrtti_typeid<AZ::RPI::StreamingImageAsset>(),
+                false);
+
+            // we only track notifications for new texture assets, existing assets are automatically reloaded by the RPI
+            if (!assetId.IsValid())
+            {
+                m_notifyTextureAssets.push_back({ assetPath, assetId });
+            }
+        }
+
+        bool DiffuseProbeGridFeatureProcessor::CheckTextureAssetNotification(
+            const AZStd::string& relativePath,
+            Data::Asset<RPI::StreamingImageAsset>& outTextureAsset,
+            DiffuseProbeGridTextureNotificationType& outNotificationType)
+        {
+            for (NotifyTextureAssetVector::iterator itNotification = m_notifyTextureAssets.begin(); itNotification != m_notifyTextureAssets.end(); ++itNotification)
+            {
+                if (itNotification->m_relativePath == relativePath)
+                {
+                    outNotificationType = itNotification->m_notificationType;
+                    if (outNotificationType != DiffuseProbeGridTextureNotificationType::None)
+                    {
+                        outTextureAsset = itNotification->m_asset;
+                        m_notifyTextureAssets.erase(itNotification);
+                    }
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        bool DiffuseProbeGridFeatureProcessor::AreBakedTexturesReferenced(
+            const AZStd::string& irradianceTextureRelativePath,
+            const AZStd::string& distanceTextureRelativePath,
+            const AZStd::string& relocationTextureRelativePath,
+            const AZStd::string& classificationTextureRelativePath)
+        {
+            for (auto& diffuseProbeGrid : m_diffuseProbeGrids)
+            {
+                if ((diffuseProbeGrid->GetBakedIrradianceRelativePath() == irradianceTextureRelativePath) ||
+                    (diffuseProbeGrid->GetBakedDistanceRelativePath() == distanceTextureRelativePath) ||
+                    (diffuseProbeGrid->GetBakedRelocationRelativePath() == relocationTextureRelativePath) ||
+                    (diffuseProbeGrid->GetBakedClassificationRelativePath() == classificationTextureRelativePath))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        void DiffuseProbeGridFeatureProcessor::SetMode(const DiffuseProbeGridHandle& probeGrid, DiffuseProbeGridMode mode)
+        {
+            AZ_Assert(probeGrid.get(), "SetMode called with an invalid handle");
+            probeGrid->SetMode(mode);
+
+            UpdateRealTimeList(probeGrid);
+
+            m_probeGridSortRequired = true;
+        }
+
+        void DiffuseProbeGridFeatureProcessor::SetBakedTextures(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridBakedTextures& bakedTextures)
+        {
+            AZ_Assert(probeGrid.get(), "SetBakedTextures called with an invalid handle");
+            probeGrid->SetBakedTextures(bakedTextures);
         }
 
         void DiffuseProbeGridFeatureProcessor::CreateBoxMesh()
@@ -418,5 +589,34 @@ namespace AZ
             }
         }
 
+        void DiffuseProbeGridFeatureProcessor::HandleAssetNotification(Data::Asset<Data::AssetData> asset, DiffuseProbeGridTextureNotificationType notificationType)
+        {
+            for (NotifyTextureAssetVector::iterator itNotification = m_notifyTextureAssets.begin(); itNotification != m_notifyTextureAssets.end(); ++itNotification)
+            {
+                if (itNotification->m_assetId == asset.GetId())
+                {
+                    // store the texture asset
+                    itNotification->m_asset = Data::static_pointer_cast<RPI::StreamingImageAsset>(asset);
+                    itNotification->m_notificationType = notificationType;
+
+                    // stop notifications on this asset
+                    Data::AssetBus::MultiHandler::BusDisconnect(itNotification->m_assetId);
+
+                    break;
+                }
+            }
+        }
+
+        void DiffuseProbeGridFeatureProcessor::OnAssetReady(Data::Asset<Data::AssetData> asset)
+        {
+            HandleAssetNotification(asset, DiffuseProbeGridTextureNotificationType::Ready);
+        }
+
+        void DiffuseProbeGridFeatureProcessor::OnAssetError(Data::Asset<Data::AssetData> asset)
+        {
+            AZ_Error("ReflectionProbeFeatureProcessor", false, "Failed to load cubemap [%s]", asset.GetHint().c_str());
+
+            HandleAssetNotification(asset, DiffuseProbeGridTextureNotificationType::Error);
+        }
     } // namespace Render
 } // namespace AZ

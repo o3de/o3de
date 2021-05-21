@@ -135,6 +135,8 @@ set(FILES
     Source/DiffuseProbeGrid/DiffuseProbeGridRenderPass.h
     Source/DiffuseProbeGrid/DiffuseProbeGrid.cpp
     Source/DiffuseProbeGrid/DiffuseProbeGrid.h
+    Source/DiffuseProbeGrid/DiffuseProbeGridTextureReadback.cpp
+    Source/DiffuseProbeGrid/DiffuseProbeGridTextureReadback.h
     Source/DiffuseProbeGrid/DiffuseProbeGridFeatureProcessor.h
     Source/DiffuseProbeGrid/DiffuseProbeGridFeatureProcessor.cpp
     Source/DisplayMapper/AcesOutputTransformPass.cpp
