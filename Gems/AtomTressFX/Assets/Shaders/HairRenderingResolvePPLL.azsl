@@ -60,7 +60,7 @@ VSOutput FullScreenVS(VSInput input)
 #define STORE_DATA_AT_INDEX( uIndex, uValue) kBuffer[uIndex].y = uValue
 #define STORE_COLOR_AT_INDEX( uIndex, uValue ) kBuffer[uIndex].z = uValue
 
-float4 GatherLinkedList(float2 vfScreenAddress )//, inout float outDepth )
+float4 GatherLinkedList(float2 vfScreenAddress, inout float outDepth )
 {
     uint2 vScreenAddress = uint2(vfScreenAddress);
     uint pointer = FragmentListHead[vScreenAddress];
@@ -77,11 +77,9 @@ float4 GatherLinkedList(float2 vfScreenAddress )//, inout float outDepth )
     [unroll]
     for (int t = 0; t < KBUFFER_SIZE; ++t)
     {
-        STORE_DEPTH_AT_INDEX(t, asuint(100000.0));
+        STORE_DEPTH_AT_INDEX(t, asuint(0.0));
         STORE_DATA_AT_INDEX(t, 0);
     }
-
-    float minDepth = 1.0;
 
     // Get first K elements from the top (top to bottom)
     // And store them in the kbuffer for later
@@ -89,12 +87,6 @@ float4 GatherLinkedList(float2 vfScreenAddress )//, inout float outDepth )
     {
         if (pointer != FRAGMENT_LIST_NULL)
         {
-            float depth = asfloat(NODE_DEPTH(pointer));
-            if (minDepth > depth)
-            {
-                minDepth = depth;
-            }
-
             STORE_DEPTH_AT_INDEX(p, NODE_DEPTH(pointer));
             STORE_DATA_AT_INDEX(p, NODE_DATA(pointer));
             STORE_COLOR_AT_INDEX(p, NODE_COLOR(pointer));
@@ -108,10 +100,8 @@ float4 GatherLinkedList(float2 vfScreenAddress )//, inout float outDepth )
     [allow_uav_condition]
     for (int iFragment = 0; iFragment < MAX_FRAGMENTS && pointer != FRAGMENT_LIST_NULL ; ++iFragment)
     {
-        if (pointer == FRAGMENT_LIST_NULL) break;
-
         int id = 0;
-        float minDepth = 10000.0;   // 1.0 is enough :)
+        float minDepth = 1.0; 
 
         // Find the current furthest sample in the KBuffer
         for (int i = 0; i < KBUFFER_SIZE; i++)
@@ -165,21 +155,21 @@ float4 GatherLinkedList(float2 vfScreenAddress )//, inout float outDepth )
 
     // Make sure we are blending the correct number of strands (don't blend more than we have)
     float maxAlpha = 0;
-    float max_depth = 0;
+    float minDepth = 1.0;   // furthesr fragment in Atom
 
     // Blend the top-most entries
     for (int j = 0; j < KBUFFER_SIZE; j++)
     {
         int id = 0;
-        max_depth = 0;
+        minDepth = 1.0;
 
         // find the furthest node in the array
         for (int i = 0; i < KBUFFER_SIZE; i++)
         {
             float fDepth = asfloat(GET_DEPTH_AT_INDEX(i));
-            if (max_depth < fDepth)
+            if (minDepth > fDepth)
             {
-                max_depth = fDepth;
+                minDepth = fDepth;
                 id = i;
             }
         }
@@ -190,7 +180,7 @@ float4 GatherLinkedList(float2 vfScreenAddress )//, inout float outDepth )
         uint color = GET_COLOR_AT_INDEX(id);
 
         // take this node out of the next search
-        STORE_DEPTH_AT_INDEX(id, 0);
+        STORE_DEPTH_AT_INDEX(id, asuint(1.0));
 
         // Use high quality shading for the nearest k fragments
         float fDepth = asfloat(nodeDepth);
@@ -207,9 +197,8 @@ float4 GatherLinkedList(float2 vfScreenAddress )//, inout float outDepth )
         fcolor.w *= (1.f - alpha);
     }
 
-//    outDepth = max_depth;
-//    return float4(max_depth, max_depth, max_depth, 1.0);
-//    return float4(minDepth, minDepth, minDepth, 1.0);
+    outDepth = minDepth;    // the last ine standing is the closest
+
     return fcolor;
 }
 
@@ -362,7 +351,26 @@ float4 GetClosestFragment(float2 vfScreenAddress, inout float3 tangent, inout fl
         discard;
     }
 
+    /*
+    * This block has proven to be extremely expensive due to the O(n^2) pass
+    * It must be made into a quick sort.
+    * As a comparison:
+    *   O(N) traverse below to find the closest depth -> 4 msec with complex hair
+    *   O(N^2) sort only with picking the closest (no traverse)  -> 56 msec ! ! !
+    //---------------------------------------------------------------
+    // Build indirect indexing table and sort it by depth
+    IndexArray indexArray;
+    uint fragmentsAmount = FillFragmentArray(indexArray, pointer);
+    SortFragmentArray(indexArray, fragmentsAmount);
+    
+    pointer = indexArray.fragmentIndexArray[0];
+    uint curData =  NODE_DATA(pointer);
+    uint curColor = NODE_COLOR(pointer);
+    float maxDepth = asfloat(NODE_DEPTH(pointer));
+    //---------------------------------------------------------------
+    */
     float4 fcolor = float4(0, 0, 0, 1);
+
     float maxDepth = 0;
     uint curColor, curData;
     for ( ; (pointer!=FRAGMENT_LIST_NULL) ; )
@@ -413,8 +421,8 @@ PSColorDepthOutput PPLLResolvePS(VSOutput input)
 //    pixOut.m_color.rgb = tangent;
 //    pixOut.m_color = GetClosestFragment(input.m_position.xy, tangent, pixOut.m_depth);
 //    pixOut.m_color = float4(0, pixOut.m_color.w, 0, 0);
-
-    pixOut.m_color = CombineFragments(input.m_position.xy, pixOut.m_depth);
+//    pixOut.m_color = CombineFragments(input.m_position.xy, pixOut.m_depth);
+    pixOut.m_color = GatherLinkedList(input.m_position.xy, pixOut.m_depth);
 
     return pixOut;
 }
