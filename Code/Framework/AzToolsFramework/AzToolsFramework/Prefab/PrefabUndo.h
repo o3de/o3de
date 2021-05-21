@@ -74,13 +74,13 @@ namespace AzToolsFramework
                 PrefabDom& endState,
                 const AZ::EntityId& entity);
 
+            void Do(InstanceOptionalReference instanceToExclude = AZStd::nullopt);
             void Undo() override;
             void Redo() override;
 
         private:
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             EntityAlias m_entityAlias;
-            InstanceOptionalReference m_instanceReference;
         };
 
         //! handles link changes on instances
@@ -138,11 +138,12 @@ namespace AzToolsFramework
                 const PrefabDom& patch,
                 const LinkId linkId = InvalidLinkId);
 
+            void Do(InstanceOptionalReference instanceToExclude = AZStd::nullopt);
             void Undo() override;
             void Redo() override;
 
         private:
-            void UpdateLink(PrefabDom& linkDom);
+            void UpdateLink(PrefabDom& linkDom, InstanceOptionalReference instanceToExclude = AZStd::nullopt);
 
             LinkId m_linkId;
             PrefabDom m_linkDomNext;  //data for delete/update

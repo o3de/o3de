@@ -596,7 +596,7 @@ namespace AzToolsFramework
                             state->SetParent(parentUndoBatch);
                             state->Capture(beforeState, afterState, entityId);
 
-                            state->Redo();
+                            state->Do(owningInstance);
                         }
                     }
 

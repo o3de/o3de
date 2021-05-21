@@ -52,36 +52,6 @@ namespace AzToolsFramework
                 return valueIterator->value;
             }
 
-            PrefabDomValueReference FindPrefabDomValue(PrefabDomValue& parentValue, AZ::IO::Path valuePath)
-            {
-                if (parentValue.IsNull())
-                {
-                    return AZStd::nullopt;
-                }
-
-                PrefabDomValueReference value = parentValue;
-
-                for (auto pathElement : valuePath)
-                {
-                    if (!value->get().IsObject())
-                    {
-                        return AZStd::nullopt;
-                    }
-
-                    PrefabDomValue::MemberIterator valueIterator = value->get().FindMember(pathElement.Native().data());
-                    if (valueIterator != value->get().MemberEnd())
-                    {
-                        value = valueIterator->value;
-                    }
-                    else
-                    {
-                        return AZStd::nullopt;
-                    }
-                }
-
-                return value;
-            }
-
             bool StoreInstanceInPrefabDom(const Instance& instance, PrefabDom& prefabDom)
             {
                 InstanceEntityIdMapper entityIdMapper;
