@@ -39,11 +39,12 @@ namespace TestImpact
         AZStd::optional<ReturnCode> m_returnCode; //!< The return code of the underlying processes of this job.
     };
 
-    class JobMetaContainer
+    //! Wrapper for job meta structure to inheritance/aggregation without being coupled to the JobInfo or Job classes.
+    class JobMetaWrapper
     {
     public:
-        JobMetaContainer(const JobMeta& jobMeta);
-        JobMetaContainer(JobMeta&& jobMeta);
+        JobMetaWrapper(const JobMeta& jobMeta);
+        JobMetaWrapper(JobMeta&& jobMeta);
 
         //! Returns the result of this job.
         JobResult GetJobResult() const;

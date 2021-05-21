@@ -22,7 +22,7 @@ namespace TestImpact
     //! @tparam JobPayloadT The resulting output of the processed artifact produced by this job.
     template<typename JobInfoT, typename JobPayloadT>
     class Job
-        : public JobMetaContainer
+        : public JobMetaWrapper
     {
     public:
         using Info = JobInfoT;
@@ -47,7 +47,7 @@ namespace TestImpact
 
     template<typename JobInfoT, typename JobPayloadT>
     Job<JobInfoT, JobPayloadT>::Job(const Info& jobInfo, JobMeta&& jobMeta, AZStd::optional<Payload>&& payload)
-        : JobMetaContainer(AZStd::move(jobMeta))
+        : JobMetaWrapper(AZStd::move(jobMeta))
         , m_jobInfo(jobInfo)
         , m_payload(AZStd::move(payload))
     {
