@@ -86,4 +86,94 @@ namespace AZ
         Normal,
         UniformReal
     };
+
+    //! Halton sequences are deterministic, quasi-random sequences with low discrepancy. They
+    //! are useful for generating evenly distributed points.
+    //! See https://en.wikipedia.org/wiki/Halton_sequence for more information.
+
+    //! Returns a single halton number.
+    //! @param index The index of the number. Indices start at 1. Using index 0 will return 0.
+    //! @param base The numerical base of the halton number.
+    inline float GetHaltonNumber(uint32_t index, uint32_t base)
+    {
+        float fraction = 1.0f;
+        float result = 0.0f;
+
+        while (index > 0)
+        {
+            fraction = fraction / base;
+            result += fraction * (index % base);
+            index = aznumeric_cast<uint32_t>(index / base);
+        }
+
+        return result;
+    }
+
+    //! A helper class for generating arrays of Halton sequences in n dimensions.
+    //! The class holds the state of which bases to use, the starting offset
+    //! of each dimension and how much to increment between each index for each
+    //! dimension.
+    template <uint8_t Dimensions>
+    class HaltonSequence
+    {
+    public:
+
+        //! Initializes a Halton sequence with some bases. By default there is no
+        //! offset and the index increments by 1 between each number.
+        HaltonSequence(AZStd::array<uint32_t, Dimensions> bases)
+            : m_bases(bases)
+        {
+            m_offsets.fill(1); // Halton sequences start at index 1.
+            m_increments.fill(1); // By default increment by 1 between each number.
+        }
+
+        //! Returns a Halton sequence in an array of N length
+        template<uint32_t N>
+        AZStd::array<AZStd::array<float, Dimensions>, N> GetHaltonSequence()
+        {
+            AZStd::array<AZStd::array<float, Dimensions>, N> result;
+
+            AZStd::array<uint32_t, Dimensions> indices = m_offsets;
+
+            // Generator that returns the Halton number for all bases for a single entry.
+            auto f = [&] ()
+            {
+                AZStd::array<float, Dimensions> item;
+                for (auto d = 0; d < Dimensions; ++d)
+                {
+                    item[d] = GetHaltonNumber(indices[d], m_bases[d]);
+                    indices[d] += m_increments[d];
+                }
+                return item;
+            };
+
+            AZStd::generate(result.begin(), result.end(), f);
+            return result;
+        }
+
+        //! Sets the offsets per dimension to start generating a sequence from.
+        //! By default, there is no offset (offset of 0 corresponds to starting at index 1)
+        void SetOffsets(AZStd::array<uint32_t, Dimensions> offsets)
+        {
+            m_offsets = offsets;
+
+            // Halton sequences start at index 1, so increment all the indices.
+            AZStd::for_each(m_offsets.begin(), m_offsets.end(), [](uint32_t &n){ n++; });
+        }
+
+        //! Sets the increment between numbers in the halton sequence per dimension
+        //! By default this is 1, meaning that no numbers are skipped. Can be negative
+        //! to generate numbers in reverse order.
+        void SetIncrements(AZStd::array<int32_t, Dimensions> increments)
+        {
+            m_increments = increments;
+        }
+
+    private:
+
+        AZStd::array<uint32_t, Dimensions> m_bases;
+        AZStd::array<uint32_t, Dimensions> m_offsets;
+        AZStd::array<int32_t, Dimensions> m_increments;
+
+    };
 }
