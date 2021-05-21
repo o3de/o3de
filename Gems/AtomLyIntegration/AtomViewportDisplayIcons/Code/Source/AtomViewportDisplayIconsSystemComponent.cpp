@@ -28,8 +28,6 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 
-#pragma optimize("", off)
-
 namespace AZ::Render
 {
     void AtomViewportDisplayIconsSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -163,7 +161,8 @@ namespace AZ::Render
         AzFramework::ScreenPoint screenPosition;
         using ViewportRequestBus = AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus;
         ViewportRequestBus::EventResult(screenPosition, drawParameters.m_viewport, &ViewportRequestBus::Events::ViewportWorldToScreen, drawParameters.m_position);
-        auto offsetToVertex = [&](float offsetX, float offsetY, float u, float v) -> Vertex
+        // Create a vertex offset from the world position to draw from based on the icon size
+        auto createVertex = [&](float offsetX, float offsetY, float u, float v) -> Vertex
         {
             int dx = aznumeric_cast<int>(offsetX * drawParameters.m_size.GetX());
             int dy = aznumeric_cast<int>(offsetY * drawParameters.m_size.GetY());
@@ -180,10 +179,10 @@ namespace AZ::Render
         };
 
         Vertex vertices[4] = {
-            offsetToVertex(-0.5f, -0.5f, 0.f, 0.f),
-            offsetToVertex(0.5f,  -0.5f, 1.f, 0.f),
-            offsetToVertex(0.5f,  0.5f,  1.f, 1.f),
-            offsetToVertex(-0.5f, 0.5f,  0.f, 1.f)
+            createVertex(-0.5f, -0.5f, 0.f, 0.f),
+            createVertex(0.5f,  -0.5f, 1.f, 0.f),
+            createVertex(0.5f,  0.5f,  1.f, 1.f),
+            createVertex(-0.5f, 0.5f,  0.f, 1.f)
         };
         Indice indices[6] = {0, 1, 2, 0, 2, 3};
         dynamicDraw->DrawIndexed(&vertices, 4, &indices, 6, RHI::IndexFormat::Uint16, drawSrg);
@@ -286,7 +285,6 @@ namespace AZ::Render
         auto streamingImageAsset = Data::AssetManager::Instance().FindOrCreateAsset<RPI::StreamingImageAsset>(
             streamingImageAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
         streamingImageAsset.QueueLoad();
-        //streamingImageAsset.BlockUntilLoadComplete();
 
         IconId id = m_currentId++;
         IconData& iconData = m_iconData[id];
