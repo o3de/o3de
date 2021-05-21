@@ -16,6 +16,11 @@ namespace TestImpact
 {
     TestRun::TestRun(const TestRun& other)
         : TestSuiteContainer(other)
+        , m_numRuns(other.m_numRuns)
+        , m_numNotRuns(other.m_numNotRuns)
+        , m_numPasses(other.m_numPasses)
+        , m_numFailures(other.m_numFailures)
+        , m_duration(other.m_duration)
     {
         CalculateTestMetrics();
     }
@@ -48,9 +53,12 @@ namespace TestImpact
     {
         if (this != &other)
         {
-            this->~TestRun();
-            new(this)TestRun(AZStd::move(other));
-            other.~TestRun();
+            TestSuiteContainer::operator=(AZStd::move(other));
+            m_numRuns = other.m_numRuns;
+            m_numNotRuns = other.m_numNotRuns;
+            m_numPasses = other.m_numPasses;
+            m_numFailures = other.m_numFailures;
+            m_duration = other.m_duration;
         }
 
         return *this;
@@ -60,8 +68,12 @@ namespace TestImpact
     {
         if (this != &other)
         {
-            this->~TestRun();
-            new(this)TestRun(other);
+            TestSuiteContainer::operator=(other);
+            m_numRuns = other.m_numRuns;
+            m_numNotRuns = other.m_numNotRuns;
+            m_numPasses = other.m_numPasses;
+            m_numFailures = other.m_numFailures;
+            m_duration = other.m_duration;
         }
 
         return *this;
