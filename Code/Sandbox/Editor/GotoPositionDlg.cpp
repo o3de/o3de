@@ -99,6 +99,8 @@ void CGotoPositionDlg::OnInitDialog()
     m_ui->m_dymSegX->setVisible(false);
     m_ui->m_dymSegY->setVisible(false);
 
+    m_ui->pushButton->setDefault(true);
+
     OnUpdateNumbers();
 }
 
