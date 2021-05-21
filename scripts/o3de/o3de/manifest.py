@@ -9,7 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 """
-This file contains  functions for querying paths from  ~/.o3de directory
+Contains functions for data from json files such as the o3de_manifests.json, engine.json, project.json, etc...
 """
 
 import json
@@ -496,7 +496,7 @@ def get_registered(engine_name: str = None,
                         return engine_path
 
     elif isinstance(project_name, str):
-        engine_object = find_engine_data(json_data)
+        enging_projects = get_engine_projects()
         projects = json_data['projects'].copy()
         projects.extend(engine_object['projects'])
         for project_path in projects:
@@ -513,9 +513,9 @@ def get_registered(engine_name: str = None,
                         return project_path
 
     elif isinstance(gem_name, str):
-        engine_object = find_engine_data(json_data)
+        engine_gems = get_engine_gems()
         gems = json_data['gems'].copy()
-        gems.extend(engine_object['gems'])
+        gems.extend(engine_gems)
         for gem_path in gems:
             gem_path = pathlib.Path(gem_path).resolve()
             gem_json = gem_path / 'gem.json'
@@ -530,9 +530,9 @@ def get_registered(engine_name: str = None,
                         return gem_path
 
     elif isinstance(template_name, str):
-        engine_object = find_engine_data(json_data)
+        engine_templates = get_engine_templates()
         templates = json_data['templates'].copy()
-        templates.extend(engine_object['templates'])
+        templates.extend(engine_templates)
         for template_path in templates:
             template_path = pathlib.Path(template_path).resolve()
             template_json = template_path / 'template.json'
@@ -547,9 +547,9 @@ def get_registered(engine_name: str = None,
                         return template_path
 
     elif isinstance(restricted_name, str):
-        engine_object = find_engine_data(json_data)
+        engine_restricted = get_engine_restricted()
         restricted = json_data['restricted'].copy()
-        restricted.extend(engine_object['restricted'])
+        restricted.extend(engine_restricted)
         for restricted_path in restricted:
             restricted_path = pathlib.Path(restricted_path).resolve()
             restricted_json = restricted_path / 'restricted.json'

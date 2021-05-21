@@ -9,7 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 """
-Contains command to add a gem to a project's cmake scripts
+Implemens functinality to remove external_subdirectories from the o3de_manifests.json
 """
 
 import argparse
@@ -31,7 +31,7 @@ def remove_external_subdirectory(external_subdir: str or pathlib.Path,
     """
     json_data = manifest.load_o3de_manifest()
     engine_object = manifest.find_engine_data(json_data, engine_path)
-    if not engine_object:
+    if not engine_object or not 'external_subdirectories' in engine_object:
         logger.error(f'Remove External Subdirectory Failed: {engine_path} not registered.')
         return 1
 

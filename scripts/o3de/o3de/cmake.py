@@ -9,7 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 """
-This file contains methods for introspecting data from cmake scripts
+Contains methods for query CMake gem target information
 """
 
 import logging

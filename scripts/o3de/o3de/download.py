@@ -9,7 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 """
-This file contains  functions for querying paths from  ~/.o3de directory
+Implements functionality for downloading o3de objecs either locally or from a URI
 """
 
 import argparse

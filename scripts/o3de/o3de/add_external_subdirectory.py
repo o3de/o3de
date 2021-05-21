@@ -9,7 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 """
-Contains command to add a gem to a project's cmake scripts
+Contains command to add an external_subdirectory to a project's cmake scripts
 """
 
 import argparse
@@ -50,6 +50,7 @@ def add_external_subdirectory(external_subdir: str or pathlib.Path,
             logger.error(f'Add External Subdirectory Failed: {engine_path} not registered.')
         return 1
 
+    engine_object.setdefault('external_subdirectories', [])
     while external_subdir.as_posix() in engine_object['external_subdirectories']:
         engine_object['external_subdirectories'].remove(external_subdir.as_posix())
 

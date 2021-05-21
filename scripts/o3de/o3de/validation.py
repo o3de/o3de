@@ -9,7 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 """
-This file contains  functions for querying paths from  ~/.o3de directory
+This file validating o3de object json files
 """
 import json
 import pathlib

@@ -374,7 +374,6 @@ def register_engine_path(json_data: dict,
 
     engine_object = {}
     engine_object.update({'path': engine_path.as_posix()})
-    engine_object.update({'restricted': []})
 
     json_data.setdefault('engines', []).insert(0, engine_object)
 

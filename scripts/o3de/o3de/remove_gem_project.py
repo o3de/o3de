@@ -9,7 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 """
-This file contains methods for removing a gem from a project
+Contains methods for removing a gem target from a project
 """
 
 import argparse
