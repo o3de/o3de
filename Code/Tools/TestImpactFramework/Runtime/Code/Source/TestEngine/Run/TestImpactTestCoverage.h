@@ -33,7 +33,6 @@ namespace TestImpact
         TestCoverage(TestCoverage&&) noexcept;
         TestCoverage(AZStd::vector<ModuleCoverage>&& moduleCoverages) noexcept;
         TestCoverage(const AZStd::vector<ModuleCoverage>& moduleCoverages);
-        ~TestCoverage();
 
         TestCoverage& operator=(const TestCoverage&);
         TestCoverage& operator=(TestCoverage&&) noexcept;

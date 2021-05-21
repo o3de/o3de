@@ -29,7 +29,6 @@ namespace TestImpact
         , m_sourcesCovered(AZStd::move(other.m_sourcesCovered))
     {
         AZStd::swap(m_coverageLevel, other.m_coverageLevel);
-        other.~TestCoverage();
     }
 
     TestCoverage::TestCoverage(const AZStd::vector<ModuleCoverage>& moduleCoverages)
@@ -44,19 +43,13 @@ namespace TestImpact
         CalculateTestMetrics();
     }
 
-    TestCoverage::~TestCoverage()
-    {
-        m_modules.clear();
-        m_coverageLevel.reset();
-        m_sourcesCovered.clear();
-    }
-
     TestCoverage& TestCoverage::operator=(const TestCoverage& other)
     {
         if (this != &other)
         {
-            this->~TestCoverage();
-            new(this)TestCoverage(other);
+            m_modules = other.m_modules;
+            m_sourcesCovered = other.m_sourcesCovered;
+            m_coverageLevel = other.m_coverageLevel;
         }
 
         return *this;
@@ -66,9 +59,9 @@ namespace TestImpact
     {
         if (this != &other)
         {
-            this->~TestCoverage();
-            new(this)TestCoverage(AZStd::move(other));
-            other.~TestCoverage();
+            m_modules = AZStd::move(other.m_modules);
+            m_sourcesCovered = other.m_sourcesCovered;
+            m_coverageLevel = other.m_coverageLevel;
         }
 
         return *this;

@@ -26,7 +26,6 @@ namespace TestImpact
         TestSuiteContainer(TestSuiteContainer&&) noexcept;
         TestSuiteContainer(const AZStd::vector<TestSuite>& testSuites);
         TestSuiteContainer(AZStd::vector<TestSuite>&& testSuites) noexcept;
-        virtual ~TestSuiteContainer();
 
         TestSuiteContainer& operator=(const TestSuiteContainer&);
         TestSuiteContainer& operator=(TestSuiteContainer&&) noexcept;
@@ -61,7 +60,6 @@ namespace TestImpact
         , m_numDisabledTests(other.m_numDisabledTests)
         , m_numEnabledTests(other.m_numEnabledTests)
     {
-        other.~TestSuiteContainer();
     }
 
     template<typename TestSuite>
@@ -70,14 +68,6 @@ namespace TestImpact
         , m_numDisabledTests(other.m_numDisabledTests)
         , m_numEnabledTests(other.m_numEnabledTests)
     {
-    }
-
-    template<typename TestSuite>
-    TestSuiteContainer<TestSuite>::~TestSuiteContainer()
-    {
-        m_testSuites.clear();
-        m_numDisabledTests = 0;
-        m_numEnabledTests = 0;
     }
 
     template<typename TestSuite>
@@ -99,9 +89,9 @@ namespace TestImpact
     {
         if (this != &other)
         {
-            this->~TestSuiteContainer();
-            new(this)TestSuiteContainer(AZStd::move(other));
-            other.~TestSuiteContainer();
+            m_testSuites = AZStd::move(other.m_testSuites);
+            m_numDisabledTests = other.m_numDisabledTests;
+            m_numEnabledTests = other.m_numEnabledTests;
         }
 
         return *this;
@@ -112,8 +102,9 @@ namespace TestImpact
     {
         if (this != &other)
         {
-            this->~TestSuiteContainer();
-            new(this)TestSuiteContainer(other);
+            m_testSuites = other.m_testSuites;
+            m_numDisabledTests = other.m_numDisabledTests;
+            m_numEnabledTests = other.m_numEnabledTests;
         }
 
         return *this;

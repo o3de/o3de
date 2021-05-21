@@ -28,7 +28,6 @@ namespace TestImpact
         , m_numFailures(other.m_numFailures)
         , m_duration(other.m_duration)
     {
-        other.~TestRun();
     }
 
     TestRun::TestRun(AZStd::vector<TestRunSuite>&& testSuites, AZStd::chrono::milliseconds duration) noexcept
@@ -43,15 +42,6 @@ namespace TestImpact
         , m_duration(duration)
     {
         CalculateTestMetrics();
-    }
-
-    TestRun::~TestRun()
-    {
-        m_numRuns = 0;
-        m_numNotRuns = 0;
-        m_numPasses = 0;
-        m_numFailures = 0;
-        m_duration = AZStd::chrono::milliseconds{ 0 };
     }
 
     TestRun& TestRun::operator=(TestRun&& other) noexcept

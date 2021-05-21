@@ -28,7 +28,6 @@ namespace TestImpact
         TestRun(TestRun&&) noexcept;
         TestRun(const AZStd::vector<TestRunSuite>& testSuites, AZStd::chrono::milliseconds duration);
         TestRun(AZStd::vector<TestRunSuite>&& testSuites, AZStd::chrono::milliseconds duration) noexcept;
-        ~TestRun();
 
         TestRun& operator=(const TestRun&);
         TestRun& operator=(TestRun&&) noexcept;
