@@ -508,6 +508,42 @@ namespace O3DE::ProjectManager
         }
     }
 
+    bool PythonBindings::AddGemToProject(const QString& gemPath, const QString& projectPath)
+    {
+        bool result = ExecuteWithLock([&] {
+            pybind11::str pyGemPath     = gemPath.toStdString();
+            pybind11::str pyProjectPath = projectPath.toStdString();
+
+            m_registration.attr("add_gem_to_project")(
+                pybind11::none(), // gem_name
+                pyGemPath,
+                pybind11::none(), // gem_target
+                pybind11::none(), // project_name
+                pyProjectPath
+                );
+        });
+
+        return result;
+    }
+
+    bool PythonBindings::RemoveGemFromProject(const QString& gemPath, const QString& projectPath)
+    {
+        bool result = ExecuteWithLock([&] {
+            pybind11::str pyGemPath     = gemPath.toStdString();
+            pybind11::str pyProjectPath = projectPath.toStdString();
+
+            m_registration.attr("remove_gem_to_project")(
+                pybind11::none(), // gem_name
+                pyGemPath,
+                pybind11::none(), // gem_target
+                pybind11::none(), // project_name
+                pyProjectPath
+                );
+        });
+
+        return result;
+    }
+
     bool PythonBindings::UpdateProject([[maybe_unused]] const ProjectInfo& projectInfo)  
     {
         return false;

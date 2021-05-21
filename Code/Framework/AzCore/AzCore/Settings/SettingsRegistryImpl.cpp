@@ -880,6 +880,13 @@ namespace AZ
         const Specializations& specializations, const rapidjson::Pointer& historyPointer, AZStd::string_view folderPath)
     {
         using namespace rapidjson;
+        
+        if (&lhs == &rhs)
+        {
+            // Early return to avoid setting the collisionFound reference to true
+            // std::sort is allowed to pass in the same memory address for the left and right elements
+            return false;
+        }
 
         AZ_Assert(!lhs.m_tags.empty(), "Comparing a settings file without at least a name tag.");
         AZ_Assert(!rhs.m_tags.empty(), "Comparing a settings file without at least a name tag.");
