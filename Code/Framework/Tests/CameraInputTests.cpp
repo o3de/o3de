@@ -15,7 +15,6 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Viewport/CameraInput.h>
-#include <AzFramework/Windowing/WindowBus.h>
 
 namespace UnitTest
 {
@@ -68,23 +67,21 @@ namespace UnitTest
 
     TEST_F(CameraInputFixture, BeginEndOrbitCameraConsumesCorrectEvents)
     {
-        // set initial mouse position
-        const bool consumed1 = HandleEventAndUpdate(AzFramework::CursorEvent{AzFramework::ScreenPoint(5, 5)});
         // begin orbit camera
-        const bool consumed2 = HandleEventAndUpdate(
+        const bool consumed1 = HandleEventAndUpdate(
             AzFramework::DiscreteInputEvent{AzFramework::InputDeviceKeyboard::Key::ModifierAltL, AzFramework::InputChannel::State::Began});
         // begin listening for orbit rotate (click detector) - event is not consumed
-        const bool consumed3 = HandleEventAndUpdate(
+        const bool consumed2 = HandleEventAndUpdate(
             AzFramework::DiscreteInputEvent{AzFramework::InputDeviceMouse::Button::Left, AzFramework::InputChannel::State::Began});
         // begin orbit rotate (mouse has moved sufficient distance to initiate)
-        const bool consumed4 = HandleEventAndUpdate(AzFramework::CursorEvent{AzFramework::ScreenPoint(10, 10)});
+        const bool consumed3 = HandleEventAndUpdate(AzFramework::HorizontalMotionEvent{5});
         // end orbit (mouse up) - event is not consumed
-        const bool consumed5 = HandleEventAndUpdate(
+        const bool consumed4 = HandleEventAndUpdate(
             AzFramework::DiscreteInputEvent{AzFramework::InputDeviceMouse::Button::Left, AzFramework::InputChannel::State::Ended});
 
-        const auto allConsumed = AZStd::vector<bool>{consumed1, consumed2, consumed3, consumed4, consumed5};
+        const auto allConsumed = AZStd::vector<bool>{consumed1, consumed2, consumed3, consumed4};
 
         using ::testing::ElementsAre;
-        EXPECT_THAT(allConsumed, ElementsAre(false, true, false, true, false));
+        EXPECT_THAT(allConsumed, ElementsAre(true, false, true, false));
     }
 } // namespace UnitTest

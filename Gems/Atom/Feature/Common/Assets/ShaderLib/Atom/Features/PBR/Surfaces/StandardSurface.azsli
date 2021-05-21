@@ -43,7 +43,6 @@ class Surface
 
 };
 
-
 // Specular Anti-Aliasing technique from this paper:
 // http://www.jp.square-enix.com/tech/library/pdf/ImprovedGeometricSpecularAA.pdf
 void Surface::ApplySpecularAA()
