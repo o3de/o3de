@@ -58,7 +58,7 @@ namespace TestImpact
 
         for (auto& process : m_processPool)
         {
-            if (PopAndLaunch(process) == CallbackResult::Abort)
+            if (PopAndLaunch(process) == ProcessCallbackResult::Abort)
             {
                 TerminateAllProcesses(ExitCondition::Terminated);
                 return;
@@ -110,7 +110,7 @@ namespace TestImpact
                         const auto exitTime = AZStd::chrono::high_resolution_clock::now();
 
                         // Inform the client that the processes has exited
-                        if (CallbackResult::Abort == m_processExitCallback(
+                        if (ProcessCallbackResult::Abort == m_processExitCallback(
                             processId,
                             ExitCondition::Gracefull,
                             returnCode,
@@ -124,7 +124,7 @@ namespace TestImpact
                         else if (!m_processQueue.empty())
                         {
                             // This slot in the pool is free so launch one of the processes waiting in the queue
-                            if (PopAndLaunch(processInFlight) == CallbackResult::Abort)
+                            if (PopAndLaunch(processInFlight) == ProcessCallbackResult::Abort)
                             {
                                 // Client chose to abort the scheduler
                                 TerminateAllProcesses(ExitCondition::Terminated);
@@ -150,7 +150,7 @@ namespace TestImpact
                             const ReturnCode returnCode = processInFlight.m_process->GetReturnCode().value();
                             processInFlight.m_process.reset();
 
-                            if (CallbackResult::Abort == m_processExitCallback(
+                            if (ProcessCallbackResult::Abort == m_processExitCallback(
                                 processId,
                                 ExitCondition::Timeout,
                                 returnCode,
@@ -172,7 +172,7 @@ namespace TestImpact
                     // Queue is empty, no more processes to launch
                     if (!m_processQueue.empty())
                     {
-                        if (PopAndLaunch(processInFlight) == CallbackResult::Abort)
+                        if (PopAndLaunch(processInFlight) == ProcessCallbackResult::Abort)
                         {
                             // Client chose to abort the scheduler
                             TerminateAllProcesses(ExitCondition::Terminated);
@@ -194,7 +194,7 @@ namespace TestImpact
         }
     }
 
-    CallbackResult ProcessScheduler::PopAndLaunch(ProcessInFlight& processInFlight)
+    ProcessCallbackResult ProcessScheduler::PopAndLaunch(ProcessInFlight& processInFlight)
     {
         auto processInfo = m_processQueue.front();
         m_processQueue.pop();
@@ -251,7 +251,7 @@ namespace TestImpact
                 if (isCallingBackToClient)
                 {
                     const auto exitTime = AZStd::chrono::high_resolution_clock::now();
-                    if (CallbackResult::Abort == m_processExitCallback(
+                    if (ProcessCallbackResult::Abort == m_processExitCallback(
                         processInFlight.m_process->GetProcessInfo().GetId(),
                         exitStatus,
                         returnCode,

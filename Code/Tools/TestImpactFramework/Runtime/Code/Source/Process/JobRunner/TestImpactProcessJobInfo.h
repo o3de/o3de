@@ -24,6 +24,7 @@ namespace TestImpact
     {
     public:
         using IdType = size_t;
+        using CommandType = AZStd::string;
 
         //! Client-provided identifier to distinguish between different jobs.
         //! @note Ids of different job types are not interchangeable.
@@ -32,30 +33,37 @@ namespace TestImpact
             IdType m_value;
         };
 
+        //! Command used my ProcessScheduler to execute this job.
+        //! @note Commands of different job types are not interchangeable.
+        struct Command
+        {
+            CommandType m_args;
+        };
+
         //! Constructs the job information with any additional information required by the job.
         //! @param jobId The client-provided unique identifier for the job.
-        //! @param args The arguments used to launch the process running the job.
+        //! @param command The command used to launch the process running the job.
         //! @param additionalInfo The arguments to be provided to the additional information data structure.
         template<typename... AdditionalInfoArgs>
-        JobInfo(Id jobId, const AZStd::string& args, AdditionalInfoArgs&&... additionalInfo);
+        JobInfo(Id jobId, const Command& command, AdditionalInfoArgs&&... additionalInfo);
 
         //! Returns the id of this job.
         Id GetId() const;
 
         //! Returns the command arguments used to execute this job.
-        const AZStd::string& GetArgs() const;
+        const Command& GetCommand() const;
 
     private:
         Id m_id;
-        AZStd::string m_args;
+        Command m_command;
     };
 
     template<typename AdditionalInfo>
     template<typename... AdditionalInfoArgs>
-    JobInfo<AdditionalInfo>::JobInfo(Id jobId, const AZStd::string& args, AdditionalInfoArgs&&... additionalInfo)
+    JobInfo<AdditionalInfo>::JobInfo(Id jobId, const Command& command, AdditionalInfoArgs&&... additionalInfo)
         : AdditionalInfo{std::forward<AdditionalInfoArgs>(additionalInfo)...}
         , m_id(jobId)
-        , m_args(args)
+        , m_command(command)
     {
     }
 
@@ -66,8 +74,8 @@ namespace TestImpact
     }
 
     template<typename AdditionalInfo>
-    const AZStd::string& JobInfo<AdditionalInfo>::GetArgs() const
+    const typename JobInfo<AdditionalInfo>::Command& JobInfo<AdditionalInfo>::GetCommand() const
     {
-        return m_args;
+        return m_command;
     }
 } // namespace TestImpact

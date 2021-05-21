@@ -42,6 +42,9 @@ namespace TestImpact
         //! Returns the target with the specified name or throws if target not found.
         const Target* GetTargetOrThrow(const AZStd::string& name) const;
 
+        //! Returns true if the specified target is in the list, otherwise false.
+        bool HasTarget(const AZStd::string& name) const;
+
         // Returns the number of targets in the list.
         size_t GetNumTargets() const;
 
@@ -71,7 +74,7 @@ namespace TestImpact
         m_targets.reserve(descriptors.size());
         for (auto&& descriptor : descriptors)
         {
-            m_targets.emplace_back(Target(AZStd::move(descriptor)));
+            m_targets.emplace_back(AZStd::move(Target(AZStd::move(descriptor))));
         }
     }
 
@@ -121,5 +124,11 @@ namespace TestImpact
         const Target* target = GetTarget(name);
         AZ_TestImpact_Eval(target, TargetException, AZStd::string::format("Couldn't find target %s", name.c_str()).c_str());
         return target;
+    }
+
+    template<typename Target>
+    bool BuildTargetList<Target>::HasTarget(const AZStd::string& name) const
+    {
+        return GetTarget(name) != nullptr;
     }
 } // namespace TestImpact

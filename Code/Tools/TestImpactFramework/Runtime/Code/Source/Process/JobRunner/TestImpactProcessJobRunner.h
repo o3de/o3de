@@ -13,7 +13,6 @@
 #pragma once
 
 #include <Process/Scheduler/TestImpactProcessScheduler.h>
-#include <TestImpactFramework/TestImpactCallback.h>
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
@@ -27,7 +26,7 @@ namespace TestImpact
     //! @param meta The meta-data about the job run.
     //! @param std The standard output and standard error of the process running the job.
     template<typename Job>
-    using JobCallback = AZStd::function<CallbackResult(const typename Job::Info& jobInfo, const JobMeta& meta, StdContent&& std)>;
+    using JobCallback = AZStd::function<ProcessCallbackResult(const typename Job::Info& jobInfo, const JobMeta& meta, StdContent&& std)>;
 
     //! The payloads produced by the job-specific payload producer in the form of a map associating each job id with the job's payload.
     template<typename Job>
@@ -116,7 +115,7 @@ namespace TestImpact
             const auto* jobInfo = &jobInfos[jobIndex];
             const auto jobId = jobInfo->GetId().m_value;
             metas.emplace(jobId, AZStd::pair<JobMeta, const typename JobT::Info*>{JobMeta{}, jobInfo});
-            processes.emplace_back(jobId, m_stdOutRouting, m_stdErrRouting, jobInfo->GetArgs());
+            processes.emplace_back(jobId, m_stdOutRouting, m_stdErrRouting, jobInfo->GetCommand().m_args);
         }
 
         // Wrapper around low-level process launch callback to gather job meta-data and present a simplified callback interface to the client
@@ -134,7 +133,7 @@ namespace TestImpact
             else
             {
                 meta.m_startTime = createTime;
-                return CallbackResult::Continue;
+                return ProcessCallbackResult::Continue;
             }
         };
 
@@ -153,9 +152,13 @@ namespace TestImpact
             {
                 meta.m_result = JobResult::ExecutedWithSuccess;
             }
-            else if (exitCondition == ExitCondition::Terminated || exitCondition == ExitCondition::Timeout)
+            else if (exitCondition == ExitCondition::Terminated)
             {
                 meta.m_result = JobResult::Terminated;
+            }
+            else if (exitCondition == ExitCondition::Timeout)
+            {
+                meta.m_result = JobResult::Timeout;
             }
             else
             {

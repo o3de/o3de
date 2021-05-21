@@ -29,6 +29,12 @@ namespace TestImpact
         //! Returns the test target suite.
         const AZStd::string& GetSuite() const;
 
+        //! Returns the launcher custom arguments.
+        const AZStd::string& GetCustomArgs() const;
+
+        //! Returns the test run timeout.
+        AZStd::chrono::milliseconds GetTimeout() const;
+
         //! Returns the test target launch method.
         LaunchMethod GetLaunchMethod() const;
 

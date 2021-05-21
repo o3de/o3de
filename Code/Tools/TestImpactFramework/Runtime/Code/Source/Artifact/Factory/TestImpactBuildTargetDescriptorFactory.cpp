@@ -10,18 +10,19 @@
  *
  */
 
+#include <TestImpactFramework/TestImpactRuntime.h>
+
 #include <Artifact/Factory/TestImpactBuildTargetDescriptorFactory.h>
 #include <Artifact/TestImpactArtifactException.h>
 
-#include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/document.h>
 #include <AzCore/std/string/regex.h>
 
 namespace TestImpact
 {
     AutogenSources PairAutogenSources(
-        const AZStd::vector<AZ::IO::Path>& inputSources,
-        const AZStd::vector<AZ::IO::Path>& outputSources,
+        const AZStd::vector<RepoPath>& inputSources,
+        const AZStd::vector<RepoPath>& outputSources,
         const AZStd::string& autogenMatcher)
     {
         AutogenSources autogenSources;
@@ -65,8 +66,8 @@ namespace TestImpact
 
     BuildTargetDescriptor BuildTargetDescriptorFactory(
         const AZStd::string& buildTargetData,
-        const AZStd::vector<AZStd::string>& staticSourceExtensionExcludes,
-        const AZStd::vector<AZStd::string>& autogenInputExtensionExcludes,
+        const AZStd::vector<AZStd::string>& staticSourceExtensionIncludes,
+        const AZStd::vector<AZStd::string>& autogenInputExtensionIncludes,
         const AZStd::string& autogenMatcher)
     {
         // Keys for pertinent JSON node and attribute names
@@ -118,14 +119,14 @@ namespace TestImpact
         const auto& staticSources = sources[Keys[StaticKey]].GetArray();
         if (!staticSources.Empty())
         {
-            buildTargetDescriptor.m_sources.m_staticSources = AZStd::vector<AZStd::string>();
+            buildTargetDescriptor.m_sources.m_staticSources = AZStd::vector<RepoPath>();
 
             for (const auto& source : staticSources)
             {
-                const AZ::IO::Path sourcePath = AZ::IO::Path(source.GetString());
+                const RepoPath sourcePath = RepoPath(source.GetString());
                 if (AZStd::find(
-                        staticSourceExtensionExcludes.begin(), staticSourceExtensionExcludes.end(), sourcePath.Extension().Native()) ==
-                    staticSourceExtensionExcludes.end())
+                        staticSourceExtensionIncludes.begin(), staticSourceExtensionIncludes.end(), sourcePath.Extension().Native()) !=
+                    staticSourceExtensionIncludes.end())
                 {
                     buildTargetDescriptor.m_sources.m_staticSources.emplace_back(AZStd::move(sourcePath));
                 }
@@ -139,17 +140,17 @@ namespace TestImpact
             AZ_TestImpact_Eval(
                 !inputSources.Empty() && !outputSources.Empty(), ArtifactException, "Autogen malformed, input or output sources are empty");
 
-            AZStd::vector<AZ::IO::Path> inputPaths;
-            AZStd::vector<AZ::IO::Path> outputPaths;
+            AZStd::vector<RepoPath> inputPaths;
+            AZStd::vector<RepoPath> outputPaths;
             inputPaths.reserve(inputSources.Size());
             outputPaths.reserve(outputSources.Size());
 
             for (const auto& source : inputSources)
             {
-                const AZ::IO::Path sourcePath = AZ::IO::Path(source.GetString());
+                const RepoPath sourcePath = RepoPath(source.GetString());
                 if (AZStd::find(
-                        autogenInputExtensionExcludes.begin(), autogenInputExtensionExcludes.end(), sourcePath.Extension().Native()) ==
-                    autogenInputExtensionExcludes.end())
+                        autogenInputExtensionIncludes.begin(), autogenInputExtensionIncludes.end(), sourcePath.Extension().Native()) !=
+                    autogenInputExtensionIncludes.end())
                 {
                     inputPaths.emplace_back(AZStd::move(sourcePath));
                 }
@@ -157,7 +158,7 @@ namespace TestImpact
 
             for (const auto& source : outputSources)
             {
-                outputPaths.emplace_back(AZStd::move(AZ::IO::Path(source.GetString())));
+                outputPaths.emplace_back(AZStd::move(RepoPath(source.GetString())));
             }
 
             buildTargetDescriptor.m_sources.m_autogenSources = PairAutogenSources(inputPaths, outputPaths, autogenMatcher);

@@ -21,13 +21,13 @@ namespace TestImpact
 {
     //! Constructs a build target artifact from the specified build target data.
     //! @param buildTargetData The raw build target data in JSON format.
-    //! @param staticSourceExcludes The list of file extensions to exclude for static sources.
-    //! @param autogenInputExtentsionExcludes The list of file extensions to exclude for autogen input sources.
+    //! @param staticSourceIncludes The list of file extensions to include for static sources.
+    //! @param autogenInputExtentsionIncludes The list of file extensions to include for autogen input sources.
     //! @param autogenMatcher The regex pattern used to match autogen input filenames with output filenames.
     //! @return The constructed build target artifact.
     BuildTargetDescriptor BuildTargetDescriptorFactory(
         const AZStd::string& buildTargetData,
-        const AZStd::vector<AZStd::string>& staticSourceExtentsionExcludes,
-        const AZStd::vector<AZStd::string>& autogenInputExtentsionExcludes,
+        const AZStd::vector<AZStd::string>& staticSourceExtentsionIncludes,
+        const AZStd::vector<AZStd::string>& autogenInputExtentsionIncludes,
         const AZStd::string& autogenMatcher);
 } // namespace TestImpact
