@@ -138,7 +138,7 @@ namespace TestImpact
         {
             // Autogen input files are not compiled sources and thus supplying coverage data for them makes no sense
             AZ_TestImpact_Eval(
-                m_autogenInputToOutputMap.find(sourceCoverage.GetPath().c_str()) == m_autogenInputToOutputMap.end(),
+                m_autogenInputToOutputMap.find(sourceCoverage.GetPath().String()) == m_autogenInputToOutputMap.end(),
                 DependencyException, AZStd::string::format("Couldn't replace source coverage for %s, source file is an autogen input file",
                     sourceCoverage.GetPath().c_str()).c_str());
 
@@ -188,16 +188,12 @@ namespace TestImpact
                 // Clearing the coverage data of an autogen input source instead clears the coverage data of its output sources
                 for (const auto& outputSource : outputSources->second)
                 {
-                    AZStd::vector<SourceCoveringTests> coverage;
-                    coverage.emplace_back(RepoPath(outputSource));
-                    ReplaceSourceCoverage(SourceCoveringTestsList(AZStd::move(coverage)));
+                    ReplaceSourceCoverage(SourceCoveringTestsList(AZStd::vector<SourceCoveringTests>{ SourceCoveringTests(RepoPath(outputSource)) }));
                 }
             }
             else
             {
-                AZStd::vector<SourceCoveringTests> coverage;
-                coverage.emplace_back(RepoPath(path));
-                ReplaceSourceCoverage(SourceCoveringTestsList(AZStd::move(coverage)));
+                ReplaceSourceCoverage(SourceCoveringTestsList(AZStd::vector<SourceCoveringTests>{ SourceCoveringTests(RepoPath(path)) }));
             }
         }
     }

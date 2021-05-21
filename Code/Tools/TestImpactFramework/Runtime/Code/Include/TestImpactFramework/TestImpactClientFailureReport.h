@@ -130,7 +130,7 @@ namespace TestImpact
         private:
             AZStd::vector<ExecutionFailure> m_executionFailures;
             AZStd::vector<LauncherFailure> m_launcherFailures;
-            AZStd::vector<TargetFailure> m_unexecutedTestsTests;
+            AZStd::vector<TargetFailure> m_unexecutedTests;
         };
 
         //! Represents the report for a failed regular test sequence run without test impact analysis.

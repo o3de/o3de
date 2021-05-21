@@ -34,8 +34,7 @@ namespace TestImpact
     struct JobMeta
     {
         JobResult m_result = JobResult::NotExecuted;
-        AZStd::optional<AZStd::chrono::high_resolution_clock::time_point>
-            m_startTime; //!< The time, relative to the job runner start, that this job started.
+        AZStd::optional<AZStd::chrono::high_resolution_clock::time_point> m_startTime; //!< The time, relative to the job runner start, that this job started.
         AZStd::optional<AZStd::chrono::milliseconds> m_duration; //!< The duration that this job took to complete.
         AZStd::optional<ReturnCode> m_returnCode; //!< The return code of the underlying processes of this job.
     };
