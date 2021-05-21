@@ -18,7 +18,6 @@
 #include <AzCore/std/optional.h>
 #include <AzFramework/Input/Channels/InputChannel.h>
 #include <AzFramework/Viewport/ClickDetector.h>
-#include <AzFramework/Viewport/CursorState.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Viewport/ViewportId.h>
 
@@ -72,10 +71,15 @@ namespace AzFramework
 
     void UpdateCameraFromTransform(Camera& camera, const AZ::Transform& transform);
 
-    struct CursorEvent
+    //! Generic motion type
+    template<typename MotionTag>
+    struct MotionEvent
     {
-        ScreenPoint m_position;
+        int m_delta;
     };
+
+    using HorizontalMotionEvent = MotionEvent<struct HorizontalMotionTag>;
+    using VerticalMotionEvent = MotionEvent<struct VerticalMotionTag>;
 
     struct ScrollEvent
     {
@@ -88,7 +92,7 @@ namespace AzFramework
         InputChannel::State m_state; //!< Channel state. (e.g. Begin/update/end event).
     };
 
-    using InputEvent = AZStd::variant<AZStd::monostate, CursorEvent, ScrollEvent, DiscreteInputEvent>;
+    using InputEvent = AZStd::variant<AZStd::monostate, HorizontalMotionEvent, VerticalMotionEvent, ScrollEvent, DiscreteInputEvent>;
 
     class CameraInput
     {
@@ -194,6 +198,7 @@ namespace AzFramework
             m_activeCameraInputs.begin(), m_activeCameraInputs.end(), [](const auto& cameraInput) { return cameraInput->Exclusive(); });
     }
 
+    //! Responsible for updating a series of cameras given various inputs.
     class CameraSystem
     {
     public:
@@ -203,8 +208,8 @@ namespace AzFramework
         Cameras m_cameras;
 
     private:
-        CursorState m_cursorState;
-        float m_scrollDelta = 0.0f;
+        ScreenVector m_motionDelta; //!< The delta used for look/orbit/pan (rotation + translation) - two dimensional.
+        float m_scrollDelta = 0.0f; //!< The delta used for dolly/movement (translation) - one dimensional. 
     };
 
     class RotateCameraInput : public CameraInput
@@ -419,8 +424,6 @@ namespace AzFramework
         return true;
     }
 
-    struct WindowSize;
-
     //! Map from a generic InputChannel event to a camera specific InputEvent.
-    InputEvent BuildInputEvent(const InputChannel& inputChannel, const WindowSize& windowSize);
+    InputEvent BuildInputEvent(const InputChannel& inputChannel);
 } // namespace AzFramework

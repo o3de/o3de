@@ -9,6 +9,7 @@
         Version="$(var.CPACK_PACKAGE_VERSION)"
         Manufacturer="$(var.CPACK_PACKAGE_VENDOR)"
         UpgradeCode="$(var.CPACK_BOOTSTRAP_UPGRADE_GUID)"
+        IconSourceFile="$(var.CPACK_WIX_PRODUCT_ICON)"
         DisableModify="yes">
 
         <Variable Name="InstallFolder"
@@ -20,12 +21,14 @@
             <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
                 <bal:WixStandardBootstrapperApplication
                     LicenseUrl="$(var.CPACK_LICENSE_URL)"
+                    LogoFile="$(var.CPACK_WIX_PRODUCT_LOGO)"
                     ShowVersion="yes" />
             </BootstrapperApplicationRef>
         <?else?>
             <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
                 <bal:WixStandardBootstrapperApplication
                     LicenseFile="$(var.CPACK_WIX_LICENSE_RTF)"
+                    LogoFile="$(var.CPACK_WIX_PRODUCT_LOGO)"
                     ShowVersion="yes" />
             </BootstrapperApplicationRef>
         <?endif?>
