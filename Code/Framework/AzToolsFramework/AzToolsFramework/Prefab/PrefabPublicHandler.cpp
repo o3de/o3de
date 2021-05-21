@@ -109,7 +109,6 @@ namespace AzToolsFramework
                 for (auto& nestedInstance : instances)
                 {
                     AZStd::unique_ptr<Instance> outInstance = commonRootEntityOwningInstance->get().DetachNestedInstance(nestedInstance->GetInstanceAlias());
-                    instancePtrs.emplace_back(AZStd::move(outInstance));
 
                     auto linkRef = m_prefabSystemComponentInterface->FindLink(nestedInstance->GetLinkId());
 
@@ -122,6 +121,8 @@ namespace AzToolsFramework
                     }
                     
                     RemoveLink(outInstance, commonRootEntityOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch());
+
+                    instancePtrs.emplace_back(AZStd::move(outInstance));
                 }
 
                 PrefabUndoHelpers::UpdatePrefabInstance(
@@ -823,9 +824,14 @@ namespace AzToolsFramework
                     QString newEntityDomString = aliasEntityPair.second;
 
                     // Replace all of the old alias references with the new ones
+                    // We bookend the aliases with \" as an extra precaution to prevent
+                    // inadvertently replacing a matching string vs. where an actual EntityId is expected
                     for (auto aliasMapIter : oldAliasToNewAliasMap)
                     {
-                        newEntityDomString.replace(aliasMapIter.first.c_str(), aliasMapIter.second.c_str());
+                        QString oldAlias = QString("\"%1\"").arg(aliasMapIter.first.c_str());
+                        QString newAlias = QString("\"%1\"").arg(aliasMapIter.second.c_str());
+
+                        newEntityDomString.replace(oldAlias, newAlias);
                     }
 
                     // Create the new Entity DOM from parsing the JSON string
