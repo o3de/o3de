@@ -769,7 +769,7 @@ namespace AzToolsFramework
 
                 if (!success)
                 {
-                    return AZ::Failure(AZStd::string("Cannot duplicate multiple entities belonging to different instances with one operation"));
+                    return AZ::Failure(AZStd::string("Failed to retrieve entities and instances from the given list of entity ids for duplication"));
                 }
 
                 // Make a copy of our before instance DOM where we will add our duplicated entities
@@ -795,11 +795,6 @@ namespace AzToolsFramework
                     EntityAlias newEntityAlias = Instance::GenerateEntityAlias();
                     oldAliasToNewAliasMap.insert(AZStd::make_pair(oldAlias, newEntityAlias));
 
-                    // Update the Entity Id in the Entity DOM for the duplicated Entity
-                    auto entityIdIter = entityDomBefore.FindMember(PrefabDomUtils::EntityIdName);
-                    AZ_Assert(entityIdIter != entityDomBefore.MemberEnd(), "Entity DOM missing Id.");
-                    entityIdIter->value.SetString(newEntityAlias.c_str(), newEntityAlias.length(), entityDomBefore.GetAllocator());
-
                     rapidjson::StringBuffer buffer;
                     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
                     entityDomBefore.Accept(writer);
@@ -824,14 +819,20 @@ namespace AzToolsFramework
                     QString newEntityDomString = aliasEntityPair.second;
 
                     // Replace all of the old alias references with the new ones
-                    // We bookend the aliases with \" as an extra precaution to prevent
+                    // We bookend the aliases with \" and also with a / as an extra precaution to prevent
                     // inadvertently replacing a matching string vs. where an actual EntityId is expected
+                    // This will cover both cases where an alias could be used in a normal entity vs. an instance
                     for (auto aliasMapIter : oldAliasToNewAliasMap)
                     {
-                        QString oldAlias = QString("\"%1\"").arg(aliasMapIter.first.c_str());
-                        QString newAlias = QString("\"%1\"").arg(aliasMapIter.second.c_str());
+                        QString oldAliasQuotes = QString("\"%1\"").arg(aliasMapIter.first.c_str());
+                        QString newAliasQuotes = QString("\"%1\"").arg(aliasMapIter.second.c_str());
 
-                        newEntityDomString.replace(oldAlias, newAlias);
+                        newEntityDomString.replace(oldAliasQuotes, newAliasQuotes);
+
+                        QString oldAliasPathRef = QString("/%1").arg(aliasMapIter.first.c_str());
+                        QString newAliasPathRef = QString("/%1").arg(aliasMapIter.second.c_str());
+
+                        newEntityDomString.replace(oldAliasPathRef, newAliasPathRef);
                     }
 
                     // Create the new Entity DOM from parsing the JSON string
