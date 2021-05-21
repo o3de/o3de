@@ -42,6 +42,8 @@ namespace AZ
             static bool ConvertSliceFiles(Application& application);
 
         private:
+            static bool ConnectToAssetProcessor();
+            static void DisconnectFromAssetProcessor();
 
             static bool ConvertSliceFile(AZ::SerializeContext* serializeContext, const AZStd::string& slicePath, bool isDryRun);
             static bool ConvertSliceToPrefab(

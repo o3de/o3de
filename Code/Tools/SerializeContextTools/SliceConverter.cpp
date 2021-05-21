@@ -25,6 +25,8 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Archive/IArchive.h>
+#include <AzFramework/Asset/AssetSystemBus.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
@@ -71,6 +73,13 @@ namespace AZ
                 return false;
             }
 
+            // Connect to the Asset Processor so that we can get the correct source path to any nested slice references.
+            if (!ConnectToAssetProcessor())
+            {
+                AZ_Error("Convert-Slice", false, "  Failed to connect to the Asset Processor.\n");
+                return false;
+            }
+
             // Load the asset catalog so that we can find any nested assets successfully.  We also need to tick the tick bus
             // so that the OnCatalogLoaded event gets processed now, instead of during application shutdown.
             AZ::Data::AssetCatalogRequestBus::Broadcast(
@@ -98,6 +107,7 @@ namespace AZ
                 result = result && convertResult;
             }
 
+            DisconnectFromAssetProcessor();
             return result;
         }
 
@@ -276,10 +286,25 @@ namespace AZ
                 sliceAsset.QueueLoad();
                 sliceAsset.BlockUntilLoadComplete();
 
-                // First, convert the nested slice to a prefab.
-                AZStd::string assetPath;
+                // The slice list gives us asset IDs, and we need to get to the source path.  So first we get the asset path from the ID,
+                // then we get the source path from the asset path.
+
+                AZStd::string processedAssetPath;
                 AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                    assetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, sliceAsset.GetId());
+                    processedAssetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, sliceAsset.GetId());
+
+                AZStd::string assetPath;
+                AzToolsFramework::AssetSystemRequestBus::Broadcast(
+                    &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+                    processedAssetPath, assetPath);
+                if (assetPath.empty())
+                {
+                    AZ_Warning("Convert-Slice", false,
+                        "  Source path for nested slice '%s' could not be found, slice not converted.", processedAssetPath.c_str());
+                    return false;
+                }
+
+                // Now, convert the nested slice to a prefab.
                 bool nestedSliceResult = ConvertSliceFile(serializeContext, assetPath, isDryRun);
                 if (!nestedSliceResult)
                 {
@@ -287,21 +312,26 @@ namespace AZ
                     return false;
                 }
 
-                // Load the prefab template for the nested slice
+                // Load the prefab template for the newly-created nested prefab.
+                // To get the template, we need to take our absolute slice path and turn it into a project-relative prefab path.
                 AZ::IO::Path nestedPrefabPath = assetPath;
                 nestedPrefabPath.ReplaceExtension("prefab");
+
+                auto prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
+                nestedPrefabPath = prefabLoaderInterface->GetRelativePathToProject(nestedPrefabPath);
+
                 AzToolsFramework::Prefab::TemplateId nestedTemplateId =
                     prefabSystemComponentInterface->GetTemplateIdFromFilePath(nestedPrefabPath);
                 AzToolsFramework::Prefab::TemplateReference nestedTemplate =
                     prefabSystemComponentInterface->FindTemplate(nestedTemplateId);
 
-                // Get the expected number of instances for this prefab
+                // For each slice instance of the nested slice, convert it to a nested prefab instance instead.
+
                 auto instances = slice.GetInstances();
                 AZ_Printf(
                     "Convert-Slice", "  Attaching %zu instances of nested slice '%s'.\n", instances.size(),
                     nestedPrefabPath.Native().c_str());
 
-                // For each slice instance of the nested slice, convert it to a nested prefab instance instead.
                 for (auto& instance : instances)
                 {
                     bool instanceConvertResult = ConvertSliceInstance(instance, sliceAsset, nestedTemplate, sourceInstance);
@@ -420,6 +450,42 @@ namespace AZ
             }
 
             return true;
+        }
+
+        bool SliceConverter::ConnectToAssetProcessor()
+        {
+            AzFramework::AssetSystem::ConnectionSettings connectionSettings;
+            AzFramework::AssetSystem::ReadConnectionSettingsFromSettingsRegistry(connectionSettings);
+
+            connectionSettings.m_launchAssetProcessorOnFailedConnection = true;
+            connectionSettings.m_connectionDirection =
+                AzFramework::AssetSystem::ConnectionSettings::ConnectionDirection::ConnectToAssetProcessor;
+            connectionSettings.m_connectionIdentifier = AzFramework::AssetSystem::ConnectionIdentifiers::Editor;
+            connectionSettings.m_loggingCallback = [](AZStd::string_view logData)
+            {
+                AZ_Printf("Convert-Slice", "%.*s\n", AZ_STRING_ARG(logData));
+            };
+
+            bool connectedToAssetProcessor = false;
+
+            AzFramework::AssetSystemRequestBus::BroadcastResult(
+                connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::EstablishAssetProcessorConnection,
+                connectionSettings);
+
+            return connectedToAssetProcessor;
+        }
+
+        void SliceConverter::DisconnectFromAssetProcessor()
+        {
+            AzFramework::AssetSystemRequestBus::Broadcast(
+                &AzFramework::AssetSystem::AssetSystemRequests::StartDisconnectingAssetProcessor);
+
+            // Wait for the disconnect to finish.
+            bool disconnected = false;
+            AzFramework::AssetSystemRequestBus::BroadcastResult(disconnected, 
+                &AzFramework::AssetSystem::AssetSystemRequests::WaitUntilAssetProcessorDisconnected, AZStd::chrono::seconds(30));
+
+            AZ_Error("Convert-Slice", disconnected, "Asset Processor failed to disconnect successfully.");
         }
 
     } // namespace SerializeContextTools
