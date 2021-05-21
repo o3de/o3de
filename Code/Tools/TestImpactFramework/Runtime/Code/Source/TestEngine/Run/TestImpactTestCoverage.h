@@ -29,7 +29,13 @@ namespace TestImpact
     class TestCoverage
     {
     public:
-        TestCoverage(AZStd::vector<ModuleCoverage>&& moduleCoverages);
+        TestCoverage(const TestCoverage&);
+        TestCoverage(TestCoverage&&) noexcept;
+        TestCoverage(AZStd::vector<ModuleCoverage>&& moduleCoverages) noexcept;
+        TestCoverage(const AZStd::vector<ModuleCoverage>& moduleCoverages);
+
+        TestCoverage& operator=(const TestCoverage&);
+        TestCoverage& operator=(TestCoverage&&) noexcept;
 
         //! Returns the number of unique sources covered.
         size_t GetNumSourcesCovered() const;
@@ -47,6 +53,8 @@ namespace TestImpact
         AZStd::optional<CoverageLevel> GetCoverageLevel() const;
 
     private:
+        void CalculateTestMetrics();
+
         AZStd::vector<ModuleCoverage> m_modules;
         AZStd::vector<AZStd::string> m_sourcesCovered;
         AZStd::optional<CoverageLevel> m_coverageLevel;

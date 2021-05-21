@@ -10,16 +10,68 @@
  *
  */
 
-#include <Test/Run/TestImpactTestCoverage.h>
+#include <TestEngine/Run/TestImpactTestCoverage.h>
 
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/sort.h>
 
 namespace TestImpact
 {
-    TestCoverage::TestCoverage(AZStd::vector<ModuleCoverage>&& moduleCoverages)
+    TestCoverage::TestCoverage(const TestCoverage& other)
+        : m_modules(other.m_modules)
+        , m_sourcesCovered(other.m_sourcesCovered)
+        , m_coverageLevel(other.m_coverageLevel)
+    {
+    }
+
+    TestCoverage::TestCoverage(TestCoverage&& other) noexcept
+        : m_modules(AZStd::move(other.m_modules))
+        , m_sourcesCovered(AZStd::move(other.m_sourcesCovered))
+    {
+        AZStd::swap(m_coverageLevel, other.m_coverageLevel);
+    }
+
+    TestCoverage::TestCoverage(const AZStd::vector<ModuleCoverage>& moduleCoverages)
+        : m_modules(moduleCoverages)
+    {
+        CalculateTestMetrics();
+    }
+
+    TestCoverage::TestCoverage(AZStd::vector<ModuleCoverage>&& moduleCoverages) noexcept
         : m_modules(AZStd::move(moduleCoverages))
     {
+        CalculateTestMetrics();
+    }
+
+    TestCoverage& TestCoverage::operator=(const TestCoverage& other)
+    {
+        if (this != &other)
+        {
+            m_modules = other.m_modules;
+            m_sourcesCovered = other.m_sourcesCovered;
+            m_coverageLevel = other.m_coverageLevel;
+        }
+
+        return *this;
+    }
+
+    TestCoverage& TestCoverage::operator=(TestCoverage&& other) noexcept
+    {
+        if (this != &other)
+        {
+            m_modules = AZStd::move(other.m_modules);
+            m_sourcesCovered = other.m_sourcesCovered;
+            m_coverageLevel = other.m_coverageLevel;
+        }
+
+        return *this;
+    }
+
+    void TestCoverage::CalculateTestMetrics()
+    {
+        m_coverageLevel.reset();
+        m_sourcesCovered.clear();
+
         for (const auto& moduleCovered : m_modules)
         {
             for (const auto& sourceCovered : moduleCovered.m_sources)

@@ -12,9 +12,9 @@
 
 #pragma once
 
-#include <Test/Job/TestImpactTestJobRunner.h>
-#include <Test/Run/TestImpactTestRun.h>
-#include <Test/Run/TestImpactTestRunJobData.h>
+#include <TestEngine/JobRunner/TestImpactTestJobRunner.h>
+#include <TestEngine/Run/TestImpactTestRun.h>
+#include <TestEngine/Run/TestImpactTestRunJobData.h>
 
 namespace TestImpact
 {

@@ -13,7 +13,7 @@
 #pragma once
 
 #include <Artifact/Dynamic/TestImpactTestRunSuite.h>
-#include <Test/TestImpactTestSuiteContainer.h>
+#include <TestEngine/TestImpactTestSuiteContainer.h>
 
 namespace TestImpact
 {
@@ -24,7 +24,13 @@ namespace TestImpact
         using TestSuiteContainer = TestSuiteContainer<TestRunSuite>;
 
     public:
-        TestRun(AZStd::vector<TestRunSuite>&& testSuites, AZStd::chrono::milliseconds duration);
+        TestRun(const TestRun&);
+        TestRun(TestRun&&) noexcept;
+        TestRun(const AZStd::vector<TestRunSuite>& testSuites, AZStd::chrono::milliseconds duration);
+        TestRun(AZStd::vector<TestRunSuite>&& testSuites, AZStd::chrono::milliseconds duration) noexcept;
+
+        TestRun& operator=(const TestRun&);
+        TestRun& operator=(TestRun&&) noexcept;
 
         //! Returns the total number of tests that were run.
         size_t GetNumRuns() const;
@@ -42,6 +48,8 @@ namespace TestImpact
         AZStd::chrono::milliseconds GetDuration() const;
 
     private:
+        void CalculateTestMetrics();
+
         size_t m_numRuns = 0;
         size_t m_numNotRuns = 0;
         size_t m_numPasses = 0;

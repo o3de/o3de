@@ -12,15 +12,11 @@
 
 #pragma once
 
-#include <Test/Enumeration/TestImpactTestEnumeration.h>
-
-#include <AzCore/std/string/string.h>
+#include <Artifact/Dynamic/TestImpactTestEnumerationSuite.h>
+#include <TestEngine/TestImpactTestSuiteContainer.h>
 
 namespace TestImpact
 {
-    //! Serializes the specified test enumeration to JSON format.
-    AZStd::string SerializeTestEnumeration(const TestEnumeration& testEnumeration);
-
-    //! Deserializes a test enumeration from the specified test enumeration data in JSON format.
-    TestEnumeration DeserializeTestEnumeration(const AZStd::string& testEnumerationString);
+    //! Representation of a given test target's enumerated tests.
+    using TestEnumeration = TestSuiteContainer<TestEnumerationSuite>;
 } // namespace TestImpact

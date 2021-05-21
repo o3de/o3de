@@ -10,13 +10,17 @@
  *
  */
 
-#pragma once
-
-#include <Artifact/Dynamic/TestImpactTestEnumerationSuite.h>
-#include <Test/TestImpactTestSuiteContainer.h>
+#include <TestEngine/Run/TestImpactTestRunJobData.h>
 
 namespace TestImpact
 {
-    //! Representation of a given test target's enumerated tests.
-    using TestEnumeration = TestSuiteContainer<TestEnumerationSuite>;
+    TestRunJobData::TestRunJobData(const RepoPath& resultsArtifact)
+        : m_runArtifact(resultsArtifact)
+    {
+    }
+
+    const RepoPath& TestRunJobData::GetRunArtifactPath() const
+    {
+        return m_runArtifact;
+    }
 } // namespace TestImpact

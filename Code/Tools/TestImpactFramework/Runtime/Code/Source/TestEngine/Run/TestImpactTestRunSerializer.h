@@ -12,20 +12,15 @@
 
 #pragma once
 
-#include <Test/Job/TestImpactTestJobRunner.h>
+#include <TestEngine/Run/TestImpactTestRun.h>
+
+#include <AzCore/std/string/string.h>
 
 namespace TestImpact
 {
-    //! Per-job data for test runs.
-    class TestRunJobData
-    {
-    public:
-        TestRunJobData(const AZ::IO::Path& resultsArtifact);
+    //! Serializes the specified test run to JSON format.
+    AZStd::string SerializeTestRun(const TestRun& testRun);
 
-        //! Returns the path to the test run artifact produced by the test target.
-        const AZ::IO::Path& GetRunArtifactPath() const;
-
-    private:
-        AZ::IO::Path m_runArtifact; //!< Path to results data.
-    };
+    //! Deserializes a test run from the specified test run data in JSON format.
+    TestRun DeserializeTestRun(const AZStd::string& testRunString);
 } // namespace TestImpact
