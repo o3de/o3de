@@ -96,6 +96,22 @@ namespace O3DE::ProjectManager
          */
         virtual bool UpdateProject(const ProjectInfo& projectInfo) = 0;
 
+        /**
+         * Add a gem to a project
+         * @param gemPath the absolute path to the gem 
+         * @param projectPath the absolute path to the project
+         * @return true on success, false on failure
+         */
+        virtual bool AddGemToProject(const QString& gemPath, const QString& projectPath) = 0;
+
+        /**
+         * Remove gem to a project
+         * @param gemPath the absolute path to the gem 
+         * @param projectPath the absolute path to the project
+         * @return true on success, false on failure
+         */
+        virtual bool RemoveGemFromProject(const QString& gemPath, const QString& projectPath) = 0;
+
 
         // Project Templates
 

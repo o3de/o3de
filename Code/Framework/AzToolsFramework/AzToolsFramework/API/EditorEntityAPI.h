@@ -52,6 +52,21 @@ namespace AzToolsFramework
         * Deletes all entities in the provided list, as well as their transform descendants.
         */
         virtual void DeleteEntitiesAndAllDescendants(const EntityIdList& entities) = 0;
+
+        /**
+          * Duplicate all currently-selected entities.
+          */
+        virtual void DuplicateSelected() = 0;
+
+        /**
+         * Duplicates the specified entity.
+         */
+        virtual void DuplicateEntityById(AZ::EntityId entityId) = 0;
+
+        /**
+         * Duplicates all specified entities.
+         */
+        virtual void DuplicateEntities(const EntityIdList& entities) = 0;
     };
 
 } // namespace AzToolsFramework

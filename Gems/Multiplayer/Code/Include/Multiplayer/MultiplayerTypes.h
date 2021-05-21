@@ -18,6 +18,7 @@
 #include <AzCore/std/string/fixed_string.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/ConnectionLayer/ConnectionEnums.h>
+#include <AzNetworking/DataStructures/ByteBuffer.h>
 
 namespace Multiplayer
 {
@@ -85,8 +86,7 @@ namespace Multiplayer
         Activate
     };
 
-    // This is just a placeholder
-    // The level/prefab cooking will devise the actual solution for identifying a dynamically spawnable entity within a prefab
+    // Structure for identifying a specific entity within a spawnable
     struct PrefabEntityId
     {
         AZ_TYPE_INFO(PrefabEntityId, "{EFD37465-CCAC-4E87-A825-41B4010A2C75}");
@@ -120,6 +120,13 @@ namespace Multiplayer
             serializer.Serialize(m_entityOffset, "entityOffset");
             return serializer.IsValid();
         }
+    };
+
+    struct EntityMigrationMessage
+    {
+        NetEntityId m_entityId;
+        PrefabEntityId m_prefabEntityId;
+        AzNetworking::PacketEncodingBuffer m_propertyUpdateData;
     };
 }
 

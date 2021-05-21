@@ -65,8 +65,8 @@ function Process(context)
 
     for i=1,MAX_WRINKLE_LAYER_COUNT do
         if(i <= count) then
-            isBaseColorTextureMissing = isBaseColorEnabled and nil == context:GetMaterialPropertyValue_image("wrinkleLayers.baseColorMap" .. i)
-            isNormalTextureMissing = isNormalEnabled and nil == context:GetMaterialPropertyValue_image("wrinkleLayers.normalMap" .. i)
+            isBaseColorTextureMissing = isBaseColorEnabled and nil == context:GetMaterialPropertyValue_Image("wrinkleLayers.baseColorMap" .. i)
+            isNormalTextureMissing = isNormalEnabled and nil == context:GetMaterialPropertyValue_Image("wrinkleLayers.normalMap" .. i)
             context:SetShaderOptionValue_bool("o_wrinkleLayers_baseColor_useTexture" .. i, not isBaseColorTextureMissing)
             context:SetShaderOptionValue_bool("o_wrinkleLayers_normal_useTexture" .. i, not isNormalTextureMissing)
         else
