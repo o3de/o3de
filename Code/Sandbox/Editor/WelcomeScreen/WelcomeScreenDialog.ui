@@ -104,17 +104,20 @@
          <number>0</number>
         </property>
         <property name="bottomMargin">
-         <number>0</number>
+         <number>10</number>
         </property>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
+          <property name="leftMargin">
+           <number>15</number>
+          </property>
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_2">
             <property name="spacing">
              <number>10</number>
             </property>
             <property name="leftMargin">
-             <number>20</number>
+             <number>0</number>
             </property>
             <item>
              <widget class="QLabel" name="currentProjectLabel">
@@ -183,6 +186,23 @@
            </size>
           </property>
          </spacer>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <property name="leftMargin">
+           <number>15</number>
+          </property>
+          <property name="rightMargin">
+           <number>15</number>
+          </property>
+          <item>
+           <widget class="QPushButton" name="switchProjectButton">
+            <property name="text">
+             <string>Switch project...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -454,31 +474,14 @@
             </spacer>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_2">
-             <item>
-              <widget class="QLabel" name="levelFileLabel">
-               <property name="text">
-                <string>No level file created yet for the project. &lt;a href=&quot;#&quot;&gt;Create one&lt;/a&gt; now.</string>
-               </property>
-               <property name="textFormat">
-                <enum>Qt::RichText</enum>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_3">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
+            <widget class="QLabel" name="levelFileLabel">
+             <property name="text">
+              <string>No level file created yet for this project. &lt;a href=&quot;#&quot;&gt;Create one&lt;/a&gt; now.</string>
+             </property>
+             <property name="textFormat">
+              <enum>Qt::RichText</enum>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>

@@ -114,31 +114,10 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     connect(ui->levelFileLabel, &QLabel::linkActivated, this, &WelcomeScreenDialog::OnNewLevelLabelClicked);
     connect(ui->openLevelButton, &QPushButton::clicked, this, &WelcomeScreenDialog::OnOpenLevelBtnClicked);
 
-//    connect(ui->newSliceButton, &QPushButton::clicked, this, &WelcomeScreenDialog::OnNewSliceBtnClicked);
-//    connect(ui->openSliceButton, &QPushButton::clicked, this, &WelcomeScreenDialog::OnOpenSliceBtnClicked);
-
-//    connect(ui->documentationButton, &QPushButton::clicked, this, &WelcomeScreenDialog::OnDocumentationBtnClicked);
 //    connect(ui->showOnStartup, &QCheckBox::clicked, this, &WelcomeScreenDialog::OnShowOnStartupBtnClicked);
 //    connect(ui->autoLoadLevel, &QCheckBox::clicked, this, &WelcomeScreenDialog::OnAutoLoadLevelBtnClicked);
-#if 0
-    m_manifest = new News::ResourceManifest(
-            std::bind(&WelcomeScreenDialog::SyncSuccess, this),
-            std::bind(&WelcomeScreenDialog::SyncFail, this, std::placeholders::_1),
-            std::bind(&WelcomeScreenDialog::SyncUpdate, this, std::placeholders::_1, std::placeholders::_2));
-    
-    m_articleViewContainer = new News::ArticleViewContainer(this, *m_manifest);
-    connect(m_articleViewContainer, &News::ArticleViewContainer::scrolled,
-        this, &WelcomeScreenDialog::previewAreaScrolled);
-    ui->articleViewContainerRoot->layout()->addWidget(m_articleViewContainer);
 
-    m_manifest->Sync();
-#endif
-#ifndef ENABLE_SLICE_EDITOR
-//    ui->newSliceButton->hide();
-//    ui->openSliceButton->hide();
-#endif
-
-    // Adjust the height, if need be
+// Adjust the height, if need be
     // Do it in the constructor so that the WindowDecoratorWrapper handles it correctly
     int smallestHeight = GetSmallestScreenHeight();
     if (smallestHeight < geometry().height())
@@ -158,16 +137,10 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
 WelcomeScreenDialog::~WelcomeScreenDialog()
 {
     delete ui;
-    delete m_manifest;
 }
 
 void WelcomeScreenDialog::done(int result)
 {
-    if (m_waitingOnAsync)
-    {
-        m_manifest->Abort();
-    }
-
     QDialog::done(result);
 }
 
@@ -178,16 +151,6 @@ const QString& WelcomeScreenDialog::GetLevelPath()
 
 bool WelcomeScreenDialog::eventFilter(QObject *watched, QEvent *event)
 {
-#if 0
-    if (watched == ui->documentationLink)
-    {
-        if (event->type() == QEvent::MouseButtonRelease)
-        {
-            OnDocumentationBtnClicked(false);
-            return true;
-        }
-    }
-#endif
     return QDialog::eventFilter(watched, event);
 }
 
@@ -338,26 +301,6 @@ void WelcomeScreenDialog::OnOpenLevelBtnClicked([[maybe_unused]] bool checked)
     }
 }
 
-void WelcomeScreenDialog::OnNewSliceBtnClicked([[maybe_unused]] bool checked)
-{
-    m_levelPath = "new slice";
-    accept();
-}
-
-void WelcomeScreenDialog::OnOpenSliceBtnClicked(bool)
-{
-    QString fileName = QFileDialog::getOpenFileName(MainWindow::instance(),
-        tr("Open Slice"),
-        Path::GetEditingGameDataFolder().c_str(),
-        tr("Slice (*.slice)"));
-
-    if (!fileName.isEmpty())
-    {
-        m_levelPath = fileName;
-        accept();
-    }
-}
-
 void WelcomeScreenDialog::OnRecentLevelListItemClicked(const QModelIndex& modelIndex)
 {
     int index = modelIndex.row();
@@ -372,45 +315,6 @@ void WelcomeScreenDialog::OnRecentLevelListItemClicked(const QModelIndex& modelI
 void WelcomeScreenDialog::OnCloseBtnClicked([[maybe_unused]] bool checked)
 {
     accept();
-}
-
-void WelcomeScreenDialog::OnAutoLoadLevelBtnClicked(bool checked)
-{
-    gSettings.bAutoloadLastLevelAtStartup = checked;
-    gSettings.Save();
-}
-
-
-void WelcomeScreenDialog::OnShowOnStartupBtnClicked(bool checked)
-{
-    gSettings.bShowDashboardAtStartup = !checked;
-    gSettings.Save();
-
-    if (gSettings.bShowDashboardAtStartup == false)
-    {
-        QMessageBox msgBox(AzToolsFramework::GetActiveWindow());
-        msgBox.setWindowTitle(QObject::tr("Skip the Welcome dialog on startup"));
-        msgBox.setText(QObject::tr("You may re-enable the Welcome dialog at any time by going to Edit > Editor Settings > Global Preferences in the menu bar."));
-        msgBox.exec();
-    }
-}
-
-void WelcomeScreenDialog::OnDocumentationBtnClicked([[maybe_unused]] bool checked)
-{
-    QString webLink = tr("https://aws.amazon.com/lumberyard/support/");
-    QDesktopServices::openUrl(QUrl(webLink));
-}
-
-void WelcomeScreenDialog::SyncFail([[maybe_unused]] News::ErrorCode error)
-{
-    m_articleViewContainer->AddErrorMessage();
-    m_waitingOnAsync = false;
-}
-
-void WelcomeScreenDialog::SyncSuccess()
-{
-    m_articleViewContainer->PopulateArticles();
-    m_waitingOnAsync = false;
 }
 
 void WelcomeScreenDialog::previewAreaScrolled()
