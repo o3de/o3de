@@ -1652,10 +1652,22 @@ def create_project(project_path: str,
                             d.write('# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n')
                             d.write('# {END_LICENSE}\n')
 
-    # copy the o3de_manifest.cmake into the project root
-    engine_path = manifest.get_this_engine_path()
-    o3de_manifest_cmake = f'{engine_path}/cmake/o3de_manifest.cmake'
-    shutil.copy(o3de_manifest_cmake, project_path)
+    # set the "engine" element of the project.json
+    engine_json_data = manifest.get_engine_json_data(engine_path=manifest.get_this_engine_path())
+    try:
+        engine_name = engine_json_data['engine_name']
+    except Exception as e:
+        logger.error(f"engine_name for this engine not found in engine.json.")
+        return 1
+
+    project_json_data = manifest.get_project_json_data(project_path=project_path)
+    project_json_data.update({"engine": engine_name})
+    with open(project_json, 'w') as s:
+        try:
+            s.write(json.dumps(project_json_data, indent=4))
+        except Exception as e:
+            logger.error(f'Failed to write project json at {project_path}.')
+            return 1
 
     return 0
 
