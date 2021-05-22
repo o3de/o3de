@@ -18,6 +18,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/string/regex.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
@@ -106,13 +107,24 @@ namespace TextureAtlasBuilder
     {
         bool resolved = false;
 
-        // Get full path by appending the relative path to the watch directory
-        AZStd::string fullPath = watchDirectory;
-        fullPath.append("/");
-        fullPath.append(relativePath);
+        if (relativePath[0] == '@')
+        {
+            // Get full path by resolving the alias at the front of the path
+            char resolvedPath[AZ_MAX_PATH_LEN];
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath(relativePath.c_str(), resolvedPath, AZ_MAX_PATH_LEN);
+            resolvedFullPathOut = resolvedPath;
+            resolved = true;
+        }
+        else
+        {
+            // Get full path by appending the relative path to the watch directory
+            AZStd::string fullPath = watchDirectory;
+            fullPath.append("/");
+            fullPath.append(relativePath);
 
-        // Resolve to canonical path (remove "./" and "../") 
-        resolved = GetCanonicalPathFromFullPath(fullPath, resolvedFullPathOut);
+            // Resolve to canonical path (remove "./" and "../") 
+            resolved = GetCanonicalPathFromFullPath(fullPath, resolvedFullPathOut);
+        }
 
         return resolved;
     }
