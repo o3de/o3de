@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Class Name="SpawnNodeable"
+         QualifiedName="Nodeables::Spawning::SpawnNodeable"
+         PreferredClassName="Spawn"
+         Base="ScriptCanvas::Nodeable"
+         Icon="Icons/ScriptCanvas/Placeholder.png"
+         Category="Spawning"
+         GeneratePropertyFriend="True"
+         Namespace="ScriptCanvas"
+         Description="Spawn">
+
+    <Input Name="Spawn" Description="">
+    </Input>
+    
+  </Class>
+</ScriptCanvas>
