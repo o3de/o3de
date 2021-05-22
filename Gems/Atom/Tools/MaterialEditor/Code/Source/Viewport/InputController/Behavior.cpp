@@ -44,6 +44,8 @@ namespace MaterialEditor
         MaterialEditorViewportInputControllerRequestBus::BroadcastResult(
             m_targetPosition,
             &MaterialEditorViewportInputControllerRequestBus::Handler::GetTargetPosition);
+        MaterialEditorViewportInputControllerRequestBus::BroadcastResult(
+            m_radius, &MaterialEditorViewportInputControllerRequestBus::Handler::GetRadius);
     }
 
     void Behavior::End()
@@ -119,7 +121,7 @@ namespace MaterialEditor
 
     float Behavior::GetSensitivityZ()
     {
-        return 0.001f;
+        return 0.001f * AZ::GetMax(0.5f, m_radius);
     }
 
     AZ::Quaternion Behavior::LookRotation(AZ::Vector3 forward)
