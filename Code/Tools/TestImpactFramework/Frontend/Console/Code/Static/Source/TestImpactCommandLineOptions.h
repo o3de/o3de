@@ -32,23 +32,16 @@ namespace TestImpact
     class CommandLineOptions
     {
     public:
-        struct OutputChangeList
-        {
-            bool m_stdOut;
-            AZStd::optional<RepoPath> m_file;
-        };
-
         CommandLineOptions(int argc, char** argv);
         static AZStd::string GetCommandLineUsageString();
 
-        bool HasUnifiedDiffFile() const;
-        bool HasOutputChangeList() const;
+        bool HasChangeListFile() const;
         bool HasTestSequence() const;
         bool HasSafeMode() const;
+        bool HasOutputChangeList() const;
 
         const RepoPath& GetConfigurationFile() const;
-        const AZStd::optional<RepoPath>& GetUnifiedDiffFile() const;
-        const AZStd::optional<OutputChangeList>& GetOutputChangeList() const;
+        const AZStd::optional<RepoPath>& GetChangeListFile() const;
         const AZStd::optional<TestSequenceType>& GetTestSequenceType() const;
         Policy::TestPrioritization GetTestPrioritizationPolicy() const;
         Policy::ExecutionFailure GetExecutionFailurePolicy() const;
@@ -64,8 +57,8 @@ namespace TestImpact
 
     private:
         RepoPath m_configurationFile;
-        AZStd::optional<RepoPath> m_unifiedDiffFile;
-        AZStd::optional<OutputChangeList> m_outputChangeList;
+        AZStd::optional<RepoPath> m_changeListFile;
+        bool m_outputChangeList = false;
         AZStd::optional<TestSequenceType> m_testSequenceType;
         Policy::TestPrioritization m_testPrioritizationPolicy = Policy::TestPrioritization::None;
         Policy::ExecutionFailure m_executionFailurePolicy = Policy::ExecutionFailure::Continue;

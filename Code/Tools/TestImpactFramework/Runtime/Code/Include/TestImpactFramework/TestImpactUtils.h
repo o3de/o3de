@@ -33,7 +33,10 @@ namespace TestImpact
 
         AZStd::vector<char> buffer(fileSize + 1);
         buffer[fileSize] = '\0';
-        AZ_TestImpact_Eval(AZ::IO::SystemFile::Read(path.c_str(), buffer.data()), ExceptionType, AZStd::string::format("Could not read contents of file %s", path.c_str()));
+        AZ_TestImpact_Eval(
+            AZ::IO::SystemFile::Read(path.c_str(), buffer.data()),
+            ExceptionType,
+            AZStd::string::format("Could not read contents of file %s", path.c_str()));
 
         return AZStd::string(buffer.begin(), buffer.end());
     }
@@ -53,8 +56,7 @@ namespace TestImpact
             ExceptionType,
             AZStd::string::format("Couldn't open file %s for writing", path.c_str()));
 
-        AZ_TestImpact_Eval(file.Write(bytes.data(), bytes.size()), ExceptionType, AZStd::string::format("Couldn't write contents for file %s", path.c_str()));
-
-        return;
+        AZ_TestImpact_Eval(
+            file.Write(bytes.data(), bytes.size()), ExceptionType, AZStd::string::format("Couldn't write contents for file %s", path.c_str()));
     }
 } // namespace TestImpact

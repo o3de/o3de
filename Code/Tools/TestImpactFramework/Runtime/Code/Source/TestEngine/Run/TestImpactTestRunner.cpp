@@ -26,18 +26,17 @@ namespace TestImpact
         return TestRun(GTest::TestRunSuitesFactory(ReadFileContents<TestRunException>(runFile)), duration);
     }
 
-    TestRunner::TestRunner(
-        AZStd::optional<ClientJobCallback> clientCallback,
-        size_t maxConcurrentRuns,
-        AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout)
-        : JobRunner(clientCallback, AZStd::nullopt, StdOutputRouting::None, StdErrorRouting::None, maxConcurrentRuns, runTimeout, runnerTimeout)
+    TestRunner::TestRunner(size_t maxConcurrentRuns)
+        : JobRunner(maxConcurrentRuns)
     {
     }
 
-    AZStd::vector<TestRunner::Job> TestRunner::RunTests(
+    AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestRunner::Job>> TestRunner::RunTests(
         const AZStd::vector<JobInfo>& jobInfos,
-        JobExceptionPolicy jobExceptionPolicy)
+        JobExceptionPolicy jobExceptionPolicy,
+        AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
+        AZStd::optional<ClientJobCallback> clientCallback)
     {
         const auto payloadGenerator = [this](const JobDataMap& jobDataMap)
         {
@@ -62,6 +61,15 @@ namespace TestImpact
             return runs;
         };
 
-        return ExecuteJobs(jobInfos, payloadGenerator, jobExceptionPolicy);
+        return ExecuteJobs(
+            jobInfos,
+            jobExceptionPolicy,
+            payloadGenerator,
+            StdOutputRouting::None,
+            StdErrorRouting::None,
+            runTimeout,
+            runnerTimeout,
+            clientCallback,
+            AZStd::nullopt);
     }
 } // namespace TestImpact

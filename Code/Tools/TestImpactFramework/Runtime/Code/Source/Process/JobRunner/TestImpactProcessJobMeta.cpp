@@ -16,32 +16,32 @@
 
 namespace TestImpact
 {
-    JobMetaContainer::JobMetaContainer(const JobMeta& jobMeta)
+    JobMetaWrapper::JobMetaWrapper(const JobMeta& jobMeta)
         : m_meta(jobMeta)
     {
     }
 
-    JobMetaContainer::JobMetaContainer(JobMeta&& jobMeta)
+    JobMetaWrapper::JobMetaWrapper(JobMeta&& jobMeta)
         : m_meta(AZStd::move(jobMeta))
     {
     }
 
-    JobResult JobMetaContainer::GetJobResult() const
+    JobResult JobMetaWrapper::GetJobResult() const
     {
         return m_meta.m_result;
     }
 
-    AZStd::optional<ReturnCode> JobMetaContainer::GetReturnCode() const
+    AZStd::optional<ReturnCode> JobMetaWrapper::GetReturnCode() const
     {
         return m_meta.m_returnCode;
     }
 
-    AZStd::chrono::high_resolution_clock::time_point JobMetaContainer::GetStartTime() const
+    AZStd::chrono::high_resolution_clock::time_point JobMetaWrapper::GetStartTime() const
     {
         return m_meta.m_startTime.value_or(AZStd::chrono::high_resolution_clock::time_point());
     }
 
-    AZStd::chrono::high_resolution_clock::time_point JobMetaContainer::GetEndTime() const
+    AZStd::chrono::high_resolution_clock::time_point JobMetaWrapper::GetEndTime() const
     {
         if (m_meta.m_startTime.has_value() && m_meta.m_duration.has_value())
         {
@@ -53,7 +53,7 @@ namespace TestImpact
         }
     }
 
-    AZStd::chrono::milliseconds JobMetaContainer::GetDuration() const
+    AZStd::chrono::milliseconds JobMetaWrapper::GetDuration() const
     {
         return m_meta.m_duration.value_or(AZStd::chrono::milliseconds{ 0 });
     }

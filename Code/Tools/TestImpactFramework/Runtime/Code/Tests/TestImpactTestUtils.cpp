@@ -16,6 +16,7 @@
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/std/string/regex.h>
 
 namespace UnitTest
 {
@@ -80,7 +81,7 @@ namespace UnitTest
             output += "\n";
         }
 
-        return output;
+        return AZStd::regex_replace(output, AZStd::regex("\\"), "\\\\");
     }
 
     AZStd::string GenerateBuildTargetDescriptorString(

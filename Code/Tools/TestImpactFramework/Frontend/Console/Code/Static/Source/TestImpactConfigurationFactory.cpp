@@ -40,9 +40,9 @@ namespace TestImpact
         // Workspace
         runtimeConfig.m_workspace.m_temp.m_root = configurationFile["workspace"]["temp"]["root"].GetString();
         runtimeConfig.m_workspace.m_temp.m_relativePaths.m_artifactDirectory = runtimeConfig.m_workspace.m_temp.m_root / RepoPath(configurationFile["workspace"]["temp"]["relative_paths"]["artifact_dir"].GetString());
-        runtimeConfig.m_workspace.m_persistent.m_root = configurationFile["workspace"]["persistent"]["root"].GetString();
-        runtimeConfig.m_workspace.m_persistent.m_relativePaths.m_sparTIAFile = runtimeConfig.m_workspace.m_persistent.m_root / RepoPath(configurationFile["workspace"]["persistent"]["relative_paths"]["test_impact_data_file"].GetString());
-        runtimeConfig.m_workspace.m_persistent.m_relativePaths.m_enumerationCacheDirectory = runtimeConfig.m_workspace.m_persistent.m_root / RepoPath(configurationFile["workspace"]["persistent"]["relative_paths"]["enumeration_cache_dir"].GetString());
+        runtimeConfig.m_workspace.m_active.m_root = configurationFile["workspace"]["active"]["root"].GetString();
+        runtimeConfig.m_workspace.m_active.m_relativePaths.m_sparTIAFile = runtimeConfig.m_workspace.m_active.m_root / RepoPath(configurationFile["workspace"]["active"]["relative_paths"]["test_impact_data_file"].GetString());
+        runtimeConfig.m_workspace.m_active.m_relativePaths.m_enumerationCacheDirectory = runtimeConfig.m_workspace.m_active.m_root / RepoPath(configurationFile["workspace"]["active"]["relative_paths"]["enumeration_cache_dir"].GetString());
 
         // Build target descriptors
         runtimeConfig.m_buildTargetDescriptor.m_mappingDirectory = configurationFile["artifacts"]["static"]["build_target_descriptor"]["dir"].GetString();

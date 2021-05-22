@@ -14,16 +14,10 @@
 
 namespace TestImpact
 {
-    TestEngineRegularRun::TestEngineRegularRun(TestEngineJob&& testJob, AZStd::optional<TestRun>&& testRun, Client::TestRunResult testResult)
+    TestEngineRegularRun::TestEngineRegularRun(TestEngineJob&& testJob, AZStd::optional<TestRun>&& testRun)
         : TestEngineJob(AZStd::move(testJob))
         , m_testRun(AZStd::move(testRun))
-        , m_testResult(testResult)
     {
-    }
-
-    Client::TestRunResult TestEngineRegularRun::GetTestResult() const
-    {
-        return m_testResult;
     }
 
     const AZStd::optional<TestRun>& TestEngineRegularRun::GetTestRun() const

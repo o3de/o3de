@@ -337,14 +337,17 @@ namespace UnitTest
         }
 
         // When the process scheduler launches the processes
-        m_processScheduler = AZStd::make_unique<TestImpact::ProcessScheduler>(
+        m_processScheduler = AZStd::make_unique<TestImpact::ProcessScheduler>(m_numMaxConcurrentProcesses);
+
+        const auto result = m_processScheduler->Execute(
             m_processInfos,
-            m_processLaunchCallback,
-            m_processExitCallback,
-            m_numMaxConcurrentProcesses,
             AZStd::nullopt,
-            AZStd::nullopt
+            AZStd::nullopt,
+            m_processLaunchCallback,
+            m_processExitCallback
             );
+
+        EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
         for (size_t pid = 0; pid < m_numProcessesToLaunch; pid++)
         {
@@ -376,14 +379,17 @@ namespace UnitTest
         }
 
         // When the process scheduler launches the processes
-        m_processScheduler = AZStd::make_unique<TestImpact::ProcessScheduler>(
+        m_processScheduler = AZStd::make_unique<TestImpact::ProcessScheduler>(m_numMaxConcurrentProcesses);
+
+        const auto result = m_processScheduler->Execute(
             m_processInfos,
-            m_processLaunchCallback,
-            m_processExitCallback,
-            m_numMaxConcurrentProcesses,
             AZStd::nullopt,
-            AZStd::nullopt
-            );
+            AZStd::nullopt,
+            m_processLaunchCallback,
+            m_processExitCallback
+        );
+
+        EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
         for (size_t pid = 0; pid < m_numProcessesToLaunch; pid++)
         {
@@ -419,14 +425,17 @@ namespace UnitTest
         }
 
         // When the process scheduler launches the processes with a process timeout value
-        m_processScheduler = AZStd::make_unique<TestImpact::ProcessScheduler>(
+        m_processScheduler = AZStd::make_unique<TestImpact::ProcessScheduler>(m_numMaxConcurrentProcesses);
+
+        const auto result = m_processScheduler->Execute(
             m_processInfos,
-            m_processLaunchCallback,
-            m_processExitCallback,
-            m_numMaxConcurrentProcesses,
             AZStd::chrono::milliseconds(100),
-            AZStd::nullopt
-            );
+            AZStd::nullopt,
+            m_processLaunchCallback,
+            m_processExitCallback
+        );
+
+        EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
         for (size_t pid = 0; pid < m_numProcessesToLaunch; pid++)
         {
@@ -477,14 +486,17 @@ namespace UnitTest
         };
 
         // When the process scheduler launches the processes
-        m_processScheduler = AZStd::make_unique<TestImpact::ProcessScheduler>(
+        m_processScheduler = AZStd::make_unique<TestImpact::ProcessScheduler>(m_numMaxConcurrentProcesses);
+
+        const auto result = m_processScheduler->Execute(
             m_processInfos,
-            abortingLaunchCallback,
-            m_processExitCallback,
-            m_numMaxConcurrentProcesses,
             AZStd::nullopt,
-            AZStd::nullopt
-            );
+            AZStd::nullopt,
+            abortingLaunchCallback,
+            m_processExitCallback
+        );
+
+        EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
         for (size_t pid = 0; pid < m_numProcessesToLaunch; pid++)
         {
@@ -540,14 +552,17 @@ namespace UnitTest
         };
 
         // When the process scheduler launches the processes
-        m_processScheduler = AZStd::make_unique<TestImpact::ProcessScheduler>(
+        m_processScheduler = AZStd::make_unique<TestImpact::ProcessScheduler>(m_numMaxConcurrentProcesses);
+
+        const auto result = m_processScheduler->Execute(
             m_processInfos,
-            m_processLaunchCallback,
-            abortingExitCallback,
-            m_numMaxConcurrentProcesses,
             AZStd::nullopt,
-            AZStd::nullopt
-            );
+            AZStd::nullopt,
+            m_processLaunchCallback,
+            abortingExitCallback
+        );
+
+        EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
         for (size_t pid = 0; pid < m_numProcessesToLaunch; pid++)
         {
@@ -600,14 +615,17 @@ namespace UnitTest
         }
 
         // When the process scheduler launches the processes with a scheduler timeout value
-        m_processScheduler = AZStd::make_unique<TestImpact::ProcessScheduler>(
+        m_processScheduler = AZStd::make_unique<TestImpact::ProcessScheduler>(m_numMaxConcurrentProcesses);
+
+        const auto result = m_processScheduler->Execute(
             m_processInfos,
-            m_processLaunchCallback,
-            m_processExitCallback,
-            m_numMaxConcurrentProcesses,
             AZStd::nullopt,
-            AZStd::chrono::milliseconds(100)
-            );
+            AZStd::chrono::milliseconds(100),
+            m_processLaunchCallback,
+            m_processExitCallback
+        );
+
+        EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Timeout);
 
         for (size_t pid = 0; pid < m_numProcessesToLaunch; pid++)
         {
@@ -646,14 +664,17 @@ namespace UnitTest
         }
 
         // When the process scheduler launches the processes
-        m_processScheduler = AZStd::make_unique<TestImpact::ProcessScheduler>(
+        m_processScheduler = AZStd::make_unique<TestImpact::ProcessScheduler>(m_numMaxConcurrentProcesses);
+
+        const auto result = m_processScheduler->Execute(
             m_processInfos,
-            m_processLaunchCallback,
-            m_processExitCallback,
-            m_numMaxConcurrentProcesses,
             AZStd::nullopt,
-            AZStd::nullopt
-            );
+            AZStd::nullopt,
+            m_processLaunchCallback,
+            m_processExitCallback
+        );
+
+        EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
         for (size_t pid = 0; pid < m_numProcessesToLaunch; pid++)
         {
@@ -677,14 +698,17 @@ namespace UnitTest
         }
 
         // When the process scheduler launches the processes
-        m_processScheduler = AZStd::make_unique<TestImpact::ProcessScheduler>(
+        m_processScheduler = AZStd::make_unique<TestImpact::ProcessScheduler>(m_numMaxConcurrentProcesses);
+
+        const auto result = m_processScheduler->Execute(
             m_processInfos,
-            m_processLaunchCallback,
-            m_processExitCallback,
-            m_numMaxConcurrentProcesses,
             AZStd::nullopt,
-            AZStd::nullopt
-            );
+            AZStd::nullopt,
+            m_processLaunchCallback,
+            m_processExitCallback
+        );
+
+        EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
         for (size_t pid = 0; pid < m_numProcessesToLaunch; pid++)
         {

@@ -48,7 +48,8 @@ namespace TestImpact
             RelativePaths m_relativePaths;
         };
 
-        struct Persistent
+        //! Active persistent data workspace configuration.
+        struct Active
         {
             //! Paths relative to root.
             struct RelativePaths
@@ -62,7 +63,7 @@ namespace TestImpact
         };
 
         Temp m_temp;
-        Persistent m_persistent;
+        Active m_active;
     };
 
     //! Build target descriptor configuration.
@@ -85,19 +86,19 @@ namespace TestImpact
     //! Test target meta configuration.
     struct TestTargetMetaConfig
     {
-        RepoPath m_metaFile; //!< Path to the master test target meta file.
+        RepoPath m_metaFile; //!< Path to the test target meta file.
     };
 
     //! Test engine configuration.
     struct TestEngineConfig
     {
-        //!< Test runner configuration.
+        //! Test runner configuration.
         struct TestRunner
         {
             RepoPath m_binary; //!< Path to the test runner binary.
         };
 
-        //!< Test instrumentation configuration.
+        //! Test instrumentation configuration.
         struct Instrumentation
         {
             RepoPath m_binary; //!< Path to the test instrumentation binary.
@@ -107,10 +108,10 @@ namespace TestImpact
         Instrumentation m_instrumentation;
     };
 
-    //!< Build target configuration.
+    //! Build target configuration.
     struct TargetConfig
     {
-        //!< Test target sharding configuration.
+        //! Test target sharding configuration.
         struct ShardedTarget
         {
             AZStd::string m_name; //!< Name of test target this sharding configuration applies to.
@@ -122,7 +123,6 @@ namespace TestImpact
         AZStd::vector<ShardedTarget> m_shardedTestTargets; //!< Test target shard configurations (opt-in).
     };
 
-    //! Runtime configuration.
     struct RuntimeConfig
     {
         ConfigMeta m_meta;

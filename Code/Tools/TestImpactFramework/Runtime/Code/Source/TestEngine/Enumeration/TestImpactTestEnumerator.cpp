@@ -106,19 +106,18 @@ namespace TestImpact
         return m_cache;
     }
 
-    TestEnumerator::TestEnumerator(
-        AZStd::optional<ClientJobCallback> clientCallback,
-        size_t maxConcurrentEnumerations,
-        AZStd::optional<AZStd::chrono::milliseconds> enumerationTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> enumeratorTimeout)
-        : JobRunner(clientCallback, AZStd::nullopt, StdOutputRouting::None, StdErrorRouting::None, maxConcurrentEnumerations, enumerationTimeout, enumeratorTimeout)
+    TestEnumerator::TestEnumerator(size_t maxConcurrentEnumerations)
+        : JobRunner(maxConcurrentEnumerations)
     {
     }
-
-    AZStd::vector<TestEnumerator::Job> TestEnumerator::Enumerate(
+    
+    AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestEnumerator::Job>> TestEnumerator::Enumerate(
         const AZStd::vector<JobInfo>& jobInfos,
         CacheExceptionPolicy cacheExceptionPolicy,
-        JobExceptionPolicy jobExceptionPolicy)
+        JobExceptionPolicy jobExceptionPolicy,
+        AZStd::optional<AZStd::chrono::milliseconds> enumerationTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> enumeratorTimeout,
+        AZStd::optional<ClientJobCallback> clientCallback)
     {
         AZStd::vector<Job> cachedJobs;
         AZStd::vector<JobInfo> jobQueue;
@@ -165,7 +164,7 @@ namespace TestImpact
                 const auto& [meta, jobInfo] = jobData;
                 if (meta.m_result == JobResult::ExecutedWithSuccess)
                 {
-                    const auto& enumeration = enumerations[jobId] = ParseTestEnumerationFile(jobInfo->GetEnumerationArtifactPath());
+                    const auto& enumeration = (enumerations[jobId] = ParseTestEnumerationFile(jobInfo->GetEnumerationArtifactPath()));
 
                     // Write out the enumeration to a cache file if we have a cache write policy for this job
                     if (jobInfo->GetCache().has_value() && jobInfo->GetCache()->m_policy == JobData::CachePolicy::Write)
@@ -179,14 +178,23 @@ namespace TestImpact
         };
 
         // Generate the enumeration results for the jobs that weren't cached
-        auto jobs = ExecuteJobs(jobQueue, payloadGenerator, jobExceptionPolicy);
-
+        auto [result, jobs] = ExecuteJobs(
+            jobQueue,
+            jobExceptionPolicy,
+            payloadGenerator,
+            StdOutputRouting::None,
+            StdErrorRouting::None,
+            enumerationTimeout,
+            enumeratorTimeout,
+            clientCallback,
+            AZStd::nullopt);
+       
         // We need to add the cached jobs to the completed job list even though they technically weren't executed
         for (auto&& job : cachedJobs)
         {
             jobs.emplace_back(AZStd::move(job));
         }
 
-        return jobs;
+        return { result, jobs };
     }
 } // namespace TestImpact

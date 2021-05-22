@@ -12,7 +12,6 @@
 set(FILES
     Static/Tests/TestImpactCommandLineOptionsTest.cpp
     Static/Tests/TestImpactConfigurationFactoryTest.cpp
-    Static/Tests/TestImpactChangeListFactoryTest.cpp
     Static/Tests/TestImpactFrontendConsoleStaticTestMain.cpp
     Static/Tests/TestImpactConsoleApplicationTest.cpp
 )

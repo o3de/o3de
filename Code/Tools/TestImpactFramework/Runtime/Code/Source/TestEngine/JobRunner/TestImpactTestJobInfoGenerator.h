@@ -19,6 +19,8 @@
 #include <TestEngine/Run/TestImpactInstrumentedTestRunner.h>
 #include <TestEngine/Run/TestImpactTestRunner.h>
 
+#include <AzCore/std/containers/vector.h>
+
 namespace TestImpact
 {
     class TestTarget;
@@ -49,6 +51,17 @@ namespace TestImpact
         InstrumentedTestRunner::JobInfo GenerateInstrumentedTestRunJobInfo(
             const TestTarget* testTarget,
             InstrumentedTestRunner::JobInfo::Id jobId,
+            CoverageLevel coverageLevel) const;
+
+        AZStd::vector<TestEnumerator::JobInfo> GenerateTestEnumerationJobInfos(
+            const AZStd::vector<const TestTarget*>& testTargets,
+            TestEnumerator::JobInfo::CachePolicy cachePolicy) const;
+
+        AZStd::vector<TestRunner::JobInfo> GenerateRegularTestRunJobInfos(
+            const AZStd::vector<const TestTarget*>& testTargets) const;
+
+        AZStd::vector<InstrumentedTestRunner::JobInfo> GenerateInstrumentedTestRunJobInfos(
+            const AZStd::vector<const TestTarget*>& testTargets,
             CoverageLevel coverageLevel) const;
     private:
         AZStd::string GenerateLaunchArgument(const TestTarget* testTarget) const;

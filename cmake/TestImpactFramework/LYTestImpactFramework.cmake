@@ -327,8 +327,11 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE PERSISTENT_DATA_D
     # Temp dir
     set(temp_dir "${LY_TEST_IMPACT_TEMP_DIR}")
 
-    # Persistent dir
-    set(persistent_dir "${PERSISTENT_DATA_DIR}")
+    # Active eprsistent data dir
+    set(active_dir "${PERSISTENT_DATA_DIR}/active")
+
+    # Historic eprsistent data dir
+    set(historic_dir "${PERSISTENT_DATA_DIR}/historic")
 
     # Source to target mappings dir
     set(source_target_mapping_dir "${LY_TEST_IMPACT_SOURCE_TARGET_MAPPING_DIR}")
@@ -338,6 +341,9 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE PERSISTENT_DATA_D
     
     # Build dependency artifact dir
     set(target_dependency_dir "${LY_TEST_IMPACT_TARGET_DEPENDENCY_DIR}")
+
+    # Test impact analysis framework binary
+    set(tiaf_bin "$<TARGET_FILE:${LY_TEST_IMPACT_CONSOLE_TARGET}>")
     
     # Substitute config file template with above vars
     file(READ "${CONFIG_TEMPLATE_FILE}" config_file)
@@ -345,9 +351,13 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE PERSISTENT_DATA_D
     
     # Write out entire config contents to a file in the build directory of the test impact framework console target
     file(GENERATE
-        OUTPUT "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/$<TARGET_FILE_BASE_NAME:${LY_TEST_IMPACT_CONSOLE_TARGET}>.$<CONFIG>.json" 
+        OUTPUT "${PERSISTENT_DATA_DIR}/$<TARGET_FILE_BASE_NAME:${LY_TEST_IMPACT_CONSOLE_TARGET}>.$<CONFIG>.json" 
         CONTENT ${config_file}
     )
+
+    # Set the above config file as the default config file to use for the test impact framework console target
+    target_compile_definitions(${LY_TEST_IMPACT_CONSOLE_STATIC_TARGET} PUBLIC "LY_TEST_IMPACT_DEFAULT_CONFIG_FILE=\"${PERSISTENT_DATA_DIR}/$<TARGET_FILE_BASE_NAME:${LY_TEST_IMPACT_CONSOLE_TARGET}>.$<CONFIG>.json\"")
+    message(DEBUG "Test impact framework post steps complete")
 endfunction()
 
 #! ly_test_impact_post_step: runs the post steps to be executed after all other cmake scripts have been executed.
@@ -357,7 +367,7 @@ function(ly_test_impact_post_step)
     endif()
 
     # Directory per build config for persistent test impact data (to be checked in)
-    set(persistent_data_dir "${LY_ROOT_FOLDER}/Tests/test_impact_framework/${CMAKE_SYSTEM_NAME}/$<CONFIG>")
+    set(persistent_data_dir "${LY_ROOT_FOLDER}/Tests/test_impact_framework/${CMAKE_SYSTEM_NAME}/$<CONFIG>/")
 
     # Directory for binaries built for this profile
     set(bin_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
@@ -385,8 +395,4 @@ function(ly_test_impact_post_step)
     # Copy over the graphviz options file for the build dependency graphs
     message(DEBUG "Test impact framework config file written")
     file(COPY "cmake/TestImpactFramework/CMakeGraphVizOptions.cmake" DESTINATION ${CMAKE_BINARY_DIR})
-
-    # Set the above config file as the default config file to use for the test impact framework console target
-    target_compile_definitions(${LY_TEST_IMPACT_CONSOLE_STATIC_TARGET} PUBLIC "LY_TEST_IMPACT_DEFAULT_CONFIG_FILE=\"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/$<TARGET_FILE_BASE_NAME:${LY_TEST_IMPACT_CONSOLE_TARGET}>.$<CONFIG>.json\"")
-    message(DEBUG "Test impact framework post steps complete")
 endfunction()

@@ -33,45 +33,40 @@ namespace TestImpact
             return LY_TEST_IMPACT_DEFAULT_CONFIG_FILE;
         }
 
-        AZStd::optional<RepoPath> ParseUnifiedDiffFile(const AZ::CommandLine& cmd)
+        AZStd::optional<RepoPath> ParseChangeListFile(const AZ::CommandLine& cmd)
         {
-            const auto numSwitchValues = cmd.GetNumSwitchValues("unidiff");
+            const auto numSwitchValues = cmd.GetNumSwitchValues("changelist");
             if (numSwitchValues)
             {
-                AZ_TestImpact_Eval(numSwitchValues == 1, CommandLineOptionsException, "Unexpected number of parameters for unified diff file option");
-                const auto value = cmd.GetSwitchValue("unidiff", 0);
-                AZ_TestImpact_Eval(!value.empty(), CommandLineOptionsException, "Unified file option value is empty");
+                AZ_TestImpact_Eval(numSwitchValues == 1, CommandLineOptionsException, "Unexpected number of parameters for change lis file option");
+                const auto value = cmd.GetSwitchValue("changelist", 0);
+                AZ_TestImpact_Eval(!value.empty(), CommandLineOptionsException, "Change list file option value is empty");
                 return value;
             }
 
             return AZStd::nullopt;
         }
 
-        AZStd::optional<CommandLineOptions::OutputChangeList> ParseOutputChangeList(const AZ::CommandLine& cmd)
+        bool ParseOutputChangeList(const AZ::CommandLine& cmd)
         {
             const auto numSwitchValues = cmd.GetNumSwitchValues("ochangelist");
             if (numSwitchValues)
             {
-                AZ_TestImpact_Eval(numSwitchValues <= 2, CommandLineOptionsException, "Unexpected number of parameters for output change list option");
-                CommandLineOptions::OutputChangeList outputChangeList;
-                for (auto i = 0; i < numSwitchValues; i++)
+                AZ_TestImpact_Eval(numSwitchValues == 1, CommandLineOptionsException, "Unexpected number of parameters for output change list option");
+                const auto option = cmd.GetSwitchValue("ochangelist", 0);
+                if (option == "on")
                 {
-                    const auto value = cmd.GetSwitchValue("ochangelist", i);
-                    AZ_TestImpact_Eval(!value.empty(), CommandLineOptionsException, "Change list option value is empty");
-                    if (value == "stdout")
-                    {
-                        outputChangeList.m_stdOut = true;
-                    }
-                    else
-                    {
-                        outputChangeList.m_file = value;
-                    }
+                    return true;
+                }
+                else if (option == "off")
+                {
+                    return false;
                 }
 
-                return outputChangeList;
+                throw CommandLineOptionsException(AZStd::string::format("Unexpected value for output change list option: %s", option.c_str()));
             }
 
-            return AZStd::nullopt;
+            return false;
         }
 
         AZStd::optional<TestSequenceType> ParseTestSequenceType(const AZ::CommandLine& cmd)
@@ -389,7 +384,7 @@ namespace TestImpact
             "  options:\n"
             "    -config=<filename>                              Path to the configuration file for the TIAF runtime (default: \n"
             "                                                    <tiaf binay build dir>.<tiaf binary build type>.json).\n"
-            "    -unidiff=<filename>                             Path to the unified diff of source file changes to perform test impact \n"
+            "    -changelist=<filename>                          Path to the JSON of source file changes to perform test impact \n"
             "                                                    analysis on.\n"
             "    -gtimeout=<milliseconds>                        Global timeout value to terminate the entire test sequence should it \n"
             "                                                    be exceeded.\n"
@@ -446,9 +441,7 @@ namespace TestImpact
             "                                                    available, no prioritization will occur).\n"
             "    -maxconcurrency=<number>                        The maximum number of concurrent test targets/shards to be in flight at \n"
             "                                                    any given moment.\n"
-            "    -ochangelist=<stdout, filename>                 Outputs the change list generated from the unified diff, where stdout \n"
-            "                                                    outputs the change list to the standard output and file writes the change \n"
-            "                                                    list to the specified file (multiple values are accepted)."
+            "    -ochangelist=<on,off>                           Outputs the change list used for test selection.\n"
             "    -suites=<names>                                 The test suites to select from for this test sequence (multiple values are \n"
             "                                                    allowed). The suite all has special significance and will allow tests from \n"
             "                                                    any suite to be selected, however this particular suite is mutually exclusive\n"
@@ -464,7 +457,7 @@ namespace TestImpact
         cmd.Parse(argc, argv);
 
         m_configurationFile = ParseConfigurationFile(cmd);
-        m_unifiedDiffFile = ParseUnifiedDiffFile(cmd);
+        m_changeListFile = ParseChangeListFile(cmd);
         m_outputChangeList = ParseOutputChangeList(cmd);
         m_testSequenceType = ParseTestSequenceType(cmd);
         m_testPrioritizationPolicy = ParseTestPrioritizationPolicy(cmd);
@@ -481,14 +474,9 @@ namespace TestImpact
         m_suitesFilter = ParseSuitesFilter(cmd);
     }
  
-    bool CommandLineOptions::HasUnifiedDiffFile() const
+    bool CommandLineOptions::HasChangeListFile() const
     {
-        return m_unifiedDiffFile.has_value();
-    }
-
-    bool CommandLineOptions::HasOutputChangeList() const
-    {
-        return m_outputChangeList.has_value();
+        return m_changeListFile.has_value();
     }
 
     bool CommandLineOptions::HasTestSequence() const
@@ -501,12 +489,12 @@ namespace TestImpact
         return m_safeMode;
     }
 
-    const AZStd::optional<RepoPath>& CommandLineOptions::GetUnifiedDiffFile() const
+    const AZStd::optional<RepoPath>& CommandLineOptions::GetChangeListFile() const
     {
-        return m_unifiedDiffFile;
+        return m_changeListFile;
     }
 
-    const AZStd::optional<CommandLineOptions::OutputChangeList>& CommandLineOptions::GetOutputChangeList() const
+    bool CommandLineOptions::HasOutputChangeList() const
     {
         return m_outputChangeList;
     }

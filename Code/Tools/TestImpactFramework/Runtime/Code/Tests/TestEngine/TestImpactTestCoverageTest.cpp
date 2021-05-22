@@ -19,12 +19,12 @@ namespace UnitTest
 {
     namespace
     {
-        AZStd::string GenerateSourcePath(AZ::u32 index)
+        TestImpact::RepoPath GenerateSourcePath(AZ::u32 index)
         {
             return AZStd::string::format("SourceFile%u", index);
         }
 
-        AZStd::string GenerateModulePath(AZ::u32 index)
+        TestImpact::RepoPath GenerateModulePath(AZ::u32 index)
         {
             return AZStd::string::format("Module%u", index);
         }

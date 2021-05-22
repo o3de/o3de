@@ -39,8 +39,8 @@ namespace TestImpact
         }
     }
 
-    TestEngineInstrumentedRun::TestEngineInstrumentedRun(TestEngineJob&& testJob, AZStd::optional<AZStd::pair<TestRun, TestCoverage>>&& testRunAndCoverage, Client::TestRunResult testResult)
-        : TestEngineRegularRun(AZStd::move(testJob), ReleaseTestRun(AZStd::move(testRunAndCoverage)), testResult)
+    TestEngineInstrumentedRun::TestEngineInstrumentedRun(TestEngineJob&& testJob, AZStd::optional<AZStd::pair<TestRun, TestCoverage>>&& testRunAndCoverage)
+        : TestEngineRegularRun(AZStd::move(testJob), ReleaseTestRun(AZStd::move(testRunAndCoverage)))
         , m_testCoverage(ReleaseTestCoverage(AZStd::move(testRunAndCoverage)))
     {
     }

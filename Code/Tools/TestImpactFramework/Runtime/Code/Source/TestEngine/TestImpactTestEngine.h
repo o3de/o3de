@@ -27,9 +27,12 @@ namespace TestImpact
 {
     class TestTarget;
     class TestJobInfoGenerator;
+    class TestEnumerator;
+    class InstrumentedTestRunner;
+    class TestRunner;
 
     using TestEngineEnumerationCallback = AZStd::function<void(const TestEngineJob& testJob)>;
-    using TestEngineRunCallback = AZStd::function<void(const TestEngineJob& testJob, Client::TestRunResult testResult)>;
+    using TestEngineRunCallback = AZStd::function<void(const TestEngineJob& testJob)>;
 
     class TestEngine
     {
@@ -45,15 +48,15 @@ namespace TestImpact
 
         ~TestEngine();
 
-        AZStd::vector<TestEngineEnumeration> UpdateEnumerationCache(
-            const AZStd::vector<const TestTarget*> testTargets,
+        AZStd::pair < TestSequenceResult, AZStd::vector<TestEngineEnumeration>> UpdateEnumerationCache(
+            const AZStd::vector<const TestTarget*>& testTargets,
             Policy::ExecutionFailure executionFailurePolicy,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<TestEngineEnumerationCallback> callback);
 
         [[nodiscard]]AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun>> RegularRun(
-            const AZStd::vector<const TestTarget*> testTargets,
+            const AZStd::vector<const TestTarget*>& testTargets,
             Policy::TestSharding testShardingPolicy,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::TestFailure testFailurePolicy,
@@ -63,7 +66,7 @@ namespace TestImpact
             AZStd::optional<TestEngineRunCallback> callback);
 
         [[nodiscard]]AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun>> InstrumentedRun(
-            const AZStd::vector<const TestTarget*> testTargets,
+            const AZStd::vector<const TestTarget*>& testTargets,
             Policy::TestSharding testShardingPolicy,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::IntegrityFailure integrityFailurePolicy,
@@ -76,5 +79,8 @@ namespace TestImpact
     private:
         size_t m_maxConcurrentRuns = 0;
         AZStd::unique_ptr<TestJobInfoGenerator> m_testJobInfoGenerator;
+        AZStd::unique_ptr<TestEnumerator> m_testEnumerator;
+        AZStd::unique_ptr<InstrumentedTestRunner> m_instrumentedTestRunner;
+        AZStd::unique_ptr<TestRunner> m_testRunner;
     };
 }

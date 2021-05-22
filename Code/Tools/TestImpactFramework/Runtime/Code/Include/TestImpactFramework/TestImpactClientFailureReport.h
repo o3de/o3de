@@ -116,7 +116,7 @@ namespace TestImpact
             SequenceFailure(
                 AZStd::vector<ExecutionFailure>&& executionFailures,
                 AZStd::vector<LauncherFailure>&& launcherFailures,
-                AZStd::vector<TargetFailure>&& unexecutionTests);
+                AZStd::vector<TargetFailure>&& unexecutedTests);
 
             //! Returns the test targets in this sequence that failed to execute.
             const AZStd::vector<ExecutionFailure>& GetExecutionFailures() const;
@@ -130,7 +130,7 @@ namespace TestImpact
         private:
             AZStd::vector<ExecutionFailure> m_executionFailures;
             AZStd::vector<LauncherFailure> m_launcherFailures;
-            AZStd::vector<TargetFailure> m_unexecutionTests;
+            AZStd::vector<TargetFailure> m_unexecutedTests;
         };
 
         //! Represents the report for a failed regular test sequence run without test impact analysis.
@@ -142,7 +142,7 @@ namespace TestImpact
                 AZStd::vector<ExecutionFailure>&& executionFailures,
                 AZStd::vector<LauncherFailure>&& launcherFailures,
                 AZStd::vector<TestRunFailure>&& testRunFailures,
-                AZStd::vector<TargetFailure>&& unexecutionTests);
+                AZStd::vector<TargetFailure>&& unexecutedTests);
 
             //! Returns the test targets that contain failing tests.
             const AZStd::vector<TestRunFailure>& GetTestRunFailures() const;
@@ -161,7 +161,7 @@ namespace TestImpact
                 AZStd::vector<LauncherFailure>&& launcherFailures,
                 AZStd::vector<TestRunFailure>&& selectedTestRunFailures,
                 AZStd::vector<TestRunFailure>&& discardedTestRunFailures,
-                AZStd::vector<TargetFailure>&& unexecutionTests);
+                AZStd::vector<TargetFailure>&& unexecutedTests);
 
             //! Returns the test targets that were selected to run but contain failing tests.
             const AZStd::vector<TestRunFailure> GetSelectedTestRunFailures() const;

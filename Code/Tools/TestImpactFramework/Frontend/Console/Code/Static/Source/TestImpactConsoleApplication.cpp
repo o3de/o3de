@@ -22,7 +22,6 @@
 #include <TestImpactFramework/TestImpactClientTestSelection.h>
 #include <TestImpactFramework/TestImpactRuntime.h>
 
-#include <TestImpactChangeListFactory.h>
 #include <TestImpactCommandLineOptions.h>
 #include <TestImpactConfigurationFactory.h>
 #include <TestImpactCommandLineOptionsException.h>
@@ -68,22 +67,13 @@ namespace TestImpact
                 CommandLineOptions options(argc, argv);
                 AZStd::optional<ChangeList> changeList;
 
-                if (options.HasUnifiedDiffFile())
+                if (options.HasChangeListFile())
                 {
-                    const auto diff = ReadFileContents<CommandLineOptionsException>(*options.GetUnifiedDiffFile());
-                    changeList = UnifiedDiff::ChangeListFactory(diff);
+                    changeList = DeserializeChangeList(ReadFileContents<CommandLineOptionsException>(*options.GetChangeListFile()));
                     if (options.HasOutputChangeList())
                     {
-                        if (options.GetOutputChangeList()->m_stdOut)
-                        {
-                            std::cout << "Change List:\n";
-                            std::cout << GetChangeListString(*changeList).c_str();
-                        }
-
-                        if (options.GetOutputChangeList()->m_file.has_value())
-                        {
-                            TestImpact::WriteFileContents<CommandLineOptionsException>(TestImpact::SerializeChangeList(*changeList), options.GetOutputChangeList()->m_file.value());
-                        }
+                        std::cout << "Change List:\n";
+                        std::cout << GetChangeListString(*changeList).c_str();
 
                         if (!options.HasTestSequence())
                         {
@@ -181,7 +171,7 @@ namespace TestImpact
                     std::wcout << progress.c_str() << " " << result << " "  << test.GetTargetName().c_str() << " (" << (test.GetDuration().count() / 1000.f) << "s)\n";
                 };
 
-                const auto sequenceComplete = []([[maybe_unused]] Client::FailureReport&& failureReport, AZStd::chrono::milliseconds duration)
+                const auto sequenceComplete = []([[maybe_unused]] Client::RegularSequenceFailure&& failureReport, AZStd::chrono::milliseconds duration)
                 {
                     std::cout << "DURATION: " << (duration.count() / 1000.f) << "s\n";
                 };

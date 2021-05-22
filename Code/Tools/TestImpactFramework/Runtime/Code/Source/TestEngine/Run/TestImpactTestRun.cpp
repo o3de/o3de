@@ -14,10 +14,78 @@
 
 namespace TestImpact
 {
-    TestRun::TestRun(AZStd::vector<TestRunSuite>&& testSuites, AZStd::chrono::milliseconds duration)
+    TestRun::TestRun(const TestRun& other)
+        : TestSuiteContainer(other)
+        , m_numRuns(other.m_numRuns)
+        , m_numNotRuns(other.m_numNotRuns)
+        , m_numPasses(other.m_numPasses)
+        , m_numFailures(other.m_numFailures)
+        , m_duration(other.m_duration)
+    {
+        CalculateTestMetrics();
+    }
+
+    TestRun::TestRun(TestRun&& other) noexcept
+        : TestSuiteContainer(AZStd::move(other))
+        , m_numRuns(other.m_numRuns)
+        , m_numNotRuns(other.m_numNotRuns)
+        , m_numPasses(other.m_numPasses)
+        , m_numFailures(other.m_numFailures)
+        , m_duration(other.m_duration)
+    {
+    }
+
+    TestRun::TestRun(AZStd::vector<TestRunSuite>&& testSuites, AZStd::chrono::milliseconds duration) noexcept
         : TestSuiteContainer(AZStd::move(testSuites))
         , m_duration(duration)
     {
+        CalculateTestMetrics();
+    }
+
+    TestRun::TestRun(const AZStd::vector<TestRunSuite>& testSuites, AZStd::chrono::milliseconds duration)
+        : TestSuiteContainer(testSuites)
+        , m_duration(duration)
+    {
+        CalculateTestMetrics();
+    }
+
+    TestRun& TestRun::operator=(TestRun&& other) noexcept
+    {
+        if (this != &other)
+        {
+            TestSuiteContainer::operator=(AZStd::move(other));
+            m_numRuns = other.m_numRuns;
+            m_numNotRuns = other.m_numNotRuns;
+            m_numPasses = other.m_numPasses;
+            m_numFailures = other.m_numFailures;
+            m_duration = other.m_duration;
+        }
+
+        return *this;
+    }
+
+    TestRun& TestRun::operator=(const TestRun& other)
+    {
+        if (this != &other)
+        {
+            TestSuiteContainer::operator=(other);
+            m_numRuns = other.m_numRuns;
+            m_numNotRuns = other.m_numNotRuns;
+            m_numPasses = other.m_numPasses;
+            m_numFailures = other.m_numFailures;
+            m_duration = other.m_duration;
+        }
+
+        return *this;
+    }
+
+    void TestRun::CalculateTestMetrics()
+    {
+        m_numRuns = 0;
+        m_numNotRuns = 0;
+        m_numPasses = 0;
+        m_numFailures = 0;
+
         for (const auto& suite : m_testSuites)
         {
             for (const auto& test : suite.m_tests)

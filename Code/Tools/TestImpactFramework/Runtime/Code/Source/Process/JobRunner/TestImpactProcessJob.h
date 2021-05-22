@@ -22,7 +22,7 @@ namespace TestImpact
     //! @tparam JobPayloadT The resulting output of the processed artifact produced by this job.
     template<typename JobInfoT, typename JobPayloadT>
     class Job
-        : public JobMetaContainer
+        : public JobMetaWrapper
     {
     public:
         using Info = JobInfoT;
@@ -38,7 +38,8 @@ namespace TestImpact
         const AZStd::optional<Payload>& GetPayload() const;
 
         //! Facilitates the client consuming the payload.
-        AZStd::optional<Payload>&& ReleasePayload();
+        //! @note It is valid for a job life cycle to continue after having released its payload.
+        AZStd::optional<Payload> ReleasePayload();
 
     private:
         Info m_jobInfo;
@@ -47,7 +48,7 @@ namespace TestImpact
 
     template<typename JobInfoT, typename JobPayloadT>
     Job<JobInfoT, JobPayloadT>::Job(const Info& jobInfo, JobMeta&& jobMeta, AZStd::optional<Payload>&& payload)
-        : JobMetaContainer(AZStd::move(jobMeta))
+        : JobMetaWrapper(AZStd::move(jobMeta))
         , m_jobInfo(jobInfo)
         , m_payload(AZStd::move(payload))
     {
@@ -66,8 +67,8 @@ namespace TestImpact
     }
 
     template<typename JobInfoT, typename JobPayloadT>
-    AZStd::optional<JobPayloadT>&& Job<JobInfoT, JobPayloadT>::ReleasePayload()
+    AZStd::optional<JobPayloadT> Job<JobInfoT, JobPayloadT>::ReleasePayload()
     {
-        return AZStd::move(m_payload);
+        return AZStd::exchange(m_payload, AZStd::nullopt);
     }
 } // namespace TestImpact

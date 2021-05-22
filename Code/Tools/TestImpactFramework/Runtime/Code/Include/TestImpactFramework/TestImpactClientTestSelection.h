@@ -19,9 +19,9 @@ namespace TestImpact
 {
     namespace Client
     {
-        //! The set of test targets selected to run regardless of whether or not the test targets are to be exclude either for being on the master exclude
+        //! The set of test targets selected to run regardless of whether or not the test targets are to be excluded either for being on the primary exclude
         //! list and/or being part of a test suite excluded from this run.
-        //! @note Only the included test targets will be run. The excluded test targetss, although selected, will not be run.
+        //! @note Only the included test targets will be run. The excluded test targets, although selected, will not be run.
         class TestRunSelection
         {
         public:

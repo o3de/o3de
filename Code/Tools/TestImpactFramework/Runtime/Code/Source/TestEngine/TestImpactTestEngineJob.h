@@ -19,15 +19,17 @@ namespace TestImpact
     class TestTarget;
 
     class TestEngineJob
-        : public JobMetaContainer
+        : public JobMetaWrapper
     {
     public:
-        TestEngineJob(const TestTarget* testTarget, const AZStd::string& commandString, const JobMeta& jobMeta);
+        TestEngineJob(const TestTarget* testTarget, const AZStd::string& commandString, const JobMeta& jobMeta, Client::TestRunResult testResult);
         const TestTarget* GetTestTarget() const;
+        Client::TestRunResult GetTestResult() const;
         const AZStd::string& GetCommandString() const;
     private:
         const TestTarget* m_testTarget;
         AZStd::string m_commandString;
         JobMeta m_meta;
+        Client::TestRunResult m_testResult;
     };
 } // namespace TestImpact

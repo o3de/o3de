@@ -16,7 +16,5 @@ set(FILES
     Static/Source/TestImpactCommandLineOptionsException.h
     Static/Source/TestImpactConfigurationFactory.h
     Static/Source/TestImpactConfigurationFactory.cpp
-    Static/Source/TestImpactChangeListFactory.h
-    Static/Source/TestImpactChangeListFactory.cpp
     Static/Source/TestImpactConsoleApplication.cpp
 )

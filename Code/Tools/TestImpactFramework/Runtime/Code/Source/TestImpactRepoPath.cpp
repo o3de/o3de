@@ -14,25 +14,27 @@
 
 #include <AzCore/StringFunc/StringFunc.h>
 
+constexpr char Separator = AZ_TRAIT_OS_PATH_SEPARATOR;
+
 namespace TestImpact
 {
     constexpr RepoPath::RepoPath(const string_type& path) noexcept
-        : AZ::IO::Path(AZ::IO::Path(path).MakePreferred())
+        : AZ::IO::Path(path, Separator)
     {
     }
 
     constexpr RepoPath::RepoPath(const value_type* path) noexcept
-        : AZ::IO::Path(AZ::IO::Path(path).MakePreferred())
+        : AZ::IO::Path(path, Separator)
     {
     }
 
     constexpr RepoPath::RepoPath(const AZ::IO::PathView& path)
-        : AZ::IO::Path(AZ::IO::Path(path).MakePreferred())
+        : AZ::IO::Path(AZ::IO::Path(path).String(), Separator)
     {
     }
         
     constexpr RepoPath::RepoPath(const AZ::IO::Path& path)
-        : AZ::IO::Path(AZ::IO::Path(path).MakePreferred())
+        : AZ::IO::Path(AZ::IO::Path(path).String(), Separator)
     {
     }
 

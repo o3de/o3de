@@ -47,7 +47,7 @@ namespace TestImpact
         m_testEngine = AZStd::make_unique<TestEngine>(
             m_config.m_repo.m_root,
             m_config.m_target.m_outputDirectory,
-            m_config.m_workspace.m_persistent.m_relativePaths.m_enumerationCacheDirectory,
+            m_config.m_workspace.m_active.m_relativePaths.m_enumerationCacheDirectory,
             m_config.m_workspace.m_temp.m_relativePaths.m_artifactDirectory,
             m_config.m_testEngine.m_testRunner.m_binary,
             m_config.m_testEngine.m_instrumentation.m_binary,
@@ -113,11 +113,11 @@ namespace TestImpact
             (*testSequenceStartCallback)(CreateTestSelection(includedTestTargets, excludedTestTargets));
         }
 
-        const auto testComplete = [testCompleteCallback](const TestEngineJob& testJob, Client::TestRunResult testResult)
+        const auto testComplete = [testCompleteCallback](const TestEngineJob& testJob)
         {
             if (testCompleteCallback.has_value())
             {
-                (*testCompleteCallback)(Client::TestRun(testJob.GetTestTarget()->GetName(), testResult, testJob.GetDuration()));
+                (*testCompleteCallback)(Client::TestRun(testJob.GetTestTarget()->GetName(), testJob.GetTestResult(), testJob.GetDuration()));
             }
         };
 
@@ -196,11 +196,11 @@ namespace TestImpact
             (*testSequenceStartCallback)(CreateTestSelection(includedTestTargets, excludedTestTargets));
         }
 
-        const auto testComplete = [testCompleteCallback](const TestEngineJob& testJob, Client::TestRunResult testResult)
+        const auto testComplete = [testCompleteCallback](const TestEngineJob& testJob)
         {
             if (testCompleteCallback.has_value())
             {
-                (*testCompleteCallback)(Client::TestRun(testJob.GetTestTarget()->GetName(), testResult, testJob.GetDuration()));
+                (*testCompleteCallback)(Client::TestRun(testJob.GetTestTarget()->GetName(), testJob.GetTestResult(), testJob.GetDuration()));
             }
         };
 
@@ -219,7 +219,7 @@ namespace TestImpact
         m_dynamicDependencyMap->ReplaceSourceCoverage(coverage);
         const auto sparTIA = m_dynamicDependencyMap->ExportSourceCoverage();
         const auto sparTIAData = SerializeSourceCoveringTestsList(sparTIA);
-        WriteFileContents<RuntimeException>(sparTIAData, m_config.m_workspace.m_persistent.m_relativePaths.m_sparTIAFile);
+        WriteFileContents<RuntimeException>(sparTIAData, m_config.m_workspace.m_active.m_relativePaths.m_sparTIAFile);
 
         const AZStd::chrono::high_resolution_clock::time_point endTime = AZStd::chrono::high_resolution_clock::now();
         const auto duration = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(endTime - startTime);

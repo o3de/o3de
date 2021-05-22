@@ -103,7 +103,7 @@ namespace TestImpact
             AZStd::vector<TargetFailure>&& unexecutionTests)
             : m_executionFailures(AZStd::move(executionFailures))
             , m_launcherFailures(AZStd::move(launcherFailures))
-            , m_unexecutionTests(AZStd::move(unexecutionTests))
+            , m_unexecutedTests(AZStd::move(unexecutionTests))
         {
         }
 
@@ -119,7 +119,7 @@ namespace TestImpact
 
         const AZStd::vector<TargetFailure>& SequenceFailure::GetUnexecutedTest() const
         {
-            return m_unexecutionTests;
+            return m_unexecutedTests;
         }
 
         RegularSequenceFailure::RegularSequenceFailure(

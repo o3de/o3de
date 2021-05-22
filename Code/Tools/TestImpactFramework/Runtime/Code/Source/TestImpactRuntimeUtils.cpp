@@ -115,7 +115,7 @@ namespace TestImpact
 
                 for (const auto& source : job.GetTestCoverge().value().GetSourcesCovered())
                 {
-                    coverage[source].insert(job.GetTestTarget()->GetName());
+                    coverage[source.String()].insert(job.GetTestTarget()->GetName());
                 }
             }
         }

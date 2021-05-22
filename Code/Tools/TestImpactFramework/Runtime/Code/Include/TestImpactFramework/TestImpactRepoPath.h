@@ -26,7 +26,7 @@ namespace TestImpact
     public:
         constexpr RepoPath() = default;
         constexpr RepoPath(const RepoPath&) = default;
-        constexpr RepoPath(RepoPath&&) = default;
+        constexpr RepoPath(RepoPath&&) noexcept = default;
         constexpr RepoPath(const string_type&) noexcept;
         constexpr RepoPath(const value_type*) noexcept;
         constexpr RepoPath(const AZ::IO::PathView&);

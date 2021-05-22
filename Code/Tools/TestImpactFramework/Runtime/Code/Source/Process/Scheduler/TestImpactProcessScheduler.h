@@ -22,6 +22,7 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace TestImpact
 {
@@ -47,6 +48,13 @@ namespace TestImpact
     {
         Continue, //!< Continune scheduling.
         Abort //!< Abort scheduling immediately.
+    };
+
+    //! Result of the process scheduling sequence.
+    enum class ProcessSchedulerResult : bool
+    {
+        Graceful, //!< The scheduler completed its run without incident or was terminated gracefully in response to a client callback result.
+        Timeout //!< The scheduler aborted its run prematurely due to its runtime exceeding the scheduler timeout value.
     };
 
     //! Callback for process launch attempt.
@@ -79,38 +87,28 @@ namespace TestImpact
     {
     public:
         //! Constructs the scheduler with the specified batch of processes.
-        //! @param processes The batch of processes to schedule.
-        //! @param processLaunchCallback The process launch callback function.
-        //! @param processExitCallback The process exit callback function.
         //! @param maxConcurrentProcesses The maximum number of concurrent processes in-flight.
-        //! @param processTimeout The maximum duration a process may be in-flight for before being forcefully terminated.
-        //! @param scheduleTimeout The maximum duration the scheduler may run before forcefully terminating all in-flight processes.
-        //! processes and abandoning any queued processes.
-        ProcessScheduler(
-            const AZStd::vector<ProcessInfo>& processes,
-            const ProcessLaunchCallback& processLaunchCallback,
-            const ProcessExitCallback& processExitCallback,
-            size_t maxConcurrentProcesses,
-            AZStd::optional<AZStd::chrono::milliseconds> processTimeout,
-            AZStd::optional<AZStd::chrono::milliseconds> scheduleTimeout);
-
+        ProcessScheduler(size_t maxConcurrentProcesses);
         ~ProcessScheduler();
 
+        //! Executes the specified processes and calls the client callbacks (if any) as each process progresses in its life cycle.
+        //! @note Multiple subsequent calls to Execute are permitted.
+        //! @param processes The batch of processes to schedule.
+        //! @param processTimeout The maximum duration a process may be in-flight for before being forcefully terminated.
+        //! @param scheduleTimeout The maximum duration the scheduler may run before forcefully terminating all in-flight processes.
+        //! @param processLaunchCallback The process launch callback function.
+        //! @param processExitCallback The process exit callback function.
+        //! @returns The state that triggered the end of the schedule sequence.
+        ProcessSchedulerResult Execute(
+            const AZStd::vector<ProcessInfo>& processes,
+            AZStd::optional<AZStd::chrono::milliseconds> processTimeout,
+            AZStd::optional<AZStd::chrono::milliseconds> scheduleTimeout,
+            ProcessLaunchCallback processLaunchCallback,
+            ProcessExitCallback processExitCallback);
+
     private:
-        struct ProcessInFlight;
-
-        void MonitorProcesses();
-        ProcessCallbackResult PopAndLaunch(ProcessInFlight& processInFlight);
-        void TerminateAllProcesses(ExitCondition exitStatus);
-        StdContent ConsumeProcessStdContent(ProcessInFlight& processInFlight);
-        void AccumulateProcessStdContent(ProcessInFlight& processInFlight);
-
-        const ProcessLaunchCallback m_processCreateCallback;
-        const ProcessExitCallback m_processExitCallback;
-        const AZStd::optional<AZStd::chrono::milliseconds> m_processTimeout;
-        const AZStd::optional<AZStd::chrono::milliseconds> m_scheduleTimeout;
-        const AZStd::chrono::high_resolution_clock::time_point m_startTime;
-        AZStd::vector<ProcessInFlight> m_processPool;
-        AZStd::queue<ProcessInfo> m_processQueue;
+        class ExecutionState;
+        AZStd::unique_ptr<ExecutionState> m_executionState;
+        size_t m_maxConcurrentProcesses = 0;
     };
 } // namespace TestImpact

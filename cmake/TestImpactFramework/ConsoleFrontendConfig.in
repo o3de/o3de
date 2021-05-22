@@ -4,7 +4,9 @@
     "timestamp": "${timestamp}"
   },
   "repo": {
-    "root": "${repo_dir}"
+    "root": "${repo_dir}",
+    "source_of_truth": "main",
+    "tiaf_bin": "${tiaf_bin}"
   },
   "workspace": {
     "temp": {
@@ -13,11 +15,19 @@
         "artifact_dir": "RuntimeArtifact"
       }
     },
-    "persistent": {
-      "root": "${persistent_dir}",
+    "active": {
+      "root": "${active_dir}",
       "relative_paths": {
         "test_impact_data_file": "TestImpactData.spartia",
-        "enumeration_cache_dir": "EnumerationCache"
+        "enumeration_cache_dir": "EnumerationCache",
+        "last_build_target_list_file": "LastRunBuildTargets.json"
+      }
+    },
+    "historic": {
+      "root": "${historic_dir}",
+      "relative_paths": {
+        "last_run_hash_file": "last_run.hash",
+        "last_build_target_list_file": "LastRunBuildTargets.json"
       }
     }
   },

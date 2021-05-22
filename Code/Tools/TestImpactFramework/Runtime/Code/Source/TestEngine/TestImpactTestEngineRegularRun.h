@@ -23,11 +23,9 @@ namespace TestImpact
         : public TestEngineJob
     {
     public:
-        TestEngineRegularRun(TestEngineJob&& testJob, AZStd::optional<TestRun>&& testRun, Client::TestRunResult testResult);
-        Client::TestRunResult GetTestResult() const;
+        TestEngineRegularRun(TestEngineJob&& testJob, AZStd::optional<TestRun>&& testRun);
         const AZStd::optional<TestRun>& GetTestRun() const;
     private:
-        AZStd::optional<TestRun> m_testRun;
-        Client::TestRunResult m_testResult;
+        AZStd::optional<TestRun> m_testRun;        
     };
 } // namespace TestImpact

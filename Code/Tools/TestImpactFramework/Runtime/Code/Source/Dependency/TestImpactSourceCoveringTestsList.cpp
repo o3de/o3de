@@ -16,11 +16,6 @@
 
 namespace TestImpact
 {
-    //SourceCoveringTests::SourceCoveringTests(const SourceCoveringTests& other)
-    //{
-    //
-    //}
-
     AZStd::vector<AZStd::string> ExtractTargetsFromSet(AZStd::unordered_set<AZStd::string>&& coveringTestTargets)
     {
         AZStd::vector<AZStd::string> testTargets;

@@ -15,10 +15,11 @@
 
 namespace TestImpact
 {
-    TestEngineJob::TestEngineJob(const TestTarget* testTarget, const AZStd::string& commandString, const JobMeta& jobMeta)
+    TestEngineJob::TestEngineJob(const TestTarget* testTarget, const AZStd::string& commandString, const JobMeta& jobMeta, Client::TestRunResult testResult)
         : m_testTarget(testTarget)
         , m_commandString(commandString)
-        , JobMetaContainer(jobMeta)
+        , JobMetaWrapper(jobMeta)
+        , m_testResult(testResult)
     {
     }
 
@@ -30,5 +31,10 @@ namespace TestImpact
     const AZStd::string& TestEngineJob::GetCommandString() const
     {
         return m_commandString;
+    }
+
+    Client::TestRunResult TestEngineJob::GetTestResult() const
+    {
+        return m_testResult;
     }
 } // namespace TestImpact
