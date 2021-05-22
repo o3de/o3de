@@ -21,6 +21,7 @@
 namespace TestImpact
 {
     // Known error codes for test instrumentation, test runner and unit test library
+    // This could be refactored into a generic solution agnostic of the tool and library specific details
     namespace ErrorCodes
     {
         namespace OpenCppCoverage
@@ -44,7 +45,7 @@ namespace TestImpact
 
     namespace
     {
-        //! Calculate the sequence result by analysing the state of the test targets that were run.
+        // Calculate the sequence result by analysing the state of the test targets that were run.
         template<typename TestEngineJobType>
         TestSequenceResult CalculateSequenceResult(
             ProcessSchedulerResult result,
@@ -92,6 +93,7 @@ namespace TestImpact
             }
         }
 
+        // Deduces the run result for a given test target based on how the process exited and known return values
         Client::TestRunResult GetClientTestRunResultForMeta(const JobMeta& meta)
         {
             // Attempt to determine why a given test target executed successfully but return with an error code
@@ -125,7 +127,7 @@ namespace TestImpact
             case JobResult::ExecutedWithSuccess:
                 return Client::TestRunResult::AllTestsPass;
             // NotExecuted happens when a test is queued for launch but the test runner terminates the sequence (either due to client abort
-            // or due to the sequence timer expiring) whereas Terminated happens when the aformentioned scenarios happen when the test target
+            // or due to the sequence timer expiring) whereas Terminated happens when the aforementioned scenarios happen when the test target
             // is in flight
             case JobResult::NotExecuted:
             case JobResult::Terminated:
@@ -141,8 +143,33 @@ namespace TestImpact
         template<typename IdType>
         using TestEngineJobMap = AZStd::unordered_map<IdType, TestEngineJob>;
 
+        template<typename TestJobRunner>
+        struct TestJobRunnerTrait
+        {};
+
+        template<typename TestJobRunner>
+        using TestEngineJobType = typename TestJobRunnerTrait<TestJobRunner>::TestEngineJobType;
+        
+        template<>
+        struct TestJobRunnerTrait<TestEnumerator>
+        {
+            using TestEngineJobType = TestEngineEnumeration;
+        };
+
+        template<>
+        struct TestJobRunnerTrait<TestRunner>
+        {
+            using TestEngineJobType = TestEngineRegularRun;
+        };
+
+        template<>
+        struct TestJobRunnerTrait<InstrumentedTestRunner>
+        {
+            using TestEngineJobType = TestEngineInstrumentedRun;
+        };
+
         // Functor for handling test job runner callbacks
-        template<typename TestJobRunner, typename TestEngineJobCallback>
+        template<typename TestJobRunner>
         class TestJobRunnerCallbackHandler
         {
             using IdType = typename TestJobRunner::JobInfo::IdType;
@@ -151,7 +178,7 @@ namespace TestImpact
             TestJobRunnerCallbackHandler(
                 const AZStd::vector<const TestTarget*>& testTargets,
                 TestEngineJobMap<IdType>* engineJobs,
-                AZStd::optional<TestEngineJobCallback>* callback)
+                AZStd::optional<TestEngineJobCompleteCallback>* callback)
                 : m_testTargets(testTargets)
                 , m_engineJobs(engineJobs)
                 , m_callback(callback)
@@ -178,16 +205,17 @@ namespace TestImpact
         private:
             const AZStd::vector<const TestTarget*>& m_testTargets;
             TestEngineJobMap<typename IdType>* m_engineJobs;
-            AZStd::optional<TestEngineJobCallback>* m_callback;
+            AZStd::optional<TestEngineJobCompleteCallback>* m_callback;
         };
 
-        template<typename TestJobRunner, typename TestEngineRun>
-        AZStd::vector<TestEngineRun> CompileTestEngineRuns(
+        // Helper function to compile the run type specific test engine jobs from their associated jobs and payloads
+        template<typename TestJobRunner>
+        AZStd::vector<TestEngineJobType<TestJobRunner>> CompileTestEngineRuns(
             const AZStd::vector<const TestTarget*>& testTargets,
             AZStd::vector<typename TestJobRunner::Job>& runnerjobs,
             TestEngineJobMap<typename TestJobRunner::JobInfo::IdType>&& engineJobs)
         {
-            AZStd::vector<TestEngineRun> engineRuns;
+            AZStd::vector<TestEngineJobType<TestJobRunner>> engineRuns;
             engineRuns.reserve(testTargets.size());
 
             for (auto& job : runnerjobs)
@@ -196,9 +224,9 @@ namespace TestImpact
                 if (auto it = engineJobs.find(id);
                     it != engineJobs.end())
                 {
-                    // An entry in the test engine job map means that this job was acted upon (an attempt to execute)
+                    // An entry in the test engine job map means that this job was acted upon (an attempt to execute, successful or otherwise)
                     auto& engineJob = it->second;
-                    TestEngineRun run(AZStd::move(engineJob), job.ReleasePayload());
+                    TestEngineJobType<TestJobRunner> run(AZStd::move(engineJob), job.ReleasePayload());
                     engineRuns.push_back(AZStd::move(run));
                 }
                 else
@@ -207,12 +235,29 @@ namespace TestImpact
                     // was terminated whilst this job was still queued up for execution)
                     const auto& args = job.GetJobInfo().GetCommand().m_args;
                     const auto* target = testTargets[id];
-                    TestEngineRun run(TestEngineJob(target, args, {}, Client::TestRunResult::NotRun), {});
+                    TestEngineJobType<TestJobRunner> run(TestEngineJob(target, args, {}, Client::TestRunResult::NotRun), {});
                     engineRuns.push_back(AZStd::move(run));
                 }
             }
 
             return engineRuns;
+        }
+
+        Bitwise::TestJobExceptionPolicy GetTestJobExceptionPolicy(
+            Policy::ExecutionFailure executionFailurePolicy, Policy::TestFailure testFailurePolicy)
+        {
+            auto jobExecutionPolicy = Bitwise::TestJobExceptionPolicy::Never;
+            if (executionFailurePolicy == Policy::ExecutionFailure::Abort)
+            {
+                jobExecutionPolicy |= Bitwise::TestJobExceptionPolicy::OnFailedToExecute;
+            }
+
+            if (testFailurePolicy == Policy::TestFailure::Abort)
+            {
+                jobExecutionPolicy |= Bitwise::TestJobExceptionPolicy::OnExecutedWithFailure;
+            }
+
+            return jobExecutionPolicy;
         }
     }
 
@@ -225,7 +270,8 @@ namespace TestImpact
         const RepoPath& instrumentBinary,
         size_t maxConcurrentRuns)
         : m_maxConcurrentRuns(maxConcurrentRuns)
-        , m_testJobInfoGenerator(AZStd::make_unique<TestJobInfoGenerator>(sourceDir, targetBinaryDir, cacheDir, artifactDir, testRunnerBinary, instrumentBinary))
+        , m_testJobInfoGenerator(AZStd::make_unique<TestJobInfoGenerator>(
+            sourceDir, targetBinaryDir, cacheDir, artifactDir, testRunnerBinary, instrumentBinary))
         , m_testEnumerator(AZStd::make_unique<TestEnumerator>(maxConcurrentRuns))
         , m_instrumentedTestRunner(AZStd::make_unique<InstrumentedTestRunner>(maxConcurrentRuns))
         , m_testRunner(AZStd::make_unique<TestRunner>(maxConcurrentRuns))
@@ -239,7 +285,7 @@ namespace TestImpact
         Policy::ExecutionFailure executionFailurePolicy,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineEnumerationCallback> callback)
+        AZStd::optional<TestEngineJobCompleteCallback> callback)
     {
         TestEngineJobMap<TestEnumerator::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateTestEnumerationJobInfos(testTargets, TestEnumerator::JobInfo::CachePolicy::Write);
@@ -252,7 +298,7 @@ namespace TestImpact
             ? (TestEnumerator::JobExceptionPolicy::OnExecutedWithFailure | TestEnumerator::JobExceptionPolicy::OnFailedToExecute)
             : TestEnumerator::JobExceptionPolicy::Never;
 
-        TestJobRunnerCallbackHandler<TestEnumerator, TestEngineEnumerationCallback> jobCallback(testTargets, &engineJobs, &callback);
+        TestJobRunnerCallbackHandler<TestEnumerator> jobCallback(testTargets, &engineJobs, &callback);
         auto [result, runnerJobs] = m_testEnumerator->Enumerate(
             jobInfos,
             cacheExceptionPolicy,
@@ -261,7 +307,7 @@ namespace TestImpact
             globalTimeout,
             jobCallback);
 
-        auto engineRuns = CompileTestEngineRuns<TestEnumerator, TestEngineEnumeration>(testTargets, runnerJobs, AZStd::move(engineJobs));
+        auto engineRuns = CompileTestEngineRuns<TestEnumerator>(testTargets, runnerJobs, AZStd::move(engineJobs));
         return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     }
 
@@ -273,23 +319,13 @@ namespace TestImpact
         [[maybe_unused]]TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineRunCallback> callback)
+        AZStd::optional<TestEngineJobCompleteCallback> callback)
     {
         TestEngineJobMap<TestRunner::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateRegularTestRunJobInfos(testTargets);
+        const auto jobExecutionPolicy = GetTestJobExceptionPolicy(executionFailurePolicy, testFailurePolicy);
 
-        auto jobExecutionPolicy = TestRunner::JobExceptionPolicy::Never;
-        if (executionFailurePolicy == Policy::ExecutionFailure::Abort)
-        {
-            jobExecutionPolicy |= TestRunner::JobExceptionPolicy::OnExecutedWithFailure;
-        }
-
-        if (testFailurePolicy == Policy::TestFailure::Abort)
-        {
-            jobExecutionPolicy |= TestRunner::JobExceptionPolicy::OnExecutedWithFailure;
-        }
-
-        TestJobRunnerCallbackHandler<TestRunner, TestEngineRunCallback> jobCallback(testTargets, &engineJobs, &callback);
+        TestJobRunnerCallbackHandler<TestRunner> jobCallback(testTargets, &engineJobs, &callback);
         auto [result, runnerJobs] = m_testRunner->RunTests(
             jobInfos,
             jobExecutionPolicy,
@@ -297,7 +333,7 @@ namespace TestImpact
             globalTimeout,
             jobCallback);
 
-        auto engineRuns = CompileTestEngineRuns<TestRunner, TestEngineRegularRun>(testTargets, runnerJobs, AZStd::move(engineJobs));
+        auto engineRuns = CompileTestEngineRuns<TestRunner>(testTargets, runnerJobs, AZStd::move(engineJobs));
         return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     }
 
@@ -310,27 +346,16 @@ namespace TestImpact
         [[maybe_unused]]TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineRunCallback> callback)
+        AZStd::optional<TestEngineJobCompleteCallback> callback)
     {
         TestEngineJobMap<InstrumentedTestRunner::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateInstrumentedTestRunJobInfos(testTargets, CoverageLevel::Source);
-        auto jobExecutionPolicy = InstrumentedTestRunner::JobExceptionPolicy::Never;
-
-        if (executionFailurePolicy == Policy::ExecutionFailure::Abort)
-        {
-            jobExecutionPolicy |= InstrumentedTestRunner::JobExceptionPolicy::OnExecutedWithFailure;
-        }
-
-        if (testFailurePolicy == Policy::TestFailure::Abort)
-        {
-            jobExecutionPolicy |= InstrumentedTestRunner::JobExceptionPolicy::OnExecutedWithFailure;
-        }
-
+        const auto jobExecutionPolicy = GetTestJobExceptionPolicy(executionFailurePolicy, testFailurePolicy);
         const auto coverageExceptionPolicy = (integrityFailurePolicy == Policy::IntegrityFailure::Abort)
             ? InstrumentedTestRunner::CoverageExceptionPolicy::OnEmptyCoverage
             : InstrumentedTestRunner::CoverageExceptionPolicy::Never;
 
-        TestJobRunnerCallbackHandler<InstrumentedTestRunner, TestEngineRunCallback> jobCallback(testTargets, &engineJobs, &callback);
+        TestJobRunnerCallbackHandler<InstrumentedTestRunner> jobCallback(testTargets, &engineJobs, &callback);
         auto [result, runnerJobs] = m_instrumentedTestRunner->RunInstrumentedTests(
             jobInfos,
             coverageExceptionPolicy,
@@ -339,11 +364,7 @@ namespace TestImpact
             globalTimeout,
             jobCallback);
 
-        auto engineRuns = CompileTestEngineRuns<InstrumentedTestRunner, TestEngineInstrumentedRun>(testTargets, runnerJobs, AZStd::move(engineJobs));
-
-        // do test for passing tests with no coverage as these are integrity failrues
-        // (failing tests with no coverage must be considered as test launch failures)
-
+        auto engineRuns = CompileTestEngineRuns<InstrumentedTestRunner>(testTargets, runnerJobs, AZStd::move(engineJobs));
         return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     }
 }

@@ -20,6 +20,8 @@
 
 namespace TestImpact
 {
+    constexpr char TargetTag = '-';
+
     AZStd::string SerializeSourceCoveringTestsList(const SourceCoveringTestsList& sourceCoveringTestsList)
     {
         AZStd::string output;
@@ -27,22 +29,51 @@ namespace TestImpact
 
         for (const auto& source : sourceCoveringTestsList.GetCoverage())
         {
-            // Sorce file
+            // Source file
             output += source.GetPath().String();
             output += "\n";
 
             // Covering test targets
             for (const auto& testTarget : source.GetCoveringTestTargets())
             {
-                output += AZStd::string::format(" %s\n", testTarget.c_str());
+                output += AZStd::string::format("%c%s\n", TargetTag, testTarget.c_str());
             }
         }
 
         return output;
     }
 
-    //SourceCoveringTestsList DeserializeSourceCoveringTestsList(const AZStd::string& sourceCoveringTestsListString)
-    //{
-    //
-    //}
+    SourceCoveringTestsList DeserializeSourceCoveringTestsList(const AZStd::string& sourceCoveringTestsListString)
+    {
+        AZStd::vector<SourceCoveringTests> sourceCoveringTests;
+        sourceCoveringTests.reserve(1U << 16); // Reserve for approx. 65k source files
+        const AZStd::string delim = "\n";
+        auto start = 0U;
+        auto end = sourceCoveringTestsListString.find(delim);
+        AZStd::string source;
+        AZStd::vector<AZStd::string> coveringTests;
+        while (end != AZStd::string::npos)
+        {
+            const auto line = sourceCoveringTestsListString.substr(start, end - start);
+            if (line.starts_with(TargetTag))
+            {
+                coveringTests.push_back(line.substr(1, line.length() - 1));
+            }
+            else
+            {
+                if (!coveringTests.empty())
+                {
+                    sourceCoveringTests.push_back(SourceCoveringTests(source, AZStd::move(coveringTests)));
+                    coveringTests.clear();
+                }
+
+                source = line;
+            }
+
+            start = end + delim.length();
+            end = sourceCoveringTestsListString.find(delim, start);
+        }
+
+        return SourceCoveringTestsList(AZStd::move(sourceCoveringTests));
+    }
 } // namespace TestImpact

@@ -31,12 +31,21 @@ namespace TestImpact
     class InstrumentedTestRunner;
     class TestRunner;
 
-    using TestEngineEnumerationCallback = AZStd::function<void(const TestEngineJob& testJob)>;
-    using TestEngineRunCallback = AZStd::function<void(const TestEngineJob& testJob)>;
+    //! Callback for when a given test engine job completes.
+    using TestEngineJobCompleteCallback = AZStd::function<void(const TestEngineJob& testJob)>;
 
+    //! Provides the front end for performing test enumerations and test runs.
     class TestEngine
     {
     public:
+        //! Configures the test engine with the necessary path information for launching test targets and managing the artifacts they produce.
+        //! @param sourceDir
+        //! @param targetBinaryDir
+        //! @param cacheDir
+        //! @param artifactDir
+        //! @param testRunnerBinary
+        //! @param instrumentBinary
+        //! @param maxConcurrentRuns
         TestEngine(
             const RepoPath& sourceDir,
             const RepoPath& targetBinaryDir,
@@ -48,13 +57,33 @@ namespace TestImpact
 
         ~TestEngine();
 
+        //! Updates the cached enumerations for the specified test targets.
+        //! @note Whilst test runs will make use of this cache for test target sharding it is the responsibility of the client to
+        //! ensure any stale caches are up to date by calling this function. No attempt to maintain internal consistency will be made
+        //! by the test engine itself.
+        //! @param testTargets
+        //! @param executionFailurePolicy
+        //! @param testTargetTimeout
+        //! @param globalTimeout
+        //! @param callback
+        //! @ returns
         AZStd::pair < TestSequenceResult, AZStd::vector<TestEngineEnumeration>> UpdateEnumerationCache(
             const AZStd::vector<const TestTarget*>& testTargets,
             Policy::ExecutionFailure executionFailurePolicy,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-            AZStd::optional<TestEngineEnumerationCallback> callback);
+            AZStd::optional<TestEngineJobCompleteCallback> callback);
 
+        //! Performs a test run without any instrumentation and, for each test target, returns the test run results and metrics about the run.
+        //! @param
+        //! @param
+        //! @param
+        //! @param
+        //! @param
+        //! @param
+        //! @param
+        //! @param
+        //! @ returns
         [[nodiscard]]AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun>> RegularRun(
             const AZStd::vector<const TestTarget*>& testTargets,
             Policy::TestSharding testShardingPolicy,
@@ -63,8 +92,19 @@ namespace TestImpact
             TargetOutputCapture targetOutputCapture,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-            AZStd::optional<TestEngineRunCallback> callback);
+            AZStd::optional<TestEngineJobCompleteCallback> callback);
 
+        //! Performs a test run with instrumentation and, for each test target, returns the test run results, coverage data and metrics about the run.
+        //! @param
+        //! @param
+        //! @param
+        //! @param
+        //! @param
+        //! @param
+        //! @param
+        //! @param
+        //! @param
+        //! @ returns
         [[nodiscard]]AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun>> InstrumentedRun(
             const AZStd::vector<const TestTarget*>& testTargets,
             Policy::TestSharding testShardingPolicy,
@@ -74,7 +114,7 @@ namespace TestImpact
             TargetOutputCapture targetOutputCapture,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-            AZStd::optional<TestEngineRunCallback> callback);
+            AZStd::optional<TestEngineJobCompleteCallback> callback);
 
     private:
         size_t m_maxConcurrentRuns = 0;

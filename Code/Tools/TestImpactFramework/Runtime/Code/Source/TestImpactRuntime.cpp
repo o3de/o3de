@@ -15,6 +15,7 @@
 #include <TestImpactFramework/TestImpactRuntimeException.h>
 
 #include <TestImpactRuntimeUtils.h>
+#include <Dependency/TestImpactDependencyException.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Dependency/TestImpactSourceCoveringTestsSerializer.h>
 #include <TestEngine/TestImpactTestEngine.h>
@@ -41,9 +42,16 @@ namespace TestImpact
         , m_targetOutputCapture(targetOutputCapture)
         , m_maxConcurrency(maxConcurrency.value_or(AZStd::thread::hardware_concurrency()))
     {
+        // Construct the dynamic dependency map from the build target descriptors
         m_dynamicDependencyMap = ConstructDynamicDependencyMap(m_config.m_testTargetMeta, m_config.m_buildTargetDescriptor);
+
+        // Construct the target exclude list from the target configuration data
         m_testTargetExcludeList = ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetTestTargetList(), m_config.m_target);
+
+        // Enumerate the test targets that have potentially changed since the last run
         //EnumerateDirtyTestTargets();
+
+        // Construct the test engine with the workspace path and launcher binaries
         m_testEngine = AZStd::make_unique<TestEngine>(
             m_config.m_repo.m_root,
             m_config.m_target.m_outputDirectory,
@@ -53,15 +61,28 @@ namespace TestImpact
             m_config.m_testEngine.m_instrumentation.m_binary,
             m_maxConcurrency);
 
-        //try
-        //{
-        //    const auto sparTIA = DeserializeSourceCoveringTestsList(ReadFileContents<Runtime>(m_config.m_workspace.m_persistent.m_sparTIAFile));
-        //    m_dynamicDependencyMap->ReplaceSourceCoverage(sparTIA);
-        //}
-        //catch (const RuntimeException& e)
-        //{
-        //
-        //}
+        try
+        {
+            // Populate the dynamic dependency map with the existing source coverage data (if any)
+            const auto tiaDataRaw = ReadFileContents<Exception>(m_config.m_workspace.m_active.m_relativePaths.m_sparTIAFile);
+            const auto tiaData = DeserializeSourceCoveringTestsList(tiaDataRaw);
+            if (tiaData.GetNumSources())
+            {
+                m_dynamicDependencyMap->ReplaceSourceCoverage(tiaData);
+                m_hasImpactAnalysisData = true;
+            }
+        }
+        catch (const DependencyException& e)
+        {
+            if (integrationFailurePolicy == Policy::IntegrityFailure::Abort)
+            {
+                throw RuntimeException(e.what());
+            }
+        }
+        catch ([[maybe_unused]]const Exception& e)
+        {
+            AZ_Printf("No test impact analysis data found at %s", m_config.m_workspace.m_active.m_relativePaths.m_sparTIAFile.c_str());
+        }        
     }
 
     Runtime::~Runtime() = default;
