@@ -5,7 +5,7 @@
     "propertyLayoutVersion": 3,
     "properties": {
         "general": {
-            "debugDrawMode": "BlendMaskValues"
+            "debugDrawMode": "BlendSource"
         }
     }
 }
