@@ -4,6 +4,7 @@
     </qresource>
     <qresource prefix="/">
         <file>Add.svg</file>
+        <file>ArrowBack.svg</file>
         <file>Select_Folder.svg</file>
         <file>o3de_editor.ico</file>
         <file>Windows.svg</file>
