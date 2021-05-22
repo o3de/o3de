@@ -18,10 +18,7 @@
 #include <QStack>
 #endif
 
-namespace AzQtComponents
-{
-    class TabWidget;
-}
+QT_FORWARD_DECLARE_CLASS(QTabWidget)
 
 namespace O3DE::ProjectManager
 {
@@ -53,7 +50,7 @@ namespace O3DE::ProjectManager
         QStackedWidget* m_screenStack;
         QHash<ProjectManagerScreen, ScreenWidget*> m_screenMap;
         QStack<ProjectManagerScreen> m_screenVisitOrder;
-        AzQtComponents::TabWidget* m_tabWidget;
+        QTabWidget* m_tabWidget;
     };
 
 } // namespace O3DE::ProjectManager

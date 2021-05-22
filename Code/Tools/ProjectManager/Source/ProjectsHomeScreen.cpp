@@ -34,6 +34,16 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::ProjectsHome;
     }
 
+    bool ProjectsHomeScreen::IsTab()
+    {
+        return true;
+    }
+
+    QString ProjectsHomeScreen::GetTabText()
+    {
+        return tr("Projects");
+    }
+
     void ProjectsHomeScreen::HandleNewProjectButton()
     {
         emit ResetScreenRequest(ProjectManagerScreen::NewProjectSettingsCore);

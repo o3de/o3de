@@ -13,13 +13,11 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QMainWindow>
-#include "PythonBindings.h"
+#include <PythonBindings.h>
 #endif
 
 namespace O3DE::ProjectManager
 {
-    QT_FORWARD_DECLARE_CLASS(ScreensCtrl)
-
     class ProjectManagerWindow
         : public QMainWindow
     {
@@ -29,12 +27,7 @@ namespace O3DE::ProjectManager
         explicit ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& engineRootPath);
         ~ProjectManagerWindow();
 
-    protected slots:
-        void HandleProjectsMenu();
-        void HandleEngineMenu();
-
     private:
-        ScreensCtrl* m_screensCtrl;
         AZStd::unique_ptr<PythonBindings> m_pythonBindings;
     };
 

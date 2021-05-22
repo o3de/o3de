@@ -14,8 +14,7 @@
 #include <ScreenFactory.h>
 #include <ScreenWidget.h>
 
-#include <AzQtComponents/Components/Widgets/TabWidget.h>
-
+#include <QTabWidget>
 #include <QVBoxLayout>
 
 namespace O3DE::ProjectManager
@@ -23,16 +22,17 @@ namespace O3DE::ProjectManager
     ScreensCtrl::ScreensCtrl(QWidget* parent)
         : QWidget(parent)
     {
+        setObjectName("ScreensCtrl");
+
         QVBoxLayout* vLayout = new QVBoxLayout();
-        //vLayout->setMargin(0);
-        //vLayout->setSpacing(0);
-        //vLayout->setContentsMargins(0, 0, 0, 0);
+        vLayout->setContentsMargins(0, 0, 0, 0);
         setLayout(vLayout);
 
         m_screenStack = new QStackedWidget();
         vLayout->addWidget(m_screenStack);
 
-        m_tabWidget = new AzQtComponents::TabWidget();
+        // add a tab widget at the bottom of the stack
+        m_tabWidget = new QTabWidget();
         m_screenStack->addWidget(m_tabWidget);
 
         //Track the bottom of the stack
@@ -62,7 +62,14 @@ namespace O3DE::ProjectManager
 
     ScreenWidget* ScreensCtrl::GetCurrentScreen()
     {
-        return reinterpret_cast<ScreenWidget*>(m_screenStack->currentWidget());
+        if (m_screenStack->currentWidget() == m_tabWidget)
+        {
+            return reinterpret_cast<ScreenWidget*>(m_tabWidget->currentWidget());
+        }
+        else
+        {
+            return reinterpret_cast<ScreenWidget*>(m_screenStack->currentWidget());
+        }
     }
 
     bool ScreensCtrl::ChangeToScreen(ProjectManagerScreen screen)
@@ -88,6 +95,11 @@ namespace O3DE::ProjectManager
 
             if (currentScreen != newScreen)
             {
+                if (addVisit)
+                {
+                    m_screenVisitOrder.push(currentScreen->GetScreenEnum());
+                }
+
                 if (newScreen->IsTab())
                 {
                     m_screenStack->setCurrentWidget(m_tabWidget);
@@ -99,11 +111,7 @@ namespace O3DE::ProjectManager
                 }
                 else
                 {
-                    if (addVisit)
-                    {
-                        m_screenVisitOrder.push(currentScreen->GetScreenEnum());
-                    }
-                    m_screenStack->setCurrentWidget(iterator.value());
+                    m_screenStack->setCurrentWidget(newScreen);
                 }
                 return true;
             }
@@ -132,7 +140,7 @@ namespace O3DE::ProjectManager
         ScreenWidget* newScreen = BuildScreen(this, screen);
         if (newScreen->IsTab())
         {
-            m_tabWidget->addTab(newScreen, "test");
+            m_tabWidget->addTab(newScreen, newScreen->GetTabText());
         }
         else
         {

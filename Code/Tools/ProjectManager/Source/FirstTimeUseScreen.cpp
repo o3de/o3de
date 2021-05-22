@@ -82,6 +82,11 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::FirstTimeUse;
     }
 
+    QString FirstTimeUseScreen::GetTabText()
+    {
+        return tr("");
+    }
+
     void FirstTimeUseScreen::HandleNewProjectButton()
     {
         emit ResetScreenRequest(ProjectManagerScreen::NewProjectSettingsCore);

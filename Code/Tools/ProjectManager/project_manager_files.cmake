@@ -33,7 +33,6 @@ set(FILES
     Source/ProjectManagerWindow.cpp
     Source/ProjectTemplateInfo.h
     Source/ProjectTemplateInfo.cpp
-    Source/ProjectManagerWindow.ui
     Source/PythonBindings.h
     Source/PythonBindings.cpp
     Source/PythonBindingsInterface.h

@@ -10,15 +10,13 @@
  *
  */
 
-#include "ProjectManagerWindow.h"
-#include "ScreenFactory.h"
-#include "ScreensCtrl.h"
+#include <ProjectManagerWindow.h>
+#include <ScreensCtrl.h>
 
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzCore/IO/Path/Path.h>
 
 #include <QDir>
-
 
 namespace O3DE::ProjectManager
 {
@@ -29,43 +27,36 @@ namespace O3DE::ProjectManager
 
         setWindowTitle(tr("O3DE Project Manager"));
 
-        // setup stylesheets and hot reloading
+        ScreensCtrl* screensCtrl = new ScreensCtrl();
+
+        // currently the tab order on the home page is based on the order of this list
+        QVector<ProjectManagerScreen> screenEnums =
+        {
+            ProjectManagerScreen::NewProjectSettingsCore,
+            ProjectManagerScreen::ProjectsHome,
+            ProjectManagerScreen::ProjectSettings,
+            ProjectManagerScreen::EngineSettings,
+            ProjectManagerScreen::FirstTimeUse 
+        };
+        screensCtrl->BuildScreens(screenEnums);
+
+        setCentralWidget(screensCtrl);
+
+        // setup stylesheets and hot reloading 
         QDir rootDir = QString::fromUtf8(engineRootPath.Native().data(), aznumeric_cast<int>(engineRootPath.Native().size()));
         const auto pathOnDisk = rootDir.absoluteFilePath("Code/Tools/ProjectManager/Resources");
         const auto qrcPath = QStringLiteral(":/ProjectManager/style");
         AzQtComponents::StyleManager::addSearchPaths("style", pathOnDisk, qrcPath, engineRootPath);
+
+        // set stylesheet after creating the screens or their styles won't get updated
         AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("style:ProjectManager.qss"));
 
-
-        m_screensCtrl = new ScreensCtrl();
-
-        // modal screens
-        QVector<ProjectManagerScreen> screenEnums =
-        {
-            ProjectManagerScreen::FirstTimeUse,
-            ProjectManagerScreen::NewProjectSettingsCore,
-            ProjectManagerScreen::ProjectsHome,
-            ProjectManagerScreen::ProjectSettings,
-            ProjectManagerScreen::EngineSettings
-        };
-
-        // tab screens
-        m_screensCtrl->BuildScreens(screenEnums);
-        m_screensCtrl->ForceChangeToScreen(ProjectManagerScreen::FirstTimeUse, false);
+        screensCtrl->ForceChangeToScreen(ProjectManagerScreen::FirstTimeUse, false);
     }
 
     ProjectManagerWindow::~ProjectManagerWindow()
     {
         m_pythonBindings.reset();
-    }
-
-    void ProjectManagerWindow::HandleProjectsMenu()
-    {
-        m_screensCtrl->ChangeToScreen(ProjectManagerScreen::ProjectsHome);
-    }
-    void ProjectManagerWindow::HandleEngineMenu()
-    {
-        m_screensCtrl->ChangeToScreen(ProjectManagerScreen::EngineSettings);
     }
 
 } // namespace O3DE::ProjectManager

@@ -45,6 +45,10 @@ namespace O3DE::ProjectManager
         {
             return false;
         }
+        virtual QString GetTabText()
+        {
+            return tr("Missing");
+        }
         virtual QString GetNextButtonText()
         {
             return "Next";

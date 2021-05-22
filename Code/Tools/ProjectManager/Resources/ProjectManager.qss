@@ -1,29 +1,65 @@
 /************** General (MainWindow) **************/
 QMainWindow {
-    background-color: #333333;
+    background:#111111 url(:/o3de.svg) no-repeat top left;
+    /* position the logo using padding and background-origin, Qt does not support background-position pixels */
+    background-origin:content;
+    padding:25px 16px;
+    margin:0;
 }
-
 
 QPushButton:focus {
     outline: none;
     border:1px solid #1e70eb;
 }
 
+QTabBar {
+    background-color: transparent;
+}
+QTabWidget::tab-bar
+{
+    left: 78px; /* make room for the logo */
+}
+QTabBar::tab {
+    height:82px;
+    background-color: transparent;
+    font-size:24px;
+    min-width:100px;
+    margin-right:40px;
+    border-bottom: 3px solid transparent;
+}
+QTabBar::tab:text
+{
+    text-align:left;
+}
+QTabWidget::pane {
+    background-color: #333333;
+    border:0 none;
+}
+QTabBar::tab:selected
+{
+    border-bottom: 3px solid #1e70eb;
+    color: #1e70eb;
+}
+QTabBar::tab:hover
+{
+    border-bottom: 3px solid #1e70eb;
+}
+
 /************** General (Forms) **************/
 
 #formLineEditWidget,
 #formBrowseEditWidget {
-    max-width: 780px;
+    max-width: 890px;
 }
 
 #formFrame {
-    max-width: 720px;
+    max-width: 840px;
     background-color: #444444;
     border:1px solid #dddddd;
     border-radius: 4px;
     padding: 0px 10px 2px 6px;
     margin-top:10px;
-    margin-left:30px;
+    margin-left:50px;
 }
 
 #formFrame[Focus="true"] {
@@ -59,15 +95,105 @@ QPushButton:focus {
     padding-top: -4px;
 }
 
+
 #formErrorLabel {
     color: #ec3030;
     font-size: 14px;
-    margin-left: 40px;
+    margin-left: 50px;
 }
 
 #formTitleLabel {
     font-size:21px;
     color:#ffffff;
-    margin: 10px 0 10px 30px;
+    margin: 24px 0 10px 50px;
+}
+
+/************** General (Modal windows) **************/
+
+#header {
+	background-color:#111111;
+    min-height:80px;
+    max-height:80px;
+}
+
+#header QPushButton {
+    /* settings min/max lets us use a fixed size */
+    min-width: 50px;
+    max-width: 50px;
+    min-height: 40px;
+    max-height: 40px;
+    background:transparent url(:/ArrowBack.svg) no-repeat bottom;
+    background-origin:content;
+    qproperty-flat: true;
+    qproperty-iconSize: 50px;
+}
+
+#header QPushButton:focus {
+    border:none;
+}
+
+#headerTitle {
+    font-size:14px;
+    text-align:left;
+    margin:0;
+    padding-top:10px;
+    padding-bottom:-5px;
+    min-height:15px;
+    max-height:15px;
+}
+#headerSubTitle {
+    font-size:24px;
+    text-align:left;
+    margin:0;
+    min-height:42px;
+    max-height:42px;
+}
+
+#body {
+    background-color:#333333;
+}
+#footer {
+    min-height:54px;
+    max-height:54px;
+}
+
+#footer > QPushButton {
+    qproperty-flat: true;
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+							stop: 0 #0095f2, stop: 1.0 #1e70eb);
+    border-radius: 3px;
+    min-height: 28px;
+    max-height: 28px;
+    min-width: 150px;
+    margin-right: 10px;
+}
+#footer > QPushButton[text="Back"] {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+							stop: 0 #888888, stop: 1.0 #555555);
+}
+
+/************** Project Settings **************/
+#projectTemplate {
+    margin: 55px 0 0 50px;
+    max-width: 780px;
+    min-height:200px;
+    max-height:200px;
+}
+#projectTemplateLabel {
+    font-size:16px;
+    font-weight:100;
+}
+
+#projectTemplateDetailsLabel {
+    font-size:14px;
+    min-height:40px;
+    margin-bottom:20px;
+}
+
+#projectTemplateDetails {
+    background-color:#444444;
+    max-width:240px;
+    min-width:240px;
+    margin-left:30px;
 }
 

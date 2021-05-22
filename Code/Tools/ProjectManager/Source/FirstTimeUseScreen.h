@@ -27,13 +27,12 @@ namespace O3DE::ProjectManager
         explicit FirstTimeUseScreen(QWidget* parent = nullptr);
         ~FirstTimeUseScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
+        QString GetTabText() override;
+        bool IsTab() override;
 
     protected slots:
         void HandleNewProjectButton();
         void HandleAddProjectButton();
-
-    protected:
-        bool IsTab() override;
 
     private:
         QPushButton* CreateLargeBoxButton(const QIcon& icon, const QString& text, QWidget* parent = nullptr);
