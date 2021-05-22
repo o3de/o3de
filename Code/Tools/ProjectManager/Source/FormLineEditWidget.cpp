@@ -28,7 +28,7 @@ namespace O3DE::ProjectManager
     {
         setObjectName("formLineEditWidget");
 
-        auto mainLayout = new QVBoxLayout();
+        QVBoxLayout* mainLayout = new QVBoxLayout();
         mainLayout->setAlignment(Qt::AlignTop);
         {
             m_frame = new QFrame(this);
@@ -37,7 +37,7 @@ namespace O3DE::ProjectManager
             // use a horizontal box layout so buttons can be added to the right of the field
             m_frameLayout = new QHBoxLayout();
             {
-                auto* fieldLayout = new QVBoxLayout();
+                QVBoxLayout* fieldLayout = new QVBoxLayout();
 
                 QLabel* label = new QLabel(labelText, this);
                 fieldLayout->addWidget(label);
@@ -56,7 +56,7 @@ namespace O3DE::ProjectManager
 
                 m_frameLayout->addLayout(fieldLayout);
 
-                auto* emptyWidget = new QWidget(this);
+                QWidget* emptyWidget = new QWidget(this);
                 m_frameLayout->addWidget(emptyWidget);
             }
 

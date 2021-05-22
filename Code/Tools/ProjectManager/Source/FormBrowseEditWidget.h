@@ -13,7 +13,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include "FormLineEditWidget.h" 
+#include <FormLineEditWidget.h> 
 #endif
 
 namespace O3DE::ProjectManager

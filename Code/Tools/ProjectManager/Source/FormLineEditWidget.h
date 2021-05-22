@@ -44,10 +44,10 @@ namespace O3DE::ProjectManager
         QLineEdit* lineEdit() const;
 
     protected:
-        QLabel* m_errorLabel   = nullptr;
-        QFrame* m_frame        = nullptr;
+        QLabel* m_errorLabel = nullptr;
+        QFrame* m_frame = nullptr;
         QHBoxLayout* m_frameLayout = nullptr;
-        AzQtComponents::StyledLineEdit* m_lineEdit   = nullptr;
+        AzQtComponents::StyledLineEdit* m_lineEdit = nullptr;
 
     private slots:
         void flavorChanged();
