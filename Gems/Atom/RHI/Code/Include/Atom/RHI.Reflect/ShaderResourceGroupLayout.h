@@ -75,6 +75,8 @@ namespace AZ
              */
             bool Finalize();
 
+            void SetName(const Name& name) {  m_name = name; }
+            const Name& GetName() const { return m_name; }
 
             /**
              * Designates this SRG as ShaderVariantKey fallback by providing the generated
@@ -271,6 +273,9 @@ namespace AZ
                 uint32_t& groupSize);
 
             AZ_SERIALIZE_FRIEND();
+
+            //! Name of the ShaderResourceGroup as specified in the original *.azsl/*.azsli file.
+            Name m_name;
 
             AZStd::vector<ShaderInputStaticSamplerDescriptor> m_staticSamplers;
 

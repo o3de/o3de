@@ -16,6 +16,7 @@
 #include <Application.h>
 #include <Converter.h>
 #include <Dumper.h>
+#include <SliceConverter.h>
 
 
 void PrintHelp()
@@ -74,6 +75,14 @@ void PrintHelp()
     AZ_Printf("Help", R"(           On Windows the <prefix> should be in quotes, as \"/\" is treated as command option prefix)" "\n");
     AZ_Printf("Help", R"(    [opt] -verbose: Report additional details during the conversion process.)" "\n");
     AZ_Printf("Help", R"(    example: 'convert-ini --files=AssetProcessorPlatformConfig.ini;bootstrap.cfg --ext=setreg)" "\n");
+    AZ_Printf("Help", "  'convert-slice': Converts ObjectStream-based slice files or legacy levels to a JSON-based prefab.\n");
+    AZ_Printf("Help", "    [arg] -files=<path>: <comma or semicolon>-separated list of files to convert. Supports wildcards.\n");
+    AZ_Printf("Help", "    [opt] -dryrun: Processes as normal, but doesn't write files.\n");
+    AZ_Printf("Help", "    [opt] -keepdefaults: Fields are written if a default value was found.\n");
+    AZ_Printf("Help", "    [opt] -verbose: Report additional details during the conversion process.\n");
+    AZ_Printf("Help", "    example: 'convert-slice -files=*.slice -specializations=editor\n");
+    AZ_Printf("Help", "    example: 'convert-slice -files=Levels/TestLevel/TestLevel.ly -specializations=editor\n");
+    AZ_Printf("Help", "\n");
 }
 
 int main(int argc, char** argv)
@@ -113,6 +122,10 @@ int main(int argc, char** argv)
         else if (AZ::StringFunc::Equal("convert-ini", action.c_str()))
         {
             result = Converter::ConvertConfigFile(application);
+        }
+        else if (AZ::StringFunc::Equal("convert-slice", action.c_str()))
+        {
+            result = SliceConverter::ConvertSliceFiles(application);
         }
         else
         {

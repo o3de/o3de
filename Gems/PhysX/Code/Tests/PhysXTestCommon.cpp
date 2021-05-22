@@ -107,7 +107,7 @@ namespace PhysX
 
             auto shapeConfig = AZStd::make_shared<Physics::SphereShapeConfiguration>(radius);
             auto shpereColliderComponent = entity->CreateComponent<PhysX::SphereColliderComponent>();
-            shpereColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(colliderConfig, shapeConfig) });
+            shpereColliderComponent->SetShapeConfigurationList({ AzPhysics::ShapeColliderPair(colliderConfig, shapeConfig) });
 
             AzPhysics::RigidBodyConfiguration rigidBodyConfig;
             rigidBodyConfig.m_computeMass = false;
@@ -136,7 +136,7 @@ namespace PhysX
             colliderConfig->m_collisionLayer = layer;
             auto shapeConfig = AZStd::make_shared<Physics::SphereShapeConfiguration>(radius);
             auto sphereColliderComponent = entity->CreateComponent<SphereColliderComponent>();
-            sphereColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(colliderConfig, shapeConfig) });
+            sphereColliderComponent->SetShapeConfigurationList({ AzPhysics::ShapeColliderPair(colliderConfig, shapeConfig) });
 
             entity->CreateComponent<StaticRigidBodyComponent>(sceneHandle);
 
@@ -171,7 +171,7 @@ namespace PhysX
             auto boxColliderComponent = entity->CreateComponent<PhysX::BoxColliderComponent>();
             auto colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
             colliderConfig->m_collisionLayer = layer;
-            boxColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(colliderConfig, shapeConfig) });
+            boxColliderComponent->SetShapeConfigurationList({ AzPhysics::ShapeColliderPair(colliderConfig, shapeConfig) });
             entity->CreateComponent<PhysX::StaticRigidBodyComponent>(sceneHandle);
             entity->Activate();
             return entity;
@@ -195,7 +195,7 @@ namespace PhysX
             colliderConfig->m_collisionLayer = layer;
             auto shapeConfig = AZStd::make_shared<Physics::CapsuleShapeConfiguration>(height, radius);
             auto capsuleColliderComponent = entity->CreateComponent<CapsuleColliderComponent>();
-            capsuleColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(colliderConfig, shapeConfig) });
+            capsuleColliderComponent->SetShapeConfigurationList({ AzPhysics::ShapeColliderPair(colliderConfig, shapeConfig) });
 
             AzPhysics::RigidBodyConfiguration rigidBodyConfig;
             rigidBodyConfig.m_computeMass = false;
@@ -223,7 +223,7 @@ namespace PhysX
             colliderConfig->m_collisionLayer = layer;
             auto shapeConfig = AZStd::make_shared<Physics::CapsuleShapeConfiguration>(height, radius);
             auto capsuleColliderComponent = entity->CreateComponent<CapsuleColliderComponent>();
-            capsuleColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(colliderConfig, shapeConfig) });
+            capsuleColliderComponent->SetShapeConfigurationList({ AzPhysics::ShapeColliderPair(colliderConfig, shapeConfig) });
 
             entity->CreateComponent<StaticRigidBodyComponent>(sceneHandle);
 
@@ -244,14 +244,13 @@ namespace PhysX
             AZ_Assert(cookingResult, "Failed to cook the cube mesh.");
 
             // Setup shape & collider configurations
-            Physics::CookedMeshShapeConfiguration shapeConfig;
-            shapeConfig.SetCookedMeshData(cookedData.data(), cookedData.size(),
+            auto shapeConfig = AZStd::make_shared<Physics::CookedMeshShapeConfiguration>();
+            shapeConfig->SetCookedMeshData(cookedData.data(), cookedData.size(),
                 Physics::CookedMeshShapeConfiguration::MeshType::TriangleMesh);
 
-            Physics::ColliderConfiguration colliderConfig;
-
             AzPhysics::StaticRigidBodyConfiguration staticRigidBodyConfiguration;
-            staticRigidBodyConfiguration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(&colliderConfig, &shapeConfig);
+            staticRigidBodyConfiguration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(
+                AZStd::make_shared<Physics::ColliderConfiguration>(), shapeConfig);
 
             if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
             {
@@ -290,7 +289,7 @@ namespace PhysX
 
             auto shapeConfig = AZStd::make_shared<Physics::BoxShapeConfiguration>(dimensions);
             auto boxColliderComponent = entity->CreateComponent<PhysX::BoxColliderComponent>();
-            boxColliderComponent->SetShapeConfigurationList({ AZStd::make_pair(colliderConfig, shapeConfig) });
+            boxColliderComponent->SetShapeConfigurationList({ AzPhysics::ShapeColliderPair(colliderConfig, shapeConfig) });
 
             AzPhysics::RigidBodyConfiguration rigidBodyConfig;
             rigidBodyConfig.m_computeMass = false;
@@ -307,7 +306,7 @@ namespace PhysX
             AZ::TransformConfig transformConfig;
             transformConfig.m_worldTransform = AZ::Transform::CreateTranslation(position);
             entity->CreateComponent<AzFramework::TransformComponent>()->SetConfiguration(transformConfig);
-            Physics::ShapeConfigurationList shapeConfigList = { AZStd::make_pair(
+            AzPhysics::ShapeColliderPairList shapeConfigList = { AzPhysics::ShapeColliderPair(
                 AZStd::make_shared<Physics::ColliderConfiguration>(),
                 AZStd::make_shared<Physics::BoxShapeConfiguration>()) };
             auto boxCollider = entity->CreateComponent<BoxColliderComponent>();
@@ -371,10 +370,10 @@ namespace PhysX
 
         AzPhysics::StaticRigidBody* AddStaticFloorToScene(AzPhysics::SceneHandle sceneHandle, const AZ::Transform& transform)
         {
-            Physics::ColliderConfiguration colliderConfig;
-            Physics::BoxShapeConfiguration shapeConfiguration(AZ::Vector3(20.0f, 20.0f, 1.0f));
             AzPhysics::StaticRigidBodyConfiguration staticBodyConfiguration;
-            staticBodyConfiguration.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
+            staticBodyConfiguration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(
+                AZStd::make_shared<Physics::ColliderConfiguration>(),
+                AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3(20.0f, 20.0f, 1.0f)));
             if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
             {
                 AzPhysics::SimulatedBodyHandle simBodyHandle = sceneInterface->AddSimulatedBody(sceneHandle, &staticBodyConfiguration);
@@ -410,10 +409,10 @@ namespace PhysX
         AzPhysics::SimulatedBodyHandle AddSphereToScene(AzPhysics::SceneHandle sceneHandle, const AZ::Vector3& position,
             const float radius /*= 0.5f*/, const AzPhysics::CollisionLayer& layer /*= AzPhysics::CollisionLayer::Default*/)
         {
-            Physics::ColliderConfiguration colliderConfig;
-            colliderConfig.m_collisionLayer = layer;
-            Physics::SphereShapeConfiguration shapeConfiguration;
-            shapeConfiguration.m_radius = radius;
+            auto colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
+            colliderConfig->m_collisionLayer = layer;
+            auto shapeConfiguration = AZStd::make_shared<Physics::SphereShapeConfiguration>();
+            shapeConfiguration->m_radius = radius;
             AzPhysics::RigidBodyConfiguration rigidBodySettings;
             rigidBodySettings.m_computeMass = false;
             rigidBodySettings.m_computeInertiaTensor = false;
@@ -421,7 +420,7 @@ namespace PhysX
             rigidBodySettings.m_mass = 1.0f;
             rigidBodySettings.m_position = position;
             rigidBodySettings.m_linearDamping = 0.0f;
-            rigidBodySettings.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
+            rigidBodySettings.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(colliderConfig, shapeConfiguration);
 
             if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
             {
@@ -435,11 +434,12 @@ namespace PhysX
             const AzPhysics::CollisionLayer& layer /*= AzPhysics::CollisionLayer::Default*/)
         {
             AzPhysics::RigidBodyConfiguration rigidBodySettings;
-            Physics::ColliderConfiguration colliderConfig;
-            colliderConfig.m_collisionLayer = layer;
-            colliderConfig.m_rotation = AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi);
-            Physics::CapsuleShapeConfiguration shapeConfig(height, radius);
-            rigidBodySettings.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfig);
+            auto colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
+            colliderConfig->m_collisionLayer = layer;
+            colliderConfig->m_rotation = AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi);
+            
+            rigidBodySettings.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(colliderConfig,
+                AZStd::make_shared<Physics::CapsuleShapeConfiguration>(height, radius));
             rigidBodySettings.m_position = position;
             rigidBodySettings.m_computeMass = false;
             rigidBodySettings.m_computeInertiaTensor = false;
@@ -457,10 +457,10 @@ namespace PhysX
             const AZ::Vector3& position, const AZ::Vector3& dimensions /*= AZ::Vector3(1.0f)*/,
             const AzPhysics::CollisionLayer& layer /*= AzPhysics::CollisionLayer::Default*/)
         {
-            Physics::ColliderConfiguration colliderConfig;
-            colliderConfig.m_collisionLayer = layer;
-            Physics::BoxShapeConfiguration shapeConfiguration;
-            shapeConfiguration.m_dimensions = dimensions;
+            auto colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
+            colliderConfig->m_collisionLayer = layer;
+            auto shapeConfiguration = AZStd::make_shared<Physics::BoxShapeConfiguration>();
+            shapeConfiguration->m_dimensions = dimensions;
 
             AzPhysics::RigidBodyConfiguration rigidBodySettings;
             rigidBodySettings.m_computeMass = false;
@@ -469,7 +469,7 @@ namespace PhysX
             rigidBodySettings.m_mass = 1.0f;
             rigidBodySettings.m_position = position;
             rigidBodySettings.m_linearDamping = 0.0f;
-            rigidBodySettings.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
+            rigidBodySettings.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(colliderConfig, shapeConfiguration);
             if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
             {
                 return sceneInterface->AddSimulatedBody(sceneHandle, &rigidBodySettings);
@@ -481,13 +481,14 @@ namespace PhysX
             const AZ::Vector3& position, const AZ::Vector3& dimensions /*= AZ::Vector3(1.0f)*/,
             const AzPhysics::CollisionLayer& layer /*= AzPhysics::CollisionLayer::Default*/)
         {
-            Physics::ColliderConfiguration colliderConfig;
-            colliderConfig.m_collisionLayer = layer;
-            Physics::BoxShapeConfiguration shapeConfiguration;
-            shapeConfiguration.m_dimensions = dimensions;
+            auto colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
+            colliderConfig->m_collisionLayer = layer;
+            auto shapeConfiguration = AZStd::make_shared<Physics::BoxShapeConfiguration>();
+            shapeConfiguration->m_dimensions = dimensions;
+
             AzPhysics::StaticRigidBodyConfiguration rigidBodySettings;
             rigidBodySettings.m_position = position;
-            rigidBodySettings.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
+            rigidBodySettings.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(colliderConfig, shapeConfiguration);
 
             if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
             {

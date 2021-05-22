@@ -60,13 +60,7 @@ namespace AZ
 
         bool SkinnedMeshRenderProxy::BuildDispatchItem([[maybe_unused]] const RPI::Scene& scene, size_t modelLodIndex, [[maybe_unused]] const SkinnedMeshShaderOptions& shaderOptions)
         {
-            if (!m_featureProcessor->GetSkinningPass())
-            {
-                AZ_Error("Skinned Mesh Feature Processor", false, "Failed to get Skinning Pass. Make sure the project has a skinning pass.");
-                return false;
-            }
-
-            Data::Instance<RPI::Shader> skinningShader = m_featureProcessor->GetSkinningPass()->GetShader();
+            Data::Instance<RPI::Shader> skinningShader = m_featureProcessor->GetSkinningShader();
             if (!skinningShader)
             {
                 AZ_Error("Skinned Mesh Feature Processor", false, "Failed to get skinning shader from skinning pass");
@@ -89,7 +83,7 @@ namespace AZ
                     m_instance->m_outputStreamOffsetsInBytes[modelLodIndex],
                     modelLodIndex, m_boneTransforms,
                     m_shaderOptions,
-                    m_featureProcessor->GetSkinningPass(),
+                    m_featureProcessor,
                     m_instance->m_morphTargetInstanceMetaData[modelLodIndex],
                     morphDeltaIntegerEncoding });
 
@@ -100,7 +94,7 @@ namespace AZ
             }
 
             // Get the data needed to create a morph target dispatch item
-            Data::Instance<RPI::Shader> morphTargetShader = m_featureProcessor->GetMorphTargetPass()->GetShader();
+            Data::Instance<RPI::Shader> morphTargetShader = m_featureProcessor->GetMorphTargetShader();
             const AZStd::vector<AZStd::intrusive_ptr<MorphTargetInputBuffers>>& morphTargetInputBuffersVector = m_inputBuffers->GetMorphTargetInputBuffers(modelLodIndex);
             AZ_Assert(morphTargetMetaDatas.size() == morphTargetInputBuffersVector.size(), "Skinned Mesh Feature Processor - Mismatch in morph target metadata count and morph target input buffer count");
 
@@ -118,7 +112,7 @@ namespace AZ
                     aznew MorphTargetDispatchItem{
                         morphTargetInputBuffersVector[morphTargetIndex],
                         morphTargetMetaDatas[morphTargetIndex],
-                        m_featureProcessor->GetMorphTargetPass(),
+                        m_featureProcessor,
                         m_instance->m_morphTargetInstanceMetaData[modelLodIndex],
                         morphDeltaIntegerEncoding });
 

@@ -13,6 +13,8 @@
 #include <Source/Debug/MultiplayerDebugSystemComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzNetworking/Framework/INetworking.h>
+#include <AzNetworking/Framework/INetworkInterface.h>
 #include <Multiplayer/IMultiplayer.h>
 
 namespace Multiplayer
@@ -138,7 +140,7 @@ namespace Multiplayer
 
     void DrawComponentDetails(const MultiplayerStats& stats, NetComponentId netComponentId)
     {
-        IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
+        MultiplayerComponentRegistry* componentRegistry = GetMultiplayerComponentRegistry();
         {
             const MultiplayerStats::Metric metric = stats.CalculateComponentPropertyUpdateSentMetrics(netComponentId);
             float callsPerSecond = 0.0f;
@@ -150,7 +152,7 @@ namespace Multiplayer
                 for (AZStd::size_t index = 0; index < componentStats.m_propertyUpdatesSent.size(); ++index)
                 {
                     const PropertyIndex propertyIndex = aznumeric_cast<PropertyIndex>(index);
-                    const char* propertyName = multiplayer->GetComponentPropertyName(netComponentId, propertyIndex);
+                    const char* propertyName = componentRegistry->GetComponentPropertyName(netComponentId, propertyIndex);
                     const MultiplayerStats::Metric& subMetric = componentStats.m_propertyUpdatesSent[index];
                     callsPerSecond = 0.0f;
                     bytesPerSecond = 0.0f;
@@ -172,7 +174,7 @@ namespace Multiplayer
                 for (AZStd::size_t index = 0; index < componentStats.m_propertyUpdatesRecv.size(); ++index)
                 {
                     const PropertyIndex propertyIndex = aznumeric_cast<PropertyIndex>(index);
-                    const char* propertyName = multiplayer->GetComponentPropertyName(netComponentId, propertyIndex);
+                    const char* propertyName = componentRegistry->GetComponentPropertyName(netComponentId, propertyIndex);
                     const MultiplayerStats::Metric& subMetric = componentStats.m_propertyUpdatesRecv[index];
                     callsPerSecond = 0.0f;
                     bytesPerSecond = 0.0f;
@@ -194,7 +196,7 @@ namespace Multiplayer
                 for (AZStd::size_t index = 0; index < componentStats.m_rpcsSent.size(); ++index)
                 {
                     const RpcIndex rpcIndex = aznumeric_cast<RpcIndex>(index);
-                    const char* rpcName = multiplayer->GetComponentRpcName(netComponentId, rpcIndex);
+                    const char* rpcName = componentRegistry->GetComponentRpcName(netComponentId, rpcIndex);
                     const MultiplayerStats::Metric& subMetric = componentStats.m_rpcsSent[index];
                     callsPerSecond = 0.0f;
                     bytesPerSecond = 0.0f;
@@ -216,7 +218,7 @@ namespace Multiplayer
                 for (AZStd::size_t index = 0; index < componentStats.m_rpcsRecv.size(); ++index)
                 {
                     const RpcIndex rpcIndex = aznumeric_cast<RpcIndex>(index);
-                    const char* rpcName = multiplayer->GetComponentRpcName(netComponentId, rpcIndex);
+                    const char* rpcName = componentRegistry->GetComponentRpcName(netComponentId, rpcIndex);
                     const MultiplayerStats::Metric& subMetric = componentStats.m_rpcsRecv[index];
                     callsPerSecond = 0.0f;
                     bytesPerSecond = 0.0f;
@@ -233,11 +235,49 @@ namespace Multiplayer
         const float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;
         const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 
+        if (m_displayNetworkingStats)
+        {
+            if (ImGui::Begin("Networking Stats", &m_displayNetworkingStats, ImGuiWindowFlags_None))
+            {
+                AzNetworking::INetworking* networking = AZ::Interface<AzNetworking::INetworking>::Get();
+
+                ImGui::Text("Total sockets monitored by TcpListenThread: %u", networking->GetTcpListenThreadSocketCount());
+                ImGui::Text("Total time spent updating TcpListenThread: %lld", aznumeric_cast<AZ::s64>(networking->GetTcpListenThreadUpdateTime()));
+                ImGui::Text("Total sockets monitored by UdpReaderThread: %u", networking->GetUdpReaderThreadSocketCount());
+                ImGui::Text("Total time spent updating UdpReaderThread: %lld", aznumeric_cast<AZ::s64>(networking->GetUdpReaderThreadUpdateTime()));
+
+                for (auto& networkInterface : networking->GetNetworkInterfaces())
+                {
+                    const char* protocol = networkInterface.second->GetType() == AzNetworking::ProtocolType::Tcp ? "Tcp" : "Udp";
+                    const char* trustZone = networkInterface.second->GetTrustZone() == AzNetworking::TrustZone::ExternalClientToServer ? "ExternalClientToServer" : "InternalServerToServer";
+                    const uint32_t port = aznumeric_cast<uint32_t>(networkInterface.second->GetPort());
+                    ImGui::Text("%sNetworkInterface: %s - open to %s on port %u", protocol, networkInterface.second->GetName().GetCStr(), trustZone, port);
+
+                    const AzNetworking::NetworkInterfaceMetrics& metrics = networkInterface.second->GetMetrics();
+                    ImGui::Text(" - Total time spent updating in milliseconds: %lld", aznumeric_cast<AZ::s64>(metrics.m_updateTimeMs));
+                    ImGui::Text(" - Total number of connections: %llu", aznumeric_cast<AZ::u64>(metrics.m_connectionCount));
+                    ImGui::Text(" - Total send time in milliseconds: %lld", aznumeric_cast<AZ::s64>(metrics.m_sendTimeMs));
+                    ImGui::Text(" - Total sent packets: %llu", aznumeric_cast<AZ::s64>(metrics.m_sendPackets));
+                    ImGui::Text(" - Total sent bytes after compression: %llu", aznumeric_cast<AZ::u64>(metrics.m_sendBytes));
+                    ImGui::Text(" - Total sent bytes before compression: %llu", aznumeric_cast<AZ::u64>(metrics.m_sendBytesUncompressed));
+                    ImGui::Text(" - Total sent compressed packets without benefit: %llu", aznumeric_cast<AZ::u64>(metrics.m_sendCompressedPacketsNoGain));
+                    ImGui::Text(" - Total gain from packet compression: %lld", aznumeric_cast<AZ::s64>(metrics.m_sendBytesCompressedDelta));
+                    ImGui::Text(" - Total packets resent: %llu", aznumeric_cast<AZ::u64>(metrics.m_resentPackets));
+                    ImGui::Text(" - Total receive time in milliseconds: %lld", aznumeric_cast<AZ::s64>(metrics.m_recvTimeMs));
+                    ImGui::Text(" - Total received packets: %llu", aznumeric_cast<AZ::u64>(metrics.m_recvPackets));
+                    ImGui::Text(" - Total received bytes after compression: %llu", aznumeric_cast<AZ::u64>(metrics.m_recvBytes));
+                    ImGui::Text(" - Total received bytes before compression: %llu", aznumeric_cast<AZ::u64>(metrics.m_recvBytesUncompressed));
+                    ImGui::Text(" - Total packets discarded due to load: %llu", aznumeric_cast<AZ::u64>(metrics.m_discardedPackets));
+                }
+            }
+        }
+
         if (m_displayMultiplayerStats)
         {
             if (ImGui::Begin("Multiplayer Stats", &m_displayMultiplayerStats, ImGuiWindowFlags_None))
             {
                 IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
+                MultiplayerComponentRegistry* componentRegistry = GetMultiplayerComponentRegistry();
                 const Multiplayer::MultiplayerStats& stats = multiplayer->GetStats();
                 ImGui::Text("Multiplayer operating in %s mode", GetEnumString(multiplayer->GetAgentType()));
                 ImGui::Text("Total networked entities: %llu", aznumeric_cast<AZ::u64>(stats.m_entityCount));
@@ -267,8 +307,8 @@ namespace Multiplayer
                         {
                             const NetComponentId netComponentId = aznumeric_cast<NetComponentId>(index);
                             using StringLabel = AZStd::fixed_string<128>;
-                            const StringLabel gemName = multiplayer->GetComponentGemName(netComponentId);
-                            const StringLabel componentName = multiplayer->GetComponentName(netComponentId);
+                            const StringLabel gemName = componentRegistry->GetComponentGemName(netComponentId);
+                            const StringLabel componentName = componentRegistry->GetComponentName(netComponentId);
                             const StringLabel label = gemName + "::" + componentName;
                             if (DrawComponentRow(label.c_str(), stats, netComponentId))
                             {

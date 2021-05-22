@@ -73,8 +73,6 @@ namespace AZ
             static bool SerializeOutShaderVariantAsset(const Data::Asset<RPI::ShaderVariantAsset> shaderVariantAsset, const AZStd::string& shaderFullPath, const AZStd::string& tempDirPath,
                 const RHI::ShaderPlatformInterface& shaderPlatformInterface, const uint32_t productSubID, AssetBuilderSDK::JobProduct& assetProduct);
 
-            static void GetDefaultEntryPointsFromAzslData(const AzslData& shaderData, AZStd::unordered_map<AZStd::string, RPI::ShaderStageType>& shaderEntryPoints);
-
             // AssetBuilderSDK::AssetBuilderCommandBus interface overrides ...
             void ShutDown() override { };
 

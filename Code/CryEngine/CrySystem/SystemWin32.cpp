@@ -46,15 +46,15 @@
 #include <shlobj.h>
 #endif
 
+#include "IDebugCallStack.h"
+
 #if defined(APPLE) || defined(LINUX)
 #include <pwd.h>
 #endif
 
 #include "XConsole.h"
-#include "StreamEngine/StreamEngine.h"
 #include "LocalizedStringManager.h"
 #include "XML/XmlUtils.h"
-#include "AutoDetectSpec.h"
 
 #if defined(WIN32)
 __pragma(comment(lib, "wininet.lib"))
@@ -120,19 +120,6 @@ struct PEHeader_DLL
 };
 #pragma pack(pop)
 #endif
-
-const SmallModuleInfo* FindModuleInfo(std::vector<SmallModuleInfo>& vec, const char* name)
-{
-    for (size_t i = 0; i < vec.size(); ++i)
-    {
-        if (!vec[i].name.compareNoCase(name))
-        {
-            return &vec[i];
-        }
-    }
-
-    return 0;
-}
 
 //////////////////////////////////////////////////////////////////////////
 const char* CSystem::GetUserName()
@@ -231,30 +218,6 @@ int CSystem::GetApplicationLogInstance([[maybe_unused]] const char* logFilePath)
 #endif
 }
 
-// these 2 functions are duplicated in System.cpp in editor
-//////////////////////////////////////////////////////////////////////////
-#if !defined(LINUX)
-extern int CryStats(char* buf);
-#endif
-int CSystem::DumpMMStats(bool log)
-{
-#if defined(LINUX)
-    return 0;
-#else
-    if (log)
-    {
-        char buf[1024];
-        int n = CryStats(buf);
-        GetILog()->Log(buf);
-        return n;
-    }
-    else
-    {
-        return CryStats(NULL);
-    };
-#endif
-};
-
 //////////////////////////////////////////////////////////////////////////
 struct CryDbgModule
 {
@@ -264,273 +227,7 @@ struct CryDbgModule
     DWORD dwSize;
 };
 
-//////////////////////////////////////////////////////////////////////////
-void CSystem::DebugStats([[maybe_unused]] bool checkpoint, [[maybe_unused]] bool leaks)
-{
 #ifdef WIN32
-    std::vector<CryDbgModule> dbgmodules;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Use windows Performance Monitoring API to enumerate all modules of current process.
-    //////////////////////////////////////////////////////////////////////////
-    HANDLE hSnapshot;
-    hSnapshot = CreateToolhelp32Snapshot (TH32CS_SNAPMODULE, 0);
-    if (hSnapshot != INVALID_HANDLE_VALUE)
-    {
-        MODULEENTRY32 me;
-        memset (&me, 0, sizeof(me));
-        me.dwSize = sizeof(me);
-
-        if (Module32First (hSnapshot, &me))
-        {
-            // the sizes of each module group
-            do
-            {
-                CryDbgModule module;
-                module.handle = me.hModule;
-                module.name = me.szModule;
-                module.dwSize = me.modBaseSize;
-                dbgmodules.push_back(module);
-            } while (Module32Next(hSnapshot, &me));
-        }
-        CloseHandle (hSnapshot);
-    }
-    //////////////////////////////////////////////////////////////////////////
-   
-    int nolib = 0;
-
-#ifdef _DEBUG
-    ILog* log = GetILog();
-    int totalal = 0;
-    int totalbl = 0;
-    int extrastats[10];
-#endif
-
-    int totalUsedInModules = 0;
-    int countedMemoryModules = 0;
-    for (int i = 0; i < (int)(dbgmodules.size()); i++)
-    {
-        if (!dbgmodules[i].handle)
-        {
-            CryLogAlways("WARNING: CSystem::DebugStats: NULL handle for %s", dbgmodules[i].name.c_str());
-            nolib++;
-            continue;
-        }
-        ;
-
-        typedef int (* PFN_MODULEMEMORY)();
-        PFN_MODULEMEMORY fpCryModuleGetAllocatedMemory = (PFN_MODULEMEMORY)::GetProcAddress((HMODULE)dbgmodules[i].handle, "CryModuleGetAllocatedMemory");
-        if (fpCryModuleGetAllocatedMemory)
-        {
-            int allocatedMemory = fpCryModuleGetAllocatedMemory();
-            totalUsedInModules += allocatedMemory;
-            countedMemoryModules++;
-            CryLogAlways("%8d K used in Module %s: ", allocatedMemory / 1024, dbgmodules[i].name.c_str());
-        }
-
-#ifdef _DEBUG
-        typedef void (* PFNUSAGESUMMARY)(ILog* log, const char*, int*);
-        typedef void (* PFNCHECKPOINT)();
-        PFNUSAGESUMMARY fpu = (PFNUSAGESUMMARY)::GetProcAddress((HMODULE)dbgmodules[i].handle, "UsageSummary");
-        PFNCHECKPOINT fpc = (PFNCHECKPOINT)::GetProcAddress((HMODULE)dbgmodules[i].handle, "CheckPoint");
-        if (fpu && fpc)
-        {
-            if (checkpoint)
-            {
-                fpc();
-            }
-            else
-            {
-                extrastats[2] = (int)leaks;
-                fpu(log, dbgmodules[i].name.c_str(), extrastats);
-                totalal += extrastats[0];
-                totalbl += extrastats[1];
-            };
-        }
-        else
-        {
-            CryLogAlways("WARNING: CSystem::DebugStats: could not retrieve function from DLL %s", dbgmodules[i].name.c_str());
-            nolib++;
-        };
-#endif
-
-        typedef HANDLE(* PFNGETDLLHEAP)();
-        PFNGETDLLHEAP fpg = (PFNGETDLLHEAP)::GetProcAddress((HMODULE)dbgmodules[i].handle, "GetDLLHeap");
-        if (fpg)
-        {
-            dbgmodules[i].heap = fpg();
-        }
-        ;
-    }
-    ;
-
-    CryLogAlways("-------------------------------------------------------");
-    CryLogAlways("%8d K Total Memory Allocated in %d Modules", totalUsedInModules / 1024, countedMemoryModules);
-#ifdef _DEBUG
-    CryLogAlways("$8GRAND TOTAL: %d k, %d blocks (%d dlls not included)", totalal / 1024, totalbl, nolib);
-    CryLogAlways("estimated debugalloc overhead: between %d k and %d k", totalbl * 36 / 1024, totalbl * 72 / 1024);
-#endif
-
-    //////////////////////////////////////////////////////////////////////////
-    // Get HeapQueryInformation pointer if on windows XP.
-    //////////////////////////////////////////////////////////////////////////
-    typedef BOOL (WINAPI * FUNC_HeapQueryInformation)(HANDLE, HEAP_INFORMATION_CLASS, PVOID, SIZE_T, PSIZE_T);
-    FUNC_HeapQueryInformation pFnHeapQueryInformation = NULL;
-    HMODULE hKernelInstance = CryLoadLibrary("Kernel32.dll");
-    if (hKernelInstance)
-    {
-        pFnHeapQueryInformation = (FUNC_HeapQueryInformation)(::GetProcAddress(hKernelInstance, "HeapQueryInformation"));
-    }
-    //////////////////////////////////////////////////////////////////////////
-
-    const int MAXHANDLES = 100;
-    HANDLE handles[MAXHANDLES];
-    int realnumh = GetProcessHeaps(MAXHANDLES, handles);
-    char hinfo[1024];
-    PROCESS_HEAP_ENTRY phe;
-    CryLogAlways("$6--------------------- dump of windows heaps ---------------------");
-    int nTotalC = 0, nTotalCP = 0, nTotalUC = 0, nTotalUCP = 0, totalo = 0;
-    for (int i = 0; i < realnumh; i++)
-    {
-        HANDLE hHeap = handles[i];
-        HeapCompact(hHeap, 0);
-        hinfo[0] = 0;
-        if (pFnHeapQueryInformation)
-        {
-            pFnHeapQueryInformation(hHeap, HeapCompatibilityInformation, hinfo, 1024, NULL);
-        }
-        else
-        {
-            for (int m = 0; m < (int)(dbgmodules.size()); m++)
-            {
-                if (dbgmodules[m].heap == handles[i])
-                {
-                    azstrcpy(hinfo, AZ_ARRAY_SIZE(hinfo), dbgmodules[m].name.c_str());
-                }
-            }
-        }
-        phe.lpData = NULL;
-        int nCommitted = 0, nUncommitted = 0, nOverhead = 0;
-        int nCommittedPieces = 0, nUncommittedPieces = 0;
-#if !defined(NDEBUG)
-        int nPrevRegionIndex = -1;
-#endif
-        while (HeapWalk(hHeap, &phe))
-        {
-            if (phe.wFlags & PROCESS_HEAP_REGION)
-            {
-                assert (++nPrevRegionIndex == phe.iRegionIndex);
-                nCommitted += phe.Region.dwCommittedSize;
-                nUncommitted +=  phe.Region.dwUnCommittedSize;
-                assert (phe.cbData == 0 || (phe.wFlags & PROCESS_HEAP_ENTRY_BUSY));
-            }
-            else
-            if (phe.wFlags & PROCESS_HEAP_UNCOMMITTED_RANGE)
-            {
-                nUncommittedPieces += phe.cbData;
-            }
-            else
-            {
-                //if (phe.wFlags & PROCESS_HEAP_ENTRY_BUSY)
-                nCommittedPieces += phe.cbData;
-            }
-
-
-            {
-                /*
-                MEMORY_BASIC_INFORMATION mbi;
-                if (VirtualQuery(phe.lpData, &mbi,sizeof(mbi)) == sizeof(mbi))
-                {
-                if (mbi.State == MEM_COMMIT)
-                nCommittedPieces += phe.cbData;//mbi.RegionSize;
-                //else
-                //  nUncommitted += mbi.RegionSize;
-                }
-                else
-                nCommittedPieces += phe.cbData;
-                */
-            }
-
-            nOverhead += phe.cbOverhead;
-        }
-
-        CryLogAlways("* heap %8x: %6d (or ~%6d) K in use, %6d..%6d K uncommitted, %6d K overhead (%s)\n",
-            handles[i], nCommittedPieces / 1024, nCommitted / 1024, nUncommittedPieces / 1024, nUncommitted / 1024, nOverhead / 1024, hinfo);
-
-        nTotalC += nCommitted;
-        nTotalCP += nCommittedPieces;
-        nTotalUC += nUncommitted;
-        nTotalUCP += nUncommittedPieces;
-        totalo += nOverhead;
-    }
-    ;
-    CryLogAlways("$6----------------- total in heaps: %d megs committed (win stats shows ~%d) (%d..%d uncommitted, %d k overhead) ---------------------", nTotalCP / 1024 / 1024, nTotalC / 1024 / 1024, nTotalUCP / 1024 / 1024, nTotalUC / 1024 / 1024, totalo / 1024);
-
-#endif //WIN32
-};
-
-#ifdef WIN32
-struct DumpHeap32Stats
-{
-    DumpHeap32Stats()
-        : dwFree(0)
-        , dwMoveable(0)
-        , dwFixed(0)
-        , dwUnknown(0)
-    {
-    }
-    void operator += (const DumpHeap32Stats& right)
-    {
-        dwFree += right.dwFree;
-        dwMoveable += right.dwMoveable;
-        dwFixed += right.dwFixed;
-        dwUnknown += right.dwUnknown;
-    }
-    DWORD dwFree;
-    DWORD dwMoveable;
-    DWORD dwFixed;
-    DWORD dwUnknown;
-};
-static void DumpHeap32 (const HEAPLIST32& hl, DumpHeap32Stats& stats)
-{
-    HEAPENTRY32 he;
-    memset (&he, 0, sizeof(he));
-    he.dwSize = sizeof(he);
-
-    if (Heap32First (&he, hl.th32ProcessID, hl.th32HeapID))
-    {
-        DumpHeap32Stats heap;
-        do
-        {
-            if (he.dwFlags & LF32_FREE)
-            {
-                heap.dwFree += he.dwBlockSize;
-            }
-            else
-            if (he.dwFlags & LF32_MOVEABLE)
-            {
-                heap.dwMoveable += he.dwBlockSize;
-            }
-            else
-            if (he.dwFlags & LF32_FIXED)
-            {
-                heap.dwFixed += he.dwBlockSize;
-            }
-            else
-            {
-                heap.dwUnknown += he.dwBlockSize;
-            }
-        } while (Heap32Next (&he));
-
-        CryLogAlways ("%08X  %6d %6d %6d (%d)", hl.th32HeapID, heap.dwFixed / 0x400, heap.dwFree / 0x400, heap.dwMoveable / 0x400, heap.dwUnknown / 0x400);
-        stats += heap;
-    }
-    else
-    {
-        CryLogAlways ("%08X  empty or invalid");
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
 class CStringOrder
 {
@@ -565,94 +262,6 @@ const char* GetModuleGroup (const char* szString)
 }
 
 #endif
-
-//////////////////////////////////////////////////////////////////////////
-void CSystem::DumpWinHeaps()
-{
-#ifdef WIN32
-    //
-    // Retrieve modules and log them; remember the process id
-
-    HANDLE hSnapshot;
-    hSnapshot = CreateToolhelp32Snapshot (TH32CS_SNAPMODULE, 0);
-    if (hSnapshot == INVALID_HANDLE_VALUE)
-    {
-        CryLogAlways ("Cannot get the module snapshot, error code %d", GetLastError());
-        return;
-    }
-
-    DWORD dwProcessID = GetCurrentProcessId();
-
-    MODULEENTRY32 me;
-    memset (&me, 0, sizeof(me));
-    me.dwSize = sizeof(me);
-
-    if (Module32First (hSnapshot, &me))
-    {
-        // the sizes of each module group
-        StringToSizeMap mapGroupSize;
-        DWORD dwTotalModuleSize = 0;
-        CryLogAlways ("base        size  module");
-        do
-        {
-            dwProcessID = me.th32ProcessID;
-            const char* szGroup = GetModuleGroup (me.szModule);
-            CryLogAlways ("%08X %8X  %25s   - %s", me.modBaseAddr, me.modBaseSize, me.szModule, azstricmp(szGroup, "Other") ? szGroup : "");
-            dwTotalModuleSize += me.modBaseSize;
-            AddSize (mapGroupSize, szGroup, me.modBaseSize);
-        } while (Module32Next(hSnapshot, &me));
-
-        CryLogAlways ("------------------------------------");
-        for (StringToSizeMap::iterator it = mapGroupSize.begin(); it != mapGroupSize.end(); ++it)
-        {
-            CryLogAlways ("         %6.3f Mbytes  - %s", double(it->second) / 0x100000, it->first);
-        }
-        CryLogAlways ("------------------------------------");
-        CryLogAlways ("         %6.3f Mbytes  - TOTAL", double(dwTotalModuleSize) / 0x100000);
-        CryLogAlways ("------------------------------------");
-    }
-    else
-    {
-        CryLogAlways ("No modules to dump");
-    }
-
-    CloseHandle (hSnapshot);
-
-    //
-    // Retrieve the heaps and dump each of them with a special function
-
-    hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPHEAPLIST, 0);
-    if (hSnapshot == INVALID_HANDLE_VALUE)
-    {
-        CryLogAlways ("Cannot get the heap LIST snapshot, error code %d", GetLastError());
-        return;
-    }
-
-    HEAPLIST32 hl;
-    memset (&hl, 0, sizeof(hl));
-    hl.dwSize = sizeof(hl);
-
-    CryLogAlways ("__Heap__   fixed   free   move (unknown)");
-    if (Heap32ListFirst (hSnapshot, &hl))
-    {
-        DumpHeap32Stats stats;
-        do
-        {
-            DumpHeap32 (hl, stats);
-        } while (Heap32ListNext (hSnapshot, &hl));
-
-        CryLogAlways ("-------------------------------------------------");
-        CryLogAlways ("$6          %6.3f %6.3f %6.3f (%.3f) Mbytes", double(stats.dwFixed) / 0x100000, double(stats.dwFree) / 0x100000, double(stats.dwMoveable) / 0x100000, double(stats.dwUnknown) / 0x100000);
-        CryLogAlways ("-------------------------------------------------");
-    }
-    else
-    {
-        CryLogAlways ("No heaps to dump");
-    }
-
-    CloseHandle(hSnapshot);
-#endif
-}
 
 // Make system error message string
 //////////////////////////////////////////////////////////////////////////
@@ -739,8 +348,6 @@ void CSystem::FatalError(const char* format, ...)
     assert(szBuffer[0] >= ' ');
     //  strcpy(szBuffer,szBuffer+1);    // remove verbosity tag since it is not supported by ::MessageBox
 
-    LogSystemInfo();
-
     OutputDebugString(szBuffer);
 #ifdef WIN32
     OnFatalError(szBuffer);
@@ -750,6 +357,7 @@ void CSystem::FatalError(const char* format, ...)
     }
 
     // Dump callstack.
+    IDebugCallStack::instance()->FatalError(szBuffer);
 #endif
 
     CryDebugBreak();
@@ -791,6 +399,8 @@ void CSystem::ReportBug([[maybe_unused]] const char* format, ...)
     va_start(ArgList, format);
     azvsnprintf(szBuffer + strlen(sPrefix), MAX_WARNING_LENGTH - strlen(sPrefix), format, ArgList);
     va_end(ArgList);
+
+    IDebugCallStack::instance()->ReportBug(szBuffer);
 #endif
 }
 
@@ -878,146 +488,6 @@ bool CSystem::ReLaunchMediaCenter()
     return false;
 }
 #endif //defined(WIN32)
-
-//////////////////////////////////////////////////////////////////////////
-#if defined(WIN32)
-void CSystem::LogSystemInfo()
-{
-    //////////////////////////////////////////////////////////////////////
-    // Write the system informations to the log
-    //////////////////////////////////////////////////////////////////////
-
-    char szBuffer[1024];
-    char szProfileBuffer[128];
-    char szLanguageBuffer[64];
-    //char szCPUModel[64];
-
-    MEMORYSTATUSEX MemoryStatus;
-    MemoryStatus.dwLength = sizeof(MemoryStatus);
-
-    DEVMODE DisplayConfig;
-    OSVERSIONINFO OSVerInfo;
-    OSVerInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-
-    // log system language
-    GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, LOCALE_SENGLANGUAGE, szLanguageBuffer, sizeof(szLanguageBuffer));
-    azsprintf(szBuffer, "System language: %s", szLanguageBuffer);
-    CryLogAlways(szBuffer);
-
-    // log Windows directory
-    GetWindowsDirectory(szBuffer, sizeof(szBuffer));
-    string str = "Windows Directory: \"";
-    str += szBuffer;
-    str += "\"";
-    CryLogAlways(str);
-
-    //////////////////////////////////////////////////////////////////////
-    // Send system time & date
-    //////////////////////////////////////////////////////////////////////
-
-    str = "Local time is ";
-    azstrtime(szBuffer);
-    str += szBuffer;
-    str += " ";
-    _strdate_s(szBuffer);
-    str += szBuffer;
-    azsprintf(szBuffer, ", system running for %lu minutes", GetTickCount() / 60000);
-    str += szBuffer;
-    CryLogAlways(str);
-
-    //////////////////////////////////////////////////////////////////////
-    // Send system memory status
-    //////////////////////////////////////////////////////////////////////
-
-    GlobalMemoryStatusEx(&MemoryStatus);
-    azsprintf(szBuffer, "%I64dMB physical memory installed, %I64dMB available, %I64dMB virtual memory installed, %ld percent of memory in use",
-        MemoryStatus.ullTotalPhys  / 1048576 + 1,
-        MemoryStatus.ullAvailPhys / 1048576,
-        MemoryStatus.ullTotalVirtual / 1048576,
-        MemoryStatus.dwMemoryLoad);
-    CryLogAlways(szBuffer);
-
-    if (GetISystem()->GetIMemoryManager())
-    {
-        IMemoryManager::SProcessMemInfo memCounters;
-        GetISystem()->GetIMemoryManager()->GetProcessMemInfo(memCounters);
-
-        uint64 PagefileUsage = memCounters.PagefileUsage;
-        uint64 PeakPagefileUsage = memCounters.PeakPagefileUsage;
-        uint64 WorkingSetSize = memCounters.WorkingSetSize;
-        azsprintf(szBuffer, "PageFile usage: %I64dMB, Working Set: %I64dMB, Peak PageFile usage: %I64dMB,",
-            (uint64)PagefileUsage / (1024 * 1024),
-            (uint64)WorkingSetSize / (1024 * 1024),
-            (uint64)PeakPagefileUsage / (1024 * 1024));
-        CryLogAlways(szBuffer);
-    }
-
-    //////////////////////////////////////////////////////////////////////
-    // Send display settings
-    //////////////////////////////////////////////////////////////////////
-
-    EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &DisplayConfig);
-    GetPrivateProfileString("boot.description", "display.drv",
-        "(Unknown graphics card)", szProfileBuffer, sizeof(szProfileBuffer),
-        "system.ini");
-    azsprintf(szBuffer, "Current display mode is %lux%lux%lu, %s",
-        DisplayConfig.dmPelsWidth, DisplayConfig.dmPelsHeight,
-        DisplayConfig.dmBitsPerPel, szProfileBuffer);
-    CryLogAlways(szBuffer);
-
-    //////////////////////////////////////////////////////////////////////
-    // Send input device configuration
-    //////////////////////////////////////////////////////////////////////
-
-    str = "";
-    // Detect the keyboard type
-    switch (GetKeyboardType(0))
-    {
-    case 1:
-        str = "IBM PC/XT (83-key)";
-        break;
-    case 2:
-        str = "ICO (102-key)";
-        break;
-    case 3:
-        str = "IBM PC/AT (84-key)";
-        break;
-    case 4:
-        str = "IBM enhanced (101/102-key)";
-        break;
-    case 5:
-        str = "Nokia 1050";
-        break;
-    case 6:
-        str = "Nokia 9140";
-        break;
-    case 7:
-        str = "Japanese";
-        break;
-    default:
-        str = "Unknown";
-        break;
-    }
-
-    // Any mouse attached ?
-    if (!GetSystemMetrics(SM_MOUSEPRESENT))
-    {
-        CryLogAlways(str + " keyboard and no mouse installed");
-    }
-    else
-    {
-        azsprintf(szBuffer, " keyboard and %i+ button mouse installed",
-            GetSystemMetrics(SM_CMOUSEBUTTONS));
-        CryLogAlways(str + szBuffer);
-    }
-
-    CryLogAlways("--------------------------------------------------------------------------------");
-}
-#else
-void CSystem::LogSystemInfo()
-{
-}
-#endif
 
 #if (defined(WIN32) || defined(WIN64))
 //////////////////////////////////////////////////////////////////////////

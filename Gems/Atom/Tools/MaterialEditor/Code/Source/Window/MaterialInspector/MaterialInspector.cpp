@@ -198,6 +198,11 @@ namespace MaterialEditor
                 &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupNameId),
                 [this](const auto source, const auto target) { return CompareInstanceNodeProperties(source, target); });
             AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
+            
+            bool isGroupVisible = false;
+            MaterialDocumentRequestBus::EventResult(
+                isGroupVisible, m_documentId, &MaterialDocumentRequestBus::Events::IsPropertyGroupVisible, AZ::Name{groupNameId});
+            SetGroupVisible(groupNameId, isGroupVisible);
         }
     }
 
@@ -221,8 +226,7 @@ namespace MaterialEditor
         }
     }
 
-    void MaterialInspector::OnDocumentPropertyConfigModified(
-        const AZ::Uuid& documentId, const AtomToolsFramework::DynamicProperty& property)
+    void MaterialInspector::OnDocumentPropertyConfigModified(const AZ::Uuid&, const AtomToolsFramework::DynamicProperty& property)
     {
         for (auto& groupPair : m_groups)
         {
@@ -234,19 +238,22 @@ namespace MaterialEditor
                     if (reflectedProperty.GetVisibility() != property.GetVisibility())
                     {
                         reflectedProperty.SetConfig(property.GetConfig());
-                        AtomToolsFramework::InspectorRequestBus::Event(
-                            documentId, &AtomToolsFramework::InspectorRequestBus::Events::RebuildGroup, groupPair.first);
+                        RebuildGroup(groupPair.first);
                     }
                     else
                     {
                         reflectedProperty.SetConfig(property.GetConfig());
-                        AtomToolsFramework::InspectorRequestBus::Event(
-                            documentId, &AtomToolsFramework::InspectorRequestBus::Events::RefreshGroup, groupPair.first);
+                        RefreshGroup(groupPair.first);
                     }
                     return;
                 }
             }
         }
+    }
+    
+    void MaterialInspector::OnDocumentPropertyGroupVisibilityChanged(const AZ::Uuid&, const AZ::Name& groupId, bool visible)
+    {
+        SetGroupVisible(groupId.GetStringView(), visible);
     }
 
     void MaterialInspector::BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode)

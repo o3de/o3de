@@ -10,26 +10,16 @@
 #
 
 set(FILES
-    QTangent.h
     CryCommon.cpp
-    Allocator.h
-    FinalizingSpline.h
     IAudioInterfacesCommonData.h
     IAudioSystem.h
-    IChunkFile.h
     ICmdLine.h
-    IColorGradingController.h
     IConsole.h
     IEntityRenderState.h
     IEntityRenderState_info.cpp
     IFont.h
     IFunctorBase.h
-    IFuncVariable.h
     IGem.h
-    IGeneralMemoryHeap.h
-    IGeomCache.h
-    IImage.h
-    IImageHandler.h
     IIndexedMesh.h
     IIndexedMesh_info.cpp
     ILevelSystem.h
@@ -37,58 +27,40 @@ set(FILES
     LocalizationManagerBus.h
     LocalizationManagerBus.inl
     ILog.h
-    ILZ4Decompressor.h
     IMaterial.h
-    IMemory.h
-    IMeshBaking.h
     IMiniLog.h
     IMovieSystem.h
     IPhysics.h
-    IPhysicsDebugRenderer.h
     IPostEffectGroup.h
     IProcess.h
     IReadWriteXMLSink.h
     IRenderAuxGeom.h
     IRenderer.h
     IRenderMesh.h
-    IResourceCollector.h
-    IResourceManager.h
     ISerialize.h
     IShader.h
-    IShader_info.h
     ISplines.h
     IStatObj.h
     StatObjBus.h
     IStereoRenderer.h
-    IStreamEngine.h
-    IStreamEngineDefs.h
     ISurfaceType.h
     ISystem.h
-    ITextModeConsole.h
     ITexture.h
     ITimer.h
     IValidator.h
-    IVideoRenderer.h
     IViewSystem.h
     IWindowMessageHandler.h
     IXml.h
-    IZLibCompressor.h
-    IZlibDecompressor.h
-    IZStdDecompressor.h
-    IProximityTriggerSystem.h
     MicrophoneBus.h
     physinterface.h
     HMDBus.h
     VRCommon.h
     StereoRendererBus.h
     HeightmapUpdateNotificationBus.h
-    IObjManager.h
     INavigationSystem.h
     IMNM.h
-    AzDXGIFormat.h
     SFunctor.h
     FunctorBaseFunction.h
-    CustomMemoryHeap.h
     FunctorBaseMember.h
     stridedptr.h
     Options.h
@@ -97,83 +69,52 @@ set(FILES
     CryRandomInternal.h
     Random.h
     LCGRandom.h
-    MaterialUtils.h
     MTPseudoRandom.cpp
     CryTypeInfo.cpp
     BaseTypes.h
     CompileTimeAssert.h
-    CryThreadSafeWorkerContainer.h
-    CryThreadSafeRendererContainer.h
-    intrusive_list.hpp
     MemoryAccess.h
-    Algorithm.h
     AnimKey.h
     BitFiddling.h
-    CGFContent.h
-    CGFContent_info.cpp
     Common_TypeInfo.cpp
-    CountedValue.h
-    CrtDebugStats.h
     CryArray.h
-    CryArray2d.h
     CryAssert.h
     CryCrc32.h
     CryCustomTypes.h
     CryFile.h
-    CryFixedArray.h
     CryFixedString.h
     CryHeaders.h
     CryHeaders_info.cpp
     CryListenerSet.h
-    CryMemoryAllocator.h
-    CryMemoryManager.h
     CryLegacyAllocator.h
     CryName.h
     CryPath.h
     CryPodArray.h
-    CryPtrArray.h
     CrySizer.h
     CryString.h
     CrySystemBus.h
     CryThread.h
     CryThreadImpl.h
     CryTypeInfo.h
-    CryUtils.h
     CryVersion.h
-    CryZlib.h
     FrameProfiler.h
-    HashGrid.h
     HeapAllocator.h
-    HeapContainer.h
-    ImageExtensionHelper.cpp
-    ImageExtensionHelper.h
-    ImageExtensionHelper_info.h
-    InplaceFactory.h
     LegacyAllocator.h
     MetaUtils.h
     MiniQueue.h
     MTPseudoRandom.h
     MultiThread.h
     MultiThread_Containers.h
-    Name_TypeInfo.h
     NullAudioSystem.h
     PNoise3.h
     PoolAllocator.h
     primitives.h
-    primitives_info.h
     ProjectDefines.h
     Range.h
-    RenderContextConfig.h
-    RingBuffer.h
-    ScopeGuard.h
     ScopedVariableSetter.h
     SerializeFwd.h
     SimpleSerialize.h
-    SmartPointersHelpers.h
     smartptr.h
-    StackContainer.h
-    STLGlobalAllocator.h
-    STLPoolAllocator.h
     StlUtils.h
     StringUtils.h
     Synchronization.h
@@ -183,7 +124,6 @@ set(FILES
     TimeValue_info.h
     TypeInfo_decl.h
     TypeInfo_impl.h
-    UnalignedBlit.h
     UnicodeBinding.h
     UnicodeEncoding.h
     UnicodeFunctions.h
@@ -194,16 +134,11 @@ set(FILES
     XMLBinaryHeaders.h
     RenderBus.h
     MainThreadRenderRequestBus.h
-    OceanConstants.h
-    PakLoadDataUtils.cpp
-    PakLoadDataUtils.h
-    TPool.h
     Cry_Matrix33.h
     Cry_Matrix34.h
     Cry_Matrix44.h
     Cry_MatrixDiag.h
     Cry_Vector4.h
-    AABBSV.h
     Cry_Camera.h
     Cry_Color.h
     Cry_Geo.h
@@ -217,14 +152,12 @@ set(FILES
     Cry_Vector3.h
     Cry_XOptimise.h
     CryHalf_info.h
-    GeomQuery.h
     CryHalf.inl
     MathConversion.h
     Cry_HWMatrix.h
     Cry_HWVector3.h
     AndroidSpecific.h
     AppleSpecific.h
-    Console_std.h
     CryAssert_Android.h
     CryAssert_impl.h
     CryAssert_iOS.h
@@ -232,7 +165,6 @@ set(FILES
     CryAssert_Mac.h
     CryLibrary.cpp
     CryLibrary.h
-    CryMemoryManager_impl.h
     CryThread_dummy.h
     CryThread_pthreads.h
     CryThread_windows.h
@@ -341,6 +273,5 @@ set(FILES
     Maestro/Types/AssetBlends.h
     Maestro/Types/SequenceType.h
     StaticInstance.h
-    Pak/CryPakUtils.h
     WinBase.cpp
 )
