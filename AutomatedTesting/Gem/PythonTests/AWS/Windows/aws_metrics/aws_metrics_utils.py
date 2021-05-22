@@ -10,23 +10,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
 import pathlib
+import pytest
 import typing
-import os
 
 from datetime import datetime
 from botocore.exceptions import WaiterError
 
-from common.aws_utils import AwsUtils
-from .waiters import KinesisAnalyticsApplicationUpdatedWaiter, \
+from AWS.common.aws_utils import AwsUtils
+from .aws_metrics_waiters import KinesisAnalyticsApplicationUpdatedWaiter, \
     CloudWatchMetricsDeliveredWaiter, DataLakeMetricsDeliveredWaiter, GlueCrawlerReadyWaiter
-
-# Default region for deploying and accessing AWS resources.
-AWS_METRICS_DEFAULT_REGION = 'us-west-2'
-# Key and type for AWS resources exported to the resource mapping file.
-RESR_API_ID_KEY = 'AWSMetrics.RESTApiId'
-RESR_API_ID_TYPE = 'AWS::ApiGateway::RestApi'
-REST_API_STAGE_KEY = 'AWSMetrics.RESTApiStage'
-REST_API_STAGE_TYPE = 'AWS::ApiGateway::Stage'
 
 # Expected directory and file extension for the S3 objects.
 EXPECTED_S3_DIRECTORY = 'firehose_events/'
@@ -37,42 +29,11 @@ class AWSMetricsUtils:
     """
     Provide utils functions for the AWSMetrics gem to interact with the deployed resources.
     """
-    def __init__(self, region: str = AWS_METRICS_DEFAULT_REGION):
-        self._aws_util = AwsUtils(region)
-        self._region = region
 
-    def export_rest_api_id(self, stack_name: str, resource_mapping_file_path: str):
-        """
-        Read the stack output and export the RestApiId to the resource mappings file.
-        :param stack_name: Name of the CloudFormation stack.
-        :param resource_mapping_file_path: Path to the resource mapping file.
-        """
-        client = self._aws_util.client('cloudformation')
+    def __init__(self, aws_utils: AwsUtils):
+        self._aws_util = aws_utils
 
-        response = client.describe_stacks(
-            StackName=stack_name
-        )
-        stacks = response.get('Stacks', [])
-        assert len(stacks) == 1, f'{stack_name} is invalid.'
-
-        # export the RestApiId and RESTApiStage to the resource mappings file.
-        for output in stacks[0].get('Outputs', []):
-            if output.get('OutputKey', '') == 'RestApiId':
-                self._aws_util.add_resource_to_resource_mappings(
-                    resource_mapping_file_path=resource_mapping_file_path,
-                    resource_key=RESR_API_ID_KEY,
-                    resource_type=RESR_API_ID_TYPE,
-                    resource_id=output.get('OutputValue', '')
-                )
-            if output.get('OutputKey', '') == 'DeploymentStage':
-                self._aws_util.add_resource_to_resource_mappings(
-                    resource_mapping_file_path=resource_mapping_file_path,
-                    resource_key=REST_API_STAGE_KEY,
-                    resource_type=REST_API_STAGE_TYPE,
-                    resource_id=output.get('OutputValue', '')
-                )
-
-    def start_kenisis_data_analytics_application(self, application_name: str):
+    def start_kenisis_data_analytics_application(self, application_name: str) -> None:
         """
         Start the Kenisis Data Analytics application for real-time analytics.
         :param application_name: Name of the Kenisis Data Analytics application.
@@ -120,7 +81,7 @@ class AWSMetricsUtils:
 
         return input_descriptions[0].get('InputId', '')
 
-    def stop_kenisis_data_analytics_application(self, application_name: str):
+    def stop_kenisis_data_analytics_application(self, application_name: str) -> None:
         """
         Stop the Kenisis Data Analytics application.
         :param application_name: Name of the Kenisis Data Analytics application.
@@ -136,7 +97,7 @@ class AWSMetricsUtils:
             assert False, f'Failed to stop the Kinesis Data Analytics application: {str(e)}.'
 
     def verify_cloud_watch_delivery(self, namespace: str, metrics_name: str,
-                                    dimensions: typing.List[dict], start_time: datetime):
+                                    dimensions: typing.List[dict], start_time: datetime) -> None:
         """
         Verify that the expected metrics is delivered to CloudWatch.
         :param namespace: Namespace of the metrics.
@@ -156,7 +117,7 @@ class AWSMetricsUtils:
         except WaiterError as e:
             assert False, f'Failed to deliver metrics to CloudWatch: {str(e)}.'
 
-    def verify_s3_delivery(self, analytics_bucket_name: str):
+    def verify_s3_delivery(self, analytics_bucket_name: str) -> None:
         """
         Verify that metrics are delivered to S3 for batch analytics successfully.
         :param analytics_bucket_name: Name of the deployed S3 bucket.
@@ -167,26 +128,22 @@ class AWSMetricsUtils:
         try:
             DataLakeMetricsDeliveredWaiter(client).wait(bucket_name=bucket_name, prefix=EXPECTED_S3_DIRECTORY)
         except WaiterError as e:
-            assert False, f'Failed to deliver metrics to S3 data lake: {str(e)}.'
+            assert False, f'Failed to find the S3 directory for storing metrics data: {str(e)}.'
 
         # Check whether the data is converted to the expected data format.
         response = client.list_objects_v2(
             Bucket=bucket_name,
             Prefix=EXPECTED_S3_DIRECTORY
         )
-
-        if response.get('KeyCount', 0) == 0:
-            # No metrics is sent to the S3 bucket.
-            return False
+        assert response.get('KeyCount', 0) != 0, f'Failed to deliver metrics to the S3 bucket {bucket_name}.'
 
         s3_objects = response.get('Contents', [])
         for s3_object in s3_objects:
             key = s3_object.get('Key', '')
             assert pathlib.Path(key).suffix == EXPECTED_S3_OBJECT_EXTENSION, \
                 f'Invalid data format is found in the S3 bucket {bucket_name}'
-        return True
 
-    def run_glue_crawler(self, crawler_name: str):
+    def run_glue_crawler(self, crawler_name: str) -> None:
         """
         Run the Glue crawler and wait for it to finish.
         :param crawler_name: Name of the Glue crawler
@@ -205,7 +162,7 @@ class AWSMetricsUtils:
         except WaiterError as e:
             assert False, f'Failed to run the Glue crawler: {str(e)}.'
 
-    def run_named_queries(self, work_group: str):
+    def run_named_queries(self, work_group: str) -> None:
         """
         Run the named queries under the specific Athena work group.
         :param work_group: Name of the Athena work group.
@@ -243,7 +200,7 @@ class AWSMetricsUtils:
 
             assert state == 'SUCCEEDED', f'Failed to run the named query {named_query.get("Name", {})}'
 
-    def empty_s3_bucket(self, bucket_name: str):
+    def empty_s3_bucket(self, bucket_name: str) -> None:
         """
         Empty the S3 bucket following:
         https://boto3.amazonaws.com/v1/documentation/api/latest/guide/migrations3.html
@@ -257,7 +214,7 @@ class AWSMetricsUtils:
         for key in bucket.objects.all():
             key.delete()
 
-    def get_analytics_bucket_name(self, stack_name: str):
+    def get_analytics_bucket_name(self, stack_name: str) -> str:
         """
         Get the name of the deployed S3 bucket.
         :param stack_name: Name of the CloudFormation stack.
@@ -277,15 +234,16 @@ class AWSMetricsUtils:
 
         return ''
 
-    @staticmethod
-    def remove_file(file_path: str):
-        """
-        Remove a local file and its directory.
-        :param file_path: Path to the local file.
-        """
-        if os.path.exists(file_path):
-            os.remove(file_path)
 
-        file_dir = os.path.dirname(file_path)
-        if os.path.exists(file_dir) and len(os.listdir(file_dir)) == 0:
-            os.rmdir(file_dir)
+@pytest.fixture(scope='function')
+def aws_metrics_utils(
+        request: pytest.fixture,
+        aws_utils: pytest.fixture):
+    """
+    Fixture for the AWS metrics util functions.
+    :param request:  _pytest.fixtures.SubRequest class that handles getting
+        a pytest fixture from a pytest function/fixture.
+    :param aws_utils: aws_utils fixture.
+    """
+    aws_utils_obj = AWSMetricsUtils(aws_utils)
+    return aws_utils_obj

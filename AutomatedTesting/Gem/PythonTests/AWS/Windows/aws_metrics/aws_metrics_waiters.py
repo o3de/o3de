@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import botocore.client
 
 from datetime import timedelta
-from common.custom_waiter import CustomWaiter, WaitState
+from AWS.common.custom_waiter import CustomWaiter, WaitState
 
 
 class KinesisAnalyticsApplicationUpdatedWaiter(CustomWaiter):
