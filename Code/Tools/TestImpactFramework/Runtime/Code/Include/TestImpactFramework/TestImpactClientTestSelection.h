@@ -37,7 +37,9 @@ namespace TestImpact
             size_t GetNumIncludedTestRuns() const;
 
             //! Returns the number of selected test runs that will not be run.
-            size_t GetNumNumExcludedTestRuns() const;
+            size_t GetNumExcludedTestRuns() const;
+
+            size_t GetTotalNumTests() const;
 
         private:
             AZStd::vector<AZStd::string> m_includedTestRuns;

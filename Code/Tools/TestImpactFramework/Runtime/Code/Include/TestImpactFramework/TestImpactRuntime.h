@@ -30,6 +30,7 @@
 namespace TestImpact
 {
     class DynamicDependencyMap;
+    class TestSelectorAndPrioritizer;
     class TestEngine;
     class TestTarget;
 
@@ -175,6 +176,7 @@ namespace TestImpact
         TargetOutputCapture m_targetOutputCapture;
         size_t m_maxConcurrency = 0;
         AZStd::unique_ptr<DynamicDependencyMap> m_dynamicDependencyMap;
+        AZStd::unique_ptr<TestSelectorAndPrioritizer> m_testSelectorAndPrioritizer;
         AZStd::unique_ptr<TestEngine> m_testEngine;
         AZStd::unordered_set<const TestTarget*> m_testTargetExcludeList;
         AZStd::unordered_set<const TestTarget*> m_testTargetShardList;

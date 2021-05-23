@@ -37,10 +37,14 @@ namespace TestImpact
             return m_includedTestRuns.size();
         }
 
-        size_t TestRunSelection::GetNumNumExcludedTestRuns() const
+        size_t TestRunSelection::GetNumExcludedTestRuns() const
         {
             return m_excludedTestRuns.size();
         }
 
+        size_t TestRunSelection::GetTotalNumTests() const
+        {
+            return GetNumIncludedTestRuns() + GetNumExcludedTestRuns();
+        }
     }
 }

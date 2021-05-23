@@ -18,6 +18,7 @@
 #include <Dependency/TestImpactDependencyException.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Dependency/TestImpactSourceCoveringTestsSerializer.h>
+#include <Dependency/TestImpactTestSelectorAndPrioritizer.h>
 #include <TestEngine/TestImpactTestEngine.h>
 
 #include <AzCore/IO/SystemFile.h>
@@ -44,6 +45,8 @@ namespace TestImpact
     {
         // Construct the dynamic dependency map from the build target descriptors
         m_dynamicDependencyMap = ConstructDynamicDependencyMap(m_config.m_testTargetMeta, m_config.m_buildTargetDescriptor);
+
+        m_testSelectorAndPrioritizer = AZStd::make_unique<TestSelectorAndPrioritizer>(m_dynamicDependencyMap.get(), DependencyGraphDataMap{});
 
         // Construct the target exclude list from the target configuration data
         m_testTargetExcludeList = ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetTestTargetList(), m_config.m_target);
@@ -87,13 +90,6 @@ namespace TestImpact
 
     Runtime::~Runtime() = default;
 
-    //void EnumerateDirtyTestTargets()
-    //{
-    //    AZStd::vector<const TestTarget*> dirtyTargets;
-    //    // TODO: cross reference with list of previously enabled targets
-    //    m_testEngine->UpdateEnumerationCache(dirtyTargets, AZStd::nullopt);
-    //}
-
     TestSequenceResult Runtime::RegularTestSequence(
         const AZStd::unordered_set<AZStd::string> suitesFilter,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
@@ -131,7 +127,7 @@ namespace TestImpact
 
         if (testSequenceStartCallback.has_value())
         {
-            (*testSequenceStartCallback)(CreateTestSelection(includedTestTargets, excludedTestTargets));
+            (*testSequenceStartCallback)(Client::TestRunSelection(ExtractTestTargetNames(includedTestTargets), ExtractTestTargetNames(excludedTestTargets)));
         }
 
         const auto testComplete = [testCompleteCallback](const TestEngineJob& testJob)
@@ -157,7 +153,7 @@ namespace TestImpact
 
         if (testSequenceEndCallback.has_value())
         {
-            (*testSequenceEndCallback)(CreateFailureReport(testJobs), duration);
+            (*testSequenceEndCallback)(CreateRegularFailureReport(testJobs), duration);
         }
 
         return result;
@@ -172,7 +168,78 @@ namespace TestImpact
         [[maybe_unused]]AZStd::optional<ImpactAnalysisTestSequenceCompleteCallback> testSequenceEndCallback,
         [[maybe_unused]]AZStd::optional<TestCompleteCallback> testCompleteCallback)
     {
-        return TestSequenceResult::Success;
+        AZStd::vector<const TestTarget*> includedTestTargets;
+        AZStd::vector<const TestTarget*> excludedTestTargets;
+        AZStd::vector<const TestTarget*> discardedTests;
+        AZStd::vector<const TestTarget*> draftedTests;
+        AZStd::unordered_set<const TestTarget*> selectedTests;
+        const AZStd::chrono::high_resolution_clock::time_point startTime = AZStd::chrono::high_resolution_clock::now();
+        const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList);
+        const auto selectedTestTargets = m_testSelectorAndPrioritizer->SelectTestTargets(changeDependecyList, testPrioritizationPolicy);
+
+        for (const auto* testTarget : selectedTestTargets)
+        {
+            selectedTests.insert(testTarget);
+            if (!m_testTargetExcludeList.contains(testTarget))
+            {
+                includedTestTargets.push_back(testTarget);
+            }
+            else
+            {
+                excludedTestTargets.push_back(testTarget);
+            }
+        }
+
+        for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
+        {
+            if (!selectedTests.contains(&testTarget))
+            {
+                discardedTests.push_back(&testTarget);
+            }
+        }
+
+        if (testSequenceStartCallback.has_value())
+        {
+            (*testSequenceStartCallback)(
+                Client::TestRunSelection(ExtractTestTargetNames(includedTestTargets), ExtractTestTargetNames(excludedTestTargets)),
+                ExtractTestTargetNames(discardedTests),
+                ExtractTestTargetNames(draftedTests));
+        }
+
+        const auto testComplete = [testCompleteCallback](const TestEngineJob& testJob)
+        {
+            if (testCompleteCallback.has_value())
+            {
+                (*testCompleteCallback)(Client::TestRun(testJob.GetTestTarget()->GetName(), testJob.GetTestResult(), testJob.GetDuration()));
+            }
+        };
+
+        const auto [result, testJobs] = m_testEngine->InstrumentedRun(
+            includedTestTargets,
+            m_testShardingPolicy,
+            m_executionFailurePolicy,
+            Policy::IntegrityFailure::Continue,
+            m_testFailurePolicy,
+            m_targetOutputCapture,
+            AZStd::nullopt,
+            globalTimeout,
+            testComplete);
+
+        const auto coverage = CreateSourceCoveringTestFromTestCoverages(testJobs, m_config.m_repo.m_root);
+        m_dynamicDependencyMap->ReplaceSourceCoverage(coverage);
+        const auto sparTIA = m_dynamicDependencyMap->ExportSourceCoverage();
+        const auto sparTIAData = SerializeSourceCoveringTestsList(sparTIA);
+        WriteFileContents<RuntimeException>(sparTIAData, m_config.m_workspace.m_active.m_relativePaths.m_sparTIAFile);
+        m_hasImpactAnalysisData = true;
+
+        const AZStd::chrono::high_resolution_clock::time_point endTime = AZStd::chrono::high_resolution_clock::now();
+        const auto duration = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(endTime - startTime);
+        if (testSequenceEndCallback.has_value())
+        {
+            (*testSequenceEndCallback)(CreateTestImpactFailureReport(includedTestTargets, excludedTestTargets, discardedTests, draftedTests), duration);
+        }
+
+        return result;
     }
 
     TestSequenceResult Runtime::SafeImpactAnalysisTestSequence(
@@ -210,11 +277,9 @@ namespace TestImpact
             }
         }
 
-        //includedTestTargets.push_back(m_dynamicDependencyMap->GetTestTargetList().GetTargetOrThrow("AudioSystem.Editor.Tests"));
-
         if (testSequenceStartCallback.has_value())
         {
-            (*testSequenceStartCallback)(CreateTestSelection(includedTestTargets, excludedTestTargets));
+            (*testSequenceStartCallback)(Client::TestRunSelection(ExtractTestTargetNames(includedTestTargets), ExtractTestTargetNames(excludedTestTargets)));
         }
 
         const auto testComplete = [testCompleteCallback](const TestEngineJob& testJob)
@@ -241,12 +306,13 @@ namespace TestImpact
         const auto sparTIA = m_dynamicDependencyMap->ExportSourceCoverage();
         const auto sparTIAData = SerializeSourceCoveringTestsList(sparTIA);
         WriteFileContents<RuntimeException>(sparTIAData, m_config.m_workspace.m_active.m_relativePaths.m_sparTIAFile);
+        m_hasImpactAnalysisData = true;
 
         const AZStd::chrono::high_resolution_clock::time_point endTime = AZStd::chrono::high_resolution_clock::now();
         const auto duration = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(endTime - startTime);
         if (testSequenceEndCallback.has_value())
         {
-            (*testSequenceEndCallback)(CreateFailureReport(testJobs), duration);
+            (*testSequenceEndCallback)(CreateRegularFailureReport(testJobs), duration);
         }
 
         return result;
@@ -254,6 +320,6 @@ namespace TestImpact
 
     bool Runtime::HasImpactAnalysisData() const
     {
-        return false;
+        return m_hasImpactAnalysisData;
     }
 }

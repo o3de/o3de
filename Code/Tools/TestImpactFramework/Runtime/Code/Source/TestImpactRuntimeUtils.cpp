@@ -70,22 +70,15 @@ namespace TestImpact
         return testTargetExcludeList;
     }
 
-    Client::TestRunSelection CreateTestSelection(
-        const AZStd::vector<const TestTarget*>& includedTestTargets,
-        const AZStd::vector<const TestTarget*>& excludedTestTargets)
+    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*> testTargets)
     {
-        const auto populateTestTargetNames = [](const AZStd::vector<const TestTarget*> testTargets)
+        AZStd::vector<AZStd::string> testNames;
+        AZStd::transform(testTargets.begin(), testTargets.end(), AZStd::back_inserter(testNames), [](const TestTarget* testTarget)
         {
-            AZStd::vector<AZStd::string> testNames;
-            AZStd::transform(testTargets.begin(), testTargets.end(), AZStd::back_inserter(testNames), [](const TestTarget* testTarget)
-            {
-                return testTarget->GetName();
-            });
+            return testTarget->GetName();
+        });
 
-            return testNames;
-        };
-
-        return Client::TestRunSelection(populateTestTargetNames(includedTestTargets), populateTestTargetNames(excludedTestTargets));
+        return testNames;
     }
 
     SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(const AZStd::vector<TestEngineInstrumentedRun>& jobs, const RepoPath& root)
@@ -136,5 +129,36 @@ namespace TestImpact
         }
 
         return SourceCoveringTestsList(AZStd::move(sourceCoveringTests));
+    }
+
+    Client::ImpactAnalysisSequenceFailure CreateTestImpactFailureReport(
+        [[maybe_unused]] const AZStd::vector<const TestTarget*>& includedTestTargets,
+        [[maybe_unused]] const AZStd::vector<const TestTarget*>& excludedTestTargets,
+        [[maybe_unused]] const AZStd::vector<const TestTarget*>& discardedTests,
+        [[maybe_unused]] const AZStd::vector<const TestTarget*>& draftedTests)
+    {
+        AZStd::vector<Client::ExecutionFailure> executionFailures;
+        AZStd::vector<Client::LauncherFailure> launcherFailures;
+        AZStd::vector<Client::TestRunFailure> selectedTestRunFailures;
+        AZStd::vector<Client::TestRunFailure> discardedTestRunFailures;
+        AZStd::vector<Client::TargetFailure> unexecutedTests;
+
+        //for (const auto& testJob : testJobs)
+        //{
+        //    //switch (testJob.GetResult())
+        //    //{
+        //    //case JobResult::FailedToExecute:
+        //    //{
+        //    //    executionFailures.push_back()
+        //    //}
+        //    //}
+        //}
+
+        return Client::ImpactAnalysisSequenceFailure(
+            AZStd::move(executionFailures),
+            AZStd::move(launcherFailures),
+            AZStd::move(selectedTestRunFailures),
+            AZStd::move(discardedTestRunFailures),
+            AZStd::move(unexecutedTests));
     }
 }

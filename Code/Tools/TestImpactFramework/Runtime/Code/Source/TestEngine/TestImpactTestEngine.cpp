@@ -348,8 +348,11 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestEngineJobCompleteCallback> callback)
     {
+        // Generate a job info with source level coverage for each of the test targets in the list
         TestEngineJobMap<InstrumentedTestRunner::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateInstrumentedTestRunJobInfos(testTargets, CoverageLevel::Source);
+
+        // Set the coverage exception policy to abort early if any successful job fails to produce coverage data
         const auto jobExecutionPolicy = GetTestJobExceptionPolicy(executionFailurePolicy, testFailurePolicy);
         const auto coverageExceptionPolicy = (integrityFailurePolicy == Policy::IntegrityFailure::Abort)
             ? InstrumentedTestRunner::CoverageExceptionPolicy::OnEmptyCoverage

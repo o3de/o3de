@@ -102,30 +102,31 @@ namespace TestImpact
                         return ReturnCode::Success;
                     case TestSequenceResult::Failure:
                         return ReturnCode::TestFailure;
-                    //case TestSequenceResult::Timeout:
-                    //    return ReturnCode::TestFailure;
+                    case TestSequenceResult::Timeout:
+                        return ReturnCode::Timeout;
                     default:
                         std::cout << "Unexpected TestSequenceResult value: " << static_cast<size_t>(result) << std::endl;
                         return ReturnCode::UnknownError;
                     }
                 };
 
-                const auto impactAnalysisTestSequence = [&options, &runtime, &changeList, &handleTestSequenceResult]()
+                size_t numTests = 0;
+                size_t testsComplete = 0;
+
+                const auto impactAnalysisTestSequence = [&options, &runtime, &changeList, &handleTestSequenceResult, &numTests, &testsComplete]()
                 {
+                    const auto impactSequenceStart = [&numTests]
+                    (Client::TestRunSelection&& selectedTests, AZStd::vector<AZStd::string>&& discardedTests, AZStd::vector<AZStd::string>&& draftedTests)
+                    {
+                        const float totalTests = selectedTests.GetTotalNumTests() + discardedTests.size();
+                        const float saving = (1.0 - (selectedTests.GetTotalNumTests() / totalTests)) * 100.0f;
+                        std::cout << selectedTests.GetTotalNumTests() << " tests selected, " << discardedTests.size() << " tests discarded (" << saving << "% test saving)\n";
+                        std::cout << "Of which " << selectedTests.GetNumExcludedTestRuns() << " tests have been excluded and " << draftedTests.size() << " tests have been drafted\n";
+                    };
+
                     AZ_TestImpact_Eval(changeList.has_value(), CommandLineOptionsException, "Expected a change list for impact analysis but none was provided");
                     TestSequenceResult result = TestSequenceResult::Failure;
                     if (options.HasSafeMode())
-                    {
-                        result = runtime.ImpactAnalysisTestSequence(
-                            changeList.value(),
-                            options.GetTestPrioritizationPolicy(),
-                            options.GetTestTargetTimeout(),
-                            options.GetGlobalTimeout(),
-                            AZStd::nullopt,
-                            AZStd::nullopt,
-                            AZStd::nullopt);
-                    }
-                    else
                     {
                         result = runtime.SafeImpactAnalysisTestSequence(
                             changeList.value(),
@@ -137,12 +138,20 @@ namespace TestImpact
                             AZStd::nullopt,
                             AZStd::nullopt);
                     }
+                    else
+                    {
+                        result = runtime.ImpactAnalysisTestSequence(
+                            changeList.value(),
+                            options.GetTestPrioritizationPolicy(),
+                            options.GetTestTargetTimeout(),
+                            options.GetGlobalTimeout(),
+                            impactSequenceStart,
+                            AZStd::nullopt,
+                            AZStd::nullopt);
+                    }
 
                     return handleTestSequenceResult(result);
                 };
-
-                size_t numTests = 0;
-                size_t testsComplete = 0;
 
                 const auto sequenceStart = [&options, &numTests](Client::TestRunSelection&& testSelection)
                 {
@@ -160,7 +169,7 @@ namespace TestImpact
                     }
 
                     numTests = testSelection.GetNumIncludedTestRuns();
-                    std::cout << numTests << " tests selected, " << testSelection.GetNumNumExcludedTestRuns() << " excluded\n";
+                    std::cout << numTests << " tests selected, " << testSelection.GetNumExcludedTestRuns() << " excluded\n";
                 };
 
                 const auto testComplete = [&numTests, &testsComplete](Client::TestRun&& test)

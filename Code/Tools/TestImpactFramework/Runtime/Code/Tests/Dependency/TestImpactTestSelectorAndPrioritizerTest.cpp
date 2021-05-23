@@ -35,7 +35,7 @@ namespace UnitTest
 
     class TestSelectorAndPrioritizerFixtureWithParams
         : public TestSelectorAndPrioritizerFixture
-        , public ::testing::WithParamInterface<AZStd::tuple<MicroRepo::SourceMap::value_type, TestImpact::TestSelectionStrategy>>
+        , public ::testing::WithParamInterface<AZStd::tuple<MicroRepo::SourceMap::value_type, TestImpact::Policy::TestPrioritization>>
     {
     public:
         TestSelectorAndPrioritizerFixtureWithParams()
@@ -48,7 +48,7 @@ namespace UnitTest
 
     protected:
         MicroRepo::SourceMapEntry m_source;
-        TestImpact::TestSelectionStrategy m_testSelectionStrategy;
+        TestImpact::Policy::TestPrioritization m_testSelectionStrategy;
     };
 
     class TestSelectorAndPrioritizerFixtureWithAllSources
@@ -82,7 +82,7 @@ namespace UnitTest
 
         const auto selectedTestTargets = m_testSelectorAndPrioritizer->SelectTestTargets(changeDependecyList, m_testSelectionStrategy);
     
-        if (m_testSelectionStrategy == TestImpact::TestSelectionStrategy::SelectOnly)
+        if (m_testSelectionStrategy == TestImpact::Policy::TestPrioritization::None)
         {
             EXPECT_EQ(selectedTestTargets.size(), m_source.second.m_createParentYesCoverageNo.size());
             for (const auto testTarget : selectedTestTargets)
@@ -211,7 +211,7 @@ namespace UnitTest
 
         const auto selectedTestTargets = m_testSelectorAndPrioritizer->SelectTestTargets(changeDependecyList, m_testSelectionStrategy);
 
-        if (m_testSelectionStrategy == TestImpact::TestSelectionStrategy::SelectOnly)
+        if (m_testSelectionStrategy == TestImpact::Policy::TestPrioritization::None)
         {
             EXPECT_EQ(selectedTestTargets.size(), m_source.second.m_updateParentYesCoverageNo.size());
             for (const auto testTarget : selectedTestTargets)
@@ -245,7 +245,7 @@ namespace UnitTest
 
         const auto selectedTestTargets = m_testSelectorAndPrioritizer->SelectTestTargets(changeDependecyList, m_testSelectionStrategy);
 
-        if (m_testSelectionStrategy == TestImpact::TestSelectionStrategy::SelectOnly)
+        if (m_testSelectionStrategy == TestImpact::Policy::TestPrioritization::None)
         {
             const auto& expectedSelectedTargets = m_source.second.m_updateParentNoCoverageYes;
             EXPECT_EQ(selectedTestTargets.size(), expectedSelectedTargets.size());
@@ -300,7 +300,7 @@ namespace UnitTest
     
         const auto selectedTestTargets = m_testSelectorAndPrioritizer->SelectTestTargets(changeDependecyList, m_testSelectionStrategy);
     
-        if (m_testSelectionStrategy == TestImpact::TestSelectionStrategy::SelectOnly)
+        if (m_testSelectionStrategy == TestImpact::Policy::TestPrioritization::None)
         {
             const auto& expectedSelectedTargets = m_source.second.m_updateParentYesCoverageYes;
             EXPECT_EQ(selectedTestTargets.size(), expectedSelectedTargets.size());
@@ -371,7 +371,7 @@ namespace UnitTest
 
         const auto selectedTestTargets = m_testSelectorAndPrioritizer->SelectTestTargets(changeDependecyList, m_testSelectionStrategy);
 
-        if (m_testSelectionStrategy == TestImpact::TestSelectionStrategy::SelectOnly)
+        if (m_testSelectionStrategy == TestImpact::Policy::TestPrioritization::None)
         {
             const auto& expectedSelectedTargets = m_source.second.m_deleteParentNoCoverageYes;
             EXPECT_EQ(selectedTestTargets.size(), expectedSelectedTargets.size());
@@ -454,7 +454,7 @@ namespace UnitTest
         TestSelectorAndPrioritizerFixtureWithAllSources,
         ::testing::Combine(
             ::testing::ValuesIn(MicroRepo::GenerateSourceMap(MicroRepo::Sources::AutogenInput | MicroRepo::Sources::Production | MicroRepo::Sources::Mixed | MicroRepo::Sources::Test)),
-            ::testing::Values(TestImpact::TestSelectionStrategy::SelectOnly/*, TestImpact::TestSelection::SelectAndPriotitize*/))
+            ::testing::Values(TestImpact::Policy::TestPrioritization::None/*, TestImpact::TestSelection::SelectAndPriotitize*/))
     );
 
     INSTANTIATE_TEST_CASE_P(
@@ -462,6 +462,6 @@ namespace UnitTest
         TestSelectorAndPrioritizerFixtureWithAllSourcesExceptAutogenSources,
         ::testing::Combine(
             ::testing::ValuesIn(MicroRepo::GenerateSourceMap(MicroRepo::Sources::Production | MicroRepo::Sources::Mixed | MicroRepo::Sources::Test)),
-            ::testing::Values(TestImpact::TestSelectionStrategy::SelectOnly/*, TestImpact::TestSelection::SelectAndPriotitize*/))
+            ::testing::Values(TestImpact::Policy::TestPrioritization::None/*, TestImpact::TestSelection::SelectAndPriotitize*/))
     );
 } // namespace TestImpact

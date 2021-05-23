@@ -38,14 +38,12 @@ namespace TestImpact
 
     AZStd::unordered_set<const TestTarget*> ConstructTestTargetExcludeList(const TestTargetList& testTargets, const TargetConfig& targetConfig);
 
-    Client::TestRunSelection CreateTestSelection(
-        const AZStd::vector<const TestTarget*>& includedTestTargets,
-        const AZStd::vector<const TestTarget*>& excludedTestTargets);
+    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*> testTargets);
 
     SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(const AZStd::vector<TestEngineInstrumentedRun>& jobs, const RepoPath& root);
 
     template<typename TestJob>
-    Client::RegularSequenceFailure CreateFailureReport([[maybe_unused]] const AZStd::vector<TestJob>& testJobs)
+    Client::RegularSequenceFailure CreateRegularFailureReport([[maybe_unused]] const AZStd::vector<TestJob>& testJobs)
     {
         AZStd::vector<Client::ExecutionFailure> executionFailures;
         AZStd::vector<Client::LauncherFailure> launcherFailures;
@@ -65,4 +63,10 @@ namespace TestImpact
 
         return Client::RegularSequenceFailure(AZStd::move(executionFailures), AZStd::move(launcherFailures), AZStd::move(testRunFailures), AZStd::move(unexecutedTestRsuns));
     }
+
+    Client::ImpactAnalysisSequenceFailure CreateTestImpactFailureReport(
+        [[maybe_unused]] const AZStd::vector<const TestTarget*>& includedTestTargets,
+        [[maybe_unused]] const AZStd::vector<const TestTarget*>& excludedTestTargets,
+        [[maybe_unused]] const AZStd::vector<const TestTarget*>& discardedTests,
+        [[maybe_unused]] const AZStd::vector<const TestTarget*>& draftedTests);
 }
