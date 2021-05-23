@@ -37,6 +37,7 @@ namespace UnitTest
     inline constexpr const char* ValidProcessPath = LY_TEST_IMPACT_TEST_PROCESS_BIN;
     inline constexpr const char* InvalidProcessPath = "!!!@@@---???";
     inline constexpr const AZStd::chrono::milliseconds LongSleep = AZStd::chrono::minutes(60);
+    inline constexpr const AZStd::chrono::milliseconds MediumSleep = AZStd::chrono::seconds(5);
     inline constexpr const size_t LargeTextSize = 0xFFFF - 1; // 65,535 chars less the null terminator
     inline constexpr const AZStd::chrono::milliseconds ShortSleep = AZStd::chrono::milliseconds(500);
     inline constexpr const AZStd::chrono::milliseconds NoSleep = AZStd::chrono::milliseconds(0);

@@ -13,7 +13,7 @@
 #include <TestImpactFramework/TestImpactUtils.h>
 
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
-#include <TestEngine/Run/TestImpactTestRunException.h>
+#include <TestEngine/TestImpactTestEngineException.h>
 #include <TestEngine/Run/TestImpactTestRunSerializer.h>
 #include <TestEngine/Run/TestImpactTestRunner.h>
 
@@ -21,11 +21,6 @@
 
 namespace TestImpact
 {
-    TestRun ParseTestRunFile(const RepoPath& runFile, AZStd::chrono::milliseconds duration)
-    {
-        return TestRun(GTest::TestRunSuitesFactory(ReadFileContents<TestRunException>(runFile)), duration);
-    }
-
     TestRunner::TestRunner(size_t maxConcurrentRuns)
         : JobRunner(maxConcurrentRuns)
     {
@@ -48,7 +43,7 @@ namespace TestImpact
                 {
                     try
                     {
-                        runs[jobId] = ParseTestRunFile(jobInfo->GetRunArtifactPath(), meta.m_duration.value());
+                        runs[jobId] = TestRun(GTest::TestRunSuitesFactory(ReadFileContents<TestEngineException>(jobInfo->GetRunArtifactPath())), meta.m_duration.value());
                     }
                     catch (const Exception& e)
                     {

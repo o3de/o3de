@@ -16,9 +16,8 @@
 
 namespace TestImpact
 {
-    //! Exception for test enumerations and test enumeration related operations.
-    class TestEnumerationException
-        : public Exception
+    //! Exception for test engine runs and related operations.
+    class TestEngineException : public Exception
     {
     public:
         using Exception::Exception;

@@ -45,6 +45,17 @@ namespace UnitTest
         FourConcurrentProcesses = 4
     };
 
+    // Validates that the specified job was executed and returned successfully but for jobs that produce no payload
+    template<typename Job>
+    void ValidateJobExecutedSuccessfullyNoPayload(const Job& job)
+    {
+        EXPECT_EQ(job.GetJobResult(), TestImpact::JobResult::ExecutedWithSuccess);
+        EXPECT_TRUE(job.GetDuration() > AZStd::chrono::milliseconds(0));
+        EXPECT_TRUE(job.GetReturnCode().has_value());
+        EXPECT_EQ(job.GetReturnCode(), 0);
+        EXPECT_FALSE(job.GetPayload().has_value());
+    }
+
     // Validates that the specified job was executed and returned successfully
     template<typename Job>
     void ValidateJobExecutedSuccessfully(const Job& job)
@@ -91,7 +102,7 @@ namespace UnitTest
         EXPECT_FALSE(job.GetPayload().has_value());
     }
 
-    // Validates that the specified job was executed but was terminated by the job runner
+    // Validates that the specified job was executed but was terminated by the job runner due to timing out
     template<typename Job>
     void ValidateJobTimeout(const Job& job)
     {
@@ -99,6 +110,28 @@ namespace UnitTest
         EXPECT_TRUE(job.GetDuration() > AZStd::chrono::milliseconds(0));
         EXPECT_TRUE(job.GetReturnCode().has_value());
         EXPECT_EQ(job.GetReturnCode().value(), TestImpact::ProcessTimeoutErrorCode);
+        EXPECT_FALSE(job.GetPayload().has_value());
+    }
+
+    // Validates that the specified job was executed but was terminated by the job runner due to another job cauising the sequence to enf prematurely
+    template<typename Job>
+    void ValidateJobTerminated(const Job& job)
+    {
+        EXPECT_EQ(job.GetJobResult(), TestImpact::JobResult::Terminated);
+        EXPECT_TRUE(job.GetDuration() > AZStd::chrono::milliseconds(0));
+        EXPECT_TRUE(job.GetReturnCode().has_value());
+        EXPECT_EQ(job.GetReturnCode().value(), TestImpact::ProcessTerminateErrorCode);
+        EXPECT_FALSE(job.GetPayload().has_value());
+    }
+
+    // Validates that the specified job executed but returned with error and no payload produced
+    template<typename Job>
+    void ValidateJobExecutedWithFailedTestsNoPayload(const Job& job)
+    {
+        EXPECT_EQ(job.GetJobResult(), TestImpact::JobResult::ExecutedWithFailure);
+        EXPECT_TRUE(job.GetDuration() > AZStd::chrono::milliseconds(0));
+        EXPECT_TRUE(job.GetReturnCode().has_value());
+        EXPECT_GT(job.GetReturnCode().value(), 0);
         EXPECT_FALSE(job.GetPayload().has_value());
     }
 

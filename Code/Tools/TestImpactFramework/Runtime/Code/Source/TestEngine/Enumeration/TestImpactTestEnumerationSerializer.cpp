@@ -10,7 +10,7 @@
  *
  */
 
-#include <TestEngine/Enumeration/TestImpactTestEnumerationException.h>
+#include <TestEngine/TestImpactTestEngineException.h>
 #include <TestEngine/Enumeration/TestImpactTestEnumerationSerializer.h>
 
 #include <AzCore/JSON/document.h>
@@ -82,7 +82,7 @@ namespace TestImpact
 
         if (doc.Parse<0>(testEnumString.c_str()).HasParseError())
         {
-            throw TestEnumerationException("Could not parse enumeration data");
+            throw TestEngineException("Could not parse enumeration data");
         }
 
         for (const auto& suite : doc[TestEnumFields::Keys[TestEnumFields::SuitesKey]].GetArray())

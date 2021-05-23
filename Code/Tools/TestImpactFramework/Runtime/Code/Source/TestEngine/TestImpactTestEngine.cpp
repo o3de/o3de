@@ -10,6 +10,8 @@
  *
  */
 
+#include <Target/TestImpactTestTarget.h>
+#include <TestEngine/TestImpactTestEngineException.h>
 #include <TestEngine/TestImpactTestEngine.h>
 #include <TestEngine/Enumeration/TestImpactTestEnumerator.h>
 #include <TestEngine/Run/TestImpactInstrumentedTestRunner.h>
@@ -136,7 +138,7 @@ namespace TestImpact
             case JobResult::Timeout:
                 return Client::TestRunResult::Timeout;
             default:
-                throw(/*TestEngine*/Exception(AZStd::string::format("Unexpected job result: %u", static_cast<unsigned int>(meta.m_result))));
+                throw(TestEngineException(AZStd::string::format("Unexpected job result: %u", static_cast<unsigned int>(meta.m_result))));
             }
         }
 
@@ -290,10 +292,6 @@ namespace TestImpact
         TestEngineJobMap<TestEnumerator::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateTestEnumerationJobInfos(testTargets, TestEnumerator::JobInfo::CachePolicy::Write);
     
-        const auto cacheExceptionPolicy = (executionFailurePolicy == Policy::ExecutionFailure::Abort)
-            ? TestEnumerator::CacheExceptionPolicy::OnCacheWriteFailure
-            : TestEnumerator::CacheExceptionPolicy::Never;
-    
         const auto jobExecutionPolicy = executionFailurePolicy == Policy::ExecutionFailure::Abort
             ? (TestEnumerator::JobExceptionPolicy::OnExecutedWithFailure | TestEnumerator::JobExceptionPolicy::OnFailedToExecute)
             : TestEnumerator::JobExceptionPolicy::Never;
@@ -301,7 +299,7 @@ namespace TestImpact
         TestJobRunnerCallbackHandler<TestEnumerator> jobCallback(testTargets, &engineJobs, &callback);
         auto [result, runnerJobs] = m_testEnumerator->Enumerate(
             jobInfos,
-            cacheExceptionPolicy,
+            TestEnumerator::CacheExceptionPolicy::OnCacheWriteFailure,
             jobExecutionPolicy,
             testTargetTimeout,
             globalTimeout,
@@ -352,22 +350,34 @@ namespace TestImpact
         TestEngineJobMap<InstrumentedTestRunner::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateInstrumentedTestRunJobInfos(testTargets, CoverageLevel::Source);
 
-        // Set the coverage exception policy to abort early if any successful job fails to produce coverage data
+        // Set the j
         const auto jobExecutionPolicy = GetTestJobExceptionPolicy(executionFailurePolicy, testFailurePolicy);
-        const auto coverageExceptionPolicy = (integrityFailurePolicy == Policy::IntegrityFailure::Abort)
-            ? InstrumentedTestRunner::CoverageExceptionPolicy::OnEmptyCoverage
-            : InstrumentedTestRunner::CoverageExceptionPolicy::Never;
 
         TestJobRunnerCallbackHandler<InstrumentedTestRunner> jobCallback(testTargets, &engineJobs, &callback);
         auto [result, runnerJobs] = m_instrumentedTestRunner->RunInstrumentedTests(
             jobInfos,
-            coverageExceptionPolicy,
             jobExecutionPolicy,
             testTargetTimeout,
             globalTimeout,
             jobCallback);
 
         auto engineRuns = CompileTestEngineRuns<InstrumentedTestRunner>(testTargets, runnerJobs, AZStd::move(engineJobs));
+
+        // Now that we know the true result of successful jobs that return non-zero we can deduce if we have any integrity failures
+        // where a test target ran and completed its tests without incident yet failed to produce coverage data
+        if (integrityFailurePolicy == Policy::IntegrityFailure::Abort)
+        {
+            for (const auto& engineRun : engineRuns)
+            {
+                if (const auto testResult = engineRun.GetTestResult();
+                    testResult == Client::TestRunResult::AllTestsPass || testResult == Client::TestRunResult::TestFailures)
+                {
+                    AZ_TestImpact_Eval(engineRun.GetTestCoverge().has_value(), TestEngineException, AZStd::string::format(
+                        "Test target %s completed its test run but failed to produce coverage data", engineRun.GetTestTarget()->GetName().c_str()));
+                }
+            }
+        }
+
         return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     }
 }

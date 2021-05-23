@@ -57,9 +57,7 @@ namespace TestImpact
         enum class CacheExceptionPolicy
         {
             Never = 0, //! Never throw.
-            OnCacheNotExist = 1, //! Throw when a cache read policy was in place but a cache file for this job doesn't exist.
-            OnCacheReadFailure = 1 << 1, //! Throw when a cache read policy is in place but the cache file could not be read.
-            OnCacheWriteFailure = 1 << 2 //! Throw when a cache write policy is in place but the cache file could not be written.
+            OnCacheWriteFailure = 1 //! Throw when a cache write policy is in place but the cache file could not be written.
         };
     } // namespace Bitwise
 

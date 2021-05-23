@@ -16,7 +16,6 @@
 #include <TestImpactTestUtils.h>
 
 #include <Artifact/TestImpactArtifactException.h>
-#include <TestEngine/Run/TestImpactTestRunException.h>
 #include <TestEngine/Run/TestImpactTestRunner.h>
 
 #include <AzCore/UnitTest/TestTypes.h>
@@ -106,7 +105,7 @@ namespace UnitTest
     };
 
     // Fixture parameterized for different max number of concurrent jobs and different job exception policies
-    class TestRunnerFixtureWithJobExceptionParams
+    class TestRunnerFixtureWithFailedToLaunchExceptionParams
         : public TestRunnerFixture
         , public ::testing::WithParamInterface<JobExceptionPolicy>
     {
@@ -122,14 +121,27 @@ namespace UnitTest
         JobExceptionPolicy m_jobExceptionPolicy = JobExceptionPolicy::Never;
     };
 
-    class TestRunnerFixtureWithFailedToLaunchExceptionParams
-        : public TestRunnerFixtureWithJobExceptionParams
-    {
-    };
+    using ConcurrencyAndJobExceptionPermutation = AZStd::tuple
+        <
+            size_t, // Max number of concurrent processes
+            JobExceptionPolicy // Test job exception policy
+        >;
 
     class TestRunnerFixtureWithExecutedWithFailureExceptionParams
-        : public TestRunnerFixtureWithJobExceptionParams
+        : public TestRunnerFixture
+        , public ::testing::WithParamInterface<ConcurrencyAndJobExceptionPermutation>
     {
+    public:
+        void SetUp() override
+        {
+            TestRunnerFixture::SetUp();
+            const auto& [maxConcurrency, jobExceptionPolicy] = GetParam();
+            m_maxConcurrency = maxConcurrency;
+            m_jobExceptionPolicy = jobExceptionPolicy;
+        }
+
+    protected:
+        JobExceptionPolicy m_jobExceptionPolicy = JobExceptionPolicy::Never;
     };
 
     namespace
@@ -145,7 +157,7 @@ namespace UnitTest
 
     TEST_P(
         TestRunnerFixtureWithFailedToLaunchExceptionParams,
-        InvalidCommandArgument_ExpectJobResulFailedToExecuteeOrTestJobException)
+        InvalidCommandArgument_ExpectJobResulFailedToExecuteOrUnexecutedJobs)
     {
         // Given a test runner with no client callback or run timeout or runner timeout
         m_testRunner = AZStd::make_unique<TestImpact::TestRunner>(m_maxConcurrency);
@@ -197,54 +209,53 @@ namespace UnitTest
 
     TEST_P(
         TestRunnerFixtureWithExecutedWithFailureExceptionParams,
-        ErroneousReturnCode_ExpectJobResultExecutedWithFailureOrTestJobException)
+        ErroneousReturnCode_ExpectJobResultExecutedWithFailureOrInFlightTimeoutJobs)
     {
         // Given a test runner with no client callback or run timeout or runner timeout
-        m_testRunner = AZStd::make_unique<TestImpact::TestRunner>(4); /////////////////////////DO CONCURRENCY AGAIN!!!!!s
+        m_testRunner = AZStd::make_unique<TestImpact::TestRunner>(m_maxConcurrency);
 
         // Given a mixture of test run jobs that execute and return either successfully or with failure
         for (size_t jobId = 0; jobId < m_testTargetJobArgs.size(); jobId++)
         {
             JobData jobData(m_testTargetPaths[jobId].second);
             const Command args = (jobId != 0)
-                ? Command{ AZStd::string::format("%s %s", ValidProcessPath, ConstructTestProcessArgs(0, AZStd::chrono::seconds(2)).c_str()) }
+                ? Command{ AZStd::string::format("%s %s", ValidProcessPath, ConstructTestProcessArgs(0, MediumSleep).c_str()) }
             : m_testTargetJobArgs[jobId];
             m_jobInfos.emplace_back(JobInfo({jobId}, args, AZStd::move(jobData)));
         }
 
-        AZStd::reverse(m_jobInfos.begin(), m_jobInfos.end());
-
         // When the test run jobs are executed with different exception policies
-        try
-        {
-            const auto [result, runnerJobs] = m_testRunner->RunTests(m_jobInfos, JobExceptionPolicy::OnExecutedWithFailure, AZStd::nullopt, AZStd::nullopt, AZStd::nullopt);// m_jobExceptionPolicy);
-        }
-        catch (const std::exception& e)
-        {
-            std::cout << e.what();
-        }
+        const auto [result, runnerJobs] = m_testRunner->RunTests(m_jobInfos, m_jobExceptionPolicy, AZStd::nullopt, AZStd::nullopt, AZStd::nullopt);
 
-        //if (::IsFlagSet(m_jobExceptionPolicy, JobExceptionPolicy::OnExecutedWithFailure))
-        //{
-        //    ValidateJobExecutedWithFailedTests(runnerJobs[0]);
-        //    ValidateTestTargetRun(runnerJobs[0].GetPayload().value(), m_expectedTestTargetRuns[runnerJobs[0].GetJobInfo().GetId().m_value]);
-        //
-        //    for (auto jobId = 1; jobId < runnerJobs.size(); jobId++)
-        //    {
-        //        ValidateJobTimeout(runnerJobs[jobId]);
-        //    }
-        //}
-        //else
-        //{
-        //    ValidateJobExecutedWithFailedTests(runnerJobs[0]);
-        //
-        //    for (auto jobId = 1; jobId < runnerJobs.size(); jobId++)
-        //    {
-        //        // Expect the valid jobs to successfully result in a test run that matches the expected test run data
-        //        ValidateJobExecutedSuccessfully(runnerJobs[jobId]);
-        //        ValidateTestTargetRun(runnerJobs[jobId].GetPayload().value(), m_expectedTestTargetRuns[jobId]);
-        //    }
-        //}        
+        EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
+
+        if (::IsFlagSet(m_jobExceptionPolicy, JobExceptionPolicy::OnExecutedWithFailure))
+        {
+            ValidateJobExecutedWithFailedTests(runnerJobs[0]);
+            ValidateTestTargetRun(runnerJobs[0].GetPayload().value(), m_expectedTestTargetRuns[runnerJobs[0].GetJobInfo().GetId().m_value]);
+        
+            for (auto jobId = 1; jobId < runnerJobs.size(); jobId++)
+            {
+                if (jobId < m_maxConcurrency)
+                {
+                    ValidateJobTerminated(runnerJobs[jobId]);
+                }
+                else
+                {
+                    ValidateJobNotExecuted(runnerJobs[jobId]);
+                }
+            }
+        }
+        else
+        {
+            ValidateJobExecutedWithFailedTests(runnerJobs[0]);
+        
+            for (auto jobId = 1; jobId < runnerJobs.size(); jobId++)
+            {
+                // Expect the valid jobs to successfully result in a test run that matches the expected test run data
+                ValidateJobExecutedSuccessfullyNoPayload(runnerJobs[jobId]);
+            }
+        }        
     }
 
     TEST_F(TestRunnerFixture, EmptyArtifact_ExpectCompletedTestWithEmptyArtifact)
@@ -412,11 +423,11 @@ namespace UnitTest
         }
     }
 
-    TEST_P(TestRunnerFixtureWithConcurrencyParams, JobRunnerTimeout_InFlightJobsTimeoutAndQueuedJobsUnlaunched)  ////////////////////////////////////////////
+    TEST_F(TestRunnerFixture, JobRunnerTimeout_InFlightJobsTimeoutAndQueuedJobsUnlaunched)
     {
         // Given a test runner with no client callback or runner timeout and 500ms run timeout
         m_testRunner =
-            AZStd::make_unique<TestImpact::TestRunner>(1); ////////////////////////////////////
+            AZStd::make_unique<TestImpact::TestRunner>(1);
 
         // Given an test run job for each test target where half will sleep indefinitely
         for (size_t jobId = 0; jobId < m_testTargetJobArgs.size(); jobId++)
@@ -499,7 +510,9 @@ namespace UnitTest
     INSTANTIATE_TEST_CASE_P(
         ,
         TestRunnerFixtureWithExecutedWithFailureExceptionParams,
-        ::testing::ValuesIn(ExecutedWithFailureExceptionPolicies));
+        ::testing::Combine(
+            ::testing::ValuesIn(MaxConcurrentRuns),
+            ::testing::ValuesIn(ExecutedWithFailureExceptionPolicies)));
 
     INSTANTIATE_TEST_CASE_P(, TestRunnerFixtureWithConcurrencyParams, ::testing::ValuesIn(MaxConcurrentRuns));
 } // namespace UnitTest
