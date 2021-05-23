@@ -4,29 +4,28 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "Textures/roof_1k_ao.png"
-        },
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
             "textureBlendMode": "Lerp",
             "textureMap": "Textures/roof_1k_basecolor.png"
         },
-        "general": {
-            "applySpecularAA": true
+        "irradiance": {
+            "color": [
+                0.2048981487751007,
+                0.2048981487751007,
+                0.2048981487751007,
+                1.0
+            ]
         },
         "metallic": {
-            "useTexture": false
+            "factor": 0.5,
+            "textureMap": "Textures/roof_1k_metallic.png"
         },
         "normal": {
             "factor": 0.5,
-            "flipY": true,
             "textureMap": "Textures/roof_1k_normal.jpg"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "Textures/roof_1k_ao.png"
         },
         "opacity": {
             "factor": 1.0
@@ -38,6 +37,7 @@
             "textureMap": "Textures/roof_1k_height.png"
         },
         "roughness": {
+            "lowerBound": 0.5,
             "textureMap": "Textures/roof_1k_roughness.png"
         }
     }

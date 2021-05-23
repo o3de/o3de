@@ -4,9 +4,6 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "Textures/bricks_1k_ao.png"
-        },
         "baseColor": {
             "color": [
                 0.800000011920929,
@@ -14,13 +11,14 @@
                 0.800000011920929,
                 1.0
             ],
+            "textureBlendMode": "Lerp",
             "textureMap": "Textures/bricks_1k_basecolor.png"
         },
         "clearCoat": {
             "enable": true,
-            "factor": 0.5,
+            "factor": 0.25,
             "normalMap": "Textures/bricks_1k_normal.jpg",
-            "roughness": 0.5
+            "roughness": 0.75
         },
         "general": {
             "applySpecularAA": true
@@ -34,10 +32,14 @@
             ]
         },
         "metallic": {
+            "factor": 1.0,
             "textureMap": "Textures/bricks_1k_metallic.png"
         },
         "normal": {
             "textureMap": "Textures/bricks_1k_normal.jpg"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "Textures/bricks_1k_ao.png"
         },
         "opacity": {
             "factor": 1.0
@@ -50,6 +52,9 @@
         },
         "roughness": {
             "textureMap": "Textures/bricks_1k_roughness.png"
+        },
+        "specularF0": {
+            "enableMultiScatterCompensation": true
         }
     }
 }

@@ -4,16 +4,8 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "Textures/columnB_1k_ao.png"
-        },
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
+            "textureBlendMode": "Lerp",
             "textureMap": "Textures/columnB_1k_basecolor.png"
         },
         "clearCoat": {
@@ -34,10 +26,14 @@
             ]
         },
         "metallic": {
+            "factor": 1.0,
             "textureMap": "Textures/columnB_1k_metallic.png"
         },
         "normal": {
             "textureMap": "Textures/columnB_1k_normal.jpg"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "Textures/columnB_1k_ao.png"
         },
         "opacity": {
             "factor": 1.0
@@ -50,6 +46,9 @@
         },
         "roughness": {
             "textureMap": "Textures/columnB_1k_roughness.png"
+        },
+        "specularF0": {
+            "enableMultiScatterCompensation": true
         }
     }
 }

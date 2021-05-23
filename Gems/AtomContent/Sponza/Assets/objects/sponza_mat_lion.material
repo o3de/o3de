@@ -4,16 +4,8 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "Textures/lion_1k_ao.png"
-        },
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
+            "textureBlendMode": "Lerp",
             "textureMap": "Textures/lion_1k_basecolor.png"
         },
         "general": {
@@ -28,10 +20,14 @@
             ]
         },
         "metallic": {
+            "factor": 1.0,
             "textureMap": "Textures/lion_1k_metallic.png"
         },
         "normal": {
             "textureMap": "Textures/lion_1k_normal.jpg"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "Textures/lion_1k_ao.png"
         },
         "opacity": {
             "factor": 1.0
@@ -39,7 +35,7 @@
         "parallax": {
             "algorithm": "ContactRefinement",
             "enable": true,
-            "factor": 0.009999999776482582,
+            "factor": 0.029999999329447748,
             "pdo": true,
             "quality": "Ultra",
             "textureMap": "Textures/lion_1k_height.png"

@@ -5,12 +5,7 @@
     "propertyLayoutVersion": 3,
     "properties": {
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
+            "textureBlendMode": "Lerp",
             "textureMap": "Textures/chain_basecolor.png"
         },
         "general": {
@@ -25,6 +20,7 @@
             ]
         },
         "metallic": {
+            "factor": 1.0,
             "textureMap": "Textures/chain_alpha.png"
         },
         "normal": {
@@ -38,6 +34,9 @@
         },
         "roughness": {
             "factor": 0.4000000059604645
+        },
+        "specularF0": {
+            "enableMultiScatterCompensation": true
         }
     }
 }

@@ -5,16 +5,10 @@
     "propertyLayoutVersion": 3,
     "properties": {
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
+            "textureBlendMode": "Lerp",
             "textureMap": "Textures/thorn_basecolor.png"
         },
         "clearCoat": {
-            "enable": true,
             "factor": 0.05000000074505806,
             "normalMap": "Textures/thorn_normal.jpg",
             "roughness": 0.10000000149011612
@@ -31,6 +25,7 @@
             ]
         },
         "metallic": {
+            "factor": 1.0,
             "textureMap": "Textures/thorn_metallic.png"
         },
         "normal": {
@@ -46,6 +41,9 @@
         },
         "roughness": {
             "textureMap": "Textures/thorn_roughness.png"
+        },
+        "specularF0": {
+            "enableMultiScatterCompensation": true
         },
         "subsurfaceScattering": {
             "enableSubsurfaceScattering": true,

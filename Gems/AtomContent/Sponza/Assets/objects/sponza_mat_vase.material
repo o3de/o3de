@@ -4,16 +4,8 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "Textures/vase_1k_ao.png"
-        },
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
+            "textureBlendMode": "Lerp",
             "textureMap": "Textures/vase_1k_basecolor.png"
         },
         "general": {
@@ -28,10 +20,14 @@
             ]
         },
         "metallic": {
+            "factor": 1.0,
             "textureMap": "Textures/vase_1k_metallic.png"
         },
         "normal": {
             "textureMap": "Textures/vase_1k_normal.jpg"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "Textures/vase_1k_ao.png"
         },
         "opacity": {
             "factor": 1.0

@@ -13,9 +13,6 @@
             ],
             "textureMap": "Textures/vasePlant_1k_basecolor.png"
         },
-        "general": {
-            "applySpecularAA": true
-        },
         "irradiance": {
             "color": [
                 0.6788738965988159,

@@ -4,16 +4,8 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "Textures/vaseRound_1k_ao.png"
-        },
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
+            "textureBlendMode": "Lerp",
             "textureMap": "Textures/vaseRound_1k_basecolor.png"
         },
         "clearCoat": {
@@ -21,7 +13,8 @@
             "factor": 0.5,
             "influenceMap": "Textures/vaseRound_1k_ao.png",
             "normalMap": "Textures/vaseRound_1k_normal.jpg",
-            "roughness": 0.25
+            "roughness": 0.25,
+            "roughnessMap": "Textures/vaseRound_1k_roughness.png"
         },
         "general": {
             "applySpecularAA": true
@@ -34,8 +27,15 @@
                 1.0
             ]
         },
+        "metallic": {
+            "factor": 1.0,
+            "textureMap": "Textures/vaseRound_1k_metallic.png"
+        },
         "normal": {
             "textureMap": "Textures/vaseRound_1k_normal.jpg"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "Textures/vaseRound_1k_ao.png"
         },
         "opacity": {
             "factor": 1.0
