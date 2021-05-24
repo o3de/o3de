@@ -9,7 +9,8 @@
             "textureMap": "Textures/details_1k_basecolor.png"
         },
         "clearCoat": {
-            "factor": 0.5,
+            "enable": true,
+            "factor": 0.10000000149011612,
             "normalMap": "Textures/details_1k_normal.png",
             "roughness": 0.25
         },

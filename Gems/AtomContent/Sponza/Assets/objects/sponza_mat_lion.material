@@ -8,6 +8,12 @@
             "textureBlendMode": "Lerp",
             "textureMap": "Textures/lion_1k_basecolor.png"
         },
+        "clearCoat": {
+            "enable": true,
+            "factor": 0.5,
+            "normalMap": "Textures/lion_1k_normal.jpg",
+            "roughness": 0.25
+        },
         "general": {
             "applySpecularAA": true
         },

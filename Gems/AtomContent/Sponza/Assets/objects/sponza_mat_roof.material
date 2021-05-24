@@ -8,6 +8,10 @@
             "textureBlendMode": "Lerp",
             "textureMap": "Textures/roof_1k_basecolor.png"
         },
+        "clearCoat": {
+            "enable": true,
+            "factor": 0.0
+        },
         "irradiance": {
             "color": [
                 0.2048981487751007,

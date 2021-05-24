@@ -8,6 +8,12 @@
             "textureBlendMode": "Lerp",
             "textureMap": "Textures/vase_1k_basecolor.png"
         },
+        "clearCoat": {
+            "enable": true,
+            "factor": 0.5,
+            "normalMap": "Textures/vase_1k_normal.jpg",
+            "roughness": 0.800000011920929
+        },
         "general": {
             "applySpecularAA": true
         },

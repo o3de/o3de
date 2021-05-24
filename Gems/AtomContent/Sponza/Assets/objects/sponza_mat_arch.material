@@ -8,6 +8,10 @@
             "textureBlendMode": "Lerp",
             "textureMap": "Textures/arch_1k_basecolor.png"
         },
+        "clearCoat": {
+            "enable": true,
+            "factor": 0.0
+        },
         "general": {
             "applySpecularAA": true
         },

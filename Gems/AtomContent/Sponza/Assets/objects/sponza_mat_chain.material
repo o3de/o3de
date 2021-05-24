@@ -8,6 +8,12 @@
             "textureBlendMode": "Lerp",
             "textureMap": "Textures/chain_basecolor.png"
         },
+        "clearCoat": {
+            "enable": true,
+            "factor": 0.10000000149011612,
+            "normalMap": "Textures/chain_normal.jpg",
+            "roughness": 0.5
+        },
         "general": {
             "applySpecularAA": true
         },

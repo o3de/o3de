@@ -13,6 +13,10 @@
             ],
             "textureMap": "Textures/vasePlant_1k_basecolor.png"
         },
+        "clearCoat": {
+            "enable": true,
+            "factor": 0.25
+        },
         "irradiance": {
             "color": [
                 0.6788738965988159,

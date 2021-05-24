@@ -9,9 +9,9 @@
             "textureMap": "Textures/thorn_basecolor.png"
         },
         "clearCoat": {
-            "factor": 0.05000000074505806,
-            "normalMap": "Textures/thorn_normal.jpg",
-            "roughness": 0.10000000149011612
+            "enable": true,
+            "factor": 0.5,
+            "normalMap": "Textures/thorn_normal.jpg"
         },
         "general": {
             "applySpecularAA": true

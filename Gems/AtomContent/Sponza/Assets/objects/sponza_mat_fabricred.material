@@ -8,6 +8,13 @@
             "textureBlendMode": "Lerp",
             "textureMap": "Textures/fabricRed_1k_basecolor.png"
         },
+        "clearCoat": {
+            "enable": true,
+            "factor": 0.10000000149011612,
+            "normalMap": "Materials/BasicFabric/basic_fabric_normal.jpg",
+            "normalStrength": 0.5,
+            "roughness": 0.800000011920929
+        },
         "general": {
             "applySpecularAA": true
         },
