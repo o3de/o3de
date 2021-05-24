@@ -163,9 +163,9 @@ namespace EMStudio
         {}
         ~UndoMenuCallback() = default;
 
-        void OnRemoveCommand([[maybe_unused]] uint32 historyIndex) override          { m_mainWindow->UpdateUndoRedo(); }
-        void OnSetCurrentCommand([[maybe_unused]] uint32 index) override             { m_mainWindow->UpdateUndoRedo(); }
-        void OnAddCommandToHistory([[maybe_unused]] uint32 historyIndex, [[maybe_unused]] MCore::CommandGroup* group, [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine) override { m_mainWindow->UpdateUndoRedo(); }
+        void OnRemoveCommand([[maybe_unused]] size_t historyIndex) override          { m_mainWindow->UpdateUndoRedo(); }
+        void OnSetCurrentCommand([[maybe_unused]] size_t index) override             { m_mainWindow->UpdateUndoRedo(); }
+        void OnAddCommandToHistory([[maybe_unused]] size_t historyIndex, [[maybe_unused]] MCore::CommandGroup* group, [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine) override { m_mainWindow->UpdateUndoRedo(); }
 
         void OnPreExecuteCommand([[maybe_unused]] MCore::CommandGroup* group, [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine) override {}
         void OnPostExecuteCommand([[maybe_unused]] MCore::CommandGroup* group, [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine, [[maybe_unused]] bool wasSuccess, [[maybe_unused]] const AZStd::string& outResult) override {}
