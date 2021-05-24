@@ -180,7 +180,7 @@ namespace Benchmark
         }
     }
 
-    BENCHMARK_F(BM_MathTransform, CreateScale)(benchmark::State& state)
+    BENCHMARK_F(BM_MathTransform, CreateUniformScale)(benchmark::State& state)
     {
         for (auto _ : state)
         {
@@ -344,7 +344,7 @@ namespace Benchmark
         }
     }
 
-    BENCHMARK_F(BM_MathTransform, GetScale)(benchmark::State& state)
+    BENCHMARK_F(BM_MathTransform, GetUniformScale)(benchmark::State& state)
     {
         for (auto _ : state)
         {
@@ -356,20 +356,20 @@ namespace Benchmark
         }
     }
 
-    BENCHMARK_F(BM_MathTransform, SetScale)(benchmark::State& state)
+    BENCHMARK_F(BM_MathTransform, SetUniformScale)(benchmark::State& state)
     {
         for (auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
                 AZ::Transform testTransform = testData.t2;
-                testTransform.SetScale(testData.v3);
+                testTransform.SetUniformScale(testData.value[0]);
                 benchmark::DoNotOptimize(testTransform);
             }
         }
     }
 
-    BENCHMARK_F(BM_MathTransform, ExtractScale)(benchmark::State& state)
+    BENCHMARK_F(BM_MathTransform, ExtractUniformScale)(benchmark::State& state)
     {
         for (auto _ : state)
         {

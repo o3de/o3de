@@ -159,30 +159,7 @@ namespace UnitTest
 
     INSTANTIATE_TEST_CASE_P(MATH_Transform, TransformCreateFromQuaternionFixture, ::testing::ValuesIn(MathTestData::UnitQuaternions));
 
-    using TransformCreateFromMatrix3x3Fixture = ::testing::TestWithParam<AZ::Matrix3x3>;
-
-    TEST_P(TransformCreateFromMatrix3x3Fixture, CreateFromMatrix3x3)
-    {
-        const AZ::Matrix3x3 matrix3x3 = GetParam();
-        const AZ::Transform transform = AZ::Transform::CreateFromMatrix3x3(matrix3x3);
-        EXPECT_THAT(transform.GetTranslation(), IsClose(AZ::Vector3::CreateZero()));
-        const AZ::Vector3 vector(2.3f, -0.6, 1.8f);
-        EXPECT_THAT(transform.TransformPoint(vector), IsClose(matrix3x3 * vector));
-    }
-
-    TEST_P(TransformCreateFromMatrix3x3Fixture, CreateFromMatrix3x3AndTranslation)
-    {
-        const AZ::Matrix3x3 matrix3x3 = GetParam();
-        const AZ::Vector3 translation(-2.6f, 1.7f, 0.8f);
-        const AZ::Transform transform = AZ::Transform::CreateFromMatrix3x3AndTranslation(matrix3x3, translation);
-        EXPECT_THAT(transform.GetTranslation(), IsClose(translation));
-        const AZ::Vector3 vector(2.3f, -0.6, 1.8f);
-        EXPECT_THAT(transform.TransformPoint(vector), IsClose(matrix3x3 * vector + translation));
-    }
-
-    INSTANTIATE_TEST_CASE_P(MATH_Transform, TransformCreateFromMatrix3x3Fixture, ::testing::ValuesIn(MathTestData::Matrix3x3s));
-
-    TEST(MATH_Transform, CreateScale)
+    TEST(MATH_Transform, CreateUniformScale)
     {
         const float scale = 1.7f;
         const AZ::Transform transform = AZ::Transform::CreateUniformScale(scale);
@@ -254,14 +231,14 @@ namespace UnitTest
     TEST(MATH_Transform, TranslationCorrectInTransformHierarchy)
     {
         AZ::Transform parent = AZ::Transform::CreateRotationZ(AZ::DegToRad(45.0f));
-        parent.SetScale(AZ::Vector3(3.0f, 2.0f, 1.0f));
+        parent.SetUniformScale(3.0f);
         parent.SetTranslation(AZ::Vector3(0.2f, 0.3f, 0.4f));
         AZ::Transform child = AZ::Transform::CreateRotationZ(AZ::DegToRad(90.0f));
         child.SetTranslation(AZ::Vector3(0.5f, 0.6f, 0.7f));
         const AZ::Transform overallTransform = parent * child;
         const AZ::Vector3 overallTranslation = overallTransform.GetTranslation();
-        const AZ::Vector3 expectedTranslation(0.412132f, 2.20919f, 1.1f);
-        EXPECT_THAT(overallTranslation, IsClose(AZ::Vector3(0.412132f, 2.20919f, 1.1f)));
+        const AZ::Vector3 expectedTranslation(-0.012132f, 2.633452f, 2.5f);
+        EXPECT_THAT(overallTranslation, IsClose(expectedTranslation));
     }
 
     TEST(MATH_Transform, TransformPointVector3)
@@ -337,10 +314,10 @@ namespace UnitTest
     TEST_P(TransformScaleFixture, Scale)
     {
         const AZ::Transform orthogonalTransform = GetParam();
-        EXPECT_THAT(orthogonalTransform.GetScale(), IsClose(AZ::Vector3::CreateOne()));
+        EXPECT_NEAR(orthogonalTransform.GetUniformScale(), 1.0f, AZ::Constants::Tolerance);
         AZ::Transform unscaledTransform = orthogonalTransform;
-        unscaledTransform.ExtractScale();
-        EXPECT_THAT(unscaledTransform.GetScale(), IsClose(AZ::Vector3::CreateOne()));
+        unscaledTransform.ExtractUniformScale();
+        EXPECT_NEAR(unscaledTransform.GetUniformScale(), 1.0f, AZ::Constants::Tolerance);
         const float scale = 2.8f;
         AZ::Transform scaledTransform = orthogonalTransform;
         scaledTransform.MultiplyByUniformScale(scale);
