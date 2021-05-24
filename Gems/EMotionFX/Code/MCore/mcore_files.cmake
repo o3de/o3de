@@ -8,7 +8,6 @@
 
 set(FILES
     Source/AABB.h
-    Source/AbstractData.h
     Source/Algorithms.cpp
     Source/Algorithms.h
     Source/Algorithms.inl
