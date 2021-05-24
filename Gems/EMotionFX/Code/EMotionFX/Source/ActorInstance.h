@@ -75,13 +75,13 @@ namespace EMotionFX
          * Get the unique identification number for the actor instance.
          * @return The unique identification number.
          */
-        MCORE_INLINE uint32 GetID() const                                       { return mID; }
+        MCORE_INLINE size_t GetID() const                                       { return mID; }
 
         /**
          * Set the unique identification number for the actor instance.
          * @param[in] id The unique identification number.
          */
-        void SetID(uint32 id);
+        void SetID(size_t id);
 
         /**
          * Get the motion system of this actor instance.
@@ -181,7 +181,7 @@ namespace EMotionFX
          * @param[in] skeletalLODLevel The skeletal LOD level to calculate the number of disabled nodes for.
          * @return  The number of disabled nodes for the given skeletal LOD level.
          */
-        uint32 CalcNumDisabledNodes(uint32 skeletalLODLevel) const;
+        size_t CalcNumDisabledNodes(size_t skeletalLODLevel) const;
 
         /**
          * Calculate the number of used skeletal LOD levels. Each actor instance alsways has 32 skeletal LOD levels while in most cases
@@ -189,7 +189,7 @@ namespace EMotionFX
          * relative to the previous LOD level.
          * @return The number of actually used skeletal LOD levels.
          */
-        uint32 CalcNumSkeletalLODLevels() const;
+        size_t CalcNumSkeletalLODLevels() const;
 
         /**
          * Get the current used geometry and skeletal detail level.
@@ -199,13 +199,13 @@ namespace EMotionFX
          * are needed.
          * @result The current LOD level.
          */
-        uint32 GetLODLevel() const;
+        size_t GetLODLevel() const;
 
         /**
          * Set the current geometry and skeletal detail level, where 0 is the highest detail.
          * @param level The LOD level. Values higher than [GetNumGeometryLODLevels()-1] will be clamped to the maximum LOD.
          */
-        void SetLODLevel(uint32 level);
+        void SetLODLevel(size_t level);
 
         //--------------------------------
 
@@ -423,7 +423,7 @@ namespace EMotionFX
          *                      4th vertex will be included in the bounds calculation, so only processing 25% of the total number of vertices. The same goes for
          *                      node based bounds, but then it will process every 4th node. Of course higher values produce less accurate results, but are faster to process.
          */
-        void UpdateBounds(uint32 geomLODLevel, EBoundsType boundsType = BOUNDS_NODE_BASED, uint32 itemFrequency = 1);
+        void UpdateBounds(size_t geomLODLevel, EBoundsType boundsType = BOUNDS_NODE_BASED, uint32 itemFrequency = 1);
 
         /**
          * Update the base static axis aligned bounding box shape.
@@ -465,7 +465,7 @@ namespace EMotionFX
          * @param vertexFrequency This includes every "vertexFrequency"-th vertex. So for example a value of 2 would skip every second vertex and
          *                        so will process half of the vertices. A value of 4 would process only each 4th vertex, etc.
          */
-        void CalcMeshBasedAabb(uint32 geomLODLevel, AZ::Aabb* outResult, uint32 vertexFrequency = 1);
+        void CalcMeshBasedAabb(size_t geomLODLevel, AZ::Aabb* outResult, uint32 vertexFrequency = 1);
 
         /**
          * Get the axis aligned bounding box.
@@ -568,7 +568,7 @@ namespace EMotionFX
          *                   When you set this to false, it will not be deleted from memory, but only removed from the array of attachments
          *                   that is stored locally inside this actor instance.
          */
-        void RemoveAttachment(uint32 nr, bool delFromMem = true);
+        void RemoveAttachment(size_t nr, bool delFromMem = true);
 
         /**
          * Remove all attachments from this actor instance.
@@ -593,7 +593,7 @@ namespace EMotionFX
          * @result Returns the attachment number, in range of [0..GetNumAttachments()-1], or MCORE_INVALIDINDEX32 when no attachment
          *         using the specified actor instance can be found.
          */
-        uint32 FindAttachmentNr(ActorInstance* actorInstance);
+        size_t FindAttachmentNr(ActorInstance* actorInstance);
 
         /**
          * Get the number of attachments that have been added to this actor instance.
@@ -606,7 +606,7 @@ namespace EMotionFX
          * @param nr The attachment number, which must be in range of [0..GetNumAttachments()-1].
          * @result A pointer to the attachment.
          */
-        Attachment* GetAttachment(uint32 nr) const;
+        Attachment* GetAttachment(size_t nr) const;
 
         /**
          * Check whether this actor instance also is an attachment or not.
@@ -671,7 +671,7 @@ namespace EMotionFX
          * @param nr The dependency number to get, which must be in range of [0..GetNumDependencies()].
          * @result A pointer to the dependency.
          */
-        Actor::Dependency* GetDependency(uint32 nr);
+        Actor::Dependency* GetDependency(size_t nr);
 
         /**
          * Get the morph setup instance.
@@ -692,7 +692,7 @@ namespace EMotionFX
          * @param ray The ray to check.
          * @return A pointer to the node we detected the first intersection with (doesn't have to be the closest), or nullptr when no intersection found.
          */
-        Node* IntersectsCollisionMesh(uint32 lodLevel, const MCore::Ray& ray) const;
+        Node* IntersectsCollisionMesh(size_t lodLevel, const MCore::Ray& ray) const;
 
         /**
          * Check for an intersection between the collision mesh of this actor and a given ray, and calculate the closest intersection point.
@@ -711,7 +711,7 @@ namespace EMotionFX
          *                   A value of nullptr is allowed, which will skip storing the resulting triangle indices.
          * @return A pointer to the node we detected the closest intersection with, or nullptr when no intersection found.
          */
-        Node* IntersectsCollisionMesh(uint32 lodLevel, const MCore::Ray& ray, AZ::Vector3* outIntersect, AZ::Vector3* outNormal = nullptr, AZ::Vector2* outUV = nullptr, float* outBaryU = nullptr, float* outBaryV = nullptr, uint32* outIndices = nullptr) const;
+        Node* IntersectsCollisionMesh(size_t lodLevel, const MCore::Ray& ray, AZ::Vector3* outIntersect, AZ::Vector3* outNormal = nullptr, AZ::Vector2* outUV = nullptr, float* outBaryU = nullptr, float* outBaryV = nullptr, uint32* outIndices = nullptr) const;
 
         /**
          * Check for an intersection between the real mesh (if present) of this actor and a given ray.
@@ -721,7 +721,7 @@ namespace EMotionFX
          * @param ray The ray to test with.
          * @return Returns a pointer to itself when an intersection occurred, or nullptr when no intersection found.
          */
-        Node* IntersectsMesh(uint32 lodLevel, const MCore::Ray& ray) const;
+        Node* IntersectsMesh(size_t lodLevel, const MCore::Ray& ray) const;
 
         /**
          * Checks for an intersection between the real mesh (if present) of this actor and a given ray.
@@ -741,7 +741,7 @@ namespace EMotionFX
          *                   A value of nullptr is allowed, which will skip storing the resulting triangle indices.
          * @return A pointer to the node we detected the closest intersection with, or nullptr when no intersection found.
          */
-        Node* IntersectsMesh(uint32 lodLevel, const MCore::Ray& ray, AZ::Vector3* outIntersect, AZ::Vector3* outNormal = nullptr, AZ::Vector2* outUV = nullptr, float* outBaryU = nullptr, float* outBaryV = nullptr, uint32* outStartIndex = nullptr) const;
+        Node* IntersectsMesh(size_t lodLevel, const MCore::Ray& ray, AZ::Vector3* outIntersect, AZ::Vector3* outNormal = nullptr, AZ::Vector2* outUV = nullptr, float* outBaryU = nullptr, float* outBaryV = nullptr, uint32* outStartIndex = nullptr) const;
 
         void SetRagdoll(Physics::Ragdoll* ragdoll);
         RagdollInstance* GetRagdollInstance() const;
@@ -856,7 +856,7 @@ namespace EMotionFX
         float GetMotionSamplingTimer() const;
         float GetMotionSamplingRate() const;
 
-        MCORE_INLINE uint32 GetNumNodes() const         { return mActor->GetSkeleton()->GetNumNodes(); }
+        MCORE_INLINE size_t GetNumNodes() const         { return mActor->GetSkeleton()->GetNumNodes(); }
 
         void UpdateVisualizeScale();                    // not automatically called on creation for performance reasons (this method relatively is slow as it updates all meshes)
         float GetVisualizeScale() const;
@@ -892,10 +892,10 @@ namespace EMotionFX
         float                   mMotionSamplingRate;    /**< The motion sampling rate in seconds, where 0.1 would mean to update 10 times per second. A value of 0 or lower means to update every frame. */
         float                   mMotionSamplingTimer;   /**< The time passed since the last time we sampled motions/anim graphs. */
         float                   mVisualizeScale;        /**< Some visualization scale factor when rendering for example normals, to be at a nice size, relative to the character. */
-        uint32                  mLODLevel;              /**< The current LOD level, where 0 is the highest detail. */
-        uint32                  m_requestedLODLevel;    /**< Requested LOD level. The actual LOD level will be updated as soon as all transforms for the requested LOD level are ready. */
+        size_t                  mLODLevel;              /**< The current LOD level, where 0 is the highest detail. */
+        size_t                  m_requestedLODLevel;    /**< Requested LOD level. The actual LOD level will be updated as soon as all transforms for the requested LOD level are ready. */
         uint32                  mBoundsUpdateItemFreq;  /**< The bounds update item counter step size. A value of 1 means every vertex/node, a value of 2 means every second vertex/node, etc. */
-        uint32                  mID;                    /**< The unique identification number for the actor instance. */
+        size_t                  mID;                    /**< The unique identification number for the actor instance. */
         uint32                  mThreadIndex;           /**< The thread index. This specifies the thread number this actor instance is being processed in. */
         EBoundsType             mBoundsUpdateType;      /**< The bounds update type (node based, mesh based or collision mesh based). */
         float m_boundsExpandBy = 0.25f; /**< Expand bounding box by normalized percentage. (Default: 25% greater than the calculated bounding box) */
@@ -1002,7 +1002,7 @@ namespace EMotionFX
          * are needed.
          * @param level The skeletal detail LOD level. Values higher than 31 will be automatically clamped to 31.
          */
-        void SetSkeletalLODLevelNodeFlags(uint32 level);
+        void SetSkeletalLODLevelNodeFlags(size_t level);
 
         /*
          * Update the LOD level in case a change was requested.
