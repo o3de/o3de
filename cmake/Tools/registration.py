@@ -2118,27 +2118,35 @@ def find_engine_data(json_data: dict,
     return None
 
 
-def get_engine_data(engine_name: str = None,
-                    engine_path: str or pathlib.Path = None, ) -> dict or None:
+def _validate_engine_name_and_path(engine_name: str = None,
+                    engine_path: str or pathlib.Path = None) -> pathlib.Path or None:
     if not engine_name and not engine_path:
         logger.error('Must specify either a Engine name or Engine Path.')
-        return 1
+        return None
 
     if engine_name and not engine_path:
         engine_path = get_registered(engine_name=engine_name)
 
     if not engine_path:
         logger.error(f'Engine Path {engine_path} has not been registered.')
-        return 1
+        return None 
 
     engine_path = pathlib.Path(engine_path).resolve()
     engine_json = engine_path / 'engine.json'
     if not engine_json.is_file():
         logger.error(f'Engine json {engine_json} is not present.')
-        return 1
+        return None 
     if not valid_o3de_engine_json(engine_json):
         logger.error(f'Engine json {engine_json} is not valid.')
-        return 1
+        return None 
+    
+    return engine_json
+
+def get_engine_data(engine_name: str = None,
+                    engine_path: str or pathlib.Path = None ) -> dict or None:
+    engine_json = _validate_engine_name_and_path(engine_name, engine_path)
+    if not engine_json:
+        return None
 
     with engine_json.open('r') as f:
         try:
@@ -2149,6 +2157,26 @@ def get_engine_data(engine_name: str = None,
             return engine_json_data
 
     return None
+
+def set_engine_data(engine_name: str = None,
+                    engine_path: str or pathlib.Path = None,
+                    engine_data: dict = None ) -> int:
+    if not engine_data:
+        logger.error('Must provide engine data.')
+        return 1 
+
+    engine_json = _validate_engine_name_and_path(engine_name, engine_path)
+    if not engine_json:
+        return 1 
+
+    with engine_json.open('w') as f:
+        try:
+            json.dump(engine_data, f, indent=4)
+        except Exception as e:
+            logger.warn(f'Failed to load or write {engine_json}: {str(e)}')
+            return 1
+
+    return 0 
 
 
 def get_project_data(project_name: str = None,
@@ -2184,27 +2212,36 @@ def get_project_data(project_name: str = None,
     return None
 
 
-def get_gem_data(gem_name: str = None,
-                 gem_path: str or pathlib.Path = None, ) -> dict or None:
+def _validate_gem_name_and_path(gem_name: str = None,
+                 gem_path: str or pathlib.Path = None) -> pathlib.Path or None:
     if not gem_name and not gem_path:
         logger.error('Must specify either a Gem name or Gem Path.')
-        return 1
+        return None
 
     if gem_name and not gem_path:
         gem_path = get_registered(gem_name=gem_name)
 
     if not gem_path:
         logger.error(f'Gem Path {gem_path} has not been registered.')
-        return 1
+        return None 
 
     gem_path = pathlib.Path(gem_path).resolve()
     gem_json = gem_path / 'gem.json'
     if not gem_json.is_file():
         logger.error(f'Gem json {gem_json} is not present.')
-        return 1
+        return None 
     if not valid_o3de_gem_json(gem_json):
         logger.error(f'Gem json {gem_json} is not valid.')
-        return 1
+        return None 
+    
+    return gem_json
+
+
+def get_gem_data(gem_name: str = None,
+                 gem_path: str or pathlib.Path = None) -> dict or None:
+    gem_json = _validate_gem_name_and_path(gem_name, gem_path)
+    if not gem_json:
+        return None 
 
     with gem_json.open('r') as f:
         try:
@@ -2215,6 +2252,27 @@ def get_gem_data(gem_name: str = None,
             return gem_json_data
 
     return None
+
+
+def set_gem_data(gem_name: str = None,
+                 gem_path: str or pathlib.Path = None, 
+                 gem_data: dict = None) -> int:
+    if not gem_data:
+        logger.error('Must provide Gem data.')
+        return 1 
+
+    gem_json = _validate_gem_name_and_path(gem_name, gem_path)
+    if not gem_json:
+        return 1 
+
+    with gem_json.open('w') as f:
+        try:
+            json.dump(gem_data, f, indent=4)
+        except Exception as e:
+            logger.warn(f'Failed to load and write {gem_json}: {str(e)}')
+            return 1 
+
+    return 0 
 
 
 def get_template_data(template_name: str = None,

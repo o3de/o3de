@@ -80,7 +80,7 @@
                 {
                     "Name": "EyeAdaptationPass",
                     "TemplateName": "EyeAdaptationTemplate",
-                    "Enabled": false,
+                    "Enabled": true,
                     "Connections": [
                         {
                             "LocalSlot": "SceneLuminanceInput",
