@@ -24,10 +24,10 @@ class Tests():
 def ScriptEvent_AddRemoveMethod_UpdatesInSC():
     """
     Summary:
-     Script Event file can be created
+     Method can be added/removed to an existing .scriptevents file
 
     Expected Behavior:
-     File is created without any errors and warnings in Console
+     The Method is correctly added/removed to the asset, and Script Canvas nodes are updated accordingly.
 
     Test Steps:
      1) Open Asset Editor and Script Canvas windows
