@@ -187,7 +187,7 @@ namespace LmbrCentral
 
     static AZ::Aabb CalculateTubeBounds(const TubeShape& tubeShape, const AZ::Transform& transform)
     {
-        const auto maxScale = transform.GetScale().GetMaxElement();
+        const auto maxScale = transform.GetUniformScale();
         const auto scaledRadiusFn =
             [&tubeShape, maxScale](const AZ::SplineAddress& splineAddress)
         {
