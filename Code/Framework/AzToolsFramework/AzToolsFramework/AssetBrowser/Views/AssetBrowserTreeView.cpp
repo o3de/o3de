@@ -40,8 +40,6 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // conversio
 #include <QTimer>
 AZ_POP_DISABLE_WARNING
 
-//#pragma optimize("", off)
-
 namespace AzToolsFramework
 {
     namespace AssetBrowser
