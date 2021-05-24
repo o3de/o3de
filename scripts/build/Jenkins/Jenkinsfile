@@ -60,7 +60,7 @@ def palRm(path) {
     } else {
         def win_path = path.replace('/','\\')
         bat label: "Removing ${win_path}",
-            script: "del ${win_path}"
+            script: "del /Q ${win_path}"
     }
 }
 
@@ -190,12 +190,14 @@ def CheckoutBootstrapScripts(String branchName) {
         doGenerateSubmoduleConfigurations: false,
         extensions: [
             [$class: 'PruneStaleBranch'],
+            [$class: 'AuthorInChangelog'],
             [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [
                 [ $class: 'SparseCheckoutPath', path: 'scripts/build/Jenkins/' ],
                 [ $class: 'SparseCheckoutPath', path: 'scripts/build/bootstrap/' ],
                 [ $class: 'SparseCheckoutPath', path: 'scripts/build/Platform' ]
             ]],
-            [$class: 'CloneOption', depth: 1, noTags: false, reference: '', shallow: true]
+            // Shallow checkouts break changelog computation. Do not enable.
+            [$class: 'CloneOption', noTags: false, reference: '', shallow: false]
         ],
         submoduleCfg: [],
         userRemoteConfigs: scm.userRemoteConfigs
@@ -234,6 +236,7 @@ def CheckoutRepo(boolean disableSubmodules = false) {
             branches: scm.branches,
             extensions: [
                 [$class: 'PruneStaleBranch'],
+                [$class: 'AuthorInChangelog'],
                 [$class: 'SubmoduleOption', disableSubmodules: disableSubmodules, recursiveSubmodules: true],
                 [$class: 'CheckoutOption', timeout: 60]
             ],
@@ -339,17 +342,30 @@ def TestMetrics(Map pipelineConfig, String workspace, String branchName, String 
             checkout scm: [
                 $class: 'GitSCM',
                 branches: [[name: '*/main']],
-                extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'mars']],
+                extensions: [
+                    [$class: 'AuthorInChangelog'],
+                    [$class: 'RelativeTargetDirectory', relativeTargetDir: 'mars']
+                ],
                 userRemoteConfigs: [[url: "${env.MARS_REPO}", name: 'mars', credentialsId: "${env.GITHUB_USER}"]]
             ]
             withCredentials([usernamePassword(credentialsId: "${env.SERVICE_USER}", passwordVariable: 'apitoken', usernameVariable: 'username')]) {
                 def command = "${pipelineConfig.PYTHON_DIR}/python.cmd -u mars/scripts/python/ctest_test_metric_scraper.py " +
                               '-e jenkins.creds.user %username% -e jenkins.creds.pass %apitoken% ' +
                               "-e jenkins.base_url ${env.JENKINS_URL} " +
-                              "${cmakeBuildDir} ${branchName} %BUILD_NUMBER% AR ${configuration} ${repoName} "
+                              "${cmakeBuildDir} ${branchName} %BUILD_NUMBER% AR ${configuration} ${repoName} --url ${env.BUILD_URL}"
                 bat label: "Publishing ${buildJobName} Test Metrics",
                     script: command
             }
+        }
+    }
+}
+
+def ExportTestResults(Map options, String platform, String type, String workspace, Map params) {
+    catchError(message: "Error exporting tests results (this won't fail the build)", buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+        def o3deroot = "${workspace}/${ENGINE_REPOSITORY_NAME}"
+        dir("${o3deroot}/${params.OUTPUT_DIRECTORY}") {
+            junit testResults: "Testing/**/*.xml"
+            palRmDir("Testing")
         }
     }
 }
@@ -392,6 +408,14 @@ def CreateTestMetricsStage(Map pipelineConfig, String branchName, Map environmen
     return {
         stage("${buildJobName}_metrics") {
             TestMetrics(pipelineConfig, environmentVars['WORKSPACE'], branchName, env.DEFAULT_REPOSITORY_NAME, buildJobName, outputDirectory, configuration)
+        }
+    }
+}
+
+def CreateExportTestResultsStage(Map pipelineConfig, String platformName, String jobName, Map environmentVars, Map params) {
+    return {
+        stage("${jobName}_results") {
+            ExportTestResults(pipelineConfig, platformName, jobName, environmentVars['WORKSPACE'], params)
         }
     }
 }
@@ -511,10 +535,14 @@ try {
                                 }
                             }
                             finally {
-                                if (env.MARS_REPO && platform.value.build_types[build_job_name].PARAMETERS.containsKey('TEST_METRICS') && platform.value.build_types[build_job_name].PARAMETERS.TEST_METRICS == 'True') {
-                                    def output_directory = platform.value.build_types[build_job_name].PARAMETERS.OUTPUT_DIRECTORY
-                                    def configuration = platform.value.build_types[build_job_name].PARAMETERS.CONFIGURATION
+                                def params = platform.value.build_types[build_job_name].PARAMETERS
+                                if (env.MARS_REPO && params && params.containsKey('TEST_METRICS') && params.TEST_METRICS == 'True') {
+                                    def output_directory = params.OUTPUT_DIRECTORY
+                                    def configuration = params.CONFIGURATION
                                     CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, output_directory, configuration).call()
+                                }
+                                if (params && params.containsKey('TEST_RESULTS') && params.TEST_RESULTS == 'True') {
+                                    CreateExportTestResultsStage(pipelineConfig,  platform.key, build_job_name, envVars, params).call()
                                 }
                                 CreateTeardownStage(envVars).call()
                             }

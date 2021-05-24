@@ -147,7 +147,6 @@ namespace ScriptCanvasEditor
         AZStd::unique_ptr<AZ::JobManager> m_jobManager;
         AZStd::unique_ptr<AZ::JobContext> m_jobContext;
 
-        AZStd::vector<AZStd::unique_ptr<AzToolsFramework::PropertyHandlerBase>> m_propertyHandlers;
         AZStd::unordered_set<ScriptCanvas::Data::Type> m_creatableTypes;
 
         AssetTracker m_assetTracker;

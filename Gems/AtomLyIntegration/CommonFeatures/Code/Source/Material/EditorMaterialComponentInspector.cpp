@@ -213,7 +213,11 @@ namespace AZ
                 }
 
                 // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-                auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(&group, &group, group.TYPEINFO_Uuid(), this, this,
+                const AZ::Crc32 saveStateKey(AZStd::string::format(
+                    "MaterialPropertyInspector::PropertyGroup::%s::%s", m_materialAssetId.ToString<AZStd::string>().c_str(),
+                    groupNameId.c_str()));
+                auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
+                    &group, &group, group.TYPEINFO_Uuid(), this, this, saveStateKey,
                     [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
                         AZ_UNUSED(source);
                         const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
@@ -262,7 +266,11 @@ namespace AZ
                     }
 
                     // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-                    auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(&group, &group, group.TYPEINFO_Uuid(), this, this,
+                    const AZ::Crc32 saveStateKey(AZStd::string::format(
+                        "MaterialPropertyInspector::PropertyGroup::%s::%s", m_materialAssetId.ToString<AZStd::string>().c_str(),
+                        groupNameId.c_str()));
+                    auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
+                        &group, &group, group.TYPEINFO_Uuid(), this, this, saveStateKey,
                         [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
                             AZ_UNUSED(source);
                             const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
@@ -288,15 +296,25 @@ namespace AZ
             void MaterialPropertyInspector::RunEditorMaterialFunctors()
             {
                 AZStd::unordered_set<AZ::Name> changedPropertyNames;
+                AZStd::unordered_set<AZ::Name> changedPropertyGroupNames;
 
                 // Convert editor property configuration data into material property meta data so that it can be used to execute functors
                 AZStd::unordered_map<AZ::Name, AZ::RPI::MaterialPropertyDynamicMetadata> propertyDynamicMetadata;
-                for (auto& group : m_groups)
+                AZStd::unordered_map<AZ::Name, AZ::RPI::MaterialPropertyGroupDynamicMetadata> propertyGroupDynamicMetadata;
+                for (auto& groupPair : m_groups)
                 {
-                    for (auto& property : group.second.m_properties)
+                    AZ::RPI::MaterialPropertyGroupDynamicMetadata& metadata = propertyGroupDynamicMetadata[AZ::Name{groupPair.first}];
+                    
+                    for (auto& property : groupPair.second.m_properties)
                     {
                         AtomToolsFramework::ConvertToPropertyMetaData(propertyDynamicMetadata[property.GetId()], property.GetConfig());
                     }
+
+                    // It's significant that we check IsGroupHidden rather than IsGroupVisisble, because it follows the same rules as QWidget::isHidden().
+                    // We don't care whether the widget and all its parents are visible, we only care about whether the group was hidden within the context
+                    // of the material property inspector.
+                    metadata.m_visibility = IsGroupHidden(groupPair.first) ?
+                        AZ::RPI::MaterialPropertyGroupVisibility::Hidden : AZ::RPI::MaterialPropertyGroupVisibility::Enabled;
                 }
 
                 for (AZ::RPI::Ptr<AZ::RPI::MaterialFunctor>& functor : m_editorFunctors)
@@ -310,7 +328,9 @@ namespace AZ
                             m_materialInstance->GetPropertyValues(),
                             m_materialInstance->GetMaterialPropertiesLayout(),
                             propertyDynamicMetadata,
+                            propertyGroupDynamicMetadata,
                             changedPropertyNames,
+                            changedPropertyGroupNames,
                             &materialPropertyDependencies
                         );
                         functor->Process(context);
@@ -319,9 +339,16 @@ namespace AZ
                 m_dirtyPropertyFlags.reset();
 
                 // Apply any changes to material property meta data back to the editor property configurations
-                for (auto& group : m_groups)
+                for (auto& groupPair : m_groups)
                 {
-                    for (auto& property : group.second.m_properties)
+                    AZ::Name groupName{groupPair.first};
+
+                    if (changedPropertyGroupNames.find(groupName) != changedPropertyGroupNames.end())
+                    {
+                        SetGroupVisible(groupPair.first, propertyGroupDynamicMetadata[groupName].m_visibility == AZ::RPI::MaterialPropertyGroupVisibility::Enabled);
+                    }
+
+                    for (auto& property : groupPair.second.m_properties)
                     {
                         AtomToolsFramework::DynamicPropertyConfig propertyConfig = property.GetConfig();
 

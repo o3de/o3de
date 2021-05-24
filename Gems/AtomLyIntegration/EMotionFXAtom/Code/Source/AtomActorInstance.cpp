@@ -28,6 +28,7 @@
 #include <MCore/Source/AzCoreConversions.h>
 
 #include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/Image/StreamingImage.h>
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/EntityId.h>
@@ -39,6 +40,8 @@ namespace AZ
 {
     namespace Render
     {
+        static constexpr uint32_t s_maxActiveWrinkleMasks = 16;
+
         AZ_CLASS_ALLOCATOR_IMPL(AtomActorInstance, EMotionFX::Integration::EMotionFXAllocator, 0)
 
         AtomActorInstance::AtomActorInstance(AZ::EntityId entityId,
@@ -409,6 +412,10 @@ namespace AZ
                     EMotionFX::MorphSetup* morphSetup = m_actorInstance->GetActor()->GetMorphSetup(lodIndex);
                     if (morphSetup)
                     {
+                        // Track all the masks/weights that are currently active
+                        m_wrinkleMasks.clear();
+                        m_wrinkleMaskWeights.clear();
+
                         uint32_t morphTargetCount = morphSetup->GetNumMorphTargets();
                         m_morphTargetWeights.clear();
                         for (uint32_t morphTargetIndex = 0; morphTargetIndex < morphTargetCount; ++morphTargetIndex)
@@ -433,11 +440,28 @@ namespace AZ
                                 const EMotionFX::MorphTargetStandard::DeformData* deformData = morphTargetStandard->GetDeformData(deformDataIndex);
                                 if (deformData->mNumVerts > 0)
                                 {
-                                    m_morphTargetWeights.push_back(morphTargetSetupInstance->GetWeight());
+                                    float weight = morphTargetSetupInstance->GetWeight();
+                                    m_morphTargetWeights.push_back(weight);
+
+                                    // If the morph target is active and it has a wrinkle mask
+                                    auto wrinkleMaskIter = m_morphTargetWrinkleMaskMapsByLod[lodIndex].find(morphTargetStandard);
+                                    if (weight > 0 && wrinkleMaskIter != m_morphTargetWrinkleMaskMapsByLod[lodIndex].end())
+                                    {
+                                        // Add the wrinkle mask and weight, to be set on the material
+                                        m_wrinkleMasks.push_back(wrinkleMaskIter->second);
+                                        m_wrinkleMaskWeights.push_back(weight);
+                                    }
                                 }
                             }
                         }
                         m_skinnedMeshRenderProxy->SetMorphTargetWeights(lodIndex, m_morphTargetWeights);
+
+                        // Until EMotionFX and Atom lods are synchronized [ATOM-13564] we don't know which EMotionFX lod to pull the weights from
+                        // Until that is fixed, just use lod 0 [ATOM-15251]
+                        if (lodIndex == 0)
+                        {
+                            UpdateWrinkleMasks();
+                        }
                     }
                 }
             }
@@ -448,6 +472,8 @@ namespace AZ
             MaterialAssignmentMap materials;
             MaterialComponentRequestBus::EventResult(materials, m_entityId, &MaterialComponentRequests::GetMaterialOverrides);
             CreateRenderProxy(materials);
+
+            InitWrinkleMasks();
 
             TransformNotificationBus::Handler::BusConnect(m_entityId);
             MaterialComponentNotificationBus::Handler::BusConnect(m_entityId);
@@ -571,5 +597,77 @@ namespace AZ
         {
             CreateSkinnedMeshInstance();
         }
+
+        void AtomActorInstance::InitWrinkleMasks()
+        {
+            EMotionFX::Actor* actor = m_actorAsset->GetActor();
+            m_morphTargetWrinkleMaskMapsByLod.resize(m_skinnedMeshInputBuffers->GetLodCount());
+            m_wrinkleMasks.reserve(s_maxActiveWrinkleMasks);
+            m_wrinkleMaskWeights.reserve(s_maxActiveWrinkleMasks);
+
+            for (size_t lodIndex = 0; lodIndex < m_skinnedMeshInputBuffers->GetLodCount(); ++lodIndex)
+            {
+                EMotionFX::MorphSetup* morphSetup = actor->GetMorphSetup(lodIndex);
+                if (morphSetup)
+                {
+                    const AZStd::vector<AZ::RPI::MorphTargetMetaAsset::MorphTarget>& metaDatas = actor->GetMorphTargetMetaAsset()->GetMorphTargets();
+                    // Loop over all the EMotionFX morph targets
+                    uint32_t numMorphTargets = morphSetup->GetNumMorphTargets();
+                    for (uint32_t morphTargetIndex = 0; morphTargetIndex < numMorphTargets; ++morphTargetIndex)
+                    {
+                        EMotionFX::MorphTargetStandard* morphTarget = static_cast<EMotionFX::MorphTargetStandard*>(morphSetup->GetMorphTarget(morphTargetIndex));
+                        for (const RPI::MorphTargetMetaAsset::MorphTarget& metaData : metaDatas)
+                        {
+                            // Find the metaData associated with this morph target
+                            if (metaData.m_morphTargetName == morphTarget->GetNameString() && metaData.m_wrinkleMask && metaData.m_numVertices > 0)
+                            {
+                                // If the metaData has a wrinkle mask, add it to the map
+                                Data::Instance<RPI::StreamingImage> streamingImage = RPI::StreamingImage::FindOrCreate(metaData.m_wrinkleMask);
+                                if (streamingImage)
+                                {
+                                    m_morphTargetWrinkleMaskMapsByLod[lodIndex][morphTarget] = streamingImage;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        void AtomActorInstance::UpdateWrinkleMasks()
+        {
+            if (m_meshHandle)
+            {
+                Data::Instance<RPI::ShaderResourceGroup> wrinkleMaskObjectSrg = m_meshFeatureProcessor->GetObjectSrg(*m_meshHandle);
+                if (wrinkleMaskObjectSrg)
+                {
+                    RHI::ShaderInputImageIndex wrinkleMasksIndex = wrinkleMaskObjectSrg->FindShaderInputImageIndex(Name{ "m_wrinkle_masks" });
+                    RHI::ShaderInputConstantIndex wrinkleMaskWeightsIndex = wrinkleMaskObjectSrg->FindShaderInputConstantIndex(Name{ "m_wrinkle_mask_weights" });
+                    RHI::ShaderInputConstantIndex wrinkleMaskCountIndex = wrinkleMaskObjectSrg->FindShaderInputConstantIndex(Name{ "m_wrinkle_mask_count" });
+                    if (wrinkleMasksIndex.IsValid() || wrinkleMaskWeightsIndex.IsValid() || wrinkleMaskCountIndex.IsValid())
+                    {
+                        AZ_Error("AtomActorInstance", wrinkleMasksIndex.IsValid(), "m_wrinkle_masks not found on the ObjectSrg, but m_wrinkle_mask_weights and/or m_wrinkle_mask_count are being used.");
+                        AZ_Error("AtomActorInstance", wrinkleMaskWeightsIndex.IsValid(), "m_wrinkle_mask_weights not found on the ObjectSrg, but m_wrinkle_masks and/or m_wrinkle_mask_count are being used.");
+                        AZ_Error("AtomActorInstance", wrinkleMaskCountIndex.IsValid(), "m_wrinkle_mask_count not found on the ObjectSrg, but m_wrinkle_mask_weights and/or m_wrinkle_masks are being used.");
+
+                        if (m_wrinkleMasks.size())
+                        {
+                            wrinkleMaskObjectSrg->SetImageArray(wrinkleMasksIndex, AZStd::array_view<Data::Instance<RPI::Image>>(m_wrinkleMasks.data(), m_wrinkleMasks.size()));
+
+                            // Set the weights for any active masks
+                            for (size_t i = 0; i < m_wrinkleMaskWeights.size(); ++i)
+                            {
+                                wrinkleMaskObjectSrg->SetConstant(wrinkleMaskWeightsIndex, m_wrinkleMaskWeights[i], i);
+                            }
+                            AZ_Error("AtomActorInstance", m_wrinkleMaskWeights.size() <= s_maxActiveWrinkleMasks, "The skinning shader supports no more than %d active morph targets with wrinkle masks.", s_maxActiveWrinkleMasks);
+                        }
+
+                        wrinkleMaskObjectSrg->SetConstant(wrinkleMaskCountIndex, aznumeric_cast<uint32_t>(m_wrinkleMasks.size()));
+                        m_meshFeatureProcessor->QueueObjectSrgForCompile(*m_meshHandle);
+                    }
+                }
+            }
+        }
+
     } //namespace Render
 } // namespace AZ

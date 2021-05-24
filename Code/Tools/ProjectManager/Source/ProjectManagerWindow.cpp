@@ -27,80 +27,52 @@ namespace O3DE::ProjectManager
         , m_ui(new Ui::ProjectManagerWindowClass())
     {
         m_ui->setupUi(this);
+        QLayout* layout = m_ui->centralWidget->layout();
+        layout->setMargin(0);
+        layout->setSpacing(0);
+        layout->setContentsMargins(0, 0, 0, 0);
 
-        ConnectSlotsAndSignals();
+        setFixedSize(this->geometry().width(), this->geometry().height());
+
+        m_pythonBindings = AZStd::make_unique<PythonBindings>(engineRootPath);
+
+        m_screensCtrl = new ScreensCtrl();
+        m_ui->verticalLayout->addWidget(m_screensCtrl);
+
+        connect(m_ui->projectsMenu, &QMenu::aboutToShow, this, &ProjectManagerWindow::HandleProjectsMenu);
+        connect(m_ui->engineMenu, &QMenu::aboutToShow, this, &ProjectManagerWindow::HandleEngineMenu);
 
         QDir rootDir = QString::fromUtf8(engineRootPath.Native().data(), aznumeric_cast<int>(engineRootPath.Native().size()));
         const auto pathOnDisk = rootDir.absoluteFilePath("Code/Tools/ProjectManager/Resources");
-        const auto qrcPath = QStringLiteral(":/ProjectManagerWindow");
-        AzQtComponents::StyleManager::addSearchPaths("projectmanagerwindow", pathOnDisk, qrcPath, engineRootPath);
+        const auto qrcPath = QStringLiteral(":/ProjectManager/style");
+        AzQtComponents::StyleManager::addSearchPaths("style", pathOnDisk, qrcPath, engineRootPath);
 
-        AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("projectlauncherwindow:ProjectManagerWindow.qss"));
+        AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("style:ProjectManager.qss"));
 
-        BuildScreens();
-
-        ChangeToScreen(ProjectManagerScreen::FirstTimeUse);
+        QVector<ProjectManagerScreen> screenEnums =
+        {
+            ProjectManagerScreen::FirstTimeUse,
+            ProjectManagerScreen::NewProjectSettingsCore,
+            ProjectManagerScreen::ProjectsHome,
+            ProjectManagerScreen::ProjectSettings,
+            ProjectManagerScreen::EngineSettings
+        };
+        m_screensCtrl->BuildScreens(screenEnums);
+        m_screensCtrl->ForceChangeToScreen(ProjectManagerScreen::FirstTimeUse, false);
     }
 
     ProjectManagerWindow::~ProjectManagerWindow()
     {
-    }
-
-    void ProjectManagerWindow::BuildScreens()
-    {
-        // Basically just iterate over the ProjectManagerScreen enum creating each screen
-        // Could add some fancy to do this but there are few screens right now
-
-        ResetScreen(ProjectManagerScreen::FirstTimeUse);
-        ResetScreen(ProjectManagerScreen::NewProjectSettings);
-        ResetScreen(ProjectManagerScreen::GemCatalog);
-        ResetScreen(ProjectManagerScreen::ProjectsHome);
-        ResetScreen(ProjectManagerScreen::ProjectSettings);
-        ResetScreen(ProjectManagerScreen::EngineSettings);
-    }
-
-    QStackedWidget* ProjectManagerWindow::GetScreenStack()
-    {
-        return m_ui->stackedScreens;
-    }
-
-    void ProjectManagerWindow::ChangeToScreen(ProjectManagerScreen screen)
-    {
-        int index = aznumeric_cast<int, ProjectManagerScreen>(screen);
-        m_ui->stackedScreens->setCurrentIndex(index);
-    }
-
-    void ProjectManagerWindow::ResetScreen(ProjectManagerScreen screen)
-    {
-        int index = aznumeric_cast<int, ProjectManagerScreen>(screen);
-
-        // Fine the old screen if it exists and get rid of it so we can start fresh
-        QWidget* oldScreen = m_ui->stackedScreens->widget(index);
-
-        if (oldScreen)
-        {
-            m_ui->stackedScreens->removeWidget(oldScreen);
-            oldScreen->deleteLater();
-        }
-
-        // Add new screen
-        QWidget* newScreen = BuildScreen(this, screen);
-        m_ui->stackedScreens->insertWidget(index, newScreen);
-    }
-
-    void ProjectManagerWindow::ConnectSlotsAndSignals()
-    {
-        QObject::connect(m_ui->projectsMenu, &QMenu::aboutToShow, this, &ProjectManagerWindow::HandleProjectsMenu);
-        QObject::connect(m_ui->engineMenu, &QMenu::aboutToShow, this, &ProjectManagerWindow::HandleEngineMenu);
+        m_pythonBindings.reset();
     }
 
     void ProjectManagerWindow::HandleProjectsMenu()
     {
-        ChangeToScreen(ProjectManagerScreen::ProjectsHome);
+        m_screensCtrl->ChangeToScreen(ProjectManagerScreen::ProjectsHome);
     }
     void ProjectManagerWindow::HandleEngineMenu()
     {
-        ChangeToScreen(ProjectManagerScreen::EngineSettings);
+        m_screensCtrl->ChangeToScreen(ProjectManagerScreen::EngineSettings);
     }
 
 } // namespace O3DE::ProjectManager

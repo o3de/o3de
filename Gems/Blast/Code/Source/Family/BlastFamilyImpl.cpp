@@ -202,7 +202,7 @@ namespace Blast
             if (parentBody)
             {
                 parentTransform = parentBody->GetTransform();
-                parentTransform.MultiplyByScale(m_initialTransform.GetScale());
+                parentTransform.MultiplyByScale(AZ::Vector3(m_initialTransform.GetScale().GetMaxElement()));
             }
             else
             {
@@ -239,9 +239,8 @@ namespace Blast
         AzPhysics::RigidBodyConfiguration configuration;
         configuration.m_position = transform.GetTranslation();
         configuration.m_orientation = transform.GetRotation();
-        configuration.m_scale = transform.GetScale();
         configuration.m_ccdEnabled = m_actorConfiguration.m_isCcdEnabled;
-        configuration.m_simulated = m_actorConfiguration.m_isSimulated;
+        configuration.m_startSimulationEnabled = m_actorConfiguration.m_isSimulated;
         configuration.m_initialAngularVelocity = AZ::Vector3::CreateZero();
 
         BlastActorDesc actorDesc;
@@ -255,6 +254,7 @@ namespace Blast
         actorDesc.m_parentCenterOfMass = transform.GetTranslation();
         actorDesc.m_parentLinearVelocity = AZ::Vector3::CreateZero();
         actorDesc.m_bodyConfiguration = configuration;
+        actorDesc.m_scale = transform.GetScale().GetMaxElement();
 
         return actorDesc;
     }

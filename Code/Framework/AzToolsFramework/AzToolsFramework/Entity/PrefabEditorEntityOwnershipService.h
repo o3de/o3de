@@ -195,9 +195,13 @@ namespace AzToolsFramework
             AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder) override;
 
         Prefab::InstanceOptionalReference GetRootPrefabInstance() override;
+
+        const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& GetPlayInEditorAssetData() override;
         //////////////////////////////////////////////////////////////////////////
 
         void OnEntityRemoved(AZ::EntityId entityId);
+
+        void LoadReferencedAssets(AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets);
 
         OnEntitiesAddedCallback m_entitiesAddedCallback;
         OnEntitiesRemovedCallback m_entitiesRemovedCallback;

@@ -35,7 +35,7 @@ namespace GridMate
     };
 
     /**
-    *  Task to update master & proxy replicas.
+    *  Task to update primary & proxy replicas.
     *  Processes RPCs and calls replicas UpdateFromReplica. Will complete immediately if no RPCs
     *  left queued after processing, otherweise will be repeated next update tick.
     *  Initiates replica migration if proxy owner has died.

@@ -10,7 +10,7 @@
 *
 */
 
-#include <Source/Components/NetworkTransformComponent.h>
+#include <Multiplayer/Components/NetworkTransformComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/EBus/IEventScheduler.h>
@@ -96,7 +96,7 @@ namespace Multiplayer
 
     void NetworkTransformComponentController::OnTransformChangedEvent(const AZ::Transform& worldTm)
     {
-        if (GetNetEntityRole() == NetEntityRole::Authority)
+        if (IsAuthority())
         {
             SetRotation(worldTm.GetRotation());
             SetTranslation(worldTm.GetTranslation());

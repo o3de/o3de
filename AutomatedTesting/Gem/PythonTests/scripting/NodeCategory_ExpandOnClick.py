@@ -7,10 +7,6 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test case ID: T92562988
-Test Case Title: Left-click/double click expands and collapses node categories
-URL of the test case: https://testrail.agscollab.com/index.php?/tests/view/92562988
 """
 
 
@@ -124,6 +120,8 @@ def NodeCategory_ExpandOnClick():
 
 if __name__ == "__main__":
     import ImportPathHelper as imports
+
     imports.init()
     from utils import Report
+
     Report.start_test(NodeCategory_ExpandOnClick)

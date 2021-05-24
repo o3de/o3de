@@ -77,6 +77,7 @@ class CHyperGraph;
 
 namespace AzToolsFramework
 {
+    class EditorEntityAPI;
     class EditorEntityUiInterface;
 
     namespace AssetBrowser
@@ -319,12 +320,10 @@ private:
     void OnLayerComponentDeactivated(AZ::EntityId entityId) override;
 
 private:
-    void SetupFileExtensionMap();
     // Right click context menu when a layer is included in the selection.
     void SetupLayerContextMenu(QMenu* menu);
     void SetupSliceContextMenu(QMenu* menu);
     void SetupSliceContextMenu_Modify(QMenu* menu, const AzToolsFramework::EntityIdList& selectedEntities, const AZ::u32 numEntitiesInSlices);
-    void SetupScriptCanvasContextMenu(QMenu* menu);
     void SaveSlice(const bool& QuickPushToFirstLevel);
     void GetEntitiesInSlices(const AzToolsFramework::EntityIdList& selectedEntities, AZ::u32& entitiesInSlices, AZStd::vector<AZ::SliceComponent::SliceInstanceAddress>& sliceInstances);
 
@@ -348,9 +347,6 @@ private:
     };
 
 private:
-    typedef AZStd::unordered_map<AZ::u32, IFileUtil::ECustomFileType> ExtensionMap;
-    ExtensionMap m_extensionToFileType;
-
     AZ::Vector2 m_contextMenuViewPoint;
     AZ::Vector3 m_sliceWorldPos;
 
@@ -376,6 +372,7 @@ private:
 
     AzToolsFramework::EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
     AzToolsFramework::Prefab::PrefabIntegrationInterface* m_prefabIntegrationInterface = nullptr;
+    AzToolsFramework::EditorEntityAPI* m_editorEntityAPI = nullptr;
 
     // Overrides UI styling and behavior for Layer Entities
     AzToolsFramework::LayerUiHandler m_layerUiOverrideHandler;

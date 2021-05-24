@@ -168,7 +168,6 @@ namespace CryStringUtils_Internal
     // Can be used for ASCII and Unicode (UTF-8/UTF-16/UTF-32), but not for ANSI.
     // ? will match exactly one code-point.
     // * will match zero or more code-points.
-    // Note: function moved here from CryCommonTools.
     template <template<class> class CharComparator, class CharType>
     inline bool MatchesWildcards_Tpl(const CharType* pStr, const CharType* pWild)
     {
