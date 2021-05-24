@@ -40,6 +40,11 @@ void PlatformConfigurationUnitTests::SetUp()
     AssetProcessorTest::SetUp();
     AssetUtilities::ResetAssetRoot();
 
+    AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+    auto projectPathKey =
+        AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+    registry->Set(projectPathKey, "AutomatedTesting");
+    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 }
 
 void PlatformConfigurationUnitTests::TearDown()

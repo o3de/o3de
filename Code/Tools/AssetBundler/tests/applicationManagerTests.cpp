@@ -57,6 +57,12 @@ namespace AssetBundler
             UnitTest::ScopedAllocatorSetupFixture::SetUp();
             m_data = AZStd::make_unique<StaticData>();
 
+            AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+            auto projectPathKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+
             m_data->m_applicationManager.reset(aznew MockApplicationManagerTest(0, 0));
             m_data->m_applicationManager->Start(AzFramework::Application::Descriptor());
 

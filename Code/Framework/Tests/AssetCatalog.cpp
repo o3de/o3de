@@ -23,6 +23,7 @@
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
@@ -300,6 +301,12 @@ namespace UnitTest
         void SetUp() override
         {
             AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
+
+            AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+            auto projectPathKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
             m_app.reset(aznew AzFramework::Application());
             AZ::ComponentApplication::Descriptor desc;

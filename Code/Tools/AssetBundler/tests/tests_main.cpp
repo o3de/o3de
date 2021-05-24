@@ -98,6 +98,22 @@ namespace AssetBundler
     public:
         void SetUp() override
         {
+            AZ::SettingsRegistryInterface* registry = nullptr;
+            if (!AZ::SettingsRegistry::Get())
+            {
+                AZ::SettingsRegistry::Register(&m_registry);
+                registry = &m_registry;
+                
+            }
+            else
+            {
+                registry = AZ::SettingsRegistry::Get();
+            }
+            auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
+                + "/project_path";
+            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+            
             m_data = AZStd::make_unique<StaticData>();
             m_data->m_application.reset(aznew AzToolsFramework::ToolsApplication());
             m_data->m_application.get()->Start(AzFramework::Application::Descriptor());
@@ -106,15 +122,6 @@ namespace AssetBundler
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
-
-            if (!AZ::SettingsRegistry::Get())
-            {
-                AZ::SettingsRegistry::Register(&m_registry);
-                auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
-                    + "/project_path";
-                m_registry.Set(projectPathKey, "AutomatedTesting");
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
-            }
 
             AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
             if (engineRoot.empty())

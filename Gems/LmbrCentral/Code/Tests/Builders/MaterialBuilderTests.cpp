@@ -16,6 +16,7 @@
 #include <AzTest/Utils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
@@ -34,6 +35,12 @@ protected:
     void SetUp() override
     {
         UnitTest::AllocatorsTestFixture::SetUp();
+
+        AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+        auto projectPathKey =
+            AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+        registry->Set(projectPathKey, "AutomatedTesting");
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
         m_app.reset(aznew AzToolsFramework::ToolsApplication);
         m_app->Start(AZ::ComponentApplication::Descriptor());
