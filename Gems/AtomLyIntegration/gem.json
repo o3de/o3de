@@ -1,3 +1,13 @@
 {
-    "gem_name": "AtomLyIntegration"
+    "gem_name": "AtomLyIntegration",
+    "gem_module_roots": [
+        "AtomBridge",
+        "AtomFont",
+        "AtomImGuiTools",
+        "AtomViewportDisplayInfo",
+        "CommonFeatures",
+        "EMotionFXAtom",
+        "ImguiAtom",
+        "TechnicalArt/DccScriptingInterface"
+    ]
 }

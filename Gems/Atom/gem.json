@@ -1,3 +1,17 @@
 {
-    "gem_name": "Atom"
+    "gem_name": "Atom",
+    "gem_module_roots": [
+        "Asset/ImageProcessingAtom",
+        "Asset/Shader",
+        "Bootstrap",
+        "Component/DebugCamera",
+        "Feature/Common",
+        "RHI",
+        "RHI/DX12",
+        "RHI/Metal",
+        "RHI/Null",
+        "RHI/Vulkan",
+        "RPI",
+        "Tools/AtomToolsFramework"
+    ]
 }
