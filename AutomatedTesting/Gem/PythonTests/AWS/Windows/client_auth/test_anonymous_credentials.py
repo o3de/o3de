@@ -67,7 +67,8 @@ class TestAWSClientAuthAnonymousCredentials(object):
         file_to_monitor = os.path.join(launcher.workspace.paths.project_log(), GAME_LOG_NAME)
         log_monitor = ly_test_tools.log.log_monitor.LogMonitor(launcher=launcher, log_file_path=file_to_monitor)
 
-        launcher.args = ['+LoadLevel', level, '-rhi=null', '--skipWelcomeScreenDialog', '--autotest_mode']
+        launcher.args = ['+LoadLevel', level]
+        launcher.args.extend(['-rhi=null'])
 
         with launcher.start(launch_ap=False):
             result = log_monitor.monitor_log_for_lines(
