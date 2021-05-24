@@ -34,9 +34,6 @@ namespace O3DE::ProjectManager
         // add a tab widget at the bottom of the stack
         m_tabWidget = new QTabWidget();
         m_screenStack->addWidget(m_tabWidget);
-
-        //Track the bottom of the stack
-        m_screenVisitOrder.push(ProjectManagerScreen::Invalid);
     }
 
     void ScreensCtrl::BuildScreens(QVector<ProjectManagerScreen> screens)
@@ -97,17 +94,14 @@ namespace O3DE::ProjectManager
             {
                 if (addVisit)
                 {
-                    m_screenVisitOrder.push(currentScreen->GetScreenEnum());
+                    ProjectManagerScreen oldScreen = currentScreen->GetScreenEnum();
+                    m_screenVisitOrder.push(oldScreen);
                 }
 
                 if (newScreen->IsTab())
                 {
+                    m_tabWidget->setCurrentWidget(newScreen);
                     m_screenStack->setCurrentWidget(m_tabWidget);
-                    int tabIndex = m_tabWidget->indexOf(newScreen);
-                    if (tabIndex > -1)
-                    {
-                        m_tabWidget->setTabVisible(tabIndex, true);
-                    }
                 }
                 else
                 {
@@ -122,17 +116,23 @@ namespace O3DE::ProjectManager
 
     bool ScreensCtrl::GotoPreviousScreen()
     {
-        // Don't go back if we are on the first set screen
-        if (m_screenVisitOrder.top() != ProjectManagerScreen::Invalid)
+        if (!m_screenVisitOrder.isEmpty())
         {
             // We do not check with screen if we can go back, we should always be able to go back
-            return ForceChangeToScreen(m_screenVisitOrder.pop(), false);
+            ProjectManagerScreen previousScreen = m_screenVisitOrder.pop();
+            return ForceChangeToScreen(previousScreen, false);
         }
         return false;
     }
 
     void ScreensCtrl::ResetScreen(ProjectManagerScreen screen)
     {
+        bool shouldRestoreCurrentScreen = false;
+        if (GetCurrentScreen() && GetCurrentScreen()->GetScreenEnum() == screen)
+        {
+            shouldRestoreCurrentScreen = true;
+        }
+
         // Delete old screen if it exists to start fresh
         DeleteScreen(screen);
 
@@ -141,10 +141,19 @@ namespace O3DE::ProjectManager
         if (newScreen->IsTab())
         {
             m_tabWidget->addTab(newScreen, newScreen->GetTabText());
+            if (shouldRestoreCurrentScreen)
+            {
+                m_tabWidget->setCurrentWidget(newScreen);
+                m_screenStack->setCurrentWidget(m_tabWidget);
+            }
         }
         else
         {
             m_screenStack->addWidget(newScreen);
+            if (shouldRestoreCurrentScreen)
+            {
+                m_screenStack->setCurrentWidget(newScreen);
+            }
         }
 
         m_screenMap.insert(screen, newScreen);
@@ -152,6 +161,7 @@ namespace O3DE::ProjectManager
         connect(newScreen, &ScreenWidget::ChangeScreenRequest, this, &ScreensCtrl::ChangeToScreen);
         connect(newScreen, &ScreenWidget::GotoPreviousScreenRequest, this, &ScreensCtrl::GotoPreviousScreen);
         connect(newScreen, &ScreenWidget::ResetScreenRequest, this, &ScreensCtrl::ResetScreen);
+
     }
 
     void ScreensCtrl::ResetAllScreens()
@@ -168,10 +178,10 @@ namespace O3DE::ProjectManager
         const auto iter = m_screenMap.find(screen);
         if (iter != m_screenMap.end())
         {
-            ScreenWidget* screen = iter.value();
-            if (screen->IsTab())
+            ScreenWidget* screenToDelete = iter.value();
+            if (screenToDelete->IsTab())
             {
-                int tabIndex = m_tabWidget->indexOf(screen);
+                int tabIndex = m_tabWidget->indexOf(screenToDelete);
                 if (tabIndex > -1)
                 {
                     m_tabWidget->removeTab(tabIndex);
@@ -179,9 +189,10 @@ namespace O3DE::ProjectManager
             }
             else
             {
-                m_screenStack->removeWidget(screen);
+                // if the screen we delete is the current widget, a new one will
+                // be selected automatically (randomly?)
+                m_screenStack->removeWidget(screenToDelete);
             }
-            screen->deleteLater();
 
             // Erase does not cause a rehash so interators remain valid
             m_screenMap.erase(iter);
