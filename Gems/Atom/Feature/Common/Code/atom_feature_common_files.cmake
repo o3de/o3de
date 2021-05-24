@@ -252,6 +252,9 @@ set(FILES
     Source/RayTracing/RayTracingFeatureProcessor.cpp
     Source/RayTracing/RayTracingAccelerationStructurePass.cpp
     Source/RayTracing/RayTracingAccelerationStructurePass.h
+    Source/RayTracing/RayTracingPass.cpp
+    Source/RayTracing/RayTracingPass.h
+    Source/RayTracing/RayTracingPassData.h
     Source/ReflectionProbe/ReflectionProbeFeatureProcessor.cpp
     Source/ReflectionProbe/ReflectionProbe.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.cpp
