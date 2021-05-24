@@ -42,6 +42,7 @@ namespace O3DE::ProjectManager
 
             QPushButton* headerBackButton = new QPushButton();
             headerBackButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+            connect(headerBackButton, &QPushButton::clicked, this, &ProjectSettingsCtrl::HandleBackButton);
             headerLayout->addWidget(headerBackButton);
 
             QVBoxLayout* titleLayout = new QVBoxLayout();
@@ -72,12 +73,13 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(backNextButtons);
 
         m_backButton = backNextButtons->addButton("Back", QDialogButtonBox::RejectRole);
+        m_backButton->setProperty("secondary", true);
         m_nextButton = backNextButtons->addButton("Next", QDialogButtonBox::ApplyRole);
 
-        connect(m_backButton, &QPushButton::pressed, this, &ProjectSettingsCtrl::HandleBackButton);
-        connect(m_nextButton, &QPushButton::pressed, this, &ProjectSettingsCtrl::HandleNextButton);
+        connect(m_backButton, &QPushButton::clicked, this, &ProjectSettingsCtrl::HandleBackButton);
+        connect(m_nextButton, &QPushButton::clicked, this, &ProjectSettingsCtrl::HandleNextButton);
 
-        UpdateNextButtonText();
+        Update();
         setLayout(vLayout);
     }
 
@@ -91,7 +93,7 @@ namespace O3DE::ProjectManager
         if (m_stack->currentIndex() > 0)
         {
             m_stack->setCurrentIndex(m_stack->currentIndex() - 1);
-            UpdateNextButtonText();
+            Update();
         }
         else
         {
@@ -122,7 +124,7 @@ namespace O3DE::ProjectManager
         if (m_stack->currentIndex() != m_stack->count() - 1)
         {
             m_stack->setCurrentIndex(m_stack->currentIndex() + 1);
-            UpdateNextButtonText();
+            Update();
         }
         else
         {
@@ -139,10 +141,21 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void ProjectSettingsCtrl::UpdateNextButtonText()
+    void ProjectSettingsCtrl::Update()
     {
         ScreenWidget* currentScreen = reinterpret_cast<ScreenWidget*>(m_stack->currentWidget());
         m_nextButton->setText(currentScreen->GetNextButtonText());
+
+        if (currentScreen->GetScreenEnum() == ProjectManagerScreen::GemCatalog)
+        {
+            m_title->setText(tr("Create Project"));
+            m_subtitle->setText(tr("Configure project with Gems"));
+        }
+        else
+        {
+            m_title->setText(tr("Create Project"));
+            m_subtitle->setText(tr("Enter Project Details"));
+        }
     }
 
 } // namespace O3DE::ProjectManager

@@ -35,7 +35,7 @@ namespace O3DE::ProjectManager
         void HandleNextButton();
 
     private:
-        void UpdateNextButtonText();
+        void Update();
 
         QStackedWidget* m_stack;
         QLabel* m_title;
