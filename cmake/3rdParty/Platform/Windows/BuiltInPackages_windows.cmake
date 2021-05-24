@@ -36,7 +36,7 @@ ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform          
 
 # platform-specific:
 ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-3.4.1-rev1-windows                TARGETS AWSGameLiftServerSDK       PACKAGE_HASH a0586b006e4def65cc25f388de17dc475e417dc1e6f9d96749777c88aa8271b0)
-ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2104-o3de-rev2-windows    TARGETS DirectXShaderCompilerDxc   PACKAGE_HASH b259af4e4d20a79bd918adbbf6e5fc31a76a0d0b0aaca27a9238bc1d57be3529)
+ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2104-o3de-rev2-windows    TARGETS DirectXShaderCompilerDxc   PACKAGE_HASH decc53e97c7ddda9c7f853a30af7808a7b652a912f59ad2cd4bca5d308aae2c4)
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-windows         TARGETS freetype        PACKAGE_HASH 88dedc86ccb8c92f14c2c033e51ee7d828fa08eafd6475c6aa963938a99f4bf3)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.14-windows              TARGETS tiff            PACKAGE_HASH ab60d1398e4e1e375ec0f1a00cdb1d812a07c0096d827db575ce52dd6d714207)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev3-windows  TARGETS AWSNativeSDK    PACKAGE_HASH 929873d4252c464620a9d288e41bd5d47c0bd22750aeb3a1caa68a3da8247c48)
