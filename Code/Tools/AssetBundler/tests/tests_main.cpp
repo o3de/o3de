@@ -97,23 +97,7 @@ namespace AssetBundler
     {
     public:
         void SetUp() override
-        {
-            AZ::SettingsRegistryInterface* registry = nullptr;
-            if (!AZ::SettingsRegistry::Get())
-            {
-                AZ::SettingsRegistry::Register(&m_registry);
-                registry = &m_registry;
-                
-            }
-            else
-            {
-                registry = AZ::SettingsRegistry::Get();
-            }
-            auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
-                + "/project_path";
-            registry->Set(projectPathKey, "AutomatedTesting");
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
-            
+        {          
             m_data = AZStd::make_unique<StaticData>();
             m_data->m_application.reset(aznew AzToolsFramework::ToolsApplication());
             m_data->m_application.get()->Start(AzFramework::Application::Descriptor());
@@ -129,6 +113,21 @@ namespace AssetBundler
                 GTEST_FATAL_FAILURE_(AZStd::string::format("Unable to locate engine root.\n").c_str());
             }
 
+            AZ::SettingsRegistryInterface* registry = nullptr;
+            if (!AZ::SettingsRegistry::Get())
+            {
+                AZ::SettingsRegistry::Register(&m_registry);
+                registry = &m_registry;
+                
+            }
+            else
+            {
+                registry = AZ::SettingsRegistry::Get();
+            }
+            auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
+                + "/project_path";
+            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
             m_data->m_testEngineRoot = (engineRoot / RelativeTestFolder).LexicallyNormal().String();
 

@@ -37,6 +37,14 @@ protected:
     {
         UnitTest::AllocatorsTestFixture::SetUp();
 
+        m_app.reset(aznew AzToolsFramework::ToolsApplication);
+        m_app->Start(AZ::ComponentApplication::Descriptor());
+        // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
+        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+        // in the unit tests.
+        AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
+        AZ::Debug::TraceMessageBus::Handler::BusConnect();
+
         AZ::SettingsRegistryInterface* registry = nullptr;
         if (!AZ::SettingsRegistry::Get())
         {
@@ -51,14 +59,6 @@ protected:
             + "/project_path";
         registry->Set(projectPathKey, "AutomatedTesting");
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
-
-        m_app.reset(aznew AzToolsFramework::ToolsApplication);
-        m_app->Start(AZ::ComponentApplication::Descriptor());
-        // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
-        // in the unit tests.
-        AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
-        AZ::Debug::TraceMessageBus::Handler::BusConnect();
 
         const AZStd::string engineRoot = AZ::Test::GetEngineRootPath();
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@engroot@", engineRoot.c_str());
