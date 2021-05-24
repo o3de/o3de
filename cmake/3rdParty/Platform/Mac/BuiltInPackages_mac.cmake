@@ -27,7 +27,6 @@ ly_associate_package(PACKAGE_NAME expat-2.1.0-multiplatform                     
 ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform                                TARGETS zstd                       PACKAGE_HASH 45d466c435f1095898578eedde85acf1fd27190e7ea99aeaa9acfd2f09e12665)
 ly_associate_package(PACKAGE_NAME SQLite-3.32.2-rev3-multiplatform                       TARGETS SQLite                     PACKAGE_HASH dd4d3de6cbb4ce3d15fc504ba0ae0587e515dc89a25228037035fc0aef4831f4)
 ly_associate_package(PACKAGE_NAME SPIRVCross-2020.04.20-rev1-multiplatform               TARGETS SPIRVCross                 PACKAGE_HASH 7c8c0eaa0166c26745c62d2238525af7e27ac058a5db3defdbaec1878e8798dd)
-ly_associate_package(PACKAGE_NAME DirectXShaderCompiler-1.6.2104-o3de-rev1-mac           TARGETS DirectXShaderCompilerDxc   PACKAGE_HASH 4e97484f8fcf73fc39f22fc85ae86933a8f2e3ba0748fcec128bce05795035a6)
 ly_associate_package(PACKAGE_NAME azslc-1.7.21-rev1-multiplatform                        TARGETS azslc                      PACKAGE_HASH 772b7a2d9cc68aa1da4f0ee7db57ee1b4e7a8f20b81961fc5849af779582f4df)
 ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform                     TARGETS glad                       PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
 ly_associate_package(PACKAGE_NAME lux_core-2.2-rev5-multiplatform                        TARGETS lux_core                   PACKAGE_HASH c8c13cf7bc351643e1abd294d0841b24dee60e51647dff13db7aec396ad1e0b5)
@@ -35,6 +34,7 @@ ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform               
 ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform                   TARGETS PVRTexTool                 PACKAGE_HASH d0d6da61c7557de0d2c71fc35ba56c3be49555b703f0e853d4c58225537acf1e)
 
 # platform-specific:
+ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2104-o3de-rev2-mac        TARGETS DirectXShaderCompilerDxc   PACKAGE_HASH f835037b7837707ea223086bf176ce1a2fe481d0ef78e0a2f85e2adfcfb23ee7)
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-mac-ios         TARGETS freetype        PACKAGE_HASH 67b4f57aed92082d3fd7c16aa244a7d908d90122c296b0a63f73e0a0b8761977)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-mac-ios              TARGETS tiff            PACKAGE_HASH a23ae1f8991a29f8e5df09d6d5b00d7768a740f90752cef465558c1768343709)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev3-mac      TARGETS AWSNativeSDK    PACKAGE_HASH 21920372e90355407578b45ac19580df1463a39a25a867bcd0ffd8b385c8254a)
