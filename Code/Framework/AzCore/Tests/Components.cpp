@@ -909,14 +909,14 @@ namespace UnitTest
         EXPECT_EQ(2, m_entity->GetComponents().size());
     }
 
-    TEST_F(ComponentDependency, ComponentWithoutDescriptor_FailsDueToMissingDescriptor)
+    TEST_F(ComponentDependency, ComponentWithoutDescriptor_FailsDueToUnregisteredDescriptor)
     {
         CreateComponents_ABCDE();
 
         // delete ComponentB's descriptor
         ComponentDescriptorBus::Event(azrtti_typeid<ComponentB>(), &ComponentDescriptorBus::Events::ReleaseDescriptor);
 
-        EXPECT_EQ(Entity::DependencySortResult::MissingDescriptor, m_entity->EvaluateDependencies());
+        EXPECT_EQ(Entity::DependencySortResult::DescriptorNotRegistered, m_entity->EvaluateDependencies());
     }
 
     TEST_F(ComponentDependency, StableSort_GetsSameResultsEveryTime)

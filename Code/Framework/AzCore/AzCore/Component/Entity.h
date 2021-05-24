@@ -78,7 +78,6 @@ namespace AZ
             HasCyclicDependency,        ///< A cycle in component service dependencies was detected.
             HasIncompatibleServices,    ///< A component is incompatible with a service provided by another component.
             DescriptorNotRegistered,    ///< A component descriptor was not registered with the AZ::ComponentApplication.
-            MissingDescriptor,          ///< Cannot find a component's ComponentDescriptor
 
             // Deprecated values
             DSR_OK = Success,
