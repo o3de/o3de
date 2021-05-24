@@ -78,7 +78,7 @@ namespace EMotionFX
          * @param mesh The mesh to apply the deformer on.
          * @result A pointer to the newly created clone of this deformer.
          */
-        MeshDeformer* Clone(Mesh* mesh) override;
+        MeshDeformer* Clone(Mesh* mesh) const override;
 
         /**
          * Returns the unique type ID of the deformer.
@@ -107,7 +107,7 @@ namespace EMotionFX
          * @param index The local bone number, which must be in range of [0..GetNumLocalBones()-1].
          * @result The node number, which is in range of [0..Actor::GetNumNodes()-1], depending on the actor where this deformer works on.
          */
-        MCORE_INLINE uint32 GetLocalBone(uint32 index) const                { return mNodeNumbers[index]; }
+        MCORE_INLINE size_t GetLocalBone(size_t index) const                { return mNodeNumbers[index]; }
 
         /**
          * Pre-allocate space for a given number of local bones.
@@ -119,7 +119,7 @@ namespace EMotionFX
 
     protected:
         AZStd::vector<AZ::Matrix3x4>    mBoneMatrices;
-        AZStd::vector<uint32>           mNodeNumbers;
+        AZStd::vector<size_t>           mNodeNumbers;
 
         /**
          * Default constructor.
@@ -137,18 +137,10 @@ namespace EMotionFX
          * @param nodeIndex The node number to search for.
          * @result The index inside the mBones member array, which uses the given node.
          */
-        MCORE_INLINE uint32 FindLocalBoneIndex(uint32 nodeIndex) const
+        MCORE_INLINE size_t FindLocalBoneIndex(size_t nodeIndex) const
         {
-            const size_t numBones = mNodeNumbers.size();
-            for (size_t i = 0; i < numBones; ++i)
-            {
-                if (mNodeNumbers[i] == nodeIndex)
-                {
-                    return static_cast<uint32>(i);
-                }
-            }
-
-            return MCORE_INVALIDINDEX32;
+            const auto foundBoneIndex = AZStd::find(begin(mNodeNumbers), end(mNodeNumbers), nodeIndex);
+            return foundBoneIndex != end(mNodeNumbers) ? AZStd::distance(begin(mNodeNumbers), foundBoneIndex) : InvalidIndex;
         }
 
         void SkinVertexRange(uint32 startVertex, uint32 endVertex, AZ::Vector3* positions, AZ::Vector3* normals, AZ::Vector4* tangents, AZ::Vector3* bitangents, uint32* orgVerts, SkinningInfoVertexAttributeLayer* layer);

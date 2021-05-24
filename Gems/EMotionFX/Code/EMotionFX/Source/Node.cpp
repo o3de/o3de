@@ -24,7 +24,7 @@ namespace EMotionFX
         mNodeIndex          = InvalidIndex;     // hasn't been set yet
         mSkeletalLODs       = 0xFFFFFFFF;               // set all bits of the integer to 1, which enables this node in all LOD levels on default
         mSkeleton           = skeleton;
-        mSemanticNameID     = InvalidIndex;
+        mSemanticNameID     = InvalidIndex32;
         mNodeFlags          = FLAG_INCLUDEINBOUNDSCALC;
 
         if (name)
@@ -33,12 +33,12 @@ namespace EMotionFX
         }
         else
         {
-            mNameID         = InvalidIndex;
+            mNameID         = InvalidIndex32;
         }
     }
 
 
-    Node::Node(size_t nameID, Skeleton* skeleton)
+    Node::Node(uint32 nameID, Skeleton* skeleton)
         : BaseObject()
     {
         mParentIndex        = InvalidIndex;
@@ -46,7 +46,7 @@ namespace EMotionFX
         mSkeletalLODs       = 0xFFFFFFFF;// set all bits of the integer to 1, which enables this node in all LOD levels on default
         mSkeleton           = skeleton;
         mNameID             = nameID;
-        mSemanticNameID     = InvalidIndex;
+        mSemanticNameID     = InvalidIndex32;
         mNodeFlags          = FLAG_INCLUDEINBOUNDSCALC;
     }
 
@@ -69,7 +69,7 @@ namespace EMotionFX
 
 
     // create a node
-    Node* Node::Create(size_t nameID, Skeleton* skeleton)
+    Node* Node::Create(uint32 nameID, Skeleton* skeleton)
     {
         return aznew Node(nameID, skeleton);
     }
@@ -235,7 +235,7 @@ namespace EMotionFX
         }
         else
         {
-            mNameID = InvalidIndex;
+            mNameID = InvalidIndex32;
         }
     }
 
@@ -249,7 +249,7 @@ namespace EMotionFX
         }
         else
         {
-            mSemanticNameID = InvalidIndex;
+            mSemanticNameID = InvalidIndex32;
         }
     }
 

@@ -396,9 +396,9 @@ namespace EMotionFX
         standardMaterial->mWireFrame        = mWireFrame;
 
         // copy the layers
-        const uint32 numLayers = mLayers.size();
+        const size_t numLayers = mLayers.size();
         standardMaterial->mLayers.resize(numLayers);
-        for (uint32 i = 0; i < numLayers; ++i)
+        for (size_t i = 0; i < numLayers; ++i)
         {
             standardMaterial->mLayers[i] = StandardMaterialLayer::Create();
             standardMaterial->mLayers[i]->InitFrom(mLayers[i]);
@@ -559,14 +559,14 @@ namespace EMotionFX
     }
 
 
-    StandardMaterialLayer* StandardMaterial::GetLayer(uint32 nr)
+    StandardMaterialLayer* StandardMaterial::GetLayer(size_t nr)
     {
         MCORE_ASSERT(nr < mLayers.size());
         return mLayers[nr];
     }
 
 
-    void StandardMaterial::RemoveLayer(uint32 nr, bool delFromMem)
+    void StandardMaterial::RemoveLayer(size_t nr, bool delFromMem)
     {
         MCORE_ASSERT(nr < mLayers.size());
         if (delFromMem)
@@ -580,33 +580,27 @@ namespace EMotionFX
 
     void StandardMaterial::RemoveAllLayers()
     {
-        const uint32 numLayers = mLayers.size();
-        for (uint32 i = 0; i < numLayers; ++i)
+        for (StandardMaterialLayer* mLayer : mLayers)
         {
-            mLayers[i]->Destroy();
+            mLayer->Destroy();
         }
 
         mLayers.clear();
     }
 
 
-    uint32 StandardMaterial::FindLayer(uint32 layerType) const
+    size_t StandardMaterial::FindLayer(uint32 layerType) const
     {
         // search through all layers
-        const uint32 numLayers = mLayers.size();
-        for (uint32 i = 0; i < numLayers; ++i)
+        const auto foundLayer = AZStd::find_if(begin(mLayers), end(mLayers), [layerType](const StandardMaterialLayer* layer)
         {
-            if (mLayers[i]->GetType() == layerType)
-            {
-                return i;
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return layer->GetType() == layerType;
+        });
+        return foundLayer != end(mLayers) ? AZStd::distance(begin(mLayers), foundLayer) : InvalidIndex;
     }
 
 
-    void StandardMaterial::ReserveLayers(uint32 numLayers)
+    void StandardMaterial::ReserveLayers(size_t numLayers)
     {
         mLayers.reserve(numLayers);
     }

@@ -30,7 +30,7 @@ namespace EMotionFX
             leftPinky2Index = 11,
             leftPinky3Index = 12,
             numJoints = 13,
-            INVALID = MCORE_INVALIDINDEX32
+            INVALID = InvalidIndex
         };
 
         PrefabLeftArmSkeleton()

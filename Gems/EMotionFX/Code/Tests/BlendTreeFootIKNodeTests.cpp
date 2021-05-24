@@ -209,15 +209,15 @@ namespace EMotionFX
         BlendTreeFootIKNode::UniqueData* uniqueData = static_cast<BlendTreeFootIKNode::UniqueData*>(m_animGraphInstance->FindOrCreateUniqueNodeData(m_ikNode));
         ASSERT_TRUE(uniqueData != nullptr);
         ASSERT_TRUE(!uniqueData->GetHasError());
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::UpperLeg], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::Knee], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::Foot], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::Toe], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::UpperLeg], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::Knee], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::Foot], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::Toe], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_hipJointIndex, MCORE_INVALIDINDEX32);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::UpperLeg], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::Knee], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::Foot], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::Toe], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::UpperLeg], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::Knee], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::Foot], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::Toe], InvalidIndex);
+        ASSERT_NE(uniqueData->m_hipJointIndex, InvalidIndex);
 
         // Make sure the weights are fully active.
         ASSERT_FLOAT_EQ(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_weight, 1.0f);

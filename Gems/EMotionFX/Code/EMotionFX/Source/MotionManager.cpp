@@ -95,245 +95,137 @@ namespace EMotionFX
     // find the motion and return a pointer, nullptr if the motion is not in
     Motion* MotionManager::FindMotionByName(const char* motionName, bool isTool) const
     {
-        // get the number of motions and iterate through them
-        const uint32 numMotions = mMotions.size();
-        for (uint32 i = 0; i < numMotions; ++i)
+        const auto foundMotion = AZStd::find_if(begin(mMotions), end(mMotions), [motionName, isTool](const auto& motion)
         {
-            if (mMotions[i]->GetIsOwnedByRuntime() == isTool)
-            {
-                continue;
-            }
-
-            // compare the motion names
-            if (mMotions[i]->GetNameString() == motionName)
-            {
-                return mMotions[i];
-            }
-        }
-
-        return nullptr;
+            return motion->GetIsOwnedByRuntime() != isTool && motion->GetNameString() == motionName;
+        });
+        return foundMotion != end(mMotions) ? *foundMotion : nullptr;
     }
 
 
     // find the motion and return a pointer, nullptr if the motion is not in
     Motion* MotionManager::FindMotionByFileName(const char* fileName, bool isTool) const
     {
-        // get the number of motions and iterate through them
-        const uint32 numMotions = mMotions.size();
-        for (uint32 i = 0; i < numMotions; ++i)
+        const auto foundMotion = AZStd::find_if(begin(mMotions), end(mMotions), [fileName, isTool](const auto& motion)
         {
-            if (mMotions[i]->GetIsOwnedByRuntime() == isTool)
-            {
-                continue;
-            }
-
-            // compare the motion names
-            if (AzFramework::StringFunc::Equal(mMotions[i]->GetFileNameString().c_str(), fileName, false /* no case */))
-            {
-                return mMotions[i];
-            }
-        }
-
-        return nullptr;
+            return motion->GetIsOwnedByRuntime() != isTool &&
+                AzFramework::StringFunc::Equal(motion->GetFileNameString().c_str(), fileName, false /* no case */);
+        });
+        return foundMotion != end(mMotions) ? *foundMotion : nullptr;
     }
 
 
     // find the motion set by filename and return a pointer, nullptr if the motion set is not in yet
     MotionSet* MotionManager::FindMotionSetByFileName(const char* fileName, bool isTool) const
     {
-        // get the number of motion sets and iterate through them
-        const uint32 numMotionSets = mMotionSets.size();
-        for (uint32 i = 0; i < numMotionSets; ++i)
+        const auto foundMotionSet = AZStd::find_if(begin(mMotionSets), end(mMotionSets), [fileName, isTool](const auto& motionSet)
         {
-            MotionSet* motionSet = mMotionSets[i];
-            if (motionSet->GetIsOwnedByRuntime() == isTool)
-            {
-                continue;
-            }
-
-            // compare the motion set filenames
-            if (AzFramework::StringFunc::Equal(motionSet->GetFilename(), fileName))
-            {
-                return motionSet;
-            }
-        }
-
-        return nullptr;
+            return motionSet->GetIsOwnedByRuntime() != isTool &&
+                AzFramework::StringFunc::Equal(motionSet->GetFilename(), fileName);
+        });
+        return foundMotionSet != end(mMotionSets) ? *foundMotionSet : nullptr;
     }
 
 
     // find the motion set and return a pointer, nullptr if the motion set has not been found
     MotionSet* MotionManager::FindMotionSetByName(const char* name, bool isOwnedByRuntime) const
     {
-        // get the number of motion sets and iterate through them
-        const uint32 numMotionSets = mMotionSets.size();
-        for (uint32 i = 0; i < numMotionSets; ++i)
+        const auto foundMotionSet = AZStd::find_if(begin(mMotionSets), end(mMotionSets), [name, isOwnedByRuntime](const auto& motionSet)
         {
-            MotionSet* motionSet = mMotionSets[i];
-
-            if (motionSet->GetIsOwnedByRuntime() == isOwnedByRuntime)
-            {
-                // compare the motion set names
-                if (AzFramework::StringFunc::Equal(motionSet->GetName(), name))
-                {
-                    return motionSet;
-                }
-            }
-        }
-
-        return nullptr;
+            return motionSet->GetIsOwnedByRuntime() == isOwnedByRuntime &&
+                AzFramework::StringFunc::Equal(motionSet->GetName(), name);
+        });
+        return foundMotionSet != end(mMotionSets) ? *foundMotionSet : nullptr;
     }
 
 
     // find the motion index for the given motion
-    uint32 MotionManager::FindMotionIndexByName(const char* motionName, bool isTool) const
+    size_t MotionManager::FindMotionIndexByName(const char* motionName, bool isTool) const
     {
-        // get the number of motions and iterate through them
-        const uint32 numMotions = mMotions.size();
-        for (uint32 i = 0; i < numMotions; ++i)
+        const auto foundMotion = AZStd::find_if(begin(mMotions), end(mMotions), [motionName, isTool](const auto& motion)
         {
-            if (mMotions[i]->GetIsOwnedByRuntime() == isTool)
-            {
-                continue;
-            }
-
-            // compare the motion names
-            if (mMotions[i]->GetNameString() == motionName)
-            {
-                return i;
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return motion->GetIsOwnedByRuntime() != isTool && motion->GetNameString() == motionName;
+        });
+        return foundMotion != end(mMotions) ? AZStd::distance(begin(mMotions), foundMotion) : InvalidIndex;
     }
 
 
     // find the motion set index for the given motion
-    uint32 MotionManager::FindMotionSetIndexByName(const char* name, bool isTool) const
+    size_t MotionManager::FindMotionSetIndexByName(const char* name, bool isTool) const
     {
-        // get the number of motions and iterate through them
-        const uint32 numMotionSets = mMotionSets.size();
-        for (uint32 i = 0; i < numMotionSets; ++i)
+        const auto foundMotionSet = AZStd::find_if(begin(mMotionSets), end(mMotionSets), [name, isTool](const MotionSet* motionSet)
         {
-            MotionSet* motionSet = mMotionSets[i];
-
-            if (motionSet->GetIsOwnedByRuntime() == isTool)
-            {
-                continue;
-            }
-
-            // compare the motion set names
-            if (AzFramework::StringFunc::Equal(motionSet->GetName(), name))
-            {
-                return i;
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return motionSet->GetIsOwnedByRuntime() != isTool &&
+                AzFramework::StringFunc::Equal(motionSet->GetName(), name);
+        });
+        return foundMotionSet != end(mMotionSets) ? AZStd::distance(begin(mMotionSets), foundMotionSet) : InvalidIndex;
     }
 
 
     // find the motion index for the given motion
-    uint32 MotionManager::FindMotionIndexByID(uint32 id) const
+    size_t MotionManager::FindMotionIndexByID(uint32 id) const
     {
-        // get the number of motions and iterate through them
-        const uint32 numMotions = mMotions.size();
-        for (uint32 i = 0; i < numMotions; ++i)
+        const auto foundMotion = AZStd::find_if(begin(mMotions), end(mMotions), [id](const Motion* motion)
         {
-            if (mMotions[i]->GetID() == id)
-            {
-                return i;
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return motion->GetID() == id;
+        });
+        return foundMotion != end(mMotions) ? AZStd::distance(begin(mMotions), foundMotion) : InvalidIndex;
+        // get the number of motions and iterate through them
     }
 
 
     // find the motion set index
-    uint32 MotionManager::FindMotionSetIndexByID(uint32 id) const
+    size_t MotionManager::FindMotionSetIndexByID(uint32 id) const
     {
-        // get the number of motion sets and iterate through them
-        const uint32 numMotionSets = mMotionSets.size();
-        for (uint32 i = 0; i < numMotionSets; ++i)
+        const auto foundMotionSet = AZStd::find_if(begin(mMotionSets), end(mMotionSets), [id](const MotionSet* motionSet)
         {
-            // compare the motion names
-            if (mMotionSets[i]->GetID() == id)
-            {
-                return i;
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return motionSet->GetID() == id;
+        });
+        return foundMotionSet != end(mMotionSets) ? AZStd::distance(begin(mMotionSets), foundMotionSet) : InvalidIndex;
     }
 
 
     // find the motion and return a pointer, nullptr if the motion is not in
     Motion* MotionManager::FindMotionByID(uint32 id) const
     {
-        // get the number of motions and iterate through them
-        const uint32 numMotions = mMotions.size();
-        for (uint32 i = 0; i < numMotions; ++i)
+        const auto foundMotion = AZStd::find_if(begin(mMotions), end(mMotions), [id](const Motion* motion)
         {
-            if (mMotions[i]->GetID() == id)
-            {
-                return mMotions[i];
-            }
-        }
-
-        return nullptr;
+            return motion->GetID() == id;
+        });
+        return foundMotion != end(mMotions) ? *foundMotion : nullptr;
     }
 
 
     // find the motion set with the given and return it, nullptr if the motion set won't be found
     MotionSet* MotionManager::FindMotionSetByID(uint32 id) const
     {
-        // get the number of motion sets and iterate through them
-        const uint32 numMotionSets = mMotionSets.size();
-        for (uint32 i = 0; i < numMotionSets; ++i)
+        const auto foundMotionSet = AZStd::find_if(begin(mMotionSets), end(mMotionSets), [id](const MotionSet* motionSet)
         {
-            if (mMotionSets[i]->GetID() == id)
-            {
-                return mMotionSets[i];
-            }
-        }
-
-        return nullptr;
+            return motionSet->GetID() == id;
+        });
+        return foundMotionSet != end(mMotionSets) ? *foundMotionSet : nullptr;
     }
 
 
     // find the motion set index and return it
-    uint32 MotionManager::FindMotionSetIndex(MotionSet* motionSet) const
+    size_t MotionManager::FindMotionSetIndex(MotionSet* motionSet) const
     {
-        // get the number of motion sets and iterate through them
-        const uint32 numMotionSets = mMotionSets.size();
-        for (uint32 i = 0; i < numMotionSets; ++i)
+        const auto foundMotionSet = AZStd::find_if(begin(mMotionSets), end(mMotionSets), [motionSet](const MotionSet* ms)
         {
-            if (mMotionSets[i] == motionSet)
-            {
-                return i;
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return ms == motionSet;
+        });
+        return foundMotionSet != end(mMotionSets) ? AZStd::distance(begin(mMotionSets), foundMotionSet) : InvalidIndex;
     }
 
 
     // find the motion index for the given motion
-    uint32 MotionManager::FindMotionIndex(Motion* motion) const
+    size_t MotionManager::FindMotionIndex(Motion* motion) const
     {
-        // get the number of motions and iterate through them
-        const uint32 numMotions = mMotions.size();
-        for (uint32 i = 0; i < numMotions; ++i)
+        const auto foundMotion = AZStd::find_if(begin(mMotions), end(mMotions), [motion](const Motion* m)
         {
-            // compare the motions
-            if (motion == mMotions[i])
-            {
-                return i;
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return m == motion;
+        });
+        return foundMotion != end(mMotions) ? AZStd::distance(begin(mMotions), foundMotion) : InvalidIndex;
     }
 
 
@@ -380,25 +272,13 @@ namespace EMotionFX
 
 
     // find the index by filename
-    uint32 MotionManager::FindMotionIndexByFileName(const char* fileName, bool isTool) const
+    size_t MotionManager::FindMotionIndexByFileName(const char* fileName, bool isTool) const
     {
-        // get the number of motions and iterate through them
-        const uint32 numMotions = mMotions.size();
-        for (uint32 i = 0; i < numMotions; ++i)
+        const auto foundMotion = AZStd::find_if(begin(mMotions), end(mMotions), [fileName, isTool](const Motion* motion)
         {
-            if (mMotions[i]->GetIsOwnedByRuntime() == isTool)
-            {
-                continue;
-            }
-
-            // compare the motions
-            if (mMotions[i]->GetFileNameString() == fileName)
-            {
-                return i;
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return motion->GetIsOwnedByRuntime() != isTool && motion->GetFileNameString() == fileName;
+        });
+        return foundMotion != end(mMotions) ? AZStd::distance(begin(mMotions), foundMotion) : InvalidIndex;
     }
 
 
@@ -419,8 +299,8 @@ namespace EMotionFX
             AnimGraphInstance* animGraphInstance = animGraph->GetAnimGraphInstance(b);
 
             // reset all motion nodes that use this motion
-            const uint32 numNodes = animGraph->GetNumNodes();
-            for (uint32 m = 0; m < numNodes; ++m)
+            const size_t numNodes = animGraph->GetNumNodes();
+            for (size_t m = 0; m < numNodes; ++m)
             {
                 AnimGraphNode* node = animGraph->GetNode(m);
                 AnimGraphNodeData* uniqueData = static_cast<AnimGraphNodeData*>(animGraphInstance->GetUniqueObjectData(node->GetObjectIndex()));
@@ -453,26 +333,25 @@ namespace EMotionFX
 
 
     // remove the motion with the given index from the motion manager
-    bool MotionManager::RemoveMotionWithoutLock(uint32 index, bool delFromMemory)
+    bool MotionManager::RemoveMotionWithoutLock(size_t index, bool delFromMemory)
     {
-        if (index == MCORE_INVALIDINDEX32)
+        if (index == InvalidIndex)
         {
             return false;
         }
 
-        uint32 i;
         Motion* motion = mMotions[index];
 
         // stop all motion instances of the motion to delete
-        const uint32 numActorInstances = GetActorManager().GetNumActorInstances();
-        for (i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             ActorInstance* actorInstance = GetActorManager().GetActorInstance(i);
             MotionSystem* motionSystem = actorInstance->GetMotionSystem();
             MCORE_ASSERT(actorInstance->GetMotionSystem());
 
             // instances and iterate through the motion instances
-            for (uint32 j = 0; j < motionSystem->GetNumMotionInstances(); )
+            for (size_t j = 0; j < motionSystem->GetNumMotionInstances(); )
             {
                 MotionInstance* motionInstance = motionSystem->GetMotionInstance(j);
 
@@ -491,11 +370,8 @@ namespace EMotionFX
         }
 
         // Reset all motion entries in the motion sets of the current motion.
-        const uint32 numMotionSets = mMotionSets.size();
-        for (i = 0; i < numMotionSets; ++i)
+        for (const MotionSet* motionSet : mMotionSets)
         {
-            MotionSet* motionSet = mMotionSets[i];
-
             const EMotionFX::MotionSet::MotionEntries& motionEntries = motionSet->GetMotionEntries();
             for (const auto& item : motionEntries)
             {
@@ -509,8 +385,8 @@ namespace EMotionFX
         }
 
         // stop all motion instances of the motion to delete inside the motion nodes and reset their unique data
-        const uint32 numAnimGraphs = GetAnimGraphManager().GetNumAnimGraphs();
-        for (i = 0; i < numAnimGraphs; ++i)
+        const size_t numAnimGraphs = GetAnimGraphManager().GetNumAnimGraphs();
+        for (size_t i = 0; i < numAnimGraphs; ++i)
         {
             AnimGraph* animGraph = GetAnimGraphManager().GetAnimGraph(i);
             ResetMotionNodes(animGraph, motion);
@@ -542,9 +418,9 @@ namespace EMotionFX
 
 
     // remove the motion set with the given index from the motion manager
-    bool MotionManager::RemoveMotionSetWithoutLock(uint32 index, bool delFromMemory)
+    bool MotionManager::RemoveMotionSetWithoutLock(size_t index, bool delFromMemory)
     {
-        if (index == MCORE_INVALIDINDEX32)
+        if (index == InvalidIndex)
         {
             return false;
         }
@@ -598,16 +474,15 @@ namespace EMotionFX
 
 
     // calculate the number of root motion sets
-    uint32 MotionManager::CalcNumRootMotionSets() const
+    size_t MotionManager::CalcNumRootMotionSets() const
     {
-        uint32 result = 0;
+        size_t result = 0;
 
         // get the number of motion sets and iterate through them
-        const uint32 numMotionSets = mMotionSets.size();
-        for (uint32 i = 0; i < numMotionSets; ++i)
+        for (const MotionSet* mMotionSet : mMotionSets)
         {
             // sum up the root motion sets
-            if (mMotionSets[i]->GetParentSet() == nullptr)
+            if (mMotionSet->GetParentSet() == nullptr)
             {
                 result++;
             }
@@ -618,32 +493,13 @@ namespace EMotionFX
 
 
     // find the given root motion set
-    MotionSet* MotionManager::FindRootMotionSet(uint32 index)
+    MotionSet* MotionManager::FindRootMotionSet(size_t index)
     {
-        uint32 currentIndex = 0;
-
-        // get the number of motion sets and iterate through them
-        const uint32 numMotionSets = mMotionSets.size();
-        for (uint32 i = 0; i < numMotionSets; ++i)
+        auto foundRootMotionSet = AZStd::find_if(begin(mMotionSets), end(mMotionSets), [iter = index](const MotionSet* motionSet) mutable
         {
-            // get the current motion set
-            MotionSet* motionSet = mMotionSets[i];
-
-            // check if we are dealing with a root motion set and skip all others
-            if (mMotionSets[i]->GetParentSet())
-            {
-                continue;
-            }
-
-            // compare the indices and return in case we reached it, if not increase the counter
-            if (currentIndex == index)
-            {
-                return motionSet;
-            }
-            currentIndex++;
-        }
-
-        return nullptr;
+            return motionSet->GetParentSet() == nullptr && iter-- == 0;
+        });
+        return foundRootMotionSet != end(mMotionSets) ? *foundRootMotionSet : nullptr;
     }
 
 

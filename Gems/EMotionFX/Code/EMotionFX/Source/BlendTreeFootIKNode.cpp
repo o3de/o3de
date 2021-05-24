@@ -270,8 +270,8 @@ namespace EMotionFX
     // Generate the ray start and end position.
     void BlendTreeFootIKNode::GenerateRayStartEnd(LegId legId, LegJointId jointId, AnimGraphInstance* animGraphInstance, UniqueData* uniqueData, const Pose& inputPose, AZ::Vector3& outRayStart, AZ::Vector3& outRayEnd) const
     {
-        const AZ::u32 jointIndex = uniqueData->m_legs[legId].m_jointIndices[jointId];
-        AZ_Assert(jointIndex != MCORE_INVALIDINDEX32, "Expecting the joint index to be valid.");
+        const size_t jointIndex = uniqueData->m_legs[legId].m_jointIndices[jointId];
+        AZ_Assert(jointIndex != InvalidIndex, "Expecting the joint index to be valid.");
 
         const float rayLength = GetRaycastLength(animGraphInstance);
         const AZ::Vector3 upVector = animGraphInstance->GetActorInstance()->GetWorldSpaceTransform().mRotation
@@ -412,8 +412,8 @@ namespace EMotionFX
         const float weight = leg.m_weight * solveParams.m_weight;
         if (!solveParams.m_forceIKDisabled && leg.IsFlagEnabled(LegFlags::IkEnabled) && weight > AZ::Constants::FloatEpsilon)
         {
-            const AZ::u32 footIndex = leg.m_jointIndices[LegJointId::Foot];
-            const AZ::u32 toeIndex = leg.m_jointIndices[LegJointId::Toe];
+            const size_t footIndex = leg.m_jointIndices[LegJointId::Foot];
+            const size_t toeIndex = leg.m_jointIndices[LegJointId::Toe];
 
             // When both foot and toe are on the floor
             float distToToeTarget = 0.01f;
@@ -523,9 +523,9 @@ namespace EMotionFX
     void BlendTreeFootIKNode::SolveLegIK(LegId legId, const IKSolveParameters& solveParams)
     {
         Leg& leg = solveParams.m_uniqueData->m_legs[legId];
-        const AZ::u32 upperLegIndex = leg.m_jointIndices[LegJointId::UpperLeg];
-        const AZ::u32 kneeIndex = leg.m_jointIndices[LegJointId::Knee];
-        const AZ::u32 footIndex = leg.m_jointIndices[LegJointId::Foot];
+        const size_t upperLegIndex = leg.m_jointIndices[LegJointId::UpperLeg];
+        const size_t kneeIndex = leg.m_jointIndices[LegJointId::Knee];
+        const size_t footIndex = leg.m_jointIndices[LegJointId::Foot];
 
         // Calculate the world space transforms of the joints inside the leg.
         Transform inputGlobalTransforms[4];
@@ -701,7 +701,7 @@ namespace EMotionFX
         {
             for (size_t i = 1; i < 4; ++i)
             {
-                const AZ::u32 nodeIndex = leg.m_jointIndices[Toe - i];
+                const size_t nodeIndex = leg.m_jointIndices[Toe - i];
                 solveParams.m_outputPose->UpdateLocalSpaceTransform(nodeIndex);
                 Transform finalTransform = solveParams.m_inputPose->GetLocalSpaceTransform(nodeIndex);
                 finalTransform.Blend(solveParams.m_outputPose->GetLocalSpaceTransform(nodeIndex), weight);
@@ -924,8 +924,8 @@ namespace EMotionFX
         }
 
         const AnimGraphEventBuffer& eventBuffer = uniqueData->m_eventBuffer;
-        const AZ::u32 numEvents = eventBuffer.GetNumEvents();
-        for (AZ::u32 i = 0; i < numEvents; ++i)
+        const size_t numEvents = eventBuffer.GetNumEvents();
+        for (size_t i = 0; i < numEvents; ++i)
         {
             const EventInfo& eventInfo = eventBuffer.GetEvent(i);
             const MotionEvent* motionEvent = eventInfo.mEvent;

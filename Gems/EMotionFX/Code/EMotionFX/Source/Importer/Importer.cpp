@@ -60,10 +60,9 @@ namespace EMotionFX
     Importer::~Importer()
     {
         // remove all chunk processors
-        const uint32 numProcessors = mChunkProcessors.size();
-        for (uint32 i = 0; i < numProcessors; ++i)
+        for (ChunkProcessor* mChunkProcessor : mChunkProcessors)
         {
-            mChunkProcessors[i]->Destroy();
+            mChunkProcessor->Destroy();
         }
     }
 
@@ -730,20 +729,11 @@ namespace EMotionFX
     SharedData* Importer::FindSharedData(AZStd::vector<SharedData*>* sharedDataArray, uint32 type)
     {
         // for all shared data
-        const uint32 numSharedData = sharedDataArray->size();
-        for (uint32 i = 0; i < numSharedData; ++i)
+        const auto foundSharedData = AZStd::find_if(begin(*sharedDataArray), end(*sharedDataArray), [type](const SharedData* sharedData)
         {
-            SharedData* sharedData = sharedDataArray->at(i);
-
-            // check if it's the type we are searching for
-            if (sharedData->GetType() == type)
-            {
-                return sharedData;
-            }
-        }
-
-        // nothing found
-        return nullptr;
+            return sharedData->GetType() == type;
+        });
+        return foundSharedData != end(*sharedDataArray) ? *foundSharedData : nullptr;
     }
 
 
@@ -764,11 +754,9 @@ namespace EMotionFX
         mLogDetails = detailLoggingActive;
 
         // set the processors logging flag
-        const int32 numProcessors = mChunkProcessors.size();
-        for (int32 i = 0; i < numProcessors; i++)
+        for (ChunkProcessor* processor : mChunkProcessors)
         {
-            ChunkProcessor* processor = mChunkProcessors[i];
-            processor->SetLogging((mLoggingActive && detailLoggingActive)); // only enable if logging is also enabled
+             processor->SetLogging(mLoggingActive && detailLoggingActive); // only enable if logging is also enabled
         }
     }
 
@@ -789,10 +777,8 @@ namespace EMotionFX
     // reset shared objects so that the importer is ready for use again
     void Importer::ResetSharedData(AZStd::vector<SharedData*>& sharedData)
     {
-        const int32 numSharedData = sharedData.size();
-        for (int32 i = 0; i < numSharedData; i++)
+        for (SharedData* data : sharedData)
         {
-            SharedData* data = sharedData[i];
             data->Reset();
             data->Destroy();
         }
@@ -804,20 +790,11 @@ namespace EMotionFX
     ChunkProcessor* Importer::FindChunk(uint32 chunkID, uint32 version) const
     {
         // for all chunk processors
-        const uint32 numProcessors = mChunkProcessors.size();
-        for (uint32 i = 0; i < numProcessors; ++i)
+        const auto foundProcessor = AZStd::find_if(begin(mChunkProcessors), end(mChunkProcessors), [chunkID, version](const ChunkProcessor* processor)
         {
-            ChunkProcessor* processor = mChunkProcessors[i];
-
-            // if this chunk is the type we are searching for AND it can process our chunk version, return it
-            if (processor->GetChunkID() == chunkID && processor->GetVersion() == version)
-            {
-                return processor;
-            }
-        }
-
-        // nothing found
-        return nullptr;
+            return processor->GetChunkID() == chunkID && processor->GetVersion() == version;
+        });
+        return foundProcessor != end(mChunkProcessors) ? *foundProcessor : nullptr;
     }
 
 

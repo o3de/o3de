@@ -70,7 +70,7 @@ namespace EMotionFX
          * @param nameID The name ID, generated using the MCore::GetStringIdPool().
          * @param skeleton The skeleton where this node will belong to, you still need to manually add it to the skeleton though.
          */
-        static Node* Create(size_t nameID, Skeleton* skeleton);
+        static Node* Create(uint32 nameID, Skeleton* skeleton);
 
         /**
          * Clone the node.
@@ -155,14 +155,14 @@ namespace EMotionFX
          * same ID number.
          * @result The node ID number, which can be used for fast compares between nodes.
          */
-        MCORE_INLINE size_t GetID() const                                       { return mNameID; }
+        MCORE_INLINE uint32 GetID() const                                       { return mNameID; }
 
         /**
          * Get the semantic name ID.
          * To get the name you can also use GetSemanticName() and GetSemanticNameString().
          * @result The semantic name ID.
          */
-        MCORE_INLINE size_t GetSemanticID() const                               { return mSemanticNameID; }
+        MCORE_INLINE uint32 GetSemanticID() const                               { return mSemanticNameID; }
 
         /**
          * Get the number of child nodes attached to this node.
@@ -418,8 +418,8 @@ namespace EMotionFX
         size_t      mNodeIndex;         /**< The node index, which is the index into the array of nodes inside the Skeleton class. */
         size_t      mParentIndex;       /**< The parent node index, or MCORE_INVALIDINDEX32 when there is no parent. */
         size_t      mSkeletalLODs;      /**< The skeletal LOD status values. Each bit represents if this node is enabled or disabled in the given LOD. */
-        size_t      mNameID;            /**< The ID, which is generated from the name. You can use this for fast compares between nodes. */
-        size_t      mSemanticNameID;    /**< The semantic name ID, for example "LeftHand" or "RightFoot" or so, this can be used for retargeting. */
+        uint32      mNameID;            /**< The ID, which is generated from the name. You can use this for fast compares between nodes. */
+        uint32      mSemanticNameID;    /**< The semantic name ID, for example "LeftHand" or "RightFoot" or so, this can be used for retargeting. */
         Skeleton*   mSkeleton;          /**< The skeleton where this node belongs to. */
         AZStd::vector<size_t>            mChildIndices;      /**< The indices that point to the child nodes. */
         AZStd::vector<NodeAttribute*>    mAttributes;        /**< The node attributes. */
@@ -437,7 +437,7 @@ namespace EMotionFX
          * @param nameID The name ID, generated using the MCore::GetStringIdPool().
          * @param skeleton The skeleton where this node will belong to.
          */
-        Node(size_t nameID, Skeleton* skeleton);
+        Node(uint32 nameID, Skeleton* skeleton);
 
         /**
          * The destructor.

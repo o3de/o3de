@@ -46,7 +46,7 @@ namespace EMotionFX
 
 
     // remove a given entry from the queue
-    void MotionQueue::RemoveEntry(uint32 nr)
+    void MotionQueue::RemoveEntry(size_t nr)
     {
         if (mMotionSystem->RemoveMotionInstance(mEntries[nr].mMotion) == false)
         {
@@ -61,7 +61,7 @@ namespace EMotionFX
     void MotionQueue::Update()
     {
         // get the number of entries
-        uint32 numEntries = GetNumEntries();
+        size_t numEntries = GetNumEntries();
 
         // if there are entries in the queue
         if (numEntries == 0)
@@ -199,7 +199,7 @@ namespace EMotionFX
     }
 
 
-    MotionQueue::QueueEntry& MotionQueue::GetEntry(uint32 nr)
+    MotionQueue::QueueEntry& MotionQueue::GetEntry(size_t nr)
     {
         return mEntries[nr];
     }

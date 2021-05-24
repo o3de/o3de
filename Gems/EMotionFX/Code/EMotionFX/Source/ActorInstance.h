@@ -75,13 +75,13 @@ namespace EMotionFX
          * Get the unique identification number for the actor instance.
          * @return The unique identification number.
          */
-        MCORE_INLINE size_t GetID() const                                       { return mID; }
+        MCORE_INLINE uint32 GetID() const                                       { return mID; }
 
         /**
          * Set the unique identification number for the actor instance.
          * @param[in] id The unique identification number.
          */
-        void SetID(size_t id);
+        void SetID(uint32 id);
 
         /**
          * Get the motion system of this actor instance.
@@ -895,7 +895,7 @@ namespace EMotionFX
         size_t                  mLODLevel;              /**< The current LOD level, where 0 is the highest detail. */
         size_t                  m_requestedLODLevel;    /**< Requested LOD level. The actual LOD level will be updated as soon as all transforms for the requested LOD level are ready. */
         uint32                  mBoundsUpdateItemFreq;  /**< The bounds update item counter step size. A value of 1 means every vertex/node, a value of 2 means every second vertex/node, etc. */
-        size_t                  mID;                    /**< The unique identification number for the actor instance. */
+        uint32                  mID;                    /**< The unique identification number for the actor instance. */
         uint32                  mThreadIndex;           /**< The thread index. This specifies the thread number this actor instance is being processed in. */
         EBoundsType             mBoundsUpdateType;      /**< The bounds update type (node based, mesh based or collision mesh based). */
         float m_boundsExpandBy = 0.25f; /**< Expand bounding box by normalized percentage. (Default: 25% greater than the calculated bounding box) */

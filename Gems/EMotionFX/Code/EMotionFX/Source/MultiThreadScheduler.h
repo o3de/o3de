@@ -99,14 +99,14 @@ namespace EMotionFX
          * @param actorInstance The actor instance to insert.
          * @param startStep An offset in the schedule where to start trying to insert the actor instances.
          */
-        void RecursiveInsertActorInstance(ActorInstance* actorInstance, uint32 startStep = 0) override;
+        void RecursiveInsertActorInstance(ActorInstance* actorInstance, size_t startStep = 0) override;
 
         /**
          * Recursively remove an actor instance and its attachments from the schedule.
          * @param actorInstance The actor instance to remove.
          * @param startStep An offset in the schedule where to start trying to remove from.
          */
-        void RecursiveRemoveActorInstance(ActorInstance* actorInstance, uint32 startStep = 0) override;
+        void RecursiveRemoveActorInstance(ActorInstance* actorInstance, size_t startStep = 0) override;
 
         /**
          * Remove a single actor instance from the schedule. This will not remove its attachments.
@@ -114,12 +114,12 @@ namespace EMotionFX
          * @param startStep An offset in the schedule where to start trying to remove from.
          * @result Returns the offset in the schedule where the actor instance was removed.
          */
-        uint32 RemoveActorInstance(ActorInstance* actorInstance, uint32 startStep = 0) override;
+        size_t RemoveActorInstance(ActorInstance* actorInstance, size_t startStep = 0) override;
 
         void Lock();
         void Unlock();
 
-        const ScheduleStep& GetScheduleStep(uint32 index) const { return mSteps[index]; }
+        const ScheduleStep& GetScheduleStep(size_t index) const { return mSteps[index]; }
         size_t GetNumScheduleSteps() const { return mSteps.size(); }
 
     protected:
@@ -156,7 +156,7 @@ namespace EMotionFX
          * @param outStepNr This will contain the step number in which we can insert the actor instance.
          * @result Returns false when there is no step where we can insert in. A new step will have to be added.
          */
-        bool FindNextFreeItem(ActorInstance* actorInstance, uint32 startStep, uint32* outStepNr);
+        bool FindNextFreeItem(ActorInstance* actorInstance, size_t startStep, size_t* outStepNr);
 
         /**
          * Add the dependencies of a given actor instance to a specified scheduler step.

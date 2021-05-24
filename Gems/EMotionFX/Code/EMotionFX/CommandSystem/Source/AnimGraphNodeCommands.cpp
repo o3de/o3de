@@ -370,8 +370,8 @@ namespace CommandSystem
         animGraph->RecursiveInvalidateUniqueDatas();
 
         // init new node for all anim graph instances belonging to it
-        const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             EMotionFX::AnimGraphInstance* animGraphInstance = EMotionFX::GetActorManager().GetActorInstance(i)->GetAnimGraphInstance();
             if (animGraphInstance && animGraphInstance->GetAnimGraph() == animGraph)
@@ -416,7 +416,7 @@ namespace CommandSystem
         const AZStd::string commandString = AZStd::string::format("AnimGraphRemoveNode -animGraphID %i -name \"%s\"", animGraph->GetID(), node->GetName());
         if (GetCommandManager()->ExecuteCommandInsideCommand(commandString, outResult) == false)
         {
-            if (outResult.size() > 0)
+            if (!outResult.empty())
             {
                 MCore::LogError(outResult.c_str());
             }
@@ -743,8 +743,8 @@ namespace CommandSystem
                     //--------------------------
                     // Find alternative entry state.
                     EMotionFX::AnimGraphNode* newEntryState = nullptr;
-                    uint32 numStates = stateMachine->GetNumChildNodes();
-                    for (uint32 s = 0; s < numStates; ++s)
+                    size_t numStates = stateMachine->GetNumChildNodes();
+                    for (size_t s = 0; s < numStates; ++s)
                     {
                         EMotionFX::AnimGraphNode* childNode = stateMachine->GetChildNode(s);
                         if (childNode != emfxNode)
@@ -848,7 +848,7 @@ namespace CommandSystem
 
         if (!GetCommandManager()->ExecuteCommandGroupInsideCommand(group, outResult))
         {
-            if (outResult.size() > 0)
+            if (!outResult.empty())
             {
                 MCore::LogError(outResult.c_str());
             }
@@ -870,7 +870,7 @@ namespace CommandSystem
             );
             if (GetCommandManager()->ExecuteCommandInsideCommand(command, outResult) == false)
             {
-                if (outResult.size() > 0)
+                if (!outResult.empty())
                 {
                     MCore::LogError(outResult.c_str());
                 }
@@ -1207,16 +1207,15 @@ namespace CommandSystem
                 AZStd::vector<EMotionFX::AnimGraphNode*> outNodes;
                 const AZ::TypeId nodeType = azrtti_typeid(node);
                 parentNode->CollectChildNodesOfType(nodeType, &outNodes);
-                const uint32 numTypeNodes = outNodes.size();
+                const size_t numTypeNodes = outNodes.size();
 
                 // Gather the number of already removed nodes with the same type as the one we're trying to remove.
-                const size_t numTotalDeletedNodes = nodeList.size();
-                uint32 numTypeDeletedNodes = 0;
-                for (size_t i = 0; i < numTotalDeletedNodes; ++i)
+                size_t numTypeDeletedNodes = 0;
+                for (const EMotionFX::AnimGraphNode* i : nodeList)
                 {
                     // Check if the nodes have the same parent, meaning they are in the same graph plus check if they have the same type
                     // if that both is the same we can increase the number of deleted nodes for the graph where the current node is in.
-                    if (nodeList[i]->GetParentNode() == parentNode && azrtti_typeid(nodeList[i]) == nodeType)
+                    if (i->GetParentNode() == parentNode && azrtti_typeid(i) == nodeType)
                     {
                         numTypeDeletedNodes++;
                     }
@@ -1242,8 +1241,8 @@ namespace CommandSystem
         // 2. Delete all child nodes recursively before deleting the node.
 
         // Get the number of child nodes, iterate through them and recursively call the function.
-        const uint32 numChildNodes = node->GetNumChildNodes();
-        for (uint32 i = 0; i < numChildNodes; ++i)
+        const size_t numChildNodes = node->GetNumChildNodes();
+        for (size_t i = 0; i < numChildNodes; ++i)
         {
             EMotionFX::AnimGraphNode* childNode = node->GetChildNode(i);
             DeleteNode(commandGroup, animGraph, childNode, nodeList, connectionList, transitionList, true, false, false);
@@ -1268,10 +1267,9 @@ namespace CommandSystem
 
     void DeleteNodes(MCore::CommandGroup* commandGroup, EMotionFX::AnimGraph* animGraph, const AZStd::vector<AZStd::string>& nodeNames, AZStd::vector<EMotionFX::AnimGraphNode*>& nodeList, AZStd::vector<EMotionFX::BlendTreeConnection*>& connectionList, AZStd::vector<EMotionFX::AnimGraphStateTransition*>& transitionList, bool autoChangeEntryStates)
     {
-        const size_t numNodeNames = nodeNames.size();
-        for (size_t i = 0; i < numNodeNames; ++i)
+        for (const AZStd::string& nodeName : nodeNames)
         {
-            EMotionFX::AnimGraphNode* node = animGraph->RecursiveFindNodeByName(nodeNames[i].c_str());
+            EMotionFX::AnimGraphNode* node = animGraph->RecursiveFindNodeByName(nodeName.c_str());
 
             // Add the delete node commands to the command group.
             DeleteNode(commandGroup, animGraph, node, nodeList, connectionList, transitionList, true, true, autoChangeEntryStates);
@@ -1385,8 +1383,8 @@ namespace CommandSystem
         }
 
         // Recurse through the child nodes.
-        const uint32 numChildNodes = node->GetNumChildNodes();
-        for (uint32 i = 0; i < numChildNodes; ++i)
+        const size_t numChildNodes = node->GetNumChildNodes();
+        for (size_t i = 0; i < numChildNodes; ++i)
         {
             EMotionFX::AnimGraphNode* childNode = node->GetChildNode(i);
             CopyAnimGraphNodeCommand(commandGroup, targetAnimGraph, node, childNode,
@@ -1404,8 +1402,8 @@ namespace CommandSystem
         }
 
         // Recurse through the child nodes.
-        const uint32 numChildNodes = node->GetNumChildNodes();
-        for (uint32 i = 0; i < numChildNodes; ++i)
+        const size_t numChildNodes = node->GetNumChildNodes();
+        for (size_t i = 0; i < numChildNodes; ++i)
         {
             EMotionFX::AnimGraphNode* childNode = node->GetChildNode(i);
             CopyAnimGraphConnectionsCommand(commandGroup, targetAnimGraph, childNode,
@@ -1436,8 +1434,8 @@ namespace CommandSystem
             }
             else
             {
-                const uint32 numConnections = node->GetNumConnections();
-                for (uint32 i = 0; i < numConnections; ++i)
+                const size_t numConnections = node->GetNumConnections();
+                for (size_t i = 0; i < numConnections; ++i)
                 {
                     EMotionFX::BlendTreeConnection* connection = node->GetConnection(i);
                     CopyBlendTreeConnection(commandGroup, targetAnimGraph, node, connection,
@@ -1455,29 +1453,14 @@ namespace CommandSystem
         }
 
         // Remove all nodes that are child nodes of other selected nodes.
-        for (size_t i = 0; i < nodesToCopy.size();)
+        AZStd::erase_if(nodesToCopy, [&nodesToCopy](const EMotionFX::AnimGraphNode* node)
         {
-            EMotionFX::AnimGraphNode* node = nodesToCopy[i];
-
-            bool removeNode = false;
-            for (size_t j = 0; j < nodesToCopy.size(); ++j)
+            const auto found = AZStd::find_if(begin(nodesToCopy), end(nodesToCopy), [node](const EMotionFX::AnimGraphNode* parent)
             {
-                if (node != nodesToCopy[j] && node->RecursiveIsParentNode(nodesToCopy[j]))
-                {
-                    removeNode = true;
-                    break;
-                }
-            }
-
-            if (removeNode)
-            {
-                nodesToCopy.erase(nodesToCopy.begin() + i);
-            }
-            else
-            {
-                i++;
-            }
-        }
+                return node != parent && node->RecursiveIsParentNode(parent);
+            });
+            return found != end(nodesToCopy);
+        });
 
         // In case we are in cut and paste mode and delete the cut nodes.
         if (cutMode)

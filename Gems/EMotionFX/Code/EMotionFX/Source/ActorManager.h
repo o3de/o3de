@@ -67,7 +67,7 @@ namespace EMotionFX
          * This does not include the clones that have been optionally created.
          * @result The number of registered actors.
          */
-        MCORE_INLINE uint32 GetNumActors() const { return static_cast<uint32>(m_actors.size()); }
+        MCORE_INLINE size_t GetNumActors() const { return m_actors.size(); }
 
         /**
          * Get a given actor.
@@ -77,7 +77,7 @@ namespace EMotionFX
          * @param nr The actor number, which must be in range of [0..GetNumActors()-1].
          * @result A reference to the actor object that contains the array of Actor objects.
          */
-        Actor* GetActor(uint32 nr) const;
+        Actor* GetActor(size_t nr) const;
 
         /**
          * Find the given actor by name.
@@ -99,7 +99,7 @@ namespace EMotionFX
          * @param actor The actor object you once passed to RegisterActor.
          * @result Returns the actor number, which is in range of [0..GetNumActors()-1], or returns MCORE_INVALIDINDEX32 when not found.
          */
-        uint32 FindActorIndex(Actor* actor) const;
+        size_t FindActorIndex(Actor* actor) const;
 
         /**
          * Find the actor number for a given actor name.
@@ -107,7 +107,7 @@ namespace EMotionFX
          * @param actorName The name of the actor.
          * @result Returns the actor number, which is in range of [0..GetNumActors()-1], or returns MCORE_INVALIDINDEX32 when not found.
          */
-        uint32 FindActorIndexByName(const char* actorName) const;
+        size_t FindActorIndexByName(const char* actorName) const;
 
         /**
          * Find the actor number for a given actor filename.
@@ -115,7 +115,7 @@ namespace EMotionFX
          * @param filename The filename of the actor.
          * @result Returns the actor number, which is in range of [0..GetNumActors()-1], or returns MCORE_INVALIDINDEX32 when not found.
          */
-        uint32 FindActorIndexByFileName(const char* filename) const;
+        size_t FindActorIndexByFileName(const char* filename) const;
 
         // register the actor instance
         void RegisterActorInstance(ActorInstance* actorInstance);
@@ -131,7 +131,7 @@ namespace EMotionFX
          * @param nr The actor instance number, which must be in range of [0..GetNumActorInstances()-1].
          * @result A pointer to the actor instance.
          */
-        MCORE_INLINE ActorInstance* GetActorInstance(uint32 nr) const                   { return mActorInstances[nr]; }
+        MCORE_INLINE ActorInstance* GetActorInstance(size_t nr) const                   { return mActorInstances[nr]; }
 
         /**
          * Get the array of actor instances.
@@ -144,7 +144,7 @@ namespace EMotionFX
          * @param actorInstance A pointer to the actor instance to be searched.
          * @result The actor instance index for the actor manager, MCORE_INVALIDINDEX32 in case the actor instance hasn't been found.
          */
-        uint32 FindActorInstanceIndex(ActorInstance* actorInstance) const;
+        size_t FindActorInstanceIndex(ActorInstance* actorInstance) const;
 
         /**
          * Find an actor instance inside the actor manager by its id.
@@ -192,7 +192,7 @@ namespace EMotionFX
          * When you delete an actor instance, it automatically will unregister itself from the manager.
          * @param nr The actor instance number, which has to be in range of [0..GetNumActorInstances()-1].
          */
-        void UnregisterActorInstance(uint32 nr);
+        void UnregisterActorInstance(size_t nr);
 
         /**
          * Get the number of root actor instances.
@@ -211,7 +211,7 @@ namespace EMotionFX
          * @param nr The root actor instance number, which must be in range of [0..GetNumRootActorInstances()-1].
          * @result A pointer to the actor instance that is a root.
          */
-        MCORE_INLINE ActorInstance* GetRootActorInstance(uint32 nr) const       { return mRootActorInstances[nr]; }
+        MCORE_INLINE ActorInstance* GetRootActorInstance(size_t nr) const       { return mRootActorInstances[nr]; }
 
         /**
          * Get the currently used actor update scheduler.

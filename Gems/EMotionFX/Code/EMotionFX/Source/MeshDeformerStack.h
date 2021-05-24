@@ -87,7 +87,7 @@ namespace EMotionFX
          * @param pos The position to insert the deformer.
          * @param meshDeformer The deformer to store at this position.
          */
-        void InsertDeformer(uint32 pos, MeshDeformer* meshDeformer);
+        void InsertDeformer(size_t pos, MeshDeformer* meshDeformer);
 
         /**
          * Remove a given deformer.
@@ -101,7 +101,7 @@ namespace EMotionFX
          * @param deformerTypeID The type ID of the deformer, which is returned by MeshDeformer::GetType().
          * @result Returns the number of deformers that have been removed.
          */
-        uint32 RemoveAllDeformersByType(uint32 deformerTypeID);
+        size_t RemoveAllDeformersByType(uint32 deformerTypeID);
 
         /**
          * Remove all deformers from this mesh deformer stack.
@@ -115,7 +115,7 @@ namespace EMotionFX
          * @param enabled Set to true when you want to enable these deformers, or false if you want to disable them.
          * @result Returns the number of deformers that have been enabled or disabled.
          */
-        uint32 EnableAllDeformersByType(uint32 deformerTypeID, bool enabled);
+        size_t EnableAllDeformersByType(uint32 deformerTypeID, bool enabled);
 
         /**
          * Creates an exact clone (copy) of this deformer stack, including all deformers (which will also be cloned).
@@ -141,7 +141,7 @@ namespace EMotionFX
          * @param nr The deformer number to get.
          * @result A pointer to the deformer.
          */
-        MeshDeformer* GetDeformer(uint32 nr) const;
+        MeshDeformer* GetDeformer(size_t nr) const;
 
         /**
          * Check if the stack contains a deformer of a given type.
@@ -156,7 +156,7 @@ namespace EMotionFX
          * @param occurrence In case there are multiple controllers of the same type, 0 means it returns the first one, 1 means the second, etc.
          * @result A pointer to the mesh deformer of the given type, or nullptr when not found.
          */
-        MeshDeformer* FindDeformerByType(uint32 deformerTypeID, uint32 occurrence = 0) const;
+        MeshDeformer* FindDeformerByType(uint32 deformerTypeID, size_t occurrence = 0) const;
 
     private:
         AZStd::vector<MeshDeformer*> mDeformers;     /**< The stack of deformers. */

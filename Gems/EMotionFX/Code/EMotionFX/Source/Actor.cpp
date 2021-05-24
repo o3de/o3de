@@ -1446,8 +1446,8 @@ namespace EMotionFX
             {
                 // Optional, not all actors have morph targets.
                 const size_t numLODLevels = m_meshAsset->GetLodAssets().size();
-                mMorphSetups.Resize(static_cast<uint32>(numLODLevels));
-                for (AZ::u32 i = 0; i < numLODLevels; ++i)
+                mMorphSetups.resize(numLODLevels);
+                for (size_t i = 0; i < numLODLevels; ++i)
                 {
                     mMorphSetups[i] = nullptr;
                 }
@@ -2657,8 +2657,7 @@ namespace EMotionFX
                 EMotionFX::SkinningInfoVertexAttributeLayer* skinLayer =
                     static_cast<EMotionFX::SkinningInfoVertexAttributeLayer*>(vertexAttributeLayer);
                 const AZ::u32 numOrgVerts = skinLayer->GetNumAttributes();
-                AZStd::set<AZ::u32> localJointIndices = skinLayer->CalcLocalJointIndices(numOrgVerts);
-                const size_t numLocalJoints = localJointIndices.size();
+                const size_t numLocalJoints = skinLayer->CalcLocalJointIndices(numOrgVerts).size();
 
                 // The information about if we want to use dual quat skinning is baked into the mesh chunk and we don't have access to that
                 // anymore. Default to dual quat skinning.
@@ -2721,7 +2720,7 @@ namespace EMotionFX
                 AZ_Assert(node, "Cannot find joint named %s in the skeleton while it is used by the skin.", pair.first.c_str());
                 continue;
             }
-            result.emplace(pair.second, node->GetNodeIndex());
+            result.emplace(pair.second, aznumeric_caster(node->GetNodeIndex()));
         }
 
         return result;

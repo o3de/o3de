@@ -356,8 +356,8 @@ namespace EMotionFX
     void BlendTree::RecursiveFindCycles(AnimGraphNode* nextNode, AZStd::unordered_set<AnimGraphNode*>& visitedNodes, AZStd::unordered_set<AZStd::pair<BlendTreeConnection*, AnimGraphNode*> >& cycleConnections) const
     {
         AZStd::unordered_map<AnimGraphNode*, AZStd::vector<BlendTreeConnection*> > sourceNodesAndConnections;
-        const uint32 numConnections = nextNode->GetNumConnections();
-        for (uint32 j = 0; j < numConnections; ++j)
+        const size_t numConnections = nextNode->GetNumConnections();
+        for (size_t j = 0; j < numConnections; ++j)
         {
             AnimGraphNode* sourceNode = nextNode->GetConnection(j)->GetSourceNode();
             sourceNodesAndConnections[sourceNode].emplace_back(nextNode->GetConnection(j));

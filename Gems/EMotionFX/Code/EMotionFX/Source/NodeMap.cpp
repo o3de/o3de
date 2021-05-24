@@ -127,7 +127,7 @@ namespace EMotionFX
 
 
     // remove a given entry by its name ID
-    void NodeMap::RemoveEntryByNameID(size_t firstNameID)
+    void NodeMap::RemoveEntryByNameID(uint32 firstNameID)
     {
         const size_t entryIndex = FindEntryIndexByNameID(firstNameID);
         if (entryIndex == InvalidIndex)
@@ -373,7 +373,7 @@ namespace EMotionFX
 
 
     // find an entry index by its name ID
-    size_t NodeMap::FindEntryIndexByNameID(size_t firstNameID) const
+    size_t NodeMap::FindEntryIndexByNameID(uint32 firstNameID) const
     {
         const auto foundEntry = AZStd::find_if(begin(mEntries), end(mEntries), [firstNameID](const MapEntry& entry)
         {

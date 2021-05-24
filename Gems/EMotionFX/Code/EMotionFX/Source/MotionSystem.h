@@ -104,7 +104,7 @@ namespace EMotionFX
          * @result A pointer to the motion instance.
          * @see IsValidMotionInstance
          */
-        MotionInstance* GetMotionInstance(uint32 nr) const;
+        MotionInstance* GetMotionInstance(size_t nr) const;
 
         /**
          * Recursively search for the first non mixing motion and return the motion instance.

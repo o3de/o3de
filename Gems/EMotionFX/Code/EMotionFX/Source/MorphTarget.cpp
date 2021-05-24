@@ -211,7 +211,7 @@ namespace EMotionFX
 
 
     // copy the base class members to the target class
-    void MorphTarget::CopyBaseClassMemberValues(MorphTarget* target)
+    void MorphTarget::CopyBaseClassMemberValues(MorphTarget* target) const
     {
         target->mNameID         = mNameID;
         target->mRangeMin       = mRangeMin;

@@ -132,7 +132,7 @@ namespace EMotionFX
     class AnimGraphPropertyUtils
     {
     public:
-        static void ReinitJointIndices(const Actor* actor, const AZStd::vector<AZStd::string>& jointNames, AZStd::vector<AZ::u32>& outJointIndices);
+        static void ReinitJointIndices(const Actor* actor, const AZStd::vector<AZStd::string>& jointNames, AZStd::vector<size_t>& outJointIndices);
     };
     
 } // namespace EMotionFX

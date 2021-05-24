@@ -237,7 +237,7 @@ namespace EMotionFX
                 for (size_t n = 0; n < numNodes; ++n)
                 {
                     const float finalWeight = blendWeight /* * uniqueData->mWeights[n]*/;
-                    const uint32 nodeIndex = uniqueData->mMask[n];
+                    const size_t nodeIndex = uniqueData->mMask[n];
                     transform = outputLocalPose.GetLocalSpaceTransform(nodeIndex);
                     transform.Blend(localMaskPose.GetLocalSpaceTransform(nodeIndex), finalWeight);
                     outputLocalPose.SetLocalSpaceTransform(nodeIndex, transform);
@@ -250,7 +250,7 @@ namespace EMotionFX
                 for (size_t n = 0; n < numNodes; ++n)
                 {
                     const float finalWeight = blendWeight /* * uniqueData->mWeights[n]*/;
-                    const uint32 nodeIndex = uniqueData->mMask[n];
+                    const size_t nodeIndex = uniqueData->mMask[n];
                     transform = outputLocalPose.GetLocalSpaceTransform(nodeIndex);
                     transform.BlendAdditive(localMaskPose.GetLocalSpaceTransform(nodeIndex), bindPose->GetLocalSpaceTransform(nodeIndex), finalWeight);
                     outputLocalPose.SetLocalSpaceTransform(nodeIndex, transform);

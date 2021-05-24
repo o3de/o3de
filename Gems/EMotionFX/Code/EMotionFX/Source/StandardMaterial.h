@@ -403,7 +403,7 @@ namespace EMotionFX
          * This does not influence the return value of GetNumLayers().
          * @param numLayers The number of layers to pre-allocate space for.
          */
-        void ReserveLayers(uint32 numLayers);
+        void ReserveLayers(size_t numLayers);
 
         /**
          * Add a given layer to this material.
@@ -422,14 +422,14 @@ namespace EMotionFX
          * @param nr The material layer number to get.
          * @result A pointer to the material layer.
          */
-        StandardMaterialLayer* GetLayer(uint32 nr);
+        StandardMaterialLayer* GetLayer(size_t nr);
 
         /**
          * Remove a specified material layer (also deletes it from memory).
          * @param nr The material layer number to remove.
          * @param delFromMem Set to true if it should be deleted from memory as well.
          */
-        void RemoveLayer(uint32 nr, bool delFromMem = true);
+        void RemoveLayer(size_t nr, bool delFromMem = true);
 
         /**
          * Removes all material layers from this material (includes deletion from memory).
@@ -442,14 +442,14 @@ namespace EMotionFX
          * Find the layer number which is of the given type.
          * If you for example want to search for a diffuse layer, you make a call like:
          *
-         * uint32 layerNumber = material->FindLayer( StandardMaterialLayer::LAYERTYPE_DIFFUSE );
+         * size_t layerNumber = material->FindLayer( StandardMaterialLayer::LAYERTYPE_DIFFUSE );
          *
          * This will return a value the layer number, which can be accessed with the GetLayer(layerNumber) method.
          * A value of MCORE_INVALIDINDEX32 will be returned in case no layer of the specified type could be found.
          * @param layerType The layer type you want to search on, for a list of valid types, see the enum inside StandardMaterialLayer.
          * @result Returns the layer number or MCORE_INVALIDINDEX32 when it could not be found.
          */
-        uint32 FindLayer(uint32 layerType) const;
+        size_t FindLayer(uint32 layerType) const;
 
         /**
          * Creates a clone of the material, including it's layers.

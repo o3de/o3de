@@ -65,10 +65,9 @@ namespace EMotionFX
             MCORE_ASSERT(mData == nullptr);
 
             // delete all subpools
-            const uint32 numSubPools = mSubPools.size();
-            for (uint32 s = 0; s < numSubPools; ++s)
+            for (SubPool* mSubPool : mSubPools)
             {
-                delete mSubPools[s];
+                delete mSubPool;
             }
             mSubPools.clear();
 
@@ -114,7 +113,7 @@ namespace EMotionFX
 
 
     // init the motion instance pool
-    void MotionInstancePool::Init(uint32 numInitialInstances, EPoolType poolType, uint32 subPoolSize)
+    void MotionInstancePool::Init(size_t numInitialInstances, EPoolType poolType, size_t subPoolSize)
     {
         if (mPool)
         {
@@ -141,7 +140,7 @@ namespace EMotionFX
         {
             mPool->mData    = (uint8*)MCore::Allocate(numInitialInstances * sizeof(MotionInstance), EMFX_MEMCATEGORY_MOTIONINSTANCEPOOL);// alloc space
             mPool->mFreeList.resize_no_construct(numInitialInstances);
-            for (uint32 i = 0; i < numInitialInstances; ++i)
+            for (size_t i = 0; i < numInitialInstances; ++i)
             {
                 void* memLocation = (void*)(mPool->mData + i * sizeof(MotionInstance));
                 mPool->mFreeList[i].mAddress = memLocation;
@@ -158,7 +157,7 @@ namespace EMotionFX
             subPool->mNumInstances      = numInitialInstances;
 
             mPool->mFreeList.resize_no_construct(numInitialInstances);
-            for (uint32 i = 0; i < numInitialInstances; ++i)
+            for (size_t i = 0; i < numInitialInstances; ++i)
             {
                 mPool->mFreeList[i].mAddress = (void*)(subPool->mData + i * sizeof(MotionInstance));
                 mPool->mFreeList[i].mSubPool = subPool;
@@ -203,14 +202,14 @@ namespace EMotionFX
         // we have no more free attributes left
         if (mPool->mPoolType == POOLTYPE_DYNAMIC) // we're dynamic, so we can just create new ones
         {
-            const uint32 numInstances = mPool->mSubPoolSize;
+            const size_t numInstances = mPool->mSubPoolSize;
             mPool->mNumInstances += numInstances;
 
             SubPool* subPool = new SubPool();
             subPool->mData              = (uint8*)MCore::Allocate(numInstances * sizeof(MotionInstance), EMFX_MEMCATEGORY_MOTIONINSTANCEPOOL);// alloc space
             subPool->mNumInstances      = numInstances;
 
-            const uint32 startIndex = mPool->mFreeList.size();
+            const size_t startIndex = mPool->mFreeList.size();
             //mPool->mFreeList.Reserve( numInstances * 2 );
             if (mPool->mFreeList.capacity() < mPool->mNumInstances)
             {
@@ -218,7 +217,7 @@ namespace EMotionFX
             }
 
             mPool->mFreeList.resize_no_construct(startIndex + numInstances);
-            for (uint32 i = 0; i < numInstances; ++i)
+            for (size_t i = 0; i < numInstances; ++i)
             {
                 void* memAddress = (void*)(subPool->mData + i * sizeof(MotionInstance));
                 mPool->mFreeList[i + startIndex].mAddress = memAddress;
@@ -290,12 +289,12 @@ namespace EMotionFX
         Lock();
         MCore::LogInfo("EMotionFX::MotionInstancePool::LogMemoryStats() - Logging motion instance pool info");
 
-        const uint32 numFree    = mPool->mFreeList.size();
-        uint32 numUsed          = mPool->mNumUsedInstances;
-        uint32 memUsage         = 0;
-        uint32 usedMemUsage     = 0;
-        uint32 totalMemUsage    = 0;
-        uint32 totalUsedInstancesMemUsage = 0;
+        const size_t numFree    = mPool->mFreeList.size();
+        size_t numUsed          = mPool->mNumUsedInstances;
+        size_t memUsage         = 0;
+        size_t usedMemUsage     = 0;
+        size_t totalMemUsage    = 0;
+        size_t totalUsedInstancesMemUsage = 0;
 
         if (mPool->mPoolType == POOLTYPE_STATIC)
         {
@@ -375,13 +374,13 @@ namespace EMotionFX
     {
         Lock();
 
-        for (uint32 i = 0; i < mPool->mSubPools.size(); )
+        for (size_t i = 0; i < mPool->mSubPools.size(); )
         {
             SubPool* subPool = mPool->mSubPools[i];
             if (subPool->mNumInUse == 0)
             {
                 // remove all free allocations
-                for (uint32 a = 0; a < mPool->mFreeList.size(); )
+                for (size_t a = 0; a < mPool->mFreeList.size(); )
                 {
                     if (mPool->mFreeList[a].mSubPool == subPool)
                     {

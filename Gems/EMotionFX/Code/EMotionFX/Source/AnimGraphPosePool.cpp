@@ -27,10 +27,9 @@ namespace EMotionFX
     AnimGraphPosePool::~AnimGraphPosePool()
     {
         // delete all poses
-        const uint32 numPoses = mPoses.size();
-        for (uint32 i = 0; i < numPoses; ++i)
+        for (AnimGraphPose* mPose : mPoses)
         {
-            delete mPoses[i];
+            delete mPose;
         }
         mPoses.clear();
 
@@ -40,17 +39,16 @@ namespace EMotionFX
 
 
     // resize the number of poses in the pool
-    void AnimGraphPosePool::Resize(uint32 numPoses)
+    void AnimGraphPosePool::Resize(size_t numPoses)
     {
-        const uint32 numOldPoses = mPoses.size();
+        const size_t numOldPoses = mPoses.size();
 
         // if we will remove poses
-        int32 difference = numPoses - numOldPoses;
-        if (difference < 0)
+        if (numPoses < numOldPoses)
         {
             // remove the last poses
-            difference = abs(difference);
-            for (int32 i = 0; i < difference; ++i)
+            const size_t numToRemove = numOldPoses - numPoses;
+            for (size_t i = 0; i < numToRemove; ++i)
             {
                 AnimGraphPose* pose = mPoses.back();
                 MCORE_ASSERT(AZStd::find(begin(mFreePoses), end(mFreePoses), pose) == end(mFreePoses)); // make sure the pose is not already in use
@@ -60,7 +58,8 @@ namespace EMotionFX
         }
         else // we want to add new poses
         {
-            for (int32 i = 0; i < difference; ++i)
+            const size_t numToAdd = numPoses - numOldPoses;
+            for (size_t i = 0; i < numToAdd; ++i)
             {
                 AnimGraphPose* newPose = new AnimGraphPose();
                 mPoses.emplace_back(newPose);
@@ -74,12 +73,12 @@ namespace EMotionFX
     AnimGraphPose* AnimGraphPosePool::RequestPose(const ActorInstance* actorInstance)
     {
         // if we have no free poses left, allocate a new one
-        if (mFreePoses.size() == 0)
+        if (mFreePoses.empty())
         {
             AnimGraphPose* newPose = new AnimGraphPose();
             newPose->LinkToActorInstance(actorInstance);
             mPoses.emplace_back(newPose);
-            mMaxUsed = MCore::Max<uint32>(mMaxUsed, GetNumUsedPoses());
+            mMaxUsed = AZStd::max(mMaxUsed, GetNumUsedPoses());
             newPose->SetIsInUse(true);
             return newPose;
         }
@@ -89,7 +88,7 @@ namespace EMotionFX
         //if (pose->GetActorInstance() != actorInstance)
         pose->LinkToActorInstance(actorInstance);
         mFreePoses.pop_back(); // remove it from the list of free poses
-        mMaxUsed = MCore::Max<uint32>(mMaxUsed, GetNumUsedPoses());
+        mMaxUsed = AZStd::max(mMaxUsed, GetNumUsedPoses());
         pose->SetIsInUse(true);
         return pose;
     }
@@ -107,10 +106,8 @@ namespace EMotionFX
     // free all poses
     void AnimGraphPosePool::FreeAllPoses()
     {
-        const uint32 numPoses = mPoses.size();
-        for (uint32 i = 0; i < numPoses; ++i)
+        for (AnimGraphPose* curPose : mPoses)
         {
-            AnimGraphPose* curPose = mPoses[i];
             if (curPose->GetIsInUse())
             {
                 FreePose(curPose);

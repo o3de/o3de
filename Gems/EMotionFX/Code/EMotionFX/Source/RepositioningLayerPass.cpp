@@ -26,7 +26,7 @@ namespace EMotionFX
     RepositioningLayerPass::RepositioningLayerPass(MotionLayerSystem* motionLayerSystem)
         : LayerPass(motionLayerSystem)
     {
-        mLastReposNode = MCORE_INVALIDINDEX32;
+        mLastReposNode = InvalidIndex;
     }
 
 
@@ -77,8 +77,8 @@ namespace EMotionFX
 
         // Bottom up traversal of the layers.
         bool firstBlend = true;
-        const uint32 numMotionInstances = mMotionSystem->GetNumMotionInstances();
-        for (uint32 i = numMotionInstances - 1; i != MCORE_INVALIDINDEX32; --i)
+        const size_t numMotionInstances = mMotionSystem->GetNumMotionInstances();
+        for (size_t i = numMotionInstances - 1; i != InvalidIndex; --i)
         {
             MotionInstance* motionInstance = mMotionSystem->GetMotionInstance(i);
             if (!motionInstance->GetMotionExtractionEnabled())

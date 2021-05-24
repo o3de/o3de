@@ -48,11 +48,11 @@ namespace EMotionFX
         bool RemoveAnimGraph(AnimGraph* animGraph, bool delFromMemory = true);
         void RemoveAllAnimGraphs(bool delFromMemory = true);
 
-        MCORE_INLINE uint32 GetNumAnimGraphs() const                                { MCore::LockGuardRecursive lock(mAnimGraphLock); return static_cast<uint32>(mAnimGraphs.size()); }
-        MCORE_INLINE AnimGraph* GetAnimGraph(uint32 index) const                    { MCore::LockGuardRecursive lock(mAnimGraphLock); return mAnimGraphs[index]; }
+        MCORE_INLINE size_t GetNumAnimGraphs() const                                { MCore::LockGuardRecursive lock(mAnimGraphLock); return mAnimGraphs.size(); }
+        MCORE_INLINE AnimGraph* GetAnimGraph(size_t index) const                    { MCore::LockGuardRecursive lock(mAnimGraphLock); return mAnimGraphs[index]; }
         AnimGraph* GetFirstAnimGraph() const;
 
-        uint32 FindAnimGraphIndex(AnimGraph* animGraph) const;
+        size_t FindAnimGraphIndex(AnimGraph* animGraph) const;
         AnimGraph* FindAnimGraphByFileName(const char* filename, bool isTool = true) const;
         AnimGraph* FindAnimGraphByID(uint32 animGraphID) const;
 
@@ -67,7 +67,7 @@ namespace EMotionFX
         size_t GetNumAnimGraphInstances() const                        { MCore::LockGuardRecursive lock(mAnimGraphInstanceLock); return mAnimGraphInstances.size(); }
         AnimGraphInstance* GetAnimGraphInstance(size_t index) const    { MCore::LockGuardRecursive lock(mAnimGraphInstanceLock); return mAnimGraphInstances[index]; }
 
-        uint32 FindAnimGraphInstanceIndex(AnimGraphInstance* animGraphInstance) const;
+        size_t FindAnimGraphInstanceIndex(AnimGraphInstance* animGraphInstance) const;
 
         void SetAnimGraphVisualizationEnabled(bool enabled);
 

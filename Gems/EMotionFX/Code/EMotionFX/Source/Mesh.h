@@ -171,7 +171,7 @@ namespace EMotionFX
          * It is recommended NOT to put this function inside a loop, because it is not very fast.
          * @result The number of UV layers/sets currently present inside this mesh.
          */
-        uint32 CalcNumUVLayers() const;
+        size_t CalcNumUVLayers() const;
 
         /**
          * Calculate the number of vertex attribute layers of the given type.
@@ -179,7 +179,7 @@ namespace EMotionFX
          * @param[in] type The type of the vertex attribute layer to count.
          * @result The number of layers/sets currently present inside this mesh.
          */
-        uint32 CalcNumAttributeLayers(uint32 type) const;
+        size_t CalcNumAttributeLayers(uint32 type) const;
 
         /**
          * Get the number of original vertices. This can be lower compared to the value returned by GetNumVertices().
@@ -249,7 +249,7 @@ namespace EMotionFX
          * @param nr The submesh number, which must be in range of [0..GetNumSubMeshes()-1].
          * @param subMesh The submesh to use.
          */
-        MCORE_INLINE void SetSubMesh(uint32 nr, SubMesh* subMesh)           { mSubMeshes[nr] = subMesh; }
+        MCORE_INLINE void SetSubMesh(size_t nr, SubMesh* subMesh)           { mSubMeshes[nr] = subMesh; }
 
         /**
          * Set the number of submeshes.
@@ -257,21 +257,21 @@ namespace EMotionFX
          * Do not forget to use SetSubMesh() to initialize all submeshes!
          * @param numSubMeshes The number of submeshes to use.
          */
-        MCORE_INLINE void SetNumSubMeshes(uint32 numSubMeshes)              { mSubMeshes.resize(numSubMeshes); }
+        MCORE_INLINE void SetNumSubMeshes(size_t numSubMeshes)              { mSubMeshes.resize(numSubMeshes); }
 
         /**
          * Remove a given submesh from this mesh.
          * @param nr The submesh index number to remove, which must be in range of 0..GetNumSubMeshes()-1.
          * @param delFromMem Set to true when you want to delete the submesh from memory as well, otherwise set to false.
          */
-        void RemoveSubMesh(uint32 nr, bool delFromMem = true);
+        void RemoveSubMesh(size_t nr, bool delFromMem = true);
 
         /**
          * Insert a submesh into the array of submeshes.
          * @param insertIndex The position in the submesh array to insert this new submesh.
          * @param subMesh A pointer to the submesh to insert into this mesh.
          */
-        void InsertSubMesh(uint32 insertIndex, SubMesh* subMesh);
+        void InsertSubMesh(size_t insertIndex, SubMesh* subMesh);
 
         /**
          * Get the shared vertex attribute data of a given layer.
@@ -306,7 +306,7 @@ namespace EMotionFX
          * @result The vertex attribute layer index number that you can pass to GetSharedVertexAttributeLayer. A value of MCORE_INVALIDINDEX32 is returned
          *         when no result could be found.
          */
-        uint32 FindSharedVertexAttributeLayerNumber(uint32 layerTypeID, uint32 occurrence = 0) const;
+        size_t FindSharedVertexAttributeLayerNumber(uint32 layerTypeID, size_t occurrence = 0) const;
 
         /**
          * Find and return the shared vertex attribute layer of a given type.
@@ -318,7 +318,7 @@ namespace EMotionFX
          *                  want the second layer of the given type, etc.
          * @result A pointer to the vertex attribute layer, or nullptr when none could be found.
          */
-        VertexAttributeLayer* FindSharedVertexAttributeLayer(uint32 layerTypeID, uint32 occurence = 0) const;
+        VertexAttributeLayer* FindSharedVertexAttributeLayer(uint32 layerTypeID, size_t occurence = 0) const;
 
         /**
          * Removes all shared vertex attributes for all shared vertices.
@@ -331,7 +331,7 @@ namespace EMotionFX
          * Automatically deletes the data from memory.
          * @param layerNr The layer number to remove, must be below the value returned by GetNumSharedVertexAttributeLayers().
          */
-        void RemoveSharedVertexAttributeLayer(uint32 layerNr);
+        void RemoveSharedVertexAttributeLayer(size_t layerNr);
 
         /**
          * Get the number of vertex attributes.
@@ -346,7 +346,7 @@ namespace EMotionFX
          * @param layerNr The layer number to get the attributes from. Must be below the value returned by GetNumVertexAttributeLayers().
          * @result A pointer to the array of vertex attributes. You can typecast this pointer if you know the type of the vertex attributes.
          */
-        VertexAttributeLayer* GetVertexAttributeLayer(uint32 layerNr);
+        VertexAttributeLayer* GetVertexAttributeLayer(size_t layerNr);
 
         /**
          * Adds a new layer of vertex attributes.
@@ -373,9 +373,9 @@ namespace EMotionFX
          * @result The vertex attribute layer index number that you can pass to GetSharedVertexAttributeLayer. A value of MCORE_INVALIDINDEX32 os returned
          *         when no result could be found.
          */
-        uint32 FindVertexAttributeLayerNumber(uint32 layerTypeID, uint32 occurrence = 0) const;
+        size_t FindVertexAttributeLayerNumber(uint32 layerTypeID, size_t occurrence = 0) const;
 
-        uint32 FindVertexAttributeLayerNumberByName(uint32 layerTypeID, const char* name) const;
+        size_t FindVertexAttributeLayerNumberByName(uint32 layerTypeID, const char* name) const;
         VertexAttributeLayer* FindVertexAttributeLayerByName(uint32 layerTypeID, const char* name) const;
 
 
@@ -389,15 +389,15 @@ namespace EMotionFX
          *                  want the second layer of the given type, etc.
          * @result A pointer to the vertex attribute layer, or nullptr when none could be found.
          */
-        VertexAttributeLayer* FindVertexAttributeLayer(uint32 layerTypeID, uint32 occurence = 0) const;
+        VertexAttributeLayer* FindVertexAttributeLayer(uint32 layerTypeID, size_t occurence = 0) const;
 
-        uint32 FindVertexAttributeLayerIndexByName(const char* name) const;
-        uint32 FindVertexAttributeLayerIndexByNameString(const AZStd::string& name) const;
-        uint32 FindVertexAttributeLayerIndexByNameID(uint32 nameID) const;
+        size_t FindVertexAttributeLayerIndexByName(const char* name) const;
+        size_t FindVertexAttributeLayerIndexByNameString(const AZStd::string& name) const;
+        size_t FindVertexAttributeLayerIndexByNameID(uint32 nameID) const;
 
-        uint32 FindSharedVertexAttributeLayerIndexByName(const char* name) const;
-        uint32 FindSharedVertexAttributeLayerIndexByNameString(const AZStd::string& name) const;
-        uint32 FindSharedVertexAttributeLayerIndexByNameID(uint32 nameID) const;
+        size_t FindSharedVertexAttributeLayerIndexByName(const char* name) const;
+        size_t FindSharedVertexAttributeLayerIndexByNameString(const AZStd::string& name) const;
+        size_t FindSharedVertexAttributeLayerIndexByNameID(uint32 nameID) const;
 
         /**
          * Removes all vertex attributes for all vertices.
@@ -410,7 +410,7 @@ namespace EMotionFX
          * Automatically deletes the data from memory.
          * @param layerNr The layer number to remove, must be below the value returned by GetNumVertexAttributeLayers().
          */
-        void RemoveVertexAttributeLayer(uint32 layerNr);
+        void RemoveVertexAttributeLayer(size_t layerNr);
 
         //---------------------------------------------------
 
@@ -517,7 +517,7 @@ namespace EMotionFX
          * @param onlyRemoveOnZeroVertsAndTriangles Only remove when both the number of vertices and number of indices/triangles are zero.
          * @result Returns the number of removed submeshes.
          */
-        uint32 RemoveEmptySubMeshes(bool onlyRemoveOnZeroVertsAndTriangles = true);
+        size_t RemoveEmptySubMeshes(bool onlyRemoveOnZeroVertsAndTriangles = true);
 
         /**
          * Find specific current vertex data in the mesh. This contains the vertex data after mesh deformers have been
@@ -538,7 +538,7 @@ namespace EMotionFX
          *                   when there are multiple layers of the same type. An example is a mesh having multiple UV layers.
          * @result A void pointer to the layer data. You have to typecast yourself.
          */
-        void* FindVertexData(uint32 layerID, uint32 occurrence = 0) const;
+        void* FindVertexData(uint32 layerID, size_t occurrence = 0) const;
 
         void* FindVertexDataByName(uint32 layerID, const char* name) const;
 
@@ -561,7 +561,7 @@ namespace EMotionFX
          *                   when there are multiple layers of the same type. An example is a mesh having multiple UV layers.
          * @result A void pointer to the layer data. You have to typecast yourself.
          */
-        void* FindOriginalVertexData(uint32 layerID, uint32 occurrence = 0) const;
+        void* FindOriginalVertexData(uint32 layerID, size_t occurrence = 0) const;
 
         void* FindOriginalVertexDataByName(uint32 layerID, const char* name) const;
 

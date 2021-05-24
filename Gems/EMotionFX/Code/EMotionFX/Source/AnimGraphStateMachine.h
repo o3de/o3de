@@ -267,7 +267,7 @@ namespace EMotionFX
     private:
         AZStd::vector<AnimGraphStateTransition*>    mTransitions; /**< The higher the index, the older the active transtion, the more time passed since it got started. Index = 0 is the most recent transition and the one with the highest global influence.*/
         AnimGraphNode*                              mEntryState;                /**< A pointer to the initial state, so the state where the machine starts. */
-        uint32                                      mEntryStateNodeNr;          /**< Used only in the legacy file format. Remove after the legacy file format will be removed. */
+        size_t                                      mEntryStateNodeNr;          /**< Used only in the legacy file format. Remove after the legacy file format will be removed. */
         AZ::u64                                     m_entryStateId;             /**< The node id of the entry state. */
         bool                                        m_alwaysStartInEntryState;
 

@@ -99,13 +99,13 @@ namespace EMotionFX
          * @param nr The queue entry number to get.
          * @result A reference to the queue entry, with write access.
          */
-        QueueEntry& GetEntry(uint32 nr);
+        QueueEntry& GetEntry(size_t nr);
 
         /**
          * Remove a given entry from the queue.
          * @param nr The entry number to remove from the queue.
          */
-        void RemoveEntry(uint32 nr);
+        void RemoveEntry(size_t nr);
 
         /**
          * Updates the motion queue.

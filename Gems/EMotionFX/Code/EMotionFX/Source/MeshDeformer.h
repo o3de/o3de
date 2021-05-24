@@ -56,7 +56,7 @@ namespace EMotionFX
          * @param mesh The mesh to apply the cloned deformer on.
          * @result A pointer to the newly created clone of this deformer.
          */
-        virtual MeshDeformer* Clone(Mesh* mesh) = 0;
+        virtual MeshDeformer* Clone(Mesh* mesh) const = 0;
 
         /**
          * Returns the type identification number of the deformer class.

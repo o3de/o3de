@@ -1424,7 +1424,7 @@ namespace EMotionFX
         const Actor* actor = mActorInstance->GetActor();
         const TransformData* transformData = mActorInstance->GetTransformData();
         const Pose* bindPose = transformData->GetBindPose();
-        const AZStd::vector<AZ::u32>& jointLinks = motionLinkData->GetJointDataLinks();
+        const AZStd::vector<size_t>& jointLinks = motionLinkData->GetJointDataLinks();
 
         AnimGraphPose* tempPose = GetEMotionFX().GetThreadData(mActorInstance->GetThreadIndex())->GetPosePool().RequestPose(mActorInstance);
         Pose& unmirroredPose = tempPose->GetPose();

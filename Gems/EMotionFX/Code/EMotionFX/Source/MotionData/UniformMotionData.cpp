@@ -130,13 +130,13 @@ namespace EMotionFX
         }
     }
 
-    Transform UniformMotionData::SampleJointTransform(const SampleSettings& settings, AZ::u32 jointSkeletonIndex) const
+    Transform UniformMotionData::SampleJointTransform(const SampleSettings& settings, size_t jointSkeletonIndex) const
     {
         const Actor* actor = settings.m_actorInstance->GetActor();
         const MotionLinkData* motionLinkData = FindMotionLinkData(actor);
 
-        const AZ::u32 transformDataIndex = motionLinkData->GetJointDataLinks()[jointSkeletonIndex];
-        if (m_additive && transformDataIndex == InvalidIndex32)
+        const size_t transformDataIndex = motionLinkData->GetJointDataLinks()[jointSkeletonIndex];
+        if (m_additive && transformDataIndex == InvalidIndex)
         {
             return Transform::CreateIdentity();
         }
@@ -152,7 +152,7 @@ namespace EMotionFX
 
         // Sample the interpolated data.
         Transform result;
-        if (transformDataIndex != InvalidIndex32 && !inPlace)
+        if (transformDataIndex != InvalidIndex && !inPlace)
         {
             const StaticJointData& staticJointData = m_staticJointData[transformDataIndex];
             const JointData& jointData = m_jointData[transformDataIndex];
@@ -208,20 +208,20 @@ namespace EMotionFX
         size_t indexB;
         CalculateInterpolationIndicesUniform(settings.m_sampleTime, m_sampleSpacing, m_duration, m_numSamples, indexA, indexB, t);
 
-        const AZStd::vector<AZ::u32>& jointLinks = motionLinkData->GetJointDataLinks();
+        const AZStd::vector<size_t>& jointLinks = motionLinkData->GetJointDataLinks();
         const ActorInstance* actorInstance = settings.m_actorInstance;
         const Skeleton* skeleton = actor->GetSkeleton();
         const Pose* bindPose = actorInstance->GetTransformData()->GetBindPose();
-        const AZ::u32 numNodes = actorInstance->GetNumEnabledNodes();
-        for (AZ::u32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = actorInstance->GetNumEnabledNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
-            const AZ::u32 skeletonJointIndex = actorInstance->GetEnabledNode(i);
+            const size_t skeletonJointIndex = actorInstance->GetEnabledNode(i);
             const bool inPlace = (settings.m_inPlace && skeleton->GetNode(skeletonJointIndex)->GetIsRootNode());
 
             // Sample the interpolated data.
             Transform result;
-            const AZ::u32 jointDataIndex = jointLinks[skeletonJointIndex];
-            if (jointDataIndex != InvalidIndex32 && !inPlace)
+            const size_t jointDataIndex = jointLinks[skeletonJointIndex];
+            if (jointDataIndex != InvalidIndex && !inPlace)
             {
                 const StaticJointData& staticJointData = m_staticJointData[jointDataIndex];
                 const JointData& jointData = m_jointData[jointDataIndex];
@@ -234,7 +234,7 @@ namespace EMotionFX
             }
             else
             {
-                if (m_additive && jointDataIndex == InvalidIndex32)
+                if (m_additive && jointDataIndex == InvalidIndex)
                 {
                     result = Transform::CreateIdentity();
                 }
@@ -268,8 +268,8 @@ namespace EMotionFX
 
         // Output morph target weights.
         const MorphSetupInstance* morphSetup = actorInstance->GetMorphSetupInstance();
-        const AZ::u32 numMorphTargets = morphSetup->GetNumMorphTargets();
-        for (AZ::u32 i = 0; i < numMorphTargets; ++i)
+        const size_t numMorphTargets = morphSetup->GetNumMorphTargets();
+        for (size_t i = 0; i < numMorphTargets; ++i)
         {
             const AZ::u32 morphTargetId = morphSetup->GetMorphTarget(i)->GetID();
             const AZ::Outcome<size_t> morphIndex = FindMorphIndexByNameId(morphTargetId);

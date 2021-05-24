@@ -116,7 +116,7 @@ namespace EMotionFX
             *outWeight = MCore::Clamp<float>(*outWeight, 0.0f, 1.0f);
 
             UniqueData* uniqueData = static_cast<BlendTreeBlend2NodeBase::UniqueData*>(animGraphInstance->FindOrCreateUniqueObjectData(this));
-            if (uniqueData->mMask.size() > 0)
+            if (!uniqueData->mMask.empty())
             {
                 *outBlendNodeA  = connectionA->GetSourceNode();
                 *outBlendNodeB  = connectionB->GetSourceNode();

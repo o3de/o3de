@@ -38,9 +38,9 @@ namespace CommandSystem
 
         bool SetCommandParameters(const MCore::CommandLine& parameters);
 
-        void SetMotionID(int32 motionID) { m_motionID = motionID; }
+        void SetMotionID(uint32 motionID) { m_motionID = motionID; }
     protected:
-        int32 m_motionID = 0;
+        uint32 m_motionID = 0;
     };
 
     // Adjust motion command.
@@ -83,7 +83,7 @@ namespace CommandSystem
     public:
         uint32          mOldMotionID;
         AZStd::string   mOldFileName;
-        uint32          mOldIndex;
+        size_t          mOldIndex;
         bool            mOldWorkspaceDirtyFlag;
     MCORE_DEFINECOMMAND_END
 

@@ -19,9 +19,9 @@ namespace CommandSystem
 {
     // Adjust the given actor.
     MCORE_DEFINECOMMAND_START(CommandAdjustActor, "Adjust actor", true)
-    uint32                                          mOldMotionExtractionNodeIndex;
-    uint32                                          mOldRetargetRootNodeIndex;
-    uint32                                          mOldTrajectoryNodeIndex;
+    size_t                                          mOldMotionExtractionNodeIndex;
+    size_t                                          mOldRetargetRootNodeIndex;
+    size_t                                          mOldTrajectoryNodeIndex;
     AZStd::string                                   mOldAttachmentNodes;
     AZStd::string                                   mOldExcludedFromBoundsNodes;
     AZStd::string                                   mOldName;
@@ -71,6 +71,6 @@ public:
     // Helper functions
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     void COMMANDSYSTEM_API ClearScene(bool deleteActors = true, bool deleteActorInstances = true, MCore::CommandGroup* commandGroup = nullptr);
-    void COMMANDSYSTEM_API PrepareCollisionMeshesNodesString(EMotionFX::Actor* actor, uint32 lod, AZStd::string* outNodeNames);
+    void COMMANDSYSTEM_API PrepareCollisionMeshesNodesString(EMotionFX::Actor* actor, size_t lod, AZStd::string* outNodeNames);
     void COMMANDSYSTEM_API PrepareExcludedNodesString(EMotionFX::Actor* actor, AZStd::string* outNodeNames);
 } // namespace CommandSystem

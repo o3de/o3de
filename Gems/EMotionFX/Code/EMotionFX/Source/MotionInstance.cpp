@@ -33,7 +33,7 @@ namespace EMotionFX
 
         m_motion = motion;
         m_actorInstance = actorInstance;
-        m_id = MCore::GetIDGenerator().GenerateID();
+        m_id = aznumeric_caster(MCore::GetIDGenerator().GenerateID());
 
         SetDeleteOnZeroWeight(true);
         SetCanOverwrite(true);
@@ -819,7 +819,7 @@ namespace EMotionFX
     }
 
     // calculate a world space transformation for a given node by sampling the motion at a given time
-    void MotionInstance::CalcGlobalTransform(const AZStd::vector<AZ::u32>& hierarchyPath, float timeValue, Transform* outTransform) const
+    void MotionInstance::CalcGlobalTransform(const AZStd::vector<size_t>& hierarchyPath, float timeValue, Transform* outTransform) const
     {
         Actor*      actor = m_actorInstance->GetActor();
         Skeleton*   skeleton = actor->GetSkeleton();
@@ -829,10 +829,10 @@ namespace EMotionFX
         outTransform->Identity();
 
         // iterate from root towards the node (so backwards in the array)
-        for (int32 i = hierarchyPath.size() - 1; i >= 0; --i)
+        for (auto iter = rbegin(hierarchyPath); iter != rend(hierarchyPath); ++iter)
         {
             // get the current node index
-            const AZ::u32 nodeIndex = hierarchyPath[i];
+            const size_t nodeIndex = *iter;
             m_motion->CalcNodeTransform(this, &subMotionTransform, actor, skeleton->GetNode(nodeIndex), timeValue, GetRetargetingEnabled());
 
             // multiply parent transform with the current node's transform
@@ -879,7 +879,7 @@ namespace EMotionFX
         }
 
         // get the motion extraction node index
-        const AZ::u32 motionExtractionNodeIndex = motionExtractNode->GetNodeIndex();
+        const size_t motionExtractionNodeIndex = motionExtractNode->GetNodeIndex();
 
         // get the current and previous time value from the motion instance
         float curTimeValue = GetCurrentTime();

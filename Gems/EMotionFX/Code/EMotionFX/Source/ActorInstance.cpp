@@ -57,7 +57,7 @@ namespace EMotionFX
         mAttachedTo             = nullptr;
         mSelfAttachment         = nullptr;
         mCustomData             = nullptr;
-        mID                     = MCore::GetIDGenerator().GenerateID();
+        mID                     = aznumeric_caster(MCore::GetIDGenerator().GenerateID());
         mVisualizeScale         = 1.0f;
         mMotionSamplingRate     = 0.0f;
         mMotionSamplingTimer    = 0.0f;
@@ -465,7 +465,7 @@ namespace EMotionFX
             return attachment->GetAttachmentActorInstance() == actorInstance;
         });
 
-        return foundAttachment == mAttachments.end() ? AZStd::distance(mAttachments.begin(), foundAttachment) : InvalidIndex;
+        return foundAttachment != mAttachments.end() ? AZStd::distance(mAttachments.begin(), foundAttachment) : InvalidIndex;
     }
 
     // remove an attachment by actor instance pointer
@@ -1433,7 +1433,7 @@ namespace EMotionFX
         return mActor;
     }
 
-    void ActorInstance::SetID(size_t id)
+    void ActorInstance::SetID(uint32 id)
     {
         mID = id;
     }

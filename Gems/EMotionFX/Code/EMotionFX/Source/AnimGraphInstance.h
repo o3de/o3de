@@ -95,28 +95,28 @@ namespace EMotionFX
         bool GetVector4ParameterValue(const char* paramName, AZ::Vector4* outValue);
         bool GetRotationParameterValue(const char* paramName, AZ::Quaternion* outRotation);
 
-        bool GetParameterValueAsFloat(uint32 paramIndex, float* outValue);
-        bool GetParameterValueAsBool(uint32 paramIndex, bool* outValue);
-        bool GetParameterValueAsInt(uint32 paramIndex, int32* outValue);
-        bool GetVector2ParameterValue(uint32 paramIndex, AZ::Vector2* outValue);
-        bool GetVector3ParameterValue(uint32 paramIndex, AZ::Vector3* outValue);
-        bool GetVector4ParameterValue(uint32 paramIndex, AZ::Vector4* outValue);
-        bool GetRotationParameterValue(uint32 paramIndex, AZ::Quaternion* outRotation);
+        bool GetParameterValueAsFloat(size_t paramIndex, float* outValue);
+        bool GetParameterValueAsBool(size_t paramIndex, bool* outValue);
+        bool GetParameterValueAsInt(size_t paramIndex, int32* outValue);
+        bool GetVector2ParameterValue(size_t paramIndex, AZ::Vector2* outValue);
+        bool GetVector3ParameterValue(size_t paramIndex, AZ::Vector3* outValue);
+        bool GetVector4ParameterValue(size_t paramIndex, AZ::Vector4* outValue);
+        bool GetRotationParameterValue(size_t paramIndex, AZ::Quaternion* outRotation);
 
         void SetMotionSet(MotionSet* motionSet);
 
         void CreateParameterValues();
         void AddMissingParameterValues();   // add the missing parameters that the anim graph has to this anim graph instance
-        void ReInitParameterValue(uint32 index);
+        void ReInitParameterValue(size_t index);
         void ReInitParameterValues();
-        void RemoveParameterValue(uint32 index, bool delFromMem = true);
+        void RemoveParameterValue(size_t index, bool delFromMem = true);
         void AddParameterValue();       // add the last anim graph parameter to this instance
-        void InsertParameterValue(uint32 index);    // add the parameter of the animgraph, at a given index
-        void MoveParameterValue(uint32 oldIndex, uint32 newIndex);   // move the parameter from old index to new index
+        void InsertParameterValue(size_t index);    // add the parameter of the animgraph, at a given index
+        void MoveParameterValue(size_t oldIndex, size_t newIndex);   // move the parameter from old index to new index
         void RemoveAllParameters(bool delFromMem);
 
         template <typename T>
-        MCORE_INLINE T* GetParameterValueChecked(uint32 index) const
+        MCORE_INLINE T* GetParameterValueChecked(size_t index) const
         {
             MCore::Attribute* baseAttrib = mParamValues[index];
             if (baseAttrib->GetType() == T::TYPE_ID)
@@ -126,7 +126,7 @@ namespace EMotionFX
             return nullptr;
         }
 
-        MCORE_INLINE MCore::Attribute* GetParameterValue(uint32 index) const                            { return mParamValues[index]; }
+        MCORE_INLINE MCore::Attribute* GetParameterValue(size_t index) const                            { return mParamValues[index]; }
         MCore::Attribute* FindParameter(const AZStd::string& name) const;
         AZ::Outcome<size_t> FindParameterIndex(const AZStd::string& name) const;
 
@@ -160,7 +160,7 @@ namespace EMotionFX
         void RemoveAllInternalAttributes();
         void ReserveInternalAttributes(size_t totalNumInternalAttributes);
         void RemoveInternalAttribute(size_t index, bool delFromMem = true);   // removes the internal attribute (does not update any indices of other attributes)
-        uint32 AddInternalAttribute(MCore::Attribute* attribute);           // returns the index of the new added attribute
+        size_t AddInternalAttribute(MCore::Attribute* attribute);           // returns the index of the new added attribute
 
         AnimGraphObjectData* FindOrCreateUniqueObjectData(const AnimGraphObject* object);
         AnimGraphNodeData* FindOrCreateUniqueNodeData(const AnimGraphNode* node);
@@ -195,7 +195,7 @@ namespace EMotionFX
         void SetIsOwnedByRuntime(bool isOwnedByRuntime);
         bool GetIsOwnedByRuntime() const;
 
-        ActorInstance* FindActorInstanceFromParentDepth(uint32 parentDepth) const;
+        ActorInstance* FindActorInstanceFromParentDepth(size_t parentDepth) const;
 
         void SetVisualizeScale(float scale);
         float GetVisualizeScale() const;
@@ -237,11 +237,11 @@ namespace EMotionFX
         void CollectActiveAnimGraphNodes(AZStd::vector<AnimGraphNode*>* outNodes, const AZ::TypeId& nodeType = AZ::TypeId::CreateNull()); // MCORE_INVALIDINDEX32 means all node types
         void CollectActiveNetTimeSyncNodes(AZStd::vector<AnimGraphNode*>* outNodes);
 
-        MCORE_INLINE uint32 GetObjectFlags(uint32 objectIndex) const                                            { return mObjectFlags[objectIndex]; }
-        MCORE_INLINE void SetObjectFlags(uint32 objectIndex, uint32 flags)                                      { mObjectFlags[objectIndex] = flags; }
-        MCORE_INLINE void EnableObjectFlags(uint32 objectIndex, uint32 flagsToEnable)                           { mObjectFlags[objectIndex] |= flagsToEnable; }
-        MCORE_INLINE void DisableObjectFlags(uint32 objectIndex, uint32 flagsToDisable)                         { mObjectFlags[objectIndex] &= ~flagsToDisable; }
-        MCORE_INLINE void SetObjectFlags(uint32 objectIndex, uint32 flags, bool enabled)
+        MCORE_INLINE uint32 GetObjectFlags(size_t objectIndex) const                                            { return mObjectFlags[objectIndex]; }
+        MCORE_INLINE void SetObjectFlags(size_t objectIndex, uint32 flags)                                      { mObjectFlags[objectIndex] = flags; }
+        MCORE_INLINE void EnableObjectFlags(size_t objectIndex, uint32 flagsToEnable)                           { mObjectFlags[objectIndex] |= flagsToEnable; }
+        MCORE_INLINE void DisableObjectFlags(size_t objectIndex, uint32 flagsToDisable)                         { mObjectFlags[objectIndex] &= ~flagsToDisable; }
+        MCORE_INLINE void SetObjectFlags(size_t objectIndex, uint32 flags, bool enabled)
         {
             if (enabled)
             {
@@ -252,25 +252,25 @@ namespace EMotionFX
                 mObjectFlags[objectIndex] &= ~flags;
             }
         }
-        MCORE_INLINE bool GetIsObjectFlagEnabled(uint32 objectIndex, uint32 flag) const                         { return (mObjectFlags[objectIndex] & flag) != 0; }
+        MCORE_INLINE bool GetIsObjectFlagEnabled(size_t objectIndex, uint32 flag) const                         { return (mObjectFlags[objectIndex] & flag) != 0; }
 
-        MCORE_INLINE bool GetIsOutputReady(uint32 objectIndex) const                                            { return (mObjectFlags[objectIndex] & OBJECTFLAGS_OUTPUT_READY) != 0; }
-        MCORE_INLINE void SetIsOutputReady(uint32 objectIndex, bool isReady)                                    { SetObjectFlags(objectIndex, OBJECTFLAGS_OUTPUT_READY, isReady); }
+        MCORE_INLINE bool GetIsOutputReady(size_t objectIndex) const                                            { return (mObjectFlags[objectIndex] & OBJECTFLAGS_OUTPUT_READY) != 0; }
+        MCORE_INLINE void SetIsOutputReady(size_t objectIndex, bool isReady)                                    { SetObjectFlags(objectIndex, OBJECTFLAGS_OUTPUT_READY, isReady); }
 
-        MCORE_INLINE bool GetIsSynced(uint32 objectIndex) const                                                 { return (mObjectFlags[objectIndex] & OBJECTFLAGS_SYNCED) != 0; }
-        MCORE_INLINE void SetIsSynced(uint32 objectIndex, bool isSynced)                                        { SetObjectFlags(objectIndex, OBJECTFLAGS_SYNCED, isSynced); }
+        MCORE_INLINE bool GetIsSynced(size_t objectIndex) const                                                 { return (mObjectFlags[objectIndex] & OBJECTFLAGS_SYNCED) != 0; }
+        MCORE_INLINE void SetIsSynced(size_t objectIndex, bool isSynced)                                        { SetObjectFlags(objectIndex, OBJECTFLAGS_SYNCED, isSynced); }
 
-        MCORE_INLINE bool GetIsResynced(uint32 objectIndex) const                                               { return (mObjectFlags[objectIndex] & OBJECTFLAGS_RESYNC) != 0; }
-        MCORE_INLINE void SetIsResynced(uint32 objectIndex, bool isResynced)                                    { SetObjectFlags(objectIndex, OBJECTFLAGS_RESYNC, isResynced); }
+        MCORE_INLINE bool GetIsResynced(size_t objectIndex) const                                               { return (mObjectFlags[objectIndex] & OBJECTFLAGS_RESYNC) != 0; }
+        MCORE_INLINE void SetIsResynced(size_t objectIndex, bool isResynced)                                    { SetObjectFlags(objectIndex, OBJECTFLAGS_RESYNC, isResynced); }
 
-        MCORE_INLINE bool GetIsUpdateReady(uint32 objectIndex) const                                            { return (mObjectFlags[objectIndex] & OBJECTFLAGS_UPDATE_READY) != 0; }
-        MCORE_INLINE void SetIsUpdateReady(uint32 objectIndex, bool isReady)                                    { SetObjectFlags(objectIndex, OBJECTFLAGS_UPDATE_READY, isReady); }
+        MCORE_INLINE bool GetIsUpdateReady(size_t objectIndex) const                                            { return (mObjectFlags[objectIndex] & OBJECTFLAGS_UPDATE_READY) != 0; }
+        MCORE_INLINE void SetIsUpdateReady(size_t objectIndex, bool isReady)                                    { SetObjectFlags(objectIndex, OBJECTFLAGS_UPDATE_READY, isReady); }
 
-        MCORE_INLINE bool GetIsTopDownUpdateReady(uint32 objectIndex) const                                     { return (mObjectFlags[objectIndex] & OBJECTFLAGS_TOPDOWNUPDATE_READY) != 0; }
-        MCORE_INLINE void SetIsTopDownUpdateReady(uint32 objectIndex, bool isReady)                             { SetObjectFlags(objectIndex, OBJECTFLAGS_TOPDOWNUPDATE_READY, isReady); }
+        MCORE_INLINE bool GetIsTopDownUpdateReady(size_t objectIndex) const                                     { return (mObjectFlags[objectIndex] & OBJECTFLAGS_TOPDOWNUPDATE_READY) != 0; }
+        MCORE_INLINE void SetIsTopDownUpdateReady(size_t objectIndex, bool isReady)                             { SetObjectFlags(objectIndex, OBJECTFLAGS_TOPDOWNUPDATE_READY, isReady); }
 
-        MCORE_INLINE bool GetIsPostUpdateReady(uint32 objectIndex) const                                        { return (mObjectFlags[objectIndex] & OBJECTFLAGS_POSTUPDATE_READY) != 0; }
-        MCORE_INLINE void SetIsPostUpdateReady(uint32 objectIndex, bool isReady)                                { SetObjectFlags(objectIndex, OBJECTFLAGS_POSTUPDATE_READY, isReady); }
+        MCORE_INLINE bool GetIsPostUpdateReady(size_t objectIndex) const                                        { return (mObjectFlags[objectIndex] & OBJECTFLAGS_POSTUPDATE_READY) != 0; }
+        MCORE_INLINE void SetIsPostUpdateReady(size_t objectIndex, bool isReady)                                { SetObjectFlags(objectIndex, OBJECTFLAGS_POSTUPDATE_READY, isReady); }
 
         const InitSettings& GetInitSettings() const;
         const AnimGraphEventBuffer& GetEventBuffer() const;

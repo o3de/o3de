@@ -39,8 +39,8 @@ namespace EMotionFX
     public:
         struct MapEntry
         {
-            size_t mFirstNameID = InvalidIndex;   /**< The first name ID, which is the primary key in the map. */
-            size_t mSecondNameID = InvalidIndex;  /**< The second name ID. */
+            uint32 mFirstNameID = InvalidIndex32;   /**< The first name ID, which is the primary key in the map. */
+            uint32 mSecondNameID = InvalidIndex32;  /**< The second name ID. */
         };
 
         static NodeMap* Create();
@@ -57,7 +57,7 @@ namespace EMotionFX
         const AZStd::string& GetSecondNameString(size_t entryIndex) const;
         bool GetHasEntry(const char* firstName) const;
         size_t FindEntryIndexByName(const char* firstName) const;
-        size_t FindEntryIndexByNameID(size_t firstNameID) const;
+        size_t FindEntryIndexByNameID(uint32 firstNameID) const;
         const char* FindSecondName(const char* firstName) const;
         void FindSecondName(const char* firstName, AZStd::string* outString);
 
@@ -69,7 +69,7 @@ namespace EMotionFX
         void SetEntry(const char* firstName, const char* secondName, bool addIfNotExists);
         void RemoveEntryByIndex(size_t entryIndex);
         void RemoveEntryByName(const char* firstName);
-        void RemoveEntryByNameID(size_t firstNameID);
+        void RemoveEntryByNameID(uint32 firstNameID);
 
         // filename
         void SetFileName(const char* fileName);

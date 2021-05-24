@@ -29,20 +29,20 @@ namespace EMotionFX
         AnimGraphRefCountedDataPool();
         ~AnimGraphRefCountedDataPool();
 
-        void Resize(uint32 numItems);
+        void Resize(size_t numItems);
 
         AnimGraphRefCountedData* RequestNew();
         void Free(AnimGraphRefCountedData* item);
 
         MCORE_INLINE size_t GetNumFreeItems() const             { return mFreeItems.size(); }
         MCORE_INLINE size_t GetNumItems() const                 { return mItems.size(); }
-        MCORE_INLINE size_t GetNumUsedItems() const             { return (mItems.size() - mFreeItems.size()); }
-        MCORE_INLINE uint32 GetNumMaxUsedItems() const          { return mMaxUsed; }
+        MCORE_INLINE size_t GetNumUsedItems() const             { return mItems.size() - mFreeItems.size(); }
+        MCORE_INLINE size_t GetNumMaxUsedItems() const          { return mMaxUsed; }
         MCORE_INLINE void ResetMaxUsedItems()                   { mMaxUsed = 0; }
 
     private:
         AZStd::vector<AnimGraphRefCountedData*> mItems;
         AZStd::vector<AnimGraphRefCountedData*> mFreeItems;
-        uint32                                  mMaxUsed;
+        size_t                                  mMaxUsed;
     };
 }   // namespace EMotionFX

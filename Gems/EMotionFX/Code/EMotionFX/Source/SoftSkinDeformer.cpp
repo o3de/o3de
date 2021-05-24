@@ -61,7 +61,7 @@ namespace EMotionFX
 
 
     // clone this class
-    MeshDeformer* SoftSkinDeformer::Clone(Mesh* mesh)
+    MeshDeformer* SoftSkinDeformer::Clone(Mesh* mesh) const
     {
         // create the new cloned deformer
         SoftSkinDeformer* result = aznew SoftSkinDeformer(mesh);
@@ -89,7 +89,7 @@ namespace EMotionFX
         const size_t numBones = mBoneMatrices.size();
         for (size_t i = 0; i < numBones; i++)
         {
-            const uint32 nodeIndex = mNodeNumbers[i];
+            const size_t nodeIndex = mNodeNumbers[i];
             mBoneMatrices[i] = skinningMatrices[nodeIndex];
         }
 
@@ -240,15 +240,15 @@ namespace EMotionFX
                 SkinInfluence* influence = skinningLayer->GetInfluence(i, a);
 
                 // get the bone index in the array
-                uint32 boneIndex = FindLocalBoneIndex(influence->GetNodeNr());
+                size_t boneIndex = FindLocalBoneIndex(influence->GetNodeNr());
 
                 // if the bone is not found in our array
-                if (boneIndex == MCORE_INVALIDINDEX32)
+                if (boneIndex == InvalidIndex)
                 {
                     // add the bone to the array of bones in this deformer
                     mNodeNumbers.emplace_back(influence->GetNodeNr());
                     mBoneMatrices.emplace_back(mat);
-                    boneIndex = static_cast<uint32>(mBoneMatrices.size()) - 1;
+                    boneIndex = mBoneMatrices.size() - 1;
                 }
 
                 // set the bone number in the influence

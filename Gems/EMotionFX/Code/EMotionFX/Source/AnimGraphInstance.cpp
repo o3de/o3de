@@ -143,12 +143,11 @@ namespace EMotionFX
     {
         if (delFromMem)
         {
-            const uint32 numParams = mParamValues.size();
-            for (uint32 i = 0; i < numParams; ++i)
+            for (MCore::Attribute* mParamValue : mParamValues)
             {
-                if (mParamValues[i])
+                if (mParamValue)
                 {
-                    delete mParamValues[i];
+                    delete mParamValue;
                 }
             }
         }
@@ -172,12 +171,12 @@ namespace EMotionFX
     }
 
 
-    uint32 AnimGraphInstance::AddInternalAttribute(MCore::Attribute* attribute)
+    size_t AnimGraphInstance::AddInternalAttribute(MCore::Attribute* attribute)
     {
         MCore::LockGuard lock(mMutex);
 
         m_internalAttributes.emplace_back(attribute);
-        return static_cast<uint32>(m_internalAttributes.size() - 1);
+        return m_internalAttributes.size() - 1;
     }
 
 
@@ -266,11 +265,11 @@ namespace EMotionFX
         RemoveAllParameters(true);
 
         const ValueParameterVector& valueParameters = mAnimGraph->RecursivelyGetValueParameters();
-        mParamValues.resize(static_cast<uint32>(valueParameters.size()));
+        mParamValues.resize(valueParameters.size());
 
         // init the values
-        const uint32 numParams = mParamValues.size();
-        for (uint32 i = 0; i < numParams; ++i)
+        const size_t numParams = mParamValues.size();
+        for (size_t i = 0; i < numParams; ++i)
         {
             mParamValues[i] = valueParameters[i]->ConstructDefaultValueAsAttribute();
         }
@@ -282,28 +281,27 @@ namespace EMotionFX
     {
         // check how many parameters we need to add
         const ValueParameterVector& valueParameters = mAnimGraph->RecursivelyGetValueParameters();
-        const int32 numToAdd = static_cast<uint32>(valueParameters.size()) - mParamValues.size();
+        const ptrdiff_t numToAdd = aznumeric_cast<ptrdiff_t>(valueParameters.size()) - mParamValues.size();
         if (numToAdd <= 0)
         {
             return;
         }
 
         // make sure we have the right space pre-allocated
-        mParamValues.reserve(static_cast<uint32>(valueParameters.size()));
+        mParamValues.reserve(valueParameters.size());
 
         // add the remaining parameters
-        const uint32 startIndex = mParamValues.size();
-        for (int32 i = 0; i < numToAdd; ++i)
+        const size_t startIndex = mParamValues.size();
+        for (ptrdiff_t i = 0; i < numToAdd; ++i)
         {
-            const uint32 index = startIndex + i;
-            mParamValues.emplace_back();
-            mParamValues.back() = valueParameters[index]->ConstructDefaultValueAsAttribute();
+            const size_t index = startIndex + i;
+            mParamValues.emplace_back(valueParameters[index]->ConstructDefaultValueAsAttribute());
         }
     }
 
 
     // remove a parameter value
-    void AnimGraphInstance::RemoveParameterValue(uint32 index, bool delFromMem)
+    void AnimGraphInstance::RemoveParameterValue(size_t index, bool delFromMem)
     {
         if (delFromMem)
         {
@@ -318,7 +316,7 @@ namespace EMotionFX
 
 
     // reinitialize the parameter
-    void AnimGraphInstance::ReInitParameterValue(uint32 index)
+    void AnimGraphInstance::ReInitParameterValue(size_t index)
     {
         if (mParamValues[index])
         {
@@ -331,8 +329,8 @@ namespace EMotionFX
 
     void AnimGraphInstance::ReInitParameterValues()
     {
-        const AZ::u32 parameterValueCount = mParamValues.size();
-        for (AZ::u32 i = 0; i < parameterValueCount; ++i)
+        const size_t parameterValueCount = mParamValues.size();
+        for (size_t i = 0; i < parameterValueCount; ++i)
         {
             ReInitParameterValue(i);
         }
@@ -440,8 +438,8 @@ namespace EMotionFX
         else
         {
             // get the number of child nodes, iterate through them and call the function recursively in case we are dealing with a blend tree or another node
-            const uint32 numChildNodes = node->GetNumChildNodes();
-            for (uint32 i = 0; i < numChildNodes; ++i)
+            const size_t numChildNodes = node->GetNumChildNodes();
+            for (size_t i = 0; i < numChildNodes; ++i)
             {
                 RecursiveSwitchToEntryState(node->GetChildNode(i));
             }
@@ -470,8 +468,8 @@ namespace EMotionFX
         }
 
         // get the number of child nodes, iterate through them and call the function recursively
-        const uint32 numChildNodes = node->GetNumChildNodes();
-        for (uint32 i = 0; i < numChildNodes; ++i)
+        const size_t numChildNodes = node->GetNumChildNodes();
+        for (size_t i = 0; i < numChildNodes; ++i)
         {
             RecursiveResetCurrentState(node->GetChildNode(i));
         }
@@ -494,7 +492,7 @@ namespace EMotionFX
             return nullptr;
         }
 
-        return mParamValues[static_cast<uint32>(paramIndex.GetValue())];
+        return mParamValues[paramIndex.GetValue()];
     }
 
 
@@ -507,7 +505,7 @@ namespace EMotionFX
 
 
     // add the parameter of the animgraph, at a given index
-    void AnimGraphInstance::InsertParameterValue(uint32 index)
+    void AnimGraphInstance::InsertParameterValue(size_t index)
     {
         mParamValues.emplace(AZStd::next(begin(mParamValues), index), nullptr);
         ReInitParameterValue(index);
@@ -515,7 +513,7 @@ namespace EMotionFX
 
 
     // move the parameter from old index to new index
-    void AnimGraphInstance::MoveParameterValue(uint32 oldIndex, uint32 newIndex)
+    void AnimGraphInstance::MoveParameterValue(size_t oldIndex, size_t newIndex)
     {
         MCore::Attribute* oldAttribute = mParamValues[oldIndex];
 
@@ -523,18 +521,18 @@ namespace EMotionFX
         // otherwise, move to the left of new index
         if (oldIndex > newIndex)
         {
-            for (uint32 paramIndex = oldIndex; paramIndex > newIndex; paramIndex--)
+            for (size_t paramIndex = oldIndex; paramIndex > newIndex; paramIndex--)
             {
-                const uint32 prevIndex = paramIndex - 1;
+                const size_t prevIndex = paramIndex - 1;
                 mParamValues[paramIndex] = mParamValues[prevIndex];
             }
             mParamValues[newIndex] = oldAttribute;
         }
         else
         {
-            for (uint32 paramIndex = oldIndex; paramIndex < newIndex; paramIndex++)
+            for (size_t paramIndex = oldIndex; paramIndex < newIndex; paramIndex++)
             {
-                const uint32 nexIndex = paramIndex + 1;
+                const size_t nexIndex = paramIndex + 1;
                 mParamValues[paramIndex] = mParamValues[nexIndex];
             }
             mParamValues[newIndex] = oldAttribute;
@@ -609,7 +607,7 @@ namespace EMotionFX
 
 
     // find an actor instance based on a parent depth value
-    ActorInstance* AnimGraphInstance::FindActorInstanceFromParentDepth(uint32 parentDepth) const
+    ActorInstance* AnimGraphInstance::FindActorInstanceFromParentDepth(size_t parentDepth) const
     {
         // start with the actor instance this anim graph instance is working on
         ActorInstance* curInstance = mActorInstance;
@@ -619,7 +617,7 @@ namespace EMotionFX
         }
 
         // repeat until we are at the root
-        uint32 depth = 1;
+        size_t depth = 1;
         while (curInstance)
         {
             // get the attachment object
@@ -667,7 +665,7 @@ namespace EMotionFX
             return;
         }
 
-        const uint32 index = uniqueData->GetObject()->GetObjectIndex();
+        const size_t index = uniqueData->GetObject()->GetObjectIndex();
         if (delFromMem && m_uniqueDatas[index])
         {
             m_uniqueDatas[index]->Destroy();
@@ -682,7 +680,7 @@ namespace EMotionFX
     {
         AnimGraphObjectData* data = m_uniqueDatas[index];
         m_uniqueDatas.erase(m_uniqueDatas.begin() + index);
-        mObjectFlags.erase(AZStd::next(begin(mObjectFlags), static_cast<uint32>(index)));
+        mObjectFlags.erase(AZStd::next(begin(mObjectFlags), index));
         if (delFromMem && data)
         {
             data->Destroy();
@@ -809,10 +807,10 @@ namespace EMotionFX
     // init the hashmap
     void AnimGraphInstance::InitUniqueDatas()
     {
-        const uint32 numObjects = mAnimGraph->GetNumObjects();
+        const size_t numObjects = mAnimGraph->GetNumObjects();
         m_uniqueDatas.resize(numObjects);
         mObjectFlags.resize(numObjects);
-        for (uint32 i = 0; i < numObjects; ++i)
+        for (size_t i = 0; i < numObjects; ++i)
         {
             m_uniqueDatas[i] = nullptr;
             mObjectFlags[i] = 0;
@@ -932,10 +930,9 @@ namespace EMotionFX
     // reset all node flags
     void AnimGraphInstance::ResetFlagsForAllObjects(uint32 flagsToDisable)
     {
-        const uint32 numObjects = mObjectFlags.size();
-        for (uint32 i = 0; i < numObjects; ++i)
+        for (uint32& mObjectFlag : mObjectFlags)
         {
-            mObjectFlags[i] &= ~flagsToDisable;
+            mObjectFlag &= ~flagsToDisable;
         }
     }
 
@@ -943,8 +940,8 @@ namespace EMotionFX
     // reset all node pose ref counts
     void AnimGraphInstance::ResetPoseRefCountsForAllNodes()
     {
-        const uint32 numNodes = mAnimGraph->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = mAnimGraph->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             mAnimGraph->GetNode(i)->ResetPoseRefCount(this);
         }
@@ -954,8 +951,8 @@ namespace EMotionFX
     // reset all node pose ref counts
     void AnimGraphInstance::ResetRefDataRefCountsForAllNodes()
     {
-        const uint32 numNodes = mAnimGraph->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = mAnimGraph->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             mAnimGraph->GetNode(i)->ResetRefDataRefCount(this);
         }
@@ -977,8 +974,8 @@ namespace EMotionFX
     // reset flags for all nodes
     void AnimGraphInstance::ResetFlagsForAllNodes(uint32 flagsToDisable)
     {
-        const uint32 numNodes = mAnimGraph->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = mAnimGraph->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             AnimGraphNode* node = mAnimGraph->GetNode(i);
             mObjectFlags[node->GetObjectIndex()] &= ~flagsToDisable;
@@ -986,8 +983,8 @@ namespace EMotionFX
             if (GetEMotionFX().GetIsInEditorMode())
             {
                 // reset all connections
-                const uint32 numConnections = node->GetNumConnections();
-                for (uint32 c = 0; c < numConnections; ++c)
+                const size_t numConnections = node->GetNumConnections();
+                for (size_t c = 0; c < numConnections; ++c)
                 {
                     node->GetConnection(c)->SetIsVisited(false);
                 }
@@ -1024,7 +1021,7 @@ namespace EMotionFX
 
     AnimGraphObjectData* AnimGraphInstance::FindOrCreateUniqueObjectData(const AnimGraphObject* object)
     {
-        const AZ::u32 objectIndex = object->GetObjectIndex();
+        const size_t objectIndex = object->GetObjectIndex();
         AnimGraphObjectData* uniqueData = m_uniqueDatas[objectIndex];
         if (uniqueData)
         {
@@ -1062,8 +1059,8 @@ namespace EMotionFX
     // init all internal attributes
     void AnimGraphInstance::InitInternalAttributes()
     {
-        const uint32 numNodes = mAnimGraph->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = mAnimGraph->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             mAnimGraph->GetNode(i)->InitInternalAttributes(this);
         }
@@ -1258,8 +1255,8 @@ namespace EMotionFX
         const uint32 threadIndex = mActorInstance->GetThreadIndex();
         AnimGraphRefCountedDataPool& refDataPool = GetEMotionFX().GetThreadData(threadIndex)->GetRefCountedDataPool();
 
-        const uint32 numNodes = mAnimGraph->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = mAnimGraph->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             const AnimGraphNode* node = mAnimGraph->GetNode(i);
             AnimGraphNodeData* nodeData = static_cast<AnimGraphNodeData*>(m_uniqueDatas[node->GetObjectIndex()]);
@@ -1292,7 +1289,7 @@ namespace EMotionFX
         }
     }
 
-    bool AnimGraphInstance::GetParameterValueAsFloat(uint32 paramIndex, float* outValue)
+    bool AnimGraphInstance::GetParameterValueAsFloat(size_t paramIndex, float* outValue)
     {
         MCore::AttributeFloat* floatAttribute = GetParameterValueChecked<MCore::AttributeFloat>(paramIndex);
         if (floatAttribute)
@@ -1318,7 +1315,7 @@ namespace EMotionFX
         return false;
     }
 
-    bool AnimGraphInstance::GetParameterValueAsBool(uint32 paramIndex, bool* outValue)
+    bool AnimGraphInstance::GetParameterValueAsBool(size_t paramIndex, bool* outValue)
     {
         float floatValue;
         if (GetParameterValueAsFloat(paramIndex, &floatValue))
@@ -1331,7 +1328,7 @@ namespace EMotionFX
     }
 
 
-    bool AnimGraphInstance::GetParameterValueAsInt(uint32 paramIndex, int32* outValue)
+    bool AnimGraphInstance::GetParameterValueAsInt(size_t paramIndex, int32* outValue)
     {
         float floatValue;
         if (GetParameterValueAsFloat(paramIndex, &floatValue))
@@ -1344,7 +1341,7 @@ namespace EMotionFX
     }
 
 
-    bool AnimGraphInstance::GetVector2ParameterValue(uint32 paramIndex, AZ::Vector2* outValue)
+    bool AnimGraphInstance::GetVector2ParameterValue(size_t paramIndex, AZ::Vector2* outValue)
     {
         MCore::AttributeVector2* param = GetParameterValueChecked<MCore::AttributeVector2>(paramIndex);
         if (param)
@@ -1357,7 +1354,7 @@ namespace EMotionFX
     }
 
 
-    bool AnimGraphInstance::GetVector3ParameterValue(uint32 paramIndex, AZ::Vector3* outValue)
+    bool AnimGraphInstance::GetVector3ParameterValue(size_t paramIndex, AZ::Vector3* outValue)
     {
         MCore::AttributeVector3* param = GetParameterValueChecked<MCore::AttributeVector3>(paramIndex);
         if (param)
@@ -1370,7 +1367,7 @@ namespace EMotionFX
     }
 
 
-    bool AnimGraphInstance::GetVector4ParameterValue(uint32 paramIndex, AZ::Vector4* outValue)
+    bool AnimGraphInstance::GetVector4ParameterValue(size_t paramIndex, AZ::Vector4* outValue)
     {
         MCore::AttributeVector4* param = GetParameterValueChecked<MCore::AttributeVector4>(paramIndex);
         if (param)
@@ -1383,7 +1380,7 @@ namespace EMotionFX
     }
 
 
-    bool AnimGraphInstance::GetRotationParameterValue(uint32 paramIndex, AZ::Quaternion* outRotation)
+    bool AnimGraphInstance::GetRotationParameterValue(size_t paramIndex, AZ::Quaternion* outRotation)
     {
         MCore::AttributeQuaternion* param = GetParameterValueChecked<MCore::AttributeQuaternion>(paramIndex);
         if (param)
@@ -1428,7 +1425,7 @@ namespace EMotionFX
             return false;
         }
 
-        return GetParameterValueAsFloat(static_cast<uint32>(index.GetValue()), outValue);
+        return GetParameterValueAsFloat(index.GetValue(), outValue);
     }
 
 
@@ -1440,7 +1437,7 @@ namespace EMotionFX
             return false;
         }
 
-        return GetParameterValueAsBool(static_cast<uint32>(index.GetValue()), outValue);
+        return GetParameterValueAsBool(index.GetValue(), outValue);
     }
 
 
@@ -1452,7 +1449,7 @@ namespace EMotionFX
             return false;
         }
 
-        return GetParameterValueAsInt(static_cast<uint32>(index.GetValue()), outValue);
+        return GetParameterValueAsInt(index.GetValue(), outValue);
     }
 
 
@@ -1464,7 +1461,7 @@ namespace EMotionFX
             return false;
         }
 
-        return GetVector2ParameterValue(static_cast<uint32>(index.GetValue()), outValue);
+        return GetVector2ParameterValue(index.GetValue(), outValue);
     }
 
 
@@ -1476,7 +1473,7 @@ namespace EMotionFX
             return false;
         }
 
-        return GetVector3ParameterValue(static_cast<uint32>(index.GetValue()), outValue);
+        return GetVector3ParameterValue(index.GetValue(), outValue);
     }
 
 
@@ -1488,7 +1485,7 @@ namespace EMotionFX
             return false;
         }
 
-        return GetVector4ParameterValue(static_cast<uint32>(index.GetValue()), outValue);
+        return GetVector4ParameterValue(index.GetValue(), outValue);
     }
 
 
@@ -1500,7 +1497,7 @@ namespace EMotionFX
             return false;
         }
 
-        return GetRotationParameterValue(static_cast<uint32>(index.GetValue()), outRotation);
+        return GetRotationParameterValue(index.GetValue(), outRotation);
     }
 } // namespace EMotionFX
 

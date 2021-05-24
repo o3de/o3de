@@ -68,7 +68,7 @@ namespace EMotionFX
 
 
     // get the node number of a given index
-    uint16 NodeGroup::GetNode(uint16 index)
+    uint16 NodeGroup::GetNode(uint16 index) const
     {
         return mNodes[index];
     }

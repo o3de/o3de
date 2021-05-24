@@ -30,7 +30,7 @@ namespace EMotionFX
         //uint32 RecursiveCalcNumNodes() const;
         //void RecursiveCalcStatistics(Statistics& outStatistics) const;
         //uint32 RecursiveCalcNumNodeConnections() const;
-        //void DecreaseInternalAttributeIndices(uint32 decreaseEverythingHigherThan);
+        //void DecreaseInternalAttributeIndices(size_t decreaseEverythingHigherThan);
         //AZStd::string GenerateNodeName(const AZStd::unordered_set<AZStd::string>& nameReserveList, const char* prefix = "Node") const;
         MOCK_CONST_METHOD0(GetNumParameters, size_t());
         MOCK_CONST_METHOD0(GetNumValueParameters, size_t());

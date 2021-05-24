@@ -75,7 +75,7 @@ namespace EMotionFX
          * @param mesh The mesh to apply the deformer on.
          * @result A pointer to the newly created clone of this deformer.
          */
-        MeshDeformer* Clone(Mesh* mesh) override;
+        MeshDeformer* Clone(Mesh* mesh) const override;
 
         /**
          * Returns the unique type ID of the deformer.
@@ -104,7 +104,7 @@ namespace EMotionFX
          * @param index The local bone number, which must be in range of [0..GetNumLocalBones()-1].
          * @result The node number, which is in range of [0..Actor::GetNumNodes()-1], depending on the actor where this deformer works on.
          */
-        MCORE_INLINE uint32 GetLocalBone(uint32 index) const                { return m_bones[index].mNodeNr; }
+        MCORE_INLINE size_t GetLocalBone(size_t index) const                { return m_bones[index].mNodeNr; }
 
         /**
          * Pre-allocate space for a given number of local bones.
@@ -119,11 +119,11 @@ namespace EMotionFX
          */
         struct EMFX_API BoneInfo
         {
-            uint32                  mNodeNr;        /**< The node number. */
+            size_t                  mNodeNr;        /**< The node number. */
             MCore::DualQuaternion   mDualQuat;      /**< The dual quat of the pre-calculated matrix that contains the "globalMatrix * inverse(bindPoseMatrix)". */
 
             MCORE_INLINE BoneInfo()
-                : mNodeNr(MCORE_INVALIDINDEX32) {}
+                : mNodeNr(InvalidIndex) {}
         };
         AZStd::vector<BoneInfo> m_bones; /**< The array of bone information used for pre-calculation. */
 
@@ -155,6 +155,6 @@ namespace EMotionFX
          * @param nodeIndex The node number to search for.
          * @result The index inside the mBones member array, which uses the given node.
          */
-        AZ::Outcome<size_t> FindLocalBoneIndex(uint32 nodeIndex) const;
+        AZ::Outcome<size_t> FindLocalBoneIndex(size_t nodeIndex) const;
     };
 } // namespace EMotionFX

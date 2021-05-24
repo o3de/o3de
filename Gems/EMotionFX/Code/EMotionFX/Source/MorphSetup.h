@@ -61,7 +61,7 @@ namespace EMotionFX
          * @param delFromMem When set to true, the morph target will be deleted from memory as well. When false, it will
          *                   only be removed from the array of morph targets inside this class.
          */
-        void RemoveMorphTarget(uint32 nr, bool delFromMem = true);
+        void RemoveMorphTarget(size_t nr, bool delFromMem = true);
 
         /**
          * Remove a given morph target.
@@ -89,24 +89,24 @@ namespace EMotionFX
          * Find a morph target index by its unique ID, which has been calculated based on its name.
          * All morph targets with the same ID will also have the same name.
          * @param id The ID to search for.
-         * @result The morph target number, or MCORE_INVALIDINDEX32 when not found. You can use the returned number with the method
+         * @result The morph target number, or InvalidIndex when not found. You can use the returned number with the method
          *         GetMorphTarget(nr) in order to convert it into a direct pointer to the morph target.
          */
-        uint32 FindMorphTargetNumberByID(uint32 id) const;
+        size_t FindMorphTargetNumberByID(uint32 id) const;
 
         /**
          * Find a morph target index by its name.
          * Please remember that this is case sensitive.
          * @result The index of the morph target that you can pass to GetMorphTarget(index).
          */
-        uint32 FindMorphTargetIndexByName(const char* name) const;
+        size_t FindMorphTargetIndexByName(const char* name) const;
 
         /**
          * Find a morph target index by its name.
          * Please remember that this is case insensitive.
          * @result The index of the morph target that you can pass to GetMorphTarget(index).
          */
-        uint32 FindMorphTargetIndexByNameNoCase(const char* name) const;
+        size_t FindMorphTargetIndexByNameNoCase(const char* name) const;
 
         /**
          * Find a morph target by its name.

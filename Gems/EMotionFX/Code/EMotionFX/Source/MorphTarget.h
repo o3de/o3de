@@ -259,14 +259,14 @@ namespace EMotionFX
          * Creates an exact clone of this  morph target.
          * @result Returns a pointer to an exact clone of this morph target.
          */
-        virtual MorphTarget* Clone() = 0;
+        virtual MorphTarget* Clone() const = 0;
 
         /**
          * Copy the morph target base class members over to another morph target.
          * This can be used when implementing your own Clone method for your own morph target.
          * @param target The morph target to copy the data from.
          */
-        void CopyBaseClassMemberValues(MorphTarget* target);
+        void CopyBaseClassMemberValues(MorphTarget* target) const;
 
         /**
          * Scale all transform and positional data.

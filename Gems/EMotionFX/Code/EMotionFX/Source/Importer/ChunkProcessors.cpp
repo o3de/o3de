@@ -1907,7 +1907,6 @@ namespace EMotionFX
         const MCore::Endian::EEndianType endianType = importParams.mEndianType;
         Actor* actor = importParams.mActor;
 
-        uint32 i;
         MCORE_ASSERT(actor);
         Skeleton* skeleton = actor->GetSkeleton();
 
@@ -1920,7 +1919,7 @@ namespace EMotionFX
         const uint32 numAttachmentNodes = attachmentNodesChunk.mNumNodes;
 
         // read all node attachment nodes
-        for (i = 0; i < numAttachmentNodes; ++i)
+        for (uint32 i = 0; i < numAttachmentNodes; ++i)
         {
             // get the attachment node index and endian convert it
             uint16 nodeNr;
@@ -1940,8 +1939,8 @@ namespace EMotionFX
         {
             MCore::LogDetailedInfo("- Attachment Nodes (%i):", numAttachmentNodes);
 
-            const uint32 numNodes = actor->GetNumNodes();
-            for (i = 0; i < numNodes; ++i)
+            const size_t numNodes = actor->GetNumNodes();
+            for (size_t i = 0; i < numNodes; ++i)
             {
                 // get the current node
                 Node* node = skeleton->GetNode(i);
@@ -1949,7 +1948,7 @@ namespace EMotionFX
                 // only log the attachment nodes
                 if (node->GetIsAttachmentNode())
                 {
-                    MCore::LogDetailedInfo("   + '%s' (%i)", node->GetName(), node->GetNodeIndex());
+                    MCore::LogDetailedInfo("   + '%s' (%zu)", node->GetName(), node->GetNodeIndex());
                 }
             }
         }

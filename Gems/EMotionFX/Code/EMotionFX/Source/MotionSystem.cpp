@@ -45,7 +45,7 @@ namespace EMotionFX
         GetEventManager().OnDeleteMotionSystem(this);
 
         // delete the motion infos
-        while (mMotionInstances.size())
+        while (!mMotionInstances.empty())
         {
             //delete mMotionInstances.GetLast();
             GetMotionInstancePool().Free(mMotionInstances.back());
@@ -173,10 +173,9 @@ namespace EMotionFX
     // stop all the motions that are currently playing
     void MotionSystem::StopAllMotions()
     {
-        const uint32 numInstances = mMotionInstances.size();
-        for (uint32 i = 0; i < numInstances; ++i)
+        for (MotionInstance* motionInstance : mMotionInstances)
         {
-            mMotionInstances[i]->Stop();
+            motionInstance->Stop();
         }
     }
 
@@ -184,12 +183,11 @@ namespace EMotionFX
     // stop all motion instances of a given motion
     void MotionSystem::StopAllMotions(Motion* motion)
     {
-        const uint32 numInstances = mMotionInstances.size();
-        for (uint32 i = 0; i < numInstances; ++i)
+        for (MotionInstance* motionInstance : mMotionInstances)
         {
-            if (mMotionInstances[i]->GetMotion()->GetID() == motion->GetID())
+            if (motionInstance->GetMotion()->GetID() == motion->GetID())
             {
-                mMotionInstances[i]->Stop();
+                motionInstance->Stop();
             }
         }
     }
@@ -230,10 +228,9 @@ namespace EMotionFX
     void MotionSystem::UpdateMotionInstances(float timePassed)
     {
         // update all the motion infos
-        const uint32 numInstances = mMotionInstances.size();
-        for (uint32 i = 0; i < numInstances; ++i)
+        for (MotionInstance* motionInstance : mMotionInstances)
         {
-            mMotionInstances[i]->Update(timePassed);
+            motionInstance->Update(timePassed);
         }
     }
 
@@ -241,64 +238,26 @@ namespace EMotionFX
     // check if the given motion instance still exists within the actor, so if it hasn't been deleted from memory yet
     bool MotionSystem::CheckIfIsValidMotionInstance(MotionInstance* instance) const
     {
-        // if it's a null pointer, just return
-        if (instance == nullptr)
+        return instance && AZStd::any_of(begin(mMotionInstances), end(mMotionInstances), [instance](const MotionInstance* motionInstance)
         {
-            return false;
-        }
-
-        // for all motion instances currently playing in this actor
-        const uint32 numInstances = mMotionInstances.size();
-        for (uint32 i = 0; i < numInstances; ++i)
-        {
-            // check if this one is the one we are searching for, if so, return that it is still valid
-            if (mMotionInstances[i] == instance) // if the memory object appears to be valid
-            {
-                if (mMotionInstances[i]->GetID() == instance->GetID()) // check if the id is the same, as a new motion theoretically could have received the same memory address
-                {
-                    return true;
-                }
-            }
-        }
-
-        // it's not found, this means it has already been deleted from memory and is not valid anymore
-        return false;
+            return motionInstance->GetID() == instance->GetID();
+        });
     }
 
 
     // check if there is a motion instance playing, which is an instance of a specified motion
     bool MotionSystem::CheckIfIsPlayingMotion(Motion* motion, bool ignorePausedMotions) const
     {
-        if (!motion)
+        return motion && AZStd::any_of(begin(mMotionInstances), end(mMotionInstances), [motion, ignorePausedMotions](const MotionInstance* motionInstance)
         {
-            return false;
-        }
-
-        // for all motion instances currently playing in this actor
-        const uint32 numInstances = mMotionInstances.size();
-        for (uint32 i = 0; i < numInstances; ++i)
-        {
-            const MotionInstance* motionInstance = mMotionInstances[i];
-
-            if (ignorePausedMotions && motionInstance->GetIsPaused())
-            {
-                continue;
-            }
-
-            // check if the motion instance is an instance of the motion we are searching for
-            if (motionInstance->GetMotion()->GetID() == motion->GetID())
-            {
-                return true;
-            }
-        }
-
-        // it's not found, this means it has already been deleted from memory and is not valid anymore
-        return false;
+            return !(ignorePausedMotions && motionInstance->GetIsPaused()) &&
+                motionInstance->GetMotion()->GetID() == motion->GetID();
+        });
     }
 
 
     // return given motion instance
-    MotionInstance* MotionSystem::GetMotionInstance(uint32 nr) const
+    MotionInstance* MotionSystem::GetMotionInstance(size_t nr) const
     {
         MCORE_ASSERT(nr < mMotionInstances.size());
         return mMotionInstances[nr];
@@ -330,7 +289,7 @@ namespace EMotionFX
         MCORE_ASSERT(motionQueue);
 
         // copy entries from the given queue to the motion system's one
-        for (uint32 i = 0; i < motionQueue->GetNumEntries(); ++i)
+        for (size_t i = 0; i < motionQueue->GetNumEntries(); ++i)
         {
             mMotionQueue->AddEntry(motionQueue->GetEntry(i));
         }
@@ -362,6 +321,6 @@ namespace EMotionFX
 
     bool MotionSystem::GetIsPlaying() const
     {
-        return (mMotionInstances.size() > 0);
+        return !mMotionInstances.empty();
     }
 } // namespace EMotionFX

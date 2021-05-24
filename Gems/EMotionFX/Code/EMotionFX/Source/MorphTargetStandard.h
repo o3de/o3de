@@ -104,7 +104,7 @@ namespace EMotionFX
             AZ::Quaternion      mScaleRotation;     /**< The scale rotation, as absolute value. */
             AZ::Vector3         mPosition;          /**< The position as a delta, so the difference between the original and target position. */
             AZ::Vector3         mScale;             /**< The scale as a delta, so the difference between the original and target scale. */
-            uint32              mNodeIndex;         /**< The node number to apply this on. */
+            size_t              mNodeIndex;         /**< The node number to apply this on. */
         }
         MCORE_ALIGN_POST(16);
 
@@ -182,7 +182,7 @@ namespace EMotionFX
          * @param nr The deform data number, which must be in range of [0..GetNumDeformDatas()-1].
          * @result A pointer to the deform data object.
          */
-        DeformData* GetDeformData(uint32 nr) const;
+        DeformData* GetDeformData(size_t nr) const;
 
         /**
          * Add a given deform data to the array of deform data objects.
@@ -207,13 +207,13 @@ namespace EMotionFX
          * @param nr The transformation number, must be in range of [0..GetNumTransformations()-1].
          * @result A reference to the transformation.
          */
-        Transformation& GetTransformation(uint32 nr);
+        Transformation& GetTransformation(size_t nr);
 
         /**
          * Creates an exact clone of this  morph target.
          * @result Returns a pointer to an exact clone of this morph target.
          */
-        MorphTarget* Clone() override;
+        MorphTarget* Clone() const override;
 
         /**
          * Remove all deform data objects from memory as well as from the class.
@@ -230,27 +230,27 @@ namespace EMotionFX
          * @param index The deform data to remove. The index must be in range of [0, GetNumDeformDatas()].
          * @param delFromMem Set to true (default) when you wish to also delete the specified deform data from memory.
          */
-        void RemoveDeformData(uint32 index, bool delFromMem = true);
+        void RemoveDeformData(size_t index, bool delFromMem = true);
 
         /**
          * Remove the given transformation.
          * @param index The transformation to remove. The index must be in range of [0, GetNumTransformations()].
          */
-        void RemoveTransformation(uint32 index);
+        void RemoveTransformation(size_t index);
 
         /**
          * Reserve (pre-allocate) space in the array of deform datas.
          * This does NOT change the value returned by GetNumDeformDatas().
          * @param numDeformDatas The absolute number of deform datas to pre-allocate space for.
          */
-        void ReserveDeformDatas(uint32 numDeformDatas);
+        void ReserveDeformDatas(size_t numDeformDatas);
 
         /**
          * Reserve (pre-allocate) space in the array of transformations.
          * This does NOT change the value returned by GetNumTransformations().
          * @param numTransforms The absolute number of transformations to pre-allocate space for.
          */
-        void ReserveTransformations(uint32 numTransforms);
+        void ReserveTransformations(size_t numTransforms);
 
         /**
          * Scale all transform and positional data.

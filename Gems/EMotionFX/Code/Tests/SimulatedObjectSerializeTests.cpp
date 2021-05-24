@@ -35,7 +35,7 @@ namespace EMotionFX
             size_t skeletonJointIndex;
             const Node* skeletonJoint = skeleton->FindNodeAndIndexByName(name, skeletonJointIndex);
             ASSERT_NE(skeletonJoint, nullptr);
-            ASSERT_NE(skeletonJointIndex, MCORE_INVALIDINDEX32);
+            ASSERT_NE(skeletonJointIndex, InvalidIndex);
 
             SimulatedJoint* simulatedJoint = object->AddSimulatedJoint(skeletonJointIndex);
             simulatedJoint->SetDamping(0.1f);

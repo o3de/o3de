@@ -74,14 +74,14 @@ namespace EMotionFX
         return values[indexA].ToQuaternion().NLerp(values[indexB].ToQuaternion(), t);
     }
 
-    Transform NonUniformMotionData::SampleJointTransform(const SampleSettings& settings, AZ::u32 jointSkeletonIndex) const
+    Transform NonUniformMotionData::SampleJointTransform(const SampleSettings& settings, size_t jointSkeletonIndex) const
     {
         const Actor* actor = settings.m_actorInstance->GetActor();
         const MotionLinkData* motionLinkData = FindMotionLinkData(actor);
         const Skeleton* skeleton = actor->GetSkeleton();
 
-        const AZ::u32 jointDataIndex = motionLinkData->GetJointDataLinks()[jointSkeletonIndex];
-        if (m_additive && jointDataIndex == InvalidIndex32)
+        const size_t jointDataIndex = motionLinkData->GetJointDataLinks()[jointSkeletonIndex];
+        if (m_additive && jointDataIndex == InvalidIndex)
         {
             return Transform::CreateIdentity();
         }
@@ -89,7 +89,7 @@ namespace EMotionFX
         // Sample the interpolated data.
         Transform result;
         const bool inPlace = (settings.m_inPlace && skeleton->GetNode(jointSkeletonIndex)->GetIsRootNode());
-        if (jointDataIndex != InvalidIndex32 && !inPlace)
+        if (jointDataIndex != InvalidIndex && !inPlace)
         {
             const JointData& jointData = m_jointData[jointDataIndex];
             result.mPosition = (!jointData.m_positionTrack.m_times.empty()) ? CalculateInterpolatedValue<AZ::Vector3, AZ::Vector3>(jointData.m_positionTrack, settings.m_sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.mPosition;
@@ -141,16 +141,16 @@ namespace EMotionFX
         const ActorInstance* actorInstance = settings.m_actorInstance;
         const Skeleton* skeleton = actor->GetSkeleton();
         const Pose* bindPose = actorInstance->GetTransformData()->GetBindPose();
-        const AZ::u32 numNodes = actorInstance->GetNumEnabledNodes();
-        for (AZ::u32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = actorInstance->GetNumEnabledNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
-            const AZ::u32 jointIndex = actorInstance->GetEnabledNode(i);
-            const AZ::u32 jointDataIndex = motionLinkData->GetJointDataLinks()[jointIndex];
+            const uint16 jointIndex = actorInstance->GetEnabledNode(i);
+            const size_t jointDataIndex = motionLinkData->GetJointDataLinks()[jointIndex];
             const bool inPlace = (settings.m_inPlace && skeleton->GetNode(jointIndex)->GetIsRootNode());
 
             // Sample the interpolated data.
             Transform result;
-            if (jointDataIndex != InvalidIndex32 && !inPlace)
+            if (jointDataIndex != InvalidIndex && !inPlace)
             {
                 const JointData& jointData = m_jointData[jointDataIndex];
                 result.mPosition = (!jointData.m_positionTrack.m_times.empty()) ? CalculateInterpolatedValue<AZ::Vector3>(jointData.m_positionTrack, settings.m_sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.mPosition;
@@ -161,7 +161,7 @@ namespace EMotionFX
             }
             else
             {
-                if (m_additive && jointDataIndex == InvalidIndex32)
+                if (m_additive && jointDataIndex == InvalidIndex)
                 {
                     result = Transform::CreateIdentity();
                 }
@@ -195,8 +195,8 @@ namespace EMotionFX
 
         // Output morph target weights.
         const MorphSetupInstance* morphSetup = actorInstance->GetMorphSetupInstance();
-        const AZ::u32 numMorphTargets = morphSetup->GetNumMorphTargets();
-        for (AZ::u32 i = 0; i < numMorphTargets; ++i)
+        const size_t numMorphTargets = morphSetup->GetNumMorphTargets();
+        for (size_t i = 0; i < numMorphTargets; ++i)
         {
             const AZ::u32 morphTargetId = morphSetup->GetMorphTarget(i)->GetID();
             const AZ::Outcome<size_t> morphIndex = FindMorphIndexByNameId(morphTargetId);

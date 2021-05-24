@@ -55,7 +55,7 @@ namespace EMotionFX
         struct EMFX_API DeformPass
         {
             MorphTargetStandard*    mMorphTarget;   /**< The morph target working on the mesh. */
-            uint32                  mDeformDataNr;  /**< An index inside the deform datas of the standard morph target. */
+            size_t                  mDeformDataNr;  /**< An index inside the deform datas of the standard morph target. */
             bool                    mLastNearZero;  /**< Was the last frame's weight near zero? */
 
             /**
@@ -64,7 +64,7 @@ namespace EMotionFX
              */
             DeformPass()
                 : mMorphTarget(nullptr)
-                , mDeformDataNr(MCORE_INVALIDINDEX32)
+                , mDeformDataNr(InvalidIndex)
                 , mLastNearZero(false) {}
         };
 
@@ -110,7 +110,7 @@ namespace EMotionFX
          * @param mesh The mesh to apply the deformer on.
          * @result A pointer to the newly created clone of this deformer.
          */
-        MeshDeformer* Clone(Mesh* mesh) override;
+        MeshDeformer* Clone(Mesh* mesh) const override;
 
         /**
          * Add a deform pass.
@@ -129,7 +129,7 @@ namespace EMotionFX
          * This does not influence the return value of GetNumDeformPasses().
          * @param numPasses The number of passes to pre-allocate space for.
          */
-        void ReserveDeformPasses(uint32 numPasses);
+        void ReserveDeformPasses(size_t numPasses);
 
     private:
         AZStd::vector<DeformPass>    mDeformPasses;  /**< The deform passes. Each pass basically represents a morph target. */

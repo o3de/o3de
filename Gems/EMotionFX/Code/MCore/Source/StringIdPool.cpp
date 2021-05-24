@@ -43,7 +43,7 @@ namespace MCore
     AZ::u32 StringIdPool::GenerateIdForStringWithoutLock(const AZStd::string& objectName)
     {
         // Try to insert it, if we hit a collision, we have the element.
-        auto iterator = mStringToIndex.emplace(objectName, static_cast<AZ::u32>(mStrings.size()));
+        auto iterator = mStringToIndex.emplace(objectName, aznumeric_caster(mStrings.size()));
         if (!iterator.second)
         {
             // could not insert, we have the element
@@ -148,7 +148,7 @@ namespace MCore
         /// Convert binary data to text.
         size_t DataToText(AZ::IO::GenericStream& in, AZ::IO::GenericStream& out, bool /*isDataBigEndian = false*/)
         {
-            size_t dataSize = static_cast<size_t>(in.GetLength());
+            AZ::u64 dataSize = in.GetLength();
 
             AZStd::string outText;
             outText.resize(dataSize);

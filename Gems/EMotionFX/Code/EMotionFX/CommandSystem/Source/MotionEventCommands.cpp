@@ -956,7 +956,7 @@ namespace CommandSystem
             }
 
             // get the event index and check if it is in range
-            if (m_eventNr < 0 || m_eventNr >= eventTrack->GetNumEvents())
+            if (m_eventNr >= eventTrack->GetNumEvents())
             {
                 return AZ::Failure();
             }
@@ -1006,7 +1006,7 @@ namespace CommandSystem
 
 
     // remove event track
-    void CommandRemoveEventTrack(EMotionFX::Motion* motion, uint32 trackIndex)
+    void CommandRemoveEventTrack(EMotionFX::Motion* motion, size_t trackIndex)
     {
         if (!motion)
         {
@@ -1035,7 +1035,7 @@ namespace CommandSystem
 
 
     // remove event track
-    void CommandRemoveEventTrack(uint32 trackIndex)
+    void CommandRemoveEventTrack(size_t trackIndex)
     {
         EMotionFX::Motion* motion = GetCommandManager()->GetCurrentSelection().GetSingleMotion();
         CommandRemoveEventTrack(motion, trackIndex);
@@ -1043,7 +1043,7 @@ namespace CommandSystem
 
 
     // rename event track
-    void CommandRenameEventTrack(EMotionFX::Motion* motion, uint32 trackIndex, const char* newName)
+    void CommandRenameEventTrack(EMotionFX::Motion* motion, size_t trackIndex, const char* newName)
     {
         // make sure the motion is valid
         if (motion == nullptr)
@@ -1065,7 +1065,7 @@ namespace CommandSystem
 
 
     // rename event track
-    void CommandRenameEventTrack(uint32 trackIndex, const char* newName)
+    void CommandRenameEventTrack(size_t trackIndex, const char* newName)
     {
         EMotionFX::Motion* motion = GetCommandManager()->GetCurrentSelection().GetSingleMotion();
         CommandRenameEventTrack(motion, trackIndex, newName);
@@ -1073,7 +1073,7 @@ namespace CommandSystem
 
 
     // enable or disable event track
-    void CommandEnableEventTrack(EMotionFX::Motion* motion, uint32 trackIndex, bool isEnabled)
+    void CommandEnableEventTrack(EMotionFX::Motion* motion, size_t trackIndex, bool isEnabled)
     {
         // make sure the motion is valid
         if (motion == nullptr)
@@ -1098,7 +1098,7 @@ namespace CommandSystem
 
 
     // enable or disable event track
-    void CommandEnableEventTrack(uint32 trackIndex, bool isEnabled)
+    void CommandEnableEventTrack(size_t trackIndex, bool isEnabled)
     {
         EMotionFX::Motion* motion = GetCommandManager()->GetCurrentSelection().GetSingleMotion();
         CommandEnableEventTrack(motion, trackIndex, isEnabled);
@@ -1114,7 +1114,7 @@ namespace CommandSystem
 
 
     // remove motion event
-    void CommandHelperRemoveMotionEvent(EMotionFX::Motion* motion, const char* trackName, uint32 eventNr, MCore::CommandGroup* commandGroup)
+    void CommandHelperRemoveMotionEvent(EMotionFX::Motion* motion, const char* trackName, size_t eventNr, MCore::CommandGroup* commandGroup)
     {
         // make sure the motion is valid
         if (motion == nullptr)
@@ -1127,7 +1127,7 @@ namespace CommandSystem
 
         // execute the create motion event command
         AZStd::string command;
-        command = AZStd::string::format("RemoveMotionEvent -motionID %i -eventTrackName \"%s\" -eventNr %i", motion->GetID(), trackName, eventNr);
+        command = AZStd::string::format("RemoveMotionEvent -motionID %i -eventTrackName \"%s\" -eventNr %zu", motion->GetID(), trackName, eventNr);
 
         // add the command to the command group
         if (commandGroup == nullptr)
@@ -1152,7 +1152,7 @@ namespace CommandSystem
 
 
     // remove motion event
-    void CommandHelperRemoveMotionEvent(uint32 motionID, const char* trackName, uint32 eventNr, MCore::CommandGroup* commandGroup)
+    void CommandHelperRemoveMotionEvent(uint32 motionID, const char* trackName, size_t eventNr, MCore::CommandGroup* commandGroup)
     {
         // find the motion by id
         EMotionFX::Motion* motion = EMotionFX::GetMotionManager().FindMotionByID(motionID);
@@ -1165,7 +1165,7 @@ namespace CommandSystem
     }
 
     // remove motion event
-    void CommandHelperRemoveMotionEvent(const char* trackName, uint32 eventNr, MCore::CommandGroup* commandGroup)
+    void CommandHelperRemoveMotionEvent(const char* trackName, size_t eventNr, MCore::CommandGroup* commandGroup)
     {
         EMotionFX::Motion* motion = GetCommandManager()->GetCurrentSelection().GetSingleMotion();
         if (motion == nullptr)
@@ -1178,7 +1178,7 @@ namespace CommandSystem
 
 
     // remove motion event
-    void CommandHelperRemoveMotionEvents(uint32 motionID, const char* trackName, const AZStd::vector<uint32>& eventNumbers, MCore::CommandGroup* commandGroup)
+    void CommandHelperRemoveMotionEvents(uint32 motionID, const char* trackName, const AZStd::vector<size_t>& eventNumbers, MCore::CommandGroup* commandGroup)
     {
         // find the motion by id
         EMotionFX::Motion* motion = EMotionFX::GetMotionManager().FindMotionByID(motionID);
@@ -1191,11 +1191,11 @@ namespace CommandSystem
         MCore::CommandGroup internalCommandGroup("Remove motion events");
 
         // get the number of events to remove and iterate through them
-        const int32 numEvents = eventNumbers.size();
-        for (int32 i = 0; i < numEvents; ++i)
+        const size_t numEvents = eventNumbers.size();
+        for (size_t i = 0; i < numEvents; ++i)
         {
             // remove the events from back to front
-            uint32 eventNr = eventNumbers[numEvents - 1 - i];
+            size_t eventNr = eventNumbers[numEvents - 1 - i];
 
             // add the command to the command group
             if (commandGroup == nullptr)
@@ -1221,7 +1221,7 @@ namespace CommandSystem
 
 
     // remove motion event
-    void CommandHelperRemoveMotionEvents(const char* trackName, const AZStd::vector<uint32>& eventNumbers, MCore::CommandGroup* commandGroup)
+    void CommandHelperRemoveMotionEvents(const char* trackName, const AZStd::vector<size_t>& eventNumbers, MCore::CommandGroup* commandGroup)
     {
         EMotionFX::Motion* motion = GetCommandManager()->GetCurrentSelection().GetSingleMotion();
         if (motion == nullptr)
@@ -1233,7 +1233,7 @@ namespace CommandSystem
     }
 
 
-    void CommandHelperMotionEventTrackChanged(EMotionFX::Motion* motion, uint32 eventNr, float startTime, float endTime, const char* oldTrackName, const char* newTrackName)
+    void CommandHelperMotionEventTrackChanged(EMotionFX::Motion* motion, size_t eventNr, float startTime, float endTime, const char* oldTrackName, const char* newTrackName)
     {
         // get the motion event track
         EMotionFX::MotionEventTable* eventTable = motion->GetEventTable();
@@ -1256,7 +1256,7 @@ namespace CommandSystem
         // get the motion event
         EMotionFX::MotionEvent& motionEvent = eventTrack->GetEvent(eventNr);
 
-        commandGroup.AddCommandString(AZStd::string::format("RemoveMotionEvent -motionID %i -eventTrackName \"%s\" -eventNr %i", motion->GetID(), oldTrackName, eventNr));
+        commandGroup.AddCommandString(AZStd::string::format("RemoveMotionEvent -motionID %i -eventTrackName \"%s\" -eventNr %zu", motion->GetID(), oldTrackName, eventNr));
         CommandHelperAddMotionEvent(motion, newTrackName, startTime, endTime, motionEvent.GetEventDatas(), &commandGroup);
 
         // execute the command group
@@ -1267,7 +1267,7 @@ namespace CommandSystem
     }
 
 
-    void CommandHelperMotionEventTrackChanged(uint32 eventNr, float startTime, float endTime, const char* oldTrackName, const char* newTrackName)
+    void CommandHelperMotionEventTrackChanged(size_t eventNr, float startTime, float endTime, const char* oldTrackName, const char* newTrackName)
     {
         EMotionFX::Motion* motion = GetCommandManager()->GetCurrentSelection().GetSingleMotion();
         CommandHelperMotionEventTrackChanged(motion, eventNr, startTime, endTime, oldTrackName, newTrackName);

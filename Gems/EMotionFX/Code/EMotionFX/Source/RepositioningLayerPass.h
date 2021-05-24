@@ -59,8 +59,8 @@ namespace EMotionFX
 
 
     private:
-        AZStd::vector<uint32>    mHierarchyPath; /**< The path of node indices to the repositioning node. */
-        uint32                  mLastReposNode; /**< The last repositioning node index that was used. When this changes, the hierarchy path has to be updated. */
+        AZStd::vector<size_t>    mHierarchyPath; /**< The path of node indices to the repositioning node. */
+        size_t                  mLastReposNode; /**< The last repositioning node index that was used. When this changes, the hierarchy path has to be updated. */
 
         /**
          * The constructor.
