@@ -17,6 +17,8 @@
 #include <Multiplayer/EntityDomains/IEntityDomain.h>
 #include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
 #include <Multiplayer/NetworkEntity/NetworkEntityHandle.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h>
 #include <Multiplayer/ReplicationWindows/IReplicationWindow.h>
 #include <AzNetworking/DataStructures/TimeoutQueue.h>
 #include <AzNetworking/PacketLayer/IPacketHeader.h>
@@ -26,7 +28,6 @@
 #include <AzCore/std/limits.h>
 #include <AzCore/EBus/Event.h>
 #include <AzCore/EBus/ScheduledEvent.h>
-#include <Source/AutoGen/Multiplayer.AutoPackets.h>
 
 namespace AzNetworking
 {
@@ -82,7 +83,7 @@ namespace Multiplayer
 
         void AddAutonomousEntityReplicatorCreatedHandle(AZ::Event<NetEntityId>::Handler& handler);
 
-        bool HandleMessage(AzNetworking::IConnection* invokingConnection, MultiplayerPackets::EntityMigration& message);
+        bool HandleEntityMigration(AzNetworking::IConnection* invokingConnection, EntityMigrationMessage& message);
         bool HandleEntityDeleteMessage(EntityReplicator* entityReplicator, const AzNetworking::IPacketHeader& packetHeader, const NetworkEntityUpdateMessage& updateMessage);
         bool HandleEntityUpdateMessage(AzNetworking::IConnection* invokingConnection, const AzNetworking::IPacketHeader& packetHeader, const NetworkEntityUpdateMessage& updateMessage);
         bool HandleEntityRpcMessage(AzNetworking::IConnection* invokingConnection, NetworkEntityRpcMessage& message);

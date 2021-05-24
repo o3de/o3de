@@ -35,6 +35,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/EditorEntityAPI.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
@@ -191,6 +192,9 @@ void SandboxIntegrationManager::Setup()
     AZ_Assert(
         (m_prefabIntegrationInterface != nullptr),
         "SandboxIntegrationManager requires a PrefabIntegrationInterface instance to be present on Setup().");
+
+    m_editorEntityAPI = AZ::Interface<AzToolsFramework::EditorEntityAPI>::Get();
+    AZ_Assert(m_editorEntityAPI, "SandboxIntegrationManager requires an EditorEntityAPI instance to be present on Setup().");
 
     AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler::BusConnect();
 }
@@ -1215,9 +1219,20 @@ void SandboxIntegrationManager::CloneSelection(bool& handled)
 
     if (!duplicationSet.empty())
     {
-        AZStd::unordered_set<AZ::EntityId> clonedEntities;
-        handled = AzToolsFramework::CloneInstantiatedEntities(duplicationSet, clonedEntities);
-        m_unsavedEntities.insert(clonedEntities.begin(), clonedEntities.end());
+        bool prefabSystemEnabled = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+        if (prefabSystemEnabled)
+        {
+            m_editorEntityAPI->DuplicateSelected();
+            handled = true;
+        }
+        else
+        {
+            AZStd::unordered_set<AZ::EntityId> clonedEntities;
+            handled = AzToolsFramework::CloneInstantiatedEntities(duplicationSet, clonedEntities);
+            m_unsavedEntities.insert(clonedEntities.begin(), clonedEntities.end());
+        }
     }
     else
     {

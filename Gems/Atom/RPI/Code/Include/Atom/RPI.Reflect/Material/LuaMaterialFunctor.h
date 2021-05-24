@@ -329,6 +329,8 @@ namespace AZ
             bool SetMaterialPropertySoftMaxValue(const char* name, Type value);
 
             bool SetMaterialPropertyDescription(const char* name, const char* description);
+            
+            bool SetMaterialPropertyGroupVisibility(const char* name, MaterialPropertyGroupVisibility visibility);
 
         private:
 

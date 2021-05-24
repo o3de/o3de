@@ -24,14 +24,12 @@ namespace Multiplayer
         ReplicationRecordStats() = default;
         ReplicationRecordStats
         (
-            uint32_t authorityToAuthorityCount,
             uint32_t authorityToClientCount,
             uint32_t authorityToServerCount,
             uint32_t authorityToAutonomousCount,
             uint32_t autonomousToAuthorityCount
         );
 
-        uint32_t m_authorityToAuthorityCount = 0;
         uint32_t m_authorityToClientCount = 0;
         uint32_t m_authorityToServerCount = 0;
         uint32_t m_authorityToAutonomousCount = 0;
@@ -63,19 +61,16 @@ namespace Multiplayer
 
         bool Serialize(AzNetworking::ISerializer& serializer);
 
-        void ConsumeAuthorityToAuthorityBits(uint32_t consumedBits);
         void ConsumeAuthorityToClientBits(uint32_t consumedBits);
         void ConsumeAuthorityToServerBits(uint32_t consumedBits);
         void ConsumeAuthorityToAutonomousBits(uint32_t consumedBits);
         void ConsumeAutonomousToAuthorityBits(uint32_t consumedBits);
 
-        bool ContainsAuthorityToAuthorityBits() const;
         bool ContainsAuthorityToClientBits() const;
         bool ContainsAuthorityToServerBits() const;
         bool ContainsAuthorityToAutonomousBits() const;
         bool ContainsAutonomousToAuthorityBits() const;
 
-        uint32_t GetRemainingAuthorityToAuthorityBits() const;
         uint32_t GetRemainingAuthorityToClientBits() const;
         uint32_t GetRemainingAuthorityToServerBits() const;
         uint32_t GetRemainingAuthorityToAutonomousBits() const;
@@ -84,13 +79,11 @@ namespace Multiplayer
         ReplicationRecordStats GetStats() const;
 
         using RecordBitset = AzNetworking::FixedSizeVectorBitset<MaxRecordBits>;
-        RecordBitset m_authorityToAuthority;
         RecordBitset m_authorityToClient;
         RecordBitset m_authorityToServer;
         RecordBitset m_authorityToAutonomous;
         RecordBitset m_autonomousToAuthority;
 
-        uint32_t m_authorityToAuthorityConsumedBits = 0;
         uint32_t m_authorityToClientConsumedBits = 0;
         uint32_t m_authorityToServerConsumedBits = 0;
         uint32_t m_authorityToAutonomousConsumedBits = 0;

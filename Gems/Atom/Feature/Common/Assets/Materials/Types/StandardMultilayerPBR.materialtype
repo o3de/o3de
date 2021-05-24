@@ -24,11 +24,6 @@
                 "description": "Properties for configuring UV transforms for the entire material, including the blend masks."
             },
             {
-                "id": "subsurfaceScattering",
-                "displayName": "Subsurface Scattering",
-                "description": "Properties for configuring subsurface scattering effects."
-            },
-            {
                 // Note: this property group is used in the DiffuseGlobalIllumination pass, it is not read by the StandardPBR shader
                 "id": "irradiance",
                 "displayName": "Irradiance",
@@ -204,7 +199,7 @@
                     "displayName": "Debug Draw Mode",
                     "description": "Enables various debug view features.",
                     "type": "Enum",
-                    "enumValues": [ "None", "BlendMaskValues", "DepthMaps" ],
+                    "enumValues": [ "None", "BlendSource", "DepthMaps" ],
                     "defaultValue": "None",
                     "connection": {
                         "type": "ShaderOption",
@@ -300,6 +295,28 @@
                 }
             ],
             "blend": [
+                {
+                    "id": "enableLayer2",
+                    "displayName": "Enable Layer 2",
+                    "description": "Whether to enable layer 2.",
+                    "type": "Bool",
+                    "defaultValue": false,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_layer2_enabled"
+                    }
+                }, 
+                {
+                    "id": "enableLayer3",
+                    "displayName": "Enable Layer 3",
+                    "description": "Whether to enable layer 3.",
+                    "type": "Bool",
+                    "defaultValue": false,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_layer3_enabled"
+                    }
+                }, 
                 {
                     "id": "blendSource",
                     "displayName": "Blend Source",
@@ -465,183 +482,6 @@
                     "type": "float",
                     "defaultValue": 1.0,
                     "step": 0.1
-                }
-            ],
-            "subsurfaceScattering": [
-                {
-                    "id": "enableSubsurfaceScattering",
-                    "displayName": "Subsurface Scattering",
-                    "description": "Enable subsurface scattering feature, this will disable metallic and parallax mapping property due to incompatibility",
-                    "type": "Bool",
-                    "defaultValue": false,
-                    "connection": {
-                        "type": "ShaderOption",
-                        "id": "o_enableSubsurfaceScattering"
-                    }
-                },
-                {
-                    "id": "subsurfaceScatterFactor",
-                    "displayName": "    Factor",
-                    "description": "Strength factor for scaling percentage of subsurface scattering effect applied",
-                    "type": "float",
-                    "defaultValue": 1.0,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_subsurfaceScatteringFactor"
-                    }
-                },
-                {
-                    "id": "influenceMap",
-                    "displayName": "    Influence Map",
-                    "description": "Use texture map to control the strength of subsurface scattering",
-                    "type": "Image",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_subsurfaceScatteringInfluenceMap"
-                    }
-                },
-                {
-                    "id": "useInfluenceMap",
-                    "displayName": "    Use Influence Map",
-                    "description": "Whether to use the texture map as influence mask.",
-                    "type": "Bool",
-                    "defaultValue": true
-                },
-                {
-                    "id": "influenceMapUv",
-                    "displayName": "    UV",
-                    "description": "Influence map UV set",
-                    "type": "Enum",
-                    "enumIsUv": true,
-                    "defaultValue": "Tiled",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_subsurfaceScatteringInfluenceMapUvIndex"
-                    }
-                },
-                {
-                    "id": "scatterColor",
-                    "displayName": "    Scatter color",
-                    "description": "Color of volume light traveled through",
-                    "type": "Color",
-                    "defaultValue": [ 1.0, 0.27, 0.13 ]
-                },
-                {
-                    "id": "scatterDistance",
-                    "displayName": "    Scatter distance",
-                    "description": "How far light traveled inside the volume",
-                    "type": "float",
-                    "defaultValue": 8,
-                    "min": 0.0,
-                    "softMax": 20.0
-                },
-                {
-                    "id": "quality",
-                    "displayName": "    Quality",
-                    "description": "How much percent of sample will be used for each pixel, more samples improve quality and reduce artifacts, especially when the scatter distance is relatively large, but slow down computation time, 1.0 = full set 200 samples per pixel",
-                    "type": "float",
-                    "defaultValue": 0.4,
-                    "min": 0.2,
-                    "max": 1.0,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_subsurfaceScatteringQuality"
-                    }
-                },
-                {
-                    "id": "transmissionMode",
-                    "displayName": "Transmission",
-                    "description": "Algorithm used for calculating transmission",
-                    "type": "Enum",
-                    "enumValues": [ "None", "ThickObject", "ThinObject" ],
-                    "defaultValue": "None",
-                    "connection": {
-                        "type": "ShaderOption",
-                        "id": "o_transmission_mode"
-                    }
-                },
-                {
-                    "id": "thickness",
-                    "displayName": "    Thickness",
-                    "description": "Normalized global thickness, the maxima between this value (multiplied by thickness map if enabled) and thickness from shadow map (if applicable) will be used as final thickness of pixel",
-                    "type": "float",
-                    "defaultValue": 0.5,
-                    "min": 0.0,
-                    "max": 1.0
-                },
-                {
-                    "id": "thicknessMap",
-                    "displayName": "    Thickness Map",
-                    "description": "Use a greyscale texture for per pixel thickness",
-                    "type": "Image",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_transmissionThicknessMap"
-                    }
-                },
-                {
-                    "id": "useThicknessMap",
-                    "displayName": "    Use Thickness Map",
-                    "description": "Whether to use the thickness map",
-                    "type": "Bool",
-                    "defaultValue": true
-                },
-                {
-                    "id": "thicknessMapUv",
-                    "displayName": "    UV",
-                    "description": "Thickness map UV set",
-                    "type": "Enum",
-                    "enumIsUv": true,
-                    "defaultValue": "Tiled",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_transmissionThicknessMapUvIndex"
-                    }
-                },
-                {
-                    "id": "transmissionTint",
-                    "displayName": "    Transmission Tint",
-                    "description": "Color of the volume light travelling through",
-                    "type": "Color",
-                    "defaultValue": [ 1.0, 0.8, 0.6 ]
-                },
-                {
-                    "id": "transmissionPower",
-                    "displayName": "    Power",
-                    "description": "How much transmitted light scatter radially ",
-                    "type": "float",
-                    "defaultValue": 6.0,
-                    "min": 0.0,
-                    "softMax":  20.0
-                },
-                {
-                    "id": "transmissionDistortion",
-                    "displayName": "    Distortion",
-                    "description": "How much light direction distorted towards surface normal",
-                    "type": "float",
-                    "defaultValue": 0.1,
-                    "min": 0.0,
-                    "max": 1.0
-                },
-                {
-                    "id": "transmissionAttenuation",
-                    "displayName": "    Attenuation",
-                    "description": "How fast transmitted light fade with thickness",
-                    "type": "float",
-                    "defaultValue": 4.0,
-                    "min": 0.0,
-                    "softMax": 20.0
-                },
-                {
-                    "id": "transmissionScale",
-                    "displayName": "    Scale",
-                    "description": "Strength of transmission",
-                    "type": "float",
-                    "defaultValue": 3.0,
-                    "min": 0.0,
-                    "softMax": 20.0
                 }
             ],
             "irradiance": [
@@ -2845,22 +2685,9 @@
             }
         },
         {
-            // Preprocess & build parameter set for subsurface scattering and translucency
-            "type": "HandleSubsurfaceScatteringParameters",
+            "type": "Lua",
             "args": {
-                "mode": "subsurfaceScattering.transmissionMode",
-                "scale" : "subsurfaceScattering.transmissionScale",
-                "power" : "subsurfaceScattering.transmissionPower",
-                "distortion" : "subsurfaceScattering.transmissionDistortion",
-                "attenuation" : "subsurfaceScattering.transmissionAttenuation",
-                "tintColor" : "subsurfaceScattering.transmissionTint",
-                "thickness" : "subsurfaceScattering.thickness",
-                "enabled": "subsurfaceScattering.enableSubsurfaceScattering",
-                "scatterDistanceColor" : "subsurfaceScattering.scatterColor",
-                "scatterDistanceIntensity" : "subsurfaceScattering.scatterDistance",
-                "scatterDistanceShaderInput" : "m_scatterDistance",
-                "parametersShaderInput" : "m_transmissionParams",
-                "tintThickenssShaderInput" : "m_transmissionTintThickness"
+                "file": "StandardMultilayerPBR_LayerEnable.lua"
             }
         },
         {
@@ -2873,12 +2700,6 @@
             "type": "Lua",
             "args": {
                 "file": "StandardMultilayerPBR_Parallax.lua"
-            }
-        },
-        {
-            "type": "Lua",
-            "args": {
-                "file": "StandardPBR_SubsurfaceState.lua"
             }
         },
         //##############################################################################################

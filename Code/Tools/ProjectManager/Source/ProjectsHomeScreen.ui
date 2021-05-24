@@ -48,8 +48,8 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../project_manager.qrc">
-         <normaloff>:/Resources/Add.svg</normaloff>:/Resources/Add.svg</iconset>
+        <iconset resource="../Resources/ProjectManager.qrc">
+         <normaloff>:/Add.svg</normaloff>:/Add.svg</iconset>
        </property>
       </widget>
      </item>
@@ -65,8 +65,8 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../project_manager.qrc">
-         <normaloff>:/Resources/Select_Folder.svg</normaloff>:/Resources/Select_Folder.svg</iconset>
+        <iconset resource="../Resources/ProjectManager.qrc">
+         <normaloff>:/Select_Folder.svg</normaloff>:/Select_Folder.svg</iconset>
        </property>
       </widget>
      </item>
@@ -131,7 +131,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../project_manager.qrc"/>
+  <include location="../Resources/ProjectManager.qrc"/>
  </resources>
  <connections/>
 </ui>
