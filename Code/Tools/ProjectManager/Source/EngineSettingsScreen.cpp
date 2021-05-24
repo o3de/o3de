@@ -15,10 +15,10 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
-#include "FormLineEditWidget.h"
-#include "FormBrowseEditWidget.h"
-#include "PythonBindingsInterface.h"
-#include "PathValidator.h"
+#include <FormLineEditWidget.h>
+#include <FormBrowseEditWidget.h>
+#include <PythonBindingsInterface.h>
+#include <PathValidator.h>
 
 namespace O3DE::ProjectManager
 {
@@ -32,7 +32,7 @@ namespace O3DE::ProjectManager
 
         EngineInfo engineInfo;
 
-        auto engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
         if (engineInfoResult.IsSuccess())
         {
             engineInfo = engineInfoResult.GetValue();

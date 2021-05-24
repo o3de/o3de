@@ -10,7 +10,7 @@
 *
 */
 
-#include "FormBrowseEditWidget.h"
+#include <FormBrowseEditWidget.h>
 #include <AzQtComponents/Components/StyledLineEdit.h>
 #include <QPushButton>
 #include <QHBoxLayout>
