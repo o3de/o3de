@@ -90,7 +90,7 @@ namespace EMotionFX
          * @param The LOD level, which must be in range of 0..mActor->GetNumLODLevels().
          * @param nodeIndex The index of the node. If this node happens to have no mesh the regular current world space transform is returned.
          */
-        Transform GetMeshNodeWorldSpaceTransform(AZ::u32 lodLevel, AZ::u32 nodeIndex) const;
+        Transform GetMeshNodeWorldSpaceTransform(size_t lodLevel, size_t nodeIndex) const;
 
         void InvalidateAllLocalSpaceTransforms();
         void InvalidateAllModelSpaceTransforms();

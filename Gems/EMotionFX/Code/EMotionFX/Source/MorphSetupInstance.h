@@ -130,16 +130,16 @@ namespace EMotionFX
          * @param nr The morph target number, which must be in range of [0..GetNumMorphTargets()-1].
          * @result A pointer to the morph target inside this class.
          */
-        MCORE_INLINE MorphTarget* GetMorphTarget(uint32 nr)                 { return &mMorphTargets[nr]; }
+        MCORE_INLINE MorphTarget* GetMorphTarget(size_t nr)                 { return &mMorphTargets[nr]; }
 
-        MCORE_INLINE const MorphTarget* GetMorphTarget(uint32 nr) const     { return &mMorphTargets[nr]; }
+        MCORE_INLINE const MorphTarget* GetMorphTarget(size_t nr) const     { return &mMorphTargets[nr]; }
 
         /**
          * Find a given morph target number by its ID.
          * @param id The ID value to search for.
-         * @result Returns the morph target number in range of [0..GetNumMorphTargets()-1], or MCORE_INVALIDINDEX32 when not found.
+         * @result Returns the morph target number in range of [0..GetNumMorphTargets()-1], or InvalidIndex when not found.
          */
-        uint32 FindMorphTargetIndexByID(uint32 id) const;
+        size_t FindMorphTargetIndexByID(uint32 id) const;
 
         /**
          * Find the morph target by its ID.
