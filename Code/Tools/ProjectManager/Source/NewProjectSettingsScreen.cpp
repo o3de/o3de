@@ -42,6 +42,7 @@ namespace O3DE::ProjectManager
         // if we don't provide a parent for this box layout the stylesheet doesn't take
         // if we don't set this in a frame (just use a sub-layout) all the content will align incorrectly horizontally
         QFrame* projectSettingsFrame = new QFrame(this);
+        projectSettingsFrame->setObjectName("projectSettings");
         QVBoxLayout* vLayout = new QVBoxLayout(this);
 
         // you cannot remove content margins in qss

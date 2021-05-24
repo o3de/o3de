@@ -1,6 +1,6 @@
 /************** General (MainWindow) **************/
 QMainWindow {
-    background:#111111 url(:/o3de.svg) no-repeat top left;
+    background:#131313 url(:/o3de.svg) no-repeat top left;
     /* position the logo using padding and background-origin, Qt does not support background-position pixels */
     background-origin:content;
     padding:25px 16px;
@@ -42,7 +42,11 @@ QTabBar::tab:selected
 }
 QTabBar::tab:hover
 {
-    border-bottom: 3px solid #1e70eb;
+    color: #1e70eb;
+}
+QTabBar::tab:pressed
+{
+    color: #0e60eb;
 }
 
 /************** General (Forms) **************/
@@ -118,11 +122,12 @@ QTabBar::tab:hover
 
 #header QPushButton {
     /* settings min/max lets us use a fixed size */
-    min-width: 50px;
-    max-width: 50px;
-    min-height: 40px;
-    max-height: 40px;
-    background:transparent url(:/ArrowBack.svg) no-repeat bottom;
+    min-width: 24px;
+    max-width: 24px;
+    min-height: 24px;
+    max-height: 24px;
+    margin: 20px 10px 0px 10px;
+    background:transparent url(:/ArrowBack.svg) no-repeat center;
     background-origin:content;
     qproperty-flat: true;
     qproperty-iconSize: 50px;
@@ -130,6 +135,12 @@ QTabBar::tab:hover
 
 #header QPushButton:focus {
     border:none;
+}
+#header QPushButton:hover {
+    background:#333333 url(:/ArrowBack.svg) no-repeat center;
+}
+#header QPushButton:pressed {
+    background:#222222 url(:/ArrowBack.svg) no-repeat center;
 }
 
 #headerTitle {
@@ -153,6 +164,8 @@ QTabBar::tab:hover
     background-color:#333333;
 }
 #footer {
+    /* settings min/max lets us use a fixed size */
+    min-width: 50px;
     min-height:54px;
     max-height:54px;
 }
@@ -165,14 +178,36 @@ QTabBar::tab:hover
     min-height: 28px;
     max-height: 28px;
     min-width: 150px;
-    margin-right: 10px;
+    margin-right:30px;
 }
-#footer > QPushButton[text="Back"] {
+#footer > QPushButton:hover {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+							stop: 0 #10A5f2, stop: 1.0 #2e80eb);
+}
+#footer > QPushButton:pressed {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+							stop: 0 #0085e2, stop: 1.0 #0e60db);
+}
+
+#footer > QPushButton[secondary="true"] {
+    margin-right: 10px;
 	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
 							stop: 0 #888888, stop: 1.0 #555555);
 }
+#footer > QPushButton[secondary="true"]:hover {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+							stop: 0 #999999, stop: 1.0 #666666);
+}
+#footer > QPushButton[secondary="true"]:pressed {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+							stop: 0 #555555, stop: 1.0 #777777);
+}
 
 /************** Project Settings **************/
+#projectSettings {
+    margin-top:42px;
+}
+
 #projectTemplate {
     margin: 55px 0 0 50px;
     max-width: 780px;
