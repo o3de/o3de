@@ -125,6 +125,7 @@ namespace AZ
                 Data::Instance<RPI::AttachmentImage> m_brdfTexture;
 
                 bool m_createDefaultScene = true;
+                bool m_defaultSceneReady = false;
 
                 // Maps AZ scenes to RPI scene weak pointers to allow looking up a ScenePtr instead of a raw Scene*
                 AZStd::unordered_map<AzFramework::Scene*, AZStd::weak_ptr<AZ::RPI::Scene>> m_azSceneToAtomSceneMap;

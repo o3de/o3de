@@ -147,6 +147,7 @@ namespace Blast
     void BlastFamilyComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC("BlastFamilyService"));
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void BlastFamilyComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

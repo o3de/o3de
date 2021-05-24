@@ -1781,22 +1781,7 @@ namespace AzToolsFramework
 
         m_cachedEntityIdUnderCursor = m_editorHelpers->HandleMouseInteraction(cameraState, mouseInteraction);
 
-        const AzFramework::ClickDetector::ClickEvent selectClickEvent = [&mouseInteraction] {
-            if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
-            {
-                if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down)
-                {
-                    return AzFramework::ClickDetector::ClickEvent::Down;
-                }
-
-                if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Up)
-                {
-                    return AzFramework::ClickDetector::ClickEvent::Up;
-                }
-            }
-            return AzFramework::ClickDetector::ClickEvent::Nil;
-        }();
-
+        const auto selectClickEvent = ClickDetectorEventFromViewportInteraction(mouseInteraction);
         m_cursorState.SetCurrentPosition(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
         const auto clickOutcome = m_clickDetector.DetectClick(selectClickEvent, m_cursorState.CursorDelta());
 

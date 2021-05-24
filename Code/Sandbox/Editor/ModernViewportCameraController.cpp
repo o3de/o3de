@@ -97,17 +97,34 @@ namespace SandboxEditor
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
     }
 
+    // should the camera system respond to this particular event
+    static bool ShouldHandle(const AzFramework::ViewportControllerPriority priority, const bool exclusive)
+    {
+        // ModernViewportCameraControllerInstance receives events at all priorities, it should only respond
+        // to normal priority events if it is not in 'exclusive' mode and when in 'exclusive' mode it should
+        // only respond to the highest priority events
+        return !exclusive && priority == AzFramework::ViewportControllerPriority::Normal ||
+            exclusive && priority == AzFramework::ViewportControllerPriority::Highest;
+    }
+
     bool ModernViewportCameraControllerInstance::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
-        AzFramework::WindowSize windowSize;
-        AzFramework::WindowRequestBus::EventResult(
-            windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+        if (ShouldHandle(event.m_priority, m_cameraSystem.m_cameras.Exclusive()))
+        {
+            return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel));
+        }
 
-        return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel, windowSize));
+        return false;
     }
 
     void ModernViewportCameraControllerInstance::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
     {
+        // only update for a single priority (normal is the default)
+        if (event.m_priority != AzFramework::ViewportControllerPriority::Normal)
+        {
+            return;
+        }
+
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
             m_updatingTransform = true;
