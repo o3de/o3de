@@ -106,6 +106,17 @@ namespace AzToolsFramework
         World, //!< World space (space aligned to world axes - identity).
     };
 
+    struct SpaceCluster
+    {
+        ViewportUi::ClusterId m_spaceClusterId;
+        ViewportUi::ButtonId m_localButtonId;
+        ViewportUi::ButtonId m_parentButtonId;
+        ViewportUi::ButtonId m_worldButtonId;
+        AZ::Event<ViewportUi::ButtonId>::Handler m_spaceSelectionHandler;
+        ReferenceFrame m_currentSpace = ReferenceFrame::Parent;
+        bool m_spaceLock = false;
+    };
+
     //! Entity selection/interaction handling.
     //! Provide a suite of functionality for manipulating entities, primarily through their TransformComponent.
     class EditorTransformComponentSelection
@@ -286,15 +297,9 @@ namespace AzToolsFramework
         AZ::Event<ViewportUi::ButtonId>::Handler m_transformModeSelectionHandler; //!< Event handler for the Viewport UI cluster.
         AzFramework::ClickDetector m_clickDetector; //!< Detect different types of mouse click.
         AzFramework::CursorState m_cursorState; //!< Track the mouse position and delta movement each frame.
-		
-		ViewportUi::ClusterId m_spaceClusterId; 
-        ViewportUi::ButtonId m_localButtonId; 
-        ViewportUi::ButtonId m_parentButtonId; 
-        ViewportUi::ButtonId m_worldButtonId; 
-        AZ::Event<ViewportUi::ButtonId>::Handler m_SpaceSelectionHandler;
-        void UpdateSpaceCluster(ReferenceFrame space);
-        ReferenceFrame m_currentSpace = ReferenceFrame::Parent;
-        bool m_spaceLock = false;
+
+        SpaceCluster m_spaceCluster;
+        void UpdateSpaceCluster(ReferenceFrame referenceFrame);
     };
 
     //! The ETCS (EntityTransformComponentSelection) namespace contains functions and data used exclusively by
