@@ -31,7 +31,7 @@ set(gem_module_template [[
             "@stripped_gem_target@":
             {
                 "Modules":["$<TARGET_FILE_NAME:@gem_target@>"],
-                "SourcePaths":["@gem_relative_source_dir@"]
+                "SourcePaths":["@gem_module_root_relative_to_engine_root@"]
             }]]
 )
 
@@ -85,6 +85,101 @@ function(ly_get_gem_load_dependencies ly_GEM_LOAD_DEPENDENCIES ly_TARGET)
     set(${ly_GEM_LOAD_DEPENDENCIES} ${all_gem_load_dependencies} PARENT_SCOPE)
 endfunction()
 
+#!ly_get_gem_module_roots: Uses the supplied gem_target to lookup the nearest gem.json file above the SOURCE_DIR
+# If a gem.json file is found it is added as gem module root and then queried for additional gem module root
+# by looking up the "gem_module_root" key
+#
+# \arg:gem_target(TARGET) - Target to look upwards from using its SOURCE_DIR property
+function(ly_get_gem_module_roots output_gem_module_roots gem_target)
+    unset(gem_module_roots)
+    get_property(gem_source_dir TARGET ${gem_target} PROPERTY SOURCE_DIR)
+
+    if(gem_source_dir)
+        set(candidate_gem_dir ${gem_source_dir})
+        # Locate the root of the gem by finding the gem.json location
+        while(NOT EXISTS ${candidate_gem_dir}/gem.json)
+            get_filename_component(parent_dir ${candidate_gem_dir} DIRECTORY)
+            if (${parent_dir} STREQUAL ${candidate_gem_dir})
+                message(WARNING "Did not find a gem.json while processing GEM_MODULE target ${gem_target}!")
+                break()
+            endif()
+            set(candidate_gem_dir ${parent_dir})
+        endwhile()
+    endif()
+
+    if (EXISTS ${candidate_gem_dir}/gem.json)
+        set(gem_source_dir ${candidate_gem_dir})
+        file(READ ${gem_source_dir}/gem.json gem_json_data)
+        string(JSON module_root_count ERROR_VARIABLE gem_json_error LENGTH ${gem_json_data} gem_module_roots)
+        if(module_root_count GREATER 0)
+            math(EXPR module_root_range "${module_root_count}-1")
+            # Convert the paths the relative paths to absolute paths using the engine root
+            # as the base directory
+            foreach(module_root_index RANGE ${module_root_range})
+                string(JSON module_root ERROR_VARIABLE gem_json_error GET ${gem_json_data} gem_module_roots ${module_root_index})
+                file(REAL_PATH ${module_root} gem_absolute_module_root BASE_DIRECTORY ${gem_source_dir})
+                list(APPEND gem_module_roots ${gem_absolute_module_root})
+            endforeach()
+        endif()
+    endif()
+
+    # Prepend the relative path from the Engine Root to the gem_module_roots list
+    list(PREPEND gem_module_roots ${gem_source_dir})
+    set(${output_gem_module_roots} ${gem_module_roots} PARENT_SCOPE)
+endfunction()
+
+#!ly_find_best_gem_module_roots: Attempts to find the gem module root which is the closest ancestor directory
+# to the gem_target using the supplied gem_module_roots
+# If a gem.json file is found it is added as gem module root and then queried for additional gem module root
+# by looking up the "gem_module_root" key
+
+# \arg:gem_target(TARGET) - Target to whose SOURCE_DIR property is compared against the module roots
+# \arg:gem_module_roots(list:PATH) - list of absolute gem module roots to search for nearest ancestor
+function(ly_find_best_gem_module_root output_module_root gem_target gem_module_roots)
+
+    get_property(module_root_cached DIRECTORY PROPERTY gem_module_root_${gem_target} SET)
+    if(module_root_cached)
+        get_property(module_root_prop DIRECTORY PROPERTY gem_module_root_${gem_target} )
+        set(${output_module_root} ${module_root_prop} PARENT_SCOPE)
+        return()
+    endif()
+
+    # An optimization for the case where there is only one gem_module_roots. The output_module_root is set to that
+    list(LENGTH gem_module_roots gem_module_roots_count)
+    if(gem_module_roots_count EQUAL 1)
+        list(GET gem_module_roots 0 best_module_root)
+        set_property(DIRECTORY PROPERTY gem_module_root_${gem_target} ${best_module_root})
+        set(${output_module_root} ${best_module_root} PARENT_SCOPE)
+        return()
+    endif()
+
+    get_property(gem_source_dir TARGET ${gem_target} PROPERTY SOURCE_DIR)
+    # shortest_prefix is used to store the shortest prefix from a gem module root to the gem source dir
+    # Initialized to 10000 to make sure it is larger than any file path length
+    set(shortest_prefix "10000")
+    unset(best_module_root)
+    foreach(gem_module_root ${gem_module_roots})
+        file(RELATIVE_PATH relative_to_module_root ${gem_module_root} ${gem_source_dir})
+        # if the gem SOURCE_DIR is not relative to the module root then continue
+        if(relative_to_module_root MATCHES [[^\.\./]] OR IS_ABSOLUTE ${relative_to_module_root})
+            continue()
+        endif()
+        # Update the shortest prefix
+        string(LENGTH "${relative_to_module_root}" module_to_source_dir_length)
+        if(module_to_source_dir_length LESS shortest_prefix)
+            set(best_module_root ${gem_module_root})
+            set(shortest_prefix "${module_to_source_dir_length}")
+        endif()
+    endforeach()
+
+    # Assign the best_module_root path to the output variable and stored it in a DIRECTORY property for caching
+    if(best_module_root)
+        set_property(DIRECTORY PROPERTY gem_module_root_${gem_target} ${best_module_root})
+        set(${output_module_root} ${best_module_root} PARENT_SCOPE)
+    endif()
+
+endfunction()
+
 #! ly_delayed_generate_settings_registry: Generates a .setreg file for each target with dependencies
 #  added to it via ly_add_target_dependencies
 #  The generated file contains the file to the each dependent targets
@@ -102,7 +197,7 @@ function(ly_delayed_generate_settings_registry)
 
         # Retrieve the target name from the back of the list
         list(POP_BACK prefix_target_list target)
-        # Retreives the prefix if available from the remaining element of the list
+        # Retrieves the prefix if available from the remaining element of the list
         list(POP_BACK prefix_target_list prefix)
 
         # Get the gem dependencies for the given project and target combination
@@ -123,20 +218,10 @@ function(ly_delayed_generate_settings_registry)
             if (NOT TARGET ${gem_target})
                 message(FATAL_ERROR "Dependency ${gem_target} from ${target} does not exist")
             endif()
-            get_property(gem_relative_source_dir TARGET ${gem_target} PROPERTY SOURCE_DIR)
 
-            if(gem_relative_source_dir)
-                # Most gems SOURCE dir is nested in the path, we need to find the path where an 'Assets' or 'Code' folder resides
-                while(NOT EXISTS ${gem_relative_source_dir}/Assets AND NOT EXISTS ${gem_relative_source_dir}/Code)
-                    get_filename_component(parent_dir ${gem_relative_source_dir} DIRECTORY)
-                    if (${parent_dir} STREQUAL ${gem_relative_source_dir})
-                        message(FATAL_ERROR "Did not find a Gem source dir while processing target ${gem_target}!")
-                    endif()
-                    set(gem_relative_source_dir ${parent_dir})
-                endwhile()
-                file(TO_CMAKE_PATH ${LY_ROOT_FOLDER} ly_root_folder_cmake)
-                file(RELATIVE_PATH gem_relative_source_dir ${ly_root_folder_cmake} ${gem_relative_source_dir})
-            endif()
+            ly_get_gem_module_roots(gem_module_roots ${gem_target})
+            ly_find_best_gem_module_root(best_gem_module_root "${gem_target}" "${gem_module_roots}")
+            file(RELATIVE_PATH gem_module_root_relative_to_engine_root ${LY_ROOT_FOLDER} ${best_gem_module_root})
 
             # Strip target namespace from gem targets before configuring them into the json template
             ly_strip_target_namespace(TARGET ${gem_target} OUTPUT_VARIABLE stripped_gem_target)
