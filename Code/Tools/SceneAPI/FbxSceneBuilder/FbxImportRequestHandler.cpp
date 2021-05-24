@@ -39,9 +39,7 @@ namespace AZ
 
             void FbxImportRequestHandler::Activate()
             {
-                auto settingsRegistry = AZ::SettingsRegistry::Get();
-                
-                if (settingsRegistry)
+                if (auto* settingsRegistry = AZ::SettingsRegistry::Get())
                 {
                     settingsRegistry->GetObject(m_settings, "/O3DE/SceneAPI/AssetImporter");
                 }
@@ -72,9 +70,9 @@ namespace AZ
             {
                 // It's unlikely an empty file extension list is intentional,
                 // so if it's empty, try reloading it from the registry.
-                if (m_settings.m_supportedFileTypeExtensions.size() == 0)
+                if (m_settings.m_supportedFileTypeExtensions.empty())
                 {
-                    if (auto settingsRegistry = AZ::SettingsRegistry::Get())
+                    if (auto* settingsRegistry = AZ::SettingsRegistry::Get())
                     {
                         settingsRegistry->GetObject(m_settings, "/O3DE/SceneAPI/AssetImporter");
                     }
