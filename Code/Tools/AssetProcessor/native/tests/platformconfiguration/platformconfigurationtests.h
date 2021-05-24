@@ -13,7 +13,6 @@
 #pragma once
 
 #include <AzTest/AzTest.h>
-#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <QCoreApplication>
 #include "native/tests/AssetProcessorTest.h"
 #include "native/unittests/UnitTestRunner.h"
@@ -38,6 +37,5 @@ private:
     int         m_argc;
     char**      m_argv;
     QCoreApplication* m_qApp;
-    AZ::SettingsRegistryImpl m_registry;    
 };
 

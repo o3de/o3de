@@ -16,8 +16,6 @@
 #include <AzTest/Utils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/Settings/SettingsRegistryImpl.h>
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
@@ -45,21 +43,6 @@ protected:
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
 
-        AZ::SettingsRegistryInterface* registry = nullptr;
-        if (!AZ::SettingsRegistry::Get())
-        {
-            AZ::SettingsRegistry::Register(&m_registry);
-            registry = &m_registry;
-        }
-        else
-        {
-            registry = AZ::SettingsRegistry::Get();
-        }
-        auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
-            + "/project_path";
-        registry->Set(projectPathKey, "AutomatedTesting");
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
-
         const AZStd::string engineRoot = AZ::Test::GetEngineRootPath();
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@engroot@", engineRoot.c_str());
 
@@ -71,12 +54,6 @@ protected:
 
     void TearDown() override
     {
-        auto settingsRegistry = AZ::SettingsRegistry::Get();
-        if(settingsRegistry == &m_registry)
-        {
-            AZ::SettingsRegistry::Unregister(settingsRegistry);
-        }
-
         AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
         m_app->Stop();
         m_app.reset();
@@ -144,7 +121,6 @@ protected:
     }
 
     AZStd::unique_ptr<AzToolsFramework::ToolsApplication> m_app;
-    AZ::SettingsRegistryImpl m_registry;
 };
 
 TEST_F(MaterialBuilderTests, MaterialBuilder_EmptyFile_ExpectFailure)

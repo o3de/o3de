@@ -14,7 +14,6 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/Application/Application.h>
@@ -84,12 +83,6 @@ namespace UnitTest
         void SetUp() override
         {
             AllocatorsFixture::SetUp();
-
-            AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
-            auto projectPathKey =
-                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-            registry->Set(projectPathKey, "AutomatedTesting");
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
             m_data = AZStd::make_unique<StaticData>();
             using namespace  AzFramework::FileTag;

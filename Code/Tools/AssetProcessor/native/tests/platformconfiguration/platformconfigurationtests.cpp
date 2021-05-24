@@ -35,21 +35,6 @@ PlatformConfigurationUnitTests::PlatformConfigurationUnitTests()
 
 void PlatformConfigurationUnitTests::SetUp()
 {
-    AZ::SettingsRegistryInterface* registry = nullptr;
-    if (!AZ::SettingsRegistry::Get())
-    {
-        AZ::SettingsRegistry::Register(&m_registry);
-        registry = &m_registry;
-    }
-    else
-    {
-        registry = AZ::SettingsRegistry::Get();
-    }
-    auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
-        + "/project_path";
-    registry->Set(projectPathKey, "AutomatedTesting");
-    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
-
     using namespace AssetProcessor;
     m_qApp = new QCoreApplication(m_argc, m_argv);
     AssetProcessorTest::SetUp();
@@ -61,12 +46,6 @@ void PlatformConfigurationUnitTests::TearDown()
     AssetUtilities::ResetAssetRoot();
     delete m_qApp;
     AssetProcessor::AssetProcessorTest::TearDown();
-
-    auto settingsRegistry = AZ::SettingsRegistry::Get();
-    if(settingsRegistry == &m_registry)
-    {
-        AZ::SettingsRegistry::Unregister(settingsRegistry);
-    }
 }
 
 TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_BadPlatform)
