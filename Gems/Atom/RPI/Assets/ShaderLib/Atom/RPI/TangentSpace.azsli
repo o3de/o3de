@@ -52,6 +52,12 @@ float3 GetTangentSpaceNormal_Unnormalized(float2 normalMapSample, float normalSt
     // The image build pipeline drops the B channel so we have to reconstruct it here.
     surfaceNormal.z = sqrt(1 - dot(surfaceNormal.xy, surfaceNormal.xy));
     
+    // Don't allow z to be zero just in case normalStrength approaches 0, to avoid a 0-length normal.
+    // It doesn't make sense anyway to have a surface with a normal map completely tangential.
+    // This also addresses the possibility of z being NaN, in the case where x^2+y^2 > 1, so we don't need to call saturate in the sqrt operation above.
+    // (Note this edge case would be particularly evident in multilayer material types, where the normal map is masked out using normalStrength).
+    surfaceNormal.z = max(surfaceNormal.z, 0.01);
+
     surfaceNormal.xy *= normalStrength;
 
     return surfaceNormal;
