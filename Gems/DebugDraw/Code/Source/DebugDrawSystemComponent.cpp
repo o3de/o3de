@@ -19,9 +19,6 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/parallel/lock.h>
 
-// #include <Cry_Camera.h>
-// #include <MathConversion.h>
-
 #include "DebugDrawSystemComponent.h"
 
 // Editor specific
@@ -276,7 +273,6 @@ namespace DebugDraw
 
         AzFramework::DebugDisplayRequests* debugDisplay =
             AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
-
 
         OnTickAabbs(*debugDisplay);
         OnTickLines(*debugDisplay);

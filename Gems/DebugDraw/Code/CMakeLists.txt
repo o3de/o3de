@@ -21,10 +21,10 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PUBLIC
-        AZ::AtomCore
-        Gem::Atom_RPI.Public
-        Gem::Atom_Bootstrap.Headers
-        Legacy::CryCommon
+            AZ::AtomCore
+            Gem::Atom_RPI.Public
+            Gem::Atom_Bootstrap.Headers
+            Legacy::CryCommon
 )
 
 ly_add_target(
