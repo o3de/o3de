@@ -26,6 +26,7 @@ endforeach()
 
 #! o3de_restricted_id: Reads the "restricted" key from the o3de manifest
 #
+# \arg:o3de_json_file name of the o3de json file to read the "restricted_name" key from
 # \arg:restricted returns the restricted association element from an o3de json, otherwise engine 'o3de' is assumed
 # \arg:o3de_json_file name of the o3de json file
 function(o3de_restricted_id o3de_json_file restricted)
@@ -33,8 +34,6 @@ function(o3de_restricted_id o3de_json_file restricted)
     string(JSON restricted_entry ERROR_VARIABLE json_error GET ${json_data} "restricted_name")
     if(json_error)
         message(WARNING "Unable to read restricted from '${o3de_json_file}', error: ${json_error}")
-        message(WARNING "Setting restricted to engine default 'o3de'")
-        set(restricted_entry "o3de")
     endif()
     if(restricted_entry)
        set(${restricted} ${restricted_entry} PARENT_SCOPE)
@@ -96,8 +95,8 @@ endfunction()
 
 #! o3de_restricted_path:
 #
-# \arg:restricted_path returns the path of the o3de restricted folder with name restricted_name
-# \arg:restricted_name name of the restricted
+# \arg:o3de_json_file json file to read restricted id from
+# \arg:restricted_name name of the restricted object
 function(o3de_restricted_path o3de_json_file restricted_path)
     o3de_restricted_id(${o3de_json_file} restricted_name)
     if(restricted_name)
@@ -110,8 +109,7 @@ endfunction()
 
 #! read_engine_restricted_path: Locates the restricted path within the engine from a json file
 #
-# \arg:restricted_path returns the path of the o3de restricted folder with name restricted_name
-# \arg:restricted_name name of the restricted
+# \arg:output_restricted_path returns the path of the o3de restricted folder with name restricted_name
 function(read_engine_restricted_path output_restricted_path)
     # Set manifest path to path in the user home directory
     set(manifest_path ${LY_ROOT_FOLDER}/engine.json)
