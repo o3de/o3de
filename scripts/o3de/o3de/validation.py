@@ -14,6 +14,10 @@ This file validating o3de object json files
 import json
 import pathlib
 
+def valid_o3de_json_dict(json_data: dict, key: str) -> bool:
+    return key in json_data
+
+
 def valid_o3de_repo_json(file_name: str or pathlib.Path) -> bool:
     file_name = pathlib.Path(file_name).resolve()
     if not file_name.is_file():
@@ -24,7 +28,7 @@ def valid_o3de_repo_json(file_name: str or pathlib.Path) -> bool:
             json_data = json.load(f)
             test = json_data['repo_name']
             test = json_data['origin']
-        except Exception as e:
+        except (json.JSONDecodeError, KeyError) as e:
             return False
 
     return True
@@ -39,8 +43,7 @@ def valid_o3de_engine_json(file_name: str or pathlib.Path) -> bool:
         try:
             json_data = json.load(f)
             test = json_data['engine_name']
-            # test = json_data['origin'] # will be required soon
-        except Exception as e:
+        except (json.JSONDecodeError, KeyError) as e:
             return False
     return True
 
@@ -54,8 +57,7 @@ def valid_o3de_project_json(file_name: str or pathlib.Path) -> bool:
         try:
             json_data = json.load(f)
             test = json_data['project_name']
-            # test = json_data['origin'] # will be required soon
-        except Exception as e:
+        except (json.JSONDecodeError, KeyError) as e:
             return False
     return True
 
@@ -69,8 +71,7 @@ def valid_o3de_gem_json(file_name: str or pathlib.Path) -> bool:
         try:
             json_data = json.load(f)
             test = json_data['gem_name']
-            # test = json_data['origin'] # will be required soon
-        except Exception as e:
+        except (json.JSONDecodeError, KeyError) as e:
             return False
     return True
 
@@ -83,8 +84,7 @@ def valid_o3de_template_json(file_name: str or pathlib.Path) -> bool:
         try:
             json_data = json.load(f)
             test = json_data['template_name']
-            # test = json_data['origin'] # will be required soon
-        except Exception as e:
+        except (json.JSONDecodeError, KeyError) as e:
             return False
     return True
 
@@ -97,7 +97,6 @@ def valid_o3de_restricted_json(file_name: str or pathlib.Path) -> bool:
         try:
             json_data = json.load(f)
             test = json_data['restricted_name']
-            # test = json_data['origin'] # will be required soon
-        except Exception as e:
+        except (json.JSONDecodeError, KeyError) as e:
             return False
     return True

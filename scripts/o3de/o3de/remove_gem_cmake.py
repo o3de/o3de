@@ -15,6 +15,7 @@ Contains methods for removing a gem from a project's cmake scripts
 import argparse
 import logging
 import pathlib
+import sys
 
 from o3de import manifest, remove_external_subdirectory
 
@@ -64,26 +65,58 @@ def _run_remove_gem_from_cmake(args: argparse) -> int:
     return remove_gem_from_cmake(args.gem_name, args.gem_path)
 
 
-def add_args(parser, subparsers) -> None:
+def add_parser_args(parser):
     """
-    add_args is called to add expected parser arguments and subparsers arguments to each command such that it can be
+    add_parser_args is called to add arguments to each command such that it can be
     invoked locally or added by a central python file.
-    Ex. Directly run from this file alone with: python register.py register --gem-path "C:/TestGem"
-    OR
-    o3de.py can downloadable commands by importing engine_template,
-    call add_args and execute: python o3de.py register --gem-path "C:/TestGem"
-    :param parser: the caller instantiates a parser and passes it in here
-    :param subparsers: the caller instantiates subparsers and passes it in here
+    Ex. Directly run from this file alone with: python remove_gem_cmake.py --gem-name Atom
+    :param parser: the caller passes an argparse parser like instance to this method
     """
-    # convenience functions to disambiguate the gem name -> gem_path and call remove-external-subdirectory on gem_path
-    remove_gem_from_cmake_subparser = subparsers.add_parser('remove-gem-from-cmake')
-    group = remove_gem_from_cmake_subparser.add_mutually_exclusive_group(required=True)
+    group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-gp', '--gem-path', type=str, required=False,
                        help='The path to the gem.')
     group.add_argument('-gn', '--gem-name', type=str, required=False,
                        help='The name of the gem.')
 
-    remove_gem_from_cmake_subparser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
+    parser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
                                                  help='By default the home folder is the user folder, override it to this folder.')
 
-    remove_gem_from_cmake_subparser.set_defaults(func=_run_remove_gem_from_cmake)
+    parser.set_defaults(func=_run_remove_gem_from_cmake)
+
+
+def add_args(subparsers) -> None:
+    """
+    add_args is called to add subparsers arguments to each command such that it can be
+    a central python file such as o3de.py.
+    It can be run from the o3de.py script as follows
+    call add_args and execute: python o3de.py remove-gem-from-cmake --gem-name Atom
+    :param subparsers: the caller instantiates subparsers and passes it in here
+    """
+    remove_gem_from_cmake_subparser = subparsers.add_parser('remove-gem-from-cmake')
+    add_parser_args(remove_gem_from_cmake_subparser)
+
+
+def main():
+    """
+    Runs remove_gem_cmake.py script as standalone script
+    """
+    # parse the command line args
+    the_parser = argparse.ArgumentParser()
+
+    # add subparsers
+
+    # add args to the parser
+    add_parser_args(the_parser)
+
+    # parse args
+    the_args = the_parser.parse_args()
+
+    # run
+    ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
+
+    # return
+    sys.exit(ret)
+
+
+if __name__ == "__main__":
+    main()

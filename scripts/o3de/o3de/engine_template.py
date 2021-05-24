@@ -79,7 +79,7 @@ restricted_platforms = {
 }
 
 template_file_name = 'template.json'
-
+this_script_parent = os.path.dirname(os.path.realpath(__file__))
 
 def _transform(s_data: str,
                replacements: list,
@@ -329,7 +329,7 @@ def _instantiate_template(template_json_data: dict,
                 with open(platform_json, 'r') as s:
                     try:
                         json_data = json.load(s)
-                    except Exception as e:
+                    except json.JSONDecodeError as e:
                         logger.error(f'Failed to load {platform_json}: ' + str(e))
                         return 1
                     else:
@@ -407,7 +407,7 @@ def create_template(source_path: str,
         template_path = f'{default_templates_folder}/{template_path}'
         logger.info(f'Template path not a full path. Using default templates folder {template_path}')
     if os.path.isdir(template_path):
-        logger.error(f'Template path {template_path} is already exists.')
+        logger.error(f'Template path {template_path} already exists.')
         return 1
 
     # template name is now the last component of the template_path
@@ -432,12 +432,12 @@ def create_template(source_path: str,
             with open(engine_json) as s:
                 try:
                     engine_json_data = json.load(s)
-                except Exception as e:
+                except json.JSONDecodeError as e:
                     logger.error(f"Failed to read engine json {engine_json}: {str(e)}")
                     return 1
                 try:
                     engine_restricted = engine_json_data['restricted_name']
-                except Exception as e:
+                except KeyError as e:
                     logger.error(f"Engine json {engine_json} restricted not found.")
                     return 1
             engine_restricted_folder = manifest.get_registered(restricted_name=engine_restricted)
@@ -475,12 +475,12 @@ def create_template(source_path: str,
                 with open(restricted_json, 'r') as s:
                     try:
                         restricted_json_data = json.load(s)
-                    except Exception as e:
+                    except json.JSONDecodeError as e:
                         logger.error(f'Failed to load {restricted_json}: ' + str(e))
                         return 1
                     try:
                         template_restricted_name = restricted_json_data['restricted_name']
-                    except Exception as e:
+                    except KeyError as e:
                         logger.error(f'Failed to read restricted_name from {restricted_json}')
                         return 1
         else:
@@ -943,8 +943,7 @@ def create_template(source_path: str,
         s.write(json.dumps(json_data, indent=4))
 
     # copy the default preview.png
-    this_script_parent = os.path.dirname(os.path.realpath(__file__))
-    preview_png_src = f'{this_script_parent}/preview.png'
+    preview_png_src = f'{this_script_parent}/resources/preview.png'
     preview_png_dst = f'{template_path}/Template/preview.png'
     if not os.path.isfile(preview_png_dst):
         shutil.copy(preview_png_src, preview_png_dst)
@@ -1067,14 +1066,14 @@ def create_from_template(destination_path: str,
     with open(template_json) as s:
         try:
             template_json_data = json.load(s)
-        except Exception as e:
+        except KeyError as e:
             logger.error(f'Could read template json {template_json}: {str(e)}.')
             return 1
 
     # read template name from the json
     try:
         template_name = template_json_data['template_name']
-    except Exception as e:
+    except KeyError as e:
         logger.error(f'Could not read "template_name" from template json {template_json}: {str(e)}.')
         return 1
 
@@ -1083,7 +1082,7 @@ def create_from_template(destination_path: str,
     if not template_restricted_name and not template_restricted_path:
         try:
             template_json_restricted_name = template_json_data['restricted_name']
-        except Exception as e:
+        except KeyError as e:
             # the template json doesn't have a 'restricted_name' element warn and use it
             logger.info(f'The template does not specify a "restricted_name".')
         else:
@@ -1100,7 +1099,7 @@ def create_from_template(destination_path: str,
             # The user specified a --template-restricted-name
             try:
                 template_json_restricted_name = template_json_data['restricted_name']
-            except Exception as e:
+            except KeyError as e:
                 # the template json doesn't have a 'restricted_name' element warn and use it
                 logger.info(f'The template does not specify a "restricted_name".'
                             f' Using supplied {template_restricted_name}')
@@ -1120,7 +1119,7 @@ def create_from_template(destination_path: str,
             template_restricted_path = template_restricted_path.replace('\\', '/')
             try:
                 template_json_restricted_name = template_json_data['restricted_name']
-            except Exception as e:
+            except KeyError as e:
                 # the template json doesn't have a 'restricted_name' element warn and use it
                 logger.info(f'The template does not specify a "restricted_name".'
                             f' Using supplied {template_restricted_path}')
@@ -1154,7 +1153,7 @@ def create_from_template(destination_path: str,
             try:
                 template_json_restricted_platform_relative_path = template_json_data[
                     'restricted_platform_relative_path']
-            except Exception as e:
+            except KeyError as e:
                 # the template json doesn't have a 'restricted_platform_relative_path' element warn and use it
                 logger.info(f'The template does not specify a "restricted_platform_relative_path".'
                             f' Using {template_restricted_platform_relative_path}')
@@ -1175,7 +1174,7 @@ def create_from_template(destination_path: str,
         try:
             template_restricted_platform_relative_path = template_json_data[
                 'restricted_platform_relative_path']
-        except Exception as e:
+        except KeyError as e:
             # The template json doesn't have a 'restricted_platform_relative_path' element, set empty string.
             template_restricted_platform_relative_path = ''
 
@@ -1356,14 +1355,14 @@ def create_project(project_path: str,
     with open(template_json) as s:
         try:
             template_json_data = json.load(s)
-        except Exception as e:
+        except json.JSONDecodeError as e:
             logger.error(f'Could read template json {template_json}: {str(e)}.')
             return 1
 
     # read template name from the json
     try:
         template_name = template_json_data['template_name']
-    except Exception as e:
+    except KeyError as e:
         logger.error(f'Could not read "template_name" from template json {template_json}: {str(e)}.')
         return 1
 
@@ -1372,7 +1371,7 @@ def create_project(project_path: str,
     if not template_restricted_name and not template_restricted_path:
         try:
             template_json_restricted_name = template_json_data['restricted_name']
-        except Exception as e:
+        except KeyError as e:
             # the template json doesn't have a 'restricted_name' element warn and use it
             logger.info(f'The template does not specify a "restricted_name".')
         else:
@@ -1389,7 +1388,7 @@ def create_project(project_path: str,
             # The user specified a --template-restricted-name
             try:
                 template_json_restricted_name = template_json_data['restricted_name']
-            except Exception as e:
+            except KeyError as e:
                 # the template json doesn't have a 'restricted_name' element warn and use it
                 logger.info(f'The template does not specify a "restricted_name".'
                             f' Using supplied {template_restricted_name}')
@@ -1409,7 +1408,7 @@ def create_project(project_path: str,
             template_restricted_path = template_restricted_path.replace('\\', '/')
             try:
                 template_json_restricted_name = template_json_data['restricted_name']
-            except Exception as e:
+            except KeyError as e:
                 # the template json doesn't have a 'restricted_name' element warn and use it
                 logger.info(f'The template does not specify a "restricted_name".'
                             f' Using supplied {template_restricted_path}')
@@ -1442,7 +1441,7 @@ def create_project(project_path: str,
             try:
                 template_json_restricted_platform_relative_path = template_json_data[
                     'restricted_platform_relative_path']
-            except Exception as e:
+            except KeyError as e:
                 # the template json doesn't have a 'restricted_platform_relative_path' element warn and use it
                 logger.info(f'The template does not specify a "restricted_platform_relative_path".'
                             f' Using {template_restricted_platform_relative_path}')
@@ -1463,7 +1462,7 @@ def create_project(project_path: str,
             try:
                 template_restricted_platform_relative_path = template_json_data[
                     'restricted_platform_relative_path']
-            except Exception as e:
+            except KeyError as e:
                 # The template json doesn't have a 'restricted_platform_relative_path' element, set empty string.
                 template_restricted_platform_relative_path = ''
     if not template_restricted_platform_relative_path:
@@ -1597,13 +1596,13 @@ def create_project(project_path: str,
             with open(restricted_json, 'r') as s:
                 try:
                     restricted_json_data = json.load(s)
-                except Exception as e:
+                except json.JSONDecodeError as e:
                     logger.error(f'Failed to load restricted json {restricted_json}.')
                     return 1
 
             try:
                 restricted_name = restricted_json_data["restricted_name"]
-            except Exception as e:
+            except KeyError as e:
                 logger.error(f'Failed to read "restricted_name" from restricted json {restricted_json}.')
                 return 1
 
@@ -1616,7 +1615,7 @@ def create_project(project_path: str,
             with open(project_json, 'r') as s:
                 try:
                     project_json_data = json.load(s)
-                except Exception as e:
+                except json.JSONDecodeError as e:
                     logger.error(f'Failed to load project json {project_json}.')
                     return 1
 
@@ -1625,7 +1624,7 @@ def create_project(project_path: str,
             with open(project_json, 'w') as s:
                 try:
                     s.write(json.dumps(project_json_data, indent=4))
-                except Exception as e:
+                except OSError as e:
                     logger.error(f'Failed to write project json {project_json}.')
                     return 1
 
@@ -1656,7 +1655,7 @@ def create_project(project_path: str,
     engine_json_data = manifest.get_engine_json_data(engine_path=manifest.get_this_engine_path())
     try:
         engine_name = engine_json_data['engine_name']
-    except Exception as e:
+    except KeyError as e:
         logger.error(f"engine_name for this engine not found in engine.json.")
         return 1
 
@@ -1665,7 +1664,7 @@ def create_project(project_path: str,
     with open(project_json, 'w') as s:
         try:
             s.write(json.dumps(project_json_data, indent=4))
-        except Exception as e:
+        except OSError as e:
             logger.error(f'Failed to write project json at {project_path}.')
             return 1
 
@@ -1749,14 +1748,14 @@ def create_gem(gem_path: str,
     with open(template_json) as s:
         try:
             template_json_data = json.load(s)
-        except Exception as e:
+        except json.JSONDecodeError as e:
             logger.error(f'Could read template json {template_json}: {str(e)}.')
             return 1
 
     # read template name from the json
     try:
         template_name = template_json_data['template_name']
-    except Exception as e:
+    except KeyError as e:
         logger.error(f'Could not read "template_name" from template json {template_json}: {str(e)}.')
         return 1
 
@@ -1765,7 +1764,7 @@ def create_gem(gem_path: str,
     if not template_restricted_name and not template_restricted_path:
         try:
             template_json_restricted_name = template_json_data['restricted_name']
-        except Exception as e:
+        except KeyError as e:
             # the template json doesn't have a 'restricted_name' element warn and use it
             logger.info(f'The template does not specify a "restricted_name".')
         else:
@@ -1781,7 +1780,7 @@ def create_gem(gem_path: str,
             # The user specified a --template-restricted-name
             try:
                 template_json_restricted_name = template_json_data['restricted_name']
-            except Exception as e:
+            except KeyError as e:
                 # the template json doesn't have a 'restricted_name' element warn and use it
                 logger.info(f'The template does not specify a "restricted_name".'
                             f' Using supplied {template_restricted_name}')
@@ -1801,7 +1800,7 @@ def create_gem(gem_path: str,
             template_restricted_path = template_restricted_path.replace('\\', '/')
             try:
                 template_json_restricted_name = template_json_data['restricted_name']
-            except Exception as e:
+            except KeyError as e:
                 # the template json doesn't have a 'restricted_name' element warn and use it
                 logger.info(f'The template does not specify a "restricted_name".'
                             f' Using supplied {template_restricted_path}')
@@ -1833,7 +1832,7 @@ def create_gem(gem_path: str,
             try:
                 template_json_restricted_platform_relative_path = template_json_data[
                     'restricted_platform_relative_path']
-            except Exception as e:
+            except KeyError as e:
                 # the template json doesn't have a 'restricted_platform_relative_path' element warn and use it
                 logger.info(f'The template does not specify a "restricted_platform_relative_path".'
                             f' Using {template_restricted_platform_relative_path}')
@@ -1854,7 +1853,7 @@ def create_gem(gem_path: str,
             try:
                 template_restricted_platform_relative_path = template_json_data[
                     'restricted_platform_relative_path']
-            except Exception as e:
+            except KeyError as e:
                 # The template json doesn't have a 'restricted_platform_relative_path' element, set empty string.
                 template_restricted_platform_relative_path = ''
     if not template_restricted_platform_relative_path:
@@ -1988,13 +1987,13 @@ def create_gem(gem_path: str,
             with open(restricted_json, 'r') as s:
                 try:
                     restricted_json_data = json.load(s)
-                except Exception as e:
+                except json.JSONDecodeError as e:
                     logger.error(f'Failed to load restricted json {restricted_json}.')
                     return 1
 
                 try:
                     restricted_name = restricted_json_data["restricted_name"]
-                except Exception as e:
+                except KeyError as e:
                     logger.error(f'Failed to read "restricted_name" from restricted json {restricted_json}.')
                     return 1
 
@@ -2007,7 +2006,7 @@ def create_gem(gem_path: str,
                 with open(gem_json, 'r') as s:
                     try:
                         gem_json_data = json.load(s)
-                    except Exception as e:
+                    except json.JSONDecodeError as e:
                         logger.error(f'Failed to load gem json {gem_json}.')
                         return 1
 
@@ -2016,7 +2015,7 @@ def create_gem(gem_path: str,
                 with open(gem_json, 'w') as s:
                     try:
                         s.write(json.dumps(gem_json_data, indent=4))
-                    except Exception as e:
+                    except OSError as e:
                         logger.error(f'Failed to write project json {gem_json}.')
                         return 1
 
@@ -2110,15 +2109,14 @@ def _run_create_gem(args: argparse) -> int:
                       args.module_id)
 
 
-def add_args(parser, subparsers) -> None:
+def add_args(subparsers) -> None:
     """
     add_args is called to add expected parser arguments and subparsers arguments to each command such that it can be
     invoked locally or aggregated by a central python file.
-    Ex. Directly run from this file alone with: python engine_template.py create_gem --gem-path TestGem
+    Ex. Directly run from this file alone with: python engine_template.py create-gem --gem-path TestGem
     OR
     o3de.py can aggregate commands by importing engine_template,
-    call add_args and execute: python o3de.py create_gem --gem-path TestGem
-    :param parser: the caller instantiates a parser and passes it in here
+    call add_args and execute: python o3de.py create-gem --gem-path TestGem
     :param subparsers: the caller instantiates subparsers and passes it in here
     """
     # turn a directory into a template
@@ -2438,13 +2436,12 @@ if __name__ == "__main__":
     the_subparsers = the_parser.add_subparsers(help='sub-command help', dest='command', required=True)
 
     # add args to the parser
-    add_args(the_parser, the_subparsers)
+    add_args(the_subparsers)
 
     # parse args
     the_args = the_parser.parse_args()
 
     # run
-
     ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
 
     # return

@@ -15,6 +15,7 @@ Implemens functinality to remove external_subdirectories from the o3de_manifests
 import argparse
 import logging
 import pathlib
+import sys
 
 from o3de import manifest
 
@@ -62,12 +63,58 @@ def add_args(parser, subparsers) -> None:
     :param parser: the caller instantiates a parser and passes it in here
     :param subparsers: the caller instantiates subparsers and passes it in here
     """
-    remove_external_subdirectory_subparser = subparsers.add_parser('remove-external-subdirectory')
-    remove_external_subdirectory_subparser.add_argument('external_subdirectory', metavar='external_subdirectory',
+
+
+def add_parser_args(parser):
+    """
+    add_parser_args is called to add arguments to each command such that it can be
+    invoked locally or added by a central python file.
+    Ex. Directly run from this file alone with: python remove_external_subdirectory.py "D:/subdir"
+    :param parser: the caller passes an argparse parser like instance to this method
+    """
+    parser.add_argument('external_subdirectory', metavar='external_subdirectory',
                                                         type=str,
                                                         help='remove external subdirectory from cmake')
 
-    remove_external_subdirectory_subparser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
+    parser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
                                                         help='By default the home folder is the user folder, override it to this folder.')
 
-    remove_external_subdirectory_subparser.set_defaults(func=_run_remove_external_subdirectory)
+    parser.set_defaults(func=_run_remove_external_subdirectory)
+
+
+def add_args(subparsers) -> None:
+    """
+    add_args is called to add subparsers arguments to each command such that it can be
+    a central python file such as o3de.py.
+    It can be run from the o3de.py script as follows
+    call add_args and execute: python o3de.py remove-external-subdirectory "D:/subdir"
+    :param subparsers: the caller instantiates subparsers and passes it in here
+    """
+    remove_external_subdirectory_subparser = subparsers.add_parser('remove-external-subdirectory')
+    add_parser_args(remove_external_subdirectory_subparser)
+
+
+def main():
+    """
+    Runs remove_external_subdirectory.py script as standalone script
+    """
+    # parse the command line args
+    the_parser = argparse.ArgumentParser()
+
+    # add subparsers
+
+    # add args to the parser
+    add_parser_args(the_parser)
+
+    # parse args
+    the_args = the_parser.parse_args()
+
+    # run
+    ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
+
+    # return
+    sys.exit(ret)
+
+
+if __name__ == "__main__":
+    main()

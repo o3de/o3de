@@ -19,6 +19,7 @@ import json
 import os
 import pathlib
 import shutil
+import sys
 import urllib.parse
 import urllib.request
 
@@ -134,172 +135,74 @@ def register_all_in_folder(folder_path: str or pathlib.Path,
     return ret_val
 
 
-def register_all_engines_in_folder(engines_path: str or pathlib.Path,
-                                   remove: bool = False,
-                                   force: bool = False) -> int:
-    if not engines_path:
+def register_all_o3de_objects_of_type_in_folder(o3de_object_path: str or pathlib.Path,
+                                                o3de_object_type: str,
+                                                remove: bool,
+                                                force: bool,
+                                                **register_kwargs) -> int:
+    if not o3de_object_path:
         logger.error(f'Engines path cannot be empty.')
         return 1
 
-    engines_path = pathlib.Path(engines_path).resolve()
-    if not engines_path.is_dir():
+    o3de_object_path = pathlib.Path(o3de_object_path).resolve()
+    if not o3de_object_path.is_dir():
         logger.error(f'Engines path is not dir.')
         return 1
 
-    engines_set = set()
+    o3de_object_type_set = set()
+    register_path_kwarg = f'{o3de_object_type}_path' if o3de_object_type != 'repo' else f'{o3de_object_type}_uri'
 
     ret_val = 0
-    for root, dirs, files in os.walk(engines_path):
-        for name in files:
-            if name == 'engine.json':
-                engines_set.add(root)
+    for root, dirs, files in os.walk(o3de_object_path):
+        if f'{o3de_object_type}.json' in files:
+            o3de_object_type_set.add(root)
+            # Stop iteration of any subdirectories
+            # Nested o3de objects of the same type aren't supported(i.e an engine cannot be inside of a engine).
+            dirs[:] = []
 
-    for engine in sorted(engines_set, reverse=True):
-        error_code = register(engine_path=engine, remove=remove, force=force)
+    for o3de_object_type_root in sorted(o3de_object_type_set, reverse=True):
+        error_code = register(**{register_path_kwarg: o3de_object_type_root},
+                              remove=remove, force=force, **register_kwargs)
         if error_code:
             ret_val = error_code
 
     return ret_val
+
+
+def register_all_engines_in_folder(engines_path: str or pathlib.Path,
+                                   remove: bool = False,
+                                   force: bool = False) -> int:
+    return register_all_o3de_objects_of_type_in_folder(engines_path, 'engine', remove, force)
 
 
 def register_all_projects_in_folder(projects_path: str or pathlib.Path,
                                     remove: bool = False,
                                     engine_path: str or pathlib.Path = None) -> int:
-    if not projects_path:
-        logger.error(f'Projects path cannot be empty.')
-        return 1
-
-    projects_path = pathlib.Path(projects_path).resolve()
-    if not projects_path.is_dir():
-        logger.error(f'Projects path is not dir.')
-        return 1
-
-    projects_set = set()
-
-    ret_val = 0
-    for root, dirs, files in os.walk(projects_path):
-        for name in files:
-            if name == 'project.json':
-                projects_set.add(root)
-
-    for project in sorted(projects_set, reverse=True):
-        error_code = register(engine_path=engine_path, project_path=project, remove=remove)
-        if error_code:
-            ret_val = error_code
-
-    return ret_val
+    return register_all_o3de_objects_of_type_in_folder(projects_path, 'project', remove, False, engine_path=engine_path)
 
 
 def register_all_gems_in_folder(gems_path: str or pathlib.Path,
                                 remove: bool = False,
                                 engine_path: str or pathlib.Path = None) -> int:
-    if not gems_path:
-        logger.error(f'Gems path cannot be empty.')
-        return 1
-
-    gems_path = pathlib.Path(gems_path).resolve()
-    if not gems_path.is_dir():
-        logger.error(f'Gems path is not dir.')
-        return 1
-
-    gems_set = set()
-
-    ret_val = 0
-    for root, dirs, files in os.walk(gems_path):
-        for name in files:
-            if name == 'gem.json':
-                gems_set.add(root)
-
-    for gem in sorted(gems_set, reverse=True):
-        error_code = register(engine_path=engine_path, gem_path=gem, remove=remove)
-        if error_code:
-            ret_val = error_code
-
-    return ret_val
+    return register_all_o3de_objects_of_type_in_folder(gems_path, 'gem', remove, False, engine_path=engine_path)
 
 
 def register_all_templates_in_folder(templates_path: str or pathlib.Path,
                                      remove: bool = False,
                                      engine_path: str or pathlib.Path = None) -> int:
-    if not templates_path:
-        logger.error(f'Templates path cannot be empty.')
-        return 1
-
-    templates_path = pathlib.Path(templates_path).resolve()
-    if not templates_path.is_dir():
-        logger.error(f'Templates path is not dir.')
-        return 1
-
-    templates_set = set()
-
-    ret_val = 0
-    for root, dirs, files in os.walk(templates_path):
-        for name in files:
-            if name == 'template.json':
-                templates_set.add(root)
-
-    for template in sorted(templates_set, reverse=True):
-        error_code = register(engine_path=engine_path, template_path=template, remove=remove)
-        if error_code:
-            ret_val = error_code
-
-    return ret_val
+    return register_all_o3de_objects_of_type_in_folder(templates_path, 'template', remove, False, engine_path=engine_path)
 
 
 def register_all_restricted_in_folder(restricted_path: str or pathlib.Path,
                                       remove: bool = False,
                                       engine_path: str or pathlib.Path = None) -> int:
-    if not restricted_path:
-        logger.error(f'Restricted path cannot be empty.')
-        return 1
-
-    restricted_path = pathlib.Path(restricted_path).resolve()
-    if not restricted_path.is_dir():
-        logger.error(f'Restricted path is not dir.')
-        return 1
-
-    restricted_set = set()
-
-    ret_val = 0
-    for root, dirs, files in os.walk(restricted_path):
-        for name in files:
-            if name == 'restricted.json':
-                restricted_set.add(root)
-
-    for restricted in sorted(restricted_set, reverse=True):
-        error_code = register(engine_path=engine_path, restricted_path=restricted, remove=remove)
-        if error_code:
-            ret_val = error_code
-
-    return ret_val
+    return register_all_o3de_objects_of_type_in_folder(restricted_path, 'restricted', remove, False, engine_path=engine_path)
 
 
 def register_all_repos_in_folder(repos_path: str or pathlib.Path,
                                  remove: bool = False,
                                  engine_path: str or pathlib.Path = None) -> int:
-    if not repos_path:
-        logger.error(f'Repos path cannot be empty.')
-        return 1
-
-    repos_path = pathlib.Path(repos_path).resolve()
-    if not repos_path.is_dir():
-        logger.error(f'Repos path is not dir.')
-        return 1
-
-    repo_set = set()
-
-    ret_val = 0
-    for root, dirs, files in os.walk(repos_path):
-        for name in files:
-            if name == 'repo.json':
-                repo_set.add(root)
-
-    for repo in sorted(repo_set, reverse=True):
-        error_code = register(engine_path=engine_path, repo_uri=repo, remove=remove)
-        if error_code:
-            ret_val = error_code
-
-    return ret_val
+    return register_all_o3de_objects_of_type_in_folder(repos_path, 'repo', remove, force, engine_path=engine_path)
 
 
 def remove_engine_name_to_path(json_data: dict,
@@ -395,21 +298,13 @@ def register_gem_path(json_data: dict,
             logger.error(f'Engine path {engine_path} is not registered.')
             return 1
 
-        while gem_path in engine_data['gems']:
-            engine_data['gems'].remove(gem_path)
-
-        while gem_path.as_posix() in engine_data['gems']:
-            engine_data['gems'].remove(gem_path.as_posix())
+        engine_data['gems'] = list(filter(lambda p: gem_path != pathlib.Path(p), engine_data['gems']))
 
         if remove:
             logger.warn(f'Removing Gem path {gem_path}.')
             return 0
     else:
-        while gem_path in json_data['gems']:
-            json_data['gems'].remove(gem_path)
-
-        while gem_path.as_posix() in json_data['gems']:
-            json_data['gems'].remove(gem_path.as_posix())
+        json_data['gems'] = list(filter(lambda p: gem_path != pathlib.Path(p), json_data['gems']))
 
         if remove:
             logger.warn(f'Removing Gem path {gem_path}.')
@@ -447,21 +342,13 @@ def register_project_path(json_data: dict,
             logger.error(f'Engine path {engine_path} is not registered.')
             return 1
 
-        while project_path in engine_data['projects']:
-            engine_data['projects'].remove(project_path)
-
-        while project_path.as_posix() in engine_data['projects']:
-            engine_data['projects'].remove(project_path.as_posix())
+        engine_data['projects'] = list(filter(lambda p: project_path != pathlib.Path(p), engine_data['projects']))
 
         if remove:
             logger.warn(f'Engine {engine_path} removing Project path {project_path}.')
             return 0
     else:
-        while project_path in json_data['projects']:
-            json_data['projects'].remove(project_path)
-
-        while project_path.as_posix() in json_data['projects']:
-            json_data['projects'].remove(project_path.as_posix())
+        json_data['projects'] = list(filter(lambda p: project_path != pathlib.Path(p), json_data['projects']))
 
         if remove:
             logger.warn(f'Removing Project path {project_path}.')
@@ -486,20 +373,20 @@ def register_project_path(json_data: dict,
     with this_engine_json.open('r') as f:
         try:
             this_engine_json = json.load(f)
-        except Exception as e:
+        except json.JSONDecodeError as e:
             logger.error(f'Engine json failed to load: {str(e)}')
             return 1
     with project_json.open('r') as f:
         try:
             project_json_data = json.load(f)
-        except Exception as e:
+        except json.JSONDecodeError as e:
             logger.error(f'Project json failed to load: {str(e)}')
             return 1
 
     update_project_json = False
     try:
         update_project_json = project_json_data['engine'] != this_engine_json['engine_name']
-    except Exception as e:
+    except KeyError as e:
         update_project_json = True
 
     if update_project_json:
@@ -508,7 +395,7 @@ def register_project_path(json_data: dict,
         with project_json.open('w') as s:
             try:
                 s.write(json.dumps(project_json_data, indent=4))
-            except Exception as e:
+            except OSError as e:
                 logger.error(f'Project json failed to save: {str(e)}')
                 return 1
 
@@ -530,21 +417,13 @@ def register_template_path(json_data: dict,
             logger.error(f'Engine path {engine_path} is not registered.')
             return 1
 
-        while template_path in engine_data['templates']:
-            engine_data['templates'].remove(template_path)
-
-        while template_path.as_posix() in engine_data['templates']:
-            engine_data['templates'].remove(template_path.as_posix())
+        engine_data['templates'] = list(filter(lambda p: template_path != pathlib.Path(p), engine_data['templates']))
 
         if remove:
             logger.warn(f'Engine {engine_path} removing Template path {template_path}.')
             return 0
     else:
-        while template_path in json_data['templates']:
-            json_data['templates'].remove(template_path)
-
-        while template_path.as_posix() in json_data['templates']:
-            json_data['templates'].remove(template_path.as_posix())
+        json_data['templates'] = list(filter(lambda p: template_path != pathlib.Path(p), json_data['templates']))
 
         if remove:
             logger.warn(f'Removing Template path {template_path}.')
@@ -582,21 +461,13 @@ def register_restricted_path(json_data: dict,
             logger.error(f'Engine path {engine_path} is not registered.')
             return 1
 
-        while restricted_path in engine_data['restricted']:
-            engine_data['restricted'].remove(restricted_path)
-
-        while restricted_path.as_posix() in engine_data['restricted']:
-            engine_data['restricted'].remove(restricted_path.as_posix())
+        engine_data['restricted'] = list(filter(lambda p: restricted_path != pathlib.Path(p), engine_data['restricted']))
 
         if remove:
             logger.warn(f'Engine {engine_path} removing Restricted path {restricted_path}.')
             return 0
     else:
-        while restricted_path in json_data['restricted']:
-            json_data['restricted'].remove(restricted_path)
-
-        while restricted_path.as_posix() in json_data['restricted']:
-            json_data['restricted'].remove(restricted_path.as_posix())
+        json_data['restricted'] = list(filter(lambda p: restricted_path != pathlib.Path(p), json_data['restricted']))
 
         if remove:
             logger.warn(f'Removing Restricted path {restricted_path}.')
@@ -629,10 +500,7 @@ def register_repo(json_data: dict,
     url = f'{repo_uri}/repo.json'
     parsed_uri = urllib.parse.urlparse(url)
 
-    if parsed_uri.scheme == 'http' or \
-            parsed_uri.scheme == 'https' or \
-            parsed_uri.scheme == 'ftp' or \
-            parsed_uri.scheme == 'ftps':
+    if parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
         while repo_uri in json_data['repos']:
             json_data['repos'].remove(repo_uri)
     else:
@@ -647,118 +515,67 @@ def register_repo(json_data: dict,
     repo_sha256 = hashlib.sha256(url.encode())
     cache_file = manifest.get_o3de_cache_folder() / str(repo_sha256.hexdigest() + '.json')
 
-    result = 0
-    if parsed_uri.scheme == 'http' or \
-            parsed_uri.scheme == 'https' or \
-            parsed_uri.scheme == 'ftp' or \
-            parsed_uri.scheme == 'ftps':
-        if not cache_file.is_file():
-            with urllib.request.urlopen(url) as s:
-                with cache_file.open('wb') as f:
-                    shutil.copyfileobj(s, f)
-        json_data['repos'].insert(0, repo_uri)
-    else:
-        if not cache_file.is_file():
-            origin_file = pathlib.Path(url).resolve()
-            if not origin_file.is_file():
-                return 1
-            shutil.copy(origin_file, origin_file)
+    result = utils.download_file(url, cache_file)
+    if result == 0:
         json_data['repos'].insert(0, repo_uri.as_posix())
 
-    repo_set = set()
     result = repo.process_add_o3de_repo(cache_file, repo_set)
 
     return result
 
 
+def register_default_o3de_object_folder(json_data: dict,
+                                        default_o3de_object_folder: str or pathlib.Path,
+                                        o3de_object_key: str) -> int:
+    # make sure the path exists
+    default_o3de_object_folder = pathlib.Path(default_o3de_object_folder).resolve()
+    if not default_o3de_object_folder.is_dir():
+        logger.error(f'Default o3de object folder {default_o3de_object_folder} does not exist.')
+        return 1
+
+    json_data[o3de_object_key] = default_o3de_object_folder.as_posix()
+
+    return 0
+
+
 def register_default_engines_folder(json_data: dict,
                                     default_engines_folder: str or pathlib.Path,
                                     remove: bool = False) -> int:
-    if remove:
-        default_engines_folder = manifest.get_o3de_engines_folder()
-
-    # make sure the path exists
-    default_engines_folder = pathlib.Path(default_engines_folder).resolve()
-    if not default_engines_folder.is_dir():
-        logger.error(f'Default engines folder {default_engines_folder} does not exist.')
-        return 1
-
-    default_engines_folder = default_engines_folder.as_posix()
-    json_data['default_engines_folder'] = default_engines_folder
-
-    return 0
+    return register_default_o3de_object_folder(json_data,
+                                               manifest.get_o3de_engines_folder() if remove else default_engines_folder,
+                                               'default_engines_folder', remove)
 
 
 def register_default_projects_folder(json_data: dict,
                                      default_projects_folder: str or pathlib.Path,
                                      remove: bool = False) -> int:
-    if remove:
-        default_projects_folder = manifest.get_o3de_projects_folder()
-
-    # make sure the path exists
-    default_projects_folder = pathlib.Path(default_projects_folder).resolve()
-    if not default_projects_folder.is_dir():
-        logger.error(f'Default projects folder {default_projects_folder} does not exist.')
-        return 1
-
-    default_projects_folder = default_projects_folder.as_posix()
-    json_data['default_projects_folder'] = default_projects_folder
-
-    return 0
+    return register_default_o3de_object_folder(json_data,
+                                               manifest.get_o3de_projects_folder() if remove else default_projects_folder,
+                                               'default_projects_folder', remove)
 
 
 def register_default_gems_folder(json_data: dict,
                                  default_gems_folder: str or pathlib.Path,
                                  remove: bool = False) -> int:
-    if remove:
-        default_gems_folder = manifest.get_o3de_gems_folder()
-
-    # make sure the path exists
-    default_gems_folder = pathlib.Path(default_gems_folder).resolve()
-    if not default_gems_folder.is_dir():
-        logger.error(f'Default gems folder {default_gems_folder} does not exist.')
-        return 1
-
-    default_gems_folder = default_gems_folder.as_posix()
-    json_data['default_gems_folder'] = default_gems_folder
-
-    return 0
+    return register_default_o3de_object_folder(json_data,
+                                               manifest.get_o3de_gems_folder() if remove else default_gems_folder,
+                                               'default_gems_folder', remove)
 
 
 def register_default_templates_folder(json_data: dict,
                                       default_templates_folder: str or pathlib.Path,
                                       remove: bool = False) -> int:
-    if remove:
-        default_templates_folder = manifest.get_o3de_templates_folder()
-
-    # make sure the path exists
-    default_templates_folder = pathlib.Path(default_templates_folder).resolve()
-    if not default_templates_folder.is_dir():
-        logger.error(f'Default templates folder {default_templates_folder} does not exist.')
-        return 1
-
-    default_templates_folder = default_templates_folder.as_posix()
-    json_data['default_templates_folder'] = default_templates_folder
-
-    return 0
+    return register_default_o3de_object_folder(json_data,
+                                               manifest.get_o3de_templates_folder() if remove else default_templates_folder,
+                                               'default_templates_folder', remove)
 
 
 def register_default_restricted_folder(json_data: dict,
                                        default_restricted_folder: str or pathlib.Path,
-                                       remove: bool = False) -> int:
-    if remove:
-        default_restricted_folder = manifest.get_o3de_restricted_folder()
-
-    # make sure the path exists
-    default_restricted_folder = pathlib.Path(default_restricted_folder).resolve()
-    if not default_restricted_folder.is_dir():
-        logger.error(f'Default restricted folder {default_restricted_folder} does not exist.')
-        return 1
-
-    default_restricted_folder = default_restricted_folder.as_posix()
-    json_data['default_restricted_folder'] = default_restricted_folder
-
-    return 0
+                                       reset_to_default: bool = False) -> int:
+    return register_default_o3de_object_folder(json_data,
+                                               manifest.get_o3de_restricted_folder() if remove else default_restricted_folder,
+                                               'default_restricted_folder', remove)
 
 
 def register(engine_path: str or pathlib.Path = None,
@@ -999,20 +816,14 @@ def _run_register(args: argparse) -> int:
                         force=args.force)
 
 
-def add_args(parser, subparsers) -> None:
+def add_parser_args(parser):
     """
-    add_args is called to add expected parser arguments and subparsers arguments to each command such that it can be
+    add_parser_args is called to add arguments to each command such that it can be
     invoked locally or added by a central python file.
-    Ex. Directly run from this file alone with: python register.py register --gem-path "C:/TestGem"
-    OR
-    o3de.py can downloadable commands by importing engine_template,
-    call add_args and execute: python o3de.py register --gem-path "C:/TestGem"
-    :param parser: the caller instantiates a parser and passes it in here
-    :param subparsers: the caller instantiates subparsers and passes it in here
+    Ex. Directly run from this file alone with: python register.py --engine-path "C:/o3de"
+    :param parser: the caller passes an argparse parser like instance to this method
     """
-    # register
-    register_subparser = subparsers.add_parser('register')
-    group = register_subparser.add_mutually_exclusive_group(required=True)
+    group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--this-engine', action='store_true', required=False,
                        default=False,
                        help='Registers the engine this script is running from.')
@@ -1054,12 +865,49 @@ def add_args(parser, subparsers) -> None:
                        default=False,
                        help='Refresh the repo cache.')
 
-    register_subparser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
+    parser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
                                     help='By default the home folder is the user folder, override it to this folder.')
-
-    register_subparser.add_argument('-r', '--remove', action='store_true', required=False,
+    parser.add_argument('-r', '--remove', action='store_true', required=False,
                                     default=False,
                                     help='Remove entry.')
-    register_subparser.add_argument('-f', '--force', action='store_true', default=False,
+    parser.add_argument('-f', '--force', action='store_true', default=False,
                                     help='For the update of the registration field being modified.')
-    register_subparser.set_defaults(func=_run_register)
+    parser.set_defaults(func=_run_register)
+
+
+def add_args(subparsers) -> None:
+    """
+    add_args is called to add subparsers arguments to each command such that it can be
+    a central python file such as o3de.py.
+    It can be run from the o3de.py script as follows
+    call add_args and execute: python o3de.py register --engine-path "C:/o3de"
+    :param subparsers: the caller instantiates subparsers and passes it in here
+    """
+    register_subparser = subparsers.add_parser('register')
+    add_parser_args(register_subparser)
+
+
+def main():
+    """
+    Runs register.py script as standalone script
+    """
+    # parse the command line args
+    the_parser = argparse.ArgumentParser()
+
+    # add subparsers
+
+    # add args to the parser
+    add_parser_args(the_parser)
+
+    # parse args
+    the_args = the_parser.parse_args()
+
+    # run
+    ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
+
+    # return
+    sys.exit(ret)
+
+
+if __name__ == "__main__":
+    main()

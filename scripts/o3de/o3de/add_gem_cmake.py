@@ -15,6 +15,7 @@ Contains command to add a gem to a project's cmake scripts
 import argparse
 import logging
 import pathlib
+import sys
 
 from o3de import add_external_subdirectory, manifest, validation
 
@@ -24,39 +25,33 @@ logging.basicConfig()
 def add_gem_to_cmake(gem_name: str = None,
                      gem_path: str or pathlib.Path = None,
                      engine_name: str = None,
-                     engine_path: str or pathlib.Path = None,
-                     suppress_errors: bool = False) -> int:
+                     engine_path: str or pathlib.Path = None) -> int:
     """
     add a gem to a cmake as an external subdirectory for an engine
     :param gem_name: name of the gem to add to cmake
     :param gem_path: the path of the gem to add to cmake
     :param engine_name: name of the engine to add to cmake
     :param engine_path: the path of the engine to add external subdirectory to, default to this engine
-    :param suppress_errors: optional silence errors
     :return: 0 for success or non 0 failure code
     """
     if not gem_name and not gem_path:
-        if not suppress_errors:
-            logger.error('Must specify either a Gem name or Gem Path.')
+        logger.error('Must specify either a Gem name or Gem Path.')
         return 1
 
     if gem_name and not gem_path:
         gem_path = manifest.get_registered(gem_name=gem_name)
 
     if not gem_path:
-        if not suppress_errors:
-            logger.error(f'Gem Path {gem_path} has not been registered.')
+        logger.error(f'Gem Path {gem_path} has not been registered.')
         return 1
 
     gem_path = pathlib.Path(gem_path).resolve()
     gem_json = gem_path / 'gem.json'
     if not gem_json.is_file():
-        if not suppress_errors:
-            logger.error(f'Gem json {gem_json} is not present.')
+        logger.error(f'Gem json {gem_json} is not present.')
         return 1
     if not validation.valid_o3de_gem_json(gem_json):
-        if not suppress_errors:
-            logger.error(f'Gem json {gem_json} is not valid.')
+        logger.error(f'Gem json {gem_json} is not valid.')
         return 1
 
     if not engine_name and not engine_path:
@@ -66,22 +61,18 @@ def add_gem_to_cmake(gem_name: str = None,
         engine_path = manifest.get_registered(engine_name=engine_name)
 
     if not engine_path:
-        if not suppress_errors:
-            logger.error(f'Engine Path {engine_path} has not been registered.')
+        logger.error(f'Engine Path {engine_path} has not been registered.')
         return 1
 
     engine_json = engine_path / 'engine.json'
     if not engine_json.is_file():
-        if not suppress_errors:
-            logger.error(f'Engine json {engine_json} is not present.')
+        logger.error(f'Engine json {engine_json} is not present.')
         return 1
     if not validation.valid_o3de_engine_json(engine_json):
-        if not suppress_errors:
-            logger.error(f'Engine json {engine_json} is not valid.')
+        logger.error(f'Engine json {engine_json} is not valid.')
         return 1
 
-    return add_external_subdirectory.add_external_subdirectory(external_subdir=gem_path, engine_path=engine_path, suppress_errors=suppress_errors)
-
+    return add_external_subdirectory.add_external_subdirectory(external_subdir=gem_path, engine_path=engine_path)
 
 def _run_add_gem_to_cmake(args: argparse) -> int:
     if args.override_home_folder:
@@ -90,25 +81,58 @@ def _run_add_gem_to_cmake(args: argparse) -> int:
     return add_gem_to_cmake(gem_name=args.gem_name, gem_path=args.gem_path)
 
 
-def add_args(parser, subparsers) -> None:
+def add_parser_args(parser):
     """
-    add_args is called to add expected parser arguments and subparsers arguments to each command such that it can be
+    add_parser_args is called to add arguments to each command such that it can be
     invoked locally or added by a central python file.
-    Ex. Directly run from this file alone with: python register.py register --gem-path "C:/TestGem"
-    OR
-    o3de.py can downloadable commands by importing engine_template,
-    call add_args and execute: python o3de.py register --gem-path "C:/TestGem"
-    :param parser: the caller instantiates a parser and passes it in here
-    :param subparsers: the caller instantiates subparsers and passes it in here
+    Ex. Directly run from this file alone with: python add_gem_cmake.py --gem-path "/path/to/gem"
+    :param parser: the caller passes an argparse parser like instance to this method
     """
-    add_gem_to_cmake_subparser = subparsers.add_parser('add-gem-to-cmake')
-    group = add_gem_to_cmake_subparser.add_mutually_exclusive_group(required=True)
+    group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-gp', '--gem-path', type=str, required=False,
                        help='The path to the gem.')
     group.add_argument('-gn', '--gem-name', type=str, required=False,
                        help='The name of the gem.')
 
-    add_gem_to_cmake_subparser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
+    parser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
                                             help='By default the home folder is the user folder, override it to this folder.')
 
-    add_gem_to_cmake_subparser.set_defaults(func=_run_add_gem_to_cmake)
+    parser.set_defaults(func=_run_add_gem_to_cmake)
+
+
+def add_args(subparsers) -> None:
+    """
+    add_args is called to add subparsers arguments to each command such that it can be
+    a central python file such as o3de.py.
+    It can be run from the o3de.py script as follows
+    call add_args and execute: python o3de.py add-gem-to-cmake --gem-path "/path/to/gem"
+    :param subparsers: the caller instantiates subparsers and passes it in here
+    """
+    add_gem_cmake_subparser = subparsers.add_parser('add-gem-to-cmake')
+    add_parser_args(add_gem_cmake_subparser)
+
+
+def main():
+    """
+    Runs add_gem_cmake.py script as standalone script
+    """
+    # parse the command line args
+    the_parser = argparse.ArgumentParser()
+
+    # add subparsers
+
+    # add args to the parser
+    add_parser_args(the_parser)
+
+    # parse args
+    the_args = the_parser.parse_args()
+
+    # run
+    ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
+
+    # return
+    sys.exit(ret)
+
+
+if __name__ == "__main__":
+    main()

@@ -17,6 +17,7 @@ import json
 import logging
 import os
 import pathlib
+import sys
 
 from o3de import add_gem_cmake, cmake, manifest, validation
 
@@ -126,13 +127,13 @@ def add_gem_to_project(gem_name: str = None,
     with project_json.open('r') as s:
         try:
             project_json_data = json.load(s)
-        except Exception as e:
+        except json.JSONDecodeError as e:
             logger.error(f'Error loading Project json {project_json}: {str(e)}')
             return 1
         else:
             try:
                 engine_name = project_json_data['engine']
-            except Exception as e:
+            except KeyError as e:
                 logger.error(f'Project json {project_json} "engine" not found: {str(e)}')
                 return 1
             else:
@@ -261,51 +262,84 @@ def _run_add_gem_to_project(args: argparse) -> int:
                               args.add_to_cmake)
 
 
-def add_args(parser, subparsers) -> None:
+def add_parser_args(parser):
     """
-    add_args is called to add expected parser arguments and subparsers arguments to each command such that it can be
+    add_parser_args is called to add arguments to each command such that it can be
     invoked locally or added by a central python file.
-    Ex. Directly run from this file alone with: python register.py register --gem-path "C:/TestGem"
-    OR
-    o3de.py can downloadable commands by importing engine_template,
-    call add_args and execute: python o3de.py register --gem-path "C:/TestGem"
-    :param parser: the caller instantiates a parser and passes it in here
-    :param subparsers: the caller instantiates subparsers and passes it in here
+    Ex. Directly run from this file alone with: python add_gem_project.py --project-path "D:/TestProject" --gem-path "D:/TestGem"
+    :param parser: the caller passes an argparse parser like instance to this method
     """
-    add_gem_subparser = subparsers.add_parser('add-gem-to-project')
-    group = add_gem_subparser.add_mutually_exclusive_group(required=True)
+    group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-pp', '--project-path', type=str, required=False,
                        help='The path to the project.')
     group.add_argument('-pn', '--project-name', type=str, required=False,
                        help='The name of the project.')
-    group = add_gem_subparser.add_mutually_exclusive_group(required=True)
+    group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-gp', '--gem-path', type=str, required=False,
                        help='The path to the gem.')
     group.add_argument('-gn', '--gem-name', type=str, required=False,
                        help='The name of the gem.')
-    add_gem_subparser.add_argument('-gt', '--gem-target', type=str, required=False,
+    parser.add_argument('-gt', '--gem-target', type=str, required=False,
                                    help='The cmake target name to add. If not specified it will assume gem_name')
-    add_gem_subparser.add_argument('-df', '--dependencies-file', type=str, required=False,
+    parser.add_argument('-df', '--dependencies-file', type=str, required=False,
                                    help='The cmake dependencies file in which the gem dependencies are specified.'
                                         'If not specified it will assume ')
-    add_gem_subparser.add_argument('-rd', '--runtime-dependency', action='store_true', required=False,
+    parser.add_argument('-rd', '--runtime-dependency', action='store_true', required=False,
                                    default=False,
                                    help='Optional toggle if this gem should be added as a runtime dependency')
-    add_gem_subparser.add_argument('-td', '--tool-dependency', action='store_true', required=False,
+    parser.add_argument('-td', '--tool-dependency', action='store_true', required=False,
                                    default=False,
                                    help='Optional toggle if this gem should be added as a tool dependency')
-    add_gem_subparser.add_argument('-sd', '--server-dependency', action='store_true', required=False,
+    parser.add_argument('-sd', '--server-dependency', action='store_true', required=False,
                                    default=False,
                                    help='Optional toggle if this gem should be added as a server dependency')
-    add_gem_subparser.add_argument('-pl', '--platforms', type=str, required=False,
+    parser.add_argument('-pl', '--platforms', type=str, required=False,
                                    default='Common',
                                    help='Optional list of platforms this gem should be added to.'
                                         ' Ex. --platforms Mac,Windows,Linux')
-    add_gem_subparser.add_argument('-a', '--add-to-cmake', type=bool, required=False,
+    parser.add_argument('-a', '--add-to-cmake', type=bool, required=False,
                                    default=True,
                                    help='Automatically call add-gem-to-cmake.')
 
-    add_gem_subparser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
+    parser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
                                    help='By default the home folder is the user folder, override it to this folder.')
 
-    add_gem_subparser.set_defaults(func=_run_add_gem_to_project)
+    parser.set_defaults(func=_run_add_gem_to_project)
+
+
+def add_args(subparsers) -> None:
+    """
+    add_args is called to add subparsers arguments to each command such that it can be
+    a central python file such as o3de.py.
+    It can be run from the o3de.py script as follows
+    call add_args and execute: python o3de.py add-gem-to-project --project-path "D:/TestProject" --gem-path "D:/TestGem"
+    :param subparsers: the caller instantiates subparsers and passes it in here
+    """
+    add_gem_project_subparser = subparsers.add_parser('add-gem-to-project')
+    add_parser_args(add_gem_project_subparser)
+
+
+def main():
+    """
+    Runs add_gem_project.py script as standalone script
+    """
+    # parse the command line args
+    the_parser = argparse.ArgumentParser()
+
+    # add subparsers
+
+    # add args to the parser
+    add_parser_args(the_parser)
+
+    # parse args
+    the_args = the_parser.parse_args()
+
+    # run
+    ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
+
+    # return
+    sys.exit(ret)
+
+
+if __name__ == "__main__":
+    main()

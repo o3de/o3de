@@ -13,6 +13,8 @@ import argparse
 import json
 import logging
 import hashlib
+import pathlib
+import sys
 
 from o3de import utils
 
@@ -42,7 +44,7 @@ def sha256(file_path: str or pathlib.Path,
         with json_path.open('r') as s:
             try:
                 json_data = json.load(s)
-            except Exception as e:
+            except json.JSONDecodeError as e:
                 logger.error(f'Failed to read Json path {json_path}: {str(e)}')
                 return 1
         json_data.update({"sha256": sha256})
@@ -50,7 +52,7 @@ def sha256(file_path: str or pathlib.Path,
         with json_path.open('w') as s:
             try:
                 s.write(json.dumps(json_data, indent=4))
-            except Exception as e:
+            except OSError as e:
                 logger.error(f'Failed to write Json path {json_path}: {str(e)}')
                 return 1
     else:
@@ -63,20 +65,53 @@ def _run_sha256(args: argparse) -> int:
                   args.json_path)
 
 
-def add_args(parser, subparsers) -> None:
+def add_parser_args(parser):
     """
-    add_args is called to add expected parser arguments and subparsers arguments to each command such that it can be
+    add_parser_args is called to add arguments to each command such that it can be
     invoked locally or added by a central python file.
-    Ex. Directly run from this file alone with: python register.py register --gem-path "C:/TestGem"
-    OR
-    o3de.py can downloadable commands by importing engine_template,
-    call add_args and execute: python o3de.py register --gem-path "C:/TestGem"
-    :param parser: the caller instantiates a parser and passes it in here
+    Ex. Directly run from this file alone with: python sha256.py --file-path "C:/TestGem"
+    :param parser: the caller passes an argparse parser like instance to this method
+    """
+    parser.add_argument('-f', '--file-path', type=str, required=True,
+                                  help='The path to the file you want to sha256.')
+    parser.add_argument('-j', '--json-path', type=str, required=False,
+                                  help='optional path to an o3de json file to add the "sha256" element to.')
+    parser.set_defaults(func=_run_sha256)
+
+
+def add_args(subparsers) -> None:
+    """
+    add_args is called to add subparsers arguments to each command such that it can be
+    a central python file such as o3de.py.
+    It can be run from the o3de.py script as follows
+    call add_args and execute: python o3de.py sha256  --file-path "C:/TestGem"
     :param subparsers: the caller instantiates subparsers and passes it in here
     """
     sha256_subparser = subparsers.add_parser('sha256')
-    sha256_subparser.add_argument('-f', '--file-path', type=str, required=True,
-                                  help='The path to the file you want to sha256.')
-    sha256_subparser.add_argument('-j', '--json-path', type=str, required=False,
-                                  help='optional path to an o3de json file to add the "sha256" element to.')
-    sha256_subparser.set_defaults(func=_run_sha256)
+    add_parser_args(sha256_subparser)
+
+
+def main():
+    """
+    Runs sha256.py script as standalone script
+    """
+    # parse the command line args
+    the_parser = argparse.ArgumentParser()
+
+    # add subparsers
+
+    # add args to the parser
+    add_parser_args(the_parser)
+
+    # parse args
+    the_args = the_parser.parse_args()
+
+    # run
+    ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
+
+    # return
+    sys.exit(ret)
+
+
+if __name__ == "__main__":
+    main()

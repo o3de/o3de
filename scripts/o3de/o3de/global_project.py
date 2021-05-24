@@ -52,17 +52,17 @@ def set_global_project(project_name: str or None,
         with bootstrap_setreg_file.open('r') as f:
             try:
                 json_data = json.load(f)
-            except Exception as e:
+            except json.JSONDecodeError as e:
                 logger.error(f'Bootstrap.setreg failed to load: {str(e)}')
             else:
                 try:
                     json_data["Amazon"]["AzCore"]["Bootstrap"]["project_path"] = project_path
-                except Exception as e:
+                except KeyError as e:
                     logger.error(f'Bootstrap.setreg failed to load: {str(e)}')
                 else:
                     try:
                         os.unlink(bootstrap_setreg_file)
-                    except Exception as e:
+                    except OSError as e:
                         logger.error(f'Failed to unlink bootstrap file {bootstrap_setreg_file}: {str(e)}')
                         return 1
     else:
@@ -88,12 +88,12 @@ def get_global_project() -> pathlib.Path or None:
     with bootstrap_setreg_file.open('r') as f:
         try:
             json_data = json.load(f)
-        except Exception as e:
+        except json.JSONDecodeError as e:
             logger.error(f'Bootstrap.setreg failed to load: {str(e)}')
         else:
             try:
                 project_path = json_data["Amazon"]["AzCore"]["Bootstrap"]["project_path"]
-            except Exception as e:
+            except KeyError as e:
                 logger.error(f'Bootstrap.setreg cannot find Amazon:AzCore:Bootstrap:project_path: {str(e)}')
             else:
                 return pathlib.Path(project_path).resolve()
@@ -118,7 +118,7 @@ def _run_set_global_project(args: argparse) -> int:
                                args.project_path)
 
 
-def add_args(parser, subparsers) -> None:
+def add_args(subparsers) -> None:
     """
     add_args is called to add expected parser arguments and subparsers arguments to each command such that it can be
     invoked locally or aggregated by a central python file.
@@ -126,7 +126,6 @@ def add_args(parser, subparsers) -> None:
     OR
     o3de.py can aggregate commands by importing global_project, call add_args and
     execute: python o3de.py set_global_project --project-path C:/TestProject
-    :param parser: the caller instantiates a parser and passes it in here
     :param subparsers: the caller instantiates subparsers and passes it in here
     """
     get_global_project_subparser = subparsers.add_parser('get-global-project')
@@ -156,7 +155,7 @@ if __name__ == "__main__":
     the_subparsers = the_parser.add_subparsers(help='sub-command help', dest='command', required=True)
 
     # add args to the parser
-    add_args(the_parser, the_subparsers)
+    add_args(the_subparsers)
 
     # parse args
     the_args = the_parser.parse_args()

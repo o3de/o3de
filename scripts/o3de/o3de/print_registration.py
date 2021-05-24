@@ -13,6 +13,7 @@ import argparse
 import json
 import hashlib
 import logging
+import sys
 import urllib.parse
 
 from o3de import manifest, validation
@@ -143,7 +144,7 @@ def print_engines_data(engines_data: dict) -> None:
         with engine_json.open('r') as f:
             try:
                 engine_json_data = json.load(f)
-            except Exception as e:
+            except json.JSONDecodeError as e:
                 logger.warn(f'{engine_json} failed to load: {str(e)}')
             else:
                 print(engine_json)
@@ -170,7 +171,7 @@ def print_projects_data(projects_data: dict) -> None:
         with project_json.open('r') as f:
             try:
                 project_json_data = json.load(f)
-            except Exception as e:
+            except json.JSONDecodeError as e:
                 logger.warn(f'{project_json} failed to load: {str(e)}')
             else:
                 print(project_json)
@@ -197,7 +198,7 @@ def print_gems_data(gems_data: dict) -> None:
         with gem_json.open('r') as f:
             try:
                 gem_json_data = json.load(f)
-            except Exception as e:
+            except json.JSONDecodeError as e:
                 logger.warn(f'{gem_json} failed to load: {str(e)}')
             else:
                 print(gem_json)
@@ -224,7 +225,7 @@ def print_templates_data(templates_data: dict) -> None:
         with template_json.open('r') as f:
             try:
                 template_json_data = json.load(f)
-            except Exception as e:
+            except json.JSONDecodeError as e:
                 logger.warn(f'{template_json} failed to load: {str(e)}')
             else:
                 print(template_json)
@@ -243,7 +244,7 @@ def print_repos_data(repos_data: dict) -> None:
             with cache_file.open('r') as s:
                 try:
                     repo_json_data = json.load(s)
-                except Exception as e:
+                except json.JSONDecodeError as e:
                     logger.warn(f'{cache_file} failed to load: {str(e)}')
                 else:
                     print(f'{repo_uri}/repo.json cached as:')
@@ -260,7 +261,7 @@ def print_restricted_data(restricted_data: dict) -> None:
         with restricted_json.open('r') as f:
             try:
                 restricted_json_data = json.load(f)
-            except Exception as e:
+            except json.JSONDecodeError as e:
                 logger.warn(f'{restricted_json} failed to load: {str(e)}')
             else:
                 print(restricted_json)
@@ -365,19 +366,14 @@ def _run_register_show(args: argparse) -> int:
         return 0
 
 
-def add_args(parser, subparsers) -> None:
+def add_parser_args(parser):
     """
-    add_args is called to add expected parser arguments and subparsers arguments to each command such that it can be
+    add_parser_args is called to add arguments to each command such that it can be
     invoked locally or added by a central python file.
-    Ex. Directly run from this file alone with: python register.py register --gem-path "C:/TestGem"
-    OR
-    o3de.py can downloadable commands by importing engine_template,
-    call add_args and execute: python o3de.py register --gem-path "C:/TestGem"
-    :param parser: the caller instantiates a parser and passes it in here
-    :param subparsers: the caller instantiates subparsers and passes it in here
+    Ex. Directly run from this file alone with: python print_registration.py --engine-projects
+    :param parser: the caller passes an argparse parser like instance to this method
     """
-    register_show_subparser = subparsers.add_parser('register-show')
-    group = register_show_subparser.add_mutually_exclusive_group(required=False)
+    group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('-te', '--this-engine', action='store_true', required=False,
                        default=False,
                        help='Just the local engines.')
@@ -446,11 +442,49 @@ def add_args(parser, subparsers) -> None:
                        default=False,
                        help='Combine all repos templates into a single list of resources.')
 
-    register_show_subparser.add_argument('-v', '--verbose', action='count', required=False,
+    parser.add_argument('-v', '--verbose', action='count', required=False,
                                          default=0,
                                          help='How verbose do you want the output to be.')
 
-    register_show_subparser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
+    parser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
                                          help='By default the home folder is the user folder, override it to this folder.')
 
-    register_show_subparser.set_defaults(func=_run_register_show)
+    parser.set_defaults(func=_run_register_show)
+
+
+def add_args(subparsers) -> None:
+    """
+    add_args is called to add subparsers arguments to each command such that it can be
+    a central python file such as o3de.py.
+    It can be run from the o3de.py script as follows
+    call add_args and execute: python o3de.py register-show --engine-projects
+    :param subparsers: the caller instantiates subparsers and passes it in here
+    """
+    register_show_subparser = subparsers.add_parser('register-show')
+    add_parser_args(register_show_subparser)
+
+
+def main():
+    """
+    Runs print_registration.py script as standalone script
+    """
+    # parse the command line args
+    the_parser = argparse.ArgumentParser()
+
+    # add subparsers
+
+    # add args to the parser
+    add_parser_args(the_parser)
+
+    # parse args
+    the_args = the_parser.parse_args()
+
+    # run
+    ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
+
+    # return
+    sys.exit(ret)
+
+
+if __name__ == "__main__":
+    main()

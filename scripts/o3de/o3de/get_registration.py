@@ -11,6 +11,7 @@
 
 import argparse
 import pathlib
+import sys
 
 from o3de import manifest
 
@@ -27,19 +28,14 @@ def _run_get_registered(args: argparse) -> str or pathlib.Path:
                           args.restricted_name)
 
 
-def add_args(parser, subparsers) -> None:
+def add_parser_args(parser):
     """
-    add_args is called to add expected parser arguments and subparsers arguments to each command such that it can be
+    add_parser_args is called to add arguments to each command such that it can be
     invoked locally or added by a central python file.
-    Ex. Directly run from this file alone with: python register.py register --gem-path "C:/TestGem"
-    OR
-    o3de.py can downloadable commands by importing engine_template,
-    call add_args and execute: python o3de.py register --gem-path "C:/TestGem"
-    :param parser: the caller instantiates a parser and passes it in here
-    :param subparsers: the caller instantiates subparsers and passes it in here
+    Ex. Directly run from this file alone with: python get_registration.py --engine-name "o3de"
+    :param parser: the caller passes an argparse parser like instance to this method
     """
-    get_registered_subparser = subparsers.add_parser('get-registered')
-    group = get_registered_subparser.add_mutually_exclusive_group(required=True)
+    group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-en', '--engine-name', type=str, required=False,
                        help='Engine name.')
     group.add_argument('-pn', '--project-name', type=str, required=False,
@@ -56,7 +52,45 @@ def add_args(parser, subparsers) -> None:
     group.add_argument('-rsn', '--restricted-name', type=str, required=False,
                        help='Restricted name.')
 
-    get_registered_subparser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
-                                          help='By default the home folder is the user folder, override it to this folder.')
+    parser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
+                        help='By default the home folder is the user folder, override it to this folder.')
 
-    get_registered_subparser.set_defaults(func=_run_get_registered)
+    parser.set_defaults(func=_run_get_registered)
+
+
+def add_args(subparsers) -> None:
+    """
+    add_args is called to add subparsers arguments to each command such that it can be
+    a central python file such as o3de.py.
+    It can be run from the o3de.py script as follows
+    call add_args and execute: python o3de.py get-registered --engine-name "o3de"
+    :param subparsers: the caller instantiates subparsers and passes it in here
+    """
+    get_registered_subparser = subparsers.add_parser('get-registered')
+    add_parser_args(get_registered_subparser)
+
+
+def main():
+    """
+    Runs get_registration.py script as standalone script
+    """
+    # parse the command line args
+    the_parser = argparse.ArgumentParser()
+
+    # add subparsers
+
+    # add args to the parser
+    add_parser_args(the_parser)
+
+    # parse args
+    the_args = the_parser.parse_args()
+
+    # run
+    ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
+
+    # return
+    sys.exit(ret)
+
+
+if __name__ == "__main__":
+    main()

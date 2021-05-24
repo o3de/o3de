@@ -16,6 +16,7 @@ import argparse
 import logging
 import os
 import pathlib
+import sys
 
 from o3de import cmake, remove_gem_cmake
 
@@ -220,51 +221,84 @@ def _run_remove_gem_from_project(args: argparse) -> int:
                                    args.remove_from_cmake)
 
 
-def add_args(parser, subparsers) -> None:
+def add_parser_args(parser):
     """
-    add_args is called to add expected parser arguments and subparsers arguments to each command such that it can be
+    add_parser_args is called to add arguments to each command such that it can be
     invoked locally or added by a central python file.
-    Ex. Directly run from this file alone with: python register.py register --gem-path "C:/TestGem"
-    OR
-    o3de.py can downloadable commands by importing engine_template,
-    call add_args and execute: python o3de.py register --gem-path "C:/TestGem"
-    :param parser: the caller instantiates a parser and passes it in here
-    :param subparsers: the caller instantiates subparsers and passes it in here
+    Ex. Directly run from this file alone with: python remove_gem_project.py --project-path D:/Test --gem-name Atom
+    :param parser: the caller passes an argparse parser like instance to this method
     """
-    remove_gem_subparser = subparsers.add_parser('remove-gem-from-project')
-    group = remove_gem_subparser.add_mutually_exclusive_group(required=True)
+    group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-pp', '--project-path', type=str, required=False,
                        help='The path to the project.')
     group.add_argument('-pn', '--project-name', type=str, required=False,
                        help='The name of the project.')
-    group = remove_gem_subparser.add_mutually_exclusive_group(required=True)
+    group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-gp', '--gem-path', type=str, required=False,
                        help='The path to the gem.')
     group.add_argument('-gn', '--gem-name', type=str, required=False,
                        help='The name of the gem.')
-    remove_gem_subparser.add_argument('-gt', '--gem-target', type=str, required=False,
+    parser.add_argument('-gt', '--gem-target', type=str, required=False,
                                       help='The cmake target name to add. If not specified it will assume gem_name')
-    remove_gem_subparser.add_argument('-df', '--dependencies-file', type=str, required=False,
+    parser.add_argument('-df', '--dependencies-file', type=str, required=False,
                                       help='The cmake dependencies file in which the gem dependencies are specified.'
                                            'If not specified it will assume ')
-    remove_gem_subparser.add_argument('-rd', '--runtime-dependency', action='store_true', required=False,
+    parser.add_argument('-rd', '--runtime-dependency', action='store_true', required=False,
                                       default=False,
                                       help='Optional toggle if this gem should be removed as a runtime dependency')
-    remove_gem_subparser.add_argument('-td', '--tool-dependency', action='store_true', required=False,
+    parser.add_argument('-td', '--tool-dependency', action='store_true', required=False,
                                       default=False,
                                       help='Optional toggle if this gem should be removed as a server dependency')
-    remove_gem_subparser.add_argument('-sd', '--server-dependency', action='store_true', required=False,
+    parser.add_argument('-sd', '--server-dependency', action='store_true', required=False,
                                       default=False,
                                       help='Optional toggle if this gem should be removed as a server dependency')
-    remove_gem_subparser.add_argument('-pl', '--platforms', type=str, required=False,
+    parser.add_argument('-pl', '--platforms', type=str, required=False,
                                       default='Common',
                                       help='Optional list of platforms this gem should be removed from'
                                            ' Ex. --platforms Mac,Windows,Linux')
-    remove_gem_subparser.add_argument('-r', '--remove-from-cmake', type=bool, required=False,
+    parser.add_argument('-r', '--remove-from-cmake', type=bool, required=False,
                                       default=False,
                                       help='Automatically call remove-from-cmake.')
 
-    remove_gem_subparser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
+    parser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
                                       help='By default the home folder is the user folder, override it to this folder.')
 
-    remove_gem_subparser.set_defaults(func=_run_remove_gem_from_project)
+    parser.set_defaults(func=_run_remove_gem_from_project)
+
+
+def add_args(subparsers) -> None:
+    """
+    add_args is called to add subparsers arguments to each command such that it can be
+    a central python file such as o3de.py.
+    It can be run from the o3de.py script as follows
+    call add_args and execute: python o3de.py remove-gem-from-project --project-path D:/Test --gem-name Atom
+    :param subparsers: the caller instantiates subparsers and passes it in here
+    """
+    remove_gem_project_subparser = subparsers.add_parser('remove-gem-from-project')
+    add_parser_args(remove_gem_project_subparser)
+
+
+def main():
+    """
+    Runs remove_gem_project.py script as standalone script
+    """
+    # parse the command line args
+    the_parser = argparse.ArgumentParser()
+
+    # add subparsers
+
+    # add args to the parser
+    add_parser_args(the_parser)
+
+    # parse args
+    the_args = the_parser.parse_args()
+
+    # run
+    ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
+
+    # return
+    sys.exit(ret)
+
+
+if __name__ == "__main__":
+    main()

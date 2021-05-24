@@ -176,7 +176,7 @@ def load_o3de_manifest() -> dict:
     with get_o3de_manifest().open('r') as f:
         try:
             json_data = json.load(f)
-        except Exception as e:
+        except json.JSONDecodeError as e:
             logger.error(f'Manifest json failed to load: {str(e)}')
             return {}
         else:
@@ -187,7 +187,7 @@ def save_o3de_manifest(json_data: dict) -> None:
     with get_o3de_manifest().open('w') as s:
         try:
             s.write(json.dumps(json_data, indent=4))
-        except Exception as e:
+        except OSError as e:
             logger.error(f'Manifest json failed to save: {str(e)}')
 
 
@@ -331,7 +331,7 @@ def get_engine_json_data(engine_name: str = None,
     with engine_json.open('r') as f:
         try:
             engine_json_data = json.load(f)
-        except Exception as e:
+        except json.JSONDecodeError as e:
             logger.warn(f'{engine_json} failed to load: {str(e)}')
         else:
             return engine_json_data
@@ -364,7 +364,7 @@ def get_project_json_data(project_name: str = None,
     with project_json.open('r') as f:
         try:
             project_json_data = json.load(f)
-        except Exception as e:
+        except json.JSONDecodeError as e:
             logger.warn(f'{project_json} failed to load: {str(e)}')
         else:
             return project_json_data
@@ -397,7 +397,7 @@ def get_gem_json_data(gem_name: str = None,
     with gem_json.open('r') as f:
         try:
             gem_json_data = json.load(f)
-        except Exception as e:
+        except json.JSONDecodeError as e:
             logger.warn(f'{gem_json} failed to load: {str(e)}')
         else:
             return gem_json_data
@@ -430,7 +430,7 @@ def get_template_json_data(template_name: str = None,
     with template_json.open('r') as f:
         try:
             template_json_data = json.load(f)
-        except Exception as e:
+        except json.JSONDecodeError as e:
             logger.warn(f'{template_json} failed to load: {str(e)}')
         else:
             return template_json_data
@@ -463,7 +463,7 @@ def get_restricted_data(restricted_name: str = None,
     with restricted_json.open('r') as f:
         try:
             restricted_json_data = json.load(f)
-        except Exception as e:
+        except json.JSONDecodeError as e:
             logger.warn(f'{restricted_json} failed to load: {str(e)}')
         else:
             return restricted_json_data
@@ -488,7 +488,7 @@ def get_registered(engine_name: str = None,
             with engine_json.open('r') as f:
                 try:
                     engine_json_data = json.load(f)
-                except Exception as e:
+                except json.JSONDecodeError as e:
                     logger.warn(f'{engine_json} failed to load: {str(e)}')
                 else:
                     this_engines_name = engine_json_data['engine_name']
@@ -505,7 +505,7 @@ def get_registered(engine_name: str = None,
             with project_json.open('r') as f:
                 try:
                     project_json_data = json.load(f)
-                except Exception as e:
+                except json.JSONDecodeError as e:
                     logger.warn(f'{project_json} failed to load: {str(e)}')
                 else:
                     this_projects_name = project_json_data['project_name']
@@ -522,7 +522,7 @@ def get_registered(engine_name: str = None,
             with gem_json.open('r') as f:
                 try:
                     gem_json_data = json.load(f)
-                except Exception as e:
+                except json.JSONDecodeError as e:
                     logger.warn(f'{gem_json} failed to load: {str(e)}')
                 else:
                     this_gems_name = gem_json_data['gem_name']
@@ -539,7 +539,7 @@ def get_registered(engine_name: str = None,
             with template_json.open('r') as f:
                 try:
                     template_json_data = json.load(f)
-                except Exception as e:
+                except json.JSONDecodeError as e:
                     logger.warn(f'{template_path} failed to load: {str(e)}')
                 else:
                     this_templates_name = template_json_data['template_name']
@@ -556,7 +556,7 @@ def get_registered(engine_name: str = None,
             with restricted_json.open('r') as f:
                 try:
                     restricted_json_data = json.load(f)
-                except Exception as e:
+                except json.JSONDecodeError as e:
                     logger.warn(f'{restricted_json} failed to load: {str(e)}')
                 else:
                     this_restricted_name = restricted_json_data['restricted_name']
@@ -591,7 +591,7 @@ def get_registered(engine_name: str = None,
                 with repo.open('r') as f:
                     try:
                         repo_json_data = json.load(f)
-                    except Exception as e:
+                    except json.JSONDecodeError as e:
                         logger.warn(f'{cache_file} failed to load: {str(e)}')
                     else:
                         this_repos_name = repo_json_data['repo_name']
