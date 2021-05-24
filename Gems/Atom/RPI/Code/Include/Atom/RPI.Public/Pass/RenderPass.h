@@ -72,7 +72,7 @@ namespace AZ
 
             //! Return the View if this pass is associated with a pipeline view via PipelineViewTag.
             //! It may return nullptr if this pass is independent with any views.
-            ViewPtr GetView();
+            ViewPtr GetView() const;
 
         protected:
             explicit RenderPass(const PassDescriptor& descriptor);
