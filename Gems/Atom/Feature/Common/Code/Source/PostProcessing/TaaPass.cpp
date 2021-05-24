@@ -52,11 +52,6 @@ namespace AZ::Render
         Base::CompileResources(context);
     }
     
-    void TaaPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
-    {
-        Base::BuildCommandListInternal(context);
-    }
-
     void TaaPass::FrameBeginInternal(FramePrepareParams params)
     {
         m_lastFrameAccumulationBinding->SetAttachment(m_accumulationAttachments[m_accumulationOuptutIndex]);
