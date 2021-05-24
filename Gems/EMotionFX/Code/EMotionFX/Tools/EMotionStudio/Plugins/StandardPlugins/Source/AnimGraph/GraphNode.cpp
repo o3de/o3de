@@ -918,8 +918,8 @@ namespace EMStudio
     {
         if (mIsCollapsed == false)
         {
-            uint32 numPorts = MCore::Max<uint32>(mInputPorts.size(), mOutputPorts.size());
-            uint32 result = (numPorts * 15) + 34;
+            int32 numPorts = aznumeric_caster(AZStd::max(mInputPorts.size(), mOutputPorts.size()));
+            int32 result = (numPorts * 15) + 34;
             return MCore::Math::Align(result, 10);
         }
         else
@@ -930,33 +930,26 @@ namespace EMStudio
 
 
     // calc the max input port width
-    uint32 GraphNode::CalcMaxInputPortWidth() const
+    int GraphNode::CalcMaxInputPortWidth() const
     {
         // calc the maximum input port width
-        uint32 maxInputWidth = 0;
-        uint32 width;
-        const uint32 numInputPorts = mInputPorts.size();
-        for (uint32 i = 0; i < numInputPorts; ++i)
+        int maxInputWidth = 0;
+        for (const NodePort& nodePort : mInputPorts)
         {
-            const NodePort* nodePort = &mInputPorts[i];
-            width = mPortFontMetrics->horizontalAdvance(nodePort->GetName());
-            maxInputWidth = MCore::Max<uint32>(maxInputWidth, width);
+            maxInputWidth = AZStd::max(maxInputWidth, mPortFontMetrics->horizontalAdvance(nodePort.GetName()));
         }
 
         return maxInputWidth;
     }
 
     // calculate the max output port width
-    uint32 GraphNode::CalcMaxOutputPortWidth() const
+    int GraphNode::CalcMaxOutputPortWidth() const
     {
         // calc the maximum output port width
-        uint32 width;
-        uint32 maxOutputWidth = 0;
-        const uint32 numOutputPorts = mOutputPorts.size();
-        for (uint32 i = 0; i < numOutputPorts; ++i)
+        int maxOutputWidth = 0;
+        for (const NodePort& nodePort : mOutputPorts)
         {
-            width = mPortFontMetrics->horizontalAdvance(mOutputPorts[i].GetName());
-            maxOutputWidth = MCore::Max<uint32>(maxOutputWidth, width);
+            maxOutputWidth = AZStd::max(maxOutputWidth, mPortFontMetrics->horizontalAdvance(nodePort.GetName()));
         }
 
         return maxOutputWidth;
@@ -974,17 +967,16 @@ namespace EMStudio
         mMaxInputWidth = CalcMaxInputPortWidth();
         mMaxOutputWidth = CalcMaxOutputPortWidth();
 
-        const uint32 infoWidth = mInfoFontMetrics->horizontalAdvance(mElidedNodeInfo);
-        const uint32 totalPortWidth = mMaxInputWidth + mMaxOutputWidth + 40 + infoWidth;
+        const int infoWidth = mInfoFontMetrics->horizontalAdvance(mElidedNodeInfo);
+        const int totalPortWidth = mMaxInputWidth + mMaxOutputWidth + 40 + infoWidth;
 
         // make sure the node is at least 100 units in width
-        uint32 headerWidth = mHeaderFontMetrics->horizontalAdvance(mElidedName) + 40;
-        headerWidth = MCore::Max<uint32>(headerWidth, 100);
+        const int headerWidth = AZStd::max(mHeaderFontMetrics->horizontalAdvance(mElidedName) + 40, 100);
 
-        mRequiredWidth = MCore::Max<uint32>(headerWidth, totalPortWidth);
-        mNameAndPortsUpdated = true;
-
+        mRequiredWidth = AZStd::max(headerWidth, totalPortWidth);
         mRequiredWidth = MCore::Math::Align(mRequiredWidth, 10);
+
+        mNameAndPortsUpdated = true;
 
         return mRequiredWidth;
     }

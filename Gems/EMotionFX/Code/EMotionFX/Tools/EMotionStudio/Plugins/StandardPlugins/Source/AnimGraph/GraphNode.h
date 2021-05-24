@@ -150,8 +150,8 @@ namespace EMStudio
         virtual int32 CalcRequiredHeight() const;
         virtual int32 CalcRequiredWidth();
 
-        virtual uint32 CalcMaxInputPortWidth() const;
-        virtual uint32 CalcMaxOutputPortWidth() const;
+        virtual int CalcMaxInputPortWidth() const;
+        virtual int CalcMaxOutputPortWidth() const;
 
         bool GetIsInside(const QPoint& globalPoint) const;
         bool GetIsSelected() const;
@@ -273,8 +273,8 @@ namespace EMStudio
         bool                            mHasVisualGraph;
         bool                            mHasVisualOutputPorts;
 
-        uint32                          mMaxInputWidth; // will be calculated automatically in CalcRequiredWidth()
-        uint32                          mMaxOutputWidth; // will be calculated automatically in CalcRequiredWidth()
+        int                          mMaxInputWidth; // will be calculated automatically in CalcRequiredWidth()
+        int                          mMaxOutputWidth; // will be calculated automatically in CalcRequiredWidth()
 
         // has child node indicator
         QPolygonF                       mSubstPoly;
