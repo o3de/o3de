@@ -57,7 +57,4 @@ set(GEM_DEPENDENCIES
     Gem::Atom_AtomBridge.Editor
     Gem::NvCloth.Editor
     Gem::Blast.Editor
-    Gem::AWSCore.Editor
-    Gem::AWSClientAuth
-    Gem::AWSMetrics
 )

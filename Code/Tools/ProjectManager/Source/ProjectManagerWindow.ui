@@ -41,8 +41,8 @@
      <string>Icon</string>
     </property>
     <property name="icon">
-     <iconset resource="../project_manager.qrc">
-      <normaloff>:/Resources/o3de_editor.ico</normaloff>:/Resources/o3de_editor.ico</iconset>
+     <iconset resource="../Resources/ProjectManager.qrc">
+      <normaloff>:/o3de_editor.ico</normaloff>:/o3de_editor.ico</iconset>
     </property>
    </widget>
    <widget class="QMenu" name="projectsMenu">
@@ -61,7 +61,7 @@
   </widget>
  </widget>
  <resources>
-  <include location="../project_manager.qrc"/>
+  <include location="../Resources/ProjectManager.qrc"/>
  </resources>
  <connections/>
 </ui>

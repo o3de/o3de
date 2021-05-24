@@ -1,15 +1,15 @@
 The missing dependency scanner was updated to only look for substrings that are the exact length of UUIDs, separated by word boundaries. This avoids problems with very long numbers causing the scan to stall out and take a long time.
 
-This is the UUID for dev / AutomatedTesting / Config / Game . xml with an extra UUID character at the beginning. It should not show up in scan results.
-aB92667DC-9F5B-5D72-A29D-99219DD9B691
+This is the UUID for libs / particles / milestone2particles . xml with an extra UUID character at the beginning. It should not show up in scan results.
+a6BDE282B49C957F7B0714B26579BCA9A
 
-This is the UUID for dev / AutomatedTesting / Config / Editor . xml. It has an extra non-UUID character at the end. It should not show up in scan results.
-06E9D6633C875400A532BCB2C0CA19D6t
+This is the UUID for project . json. It has an extra non-UUID character at the end. It should not show up in scan results.
+B076CDDC14DF50F4A5E97518ABB3E851t
 
-Two UUIDs, the first invalid a6BDE282B49C957F7B0714B26579BCA9A mixed with a second valid one 58BE9DA51F1753B98CEEEEB10E63454D the same line. The second should show up in scan results.
+Two UUIDs, the first invalid a1CB10C43F3245B93A294C602ADEF95F9 mixed with a second valid one D1265251CC14584AB1CECB10746A2BA0 the same line. The second should show up in scan results.
 
-UUID for slices / MuzzleFlash . slice, after an equal sign should show up in scan results=747D31D71E62553592226173C49CF97E
+UUID for TestAssets / DependencyScannerAsset . slice, after an equal sign should show up in scan results=837412DFD05F576D81AAACF360463749
 
-UUID for TestsAssets / WildcardScanTest1 . txt in quotes, should show up in scan results"1CB10C43-F324-5B93-A294-C602ADEF95F9"
+UUID for TestAssets / WildcardScanTest2 . txt in quotes, should show up in scan results"D92C4661C8985E19BD3597CB2318CFA6"
 
-UUID for Objects / Lumbertank_turret . cgf in curly braces, should up show in scan results{D92C4661C8985E19BD3597CB2318CFA6}
+UUID for TestAssets / SelfReferenceAssetID. txt in curly braces, should up show in scan results{785A05D2483E5B43A2B992ACDAE6E938}

@@ -38,7 +38,10 @@
         <WixVariable Id="WixUIDialogBmp" Value="$(var.CPACK_WIX_UI_DIALOG)"/>
         <?endif?>
 
-        <FeatureRef Id="ProductFeature"/>
+        <FeatureRef Id="ProductFeature">
+            <ComponentRef Id="DesktopShortcuts"/>
+            <ComponentRef Id="StartMenuShortcuts"/>
+        </FeatureRef>
 
         <UIRef Id="$(var.CPACK_WIX_UI_REF)" />
 

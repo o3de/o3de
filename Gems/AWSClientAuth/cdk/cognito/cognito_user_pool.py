@@ -76,7 +76,7 @@ class CognitoUserPool:
             scope,
             'CognitoUserPoolId',
             description="Cognito User pool id",
-            value=self._user_pool.attr_provider_name)
+            value=self._user_pool.ref)
 
         core.CfnOutput(
             scope,
