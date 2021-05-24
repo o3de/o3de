@@ -48,17 +48,17 @@ namespace MCore
              * @param command The command instance that has been created at execution time. When set to nullptr it will assume it is a group, and it will use the group you specified.
              * @param parameters The command arguments.
              */
-            CommandHistoryEntry(CommandGroup* group, Command* command, const CommandLine& parameters, AZ::u32 historyItemNr);
+            CommandHistoryEntry(CommandGroup* group, Command* command, const CommandLine& parameters, size_t historyItemNr);
 
             ~CommandHistoryEntry();
 
-            static AZStd::string ToString(CommandGroup* group, Command* command, AZ::u32 historyItemNr);
+            static AZStd::string ToString(CommandGroup* group, Command* command, size_t historyItemNr);
             AZStd::string ToString() const;
 
             CommandGroup*   mCommandGroup;          /**< A pointer to the command group, or nullptr when no group is used (in that case it uses a single command). */
             Command*        mExecutedCommand;       /**< A pointer to the command object, or nullptr when no command is used (in that case it uses a group). */
             CommandLine     mParameters;            /**< The used command arguments, unused in case no command is used (in that case it uses a group). */
-            AZ::u32         m_historyItemNr;        /**< The global history item number. This number will neither change depending on the size of the history queue nor with undo/redo. */
+            size_t          m_historyItemNr;        /**< The global history item number. This number will neither change depending on the size of the history queue nor with undo/redo. */
         };
 
 
@@ -183,7 +183,7 @@ namespace MCore
          * On default this value is 100. This means it will remember the last 100 executed commands, which can then be undo-ed and redo-ed.
          * @param maxItems The maximum number of items to remember.
          */
-        void SetMaxHistoryItems(uint32 maxItems);
+        void SetMaxHistoryItems(size_t maxItems);
 
         /**
          * Get the maximum number of history items that the manager will remember.
@@ -197,7 +197,7 @@ namespace MCore
          * This value will be in range of [0..GetMaxHistoryItems()-1].
          * @result The current history index.
          */
-        int32 GetHistoryIndex() const;
+        ptrdiff_t GetHistoryIndex() const;
 
         /**
          * Get the number of history items stored.
@@ -225,7 +225,7 @@ namespace MCore
          * @param historyIndex The history index number, which must be in range of [0..GetNumHistoryItems()-1].
          * @result A reference to the command line that was used when executing this command.
          */
-        const CommandLine& GetHistoryCommandLine(uint32 historyIndex) const;
+        const CommandLine& GetHistoryCommandLine(size_t historyIndex) const;
 
         /**
          * Get the total number of registered commands.
@@ -302,8 +302,8 @@ namespace MCore
         AZStd::vector<AZStd::string>                    mErrors;                /**< List of errors that happened during command execution. */
         AZStd::vector<Command*>                         mCommands;              /**< A flat array of registered commands, for easy traversal. */
         size_t                                          mMaxHistoryEntries;     /**< The maximum remembered commands in the command history. */
-        int32                                           mHistoryIndex;          /**< The command history iterator. The current position in the undo/redo history. */
-        AZ::u32                                         m_totalNumHistoryItems; /**< The number of history items since the application start. This number will neither change depending on the size of the history queue nor with undo/redo. */
+        ptrdiff_t                                       mHistoryIndex;          /**< The command history iterator. The current position in the undo/redo history. */
+        size_t                                          m_totalNumHistoryItems; /**< The number of history items since the application start. This number will neither change depending on the size of the history queue nor with undo/redo. */
         int                                             m_commandsInExecution;  /**< The number of commands currently in execution. */
 
         /**
