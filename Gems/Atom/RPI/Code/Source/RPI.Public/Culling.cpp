@@ -239,16 +239,26 @@ namespace AZ
 
         void CullingScene::RegisterOrUpdateCullable(Cullable& cullable)
         {
-            m_cullDataConcurrencyCheck.soft_lock();
+            // Multiple threads can call RegisterOrUpdateCullable at the same time
+            // since the underlying visScene is thread safe, but if you're inserting or
+            // updating between BeginCulling and EndCulling, you'll get non-deterministic
+            // results depending on a race condition if you happen to update before or after
+            // the culling system starts Enumerating, so use soft_lock_shared here
+            m_cullDataConcurrencyCheck.soft_lock_shared();
             m_visScene->InsertOrUpdateEntry(cullable.m_cullData.m_visibilityEntry);
-            m_cullDataConcurrencyCheck.soft_unlock();
+            m_cullDataConcurrencyCheck.soft_unlock_shared();
         }
 
         void CullingScene::UnregisterCullable(Cullable& cullable)
         {
-            m_cullDataConcurrencyCheck.soft_lock();
+            // Multiple threads can call RegisterOrUpdateCullable at the same time
+            // since the underlying visScene is thread safe, but if you're inserting or
+            // updating between BeginCulling and EndCulling, you'll get non-deterministic
+            // results depending on a race condition if you happen to update before or after
+            // the culling system starts Enumerating, so use soft_lock_shared here
+            m_cullDataConcurrencyCheck.soft_lock_shared();
             m_visScene->RemoveEntry(cullable.m_cullData.m_visibilityEntry);
-            m_cullDataConcurrencyCheck.soft_unlock();
+            m_cullDataConcurrencyCheck.soft_unlock_shared();
         }
 
         uint32_t CullingScene::GetNumCullables() const
