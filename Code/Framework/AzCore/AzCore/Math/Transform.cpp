@@ -130,7 +130,7 @@ namespace AZ
         const Transform* transform = reinterpret_cast<const Transform*>(classPtr);
         float data[NumFloats];
         transform->GetRotation().StoreToFloat4(data);
-        Vector3(transform->GetScale()).StoreToFloat3(&data[4]);
+        transform->GetScale().StoreToFloat3(&data[4]);
         transform->GetTranslation().StoreToFloat3(&data[7]);
 
         for (int i = 0; i < NumFloats; i++)
@@ -220,7 +220,7 @@ namespace AZ
         Vector3 translation = Vector3::CreateFromFloat3(&data[7]);
 
         *reinterpret_cast<Transform*>(classPtr) =
-            Transform::CreateFromQuaternionAndTranslation(rotation, translation) * Transform::CreateUniformScale(scale.GetMaxElement());
+            Transform::CreateFromQuaternionAndTranslation(rotation, translation) * Transform::CreateScale(scale);
         return true;
     }
 
@@ -321,7 +321,7 @@ namespace AZ
     {
         Transform result;
         Matrix3x3 tmp = value;
-        result.m_scale = tmp.ExtractScale().GetMaxElement();
+        result.m_scale = tmp.ExtractScale();
         result.m_rotation = Quaternion::CreateFromMatrix3x3(tmp);
         result.m_translation = Vector3::CreateZero();
         return result;
@@ -331,7 +331,7 @@ namespace AZ
     {
         Transform result;
         Matrix3x3 tmp = value;
-        result.m_scale = tmp.ExtractScale().GetMaxElement();
+        result.m_scale = tmp.ExtractScale();
         result.m_rotation = Quaternion::CreateFromMatrix3x3(tmp);
         result.m_translation = p;
         return result;
@@ -341,7 +341,7 @@ namespace AZ
     {
         Transform result;
         Matrix3x4 tmp = value;
-        result.m_scale = tmp.ExtractScale().GetMaxElement();
+        result.m_scale = tmp.ExtractScale();
         result.m_rotation = Quaternion::CreateFromMatrix3x4(tmp);
         result.m_translation = value.GetTranslation();
         return result;

@@ -168,7 +168,7 @@ namespace AZ
     private:
 
         Quaternion m_rotation;
-        float m_scale;
+        Vector3 m_scale;
         Vector3 m_translation;
     };
 

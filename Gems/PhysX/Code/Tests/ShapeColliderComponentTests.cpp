@@ -347,6 +347,7 @@ namespace PhysXEditorTests
     TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithUnsupportedShape_HandledGracefully)
     {
         UnitTest::ErrorHandler unsupportedShapeWarningHandler("Unsupported shape");
+        UnitTest::ErrorHandler rigidBodyWarningHandler("No Collider or Shape information found when creating Rigid body");
 
         // create an editor entity with a shape collider component and a cylinder shape component
         // the cylinder shape is not currently supported by the shape collider component
@@ -355,10 +356,8 @@ namespace PhysXEditorTests
         editorEntity->CreateComponent(LmbrCentral::EditorCompoundShapeComponentTypeId);
         editorEntity->Activate();
 
-        // expect 2 warnings
-                //1 raised for the unsupported shape
-                //2 when re-creating the underlying simulated body
-        EXPECT_EQ(unsupportedShapeWarningHandler.GetWarningCount(), 2);
+        EXPECT_EQ(unsupportedShapeWarningHandler.GetExpectedWarningCount(), 1);
+        EXPECT_EQ(rigidBodyWarningHandler.GetExpectedWarningCount(), 1);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
