@@ -423,7 +423,7 @@ namespace UnitTest
     {
         const char* objectStreamBuffer =
             R"DELIMITER(<ObjectStream version="3">
-            <Class name="Transform" field="m_data" value="0.79429845 0.8545947 -0.94273965 -0.05367075 0.3899708 0.30828915 1.0097652 -0.31084164 0.56899188 513.7845459 492.5420837 32.0000000" type="{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}"/>
+            <Class name="Transform" field="m_data" value="0.79429845 0.8545947 -0.94273965 -0.1610121 1.1699124 0.92486745 1.2622065 -0.3885522 0.71123985 513.7845459 492.5420837 32.0000000" type="{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}"/>
             </ObjectStream>)DELIMITER";
 
         AZ::Transform* deserializedTransform = AZ::Utils::LoadObjectFromBuffer<AZ::Transform>(objectStreamBuffer, strlen(objectStreamBuffer) + 1);
