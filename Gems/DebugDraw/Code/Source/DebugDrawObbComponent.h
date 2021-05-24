@@ -41,9 +41,8 @@ namespace DebugDraw
             , m_worldLocation(AZ::Vector3::CreateZero())
             , m_owningEditorComponent(AZ::InvalidComponentId)
             , m_scale(AZ::Vector3(1.0f, 1.0f, 1.0f))
-        {
-            m_obb.CreateFromPositionRotationAndHalfLengths(m_worldLocation, AZ::Quaternion::CreateIdentity(), AZ::Vector3::CreateOne());
-        }
+            , m_obb(AZ::Obb::CreateFromPositionRotationAndHalfLengths(m_worldLocation, AZ::Quaternion::CreateIdentity(), AZ::Vector3::CreateOne()))
+        {}
     };
 
     class DebugDrawObbComponent
