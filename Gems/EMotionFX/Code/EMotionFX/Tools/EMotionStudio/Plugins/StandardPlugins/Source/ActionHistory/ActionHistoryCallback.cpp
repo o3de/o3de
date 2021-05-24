@@ -125,7 +125,7 @@ namespace EMStudio
     }
 
     // Add a new item to the history.
-    void ActionHistoryCallback::OnAddCommandToHistory(uint32 historyIndex, MCore::CommandGroup* group, MCore::Command* command, const MCore::CommandLine& commandLine)
+    void ActionHistoryCallback::OnAddCommandToHistory(size_t historyIndex, MCore::CommandGroup* group, MCore::Command* command, const MCore::CommandLine& commandLine)
     {
         MCORE_UNUSED(commandLine);
         mTempString = MCore::CommandManager::CommandHistoryEntry::ToString(group, command, mIndex++).c_str();
@@ -135,28 +135,28 @@ namespace EMStudio
     }
 
     // Remove an item from the history.
-    void ActionHistoryCallback::OnRemoveCommand(uint32 historyIndex)
+    void ActionHistoryCallback::OnRemoveCommand(size_t historyIndex)
     {
         // Remove the item.
         mIsRemoving = true;
-        delete mList->takeItem(historyIndex);
+        delete mList->takeItem(aznumeric_caster(historyIndex));
         mIsRemoving = false;
     }
 
     // Set the current command.
-    void ActionHistoryCallback::OnSetCurrentCommand(uint32 index)
+    void ActionHistoryCallback::OnSetCurrentCommand(size_t index)
     {
         if (mIsRemoving)
         {
             return;
         }
 
-        if (index == MCORE_INVALIDINDEX32)
+        if (index == InvalidIndex)
         {
             mList->setCurrentRow(-1);
 
             // Darken all history items.
-            const int numCommands = static_cast<int>(GetCommandManager()->GetNumHistoryItems());
+            const int numCommands = mList->count();
             for (int i = 0; i < numCommands; ++i)
             {
                 mList->item(i)->setForeground(m_darkenedBrush);
@@ -165,19 +165,19 @@ namespace EMStudio
         }
 
         // get the list of selected items
-        mList->setCurrentRow(index);
+        mList->setCurrentRow(aznumeric_caster(index));
 
         // Get the current history index.
         const uint32 historyIndex = GetCommandManager()->GetHistoryIndex();
-        if (historyIndex == MCORE_INVALIDINDEX32)
+        if (historyIndex == InvalidIndex)
         {
             AZStd::string outResult;
-            const uint32 numRedos = index + 1;
-            for (uint32 i = 0; i < numRedos; ++i)
+            const size_t numRedos = index + 1;
+            for (size_t i = 0; i < numRedos; ++i)
             {
                 outResult.clear();
                 const bool result = GetCommandManager()->Redo(outResult);
-                if (outResult.size() > 0)
+                if (!outResult.empty())
                 {
                     if (!result)
                     {
@@ -195,7 +195,7 @@ namespace EMStudio
                 // try to undo
                 outResult.clear();
                 const bool result = GetCommandManager()->Undo(outResult);
-                if (outResult.size() > 0)
+                if (!outResult.empty())
                 {
                     if (!result)
                     {
@@ -212,7 +212,7 @@ namespace EMStudio
             {
                 outResult.clear();
                 const bool result = GetCommandManager()->Redo(outResult);
-                if (outResult.size() > 0)
+                if (!outResult.empty())
                 {
                     if (!result)
                     {
@@ -222,13 +222,6 @@ namespace EMStudio
             }
         }
 
-        // Darken disabled commands.
-        const uint32 orgIndex = index;
-        if (index == MCORE_INVALIDINDEX32)
-        {
-            index = 0;
-        }
-
         const int numCommands = static_cast<int>(GetCommandManager()->GetNumHistoryItems());
         for (int i = index; i < numCommands; ++i)
         {
@@ -236,12 +229,9 @@ namespace EMStudio
         }
 
         // Color enabled ones.
-        if (orgIndex != MCORE_INVALIDINDEX32)
+        for (int i = 0; i <= static_cast<int>(index); ++i)
         {
-            for (int i = 0; i <= static_cast<int>(index); ++i)
-            {
-                mList->item(index)->setForeground(m_brush);
-            }
+            mList->item(i)->setForeground(m_brush);
         }
     }
 } // namespace EMStudio

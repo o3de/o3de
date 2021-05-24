@@ -296,9 +296,9 @@ namespace EMStudio
             void OnPreUndoCommand(MCore::Command* command, const MCore::CommandLine& commandLine);
             void OnPreExecuteCommandGroup(MCore::CommandGroup* /*group*/, bool /*undo*/) override { }
             void OnPostExecuteCommandGroup(MCore::CommandGroup* /*group*/, bool /*wasSuccess*/) override { }
-            void OnAddCommandToHistory(uint32 /*historyIndex*/, MCore::CommandGroup* /*group*/, MCore::Command* /*command*/, const MCore::CommandLine& /*commandLine*/) override { }
-            void OnRemoveCommand(uint32 /*historyIndex*/) override { }
-            void OnSetCurrentCommand(uint32 /*index*/) override { }
+            void OnAddCommandToHistory(size_t /*historyIndex*/, MCore::CommandGroup* /*group*/, MCore::Command* /*command*/, const MCore::CommandLine& /*commandLine*/) override { }
+            void OnRemoveCommand(size_t /*historyIndex*/) override { }
+            void OnSetCurrentCommand(size_t /*index*/) override { }
             void OnShowErrorReport(const AZStd::vector<AZStd::string>& errors) override;
         private:
             AZStd::vector<AZStd::string> m_skipClearRecorderCommands;

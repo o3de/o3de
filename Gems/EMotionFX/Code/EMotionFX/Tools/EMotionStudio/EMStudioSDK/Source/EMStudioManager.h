@@ -146,9 +146,9 @@ namespace EMStudio
             void OnPostExecuteCommand(MCore::CommandGroup* group, MCore::Command* command, const MCore::CommandLine& commandLine, bool wasSuccess, const AZStd::string& outResult) override;
             void OnPreExecuteCommandGroup(MCore::CommandGroup* group, bool undo) override                                                                                                       { MCORE_UNUSED(group); MCORE_UNUSED(undo); }
             void OnPostExecuteCommandGroup(MCore::CommandGroup* group, bool wasSuccess) override                                                                                                { MCORE_UNUSED(group); MCORE_UNUSED(wasSuccess); }
-            void OnAddCommandToHistory(uint32 historyIndex, MCore::CommandGroup* group, MCore::Command* command, const MCore::CommandLine& commandLine) override                                { MCORE_UNUSED(historyIndex); MCORE_UNUSED(group); MCORE_UNUSED(command); MCORE_UNUSED(commandLine); }
-            void OnRemoveCommand(uint32 historyIndex) override                                                                                                                                  { MCORE_UNUSED(historyIndex); }
-            void OnSetCurrentCommand(uint32 index) override                                                                                                                                     { MCORE_UNUSED(index); }
+            void OnAddCommandToHistory(size_t historyIndex, MCore::CommandGroup* group, MCore::Command* command, const MCore::CommandLine& commandLine) override                                { MCORE_UNUSED(historyIndex); MCORE_UNUSED(group); MCORE_UNUSED(command); MCORE_UNUSED(commandLine); }
+            void OnRemoveCommand(size_t historyIndex) override                                                                                                                                  { MCORE_UNUSED(historyIndex); }
+            void OnSetCurrentCommand(size_t index) override                                                                                                                                     { MCORE_UNUSED(index); }
         };
         EventProcessingCallback*    mEventProcessingCallback;
     };
