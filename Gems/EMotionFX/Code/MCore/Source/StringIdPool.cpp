@@ -29,10 +29,9 @@ namespace MCore
     {
         Lock();
 
-        const size_t numStrings = mStrings.size();
-        for (size_t i = 0; i < numStrings; ++i)
+        for (AZStd::basic_string<char>*& mString : mStrings)
         {
-            delete mStrings[i];
+            delete mString;
         }
         mStrings.clear();
 
@@ -69,20 +68,11 @@ namespace MCore
     }
 
 
-    const AZStd::string& StringIdPool::GetName(uint32 id)
+    const AZStd::string& StringIdPool::GetName(AZ::u32 id)
     {
         Lock();
-        MCORE_ASSERT(id != MCORE_INVALIDINDEX32);
+        MCORE_ASSERT(id != InvalidIndex32);
         const AZStd::string* stringAddress = mStrings[id];
-        Unlock();
-        return *stringAddress;
-    }
-
-    const AZStd::string& StringIdPool::GetStringById(AZ::u32 id)
-    {
-        Lock();
-        MCORE_ASSERT(id != MCORE_INVALIDINDEX32);
-        AZStd::string* stringAddress = mStrings[id];
         Unlock();
         return *stringAddress;
     }
@@ -132,8 +122,8 @@ namespace MCore
         size_t Save(const void* classPtr, AZ::IO::GenericStream& stream, bool /*isDataBigEndian = false*/)
         {
             // Look up the string to save
-            const uint32 index = static_cast<const StringIdPoolIndex*>(classPtr)->m_index;
-            if (index == MCORE_INVALIDINDEX32)
+            const AZ::u32 index = static_cast<const StringIdPoolIndex*>(classPtr)->m_index;
+            if (index == InvalidIndex32)
             {
                 return 0;
             }
