@@ -31,6 +31,9 @@ namespace AzToolsFramework
         void DeleteEntities(const EntityIdList& entities) override;
         void DeleteEntityAndAllDescendants(AZ::EntityId entityId) override;
         void DeleteEntitiesAndAllDescendants(const EntityIdList& entities) override;
+        void DuplicateSelected() override;
+        void DuplicateEntityById(AZ::EntityId entityId) override;
+        void DuplicateEntities(const EntityIdList& entities) override;
 
     private:
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;

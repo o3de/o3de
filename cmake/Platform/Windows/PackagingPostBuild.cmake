@@ -30,6 +30,7 @@ set(_addtional_defines
     -dCPACK_LOCAL_INSTALLER_DIR=${_cpack_wix_out_dir}
     -dCPACK_PACKAGE_FILE_NAME=${CPACK_PACKAGE_FILE_NAME}
     -dCPACK_PACKAGE_INSTALL_DIRECTORY=${_fixed_package_install_dir}
+    -dCPACK_WIX_PRODUCT_LOGO=${CPACK_WIX_PRODUCT_LOGO}
 )
 
 if(CPACK_LICENSE_URL)
@@ -43,7 +44,7 @@ set(_candle_command
     "-I${_cpack_wix_out_dir}" # to include cpack_variables.wxi
     ${_addtional_defines}
     ${_ext_flags}
-    "${CPACK_SOURCE_DIR}/Platform/Windows/PackagingBootstrapper.wxs"
+    "${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/Bootstrapper.wxs"
     -o "${_bootstrap_out_dir}/"
 )
 

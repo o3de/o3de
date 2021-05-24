@@ -316,15 +316,85 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(par
 {#
 
 #}
+{% macro DefineRpcSignal(Component, ClassName, Property, InvokeFrom) %}
+{%     set paramNames   = [] %}
+{%     set paramTypes   = [] %}
+{%     set paramDefines = [] %}
+{{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
+void {{ ClassName }}::Signal{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramDefines) }})
+{
+    m_{{ UpperFirst(Property.attrib['Name']) }}Event.Signal({{ ', '.join(paramNames) }});
+}
+{% endmacro %}
+{#
+
+#}
 {% macro DefineRpcInvocations(Component, ClassName, InvokeFrom, HandleOn, ProctectedSection) %}
 {% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
 {%    if Property.attrib['IsPublic']|booleanTrue == ProctectedSection %}
-{{ DefineRpcInvocation(Component, ClassName, Property, InvokeFrom, HandleOn) }}
+{{ DefineRpcInvocation(Component, ClassName, Property, InvokeFrom, HandleOn) -}}
+{%    if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
+{{ DefineRpcSignal(Component, ClassName, Property, InvokeFrom) -}}
+{% endif %}
 {%    endif %}
 {% endcall %}
 {% endmacro %}
 {#
 
+#}
+{% macro ReflectRpcInvocations(Component, ClassName, InvokeFrom, HandleOn) %}
+{% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
+{%    if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
+{%     set paramNames   = [] %}
+{%     set paramTypes   = [] %}
+{%     set paramDefines = [] %}
+{{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
+            ->Method("{{ UpperFirst(Property.attrib['Name']) }}", [](const {{ ClassName }}* self, {{ ', '.join(paramDefines) }}) {
+                        self->m_controller->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
+                    })
+{%    endif %}
+{% endcall %}
+{% endmacro %}
+{#
+
+#}
+{% macro ReflectRpcEventDescs(Component, ClassName, InvokeFrom, HandleOn) %}
+{% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
+{%    if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
+{%     set paramNames   = [] %}
+{%     set paramTypes   = [] %}
+{%     set paramDefines = [] %}
+{{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
+    // Create the BehaviorAZEventDescription needed to reflect the
+    // Get{{ UpperFirst(Property.attrib['Name']) }}Event method to the BehaviorContext without errors
+    AZ::BehaviorAzEventDescription {{ LowerFirst(Property.attrib['Name']) }}EventDesc;
+    {{ LowerFirst(Property.attrib['Name']) }}EventDesc.m_eventName = "{{ UpperFirst(Property.attrib['Name']) }} Notify Event";
+{% for Param in Property.iter('Param') %}
+    {{ LowerFirst(Property.attrib['Name']) }}EventDesc.m_parameterNames.push_back("{{ LowerFirst(Param.attrib['Name']) }}");
+{% endfor %}
+{% endif %}
+{% endcall %}
+{% endmacro %}
+{#
+
+#}
+{% macro ReflectRpcEvents(Component, ClassName, InvokeFrom, HandleOn) %}
+{% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
+{%    if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
+{%     set paramNames   = [] %}
+{%     set paramTypes   = [] %}
+{%     set paramDefines = [] %}
+{{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
+        ->Method("Get{{ UpperFirst(Property.attrib['Name']) }}Event", [](const {{ ClassName }}* self) -> AZ::Event<{{ ', '.join(paramTypes) }}>&
+        {
+            return self->m_controller->Get{{ UpperFirst(Property.attrib['Name']) }}Event();
+        })
+            ->Attribute(AZ::Script::Attributes::AzEventDescription, AZStd::move({{ LowerFirst(Property.attrib['Name']) }}EventDesc))
+{% endif %}
+{% endcall %}
+{% endmacro %}
+{#
+ 
 #}
 {% macro DeclareRpcHandleCases(Component, ComponentDerived, InvokeFrom, HandleOn, ValidationFunction) %}
 {% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
@@ -347,6 +417,9 @@ case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ Upp
             {
                 AZ_Assert(GetNetBindComponent()->GetNetEntityRole() == Multiplayer::NetEntityRole::Authority, "Entity proxy does not have authority");
                 m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection, {{ ', '.join(rpcParamList) }});
+{% if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
+                m_controller->Signal{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(rpcParamList) }});
+{% endif %}
             }
 {% if Property.attrib['IsReliable']|booleanTrue %}
 {# if the rpc is not reliable we can simply drop it, also note message reliability type is default reliable in EntityRpcMessage #}
@@ -361,6 +434,9 @@ case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ Upp
             {
                 AZ_Assert(GetNetBindComponent()->GetNetEntityRole() == Multiplayer::NetEntityRole::Autonomous, "Entity proxy does not have autonomy");
                 m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection, {{ ', '.join(rpcParamList) }});
+{% if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
+                m_controller->Signal{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(rpcParamList) }});
+{% endif %}
             }
 {% else %}
             Handle{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(rpcParamList) }});
@@ -1017,7 +1093,6 @@ namespace {{ Component.attrib['Namespace'] }}
     {
         {{ DeclareRemoteProcedureEnumerations(Component)|indent(8) }}
         {{ DeclareNetworkPropertyEnumerations(Component)|indent(8) }}
-        {{ DefineNetworkPropertyDirtyEnumeration(Component, ClassType, 'Authority', 'Authority')|indent(8) }}
         {{ DefineNetworkPropertyDirtyEnumeration(Component, ClassType, 'Authority', 'Client')|indent(8) }}
         {{ DefineNetworkPropertyDirtyEnumeration(Component, ClassType, 'Authority', 'Server')|indent(8) }}
         {{ DefineNetworkPropertyDirtyEnumeration(Component, ClassType, 'Authority', 'Autonomous')|indent(8) }}
@@ -1032,20 +1107,12 @@ namespace {{ Component.attrib['Namespace'] }}
     {{ RecordName }}::{{ RecordName }}
     (
         [[maybe_unused]] Multiplayer::ReplicationRecord& replicationRecord,
-        [[maybe_unused]] uint32_t authorityToAuthorityStartOffset,
         [[maybe_unused]] uint32_t authorityToClientStartOffset,
         [[maybe_unused]] uint32_t authorityToServerStartOffset,
         [[maybe_unused]] uint32_t authorityToAutonomousStartOffset,
         [[maybe_unused]] uint32_t autonomousToAuthorityStartOffset
     )
 {% set comma = joiner("        ,") %}
-{% set networkPropertyCount = {'value' : 0} %}
-{% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, 'Authority', 'Authority') %}
-{%-      if networkPropertyCount.update({'value': networkPropertyCount.value + 1}) %}{% endif -%} 
-{% endcall %}
-{% if networkPropertyCount.value > 0 %}
-{{ comma()|default("        :", true) }} m_authorityToAuthority(replicationRecord.m_authorityToAuthority, authorityToAuthorityStartOffset, replicationRecord.ContainsAuthorityToAuthorityBits() ? static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Authority') }}::Count) : 0)
-{% endif %}
 {% set networkPropertyCount = {'value' : 0} %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, 'Authority', 'Client') %}
 {%-      if networkPropertyCount.update({'value': networkPropertyCount.value + 1}) %}{% endif -%} 
@@ -1058,7 +1125,7 @@ namespace {{ Component.attrib['Namespace'] }}
 {%-      if networkPropertyCount.update({'value': networkPropertyCount.value + 1}) %}{% endif -%} 
 {% endcall %}
 {% if networkPropertyCount.value > 0 %}
-    {{ comma()|default("        :", true) }} authorityToServer }}(replicationRecord.m_authorityToServer, authorityToServerStartOffset, replicationRecord.ContainsAuthorityToServerBits() ? static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Server') }}::Count) : 0)
+    {{ comma()|default("        :", true) }} m_authorityToServer(replicationRecord.m_authorityToServer, authorityToServerStartOffset, replicationRecord.ContainsAuthorityToServerBits() ? static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Server') }}::Count) : 0)
 {% endif %}
 {% set networkPropertyCount = {'value' : 0} %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, 'Authority', 'Autonomous') %}
@@ -1080,9 +1147,6 @@ namespace {{ Component.attrib['Namespace'] }}
 
     AZStd::unique_ptr<{{ RecordName }}> {{ RecordName }}::AllocateRecord(Multiplayer::ReplicationRecord& replicationRecord)
     {
-        uint32_t authorityToAuthorityStart = replicationRecord.m_authorityToAuthority.GetSize();
-        replicationRecord.m_authorityToAuthority.Resize(authorityToAuthorityStart + static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Authority') }}::Count));
-
         uint32_t authorityToClientStart = replicationRecord.m_authorityToClient.GetSize();
         replicationRecord.m_authorityToClient.Resize(authorityToClientStart + static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Client') }}::Count));
 
@@ -1096,7 +1160,6 @@ namespace {{ Component.attrib['Namespace'] }}
         replicationRecord.m_autonomousToAuthority.Resize(autonomousToAuthorityStart + static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Autonomous', 'Authority') }}::Count));
 
         return AZStd::unique_ptr<{{ RecordName }}>(new {{ RecordName }}(replicationRecord,
-            authorityToAuthorityStart,
             authorityToClientStart,
             authorityToServerStart,
             authorityToAutonomousStart,
@@ -1106,7 +1169,6 @@ namespace {{ Component.attrib['Namespace'] }}
     bool {{ RecordName }}::CanAttachRecord(Multiplayer::ReplicationRecord& replicationRecord)
     {
         bool canAttach{ true };
-        canAttach &= replicationRecord.ContainsAuthorityToAuthorityBits() ? (replicationRecord.GetRemainingAuthorityToAuthorityBits() >= static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Authority') }}::Count)) : true;
         canAttach &= replicationRecord.ContainsAuthorityToClientBits() ? (replicationRecord.GetRemainingAuthorityToClientBits() >= static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Client') }}::Count)) : true;
         canAttach &= replicationRecord.ContainsAuthorityToServerBits() ? (replicationRecord.GetRemainingAuthorityToServerBits() >= static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Server') }}::Count)) : true;
         canAttach &= replicationRecord.ContainsAuthorityToAutonomousBits() ? (replicationRecord.GetRemainingAuthorityToAutonomousBits() >= static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Autonomous') }}::Count)) : true;
@@ -1116,9 +1178,6 @@ namespace {{ Component.attrib['Namespace'] }}
 
     {{ RecordName }} {{ RecordName }}::AttachRecord(Multiplayer::ReplicationRecord& replicationRecord)
     {
-        uint32_t authorityToAuthorityStart = replicationRecord.m_authorityToAuthorityConsumedBits;
-        replicationRecord.ConsumeAuthorityToAuthorityBits(static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Authority') }}::Count));
-
         uint32_t authorityToClientStart = replicationRecord.m_authorityToClientConsumedBits;
         replicationRecord.ConsumeAuthorityToClientBits(static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Client') }}::Count));
 
@@ -1132,7 +1191,6 @@ namespace {{ Component.attrib['Namespace'] }}
         replicationRecord.ConsumeAutonomousToAuthorityBits(static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Autonomous', 'Authority') }}::Count));
 
         return {{ RecordName }}(replicationRecord,
-            authorityToAuthorityStart,
             authorityToClientStart,
             authorityToServerStart,
             authorityToAutonomousStart,
@@ -1142,9 +1200,9 @@ namespace {{ Component.attrib['Namespace'] }}
     void {{ RecordName }}::SetPredictableBits()
     {
         {{ GenerateModelReplicationRecordPredictableBits(Component, ClassType, 'Authority', 'Client')|indent(8) -}}
-{{ GenerateModelReplicationRecordPredictableBits(Component, ClassType, 'Authority', 'Server')|indent(8) -}}
-{{ GenerateModelReplicationRecordPredictableBits(Component, ClassType, 'Authority', 'Autonomous')|indent(8) -}}
-{{ GenerateModelReplicationRecordPredictableBits(Component, ClassType, 'Autonomous', 'Authority')|indent(8) }}
+        {{ GenerateModelReplicationRecordPredictableBits(Component, ClassType, 'Authority', 'Server')|indent(8) -}}
+        {{ GenerateModelReplicationRecordPredictableBits(Component, ClassType, 'Authority', 'Autonomous')|indent(8) -}}
+        {{ GenerateModelReplicationRecordPredictableBits(Component, ClassType, 'Autonomous', 'Authority')|indent(8) }}
     }
 
 {% if NetworkInputCount > 0 %}
@@ -1206,23 +1264,22 @@ namespace {{ Component.attrib['Namespace'] }}
         return static_cast<{{ ComponentName }}&>(GetOwner());
     }
 
-    {{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Authority', false, ControllerBaseName)|indent(4) -}}
-{{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Authority', true, ControllerBaseName)|indent(4) -}}
-{{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Server', false, ControllerBaseName)|indent(4) -}}
-{{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Server', true, ControllerBaseName)|indent(4) -}}
-{{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Client', false, ControllerBaseName)|indent(4) -}}
-{{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Client', true, ControllerBaseName)|indent(4) -}}
-{{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Autonomous', false, ControllerBaseName)|indent(4) -}}
-{{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Autonomous', true, ControllerBaseName)|indent(4) -}}
-{{ DefineNetworkPropertyAccessors(Component, 'Autonomous', 'Authority', false, ControllerBaseName)|indent(4) -}}
-{{ DefineNetworkPropertyAccessors(Component, 'Autonomous', 'Authority', true, ControllerBaseName)|indent(4) }}
+    {{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Server', false, ControllerBaseName)|indent(4) -}}
+    {{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Server', true, ControllerBaseName)|indent(4) -}}
+    {{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Client', false, ControllerBaseName)|indent(4) -}}
+    {{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Client', true, ControllerBaseName)|indent(4) -}}
+    {{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Autonomous', false, ControllerBaseName)|indent(4) -}}
+    {{ DefineNetworkPropertyAccessors(Component, 'Authority', 'Autonomous', true, ControllerBaseName)|indent(4) -}}
+    {{ DefineNetworkPropertyAccessors(Component, 'Autonomous', 'Authority', false, ControllerBaseName)|indent(4) -}}
+    {{ DefineNetworkPropertyAccessors(Component, 'Autonomous', 'Authority', true, ControllerBaseName)|indent(4) }}
     {{ DefineArchetypePropertyGets(Component, ClassType, ControllerBaseName, "GetParent().")|indent(4) -}}
-{{ DefineRpcInvocations(Component, ControllerBaseName, 'Autonomous', 'Authority', false)|indent(4) -}}
-{{ DefineRpcInvocations(Component, ControllerBaseName, 'Autonomous', 'Authority', true)|indent(4) -}}
-{{ DefineRpcInvocations(Component, ControllerBaseName, 'Authority', 'Autonomous', false)|indent(4) -}}
-{{ DefineRpcInvocations(Component, ControllerBaseName, 'Authority', 'Autonomous', true)|indent(4) -}}
-{{ DefineRpcInvocations(Component, ControllerBaseName, 'Authority', 'Client', false)|indent(4) -}}
-{{ DefineRpcInvocations(Component, ControllerBaseName, 'Authority', 'Client', true)|indent(4) }}
+    {{ DefineRpcInvocations(Component, ControllerBaseName, 'Autonomous', 'Authority', false)|indent(4) -}}
+    {{ DefineRpcInvocations(Component, ControllerBaseName, 'Autonomous', 'Authority', true)|indent(4) -}}
+    {{ DefineRpcInvocations(Component, ControllerBaseName, 'Authority', 'Autonomous', false)|indent(4) -}}
+    {{ DefineRpcInvocations(Component, ControllerBaseName, 'Authority', 'Autonomous', true)|indent(4) -}}
+    {{ DefineRpcInvocations(Component, ControllerBaseName, 'Authority', 'Client', false)|indent(4) -}}
+    {{ DefineRpcInvocations(Component, ControllerBaseName, 'Authority', 'Client', true)|indent(4) }}
+
 {% for Service in Component.iter('ComponentRelation') %}
 {%      if (Service.attrib['HasController']|booleanTrue) and (Service.attrib['Constraint'] != 'Incompatible') %}
     {{ Service.attrib['Namespace'] }}::{{ Service.attrib['Name'] }}Controller* {{ ControllerBaseName }}::Get{{ Service.attrib['Name'] }}Controller()
@@ -1241,11 +1298,10 @@ namespace {{ Component.attrib['Namespace'] }}
         {
             serializeContext->Class<{{ ComponentBaseName }}, Multiplayer::MultiplayerComponent>()
                 ->Version(1)
-                {{ DefineNetworkPropertyReflection(Component, 'Authority', 'Authority', ComponentBaseName)|indent(16) -}}
-{{ DefineNetworkPropertyReflection(Component, 'Authority', 'Server', ComponentBaseName)|indent(16) -}}
-{{ DefineNetworkPropertyReflection(Component, 'Authority', 'Client', ComponentBaseName)|indent(16) -}}
-{{ DefineNetworkPropertyReflection(Component, 'Authority', 'Autonomous', ComponentBaseName)|indent(16) -}}
-{{ DefineNetworkPropertyReflection(Component, 'Autonomous', 'Authority', ComponentBaseName)|indent(16) }}
+                {{ DefineNetworkPropertyReflection(Component, 'Authority', 'Server', ComponentBaseName)|indent(16) -}}
+                {{ DefineNetworkPropertyReflection(Component, 'Authority', 'Client', ComponentBaseName)|indent(16) -}}
+                {{ DefineNetworkPropertyReflection(Component, 'Authority', 'Autonomous', ComponentBaseName)|indent(16) -}}
+                {{ DefineNetworkPropertyReflection(Component, 'Autonomous', 'Authority', ComponentBaseName)|indent(16) }}
                 {{ DefineArchetypePropertyReflection(Component, ComponentBaseName)|indent(16) }};
         }
         ReflectToEditContext(context);
@@ -1264,11 +1320,10 @@ namespace {{ Component.attrib['Namespace'] }}
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "{{ Component.attrib['Namespace'] }}")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    {{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Authority', ComponentBaseName)|indent(20) -}}
-{{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Server', ComponentBaseName)|indent(20) -}}
-{{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Client', ComponentBaseName)|indent(20) -}}
-{{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Autonomous', ComponentBaseName)|indent(20) -}}
-{{ DefineNetworkPropertyEditReflection(Component, 'Autonomous', 'Authority', ComponentBaseName)|indent(20) }}
+                    {{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Server', ComponentBaseName)|indent(20) -}}
+                    {{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Client', ComponentBaseName)|indent(20) -}}
+                    {{ DefineNetworkPropertyEditReflection(Component, 'Authority', 'Autonomous', ComponentBaseName)|indent(20) -}}
+                    {{ DefineNetworkPropertyEditReflection(Component, 'Autonomous', 'Authority', ComponentBaseName)|indent(20) }}
                     {{ DefineArchetypePropertyEditReflection(Component, ComponentBaseName)|indent(20) }};
 {% if ComponentDerived %}
 
@@ -1286,18 +1341,34 @@ namespace {{ Component.attrib['Namespace'] }}
         AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
         if (behaviorContext)
         {
+            {{ ReflectRpcEventDescs(Component, ComponentName, 'Server', 'Authority')|indent(4) -}}
+            {{ ReflectRpcEventDescs(Component, ComponentName, 'Autonomous', 'Authority')|indent(4) -}}
+            {{ ReflectRpcEventDescs(Component, ComponentName, 'Authority', 'Autonomous')|indent(4) -}}
+            {{ ReflectRpcEventDescs(Component, ComponentName, 'Authority', 'Client')|indent(4) }}
+
             behaviorContext->Class<{{ ComponentName }}>("{{ ComponentName }}")
                 ->Attribute(AZ::Script::Attributes::Module, "{{ LowerFirst(Component.attrib['Namespace']) }}")
                 ->Attribute(AZ::Script::Attributes::Category, "{{ UpperFirst(Component.attrib['Namespace']) }}")
 
-                // Reflect Network Properties Get, Set, and OnChanged methods
-                {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Authority', ComponentName) | indent(16) -}}
-                {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Server', ComponentName) | indent(16) -}}
-                {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Client', ComponentName) | indent(16) -}}
-                {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Autonomous', ComponentName) | indent(16) -}}
-                {{ DefineNetworkPropertyBehaviorReflection(Component, 'Autonomous', 'Authority', ComponentName) | indent(16) -}}
-                {{- DefineArchetypePropertyBehaviorReflection(Component, ComponentName) | indent(16) }}
-                ;
+            // Reflect Network Properties Get, Set, and OnChanged methods
+            {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Authority', ComponentName) | indent(16) -}}
+            {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Server', ComponentName) | indent(16) -}}
+            {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Client', ComponentName) | indent(16) -}}
+            {{ DefineNetworkPropertyBehaviorReflection(Component, 'Authority', 'Autonomous', ComponentName) | indent(16) -}}
+            {{ DefineNetworkPropertyBehaviorReflection(Component, 'Autonomous', 'Authority', ComponentName) | indent(16) -}}
+                
+            // Reflect RPCs
+            {{ ReflectRpcInvocations(Component, ComponentName, 'Server', 'Authority')|indent(4) -}}
+            {{ ReflectRpcInvocations(Component, ComponentName, 'Autonomous', 'Authority')|indent(4) -}}
+            {{ ReflectRpcInvocations(Component, ComponentName, 'Authority', 'Autonomous')|indent(4) -}}
+            {{ ReflectRpcInvocations(Component, ComponentName, 'Authority', 'Client')|indent(4) -}}
+            {{ ReflectRpcEvents(Component, ComponentName, 'Server', 'Authority')|indent(4) -}}
+            {{ ReflectRpcEvents(Component, ComponentName, 'Autonomous', 'Authority')|indent(4) -}}
+            {{ ReflectRpcEvents(Component, ComponentName, 'Authority', 'Autonomous')|indent(4) -}}
+            {{ ReflectRpcEvents(Component, ComponentName, 'Authority', 'Client')|indent(4) -}}
+
+            {{- DefineArchetypePropertyBehaviorReflection(Component, ComponentName) | indent(16) }}
+            ;
         }
     }
 
@@ -1385,17 +1456,15 @@ namespace {{ Component.attrib['Namespace'] }}
 {% endcall %}
     }
 
-    {{ DefineNetworkPropertyGets(Component, 'Authority', 'Authority', false, ComponentBaseName)|indent(4) -}}
-{{ DefineNetworkPropertyGets(Component, 'Authority', 'Server', false, ComponentBaseName)|indent(4) -}}
+    {{ DefineNetworkPropertyGets(Component, 'Authority', 'Server', false, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Autonomous', false, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Autonomous', 'Authority', false, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Client', false, ComponentBaseName)|indent(4) -}}
-{{ DefineNetworkPropertyGets(Component, 'Authority', 'Authority', true, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Server', true, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Autonomous', true, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Autonomous', 'Authority', true, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Client', true, ComponentBaseName)|indent(4) }}
-    {{ DefineArchetypePropertyGets(Component, ClassType, ComponentBaseName)|indent(4) -}}
+{{ DefineArchetypePropertyGets(Component, ClassType, ComponentBaseName)|indent(4) -}}
 {{ DefineRpcInvocations(Component, ComponentBaseName, 'Server', 'Authority', false)|indent(4) -}}
 {{ DefineRpcInvocations(Component, ComponentBaseName, 'Server', 'Authority', true)|indent(4) }}
 
@@ -1448,10 +1517,6 @@ namespace {{ Component.attrib['Namespace'] }}
 
         {{ RecordName }} record = {{ RecordName }}::AttachRecord(replicationRecord);
 
-        if (replicationRecord.ContainsAuthorityToAuthorityBits())
-        {
-            SerializeAuthorityToAuthorityProperties(record, serializer);
-        }
         if (replicationRecord.ContainsAuthorityToClientBits())
         {
             SerializeAuthorityToClientProperties(record, serializer);
@@ -1527,8 +1592,7 @@ namespace {{ Component.attrib['Namespace'] }}
     void {{ ComponentBaseName }}::NetworkAttach(Multiplayer::NetBindComponent* netBindComponent, Multiplayer::ReplicationRecord& currentEntityRecord, Multiplayer::ReplicationRecord& predictableEntityRecord)
     {
         m_netBindComponent = netBindComponent;
-        {{ DefineNetworkPropertyEditConstruction(Component, 'Authority', 'Authority', ComponentBaseName)|indent(8) -}}
-{{ DefineNetworkPropertyEditConstruction(Component, 'Authority', 'Server', ComponentBaseName)|indent(8) -}}
+        {{ DefineNetworkPropertyEditConstruction(Component, 'Authority', 'Server', ComponentBaseName)|indent(8) -}}
 {{ DefineNetworkPropertyEditConstruction(Component, 'Authority', 'Client', ComponentBaseName)|indent(8) -}}
 {{ DefineNetworkPropertyEditConstruction(Component, 'Authority', 'Autonomous', ComponentBaseName)|indent(8) -}}
 {{ DefineNetworkPropertyEditConstruction(Component, 'Autonomous', 'Authority', ComponentBaseName)|indent(8) }}
@@ -1541,8 +1605,6 @@ namespace {{ Component.attrib['Namespace'] }}
         m_controller.get()->NetworkAttach(netBindComponent, predictableEntityRecord);
     }
 
-    {{ DeclareNetworkPropertySetSerializer(Component, 'Authority', 'Authority', ComponentBaseName, RecordName)|indent(4) }}
-    {{ DeclareNetworkPropertySetNotifyChanges(Component, 'Authority', 'Authority', ComponentBaseName, RecordName)|indent(4) }}
     {{ DeclareNetworkPropertySetSerializer(Component, 'Authority', 'Server', ComponentBaseName, RecordName)|indent(4) }}
     {{ DeclareNetworkPropertySetNotifyChanges(Component, 'Authority', 'Server', ComponentBaseName, RecordName)|indent(4) }}
     {{ DeclareNetworkPropertySetSerializer(Component, 'Authority', 'Client', ComponentBaseName, RecordName)|indent(4) }}

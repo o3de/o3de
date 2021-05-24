@@ -113,6 +113,10 @@ namespace Multiplayer
             {
                 editorNetworkInterface->Disconnect(m_editorConnId, AzNetworking::DisconnectReason::TerminatedByClient);
             }
+            if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
+            {
+                console->PerformCommand("disconnect");
+            }
             break;
         }
     }
