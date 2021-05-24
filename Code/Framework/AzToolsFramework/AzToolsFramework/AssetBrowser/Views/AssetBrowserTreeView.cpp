@@ -40,6 +40,8 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // conversio
 #include <QTimer>
 AZ_POP_DISABLE_WARNING
 
+//#pragma optimize("", off)
+
 namespace AzToolsFramework
 {
     namespace AssetBrowser
@@ -270,11 +272,27 @@ namespace AzToolsFramework
             return false;
         }
 
-        void AssetBrowserTreeView::SelectFolder([[maybe_unused]] const AZStd::string& folderPath)
+        void AssetBrowserTreeView::SelectFolder(const AZStd::string& folderPath)
         {
+            QString path = folderPath.c_str();
+
+            if (path.size() == 0)
+            {
+                return;
+            }
+
+            QStringList stringList = path.split('/', Qt::SkipEmptyParts);
+            AZStd::vector<AZStd::string> entries;
+            for (int index = 0; index < stringList.size(); index++)
+            {
+                AZStd::string entryName = stringList.at(index).toUtf8();
+                entries.push_back(entryName);
+            }
+
+            SelectEntry(QModelIndex(), entries, 0, true);
         }
 
-        bool AssetBrowserTreeView::SelectEntry(const QModelIndex& idxParent, const AZStd::vector<AZStd::string>& entries, const uint32_t entryPathIndex)
+        bool AssetBrowserTreeView::SelectEntry(const QModelIndex& idxParent, const AZStd::vector<AZStd::string>& entries, const uint32_t entryPathIndex, bool useDisplayName)
         {
             if (entries.empty())
             {
@@ -290,14 +308,23 @@ namespace AzToolsFramework
                 auto rowEntry = GetEntryFromIndex<AssetBrowserEntry>(rowIdx);
 
                 // Check if this entry name matches the query
-                if (rowEntry && AzFramework::StringFunc::Equal(entry.c_str(), rowEntry->GetName().c_str(), true))
+                if (rowEntry &&
+                    ((useDisplayName && AzFramework::StringFunc::Equal(entry.c_str(), rowEntry->GetDisplayName().toUtf8(), true)) ||
+                    AzFramework::StringFunc::Equal(entry.c_str(), rowEntry->GetName().c_str(), true)))
                 {
                     // Final entry found - set it as the selected element
                     if (entryPathIndex == entries.size() - 1)
                     {
+                        if (rowEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
+                        {
+                            // Expand the item itself if it is a folder
+                            expand(rowIdx);
+                        }
+
                         selectionModel()->clear();
                         selectionModel()->select(rowIdx, QItemSelectionModel::Select);
                         setCurrentIndex(rowIdx);
+
                         return true;
                     }
 
@@ -305,7 +332,7 @@ namespace AzToolsFramework
                     if (rowEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
                     {
                         // Folder found - if the final entry is found, expand this folder so the final entry is viewable in the Asset Browser (otherwise, early out)
-                        if (SelectEntry(rowIdx, entries, entryPathIndex + 1))
+                        if (SelectEntry(rowIdx, entries, entryPathIndex + 1, useDisplayName))
                         {
                             expand(rowIdx);
                             return true;
