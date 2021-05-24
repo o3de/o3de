@@ -285,7 +285,7 @@ namespace AzToolsFramework
             AZStd::vector<AZStd::string> entries;
             for (int index = 0; index < stringList.size(); index++)
             {
-                AZStd::string entryName = stringList.at(index).toUtf8();
+                AZStd::string entryName(stringList.at(index).toUtf8());
                 entries.push_back(entryName);
             }
 
