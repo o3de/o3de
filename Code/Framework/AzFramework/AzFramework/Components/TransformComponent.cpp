@@ -432,17 +432,14 @@ namespace AzFramework
 
     void TransformComponent::SetLocalRotation(const AZ::Vector3& eulerRadianAngles)
     {
-        AZ::Transform newLocalTM = AZ::ConvertEulerRadiansToTransform(eulerRadianAngles);
-        newLocalTM.SetScale(m_localTM.GetScale());
-        newLocalTM.SetTranslation(m_localTM.GetTranslation());
+        AZ::Transform newLocalTM = m_localTM;
+        newLocalTM.SetRotation(AZ::Quaternion::CreateFromEulerAnglesRadians(eulerRadianAngles));
         SetLocalTM(newLocalTM);
     }
 
     void TransformComponent::SetLocalRotationQuaternion(const AZ::Quaternion& quaternion)
     {
-        AZ::Transform newLocalTM;
-        newLocalTM.SetScale(m_localTM.GetScale());
-        newLocalTM.SetTranslation(m_localTM.GetTranslation());
+        AZ::Transform newLocalTM = m_localTM;
         newLocalTM.SetRotation(quaternion);
         SetLocalTM(newLocalTM);
     }
