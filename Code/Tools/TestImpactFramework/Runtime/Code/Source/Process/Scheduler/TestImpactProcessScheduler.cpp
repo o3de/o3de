@@ -95,8 +95,9 @@ namespace TestImpact
         {
             if (PopAndLaunch(process) == ProcessCallbackResult::Abort)
             {
+                // Client chose to abort the scheduler
                 TerminateAllProcesses(ExitCondition::Terminated);
-                return ProcessSchedulerResult::Graceful;
+                return ProcessSchedulerResult::UserAborted;
             }
         }
 
@@ -144,7 +145,7 @@ namespace TestImpact
                         {
                             // Client chose to abort the scheduler
                             TerminateAllProcesses(ExitCondition::Terminated);
-                            return ProcessSchedulerResult::Graceful;
+                            return ProcessSchedulerResult::UserAborted;
                         }
                         else if (!m_processQueue.empty())
                         {
@@ -153,7 +154,7 @@ namespace TestImpact
                             {
                                 // Client chose to abort the scheduler
                                 TerminateAllProcesses(ExitCondition::Terminated);
-                                return ProcessSchedulerResult::Graceful;
+                                return ProcessSchedulerResult::UserAborted;
                             }
                             else
                             {
@@ -184,7 +185,7 @@ namespace TestImpact
                             {
                                 // Client chose to abort the scheduler
                                 TerminateAllProcesses(ExitCondition::Terminated);
-                                return ProcessSchedulerResult::Graceful;
+                                return ProcessSchedulerResult::UserAborted;
                             }
                         }
 
@@ -201,7 +202,7 @@ namespace TestImpact
                         {
                             // Client chose to abort the scheduler
                             TerminateAllProcesses(ExitCondition::Terminated);
-                            return ProcessSchedulerResult::Graceful;
+                            return ProcessSchedulerResult::UserAborted;
                         }
                         else
                         {

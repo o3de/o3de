@@ -27,7 +27,7 @@ namespace TestImpact
     public:
         //! Constructs a test runner with the specified parameters common to all job runs of this runner.
         //! @param maxConcurrentRuns The maximum number of runs to be in flight at any given time.
-        TestRunner(size_t maxConcurrentRuns);
+        explicit TestRunner(size_t maxConcurrentRuns);
 
         //! Executes the specified test run jobs according to the specified job exception policies.
         //! @param jobInfos The test run jobs to execute.

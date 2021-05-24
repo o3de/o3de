@@ -74,7 +74,7 @@ namespace TestImpact
 
         //! Constructs a test enumerator with the specified parameters common to all enumeration job runs of this enumerator.
         //! @param maxConcurrentEnumerations The maximum number of enumerations to be in flight at any given time.
-        TestEnumerator(size_t maxConcurrentEnumerations);
+        explicit TestEnumerator(size_t maxConcurrentEnumerations);
 
         //! Executes the specified test enumeration jobs according to the specified cache and job exception policies.
         //! @param jobInfos The enumeration jobs to execute.
