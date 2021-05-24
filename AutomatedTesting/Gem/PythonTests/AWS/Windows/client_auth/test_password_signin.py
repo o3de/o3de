@@ -86,7 +86,8 @@ class TestAWSClientAuthPasswordSignIn(object):
             Username='test1'
         )
 
-        launcher.args = ['+LoadLevel', 'AWS/ClientAuthPasswordSignIn']
+        launcher.args = ['+LoadLevel', 'AWS/ClientAuthPasswordSignIn', '--rhi=null', '--skipWelcomeScreenDialog',
+                         '--autotest_mode']
 
         with launcher.start(launch_ap=False):
             result = log_monitor.monitor_log_for_lines(
