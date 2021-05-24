@@ -57,6 +57,7 @@ namespace ExporterLib
 
     // endian conversion
     void ConvertUnsignedInt(uint32* value, MCore::Endian::EEndianType targetEndianType);
+    void ConvertUnsignedInt(uint64* value, MCore::Endian::EEndianType targetEndianType);
     void ConvertInt(int* value, MCore::Endian::EEndianType targetEndianType);
     void ConvertUnsignedShort(uint16* value, MCore::Endian::EEndianType targetEndianType);
     void ConvertFloat(float* value, MCore::Endian::EEndianType targetEndianType);
@@ -113,7 +114,7 @@ namespace ExporterLib
     // actors
     const char* GetActorExtension(bool includingDot = true);
     void SaveActorHeader(MCore::Stream* file, MCore::Endian::EEndianType targetEndianType);
-    void SaveActorFileInfo(MCore::Stream* file, uint32 numLODLevels, uint32 motionExtractionNodeIndex, uint32 retargetRootNodeIndex, const char* sourceApp, const char* orgFileName, const char* actorName, MCore::Distance::EUnitType unitType, MCore::Endian::EEndianType targetEndianType, bool optimizeSkeleton);
+    void SaveActorFileInfo(MCore::Stream* file, uint64 numLODLevels, uint64 motionExtractionNodeIndex, uint64 retargetRootNodeIndex, const char* sourceApp, const char* orgFileName, const char* actorName, MCore::Distance::EUnitType unitType, MCore::Endian::EEndianType targetEndianType, bool optimizeSkeleton);
     void SaveActor(MCore::MemoryFile* file, const EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType, const AZStd::optional<AZ::Data::AssetId> meshAssetId = AZStd::nullopt);
     bool SaveActor(AZStd::string& filename, const EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType, const AZStd::optional<AZ::Data::AssetId> meshAssetId = AZStd::nullopt);
 

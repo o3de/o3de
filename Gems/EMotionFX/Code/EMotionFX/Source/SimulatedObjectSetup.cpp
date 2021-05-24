@@ -280,7 +280,7 @@ namespace EMotionFX
     {
         if (m_object)
         {
-            return m_object->GetSimulatedRootJointIndex(this) != MCORE_INVALIDINDEX32;
+            return m_object->GetSimulatedRootJointIndex(this) != InvalidIndex;
         }
 
         return false;

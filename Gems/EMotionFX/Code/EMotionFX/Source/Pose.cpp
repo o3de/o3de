@@ -114,16 +114,16 @@ namespace EMotionFX
     }
 
     //
-    void Pose::SetNumTransforms(uint32 numTransforms)
+    void Pose::SetNumTransforms(size_t numTransforms)
     {
         // resize the buffers
         mLocalSpaceTransforms.ResizeFast(numTransforms);
         mModelSpaceTransforms.ResizeFast(numTransforms);
 
-        const uint32 oldSize = mFlags.GetLength();
+        const size_t oldSize = mFlags.GetLength();
         mFlags.ResizeFast(numTransforms);
 
-        for (uint32 i = oldSize; i < numTransforms; ++i)
+        for (size_t i = oldSize; i < numTransforms; ++i)
         {
             mFlags[i] = 0;
             SetLocalSpaceTransform(i, Transform::CreateIdentity());
@@ -257,7 +257,7 @@ namespace EMotionFX
 
 
     // recursively update
-    void Pose::UpdateModelSpaceTransform(uint32 nodeIndex) const
+    void Pose::UpdateModelSpaceTransform(size_t nodeIndex) const
     {
         Skeleton* skeleton = mActor->GetSkeleton();
 
@@ -286,7 +286,7 @@ namespace EMotionFX
 
 
     // update the local transform
-    void Pose::UpdateLocalSpaceTransform(uint32 nodeIndex) const
+    void Pose::UpdateLocalSpaceTransform(size_t nodeIndex) const
     {
         const uint32 flags = mFlags[nodeIndex];
         if (flags & FLAG_LOCALTRANSFORMREADY)
@@ -316,28 +316,28 @@ namespace EMotionFX
 
 
     // get the local transform
-    const Transform& Pose::GetLocalSpaceTransform(uint32 nodeIndex) const
+    const Transform& Pose::GetLocalSpaceTransform(size_t nodeIndex) const
     {
         UpdateLocalSpaceTransform(nodeIndex);
         return mLocalSpaceTransforms[nodeIndex];
     }
 
 
-    const Transform& Pose::GetModelSpaceTransform(uint32 nodeIndex) const
+    const Transform& Pose::GetModelSpaceTransform(size_t nodeIndex) const
     {
         UpdateModelSpaceTransform(nodeIndex);
         return mModelSpaceTransforms[nodeIndex];
     }
 
 
-    Transform Pose::GetWorldSpaceTransform(uint32 nodeIndex) const
+    Transform Pose::GetWorldSpaceTransform(size_t nodeIndex) const
     {
         UpdateModelSpaceTransform(nodeIndex);
         return mModelSpaceTransforms[nodeIndex].Multiplied(mActorInstance->GetWorldSpaceTransform());
     }
 
 
-    void Pose::GetWorldSpaceTransform(uint32 nodeIndex, Transform* outResult) const
+    void Pose::GetWorldSpaceTransform(size_t nodeIndex, Transform* outResult) const
     {
         UpdateModelSpaceTransform(nodeIndex);
         *outResult = mModelSpaceTransforms[nodeIndex];
@@ -346,7 +346,7 @@ namespace EMotionFX
 
 
     // calculate a local transform
-    void Pose::GetLocalSpaceTransform(uint32 nodeIndex, Transform* outResult) const
+    void Pose::GetLocalSpaceTransform(size_t nodeIndex, Transform* outResult) const
     {
         if ((mFlags[nodeIndex] & FLAG_LOCALTRANSFORMREADY) == false)
         {
@@ -357,7 +357,7 @@ namespace EMotionFX
     }
 
 
-    void Pose::GetModelSpaceTransform(uint32 nodeIndex, Transform* outResult) const
+    void Pose::GetModelSpaceTransform(size_t nodeIndex, Transform* outResult) const
     {
         UpdateModelSpaceTransform(nodeIndex);
         *outResult = mModelSpaceTransforms[nodeIndex];
@@ -365,7 +365,7 @@ namespace EMotionFX
 
 
     // set the local transform
-    void Pose::SetLocalSpaceTransform(uint32 nodeIndex, const Transform& newTransform, bool invalidateGlobalTransforms)
+    void Pose::SetLocalSpaceTransform(size_t nodeIndex, const Transform& newTransform, bool invalidateGlobalTransforms)
     {
         mLocalSpaceTransforms[nodeIndex] = newTransform;
         mFlags[nodeIndex] |= FLAG_LOCALTRANSFORMREADY;
@@ -382,7 +382,7 @@ namespace EMotionFX
 
 
     // mark all child nodes recursively as dirty
-    void Pose::RecursiveInvalidateModelSpaceTransforms(const Actor* actor, uint32 nodeIndex)
+    void Pose::RecursiveInvalidateModelSpaceTransforms(const Actor* actor, size_t nodeIndex)
     {
         // if this model space transform ain't ready yet assume all child nodes are also not
         if ((mFlags[nodeIndex] & FLAG_MODELTRANSFORMREADY) == false)
@@ -396,15 +396,15 @@ namespace EMotionFX
         // recurse through all child nodes
         Skeleton* skeleton = actor->GetSkeleton();
         Node* node = skeleton->GetNode(nodeIndex);
-        const uint32 numChildNodes = node->GetNumChildNodes();
-        for (uint32 i = 0; i < numChildNodes; ++i)
+        const size_t numChildNodes = node->GetNumChildNodes();
+        for (size_t i = 0; i < numChildNodes; ++i)
         {
             RecursiveInvalidateModelSpaceTransforms(actor, node->GetChildIndex(i));
         }
     }
 
 
-    void Pose::SetModelSpaceTransform(uint32 nodeIndex, const Transform& newTransform, bool invalidateChildGlobalTransforms)
+    void Pose::SetModelSpaceTransform(size_t nodeIndex, const Transform& newTransform, bool invalidateChildGlobalTransforms)
     {
         mModelSpaceTransforms[nodeIndex] = newTransform;
 
@@ -423,7 +423,7 @@ namespace EMotionFX
     }
 
 
-    void Pose::SetWorldSpaceTransform(uint32 nodeIndex, const Transform& newTransform, bool invalidateChildGlobalTransforms)
+    void Pose::SetWorldSpaceTransform(size_t nodeIndex, const Transform& newTransform, bool invalidateChildGlobalTransforms)
     {
         mModelSpaceTransforms[nodeIndex] = newTransform.Multiplied(mActorInstance->GetWorldSpaceTransformInversed());
         mFlags[nodeIndex] &= ~FLAG_LOCALTRANSFORMREADY;

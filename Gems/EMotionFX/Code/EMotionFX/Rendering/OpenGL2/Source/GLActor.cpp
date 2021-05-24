@@ -113,8 +113,8 @@ namespace RenderGL
         mTexturePath        = texturePath;
 
         // get the number of nodes and geometry LOD levels
-        const uint32 numGeometryLODLevels   = actor->GetNumLODLevels();
-        const uint32 numNodes               = actor->GetNumNodes();
+        const size_t numGeometryLODLevels   = actor->GetNumLODLevels();
+        const size_t numNodes               = actor->GetNumNodes();
 
         // set the pre-allocation amount for the number of materials
         mMaterials.resize(numGeometryLODLevels);
@@ -149,7 +149,7 @@ namespace RenderGL
             uint32 totalNumIndices[3]   = { 0, 0, 0 };
 
             // iterate through all nodes
-            for (uint32 n = 0; n < numNodes; ++n)
+            for (size_t n = 0; n < numNodes; ++n)
             {
                 // get the current node
                 EMotionFX::Node* node = skeleton->GetNode(n);
@@ -171,7 +171,7 @@ namespace RenderGL
                 EMotionFX::Mesh::EMeshType meshType = ClassifyMeshType(node, mesh, lodLevel);
 
                 // get the number of submeshes and iterate through them
-                const uint32 numSubMeshes = mesh->GetNumSubMeshes();
+                const size_t numSubMeshes = mesh->GetNumSubMeshes();
                 for (uint32 s = 0; s < numSubMeshes; ++s)
                 {
                     // get the current submesh
@@ -278,7 +278,7 @@ namespace RenderGL
             for (uint32 lodLevel = 0; lodLevel < numGeometryLODLevels; ++lodLevel)
             {
                 // iterate through all nodes
-                for (uint32 n = 0; n < numNodes; ++n)
+                for (size_t n = 0; n < numNodes; ++n)
                 {
                     // get the current node
                     EMotionFX::Node* node = skeleton->GetNode(n);
@@ -577,8 +577,8 @@ namespace RenderGL
         EMotionFX::Skeleton* skeleton = mActor->GetSkeleton();
 
         // get the number of nodes and iterate through them
-        const uint32 numNodes = mActor->GetNumNodes();
-        for (uint32 n = 0; n < numNodes; ++n)
+        const size_t numNodes = mActor->GetNumNodes();
+        for (size_t n = 0; n < numNodes; ++n)
         {
             // get the current node
             EMotionFX::Node* node = skeleton->GetNode(n);
@@ -703,7 +703,7 @@ namespace RenderGL
         }
 
         // get the number of nodes
-        const uint32 numNodes = mActor->GetNumNodes();
+        const size_t numNodes = mActor->GetNumNodes();
         if (numNodes == 0)
         {
             return;
@@ -722,7 +722,7 @@ namespace RenderGL
         uint32 globalVert = 0;
 
         // iterate through all nodes
-        for (uint32 n = 0; n < numNodes; ++n)
+        for (size_t n = 0; n < numNodes; ++n)
         {
             // get the current node
             EMotionFX::Node* node = skeleton->GetNode(n);
@@ -793,7 +793,7 @@ namespace RenderGL
         }
 
         // get the number of dynamic nodes
-        const uint32 numNodes = mActor->GetNumNodes();
+        const size_t numNodes = mActor->GetNumNodes();
         if (numNodes == 0)
         {
             return;
@@ -812,7 +812,7 @@ namespace RenderGL
         uint32 globalVert = 0;
 
         // iterate through all nodes
-        for (uint32 n = 0; n < numNodes; ++n)
+        for (size_t n = 0; n < numNodes; ++n)
         {
             // get the current node
             EMotionFX::Node* node = skeleton->GetNode(n);

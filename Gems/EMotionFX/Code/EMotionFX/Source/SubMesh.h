@@ -198,28 +198,28 @@ namespace EMotionFX
          * @param index The bone number, which must be in range of [0..GetNumBones()-1].
          * @result The node index value for the given bone.
          */
-        MCORE_INLINE uint32 GetBone(uint32 index)   const                       { return mBones[index]; }
+        MCORE_INLINE size_t GetBone(size_t index)   const                       { return mBones[index]; }
 
         /**
          * Get direct access to the bone values, by getting a pointer to the first bone index.
          * Each integer in the array represents the node number that acts as bone on this submesh.
          * @result A pointer to the array of bones used by this submesh.
          */
-        MCORE_INLINE uint32* GetBones()                                         { return mBones.data(); }
+        MCORE_INLINE size_t* GetBones()                                         { return mBones.data(); }
 
         /**
          * Get direct access to the bones array.
          * Each integer in the array represents the node number that acts as bone on this submesh.
          * @result A read only reference to the array of bones used by this submesh.
          */
-        MCORE_INLINE const AZStd::vector<uint32>& GetBonesArray() const          { return mBones; }
+        MCORE_INLINE const AZStd::vector<size_t>& GetBonesArray() const          { return mBones; }
 
         /**
          * Get direct access to the bones array.
          * Each integer in the array represents the node number that acts as bone on this submesh.
          * @result A reference to the array of bones used by this submesh.
          */
-        MCORE_INLINE AZStd::vector<uint32>& GetBonesArray()                      { return mBones; }
+        MCORE_INLINE AZStd::vector<size_t>& GetBonesArray()                      { return mBones; }
 
         /**
          * Reinitialize the bones.
@@ -268,7 +268,7 @@ namespace EMotionFX
 
 
     protected:
-        AZStd::vector<uint32>    mBones;         /**< The collection of bones. These are stored as node numbers that point into the actor. */
+        AZStd::vector<size_t>    mBones;         /**< The collection of bones. These are stored as node numbers that point into the actor. */
         uint32                  mStartVertex;   /**< The start vertex number in the vertex data arrays of the parent mesh. */
         uint32                  mStartIndex;    /**< The start index number in the index array of the parent mesh. */
         uint32                  mStartPolygon;  /**< The start polygon number in the polygon vertex count array of the parent mesh. */

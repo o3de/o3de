@@ -75,8 +75,8 @@ namespace EMotionFX
 
         mSkeleton = Skeleton::Create();
 
-        mMotionExtractionNode       = MCORE_INVALIDINDEX32;
-        mRetargetRootNode           = MCORE_INVALIDINDEX32;
+        mMotionExtractionNode       = InvalidIndex;
+        mRetargetRootNode           = InvalidIndex;
         mThreadIndex                = 0;
         mCustomData                 = nullptr;
         mID                         = MCore::GetIDGenerator().GenerateID();
@@ -172,7 +172,7 @@ namespace EMotionFX
         result->mSkeleton = mSkeleton->Clone();
 
         // clone lod data
-        const uint32 numNodes = mSkeleton->GetNumNodes();
+        const size_t numNodes = mSkeleton->GetNumNodes();
 
         const size_t numLodLevels = m_meshLodData.m_lodLevels.size();
         MeshLODData& resultMeshLodData = result->m_meshLodData;
@@ -184,7 +184,7 @@ namespace EMotionFX
             AZStd::vector<NodeLODInfo>& resultNodeInfos = resultMeshLodData.m_lodLevels[lodLevel].mNodeInfos;
 
             resultNodeInfos.resize(numNodes);
-            for (uint32 n = 0; n < numNodes; ++n)
+            for (size_t n = 0; n < numNodes; ++n)
             {
                 NodeLODInfo& resultNodeInfo = resultNodeInfos[n];
                 const NodeLODInfo& sourceNodeInfo = nodeInfos[n];
@@ -230,11 +230,11 @@ namespace EMotionFX
     // init node mirror info
     void Actor::AllocateNodeMirrorInfos()
     {
-        const uint32 numNodes = mSkeleton->GetNumNodes();
+        const size_t numNodes = mSkeleton->GetNumNodes();
         mNodeMirrorInfos.resize(numNodes);
 
         // init the data
-        for (uint32 i = 0; i < numNodes; ++i)
+        for (size_t i = 0; i < numNodes; ++i)
         {
             mNodeMirrorInfos[i].mSourceNode = static_cast<uint16>(i);
             mNodeMirrorInfos[i].mAxis       = MCORE_INVALIDINDEX8;
@@ -253,20 +253,15 @@ namespace EMotionFX
     // check if we have our axes detected
     bool Actor::GetHasMirrorAxesDetected() const
     {
-        if (mNodeMirrorInfos.size() == 0)
+        if (mNodeMirrorInfos.empty())
         {
             return false;
         }
 
-        for (uint32 i = 0; i < mNodeMirrorInfos.size(); ++i)
+        return AZStd::all_of(begin(mNodeMirrorInfos), end(mNodeMirrorInfos), [](const NodeMirrorInfo& nodeMirrorInfo)
         {
-            if (mNodeMirrorInfos[i].mAxis == MCORE_INVALIDINDEX8)
-            {
-                return false;
-            }
-        }
-
-        return true;
+            return nodeMirrorInfo.mAxis != MCORE_INVALIDINDEX8;
+        });
     }
 
 
@@ -274,13 +269,12 @@ namespace EMotionFX
     void Actor::RemoveAllMaterials()
     {
         // for all LODs
-        for (uint32 i = 0; i < mMaterials.size(); ++i)
+        for (AZStd::vector<Material*>& mMaterial : mMaterials)
         {
             // delete all materials
-            const uint32 numMats = mMaterials[i].size();
-            for (uint32 m = 0; m < numMats; ++m)
+            for (Material* m : mMaterial)
             {
-                mMaterials[i][m]->Destroy();
+                m->Destroy();
             }
         }
 
@@ -295,7 +289,7 @@ namespace EMotionFX
 
         lodLevels.emplace_back();
         LODLevel& newLOD = lodLevels.back();
-        const uint32 numNodes = mSkeleton->GetNumNodes();
+        const size_t numNodes = mSkeleton->GetNumNodes();
         newLOD.mNodeInfos.resize(numNodes);
 
         const size_t numLODs    = lodLevels.size();
@@ -339,11 +333,11 @@ namespace EMotionFX
         lodLevels.emplace(lodLevels.begin()+insertAt);
         LODLevel& newLOD = lodLevels[insertAt];
         const uint32 lodIndex   = insertAt;
-        const uint32 numNodes   = mSkeleton->GetNumNodes();
+        const size_t numNodes   = mSkeleton->GetNumNodes();
         newLOD.mNodeInfos.resize(numNodes);
 
         // get the number of nodes, iterate through them, create a new LOD level and copy over the meshes from the last LOD level
-        for (uint32 i = 0; i < numNodes; ++i)
+        for (size_t i = 0; i < numNodes; ++i)
         {
             NodeLODInfo& lodInfo    = lodLevels[lodIndex].mNodeInfos[i];
             lodInfo.mMesh           = nullptr;
@@ -366,8 +360,8 @@ namespace EMotionFX
         const LODLevel& sourceLOD = copyLodLevels[copyLODLevel];
         LODLevel& targetLOD = lodLevels[replaceLODLevel];
 
-        const uint32 numNodes = mSkeleton->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = mSkeleton->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             Node* node     = mSkeleton->GetNode(i);
             Node* copyNode = copyActor->GetSkeleton()->FindNodeByID(node->GetID());
@@ -410,14 +404,14 @@ namespace EMotionFX
         }
 
         // copy the materials
-        const uint32 numMaterials = copyActor->GetNumMaterials(copyLODLevel);
-        for (uint32 i = 0; i < mMaterials[replaceLODLevel].size(); ++i)
+        const size_t numMaterials = copyActor->GetNumMaterials(copyLODLevel);
+        for (Material* i : mMaterials[replaceLODLevel])
         {
-            mMaterials[replaceLODLevel][i]->Destroy();
+            i->Destroy();
         }
         mMaterials[replaceLODLevel].clear();
         mMaterials[replaceLODLevel].reserve(numMaterials);
-        for (uint32 i = 0; i < numMaterials; ++i)
+        for (size_t i = 0; i < numMaterials; ++i)
         {
             AddMaterial(replaceLODLevel, copyActor->GetMaterial(copyLODLevel, i)->Clone());
         }
@@ -449,22 +443,19 @@ namespace EMotionFX
         if (adjustMorphSetup)
         {
             mMorphSetups.resize(numLODs);
-            for (uint32 i = 0; i < numLODs; ++i)
-            {
-                mMorphSetups[i] = nullptr;
-            }
+            AZStd::fill(begin(mMorphSetups), AZStd::next(begin(mMorphSetups), numLODs), nullptr);
         }
     }
 
     // removes all node meshes and stacks
     void Actor::RemoveAllNodeMeshes()
     {
-        const uint32 numNodes = mSkeleton->GetNumNodes();
+        const size_t numNodes = mSkeleton->GetNumNodes();
 
         AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
         for (LODLevel& lodLevel : lodLevels)
         {
-            for (uint32 i = 0; i < numNodes; ++i)
+            for (size_t i = 0; i < numNodes; ++i)
             {
                 NodeLODInfo& info = lodLevel.mNodeInfos[i];
                 MCore::Destroy(info.mMesh);
@@ -482,8 +473,8 @@ namespace EMotionFX
         uint32 totalVerts   = 0;
         uint32 totalIndices = 0;
 
-        const uint32 numNodes = mSkeleton->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = mSkeleton->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             Mesh* mesh = GetMesh(lodLevel, i);
             if (!mesh)
@@ -520,8 +511,8 @@ namespace EMotionFX
         uint32 totalIndices = 0;
 
         // for all nodes
-        const uint32 numNodes = mSkeleton->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = mSkeleton->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             Mesh* mesh = GetMesh(lodLevel, i);
 
@@ -564,8 +555,8 @@ namespace EMotionFX
         uint32 totalIndices = 0;
 
         // for all nodes
-        const uint32 numNodes = mSkeleton->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = mSkeleton->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             Mesh* mesh = GetMesh(lodLevel, i);
 
@@ -605,8 +596,8 @@ namespace EMotionFX
     {
         uint32 maxInfluences = 0;
 
-        const uint32 numNodes = mSkeleton->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = mSkeleton->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             Mesh* mesh = GetMesh(lodLevel, i);
             if (!mesh)
@@ -627,7 +618,7 @@ namespace EMotionFX
         uint32 n;
 
         // get the number of nodes
-        const uint32 numNodes = mSkeleton->GetNumNodes();
+        const size_t numNodes = mSkeleton->GetNumNodes();
 
         // check if the conflict node flag array's size is set to the number of nodes inside the actor
         if (conflictNodeFlags.size() != numNodes)
@@ -694,8 +685,8 @@ namespace EMotionFX
 
         // Get the vertex counts for the influences. (e.g. 500 vertices have 1 skinning influence, 300 vertices have 2 skinning influences etc.)
         AZStd::vector<uint32> meshVertexCounts;
-        const uint32 numNodes = GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             Mesh* mesh = GetMesh(lodLevel, i);
             if (!mesh)
@@ -716,11 +707,11 @@ namespace EMotionFX
     }
 
     // check if there is any mesh available
-    bool Actor::CheckIfHasMeshes(uint32 lodLevel) const
+    bool Actor::CheckIfHasMeshes(size_t lodLevel) const
     {
         // check if any of the nodes has a mesh
-        const uint32 numNodes = mSkeleton->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = mSkeleton->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             if (GetMesh(lodLevel, i))
             {
@@ -735,8 +726,8 @@ namespace EMotionFX
 
     bool Actor::CheckIfHasSkinnedMeshes(AZ::u32 lodLevel) const
     {
-        const AZ::u32 numNodes = mSkeleton->GetNumNodes();
-        for (AZ::u32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = mSkeleton->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             const Mesh* mesh = GetMesh(lodLevel, i);
             if (mesh && mesh->FindSharedVertexAttributeLayer(SkinningInfoVertexAttributeLayer::TYPE_ID))
@@ -768,13 +759,11 @@ namespace EMotionFX
     // remove all morph setups
     void Actor::RemoveAllMorphSetups(bool deleteMeshDeformers)
     {
-        uint32 i;
-
         // get the number of lod levels
-        const uint32 numLODs = GetNumLODLevels();
+        const size_t numLODs = GetNumLODLevels();
 
         // for all LODs, get rid of all the morph setups for each geometry LOD
-        for (i = 0; i < mMorphSetups.size(); ++i)
+        for (uint32 i = 0; i < mMorphSetups.size(); ++i)
         {
             if (mMorphSetups[i])
             {
@@ -788,8 +777,8 @@ namespace EMotionFX
         if (deleteMeshDeformers)
         {
             // for all nodes
-            const uint32 numNodes = mSkeleton->GetNumNodes();
-            for (i = 0; i < numNodes; ++i)
+            const size_t numNodes = mSkeleton->GetNumNodes();
+            for (size_t i = 0; i < numNodes; ++i)
             {
                 // process all LOD levels
                 for (uint32 lod = 0; lod < numLODs; ++lod)
@@ -825,8 +814,8 @@ namespace EMotionFX
         }
 
         // iterate through the submeshes
-        const uint32 numSubMeshes = mesh->GetNumSubMeshes();
-        for (uint32 s = 0; s < numSubMeshes; ++s)
+        const size_t numSubMeshes = mesh->GetNumSubMeshes();
+        for (size_t s = 0; s < numSubMeshes; ++s)
         {
             // if the submesh material index is the same as the material index we search for, then it is being used
             if (mesh->GetSubMesh(s)->GetMaterial() == materialIndex)
@@ -843,18 +832,14 @@ namespace EMotionFX
     bool Actor::CheckIfIsMaterialUsed(uint32 lodLevel, uint32 index) const
     {
         // iterate through all nodes of the actor and check its meshes
-        const uint32 numNodes = mSkeleton->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = mSkeleton->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             // if the mesh is in LOD range check if it uses the material
             if (CheckIfIsMaterialUsed(GetMesh(lodLevel, i), index))
             {
                 return true;
             }
-
-            // same for the collision mesh
-            //if (CheckIfIsMaterialUsed( GetCollisionMesh(lodLevel, i), index ))
-            //return true;
         }
 
         // return false, this means that no mesh uses the given material
@@ -883,14 +868,14 @@ namespace EMotionFX
         uint32 maxNumChilds = 0;
 
         // traverse through all root nodes
-        const uint32 numRootNodes = mSkeleton->GetNumRootNodes();
-        for (uint32 i = 0; i < numRootNodes; ++i)
+        const size_t numRootNodes = mSkeleton->GetNumRootNodes();
+        for (size_t i = 0; i < numRootNodes; ++i)
         {
             // get the given root node from the actor
             Node* rootNode = mSkeleton->GetNode(mSkeleton->GetRootNodeIndex(i));
 
             // get the number of child nodes recursively
-            const uint32 numChildNodes = rootNode->GetNumChildNodesRecursive();
+            const size_t numChildNodes = rootNode->GetNumChildNodesRecursive();
 
             // if the number of child nodes of this node is bigger than the current max number
             // this is our new candidate for the repositioning node
@@ -919,8 +904,8 @@ namespace EMotionFX
         outBoneList->clear();
 
         // for all nodes
-        const uint32 numNodes = mSkeleton->GetNumNodes();
-        for (uint32 n = 0; n < numNodes; ++n)
+        const size_t numNodes = mSkeleton->GetNumNodes();
+        for (size_t n = 0; n < numNodes; ++n)
         {
             Mesh* mesh = GetMesh(lodLevel, n);
 
@@ -946,7 +931,7 @@ namespace EMotionFX
                 for (uint32 i = 0; i < numInfluences; ++i)
                 {
                     // get the node number of the bone
-                    uint32 nodeNr = skinningLayer->GetInfluence(v, i)->GetNodeNr();
+                    uint16 nodeNr = skinningLayer->GetInfluence(v, i)->GetNodeNr();
 
                     // check if it is already in the bone list, if not, add it
                     if (AZStd::find(begin(*outBoneList), end(*outBoneList), nodeNr) == end(*outBoneList))
@@ -963,8 +948,8 @@ namespace EMotionFX
     void Actor::RecursiveAddDependencies(const Actor* actor)
     {
         // process all dependencies of the given actor
-        const uint32 numDependencies = actor->GetNumDependencies();
-        for (uint32 i = 0; i < numDependencies; ++i)
+        const size_t numDependencies = actor->GetNumDependencies();
+        for (size_t i = 0; i < numDependencies; ++i)
         {
             // add it to the actor instance
             mDependencies.emplace_back(*actor->GetDependency(i));
@@ -995,8 +980,8 @@ namespace EMotionFX
         AZStd::string nameB;
 
         // search through all nodes to find the best match
-        const uint32 numNodes = mSkeleton->GetNumNodes();
-        for (uint32 n = 0; n < numNodes; ++n)
+        const size_t numNodes = mSkeleton->GetNumNodes();
+        for (size_t n = 0; n < numNodes; ++n)
         {
             // get the node name
             const char* name = mSkeleton->GetNode(n)->GetName();
@@ -1052,21 +1037,21 @@ namespace EMotionFX
     bool Actor::MapNodeMotionSource(const char* sourceNodeName, const char* destNodeName)
     {
         // find the source node index
-        const uint32 sourceNodeIndex = mSkeleton->FindNodeByNameNoCase(sourceNodeName)->GetNodeIndex();
-        if (sourceNodeIndex == MCORE_INVALIDINDEX32)
+        const size_t sourceNodeIndex = mSkeleton->FindNodeByNameNoCase(sourceNodeName)->GetNodeIndex();
+        if (sourceNodeIndex == InvalidIndex)
         {
             return false;
         }
 
         // find the dest node index
-        const uint32 destNodeIndex = mSkeleton->FindNodeByNameNoCase(destNodeName)->GetNodeIndex();
-        if (destNodeIndex == MCORE_INVALIDINDEX32)
+        const size_t destNodeIndex = mSkeleton->FindNodeByNameNoCase(destNodeName)->GetNodeIndex();
+        if (destNodeIndex == InvalidIndex)
         {
             return false;
         }
 
         // allocate the data if we haven't already
-        if (mNodeMirrorInfos.size() == 0)
+        if (mNodeMirrorInfos.empty())
         {
             AllocateNodeMirrorInfos();
         }
@@ -1084,7 +1069,7 @@ namespace EMotionFX
     bool Actor::MapNodeMotionSource(uint16 sourceNodeIndex, uint16 targetNodeIndex)
     {
         // allocate the data if we haven't already
-        if (mNodeMirrorInfos.size() == 0)
+        if (mNodeMirrorInfos.empty())
         {
             AllocateNodeMirrorInfos();
         }
@@ -1104,8 +1089,8 @@ namespace EMotionFX
     void Actor::MatchNodeMotionSources(const char* subStringA, const char* subStringB)
     {
         // try to map all nodes
-        const uint32 numNodes = mSkeleton->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = mSkeleton->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             Node* node = mSkeleton->GetNode(i);
 
@@ -1137,14 +1122,14 @@ namespace EMotionFX
 
 
     // find the first active parent node in a given skeletal LOD
-    uint32 Actor::FindFirstActiveParentBone(uint32 skeletalLOD, uint32 startNodeIndex) const
+    size_t Actor::FindFirstActiveParentBone(uint32 skeletalLOD, size_t startNodeIndex) const
     {
-        uint32 curNodeIndex = startNodeIndex;
+        size_t curNodeIndex = startNodeIndex;
 
         do
         {
             curNodeIndex = mSkeleton->GetNode(curNodeIndex)->GetParentIndex();
-            if (curNodeIndex == MCORE_INVALIDINDEX32)
+            if (curNodeIndex == InvalidIndex)
             {
                 return curNodeIndex;
             }
@@ -1153,9 +1138,9 @@ namespace EMotionFX
             {
                 return curNodeIndex;
             }
-        } while (curNodeIndex != MCORE_INVALIDINDEX32);
+        } while (curNodeIndex != InvalidIndex);
 
-        return MCORE_INVALIDINDEX32;
+        return InvalidIndex;
     }
 
     // make the geometry LOD levels compatible with the skeletal LOD levels
@@ -1169,8 +1154,8 @@ namespace EMotionFX
         for (size_t geomLod = 0; geomLod < numGeomLODs; ++geomLod)
         {
             // for all nodes
-            const uint32 numNodes = mSkeleton->GetNumNodes();
-            for (uint32 n = 0; n < numNodes; ++n)
+            const size_t numNodes = mSkeleton->GetNumNodes();
+            for (size_t n = 0; n < numNodes; ++n)
             {
                 Node* node = mSkeleton->GetNode(n);
 
@@ -1192,8 +1177,8 @@ namespace EMotionFX
                 const uint32* orgVertices = (uint32*)mesh->FindOriginalVertexData(Mesh::ATTRIB_ORGVTXNUMBERS);
 
                 // for all submeshes
-                const uint32 numSubMeshes = mesh->GetNumSubMeshes();
-                for (uint32 s = 0; s < numSubMeshes; ++s)
+                const size_t numSubMeshes = mesh->GetNumSubMeshes();
+                for (size_t s = 0; s < numSubMeshes; ++s)
                 {
                     SubMesh* subMesh = mesh->GetSubMesh(s);
 
@@ -1214,8 +1199,8 @@ namespace EMotionFX
                             if (mSkeleton->GetNode(influence->GetNodeNr())->GetSkeletalLODStatus(static_cast<uint32>(geomLod)) == false)
                             {
                                 // find the first parent bone that is enabled in this LOD
-                                const uint32 newNodeIndex = FindFirstActiveParentBone(static_cast<uint32>(geomLod), influence->GetNodeNr());
-                                if (newNodeIndex == MCORE_INVALIDINDEX32)
+                                const size_t newNodeIndex = FindFirstActiveParentBone(geomLod, influence->GetNodeNr());
+                                if (newNodeIndex == InvalidIndex)
                                 {
                                     MCore::LogWarning("EMotionFX::Actor::MakeGeomLODsCompatibleWithSkeletalLODs() - Failed to find an enabled parent for node '%s' in skeletal LOD %d of actor '%s' (0x%x)", node->GetName(), geomLod, GetFileName(), this);
                                     continue;
@@ -1250,7 +1235,7 @@ namespace EMotionFX
 
 
     // generate a path from the current node towards the root
-    void Actor::GenerateUpdatePathToRoot(uint32 endNodeIndex, AZStd::vector<uint32>& outPath) const
+    void Actor::GenerateUpdatePathToRoot(size_t endNodeIndex, AZStd::vector<size_t>& outPath) const
     {
         outPath.clear();
         outPath.reserve(32);
@@ -1279,7 +1264,7 @@ namespace EMotionFX
         }
     }
 
-    void Actor::SetMotionExtractionNodeIndex(uint32 nodeIndex)
+    void Actor::SetMotionExtractionNodeIndex(size_t nodeIndex)
     {
         mMotionExtractionNode = nodeIndex;
         ActorNotificationBus::Broadcast(&ActorNotificationBus::Events::OnMotionExtractionNodeChanged, this, GetMotionExtractionNode());
@@ -1287,7 +1272,7 @@ namespace EMotionFX
 
     Node* Actor::GetMotionExtractionNode() const
     {
-        if (mMotionExtractionNode != MCORE_INVALIDINDEX32 &&
+        if (mMotionExtractionNode != InvalidIndex &&
             mMotionExtractionNode < mSkeleton->GetNumNodes())
         {
             return mSkeleton->GetNode(mMotionExtractionNode);
@@ -1298,9 +1283,9 @@ namespace EMotionFX
 
     void Actor::ReinitializeMeshDeformers()
     {
-        const uint32 numLODLevels = GetNumLODLevels();
-        const uint32 numNodes = mSkeleton->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numLODLevels = GetNumLODLevels();
+        const size_t numNodes = mSkeleton->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             Node* node = mSkeleton->GetNode(i);
 
@@ -1327,9 +1312,9 @@ namespace EMotionFX
 
         // calculate the inverse bind pose matrices
         const Pose* bindPose = GetBindPose();
-        const uint32 numNodes = mSkeleton->GetNumNodes();
+        const size_t numNodes = mSkeleton->GetNumNodes();
         mInvBindPoseTransforms.resize(numNodes);
-        for (uint32 i = 0; i < numNodes; ++i)
+        for (size_t i = 0; i < numNodes; ++i)
         {
             mInvBindPoseTransforms[i] = bindPose->GetModelSpaceTransform(i).Inversed();
         }
@@ -1509,7 +1494,7 @@ namespace EMotionFX
         outPoints.clear();
 
         const uint32 geomLODLevel = 0;
-        const uint32 numNodes = mSkeleton->GetNumNodes();
+        const size_t numNodes = mSkeleton->GetNumNodes();
 
         for (int nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
         {
@@ -1532,8 +1517,8 @@ namespace EMotionFX
             AZ::Vector3* positions = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_POSITIONS);
 
             // for all submeshes
-            const uint32 numSubMeshes = mesh->GetNumSubMeshes();
-            for (uint32 subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
+            const size_t numSubMeshes = mesh->GetNumSubMeshes();
+            for (size_t subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
             {
                 SubMesh* subMesh = mesh->GetSubMesh(subMeshIndex);
 
@@ -1545,10 +1530,10 @@ namespace EMotionFX
                     const uint32 orgVertex = orgVertices[startVertex + vertexIndex];
 
                     // for all skinning influences of the vertex
-                    const uint32 numInfluences = static_cast<uint32>(layer->GetNumInfluences(orgVertex));
+                    const size_t numInfluences = layer->GetNumInfluences(orgVertex);
                     float maxWeight = 0.0f;
-                    uint32 maxWeightNodeIndex = 0;
-                    for (uint32 i = 0; i < numInfluences; ++i)
+                    size_t maxWeightNodeIndex = 0;
+                    for (size_t i = 0; i < numInfluences; ++i)
                     {
                         SkinInfluence* influence = layer->GetInfluence(orgVertex, i);
                         float weight = influence->GetWeight();
@@ -1577,8 +1562,8 @@ namespace EMotionFX
         Pose pose;
         pose.LinkToActor(this);
 
-        const uint32 numNodes = mNodeMirrorInfos.size();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = mNodeMirrorInfos.size();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             const uint16 motionSource = (GetHasMirrorInfo()) ? GetNodeMirrorInfo(i).mSourceNode : static_cast<uint16>(i);
 
@@ -1699,9 +1684,6 @@ namespace EMotionFX
                 //MCore::LogInfo("best for %s = %f (axis=%d) (flags=%d)", mNodes[i]->GetName(), minDist, bestAxis, bestFlags);
             }
         }
-
-        //for (uint32 i=0; i<numNodes; ++i)
-        //MCore::LogInfo("%s = (axis=%d) (flags=%d)", GetNode(i)->GetName(), mNodeMirrorInfos[i].mAxis, mNodeMirrorInfos[i].mFlags);
     }
 
 
@@ -1766,10 +1748,10 @@ namespace EMotionFX
         uint16 result = MCORE_INVALIDINDEX16;
 
         // find nodes that have the mirrored transform
-        const uint32 numNodes = mSkeleton->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = mSkeleton->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
-            const Transform curNodeTransform = pose.GetModelSpaceTransform(i);
+            const Transform& curNodeTransform = pose.GetModelSpaceTransform(i);
             if (i != nodeIndex)
             {
                 // only check the translation for now
@@ -1791,8 +1773,8 @@ namespace EMotionFX
 
         if (numMatches == 1)
         {
-            const uint32 hierarchyDepth         = mSkeleton->CalcHierarchyDepthForNode(nodeIndex);
-            const uint32 matchingHierarchyDepth = mSkeleton->CalcHierarchyDepthForNode(result);
+            const size_t hierarchyDepth         = mSkeleton->CalcHierarchyDepthForNode(nodeIndex);
+            const size_t matchingHierarchyDepth = mSkeleton->CalcHierarchyDepthForNode(result);
             if (hierarchyDepth != matchingHierarchyDepth)
             {
                 return MCORE_INVALIDINDEX16;
@@ -1838,7 +1820,7 @@ namespace EMotionFX
         *mSkeleton->GetBindPose() = *other->GetSkeleton()->GetBindPose();
     }
 
-    void Actor::SetNumNodes(uint32 numNodes)
+    void Actor::SetNumNodes(size_t numNodes)
     {
         mSkeleton->SetNumNodes(numNodes);
 
@@ -1868,13 +1850,13 @@ namespace EMotionFX
         mSkeleton->GetBindPose()->SetLocalSpaceTransform(mSkeleton->GetNumNodes() - 1, Transform::CreateIdentity());
     }
 
-    Node* Actor::AddNode(uint32 nodeIndex, const char* name, uint32 parentIndex)
+    Node* Actor::AddNode(size_t nodeIndex, const char* name, size_t parentIndex)
     {
         Node* node = Node::Create(name, GetSkeleton());
         node->SetNodeIndex(nodeIndex);
         node->SetParentIndex(parentIndex);
         AddNode(node);
-        if (parentIndex == MCORE_INVALIDINDEX32)
+        if (parentIndex == InvalidIndex)
         {
             GetSkeleton()->AddRootNode(node->GetNodeIndex());
         }
@@ -1885,7 +1867,7 @@ namespace EMotionFX
         return node;
     }
 
-    void Actor::RemoveNode(uint32 nr, bool delMem)
+    void Actor::RemoveNode(size_t nr, bool delMem)
     {
         mSkeleton->RemoveNode(nr, delMem);
 
@@ -2169,20 +2151,20 @@ namespace EMotionFX
 
     //---------------------------------
 
-    Mesh* Actor::GetMesh(uint32 lodLevel, uint32 nodeIndex) const
+    Mesh* Actor::GetMesh(size_t lodLevel, size_t nodeIndex) const
     {
         const AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
         return lodLevels[lodLevel].mNodeInfos[nodeIndex].mMesh;
     }
 
-    MeshDeformerStack* Actor::GetMeshDeformerStack(uint32 lodLevel, uint32 nodeIndex) const
+    MeshDeformerStack* Actor::GetMeshDeformerStack(uint32 lodLevel, size_t nodeIndex) const
     {
         const AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
         return lodLevels[lodLevel].mNodeInfos[nodeIndex].mStack;
     }
 
     // set the mesh for a given node in a given LOD
-    void Actor::SetMesh(uint32 lodLevel, uint32 nodeIndex, Mesh* mesh)
+    void Actor::SetMesh(uint32 lodLevel, size_t nodeIndex, Mesh* mesh)
     {
         AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
         lodLevels[lodLevel].mNodeInfos[nodeIndex].mMesh = mesh;
@@ -2190,14 +2172,14 @@ namespace EMotionFX
 
 
     // set the mesh deformer stack for a given node in a given LOD
-    void Actor::SetMeshDeformerStack(uint32 lodLevel, uint32 nodeIndex, MeshDeformerStack* stack)
+    void Actor::SetMeshDeformerStack(uint32 lodLevel, size_t nodeIndex, MeshDeformerStack* stack)
     {
         AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
         lodLevels[lodLevel].mNodeInfos[nodeIndex].mStack = stack;
     }
 
     // check if the mesh has a skinning deformer (either linear or dual quat)
-    bool Actor::CheckIfHasSkinningDeformer(uint32 lodLevel, uint32 nodeIndex) const
+    bool Actor::CheckIfHasSkinningDeformer(uint32 lodLevel, size_t nodeIndex) const
     {
         // check if there is a mesh
         Mesh* mesh = GetMesh(lodLevel, nodeIndex);
@@ -2217,7 +2199,7 @@ namespace EMotionFX
     }
 
     // remove the mesh for a given node in a given LOD
-    void Actor::RemoveNodeMeshForLOD(uint32 lodLevel, uint32 nodeIndex, bool destroyMesh)
+    void Actor::RemoveNodeMeshForLOD(uint32 lodLevel, size_t nodeIndex, bool destroyMesh)
     {
         AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
 
@@ -2273,8 +2255,8 @@ namespace EMotionFX
 
         // scale the bind pose positions
         Pose* bindPose = GetBindPose();
-        const uint32 numNodes = GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             Transform transform = bindPose->GetLocalSpaceTransform(i);
             transform.mPosition *= scaleFactor;
@@ -2283,7 +2265,7 @@ namespace EMotionFX
         bindPose->ForceUpdateFullModelSpacePose();
 
         // calculate the inverse bind pose matrices
-        for (uint32 i = 0; i < numNodes; ++i)
+        for (size_t i = 0; i < numNodes; ++i)
         {
             mInvBindPoseTransforms[i] = bindPose->GetModelSpaceTransform(i).Inversed();
         }
@@ -2293,10 +2275,10 @@ namespace EMotionFX
         m_staticAabb.SetMax(m_staticAabb.GetMax() * scaleFactor);
 
         // update mesh data for all LOD levels
-        const uint32 numLODs = GetNumLODLevels();
-        for (uint32 lod = 0; lod < numLODs; ++lod)
+        const size_t numLODs = GetNumLODLevels();
+        for (size_t lod = 0; lod < numLODs; ++lod)
         {
-            for (uint32 i = 0; i < numNodes; ++i)
+            for (size_t i = 0; i < numNodes; ++i)
             {
                 Mesh* mesh = GetMesh(lod, i);
                 if (mesh)
@@ -2344,8 +2326,8 @@ namespace EMotionFX
     // Try to figure out which axis points "up" for the motion extraction node.
     Actor::EAxis Actor::FindBestMatchingMotionExtractionAxis() const
     {
-        MCORE_ASSERT(mMotionExtractionNode != MCORE_INVALIDINDEX32);
-        if (mMotionExtractionNode == MCORE_INVALIDINDEX32)
+        MCORE_ASSERT(mMotionExtractionNode != InvalidIndex);
+        if (mMotionExtractionNode == InvalidIndex)
         {
             return AXIS_Y;
         }
@@ -2380,7 +2362,7 @@ namespace EMotionFX
     }
 
 
-    void Actor::SetRetargetRootNodeIndex(uint32 nodeIndex)
+    void Actor::SetRetargetRootNodeIndex(size_t nodeIndex)
     {
         mRetargetRootNode = nodeIndex;
     }
@@ -2388,10 +2370,10 @@ namespace EMotionFX
 
     void Actor::SetRetargetRootNode(Node* node)
     {
-        mRetargetRootNode = node ? node->GetNodeIndex() : MCORE_INVALIDINDEX32;
+        mRetargetRootNode = node ? node->GetNodeIndex() : InvalidIndex;
     }
 
-    void Actor::InsertJointAndParents(AZ::u32 jointIndex, AZStd::unordered_set<AZ::u32>& includedJointIndices)
+    void Actor::InsertJointAndParents(size_t jointIndex, AZStd::unordered_set<size_t>& includedJointIndices)
     {
         // If our joint is already in, then we can skip things.
         if (includedJointIndices.find(jointIndex) != includedJointIndices.end())
@@ -2400,8 +2382,8 @@ namespace EMotionFX
         }
 
         // Add the parent.
-        const AZ::u32 parentIndex = mSkeleton->GetNode(jointIndex)->GetParentIndex();
-        if (parentIndex != InvalidIndex32)
+        const size_t parentIndex = mSkeleton->GetNode(jointIndex)->GetParentIndex();
+        if (parentIndex != InvalidIndex)
         {
             InsertJointAndParents(parentIndex, includedJointIndices);
         }
@@ -2412,10 +2394,10 @@ namespace EMotionFX
 
     void Actor::AutoSetupSkeletalLODsBasedOnSkinningData(const AZStd::vector<AZStd::string>& alwaysIncludeJoints)
     {
-        AZStd::unordered_set<AZ::u32> includedJointIndices;
+        AZStd::unordered_set<size_t> includedJointIndices;
 
-        const AZ::u32 numLODs = GetNumLODLevels();
-        for (AZ::u32 lod = 0; lod < numLODs; ++lod)
+        const size_t numLODs = GetNumLODLevels();
+        for (size_t lod = 0; lod < numLODs; ++lod)
         {
             includedJointIndices.clear();
 
@@ -2425,8 +2407,8 @@ namespace EMotionFX
                 continue;
             }
 
-            const AZ::u32 numJoints = mSkeleton->GetNumNodes();
-            for (AZ::u32 jointIndex = 0; jointIndex < numJoints; ++jointIndex)
+            const size_t numJoints = mSkeleton->GetNumNodes();
+            for (size_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
             {
                 const Mesh* mesh = GetMesh(lod, jointIndex);
                 if (!mesh)
@@ -2438,14 +2420,13 @@ namespace EMotionFX
                 InsertJointAndParents(jointIndex, includedJointIndices);
 
                 // Look at the joints registered in the submeshes.
-                const AZ::u32 numSubMeshes = mesh->GetNumSubMeshes();
-                for (AZ::u32 subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
+                const size_t numSubMeshes = mesh->GetNumSubMeshes();
+                for (size_t subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
                 {
-                    const AZStd::vector<AZ::u32>& subMeshJoints = mesh->GetSubMesh(subMeshIndex)->GetBonesArray();
-                    const AZ::u32 numSubMeshJoints = subMeshJoints.size();
-                    for (AZ::u32 i = 0; i < numSubMeshJoints; ++i)
+                    const AZStd::vector<size_t>& subMeshJoints = mesh->GetSubMesh(subMeshIndex)->GetBonesArray();
+                    for (size_t subMeshJoint : subMeshJoints)
                     {
-                        InsertJointAndParents(subMeshJoints[i], includedJointIndices);
+                        InsertJointAndParents(subMeshJoint, includedJointIndices);
                     }
                 }
             } // for all joints
@@ -2456,7 +2437,7 @@ namespace EMotionFX
                 // Force joints in our "always include list" to be included.
                 for (const AZStd::string& jointName : alwaysIncludeJoints)
                 {
-                    AZ::u32 jointIndex = InvalidIndex32;
+                    size_t jointIndex = InvalidIndex;
                     if (!mSkeleton->FindNodeAndIndexByName(jointName, jointIndex))
                     {
                         if (!jointName.empty())
@@ -2470,14 +2451,14 @@ namespace EMotionFX
                 }
 
                 // Disable all joints first.
-                for (AZ::u32 jointIndex = 0; jointIndex < numJoints; ++jointIndex)
+                for (size_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
                 {
                     mSkeleton->GetNode(jointIndex)->SetSkeletalLODStatus(lod, false);
                 }
 
                 // Enable all our included joints in this skeletal LOD.
                 AZ_TracePrintf("EMotionFX", "[LOD %d] Enabled joints = %zd\n", lod, includedJointIndices.size());
-                for (AZ::u32 jointIndex : includedJointIndices)
+                for (size_t jointIndex : includedJointIndices)
                 {
                     mSkeleton->GetNode(jointIndex)->SetSkeletalLODStatus(lod, true);
                 }
@@ -2485,7 +2466,7 @@ namespace EMotionFX
             else // When we have an empty include list, enable everything.
             {
                 AZ_TracePrintf("EMotionFX", "[LOD %d] Enabled joints = %zd\n", lod, mSkeleton->GetNumNodes());
-                for (AZ::u32 i = 0; i < mSkeleton->GetNumNodes(); ++i)
+                for (size_t i = 0; i < mSkeleton->GetNumNodes(); ++i)
                 {
                     mSkeleton->GetNode(i)->SetSkeletalLODStatus(lod, true);
                 }
@@ -2496,17 +2477,17 @@ namespace EMotionFX
 
     void Actor::PrintSkeletonLODs()
     {
-        const AZ::u32 numLODs = GetNumLODLevels();
-        for (AZ::u32 lod = 0; lod < numLODs; ++lod)
+        const size_t numLODs = GetNumLODLevels();
+        for (size_t lod = 0; lod < numLODs; ++lod)
         {
             AZ_TracePrintf("EMotionFX", "[LOD %d]:", lod);
-            const AZ::u32 numJoints = mSkeleton->GetNumNodes();
-            for (AZ::u32 jointIndex = 0; jointIndex < numJoints; ++jointIndex)
+            const size_t numJoints = mSkeleton->GetNumNodes();
+            for (size_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
             {
                 const Node* joint = mSkeleton->GetNode(jointIndex);
                 if (joint->GetSkeletalLODStatus(lod))
                 {
-                    AZ_TracePrintf("EMotionFX", "\t%s (index=%d)", joint->GetName(), jointIndex);
+                    AZ_TracePrintf("EMotionFX", "\t%s (index=%zu)", joint->GetName(), jointIndex);
                 }
             }
         }
@@ -2530,7 +2511,7 @@ namespace EMotionFX
         // 3) In actor skeleton, remove every node that hasn't been marked.
         // 4) Meanwhile, build a map that represent the child-parent relationship. 
         // 5) After the node index changed, we use the map in 4) to restore the child-parent relationship.
-        AZ::u32 numNodes = mSkeleton->GetNumNodes();
+        size_t numNodes = mSkeleton->GetNumNodes();
         AZStd::vector<bool> flags;
         AZStd::unordered_map<AZStd::string, AZStd::string> childParentMap;
         flags.resize(numNodes);
@@ -2554,7 +2535,7 @@ namespace EMotionFX
         }
 
         // Search the actor skeleton to find all the critical nodes.
-        for (AZ::u32 i = 0; i < numNodes; ++i)
+        for (size_t i = 0; i < numNodes; ++i)
         {
             Node* node = mSkeleton->GetNode(i);
             if (node->GetIsCritical() && nodesToKeep.find(node) == nodesToKeep.end())
@@ -2584,7 +2565,7 @@ namespace EMotionFX
         }
 
         // Remove all the nodes that haven't been marked
-        for (AZ::u32 nodeIndex = numNodes - 1; nodeIndex > 0; nodeIndex--)
+        for (size_t nodeIndex = numNodes - 1; nodeIndex > 0; nodeIndex--)
         {
             if (!flags[nodeIndex])
             {
@@ -2597,7 +2578,7 @@ namespace EMotionFX
 
         // After the node index changed, the parent index become invalid. First, clear all information about children because
         // it's not valid anymore.
-        for (AZ::u32 nodeIndex = 0; nodeIndex < mSkeleton->GetNumNodes(); ++nodeIndex)
+        for (size_t nodeIndex = 0; nodeIndex < mSkeleton->GetNumNodes(); ++nodeIndex)
         {
             Node* node = mSkeleton->GetNode(nodeIndex);
             node->RemoveAllChildNodes();
@@ -2654,8 +2635,8 @@ namespace EMotionFX
         const size_t numLODLevels = lodAssets.size();
 
         lodLevels.clear();
-        SetNumLODLevels(static_cast<uint32>(numLODLevels), /*adjustMorphSetup=*/false);
-        const uint32 numNodes = mSkeleton->GetNumNodes();
+        SetNumLODLevels(numLODLevels, /*adjustMorphSetup=*/false);
+        const size_t numNodes = mSkeleton->GetNumNodes();
 
         // Remove all the materials and add them back based on the meshAsset. Eventually we will remove all the material from Actor and
         // GLActor.
@@ -2679,7 +2660,7 @@ namespace EMotionFX
                 continue;
             }
 
-            const AZ::u32 jointIndex = meshJoint->GetNodeIndex();
+            const size_t jointIndex = meshJoint->GetNodeIndex();
             NodeLODInfo& jointInfo = lodLevels[lodLevel].mNodeInfos[jointIndex];
 
             jointInfo.mMesh = mesh;
@@ -2690,8 +2671,8 @@ namespace EMotionFX
             }
 
             // Add the skinning deformers
-            const AZ::u32 numLayers = mesh->GetNumSharedVertexAttributeLayers();
-            for (AZ::u32 layerNr = 0; layerNr < numLayers; ++layerNr)
+            const size_t numLayers = mesh->GetNumSharedVertexAttributeLayers();
+            for (size_t layerNr = 0; layerNr < numLayers; ++layerNr)
             {
                 EMotionFX::VertexAttributeLayer* vertexAttributeLayer = mesh->GetSharedVertexAttributeLayer(layerNr);
                 if (vertexAttributeLayer->GetType() != EMotionFX::SkinningInfoVertexAttributeLayer::TYPE_ID)
@@ -2703,7 +2684,7 @@ namespace EMotionFX
                     static_cast<EMotionFX::SkinningInfoVertexAttributeLayer*>(vertexAttributeLayer);
                 const AZ::u32 numOrgVerts = skinLayer->GetNumAttributes();
                 AZStd::set<AZ::u32> localJointIndices = skinLayer->CalcLocalJointIndices(numOrgVerts);
-                const AZ::u32 numLocalJoints = static_cast<AZ::u32>(localJointIndices.size());
+                const size_t numLocalJoints = localJointIndices.size();
 
                 // The information about if we want to use dual quat skinning is baked into the mesh chunk and we don't have access to that
                 // anymore. Default to dual quat skinning.
@@ -2801,7 +2782,7 @@ namespace EMotionFX
                 continue;
             }
 
-            const AZ::u32 jointIndex = meshJoint->GetNodeIndex();
+            const size_t jointIndex = meshJoint->GetNodeIndex();
             NodeLODInfo& jointInfo = lodLevels[lodLevel].mNodeInfos[jointIndex];
             Mesh* mesh = jointInfo.mMesh;
 

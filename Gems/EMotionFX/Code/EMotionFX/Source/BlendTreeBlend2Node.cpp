@@ -405,7 +405,7 @@ namespace EMotionFX
 
         FilterEvents(animGraphInstance, m_eventMode, nodeA, nodeB, weight, data);
 
-        if (animGraphInstance->GetActorInstance()->GetActor()->GetMotionExtractionNodeIndex() != MCORE_INVALIDINDEX32)
+        if (animGraphInstance->GetActorInstance()->GetActor()->GetMotionExtractionNodeIndex() != InvalidIndex)
         {
             UpdateMotionExtraction(animGraphInstance, nodeA, nodeB, weight, uniqueData);
         }

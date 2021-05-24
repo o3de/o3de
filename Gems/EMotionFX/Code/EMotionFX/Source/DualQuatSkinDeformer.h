@@ -111,7 +111,7 @@ namespace EMotionFX
          * This does not alter the value returned by GetNumLocalBones().
          * @param numBones The number of bones to pre-allocate space for.
          */
-        MCORE_INLINE void ReserveLocalBones(uint32 numBones)                { m_bones.reserve(numBones); }
+        MCORE_INLINE void ReserveLocalBones(size_t numBones)                { m_bones.reserve(numBones); }
 
     protected:
         /**

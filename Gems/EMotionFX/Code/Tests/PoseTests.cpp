@@ -742,7 +742,7 @@ namespace EMotionFX
             pose.LinkToActorInstance(m_actorInstance);
             pose.InitFromBindPose(m_actor.get());
 
-            AZ::u32 jointIndex = InvalidIndex32;
+            size_t jointIndex = InvalidIndex;
             Node* joint = m_actor->GetSkeleton()->FindNodeAndIndexByName("joint4", jointIndex);
             ASSERT_NE(joint, nullptr) << "Can't find the joint named 'joint4'.";
 
@@ -779,7 +779,7 @@ namespace EMotionFX
         Pose destPose;
         destPose.LinkToActorInstance(m_actorInstance);
         destPose.InitFromBindPose(m_actor.get());
-        for (AZ::u32 i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
+        for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
             const float floatI = static_cast<float>(i);
             Transform transform(AZ::Vector3(0.0f, 0.0f, -floatI),
@@ -798,7 +798,7 @@ namespace EMotionFX
         blendedPose.Blend(&destPose, blendWeight);
 
         // Check the blended result.
-        for (AZ::u32 i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
+        for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
             const Transform& sourceTransform = sourcePose->GetLocalSpaceTransform(i);
             const Transform& destTransform = destPose.GetLocalSpaceTransform(i);
@@ -820,7 +820,7 @@ namespace EMotionFX
         Pose sourcePose;
         sourcePose.LinkToActorInstance(m_actorInstance);
         sourcePose.InitFromBindPose(m_actor.get());
-        for (AZ::u32 i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
+        for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
             const float floatI = static_cast<float>(i);
             Transform transform(AZ::Vector3(floatI, 0.0f, 0.0f),
@@ -837,7 +837,7 @@ namespace EMotionFX
         Pose destPose;
         destPose.LinkToActorInstance(m_actorInstance);
         destPose.InitFromBindPose(m_actor.get());
-        for (AZ::u32 i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
+        for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
             const float floatI = static_cast<float>(i);
             Transform transform(AZ::Vector3(0.0f, 0.0f, -floatI),
@@ -856,7 +856,7 @@ namespace EMotionFX
         blendedPose.InitFromPose(&sourcePose);
         blendedPose.BlendAdditiveUsingBindPose(&destPose, blendWeight);
 
-        for (AZ::u32 i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
+        for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
             const Transform& bindPoseTransform = bindPose->GetLocalSpaceTransform(i);
             const Transform& sourceTransform = sourcePose.GetLocalSpaceTransform(i);
@@ -897,7 +897,7 @@ namespace EMotionFX
         poseB.LinkToActorInstance(m_actorInstance);
         poseB.InitFromBindPose(m_actor.get());
 
-        for (AZ::u32 i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
+        for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
             const float floatI = static_cast<float>(i);
             const Transform transformA(AZ::Vector3(floatI, 0.0f, 0.0f),
@@ -920,7 +920,7 @@ namespace EMotionFX
             default: { ASSERT_TRUE(false) << "Case not handled."; }
         }
 
-        for (AZ::u32 i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
+        for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
             const Transform& transformA = poseA.GetLocalSpaceTransform(i);
             const Transform& transformB = poseB.GetLocalSpaceTransform(i);
@@ -960,7 +960,7 @@ namespace EMotionFX
         poseB.LinkToActorInstance(m_actorInstance);
         poseB.InitFromBindPose(m_actor.get());
 
-        for (AZ::u32 i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
+        for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
             const float floatI = static_cast<float>(i);
             const Transform transformA(AZ::Vector3(floatI, 0.0f, 0.0f), AZ::Quaternion::CreateIdentity());
@@ -982,7 +982,7 @@ namespace EMotionFX
         poseSum.InitFromPose(&poseA);
         poseSum.Sum(&poseB, weight);
 
-        for (AZ::u32 i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
+        for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
             const Transform& transformA = poseA.GetLocalSpaceTransform(i);
             const Transform& transformB = poseB.GetLocalSpaceTransform(i);
@@ -1012,7 +1012,7 @@ namespace EMotionFX
         poseB.LinkToActorInstance(m_actorInstance);
         poseB.InitFromBindPose(m_actor.get());
 
-        for (AZ::u32 i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
+        for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
             const float floatI = static_cast<float>(i);
             const Transform transformA(AZ::Vector3(floatI, floatI, floatI), AZ::Quaternion::CreateIdentity());
@@ -1026,7 +1026,7 @@ namespace EMotionFX
         poseRel.InitFromPose(&poseA);
         poseRel.MakeRelativeTo(poseB);
 
-        for (AZ::u32 i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
+        for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
             const Transform& transformRel = poseRel.GetLocalSpaceTransform(i);
 
@@ -1095,7 +1095,7 @@ namespace EMotionFX
         }
         poseB.InitFromBindPose(m_actor.get());
 
-        for (AZ::u32 i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
+        for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
             const float floatI = static_cast<float>(i);
             const Transform transformA(AZ::Vector3(floatI, 0.0f, 0.0f),
@@ -1133,7 +1133,7 @@ namespace EMotionFX
             default: { ASSERT_TRUE(false) << "Case not handled."; }
         }
 
-        for (AZ::u32 i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
+        for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
             const Transform& transformA = poseA.GetLocalSpaceTransform(i);
             const Transform& transformB = poseB.GetLocalSpaceTransform(i);
@@ -1222,7 +1222,7 @@ namespace EMotionFX
         pose.Zero();
 
         // Check if local space transforms are correctly zeroed.
-        for (AZ::u32 i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
+        for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
             EXPECT_EQ(pose.GetLocalSpaceTransform(i), Transform::CreateZero());
         }
@@ -1244,7 +1244,7 @@ namespace EMotionFX
         AZ::SimpleLcgRandom random;
         random.SetSeed(875960);
 
-        for (AZ::u32 i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
+        for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
             Transform transformRandomRot(AZ::Vector3::CreateZero(),
                 CreateRandomUnnormalizedQuaternion(random));
@@ -1255,7 +1255,7 @@ namespace EMotionFX
 
         pose.NormalizeQuaternions();
 
-        for (AZ::u32 i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
+        for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
             CheckIfRotationIsNormalized(pose.GetLocalSpaceTransform(i).mRotation);
         }

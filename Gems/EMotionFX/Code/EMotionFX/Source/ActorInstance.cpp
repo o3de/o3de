@@ -1356,7 +1356,7 @@ namespace EMotionFX
 
     void ActorInstance::MotionExtractionCompensate(Transform& inOutMotionExtractionNodeTransform, EMotionExtractionFlags motionExtractionFlags) const
     {
-        MCORE_ASSERT(mActor->GetMotionExtractionNodeIndex() != MCORE_INVALIDINDEX32);
+        MCORE_ASSERT(mActor->GetMotionExtractionNodeIndex() != InvalidIndex);
         Transform bindPoseTransform = mTransformData->GetBindPose()->GetLocalSpaceTransform(mActor->GetMotionExtractionNodeIndex());
 
         MotionExtractionCompensate(inOutMotionExtractionNodeTransform, bindPoseTransform, motionExtractionFlags);
@@ -1365,8 +1365,8 @@ namespace EMotionFX
     // Remove the trajectory transform from the motion extraction node to prevent double transformation.
     void ActorInstance::MotionExtractionCompensate(EMotionExtractionFlags motionExtractionFlags)
     {
-        const uint32 motionExtractIndex = mActor->GetMotionExtractionNodeIndex();
-        if (motionExtractIndex == MCORE_INVALIDINDEX32)
+        const size_t motionExtractIndex = mActor->GetMotionExtractionNodeIndex();
+        if (motionExtractIndex == InvalidIndex)
         {
             return;
         }
@@ -1396,7 +1396,7 @@ namespace EMotionFX
     // Apply the motion extraction delta transform to the actor instance.
     void ActorInstance::ApplyMotionExtractionDelta(const Transform& trajectoryDelta)
     {
-        if (mActor->GetMotionExtractionNodeIndex() == MCORE_INVALIDINDEX32)
+        if (mActor->GetMotionExtractionNodeIndex() == InvalidIndex)
         {
             return;
         }

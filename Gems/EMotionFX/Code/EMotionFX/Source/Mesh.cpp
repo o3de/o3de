@@ -850,7 +850,7 @@ namespace EMotionFX
 
     //---------------------------------------------------------------
 
-    VertexAttributeLayer* Mesh::GetSharedVertexAttributeLayer(uint32 layerNr)
+    VertexAttributeLayer* Mesh::GetSharedVertexAttributeLayer(size_t layerNr)
     {
         MCORE_ASSERT(layerNr < mSharedVertexAttributes.size());
         return mSharedVertexAttributes[layerNr];

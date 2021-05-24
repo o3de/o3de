@@ -443,7 +443,7 @@ namespace EMotionFX
         FilterEvents(animGraphInstance, eventMode, nodeA, nodeB, weight, data);
 
         // Output motion extraction deltas.
-        if (animGraphInstance->GetActorInstance()->GetActor()->GetMotionExtractionNodeIndex() != MCORE_INVALIDINDEX32)
+        if (animGraphInstance->GetActorInstance()->GetActor()->GetMotionExtractionNodeIndex() != InvalidIndex)
         {
             UpdateMotionExtraction(animGraphInstance, nodeA, nodeB, weight, uniqueData);
         }

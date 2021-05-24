@@ -632,15 +632,10 @@ namespace EMotionFX
             NodeInfo& nodeInfo = m_nodeInfos[nodeIndex];
 
             // Is bone?
-            nodeInfo.m_isBone = false;
-            for (AZ::u32 lodLevel = 0; lodLevel < numLodLevels; ++lodLevel)
+            nodeInfo.m_isBone = AZStd::any_of(begin(boneListPerLodLevel), end(boneListPerLodLevel), [nodeIndex](const AZStd::vector<uint32>& lodLevel)
             {
-                if (AZStd::find(begin(boneListPerLodLevel[lodLevel]), end(boneListPerLodLevel[lodLevel]), nodeIndex) != end(boneListPerLodLevel[lodLevel]))
-                {
-                    nodeInfo.m_isBone = true;
-                    break;
-                }
-            }
+                return AZStd::find(begin(lodLevel), end(lodLevel), nodeIndex) != end(lodLevel);
+            });
 
             // Has mesh?
             nodeInfo.m_hasMesh = false;

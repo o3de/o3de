@@ -168,7 +168,7 @@ namespace EMStudio
         mNodeTable->setRowCount(mNodeGroup->GetNumNodes());
 
         // set header items for the table
-        AZStd::string headerText = AZStd::string::format("%s Nodes (%i / %i)", ((mNodeGroup->GetIsEnabledOnDefault()) ? "Enabled" : "Disabled"), mNodeGroup->GetNumNodes(), mActor->GetNumNodes());
+        AZStd::string headerText = AZStd::string::format("%s Nodes (%i / %zu)", ((mNodeGroup->GetIsEnabledOnDefault()) ? "Enabled" : "Disabled"), mNodeGroup->GetNumNodes(), mActor->GetNumNodes());
         QTableWidgetItem* nameHeaderItem = new QTableWidgetItem(headerText.c_str());
         nameHeaderItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignCenter);
         mNodeTable->setHorizontalHeaderItem(0, nameHeaderItem);

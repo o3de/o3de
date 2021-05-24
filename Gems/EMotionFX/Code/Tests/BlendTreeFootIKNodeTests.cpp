@@ -136,10 +136,10 @@ namespace EMotionFX
         void ValidateFootHeight(BlendTreeFootIKNode::LegId legId, const char* jointName, float height, float tolerance)
         {
             // Check the left foot height.
-            AZ::u32 footIndex;
+            size_t footIndex = InvalidIndex;
             Skeleton* skeleton = m_actor->GetSkeleton();
             skeleton->FindNodeAndIndexByName(jointName, footIndex);
-            ASSERT_NE(footIndex, MCORE_INVALIDINDEX32);
+            ASSERT_NE(footIndex, InvalidIndex);
             EMotionFX::Transform transform = m_actorInstance->GetTransformData()->GetCurrentPose()->GetWorldSpaceTransform(footIndex);
             const BlendTreeFootIKNode::UniqueData* uniqueData = static_cast<const BlendTreeFootIKNode::UniqueData*>(m_animGraphInstance->FindOrCreateUniqueNodeData(m_ikNode));
             const float correction = (m_actorInstance->GetWorldSpaceTransform().mRotation.TransformVector(AZ::Vector3(0.0f, 0.0f, uniqueData->m_legs[legId].m_footHeight))).GetZ();

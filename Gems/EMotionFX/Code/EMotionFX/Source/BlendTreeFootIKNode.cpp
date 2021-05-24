@@ -1021,7 +1021,7 @@ namespace EMotionFX
 
         // Adjust the hip position by moving it up or down if that would result in a more natural look.
         float hipHeightAdjustment = 0.0f;
-        if (GetAdjustHip(animGraphInstance) && uniqueData->m_hipJointIndex != MCORE_INVALIDINDEX32)
+        if (GetAdjustHip(animGraphInstance) && uniqueData->m_hipJointIndex != InvalidIndex)
         {
             hipHeightAdjustment = AdjustHip(animGraphInstance, uniqueData, inputPose->GetPose(), outputPose->GetPose(), intersectionResults, true /* allowHipAdjust */);
         }

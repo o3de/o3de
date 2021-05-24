@@ -144,11 +144,11 @@ namespace EMStudio
         mRemoveNodesButton->setEnabled((mNodeTable->rowCount() != 0) && (mNodeTable->selectedItems().size() != 0));
 
         // counter for attachment nodes
-        uint16 numAttachmentNodes = 0;
+        size_t numAttachmentNodes = 0;
 
         // set the row count
-        const uint16 numNodes = mActor->GetNumNodes();
-        for (uint16 i = 0; i < numNodes; ++i)
+        const size_t numNodes = mActor->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             // get the nodegroup
             EMotionFX::Node* node = mActor->GetSkeleton()->GetNode(i);
@@ -162,7 +162,7 @@ namespace EMStudio
         mNodeTable->setRowCount(numAttachmentNodes);
 
         // set header items for the table
-        QTableWidgetItem* nameHeaderItem = new QTableWidgetItem(AZStd::string::format("Attachment Nodes (%i / %i)", numAttachmentNodes, mActor->GetNumNodes()).c_str());
+        QTableWidgetItem* nameHeaderItem = new QTableWidgetItem(AZStd::string::format("Attachment Nodes (%zu / %zu)", numAttachmentNodes, mActor->GetNumNodes()).c_str());
         nameHeaderItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignCenter);
         mNodeTable->setHorizontalHeaderItem(0, nameHeaderItem);
 

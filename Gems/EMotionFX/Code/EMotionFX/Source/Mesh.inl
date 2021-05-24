@@ -30,7 +30,7 @@ MCORE_INLINE size_t Mesh::GetNumSubMeshes() const
 }
 
 
-MCORE_INLINE SubMesh* Mesh::GetSubMesh(uint32 nr) const
+MCORE_INLINE SubMesh* Mesh::GetSubMesh(size_t nr) const
 {
     MCORE_ASSERT(nr < mSubMeshes.size());
     return mSubMeshes[nr];

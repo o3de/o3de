@@ -293,7 +293,7 @@ namespace CommandSystem
     CommandRemoveMotionEventTrack::CommandRemoveMotionEventTrack(MCore::Command* orgCommand)
         : MCore::Command("RemoveMotionEventTrack", orgCommand)
     {
-        mOldTrackIndex = MCORE_INVALIDINDEX32;
+        mOldTrackIndex = InvalidIndex;
     }
 
 
@@ -586,9 +586,9 @@ namespace CommandSystem
         }
 
         // add the motion event and check if everything worked fine
-        mMotionEventNr = eventTrack->AddEvent(m_startTime, m_endTime, AZStd::move(m_eventDatas.value_or(EMotionFX::EventDataSet())));
+        mMotionEventNr = eventTrack->AddEvent(m_startTime, m_endTime, m_eventDatas.value_or(EMotionFX::EventDataSet()));
 
-        if (mMotionEventNr == MCORE_INVALIDINDEX32)
+        if (mMotionEventNr == InvalidIndex)
         {
             outResult = AZStd::string::format("Cannot create motion event. The returned motion event index is not valid.");
             return false;

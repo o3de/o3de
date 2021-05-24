@@ -930,7 +930,7 @@ namespace EMotionFX
                 }
 
                 // check if we have an active node for the given item
-                size_t index = MCORE_INVALIDINDEX32;
+                size_t index = InvalidIndex;
                 for (size_t x = 0; x < numActiveNodes; ++x)
                 {
                     if (mActiveNodes[x]->GetId() == curItem->mNodeId)
@@ -941,7 +941,7 @@ namespace EMotionFX
                 }
 
                 // the node got deactivated, finalize the item
-                if (index == MCORE_INVALIDINDEX32)
+                if (index == InvalidIndex)
                 {
                     curItem->mGlobalWeights.Optimize(0.0001f);
                     curItem->mLocalWeights.Optimize(0.0001f);

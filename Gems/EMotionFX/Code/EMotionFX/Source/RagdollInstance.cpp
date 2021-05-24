@@ -67,7 +67,7 @@ namespace EMotionFX
                 }
                 else
                 {
-                    m_ragdollNodeIndices[jointIndex] = MCORE_INVALIDINDEX32;
+                    m_ragdollNodeIndices[jointIndex] = InvalidIndex;
                 }
             }
 
@@ -256,7 +256,7 @@ namespace EMotionFX
     const AZ::Outcome<size_t> RagdollInstance::GetRagdollNodeIndex(size_t jointIndex) const
     {
         const size_t ragdollNodeIndex = m_ragdollNodeIndices[jointIndex];
-        if (ragdollNodeIndex == MCORE_INVALIDINDEX32)
+        if (ragdollNodeIndex == InvalidIndex)
         {
             return AZ::Failure();
         }

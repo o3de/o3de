@@ -1165,6 +1165,10 @@ namespace EMotionFX
         }
 
         actor->SetMotionExtractionNodeIndex(fileInformation.mMotionExtractionNodeIndex);
+        if (fileInformation.mMotionExtractionNodeIndex != MCORE_INVALIDINDEX32)
+        {
+            actor->SetMotionExtractionNodeIndex(fileInformation.mMotionExtractionNodeIndex);
+        }
         //  actor->SetRetargetOffset( fileInformation.mRetargetRootOffset );
         actor->SetUnitType(static_cast<MCore::Distance::EUnitType>(fileInformation.mUnitType));
         actor->SetFileUnitType(actor->GetUnitType());
@@ -1211,8 +1215,14 @@ namespace EMotionFX
             MCore::LogDetailedInfo("   + UnitType               = %d", fileInformation.mUnitType);
         }
 
-        actor->SetMotionExtractionNodeIndex(fileInformation.mMotionExtractionNodeIndex);
-        actor->SetRetargetRootNodeIndex(fileInformation.mRetargetRootNodeIndex);
+        if (fileInformation.mMotionExtractionNodeIndex != MCORE_INVALIDINDEX32)
+        {
+            actor->SetMotionExtractionNodeIndex(fileInformation.mMotionExtractionNodeIndex);
+        }
+        if (fileInformation.mRetargetRootNodeIndex != MCORE_INVALIDINDEX32)
+        {
+            actor->SetRetargetRootNodeIndex(fileInformation.mRetargetRootNodeIndex);
+        }
         actor->SetUnitType(static_cast<MCore::Distance::EUnitType>(fileInformation.mUnitType));
         actor->SetFileUnitType(actor->GetUnitType());
 
@@ -1258,8 +1268,14 @@ namespace EMotionFX
             MCore::LogDetailedInfo("   + UnitType               = %d", fileInformation.mUnitType);
         }
 
-        actor->SetMotionExtractionNodeIndex(fileInformation.mMotionExtractionNodeIndex);
-        actor->SetRetargetRootNodeIndex(fileInformation.mRetargetRootNodeIndex);
+        if (fileInformation.mMotionExtractionNodeIndex != MCORE_INVALIDINDEX32)
+        {
+            actor->SetMotionExtractionNodeIndex(fileInformation.mMotionExtractionNodeIndex);
+        }
+        if (fileInformation.mRetargetRootNodeIndex != MCORE_INVALIDINDEX32)
+        {
+            actor->SetRetargetRootNodeIndex(fileInformation.mRetargetRootNodeIndex);
+        }
         actor->SetUnitType(static_cast<MCore::Distance::EUnitType>(fileInformation.mUnitType));
         actor->SetFileUnitType(actor->GetUnitType());
         actor->SetOptimizeSkeleton(fileInformation.mOptimizeSkeleton == 0? false : true);

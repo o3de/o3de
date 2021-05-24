@@ -53,7 +53,7 @@ namespace EMotionFX
 
         void LinkToActorInstance(const ActorInstance* actorInstance, uint8 initialFlags = 0);
         void LinkToActor(const Actor* actor, uint8 initialFlags = 0, bool clearAllFlags = true);
-        void SetNumTransforms(uint32 numTransforms);
+        void SetNumTransforms(size_t numTransforms);
 
         void ApplyMorphWeightsToActorInstance();
         void ZeroMorphWeights();
@@ -63,20 +63,20 @@ namespace EMotionFX
         void ForceUpdateFullLocalSpacePose();
         void ForceUpdateFullModelSpacePose();
 
-        const Transform& GetLocalSpaceTransform(uint32 nodeIndex) const;
-        const Transform& GetModelSpaceTransform(uint32 nodeIndex) const;
-        Transform GetWorldSpaceTransform(uint32 nodeIndex) const;
+        const Transform& GetLocalSpaceTransform(size_t nodeIndex) const;
+        const Transform& GetModelSpaceTransform(size_t nodeIndex) const;
+        Transform GetWorldSpaceTransform(size_t nodeIndex) const;
 
-        void GetLocalSpaceTransform(uint32 nodeIndex, Transform* outResult) const;
-        void GetModelSpaceTransform(uint32 nodeIndex, Transform* outResult) const;
-        void GetWorldSpaceTransform(uint32 nodeIndex, Transform* outResult) const;
+        void GetLocalSpaceTransform(size_t nodeIndex, Transform* outResult) const;
+        void GetModelSpaceTransform(size_t nodeIndex, Transform* outResult) const;
+        void GetWorldSpaceTransform(size_t nodeIndex, Transform* outResult) const;
 
-        void SetLocalSpaceTransform(uint32 nodeIndex, const Transform& newTransform, bool invalidateModelSpaceTransforms = true);
-        void SetModelSpaceTransform(uint32 nodeIndex, const Transform& newTransform, bool invalidateChildModelSpaceTransforms = true);
-        void SetWorldSpaceTransform(uint32 nodeIndex, const Transform& newTransform, bool invalidateChildModelSpaceTransforms = true);
+        void SetLocalSpaceTransform(size_t nodeIndex, const Transform& newTransform, bool invalidateModelSpaceTransforms = true);
+        void SetModelSpaceTransform(size_t nodeIndex, const Transform& newTransform, bool invalidateChildModelSpaceTransforms = true);
+        void SetWorldSpaceTransform(size_t nodeIndex, const Transform& newTransform, bool invalidateChildModelSpaceTransforms = true);
 
-        void UpdateModelSpaceTransform(uint32 nodeIndex) const;
-        void UpdateLocalSpaceTransform(uint32 nodeIndex) const;
+        void UpdateModelSpaceTransform(size_t nodeIndex) const;
+        void UpdateLocalSpaceTransform(size_t nodeIndex) const;
 
         void CompensateForMotionExtraction(EMotionExtractionFlags motionExtractionFlags = (EMotionExtractionFlags)0);
         void CompensateForMotionExtractionDirect(EMotionExtractionFlags motionExtractionFlags = (EMotionExtractionFlags)0);
@@ -202,7 +202,7 @@ namespace EMotionFX
         const Actor*                                mActor;
         const Skeleton*                             mSkeleton;
 
-        void RecursiveInvalidateModelSpaceTransforms(const Actor* actor, uint32 nodeIndex);
+        void RecursiveInvalidateModelSpaceTransforms(const Actor* actor, size_t nodeIndex);
 
         /**
          * Perform a non-mixed blend into the specified destination pose.

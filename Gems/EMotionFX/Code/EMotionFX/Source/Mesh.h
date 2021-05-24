@@ -242,7 +242,7 @@ namespace EMotionFX
          * @param nr The SubMesh number to get.
          * @result A pointer to the SubMesh.
          */
-        MCORE_INLINE SubMesh* GetSubMesh(uint32 nr) const;
+        MCORE_INLINE SubMesh* GetSubMesh(size_t nr) const;
 
         /**
          * Set the value for a given submesh.
@@ -279,7 +279,7 @@ namespace EMotionFX
          * @param layerNr The layer number to get the attributes from. Must be below the value returned by GetNumSharedVertexAttributeLayers().
          * @result A pointer to the array of shared vertex attributes. You can typecast this pointer if you know the type of the vertex attributes.
          */
-        VertexAttributeLayer* GetSharedVertexAttributeLayer(uint32 layerNr);
+        VertexAttributeLayer* GetSharedVertexAttributeLayer(size_t layerNr);
 
         /**
          * Adds a new layer of shared vertex attributes.

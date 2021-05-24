@@ -168,7 +168,7 @@ namespace ExporterLib
             {
                 // rename the morph target
                 AZStd::string morphTargetName;
-                morphTargetName = AZStd::string::format("Morph Target %d", MCore::GetIDGenerator().GenerateID());
+                morphTargetName = AZStd::string::format("Morph Target %zu", MCore::GetIDGenerator().GenerateID());
                 MCore::LogWarning("The morph target has an empty name. The morph target will be automatically renamed to '%s'.", morphTargetName.c_str());
                 morphTarget->SetName(morphTargetName.c_str());
             }

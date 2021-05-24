@@ -70,7 +70,7 @@ namespace EMotionFX
          * @param nameID The name ID, generated using the MCore::GetStringIdPool().
          * @param skeleton The skeleton where this node will belong to, you still need to manually add it to the skeleton though.
          */
-        static Node* Create(uint32 nameID, Skeleton* skeleton);
+        static Node* Create(size_t nameID, Skeleton* skeleton);
 
         /**
          * Clone the node.
@@ -85,14 +85,14 @@ namespace EMotionFX
          * In that case this node is a root node.
          * @param parentNodeIndex The node index of the node where to link this node to.
          */
-        void SetParentIndex(uint32 parentNodeIndex);
+        void SetParentIndex(size_t parentNodeIndex);
 
         /**
          * Get the parent node's index.
          * This is either a valid index, or MCORE_INVALIDINDEX32 in case there is no parent node.
          * @result The index of the parent node, or MCORE_INVALIDINDEX32 in case this node has no parent.
          */
-        MCORE_INLINE uint32 GetParentIndex() const                              { return mParentIndex; }
+        MCORE_INLINE size_t GetParentIndex() const                              { return mParentIndex; }
 
         /**
          * Get the parent node as node pointer.
@@ -105,7 +105,7 @@ namespace EMotionFX
          * @param parents The array to which parent and the parents of the parents of the node will be added.
          * @param clearParentsArray When true the given parents array will be cleared before filling it.
          */
-        void RecursiveCollectParents(AZStd::vector<uint32>& parents, bool clearParentsArray = true) const;
+        void RecursiveCollectParents(AZStd::vector<size_t>& parents, bool clearParentsArray = true) const;
 
         /**
          * Set the node name.
@@ -155,14 +155,14 @@ namespace EMotionFX
          * same ID number.
          * @result The node ID number, which can be used for fast compares between nodes.
          */
-        MCORE_INLINE uint32 GetID() const                                       { return mNameID; }
+        MCORE_INLINE size_t GetID() const                                       { return mNameID; }
 
         /**
          * Get the semantic name ID.
          * To get the name you can also use GetSemanticName() and GetSemanticNameString().
          * @result The semantic name ID.
          */
-        MCORE_INLINE uint32 GetSemanticID() const                               { return mSemanticNameID; }
+        MCORE_INLINE size_t GetSemanticID() const                               { return mSemanticNameID; }
 
         /**
          * Get the number of child nodes attached to this node.
@@ -175,48 +175,48 @@ namespace EMotionFX
          * The current node is not included in the count.
          * @return The total number of nodes down the hierarchy of this node.
          */
-        uint32 GetNumChildNodesRecursive() const;
+        size_t GetNumChildNodesRecursive() const;
 
         /**
          * Get a given child's node index.
          * @param nr The child number.
          * @result The index of the child node, which is a node number inside the actor.
          */
-        MCORE_INLINE uint32 GetChildIndex(uint32 nr) const                      { return mChildIndices[nr]; }
+        MCORE_INLINE size_t GetChildIndex(size_t nr) const                      { return mChildIndices[nr]; }
 
         /**
          * Checks if the given node is a child of this node.
          * @param nodeIndex The node to check whether it is a child or not.
          * @result True if the given node is a child, false if not.
          */
-        MCORE_INLINE bool CheckIfIsChildNode(uint32 nodeIndex) const            { return (AZStd::find(begin(mChildIndices), end(mChildIndices), nodeIndex) != end(mChildIndices)); }
+        MCORE_INLINE bool CheckIfIsChildNode(size_t nodeIndex) const            { return (AZStd::find(begin(mChildIndices), end(mChildIndices), nodeIndex) != end(mChildIndices)); }
 
         /**
          * Add a child to this node.
          * @param nodeIndex The index of the child node to add.
          */
-        void AddChild(uint32 nodeIndex);
+        void AddChild(size_t nodeIndex);
 
         /**
          * Set the value for a given child node.
          * @param childNr The child number, which must be in range of [0..GetNumChildNodes()-1].
          * @param childNodeIndex The node index for this child.
          */
-        void SetChild(uint32 childNr, uint32 childNodeIndex);
+        void SetChild(size_t childNr, size_t childNodeIndex);
 
         /**
          * Resize the array of child nodes.
          * This will grow the child node array so that the value returned by GetNumChildNodes() will return the same value as you specify as parameter here.
          * @param numChildNodes The number of child nodes to create. Be sure to initialize all of the child nodes using SetChild() though!
          */
-        void SetNumChildNodes(uint32 numChildNodes);
+        void SetNumChildNodes(size_t numChildNodes);
 
         /**
          * Preallocate the array of child nodes.
          * Unlike SetNumChildNodes, this will NOT grow the child node array as reported by GetNumChildNodes(). However, it internally pre-allocates memory to make the AddChild() calls faster.
          * @param numChildNodes The number of child nodes to pre-allocate space for.
          */
-        void PreAllocNumChildNodes(uint32 numChildNodes);
+        void PreAllocNumChildNodes(size_t numChildNodes);
 
         /**
          * Removes a given child (does not delete it from memory though).
@@ -224,7 +224,7 @@ namespace EMotionFX
          * So you have to adjust the parent pointer of the child node manually.
          * @param nodeIndex The index of the child to remove.
          */
-        void RemoveChild(uint32 nodeIndex);
+        void RemoveChild(size_t nodeIndex);
 
         /**
          * Removes all child nodes (not from memory though but just clears the childs pointers in this node).
@@ -273,7 +273,7 @@ namespace EMotionFX
          * @result A pointer to the node attribute.
          * @see FindNodeAttributeNumber
          */
-        NodeAttribute* GetAttribute(uint32 attributeNr);
+        NodeAttribute* GetAttribute(size_t attributeNr);
 
         /**
          * Get a given node attribute of a given type.
@@ -289,7 +289,7 @@ namespace EMotionFX
          * @param attributeTypeID The attribute type ID (returned by NodeAttribute::GetType()).
          * @result The first located attribute number which is of the given type, or MCORE_INVALIDINDEX32 when the attribute of this type could not be located.
          */
-        uint32 FindAttributeNumber(uint32 attributeTypeID) const;
+        size_t FindAttributeNumber(uint32 attributeTypeID) const;
 
         /**
          * Removes all node attributes from this node.
@@ -301,7 +301,7 @@ namespace EMotionFX
          * Remove the given node attribute from this node.
          * @param index The index of the node attribute to remove.
          */
-        void RemoveAttribute(uint32 index);
+        void RemoveAttribute(size_t index);
 
         /**
          * Remove the given node attribute from this node which occurs at the given position.
@@ -311,14 +311,14 @@ namespace EMotionFX
          * @param occurrence The number of node attributes which will be skipped until we reached the
          *                   node to remove.
          */
-        void RemoveAttributeByType(uint32 attributeTypeID, uint32 occurrence = 0);
+        void RemoveAttributeByType(uint32 attributeTypeID, size_t occurrence = 0);
 
         /**
          * Removes all node attributes from this node of the given type.
          * @param attributeTypeID The attribute type ID (returned by NodeAttribute::GetType()).
          * @result The number of attributes that have been removed.
          */
-        uint32 RemoveAllAttributesByType(uint32 attributeTypeID);
+        size_t RemoveAllAttributesByType(uint32 attributeTypeID);
 
         //--------------------------------------------
 
@@ -328,7 +328,7 @@ namespace EMotionFX
          * So Actor::GetNode( nodeIndex ) will return this node.
          * @param index The index to use.
          */
-        void SetNodeIndex(uint32 index);
+        void SetNodeIndex(size_t index);
 
         /**
          * Get the node index value.
@@ -336,7 +336,7 @@ namespace EMotionFX
          * So Actor::GetNode( nodeIndex ) will return this node.
          * @result The index of the node.
          */
-        MCORE_INLINE uint32 GetNodeIndex() const                                        { return mNodeIndex; }
+        MCORE_INLINE size_t GetNodeIndex() const                                        { return mNodeIndex; }
 
         //------------------------------
 
@@ -364,7 +364,7 @@ namespace EMotionFX
          * @param lodLevel The skeletal LOD level to check.
          * @result Returns true when this node is enabled in the specified LOD level. Otherwise false is returned.
          */
-        MCORE_INLINE bool GetSkeletalLODStatus(uint32 lodLevel) const                   { return (mSkeletalLODs & (1 << lodLevel)) != 0; }
+        MCORE_INLINE bool GetSkeletalLODStatus(size_t lodLevel) const                   { return (mSkeletalLODs & (1 << lodLevel)) != 0; }
 
         //--------------------------------------------
 
@@ -415,13 +415,13 @@ namespace EMotionFX
         void SetIsAttachmentNode(bool isAttachmentNode);
 
     private:
-        uint32      mNodeIndex;         /**< The node index, which is the index into the array of nodes inside the Skeleton class. */
-        uint32      mParentIndex;       /**< The parent node index, or MCORE_INVALIDINDEX32 when there is no parent. */
+        size_t      mNodeIndex;         /**< The node index, which is the index into the array of nodes inside the Skeleton class. */
+        size_t      mParentIndex;       /**< The parent node index, or MCORE_INVALIDINDEX32 when there is no parent. */
         uint32      mSkeletalLODs;      /**< The skeletal LOD status values. Each bit represents if this node is enabled or disabled in the given LOD. */
-        uint32      mNameID;            /**< The ID, which is generated from the name. You can use this for fast compares between nodes. */
-        uint32      mSemanticNameID;    /**< The semantic name ID, for example "LeftHand" or "RightFoot" or so, this can be used for retargeting. */
+        size_t      mNameID;            /**< The ID, which is generated from the name. You can use this for fast compares between nodes. */
+        size_t      mSemanticNameID;    /**< The semantic name ID, for example "LeftHand" or "RightFoot" or so, this can be used for retargeting. */
         Skeleton*   mSkeleton;          /**< The skeleton where this node belongs to. */
-        AZStd::vector<uint32>            mChildIndices;      /**< The indices that point to the child nodes. */
+        AZStd::vector<size_t>            mChildIndices;      /**< The indices that point to the child nodes. */
         AZStd::vector<NodeAttribute*>    mAttributes;        /**< The node attributes. */
         uint8                           mNodeFlags;         /**< The node flags are used to store boolean attributes of the node as single bits. */
 
@@ -437,7 +437,7 @@ namespace EMotionFX
          * @param nameID The name ID, generated using the MCore::GetStringIdPool().
          * @param skeleton The skeleton where this node will belong to.
          */
-        Node(uint32 nameID, Skeleton* skeleton);
+        Node(size_t nameID, Skeleton* skeleton);
 
         /**
          * The destructor.
@@ -450,6 +450,6 @@ namespace EMotionFX
          * Recursively count the number of nodes down the hierarchy of this node.
          * @param numNodes The integer containing the current node count. This counter will be increased during recursion.
          */
-        void RecursiveCountChildNodes(uint32& numNodes);
+        void RecursiveCountChildNodes(size_t& numNodes);
     };
 } // namespace EMotionFX

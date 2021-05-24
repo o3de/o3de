@@ -44,14 +44,13 @@ namespace EMotionFX
     {
         Skeleton* result = Skeleton::Create();
 
-        const uint32 numNodes = m_nodes.size();
-        result->ReserveNodes(numNodes);
+        result->ReserveNodes(m_nodes.size());
         result->m_rootNodes = m_rootNodes;
 
         // clone the nodes
-        for (uint32 i = 0; i < numNodes; ++i)
+        for (const Node* node : m_nodes)
         {
-            result->AddNode(m_nodes[i]->Clone(result));
+            result->AddNode(node->Clone(result));
         }
 
         result->m_bindPose = m_bindPose;
@@ -61,7 +60,7 @@ namespace EMotionFX
 
 
     // reserve memory
-    void Skeleton::ReserveNodes(uint32 numNodes)
+    void Skeleton::ReserveNodes(size_t numNodes)
     {
         m_nodes.reserve(numNodes);
     }
@@ -76,7 +75,7 @@ namespace EMotionFX
 
 
     // remove a node
-    void Skeleton::RemoveNode(uint32 nodeIndex, bool delFromMem)
+    void Skeleton::RemoveNode(size_t nodeIndex, bool delFromMem)
     {
         m_nodesMap.erase(m_nodes[nodeIndex]->GetNameString());
         if (delFromMem)
@@ -93,10 +92,9 @@ namespace EMotionFX
     {
         if (delFromMem)
         {
-            const uint32 numNodes = m_nodes.size();
-            for (uint32 i = 0; i < numNodes; ++i)
+            for (Node* node : m_nodes)
             {
-                m_nodes[i]->Destroy();
+                node->Destroy();
             }
         }
 
@@ -132,38 +130,28 @@ namespace EMotionFX
     Node* Skeleton::FindNodeByNameNoCase(const char* name) const
     {
         // check the names for all nodes
-        const uint32 numNodes = m_nodes.size();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const auto foundNode = AZStd::find_if(begin(m_nodes), end(m_nodes), [name](const Node* node)
         {
-            if (AzFramework::StringFunc::Equal(m_nodes[i]->GetNameString().c_str(), name, false /* no case */))
-            {
-                return m_nodes[i];
-            }
-        }
-
-        return nullptr;
+            return AzFramework::StringFunc::Equal(node->GetNameString(), name, false /* no case */);
+        });
+        return foundNode != end(m_nodes) ? *foundNode : nullptr;
     }
 
 
     // search for a node on ID
-    Node* Skeleton::FindNodeByID(uint32 id) const
+    Node* Skeleton::FindNodeByID(size_t id) const
     {
         // check the ID's for all nodes
-        const uint32 numNodes = m_nodes.size();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const auto foundNode = AZStd::find_if(begin(m_nodes), end(m_nodes), [id](const Node* node)
         {
-            if (m_nodes[i]->GetID() == id)
-            {
-                return m_nodes[i];
-            }
-        }
-
-        return nullptr;
+            return node->GetID() == id;
+        });
+        return foundNode != end(m_nodes) ? *foundNode : nullptr;
     }
 
 
     // set a given node
-    void Skeleton::SetNode(uint32 index, Node* node)
+    void Skeleton::SetNode(size_t index, Node* node)
     {
         if (m_nodes[index])
         {
@@ -176,11 +164,11 @@ namespace EMotionFX
 
 
     // set the number of nodes
-    void Skeleton::SetNumNodes(uint32 numNodes)
+    void Skeleton::SetNumNodes(size_t numNodes)
     {
-        uint32 oldLength = m_nodes.size();
+        size_t oldLength = m_nodes.size();
         m_nodes.resize(numNodes);
-        for (uint32 i = oldLength; i < numNodes; ++i)
+        for (size_t i = oldLength; i < numNodes; ++i)
         {
             m_nodes[i] = nullptr;
         }
@@ -189,10 +177,10 @@ namespace EMotionFX
 
 
     // update the node indices
-    void Skeleton::UpdateNodeIndexValues(uint32 startNode)
+    void Skeleton::UpdateNodeIndexValues(size_t startNode)
     {
-        const uint32 numNodes = m_nodes.size();
-        for (uint32 i = startNode; i < numNodes; ++i)
+        const size_t numNodes = m_nodes.size();
+        for (size_t i = startNode; i < numNodes; ++i)
         {
             m_nodes[i]->SetNodeIndex(i);
         }
@@ -200,21 +188,21 @@ namespace EMotionFX
 
 
     // reserve memory for the root nodes array
-    void Skeleton::ReserveRootNodes(uint32 numNodes)
+    void Skeleton::ReserveRootNodes(size_t numNodes)
     {
         m_rootNodes.reserve(numNodes);
     }
 
 
     // add a root node
-    void Skeleton::AddRootNode(uint32 nodeIndex)
+    void Skeleton::AddRootNode(size_t nodeIndex)
     {
         m_rootNodes.emplace_back(nodeIndex);
     }
 
 
     // remove a given root node
-    void Skeleton::RemoveRootNode(uint32 nr)
+    void Skeleton::RemoveRootNode(size_t nr)
     {
         m_rootNodes.erase(AZStd::next(begin(m_rootNodes), nr));
     }
@@ -230,8 +218,8 @@ namespace EMotionFX
     // log all node names
     void Skeleton::LogNodes()
     {
-        const uint32 numNodes = m_nodes.size();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = m_nodes.size();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             MCore::LogInfo("%d = '%s'", i, m_nodes[i]->GetName());
         }
@@ -239,10 +227,10 @@ namespace EMotionFX
 
 
     // calculate the hierarchy depth for a given node
-    uint32 Skeleton::CalcHierarchyDepthForNode(uint32 nodeIndex) const
+    size_t Skeleton::CalcHierarchyDepthForNode(size_t nodeIndex) const
     {
-        uint32 result = 0;
-        Node* curNode = m_nodes[nodeIndex];
+        size_t result = 0;
+        const Node* curNode = m_nodes[nodeIndex];
         while (curNode->GetParentNode())
         {
             result++;
@@ -253,18 +241,18 @@ namespace EMotionFX
     }
 
 
-    Node* Skeleton::FindNodeAndIndexByName(const AZStd::string& name, AZ::u32& outIndex) const
+    Node* Skeleton::FindNodeAndIndexByName(const AZStd::string& name, size_t& outIndex) const
     {
         if (name.empty())
         {
-            outIndex = MCORE_INVALIDINDEX32;
+            outIndex = InvalidIndex;
             return nullptr;
         }
 
         Node* joint = FindNodeByNameNoCase(name.c_str());
         if (!joint)
         {
-            outIndex = MCORE_INVALIDINDEX32;
+            outIndex = InvalidIndex;
             return nullptr;
         }
 
