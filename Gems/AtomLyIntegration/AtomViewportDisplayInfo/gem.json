@@ -1,0 +1,12 @@
+{
+    "gem_name": "AtomLyIntegration_AtomViewportDisplayInfo",
+    "display_name": "Atom Viewport Display Info Overlay",
+    "summary": "Provides a diagnostic viewport overlay for the default O3DE Atom viewport.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "AtomLyIntegration",
+        "AtomViewportDisplayInfo"
+    ]
+}
