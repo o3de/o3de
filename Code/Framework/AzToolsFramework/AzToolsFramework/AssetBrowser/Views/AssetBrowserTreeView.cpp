@@ -302,7 +302,7 @@ namespace AzToolsFramework
                 if (rowEntry)
                 {
                     // Check if this entry name matches the query
-                    AZStd::string_view compareName = useDisplayName ? rowEntry->GetDisplayName().toUtf8() : rowEntry->GetName().c_str();
+                    AZStd::string_view compareName = useDisplayName ? (const char*)(rowEntry->GetDisplayName().toUtf8()) : rowEntry->GetName().c_str();
 
                     if (AzFramework::StringFunc::Equal(entry.c_str(), compareName, true))
                     {
