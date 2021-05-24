@@ -33,16 +33,6 @@ namespace TestImpact
         RepoPath m_coverageArtifact; //!< Path to coverage data.
     };
 
-    namespace Bitwise
-    {
-        //! Exception policy for test coverage artifacts.
-        enum class CoverageExceptionPolicy
-        {
-            Never = 0, //! Never throw.
-            OnEmptyCoverage = 1 //! Throw when no coverage data was produced.
-        };
-    } // namespace Bitwise
-
     //! Runs a batch of test targets to determine the test coverage and passes/failures.
     class InstrumentedTestRunner
         : public TestJobRunner<InstrumentedTestRunJobData, AZStd::pair<TestRun, TestCoverage>>
@@ -50,15 +40,12 @@ namespace TestImpact
         using JobRunner = TestJobRunner<InstrumentedTestRunJobData, AZStd::pair<TestRun, TestCoverage>>;
 
     public:
-        using CoverageExceptionPolicy = Bitwise::CoverageExceptionPolicy;
-
         //! Constructs an instrumented test runner with the specified parameters common to all job runs of this runner.
         //! @param maxConcurrentRuns The maximum number of runs to be in flight at any given time.        
         explicit InstrumentedTestRunner(size_t maxConcurrentRuns);
         
         //! Executes the specified instrumented test run jobs according to the specified job exception policies.
         //! @param jobInfos The test run jobs to execute.
-        //! @param CoverageExceptionPolicy The coverage exception policy to be used for this run.
         //! @param jobExceptionPolicy The test run job exception policy to be used for this run (use
         //! TestJobExceptionPolicy::OnFailedToExecute to throw on test failures).
         //! @param runTimeout The maximum duration a run may be in-flight for before being forcefully terminated.
@@ -67,7 +54,6 @@ namespace TestImpact
         //! @return The result of the run sequence and the instrumented run jobs with their associated test run and coverage payloads.
         AZStd::pair<ProcessSchedulerResult, AZStd::vector<Job>> RunInstrumentedTests(
             const AZStd::vector<JobInfo>& jobInfos,
-            CoverageExceptionPolicy coverageExceptionPolicy,
             JobExceptionPolicy jobExceptionPolicy,
             AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,

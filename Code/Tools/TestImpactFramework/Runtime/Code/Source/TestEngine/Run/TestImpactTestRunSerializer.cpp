@@ -10,7 +10,7 @@
  *
  */
 
-#include <TestEngine/Run/TestImpactTestRunException.h>
+#include <TestEngine/TestImpactTestEngineException.h>
 #include <TestEngine/Run/TestImpactTestRunSerializer.h>
 
 #include <AzCore/JSON/document.h>
@@ -142,7 +142,7 @@ namespace TestImpact
 
         if (doc.Parse<0>(testEnumString.c_str()).HasParseError())
         {
-            throw TestRunException("Could not parse enumeration data");
+            throw TestEngineException("Could not parse enumeration data");
         }
 
         // Run duration
