@@ -14,7 +14,7 @@
 
 namespace EMotionFX
 {
-    INSTANTIATE_TEST_CASE_P(LY92269, CommandRunnerFixture,
+    INSTANTIATE_TEST_CASE_P(CanRenameParameter_ParameterNodeUpdates, CommandRunnerFixture,
         ::testing::Values(std::vector<std::string> {
             R"str(CreateAnimGraph)str",
             R"str(AnimGraphCreateNode -animGraphID 0 -type {A8B5BB1E-5BA9-4B0A-88E9-21BB7A199ED2} -parentName Root -xPos 240 -yPos 230 -name GENERATE -namePrefix BlendTree)str",

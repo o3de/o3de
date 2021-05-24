@@ -21,12 +21,12 @@
 
 namespace EMotionFX
 {
-    class LY92748Fixture
+    class CanDeleteAnimGraphNode
         : public CommandRunnerFixture
     {
     };
 
-    TEST_P(LY92748Fixture, ExecuteCommands)
+    TEST_P(CanDeleteAnimGraphNode, CanDeleteAnimGraphNode_AnimGraphModelUpdates)
     {
         ExecuteCommands(GetParam());
 
@@ -68,7 +68,7 @@ namespace EMotionFX
 
     }
 
-    INSTANTIATE_TEST_CASE_P(DISABLED_LY92748, LY92748Fixture,
+    INSTANTIATE_TEST_CASE_P(CanDeleteAnimGraphNode_AnimGraphModelUpdates, CanDeleteAnimGraphNode,
         ::testing::Values(std::vector<std::string> {
             R"str(CreateAnimGraph)str",
             R"str(Select -animGraphID 0)str",

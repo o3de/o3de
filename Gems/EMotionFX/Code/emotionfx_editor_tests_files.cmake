@@ -54,15 +54,15 @@ set(FILES
     Tests/UI/AnimGraphUIFixture.h
     Tests/UI/MenuUIFixture.cpp
     Tests/UI/MenuUIFixture.h
-    Tests/UI/LY-92269.cpp
-    Tests/UI/LY-92748.cpp
-    Tests/UI/LY-93621.cpp
+    Tests/UI/CanRenameParameter_ParameterNodeUpdates.cpp
+    Tests/UI/CanDeleteAnimGraphNode_AnimGraphModelUpdates.cpp
+    Tests/UI/CanAdjustGroupParameter.cpp
     Tests/UI/CanAddJointAndChildren.cpp
     Tests/Integration/CanAddActor.cpp
     Tests/Integration/CanAddSimpleMotionComponent.cpp
     Tests/Integration/CanDeleteJackEntity.cpp
     Tests/Bugs/CanDeleteMotionWhenMotionIsBeingBlended.cpp
-    Tests/Bugs/LY-92860.cpp
+    Tests/Bugs/CanUndoParameterDeletionAndRestoreBlendTreeConnections.cpp
     Tests/D6JointLimitConfiguration.cpp
     Tests/D6JointLimitConfiguration.h
     Tests/Editor/FileManagerTests.cpp
