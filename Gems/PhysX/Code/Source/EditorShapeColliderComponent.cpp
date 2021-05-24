@@ -226,7 +226,7 @@ namespace PhysX
     void EditorShapeColliderComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         auto* shapeColliderComponent = gameEntity->CreateComponent<ShapeColliderComponent>();
-        Physics::ShapeConfigurationList shapeConfigurationList;
+        AzPhysics::ShapeColliderPairList shapeConfigurationList;
         shapeConfigurationList.reserve(m_shapeConfigs.size());
         for (const auto& shapeConfig : m_shapeConfigs)
         {
@@ -257,11 +257,12 @@ namespace PhysX
         configuration.m_entityId = GetEntityId();
         configuration.m_debugName = GetEntity()->GetName();
 
-        AZStd::vector<AzPhysics::ShapeColliderPair> colliderShapePairs;
+        AzPhysics::ShapeColliderPairList colliderShapePairs;
         colliderShapePairs.reserve(m_shapeConfigs.size());
         for (const auto& shapeConfig : m_shapeConfigs)
         {
-            colliderShapePairs.emplace_back(&m_colliderConfig, shapeConfig.get());
+            colliderShapePairs.emplace_back(
+                AZStd::make_shared<Physics::ColliderConfiguration>(m_colliderConfig), shapeConfig);
         }
         configuration.m_colliderAndShapeData = colliderShapePairs;
 
@@ -271,7 +272,6 @@ namespace PhysX
             if (m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
             {
                 m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-                m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
             }
 
             m_editorBodyHandle = m_sceneInterface->AddSimulatedBody(m_editorSceneHandle, &configuration);
@@ -327,6 +327,7 @@ namespace PhysX
         else
         {
             m_shapeType = !shapeCrc ? ShapeType::None : ShapeType::Unsupported;
+            m_shapeConfigs.clear();
             AZ_Warning("PhysX Shape Collider Component", m_shapeTypeWarningIssued, "Unsupported shape type for "
                 "entity \"%s\". The following shapes are currently supported - box, capsule, sphere, polygon prism.",
                 GetEntity()->GetName().c_str());
@@ -681,7 +682,6 @@ namespace PhysX
         if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
             m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-            m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
     }
 

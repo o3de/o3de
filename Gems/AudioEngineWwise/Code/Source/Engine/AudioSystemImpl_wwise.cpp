@@ -66,12 +66,18 @@ namespace Audio
     {
         void* Malloc(AkMemPoolId memId, size_t size)
         {
-            return AZ::AllocatorInstance<AudioImplAllocator>::Get().Allocate(size, 0, 0, MemoryManagerCategories[memId & AkMemID_MASK]);
+            size_t memCategory = memId & AkMemID_MASK;
+            AZ_Assert(memCategory < AkMemID_NUM, "Wwise::MemHooks::Malloc - Bad AkMemPoolId passed: %zu", memCategory);
+            return AZ::AllocatorInstance<AudioImplAllocator>::Get().Allocate(size, 0, 0,
+                (memCategory < AkMemID_NUM) ? MemoryManagerCategories[memCategory] : nullptr);
         }
 
         void* Malign(AkMemPoolId memId, size_t size, AkUInt32 alignment)
         {
-            return AZ::AllocatorInstance<AudioImplAllocator>::Get().Allocate(size, alignment, 0, MemoryManagerCategories[memId & AkMemID_MASK]);
+            size_t memCategory = memId & AkMemID_MASK;
+            AZ_Assert(memCategory < AkMemID_NUM, "WWise::MemHooks::Malign - Bad AkMemPoolId passed: %zu", memCategory);
+            return AZ::AllocatorInstance<AudioImplAllocator>::Get().Allocate(size, alignment, 0,
+                (memCategory < AkMemID_NUM) ? MemoryManagerCategories[memCategory] : nullptr);
         }
 
         void* Realloc([[maybe_unused]] AkMemPoolId memId, void* address, size_t size)
@@ -79,12 +85,12 @@ namespace Audio
             return AZ::AllocatorInstance<AudioImplAllocator>::Get().ReAllocate(address, size, 0);
         }
 
-        void Free([[maybe_unused]] AkMemPoolId memId, void* address)
+        void* ReallocAligned([[maybe_unused]] AkMemPoolId memId, void* address, size_t size, AkUInt32 alignment)
         {
-            AZ::AllocatorInstance<AudioImplAllocator>::Get().DeAllocate(address);
+            return AZ::AllocatorInstance<AudioImplAllocator>::Get().ReAllocate(address, size, alignment);
         }
 
-        void Falign([[maybe_unused]] AkMemPoolId memId, void* address)
+        void Free([[maybe_unused]] AkMemPoolId memId, void* address)
         {
             AZ::AllocatorInstance<AudioImplAllocator>::Get().DeAllocate(address);
         }
@@ -427,8 +433,8 @@ namespace Audio
         akMemSettings.pfMalloc = Wwise::MemHooks::Malloc;
         akMemSettings.pfMalign = Wwise::MemHooks::Malign;
         akMemSettings.pfRealloc = Wwise::MemHooks::Realloc;
+        akMemSettings.pfReallocAligned = Wwise::MemHooks::ReallocAligned;
         akMemSettings.pfFree = Wwise::MemHooks::Free;
-        akMemSettings.pfFalign = Wwise::MemHooks::Falign;
         akMemSettings.pfTotalReservedMemorySize = Wwise::MemHooks::TotalReservedMemorySize;
         akMemSettings.pfSizeOfMemory = Wwise::MemHooks::SizeOfMemory;
         akMemSettings.uMemAllocationSizeLimit = Wwise::Cvars::s_PrimaryMemorySize << 10;

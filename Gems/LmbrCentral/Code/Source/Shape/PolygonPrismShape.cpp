@@ -215,16 +215,17 @@ namespace LmbrCentral
         m_entityId = entityId;
         m_currentTransform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(m_currentTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
-        m_currentNonUniformScale = AZ::Vector3::CreateOne();
-        AZ::NonUniformScaleRequestBus::EventResult(m_currentNonUniformScale, m_entityId, &AZ::NonUniformScaleRequests::GetScale);
-        m_polygonPrism->SetNonUniformScale(m_currentNonUniformScale);
-        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
 
         AZ::TransformNotificationBus::Handler::BusConnect(entityId);
         ShapeComponentRequestsBus::Handler::BusConnect(entityId);
         PolygonPrismShapeComponentRequestBus::Handler::BusConnect(entityId);
         AZ::VariableVerticesRequestBus<AZ::Vector2>::Handler::BusConnect(entityId);
         AZ::FixedVerticesRequestBus<AZ::Vector2>::Handler::BusConnect(entityId);
+
+        m_currentNonUniformScale = AZ::Vector3::CreateOne();
+        AZ::NonUniformScaleRequestBus::EventResult(m_currentNonUniformScale, m_entityId, &AZ::NonUniformScaleRequests::GetScale);
+        m_polygonPrism->SetNonUniformScale(m_currentNonUniformScale);
+        m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
 
         AZ::NonUniformScaleRequestBus::Event(m_entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
             m_nonUniformScaleChangedHandler);

@@ -18,13 +18,25 @@
 
 #include <IConsole.h>
 #include <CryPath.h>
-#include <Pak/CryPakUtils.h>
 #include "System.h"
 
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Debug/EventTraceDrillerBus.h>
 
-#include "resource.h"
+#define VS_VERSION_INFO                 1
+#define IDD_CRITICAL_ERROR              101
+#define IDB_CONFIRM_SAVE                102
+#define IDB_DONT_SAVE                   103
+#define IDD_CONFIRM_SAVE_LEVEL          127
+#define IDB_CRASH_FACE                  128
+#define IDD_EXCEPTION                   245
+#define IDC_CALLSTACK                   1001
+#define IDC_EXCEPTION_CODE              1002
+#define IDC_EXCEPTION_ADDRESS           1003
+#define IDC_EXCEPTION_MODULE            1004
+#define IDC_EXCEPTION_DESC              1005
+#define IDB_EXIT                        1008
+#define IDB_IGNORE                      1010
 __pragma(comment(lib, "version.lib"))
 
 //! Needs one external of DLL handle.
@@ -276,17 +288,6 @@ int DebugCallStack::handleException(EXCEPTION_POINTERS* exception_pointer)
         sprintf_s(excAddr, "0x%04X:0x%p", exception_pointer->ContextRecord->SegCs, exception_pointer->ExceptionRecord->ExceptionAddress);
         sprintf_s(excCode, "0x%08X", exception_pointer->ExceptionRecord->ExceptionCode);
         WriteLineToLog("Exception: %s, at Address: %s", excCode, excAddr);
-
-        {
-            IMemoryManager::SProcessMemInfo memInfo;
-            if (gEnv->pSystem->GetIMemoryManager()->GetProcessMemInfo(memInfo))
-            {
-                uint32 nMemUsage = (uint32)(memInfo.PagefileUsage / (1024 * 1024));
-                WriteLineToLog("Virtual memory usage: %dMb", nMemUsage);
-            }
-            gEnv->szDebugStatus[SSystemGlobalEnvironment::MAX_DEBUG_STRING_LENGTH - 1] = '\0';
-            WriteLineToLog("Debug Status: %s", gEnv->szDebugStatus);
-        }
     }
 
     firstTime = false;
@@ -410,8 +411,6 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
     FILE* f = nullptr;
     azfopen(&f, fileName.c_str(), "wt");
 
-    CDebugAllowFileAccess ignoreInvalidFileAccess;
-
     static char errorString[s_iCallStackSize];
     errorString[0] = 0;
 
@@ -486,33 +485,9 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
         excCode, excAddr, m_excModule, excName, desc);
 
 
-    IMemoryManager::SProcessMemInfo memInfo;
-    if (gEnv->pSystem->GetIMemoryManager()->GetProcessMemInfo(memInfo))
-    {
-        char memoryString[256];
-        double MB = 1024 * 1024;
-        sprintf_s(memoryString, "Memory in use: %3.1fMB\n", (double)(memInfo.PagefileUsage) / MB);
-        cry_strcat(errs, memoryString);
-    }
-    {
-        const int tempStringSize = 256;
-        char tempString[tempStringSize];
-
-        gEnv->szDebugStatus[SSystemGlobalEnvironment::MAX_DEBUG_STRING_LENGTH - 1] = '\0';
-        sprintf_s(tempString, tempStringSize, "Debug Status: %s\n", gEnv->szDebugStatus);
-        cry_strcat(errs, tempString);
-
-        sprintf_s(tempString, tempStringSize, "Out of Memory: %d\n", gEnv->bIsOutOfMemory);
-        cry_strcat(errs, tempString);
-    }
     cry_strcat(errs, "\nCall Stack Trace:\n");
 
     std::vector<string> funcs;
-    if (gEnv->bIsOutOfMemory)
-    {
-        cry_strcat(errs, "1) OUT_OF_MEMORY()\n");
-    }
-    else
     {
         AZ::Debug::StackFrame frames[25];
         AZ::Debug::SymbolStorage::StackLine lines[AZ_ARRAY_SIZE(frames)];
@@ -546,7 +521,6 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
     if (f)
     {
         fwrite(errorString, strlen(errorString), 1, f);
-        if (!gEnv->bIsOutOfMemory)
         {
             if (g_cvars.sys_dump_aux_threads)
             {

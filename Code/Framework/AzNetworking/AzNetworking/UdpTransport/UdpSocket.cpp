@@ -82,7 +82,7 @@ namespace AzNetworking
             if (::bind(static_cast<int32_t>(m_socketFd), (const sockaddr *)&hints, sizeof(hints)) != 0)
             {
                 const int32_t error = GetLastNetworkError();
-                AZLOG_ERROR("Failed to bind socket to port %u (%d:%s)", uint32_t(port), error, GetNetworkErrorDesc(error));
+                AZLOG_ERROR("Failed to bind UDP socket to port %u (%d:%s)", uint32_t(port), error, GetNetworkErrorDesc(error));
                 return false;
             }
         }

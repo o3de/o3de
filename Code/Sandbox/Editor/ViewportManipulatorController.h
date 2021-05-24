@@ -39,7 +39,7 @@ namespace SandboxEditor
         static bool IsMouseMove(const AzFramework::InputChannel& inputChannel);
         static AzToolsFramework::ViewportInteraction::KeyboardModifier GetKeyboardModifier(const AzFramework::InputChannel& inputChannel);
 
-        AzToolsFramework::ViewportInteraction::MouseInteraction m_state;
+        AzToolsFramework::ViewportInteraction::MouseInteraction m_mouseInteraction;
         AZStd::unordered_map<AzToolsFramework::ViewportInteraction::MouseButton, AZ::ScriptTimePoint> m_pendingDoubleClicks;
         AZ::ScriptTimePoint m_curTime;
     };

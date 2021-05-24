@@ -162,6 +162,12 @@ namespace AzToolsFramework
                     classElement.RemoveElementByName(AZ_CRC("InterpolateScale", 0x9d00b831));
                 }
 
+                if (classElement.GetVersion() < 10)
+                {
+                    // The "Sync Enabled" flag is no longer needed.
+                    classElement.RemoveElementByName(AZ_CRC_CE("Sync Enabled"));
+                }
+
                 return true;
             }
         } // namespace Internal
@@ -254,7 +260,7 @@ namespace AzToolsFramework
             m_localTransformDirty = true;
             m_worldTransformDirty = true;
 
-            if (GetEntity())
+            if (const AZ::Entity* entity = GetEntity())
             {
                 SetDirty();
 
@@ -272,6 +278,22 @@ namespace AzToolsFramework
                 if (boundsUnion != nullptr)
                 {
                     boundsUnion->OnTransformUpdated(GetEntity());
+                }
+                // Fire a property changed notification for this component
+                if (const AZ::Component* component = entity->FindComponent<Components::TransformComponent>())
+                {
+                    PropertyEditorEntityChangeNotificationBus::Event(
+                        GetEntityId(), &PropertyEditorEntityChangeNotifications::OnEntityComponentPropertyChanged, component->GetId());
+                }
+
+                // Refresh the property editor if we're selected
+                bool selected = false;
+                ToolsApplicationRequestBus::BroadcastResult(
+                    selected, &AzToolsFramework::ToolsApplicationRequests::IsSelected, GetEntityId());
+                if (selected)
+                {
+                    ToolsApplicationEvents::Bus::Broadcast(
+                        &ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
                 }
             }
         }
@@ -1287,10 +1309,9 @@ namespace AzToolsFramework
                     Field("Cached World Transform Parent", &TransformComponent::m_cachedWorldTransformParent)->
                     Field("Parent Activation Transform Mode", &TransformComponent::m_parentActivationTransformMode)->
                     Field("IsStatic", &TransformComponent::m_isStatic)->
-                    Field("Sync Enabled", &TransformComponent::m_netSyncEnabled)->
                     Field("InterpolatePosition", &TransformComponent::m_interpolatePosition)->
                     Field("InterpolateRotation", &TransformComponent::m_interpolateRotation)->
-                    Version(9, &Internal::TransformComponentDataConverter);
+                    Version(10, &Internal::TransformComponentDataConverter);
 
                 if (AZ::EditContext* ptrEdit = serializeContext->GetEditContext())
                 {
@@ -1322,21 +1343,7 @@ namespace AzToolsFramework
                             Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)->
                         DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_cachedWorldTransform, "Cached World Transform", "")->
                             Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushable)->
-                            Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)->
-
-                    ClassElement(AZ::Edit::ClassElements::Group, "Network Sync")->
-                        Attribute(AZ::Edit::Attributes::AutoExpand, true)->
-
-                        DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_netSyncEnabled, "Sync to replicas", "Sync to network replicas.")->
-                        DataElement(AZ::Edit::UIHandlers::ComboBox, &TransformComponent::m_interpolatePosition,
-                            "Position Interpolation", "Enable local interpolation of position.")->
-                        EnumAttribute(AZ::InterpolationMode::NoInterpolation, "None")->
-                        EnumAttribute(AZ::InterpolationMode::LinearInterpolation, "Linear")->
-
-                        DataElement(AZ::Edit::UIHandlers::ComboBox, &TransformComponent::m_interpolateRotation,
-                            "Rotation Interpolation", "Enable local interpolation of rotation.")->
-                        EnumAttribute(AZ::InterpolationMode::NoInterpolation, "None")->
-                        EnumAttribute(AZ::InterpolationMode::LinearInterpolation, "Linear");
+                            Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide);
 
                     ptrEdit->Class<EditorTransform>("Values", "XYZ PYR")->
                         DataElement(AZ::Edit::UIHandlers::Default, &EditorTransform::m_translate, "Translate", "Local Position (Relative to parent) in meters.")->

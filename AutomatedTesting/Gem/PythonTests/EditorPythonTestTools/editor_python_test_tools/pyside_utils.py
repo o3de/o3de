@@ -18,7 +18,6 @@ from PySide2 import QtCore, QtWidgets, QtGui, QtTest
 from PySide2.QtWidgets import QAction, QWidget
 from PySide2.QtCore import Qt
 from PySide2.QtTest import QTest
-import azlmbr.legacy.general as general
 import traceback
 import threading
 import types

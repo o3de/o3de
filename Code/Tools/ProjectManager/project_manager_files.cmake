@@ -10,43 +10,57 @@
 #
 
 set(FILES
-    project_manager.qrc
+    Resources/ProjectManager.qrc
+    Resources/ProjectManager.qss
     Source/main.cpp
     Source/ScreenDefs.h
     Source/ScreenFactory.h
     Source/ScreenFactory.cpp
+    Source/ScreensCtrl.h
+    Source/ScreensCtrl.cpp
     Source/ScreenWidget.h
-    Source/FirstTimeUse.h
-    Source/FirstTimeUse.cpp
-    Source/FirstTimeUse.ui
-    Source/ProjectInfo.h
-    Source/ProjectInfo.cpp
+    Source/EngineInfo.h
+    Source/EngineInfo.cpp
+    Source/FirstTimeUseScreen.h
+    Source/FirstTimeUseScreen.cpp
+    Source/FormLineEditWidget.h
+    Source/FormLineEditWidget.cpp
+    Source/FormBrowseEditWidget.h
+    Source/FormBrowseEditWidget.cpp
+    Source/PathValidator.h
+    Source/PathValidator.cpp
     Source/ProjectManagerWindow.h
     Source/ProjectManagerWindow.cpp
+    Source/ProjectTemplateInfo.h
+    Source/ProjectTemplateInfo.cpp
     Source/ProjectManagerWindow.ui
     Source/PythonBindings.h
     Source/PythonBindings.cpp
     Source/PythonBindingsInterface.h
-    Source/NewProjectSettings.h
-    Source/NewProjectSettings.cpp
-    Source/NewProjectSettings.ui
-    Source/ProjectsHome.h
-    Source/ProjectsHome.cpp
-    Source/ProjectsHome.ui
-    Source/ProjectSettings.h
-    Source/ProjectSettings.cpp
-    Source/ProjectSettings.ui
-    Source/EngineSettings.h
-    Source/EngineSettings.cpp
-    Source/EngineSettings.ui
+    Source/ProjectInfo.h
+    Source/ProjectInfo.cpp
+    Source/NewProjectSettingsScreen.h
+    Source/NewProjectSettingsScreen.cpp
+    Source/ProjectSettingsCtrl.h
+    Source/ProjectSettingsCtrl.cpp
+    Source/ProjectsHomeScreen.h
+    Source/ProjectsHomeScreen.cpp
+    Source/ProjectsHomeScreen.ui
+    Source/ProjectSettingsScreen.h
+    Source/ProjectSettingsScreen.cpp
+    Source/ProjectSettingsScreen.ui
+    Source/EngineSettingsScreen.h
+    Source/EngineSettingsScreen.cpp
     Source/LinkWidget.h
     Source/LinkWidget.cpp
     Source/TagWidget.h
     Source/TagWidget.cpp
-    Source/GemCatalog/GemCatalog.h
-    Source/GemCatalog/GemCatalog.cpp
+    Source/GemCatalog/GemCatalogScreen.h
+    Source/GemCatalog/GemCatalogScreen.cpp
     Source/GemCatalog/GemInfo.h
     Source/GemCatalog/GemInfo.cpp
+    Source/GemCatalog/GemInspector.h
+    Source/GemCatalog/GemInspector.cpp
     Source/GemCatalog/GemItemDelegate.h
     Source/GemCatalog/GemItemDelegate.cpp
     Source/GemCatalog/GemListView.h

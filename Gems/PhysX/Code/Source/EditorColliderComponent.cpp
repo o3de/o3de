@@ -312,6 +312,26 @@ namespace PhysX
         }
     }
 
+    AZStd::shared_ptr<Physics::ShapeConfiguration> EditorProxyShapeConfig::CloneCurrent() const
+    {
+        switch (m_shapeType)
+        {
+        case Physics::ShapeType::Sphere:
+            return AZStd::make_shared<Physics::SphereShapeConfiguration>(m_sphere);
+        case Physics::ShapeType::Capsule:
+            return AZStd::make_shared<Physics::CapsuleShapeConfiguration>(m_capsule);
+        case Physics::ShapeType::PhysicsAsset:
+            return AZStd::make_shared<Physics::PhysicsAssetShapeConfiguration>(m_physicsAsset.m_configuration);
+        case Physics::ShapeType::CookedMesh:
+            return AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(m_cookedMesh);
+        default:
+            AZ_Warning("EditorProxyShapeConfig", false, "Unsupported shape type, defaulting to Box.");
+            [[fallthrough]];
+        case Physics::ShapeType::Box:
+            return AZStd::make_shared<Physics::BoxShapeConfiguration>(m_box);
+        }
+    }
+
     bool EditorProxyShapeConfig::ShowingSubdivisionLevel() const
     {
         return (m_hasNonUniformScale && (IsCapsuleConfig() || IsSphereConfig() || IsAssetConfig()));
@@ -405,7 +425,6 @@ namespace PhysX
         if (m_sceneInterface)
         {
             m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-            m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
     }
 
@@ -579,7 +598,6 @@ namespace PhysX
             if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
             {
                 m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-                m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
             }
             return;
         }
@@ -592,10 +610,6 @@ namespace PhysX
         configuration.m_entityId = GetEntityId();
         configuration.m_debugName = GetEntity()->GetName();
 
-        // This configuration needs to be at the scope of the function to be added
-        // to m_colliderAndShapeData as a pointer.
-        Physics::ColliderConfiguration colliderConfig;
-
         if (m_shapeConfiguration.IsAssetConfig())
         {
             AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
@@ -605,13 +619,15 @@ namespace PhysX
         }
         else
         {
-            colliderConfig = GetColliderConfigurationScaled();
-            Physics::ShapeConfiguration& shapeConfig = m_shapeConfiguration.GetCurrent();
+            AZStd::shared_ptr<Physics::ColliderConfiguration> colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>(
+                GetColliderConfigurationScaled());
+            AZStd::shared_ptr<Physics::ShapeConfiguration> shapeConfig = m_shapeConfiguration.CloneCurrent();
+
             if (IsNonUniformlyScaledPrimitive(m_shapeConfiguration))
             {
-                auto convexConfig = Utils::CreateConvexFromPrimitive(GetColliderConfiguration(), shapeConfig,
-                    m_shapeConfiguration.m_subdivisionLevel, shapeConfig.m_scale);
-                auto colliderConfigurationNoOffset = colliderConfig;
+                auto convexConfig = Utils::CreateConvexFromPrimitive(GetColliderConfiguration(), *(shapeConfig.get()),
+                    m_shapeConfiguration.m_subdivisionLevel, shapeConfig->m_scale);
+                Physics::ColliderConfiguration colliderConfigurationNoOffset = *colliderConfig;
                 colliderConfigurationNoOffset.m_rotation = AZ::Quaternion::CreateIdentity();
                 colliderConfigurationNoOffset.m_position = AZ::Vector3::CreateZero();
 
@@ -624,7 +640,7 @@ namespace PhysX
             }
             else
             {
-                configuration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(&colliderConfig, &shapeConfig);
+                configuration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(colliderConfig, shapeConfig);
             }
         }
 
@@ -634,7 +650,6 @@ namespace PhysX
             if (m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
             {
                 m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-                m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
             }
             
             m_editorBodyHandle = m_sceneInterface->AddSimulatedBody(m_editorSceneHandle, &configuration);
@@ -808,7 +823,7 @@ namespace PhysX
                 return;
             }
 
-            Physics::ShapeConfigurationList shapeConfigList;
+            AzPhysics::ShapeColliderPairList shapeConfigList;
             Utils::GetColliderShapeConfigsFromAsset(physicsAssetConfiguration, m_configuration, m_hasNonUniformScale,
                 m_shapeConfiguration.m_subdivisionLevel, shapeConfigList);
 
@@ -882,7 +897,7 @@ namespace PhysX
 
         const Physics::PhysicsAssetShapeConfiguration& physicsAssetConfiguration = m_shapeConfiguration.m_physicsAsset.m_configuration;
 
-        Physics::ShapeConfigurationList shapeConfigList;
+        AzPhysics::ShapeColliderPairList shapeConfigList;
         Utils::GetColliderShapeConfigsFromAsset(physicsAssetConfiguration, m_configuration, m_hasNonUniformScale,
             m_shapeConfiguration.m_subdivisionLevel, shapeConfigList);
 
@@ -1051,7 +1066,6 @@ namespace PhysX
         if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
             m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-            m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
     }
 

@@ -274,6 +274,10 @@ namespace AZ
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceBlurPass"), &Render::ReflectionScreenSpaceBlurPass::Create);
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceBlurChildPass"), &Render::ReflectionScreenSpaceBlurChildPass::Create);
             passSystem->AddPassCreator(Name("ReflectionCopyFrameBufferPass"), &Render::ReflectionCopyFrameBufferPass::Create);
+
+            // setup handler for load pass template mappings
+            m_loadTemplatesHandler = RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler([this]() { this->LoadPassTemplateMappings(); });
+            RPI::PassSystemInterface::Get()->ConnectEvent(m_loadTemplatesHandler);
         }
 
         void CommonSystemComponent::Deactivate()
@@ -292,5 +296,12 @@ namespace AZ
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<TransformServiceFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<AuxGeomFeatureProcessor>();
         }
+
+        void CommonSystemComponent::LoadPassTemplateMappings()
+        {
+            const char* passTemplatesFile = "Passes/PassTemplates.azasset";
+            RPI::PassSystemInterface::Get()->LoadPassTemplateMappings(passTemplatesFile);
+        }
+
     } // namespace Render
 } // namespace AZ

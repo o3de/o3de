@@ -12,7 +12,8 @@
 
 #pragma once
 
-#include <Include/INetworkTime.h>
+#include <Multiplayer/NetworkTime/INetworkTime.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityHandle.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Console/IConsole.h>
 
@@ -33,13 +34,16 @@ namespace Multiplayer
         HostFrameId GetUnalteredHostFrameId() const override;
         void IncrementHostFrameId() override;
         AZ::TimeMs GetHostTimeMs() const override;
-        void SyncRewindableEntityState() override;
         AzNetworking::ConnectionId GetRewindingConnectionId() const override;
         HostFrameId GetHostFrameIdForRewindingConnection(AzNetworking::ConnectionId rewindConnectionId) const override;
         void AlterTime(HostFrameId frameId, AZ::TimeMs timeMs, AzNetworking::ConnectionId rewindConnectionId) override;
+        void SyncEntitiesToRewindState(const AZ::Aabb& rewindVolume) override;
+        void ClearRewoundEntities() override;
         //! @}
 
     private:
+
+        AZStd::vector<NetworkEntityHandle> m_rewoundEntities;
 
         HostFrameId m_hostFrameId = HostFrameId{ 0 };
         HostFrameId m_unalteredFrameId = HostFrameId{ 0 };

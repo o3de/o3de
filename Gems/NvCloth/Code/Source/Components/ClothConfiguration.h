@@ -96,6 +96,7 @@ namespace NvCloth
         float m_solverFrequency = 300.0f;
         uint32_t m_accelerationFilterIterations = 30;
         bool m_removeStaticTriangles = true;
+        bool m_updateNormalsOfStaticParticles = false;
 
         // Fabric phases parameters
         float m_horizontalStiffness = 1.0f;

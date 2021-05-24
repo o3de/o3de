@@ -62,17 +62,24 @@ namespace AZ
             m_buffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
         }
 
-        void EyeAdaptationPass::UpdateEnable()
+        void EyeAdaptationPass::BuildAttachmentsInternal()
         {
-            if (m_pipeline == nullptr)
+            if (!m_buffer)
             {
-                SetEnabled(false);
-                return;
+                InitBuffer();
             }
 
-            AZ_Assert(m_pipeline->GetScene(), "Scene shouldn't nullptr");
+            AttachBufferToSlot(EyeAdaptationDataInputOutputSlotName, m_buffer);
+        }
 
-            UpdateInputBufferIndices();
+        bool EyeAdaptationPass::IsEnabled() const
+        {
+            if (!ComputePass::IsEnabled() || m_pipeline == nullptr)
+            {
+                return false;
+            }
+
+            AZ_Assert(m_pipeline->GetScene(), "EyeAdaptationPass's Pipeline does not have a valid scene pointer");
 
             AZ::RPI::Scene* scene = GetScene();
             bool enabled = false;
@@ -95,38 +102,9 @@ namespace AZ
                 }
             }
 
-            const bool lastEnabled = IsEnabled();
-            SetEnabled(enabled);
-
-            if (IsEnabled() && !lastEnabled)
-            {
-                // Need rebuilt this pass's attachment as any connections. So queue parent pass.
-                GetParent()->QueueForBuildAttachments();
-            }
+            return enabled;
         }
 
-        void EyeAdaptationPass::UpdateInputBufferIndices()
-        {
-            if (m_exposureControlBufferInputIndex.IsNull())
-            {
-                m_exposureControlBufferInputIndex = GetView()->GetShaderResourceGroup()->FindShaderInputBufferIndex(Name("m_exposureControl"));
-            }
-        }
-
-        void EyeAdaptationPass::BuildAttachmentsInternal()
-        {
-            if (m_pipeline == nullptr)
-            {
-                return;
-            }
-
-            if (!m_buffer)
-            {
-                InitBuffer();
-            }
-
-            AttachBufferToSlot(EyeAdaptationDataInputOutputSlotName, m_buffer);
-        }
 
         void EyeAdaptationPass::FrameBeginInternal(FramePrepareParams params)
         {
