@@ -400,22 +400,22 @@ namespace EMotionFX
 
 
 
-    void Node::SetSkeletalLODLevelBits(uint32 bitValues)
+    void Node::SetSkeletalLODLevelBits(size_t bitValues)
     {
         mSkeletalLODs = bitValues;
     }
 
 
-    void Node::SetSkeletalLODStatus(uint32 lodLevel, bool enabled)
+    void Node::SetSkeletalLODStatus(size_t lodLevel, bool enabled)
     {
-        MCORE_ASSERT(lodLevel <= 31);
+        MCORE_ASSERT(lodLevel <= 63);
         if (enabled)
         {
-            mSkeletalLODs |= (1 << lodLevel);
+            mSkeletalLODs |= (1ull << lodLevel);
         }
         else
         {
-            mSkeletalLODs &= ~(1 << lodLevel);
+            mSkeletalLODs &= ~(1ull << lodLevel);
         }
     }
 

@@ -170,7 +170,7 @@ namespace EMotionFX
 
     // apply the relative transformation to the specified node
     // store the result in the position, rotation and scale parameters
-    void MorphTargetStandard::ApplyTransformation(ActorInstance* actorInstance, uint32 nodeIndex, AZ::Vector3& position, AZ::Quaternion& rotation, AZ::Vector3& scale, float weight)
+    void MorphTargetStandard::ApplyTransformation(ActorInstance* actorInstance, size_t nodeIndex, AZ::Vector3& position, AZ::Quaternion& rotation, AZ::Vector3& scale, float weight)
     {
         // calculate the normalized weight (in range of 0..1)
         const float newWeight = MCore::Clamp<float>(weight, mRangeMin, mRangeMax); // make sure its within the range
@@ -202,7 +202,7 @@ namespace EMotionFX
 
 
     // check if this morph target influences the specified node or not
-    bool MorphTargetStandard::Influences(uint32 nodeIndex) const
+    bool MorphTargetStandard::Influences(size_t nodeIndex) const
     {
         // check if there is a deform data object, which works on the specified node
         for (const DeformData* deformData : mDeformDatas)
@@ -338,7 +338,7 @@ namespace EMotionFX
     //---------------------------------------------------
 
     // constructor
-    MorphTargetStandard::DeformData::DeformData(uint32 nodeIndex, uint32 numVerts)
+    MorphTargetStandard::DeformData::DeformData(size_t nodeIndex, uint32 numVerts)
     {
         mNodeIndex  = nodeIndex;
         mNumVerts   = numVerts;
@@ -356,7 +356,7 @@ namespace EMotionFX
 
 
     // create
-    MorphTargetStandard::DeformData* MorphTargetStandard::DeformData::Create(uint32 nodeIndex, uint32 numVerts)
+    MorphTargetStandard::DeformData* MorphTargetStandard::DeformData::Create(size_t nodeIndex, uint32 numVerts)
     {
         return aznew MorphTargetStandard::DeformData(nodeIndex, numVerts);
     }

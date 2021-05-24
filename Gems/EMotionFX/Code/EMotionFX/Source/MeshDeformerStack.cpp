@@ -114,13 +114,13 @@ namespace EMotionFX
 
 
     // reinitialize mesh deformers
-    void MeshDeformerStack::ReinitializeDeformers(Actor* actor, Node* node, uint32 lodLevel)
+    void MeshDeformerStack::ReinitializeDeformers(Actor* actor, Node* node, size_t lodLevel)
     {
         // if we have deformers in the stack
-        const uint32 numDeformers = mDeformers.size();
+        const size_t numDeformers = mDeformers.size();
 
         // iterate through the deformers and reinitialize them
-        for (uint32 i = 0; i < numDeformers; ++i)
+        for (size_t i = 0; i < numDeformers; ++i)
         {
             mDeformers[i]->Reinitialize(actor, node, lodLevel);
         }

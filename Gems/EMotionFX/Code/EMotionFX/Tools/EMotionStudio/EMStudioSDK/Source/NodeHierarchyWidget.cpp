@@ -210,7 +210,7 @@ namespace EMStudio
         EMotionFX::Actor*   actor       = actorInstance->GetActor();
         AZStd::string       actorName;
         AzFramework::StringFunc::Path::GetFileName(actor->GetFileNameString().c_str(), actorName);
-        const uint32        numNodes    = actor->GetNumNodes();
+        const size_t        numNodes    = actor->GetNumNodes();
 
         // extract the bones from the actor
         actor->ExtractBoneList(actorInstance->GetLODLevel(), &mBoneList);
@@ -240,11 +240,11 @@ namespace EMStudio
         mHierarchy->addTopLevelItem(rootItem);
 
         // get the number of root nodes and iterate through them
-        const uint32 numRootNodes = actor->GetSkeleton()->GetNumRootNodes();
+        const size_t numRootNodes = actor->GetSkeleton()->GetNumRootNodes();
         for (uint32 i = 0; i < numRootNodes; ++i)
         {
             // get the root node index and the corresponding node
-            const uint32        rootNodeIndex   = actor->GetSkeleton()->GetRootNodeIndex(i);
+            const size_t        rootNodeIndex   = actor->GetSkeleton()->GetRootNodeIndex(i);
             EMotionFX::Node*    rootNode        = actor->GetSkeleton()->GetNode(rootNodeIndex);
 
             // recursively add all the nodes to the hierarchy
@@ -260,7 +260,7 @@ namespace EMStudio
             return false;
         }
 
-        const uint32        nodeIndex   = node->GetNodeIndex();
+        const size_t        nodeIndex   = node->GetNodeIndex();
         AZStd::string       nodeName = node->GetNameString();
         AZStd::to_lower(nodeName.begin(), nodeName.end());
         EMotionFX::Mesh*    mesh        = actorInstance->GetActor()->GetMesh(actorInstance->GetLODLevel(), nodeIndex);
@@ -288,10 +288,10 @@ namespace EMStudio
 
     void NodeHierarchyWidget::RecursivelyAddChilds(QTreeWidgetItem* parent, EMotionFX::Actor* actor, EMotionFX::ActorInstance* actorInstance, EMotionFX::Node* node)
     {
-        const uint32        nodeIndex   = node->GetNodeIndex();
+        const size_t        nodeIndex   = node->GetNodeIndex();
         AZStd::string       nodeName = node->GetNameString();
         AZStd::to_lower(nodeName.begin(), nodeName.end());
-        const uint32        numChildren = node->GetNumChildNodes();
+        const size_t        numChildren = node->GetNumChildNodes();
         EMotionFX::Mesh*    mesh        = actor->GetMesh(actorInstance->GetLODLevel(), nodeIndex);
         const bool          isMeshNode  = (mesh);
         const bool          isBone      = (AZStd::find(begin(mBoneList), end(mBoneList), nodeIndex) != end(mBoneList));
@@ -352,7 +352,7 @@ namespace EMStudio
             for (uint32 i = 0; i < numChildren; ++i)
             {
                 // get the node index and the corresponding node
-                const uint32        childIndex  = node->GetChildIndex(i);
+                const size_t        childIndex  = node->GetChildIndex(i);
                 EMotionFX::Node*    child       = actor->GetSkeleton()->GetNode(childIndex);
 
                 // recursively add all the nodes to the hierarchy
@@ -365,7 +365,7 @@ namespace EMStudio
             for (uint32 i = 0; i < numChildren; ++i)
             {
                 // get the node index and the corresponding node
-                const uint32        childIndex  = node->GetChildIndex(i);
+                const size_t        childIndex  = node->GetChildIndex(i);
                 EMotionFX::Node*    child       = actor->GetSkeleton()->GetNode(childIndex);
 
                 // recursively add all the nodes to the hierarchy

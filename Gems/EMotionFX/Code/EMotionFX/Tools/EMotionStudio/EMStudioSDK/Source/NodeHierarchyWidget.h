@@ -133,7 +133,7 @@ namespace EMStudio
         QIcon*                              mNodeIcon;
         QIcon*                              mMeshIcon;
         QIcon*                              mCharacterIcon;
-        AZStd::vector<uint32>                mBoneList;
+        AZStd::vector<size_t>                mBoneList;
         AZStd::vector<uint32>                mActorInstanceIDs;
         AZStd::string                       mItemName;
         AZStd::string                       mActorInstanceIDString;

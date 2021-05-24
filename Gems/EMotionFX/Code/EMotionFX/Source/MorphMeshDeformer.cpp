@@ -194,7 +194,7 @@ namespace EMotionFX
 
 
     // initialize the mesh deformer
-    void MorphMeshDeformer::Reinitialize(Actor* actor, Node* node, uint32 lodLevel)
+    void MorphMeshDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel)
     {
         // clear the deform passes, but don't free the currently allocated/reserved memory
         mDeformPasses.clear();

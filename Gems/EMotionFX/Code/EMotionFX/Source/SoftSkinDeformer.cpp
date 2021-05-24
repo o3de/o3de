@@ -202,7 +202,7 @@ namespace EMotionFX
 
 
     // initialize the mesh deformer
-    void SoftSkinDeformer::Reinitialize(Actor* actor, Node* node, uint32 lodLevel)
+    void SoftSkinDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel)
     {
         MCORE_UNUSED(actor);
         MCORE_UNUSED(node);

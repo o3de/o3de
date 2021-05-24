@@ -44,7 +44,7 @@ namespace EMStudio
         bool            m_isQuadMesh;
         unsigned int    m_orgVerticesCount;
         float           m_vertexDupeRatio;
-        AZStd::vector<uint32> m_verticesByInfluences;
+        AZStd::vector<size_t> m_verticesByInfluences;
         AZStd::vector<SubMeshInfo> m_submeshes;
         AZStd::vector<NamedPropertyStringValue> m_attributeLayers;
         AZStd::vector<NamedPropertyStringValue> m_sharedAttributeLayers;

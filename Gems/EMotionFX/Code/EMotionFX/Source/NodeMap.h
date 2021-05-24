@@ -39,41 +39,37 @@ namespace EMotionFX
     public:
         struct MapEntry
         {
-            uint32  mFirstNameID;   /**< The first name ID, which is the primary key in the map. */
-            uint32  mSecondNameID;  /**< The second name ID. */
-
-            MapEntry()
-                : mFirstNameID(MCORE_INVALIDINDEX32)
-                , mSecondNameID(MCORE_INVALIDINDEX32) {}
+            size_t mFirstNameID = InvalidIndex;   /**< The first name ID, which is the primary key in the map. */
+            size_t mSecondNameID = InvalidIndex;  /**< The second name ID. */
         };
 
         static NodeMap* Create();
 
         // prealloc space in the map
-        void Reserve(uint32 numEntries);
-        void Resize(uint32 numEntries);
+        void Reserve(size_t numEntries);
+        void Resize(size_t numEntries);
 
         // get data
         size_t GetNumEntries() const;
-        const char* GetFirstName(uint32 entryIndex) const;
-        const char* GetSecondName(uint32 entryIndex) const;
-        const AZStd::string& GetFirstNameString(uint32 entryIndex) const;
-        const AZStd::string& GetSecondNameString(uint32 entryIndex) const;
+        const char* GetFirstName(size_t entryIndex) const;
+        const char* GetSecondName(size_t entryIndex) const;
+        const AZStd::string& GetFirstNameString(size_t entryIndex) const;
+        const AZStd::string& GetSecondNameString(size_t entryIndex) const;
         bool GetHasEntry(const char* firstName) const;
-        uint32 FindEntryIndexByName(const char* firstName) const;
-        uint32 FindEntryIndexByNameID(uint32 firstNameID) const;
+        size_t FindEntryIndexByName(const char* firstName) const;
+        size_t FindEntryIndexByNameID(size_t firstNameID) const;
         const char* FindSecondName(const char* firstName) const;
         void FindSecondName(const char* firstName, AZStd::string* outString);
 
         // set/modify
-        void SetFirstName(uint32 entryIndex, const char* name);
-        void SetSecondName(uint32 entryIndex, const char* name);
-        void SetEntry(uint32 entryIndex, const char* firstName, const char* secondName);
+        void SetFirstName(size_t entryIndex, const char* name);
+        void SetSecondName(size_t entryIndex, const char* name);
+        void SetEntry(size_t entryIndex, const char* firstName, const char* secondName);
         void AddEntry(const char* firstName, const char* secondName);
         void SetEntry(const char* firstName, const char* secondName, bool addIfNotExists);
-        void RemoveEntryByIndex(uint32 entryIndex);
+        void RemoveEntryByIndex(size_t entryIndex);
         void RemoveEntryByName(const char* firstName);
-        void RemoveEntryByNameID(uint32 firstNameID);
+        void RemoveEntryByNameID(size_t firstNameID);
 
         // filename
         void SetFileName(const char* fileName);

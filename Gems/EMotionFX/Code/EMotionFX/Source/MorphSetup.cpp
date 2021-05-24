@@ -196,7 +196,7 @@ namespace EMotionFX
     }
 
 
-    void MorphSetup::ReserveMorphTargets(uint32 numMorphTargets)
+    void MorphSetup::ReserveMorphTargets(size_t numMorphTargets)
     {
         mMorphTargets.reserve(numMorphTargets);
     }

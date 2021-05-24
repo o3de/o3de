@@ -39,35 +39,35 @@ namespace EMotionFX
 
 
     // preallocate space
-    void NodeMap::Reserve(uint32 numEntries)
+    void NodeMap::Reserve(size_t numEntries)
     {
         mEntries.reserve(numEntries);
     }
 
 
     // resize the entries array
-    void NodeMap::Resize(uint32 numEntries)
+    void NodeMap::Resize(size_t numEntries)
     {
         mEntries.resize(numEntries);
     }
 
 
     // modify the first name of a given entry
-    void NodeMap::SetFirstName(uint32 entryIndex, const char* name)
+    void NodeMap::SetFirstName(size_t entryIndex, const char* name)
     {
         mEntries[entryIndex].mFirstNameID = MCore::GetStringIdPool().GenerateIdForString(name);
     }
 
 
     // modify the second name
-    void NodeMap::SetSecondName(uint32 entryIndex, const char* name)
+    void NodeMap::SetSecondName(size_t entryIndex, const char* name)
     {
         mEntries[entryIndex].mSecondNameID = MCore::GetStringIdPool().GenerateIdForString(name);
     }
 
 
     // modify a given entry
-    void NodeMap::SetEntry(uint32 entryIndex, const char* firstName, const char* secondName)
+    void NodeMap::SetEntry(size_t entryIndex, const char* firstName, const char* secondName)
     {
         mEntries[entryIndex].mFirstNameID = MCore::GetStringIdPool().GenerateIdForString(firstName);
         mEntries[entryIndex].mSecondNameID = MCore::GetStringIdPool().GenerateIdForString(secondName);
@@ -78,8 +78,8 @@ namespace EMotionFX
     void NodeMap::SetEntry(const char* firstName, const char* secondName, bool addIfNotExists)
     {
         // check if there is already an entry for this name
-        const uint32 entryIndex = FindEntryIndexByName(firstName);
-        if (entryIndex == MCORE_INVALIDINDEX32)
+        const size_t entryIndex = FindEntryIndexByName(firstName);
+        if (entryIndex == InvalidIndex)
         {
             // if there is no such entry yet, and we also don't want to add a new one, then there is nothing to do
             if (addIfNotExists == false)
@@ -107,7 +107,7 @@ namespace EMotionFX
 
 
     // remove a given entry by its index
-    void NodeMap::RemoveEntryByIndex(uint32 entryIndex)
+    void NodeMap::RemoveEntryByIndex(size_t entryIndex)
     {
         mEntries.erase(AZStd::next(begin(mEntries), entryIndex));
     }
@@ -116,8 +116,8 @@ namespace EMotionFX
     // remove a given entry by its name
     void NodeMap::RemoveEntryByName(const char* firstName)
     {
-        const uint32 entryIndex = FindEntryIndexByName(firstName);
-        if (entryIndex == MCORE_INVALIDINDEX32)
+        const size_t entryIndex = FindEntryIndexByName(firstName);
+        if (entryIndex == InvalidIndex)
         {
             return;
         }
@@ -127,10 +127,10 @@ namespace EMotionFX
 
 
     // remove a given entry by its name ID
-    void NodeMap::RemoveEntryByNameID(uint32 firstNameID)
+    void NodeMap::RemoveEntryByNameID(size_t firstNameID)
     {
-        const uint32 entryIndex = FindEntryIndexByNameID(firstNameID);
-        if (entryIndex == MCORE_INVALIDINDEX32)
+        const size_t entryIndex = FindEntryIndexByNameID(firstNameID);
+        if (entryIndex == InvalidIndex)
         {
             return;
         }
@@ -208,18 +208,18 @@ namespace EMotionFX
     uint32 NodeMap::CalcFileChunkSize() const
     {
         // add the node map info header
-        uint32 numBytes = sizeof(FileFormat::NodeMapChunk);
+        size_t numBytes = sizeof(FileFormat::NodeMapChunk);
 
         // for all entries
-        const uint32 numEntries = mEntries.size();
-        for (uint32 i = 0; i < numEntries; ++i)
+        const size_t numEntries = mEntries.size();
+        for (size_t i = 0; i < numEntries; ++i)
         {
             numBytes += CalcFileStringSize(GetFirstNameString(i));
             numBytes += CalcFileStringSize(GetSecondNameString(i));
         }
 
         // return the number of bytes
-        return numBytes;
+        return aznumeric_caster(numBytes);
     }
 
 
@@ -265,7 +265,7 @@ namespace EMotionFX
 
         // the main info
         FileFormat::NodeMapChunk nodeMapChunk{};
-        nodeMapChunk.mNumEntries = mEntries.size();
+        nodeMapChunk.mNumEntries = aznumeric_caster(mEntries.size());
         MCore::Endian::ConvertUnsignedInt32To(&nodeMapChunk.mNumEntries, targetEndianType);
         if (f.Write(&nodeMapChunk, sizeof(FileFormat::NodeMapChunk)) == 0)
         {
@@ -282,7 +282,7 @@ namespace EMotionFX
         }
 
         // for all entries
-        const uint32 numEntries = mEntries.size();
+        const uint32 numEntries = aznumeric_caster(mEntries.size());
         for (uint32 i = 0; i < numEntries; ++i)
         {
             if (WriteFileString(&f, GetFirstNameString(i), targetEndianType) == false)
@@ -327,28 +327,28 @@ namespace EMotionFX
 
 
     // get the first name as char pointer
-    const char* NodeMap::GetFirstName(uint32 entryIndex) const
+    const char* NodeMap::GetFirstName(size_t entryIndex) const
     {
         return MCore::GetStringIdPool().GetName(mEntries[entryIndex].mFirstNameID).c_str();
     }
 
 
     // get the second node name as char pointer
-    const char* NodeMap::GetSecondName(uint32 entryIndex) const
+    const char* NodeMap::GetSecondName(size_t entryIndex) const
     {
         return MCore::GetStringIdPool().GetName(mEntries[entryIndex].mSecondNameID).c_str();
     }
 
 
     // get the first node name as string
-    const AZStd::string& NodeMap::GetFirstNameString(uint32 entryIndex) const
+    const AZStd::string& NodeMap::GetFirstNameString(size_t entryIndex) const
     {
         return MCore::GetStringIdPool().GetName(mEntries[entryIndex].mFirstNameID);
     }
 
 
     // get the second node name as string
-    const AZStd::string& NodeMap::GetSecondNameString(uint32 entryIndex) const
+    const AZStd::string& NodeMap::GetSecondNameString(size_t entryIndex) const
     {
         return MCore::GetStringIdPool().GetName(mEntries[entryIndex].mSecondNameID);
     }
@@ -357,48 +357,37 @@ namespace EMotionFX
     // check if we already have an entry for this name
     bool NodeMap::GetHasEntry(const char* firstName) const
     {
-        return (FindEntryIndexByName(firstName) != MCORE_INVALIDINDEX32);
+        return (FindEntryIndexByName(firstName) != InvalidIndex);
     }
 
 
     // find an entry index by its name
-    uint32 NodeMap::FindEntryIndexByName(const char* firstName) const
+    size_t NodeMap::FindEntryIndexByName(const char* firstName) const
     {
-        const uint32 numEntries = mEntries.size();
-        for (uint32 i = 0; i < numEntries; ++i)
+        const auto foundEntry = AZStd::find_if(begin(mEntries), end(mEntries), [firstName](const MapEntry& entry)
         {
-            const AZStd::string& firstNameEntry = GetFirstName(i);
-            if (firstNameEntry == firstName)
-            {
-                return i;
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return MCore::GetStringIdPool().GetName(entry.mFirstNameID) == firstName;
+        });
+        return foundEntry != end(mEntries) ? AZStd::distance(begin(mEntries), foundEntry) : InvalidIndex;
     }
 
 
     // find an entry index by its name ID
-    uint32 NodeMap::FindEntryIndexByNameID(uint32 firstNameID) const
+    size_t NodeMap::FindEntryIndexByNameID(size_t firstNameID) const
     {
-        const uint32 numEntries = mEntries.size();
-        for (uint32 i = 0; i < numEntries; ++i)
+        const auto foundEntry = AZStd::find_if(begin(mEntries), end(mEntries), [firstNameID](const MapEntry& entry)
         {
-            if (mEntries[i].mFirstNameID == firstNameID)
-            {
-                return i;
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return entry.mFirstNameID == firstNameID;
+        });
+        return foundEntry != end(mEntries) ? AZStd::distance(begin(mEntries), foundEntry) : InvalidIndex;
     }
 
 
     // find the second name for a given first name
     const char* NodeMap::FindSecondName(const char* firstName) const
     {
-        const uint32 entryIndex = FindEntryIndexByName(firstName);
-        if (entryIndex == MCORE_INVALIDINDEX32)
+        const size_t entryIndex = FindEntryIndexByName(firstName);
+        if (entryIndex == InvalidIndex)
         {
             return nullptr;
         }
@@ -410,8 +399,8 @@ namespace EMotionFX
     // find the second name based on a first given name
     void NodeMap::FindSecondName(const char* firstName, AZStd::string* outString)
     {
-        const uint32 entryIndex = FindEntryIndexByName(firstName);
-        if (entryIndex == MCORE_INVALIDINDEX32)
+        const size_t entryIndex = FindEntryIndexByName(firstName);
+        if (entryIndex == InvalidIndex)
         {
             outString->clear();
             return;

@@ -294,7 +294,7 @@ namespace EMotionFX
     }
 
     // initialize the mesh deformer
-    void DualQuatSkinDeformer::Reinitialize(Actor* actor, Node* node, uint32 lodLevel)
+    void DualQuatSkinDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel)
     {
         MCORE_UNUSED(actor);
         MCORE_UNUSED(node);

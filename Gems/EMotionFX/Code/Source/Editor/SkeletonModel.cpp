@@ -615,31 +615,31 @@ namespace EMotionFX
             return;
         }
 
-        const AZ::u32 numLodLevels = actor->GetNumLODLevels();
+        const size_t numLodLevels = actor->GetNumLODLevels();
         const Skeleton* skeleton = actor->GetSkeleton();
-        const AZ::u32 numNodes = skeleton->GetNumNodes();
+        const size_t numNodes = skeleton->GetNumNodes();
         m_nodeInfos.resize(numNodes);
 
-        AZStd::vector<AZStd::vector<uint32> > boneListPerLodLevel;
+        AZStd::vector<AZStd::vector<size_t> > boneListPerLodLevel;
         boneListPerLodLevel.resize(numLodLevels);
-        for (AZ::u32 lodLevel = 0; lodLevel < numLodLevels; ++lodLevel)
+        for (size_t lodLevel = 0; lodLevel < numLodLevels; ++lodLevel)
         {
             actor->ExtractBoneList(lodLevel, &boneListPerLodLevel[lodLevel]);
         }
 
-        for (AZ::u32 nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
+        for (size_t nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
         {
             NodeInfo& nodeInfo = m_nodeInfos[nodeIndex];
 
             // Is bone?
-            nodeInfo.m_isBone = AZStd::any_of(begin(boneListPerLodLevel), end(boneListPerLodLevel), [nodeIndex](const AZStd::vector<uint32>& lodLevel)
+            nodeInfo.m_isBone = AZStd::any_of(begin(boneListPerLodLevel), end(boneListPerLodLevel), [nodeIndex](const AZStd::vector<size_t>& lodLevel)
             {
                 return AZStd::find(begin(lodLevel), end(lodLevel), nodeIndex) != end(lodLevel);
             });
 
             // Has mesh?
             nodeInfo.m_hasMesh = false;
-            for (AZ::u32 lodLevel = 0; lodLevel < numLodLevels; ++lodLevel)
+            for (size_t lodLevel = 0; lodLevel < numLodLevels; ++lodLevel)
             {
                 if (actor->GetMesh(lodLevel, nodeIndex))
                 {

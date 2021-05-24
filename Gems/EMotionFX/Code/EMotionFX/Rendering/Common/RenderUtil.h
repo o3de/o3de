@@ -191,7 +191,7 @@ namespace MCommon
          * @param[in] color The desired skeleton color.
          * @param[in] selectedColor The color of the selected bones.
          */
-        void RenderSkeleton(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<uint32>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices = nullptr, const AZStd::unordered_set<AZ::u32>* selectedJointIndices = nullptr, const MCore::RGBAColor& color = MCore::RGBAColor(1.0f, 0.0f, 0.0f, 1.0f), const MCore::RGBAColor& selectedColor = MCore::RGBAColor(1.0f, 0.647f, 0.0f));
+        void RenderSkeleton(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<size_t>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices = nullptr, const AZStd::unordered_set<AZ::u32>* selectedJointIndices = nullptr, const MCore::RGBAColor& color = MCore::RGBAColor(1.0f, 0.0f, 0.0f, 1.0f), const MCore::RGBAColor& selectedColor = MCore::RGBAColor(1.0f, 0.647f, 0.0f));
 
         /**
          * Render node orientations.
@@ -202,7 +202,7 @@ namespace MCommon
          * @param[in] scale The scaling value in units. Axes of normal nodes will use the scaling value as unit length, skinned bones will use the scaling value as multiplier.
          * @param[in] scaleBonesOnLength Automatically scales the bone orientations based on the bone length. This means finger node orientations will be rendered smaller than foot bones as the bone length is a lot smaller as well.
          */
-        void RenderNodeOrientations(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<uint32>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices = nullptr, const AZStd::unordered_set<AZ::u32>* selectedJointIndices = nullptr, float scale = 1.0f, bool scaleBonesOnLength = true);
+        void RenderNodeOrientations(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<size_t>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices = nullptr, const AZStd::unordered_set<AZ::u32>* selectedJointIndices = nullptr, float scale = 1.0f, bool scaleBonesOnLength = true);
 
         /**
          * Render the bind pose of the given actor.

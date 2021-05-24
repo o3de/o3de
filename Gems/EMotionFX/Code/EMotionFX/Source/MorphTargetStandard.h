@@ -66,7 +66,7 @@ namespace EMotionFX
                 uint32                          mVertexNr;          /**< The vertex number inside the mesh to apply this to. */
             };
 
-            static DeformData* Create(uint32 nodeIndex, uint32 numVerts);
+            static DeformData* Create(size_t nodeIndex, uint32 numVerts);
 
             // creates a clone
             DeformData* Clone();
@@ -74,7 +74,7 @@ namespace EMotionFX
         public:
             VertexDelta*    mDeltas;            /**< The delta values. */
             uint32          mNumVerts;          /**< The number of vertices in the mDeltas and mVertexNumbers arrays. */
-            uint32          mNodeIndex;         /**< The node which this data works on. */
+            size_t          mNodeIndex;         /**< The node which this data works on. */
             float           mMinValue;          /**< The compression/decompression minimum value for the delta positions. */
             float           mMaxValue;          /**< The compression/decompression maximum value for the delta positions. */
 
@@ -83,7 +83,7 @@ namespace EMotionFX
              * @param nodeIndex The node number on which the deformations should work.
              * @param numVerts The number of vertices modified by this deform.
              */
-            DeformData(uint32 nodeIndex, uint32 numVerts);
+            DeformData(size_t nodeIndex, uint32 numVerts);
 
             /**
              * The destructor.
@@ -155,14 +155,14 @@ namespace EMotionFX
          * @param scale The input scale to which relative adjustments will be applied.
          * @param weight The absolute weight value.
          */
-        void ApplyTransformation(ActorInstance* actorInstance, uint32 nodeIndex, AZ::Vector3& position, AZ::Quaternion& rotation, AZ::Vector3& scale, float weight) override;
+        void ApplyTransformation(ActorInstance* actorInstance, size_t nodeIndex, AZ::Vector3& position, AZ::Quaternion& rotation, AZ::Vector3& scale, float weight) override;
 
         /**
          * Checks if this morph target would influence the given node.
          * @param nodeIndex The node to perform the check with.
          * @result Returns true if the given node will be modified by this morph target, otherwise false is returned.
          */
-        bool Influences(uint32 nodeIndex) const override;
+        bool Influences(size_t nodeIndex) const override;
 
         /**
          * Apply the relative deformations for this morph target to the given actor instance.

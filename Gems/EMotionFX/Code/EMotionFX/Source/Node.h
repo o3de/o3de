@@ -346,7 +346,7 @@ namespace EMotionFX
          * Bit 0 represents LOD 0, bit 1 represents LOD 1, etc.
          * @param bitValues The unsigned 32-bits integer that contains the settings for each LOD.
          */
-        void SetSkeletalLODLevelBits(uint32 bitValues);
+        void SetSkeletalLODLevelBits(size_t bitValues);
 
         /**
          * Set the skeletal LOD status for a given LOD level.
@@ -357,14 +357,14 @@ namespace EMotionFX
          * @param lodLevel The skeletal LOD level to change the settings for. This must be in range of [0..31].
          * @param enabled Set to true when you wish the node to be enabled in the given LOD, or false when you wish to disable it in the given LOD.
          */
-        void SetSkeletalLODStatus(uint32 lodLevel, bool enabled);
+        void SetSkeletalLODStatus(size_t lodLevel, bool enabled);
 
         /**
          * Get the skeletal LOD status for this node at a given skeletal LOD.
          * @param lodLevel The skeletal LOD level to check.
          * @result Returns true when this node is enabled in the specified LOD level. Otherwise false is returned.
          */
-        MCORE_INLINE bool GetSkeletalLODStatus(size_t lodLevel) const                   { return (mSkeletalLODs & (1 << lodLevel)) != 0; }
+        MCORE_INLINE bool GetSkeletalLODStatus(size_t lodLevel) const                   { return (mSkeletalLODs & (1ull << lodLevel)) != 0; }
 
         //--------------------------------------------
 
@@ -417,7 +417,7 @@ namespace EMotionFX
     private:
         size_t      mNodeIndex;         /**< The node index, which is the index into the array of nodes inside the Skeleton class. */
         size_t      mParentIndex;       /**< The parent node index, or MCORE_INVALIDINDEX32 when there is no parent. */
-        uint32      mSkeletalLODs;      /**< The skeletal LOD status values. Each bit represents if this node is enabled or disabled in the given LOD. */
+        size_t      mSkeletalLODs;      /**< The skeletal LOD status values. Each bit represents if this node is enabled or disabled in the given LOD. */
         size_t      mNameID;            /**< The ID, which is generated from the name. You can use this for fast compares between nodes. */
         size_t      mSemanticNameID;    /**< The semantic name ID, for example "LeftHand" or "RightFoot" or so, this can be used for retargeting. */
         Skeleton*   mSkeleton;          /**< The skeleton where this node belongs to. */

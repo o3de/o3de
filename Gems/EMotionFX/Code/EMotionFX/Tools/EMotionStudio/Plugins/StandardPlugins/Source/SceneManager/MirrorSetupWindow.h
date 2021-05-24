@@ -79,14 +79,14 @@ namespace EMStudio
         QIcon*                  mNodeIcon;
         QIcon*                  mMeshIcon;
         QIcon*                  mMappedIcon;
-        AZStd::vector<uint32>    mCurrentBoneList;
-        AZStd::vector<uint32>   mSourceBoneList;
-        AZStd::vector<uint32>   mMap;
+        AZStd::vector<size_t>    mCurrentBoneList;
+        AZStd::vector<size_t>   mSourceBoneList;
+        AZStd::vector<size_t>   mMap;
 
         void FillCurrentListWidget(EMotionFX::Actor* actor, const QString& filterString);
         void FillSourceListWidget(EMotionFX::Actor* actor, const QString& filterString);
         void FillMappingTable(EMotionFX::Actor* currentActor, EMotionFX::Actor* sourceActor);
-        void PerformMapping(uint32 currentNodeIndex, uint32 sourceNodeIndex);
+        void PerformMapping(size_t currentNodeIndex, size_t sourceNodeIndex);
         void RemoveCurrentSelectedMapping();
         void keyPressEvent(QKeyEvent* event);
         void keyReleaseEvent(QKeyEvent* event);

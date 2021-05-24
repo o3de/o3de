@@ -74,7 +74,7 @@ namespace EMotionFX
          * @param node The node to use for the reinitialize, so the node where the mesh belongs to during this initialization.
          * @param lodLevel The LOD level the mesh deformers work on.
          */
-        void ReinitializeDeformers(Actor* actor, Node* node, uint32 lodLevel);
+        void ReinitializeDeformers(Actor* actor, Node* node, size_t lodLevel);
 
         /**
          * Add a given deformer to the back of the stack.

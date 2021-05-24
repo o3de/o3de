@@ -653,7 +653,7 @@ namespace MCommon
 
 
     // render the advanced skeleton
-    void RenderUtil::RenderSkeleton(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<uint32>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices, const AZStd::unordered_set<AZ::u32>* selectedJointIndices, const MCore::RGBAColor& color, const MCore::RGBAColor& selectedColor)
+    void RenderUtil::RenderSkeleton(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<size_t>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices, const AZStd::unordered_set<AZ::u32>* selectedJointIndices, const MCore::RGBAColor& color, const MCore::RGBAColor& selectedColor)
     {
         // check if our render util supports rendering meshes, if not render the fallback skeleton using lines only
         if (GetIsMeshRenderingSupported() == false)
@@ -670,15 +670,15 @@ namespace MCommon
 
         // iterate through all enabled nodes
         MCore::RGBAColor tempColor;
-        const uint32 numEnabled = actorInstance->GetNumEnabledNodes();
-        for (uint32 i = 0; i < numEnabled; ++i)
+        const size_t numEnabled = actorInstance->GetNumEnabledNodes();
+        for (size_t i = 0; i < numEnabled; ++i)
         {
             EMotionFX::Node* joint = skeleton->GetNode(actorInstance->GetEnabledNode(i));
-            const AZ::u32 jointIndex = joint->GetNodeIndex();
-            const AZ::u32 parentIndex = joint->GetParentIndex();
+            const size_t jointIndex = joint->GetNodeIndex();
+            const size_t parentIndex = joint->GetParentIndex();
 
             // check if this node has a parent and is a bone, if not skip it
-            if (parentIndex == MCORE_INVALIDINDEX32 || AZStd::find(begin(boneList), end(boneList), jointIndex) == end(boneList))
+            if (parentIndex == InvalidIndex || AZStd::find(begin(boneList), end(boneList), jointIndex) == end(boneList))
             {
                 continue;
             }
@@ -715,7 +715,7 @@ namespace MCommon
 
 
     // render node orientations
-    void RenderUtil::RenderNodeOrientations(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<uint32>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices, const AZStd::unordered_set<AZ::u32>* selectedJointIndices, float scale, bool scaleBonesOnLength)
+    void RenderUtil::RenderNodeOrientations(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<size_t>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices, const AZStd::unordered_set<AZ::u32>* selectedJointIndices, float scale, bool scaleBonesOnLength)
     {
         // get the actor and the transform data
         const float unitScale = 1.0f / (float)MCore::Distance::ConvertValue(1.0f, MCore::Distance::UNITTYPE_METERS, EMotionFX::GetEMotionFX().GetUnitType());
@@ -726,18 +726,18 @@ namespace MCommon
         const float                     constPreScale   = scale * unitScale * 3.0f;
         AxisRenderingSettings axisRenderingSettings;
 
-        const uint32 numEnabled = actorInstance->GetNumEnabledNodes();
-        for (uint32 i = 0; i < numEnabled; ++i)
+        const size_t numEnabled = actorInstance->GetNumEnabledNodes();
+        for (size_t i = 0; i < numEnabled; ++i)
         {
             EMotionFX::Node* joint = skeleton->GetNode(actorInstance->GetEnabledNode(i));
-            const AZ::u32 jointIndex = joint->GetNodeIndex();
-            const AZ::u32 parentIndex = joint->GetParentIndex();
+            const size_t jointIndex = joint->GetNodeIndex();
+            const size_t parentIndex = joint->GetParentIndex();
 
             if (!visibleJointIndices || visibleJointIndices->empty() ||
                 (visibleJointIndices->find(jointIndex) != visibleJointIndices->end()))
             {
                 // either scale the bones based on their length or use the normal size
-                if (scaleBonesOnLength && parentIndex != MCORE_INVALIDINDEX32 && AZStd::find(begin(boneList), end(boneList), jointIndex) != end(boneList))
+                if (scaleBonesOnLength && parentIndex != InvalidIndex && AZStd::find(begin(boneList), end(boneList), jointIndex) != end(boneList))
                 {
                     static const float axisBoneScale = 50.0f;
                     axisRenderingSettings.mSize = GetBoneScale(actorInstance, joint) * constPreScale * axisBoneScale;

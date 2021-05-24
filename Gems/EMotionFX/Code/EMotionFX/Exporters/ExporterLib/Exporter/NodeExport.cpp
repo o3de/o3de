@@ -430,7 +430,7 @@ namespace ExporterLib
         MCore::LogInfo("============================================================");
 
         // get all nodes that are affected by the skin
-        AZStd::vector<uint32> bones;
+        AZStd::vector<size_t> bones;
         if (actor)
         {
             actor->ExtractBoneList(0, &bones);

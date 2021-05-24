@@ -68,7 +68,7 @@ namespace EMotionFX
          * @param scale This must contain the initial scale, and will be modified inside this method as well.
          * @param weight The absolute weight value.
          */
-        virtual void ApplyTransformation(ActorInstance* actorInstance, uint32 nodeIndex, AZ::Vector3& position, AZ::Quaternion& rotation, AZ::Vector3& scale, float weight) = 0;
+        virtual void ApplyTransformation(ActorInstance* actorInstance, size_t nodeIndex, AZ::Vector3& position, AZ::Quaternion& rotation, AZ::Vector3& scale, float weight) = 0;
 
         /**
          * Get the unique ID of this morph target.
@@ -212,7 +212,7 @@ namespace EMotionFX
          * @param nodeIndex The node number to perform the check on.
          * @result Returns true if the given node will be modified by this morph target, otherwise false is returned.
          */
-        virtual bool Influences(uint32 nodeIndex) const = 0;
+        virtual bool Influences(size_t nodeIndex) const = 0;
 
         /**
          * Calculate the range based weight value from a normalized weight value given by a facial animation key frame.

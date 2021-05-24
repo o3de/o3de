@@ -53,7 +53,7 @@ namespace EMStudio
             MCORE_MEMORYOBJECTCATEGORY(RenderPlugin::EMStudioRenderActor, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK_RENDERPLUGINBASE);
 
             EMotionFX::Actor*                           mActor;
-            AZStd::vector<uint32>                        mBoneList;
+            AZStd::vector<size_t>                        mBoneList;
             RenderGL::GLActor*                          mRenderActor;
             AZStd::vector<EMotionFX::ActorInstance*>     mActorInstances;
             float                                       mNormalsScaleMultiplier;

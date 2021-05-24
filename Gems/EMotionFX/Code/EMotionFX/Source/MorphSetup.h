@@ -34,7 +34,7 @@ namespace EMotionFX
          * This does not influence the return value of GetNumMorphTargets().
          * @param numMorphTargets The number of morph targets to pre-allocate space for.
          */
-        void ReserveMorphTargets(uint32 numMorphTargets);
+        void ReserveMorphTargets(size_t numMorphTargets);
 
         /**
          * Get the number of morph targets inside this  morph setup.
@@ -47,7 +47,7 @@ namespace EMotionFX
          * @param nr The morph target number, must be in range of [0..GetNumMorphTargets()-1].
          * @result A pointer to the morph target.
          */
-        MCORE_INLINE MorphTarget* GetMorphTarget(uint32 nr) const           { return mMorphTargets[nr]; }
+        MCORE_INLINE MorphTarget* GetMorphTarget(size_t nr) const           { return mMorphTargets[nr]; }
 
         /**
          * Add a morph target to this  morph setup.

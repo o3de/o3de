@@ -234,7 +234,7 @@ namespace EMotionFX
          * @param lodLevel The LOD level to check for.
          * @result Returns true when skinned meshes are present in the specified LOD level, otherwise false is returned.
          */
-        bool CheckIfHasSkinnedMeshes(AZ::u32 lodLevel) const;
+        bool CheckIfHasSkinnedMeshes(size_t lodLevel) const;
 
         /**
          * Extract a list with nodes that represent bones.
@@ -245,7 +245,7 @@ namespace EMotionFX
          * @param outBoneList The array of indices to nodes that will be filled with the nodes that are bones. When the outBoneList array
          *                    already contains items, the array will first be cleared, so all existing contents will be lost.
          */
-        void ExtractBoneList(uint32 lodLevel, AZStd::vector<uint32>* outBoneList) const;
+        void ExtractBoneList(size_t lodLevel, AZStd::vector<size_t>* outBoneList) const;
 
         //------------------------------------------------
         void SetPhysicsSetup(const AZStd::shared_ptr<PhysicsSetup>& physicsSetup);
@@ -261,7 +261,7 @@ namespace EMotionFX
          * @param lodLevel The geometry LOD level to work on.
          * @param numMaterials The amount of materials to pre-allocate space for.
          */
-        void ReserveMaterials(uint32 lodLevel, uint32 numMaterials);
+        void ReserveMaterials(size_t lodLevel, size_t numMaterials);
 
         /**
          * Get a given material.
@@ -269,7 +269,7 @@ namespace EMotionFX
          * @param nr The material number to get.
          * @result A pointer to the material.
          */
-        Material* GetMaterial(uint32 lodLevel, uint32 nr) const;
+        Material* GetMaterial(size_t lodLevel, size_t nr) const;
 
         /**
          * Find the material number/index of the material with the specified name.
@@ -279,7 +279,7 @@ namespace EMotionFX
          * @result Returns the material number/index, which you can use to GetMaterial. When no material with the given name
          *         can be found, a value of MCORE_INVALIDINDEX32 is returned.
          */
-        uint32 FindMaterialIndexByName(uint32 lodLevel, const char* name) const;
+        size_t FindMaterialIndexByName(size_t lodLevel, const char* name) const;
 
         /**
          * Set a given material.
@@ -287,14 +287,14 @@ namespace EMotionFX
          * @param nr The material number to set.
          * @param mat The material to set at this index.
          */
-        void SetMaterial(uint32 lodLevel, uint32 nr, Material* mat);
+        void SetMaterial(size_t lodLevel, size_t nr, Material* mat);
 
         /**
          * Add a material to the back of the material list.
          * @param lodLevel The LOD level add the material to.
          * @param mat The material to add to the back of the list.
          */
-        void AddMaterial(uint32 lodLevel, Material* mat);
+        void AddMaterial(size_t lodLevel, Material* mat);
 
         /**
          * Remove the given material from the material list and reassign all material numbers of the sub meshes
@@ -306,14 +306,14 @@ namespace EMotionFX
          * @param lodLevel The LOD level add the material to.
          * @param index The material index of the material to remove.
          */
-        void RemoveMaterial(uint32 lodLevel, uint32 index);
+        void RemoveMaterial(size_t lodLevel, size_t index);
 
         /**
          * Get the number of materials.
          * @param lodLevel The LOD level to get the number of material from.
          * @result The number of materials this actor has/uses.
          */
-        size_t GetNumMaterials(uint32 lodLevel) const;
+        size_t GetNumMaterials(size_t lodLevel) const;
 
         /**
          * Removes all materials from this actor.
@@ -329,7 +329,7 @@ namespace EMotionFX
          * @param index The material number to check.
          * @result Returns true when there are meshes using the material, otherwise false is returned.
          */
-        bool CheckIfIsMaterialUsed(uint32 lodLevel, uint32 index) const;
+        bool CheckIfIsMaterialUsed(size_t lodLevel, size_t index) const;
 
         //------------------------------------------------
 
@@ -348,20 +348,20 @@ namespace EMotionFX
          * @param[in] copySkeletalLODFlags Copy over the skeletal LOD flags in case of true, skip them in case of false.
          * @param[in] delLODActorFromMem When set to true, the method will automatically delete the given copyActor from memory.
          */
-        void CopyLODLevel(Actor* copyActor, uint32 copyLODLevel, uint32 replaceLODLevel, bool copySkeletalLODFlags);
+        void CopyLODLevel(Actor* copyActor, size_t copyLODLevel, size_t replaceLODLevel, bool copySkeletalLODFlags);
 
         /**
          * Insert LOD level at the given position.
          * This function will not copy any meshes, deformer, morph targets or materials but just insert an empty LOD level.
          * @param[in] insertAt The position to insert the new LOD level.
          */
-        void InsertLODLevel(uint32 insertAt);
+        void InsertLODLevel(size_t insertAt);
 
         /**
          * Set the number of LOD levels.
          * This will be called by the importer. Do not use manually.
          */
-        void SetNumLODLevels(uint32 numLODs, bool adjustMorphSetup = true);
+        void SetNumLODLevels(size_t numLODs, bool adjustMorphSetup = true);
 
         /**
          * Get the number of LOD levels inside this actor.
@@ -385,7 +385,7 @@ namespace EMotionFX
          * @param outNumVertices The integer to write the number of vertices in.
          * @param outNumIndices The integer to write the number of indices in.
          */
-        void CalcMeshTotals(uint32 lodLevel, uint32* outNumPolygons, uint32* outNumVertices, uint32* outNumIndices) const;
+        void CalcMeshTotals(size_t lodLevel, uint32* outNumPolygons, uint32* outNumVertices, uint32* outNumIndices) const;
 
         /**
          * Calculates the total number of vertices and indices of all STATIC node meshes for the given LOD.
@@ -394,7 +394,7 @@ namespace EMotionFX
          * @param outNumVertices The integer to write the number of vertices in.
          * @param outNumIndices The integer to write the number of indices in.
          */
-        void CalcStaticMeshTotals(uint32 lodLevel, uint32* outNumVertices, uint32* outNumIndices);
+        void CalcStaticMeshTotals(size_t lodLevel, uint32* outNumVertices, uint32* outNumIndices);
 
         /**
          * Calculates the total number of vertices and indices of all DEFORMABLE node meshes for the given LOD.
@@ -404,7 +404,7 @@ namespace EMotionFX
          * @param outNumVertices The integer to write the number of vertices in.
          * @param outNumIndices The integer to write the number of indices in.
          */
-        void CalcDeformableMeshTotals(uint32 lodLevel, uint32* outNumVertices, uint32* outNumIndices);
+        void CalcDeformableMeshTotals(size_t lodLevel, uint32* outNumVertices, uint32* outNumIndices);
 
         /**
          * Calculates the maximum number of bone influences.
@@ -412,7 +412,7 @@ namespace EMotionFX
          * @param lodLevel The LOD level, where 0 is the highest detail LOD level. This value must be in range of [0..GetNumLODLevels()-1].
          * @result The maximum number of influences. This will be 0 for non-softskinned objects.
          */
-        uint32 CalcMaxNumInfluences(uint32 lodLevel) const;
+        size_t CalcMaxNumInfluences(size_t lodLevel) const;
 
         /**
          * Calculates the maximum number of bone influences.
@@ -424,7 +424,7 @@ namespace EMotionFX
          * @param lodLevel The detail level to calculate the results for. A value of 0 is the highest detail.
          * @result The maximum number of vertex/bone influences. This will be 0 for rigid, non-skinned objects.
          */
-        uint32 CalcMaxNumInfluences(uint32 lodLevel, AZStd::vector<uint32>& outVertexCounts) const;
+        size_t CalcMaxNumInfluences(size_t lodLevel, AZStd::vector<size_t>& outVertexCounts) const;
 
         /**
          * Verify if the skinning will look correctly in the given geometry LOD for a given skeletal LOD level.
@@ -438,7 +438,7 @@ namespace EMotionFX
          *                         disabled nodes from the given skeletal LOD level.
          * @param geometryLODLevel The geometry LOD level to test the skeletal LOD against with.
          */
-        void VerifySkinning(AZStd::vector<uint8>& conflictNodeFlags, uint32 skeletalLODLevel, uint32 geometryLODLevel);
+        void VerifySkinning(AZStd::vector<uint8>& conflictNodeFlags, size_t skeletalLODLevel, size_t geometryLODLevel);
 
         /**
          * Checks if the given material is used by a given mesh.
@@ -446,7 +446,7 @@ namespace EMotionFX
          * @param materialIndex The index of the material to check.
          * @return True if one of the submeshes of the given mesh uses the given material, false if not.
          */
-        bool CheckIfIsMaterialUsed(Mesh* mesh, uint32 materialIndex) const;
+        bool CheckIfIsMaterialUsed(Mesh* mesh, size_t materialIndex) const;
 
         //------------------
 
@@ -546,7 +546,7 @@ namespace EMotionFX
          * @result A smart pointer object to the morph setup. Use the MCore::Pointer<MorphSetup>::GetPointer() to get the actual pointer.
          *         That GetPointer() method will return nullptr when there is no morph setup for the given LOD level.
          */
-        MCORE_INLINE MorphSetup* GetMorphSetup(uint32 geomLODLevel) const       { return mMorphSetups[geomLODLevel]; }
+        MCORE_INLINE MorphSetup* GetMorphSetup(size_t geomLODLevel) const       { return mMorphSetups[geomLODLevel]; }
 
         /**
          * Remove all morph setups. Morph setups contain all morph targtets.
@@ -561,7 +561,7 @@ namespace EMotionFX
          * @param lodLevel The LOD level, which must be in range of [0..GetNumLODLevels()-1].
          * @param setup The  morph setup for this LOD.
          */
-        void SetMorphSetup(uint32 lodLevel, MorphSetup* setup);
+        void SetMorphSetup(size_t lodLevel, MorphSetup* setup);
 
         /**
          * Get the number of node groups inside this actor object.
@@ -735,7 +735,7 @@ namespace EMotionFX
          * @param startNodeIndex The node to start looking at, for example the node index of the finger bone.
          * @result Returns the index of the first active node, when moving up the hierarchy towards the root node. Returns MCORE_INVALIDINDEX32 when not found.
          */
-        size_t FindFirstActiveParentBone(uint32 skeletalLOD, size_t startNodeIndex) const;
+        size_t FindFirstActiveParentBone(size_t skeletalLOD, size_t startNodeIndex) const;
 
         /**
          * Make the geometry LOD levels compatible with the skinning LOD levels.
@@ -777,7 +777,7 @@ namespace EMotionFX
         uint32 GetThreadIndex() const                       { return mThreadIndex; }
 
         Mesh* GetMesh(size_t lodLevel, size_t nodeIndex) const;
-        MeshDeformerStack* GetMeshDeformerStack(uint32 lodLevel, size_t nodeIndex) const;
+        MeshDeformerStack* GetMeshDeformerStack(size_t lodLevel, size_t nodeIndex) const;
 
         /** Finds the mesh points for which the specified node is the node with the highest influence.
          * This is a pretty expensive function which is only intended for use in the editor.
@@ -790,13 +790,13 @@ namespace EMotionFX
         MCORE_INLINE Skeleton* GetSkeleton() const          { return mSkeleton; }
         MCORE_INLINE size_t GetNumNodes() const             { return mSkeleton->GetNumNodes(); }
 
-        void SetMesh(uint32 lodLevel, size_t nodeIndex, Mesh* mesh);
-        void SetMeshDeformerStack(uint32 lodLevel, size_t nodeIndex, MeshDeformerStack* stack);
+        void SetMesh(size_t lodLevel, size_t nodeIndex, Mesh* mesh);
+        void SetMeshDeformerStack(size_t lodLevel, size_t nodeIndex, MeshDeformerStack* stack);
 
-        bool CheckIfHasMorphDeformer(uint32 lodLevel, size_t nodeIndex) const;
-        bool CheckIfHasSkinningDeformer(uint32 lodLevel, size_t nodeIndex) const;
+        bool CheckIfHasMorphDeformer(size_t lodLevel, size_t nodeIndex) const;
+        bool CheckIfHasSkinningDeformer(size_t lodLevel, size_t nodeIndex) const;
 
-        void RemoveNodeMeshForLOD(uint32 lodLevel, size_t nodeIndex, bool destroyMesh = true);
+        void RemoveNodeMeshForLOD(size_t lodLevel, size_t nodeIndex, bool destroyMesh = true);
 
         void SetNumNodes(size_t numNodes);
 

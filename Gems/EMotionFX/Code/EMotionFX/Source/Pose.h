@@ -100,24 +100,24 @@ namespace EMotionFX
 
         MCORE_INLINE const Transform* GetLocalSpaceTransforms() const                               { return mLocalSpaceTransforms.GetReadPtr(); }
         MCORE_INLINE const Transform* GetModelSpaceTransforms() const                               { return mModelSpaceTransforms.GetReadPtr(); }
-        MCORE_INLINE uint32 GetNumTransforms() const                                                { return mLocalSpaceTransforms.GetLength(); }
+        MCORE_INLINE size_t GetNumTransforms() const                                                { return mLocalSpaceTransforms.GetLength(); }
         MCORE_INLINE const ActorInstance* GetActorInstance() const                                  { return mActorInstance; }
         MCORE_INLINE const Actor* GetActor() const                                                  { return mActor; }
         MCORE_INLINE const Skeleton* GetSkeleton() const                                            { return mSkeleton; }
 
-        MCORE_INLINE Transform& GetLocalSpaceTransformDirect(uint32 nodeIndex)                      { return mLocalSpaceTransforms[nodeIndex]; }
-        MCORE_INLINE Transform& GetModelSpaceTransformDirect(uint32 nodeIndex)                      { return mModelSpaceTransforms[nodeIndex]; }
-        MCORE_INLINE const Transform& GetLocalSpaceTransformDirect(uint32 nodeIndex) const          { return mLocalSpaceTransforms[nodeIndex]; }
-        MCORE_INLINE const Transform& GetModelSpaceTransformDirect(uint32 nodeIndex) const          { return mModelSpaceTransforms[nodeIndex]; }
-        MCORE_INLINE void SetLocalSpaceTransformDirect(uint32 nodeIndex, const Transform& transform){ mLocalSpaceTransforms[nodeIndex]  = transform; mFlags[nodeIndex] |= FLAG_LOCALTRANSFORMREADY; }
-        MCORE_INLINE void SetModelSpaceTransformDirect(uint32 nodeIndex, const Transform& transform){ mModelSpaceTransforms[nodeIndex] = transform; mFlags[nodeIndex] |= FLAG_MODELTRANSFORMREADY; }
-        MCORE_INLINE void InvalidateLocalSpaceTransform(uint32 nodeIndex)                           { mFlags[nodeIndex] &= ~FLAG_LOCALTRANSFORMREADY; }
-        MCORE_INLINE void InvalidateModelSpaceTransform(uint32 nodeIndex)                           { mFlags[nodeIndex] &= ~FLAG_MODELTRANSFORMREADY; }
+        MCORE_INLINE Transform& GetLocalSpaceTransformDirect(size_t nodeIndex)                      { return mLocalSpaceTransforms[nodeIndex]; }
+        MCORE_INLINE Transform& GetModelSpaceTransformDirect(size_t nodeIndex)                      { return mModelSpaceTransforms[nodeIndex]; }
+        MCORE_INLINE const Transform& GetLocalSpaceTransformDirect(size_t nodeIndex) const          { return mLocalSpaceTransforms[nodeIndex]; }
+        MCORE_INLINE const Transform& GetModelSpaceTransformDirect(size_t nodeIndex) const          { return mModelSpaceTransforms[nodeIndex]; }
+        MCORE_INLINE void SetLocalSpaceTransformDirect(size_t nodeIndex, const Transform& transform){ mLocalSpaceTransforms[nodeIndex]  = transform; mFlags[nodeIndex] |= FLAG_LOCALTRANSFORMREADY; }
+        MCORE_INLINE void SetModelSpaceTransformDirect(size_t nodeIndex, const Transform& transform){ mModelSpaceTransforms[nodeIndex] = transform; mFlags[nodeIndex] |= FLAG_MODELTRANSFORMREADY; }
+        MCORE_INLINE void InvalidateLocalSpaceTransform(size_t nodeIndex)                           { mFlags[nodeIndex] &= ~FLAG_LOCALTRANSFORMREADY; }
+        MCORE_INLINE void InvalidateModelSpaceTransform(size_t nodeIndex)                           { mFlags[nodeIndex] &= ~FLAG_MODELTRANSFORMREADY; }
 
-        MCORE_INLINE void SetMorphWeight(uint32 index, float weight)                                { mMorphWeights[index] = weight; }
-        MCORE_INLINE float GetMorphWeight(uint32 index) const                                       { return mMorphWeights[index]; }
-        MCORE_INLINE uint32 GetNumMorphWeights() const                                              { return mMorphWeights.GetLength(); }
-        void ResizeNumMorphs(uint32 numMorphTargets);
+        MCORE_INLINE void SetMorphWeight(size_t index, float weight)                                { mMorphWeights[index] = weight; }
+        MCORE_INLINE float GetMorphWeight(size_t index) const                                       { return mMorphWeights[index]; }
+        MCORE_INLINE size_t GetNumMorphWeights() const                                              { return mMorphWeights.GetLength(); }
+        void ResizeNumMorphs(size_t numMorphTargets);
 
         /**
          * Blend this pose into a specified destination pose.
@@ -168,8 +168,8 @@ namespace EMotionFX
 
         Pose& operator=(const Pose& other);
 
-        MCORE_INLINE uint8 GetFlags(uint32 nodeIndex) const         { return mFlags[nodeIndex]; }
-        MCORE_INLINE void SetFlags(uint32 nodeIndex, uint8 flags)   { mFlags[nodeIndex] = flags; }
+        MCORE_INLINE uint8 GetFlags(size_t nodeIndex) const         { return mFlags[nodeIndex]; }
+        MCORE_INLINE void SetFlags(size_t nodeIndex, uint8 flags)   { mFlags[nodeIndex] = flags; }
 
         bool HasPoseData(const AZ::TypeId& typeId) const;
         PoseData* GetPoseDataByType(const AZ::TypeId& typeId) const;

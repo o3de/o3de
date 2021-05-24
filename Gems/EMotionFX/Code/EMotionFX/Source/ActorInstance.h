@@ -801,7 +801,7 @@ namespace EMotionFX
          * @param index An index in the array of enabled nodes. This must be in range of [0..GetNumEnabledNodes()-1].
          * @result The node number, which relates to Actor::GetNode( returnValue ).
          */
-        MCORE_INLINE uint16 GetEnabledNode(uint32 index) const                  { return mEnabledNodes[index]; }
+        MCORE_INLINE uint16 GetEnabledNode(size_t index) const                  { return mEnabledNodes[index]; }
 
         /**
          * Enable all nodes inside the actor instance.

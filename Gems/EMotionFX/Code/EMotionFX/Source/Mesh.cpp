@@ -740,7 +740,7 @@ namespace EMotionFX
 
 
     // returns the maximum number of weights/influences for this mesh
-    uint32 Mesh::CalcMaxNumInfluences() const
+    size_t Mesh::CalcMaxNumInfluences() const
     {
         // try to locate the skinning attribute information
         SkinningInfoVertexAttributeLayer* skinningLayer = (SkinningInfoVertexAttributeLayer*)FindSharedVertexAttributeLayer(SkinningInfoVertexAttributeLayer::TYPE_ID);
@@ -760,37 +760,33 @@ namespace EMotionFX
         }
 
         // return the maximum number of influences
-        return aznumeric_cast<uint32>(maxInfluences);
+        return maxInfluences;
     }
 
 
     // returns the maximum number of weights/influences for this mesh plus some extra information
-    uint32 Mesh::CalcMaxNumInfluences(AZStd::vector<uint32>& outVertexCounts) const
+    size_t Mesh::CalcMaxNumInfluences(AZStd::vector<size_t>& outVertexCounts) const
     {
-        size_t maxInfluences = 0;
-
         // Reset values.
         outVertexCounts.resize(CalcMaxNumInfluences() + 1);
-        for (size_t j = 0; j < outVertexCounts.size(); ++j)
-        {
-            outVertexCounts[j] = 0;
-        }
+        AZStd::fill(begin(outVertexCounts), end(outVertexCounts), 0);
 
         // Does the mesh have a skinning layer? If no we can quit directly as this means there are only unskinned vertices.
         SkinningInfoVertexAttributeLayer* skinningLayer = (SkinningInfoVertexAttributeLayer*)FindSharedVertexAttributeLayer(SkinningInfoVertexAttributeLayer::TYPE_ID);
         if (!skinningLayer)
         {
             outVertexCounts[0] = GetNumVertices();
-            return aznumeric_cast<uint32>(maxInfluences);
+            return 0;
         }
 
-        uint32* orgVerts = (uint32*)FindVertexData(Mesh::ATTRIB_ORGVTXNUMBERS);
+        const uint32* orgVerts = (uint32*)FindVertexData(Mesh::ATTRIB_ORGVTXNUMBERS);
 
         // Get the vertex counts for the influences.
+        size_t maxInfluences = 0;
         const uint32 numVerts = GetNumVertices();
         for (uint32 i = 0; i < numVerts; ++i)
         {
-            uint32 orgVertex = orgVerts[i];
+            const uint32 orgVertex = orgVerts[i];
 
             // Increase the number of vertices for the given influence value.
             const size_t numInfluences = skinningLayer->GetNumInfluences(orgVertex);
@@ -800,7 +796,7 @@ namespace EMotionFX
             maxInfluences = AZStd::max(maxInfluences, numInfluences);
         }
 
-        return aznumeric_cast<uint32>(maxInfluences);
+        return maxInfluences;
     }
 
 

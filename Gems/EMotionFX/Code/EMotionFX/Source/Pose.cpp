@@ -1334,7 +1334,7 @@ namespace EMotionFX
     }
 
 
-    void Pose::ResizeNumMorphs(uint32 numMorphTargets)
+    void Pose::ResizeNumMorphs(size_t numMorphTargets)
     {
         mMorphWeights.Resize(numMorphTargets);
     }

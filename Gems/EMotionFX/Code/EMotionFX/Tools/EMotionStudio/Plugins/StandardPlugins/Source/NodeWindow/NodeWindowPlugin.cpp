@@ -286,18 +286,18 @@ namespace EMStudio
 
         // get access to the actor and the number of nodes
         EMotionFX::Actor* actor = actorInstance->GetActor();
-        const uint32 numNodes = actor->GetNumNodes();
+        const size_t numNodes = actor->GetNumNodes();
 
         // reserve memory for the visible node indices
         m_visibleNodeIndices.reserve(numNodes);
 
         // extract the bones from the actor
-        AZStd::vector<uint32> boneList;
+        AZStd::vector<size_t> boneList;
         actor->ExtractBoneList(actorInstance->GetLODLevel(), &boneList);
 
         // iterate through all nodes and check if the node is visible
         AZStd::string nodeName;
-        for (uint32 i = 0; i < numNodes; ++i)
+        for (size_t i = 0; i < numNodes; ++i)
         {
             EMotionFX::Node* node = actor->GetSkeleton()->GetNode(i);
 
@@ -305,7 +305,7 @@ namespace EMStudio
             nodeName = node->GetNameString();
             AZStd::to_lower(nodeName.begin(), nodeName.end());
 
-            const uint32        nodeIndex   = node->GetNodeIndex();
+            const size_t        nodeIndex   = node->GetNodeIndex();
             EMotionFX::Mesh*    mesh        = actor->GetMesh(actorInstance->GetLODLevel(), nodeIndex);
             const bool          isMeshNode  = (mesh);
             const bool          isBone      = (AZStd::find(begin(boneList), end(boneList), nodeIndex) != end(boneList));

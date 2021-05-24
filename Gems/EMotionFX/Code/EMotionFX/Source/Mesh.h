@@ -462,7 +462,7 @@ namespace EMotionFX
          * This is calculated by for each vertex checking the number of bone influences, and take the maximum of that amount.
          * @result The maximum number of influences. This will be 0 for non-softskinned objects.
          */
-        uint32 CalcMaxNumInfluences() const;
+        size_t CalcMaxNumInfluences() const;
 
         /**
          * Calculates the maximum number of bone influences.
@@ -472,7 +472,7 @@ namespace EMotionFX
          *                     which are effected by 4 bones.
          * @result The maximum number of influences. This will be 0 for non-softskinned objects.
          */
-        uint32 CalcMaxNumInfluences(AZStd::vector<uint32>& outVertexCounts) const;
+        size_t CalcMaxNumInfluences(AZStd::vector<size_t>& outVertexCounts) const;
 
         /**
          * Extract a list of positions of the original vertices.
