@@ -320,6 +320,7 @@ namespace AZ
         {
             DependencySortResult m_code;
             AZStd::string m_message;
+            AZStd::string m_extendedMessage;
         };
 
         using DependencySortOutcome = AZ::Outcome<void, FailedSortDetails>;

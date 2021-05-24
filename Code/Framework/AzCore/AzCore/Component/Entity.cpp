@@ -932,13 +932,34 @@ namespace AZ
             return candidateInfo;
         }
 
+        static constexpr AZStd::string_view GetExtendedDependencySortFailureMessage(const Entity::DependencySortResult code)
+        {
+            switch (code)
+            {
+            case Entity::DependencySortResult::MissingRequiredService:
+                return {"One or more components that provide required services are not in the list of components to activate."};
+            case Entity::DependencySortResult::HasCyclicDependency:
+                return {"A cycle in component service dependencies was detected."};
+            case Entity::DependencySortResult::HasIncompatibleServices:
+                return {"A component is incompatible with a service provided by another component."};
+            case Entity::DependencySortResult::DescriptorNotRegistered:
+                return {"A component descriptor was not registered with the ComponentApplication."};
+            case Entity::DependencySortResult::MissingDescriptor:
+                return {"Cannot find the component's ComponentDescriptor."};
+            default:
+                return {};
+            }
+        }
+
         // Shortcut for returning a FailedSortDetails as an AZ::Failure.
         static FailureValue<Entity::FailedSortDetails> FailureCode(Entity::DependencySortResult code, const char* formatMessage, ...)
         {
             va_list args;
             va_start(args, formatMessage);
+            auto failure = Failure(Entity::FailedSortDetails{code, AZStd::string::format_arg(formatMessage, args), GetExtendedDependencySortFailureMessage(code)});
+            va_end(args);
 
-            return Failure(Entity::FailedSortDetails{ code, AZStd::string::format_arg(formatMessage, args) });
+            return failure;
         }
 
         // Function that creates a nice error message when incompatible components are found.
