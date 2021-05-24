@@ -24,6 +24,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QIcon>
 #include <QMenu>
 #include <QToolButton>
+#include <QAbstractItemView>
 AZ_POP_DISABLE_WARNING
 
 namespace MaterialEditor
@@ -86,11 +87,13 @@ namespace MaterialEditor
         // Add model combo box
         auto modelPresetComboBox = new ModelPresetComboBox(this);
         modelPresetComboBox->setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy::AdjustToContents);
+        modelPresetComboBox->view()->setMinimumWidth(200);
         addWidget(modelPresetComboBox);
 
         // Add lighting preset combo box
         auto lightingPresetComboBox = new LightingPresetComboBox(this);
         lightingPresetComboBox->setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy::AdjustToContents);
+        lightingPresetComboBox->view()->setMinimumWidth(200);
         addWidget(lightingPresetComboBox);
 
         MaterialViewportNotificationBus::Handler::BusConnect();
