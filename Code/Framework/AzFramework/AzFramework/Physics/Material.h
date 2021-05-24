@@ -227,22 +227,10 @@ namespace Physics
     ///
     /// Since AZ::Data::Asset doesn't reflect the data to EditContext 
     /// we have to have a wrapper doing it.
-    class MaterialLibraryAssetReflectionWrapper
+    class DefaultMaterialLibraryAssetReflectionWrapper
     {
     public:
-        AZ_CLASS_ALLOCATOR(MaterialLibraryAssetReflectionWrapper, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(Physics::MaterialLibraryAssetReflectionWrapper, "{3D2EF5DF-EFD0-47EB-B88F-3E6FE1FEE5B0}");
-        static void Reflect(AZ::ReflectContext* context);
-
-        AZ::Data::Asset<Physics::MaterialLibraryAsset> m_asset =
-            AZ::Data::AssetLoadBehavior::NoLoad;
-    };
-
-    /// Customized material library for use as default material library
-    class DefaultMaterialLibraryAssetReflectionWrapper : public Physics::MaterialLibraryAssetReflectionWrapper
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(MaterialLibraryAssetReflectionWrapper, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DefaultMaterialLibraryAssetReflectionWrapper, AZ::SystemAllocator, 0);
         AZ_TYPE_INFO(Physics::DefaultMaterialLibraryAssetReflectionWrapper, "{02AB8CBC-D35B-4E0F-89BA-A96D94DAD4F9}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -250,12 +238,10 @@ namespace Physics
             AZ::Data::AssetLoadBehavior::NoLoad;
     };
 
-    /// The class is used to store a MaterialLibraryAsset and a vector of MaterialIds selected from the library
+    /// The class is used to store a vector of MaterialIds selected from the library
     /// =======================================================================
     ///
-    /// This class is used to store a reference to the library asset and user's
-    /// selection of the materials from this library.\n
-    /// It also reflects UI controls for assigning MaterialLibraryAsset and selecting a material from it.
+    /// This class is used to store the user's selection of the materials from this library.
     /// You can reflect this class in EditorContext to provide UI for selecting materials
     /// on any custom component or QWidget.
     class MaterialSelection
@@ -269,27 +255,6 @@ namespace Physics
 
         static void Reflect(AZ::ReflectContext* context);
 
-        /// Returns whether MaterialLibraryAsset assigned to this selection exists and valid. Attempts to load
-        /// the library if it's not loaded yet.
-        /// @return true if MaterialLibraryAsset has a valid AssetId, loaded and isn't empty
-        bool IsMaterialLibraryValid() const;
-
-        /// Looks up MaterialLibraryAsset for MaterialFromAssetConfiguration with MaterialId that is stored intrenally.
-        /// @param configuration contains material data if there is a material selected by user
-        /// and if it exists in the MaterialLibraryAsset
-        /// @param materialId MaterialId to retrieve MaterialFromAssetConfiguration for
-        /// @return true if lookup was successful.
-        bool GetMaterialConfiguration(Physics::MaterialFromAssetConfiguration& configuration, const Physics::MaterialId& materialId) const;
-
-        /// Sets and loads MaterialLibraryAsset with specified AssetId. 
-        /// It is used to construct MaterialSelection at runtime.
-        /// It is not a typical use case and mostly needed to convert legacy entities and auto-generate material libraries
-        /// @param assetId AssetId to create MaterialLibraryAsset with
-        void SetMaterialLibrary(const AZ::Data::AssetId& assetId);
-
-        /// Sets the material library to none, this will cause to use the project-wide default material library
-        void ResetToDefaultMaterialLibrary();
-
         /// Sets an array of material slots to pick MaterialIds for. Having multiple slots is required for assigning multiple materials on a mesh 
         /// or heightfield object. SlotsArray can be empty and in this case Default slot will be created.
         /// @param slots Array of names for slots. Can be empty, in this case Default slot will be created
@@ -298,39 +263,26 @@ namespace Physics
         /// Returns a list of MaterialId that were assigned for each corresponding slot.
         const AZStd::vector<Physics::MaterialId>& GetMaterialIdsAssignedToSlots() const;
 
-        /// Sets the MaterialId from MaterialLibraryAsset as the selected material at a specific slotIndex.
-        /// @param materialId MaterialId that user selected from the MaterialLibraryAsset
-        /// @param slotIndex index of the slot to set MaterialId for
+        /// Sets the MaterialId as the selected material at a specific slotIndex.
+        /// @param materialId MaterialId that user selected
+        /// @param slotIndex Index of the slot to set the MaterialId
         void SetMaterialId(const Physics::MaterialId& materialId, int slotIndex = 0);
 
-        /// Returns the material library asset id.
-        AZ::Data::AssetId GetMaterialLibraryAssetId() const;
-
         /// Returns the material id assigned to this selection at a specific slotIndex.
-        /// @param slotIndex index of the slot to retrieve MaterialId for
+        /// @param slotIndex Index of the slot to retrieve the MaterialId
         Physics::MaterialId GetMaterialId(int slotIndex = 0) const;
 
-        /// Returns the material library asset.
-        const Physics::MaterialLibraryAsset* GetMaterialLibraryAssetData() const;
-
-        /// Returns the material library asset hint(UI display string)
-        const AZStd::string& GetMaterialLibraryAssetHint() const;
-
-        /// Called when the material library has changed
+        /// Called when the default material library has changed
         void OnDefaultMaterialLibraryChanged(const AZ::Data::AssetId& defaultMaterialLibraryId);
 
         /// Set if the material slots are editable in the edit context
         void SetSlotsReadOnly(bool readOnly);
 
     private:
-        AZ::Data::Asset<Physics::MaterialLibraryAsset> m_materialLibrary { AZ::Data::AssetLoadBehavior::NoLoad };
         AZStd::vector<Physics::MaterialId> m_materialIdsAssignedToSlots;
         SlotsArray m_materialSlots;
         bool m_slotsReadOnly = false;
         
-        const AZ::Data::Asset<Physics::MaterialLibraryAsset>& GetMaterialLibraryAsset() const;
-        AZ::Data::Asset<Physics::MaterialLibraryAsset> LoadAsset() const;
-        bool IsDefaultMaterialLibraryAsset() const;
         void SyncSelectionToMaterialLibrary();
         
         static const AZ::Data::Asset<Physics::MaterialLibraryAsset>& GetDefaultMaterialLibrary();

@@ -41,6 +41,7 @@ class TestAutomation(TestAutomationBase):
         from . import C5932041_PhysXForceRegion_LocalSpaceForceOnRigidBodies as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.xfail(reason="Fails until level is updated using material library from PhysX Configuration (LYN-3961)")
     @revert_physics_config
     def test_C4044459_Material_DynamicFriction(self, request, workspace, editor, launcher_platform):
         from . import C4044459_Material_DynamicFriction as test_module

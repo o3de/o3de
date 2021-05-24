@@ -15,6 +15,7 @@
 #include "Material.h"
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <PxPhysicsAPI.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
 
 namespace PhysX
 {
@@ -265,34 +266,49 @@ namespace PhysX
     void MaterialsManager::GetMaterials(const Physics::MaterialSelection& materialSelection
         , AZStd::vector<AZStd::weak_ptr<Physics::Material>>& outMaterials)
     {
+        const auto& materialIdsAssignedToSlots = materialSelection.GetMaterialIdsAssignedToSlots();
+
         outMaterials.clear();
-        outMaterials.reserve(materialSelection.GetMaterialIdsAssignedToSlots().size());
+        if (materialIdsAssignedToSlots.empty())
+        {
+            // if the materialSelection is invalid we still
+            // return a default material as a fallback behavior
+            outMaterials.emplace_back(GetDefaultMaterial());
+            return;
+        }
+
+        // It is important to return exactly the amount of materials specified in materialSelection
+        // If a number of materials different to what was cooked is assigned on a physx mesh it will lead to undefined 
+        // behavior and subtle bugs. Unfortunately, there's no warning or assertion on physx side at the shape creation time, 
+        // nor mention of this in the documentation
+        outMaterials.resize(materialIdsAssignedToSlots.size(), GetDefaultMaterial());
 
         // Ensure PxMaterial instances are initialized if possible.
         InitializeMaterials(materialSelection);
 
-        for (const auto& id : materialSelection.GetMaterialIdsAssignedToSlots())
+        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        if (!physicsSystem)
         {
+            return;
+        }
+
+        Physics::MaterialLibraryAsset* materialLibrary = physicsSystem->GetDefaultMaterialLibrary().Get();
+        if (!materialLibrary)
+        {
+            return;
+        }
+
+        for (size_t slotIndex = 0; slotIndex < materialIdsAssignedToSlots.size(); ++slotIndex)
+        {
+            const auto& id = materialIdsAssignedToSlots[slotIndex];
             Physics::MaterialFromAssetConfiguration configuration;
-            if (materialSelection.GetMaterialConfiguration(configuration, id))
+            if (materialLibrary->GetDataForMaterialId(id, configuration))
             {
                 auto iterator = m_materialsFromAssets.find(id.GetUuid());
                 if (iterator != m_materialsFromAssets.end())
                 {
-                    outMaterials.push_back(iterator->second);
+                    outMaterials[slotIndex] = iterator->second;
                 }
-                else
-                {
-                    outMaterials.push_back(GetDefaultMaterial());
-                }
-            }
-            else
-            {
-                // It is important to return exactly the amount of materials specified in materialSelection
-                // If a number of materials different to what was cooked is assigned on a physx mesh it will lead to undefined 
-                // behavior and subtle bugs. Unfortunately, there's no warning or assertion on physx side at the shape creation time, 
-                // nor mention of this in the documentation
-                outMaterials.push_back(GetDefaultMaterial());
             }
         }
     }
@@ -316,25 +332,29 @@ namespace PhysX
     {
         const AZ::u32 defaultMaterialIndex = 0;
 
-        if (!materialSelection.IsMaterialLibraryValid())
-        {
-            return defaultMaterialIndex;
-        }
-
-        auto materialAsset = AZ::Data::AssetManager::Instance().GetAsset<Physics::MaterialLibraryAsset>(materialSelection.GetMaterialLibraryAssetId(), AZ::Data::AssetLoadBehavior::Default);
-
-        materialAsset.BlockUntilLoadComplete();
-
-        AZStd::vector<Physics::MaterialFromAssetConfiguration> materialList = materialAsset.Get()->GetMaterialsData();
-        
         const AZStd::vector<Physics::MaterialId>& selectedMaterials = materialSelection.GetMaterialIdsAssignedToSlots();
-        if (selectedMaterials.size() == 0)
+        if (selectedMaterials.empty())
         {
             return defaultMaterialIndex;
         }
+        const Physics::MaterialId& firstSelectedMaterialId = selectedMaterials[0];
+
+        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        if (!physicsSystem)
+        {
+            return defaultMaterialIndex;
+        }
+
+        auto* materialLibrary = physicsSystem->GetDefaultMaterialLibrary().Get();
+        if (!materialLibrary)
+        {
+            return defaultMaterialIndex;
+        }
+
+        const AZStd::vector<Physics::MaterialFromAssetConfiguration> materialList = materialLibrary->GetMaterialsData();
         for (AZ::u32 i=0; i < materialList.size(); ++i)
         {
-            if (materialList[i].m_id == selectedMaterials[0])
+            if (materialList[i].m_id == firstSelectedMaterialId)
             {
                 return i + 1; // Index 0 is reserved for Default material.
             }
@@ -346,42 +366,19 @@ namespace PhysX
     void MaterialsManager::GetPxMaterials(const Physics::MaterialSelection& materialSelection
         , AZStd::vector<physx::PxMaterial*>& outMaterials)
     {
-        outMaterials.clear();
-        if (materialSelection.GetMaterialIdsAssignedToSlots().empty())
-        {
-            // if the materialSelection is invalid we still
-            // return a default material as a fallback behavior
-            outMaterials.push_back(GetDefaultMaterial()->GetPxMaterial());
-            return;
-        }
-        outMaterials.reserve(materialSelection.GetMaterialIdsAssignedToSlots().size());
+        AZStd::vector<AZStd::weak_ptr<Physics::Material>> materials;
+        GetMaterials(materialSelection, materials);
 
-        // Ensure PxMaterial instances are initialized if possible.
-        InitializeMaterials(materialSelection);
-
-        for (const auto& id : materialSelection.GetMaterialIdsAssignedToSlots())
+        outMaterials.reserve(materials.size());
+        for (const auto& material : materials)
         {
-            Physics::MaterialFromAssetConfiguration configuration;
-            if (materialSelection.GetMaterialConfiguration(configuration, id))
-            {
-                auto iterator = m_materialsFromAssets.find(id.GetUuid());
-                if (iterator != m_materialsFromAssets.end())
-                {
-                    outMaterials.push_back(iterator->second->GetPxMaterial());
-                }
-                else
-                {
-                    outMaterials.push_back(GetDefaultMaterial()->GetPxMaterial());
-                }
-            }
-            else
-            {
-                // It is important to return exactly the amount of materials specified in materialSelection
-                // If a number of materials different to what was cooked is assigned on a physx mesh it will lead to undefined 
-                // behavior and subtle bugs. Unfortunately, there's no warning or assertion on physx side at the shape creation time, 
-                // nor mention of this in the documentation
-                outMaterials.push_back(GetDefaultMaterial()->GetPxMaterial());
-            }
+            AZStd::shared_ptr<Physics::Material> physicsMaterial = material.lock();
+            AZ_Assert(physicsMaterial, "Invalid physics material");
+
+            PhysX::Material* physxMaterial = azrtti_cast<PhysX::Material*>(physicsMaterial.get());
+            AZ_Assert(physxMaterial, "Invalid physx material");
+
+            outMaterials.emplace_back(physxMaterial->GetPxMaterial());
         }
     }
 
@@ -409,11 +406,23 @@ namespace PhysX
 
     void MaterialsManager::InitializeMaterials(const Physics::MaterialSelection& materialSelection)
     {
+        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        if (!physicsSystem)
+        {
+            return;
+        }
+
+        auto* materialLibrary = physicsSystem->GetDefaultMaterialLibrary().Get();
+        if (!materialLibrary)
+        {
+            return;
+        }
+
         const AZStd::vector<Physics::MaterialId>& materialIds = materialSelection.GetMaterialIdsAssignedToSlots();
         for (const auto& id : materialIds)
         {
             Physics::MaterialFromAssetConfiguration configuration;
-            if (!materialSelection.GetMaterialConfiguration(configuration, id))
+            if (!materialLibrary->GetDataForMaterialId(id, configuration))
             {
                 continue; // Default material skips code below.
             }
