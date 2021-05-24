@@ -177,7 +177,7 @@ namespace EMotionFX
         const float normalizedWeight = CalcNormalizedWeight(newWeight); // convert in range of 0..1
 
         // calculate the new transformations for all nodes of this morph target
-        const uint32 numTransforms = mTransforms.GetLength();
+        const uint32 numTransforms = mTransforms.size();
         for (uint32 i = 0; i < numTransforms; ++i)
         {
             // if this is the node that gets modified by this transform
@@ -214,7 +214,7 @@ namespace EMotionFX
         }
 
         // check all transforms
-        const uint32 numTransforms = mTransforms.GetLength();
+        const uint32 numTransforms = mTransforms.size();
         for (uint32 i = 0; i < numTransforms; ++i)
         {
             if (mTransforms[i].mNodeIndex == nodeIndex)
@@ -239,7 +239,7 @@ namespace EMotionFX
         Transform newTransform;
 
         // calculate the new transformations for all nodes of this morph target
-        const uint32 numTransforms = mTransforms.GetLength();
+        const uint32 numTransforms = mTransforms.size();
         for (uint32 i = 0; i < numTransforms; ++i)
         {
             // try to find the node
@@ -277,9 +277,9 @@ namespace EMotionFX
         }
     }
 
-    uint32 MorphTargetStandard::GetNumDeformDatas() const
+    size_t MorphTargetStandard::GetNumDeformDatas() const
     {
-        return static_cast<uint32>(mDeformDatas.size());
+        return mDeformDatas.size();
     }
 
     MorphTargetStandard::DeformData* MorphTargetStandard::GetDeformData(uint32 nr) const
@@ -294,12 +294,13 @@ namespace EMotionFX
 
     void MorphTargetStandard::AddTransformation(const Transformation& transform)
     {
-        mTransforms.Add(transform);
+        mTransforms.emplace_back(transform);
     }
 
-    uint32 MorphTargetStandard::GetNumTransformations() const
+    // get the number of transformations in this morph target
+    size_t MorphTargetStandard::GetNumTransformations() const
     {
-        return mTransforms.GetLength();
+        return mTransforms.size();
     }
 
     MorphTargetStandard::Transformation& MorphTargetStandard::GetTransformation(uint32 nr)
@@ -321,7 +322,7 @@ namespace EMotionFX
 
         // now clone the deform datas
         clone->mDeformDatas.resize(mDeformDatas.size());
-        for (size_t i = 0; i < mDeformDatas.size(); ++i)
+        for (uint32 i = 0; i < mDeformDatas.size(); ++i)
         {
             clone->mDeformDatas[i] = mDeformDatas[i]->Clone();
         }
@@ -404,7 +405,7 @@ namespace EMotionFX
     // pre-allocate memory for the transformations
     void MorphTargetStandard::ReserveTransformations(uint32 numTransforms)
     {
-        mTransforms.Reserve(numTransforms);
+        mTransforms.reserve(numTransforms);
     }
 
     void MorphTargetStandard::RemoveDeformData(uint32 index, bool delFromMem)
@@ -419,7 +420,7 @@ namespace EMotionFX
 
     void MorphTargetStandard::RemoveTransformation(uint32 index)
     {
-        mTransforms.Remove(index);
+        mTransforms.erase(AZStd::next(begin(mTransforms), index));
     }
 
 
@@ -433,7 +434,7 @@ namespace EMotionFX
         }
 
         // scale the transformations
-        const uint32 numTransformations = mTransforms.GetLength();
+        const uint32 numTransformations = mTransforms.size();
         for (uint32 i = 0; i < numTransformations; ++i)
         {
             Transformation& transform = mTransforms[i];

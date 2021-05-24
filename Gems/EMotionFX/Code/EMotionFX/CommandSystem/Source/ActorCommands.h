@@ -25,7 +25,7 @@ namespace CommandSystem
     AZStd::string                                   mOldAttachmentNodes;
     AZStd::string                                   mOldExcludedFromBoundsNodes;
     AZStd::string                                   mOldName;
-    MCore::Array<EMotionFX::Actor::NodeMirrorInfo>  mOldMirrorSetup;
+    AZStd::vector<EMotionFX::Actor::NodeMirrorInfo>  mOldMirrorSetup;
     bool                                            mOldDirtyFlag;
 
     void                                            SetIsAttachmentNode(EMotionFX::Actor* actor, bool isAttachmentNode);

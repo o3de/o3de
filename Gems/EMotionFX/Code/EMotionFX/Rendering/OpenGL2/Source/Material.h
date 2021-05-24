@@ -40,7 +40,7 @@ namespace RenderGL
         uint32                  mNumVertices;   /**< The number of vertices in the primitive. */
         uint32                  mMaterialIndex; /**< The material index which is mapped to the primitive. */
 
-        MCore::Array<uint32>    mBoneNodeIndices;/**< Mapping from local bones 0-50 to nodes. */
+        AZStd::vector<uint32>    mBoneNodeIndices;/**< Mapping from local bones 0-50 to nodes. */
     };
 
 

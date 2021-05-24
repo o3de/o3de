@@ -222,6 +222,6 @@ namespace CommandSystem
     void COMMANDSYSTEM_API CommandHelperAddMotionEvent(const char* trackName, float startTime, float endTime, const EMotionFX::EventDataSet& eventDatas = EMotionFX::EventDataSet {}, MCore::CommandGroup* commandGroup = nullptr);
     void COMMANDSYSTEM_API CommandHelperRemoveMotionEvent(const char* trackName, uint32 eventNr, MCore::CommandGroup* commandGroup = nullptr);
     void COMMANDSYSTEM_API CommandHelperRemoveMotionEvent(uint32 motionID, const char* trackName, uint32 eventNr, MCore::CommandGroup* commandGroup = nullptr);
-    void COMMANDSYSTEM_API CommandHelperRemoveMotionEvents(const char* trackName, const MCore::Array<uint32>& eventNumbers, MCore::CommandGroup* commandGroup = nullptr);
+    void COMMANDSYSTEM_API CommandHelperRemoveMotionEvents(const char* trackName, const AZStd::vector<uint32>& eventNumbers, MCore::CommandGroup* commandGroup = nullptr);
     void COMMANDSYSTEM_API CommandHelperMotionEventTrackChanged(uint32 eventNr, float startTime, float endTime, const char* oldTrackName, const char* newTrackName);
 } // namespace CommandSystem

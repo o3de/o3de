@@ -99,7 +99,7 @@ namespace EMotionFX
         //void OnStateEnd(AnimGraphNode* state);
         //void OnStartTransition(AnimGraphStateTransition* transition);
         //void OnEndTransition(AnimGraphStateTransition* transition);
-        //void CollectActiveAnimGraphNodes(MCore::Array<AnimGraphNode*>* outNodes, const AZ::TypeId& nodeType = AZ::TypeId::CreateNull());
+        //void CollectActiveAnimGraphNodes(AZStd::vector<AnimGraphNode*>* outNodes, const AZ::TypeId& nodeType = AZ::TypeId::CreateNull());
         //void CollectActiveNetTimeSyncNodes(AZStd::vector<AnimGraphNode*>* outNodes);
         //uint32 GetObjectFlags(uint32 objectIndex) const;
         //void SetObjectFlags(uint32 objectIndex, uint32 flags);

@@ -1287,14 +1287,14 @@ namespace EMotionFX
 
 
     // collect child nodes of the given type
-    void AnimGraphNode::CollectChildNodesOfType(const AZ::TypeId& nodeType, MCore::Array<AnimGraphNode*>* outNodes) const
+    void AnimGraphNode::CollectChildNodesOfType(const AZ::TypeId& nodeType, AZStd::vector<AnimGraphNode*>* outNodes) const
     {
         for (AnimGraphNode* childNode : mChildNodes)
         {
             // check the current node type and add it to the output array in case they are the same
             if (azrtti_typeid(childNode) == nodeType)
             {
-                outNodes->Add(childNode);
+                outNodes->emplace_back(childNode);
             }
         }
     }
@@ -1324,7 +1324,7 @@ namespace EMotionFX
         }
     }
 
-    void AnimGraphNode::RecursiveCollectTransitionConditionsOfType(const AZ::TypeId& conditionType, MCore::Array<AnimGraphTransitionCondition*>* outConditions) const
+    void AnimGraphNode::RecursiveCollectTransitionConditionsOfType(const AZ::TypeId& conditionType, AZStd::vector<AnimGraphTransitionCondition*>* outConditions) const
     {
         // check if the current node is a state machine
         if (azrtti_typeid(this) == azrtti_typeid<AnimGraphStateMachine>())
@@ -1346,7 +1346,7 @@ namespace EMotionFX
                     AnimGraphTransitionCondition* condition = transition->GetCondition(j);
                     if (azrtti_typeid(condition) == conditionType)
                     {
-                        outConditions->Add(condition);
+                        outConditions->emplace_back(condition);
                     }
                 }
             }
@@ -1601,9 +1601,9 @@ namespace EMotionFX
 
 
     // collect internal objects
-    void AnimGraphNode::RecursiveCollectObjects(MCore::Array<AnimGraphObject*>& outObjects) const
+    void AnimGraphNode::RecursiveCollectObjects(AZStd::vector<AnimGraphObject*>& outObjects) const
     {
-        outObjects.Add(const_cast<AnimGraphNode*>(this));
+        outObjects.emplace_back(const_cast<AnimGraphNode*>(this));
 
         for (const AnimGraphNode* childNode : mChildNodes)
         {

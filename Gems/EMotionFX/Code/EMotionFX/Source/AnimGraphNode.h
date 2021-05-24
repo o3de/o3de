@@ -270,7 +270,7 @@ namespace EMotionFX
 
         virtual bool RecursiveDetectCycles(AZStd::unordered_set<const AnimGraphNode*>& nodes) const;
 
-        void CollectChildNodesOfType(const AZ::TypeId& nodeType, MCore::Array<AnimGraphNode*>* outNodes) const; // note: outNodes is NOT cleared internally, nodes are added to the array
+        void CollectChildNodesOfType(const AZ::TypeId& nodeType, AZStd::vector<AnimGraphNode*>* outNodes) const; // note: outNodes is NOT cleared internally, nodes are added to the array
 
         /**
          * Collect child nodes of the given type. This will only iterate through the child nodes and isn't a recursive process.
@@ -280,7 +280,7 @@ namespace EMotionFX
         void CollectChildNodesOfType(const AZ::TypeId& nodeType, AZStd::vector<AnimGraphNode*>& outNodes) const;
 
         void RecursiveCollectNodesOfType(const AZ::TypeId& nodeType, AZStd::vector<AnimGraphNode*>* outNodes) const; // note: outNodes is NOT cleared internally, nodes are added to the array
-        void RecursiveCollectTransitionConditionsOfType(const AZ::TypeId& conditionType, MCore::Array<AnimGraphTransitionCondition*>* outConditions) const; // note: outNodes is NOT cleared internally, nodes are added to the array
+        void RecursiveCollectTransitionConditionsOfType(const AZ::TypeId& conditionType, AZStd::vector<AnimGraphTransitionCondition*>* outConditions) const; // note: outNodes is NOT cleared internally, nodes are added to the array
 
         virtual void RecursiveCollectObjectsOfType(const AZ::TypeId& objectType, AZStd::vector<AnimGraphObject*>& outObjects) const;
 
@@ -916,7 +916,7 @@ namespace EMotionFX
         void SetHasError(AnimGraphObjectData* uniqueData, bool hasError);
 
         // collect internal objects
-        void RecursiveCollectObjects(MCore::Array<AnimGraphObject*>& outObjects) const override;
+        void RecursiveCollectObjects(AZStd::vector<AnimGraphObject*>& outObjects) const override;
         virtual void RecursiveSetUniqueDataFlag(AnimGraphInstance* animGraphInstance, uint32 flag, bool enabled);
 
         void FilterEvents(AnimGraphInstance* animGraphInstance, EEventMode eventMode, AnimGraphNode* nodeA, AnimGraphNode* nodeB, float localWeight, AnimGraphRefCountedData* refData);

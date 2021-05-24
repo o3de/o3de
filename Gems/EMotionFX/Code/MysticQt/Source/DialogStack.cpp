@@ -51,31 +51,9 @@ namespace MysticQt
 
 
     // the constructor
-    DialogStack::Dialog::Dialog()
-    {
-        mButton         = nullptr;
-        mFrame          = nullptr;
-        mWidget         = nullptr;
-        mDialogWidget   = nullptr;
-        mSplitter       = nullptr;
-        mClosable       = true;
-    }
-
-
-    // destructor
-    DialogStack::Dialog::~Dialog()
-    {
-        delete mDialogWidget;
-    }
-
-
-    // the constructor
     DialogStack::DialogStack(QWidget* parent)
         : QScrollArea(parent)
     {
-        // set the memory category of the dialog array
-        mDialogs.SetMemoryCategory(MEMCATEGORY_MYSTICQT);
-
         // set the object name
         setObjectName("DialogStack");
 
@@ -102,7 +80,7 @@ namespace MysticQt
     void DialogStack::Clear()
     {
         // destroy the dialogs
-        mDialogs.Clear();
+        mDialogs.clear();
 
         // update the scroll bars
         UpdateScrollBars();
@@ -123,7 +101,7 @@ namespace MysticQt
         // add the dialog widget
         // the splitter is hierarchical : {a, {b, c}}
         QSplitter* dialogSplitter;
-        if (mDialogs.GetLength() == 0)
+        if (mDialogs.empty())
         {
             // add the dialog widget
             dialogSplitter = mRootSplitter;
@@ -138,10 +116,10 @@ namespace MysticQt
         else
         {
             // check if one space is free on the last splitter
-            if (mDialogs.GetLast().mSplitter->count() == 1)
+            if (mDialogs.back().mSplitter->count() == 1)
             {
                 // add the dialog widget
-                dialogSplitter = mDialogs.GetLast().mSplitter;
+                dialogSplitter = mDialogs.back().mSplitter;
                 dialogSplitter->addWidget(dialogWidget);
 
                 // stretch if needed
@@ -151,16 +129,16 @@ namespace MysticQt
                 }
 
                 // less space used by the splitter when the last dialog is closed
-                if (mDialogs.GetLast().mFrame->isHidden())
+                if (mDialogs.back().mFrame->isHidden())
                 {
-                    mDialogs.GetLast().mSplitter->handle(1)->setFixedHeight(1);
-                    mDialogs.GetLast().mSplitter->setStyleSheet("QSplitter::handle{ height: 1px; background: transparent; }");
+                    mDialogs.back().mSplitter->handle(1)->setFixedHeight(1);
+                    mDialogs.back().mSplitter->setStyleSheet("QSplitter::handle{ height: 1px; background: transparent; }");
                 }
 
                 // disable the splitter
-                if (mDialogs.GetLast().mFrame->isHidden())
+                if (mDialogs.back().mFrame->isHidden())
                 {
-                    mDialogs.GetLast().mSplitter->handle(1)->setDisabled(true);
+                    mDialogs.back().mSplitter->handle(1)->setDisabled(true);
                 }
             }
             else // already two dialogs in the splitter
@@ -171,24 +149,24 @@ namespace MysticQt
                 dialogSplitter->setChildrenCollapsible(false);
 
                 // add the current last dialog and the new dialog after
-                dialogSplitter->addWidget(mDialogs.GetLast().mDialogWidget);
+                dialogSplitter->addWidget(mDialogs.back().mDialogWidget.get());
                 dialogSplitter->addWidget(dialogWidget);
 
                 // stretch if needed
-                if (mDialogs.GetLast().mMaximizeSize && mDialogs.GetLast().mStretchWhenMaximize)
+                if (mDialogs.back().mMaximizeSize && mDialogs.back().mStretchWhenMaximize)
                 {
                     dialogSplitter->setStretchFactor(0, 1);
                 }
 
                 // less space used by the splitter when the last dialog is closed
-                if (mDialogs.GetLast().mFrame->isHidden())
+                if (mDialogs.back().mFrame->isHidden())
                 {
                     dialogSplitter->handle(1)->setFixedHeight(1);
                     dialogSplitter->setStyleSheet("QSplitter::handle{ height: 1px; background: transparent; }");
                 }
 
                 // disable the splitter
-                if (mDialogs.GetLast().mFrame->isHidden())
+                if (mDialogs.back().mFrame->isHidden())
                 {
                     dialogSplitter->handle(1)->setDisabled(true);
                 }
@@ -200,24 +178,27 @@ namespace MysticQt
                 }
 
                 // replace the last dialog by the new splitter
-                mDialogs.GetLast().mSplitter->addWidget(dialogSplitter);
+                mDialogs.back().mSplitter->addWidget(dialogSplitter);
 
                 // disable the splitter
-                const uint32 lastDialogIndex = mDialogs.GetLength() - 1;
-                if (mDialogs[lastDialogIndex - 1].mFrame->isHidden())
+                if (mDialogs.size() > 1)
                 {
-                    mDialogs.GetLast().mSplitter->handle(1)->setDisabled(true);
-                }
+                    const auto previousDialogIt = mDialogs.end() - 2;
+                    if (previousDialogIt->mFrame->isHidden())
+                    {
+                        mDialogs.back().mSplitter->handle(1)->setDisabled(true);
+                    }
 
-                // stretch the splitter if needed
-                // the correct behavior is found after experimentations
-                if ((mDialogs.GetLast().mMaximizeSize && mDialogs.GetLast().mStretchWhenMaximize) || (mDialogs[lastDialogIndex - 1].mMaximizeSize && mDialogs[lastDialogIndex - 1].mStretchWhenMaximize == false))
-                {
-                    mDialogs.GetLast().mSplitter->setStretchFactor(1, 1);
+                    // stretch the splitter if needed
+                    // the correct behavior is found after experimentations
+                    if ((mDialogs.back().mMaximizeSize && mDialogs.back().mStretchWhenMaximize) || (previousDialogIt->mMaximizeSize && previousDialogIt->mStretchWhenMaximize == false))
+                    {
+                        mDialogs.back().mSplitter->setStretchFactor(1, 1);
+                    }
                 }
 
                 // set the new splitter of the last dialog
-                mDialogs.GetLast().mSplitter = dialogSplitter;
+                mDialogs.back().mSplitter = dialogSplitter;
             }
         }
 
@@ -280,17 +261,20 @@ namespace MysticQt
         dialogWidget->adjustSize();
 
         // register it, so that we know which frame is linked to which header button
-        mDialogs.AddEmpty();
-        mDialogs.GetLast().mButton              = headerButton;
-        mDialogs.GetLast().mFrame               = frame;
-        mDialogs.GetLast().mWidget              = widget;
-        mDialogs.GetLast().mDialogWidget        = dialogWidget;
-        mDialogs.GetLast().mSplitter            = dialogSplitter;
-        mDialogs.GetLast().mClosable            = closable;
-        mDialogs.GetLast().mMaximizeSize        = maximizeSize;
-        mDialogs.GetLast().mStretchWhenMaximize = stretchWhenMaximize;
-        mDialogs.GetLast().mLayout              = layout;
-        mDialogs.GetLast().mDialogLayout        = dialogLayout;
+        mDialogs.emplace_back(Dialog{
+            /*.mButton              =*/ headerButton,
+            /*.mFrame               =*/ frame,
+            /*.mWidget              =*/ widget,
+            /*.mDialogWidget        =*/ AZStd::unique_ptr<QWidget>{dialogWidget},
+            /*.mSplitter            =*/ dialogSplitter,
+            /*.mClosable            =*/ closable,
+            /*.mMaximizeSize        =*/ maximizeSize,
+            /*.mStretchWhenMaximize =*/ stretchWhenMaximize,
+            /*.mMinimumHeightBeforeClose =*/ 0,
+            /*.mMaximumHeightBeforeClose =*/ 0,
+            /*.mLayout              =*/ layout,
+            /*.mDialogLayout        =*/ dialogLayout,
+        });
 
         // check if the dialog is closed
         if (closed)
@@ -319,7 +303,7 @@ namespace MysticQt
 
     bool DialogStack::Remove(QWidget* widget)
     {
-        const uint32 numDialogs = mDialogs.GetLength();
+        const uint32 numDialogs = mDialogs.size();
         for (uint32 i = 0; i < numDialogs; ++i)
         {
             QLayout*    layout  = mDialogs[i].mFrame->layout();
@@ -333,7 +317,7 @@ namespace MysticQt
                 // TODO : shift all dialogs needed as explained on the previous comment
                 mDialogs[i].mDialogWidget->hide();
                 mDialogs[i].mDialogWidget->deleteLater();
-                mDialogs.Remove(i);
+                mDialogs.erase(AZStd::next(begin(mDialogs), i));
 
                 // update the scroll bars
                 UpdateScrollBars();
@@ -367,7 +351,7 @@ namespace MysticQt
     // find the dialog that goes with the given button
     uint32 DialogStack::FindDialog(QPushButton* pushButton)
     {
-        const uint32 numDialogs = mDialogs.GetLength();
+        const uint32 numDialogs = mDialogs.size();
         for (uint32 i = 0; i < numDialogs; ++i)
         {
             if (mDialogs[i].mButton == pushButton)
@@ -401,20 +385,20 @@ namespace MysticQt
         button->setIcon(GetMysticQt()->FindIcon("Images/Icons/ArrowDownGray.png"));
 
         // more space used by the splitter when the dialog is open
-        if (dialogIndex < (mDialogs.GetLength() - 1))
+        if (dialogIndex < (mDialogs.size() - 1))
         {
             mDialogs[dialogIndex].mSplitter->handle(1)->setFixedHeight(4);
             mDialogs[dialogIndex].mSplitter->setStyleSheet("QSplitter::handle{ height: 4px; background: transparent; }");
         }
 
         // enable the splitter
-        if (dialogIndex < (mDialogs.GetLength() - 1))
+        if (dialogIndex < (mDialogs.size() - 1))
         {
             mDialogs[dialogIndex].mSplitter->handle(1)->setEnabled(true);
         }
 
         // maximize the size if it's needed
-        if (mDialogs.GetLength() > 1)
+        if (mDialogs.size() > 1)
         {
             if (mDialogs[dialogIndex].mMaximizeSize)
             {
@@ -440,7 +424,7 @@ namespace MysticQt
                     }
 
                     // special case if it's not the last dialog
-                    if (dialogIndex < (mDialogs.GetLength() - 1))
+                    if (dialogIndex < (mDialogs.size() - 1))
                     {
                         // if the next dialog is closed, it's needed to expand to the max too
                         if (mDialogs[dialogIndex + 1].mFrame->isHidden())
@@ -489,27 +473,27 @@ namespace MysticQt
         button->setIcon(GetMysticQt()->FindIcon("Images/Icons/ArrowRightGray.png"));
 
         // less space used by the splitter when the dialog is closed
-        if (dialogIndex < (mDialogs.GetLength() - 1))
+        if (dialogIndex < (mDialogs.size() - 1))
         {
             mDialogs[dialogIndex].mSplitter->handle(1)->setFixedHeight(1);
             mDialogs[dialogIndex].mSplitter->setStyleSheet("QSplitter::handle{ height: 1px; background: transparent; }");
         }
 
         // disable the splitter
-        if (dialogIndex < (mDialogs.GetLength() - 1))
+        if (dialogIndex < (mDialogs.size() - 1))
         {
             mDialogs[dialogIndex].mSplitter->handle(1)->setDisabled(true);
         }
 
         // set the first splitter to the min if needed
-        if (dialogIndex < (mDialogs.GetLength() - 1))
+        if (dialogIndex < (mDialogs.size() - 1))
         {
             static_cast<DialogStackSplitter*>(mDialogs[dialogIndex].mSplitter)->MoveFirstSplitterToMin();
         }
 
         // maximize the first needed to avoid empty space
         bool findPreviousMaximizedDialogNeeded = true;
-        const uint32 numDialogs = mDialogs.GetLength();
+        const uint32 numDialogs = mDialogs.size();
         for (uint32 i = dialogIndex + 1; i < numDialogs; ++i)
         {
             if (mDialogs[i].mMaximizeSize && mDialogs[i].mFrame->isHidden() == false)
@@ -636,7 +620,7 @@ namespace MysticQt
         QScrollArea::resizeEvent(event);
 
         // maximize the first dialog needed
-        const uint32 numDialogs = mDialogs.GetLength();
+        const uint32 numDialogs = mDialogs.size();
         const int32 lastDialogIndex = static_cast<int32>(numDialogs) - 1;
         for (int32 i = lastDialogIndex; i >= 0; --i)
         {
@@ -655,7 +639,7 @@ namespace MysticQt
     // replace an internal widget
     void DialogStack::ReplaceWidget(QWidget* oldWidget, QWidget* newWidget)
     {
-        for (uint32 i = 0; i < mDialogs.GetLength(); ++i)
+        for (uint32 i = 0; i < mDialogs.size(); ++i)
         {
             // go next if the widget is not the same
             if (mDialogs[i].mWidget != oldWidget)
@@ -693,7 +677,7 @@ namespace MysticQt
                     mDialogs[i].mDialogWidget->setFixedHeight(dialogHeight);
 
                     // set the first splitter to the min if needed
-                    if (i < (mDialogs.GetLength() - 1))
+                    if (i < (mDialogs.size() - 1))
                     {
                         static_cast<DialogStackSplitter*>(mDialogs[i].mSplitter)->MoveFirstSplitterToMin();
                     }

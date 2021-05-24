@@ -130,7 +130,7 @@ namespace EMStudio
 
         // create the node selection windows
         mMotionExtractionNodeSelectionWindow = new NodeSelectionWindow(this, true);
-        connect(mMotionExtractionNodeSelectionWindow->GetNodeHierarchyWidget(), static_cast<void (NodeHierarchyWidget::*)(MCore::Array<SelectionItem>)>(&NodeHierarchyWidget::OnSelectionDone), this, &MotionExtractionWindow::OnMotionExtractionNodeSelected);
+        connect(mMotionExtractionNodeSelectionWindow->GetNodeHierarchyWidget(), &NodeHierarchyWidget::OnSelectionDone, this, &MotionExtractionWindow::OnMotionExtractionNodeSelected);
 
         // set some layout for our window
         mMainVerticalLayout = new QVBoxLayout();
@@ -393,7 +393,7 @@ namespace EMStudio
     }
 
 
-    void MotionExtractionWindow::OnMotionExtractionNodeSelected(MCore::Array<SelectionItem> selection)
+    void MotionExtractionWindow::OnMotionExtractionNodeSelected(AZStd::vector<SelectionItem> selection)
     {
         // get the selected node name
         uint32 actorID;

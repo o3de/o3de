@@ -46,8 +46,8 @@ namespace EMotionFX
             const Actor* actor = actorInstance->GetActor();
             const Skeleton* skeleton = actor->GetSkeleton();
 
-            const MCore::Array<AZ::u16>& enabledJoints = actorInstance->GetEnabledNodes();
-            const AZ::u32 numEnabledJoints = enabledJoints.GetLength();
+            const AZStd::vector<AZ::u16>& enabledJoints = actorInstance->GetEnabledNodes();
+            const AZ::u32 numEnabledJoints = enabledJoints.size();
             EXPECT_EQ(actorInstance->GetNumEnabledNodes(), actor->GetNumNodes() - static_cast<AZ::u32>(disabledJointNames.size()))
                 << "The enabled joints on the actor instance are not in sync with the enabledJoints.";
 

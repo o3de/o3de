@@ -122,7 +122,7 @@ namespace EMotionFX
          * Get the number of deform passes.
          * @result The number of deform passes.
          */
-        uint32 GetNumDeformPasses() const;
+        size_t GetNumDeformPasses() const;
 
         /**
          * Pre-allocate space for the deform passes.
@@ -132,7 +132,7 @@ namespace EMotionFX
         void ReserveDeformPasses(uint32 numPasses);
 
     private:
-        MCore::Array<DeformPass>    mDeformPasses;  /**< The deform passes. Each pass basically represents a morph target. */
+        AZStd::vector<DeformPass>    mDeformPasses;  /**< The deform passes. Each pass basically represents a morph target. */
 
         /**
          * Default constructor.

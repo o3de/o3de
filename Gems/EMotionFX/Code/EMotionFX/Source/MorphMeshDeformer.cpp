@@ -26,7 +26,6 @@ namespace EMotionFX
     MorphMeshDeformer::MorphMeshDeformer(Mesh* mesh)
         : MeshDeformer(mesh)
     {
-        mDeformPasses.SetMemoryCategory(EMFX_MEMCATEGORY_GEOMETRY_DEFORMERS);
     }
 
 
@@ -64,8 +63,8 @@ namespace EMotionFX
         MorphMeshDeformer* result = aznew MorphMeshDeformer(mesh);
 
         // copy the deform passes
-        result->mDeformPasses.Resize(mDeformPasses.GetLength());
-        for (uint32 i = 0; i < mDeformPasses.GetLength(); ++i)
+        result->mDeformPasses.resize(mDeformPasses.size());
+        for (uint32 i = 0; i < mDeformPasses.size(); ++i)
         {
             DeformPass& pass = result->mDeformPasses[i];
             pass.mDeformDataNr = mDeformPasses[i].mDeformDataNr;
@@ -89,7 +88,7 @@ namespace EMotionFX
         const uint32 lodLevel = actorInstance->GetLODLevel();
 
         // apply all deform passes
-        const uint32 numPasses = mDeformPasses.GetLength();
+        const uint32 numPasses = mDeformPasses.size();
         for (uint32 i = 0; i < numPasses; ++i)
         {
             // find the morph target
@@ -198,7 +197,7 @@ namespace EMotionFX
     void MorphMeshDeformer::Reinitialize(Actor* actor, Node* node, uint32 lodLevel)
     {
         // clear the deform passes, but don't free the currently allocated/reserved memory
-        mDeformPasses.Clear(false);
+        mDeformPasses.clear();
 
         // get the morph setup
         MorphSetup* morphSetup = actor->GetMorphSetup(lodLevel);
@@ -219,8 +218,8 @@ namespace EMotionFX
                 if (deformData->mNodeIndex == node->GetNodeIndex())
                 {
                     // add an empty deform pass and fill it afterwards
-                    mDeformPasses.AddEmpty();
-                    const uint32 deformPassIndex = mDeformPasses.GetLength() - 1;
+                    mDeformPasses.emplace_back();
+                    const uint32 deformPassIndex = mDeformPasses.size() - 1;
                     mDeformPasses[deformPassIndex].mDeformDataNr = j;
                     mDeformPasses[deformPassIndex].mMorphTarget  = morphTarget;
                 }
@@ -231,18 +230,18 @@ namespace EMotionFX
 
     void MorphMeshDeformer::AddDeformPass(const DeformPass& deformPass)
     {
-        mDeformPasses.Add(deformPass);
+        mDeformPasses.emplace_back(deformPass);
     }
 
 
-    uint32 MorphMeshDeformer::GetNumDeformPasses() const
+    size_t MorphMeshDeformer::GetNumDeformPasses() const
     {
-        return mDeformPasses.GetLength();
+        return mDeformPasses.size();
     }
 
 
     void MorphMeshDeformer::ReserveDeformPasses(uint32 numPasses)
     {
-        mDeformPasses.Reserve(numPasses);
+        mDeformPasses.reserve(numPasses);
     }
 } // namespace EMotionFX

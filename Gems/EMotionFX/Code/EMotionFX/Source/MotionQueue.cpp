@@ -26,7 +26,6 @@ namespace EMotionFX
     {
         MCORE_ASSERT(actorInstance && motionSystem);
 
-        mEntries.SetMemoryCategory(EMFX_MEMCATEGORY_MOTIONS_MISC);
         mActorInstance  = actorInstance;
         mMotionSystem   = motionSystem;
     }
@@ -54,7 +53,7 @@ namespace EMotionFX
             GetMotionInstancePool().Free(mEntries[nr].mMotion);
         }
 
-        mEntries.Remove(nr);
+        mEntries.erase(AZStd::next(begin(mEntries), nr));
     }
 
 
@@ -168,7 +167,7 @@ namespace EMotionFX
 
     void MotionQueue::ClearAllEntries()
     {
-        while (mEntries.GetLength())
+        while (mEntries.size())
         {
             RemoveEntry(0);
         }
@@ -177,26 +176,26 @@ namespace EMotionFX
 
     void MotionQueue::AddEntry(const MotionQueue::QueueEntry& motion)
     {
-        mEntries.Add(motion);
+        mEntries.emplace_back(motion);
     }
 
 
-    uint32 MotionQueue::GetNumEntries() const
+    size_t MotionQueue::GetNumEntries() const
     {
-        return mEntries.GetLength();
+        return mEntries.size();
     }
 
 
     MotionQueue::QueueEntry& MotionQueue::GetFirstEntry()
     {
-        MCORE_ASSERT(mEntries.GetLength() > 0);
+        MCORE_ASSERT(mEntries.size() > 0);
         return mEntries[0];
     }
 
 
     void MotionQueue::RemoveFirstEntry()
     {
-        mEntries.RemoveFirst();
+        mEntries.erase(mEntries.begin());
     }
 
 

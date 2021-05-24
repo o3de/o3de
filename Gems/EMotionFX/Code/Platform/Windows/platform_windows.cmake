@@ -5,3 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
+
+if (PAL_TRAIT_COMPILER_ID STREQUAL "MSVC")
+    set(LY_COMPILE_OPTIONS PUBLIC /wd4267)
+endif()

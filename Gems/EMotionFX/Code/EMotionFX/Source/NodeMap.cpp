@@ -41,14 +41,14 @@ namespace EMotionFX
     // preallocate space
     void NodeMap::Reserve(uint32 numEntries)
     {
-        mEntries.Reserve(numEntries);
+        mEntries.reserve(numEntries);
     }
 
 
     // resize the entries array
     void NodeMap::Resize(uint32 numEntries)
     {
-        mEntries.Resize(numEntries);
+        mEntries.resize(numEntries);
     }
 
 
@@ -101,15 +101,15 @@ namespace EMotionFX
     void NodeMap::AddEntry(const char* firstName, const char* secondName)
     {
         MCORE_ASSERT(GetHasEntry(firstName) == false);  // prevent duplicates
-        mEntries.AddEmpty();
-        SetEntry(mEntries.GetLength() - 1, firstName, secondName);
+        mEntries.emplace_back();
+        SetEntry(mEntries.size() - 1, firstName, secondName);
     }
 
 
     // remove a given entry by its index
     void NodeMap::RemoveEntryByIndex(uint32 entryIndex)
     {
-        mEntries.Remove(entryIndex);
+        mEntries.erase(AZStd::next(begin(mEntries), entryIndex));
     }
 
 
@@ -122,7 +122,7 @@ namespace EMotionFX
             return;
         }
 
-        mEntries.Remove(entryIndex);
+        mEntries.erase(AZStd::next(begin(mEntries), entryIndex));
     }
 
 
@@ -135,7 +135,7 @@ namespace EMotionFX
             return;
         }
 
-        mEntries.Remove(entryIndex);
+        mEntries.erase(AZStd::next(begin(mEntries), entryIndex));
     }
 
 
@@ -211,7 +211,7 @@ namespace EMotionFX
         uint32 numBytes = sizeof(FileFormat::NodeMapChunk);
 
         // for all entries
-        const uint32 numEntries = mEntries.GetLength();
+        const uint32 numEntries = mEntries.size();
         for (uint32 i = 0; i < numEntries; ++i)
         {
             numBytes += CalcFileStringSize(GetFirstNameString(i));
@@ -265,7 +265,7 @@ namespace EMotionFX
 
         // the main info
         FileFormat::NodeMapChunk nodeMapChunk{};
-        nodeMapChunk.mNumEntries = mEntries.GetLength();
+        nodeMapChunk.mNumEntries = mEntries.size();
         MCore::Endian::ConvertUnsignedInt32To(&nodeMapChunk.mNumEntries, targetEndianType);
         if (f.Write(&nodeMapChunk, sizeof(FileFormat::NodeMapChunk)) == 0)
         {
@@ -282,7 +282,7 @@ namespace EMotionFX
         }
 
         // for all entries
-        const uint32 numEntries = mEntries.GetLength();
+        const uint32 numEntries = mEntries.size();
         for (uint32 i = 0; i < numEntries; ++i)
         {
             if (WriteFileString(&f, GetFirstNameString(i), targetEndianType) == false)
@@ -320,9 +320,9 @@ namespace EMotionFX
 
 
     // get the number of entries
-    uint32 NodeMap::GetNumEntries() const
+    size_t NodeMap::GetNumEntries() const
     {
-        return mEntries.GetLength();
+        return mEntries.size();
     }
 
 
@@ -364,7 +364,7 @@ namespace EMotionFX
     // find an entry index by its name
     uint32 NodeMap::FindEntryIndexByName(const char* firstName) const
     {
-        const uint32 numEntries = mEntries.GetLength();
+        const uint32 numEntries = mEntries.size();
         for (uint32 i = 0; i < numEntries; ++i)
         {
             const AZStd::string& firstNameEntry = GetFirstName(i);
@@ -381,7 +381,7 @@ namespace EMotionFX
     // find an entry index by its name ID
     uint32 NodeMap::FindEntryIndexByNameID(uint32 firstNameID) const
     {
-        const uint32 numEntries = mEntries.GetLength();
+        const uint32 numEntries = mEntries.size();
         for (uint32 i = 0; i < numEntries; ++i)
         {
             if (mEntries[i].mFirstNameID == firstNameID)

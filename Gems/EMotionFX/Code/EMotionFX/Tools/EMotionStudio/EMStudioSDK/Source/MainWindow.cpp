@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/sort.h>
 #include <EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/FileManager.h>
@@ -1089,14 +1090,14 @@ namespace EMStudio
         const uint32 numPlugins = pluginManager->GetNumPlugins();
 
         // add each plugin name in an array to sort them
-        MCore::Array<AZStd::string> sortedPlugins;
-        sortedPlugins.Reserve(numPlugins);
+        AZStd::vector<AZStd::string> sortedPlugins;
+        sortedPlugins.reserve(numPlugins);
         for (uint32 p = 0; p < numPlugins; ++p)
         {
             EMStudioPlugin* plugin = pluginManager->GetPlugin(p);
-            sortedPlugins.Add(plugin->GetName());
+            sortedPlugins.emplace_back(plugin->GetName());
         }
-        sortedPlugins.Sort();
+        AZStd::sort(begin(sortedPlugins), end(sortedPlugins));
 
         // clear the window menu
         mCreateWindowMenu->clear();
@@ -1839,7 +1840,7 @@ namespace EMStudio
         dir.setSorting(QDir::Name);
 
         // add each layout
-        mLayoutNames.Clear();
+        mLayoutNames.clear();
         AZStd::string filename;
         const QFileInfoList list = dir.entryInfoList();
         const int listSize = list.size();
@@ -1856,12 +1857,12 @@ namespace EMStudio
             if (extension == "layout")
             {
                 AzFramework::StringFunc::Path::GetFileName(filename.c_str(), filename);
-                mLayoutNames.Add(filename);
+                mLayoutNames.emplace_back(filename);
             }
         }
 
         // add each menu
-        const uint32 numLayoutNames = mLayoutNames.GetLength();
+        const uint32 numLayoutNames = mLayoutNames.size();
         for (uint32 i = 0; i < numLayoutNames; ++i)
         {
             QAction* action = mLayoutsMenu->addAction(mLayoutNames[i].c_str());

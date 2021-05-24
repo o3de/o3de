@@ -21,7 +21,7 @@
 #include <QFileInfo>
 #include "EMStudioConfig.h"
 #include <MCore/Source/StandardHeaders.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <EMotionFX/Source/MotionSet.h>
 #include <EMotionFX/Source/Motion.h>
 #include <EMotionFX/Source/Actor.h>

@@ -20,7 +20,6 @@ namespace EMotionFX
     MorphSetupInstance::MorphSetupInstance()
         : BaseObject()
     {
-        mMorphTargets.SetMemoryCategory(EMFX_MEMCATEGORY_GEOMETRY_PMORPHTARGETS);
         Init(nullptr);
     }
 
@@ -63,7 +62,7 @@ namespace EMotionFX
 
         // allocate the number of morph targets
         const uint32 numMorphTargets = morphSetup->GetNumMorphTargets();
-        mMorphTargets.Resize(numMorphTargets);
+        mMorphTargets.resize(numMorphTargets);
 
         // update the ID values
         for (uint32 i = 0; i < numMorphTargets; ++i)
@@ -77,7 +76,7 @@ namespace EMotionFX
     uint32 MorphSetupInstance::FindMorphTargetIndexByID(uint32 id) const
     {
         // try to locate the morph target with the given ID
-        const uint32 numTargets = mMorphTargets.GetLength();
+        const uint32 numTargets = mMorphTargets.size();
         for (uint32 i = 0; i < numTargets; ++i)
         {
             if (mMorphTargets[i].GetID() == id)

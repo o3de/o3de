@@ -286,10 +286,5 @@ namespace EMotionFX
          * @param name The unique name of the morph target.
          */
         MorphTarget(const char* name);
-
-        /**
-         * The destructor.
-         */
-        virtual ~MorphTarget();
     };
 } // namespace EMotionFX

@@ -30,9 +30,8 @@ namespace EMotionFX
     MultiThreadScheduler::MultiThreadScheduler()
         : ActorUpdateScheduler()
     {
-        mSteps.SetMemoryCategory(EMFX_MEMCATEGORY_UPDATESCHEDULERS);
         mCleanTimer     = 0.0f; // time passed since last schedule cleanup, in seconds
-        mSteps.Reserve(1000);
+        mSteps.reserve(1000);
     }
 
 
@@ -53,7 +52,7 @@ namespace EMotionFX
     void MultiThreadScheduler::Clear()
     {
         Lock();
-        mSteps.Clear();
+        mSteps.clear();
         Unlock();
     }
 
@@ -79,7 +78,7 @@ namespace EMotionFX
     void MultiThreadScheduler::Print()
     {
         // for all steps
-        const uint32 numSteps = mSteps.GetLength();
+        const uint32 numSteps = mSteps.size();
         for (uint32 i = 0; i < numSteps; ++i)
         {
             AZ_Printf("EMotionFX", "STEP %.3d - %d", i, mSteps[i].mActorInstances.size());
@@ -92,7 +91,7 @@ namespace EMotionFX
     void MultiThreadScheduler::RemoveEmptySteps()
     {
         // process all steps
-        for (uint32 s = 0; s < mSteps.GetLength(); )
+        for (uint32 s = 0; s < mSteps.size(); )
         {
             // if the step isn't empty
             if (mSteps[s].mActorInstances.size() > 0)
@@ -101,7 +100,7 @@ namespace EMotionFX
             }
             else // otherwise remove it
             {
-                mSteps.Remove(s);
+                mSteps.erase(AZStd::next(begin(mSteps), s));
             }
         }
     }
@@ -112,7 +111,7 @@ namespace EMotionFX
     {
         MCore::LockGuardRecursive guard(mMutex);
 
-        uint32 numSteps = mSteps.GetLength();
+        uint32 numSteps = mSteps.size();
         if (numSteps == 0)
         {
             return;
@@ -124,7 +123,7 @@ namespace EMotionFX
         {
             mCleanTimer = 0.0f;
             RemoveEmptySteps();
-            numSteps = mSteps.GetLength();
+            numSteps = mSteps.size();
         }
 
         //-----------------------------------------------------------
@@ -216,7 +215,7 @@ namespace EMotionFX
     bool MultiThreadScheduler::FindNextFreeItem(ActorInstance* actorInstance, uint32 startStep, uint32* outStepNr)
     {
         // try out all steps
-        const uint32 numSteps = mSteps.GetLength();
+        const uint32 numSteps = mSteps.size();
         for (uint32 s = startStep; s < numSteps; ++s)
         {
             // if there is a conflicting dependency, skip this step
@@ -236,7 +235,7 @@ namespace EMotionFX
 
     bool MultiThreadScheduler::HasActorInstanceInSteps(const ActorInstance* actorInstance) const
     {
-        const uint32 numSteps = mSteps.GetLength();
+        const uint32 numSteps = mSteps.size();
         for (uint32 s = 0; s < numSteps; ++s)
         {
             const ScheduleStep& step = mSteps[s];
@@ -258,9 +257,9 @@ namespace EMotionFX
         uint32 outStep = startStep;
         if (!FindNextFreeItem(instance, startStep, &outStep))
         {
-            mSteps.Reserve(10);
-            mSteps.AddEmpty();
-            outStep = mSteps.GetLength() - 1;
+            mSteps.reserve(10);
+            mSteps.emplace_back();
+            outStep = mSteps.size() - 1;
         }
 
         // pre-allocate step size
@@ -269,9 +268,9 @@ namespace EMotionFX
             mSteps[outStep].mActorInstances.reserve(mSteps[outStep].mActorInstances.size() + 10);
         }
 
-        if (mSteps[outStep].mDependencies.GetLength() % 5 == 0)
+        if (mSteps[outStep].mDependencies.size() % 5 == 0)
         {
-            mSteps[outStep].mDependencies.Reserve(mSteps[outStep].mDependencies.GetLength() + 5);
+            mSteps[outStep].mDependencies.reserve(mSteps[outStep].mDependencies.size() + 5);
         }
 
         // add the actor instance and its dependencies
@@ -298,7 +297,7 @@ namespace EMotionFX
         MCore::LockGuardRecursive guard(mMutex);
 
         // for all scheduler steps, starting from the specified start step number
-        const uint32 numSteps = mSteps.GetLength();
+        const uint32 numSteps = mSteps.size();
         for (uint32 s = startStep; s < numSteps; ++s)
         {
             ScheduleStep& step = mSteps[s];
@@ -312,7 +311,7 @@ namespace EMotionFX
             if (step.mActorInstances.size() < numActorInstancesPreRemove)
             {
                 // clear the dependencies (but don't delete the memory)
-                step.mDependencies.Clear(false);
+                step.mDependencies.clear();
 
                 // calculate the new dependencies for this step
                 for (ActorInstance* stepActorInstance : step.mActorInstances)

@@ -819,7 +819,7 @@ namespace EMotionFX
     }
 
     // calculate a world space transformation for a given node by sampling the motion at a given time
-    void MotionInstance::CalcGlobalTransform(const MCore::Array<AZ::u32>& hierarchyPath, float timeValue, Transform* outTransform) const
+    void MotionInstance::CalcGlobalTransform(const AZStd::vector<AZ::u32>& hierarchyPath, float timeValue, Transform* outTransform) const
     {
         Actor*      actor = m_actorInstance->GetActor();
         Skeleton*   skeleton = actor->GetSkeleton();
@@ -829,7 +829,7 @@ namespace EMotionFX
         outTransform->Identity();
 
         // iterate from root towards the node (so backwards in the array)
-        for (int32 i = hierarchyPath.GetLength() - 1; i >= 0; --i)
+        for (int32 i = hierarchyPath.size() - 1; i >= 0; --i)
         {
             // get the current node index
             const AZ::u32 nodeIndex = hierarchyPath[i];

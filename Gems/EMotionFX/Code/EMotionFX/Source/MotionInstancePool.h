@@ -11,7 +11,7 @@
 // include the required headers
 #include "EMotionFXConfig.h"
 #include "BaseObject.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/MultiThreadManager.h>
 
 
@@ -91,8 +91,8 @@ namespace EMotionFX
             uint32                      mNumInstances;
             uint32                      mNumUsedInstances;
             uint32                      mSubPoolSize;
-            MCore::Array<MemLocation>   mFreeList;
-            MCore::Array<SubPool*>      mSubPools;
+            AZStd::vector<MemLocation>   mFreeList;
+            AZStd::vector<SubPool*>      mSubPools;
             EPoolType                   mPoolType;
         };
 

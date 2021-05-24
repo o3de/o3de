@@ -47,8 +47,7 @@ namespace RenderGL
         mWhiteTexture           = nullptr;
         mDefaultNormalTexture   = nullptr;
 
-        mEntries.SetMemoryCategory(MEMCATEGORY_RENDERING);
-        mEntries.Reserve(128);
+        mEntries.reserve(128);
     }
 
 
@@ -74,14 +73,14 @@ namespace RenderGL
     void TextureCache::Release()
     {
         // delete all textures
-        const uint32 numEntries = mEntries.GetLength();
+        const uint32 numEntries = mEntries.size();
         for (uint32 i = 0; i < numEntries; ++i)
         {
             delete mEntries[i].mTexture;
         }
 
         // clear all entries
-        mEntries.Clear();
+        mEntries.clear();
 
         // delete the white texture
         delete mWhiteTexture;
@@ -95,9 +94,7 @@ namespace RenderGL
     // add the texture to the cache (assume there are no duplicate names)
     void TextureCache::AddTexture(const char* filename, Texture* texture)
     {
-        mEntries.AddEmpty();
-        mEntries.GetLast().mName    = filename;
-        mEntries.GetLast().mTexture = texture;
+        mEntries.emplace_back(Entry{filename, texture});
     }
 
 
@@ -105,7 +102,7 @@ namespace RenderGL
     Texture* TextureCache::FindTexture(const char* filename) const
     {
         // get the number of entries and iterate through them
-        const uint32 numEntries = mEntries.GetLength();
+        const uint32 numEntries = mEntries.size();
         for (uint32 i = 0; i < numEntries; ++i)
         {
             if (AzFramework::StringFunc::Equal(mEntries[i].mName.c_str(), filename, false /* no case */)) // non-case-sensitive name compare
@@ -123,7 +120,7 @@ namespace RenderGL
     bool TextureCache::CheckIfHasTexture(Texture* texture) const
     {
         // get the number of entries and iterate through them
-        const uint32 numEntries = mEntries.GetLength();
+        const uint32 numEntries = mEntries.size();
         for (uint32 i = 0; i < numEntries; ++i)
         {
             if (mEntries[i].mTexture == texture)
@@ -139,13 +136,13 @@ namespace RenderGL
     // remove an item from the cache
     void TextureCache::RemoveTexture(Texture* texture)
     {
-        const uint32 numEntries = mEntries.GetLength();
+        const uint32 numEntries = mEntries.size();
         for (uint32 i = 0; i < numEntries; ++i)
         {
             if (mEntries[i].mTexture == texture)
             {
                 delete mEntries[i].mTexture;
-                mEntries.Remove(i);
+                mEntries.erase(AZStd::next(begin(mEntries), i));
                 return;
             }
         }

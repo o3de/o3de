@@ -22,7 +22,7 @@
 
 // include MCore related files
 #include <MCore/Source/Vector.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/SmallArray.h>
 #include <MCore/Source/Distance.h>
 
@@ -188,7 +188,7 @@ namespace EMotionFX
          * @param endNodeIndex The node index to generate the path to.
          * @param outPath the array that will contain the path.
          */
-        void GenerateUpdatePathToRoot(uint32 endNodeIndex, MCore::Array<uint32>& outPath) const;
+        void GenerateUpdatePathToRoot(uint32 endNodeIndex, AZStd::vector<uint32>& outPath) const;
 
         /**
          * Set the motion extraction node.
@@ -245,7 +245,7 @@ namespace EMotionFX
          * @param outBoneList The array of indices to nodes that will be filled with the nodes that are bones. When the outBoneList array
          *                    already contains items, the array will first be cleared, so all existing contents will be lost.
          */
-        void ExtractBoneList(uint32 lodLevel, MCore::Array<uint32>* outBoneList) const;
+        void ExtractBoneList(uint32 lodLevel, AZStd::vector<uint32>* outBoneList) const;
 
         //------------------------------------------------
         void SetPhysicsSetup(const AZStd::shared_ptr<PhysicsSetup>& physicsSetup);
@@ -313,7 +313,7 @@ namespace EMotionFX
          * @param lodLevel The LOD level to get the number of material from.
          * @result The number of materials this actor has/uses.
          */
-        uint32 GetNumMaterials(uint32 lodLevel) const;
+        size_t GetNumMaterials(uint32 lodLevel) const;
 
         /**
          * Removes all materials from this actor.
@@ -367,7 +367,7 @@ namespace EMotionFX
          * Get the number of LOD levels inside this actor.
          * @result The number of LOD levels. This value is at least 1, since the full detail LOD is always there.
          */
-        uint32 GetNumLODLevels() const;
+        size_t GetNumLODLevels() const;
 
         //--------------------------------------------------------------------------
 
@@ -438,7 +438,7 @@ namespace EMotionFX
          *                         disabled nodes from the given skeletal LOD level.
          * @param geometryLODLevel The geometry LOD level to test the skeletal LOD against with.
          */
-        void VerifySkinning(MCore::Array<uint8>& conflictNodeFlags, uint32 skeletalLODLevel, uint32 geometryLODLevel);
+        void VerifySkinning(AZStd::vector<uint8>& conflictNodeFlags, uint32 skeletalLODLevel, uint32 geometryLODLevel);
 
         /**
          * Checks if the given material is used by a given mesh.
@@ -522,7 +522,7 @@ namespace EMotionFX
          * Get the number of dependencies.
          * @result The number of dependencies that this actor has on other actors.
          */
-        MCORE_INLINE uint32 GetNumDependencies() const                          { return mDependencies.GetLength(); }
+        MCORE_INLINE size_t GetNumDependencies() const                          { return mDependencies.size(); }
 
         /**
          * Get a given dependency.
@@ -658,7 +658,7 @@ namespace EMotionFX
          */
         MCORE_INLINE const NodeMirrorInfo& GetNodeMirrorInfo(uint32 nodeIndex) const                { return mNodeMirrorInfos[nodeIndex]; }
 
-        MCORE_INLINE bool GetHasMirrorInfo() const                                                  { return (mNodeMirrorInfos.GetLength() != 0); }
+        MCORE_INLINE bool GetHasMirrorInfo() const                                                  { return (mNodeMirrorInfos.size() != 0); }
 
         //---------------------------------------------------------------
 
@@ -749,9 +749,9 @@ namespace EMotionFX
         void PostCreateInit(bool makeGeomLodsCompatibleWithSkeletalLODs = true, bool convertUnitType = true);
 
         void AutoDetectMirrorAxes();
-        const MCore::Array<NodeMirrorInfo>& GetNodeMirrorInfos() const;
-        MCore::Array<NodeMirrorInfo>& GetNodeMirrorInfos();
-        void SetNodeMirrorInfos(const MCore::Array<NodeMirrorInfo>& mirrorInfos);
+        const AZStd::vector<NodeMirrorInfo>& GetNodeMirrorInfos() const;
+        AZStd::vector<NodeMirrorInfo>& GetNodeMirrorInfos();
+        void SetNodeMirrorInfos(const AZStd::vector<NodeMirrorInfo>& mirrorInfos);
         bool GetHasMirrorAxesDetected() const;
 
         MCORE_INLINE const AZStd::vector<Transform>& GetInverseBindPoseTransforms() const                               { return mInvBindPoseTransforms; }
@@ -861,15 +861,38 @@ namespace EMotionFX
             MeshDeformerStack*      mStack;
 
             NodeLODInfo();
+            NodeLODInfo(const NodeLODInfo&) = delete;
+            NodeLODInfo(NodeLODInfo&& rhs)
+            {
+                if (&rhs == this)
+                {
+                    return;
+                }
+                mMesh = rhs.mMesh;
+                mStack = rhs.mStack;
+                rhs.mMesh = nullptr;
+                rhs.mStack = nullptr;
+            }
+            NodeLODInfo& operator=(const NodeLODInfo&) = delete;
+            NodeLODInfo& operator=(NodeLODInfo&& rhs)
+            {
+                if (&rhs == this)
+                {
+                    return *this;
+                }
+                mMesh = rhs.mMesh;
+                mStack = rhs.mStack;
+                rhs.mMesh = nullptr;
+                rhs.mStack = nullptr;
+                return *this;
+            }
             ~NodeLODInfo();
         };
 
         // a lod level
         struct EMFX_API LODLevel
         {
-            MCore::Array<NodeLODInfo> mNodeInfos;
-
-            LODLevel();
+            AZStd::vector<NodeLODInfo> mNodeInfos;
         };
 
         struct MeshLODData
@@ -896,12 +919,12 @@ namespace EMotionFX
         Node* FindMeshJoint(const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& lodModelAsset) const;
 
         Skeleton*                                       mSkeleton;                  /**< The skeleton, containing the nodes and bind pose. */
-        MCore::Array<Dependency>                        mDependencies;              /**< The dependencies on other actors (shared meshes and transforms). */
+        AZStd::vector<Dependency>                        mDependencies;              /**< The dependencies on other actors (shared meshes and transforms). */
         AZStd::string                                   mName;                      /**< The name of the actor. */
         AZStd::string                                   mFileName;                  /**< The filename of the actor. */
-        MCore::Array<NodeMirrorInfo>                    mNodeMirrorInfos;           /**< The array of node mirror info. */
-        MCore::Array< MCore::Array< Material* > >       mMaterials;                 /**< A collection of materials (for each lod). */
-        MCore::Array< MorphSetup* >                     mMorphSetups;               /**< A morph setup for each geometry LOD. */
+        AZStd::vector<NodeMirrorInfo>                    mNodeMirrorInfos;           /**< The array of node mirror info. */
+        AZStd::vector< AZStd::vector< Material* > >       mMaterials;                 /**< A collection of materials (for each lod). */
+        AZStd::vector< MorphSetup* >                     mMorphSetups;               /**< A morph setup for each geometry LOD. */
         MCore::SmallArray<NodeGroup*>                   mNodeGroups;                /**< The set of node groups. */
         AZStd::shared_ptr<PhysicsSetup>                 m_physicsSetup;             /**< Hit detection, ragdoll and cloth colliders, joint limits and rigid bodies. */
         AZStd::shared_ptr<SimulatedObjectSetup>         m_simulatedObjectSetup;     /**< Setup for simulated objects */

@@ -20,10 +20,6 @@ namespace EMotionFX
     Node::Node(const char* name, Skeleton* skeleton)
         : BaseObject()
     {
-        // set the array memory categories
-        mAttributes.SetMemoryCategory(EMFX_MEMCATEGORY_NODES);
-        mChildIndices.SetMemoryCategory(EMFX_MEMCATEGORY_NODES);
-
         mParentIndex        = MCORE_INVALIDINDEX32;
         mNodeIndex          = MCORE_INVALIDINDEX32;     // hasn't been set yet
         mSkeletalLODs       = 0xFFFFFFFF;               // set all bits of the integer to 1, which enables this node in all LOD levels on default
@@ -45,10 +41,6 @@ namespace EMotionFX
     Node::Node(uint32 nameID, Skeleton* skeleton)
         : BaseObject()
     {
-        // set the array memory categories
-        mAttributes.SetMemoryCategory(EMFX_MEMCATEGORY_NODES);
-        mChildIndices.SetMemoryCategory(EMFX_MEMCATEGORY_NODES);
-
         mParentIndex        = MCORE_INVALIDINDEX32;
         mNodeIndex          = MCORE_INVALIDINDEX32;     // hasn't been set yet
         mSkeletalLODs       = 0xFFFFFFFF;// set all bits of the integer to 1, which enables this node in all LOD levels on default
@@ -167,8 +159,8 @@ namespace EMotionFX
         result->mSemanticNameID     = mSemanticNameID;
 
         // copy the node attributes
-        result->mAttributes.Reserve(mAttributes.GetLength());
-        for (uint32 i = 0; i < mAttributes.GetLength(); i++)
+        result->mAttributes.reserve(mAttributes.size());
+        for (uint32 i = 0; i < mAttributes.size(); i++)
         {
             result->AddAttribute(mAttributes[i]->Clone());
         }
@@ -181,10 +173,10 @@ namespace EMotionFX
     // removes all attributes
     void Node::RemoveAllAttributes()
     {
-        while (mAttributes.GetLength())
+        while (mAttributes.size())
         {
-            mAttributes.GetLast()->Destroy();
-            mAttributes.RemoveLast();
+            mAttributes.back()->Destroy();
+            mAttributes.pop_back();
         }
     }
 
@@ -213,7 +205,7 @@ namespace EMotionFX
         numNodes++;
 
         // recurse down the hierarchy
-        const uint32 numChildNodes = mChildIndices.GetLength();
+        const uint32 numChildNodes = mChildIndices.size();
         for (uint32 i = 0; i < numChildNodes; ++i)
         {
             mSkeleton->GetNode(mChildIndices[i])->RecursiveCountChildNodes(numNodes);
@@ -405,20 +397,20 @@ namespace EMotionFX
 
     void Node::AddAttribute(NodeAttribute* attribute)
     {
-        mAttributes.Add(attribute);
+        mAttributes.emplace_back(attribute);
     }
 
 
-    uint32 Node::GetNumAttributes() const
+    size_t Node::GetNumAttributes() const
     {
-        return mAttributes.GetLength();
+        return mAttributes.size();
     }
 
 
     NodeAttribute* Node::GetAttribute(uint32 attributeNr)
     {
         // make sure we are in range
-        MCORE_ASSERT(attributeNr < mAttributes.GetLength());
+        MCORE_ASSERT(attributeNr < mAttributes.size());
 
         // return the attribute
         return mAttributes[attributeNr];
@@ -428,7 +420,7 @@ namespace EMotionFX
     uint32 Node::FindAttributeNumber(uint32 attributeTypeID) const
     {
         // check all attributes, and find where the specific attribute is
-        const uint32 numAttributes = mAttributes.GetLength();
+        const uint32 numAttributes = mAttributes.size();
         for (uint32 i = 0; i < numAttributes; ++i)
         {
             if (mAttributes[i]->GetType() == attributeTypeID)
@@ -445,7 +437,7 @@ namespace EMotionFX
     NodeAttribute* Node::GetAttributeByType(uint32 attributeType)
     {
         // check all attributes
-        const uint32 numAttributes = mAttributes.GetLength();
+        const uint32 numAttributes = mAttributes.size();
         for (uint32 i = 0; i < numAttributes; ++i)
         {
             if (mAttributes[i]->GetType() == attributeType)
@@ -462,13 +454,13 @@ namespace EMotionFX
     // remove the given attribute
     void Node::RemoveAttribute(uint32 index)
     {
-        mAttributes.Remove(index);
+        mAttributes.erase(AZStd::next(begin(mAttributes), index));
     }
 
 
     void Node::AddChild(uint32 nodeIndex)
     {
-        mChildIndices.AddExact(nodeIndex);
+        mChildIndices.emplace_back(nodeIndex);
     }
 
 
@@ -480,31 +472,34 @@ namespace EMotionFX
 
     void Node::SetNumChildNodes(uint32 numChildNodes)
     {
-        mChildIndices.Resize(numChildNodes);
+        mChildIndices.resize(numChildNodes);
     }
 
 
     void Node::PreAllocNumChildNodes(uint32 numChildNodes)
     {
-        mChildIndices.Reserve(numChildNodes);
+        mChildIndices.reserve(numChildNodes);
     }
 
 
     void Node::RemoveChild(uint32 nodeIndex)
     {
-        mChildIndices.RemoveByValue(nodeIndex);
+        if (const auto it = AZStd::find(begin(mChildIndices), end(mChildIndices), nodeIndex); it != end(mChildIndices))
+        {
+            mChildIndices.erase(it);
+        }
     }
 
 
     void Node::RemoveAllChildNodes()
     {
-        mChildIndices.Clear();
+        mChildIndices.clear();
     }
 
 
     bool Node::GetHasChildNodes() const
     {
-        return (mChildIndices.GetLength() > 0);
+        return (mChildIndices.size() > 0);
     }
 
 

@@ -191,7 +191,7 @@ namespace MCommon
          * @param[in] color The desired skeleton color.
          * @param[in] selectedColor The color of the selected bones.
          */
-        void RenderSkeleton(EMotionFX::ActorInstance* actorInstance, const MCore::Array<uint32>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices = nullptr, const AZStd::unordered_set<AZ::u32>* selectedJointIndices = nullptr, const MCore::RGBAColor& color = MCore::RGBAColor(1.0f, 0.0f, 0.0f, 1.0f), const MCore::RGBAColor& selectedColor = MCore::RGBAColor(1.0f, 0.647f, 0.0f));
+        void RenderSkeleton(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<uint32>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices = nullptr, const AZStd::unordered_set<AZ::u32>* selectedJointIndices = nullptr, const MCore::RGBAColor& color = MCore::RGBAColor(1.0f, 0.0f, 0.0f, 1.0f), const MCore::RGBAColor& selectedColor = MCore::RGBAColor(1.0f, 0.647f, 0.0f));
 
         /**
          * Render node orientations.
@@ -202,7 +202,7 @@ namespace MCommon
          * @param[in] scale The scaling value in units. Axes of normal nodes will use the scaling value as unit length, skinned bones will use the scaling value as multiplier.
          * @param[in] scaleBonesOnLength Automatically scales the bone orientations based on the bone length. This means finger node orientations will be rendered smaller than foot bones as the bone length is a lot smaller as well.
          */
-        void RenderNodeOrientations(EMotionFX::ActorInstance* actorInstance, const MCore::Array<uint32>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices = nullptr, const AZStd::unordered_set<AZ::u32>* selectedJointIndices = nullptr, float scale = 1.0f, bool scaleBonesOnLength = true);
+        void RenderNodeOrientations(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<uint32>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices = nullptr, const AZStd::unordered_set<AZ::u32>* selectedJointIndices = nullptr, float scale = 1.0f, bool scaleBonesOnLength = true);
 
         /**
          * Render the bind pose of the given actor.
@@ -570,17 +570,17 @@ namespace MCommon
 
         MCORE_INLINE void AddTriangle(const AZ::Vector3& posA, const AZ::Vector3& posB, const AZ::Vector3& posC, const AZ::Vector3& normalA, const AZ::Vector3& normalB, const AZ::Vector3& normalC, uint32 color)
         {
-            mTriangleVertices.Add(TriangleVertex(posA, normalA, color));
-            mTriangleVertices.Add(TriangleVertex(posB, normalB, color));
-            mTriangleVertices.Add(TriangleVertex(posC, normalC, color));
+            mTriangleVertices.emplace_back(TriangleVertex(posA, normalA, color));
+            mTriangleVertices.emplace_back(TriangleVertex(posB, normalB, color));
+            mTriangleVertices.emplace_back(TriangleVertex(posC, normalC, color));
 
-            if (mTriangleVertices.GetLength() + 2 >= mNumMaxTriangleVertices)
+            if (mTriangleVertices.size() + 2 >= mNumMaxTriangleVertices)
             {
                 RenderTriangles();
             }
         }
 
-        virtual void RenderTriangles(const MCore::Array<TriangleVertex>& triangleVertices) { MCORE_UNUSED(triangleVertices); }
+        virtual void RenderTriangles(const AZStd::vector<TriangleVertex>& triangleVertices) { MCORE_UNUSED(triangleVertices); }
         void RenderTriangles();
 
         //---------------------------------------------------------------------------------------------
@@ -609,13 +609,13 @@ namespace MCommon
 
         struct TrajectoryTracePath
         {
-            MCore::Array<TrajectoryPathParticle> mTraceParticles;
+            AZStd::vector<TrajectoryPathParticle> mTraceParticles;
             EMotionFX::ActorInstance*   mActorInstance;
             float                       mTimePassed;
 
             TrajectoryTracePath()
             {
-                mTraceParticles.Reserve(250);
+                mTraceParticles.reserve(250);
                 mTimePassed     = 0.0f;
                 mActorInstance  = NULL;
             }
@@ -812,7 +812,7 @@ namespace MCommon
         static uint32                   mNumMaxMeshIndices;     /**< The maximum capacity of the util mesh index buffer */
 
         // helper variables for rendering triangles
-        MCore::Array<TriangleVertex>    mTriangleVertices;
+        AZStd::vector<TriangleVertex>    mTriangleVertices;
         static uint32                   mNumMaxTriangleVertices;    /**< The maximum capacity of the triangle vertex buffer */
     };
 } // namespace MCommon

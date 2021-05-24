@@ -110,7 +110,6 @@ namespace RenderGL
         mTextures           = new TextureEntry[mMaxNumTextures];
 
         // text rendering
-        mTextEntries.SetMemoryCategory(MEMCATEGORY_RENDERING);
     }
 
 
@@ -164,12 +163,12 @@ namespace RenderGL
         delete[] mTextures;
 
         // get rid of texture entries
-        const uint32 numTextEntries = mTextEntries.GetLength();
+        const uint32 numTextEntries = mTextEntries.size();
         for (uint32 i = 0; i < numTextEntries; ++i)
         {
             delete mTextEntries[i];
         }
-        mTextEntries.Clear();
+        mTextEntries.clear();
     }
 
 
@@ -481,10 +480,10 @@ namespace RenderGL
     }
 
 
-    void GLRenderUtil::RenderTriangles(const MCore::Array<TriangleVertex>& triangleVertices)
+    void GLRenderUtil::RenderTriangles(const AZStd::vector<TriangleVertex>& triangleVertices)
     {
         // check if there are any triangles to render, if not return directly
-        if (triangleVertices.GetIsEmpty())
+        if (triangleVertices.empty())
         {
             return;
         }
@@ -492,7 +491,7 @@ namespace RenderGL
         glDisable(GL_CULL_FACE);
 
         // get the number of vertices to render
-        const uint32 numVertices = triangleVertices.GetLength();
+        const uint32 numVertices = triangleVertices.size();
         MCORE_ASSERT(numVertices <= mNumMaxTriangleVertices);
 
         // lock the vertex buffer
@@ -552,7 +551,7 @@ namespace RenderGL
         textEntry->mFontSize = fontSize;
         textEntry->mCentered = centered;
 
-        mTextEntries.Add(textEntry);
+        mTextEntries.emplace_back(textEntry);
     }
 
 
@@ -560,7 +559,7 @@ namespace RenderGL
     {
         static AZ::Debug::Timer timer;
         const float timeDelta = static_cast<float>(timer.StampAndGetDeltaTimeInSeconds());
-        for (uint32 i = 0; i < mTextEntries.GetLength(); )
+        for (uint32 i = 0; i < mTextEntries.size(); )
         {
             TextEntry* textEntry = mTextEntries[i];
             RenderText(static_cast<float>(textEntry->mX), static_cast<float>(textEntry->mY), textEntry->mText.c_str(), textEntry->mColor, textEntry->mFontSize, textEntry->mCentered);
@@ -569,7 +568,7 @@ namespace RenderGL
             if (textEntry->mLifeTime < 0.0f)
             {
                 delete textEntry;
-                mTextEntries.Remove(i);
+                mTextEntries.erase(AZStd::next(begin(mTextEntries), i));
             }
             else
             {

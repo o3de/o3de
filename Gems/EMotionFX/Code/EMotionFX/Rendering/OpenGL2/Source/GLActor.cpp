@@ -27,15 +27,6 @@ namespace RenderGL
         mActor              = nullptr;
         mEnableGPUSkinning  = true;
 
-        mMaterials.SetMemoryCategory(MEMCATEGORY_RENDERING);
-
-        mHomoMaterials.SetMemoryCategory(MEMCATEGORY_RENDERING);
-
-        for (uint32 i = 0; i < 3; i++)
-        {
-            mIndexBuffers[i].SetMemoryCategory(MEMCATEGORY_RENDERING);
-        }
-
         mSkyColor    = MCore::RGBAColor(0.55f, 0.55f, 0.55f);
         mGroundColor = MCore::RGBAColor(0.117f, 0.015f, 0.07f);
     }
@@ -71,14 +62,14 @@ namespace RenderGL
         for (uint32 a = 0; a < 3; ++a)
         {
             // get rid of the given vertex buffers
-            const uint32 numVertexBuffers = mVertexBuffers[a].GetLength();
+            const uint32 numVertexBuffers = mVertexBuffers[a].size();
             for (i = 0; i < numVertexBuffers; ++i)
             {
                 delete mVertexBuffers[a][i];
             }
 
             // get rid of the given index buffers
-            const uint32 numIndexBuffers = mIndexBuffers[a].GetLength();
+            const uint32 numIndexBuffers = mIndexBuffers[a].size();
             for (i = 0; i < numIndexBuffers; ++i)
             {
                 delete mIndexBuffers[a][i];
@@ -86,10 +77,10 @@ namespace RenderGL
         }
 
         // delete all materials
-        const uint32 numLOD = mMaterials.GetLength();
+        const uint32 numLOD = mMaterials.size();
         for (uint32 l = 0; l < numLOD; l++)
         {
-            const uint32 numMaterials = mMaterials[l].GetLength();
+            const uint32 numMaterials = mMaterials[l].size();
             for (uint32 n = 0; n < numMaterials; n++)
             {
                 delete mMaterials[l][n]->mMaterial;
@@ -126,13 +117,13 @@ namespace RenderGL
         const uint32 numNodes               = actor->GetNumNodes();
 
         // set the pre-allocation amount for the number of materials
-        mMaterials.Resize(numGeometryLODLevels);
+        mMaterials.resize(numGeometryLODLevels);
 
         // resize the vertex and index buffers
         for (uint32 a = 0; a < 3; ++a)
         {
-            mVertexBuffers[a].Resize(numGeometryLODLevels);
-            mIndexBuffers[a].Resize(numGeometryLODLevels);
+            mVertexBuffers[a].resize(numGeometryLODLevels);
+            mIndexBuffers[a].resize(numGeometryLODLevels);
             mPrimitives[a].Resize(numGeometryLODLevels);
 
             // reset the vertex and index buffers
@@ -143,7 +134,7 @@ namespace RenderGL
             }
         }
 
-        mHomoMaterials.Resize(numGeometryLODLevels);
+        mHomoMaterials.resize(numGeometryLODLevels);
         mDynamicNodes.Resize (numGeometryLODLevels);
 
         EMotionFX::Skeleton* skeleton = actor->GetSkeleton();
@@ -206,7 +197,7 @@ namespace RenderGL
 
                     // add to material list
                     MaterialPrimitives* materialPrims = mMaterials[lodLevel][newPrimitive.mMaterialIndex];
-                    materialPrims->mPrimitives[meshType].Add(newPrimitive);
+                    materialPrims->mPrimitives[meshType].emplace_back(newPrimitive);
 
                     totalNumIndices[meshType] += newPrimitive.mNumTriangles * 3;
                     totalNumVerts[meshType] += subMesh->GetNumVertices();
@@ -373,7 +364,7 @@ namespace RenderGL
         {
             EMotionFX::Material* emfxMaterial = mActor->GetMaterial(lodLevel, m);
             Material* material = InitMaterial(emfxMaterial);
-            mMaterials[lodLevel].Add( new MaterialPrimitives(material) );
+            mMaterials[lodLevel].emplace_back( new MaterialPrimitives(material) );
         }
     }
 
@@ -412,7 +403,7 @@ namespace RenderGL
     void GLActor::RenderMeshes(EMotionFX::ActorInstance* actorInstance, EMotionFX::Mesh::EMeshType meshType, uint32 renderFlags)
     {
         const uint32 lodLevel     = actorInstance->GetLODLevel();
-        const uint32 numMaterials = mMaterials[lodLevel].GetLength();
+        const uint32 numMaterials = mMaterials[lodLevel].size();
 
         if (numMaterials == 0)
         {
@@ -437,7 +428,7 @@ namespace RenderGL
         for (uint32 n = 0; n < numMaterials; n++)
         {
             const MaterialPrimitives* materialPrims = mMaterials[lodLevel][n];
-            const uint32 numPrimitives = materialPrims->mPrimitives[meshType].GetLength();
+            const uint32 numPrimitives = materialPrims->mPrimitives[meshType].size();
             if (numPrimitives == 0)
             {
                 continue;

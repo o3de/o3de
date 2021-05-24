@@ -25,10 +25,6 @@ namespace EMStudio
     GraphNode::GraphNode(const QModelIndex& modelIndex, const char* name, uint32 numInputs, uint32 numOutputs)
         : m_modelIndex(modelIndex)
     {
-        mConnections.SetMemoryCategory(MEMCATEGORY_STANDARDPLUGINS_ANIMGRAPH);
-        mInputPorts.SetMemoryCategory(MEMCATEGORY_STANDARDPLUGINS_ANIMGRAPH);
-        mOutputPorts.SetMemoryCategory(MEMCATEGORY_STANDARDPLUGINS_ANIMGRAPH);
-
         mRect                   = QRect(0, 0, 200, 128);
         mBaseColor              = QColor(74, 63, 238);
         mVisualizeColor         = QColor(0, 255, 0);
@@ -66,8 +62,8 @@ namespace EMStudio
         mTextOptionsAlignRight.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
         mTextOptionsAlignLeft.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 
-        mInputPorts.Resize(numInputs);
-        mOutputPorts.Resize(numOutputs);
+        mInputPorts.resize(numInputs);
+        mOutputPorts.resize(numOutputs);
 
         // initialize the port metrics
         mPortFontMetrics    = new QFontMetrics(mPortNameFont);
@@ -123,8 +119,8 @@ namespace EMStudio
         mInfoText.prepare(QTransform(), mSubTitleFont);
 
         // input ports
-        const uint32 numInputs = mInputPorts.GetLength();
-        mInputPortText.Resize(numInputs);
+        const uint32 numInputs = mInputPorts.size();
+        mInputPortText.resize(numInputs);
         for (uint32 i = 0; i < numInputs; ++i)
         {
             QStaticText& staticText = mInputPortText[i];
@@ -136,8 +132,8 @@ namespace EMStudio
         }
 
         // output ports
-        const uint32 numOutputs = mOutputPorts.GetLength();
-        mOutputPortText.Resize(numOutputs);
+        const uint32 numOutputs = mOutputPorts.size();
+        mOutputPortText.resize(numOutputs);
         for (uint32 i = 0; i < numOutputs; ++i)
         {
             QStaticText& staticText = mOutputPortText[i];
@@ -241,13 +237,13 @@ namespace EMStudio
     // remove all node connections
     void GraphNode::RemoveAllConnections()
     {
-        const uint32 numConnections = mConnections.GetLength();
+        const uint32 numConnections = mConnections.size();
         for (uint32 i = 0; i < numConnections; ++i)
         {
             delete mConnections[i];
         }
 
-        mConnections.Clear();
+        mConnections.clear();
     }
 
 
@@ -338,7 +334,7 @@ namespace EMStudio
 
         // update the input ports and reset the port highlight flags
         uint32 i;
-        const uint32 numInputPorts = mInputPorts.GetLength();
+        const uint32 numInputPorts = mInputPorts.size();
         for (i = 0; i < numInputPorts; ++i)
         {
             mInputPorts[i].SetRect(CalcInputPortRect(i));
@@ -346,7 +342,7 @@ namespace EMStudio
         }
 
         // update the output ports and reset the port highlight flags
-        const uint32 numOutputPorts = mOutputPorts.GetLength();
+        const uint32 numOutputPorts = mOutputPorts.size();
         for (i = 0; i < numOutputPorts; ++i)
         {
             mOutputPorts[i].SetRect(CalcOutputPortRect(i));
@@ -574,7 +570,7 @@ namespace EMStudio
 
                 // draw the input ports
                 QColor portBrushColor, portPenColor;
-                const uint32 numInputs = mInputPorts.GetLength();
+                const uint32 numInputs = mInputPorts.size();
                 for (uint32 i = 0; i < numInputs; ++i)
                 {
                     // get the input port and the corresponding rect
@@ -599,7 +595,7 @@ namespace EMStudio
                 if (GetHasVisualOutputPorts())
                 {
                     // draw the output ports
-                    const uint32 numOutputs = mOutputPorts.GetLength();
+                    const uint32 numOutputs = mOutputPorts.size();
                     for (uint32 i = 0; i < numOutputs; ++i)
                     {
                         // get the output port and the corresponding rect
@@ -827,7 +823,7 @@ namespace EMStudio
         const bool alwaysColor = GetAlwaysColor();
 
         // for all connections
-        const uint32 numConnections = mConnections.GetLength();
+        const uint32 numConnections = mConnections.size();
         for (uint32 c = 0; c < numConnections; ++c)
         {
             NodeConnection* nodeConnection = mConnections[c];
@@ -922,7 +918,7 @@ namespace EMStudio
     {
         if (mIsCollapsed == false)
         {
-            uint32 numPorts = MCore::Max<uint32>(mInputPorts.GetLength(), mOutputPorts.GetLength());
+            uint32 numPorts = MCore::Max<uint32>(mInputPorts.size(), mOutputPorts.size());
             uint32 result = (numPorts * 15) + 34;
             return MCore::Math::Align(result, 10);
         }
@@ -939,7 +935,7 @@ namespace EMStudio
         // calc the maximum input port width
         uint32 maxInputWidth = 0;
         uint32 width;
-        const uint32 numInputPorts = mInputPorts.GetLength();
+        const uint32 numInputPorts = mInputPorts.size();
         for (uint32 i = 0; i < numInputPorts; ++i)
         {
             const NodePort* nodePort = &mInputPorts[i];
@@ -956,7 +952,7 @@ namespace EMStudio
         // calc the maximum output port width
         uint32 width;
         uint32 maxOutputWidth = 0;
-        const uint32 numOutputPorts = mOutputPorts.GetLength();
+        const uint32 numOutputPorts = mOutputPorts.size();
         for (uint32 i = 0; i < numOutputPorts; ++i)
         {
             width = mPortFontMetrics->horizontalAdvance(mOutputPorts[i].GetName());
@@ -1052,40 +1048,40 @@ namespace EMStudio
     // remove all input ports
     void GraphNode::RemoveAllInputPorts()
     {
-        mInputPorts.Clear(false);
+        mInputPorts.clear();
     }
 
 
     // remove all output ports
     void GraphNode::RemoveAllOutputPorts()
     {
-        mOutputPorts.Clear(false);
+        mOutputPorts.clear();
     }
 
 
     // add a new input port
     NodePort* GraphNode::AddInputPort(bool updateTextPixMap)
     {
-        mInputPorts.AddEmpty();
-        mInputPorts.GetLast().SetNode(this);
+        mInputPorts.emplace_back();
+        mInputPorts.back().SetNode(this);
         if (updateTextPixMap)
         {
             UpdateTextPixmap();
         }
-        return &mInputPorts.GetLast();
+        return &mInputPorts.back();
     }
 
 
     // add a new output port
     NodePort* GraphNode::AddOutputPort(bool updateTextPixMap)
     {
-        mOutputPorts.AddEmpty();
-        mOutputPorts.GetLast().SetNode(this);
+        mOutputPorts.emplace_back();
+        mOutputPorts.back().SetNode(this);
         if (updateTextPixMap)
         {
             UpdateTextPixmap();
         }
-        return &mOutputPorts.GetLast();
+        return &mOutputPorts.back();
     }
 
     /*
@@ -1129,7 +1125,7 @@ namespace EMStudio
         // check the input ports
         if (includeInputPorts)
         {
-            const uint32 numInputPorts = mInputPorts.GetLength();
+            const uint32 numInputPorts = mInputPorts.size();
             for (i = 0; i < numInputPorts; ++i)
             {
                 QRect rect = CalcInputPortRect(i);
@@ -1143,7 +1139,7 @@ namespace EMStudio
         }
 
         // check the output ports
-        const uint32 numOutputPorts = mOutputPorts.GetLength();
+        const uint32 numOutputPorts = mOutputPorts.size();
         for (i = 0; i < numOutputPorts; ++i)
         {
             QRect rect = CalcOutputPortRect(i);
@@ -1161,7 +1157,7 @@ namespace EMStudio
     // remove a given connection
     bool GraphNode::RemoveConnection(const void* connection, bool removeFromMemory)
     {
-        const uint32 numConnections = mConnections.GetLength();
+        const uint32 numConnections = mConnections.size();
         for (uint32 i = 0; i < numConnections; ++i)
         {
             // if this is the connection we're searching for
@@ -1171,7 +1167,7 @@ namespace EMStudio
                 {
                     delete mConnections[i];
                 }
-                mConnections.Remove(i);
+                mConnections.erase(AZStd::next(begin(mConnections), i));
                 return true;
             }
         }
@@ -1182,7 +1178,7 @@ namespace EMStudio
     // Remove a given connection by model index
     bool GraphNode::RemoveConnection(const QModelIndex& modelIndex, bool removeFromMemory)
     {
-        const uint32 numConnections = mConnections.GetLength();
+        const uint32 numConnections = mConnections.size();
         for (uint32 i = 0; i < numConnections; ++i)
         {
             // if this is the connection we're searching for
@@ -1192,7 +1188,7 @@ namespace EMStudio
                 {
                     delete mConnections[i];
                 }
-                mConnections.Remove(i);
+                mConnections.erase(AZStd::next(begin(mConnections), i));
                 return true;
             }
         }

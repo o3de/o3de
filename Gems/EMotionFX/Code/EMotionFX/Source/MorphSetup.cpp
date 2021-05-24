@@ -10,19 +10,12 @@
 #include "MorphSetup.h"
 #include "MorphTarget.h"
 #include <MCore/Source/StringConversions.h>
+#include <MCore/Source/FastMath.h>
 #include <EMotionFX/Source/Allocators.h>
 
 namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(MorphSetup, DeformerAllocator, 0)
-
-
-    // constructor
-    MorphSetup::MorphSetup()
-        : BaseObject()
-    {
-        mMorphTargets.SetMemoryCategory(EMFX_MEMCATEGORY_GEOMETRY_PMORPHTARGETS);
-    }
 
 
     // destructor
@@ -42,7 +35,7 @@ namespace EMotionFX
     // add a morph target
     void MorphSetup::AddMorphTarget(MorphTarget* morphTarget)
     {
-        mMorphTargets.Add(morphTarget);
+        mMorphTargets.emplace_back(morphTarget);
     }
 
 
@@ -54,14 +47,18 @@ namespace EMotionFX
             mMorphTargets[nr]->Destroy();
         }
 
-        mMorphTargets.Remove(nr);
+        mMorphTargets.erase(AZStd::next(begin(mMorphTargets), nr));
     }
 
 
     // remove a morph target
     void MorphSetup::RemoveMorphTarget(MorphTarget* morphTarget, bool delFromMem)
     {
-        mMorphTargets.RemoveByValue(morphTarget);
+        const auto* foundMorphTarget = AZStd::find(begin(mMorphTargets), end(mMorphTargets), morphTarget);
+        if (foundMorphTarget != end(mMorphTargets))
+        {
+            mMorphTargets.erase(foundMorphTarget);
+        }
 
         if (delFromMem)
         {
@@ -73,13 +70,13 @@ namespace EMotionFX
     // remove all morph targets
     void MorphSetup::RemoveAllMorphTargets()
     {
-        const uint32 numTargets = mMorphTargets.GetLength();
+        const uint32 numTargets = mMorphTargets.size();
         for (uint32 i = 0; i < numTargets; ++i)
         {
             mMorphTargets[i]->Destroy();
         }
 
-        mMorphTargets.Clear();
+        mMorphTargets.clear();
     }
 
 
@@ -87,7 +84,7 @@ namespace EMotionFX
     MorphTarget* MorphSetup::FindMorphTargetByID(uint32 id) const
     {
         // linear search, and check IDs
-        const uint32 numTargets = mMorphTargets.GetLength();
+        const uint32 numTargets = mMorphTargets.size();
         for (uint32 i = 0; i < numTargets; ++i)
         {
             if (mMorphTargets[i]->GetID() == id)
@@ -105,7 +102,7 @@ namespace EMotionFX
     uint32 MorphSetup::FindMorphTargetNumberByID(uint32 id) const
     {
         // linear search, and check IDs
-        const uint32 numTargets = mMorphTargets.GetLength();
+        const uint32 numTargets = mMorphTargets.size();
         for (uint32 i = 0; i < numTargets; ++i)
         {
             if (mMorphTargets[i]->GetID() == id)
@@ -121,7 +118,7 @@ namespace EMotionFX
 
     uint32 MorphSetup::FindMorphTargetIndexByName(const char* name) const
     {
-        const uint32 numTargets = mMorphTargets.GetLength();
+        const uint32 numTargets = mMorphTargets.size();
         for (uint32 i = 0; i < numTargets; ++i)
         {
             if (mMorphTargets[i]->GetNameString() == name)
@@ -136,7 +133,7 @@ namespace EMotionFX
 
     uint32 MorphSetup::FindMorphTargetIndexByNameNoCase(const char* name) const
     {
-        const uint32 numTargets = mMorphTargets.GetLength();
+        const uint32 numTargets = mMorphTargets.size();
         for (uint32 i = 0; i < numTargets; ++i)
         {
             if (AzFramework::StringFunc::Equal(mMorphTargets[i]->GetNameString().c_str(), name, false /* no case */))
@@ -152,7 +149,7 @@ namespace EMotionFX
     // find a morph target by name (case sensitive)
     MorphTarget* MorphSetup::FindMorphTargetByName(const char* name) const
     {
-        const uint32 numTargets = mMorphTargets.GetLength();
+        const uint32 numTargets = mMorphTargets.size();
         for (uint32 i = 0; i < numTargets; ++i)
         {
             if (mMorphTargets[i]->GetNameString() == name)
@@ -168,7 +165,7 @@ namespace EMotionFX
     // find a morph target by name (not case sensitive)
     MorphTarget* MorphSetup::FindMorphTargetByNameNoCase(const char* name) const
     {
-        const uint32 numTargets = mMorphTargets.GetLength();
+        const uint32 numTargets = mMorphTargets.size();
         for (uint32 i = 0; i < numTargets; ++i)
         {
             if (AzFramework::StringFunc::Equal(mMorphTargets[i]->GetNameString().c_str(), name, false /* no case */))
@@ -188,7 +185,7 @@ namespace EMotionFX
         MorphSetup* clone = MorphSetup::Create();
 
         // clone all morph targets
-        const uint32 numMorphTargets = mMorphTargets.GetLength();
+        const uint32 numMorphTargets = mMorphTargets.size();
         for (uint32 i = 0; i < numMorphTargets; ++i)
         {
             clone->AddMorphTarget(mMorphTargets[i]->Clone());
@@ -201,7 +198,7 @@ namespace EMotionFX
 
     void MorphSetup::ReserveMorphTargets(uint32 numMorphTargets)
     {
-        mMorphTargets.Reserve(numMorphTargets);
+        mMorphTargets.reserve(numMorphTargets);
     }
 
 
@@ -215,7 +212,7 @@ namespace EMotionFX
         }
 
         // scale the morph targets
-        const uint32 numMorphTargets = mMorphTargets.GetLength();
+        const uint32 numMorphTargets = mMorphTargets.size();
         for (uint32 i = 0; i < numMorphTargets; ++i)
         {
             mMorphTargets[i]->Scale(scaleFactor);

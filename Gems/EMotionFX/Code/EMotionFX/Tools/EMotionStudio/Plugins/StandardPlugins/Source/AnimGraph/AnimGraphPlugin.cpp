@@ -808,11 +808,11 @@ namespace EMStudio
         const AZStd::string& paramName = animGraphInstance->GetAnimGraph()->FindParameter(paramIndex)->GetName();
 
         // iterate over all gizmos that are active
-        MCore::Array<MCommon::TransformationManipulator*>* gizmos = manager->GetTransformationManipulators();
-        const uint32 numGizmos = gizmos->GetLength();
+        AZStd::vector<MCommon::TransformationManipulator*>* gizmos = manager->GetTransformationManipulators();
+        const uint32 numGizmos = gizmos->size();
         for (uint32 i = 0; i < numGizmos; ++i)
         {
-            MCommon::TransformationManipulator* gizmo = gizmos->GetItem(i);
+            MCommon::TransformationManipulator* gizmo = gizmos->at(i);
 
             // check the gizmo name
             if (paramName == gizmo->GetName())

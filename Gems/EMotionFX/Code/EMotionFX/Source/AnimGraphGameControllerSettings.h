@@ -10,7 +10,7 @@
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/string/string.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <EMotionFX/Source/Allocators.h>
 #include <EMotionFX/Source/EMotionFXConfig.h>
 
@@ -48,12 +48,11 @@ namespace EMotionFX
 
         struct EMFX_API ParameterInfo final
         {
-            AZ_RTTI(AnimGraphGameControllerSettings::ParameterInfo, "{C3220DB3-54FA-4719-80F0-CEAE5859C641}");
+            AZ_TYPE_INFO(AnimGraphGameControllerSettings::ParameterInfo, "{C3220DB3-54FA-4719-80F0-CEAE5859C641}");
             AZ_CLASS_ALLOCATOR_DECL
 
             ParameterInfo();
             ParameterInfo(const char* parameterName);
-            virtual ~ParameterInfo() = default;
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -66,12 +65,11 @@ namespace EMotionFX
 
         struct EMFX_API ButtonInfo final
         {
-            AZ_RTTI(AnimGraphGameControllerSettings::ButtonInfo, "{94027445-C44F-4310-9DF2-1A2F39518578}");
+            AZ_TYPE_INFO(AnimGraphGameControllerSettings::ButtonInfo, "{94027445-C44F-4310-9DF2-1A2F39518578}");
             AZ_CLASS_ALLOCATOR_DECL
 
             ButtonInfo();
             ButtonInfo(AZ::u32 buttonIndex);
-            virtual ~ButtonInfo() = default;
 
             static void Reflect(AZ::ReflectContext* context);
 

@@ -11,7 +11,7 @@
 // include the required headers
 #include "EMotionFXConfig.h"
 #include "BaseObject.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 
 namespace EMotionFX
@@ -191,7 +191,7 @@ namespace EMotionFX
          * Get the number of bones used by this submesh.
          * @result The number of bones used by this submesh.
          */
-        MCORE_INLINE uint32 GetNumBones() const                                 { return mBones.GetLength(); }
+        MCORE_INLINE size_t GetNumBones() const                                 { return mBones.size(); }
 
         /**
          * Get the node index for a given bone.
@@ -205,21 +205,21 @@ namespace EMotionFX
          * Each integer in the array represents the node number that acts as bone on this submesh.
          * @result A pointer to the array of bones used by this submesh.
          */
-        MCORE_INLINE uint32* GetBones()                                         { return mBones.GetPtr(); }
+        MCORE_INLINE uint32* GetBones()                                         { return mBones.data(); }
 
         /**
          * Get direct access to the bones array.
          * Each integer in the array represents the node number that acts as bone on this submesh.
          * @result A read only reference to the array of bones used by this submesh.
          */
-        MCORE_INLINE const MCore::Array<uint32>& GetBonesArray() const          { return mBones; }
+        MCORE_INLINE const AZStd::vector<uint32>& GetBonesArray() const          { return mBones; }
 
         /**
          * Get direct access to the bones array.
          * Each integer in the array represents the node number that acts as bone on this submesh.
          * @result A reference to the array of bones used by this submesh.
          */
-        MCORE_INLINE MCore::Array<uint32>& GetBonesArray()                      { return mBones; }
+        MCORE_INLINE AZStd::vector<uint32>& GetBonesArray()                      { return mBones; }
 
         /**
          * Reinitialize the bones.
@@ -268,7 +268,7 @@ namespace EMotionFX
 
 
     protected:
-        MCore::Array<uint32>    mBones;         /**< The collection of bones. These are stored as node numbers that point into the actor. */
+        AZStd::vector<uint32>    mBones;         /**< The collection of bones. These are stored as node numbers that point into the actor. */
         uint32                  mStartVertex;   /**< The start vertex number in the vertex data arrays of the parent mesh. */
         uint32                  mStartIndex;    /**< The start index number in the index array of the parent mesh. */
         uint32                  mStartPolygon;  /**< The start polygon number in the polygon vertex count array of the parent mesh. */

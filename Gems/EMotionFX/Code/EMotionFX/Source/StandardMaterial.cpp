@@ -356,8 +356,6 @@ namespace EMotionFX
         mIOR            = 1.5f;
         mDoubleSided    = true;
         mWireFrame      = false;
-
-        mLayers.SetMemoryCategory(EMFX_MEMCATEGORY_GEOMETRY_MATERIALS);
     }
 
 
@@ -398,8 +396,8 @@ namespace EMotionFX
         standardMaterial->mWireFrame        = mWireFrame;
 
         // copy the layers
-        const uint32 numLayers = mLayers.GetLength();
-        standardMaterial->mLayers.Resize(numLayers);
+        const uint32 numLayers = mLayers.size();
+        standardMaterial->mLayers.resize(numLayers);
         for (uint32 i = 0; i < numLayers; ++i)
         {
             standardMaterial->mLayers[i] = StandardMaterialLayer::Create();
@@ -420,7 +418,10 @@ namespace EMotionFX
             {
                 layer->Destroy();
             }
-            mLayers.RemoveByValue(layer);
+            if (const auto it = AZStd::find(begin(mLayers), end(mLayers), layer); it != end(mLayers))
+            {
+                mLayers.erase(it);
+            }
         }
     }
 
@@ -547,52 +548,52 @@ namespace EMotionFX
 
     StandardMaterialLayer* StandardMaterial::AddLayer(StandardMaterialLayer* layer)
     {
-        mLayers.Add(layer);
+        mLayers.emplace_back(layer);
         return layer;
     }
 
 
-    uint32 StandardMaterial::GetNumLayers() const
+    size_t StandardMaterial::GetNumLayers() const
     {
-        return mLayers.GetLength();
+        return mLayers.size();
     }
 
 
     StandardMaterialLayer* StandardMaterial::GetLayer(uint32 nr)
     {
-        MCORE_ASSERT(nr < mLayers.GetLength());
+        MCORE_ASSERT(nr < mLayers.size());
         return mLayers[nr];
     }
 
 
     void StandardMaterial::RemoveLayer(uint32 nr, bool delFromMem)
     {
-        MCORE_ASSERT(nr < mLayers.GetLength());
+        MCORE_ASSERT(nr < mLayers.size());
         if (delFromMem)
         {
             mLayers[nr]->Destroy();
         }
 
-        mLayers.Remove(nr);
+        mLayers.erase(AZStd::next(begin(mLayers), nr));
     }
 
 
     void StandardMaterial::RemoveAllLayers()
     {
-        const uint32 numLayers = mLayers.GetLength();
+        const uint32 numLayers = mLayers.size();
         for (uint32 i = 0; i < numLayers; ++i)
         {
             mLayers[i]->Destroy();
         }
 
-        mLayers.Clear();
+        mLayers.clear();
     }
 
 
     uint32 StandardMaterial::FindLayer(uint32 layerType) const
     {
         // search through all layers
-        const uint32 numLayers = mLayers.GetLength();
+        const uint32 numLayers = mLayers.size();
         for (uint32 i = 0; i < numLayers; ++i)
         {
             if (mLayers[i]->GetType() == layerType)
@@ -607,6 +608,6 @@ namespace EMotionFX
 
     void StandardMaterial::ReserveLayers(uint32 numLayers)
     {
-        mLayers.Reserve(numLayers);
+        mLayers.reserve(numLayers);
     }
 } // namespace EMotionFX

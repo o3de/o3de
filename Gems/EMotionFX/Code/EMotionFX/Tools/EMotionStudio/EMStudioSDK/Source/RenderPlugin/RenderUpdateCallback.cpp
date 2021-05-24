@@ -84,13 +84,13 @@ namespace EMStudio
                 const EMotionFX::Transform globalTM = transformData->GetCurrentPose()->GetWorldSpaceTransform(motionExtractionNode->GetNodeIndex()).ProjectedToGroundPlane();
 
                 bool distanceTraveledEnough = false;
-                if (trajectoryPath->mTraceParticles.GetIsEmpty())
+                if (trajectoryPath->mTraceParticles.empty())
                 {
                     distanceTraveledEnough = true;
                 }
                 else
                 {
-                    const uint32 numParticles = trajectoryPath->mTraceParticles.GetLength();
+                    const uint32 numParticles = trajectoryPath->mTraceParticles.size();
                     const EMotionFX::Transform& oldGlobalTM = trajectoryPath->mTraceParticles[numParticles - 1].mWorldTM;
 
                     const AZ::Vector3& oldPos = oldGlobalTM.mPosition;
@@ -115,7 +115,7 @@ namespace EMStudio
                     // create the particle, fill its data and add it to the trajectory trace path
                     MCommon::RenderUtil::TrajectoryPathParticle trajectoryParticle;
                     trajectoryParticle.mWorldTM = globalTM;
-                    trajectoryPath->mTraceParticles.Add(trajectoryParticle);
+                    trajectoryPath->mTraceParticles.emplace_back(trajectoryParticle);
 
                     // reset the time passed as we just added a new particle
                     trajectoryPath->mTimePassed = 0.0f;
@@ -123,9 +123,9 @@ namespace EMStudio
             }
 
             // make sure we don't have too many items in our array
-            if (trajectoryPath->mTraceParticles.GetLength() > 50)
+            if (trajectoryPath->mTraceParticles.size() > 50)
             {
-                trajectoryPath->mTraceParticles.RemoveFirst();
+                trajectoryPath->mTraceParticles.erase(begin(trajectoryPath->mTraceParticles));
             }
         }
     }

@@ -97,7 +97,7 @@ namespace EMotionFX
          * This is the number of different bones that the skinning information of the mesh where this deformer works on uses.
          * @result The number of bones.
          */
-        MCORE_INLINE uint32 GetNumLocalBones() const                        { return static_cast<uint32>(m_bones.size()); }
+        MCORE_INLINE size_t GetNumLocalBones() const                        { return m_bones.size(); }
 
         /**
          * Get the node number of a given local bone.

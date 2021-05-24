@@ -11,7 +11,7 @@
 // include required files
 #include "EMotionFXConfig.h"
 #include "BaseObject.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/StringIdPool.h>
 #include <MCore/Source/Endian.h>
 
@@ -54,7 +54,7 @@ namespace EMotionFX
         void Resize(uint32 numEntries);
 
         // get data
-        uint32 GetNumEntries() const;
+        size_t GetNumEntries() const;
         const char* GetFirstName(uint32 entryIndex) const;
         const char* GetSecondName(uint32 entryIndex) const;
         const AZStd::string& GetFirstNameString(uint32 entryIndex) const;
@@ -88,7 +88,7 @@ namespace EMotionFX
         bool Save(const char* fileName, MCore::Endian::EEndianType targetEndianType) const;
 
     private:
-        MCore::Array<MapEntry>  mEntries;                   /**< The array of entries. */
+        AZStd::vector<MapEntry>  mEntries;                   /**< The array of entries. */
         AZStd::string           mFileName;                  /**< The filename. */
         Actor*                  mSourceActor;               /**< The source actor. */
 

@@ -10,7 +10,7 @@
 
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Memory/Memory.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Config.h>
 #include <MCore/Source/MultiThreadManager.h>
 #include <EMotionFX/Source/BaseObject.h>
@@ -50,7 +50,7 @@ namespace EMotionFX
          * Get the number of motions in the motion manager.
          * @return The number of registered motions.
          */
-        MCORE_INLINE uint32 GetNumMotions() const                                                               { return mMotions.GetLength(); }
+        MCORE_INLINE size_t GetNumMotions() const                                                               { return mMotions.size(); }
 
         /**
          * Remove the motion with the given name from the motion manager.
@@ -160,7 +160,7 @@ namespace EMotionFX
          * Get the number of motion sets in the motion manager.
          * @return The number of registered motion sets.
          */
-        MCORE_INLINE uint32 GetNumMotionSets() const                                                            { return mMotionSets.GetLength(); }
+        MCORE_INLINE size_t GetNumMotionSets() const                                                            { return mMotionSets.size(); }
 
         /**
          * Calculate the number of root motion sets.
@@ -233,8 +233,8 @@ namespace EMotionFX
         const MotionDataFactory& GetMotionDataFactory() const;
 
     private:
-        MCore::Array<Motion*>       mMotions;               /**< The array of motions. */
-        MCore::Array<MotionSet*>    mMotionSets;            /**< The array of motion sets. */
+        AZStd::vector<Motion*>       mMotions;               /**< The array of motions. */
+        AZStd::vector<MotionSet*>    mMotionSets;            /**< The array of motion sets. */
         MCore::Mutex                mLock;                  /**< Motion lock. */
         MCore::Mutex                mSetLock;               /**< The motion set multithread lock. */
         MotionDataFactory*          m_motionDataFactory = nullptr; /**< The motion data factory. */

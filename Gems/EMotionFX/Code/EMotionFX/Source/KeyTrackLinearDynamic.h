@@ -41,21 +41,12 @@ namespace EMotionFX
     public:
         AZ_TYPE_INFO_LEGACY(EMotionFX::KeyTrackLinear, "{8C6EB52A-9720-467B-9D96-B4B967A113D1}", StorageType)
             
-        /**
-         * Default constructor.
-         */
-        KeyTrackLinearDynamic();
+        KeyTrackLinearDynamic() = default;
 
         /**
-         * Constructor.
          * @param nrKeys The number of keyframes which the keytrack contains (preallocates this amount of keyframes).
          */
         KeyTrackLinearDynamic(uint32 nrKeys);
-
-        /**
-         * Destructor.
-         */
-        ~KeyTrackLinearDynamic();
 
         static void Reflect(AZ::ReflectContext* context);
 

@@ -38,8 +38,6 @@ namespace EMStudio
         //mLines.SetMemoryCategory(MEMCATEGORY_EMSTUDIOSDK_RENDERPLUGINBASE);
         //mLines.Reserve(2048);
 
-        mSelectedActorInstances.SetMemoryCategory(MEMCATEGORY_EMSTUDIOSDK_RENDERPLUGINBASE);
-
         // camera used to render the little axis on the bottom left
         mAxisFakeCamera = new MCommon::OrthographicCamera(MCommon::OrthographicCamera::VIEWMODE_FRONT);
 
@@ -255,13 +253,13 @@ namespace EMStudio
         }
 
         // update size/bounding volumes volumes of all existing gizmos
-        const MCore::Array<MCommon::TransformationManipulator*>* transformationManipulators = GetManager()->GetTransformationManipulators();
+        const AZStd::vector<MCommon::TransformationManipulator*>* transformationManipulators = GetManager()->GetTransformationManipulators();
 
         // render all visible gizmos
-        const uint32 numGizmos = transformationManipulators->GetLength();
+        const uint32 numGizmos = transformationManipulators->size();
         for (uint32 i = 0; i < numGizmos; ++i)
         {
-            MCommon::TransformationManipulator* activeManipulator = transformationManipulators->GetItem(i);
+            MCommon::TransformationManipulator* activeManipulator = transformationManipulators->at(i);
             if (activeManipulator == nullptr)
             {
                 continue;
@@ -619,7 +617,7 @@ namespace EMStudio
                         }
                     }
 
-                    mSelectedActorInstances.Clear(false);
+                    mSelectedActorInstances.clear();
 
                     if (ctrlPressed)
                     {
@@ -627,13 +625,13 @@ namespace EMStudio
                         const uint32 numSelectedActorInstances = selection.GetNumSelectedActorInstances();
                         for (uint32 i = 0; i < numSelectedActorInstances; ++i)
                         {
-                            mSelectedActorInstances.Add(selection.GetActorInstance(i));
+                            mSelectedActorInstances.emplace_back(selection.GetActorInstance(i));
                         }
                     }
 
                     if (selectedActorInstance)
                     {
-                        mSelectedActorInstances.Add(selectedActorInstance);
+                        mSelectedActorInstances.emplace_back(selectedActorInstance);
                     }
 
                     CommandSystem::SelectActorInstancesUsingCommands(mSelectedActorInstances);
@@ -1008,14 +1006,14 @@ namespace EMStudio
             return;
         }
 
-        MCore::Array<MCommon::TransformationManipulator*>* transformationManipulators = GetManager()->GetTransformationManipulators();
-        const uint32 numGizmos = transformationManipulators->GetLength();
+        AZStd::vector<MCommon::TransformationManipulator*>* transformationManipulators = GetManager()->GetTransformationManipulators();
+        const uint32 numGizmos = transformationManipulators->size();
 
         // render all visible gizmos
         for (uint32 i = 0; i < numGizmos; ++i)
         {
             // update the gizmos
-            MCommon::TransformationManipulator* activeManipulator = transformationManipulators->GetItem(i);
+            MCommon::TransformationManipulator* activeManipulator = transformationManipulators->at(i);
 
             // update the gizmos if there is an active manipulator
             if (activeManipulator == nullptr)
@@ -1048,7 +1046,7 @@ namespace EMStudio
         }
 
         // render custom triangles
-        const uint32 numTriangles = mTriangles.GetLength();
+        const uint32 numTriangles = mTriangles.size();
         for (uint32 i = 0; i < numTriangles; ++i)
         {
             const Triangle& curTri = mTriangles[i];

@@ -341,7 +341,7 @@ namespace EMStudio
         painter.setRenderHint(QPainter::Antialiasing, true);
 
         // get the history items shortcut
-        const MCore::Array<EMotionFX::Recorder::NodeHistoryItem*>& historyItems = actorInstanceData->mNodeHistoryItems;
+        const AZStd::vector<EMotionFX::Recorder::NodeHistoryItem*>& historyItems = actorInstanceData->mNodeHistoryItems;
         int32 windowWidth = geometry().width();
 
         RecorderGroup* recorderGroup = mPlugin->GetTimeViewToolBar()->GetRecorderGroup();
@@ -369,7 +369,7 @@ namespace EMStudio
 
         const uint32 graphContentsCode = mPlugin->mTrackHeaderWidget->mGraphContentsComboBox->currentIndex();
 
-        const uint32 numItems = historyItems.GetLength();
+        const uint32 numItems = historyItems.size();
         for (uint32 i = 0; i < numItems; ++i)
         {
             EMotionFX::Recorder::NodeHistoryItem* curItem = historyItems[i];
@@ -456,7 +456,7 @@ namespace EMStudio
 
         // display the values and names
         uint32 offset = 0;
-        const uint32 numActiveItems = mActiveItems.GetLength();
+        const uint32 numActiveItems = mActiveItems.size();
         for (uint32 i = 0; i < numActiveItems; ++i)
         {
             EMotionFX::Recorder::NodeHistoryItem* curItem = mActiveItems[i].mNodeHistoryItem;
@@ -516,7 +516,7 @@ namespace EMStudio
         }
 
         // get the history items shortcut
-        const MCore::Array<EMotionFX::Recorder::EventHistoryItem*>& historyItems = actorInstanceData->mEventHistoryItems;
+        const AZStd::vector<EMotionFX::Recorder::EventHistoryItem*>& historyItems = actorInstanceData->mEventHistoryItems;
 
         QRect clipRect = rect;
         clipRect.setRight(aznumeric_cast<int>(mPlugin->TimeToPixel(animationLength)));
@@ -528,7 +528,7 @@ namespace EMStudio
         const float tickHeight = 16;
 
         QPointF tickPoints[6];
-        const uint32 numItems = historyItems.GetLength();
+        const uint32 numItems = historyItems.size();
         for (uint32 i = 0; i < numItems; ++i)
         {
             EMotionFX::Recorder::EventHistoryItem* curItem = historyItems[i];
@@ -620,7 +620,7 @@ namespace EMStudio
         }
 
         // get the history items shortcut
-        const MCore::Array<EMotionFX::Recorder::NodeHistoryItem*>&  historyItems = actorInstanceData->mNodeHistoryItems;
+        const AZStd::vector<EMotionFX::Recorder::NodeHistoryItem*>&  historyItems = actorInstanceData->mNodeHistoryItems;
         int32 windowWidth = geometry().width();
 
         // calculate the remapped track list, based on sorted global weight, with the most influencing track on top
@@ -639,7 +639,7 @@ namespace EMStudio
 
         // for all history items
         QRectF itemRect;
-        const uint32 numItems = historyItems.GetLength();
+        const uint32 numItems = historyItems.size();
         for (uint32 i = 0; i < numItems; ++i)
         {
             EMotionFX::Recorder::NodeHistoryItem* curItem = historyItems[i];
@@ -923,7 +923,7 @@ namespace EMStudio
         visibleEndTime = mPlugin->PixelToTime(width); //mPlugin->CalcTime( width, &visibleEndTime, nullptr, nullptr, nullptr, nullptr );
 
         // for all tracks
-        const uint32 numTracks = mPlugin->mTracks.GetLength();
+        const uint32 numTracks = mPlugin->mTracks.size();
         for (uint32 i = 0; i < numTracks; ++i)
         {
             TimeTrack* track = mPlugin->mTracks[i];
@@ -1916,7 +1916,7 @@ namespace EMStudio
             return;
         }
 
-        MCore::Array<uint32> eventNumbers;
+        AZStd::vector<uint32> eventNumbers;
 
         // calculate the number of selected events
         const uint32 numEvents = timeTrack->GetNumElements();
@@ -1927,7 +1927,7 @@ namespace EMStudio
             // increase the counter in case the element is selected
             if (element->GetIsSelected())
             {
-                eventNumbers.Add(i);
+                eventNumbers.emplace_back(i);
             }
         }
 
@@ -1950,13 +1950,13 @@ namespace EMStudio
             return;
         }
 
-        MCore::Array<uint32> eventNumbers;
+        AZStd::vector<uint32> eventNumbers;
 
         // construct an array with the event numbers
         const uint32 numEvents = timeTrack->GetNumElements();
         for (uint32 i = 0; i < numEvents; ++i)
         {
-            eventNumbers.Add(i);
+            eventNumbers.emplace_back(i);
         }
 
         // remove the motion events
@@ -2315,7 +2315,7 @@ namespace EMStudio
 
         // if we recorded node history
         mNodeHistoryRect = QRect();
-        if (actorInstanceData && actorInstanceData->mNodeHistoryItems.GetLength() > 0)
+        if (actorInstanceData && actorInstanceData->mNodeHistoryItems.size() > 0)
         {
             const uint32 height = (recorder.CalcMaxNodeHistoryTrackIndex(*actorInstanceData) + 1) * (mNodeHistoryItemHeight + 3) + mNodeRectsStartHeight;
             mNodeHistoryRect.setTop(mNodeRectsStartHeight);
@@ -2325,7 +2325,7 @@ namespace EMStudio
         }
 
         mEventHistoryTotalHeight = 0;
-        if (actorInstanceData && actorInstanceData->mEventHistoryItems.GetLength() > 0)
+        if (actorInstanceData && actorInstanceData->mEventHistoryItems.size() > 0)
         {
             mEventHistoryTotalHeight = (recorder.CalcMaxEventHistoryTrackIndex(*actorInstanceData) + 1) * 20;
         }
@@ -2353,10 +2353,10 @@ namespace EMStudio
 
 
         // get the history items shortcut
-        const MCore::Array<EMotionFX::Recorder::NodeHistoryItem*>&  historyItems = actorInstanceData->mNodeHistoryItems;
+        const AZStd::vector<EMotionFX::Recorder::NodeHistoryItem*>&  historyItems = actorInstanceData->mNodeHistoryItems;
 
         QRect rect;
-        const uint32 numItems = historyItems.GetLength();
+        const uint32 numItems = historyItems.size();
         for (uint32 i = 0; i < numItems; ++i)
         {
             EMotionFX::Recorder::NodeHistoryItem* curItem = historyItems[i];
@@ -2462,20 +2462,20 @@ namespace EMStudio
             EMotionFX::AnimGraphNode* node = animGraph->RecursiveFindNodeById(item->mNodeId);
             if (node)
             {
-                MCore::Array<EMotionFX::AnimGraphNode*> nodePath;
+                AZStd::vector<EMotionFX::AnimGraphNode*> nodePath;
                 EMotionFX::AnimGraphNode* curNode = node->GetParentNode();
                 while (curNode)
                 {
-                    nodePath.Insert(0, curNode);
+                    nodePath.emplace(0, curNode);
                     curNode = curNode->GetParentNode();
                 }
 
                 AZStd::string nodePathString;
                 nodePathString.reserve(256);
-                for (uint32 i = 0; i < nodePath.GetLength(); ++i)
+                for (uint32 i = 0; i < nodePath.size(); ++i)
                 {
                     nodePathString += nodePath[i]->GetName();
-                    if (i != nodePath.GetLength() - 1)
+                    if (i != nodePath.size() - 1)
                     {
                         nodePathString += " > ";
                     }
@@ -2551,11 +2551,11 @@ namespace EMStudio
             return nullptr;
         }
 
-        const MCore::Array<EMotionFX::Recorder::EventHistoryItem*>& historyItems = actorInstanceData->mEventHistoryItems;
+        const AZStd::vector<EMotionFX::Recorder::EventHistoryItem*>& historyItems = actorInstanceData->mEventHistoryItems;
         const float tickHalfWidth = 7;
         const float tickHeight = 16;
 
-        const uint32 numItems = historyItems.GetLength();
+        const uint32 numItems = historyItems.size();
         for (uint32 i = 0; i < numItems; ++i)
         {
             EMotionFX::Recorder::EventHistoryItem* curItem = historyItems[i];
@@ -2648,20 +2648,20 @@ namespace EMStudio
                 outString += AZStd::string::format("<tr><td><p style=\"color:rgb(200,200,200)\"><b>Emitted By:&nbsp;</b></p></td>");
                 outString += AZStd::string::format("<td><p style=\"color:rgb(115, 115, 115)\">%s</p></td></tr>", node->GetName());
 
-                MCore::Array<EMotionFX::AnimGraphNode*> nodePath;
+                AZStd::vector<EMotionFX::AnimGraphNode*> nodePath;
                 EMotionFX::AnimGraphNode* curNode = node->GetParentNode();
                 while (curNode)
                 {
-                    nodePath.Insert(0, curNode);
+                    nodePath.emplace(0, curNode);
                     curNode = curNode->GetParentNode();
                 }
 
                 AZStd::string nodePathString;
                 nodePathString.reserve(256);
-                for (uint32 i = 0; i < nodePath.GetLength(); ++i)
+                for (uint32 i = 0; i < nodePath.size(); ++i)
                 {
                     nodePathString += nodePath[i]->GetName();
-                    if (i != nodePath.GetLength() - 1)
+                    if (i != nodePath.size() - 1)
                     {
                         nodePathString += " > ";
                     }

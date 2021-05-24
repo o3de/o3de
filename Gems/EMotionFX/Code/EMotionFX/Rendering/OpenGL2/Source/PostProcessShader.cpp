@@ -81,7 +81,7 @@ namespace RenderGL
     // Init
     bool PostProcessShader::Init(AZ::IO::PathView filename)
     {
-        MCore::Array<AZStd::string> defines;
+        AZStd::vector<AZStd::string> defines;
         return GLSLShader::Init(nullptr, filename, defines);
     }
 

@@ -26,7 +26,6 @@ namespace EMotionFX
     RepositioningLayerPass::RepositioningLayerPass(MotionLayerSystem* motionLayerSystem)
         : LayerPass(motionLayerSystem)
     {
-        mHierarchyPath.SetMemoryCategory(EMFX_MEMCATEGORY_MOTIONS_MOTIONSYSTEMS);
         mLastReposNode = MCORE_INVALIDINDEX32;
     }
 

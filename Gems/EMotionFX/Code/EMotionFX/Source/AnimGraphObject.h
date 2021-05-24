@@ -15,7 +15,7 @@
 #include <MCore/Source/Stream.h>
 #include <MCore/Source/CommandLine.h>
 #include <MCore/Source/Color.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Attribute.h>
 #include <MCore/Source/AttributeFloat.h>
 #include <MCore/Source/AttributeInt32.h>
@@ -153,7 +153,7 @@ namespace EMotionFX
         uint32 SaveUniqueData(AnimGraphInstance* animGraphInstance, uint8* outputBuffer) const;  // save and return number of bytes written, when outputBuffer is nullptr only return num bytes it would write
         uint32 LoadUniqueData(AnimGraphInstance* animGraphInstance, const uint8* dataBuffer);    // load and return number of bytes read, when dataBuffer is nullptr, 0 should be returned
 
-        virtual void RecursiveCollectObjects(MCore::Array<AnimGraphObject*>& outObjects) const;
+        virtual void RecursiveCollectObjects(AZStd::vector<AnimGraphObject*>& outObjects) const;
 
         bool GetHasErrorFlag(AnimGraphInstance* animGraphInstance) const;
         void SetHasErrorFlag(AnimGraphInstance* animGraphInstance, bool hasError);

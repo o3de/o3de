@@ -1178,7 +1178,7 @@ namespace CommandSystem
 
 
     // remove motion event
-    void CommandHelperRemoveMotionEvents(uint32 motionID, const char* trackName, const MCore::Array<uint32>& eventNumbers, MCore::CommandGroup* commandGroup)
+    void CommandHelperRemoveMotionEvents(uint32 motionID, const char* trackName, const AZStd::vector<uint32>& eventNumbers, MCore::CommandGroup* commandGroup)
     {
         // find the motion by id
         EMotionFX::Motion* motion = EMotionFX::GetMotionManager().FindMotionByID(motionID);
@@ -1191,7 +1191,7 @@ namespace CommandSystem
         MCore::CommandGroup internalCommandGroup("Remove motion events");
 
         // get the number of events to remove and iterate through them
-        const int32 numEvents = eventNumbers.GetLength();
+        const int32 numEvents = eventNumbers.size();
         for (int32 i = 0; i < numEvents; ++i)
         {
             // remove the events from back to front
@@ -1221,7 +1221,7 @@ namespace CommandSystem
 
 
     // remove motion event
-    void CommandHelperRemoveMotionEvents(const char* trackName, const MCore::Array<uint32>& eventNumbers, MCore::CommandGroup* commandGroup)
+    void CommandHelperRemoveMotionEvents(const char* trackName, const AZStd::vector<uint32>& eventNumbers, MCore::CommandGroup* commandGroup)
     {
         EMotionFX::Motion* motion = GetCommandManager()->GetCurrentSelection().GetSingleMotion();
         if (motion == nullptr)

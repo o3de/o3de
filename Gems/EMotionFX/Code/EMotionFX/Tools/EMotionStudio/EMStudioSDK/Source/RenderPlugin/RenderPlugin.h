@@ -53,9 +53,9 @@ namespace EMStudio
             MCORE_MEMORYOBJECTCATEGORY(RenderPlugin::EMStudioRenderActor, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK_RENDERPLUGINBASE);
 
             EMotionFX::Actor*                           mActor;
-            MCore::Array<uint32>                        mBoneList;
+            AZStd::vector<uint32>                        mBoneList;
             RenderGL::GLActor*                          mRenderActor;
-            MCore::Array<EMotionFX::ActorInstance*>     mActorInstances;
+            AZStd::vector<EMotionFX::ActorInstance*>     mActorInstances;
             float                                       mNormalsScaleMultiplier;
             float                                       mCharacterHeight;
             float                                       mOffsetFromTrajectoryNode;
@@ -203,7 +203,7 @@ namespace EMStudio
         RenderUpdateCallback*               mUpdateCallback;
 
         RenderOptions                       mRenderOptions;
-        MCore::Array<EMStudioRenderActor*>  mActors;
+        AZStd::vector<EMStudioRenderActor*>  mActors;
 
         // view widgets
         AZStd::vector<RenderViewWidget*>    m_viewWidgets;

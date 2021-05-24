@@ -12,7 +12,7 @@
 #include "EMotionFXConfig.h"
 #include "BaseObject.h"
 #include "PlayBackInfo.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 
 namespace EMotionFX
@@ -79,7 +79,7 @@ namespace EMotionFX
          * Get the number of entries currently in the queue.
          * @result The number of entries currently scheduled in the queue.
          */
-        uint32 GetNumEntries() const;
+        size_t GetNumEntries() const;
 
         /**
          * Get the first entry.
@@ -133,7 +133,7 @@ namespace EMotionFX
         void PlayNextMotion();
 
     private:
-        MCore::Array<QueueEntry>    mEntries;           /**< The motion queue entries. */
+        AZStd::vector<QueueEntry>    mEntries;           /**< The motion queue entries. */
         MotionSystem*               mMotionSystem;      /**< Motion system access pointer. */
         ActorInstance*              mActorInstance;     /**< The actor instance where this queue works on. */
 

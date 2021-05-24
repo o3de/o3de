@@ -14,7 +14,7 @@
 #include "Shader.h"
 
 // include OpenGL
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 #include <AzCore/PlatformIncl.h>
 #include <QOpenGLExtraFunctions>
@@ -42,7 +42,7 @@ namespace RenderGL
         MCORE_INLINE unsigned int GetProgram() const                                    { return mProgram; }
         bool CheckIfIsDefined(const char* attributeName);
 
-        bool Init(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName, MCore::Array<AZStd::string>& defines);
+        bool Init(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName, AZStd::vector<AZStd::string>& defines);
         void SetAttribute(const char* name, uint32 dim, uint32 type, uint32 stride, size_t offset) override;
 
         void SetUniform(const char* name, float value) override;
@@ -73,8 +73,8 @@ namespace RenderGL
             bool                mIsAttribute;
         };
 
-        uint32 FindAttributeIndex(const char* name);
-        uint32 FindUniformIndex(const char* name);
+        size_t FindAttributeIndex(const char* name);
+        size_t FindUniformIndex(const char* name);
         ShaderParameter* FindAttribute(const char* name);
         ShaderParameter* FindUniform(const char* name);
 
@@ -84,11 +84,11 @@ namespace RenderGL
 
         AZ::IO::Path                    mFileName;
 
-        MCore::Array<uint32>            mActivatedAttribs;
-        MCore::Array<uint32>            mActivatedTextures;
-        MCore::Array<ShaderParameter>   mUniforms;
-        MCore::Array<ShaderParameter>   mAttributes;
-        MCore::Array<AZStd::string>     mDefines;
+        AZStd::vector<uint32>            mActivatedAttribs;
+        AZStd::vector<uint32>            mActivatedTextures;
+        AZStd::vector<ShaderParameter>   mUniforms;
+        AZStd::vector<ShaderParameter>   mAttributes;
+        AZStd::vector<AZStd::string>     mDefines;
 
         unsigned int                    mVertexShader;
         unsigned int                    mPixelShader;

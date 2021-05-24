@@ -11,7 +11,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include "StandardHeaders.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include "Command.h"
 #include "CommandGroup.h"
 

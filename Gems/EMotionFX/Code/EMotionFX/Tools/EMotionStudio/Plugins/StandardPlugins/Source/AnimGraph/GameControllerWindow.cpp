@@ -346,11 +346,11 @@ namespace EMStudio
 
         // add all parameters
         //  uint32 startRow = 0;
-        mParameterInfos.Clear();
+        mParameterInfos.clear();
 
         const EMotionFX::ValueParameterVector& parameters = animGraph->RecursivelyGetValueParameters();
         const size_t numParameters = parameters.size();
-        mParameterInfos.Reserve(static_cast<uint32>(numParameters));
+        mParameterInfos.reserve(static_cast<uint32>(numParameters));
 
         for (size_t parameterIndex = 0; parameterIndex < numParameters; ++parameterIndex)
         {
@@ -478,7 +478,7 @@ namespace EMStudio
             paramInfo.mMode      = modeComboBox;
             paramInfo.mInvert    = invertCheckbox;
             paramInfo.mValue     = valueEdit;
-            mParameterInfos.Add(paramInfo);
+            mParameterInfos.emplace_back(paramInfo);
 
             // update the interface
             UpdateParameterInterface(&paramInfo);
@@ -490,7 +490,7 @@ namespace EMStudio
         mButtonGridLayout->setMargin(0);
 
         // clear the button infos
-        mButtonInfos.Clear();
+        mButtonInfos.clear();
 
         // get the number of buttons and iterate through them
     #if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
@@ -520,15 +520,15 @@ namespace EMStudio
             modeComboBox->setCurrentIndex(settingsInfo->m_mode);
             mButtonGridLayout->addWidget(modeComboBox, i, 1);
 
-            mButtonInfos.Add(ButtonInfo(i, modeComboBox));
+            mButtonInfos.emplace_back(ButtonInfo(i, modeComboBox));
 
             // reinit the dynamic part of the button layout
             ReInitButtonInterface(i);
         }
 
         // real time preview of the controller
-        mPreviewLabels.Clear();
-        mPreviewLabels.Resize(GameController::NUM_ELEMENTS + 1);
+        mPreviewLabels.clear();
+        mPreviewLabels.resize(GameController::NUM_ELEMENTS + 1);
         QVBoxLayout* realtimePreviewLayout = new QVBoxLayout();
         QGridLayout* previewGridLayout = new QGridLayout();
         previewGridLayout->setAlignment(Qt::AlignTop);
@@ -701,7 +701,7 @@ namespace EMStudio
     GameControllerWindow::ButtonInfo* GameControllerWindow::FindButtonInfo(QWidget* widget)
     {
         // get the number of button infos and iterate through them
-        const uint32 numButtonInfos = mButtonInfos.GetLength();
+        const uint32 numButtonInfos = mButtonInfos.size();
         for (uint32 i = 0; i < numButtonInfos; ++i)
         {
             if (mButtonInfos[i].mWidget == widget)
@@ -718,7 +718,7 @@ namespace EMStudio
     GameControllerWindow::ParameterInfo* GameControllerWindow::FindParamInfoByModeComboBox(QComboBox* comboBox)
     {
         // get the number of parameter infos and iterate through them
-        const uint32 numParamInfos = mParameterInfos.GetLength();
+        const uint32 numParamInfos = mParameterInfos.size();
         for (uint32 i = 0; i < numParamInfos; ++i)
         {
             if (mParameterInfos[i].mMode == comboBox)
@@ -736,7 +736,7 @@ namespace EMStudio
     GameControllerWindow::ParameterInfo* GameControllerWindow::FindButtonInfoByAttributeInfo(const EMotionFX::Parameter* parameter)
     {
         // get the number of parameter infos and iterate through them
-        const uint32 numParamInfos = mParameterInfos.GetLength();
+        const uint32 numParamInfos = mParameterInfos.size();
         for (uint32 i = 0; i < numParamInfos; ++i)
         {
             if (mParameterInfos[i].mParameter == parameter)
@@ -1154,7 +1154,7 @@ namespace EMStudio
     GameControllerWindow::ParameterInfo* GameControllerWindow::FindParamInfoByAxisComboBox(QComboBox* comboBox)
     {
         // get the number of parameter infos and iterate through them
-        const uint32 numParamInfos = mParameterInfos.GetLength();
+        const uint32 numParamInfos = mParameterInfos.size();
         for (uint32 i = 0; i < numParamInfos; ++i)
         {
             if (mParameterInfos[i].mAxis == comboBox)
@@ -1232,7 +1232,7 @@ namespace EMStudio
     GameControllerWindow::ParameterInfo* GameControllerWindow::FindParamInfoByCheckBox(QCheckBox* checkBox)
     {
         // get the number of parameter infos and iterate through them
-        const uint32 numParamInfos = mParameterInfos.GetLength();
+        const uint32 numParamInfos = mParameterInfos.size();
         for (uint32 i = 0; i < numParamInfos; ++i)
         {
             if (mParameterInfos[i].mInvert == checkBox)

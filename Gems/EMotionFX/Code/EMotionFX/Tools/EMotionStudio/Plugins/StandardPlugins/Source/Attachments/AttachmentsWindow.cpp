@@ -204,7 +204,7 @@ namespace EMStudio
         connect(mOpenDeformableAttachmentButton,       &QToolButton::clicked,              this, &AttachmentsWindow::OnOpenDeformableAttachmentButtonClicked);
         connect(mRemoveButton,                         &QToolButton::clicked,              this, &AttachmentsWindow::OnRemoveButtonClicked);
         connect(mClearButton,                          &QToolButton::clicked,              this, &AttachmentsWindow::OnClearButtonClicked);
-        connect(mNodeSelectionWindow->GetNodeHierarchyWidget(),                        static_cast<void (NodeHierarchyWidget::*)(MCore::Array<SelectionItem>)>(&NodeHierarchyWidget::OnSelectionDone), this, &AttachmentsWindow::OnAttachmentNodesSelected);
+        connect(mNodeSelectionWindow->GetNodeHierarchyWidget(),                        &NodeHierarchyWidget::OnSelectionDone, this, &AttachmentsWindow::OnAttachmentNodesSelected);
         connect(mNodeSelectionWindow,                                                  &NodeSelectionWindow::rejected,             this, &AttachmentsWindow::OnCancelAttachmentNodeSelection);
         connect(mNodeSelectionWindow->GetNodeHierarchyWidget()->GetTreeWidget(),       &QTreeWidget::itemSelectionChanged, this, &AttachmentsWindow::OnNodeChanged);
         connect(mEscapeShortcut, &QShortcut::activated, this, &AttachmentsWindow::OnEscapeButtonPressed);
@@ -766,10 +766,10 @@ namespace EMStudio
 
 
     // called when the node selection is done
-    void AttachmentsWindow::OnAttachmentNodesSelected(MCore::Array<SelectionItem> selection)
+    void AttachmentsWindow::OnAttachmentNodesSelected(AZStd::vector<SelectionItem> selection)
     {
         // check if selection is valid
-        if (selection.GetLength() != 1)
+        if (selection.size() != 1)
         {
             MCore::LogDebug("No valid attachment selected.");
             return;

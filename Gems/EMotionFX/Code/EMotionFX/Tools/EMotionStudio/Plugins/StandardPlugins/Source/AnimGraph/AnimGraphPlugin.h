@@ -17,7 +17,7 @@
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 
 #include <MCore/Source/Random.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 #include <EMotionFX/Source/AnimGraph.h>
 #include <EMotionFX/Source/EventHandler.h>

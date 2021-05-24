@@ -33,7 +33,7 @@
 
 namespace EMStudio
 {
-    MotionSetManagementRemoveMotionsFailedWindow::MotionSetManagementRemoveMotionsFailedWindow(QWidget* parent, const MCore::Array<EMotionFX::Motion*>& motions)
+    MotionSetManagementRemoveMotionsFailedWindow::MotionSetManagementRemoveMotionsFailedWindow(QWidget* parent, const AZStd::vector<EMotionFX::Motion*>& motions)
         : QDialog(parent)
     {
         // set the window title
@@ -70,7 +70,7 @@ namespace EMStudio
         tableWidget->verticalHeader()->setVisible(false);
 
         // set the number of rows
-        const uint32 numMotions = motions.GetLength();
+        const uint32 numMotions = motions.size();
         tableWidget->setRowCount(numMotions);
 
         // add each motion in the table

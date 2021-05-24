@@ -104,7 +104,7 @@ namespace EMStudio
         // functions for adding/removing gizmos
         MCommon::TransformationManipulator* AddTransformationManipulator(MCommon::TransformationManipulator* manipulator);
         void RemoveTransformationManipulator(MCommon::TransformationManipulator* manipulator);
-        MCore::Array<MCommon::TransformationManipulator*>* GetTransformationManipulators();
+        AZStd::vector<MCommon::TransformationManipulator*>* GetTransformationManipulators();
 
         void ClearScene();  // remove animgraphs, animgraph instances and actors
 
@@ -115,7 +115,7 @@ namespace EMStudio
         MCORE_INLINE bool GetSkipSourceControlCommands()                                        { return m_skipSourceControlCommands; }
         MCORE_INLINE void SetSkipSourceControlCommands(bool skip)                               { m_skipSourceControlCommands = skip; }
     private:
-        MCore::Array<MCommon::TransformationManipulator*> mTransformationManipulators;
+        AZStd::vector<MCommon::TransformationManipulator*> mTransformationManipulators;
         QPointer<MainWindow>                mMainWindow;
         QApplication*                       mApp;
         PluginManager*                      mPluginManager;

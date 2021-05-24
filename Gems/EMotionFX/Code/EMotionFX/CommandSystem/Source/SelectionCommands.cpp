@@ -33,10 +33,10 @@ namespace CommandSystem
         : MCore::Command(s_toggleLockSelectionCmdName, orgCommand)
     { }
 
-    void SelectActorInstancesUsingCommands(const MCore::Array<EMotionFX::ActorInstance*>& selectedActorInstances)
+    void SelectActorInstancesUsingCommands(const AZStd::vector<EMotionFX::ActorInstance*>& selectedActorInstances)
     {
         SelectionList& selection = GetCommandManager()->GetCurrentSelection();
-        const uint32 numSelectedActorInstances = selectedActorInstances.GetLength();
+        const uint32 numSelectedActorInstances = selectedActorInstances.size();
 
         // check if the current selection is equal to the desired actor instances selection list
         bool nothingChanged = true;
@@ -52,7 +52,7 @@ namespace CommandSystem
         for (uint32 i = 0; i < selection.GetNumSelectedActorInstances(); ++i)
         {
             EMotionFX::ActorInstance* actorInstance = selection.GetActorInstance(i);
-            if (selectedActorInstances.Find(actorInstance) == MCORE_INVALIDINDEX32)
+            if (AZStd::find(begin(selectedActorInstances), end(selectedActorInstances), actorInstance) == end(selectedActorInstances))
             {
                 nothingChanged = false;
                 break;

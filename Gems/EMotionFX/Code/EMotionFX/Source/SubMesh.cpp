@@ -30,7 +30,6 @@ namespace EMotionFX
         mStartPolygon   = startPolygon;
         mMaterial       = materialIndex;
 
-        mBones.SetMemoryCategory(EMFX_MEMCATEGORY_GEOMETRY_MESHES);
         SetNumBones(numBones);
     }
 
@@ -51,7 +50,7 @@ namespace EMotionFX
     // clone the submesh
     SubMesh* SubMesh::Clone(Mesh* newParentMesh)
     {
-        SubMesh* clone = aznew SubMesh(newParentMesh, mStartVertex, mStartIndex, mStartPolygon, mNumVertices, mNumIndices, mNumPolygons, mMaterial, mBones.GetLength());
+        SubMesh* clone = aznew SubMesh(newParentMesh, mStartVertex, mStartIndex, mStartPolygon, mNumVertices, mNumIndices, mNumPolygons, mMaterial, mBones.size());
         clone->mBones = mBones;
         return clone;
     }
@@ -61,7 +60,7 @@ namespace EMotionFX
     void SubMesh::RemapBone(uint16 oldNodeNr, uint16 newNodeNr)
     {
         // get the number of bones stored inside the submesh
-        const uint32 numBones = mBones.GetLength();
+        const uint32 numBones = mBones.size();
 
         // iterate through all bones and remap the bones
         for (uint32 i = 0; i < numBones; ++i)
@@ -79,7 +78,7 @@ namespace EMotionFX
     void SubMesh::ReinitBonesArray(SkinningInfoVertexAttributeLayer* skinLayer)
     {
         // clear the bones array
-        mBones.Clear(false);
+        mBones.clear();
 
         // get shortcuts to the original vertex numbers
         const uint32* orgVertices = (uint32*)mParentMesh->FindOriginalVertexData(Mesh::ATTRIB_ORGVTXNUMBERS);
@@ -101,9 +100,9 @@ namespace EMotionFX
                 const uint32    nodeNr      = influence->GetNodeNr();
 
                 // put the node index in the bones array in case it isn't in already
-                if (mBones.Contains(nodeNr) == false)
+                if (AZStd::find(begin(mBones), end(mBones), nodeNr) == end(mBones))
                 {
-                    mBones.Add(nodeNr);
+                    mBones.emplace_back(nodeNr);
                 }
             }
         }
@@ -231,7 +230,7 @@ namespace EMotionFX
 
     uint32 SubMesh::FindBoneIndex(uint32 nodeNr) const
     {
-        const uint32 numBones = mBones.GetLength();
+        const uint32 numBones = mBones.size();
         for (uint32 i = 0; i < numBones; ++i)
         {
             if (mBones[i] == nodeNr)
@@ -247,7 +246,7 @@ namespace EMotionFX
     // remove the given bone
     void SubMesh::RemoveBone(uint16 index)
     {
-        mBones.Remove(index);
+        mBones.erase(AZStd::next(begin(mBones), index));
     }
 
 
@@ -255,11 +254,11 @@ namespace EMotionFX
     {
         if (numBones == 0)
         {
-            mBones.Clear();
+            mBones.clear();
         }
         else
         {
-            mBones.Resize(numBones);
+            mBones.resize(numBones);
         }
     }
 

@@ -599,7 +599,7 @@ namespace EMotionFX
          * Get the number of attachments that have been added to this actor instance.
          * @result The number of attachments added to this actor instance.
          */
-        uint32 GetNumAttachments() const;
+        size_t GetNumAttachments() const;
 
         /**
          * Get a specific attachment.
@@ -664,7 +664,7 @@ namespace EMotionFX
          * Get the number of dependencies that this actor instance has on other actors.
          * @result The number of dependencies.
          */
-        uint32 GetNumDependencies() const;
+        size_t GetNumDependencies() const;
 
         /**
          * Get a given dependency.
@@ -788,13 +788,13 @@ namespace EMotionFX
          * Get direct access to the array of enabled nodes.
          * @result A read only reference to the array of enabled nodes. The values inside of this array are the node numbers of the enabled nodes.
          */
-        MCORE_INLINE const MCore::Array<uint16>& GetEnabledNodes() const        { return mEnabledNodes; }
+        MCORE_INLINE const AZStd::vector<uint16>& GetEnabledNodes() const        { return mEnabledNodes; }
 
         /**
          * Get the number of enabled nodes inside this actor instance.
          * @result The number of nodes that have been enabled and are being updated.
          */
-        MCORE_INLINE uint32 GetNumEnabledNodes() const                          { return mEnabledNodes.GetLength(); }
+        MCORE_INLINE size_t GetNumEnabledNodes() const                          { return mEnabledNodes.size(); }
 
         /**
          * Get the node number of a given enabled node.
@@ -873,10 +873,10 @@ namespace EMotionFX
         Transform               mParentWorldTransform = Transform::CreateIdentity();
         Transform               mTrajectoryDelta = Transform::CreateIdentityWithZeroScale();
 
-        MCore::Array<Attachment*>               mAttachments;       /**< The attachments linked to this actor instance. */
-        MCore::Array<Actor::Dependency>         mDependencies;      /**< The actor dependencies, which specify which Actor objects this instance is dependent on. */
+        AZStd::vector<Attachment*>               mAttachments;       /**< The attachments linked to this actor instance. */
+        AZStd::vector<Actor::Dependency>         mDependencies;      /**< The actor dependencies, which specify which Actor objects this instance is dependent on. */
         MorphSetupInstance*                     mMorphSetup;        /**< The  morph setup instance. */
-        MCore::Array<uint16>                    mEnabledNodes;      /**< The list of nodes that are enabled. */
+        AZStd::vector<uint16>                    mEnabledNodes;      /**< The list of nodes that are enabled. */
 
         Actor*                  mActor;                 /**< A pointer to the parent actor where this is an instance from. */
         ActorInstance*          mAttachedTo;            /**< Specifies the actor where this actor is attached to, or nullptr when it is no attachment. */

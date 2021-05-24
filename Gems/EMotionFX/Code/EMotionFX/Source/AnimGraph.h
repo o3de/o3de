@@ -20,7 +20,7 @@
 #include <EMotionFX/Source/Parameter/GroupParameter.h>
 #include <EMotionFX/Source/Parameter/ValueParameter.h>
 #include <MCore/Source/Distance.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace EMotionFX
 {
@@ -65,7 +65,7 @@ namespace EMotionFX
         AnimGraphStateTransition* RecursiveFindTransitionById(AnimGraphConnectionId transitionId) const;
 
         void RecursiveCollectNodesOfType(const AZ::TypeId& nodeType, AZStd::vector<AnimGraphNode*>* outNodes) const; // note: outNodes is NOT cleared internally, nodes are added to the array
-        void RecursiveCollectTransitionConditionsOfType(const AZ::TypeId& conditionType, MCore::Array<AnimGraphTransitionCondition*>* outConditions) const; // note: outNodes is NOT cleared internally, nodes are added to the array
+        void RecursiveCollectTransitionConditionsOfType(const AZ::TypeId& conditionType, AZStd::vector<AnimGraphTransitionCondition*>* outConditions) const; // note: outNodes is NOT cleared internally, nodes are added to the array
 
         // Collects all objects of type and/or derived type
         void RecursiveCollectObjectsOfType(const AZ::TypeId& objectType, AZStd::vector<AnimGraphObject*>& outObjects);
@@ -381,7 +381,7 @@ namespace EMotionFX
         AnimGraphObject* GetObject(uint32 index) const                                        { return mObjects[index]; }
         void ReserveNumObjects(uint32 numObjects);
 
-        uint32 GetNumNodes() const                                                            { return mNodes.GetLength(); }
+        size_t GetNumNodes() const                                                            { return mNodes.size(); }
         AnimGraphNode* GetNode(uint32 index) const                                            { return mNodes[index]; }
         void ReserveNumNodes(uint32 numNodes);
         uint32 CalcNumMotionNodes() const;
@@ -417,7 +417,7 @@ namespace EMotionFX
         AZStd::unordered_map<AZStd::string_view, size_t> m_valueParameterIndexByName; /**< Cached version of parameter index by name to accelerate lookups. */
         AZStd::vector<AnimGraphNodeGroup*>              mNodeGroups;
         AZStd::vector<AnimGraphObject*>                 mObjects;
-        MCore::Array<AnimGraphNode*>                    mNodes;
+        AZStd::vector<AnimGraphNode*>                    mNodes;
         AZStd::vector<AnimGraphInstance*>               m_animGraphInstances;
         AZStd::string                                   mFileName;
         AnimGraphStateMachine*                          mRootStateMachine;

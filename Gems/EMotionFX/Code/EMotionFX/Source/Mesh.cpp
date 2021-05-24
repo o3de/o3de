@@ -36,11 +36,6 @@ namespace EMotionFX
         mIndices            = nullptr;
         mPolyVertexCounts   = nullptr;
         mIsCollisionMesh    = false;
-
-        // set memory categories of the arrays
-        mSubMeshes.SetMemoryCategory(EMFX_MEMCATEGORY_GEOMETRY_MESHES);
-        mVertexAttributes.SetMemoryCategory(EMFX_MEMCATEGORY_GEOMETRY_MESHES);
-        mSharedVertexAttributes.SetMemoryCategory(EMFX_MEMCATEGORY_GEOMETRY_MESHES);
     }
 
     // allocation constructor
@@ -53,11 +48,6 @@ namespace EMotionFX
         mIndices            = nullptr;
         mPolyVertexCounts   = nullptr;
         mIsCollisionMesh    = isCollisionMesh;
-
-        // set memory categories of the arrays
-        mSubMeshes.SetMemoryCategory(EMFX_MEMCATEGORY_GEOMETRY_MESHES);
-        mVertexAttributes.SetMemoryCategory(EMFX_MEMCATEGORY_GEOMETRY_MESHES);
-        mSharedVertexAttributes.SetMemoryCategory(EMFX_MEMCATEGORY_GEOMETRY_MESHES);
 
         // allocate the mesh data
         Allocate(numVerts, numIndices, numPolygons, numOrgVerts);
@@ -384,7 +374,7 @@ namespace EMotionFX
     // copy all original data over the output data
     void Mesh::ResetToOriginalData()
     {
-        const uint32 numLayers = mVertexAttributes.GetLength();
+        const uint32 numLayers = mVertexAttributes.size();
         for (uint32 i = 0; i < numLayers; ++i)
         {
             mVertexAttributes[i]->ResetToOriginalData();
@@ -402,12 +392,12 @@ namespace EMotionFX
         RemoveAllVertexAttributeLayers();
 
         // get rid of all sub meshes
-        const uint32 numSubMeshes = mSubMeshes.GetLength();
+        const uint32 numSubMeshes = mSubMeshes.size();
         for (uint32 i = 0; i < numSubMeshes; ++i)
         {
             mSubMeshes[i]->Destroy();
         }
-        mSubMeshes.Clear();
+        mSubMeshes.clear();
 
         if (mIndices)
         {
@@ -668,10 +658,10 @@ namespace EMotionFX
 
 
     // creates an array of pointers to bones used by this face
-    void Mesh::GatherBonesForFace(uint32 startIndexOfFace, MCore::Array<Node*>& outBones, Actor* actor)
+    void Mesh::GatherBonesForFace(uint32 startIndexOfFace, AZStd::vector<Node*>& outBones, Actor* actor)
     {
         // get rid of existing data
-        outBones.Clear();
+        outBones.clear();
 
         // try to locate the skinning attribute information
         SkinningInfoVertexAttributeLayer* skinningLayer = (SkinningInfoVertexAttributeLayer*)FindSharedVertexAttributeLayer(SkinningInfoVertexAttributeLayer::TYPE_ID);
@@ -703,9 +693,9 @@ namespace EMotionFX
                 Node* bone = skeleton->GetNode(skinningLayer->GetInfluence(originalVertex, n)->GetNodeNr());
 
                 // if it isn't yet in the output array with bones, add it
-                if (outBones.Find(bone) == MCORE_INVALIDINDEX32)
+                if (AZStd::find(begin(outBones), end(outBones), bone) == end(outBones))
                 {
-                    outBones.Add(bone);
+                    outBones.emplace_back(bone);
                 }
             }
         }
@@ -818,7 +808,7 @@ namespace EMotionFX
     void Mesh::RemoveSubMesh(uint32 nr, bool delFromMem)
     {
         SubMesh* subMesh = mSubMeshes[nr];
-        mSubMeshes.Remove(nr);
+        mSubMeshes.erase(AZStd::next(begin(mSubMeshes), nr));
         if (delFromMem)
         {
             subMesh->Destroy();
@@ -829,7 +819,7 @@ namespace EMotionFX
     // insert a given submesh
     void Mesh::InsertSubMesh(uint32 insertIndex, SubMesh* subMesh)
     {
-        mSubMeshes.Insert(insertIndex, subMesh);
+        mSubMeshes.emplace(AZStd::next(begin(mSubMeshes), insertIndex), subMesh);
     }
 
 
@@ -839,7 +829,7 @@ namespace EMotionFX
         uint32 numLayers = 0;
 
         // check the types of all vertex attribute layers
-        const uint32 numAttributes = mVertexAttributes.GetLength();
+        const uint32 numAttributes = mVertexAttributes.size();
         for (uint32 i = 0; i < numAttributes; ++i)
         {
             if (mVertexAttributes[i]->GetType() == type)
@@ -862,21 +852,21 @@ namespace EMotionFX
 
     VertexAttributeLayer* Mesh::GetSharedVertexAttributeLayer(uint32 layerNr)
     {
-        MCORE_ASSERT(layerNr < mSharedVertexAttributes.GetLength());
+        MCORE_ASSERT(layerNr < mSharedVertexAttributes.size());
         return mSharedVertexAttributes[layerNr];
     }
 
 
     void Mesh::AddSharedVertexAttributeLayer(VertexAttributeLayer* layer)
     {
-        MCORE_ASSERT(mSharedVertexAttributes.Contains(layer) == false);
-        mSharedVertexAttributes.Add(layer);
+        MCORE_ASSERT(AZStd::find(begin(mSharedVertexAttributes), end(mSharedVertexAttributes), layer) == end(mSharedVertexAttributes));
+        mSharedVertexAttributes.emplace_back(layer);
     }
 
 
-    uint32 Mesh::GetNumSharedVertexAttributeLayers() const
+    size_t Mesh::GetNumSharedVertexAttributeLayers() const
     {
-        return mSharedVertexAttributes.GetLength();
+        return mSharedVertexAttributes.size();
     }
 
 
@@ -885,7 +875,7 @@ namespace EMotionFX
         uint32 layerCounter = 0;
 
         // check all vertex attributes of our first vertex, and find where the specific attribute is
-        const uint32 numLayers = mSharedVertexAttributes.GetLength();
+        const uint32 numLayers = mSharedVertexAttributes.size();
         for (uint32 i = 0; i < numLayers; ++i)
         {
             VertexAttributeLayer* layer = mSharedVertexAttributes[i];
@@ -922,10 +912,10 @@ namespace EMotionFX
     // delete all shared attribute layers
     void Mesh::RemoveAllSharedVertexAttributeLayers()
     {
-        while (mSharedVertexAttributes.GetLength())
+        while (mSharedVertexAttributes.size())
         {
-            mSharedVertexAttributes.GetLast()->Destroy();
-            mSharedVertexAttributes.RemoveLast();
+            mSharedVertexAttributes.back()->Destroy();
+            mSharedVertexAttributes.pop_back();
         }
     }
 
@@ -933,29 +923,29 @@ namespace EMotionFX
     // remove a layer by its index
     void Mesh::RemoveSharedVertexAttributeLayer(uint32 layerNr)
     {
-        MCORE_ASSERT(layerNr < mSharedVertexAttributes.GetLength());
+        MCORE_ASSERT(layerNr < mSharedVertexAttributes.size());
         mSharedVertexAttributes[layerNr]->Destroy();
-        mSharedVertexAttributes.Remove(layerNr);
+        mSharedVertexAttributes.erase(AZStd::next(begin(mSharedVertexAttributes), layerNr));
     }
 
 
-    uint32 Mesh::GetNumVertexAttributeLayers() const
+    size_t Mesh::GetNumVertexAttributeLayers() const
     {
-        return mVertexAttributes.GetLength();
+        return mVertexAttributes.size();
     }
 
 
     VertexAttributeLayer* Mesh::GetVertexAttributeLayer(uint32 layerNr)
     {
-        MCORE_ASSERT(layerNr < mVertexAttributes.GetLength());
+        MCORE_ASSERT(layerNr < mVertexAttributes.size());
         return mVertexAttributes[layerNr];
     }
 
 
     void Mesh::AddVertexAttributeLayer(VertexAttributeLayer* layer)
     {
-        MCORE_ASSERT(mVertexAttributes.Contains(layer) == false);
-        mVertexAttributes.Add(layer);
+        MCORE_ASSERT(AZStd::find(begin(mVertexAttributes), end(mVertexAttributes), layer) == end(mVertexAttributes));
+        mVertexAttributes.emplace_back(layer);
     }
 
 
@@ -965,7 +955,7 @@ namespace EMotionFX
         uint32 layerCounter = 0;
 
         // check all vertex attributes of our first vertex, and find where the specific attribute is
-        const uint32 numLayers = mVertexAttributes.GetLength();
+        const uint32 numLayers = mVertexAttributes.size();
         for (uint32 i = 0; i < numLayers; ++i)
         {
             VertexAttributeLayer* layer = mVertexAttributes[i];
@@ -989,7 +979,7 @@ namespace EMotionFX
     uint32 Mesh::FindVertexAttributeLayerNumberByName(uint32 layerTypeID, const char* name) const
     {
         // check all vertex attributes of our first vertex, and find where the specific attribute is
-        const uint32 numLayers = mVertexAttributes.GetLength();
+        const uint32 numLayers = mVertexAttributes.size();
         for (uint32 i = 0; i < numLayers; ++i)
         {
             VertexAttributeLayer* layer = mVertexAttributes[i];
@@ -1035,19 +1025,19 @@ namespace EMotionFX
 
     void Mesh::RemoveAllVertexAttributeLayers()
     {
-        while (mVertexAttributes.GetLength())
+        while (mVertexAttributes.size())
         {
-            mVertexAttributes.GetLast()->Destroy();
-            mVertexAttributes.RemoveLast();
+            mVertexAttributes.back()->Destroy();
+            mVertexAttributes.pop_back();
         }
     }
 
 
     void Mesh::RemoveVertexAttributeLayer(uint32 layerNr)
     {
-        MCORE_ASSERT(layerNr < mVertexAttributes.GetLength());
+        MCORE_ASSERT(layerNr < mVertexAttributes.size());
         mVertexAttributes[layerNr]->Destroy();
-        mVertexAttributes.Remove(layerNr);
+        mVertexAttributes.erase(AZStd::next(begin(mVertexAttributes), layerNr));
     }
 
 
@@ -1064,24 +1054,24 @@ namespace EMotionFX
 
         // copy the submesh data
         uint32 i;
-        const uint32 numSubMeshes = mSubMeshes.GetLength();
-        clone->mSubMeshes.Resize(numSubMeshes);
+        const uint32 numSubMeshes = mSubMeshes.size();
+        clone->mSubMeshes.resize(numSubMeshes);
         for (i = 0; i < numSubMeshes; ++i)
         {
             clone->mSubMeshes[i] = mSubMeshes[i]->Clone(clone);
         }
 
         // clone the shared vertex attributes
-        const uint32 numSharedAttributes = mSharedVertexAttributes.GetLength();
-        clone->mSharedVertexAttributes.Resize(numSharedAttributes);
+        const uint32 numSharedAttributes = mSharedVertexAttributes.size();
+        clone->mSharedVertexAttributes.resize(numSharedAttributes);
         for (i = 0; i < numSharedAttributes; ++i)
         {
             clone->mSharedVertexAttributes[i] = mSharedVertexAttributes[i]->Clone();
         }
 
         // clone the non-shared vertex attributes
-        const uint32 numAttributes = mVertexAttributes.GetLength();
-        clone->mVertexAttributes.Resize(numAttributes);
+        const uint32 numAttributes = mVertexAttributes.size();
+        clone->mVertexAttributes.resize(numAttributes);
         for (i = 0; i < numAttributes; ++i)
         {
             clone->mVertexAttributes[i] = mVertexAttributes[i]->Clone();
@@ -1105,7 +1095,7 @@ namespace EMotionFX
         }
 
         // swap all vertex attribute layers
-        const uint32 numLayers = mVertexAttributes.GetLength();
+        const uint32 numLayers = mVertexAttributes.size();
         for (uint32 i = 0; i < numLayers; ++i)
         {
             mVertexAttributes[i]->SwapAttributes(vertexA, vertexB);
@@ -1229,7 +1219,7 @@ namespace EMotionFX
         for (uint32 w = 0; w < numVertsToRemove; ++w)
         {
             // adjust all submesh start index offsets changed
-            for (uint32 s = 0; s < mSubMeshes.GetLength();)
+            for (uint32 s = 0; s < mSubMeshes.size();)
             {
                 SubMesh* subMesh = mSubMeshes[s];
 
@@ -1249,7 +1239,7 @@ namespace EMotionFX
                 // remove the submesh if it's empty
                 if (subMesh->GetNumVertices() == 0 && removeEmptySubMeshes)
                 {
-                    mSubMeshes.Remove(s);
+                    mSubMeshes.erase(AZStd::next(begin(mSubMeshes), s));
                 }
                 else
                 {
@@ -1283,7 +1273,7 @@ namespace EMotionFX
         uint32 numRemoved = 0;
 
         // for all the submeshes
-        for (uint32 i = 0; i < mSubMeshes.GetLength();)
+        for (uint32 i = 0; i < mSubMeshes.size();)
         {
             SubMesh* subMesh = mSubMeshes[i];
 
@@ -1305,7 +1295,7 @@ namespace EMotionFX
             // remove or skip
             if (mustRemove)
             {
-                mSubMeshes.Remove(i);
+                mSubMeshes.erase(AZStd::next(begin(mSubMeshes), i));
                 numRemoved++;
             }
             else
@@ -1966,7 +1956,7 @@ namespace EMotionFX
 
     void Mesh::ReserveVertexAttributeLayerSpace(uint32 numLayers)
     {
-        mVertexAttributes.Reserve(numLayers);
+        mVertexAttributes.reserve(numLayers);
     }
 
 
@@ -2003,7 +1993,7 @@ namespace EMotionFX
     // find by name
     uint32 Mesh::FindVertexAttributeLayerIndexByName(const char* name) const
     {
-        const uint32 numLayers = mVertexAttributes.GetLength();
+        const uint32 numLayers = mVertexAttributes.size();
         for (uint32 i = 0; i < numLayers; ++i)
         {
             if (mVertexAttributes[i]->GetNameString() == name)
@@ -2019,7 +2009,7 @@ namespace EMotionFX
     // find by name as string
     uint32 Mesh::FindVertexAttributeLayerIndexByNameString(const AZStd::string& name) const
     {
-        const uint32 numLayers = mVertexAttributes.GetLength();
+        const uint32 numLayers = mVertexAttributes.size();
         for (uint32 i = 0; i < numLayers; ++i)
         {
             if (mVertexAttributes[i]->GetNameString() == name)
@@ -2035,7 +2025,7 @@ namespace EMotionFX
     // find by name ID
     uint32 Mesh::FindVertexAttributeLayerIndexByNameID(uint32 nameID) const
     {
-        const uint32 numLayers = mVertexAttributes.GetLength();
+        const uint32 numLayers = mVertexAttributes.size();
         for (uint32 i = 0; i < numLayers; ++i)
         {
             if (mVertexAttributes[i]->GetNameID() == nameID)
@@ -2051,7 +2041,7 @@ namespace EMotionFX
     // find by name
     uint32 Mesh::FindSharedVertexAttributeLayerIndexByName(const char* name) const
     {
-        const uint32 numLayers = mSharedVertexAttributes.GetLength();
+        const uint32 numLayers = mSharedVertexAttributes.size();
         for (uint32 i = 0; i < numLayers; ++i)
         {
             if (mSharedVertexAttributes[i]->GetNameString() == name)
@@ -2067,7 +2057,7 @@ namespace EMotionFX
     // find by name as string
     uint32 Mesh::FindSharedVertexAttributeLayerIndexByNameString(const AZStd::string& name) const
     {
-        const uint32 numLayers = mSharedVertexAttributes.GetLength();
+        const uint32 numLayers = mSharedVertexAttributes.size();
         for (uint32 i = 0; i < numLayers; ++i)
         {
             if (mSharedVertexAttributes[i]->GetNameString() == name)
@@ -2083,7 +2073,7 @@ namespace EMotionFX
     // find by name ID
     uint32 Mesh::FindSharedVertexAttributeLayerIndexByNameID(uint32 nameID) const
     {
-        const uint32 numLayers = mSharedVertexAttributes.GetLength();
+        const uint32 numLayers = mSharedVertexAttributes.size();
         for (uint32 i = 0; i < numLayers; ++i)
         {
             if (mSharedVertexAttributes[i]->GetNameID() == nameID)

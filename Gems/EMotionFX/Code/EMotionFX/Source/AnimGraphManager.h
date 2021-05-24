@@ -11,7 +11,7 @@
 #include "EMotionFXConfig.h"
 #include <AzCore/std/containers/vector.h>
 #include "BaseObject.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include "AnimGraphObject.h"
 #include <MCore/Source/MultiThreadManager.h>
 

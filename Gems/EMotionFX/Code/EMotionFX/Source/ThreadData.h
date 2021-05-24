@@ -13,7 +13,7 @@
 #include "BaseObject.h"
 #include "AnimGraphPosePool.h"
 #include "AnimGraphRefCountedDataPool.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 
 namespace EMotionFX

@@ -620,7 +620,7 @@ namespace EMotionFX
         const AZ::u32 numNodes = skeleton->GetNumNodes();
         m_nodeInfos.resize(numNodes);
 
-        AZStd::vector<MCore::Array<uint32> > boneListPerLodLevel;
+        AZStd::vector<AZStd::vector<uint32> > boneListPerLodLevel;
         boneListPerLodLevel.resize(numLodLevels);
         for (AZ::u32 lodLevel = 0; lodLevel < numLodLevels; ++lodLevel)
         {
@@ -635,7 +635,7 @@ namespace EMotionFX
             nodeInfo.m_isBone = false;
             for (AZ::u32 lodLevel = 0; lodLevel < numLodLevels; ++lodLevel)
             {
-                if (boneListPerLodLevel[lodLevel].Find(nodeIndex) != MCORE_INVALIDINDEX32)
+                if (AZStd::find(begin(boneListPerLodLevel[lodLevel]), end(boneListPerLodLevel[lodLevel]), nodeIndex) != end(boneListPerLodLevel[lodLevel]))
                 {
                     nodeInfo.m_isBone = true;
                     break;

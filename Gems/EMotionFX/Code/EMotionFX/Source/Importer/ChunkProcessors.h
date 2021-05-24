@@ -9,7 +9,7 @@
 #pragma once
 
 #include "../EMotionFXConfig.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/CompressedQuaternion.h>
 #include "../MemoryCategories.h"
 #include "../BaseObject.h"
@@ -94,7 +94,7 @@ namespace EMotionFX
          * @param endianType The endian type to read the string in.
          * @return The actual string.
          */
-        static const char* ReadString(MCore::Stream* file, MCore::Array<SharedData*>* sharedData, MCore::Endian::EEndianType endianType);
+        static const char* ReadString(MCore::Stream* file, AZStd::vector<SharedData*>* sharedData, MCore::Endian::EEndianType endianType);
 
     public:
         uint32          mFileHighVersion;           /**< The high file version. For example 3 in case of v3.10. */

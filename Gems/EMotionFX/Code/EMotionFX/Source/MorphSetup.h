@@ -40,7 +40,7 @@ namespace EMotionFX
          * Get the number of morph targets inside this  morph setup.
          * @result The number of morph targets.
          */
-        MCORE_INLINE uint32 GetNumMorphTargets() const                      { return mMorphTargets.GetLength(); }
+        MCORE_INLINE size_t GetNumMorphTargets() const                      { return mMorphTargets.size(); }
 
         /**
          * Get a given morph target.
@@ -137,12 +137,12 @@ namespace EMotionFX
 
 
     protected:
-        MCore::Array<MorphTarget*>  mMorphTargets;  /**< The collection of morph targets. */
+        AZStd::vector<MorphTarget*>  mMorphTargets;  /**< The collection of morph targets. */
 
         /**
          * The constructor.
          */
-        MorphSetup();
+        MorphSetup() = default;
 
         /**
          * The destructor. Automatically removes all morph targets from memory.

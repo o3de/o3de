@@ -9,7 +9,7 @@
 #pragma once
 
 #include <MCore/Source/StandardHeaders.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Color.h>
 #include <MCore/Source/StringIdPool.h>
 #include "../StandardPluginsConfig.h"
@@ -44,7 +44,6 @@ namespace EMStudio
     public:
         NodePort()
             : mIsHighlighted(false)  { mNode = nullptr; mNameID = MCORE_INVALIDINDEX32; mColor.setRgb(50, 150, 250); }
-        ~NodePort() {}
 
         MCORE_INLINE void SetName(const char* name)         { mNameID = MCore::GetStringIdPool().GenerateIdForString(name); OnNameChanged(); }
         MCORE_INLINE const char* GetName() const            { return MCore::GetStringIdPool().GetName(mNameID).c_str(); }
@@ -85,10 +84,10 @@ namespace EMStudio
         const QModelIndex& GetModelIndex() const                            { return m_modelIndex; }
 
         MCORE_INLINE void UpdateNameAndPorts()                              { mNameAndPortsUpdated = false; }
-        MCORE_INLINE MCore::Array<NodeConnection*>& GetConnections()        { return mConnections; }
-        MCORE_INLINE uint32 GetNumConnections()                             { return mConnections.GetLength(); }
+        MCORE_INLINE AZStd::vector<NodeConnection*>& GetConnections()        { return mConnections; }
+        MCORE_INLINE size_t GetNumConnections()                             { return mConnections.size(); }
         MCORE_INLINE NodeConnection* GetConnection(uint32 index)            { return mConnections[index]; }
-        MCORE_INLINE NodeConnection* AddConnection(NodeConnection* con)     { mConnections.Add(con); return con; }
+        MCORE_INLINE NodeConnection* AddConnection(NodeConnection* con)     { mConnections.emplace_back(con); return con; }
         MCORE_INLINE void SetParentGraph(NodeGraph* graph)                  { mParentGraph = graph; }
         MCORE_INLINE NodeGraph* GetParentGraph()                            { return mParentGraph; }
         MCORE_INLINE NodePort* GetInputPort(uint32 index)                   { return &mInputPorts[index]; }
@@ -135,8 +134,8 @@ namespace EMStudio
         MCORE_INLINE float GetOpacity() const                               { return mOpacity; }
         MCORE_INLINE void SetOpacity(float opacity)                         { mOpacity = opacity; }
 
-        uint32 GetNumInputPorts() const                                     { return mInputPorts.GetLength(); }
-        uint32 GetNumOutputPorts() const                                    { return mOutputPorts.GetLength(); }
+        size_t GetNumInputPorts() const                                     { return mInputPorts.size(); }
+        size_t GetNumOutputPorts() const                                    { return mOutputPorts.size(); }
 
         NodePort* AddInputPort(bool updateTextPixMap);
         NodePort* AddOutputPort(bool updateTextPixMap);
@@ -227,7 +226,7 @@ namespace EMStudio
         QColor                          mBorderColor;
         QColor                          mVisualizeColor;
         QColor                          mHasChildIndicatorColor;
-        MCore::Array<NodeConnection*>   mConnections;
+        AZStd::vector<NodeConnection*>   mConnections;
         float                           mOpacity;
         bool                            mIsVisible;
         static QColor                   mPortHighlightColor;
@@ -251,15 +250,15 @@ namespace EMStudio
         QStaticText                     mSubTitleText;
         QStaticText                     mInfoText;
 
-        MCore::Array<QStaticText>       mInputPortText;
-        MCore::Array<QStaticText>       mOutputPortText;
+        AZStd::vector<QStaticText>       mInputPortText;
+        AZStd::vector<QStaticText>       mOutputPortText;
 
         int32                           mRequiredWidth;
         bool                            mNameAndPortsUpdated;
 
         NodeGraph*                      mParentGraph;
-        MCore::Array<NodePort>          mInputPorts;
-        MCore::Array<NodePort>          mOutputPorts;
+        AZStd::vector<NodePort>          mInputPorts;
+        AZStd::vector<NodePort>          mOutputPorts;
         bool                            mConFromOutputOnly;
         bool                            mIsDeletable;
         bool                            mIsCollapsed;

@@ -36,8 +36,6 @@ namespace EMotionFX
     AnimGraph::AnimGraph()
         : mGameControllerSettings(aznew AnimGraphGameControllerSettings())
     {
-        mNodes.SetMemoryCategory(EMFX_MEMCATEGORY_ANIMGRAPH);
-
         mID = MCore::GetIDGenerator().GenerateID();
         mDirtyFlag = false;
         mAutoUnregister = true;
@@ -50,7 +48,7 @@ namespace EMotionFX
 #endif // EMFX_DEVELOPMENT_BUILD
 
         // reserve some memory
-        mNodes.Reserve(1024);
+        mNodes.reserve(1024);
 
         // automatically register the anim graph
         GetAnimGraphManager().AddAnimGraph(this);
@@ -628,7 +626,7 @@ namespace EMotionFX
         mRootStateMachine->RecursiveCollectNodesOfType(nodeType, outNodes);
     }
 
-    void AnimGraph::RecursiveCollectTransitionConditionsOfType(const AZ::TypeId& conditionType, MCore::Array<AnimGraphTransitionCondition*>* outConditions) const
+    void AnimGraph::RecursiveCollectTransitionConditionsOfType(const AZ::TypeId& conditionType, AZStd::vector<AnimGraphTransitionCondition*>* outConditions) const
     {
         mRootStateMachine->RecursiveCollectTransitionConditionsOfType(conditionType, outConditions);
     }
@@ -725,8 +723,8 @@ namespace EMotionFX
         if (azrtti_istypeof<AnimGraphNode>(object))
         {
             AnimGraphNode* node = static_cast<AnimGraphNode*>(object);
-            node->SetNodeIndex(mNodes.GetLength());
-            mNodes.Add(node);
+            node->SetNodeIndex(mNodes.size());
+            mNodes.emplace_back(node);
         }
 
         // create a unique data for this added object in the animgraph instances as well
@@ -765,7 +763,7 @@ namespace EMotionFX
             AnimGraphNode* node = static_cast<AnimGraphNode*>(object);
             const uint32 nodeIndex = node->GetNodeIndex();
 
-            const uint32 numNodes = mNodes.GetLength();
+            const uint32 numNodes = mNodes.size();
             for (uint32 i = nodeIndex + 1; i < numNodes; ++i)
             {
                 AnimGraphNode* curNode = mNodes[i];
@@ -774,7 +772,7 @@ namespace EMotionFX
             }
 
             // remove the object from the array
-            mNodes.Remove(nodeIndex);
+            mNodes.erase(AZStd::next(begin(mNodes), nodeIndex));
         }
     }
 
@@ -789,14 +787,14 @@ namespace EMotionFX
     // reserve space for a given amount of nodes
     void AnimGraph::ReserveNumNodes(uint32 numNodes)
     {
-        mNodes.Reserve(numNodes);
+        mNodes.reserve(numNodes);
     }
 
 
     // Calculate number of motion nodes in the graph
     uint32 AnimGraph::CalcNumMotionNodes() const
     {
-        const uint32 numNodes = mNodes.GetLength();
+        const uint32 numNodes = mNodes.size();
         uint32 numMotionNodes = 0;
         for (uint32 i = 0; i < numNodes; ++i)
         {
@@ -1029,7 +1027,7 @@ namespace EMotionFX
     void AnimGraph::RemoveInvalidConnections(bool logWarnings)
     {
         // Iterate over all nodes
-        const AZ::u32 numNodes = mNodes.GetLength();
+        const AZ::u32 numNodes = mNodes.size();
         for (AZ::u32 i = 0; i < numNodes; ++i)
         {
             AnimGraphNode* node = mNodes[i];

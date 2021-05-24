@@ -649,8 +649,8 @@ namespace EMStudio
 
         //  mTextOptions.setAlignment( Qt::AlignCenter );
 
-        mInputPorts.Resize(1);
-        mOutputPorts.Resize(4);
+        mInputPorts.resize(1);
+        mOutputPorts.resize(4);
     }
 
     StateGraphNode::~StateGraphNode()
@@ -856,7 +856,6 @@ namespace EMStudio
             MCORE_ASSERT(false);
             return QRect();
         }
-        ;
         //MCore::LOG("CalcOutputPortRect: (%i, %i, %i, %i)", rect.top(), rect.left(), rect.bottom(), rect.right());
     }
 

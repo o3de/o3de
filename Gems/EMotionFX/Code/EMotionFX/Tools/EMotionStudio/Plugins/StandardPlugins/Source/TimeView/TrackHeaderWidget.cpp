@@ -173,7 +173,7 @@ namespace EMStudio
         setVisible(true);
         mStackWidget->setVisible(false);
 
-        const uint32 numTracks = mPlugin->mTracks.GetLength();
+        const uint32 numTracks = mPlugin->mTracks.size();
         if (numTracks == 0)
         {
             return;

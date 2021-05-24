@@ -29,7 +29,6 @@ namespace EMotionFX
     {
         MCORE_ASSERT(actorInstance);
 
-        mMotionInstances.SetMemoryCategory(EMFX_MEMCATEGORY_MOTIONS_MOTIONSYSTEMS);
         mActorInstance  = actorInstance;
         mMotionQueue    = nullptr;
 
@@ -46,11 +45,11 @@ namespace EMotionFX
         GetEventManager().OnDeleteMotionSystem(this);
 
         // delete the motion infos
-        while (mMotionInstances.GetLength())
+        while (mMotionInstances.size())
         {
             //delete mMotionInstances.GetLast();
-            GetMotionInstancePool().Free(mMotionInstances.GetLast());
-            mMotionInstances.RemoveLast();
+            GetMotionInstancePool().Free(mMotionInstances.back());
+            mMotionInstances.pop_back();
         }
 
         // get rid of the motion queue
@@ -138,7 +137,14 @@ namespace EMotionFX
     bool MotionSystem::RemoveMotionInstance(MotionInstance* instance)
     {
         // remove the motion instance from the actor
-        const bool isSuccess = mMotionInstances.RemoveByValue(instance);
+        const bool isSuccess = [this, instance] {
+            if(const auto it = AZStd::find(begin(mMotionInstances), end(mMotionInstances), instance); it != end(mMotionInstances))
+            {
+                mMotionInstances.erase(it);
+                return true;
+            }
+            return false;
+        }();
 
         // delete the motion instance from memory
         if (isSuccess)
@@ -167,7 +173,7 @@ namespace EMotionFX
     // stop all the motions that are currently playing
     void MotionSystem::StopAllMotions()
     {
-        const uint32 numInstances = mMotionInstances.GetLength();
+        const uint32 numInstances = mMotionInstances.size();
         for (uint32 i = 0; i < numInstances; ++i)
         {
             mMotionInstances[i]->Stop();
@@ -178,7 +184,7 @@ namespace EMotionFX
     // stop all motion instances of a given motion
     void MotionSystem::StopAllMotions(Motion* motion)
     {
-        const uint32 numInstances = mMotionInstances.GetLength();
+        const uint32 numInstances = mMotionInstances.size();
         for (uint32 i = 0; i < numInstances; ++i)
         {
             if (mMotionInstances[i]->GetMotion()->GetID() == motion->GetID())
@@ -190,16 +196,16 @@ namespace EMotionFX
 
 
     // remove the given motion
-    void MotionSystem::RemoveMotion(uint32 nr, bool deleteMem)
+    void MotionSystem::RemoveMotion(size_t nr, bool deleteMem)
     {
-        MCORE_ASSERT(nr < mMotionInstances.GetLength());
+        MCORE_ASSERT(nr < mMotionInstances.size());
 
         if (deleteMem)
         {
             GetEMotionFX().GetMotionInstancePool()->Free(mMotionInstances[nr]);
         }
 
-        mMotionInstances.Remove(nr);
+        mMotionInstances.erase(AZStd::next(begin(mMotionInstances), nr));
     }
 
 
@@ -208,15 +214,15 @@ namespace EMotionFX
     {
         MCORE_ASSERT(motion);
 
-        uint32 nr = mMotionInstances.Find(motion);
-        MCORE_ASSERT(nr != MCORE_INVALIDINDEX32);
+        const auto it = AZStd::find(begin(mMotionInstances), end(mMotionInstances), motion);
+        MCORE_ASSERT(it != end(mMotionInstances));
 
-        if (nr == MCORE_INVALIDINDEX32)
+        if (it == end(mMotionInstances))
         {
             return;
         }
 
-        RemoveMotion(nr, delMem);
+        RemoveMotion(AZStd::distance(begin(mMotionInstances), it), delMem);
     }
 
 
@@ -224,7 +230,7 @@ namespace EMotionFX
     void MotionSystem::UpdateMotionInstances(float timePassed)
     {
         // update all the motion infos
-        const uint32 numInstances = mMotionInstances.GetLength();
+        const uint32 numInstances = mMotionInstances.size();
         for (uint32 i = 0; i < numInstances; ++i)
         {
             mMotionInstances[i]->Update(timePassed);
@@ -242,7 +248,7 @@ namespace EMotionFX
         }
 
         // for all motion instances currently playing in this actor
-        const uint32 numInstances = mMotionInstances.GetLength();
+        const uint32 numInstances = mMotionInstances.size();
         for (uint32 i = 0; i < numInstances; ++i)
         {
             // check if this one is the one we are searching for, if so, return that it is still valid
@@ -269,7 +275,7 @@ namespace EMotionFX
         }
 
         // for all motion instances currently playing in this actor
-        const uint32 numInstances = mMotionInstances.GetLength();
+        const uint32 numInstances = mMotionInstances.size();
         for (uint32 i = 0; i < numInstances; ++i)
         {
             const MotionInstance* motionInstance = mMotionInstances[i];
@@ -294,15 +300,15 @@ namespace EMotionFX
     // return given motion instance
     MotionInstance* MotionSystem::GetMotionInstance(uint32 nr) const
     {
-        MCORE_ASSERT(nr < mMotionInstances.GetLength());
+        MCORE_ASSERT(nr < mMotionInstances.size());
         return mMotionInstances[nr];
     }
 
 
     // return number of motion instances
-    uint32 MotionSystem::GetNumMotionInstances() const
+    size_t MotionSystem::GetNumMotionInstances() const
     {
-        return mMotionInstances.GetLength();
+        return mMotionInstances.size();
     }
 
 
@@ -350,12 +356,12 @@ namespace EMotionFX
 
     void MotionSystem::AddMotionInstance(MotionInstance* instance)
     {
-        mMotionInstances.Add(instance);
+        mMotionInstances.emplace_back(instance);
     }
 
 
     bool MotionSystem::GetIsPlaying() const
     {
-        return (mMotionInstances.GetLength() > 0);
+        return (mMotionInstances.size() > 0);
     }
 } // namespace EMotionFX

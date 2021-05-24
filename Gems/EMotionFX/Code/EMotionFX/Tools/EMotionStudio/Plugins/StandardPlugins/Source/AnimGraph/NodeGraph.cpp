@@ -2013,8 +2013,8 @@ namespace EMStudio
                 // So we have to rely on the UI data.
                 for (const GraphNodeByModelIndex::value_type& target : m_graphNodeByModelIndex)
                 {
-                    MCore::Array<NodeConnection*>& connections = target.second->GetConnections();
-                    const uint32 connectionsCount = connections.GetLength();
+                    AZStd::vector<NodeConnection*>& connections = target.second->GetConnections();
+                    const uint32 connectionsCount = connections.size();
                     for (uint32 i = 0; i < connectionsCount; ++i)
                     {
                         if (connections[i]->GetType() == StateConnection::TYPE_ID)
@@ -2023,7 +2023,7 @@ namespace EMStudio
                             if (visualStateConnection->GetModelIndex() == modelIndex)
                             {
                                 delete connections[i];
-                                connections.Remove(i);
+                                connections.erase(AZStd::next(begin(connections), i));
                                 break;
                             }
                         }
@@ -2086,8 +2086,8 @@ namespace EMStudio
                 GraphNode* targetGraphNode = FindGraphNode(targetNode);
 
                 bool foundConnection = false;
-                MCore::Array<NodeConnection*>& connections = targetGraphNode->GetConnections();
-                const uint32 connectionsCount = connections.GetLength();
+                AZStd::vector<NodeConnection*>& connections = targetGraphNode->GetConnections();
+                const uint32 connectionsCount = connections.size();
                 for (uint32 i = 0; i < connectionsCount; ++i)
                 {
                     if (connections[i]->GetType() == StateConnection::TYPE_ID)
@@ -2110,13 +2110,11 @@ namespace EMStudio
                     {
                         GraphNode* visualNode = indexAndGraphNode.second.get();
 
-                        MCore::Array<NodeConnection*>& connections2 = visualNode->GetConnections();
-                        const uint32 connectionsCount2 = connections2.GetLength();
-                        for (uint32 i = 0; i < connectionsCount2; ++i)
+                        for (NodeConnection* connection : visualNode->GetConnections())
                         {
-                            if (connections2[i]->GetType() == StateConnection::TYPE_ID)
+                            if (connection->GetType() == StateConnection::TYPE_ID)
                             {
-                                StateConnection* visualStateConnection = static_cast<StateConnection*>(connections2[i]);
+                                StateConnection* visualStateConnection = static_cast<StateConnection*>(connection);
                                 if (visualStateConnection->GetModelIndex() == modelIndex)
                                 {
                                     // Transfer ownership from the previous visual node to where we relinked the transition to.
@@ -2176,8 +2174,8 @@ namespace EMStudio
         // We have to rely on the UI data.
         for (const GraphNodeByModelIndex::value_type& target : m_graphNodeByModelIndex)
         {
-            MCore::Array<NodeConnection*>& connections = target.second->GetConnections();
-            const uint32 connectionsCount = connections.GetLength();
+            AZStd::vector<NodeConnection*>& connections = target.second->GetConnections();
+            const uint32 connectionsCount = connections.size();
             for (uint32 i = 0; i < connectionsCount; ++i)
             {
                 if (connections[i]->GetType() == StateConnection::TYPE_ID)
@@ -2205,8 +2203,8 @@ namespace EMStudio
                 GraphNode* target = FindGraphNode(parentModelIndex);
                 if (target)
                 {
-                    MCore::Array<NodeConnection*>& connections = target->GetConnections();
-                    const uint32 connectionsCount = connections.GetLength();
+                    AZStd::vector<NodeConnection*>& connections = target->GetConnections();
+                    const uint32 connectionsCount = connections.size();
                     for (uint32 i = 0; i < connectionsCount; ++i)
                     {
                         if (connections[i]->GetType() == NodeConnection::TYPE_ID)

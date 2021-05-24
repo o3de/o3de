@@ -51,8 +51,6 @@ namespace EMStudio
         mMeshIcon       = new QIcon(meshIconFilename);
         mCharacterIcon  = new QIcon(iconFilename("Character.svg"));
 
-        mActorInstanceIDs.SetMemoryCategory(MEMCATEGORY_EMSTUDIOSDK);
-
         QVBoxLayout* layout = new QVBoxLayout();
         layout->setMargin(0);
 
@@ -142,7 +140,7 @@ namespace EMStudio
     }
 
 
-    void NodeHierarchyWidget::Update(const MCore::Array<uint32>& actorInstanceIDs, CommandSystem::SelectionList* selectionList)
+    void NodeHierarchyWidget::Update(const AZStd::vector<uint32>& actorInstanceIDs, CommandSystem::SelectionList* selectionList)
     {
         mActorInstanceIDs = actorInstanceIDs;
         ConvertFromSelectionList(selectionList);
@@ -153,7 +151,7 @@ namespace EMStudio
 
     void NodeHierarchyWidget::Update(uint32 actorInstanceID, CommandSystem::SelectionList* selectionList)
     {
-        mActorInstanceIDs.Clear();
+        mActorInstanceIDs.clear();
 
         if (actorInstanceID == MCORE_INVALIDINDEX32)
         {
@@ -169,12 +167,12 @@ namespace EMStudio
                     continue;
                 }
 
-                mActorInstanceIDs.Add(actorInstance->GetID());
+                mActorInstanceIDs.emplace_back(actorInstance->GetID());
             }
         }
         else
         {
-            mActorInstanceIDs.Add(actorInstanceID);
+            mActorInstanceIDs.emplace_back(actorInstanceID);
         }
 
         Update(mActorInstanceIDs, selectionList);
@@ -189,7 +187,7 @@ namespace EMStudio
         mHierarchy->clear();
 
         // get the number actor instances and iterate over them
-        const uint32 numActorInstances = mActorInstanceIDs.GetLength();
+        const uint32 numActorInstances = mActorInstanceIDs.size();
         for (uint32 i = 0; i < numActorInstances; ++i)
         {
             // get the actor instance by its id
@@ -267,7 +265,7 @@ namespace EMStudio
         AZStd::to_lower(nodeName.begin(), nodeName.end());
         EMotionFX::Mesh*    mesh        = actorInstance->GetActor()->GetMesh(actorInstance->GetLODLevel(), nodeIndex);
         const bool          isMeshNode  = (mesh);
-        const bool          isBone      = (mBoneList.Find(nodeIndex) != MCORE_INVALIDINDEX32);
+        const bool          isBone      = (AZStd::find(begin(mBoneList), end(mBoneList), nodeIndex) != end(mBoneList));
         const bool          isNode      = (isMeshNode == false && isBone == false);
 
         return CheckIfNodeVisible(nodeName, isMeshNode, isBone, isNode);
@@ -296,7 +294,7 @@ namespace EMStudio
         const uint32        numChildren = node->GetNumChildNodes();
         EMotionFX::Mesh*    mesh        = actor->GetMesh(actorInstance->GetLODLevel(), nodeIndex);
         const bool          isMeshNode  = (mesh);
-        const bool          isBone      = (mBoneList.Find(nodeIndex) != MCORE_INVALIDINDEX32);
+        const bool          isBone      = (AZStd::find(begin(mBoneList), end(mBoneList), nodeIndex) != end(mBoneList));
         const bool          isNode      = (isMeshNode == false && isBone == false);
 
         if (CheckIfNodeVisible(nodeName, isMeshNode, isBone, isNode))
@@ -563,7 +561,6 @@ namespace EMStudio
         UpdateSelection();
 
         emit OnDoubleClicked(m_selectedNodes);
-        emit OnDoubleClicked(GetSelectedItemsAsMCoreArray());
     }
 
 
@@ -634,7 +631,6 @@ namespace EMStudio
     void NodeHierarchyWidget::FireSelectionDoneSignal()
     {
         emit OnSelectionDone(m_selectedNodes);
-        emit OnSelectionDone(GetSelectedItemsAsMCoreArray());
     }
 
 
@@ -642,23 +638,6 @@ namespace EMStudio
     {
         UpdateSelection();
         return m_selectedNodes;
-    }
-
-
-    MCore::Array<SelectionItem> NodeHierarchyWidget::GetSelectedItemsAsMCoreArray()
-    {
-        AZStd::vector<SelectionItem>& selectedItems = GetSelectedItems();
-        MCore::Array<SelectionItem> result;
-
-        const AZ::u32 numSelectedItems = static_cast<AZ::u32>(selectedItems.size());
-        result.Resize(numSelectedItems);
-
-        for (AZ::u32 i = 0; i < numSelectedItems; ++i)
-        {
-            result[i] = selectedItems[i];
-        }
-
-        return result;
     }
 
 
@@ -706,7 +685,7 @@ namespace EMStudio
         m_selectedNodes.clear();
 
         // get the number actor instances and iterate over them
-        const uint32 numActorInstances = mActorInstanceIDs.GetLength();
+        const uint32 numActorInstances = mActorInstanceIDs.size();
         for (uint32 i = 0; i < numActorInstances; ++i)
         {
             // add the actor to the node hierarchy widget

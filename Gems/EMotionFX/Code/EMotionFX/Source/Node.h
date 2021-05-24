@@ -12,7 +12,7 @@
 #include <AzCore/std/containers/vector.h>
 #include "EMotionFXConfig.h"
 #include "BaseObject.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
 namespace EMotionFX
@@ -168,7 +168,7 @@ namespace EMotionFX
          * Get the number of child nodes attached to this node.
          * @result The number of child nodes.
          */
-        MCORE_INLINE uint32 GetNumChildNodes() const                            { return mChildIndices.GetLength(); }
+        MCORE_INLINE size_t GetNumChildNodes() const                            { return mChildIndices.size(); }
 
         /**
          * Get the number of child nodes down the hierarchy of this node.
@@ -189,7 +189,7 @@ namespace EMotionFX
          * @param nodeIndex The node to check whether it is a child or not.
          * @result True if the given node is a child, false if not.
          */
-        MCORE_INLINE bool CheckIfIsChildNode(uint32 nodeIndex) const            { return (mChildIndices.Find(nodeIndex) != MCORE_INVALIDINDEX32); }
+        MCORE_INLINE bool CheckIfIsChildNode(uint32 nodeIndex) const            { return (AZStd::find(begin(mChildIndices), end(mChildIndices), nodeIndex) != end(mChildIndices)); }
 
         /**
          * Add a child to this node.
@@ -262,7 +262,7 @@ namespace EMotionFX
          * Get the number of node attributes.
          * @result The number of node attributes for this node.
          */
-        uint32 GetNumAttributes() const;
+        size_t GetNumAttributes() const;
 
         /**
          * Get a given node attribute.
@@ -421,8 +421,8 @@ namespace EMotionFX
         uint32      mNameID;            /**< The ID, which is generated from the name. You can use this for fast compares between nodes. */
         uint32      mSemanticNameID;    /**< The semantic name ID, for example "LeftHand" or "RightFoot" or so, this can be used for retargeting. */
         Skeleton*   mSkeleton;          /**< The skeleton where this node belongs to. */
-        MCore::Array<uint32>            mChildIndices;      /**< The indices that point to the child nodes. */
-        MCore::Array<NodeAttribute*>    mAttributes;        /**< The node attributes. */
+        AZStd::vector<uint32>            mChildIndices;      /**< The indices that point to the child nodes. */
+        AZStd::vector<NodeAttribute*>    mAttributes;        /**< The node attributes. */
         uint8                           mNodeFlags;         /**< The node flags are used to store boolean attributes of the node as single bits. */
 
         /**

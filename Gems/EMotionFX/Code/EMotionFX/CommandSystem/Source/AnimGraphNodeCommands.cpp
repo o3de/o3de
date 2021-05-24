@@ -1204,10 +1204,10 @@ namespace CommandSystem
             if (parentNode)
             {
                 // Gather the number of nodes with the same type as the one we're trying to remove.
-                MCore::Array<EMotionFX::AnimGraphNode*> outNodes;
+                AZStd::vector<EMotionFX::AnimGraphNode*> outNodes;
                 const AZ::TypeId nodeType = azrtti_typeid(node);
                 parentNode->CollectChildNodesOfType(nodeType, &outNodes);
-                const uint32 numTypeNodes = outNodes.GetLength();
+                const uint32 numTypeNodes = outNodes.size();
 
                 // Gather the number of already removed nodes with the same type as the one we're trying to remove.
                 const size_t numTotalDeletedNodes = nodeList.size();

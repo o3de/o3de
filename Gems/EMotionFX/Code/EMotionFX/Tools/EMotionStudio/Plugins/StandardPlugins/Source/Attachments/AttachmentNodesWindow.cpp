@@ -110,8 +110,8 @@ namespace EMStudio
         connect(mAddNodesButton, &QToolButton::clicked, this, &AttachmentNodesWindow::SelectNodesButtonPressed);
         connect(mRemoveNodesButton, &QToolButton::clicked, this, &AttachmentNodesWindow::RemoveNodesButtonPressed);
         connect(mNodeTable, &QTableWidget::itemSelectionChanged, this, &AttachmentNodesWindow::OnItemSelectionChanged);
-        connect(mNodeSelectionWindow->GetNodeHierarchyWidget(), static_cast<void (NodeHierarchyWidget::*)(MCore::Array<SelectionItem>)>(&NodeHierarchyWidget::OnSelectionDone), this, &AttachmentNodesWindow::NodeSelectionFinished);
-        connect(mNodeSelectionWindow->GetNodeHierarchyWidget(), static_cast<void (NodeHierarchyWidget::*)(MCore::Array<SelectionItem>)>(&NodeHierarchyWidget::OnDoubleClicked), this, &AttachmentNodesWindow::NodeSelectionFinished);
+        connect(mNodeSelectionWindow->GetNodeHierarchyWidget(), &NodeHierarchyWidget::OnSelectionDone, this, &AttachmentNodesWindow::NodeSelectionFinished);
+        connect(mNodeSelectionWindow->GetNodeHierarchyWidget(), &NodeHierarchyWidget::OnDoubleClicked, this, &AttachmentNodesWindow::NodeSelectionFinished);
     }
 
 
@@ -322,10 +322,10 @@ namespace EMStudio
 
 
     // add / select nodes
-    void AttachmentNodesWindow::NodeSelectionFinished(MCore::Array<SelectionItem> selectionList)
+    void AttachmentNodesWindow::NodeSelectionFinished(AZStd::vector<SelectionItem> selectionList)
     {
         // return if no nodes are selected
-        if (selectionList.GetLength() == 0)
+        if (selectionList.size() == 0)
         {
             return;
         }
@@ -333,7 +333,7 @@ namespace EMStudio
         // generate node list string
         AZStd::string nodeList;
         nodeList.reserve(16384);
-        const uint32 numSelectedNodes = selectionList.GetLength();
+        const uint32 numSelectedNodes = selectionList.size();
         for (uint32 i = 0; i < numSelectedNodes; ++i)
         {
             nodeList += AZStd::string::format("%s;", selectionList[i].GetNodeName());

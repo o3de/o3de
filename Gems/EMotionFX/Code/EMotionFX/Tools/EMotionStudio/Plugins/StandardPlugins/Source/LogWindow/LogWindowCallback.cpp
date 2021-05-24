@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/sort.h>
 #include "LogWindowCallback.h"
 #include <QApplication>
 #include <QHeaderView>
@@ -289,22 +290,22 @@ namespace EMStudio
         }
 
         // filter the items
-        MCore::Array<uint32> rowIndices;
-        rowIndices.Reserve(numSelectedItems);
+        AZStd::vector<uint32> rowIndices;
+        rowIndices.reserve(numSelectedItems);
         for (uint32 i = 0; i < numSelectedItems; ++i)
         {
             const uint32 rowIndex = items[i]->row();
-            if (rowIndices.Find(rowIndex) == MCORE_INVALIDINDEX32)
+            if (AZStd::find(begin(rowIndices), end(rowIndices), rowIndex) == end(rowIndices))
             {
-                rowIndices.Add(rowIndex);
+                rowIndices.emplace_back(rowIndex);
             }
         }
 
         // sort the array to copy the item in order
-        rowIndices.Sort();
+        AZStd::sort(begin(rowIndices), end(rowIndices));
 
         // get the number of selected rows
-        const uint32 numSelectedRows = rowIndices.GetLength();
+        const uint32 numSelectedRows = rowIndices.size();
 
         // genereate the clipboard text
         QString clipboardText;

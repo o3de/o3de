@@ -24,7 +24,7 @@ namespace EMotionFX
         MOCK_CONST_METHOD1(RecursiveFindNodeById, AnimGraphNode*(AnimGraphNodeId));
         MOCK_CONST_METHOD1(RecursiveFindTransitionById, AnimGraphStateTransition*(AnimGraphConnectionId));
         MOCK_CONST_METHOD2(RecursiveCollectNodesOfType, void(const AZ::TypeId& nodeType, AZStd::vector<AnimGraphNode*>* outNodes));
-        MOCK_CONST_METHOD2(RecursiveCollectTransitionConditionsOfType, void(const AZ::TypeId& conditionType, MCore::Array<AnimGraphTransitionCondition*>* outConditions));
+        MOCK_CONST_METHOD2(RecursiveCollectTransitionConditionsOfType, void(const AZ::TypeId& conditionType, AZStd::vector<AnimGraphTransitionCondition*>* outConditions));
         MOCK_METHOD2(RecursiveCollectObjectsOfType, void(const AZ::TypeId& objectType, AZStd::vector<AnimGraphObject*>& outObjects));
         MOCK_METHOD2(RecursiveCollectObjectsAffectedBy, void(AnimGraph* animGraph, AZStd::vector<AnimGraphObject*>& outObjects));
         //uint32 RecursiveCalcNumNodes() const;

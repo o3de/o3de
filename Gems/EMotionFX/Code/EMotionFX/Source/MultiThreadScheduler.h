@@ -50,16 +50,8 @@ namespace EMotionFX
          */
         struct EMFX_API ScheduleStep
         {
-            MCore::Array<Actor::Dependency>     mDependencies;      /**< The dependencies of this scheduler step. No actor instances with the same dependencies are allowed to be added to this step. */
+            AZStd::vector<Actor::Dependency>     mDependencies;      /**< The dependencies of this scheduler step. No actor instances with the same dependencies are allowed to be added to this step. */
             AZStd::vector<ActorInstance*>       mActorInstances;    /**< The actor instances used inside this step. Each array entry will execute in another thread. */
-
-            /**
-             * The constructor.
-             */
-            ScheduleStep()
-            {
-                mDependencies.SetMemoryCategory(EMFX_MEMCATEGORY_UPDATESCHEDULERS);
-            }
         };
 
         /**
@@ -128,10 +120,10 @@ namespace EMotionFX
         void Unlock();
 
         const ScheduleStep& GetScheduleStep(uint32 index) const { return mSteps[index]; }
-        uint32 GetNumScheduleSteps() const { return mSteps.GetLength(); }
+        size_t GetNumScheduleSteps() const { return mSteps.size(); }
 
     protected:
-        MCore::Array< ScheduleStep >    mSteps;         /**< An array of update steps, that together form the schedule. */
+        AZStd::vector< ScheduleStep >    mSteps;         /**< An array of update steps, that together form the schedule. */
         float                           mCleanTimer;    /**< The time passed since the last automatic call to the Optimize method. */
         MCore::MutexRecursive           mMutex;
 

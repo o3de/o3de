@@ -22,8 +22,6 @@ namespace EMotionFX
     // constructor
     Skeleton::Skeleton()
     {
-        m_nodes.SetMemoryCategory(EMFX_MEMCATEGORY_SKELETON);
-        m_rootNodes.SetMemoryCategory(EMFX_MEMCATEGORY_SKELETON);
     }
 
 
@@ -46,7 +44,7 @@ namespace EMotionFX
     {
         Skeleton* result = Skeleton::Create();
 
-        const uint32 numNodes = m_nodes.GetLength();
+        const uint32 numNodes = m_nodes.size();
         result->ReserveNodes(numNodes);
         result->m_rootNodes = m_rootNodes;
 
@@ -65,14 +63,14 @@ namespace EMotionFX
     // reserve memory
     void Skeleton::ReserveNodes(uint32 numNodes)
     {
-        m_nodes.Reserve(numNodes);
+        m_nodes.reserve(numNodes);
     }
 
 
     // add a node
     void Skeleton::AddNode(Node* node)
     {
-        m_nodes.Add(node);
+        m_nodes.emplace_back(node);
         m_nodesMap[node->GetNameString()] = node;
     }
 
@@ -86,7 +84,7 @@ namespace EMotionFX
             m_nodes[nodeIndex]->Destroy();
         }
 
-        m_nodes.Remove(nodeIndex);
+        m_nodes.erase(AZStd::next(begin(m_nodes), nodeIndex));
     }
 
 
@@ -95,14 +93,14 @@ namespace EMotionFX
     {
         if (delFromMem)
         {
-            const uint32 numNodes = m_nodes.GetLength();
+            const uint32 numNodes = m_nodes.size();
             for (uint32 i = 0; i < numNodes; ++i)
             {
                 m_nodes[i]->Destroy();
             }
         }
 
-        m_nodes.Clear();
+        m_nodes.clear();
         m_nodesMap.clear();
         m_bindPose.Clear();
     }
@@ -134,7 +132,7 @@ namespace EMotionFX
     Node* Skeleton::FindNodeByNameNoCase(const char* name) const
     {
         // check the names for all nodes
-        const uint32 numNodes = m_nodes.GetLength();
+        const uint32 numNodes = m_nodes.size();
         for (uint32 i = 0; i < numNodes; ++i)
         {
             if (AzFramework::StringFunc::Equal(m_nodes[i]->GetNameString().c_str(), name, false /* no case */))
@@ -151,7 +149,7 @@ namespace EMotionFX
     Node* Skeleton::FindNodeByID(uint32 id) const
     {
         // check the ID's for all nodes
-        const uint32 numNodes = m_nodes.GetLength();
+        const uint32 numNodes = m_nodes.size();
         for (uint32 i = 0; i < numNodes; ++i)
         {
             if (m_nodes[i]->GetID() == id)
@@ -180,8 +178,8 @@ namespace EMotionFX
     // set the number of nodes
     void Skeleton::SetNumNodes(uint32 numNodes)
     {
-        uint32 oldLength = m_nodes.GetLength();
-        m_nodes.Resize(numNodes);
+        uint32 oldLength = m_nodes.size();
+        m_nodes.resize(numNodes);
         for (uint32 i = oldLength; i < numNodes; ++i)
         {
             m_nodes[i] = nullptr;
@@ -193,7 +191,7 @@ namespace EMotionFX
     // update the node indices
     void Skeleton::UpdateNodeIndexValues(uint32 startNode)
     {
-        const uint32 numNodes = m_nodes.GetLength();
+        const uint32 numNodes = m_nodes.size();
         for (uint32 i = startNode; i < numNodes; ++i)
         {
             m_nodes[i]->SetNodeIndex(i);
@@ -204,35 +202,35 @@ namespace EMotionFX
     // reserve memory for the root nodes array
     void Skeleton::ReserveRootNodes(uint32 numNodes)
     {
-        m_rootNodes.Reserve(numNodes);
+        m_rootNodes.reserve(numNodes);
     }
 
 
     // add a root node
     void Skeleton::AddRootNode(uint32 nodeIndex)
     {
-        m_rootNodes.Add(nodeIndex);
+        m_rootNodes.emplace_back(nodeIndex);
     }
 
 
     // remove a given root node
     void Skeleton::RemoveRootNode(uint32 nr)
     {
-        m_rootNodes.Remove(nr);
+        m_rootNodes.erase(AZStd::next(begin(m_rootNodes), nr));
     }
 
 
     // remove all root nodes
     void Skeleton::RemoveAllRootNodes()
     {
-        m_rootNodes.Clear();
+        m_rootNodes.clear();
     }
 
 
     // log all node names
     void Skeleton::LogNodes()
     {
-        const uint32 numNodes = m_nodes.GetLength();
+        const uint32 numNodes = m_nodes.size();
         for (uint32 i = 0; i < numNodes; ++i)
         {
             MCore::LogInfo("%d = '%s'", i, m_nodes[i]->GetName());

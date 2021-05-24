@@ -16,7 +16,7 @@
 #include <EMotionFX/Source/BaseObject.h>
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <MCore/Source/Attribute.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Random.h>
 
 
@@ -302,9 +302,9 @@ namespace EMotionFX
         ActorInstance*                                      mActorInstance;
         AnimGraphInstance*                                  m_parentAnimGraphInstance; // If this anim graph instance is in a reference node, it will have a parent anim graph instance.
         AZStd::vector<AnimGraphInstance*>                   m_childAnimGraphInstances; // If this anim graph instance contains reference nodes, the anim graph instances will be listed here.
-        MCore::Array<MCore::Attribute*>                     mParamValues;           // a value for each AnimGraph parameter (the control parameters)
+        AZStd::vector<MCore::Attribute*>                     mParamValues;           // a value for each AnimGraph parameter (the control parameters)
         AZStd::vector<AnimGraphObjectData*>                 m_uniqueDatas;          // unique object data
-        MCore::Array<uint32>                                mObjectFlags;           // the object flags
+        AZStd::vector<uint32>                                mObjectFlags;           // the object flags
         using EventHandlerVector = AZStd::vector<AnimGraphInstanceEventHandler*>;
         AZStd::vector<EventHandlerVector>                   m_eventHandlersByEventType; /**< The event handler to use to process events organized by EventTypes. */
         AZStd::vector<MCore::Attribute*>                    m_internalAttributes;

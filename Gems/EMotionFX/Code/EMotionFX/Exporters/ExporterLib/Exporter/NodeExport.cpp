@@ -227,13 +227,13 @@ namespace ExporterLib
     }
 
 
-    void SaveNodeGroups(MCore::Stream* file, const MCore::Array<EMotionFX::NodeGroup*>& nodeGroups, MCore::Endian::EEndianType targetEndianType)
+    void SaveNodeGroups(MCore::Stream* file, const AZStd::vector<EMotionFX::NodeGroup*>& nodeGroups, MCore::Endian::EEndianType targetEndianType)
     {
         uint32 i;
         MCORE_ASSERT(file);
 
         // get the number of node groups
-        const uint32 numGroups = nodeGroups.GetLength();
+        const uint32 numGroups = nodeGroups.size();
 
         if (numGroups == 0)
         {
@@ -286,13 +286,13 @@ namespace ExporterLib
         const uint32 numGroups = actor->GetNumNodeGroups();
 
         // create the node group array and reserve some elements
-        MCore::Array<EMotionFX::NodeGroup*> nodeGroups;
-        nodeGroups.Reserve(numGroups);
+        AZStd::vector<EMotionFX::NodeGroup*> nodeGroups;
+        nodeGroups.reserve(numGroups);
 
         // iterate through the node groups and add them to the array
         for (uint32 i = 0; i < numGroups; ++i)
         {
-            nodeGroups.Add(actor->GetNodeGroup(i));
+            nodeGroups.emplace_back(actor->GetNodeGroup(i));
         }
 
         // save the node groups
@@ -300,7 +300,7 @@ namespace ExporterLib
     }
 
 
-    void SaveNodeMotionSources(MCore::Stream* file, EMotionFX::Actor* actor, MCore::Array<EMotionFX::Actor::NodeMirrorInfo>* nodeMirrorInfos, MCore::Endian::EEndianType targetEndianType)
+    void SaveNodeMotionSources(MCore::Stream* file, EMotionFX::Actor* actor, AZStd::vector<EMotionFX::Actor::NodeMirrorInfo>* nodeMirrorInfos, MCore::Endian::EEndianType targetEndianType)
     {
         MCORE_ASSERT(file);
 
@@ -311,7 +311,7 @@ namespace ExporterLib
 
         MCORE_ASSERT(nodeMirrorInfos);
 
-        const uint32 numNodes = nodeMirrorInfos->GetLength();
+        const uint32 numNodes = nodeMirrorInfos->size();
 
         // chunk information
         EMotionFX::FileFormat::FileChunk chunkHeader;
@@ -342,7 +342,7 @@ namespace ExporterLib
         for (uint32 i = 0; i < numNodes; ++i)
         {
             // get the motion node source
-            uint16 nodeMotionSource = nodeMirrorInfos->GetItem(i).mSourceNode;
+            uint16 nodeMotionSource = nodeMirrorInfos->at(i).mSourceNode;
 
             //if (actor && nodeMotionSource != MCORE_INVALIDINDEX16)
             //LogInfo("   + '%s' (NodeNr=%i) -> '%s' (NodeNr=%i)", actor->GetNode( i )->GetName(), i, actor->GetNode( nodeMotionSource )->GetName(), nodeMotionSource);
@@ -355,14 +355,14 @@ namespace ExporterLib
         // write all axes
         for (uint32 i = 0; i < numNodes; ++i)
         {
-            uint8 axis = static_cast<uint8>(nodeMirrorInfos->GetItem(i).mAxis);
+            uint8 axis = static_cast<uint8>(nodeMirrorInfos->at(i).mAxis);
             file->Write(&axis, sizeof(uint8));
         }
 
         // write all flags
         for (uint32 i = 0; i < numNodes; ++i)
         {
-            uint8 flags = static_cast<uint8>(nodeMirrorInfos->GetItem(i).mFlags);
+            uint8 flags = static_cast<uint8>(nodeMirrorInfos->at(i).mFlags);
             file->Write(&flags, sizeof(uint8));
         }
     }
@@ -430,7 +430,7 @@ namespace ExporterLib
         MCore::LogInfo("============================================================");
 
         // get all nodes that are affected by the skin
-        MCore::Array<uint32> bones;
+        AZStd::vector<uint32> bones;
         if (actor)
         {
             actor->ExtractBoneList(0, &bones);
@@ -455,7 +455,7 @@ namespace ExporterLib
                 }
 
                 // is the attachment node a skinned one?
-                if (bones.Find(node->GetNodeIndex()) != MCORE_INVALIDINDEX32)
+                if (AZStd::find(begin(bones), end(bones), node->GetNodeIndex()) != end(bones))
                 {
                     MCore::LogWarning("Attachment node '%s' (NodeNr=%i) is used by a skin. Skinning will look incorrectly when using motion mirroring.", node->GetName(), nodeNr);
                 }

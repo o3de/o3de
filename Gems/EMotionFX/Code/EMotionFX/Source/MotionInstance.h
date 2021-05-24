@@ -821,7 +821,7 @@ namespace EMotionFX
 
         void CalcRelativeTransform(Node* rootNode, float curTime, float oldTime, Transform* outTransform) const;
         bool ExtractMotion(Transform& outTrajectoryDelta);
-        void CalcGlobalTransform(const MCore::Array<AZ::u32>& hierarchyPath, float timeValue, Transform* outTransform) const;
+        void CalcGlobalTransform(const AZStd::vector<AZ::u32>& hierarchyPath, float timeValue, Transform* outTransform) const;
         void ResetTimes();
 
         AZ_DEPRECATED(void CalcNewTimeAfterUpdate(float timePassed, float* outNewTime) const, "MotionInstance::CalcNewTimeAfterUpdate has been deprecated, please use MotionInstance::CalcPlayStateAfterUpdate(timeDelta).m_currentTime instead.");

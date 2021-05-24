@@ -27,8 +27,6 @@ namespace EMStudio
     RenderPlugin::RenderPlugin()
         : DockWidgetPlugin()
     {
-        mActors.SetMemoryCategory(MEMCATEGORY_EMSTUDIOSDK_RENDERPLUGINBASE);
-
         mIsVisible                      = true;
         mRenderUtil                     = nullptr;
         mUpdateCallback                 = nullptr;
@@ -130,7 +128,7 @@ namespace EMStudio
     void RenderPlugin::CleanEMStudioActors()
     {
         // get rid of the actors
-        const uint32 numActors = mActors.GetLength();
+        const uint32 numActors = mActors.size();
         for (uint32 i = 0; i < numActors; ++i)
         {
             if (mActors[i])
@@ -138,7 +136,7 @@ namespace EMStudio
                 delete mActors[i];
             }
         }
-        mActors.Clear();
+        mActors.clear();
     }
 
 
@@ -159,7 +157,7 @@ namespace EMStudio
 
         // get rid of the emstudio actor
         delete emstudioActor;
-        mActors.Remove(index);
+        mActors.erase(AZStd::next(begin(mActors), index));
         return true;
     }
 
@@ -168,8 +166,8 @@ namespace EMStudio
     MCommon::TransformationManipulator* RenderPlugin::GetActiveManipulator(MCommon::Camera* camera, int32 mousePosX, int32 mousePosY)
     {
         // get the current manipulator
-        MCore::Array<MCommon::TransformationManipulator*>* transformationManipulators = GetManager()->GetTransformationManipulators();
-        const uint32 numGizmos = transformationManipulators->GetLength();
+        AZStd::vector<MCommon::TransformationManipulator*>* transformationManipulators = GetManager()->GetTransformationManipulators();
+        const uint32 numGizmos = transformationManipulators->size();
 
         // init the active manipulator to nullptr
         MCommon::TransformationManipulator* activeManipulator = nullptr;
@@ -180,7 +178,7 @@ namespace EMStudio
         for (uint32 i = 0; i < numGizmos; ++i)
         {
             // get the current manipulator and check if it exists
-            MCommon::TransformationManipulator* currentManipulator = transformationManipulators->GetItem(i);
+            MCommon::TransformationManipulator* currentManipulator = transformationManipulators->at(i);
             if (currentManipulator == nullptr || currentManipulator->GetIsVisible() == false)
             {
                 continue;
@@ -319,7 +317,7 @@ namespace EMStudio
     RenderPlugin::EMStudioRenderActor* RenderPlugin::FindEMStudioActor(EMotionFX::ActorInstance* actorInstance, bool doubleCheckInstance)
     {
         // get the number of emstudio actors and iterate through them
-        const uint32 numEMStudioRenderActors = mActors.GetLength();
+        const uint32 numEMStudioRenderActors = mActors.size();
         for (uint32 i = 0; i < numEMStudioRenderActors; ++i)
         {
             EMStudioRenderActor* EMStudioRenderActor = mActors[i];
@@ -331,7 +329,7 @@ namespace EMStudio
                 if (doubleCheckInstance)
                 {
                     // now double check if the actor instance really is in the array of instances of this emstudio actor
-                    const uint32 numActorInstances = EMStudioRenderActor->mActorInstances.GetLength();
+                    const uint32 numActorInstances = EMStudioRenderActor->mActorInstances.size();
                     for (uint32 a = 0; a < numActorInstances; ++a)
                     {
                         if (EMStudioRenderActor->mActorInstances[a] == actorInstance)
@@ -359,7 +357,7 @@ namespace EMStudio
             return nullptr;
         }
 
-        const uint32 numEMStudioRenderActors = mActors.GetLength();
+        const uint32 numEMStudioRenderActors = mActors.size();
         for (uint32 i = 0; i < numEMStudioRenderActors; ++i)
         {
             EMStudioRenderActor* EMStudioRenderActor = mActors[i];
@@ -378,7 +376,7 @@ namespace EMStudio
     uint32 RenderPlugin::FindEMStudioActorIndex(EMStudioRenderActor* EMStudioRenderActor)
     {
         // get the number of emstudio actors and iterate through them
-        const uint32 numEMStudioRenderActors = mActors.GetLength();
+        const uint32 numEMStudioRenderActors = mActors.size();
         for (uint32 i = 0; i < numEMStudioRenderActors; ++i)
         {
             // compare the two emstudio actors and return the current index in case of success
@@ -407,7 +405,7 @@ namespace EMStudio
     void RenderPlugin::AddEMStudioActor(EMStudioRenderActor* emstudioActor)
     {
         // add the actor to the list and return success
-        mActors.Add(emstudioActor);
+        mActors.emplace_back(emstudioActor);
     }
 
 
@@ -440,8 +438,7 @@ namespace EMStudio
             }
         }
 
-        // 2. Remove invalid, not ready or unused emstudio actors
-        for (uint32 i = 0; i < mActors.GetLength(); ++i)
+        for (uint32 i = 0; i < mActors.size(); ++i)
         {
             EMStudioRenderActor* emstudioActor = mActors[i];
             EMotionFX::Actor* actor = emstudioActor->mActor;
@@ -479,7 +476,7 @@ namespace EMStudio
 
             if (!emstudioActor)
             {
-                for (uint32 j = 0; j < mActors.GetLength(); ++j)
+                for (uint32 j = 0; j < mActors.size(); ++j)
                 {
                     EMStudioRenderActor* currentEMStudioActor = mActors[j];
                     if (actor == currentEMStudioActor->mActor)
@@ -496,19 +493,17 @@ namespace EMStudio
                 actorInstance->SetCustomData(emstudioActor->mRenderActor);
 
                 // add the actor instance to the emstudio actor instances in case it is not in yet
-                if (emstudioActor->mActorInstances.Find(actorInstance) == MCORE_INVALIDINDEX32)
+                if (AZStd::find(begin(emstudioActor->mActorInstances), end(emstudioActor->mActorInstances), actorInstance) == end(emstudioActor->mActorInstances))
                 {
-                    emstudioActor->mActorInstances.Add(actorInstance);
+                    emstudioActor->mActorInstances.emplace_back(actorInstance);
                 }
             }
         }
 
         // 4. Unlink invalid actor instances from the emstudio actors
-        for (uint32 i = 0; i < mActors.GetLength(); ++i)
+        for (EMStudioRenderActor* emstudioActor : mActors)
         {
-            EMStudioRenderActor* emstudioActor = mActors[i];
-
-            for (uint32 j = 0; j < emstudioActor->mActorInstances.GetLength();)
+            for (uint32 j = 0; j < emstudioActor->mActorInstances.size();)
             {
                 EMotionFX::ActorInstance* emstudioActorInstance = emstudioActor->mActorInstances[j];
                 bool found = false;
@@ -524,7 +519,7 @@ namespace EMStudio
 
                 if (found == false)
                 {
-                    emstudioActor->mActorInstances.Remove(j);
+                    emstudioActor->mActorInstances.erase(AZStd::next(begin(emstudioActor->mActorInstances), j));
                 }
                 else
                 {
@@ -571,7 +566,7 @@ namespace EMStudio
     RenderPlugin::EMStudioRenderActor::~EMStudioRenderActor()
     {
         // get the number of actor instances and iterate through them
-        const uint32 numActorInstances = mActorInstances.GetLength();
+        const uint32 numActorInstances = mActorInstances.size();
         for (uint32 i = 0; i < numActorInstances; ++i)
         {
             EMotionFX::ActorInstance* actorInstance = mActorInstances[i];
@@ -1038,7 +1033,7 @@ namespace EMStudio
         MCommon::RenderUtil::TrajectoryTracePath* tracePath = new MCommon::RenderUtil::TrajectoryTracePath();
 
         tracePath->mActorInstance = actorInstance;
-        tracePath->mTraceParticles.Reserve(512);
+        tracePath->mTraceParticles.reserve(512);
 
         m_trajectoryTracePaths.emplace_back(tracePath);
         return tracePath;
@@ -1079,13 +1074,13 @@ namespace EMStudio
                 const EMotionFX::Transform& worldTM = actorInstance->GetWorldSpaceTransform();
 
                 bool distanceTraveledEnough = false;
-                if (trajectoryPath->mTraceParticles.GetIsEmpty())
+                if (trajectoryPath->mTraceParticles.empty())
                 {
                     distanceTraveledEnough = true;
                 }
                 else
                 {
-                    const uint32 numParticles = trajectoryPath->mTraceParticles.GetLength();
+                    const uint32 numParticles = trajectoryPath->mTraceParticles.size();
                     const EMotionFX::Transform& oldWorldTM = trajectoryPath->mTraceParticles[numParticles - 1].mWorldTM;
 
                     const AZ::Vector3& oldPos = oldWorldTM.mPosition;
@@ -1109,7 +1104,7 @@ namespace EMStudio
                     // create the particle, fill its data and add it to the trajectory trace path
                     MCommon::RenderUtil::TrajectoryPathParticle trajectoryParticle;
                     trajectoryParticle.mWorldTM = worldTM;
-                    trajectoryPath->mTraceParticles.Add(trajectoryParticle);
+                    trajectoryPath->mTraceParticles.emplace_back(trajectoryParticle);
 
                     // reset the time passed as we just added a new particle
                     trajectoryPath->mTimePassed = 0.0f;
@@ -1117,9 +1112,9 @@ namespace EMStudio
             }
 
             // make sure we don't have too many items in our array
-            if (trajectoryPath->mTraceParticles.GetLength() > 50)
+            if (trajectoryPath->mTraceParticles.size() > 50)
             {
-                trajectoryPath->mTraceParticles.RemoveFirst();
+                trajectoryPath->mTraceParticles.erase(begin(trajectoryPath->mTraceParticles));
             }
         }
     }

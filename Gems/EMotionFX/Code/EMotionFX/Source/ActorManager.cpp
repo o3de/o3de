@@ -27,17 +27,13 @@ namespace EMotionFX
     {
         mScheduler  = nullptr;
 
-        // set memory categories
-        mActorInstances.SetMemoryCategory(EMFX_MEMCATEGORY_ACTORMANAGER);
-        mRootActorInstances.SetMemoryCategory(EMFX_MEMCATEGORY_ACTORMANAGER);
-
         // setup the default scheduler
         SetScheduler(MultiThreadScheduler::Create());
 
         // reserve memory
         m_actors.reserve(512);
-        mActorInstances.Reserve(1024);
-        mRootActorInstances.Reserve(1024);
+        mActorInstances.reserve(1024);
+        mRootActorInstances.reserve(1024);
     }
 
 
@@ -79,8 +75,8 @@ namespace EMotionFX
     void ActorManager::UnregisterAllActorInstances()
     {
         LockActorInstances();
-        mActorInstances.Clear();
-        mRootActorInstances.Clear();
+        mActorInstances.clear();
+        mRootActorInstances.clear();
         if (mScheduler)
         {
             mScheduler->Clear();
@@ -104,7 +100,7 @@ namespace EMotionFX
         mScheduler = scheduler;
 
         // adjust all visibility flags to false for all actor instances
-        const uint32 numActorInstances = mActorInstances.GetLength();
+        const uint32 numActorInstances = mActorInstances.size();
         for (uint32 i = 0; i < numActorInstances; ++i)
         {
             mActorInstances[i]->SetIsVisible(false);
@@ -139,7 +135,7 @@ namespace EMotionFX
     {
         LockActorInstances();
 
-        mActorInstances.Add(actorInstance);
+        mActorInstances.emplace_back(actorInstance);
         UpdateActorInstanceStatus(actorInstance, false);
 
         UnlockActorInstances();
@@ -213,7 +209,7 @@ namespace EMotionFX
         LockActorInstances();
 
         // get the number of actor instances and iterate through them
-        const uint32 numActorInstances = mActorInstances.GetLength();
+        const uint32 numActorInstances = mActorInstances.size();
         for (uint32 i = 0; i < numActorInstances; ++i)
         {
             if (mActorInstances[i] == actorInstance)
@@ -233,7 +229,7 @@ namespace EMotionFX
     uint32 ActorManager::FindActorInstanceIndex(ActorInstance* actorInstance) const
     {
         // get the number of actor instances and iterate through them
-        const uint32 numActorInstances = mActorInstances.GetLength();
+        const uint32 numActorInstances = mActorInstances.size();
         for (uint32 i = 0; i < numActorInstances; ++i)
         {
             if (mActorInstances[i] == actorInstance)
@@ -251,7 +247,7 @@ namespace EMotionFX
     ActorInstance* ActorManager::FindActorInstanceByID(uint32 id) const
     {
         // get the number of actor instances and iterate through them
-        const uint32 numActorInstances = mActorInstances.GetLength();
+        const uint32 numActorInstances = mActorInstances.size();
         for (uint32 i = 0; i < numActorInstances; ++i)
         {
             if (mActorInstances[i]->GetID() == id)
@@ -349,15 +345,18 @@ namespace EMotionFX
         if (actorInstance->GetAttachedTo() == nullptr)
         {
             // make sure it's in the root list
-            if (mRootActorInstances.Contains(actorInstance) == false)
+            if (AZStd::find(begin(mRootActorInstances), end(mRootActorInstances), actorInstance) == end(mRootActorInstances))
             {
-                mRootActorInstances.Add(actorInstance);
+                mRootActorInstances.emplace_back(actorInstance);
             }
         }
         else // no root actor instance
         {
             // remove it from the root list
-            mRootActorInstances.RemoveByValue(actorInstance);
+            if (const auto it = AZStd::find(begin(mRootActorInstances), end(mRootActorInstances), actorInstance); it != end(mRootActorInstances))
+            {
+                mRootActorInstances.erase(it);
+            }
             mScheduler->RecursiveRemoveActorInstance(actorInstance);
         }
 
@@ -374,10 +373,16 @@ namespace EMotionFX
         LockActorInstances();
 
         // remove the actor instance from the list
-        mActorInstances.RemoveByValue(instance);
+        if (const auto it = AZStd::find(begin(mActorInstances), end(mActorInstances), instance); it != end(mActorInstances))
+        {
+            mActorInstances.erase(it);
+        }
 
         // remove it from the list of roots, if it is in there
-        mRootActorInstances.RemoveByValue(instance);
+        if (const auto it = AZStd::find(begin(mRootActorInstances), end(mRootActorInstances), instance); it != end(mRootActorInstances))
+        {
+            mRootActorInstances.erase(it);
+        }
 
         // remove it from the schedule
         mScheduler->RemoveActorInstance(instance);
@@ -416,7 +421,7 @@ namespace EMotionFX
     }
 
 
-    const MCore::Array<ActorInstance*>& ActorManager::GetActorInstanceArray() const
+    const AZStd::vector<ActorInstance*>& ActorManager::GetActorInstanceArray() const
     {
         return mActorInstances;
     }

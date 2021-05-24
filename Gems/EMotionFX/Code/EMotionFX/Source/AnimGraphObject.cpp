@@ -116,9 +116,9 @@ namespace EMotionFX
 
 
     // collect internal objects
-    void AnimGraphObject::RecursiveCollectObjects(MCore::Array<AnimGraphObject*>& outObjects) const
+    void AnimGraphObject::RecursiveCollectObjects(AZStd::vector<AnimGraphObject*>& outObjects) const
     {
-        outObjects.Add(const_cast<AnimGraphObject*>(this));
+        outObjects.emplace_back(const_cast<AnimGraphObject*>(this));
     }
 
     void AnimGraphObject::InvalidateUniqueDatas()

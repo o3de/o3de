@@ -140,7 +140,7 @@ namespace EMotionFX
          * Get the number of layer passes currently added to this motion layer system.
          * @result The number of layer passes.
          */
-        uint32 GetNumLayerPasses() const;
+        size_t GetNumLayerPasses() const;
 
         /**
          * Remove a given layer pass by index.
@@ -179,7 +179,7 @@ namespace EMotionFX
 
 
     private:
-        MCore::Array<LayerPass*>    mLayerPasses;           /**< The layer passes. */
+        AZStd::vector<LayerPass*>    mLayerPasses;           /**< The layer passes. */
         RepositioningLayerPass*     mRepositioningPass;     /**< The motion based actor repositioning layer pass. */
 
         /**

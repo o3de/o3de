@@ -64,7 +64,6 @@ namespace EMStudio
         m_previouslySelectedJoints = m_selectedJoints;
 
         m_jointSelectionWindow = new NodeSelectionWindow(this, m_singleJointSelection);
-        connect(m_jointSelectionWindow->GetNodeHierarchyWidget(), qOverload<MCore::Array<SelectionItem>>(&NodeHierarchyWidget::OnSelectionDone), this, &ActorJointBrowseEdit::OnSelectionDoneMCoreArray);
         connect(m_jointSelectionWindow, &NodeSelectionWindow::rejected, this, &ActorJointBrowseEdit::OnSelectionRejected);
         connect(m_jointSelectionWindow->GetNodeHierarchyWidget()->GetTreeWidget(), &QTreeWidget::itemSelectionChanged, this, &ActorJointBrowseEdit::OnSelectionChanged);
 
@@ -118,12 +117,6 @@ namespace EMStudio
         emit SelectionDone(selectedJoints);
     }
 
-    void ActorJointBrowseEdit::OnSelectionDoneMCoreArray(const MCore::Array<SelectionItem>& selectedJoints)
-    {
-        AZStd::vector<SelectionItem> convertedSelection = FromMCoreArray(selectedJoints);
-        OnSelectionDone(convertedSelection);
-    }
-
     void ActorJointBrowseEdit::OnSelectionChanged()
     {
         if (m_jointSelectionWindow)
@@ -175,15 +168,4 @@ namespace EMStudio
         return nullptr;
     }
 
-    AZStd::vector<SelectionItem> ActorJointBrowseEdit::FromMCoreArray(const MCore::Array<SelectionItem>& in) const
-    {
-        const AZ::u32 numItems = in.GetLength();
-        AZStd::vector<SelectionItem> result(static_cast<size_t>(numItems));
-        for (AZ::u32 i = 0; i < numItems; ++i)
-        {
-            result[static_cast<size_t>(i)] = in[i];
-        }
-
-        return result;
-    }
 } // namespace EMStudio

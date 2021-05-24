@@ -12,7 +12,7 @@
 #include "EMotionFXConfig.h"
 #include "BaseObject.h"
 #include "Pose.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 
 namespace EMotionFX
@@ -32,7 +32,7 @@ namespace EMotionFX
 
         Skeleton* Clone();
 
-        MCORE_INLINE uint32 GetNumNodes() const                 { return m_nodes.GetLength(); }
+        MCORE_INLINE size_t GetNumNodes() const                 { return m_nodes.size(); }
         MCORE_INLINE Node* GetNode(uint32 index) const          { return m_nodes[index]; }
 
         void ReserveNodes(uint32 numNodes);
@@ -103,7 +103,7 @@ namespace EMotionFX
          * Get the number of root nodes in the actor. A root node is a node without any parent.
          * @result The number of root nodes inside the actor.
          */
-        MCORE_INLINE uint32 GetNumRootNodes() const                             { return m_rootNodes.GetLength(); }
+        MCORE_INLINE size_t GetNumRootNodes() const                             { return m_rootNodes.size(); }
 
         /**
          * Get the node number/index of a given root node.
@@ -144,9 +144,9 @@ namespace EMotionFX
         uint32 CalcHierarchyDepthForNode(uint32 nodeIndex) const;
 
     private:
-        MCore::Array<Node*>     m_nodes;         /**< The nodes, including root nodes. */
+        AZStd::vector<Node*>     m_nodes;         /**< The nodes, including root nodes. */
         mutable AZStd::unordered_map<AZStd::string, Node*> m_nodesMap;
-        MCore::Array<uint32>    m_rootNodes;     /**< The root nodes only. */
+        AZStd::vector<uint32>    m_rootNodes;     /**< The root nodes only. */
         Pose                    m_bindPose;      /**< The bind pose. */
 
         Skeleton();

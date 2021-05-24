@@ -11,7 +11,7 @@
 // include the required headers
 #include "EMotionFXConfig.h"
 #include "BaseObject.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 
 namespace EMotionFX
@@ -123,7 +123,7 @@ namespace EMotionFX
          * This should always be equal to the number of morph targets in the highest detail.
          * @result The number of morph targets.
          */
-        MCORE_INLINE uint32 GetNumMorphTargets() const                      { return mMorphTargets.GetLength(); }
+        MCORE_INLINE size_t GetNumMorphTargets() const                      { return mMorphTargets.size(); }
 
         /**
          * Get a specific morph target.
@@ -149,7 +149,7 @@ namespace EMotionFX
         MorphTarget* FindMorphTargetByID(uint32 id);
 
     private:
-        MCore::Array<MorphTarget>   mMorphTargets;  /**< The unique morph target information. */
+        AZStd::vector<MorphTarget>   mMorphTargets;  /**< The unique morph target information. */
 
         /**
          * The default constructor.

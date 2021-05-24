@@ -280,7 +280,7 @@ namespace EMotionFX
         mStringStorageSize = 0;
     }
 
-    const char* SharedHelperData::ReadString(MCore::Stream* file, MCore::Array<SharedData*>* sharedData, MCore::Endian::EEndianType endianType)
+    const char* SharedHelperData::ReadString(MCore::Stream* file, AZStd::vector<SharedData*>* sharedData, MCore::Endian::EEndianType endianType)
     {
         MCORE_ASSERT(file);
         MCORE_ASSERT(sharedData);
@@ -904,9 +904,9 @@ namespace EMotionFX
 
         // read all tracks
         AZStd::string trackName;
-        MCore::Array<AZStd::string> typeStrings;
-        MCore::Array<AZStd::string> paramStrings;
-        MCore::Array<AZStd::string> mirrorTypeStrings;
+        AZStd::vector<AZStd::string> typeStrings;
+        AZStd::vector<AZStd::string> paramStrings;
+        AZStd::vector<AZStd::string> mirrorTypeStrings;
         for (uint32 t = 0; t < fileEventTable.mNumTracks; ++t)
         {
             // read the motion event table header
@@ -934,9 +934,9 @@ namespace EMotionFX
             }
 
             // the even type and parameter strings
-            typeStrings.Resize(fileTrack.mNumTypeStrings);
-            paramStrings.Resize(fileTrack.mNumParamStrings);
-            mirrorTypeStrings.Resize(fileTrack.mNumMirrorTypeStrings);
+            typeStrings.resize(fileTrack.mNumTypeStrings);
+            paramStrings.resize(fileTrack.mNumParamStrings);
+            mirrorTypeStrings.resize(fileTrack.mNumMirrorTypeStrings);
 
             // read all type strings
             if (GetLogging())

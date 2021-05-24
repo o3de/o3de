@@ -865,7 +865,7 @@ namespace CommandSystem
                 parameter->GetName().c_str(),
                 parameterContents.c_str());
 
-        if (insertAtIndex != MCORE_INVALIDINDEX32)
+        if (insertAtIndex != InvalidIndex32)
         {
             outResult += AZStd::string::format(" -index \"%i\"", insertAtIndex);
         }

@@ -12,7 +12,7 @@
 #include "EMotionFXConfig.h"
 #include "MeshDeformer.h"
 #include "BaseObject.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 
 namespace EMotionFX
@@ -134,7 +134,7 @@ namespace EMotionFX
          * Get the number of deformers in the stack.
          * @result The number of deformers in the stack.
          */
-        uint32 GetNumDeformers() const;
+        size_t GetNumDeformers() const;
 
         /**
          * Get a given deformer.
@@ -159,7 +159,7 @@ namespace EMotionFX
         MeshDeformer* FindDeformerByType(uint32 deformerTypeID, uint32 occurrence = 0) const;
 
     private:
-        MCore::Array<MeshDeformer*> mDeformers;     /**< The stack of deformers. */
+        AZStd::vector<MeshDeformer*> mDeformers;     /**< The stack of deformers. */
         Mesh*                       mMesh;          /**< Pointer to the mesh to which the modifier stack belongs to.*/
 
         /**

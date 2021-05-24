@@ -36,16 +36,11 @@ namespace RenderGL
         mPixelShader  = 0;
         mTextureUnit  = 0;
 
-        mUniforms.SetMemoryCategory(MEMCATEGORY_RENDERING);
-        mAttributes.SetMemoryCategory(MEMCATEGORY_RENDERING);
-        mActivatedAttribs.SetMemoryCategory(MEMCATEGORY_RENDERING);
-        mActivatedTextures.SetMemoryCategory(MEMCATEGORY_RENDERING);
-
         // pre-alloc data for uniforms and attributes
-        mUniforms.Reserve(10);
-        mAttributes.Reserve(10);
-        mActivatedAttribs.Reserve(10);
-        mActivatedTextures.Reserve(10);
+        mUniforms.reserve(10);
+        mAttributes.reserve(10);
+        mActivatedAttribs.reserve(10);
+        mActivatedTextures.reserve(10);
     }
 
 
@@ -70,14 +65,14 @@ namespace RenderGL
     // Deactivate
     void GLSLShader::Deactivate()
     {
-        const uint32 numAttribs = mActivatedAttribs.GetLength();
+        const uint32 numAttribs = mActivatedAttribs.size();
         for (uint32 i = 0; i < numAttribs; ++i)
         {
             const uint32 index = mActivatedAttribs[i];
             glDisableVertexAttribArray(mAttributes[index].mLocation);
         }
 
-        const uint32 numTextures = mActivatedTextures.GetLength();
+        const uint32 numTextures = mActivatedTextures.size();
         for (uint32 i = 0; i < numTextures; ++i)
         {
             const uint32 index = mActivatedTextures[i];
@@ -86,8 +81,8 @@ namespace RenderGL
             glBindTexture(GL_TEXTURE_2D, 0);
         }
 
-        mActivatedAttribs.Clear(false);
-        mActivatedTextures.Clear(false);
+        mActivatedAttribs.clear();
+        mActivatedTextures.clear();
     }
 
     bool GLSLShader::Validate()
@@ -129,7 +124,7 @@ namespace RenderGL
         text = "#version 120\n";
 
         // build define string
-        const uint32 numDefines = mDefines.GetLength();
+        const uint32 numDefines = mDefines.size();
         for (uint32 n = 0; n < numDefines; ++n)
         {
             text += AZStd::string::format("#define %s\n", mDefines[n].c_str());
@@ -180,10 +175,10 @@ namespace RenderGL
             AZStd::invoke(func, static_cast<QOpenGLExtraFunctions*>(this), object, logLen, &logWritten, text.data());
 
             // if there are any defines, print that out too
-            if (mDefines.GetLength() > 0)
+            if (mDefines.size() > 0)
             {
                 AZStd::string dStr;
-                const uint32 numDefines = mDefines.GetLength();
+                const uint32 numDefines = mDefines.size();
                 for (uint32 n = 0; n < numDefines; ++n)
                 {
                     if (n < numDefines - 1)
@@ -209,7 +204,7 @@ namespace RenderGL
 
 
     // Init
-    bool GLSLShader::Init(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName, MCore::Array<AZStd::string>& defines)
+    bool GLSLShader::Init(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName, AZStd::vector<AZStd::string>& defines)
     {
         initializeOpenGLFunctions();
         /*const char* args[] = { "unroll all",
@@ -276,9 +271,9 @@ namespace RenderGL
 
 
     // FindAttributeIndex
-    uint32 GLSLShader::FindAttributeIndex(const char* name)
+    size_t GLSLShader::FindAttributeIndex(const char* name)
     {
-        const uint32 numAttribs = mAttributes.GetLength();
+        const uint32 numAttribs = mAttributes.size();
         for (uint32 i = 0; i < numAttribs; ++i)
         {
             if (AzFramework::StringFunc::Equal(mAttributes[i].mName.c_str(), name, false /* no case */))
@@ -296,14 +291,14 @@ namespace RenderGL
 
         // the parameter wasn't cached, try to retrieve it
         const GLint loc = glGetAttribLocation(mProgram, name);
-        mAttributes.Add(ShaderParameter(name, loc, true));
+        mAttributes.emplace_back(name, loc, true);
 
         if (loc < 0)
         {
             return MCORE_INVALIDINDEX32;
         }
 
-        return mAttributes.GetLength() - 1;
+        return mAttributes.size() - 1;
     }
 
 
@@ -334,9 +329,9 @@ namespace RenderGL
 
 
     // FindUniformIndex
-    uint32 GLSLShader::FindUniformIndex(const char* name)
+    size_t GLSLShader::FindUniformIndex(const char* name)
     {
-        const uint32 numUniforms = mUniforms.GetLength();
+        const uint32 numUniforms = mUniforms.size();
         for (uint32 i = 0; i < numUniforms; ++i)
         {
             if (AzFramework::StringFunc::Equal(mUniforms[i].mName.c_str(), name, false /* no case */))
@@ -352,14 +347,14 @@ namespace RenderGL
 
         // the parameter wasn't cached, try to retrieve it
         const GLint loc = glGetUniformLocation(mProgram, name);
-        mUniforms.Add(ShaderParameter(name, loc, false));
+        mUniforms.emplace_back(name, loc, false);
 
         if (loc < 0)
         {
             return MCORE_INVALIDINDEX32;
         }
 
-        return mUniforms.GetLength() - 1;
+        return mUniforms.size() - 1;
     }
 
 
@@ -377,7 +372,7 @@ namespace RenderGL
         glEnableVertexAttribArray(param->mLocation);
         glVertexAttribPointer(param->mLocation, dim, type, GL_FALSE, stride, (GLvoid*)offset);
 
-        mActivatedAttribs.Add(index);
+        mActivatedAttribs.emplace_back(index);
     }
 
 
@@ -532,7 +527,7 @@ namespace RenderGL
         glBindTexture(GL_TEXTURE_2D, texture->GetID());
         glUniform1i(mUniforms[index].mLocation, mUniforms[index].mTextureUnit);
 
-        mActivatedTextures.Add(index);
+        mActivatedTextures.emplace_back(index);
     }
 
 
@@ -563,7 +558,7 @@ namespace RenderGL
         glBindTexture(GL_TEXTURE_2D, textureID);
         glUniform1i(mUniforms[index].mLocation, mUniforms[index].mTextureUnit);
 
-        mActivatedTextures.Add(index);
+        mActivatedTextures.emplace_back(index);
     }
 
 
@@ -571,7 +566,7 @@ namespace RenderGL
     bool GLSLShader::CheckIfIsDefined(const char* attributeName)
     {
         // get the number of defines and iterate through them
-        const uint32 numDefines = mDefines.GetLength();
+        const uint32 numDefines = mDefines.size();
         for (uint32 i = 0; i < numDefines; ++i)
         {
             // compare the given attribute with the current define and return if they are equal

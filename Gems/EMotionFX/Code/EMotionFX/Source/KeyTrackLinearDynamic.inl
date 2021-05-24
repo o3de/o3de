@@ -6,13 +6,6 @@
  *
  */
 
-// default constructor
-template <class ReturnType, class StorageType>
-KeyTrackLinearDynamic<ReturnType, StorageType>::KeyTrackLinearDynamic()
-{
-}
-
-
 // extended constructor
 template <class ReturnType, class StorageType>
 KeyTrackLinearDynamic<ReturnType, StorageType>::KeyTrackLinearDynamic(uint32 nrKeys)
@@ -20,13 +13,6 @@ KeyTrackLinearDynamic<ReturnType, StorageType>::KeyTrackLinearDynamic(uint32 nrK
     SetNumKeys(nrKeys);
 }
 
-
-// destructor
-template <class ReturnType, class StorageType>
-KeyTrackLinearDynamic<ReturnType, StorageType>::~KeyTrackLinearDynamic()
-{
-    ClearKeys();
-}
 
 template <class ReturnType, class StorageType>
 void KeyTrackLinearDynamic<ReturnType, StorageType>::Reflect(AZ::ReflectContext* context)

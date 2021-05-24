@@ -292,7 +292,7 @@ namespace EMStudio
         m_visibleNodeIndices.reserve(numNodes);
 
         // extract the bones from the actor
-        MCore::Array<uint32> boneList;
+        AZStd::vector<uint32> boneList;
         actor->ExtractBoneList(actorInstance->GetLODLevel(), &boneList);
 
         // iterate through all nodes and check if the node is visible
@@ -308,7 +308,7 @@ namespace EMStudio
             const uint32        nodeIndex   = node->GetNodeIndex();
             EMotionFX::Mesh*    mesh        = actor->GetMesh(actorInstance->GetLODLevel(), nodeIndex);
             const bool          isMeshNode  = (mesh);
-            const bool          isBone      = (boneList.Find(nodeIndex) != MCORE_INVALIDINDEX32);
+            const bool          isBone      = (AZStd::find(begin(boneList), end(boneList), nodeIndex) != end(boneList));
             const bool          isNode      = (isMeshNode == false && isBone == false);
 
             if (((showMeshes && isMeshNode) ||

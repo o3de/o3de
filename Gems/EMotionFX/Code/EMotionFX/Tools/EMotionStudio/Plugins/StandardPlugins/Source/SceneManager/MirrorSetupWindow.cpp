@@ -525,7 +525,7 @@ namespace EMStudio
                     typeItem->setIcon(*mMeshIcon);
                 }
                 else
-                if (mCurrentBoneList.Contains(node->GetNodeIndex()))
+                if (AZStd::find(begin(mCurrentBoneList), end(mCurrentBoneList), node->GetNodeIndex()) != end(mCurrentBoneList))
                 {
                     typeItem->setIcon(*mBoneIcon);
                 }

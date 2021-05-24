@@ -215,30 +215,6 @@ namespace EMStudio
         mNameEdit->setText(mActor->GetName());
     }
 
-    void ActorPropertiesWindow::GetNodeName(const MCore::Array<SelectionItem>& selection, AZStd::string* outNodeName, uint32* outActorID)
-    {
-        outNodeName->clear();
-        *outActorID = MCORE_INVALIDINDEX32;
-
-        if (selection.GetLength() != 1 || selection[0].GetNodeNameString().empty())
-        {
-            AZ_Warning("EMotionFX", false, "Cannot adjust motion extraction node. No valid node selected.");
-            return;
-        }
-
-        const uint32                actorInstanceID = selection[0].mActorInstanceID;
-        const char*                 nodeName        = selection[0].GetNodeName();
-        EMotionFX::ActorInstance*   actorInstance   = EMotionFX::GetActorManager().FindActorInstanceByID(actorInstanceID);
-        if (actorInstance == nullptr)
-        {
-            return;
-        }
-
-        EMotionFX::Actor* actor = actorInstance->GetActor();
-        *outActorID     = actor->GetID();
-        *outNodeName    = nodeName;
-    }
-
     void ActorPropertiesWindow::GetNodeName(const AZStd::vector<SelectionItem>& joints, AZStd::string* outNodeName, uint32* outActorID)
     {
         outNodeName->clear();

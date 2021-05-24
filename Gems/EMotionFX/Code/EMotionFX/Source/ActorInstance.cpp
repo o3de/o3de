@@ -45,11 +45,7 @@ namespace EMotionFX
     {
         MCORE_ASSERT(actor);
 
-        // set the memory categories
-        mAttachments.SetMemoryCategory(EMFX_MEMCATEGORY_ACTORINSTANCES);
-        mDependencies.SetMemoryCategory(EMFX_MEMCATEGORY_ACTORINSTANCES);
-        mEnabledNodes.SetMemoryCategory(EMFX_MEMCATEGORY_ACTORINSTANCES);
-        mEnabledNodes.Reserve(actor->GetNumNodes());
+        mEnabledNodes.reserve(actor->GetNumNodes());
 
         // set the actor and create the motion system
         mBoolFlags              = 0;
@@ -174,7 +170,7 @@ namespace EMotionFX
 
         // delete all attachments
         // actor instances that are attached will be detached, and not deleted from memory
-        const uint32 numAttachments = mAttachments.GetLength();
+        const uint32 numAttachments = mAttachments.size();
         for (uint32 i = 0; i < numAttachments; ++i)
         {
             ActorInstance* attachmentActorInstance = mAttachments[i]->GetAttachmentActorInstance();
@@ -187,7 +183,7 @@ namespace EMotionFX
             }
             mAttachments[i]->Destroy();
         }
-        mAttachments.Clear();
+        mAttachments.clear();
 
         if (mMorphSetup)
         {
@@ -396,7 +392,7 @@ namespace EMotionFX
 
         // Update the mesh deformers.
         const Skeleton* skeleton = mActor->GetSkeleton();
-        const uint32 numNodes = mEnabledNodes.GetLength();
+        const uint32 numNodes = mEnabledNodes.size();
         for (uint32 i = 0; i < numNodes; ++i)
         {
             const uint16 nodeNr = mEnabledNodes[i];
@@ -416,7 +412,7 @@ namespace EMotionFX
 
         // Update the mesh morph deformers.
         const Skeleton* skeleton = mActor->GetSkeleton();
-        const uint32 numNodes = mEnabledNodes.GetLength();
+        const uint32 numNodes = mEnabledNodes.size();
         for (uint32 i = 0; i < numNodes; ++i)
         {
             const uint16 nodeNr = mEnabledNodes[i];
@@ -448,7 +444,7 @@ namespace EMotionFX
         GetActorManager().GetScheduler()->RecursiveRemoveActorInstance(root);
 
         // add the attachment
-        mAttachments.Add(attachment);
+        mAttachments.emplace_back(attachment);
         ActorInstance* attachmentActorInstance = attachment->GetAttachmentActorInstance();
         if (attachmentActorInstance)
         {
@@ -468,7 +464,7 @@ namespace EMotionFX
     uint32 ActorInstance::FindAttachmentNr(ActorInstance* actorInstance)
     {
         // for all attachments
-        const uint32 numAttachments = mAttachments.GetLength();
+        const uint32 numAttachments = mAttachments.size();
         for (uint32 i = 0; i < numAttachments; ++i)
         {
             if (mAttachments[i]->GetAttachmentActorInstance() == actorInstance)
@@ -498,7 +494,7 @@ namespace EMotionFX
     // remove an attachment
     void ActorInstance::RemoveAttachment(uint32 nr, bool delFromMem)
     {
-        MCORE_ASSERT(nr < mAttachments.GetLength());
+        MCORE_ASSERT(nr < mAttachments.size());
 
         // first remove the current attachment tree from the scheduler
         ActorInstance* root = FindAttachmentRoot();
@@ -528,7 +524,7 @@ namespace EMotionFX
         }
 
         // remove it from the attachment list
-        mAttachments.Remove(nr);
+        mAttachments.erase(AZStd::next(begin(mAttachments), nr));
 
         // and re-add the root to the scheduler
         GetActorManager().GetScheduler()->RecursiveInsertActorInstance(root, 0);
@@ -544,9 +540,9 @@ namespace EMotionFX
     void ActorInstance::RemoveAllAttachments(bool delFromMem)
     {
         // keep removing the last attachment until there are none left
-        while (mAttachments.GetLength())
+        while (mAttachments.size())
         {
-            RemoveAttachment(mAttachments.GetLength() - 1, delFromMem);
+            RemoveAttachment(mAttachments.size() - 1, delFromMem);
         }
     }
 
@@ -554,19 +550,19 @@ namespace EMotionFX
     void ActorInstance::UpdateDependencies()
     {
         // get rid of existing dependencies
-        mDependencies.Clear();
+        mDependencies.clear();
 
         // add the main dependency
         Actor::Dependency mainDependency;
         mainDependency.mActor = mActor;
         mainDependency.mAnimGraph = (mAnimGraphInstance) ? mAnimGraphInstance->GetAnimGraph() : nullptr;
-        mDependencies.Add(mainDependency);
+        mDependencies.emplace_back(mainDependency);
 
         // add all dependencies stored inside the actor
         const uint32 numDependencies = mActor->GetNumDependencies();
         for (uint32 i = 0; i < numDependencies; ++i)
         {
-            mDependencies.Add(*mActor->GetDependency(i));
+            mDependencies.emplace_back(*mActor->GetDependency(i));
         }
     }
 
@@ -574,7 +570,7 @@ namespace EMotionFX
     void ActorInstance::UpdateAttachments()
     {
         // update all attachments
-        const uint32 numAttachments = mAttachments.GetLength();
+        const uint32 numAttachments = mAttachments.size();
         for (uint32 i = 0; i < numAttachments; ++i)
         {
             mAttachments[i]->Update();
@@ -1089,7 +1085,7 @@ namespace EMotionFX
     void ActorInstance::EnableNode(uint16 nodeIndex)
     {
         // if this node already is at an enabled state, do nothing
-        if (mEnabledNodes.Contains(nodeIndex))
+        if (AZStd::find(begin(mEnabledNodes), end(mEnabledNodes), nodeIndex) != end(mEnabledNodes))
         {
             return;
         }
@@ -1105,16 +1101,16 @@ namespace EMotionFX
             uint32 parentIndex = skeleton->GetNode(curNode)->GetParentIndex();
             if (parentIndex != MCORE_INVALIDINDEX32)
             {
-                const uint32 parentArrayIndex = mEnabledNodes.Find(static_cast<uint16>(parentIndex));
-                if (parentArrayIndex != MCORE_INVALIDINDEX32)
+                const auto parentArrayIter = AZStd::find(begin(mEnabledNodes), end(mEnabledNodes), static_cast<uint16>(parentIndex));
+                if (parentArrayIter != end(mEnabledNodes))
                 {
-                    if (parentArrayIndex + 1 >= mEnabledNodes.GetLength())
+                    if (parentArrayIter + 1 == end(mEnabledNodes))
                     {
-                        mEnabledNodes.Add(nodeIndex);
+                        mEnabledNodes.emplace_back(nodeIndex);
                     }
                     else
                     {
-                        mEnabledNodes.Insert(parentArrayIndex + 1, nodeIndex);
+                        mEnabledNodes.emplace(parentArrayIter + 1, nodeIndex);
                     }
                     found = true;
                 }
@@ -1125,7 +1121,7 @@ namespace EMotionFX
             }
             else // if we're dealing with a root node, insert it in the front of the array
             {
-                mEnabledNodes.Insert(0, nodeIndex);
+                mEnabledNodes.emplace(AZStd::next(begin(mEnabledNodes), 0), nodeIndex);
                 found = true;
             }
         } while (found == false);
@@ -1135,14 +1131,18 @@ namespace EMotionFX
     void ActorInstance::DisableNode(uint16 nodeIndex)
     {
         // try to remove the node from the array
-        mEnabledNodes.RemoveByValue(nodeIndex);
+        const auto it = AZStd::find(begin(mEnabledNodes), end(mEnabledNodes), nodeIndex);
+        if (it != end(mEnabledNodes))
+        {
+            mEnabledNodes.erase(it);
+        }
     }
 
     // enable all nodes
     void ActorInstance::EnableAllNodes()
     {
         const uint32 numNodes = mActor->GetNumNodes();
-        mEnabledNodes.Resize(numNodes);
+        mEnabledNodes.resize(numNodes);
         for (uint32 i = 0; i < numNodes; ++i)
         {
             mEnabledNodes[i] = static_cast<uint16>(i);
@@ -1152,7 +1152,7 @@ namespace EMotionFX
     // disable all nodes
     void ActorInstance::DisableAllNodes()
     {
-        mEnabledNodes.Clear();
+        mEnabledNodes.clear();
     }
 
     // change the skeletal LOD level
@@ -1587,9 +1587,9 @@ namespace EMotionFX
         m_aabb = aabb;
     }
 
-    uint32 ActorInstance::GetNumAttachments() const
+    size_t ActorInstance::GetNumAttachments() const
     {
-        return mAttachments.GetLength();
+        return mAttachments.size();
     }
 
     Attachment* ActorInstance::GetAttachment(uint32 nr) const
@@ -1612,9 +1612,9 @@ namespace EMotionFX
         return mSelfAttachment;
     }
 
-    uint32 ActorInstance::GetNumDependencies() const
+    size_t ActorInstance::GetNumDependencies() const
     {
-        return mDependencies.GetLength();
+        return mDependencies.size();
     }
 
     Actor::Dependency* ActorInstance::GetDependency(uint32 nr)
@@ -1779,7 +1779,7 @@ namespace EMotionFX
         SetIsVisible(isVisible);
 
         // recurse to all child attachments
-        const uint32 numAttachments = mAttachments.GetLength();
+        const uint32 numAttachments = mAttachments.size();
         for (uint32 i = 0; i < numAttachments; ++i)
         {
             mAttachments[i]->GetAttachmentActorInstance()->RecursiveSetIsVisible(isVisible);

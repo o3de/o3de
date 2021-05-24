@@ -18,7 +18,7 @@
 #include "Transform.h"
 
 #include <MCore/Source/Vector.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Ray.h>
 #include <MCore/Source/Color.h>
 
@@ -235,7 +235,7 @@ namespace EMotionFX
          * Get the number of sub meshes currently in the mesh.
          * @result The number of sub meshes.
          */
-        MCORE_INLINE uint32 GetNumSubMeshes() const;
+        MCORE_INLINE size_t GetNumSubMeshes() const;
 
         /**
          * Get a given SubMesh.
@@ -257,7 +257,7 @@ namespace EMotionFX
          * Do not forget to use SetSubMesh() to initialize all submeshes!
          * @param numSubMeshes The number of submeshes to use.
          */
-        MCORE_INLINE void SetNumSubMeshes(uint32 numSubMeshes)              { mSubMeshes.Resize(numSubMeshes); }
+        MCORE_INLINE void SetNumSubMeshes(uint32 numSubMeshes)              { mSubMeshes.resize(numSubMeshes); }
 
         /**
          * Remove a given submesh from this mesh.
@@ -293,7 +293,7 @@ namespace EMotionFX
          * This value is the same for all shared vertices.
          * @result The number of shared vertex attributes for every vertex.
          */
-        uint32 GetNumSharedVertexAttributeLayers() const;
+        size_t GetNumSharedVertexAttributeLayers() const;
 
         /**
          * Find and return the shared vertex attribute layer of a given type.
@@ -338,7 +338,7 @@ namespace EMotionFX
          * This value is the same for all vertices.
          * @result The number of vertex attributes for every vertex.
          */
-        uint32 GetNumVertexAttributeLayers() const;
+        size_t GetNumVertexAttributeLayers() const;
 
         /**
          * Get the vertex attribute data of a given layer.
@@ -447,7 +447,7 @@ namespace EMotionFX
          * @param outBones The array to store the pointers to the bones in. Any existing array contents will be cleared when it enters the method.
          * @param actor The actor to search the bones in.
          */
-        void GatherBonesForFace(uint32 startIndexOfFace, MCore::Array<Node*>& outBones, Actor* actor);
+        void GatherBonesForFace(uint32 startIndexOfFace, AZStd::vector<Node*>& outBones, Actor* actor);
 
         /**
          * Calculates the maximum number of bone influences for a given face.
@@ -653,7 +653,7 @@ namespace EMotionFX
 
     protected:
 
-        MCore::Array<SubMesh*>  mSubMeshes;         /**< The collection of sub meshes. */
+        AZStd::vector<SubMesh*>  mSubMeshes;         /**< The collection of sub meshes. */
         uint32*                 mIndices;           /**< The array of indices, which define the faces. */
         uint8*                  mPolyVertexCounts;  /**< The number of vertices for each polygon, where the length of this array equals the number of polygons. */
         uint32                  mNumPolygons;       /**< The number of polygons in this mesh. */
@@ -666,13 +666,13 @@ namespace EMotionFX
          * The array of shared vertex attribute layers.
          * The number of attributes in each shared layer will be equal to the value returned by Mesh::GetNumOrgVertices().
          */
-        MCore::Array< VertexAttributeLayer* >   mSharedVertexAttributes;
+        AZStd::vector< VertexAttributeLayer* >   mSharedVertexAttributes;
 
         /**
          * The array of non-shared vertex attribute layers.
          * The number of attributes in each shared layer will be equal to the value returned by Mesh::GetNumVertices().
          */
-        MCore::Array< VertexAttributeLayer* >   mVertexAttributes;
+        AZStd::vector< VertexAttributeLayer* >   mVertexAttributes;
 
         /**
          * Default constructor.

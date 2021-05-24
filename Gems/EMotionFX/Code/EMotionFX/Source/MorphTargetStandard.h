@@ -175,7 +175,7 @@ namespace EMotionFX
          * Get the number of deform data objects.
          * @result The number of deform data objects.
          */
-        uint32 GetNumDeformDatas() const;
+        size_t GetNumDeformDatas() const;
 
         /**
          * Get a given deform data object.
@@ -200,7 +200,7 @@ namespace EMotionFX
          * Get the number of transformations which are part of this bones morph target.
          * @result The number of tranformations.
          */
-        uint32 GetNumTransformations() const;
+        size_t GetNumTransformations() const;
 
         /**
          * Get a given transformation and it's corresponding node id to which the transformation belongs to.
@@ -260,7 +260,7 @@ namespace EMotionFX
         void Scale(float scaleFactor) override;
 
     private:
-        MCore::Array<Transformation>    mTransforms;            /**< The relative transformations for the given nodes, in local space. The rotation however is absolute. */
+        AZStd::vector<Transformation>   mTransforms;            /**< The relative transformations for the given nodes, in local space. The rotation however is absolute. */
         AZStd::vector<DeformData*>      mDeformDatas;           /**< The deformation data objects. */
 
         /**

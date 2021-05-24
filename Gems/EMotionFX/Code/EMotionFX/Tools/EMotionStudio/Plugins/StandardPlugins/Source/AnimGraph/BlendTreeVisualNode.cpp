@@ -40,7 +40,7 @@ namespace EMStudio
         // add all input ports
         const AZStd::vector<EMotionFX::AnimGraphNode::Port>& inPorts = mEMFXNode->GetInputPorts();
         const uint32 numInputs = static_cast<uint32>(inPorts.size());
-        mInputPorts.Reserve(numInputs);
+        mInputPorts.reserve(numInputs);
         for (uint32 i = 0; i < numInputs; ++i)
         {
             NodePort* port = AddInputPort(false);
@@ -53,7 +53,7 @@ namespace EMStudio
             // add all output ports
             const AZStd::vector<EMotionFX::AnimGraphNode::Port>& outPorts = mEMFXNode->GetOutputPorts();
             const uint32 numOutputs = static_cast<uint32>(outPorts.size());
-            mOutputPorts.Reserve(numOutputs);
+            mOutputPorts.reserve(numOutputs);
             for (uint32 i = 0; i < numOutputs; ++i)
             {
                 NodePort* port = AddOutputPort(false);
@@ -112,7 +112,6 @@ namespace EMStudio
         default:
             return QColor(50, 250, 250);
         }
-        ;
     }
 
 
@@ -303,7 +302,7 @@ namespace EMStudio
             {
                 // draw the input ports
                 QColor portBrushColor, portPenColor;
-                const uint32 numInputs = mInputPorts.GetLength();
+                const uint32 numInputs = mInputPorts.size();
                 for (uint32 i = 0; i < numInputs; ++i)
                 {
                     // get the input port and the corresponding rect
@@ -322,7 +321,7 @@ namespace EMStudio
                 if (GetHasVisualOutputPorts())
                 {
                     // draw the output ports
-                    const uint32 numOutputs = mOutputPorts.GetLength();
+                    const uint32 numOutputs = mOutputPorts.size();
                     for (uint32 i = 0; i < numOutputs; ++i)
                     {
                         // get the output port and the corresponding rect
@@ -456,7 +455,7 @@ namespace EMStudio
             painter.setFont(mPortNameFont);
 
             // draw input port text
-            const uint32 numInputs = mInputPorts.GetLength();
+            const uint32 numInputs = mInputPorts.size();
             for (uint32 i = 0; i < numInputs; ++i)
             {
                 NodePort* inputPort = &mInputPorts[i];
@@ -469,7 +468,7 @@ namespace EMStudio
             }
 
             // draw output port text
-            const uint32 numOutputs = mOutputPorts.GetLength();
+            const uint32 numOutputs = mOutputPorts.size();
             for (uint32 i = 0; i < numOutputs; ++i)
             {
                 NodePort* outputPort = &mOutputPorts[i];

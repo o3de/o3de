@@ -28,7 +28,7 @@ namespace EMotionFX
         MOCK_METHOD1(SetParentIndex, void(uint32 parentNodeIndex));
         MOCK_CONST_METHOD0(GetParentIndex, uint32());
         MOCK_CONST_METHOD0(GetParentNode, Node*());
-        MOCK_CONST_METHOD2(RecursiveCollectParents, void(MCore::Array<uint32>& parents, bool clearParentsArray));
+        MOCK_CONST_METHOD2(RecursiveCollectParents, void(AZStd::vector<uint32>& parents, bool clearParentsArray));
         MOCK_METHOD1(SetName, void(const char* name));
         MOCK_CONST_METHOD0(GetName, const char*());
         MOCK_CONST_METHOD0(GetNameString, const AZStd::string&());

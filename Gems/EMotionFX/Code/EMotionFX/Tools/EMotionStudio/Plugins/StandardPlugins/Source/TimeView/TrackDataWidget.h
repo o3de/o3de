@@ -10,7 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include "../StandardPluginsConfig.h"
 #include <EMotionFX/CommandSystem/Source/MotionEventCommands.h>
 #include <EMotionFX/Source/Recorder.h>
@@ -136,8 +136,8 @@ namespace EMStudio
         uint32              mNodeRectsStartHeight;
         double              mOldCurrentTime;
 
-        MCore::Array<EMotionFX::Recorder::ExtractedNodeHistoryItem> mActiveItems;
-        MCore::Array<uint32>                                        mTrackRemap;
+        AZStd::vector<EMotionFX::Recorder::ExtractedNodeHistoryItem> mActiveItems;
+        AZStd::vector<uint32>                                        mTrackRemap;
 
         // copy and paste
         struct CopyElement

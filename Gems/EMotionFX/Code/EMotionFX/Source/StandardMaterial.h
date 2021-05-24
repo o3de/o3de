@@ -415,7 +415,7 @@ namespace EMotionFX
          * Get the number of texture layers in this material.
          * @result The number of layers.
          */
-        uint32 GetNumLayers() const;
+        size_t GetNumLayers() const;
 
         /**
          * Get a specific layer.
@@ -471,7 +471,7 @@ namespace EMotionFX
 
 
     protected:
-        MCore::Array< StandardMaterialLayer* > mLayers; /**< StandardMaterial layers. */
+        AZStd::vector< StandardMaterialLayer* > mLayers; /**< StandardMaterial layers. */
         MCore::RGBAColor    mAmbient;           /**< Ambient color. */
         MCore::RGBAColor    mDiffuse;           /**< Diffuse color. */
         MCore::RGBAColor    mSpecular;          /**< Specular color. */

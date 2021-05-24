@@ -51,8 +51,6 @@ namespace MCommon
         mArrowHeadMesh  = CreateArrowHead(1.0f, 0.5f);
         mUnitCubeMesh   = CreateCube(1.0f);
         mFont           = new VectorFont(this);
-
-        mTriangleVertices.SetMemoryCategory(MEMCATEGORY_MCOMMON);
     }
 
 
@@ -106,14 +104,14 @@ namespace MCommon
     void RenderUtil::RenderTriangles()
     {
         // check if we have to render anything and skip directly in case there are no triangles
-        if (mTriangleVertices.GetIsEmpty())
+        if (mTriangleVertices.empty())
         {
             return;
         }
 
         // render the triangles and clear the array
         RenderTriangles(mTriangleVertices);
-        mTriangleVertices.Clear(false);
+        mTriangleVertices.clear();
     }
 
 
@@ -655,7 +653,7 @@ namespace MCommon
 
 
     // render the advanced skeleton
-    void RenderUtil::RenderSkeleton(EMotionFX::ActorInstance* actorInstance, const MCore::Array<uint32>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices, const AZStd::unordered_set<AZ::u32>* selectedJointIndices, const MCore::RGBAColor& color, const MCore::RGBAColor& selectedColor)
+    void RenderUtil::RenderSkeleton(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<uint32>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices, const AZStd::unordered_set<AZ::u32>* selectedJointIndices, const MCore::RGBAColor& color, const MCore::RGBAColor& selectedColor)
     {
         // check if our render util supports rendering meshes, if not render the fallback skeleton using lines only
         if (GetIsMeshRenderingSupported() == false)
@@ -680,7 +678,7 @@ namespace MCommon
             const AZ::u32 parentIndex = joint->GetParentIndex();
 
             // check if this node has a parent and is a bone, if not skip it
-            if (parentIndex == MCORE_INVALIDINDEX32 || boneList.Find(jointIndex) == MCORE_INVALIDINDEX32)
+            if (parentIndex == MCORE_INVALIDINDEX32 || AZStd::find(begin(boneList), end(boneList), jointIndex) == end(boneList))
             {
                 continue;
             }
@@ -717,7 +715,7 @@ namespace MCommon
 
 
     // render node orientations
-    void RenderUtil::RenderNodeOrientations(EMotionFX::ActorInstance* actorInstance, const MCore::Array<uint32>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices, const AZStd::unordered_set<AZ::u32>* selectedJointIndices, float scale, bool scaleBonesOnLength)
+    void RenderUtil::RenderNodeOrientations(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<uint32>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices, const AZStd::unordered_set<AZ::u32>* selectedJointIndices, float scale, bool scaleBonesOnLength)
     {
         // get the actor and the transform data
         const float unitScale = 1.0f / (float)MCore::Distance::ConvertValue(1.0f, MCore::Distance::UNITTYPE_METERS, EMotionFX::GetEMotionFX().GetUnitType());
@@ -739,7 +737,7 @@ namespace MCommon
                 (visibleJointIndices->find(jointIndex) != visibleJointIndices->end()))
             {
                 // either scale the bones based on their length or use the normal size
-                if (scaleBonesOnLength && parentIndex != MCORE_INVALIDINDEX32 && boneList.Find(jointIndex) != MCORE_INVALIDINDEX32)
+                if (scaleBonesOnLength && parentIndex != MCORE_INVALIDINDEX32 && AZStd::find(begin(boneList), end(boneList), jointIndex) != end(boneList))
                 {
                     static const float axisBoneScale = 50.0f;
                     axisRenderingSettings.mSize = GetBoneScale(actorInstance, joint) * constPreScale * axisBoneScale;
@@ -1711,9 +1709,9 @@ namespace MCommon
         }
 
         // fast access to the trajectory trace particles
-        const MCore::Array<MCommon::RenderUtil::TrajectoryPathParticle>& traceParticles = trajectoryPath->mTraceParticles;
-        const int32 numTraceParticles = traceParticles.GetLength();
-        if (traceParticles.GetIsEmpty())
+        const AZStd::vector<MCommon::RenderUtil::TrajectoryPathParticle>& traceParticles = trajectoryPath->mTraceParticles;
+        const int32 numTraceParticles = traceParticles.size();
+        if (traceParticles.empty())
         {
             return;
         }
@@ -1858,7 +1856,7 @@ namespace MCommon
         }
 
         // remove all particles while keeping the data in memory
-        trajectoryPath->mTraceParticles.Clear(false);
+        trajectoryPath->mTraceParticles.clear();
     }
 
 

@@ -499,7 +499,7 @@ namespace EMotionFX
     }
 
 
-    void AnimGraphReferenceNode::RecursiveCollectObjects(MCore::Array<AnimGraphObject*>& outObjects) const
+    void AnimGraphReferenceNode::RecursiveCollectObjects(AZStd::vector<AnimGraphObject*>& outObjects) const
     {
         AnimGraphNode::RecursiveCollectObjects(outObjects);
 

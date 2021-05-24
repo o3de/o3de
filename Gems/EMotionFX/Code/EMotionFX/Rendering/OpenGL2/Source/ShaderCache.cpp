@@ -15,8 +15,7 @@ namespace RenderGL
     // constructor
     ShaderCache::ShaderCache()
     {
-        mEntries.SetMemoryCategory(MEMCATEGORY_RENDERING);
-        mEntries.Reserve(128);
+        mEntries.reserve(128);
     }
 
 
@@ -31,7 +30,7 @@ namespace RenderGL
     void ShaderCache::Release()
     {
         // delete all shaders
-        const uint32 numEntries = mEntries.GetLength();
+        const uint32 numEntries = mEntries.size();
         for (uint32 i = 0; i < numEntries; ++i)
         {
             mEntries[i].mName.clear();
@@ -39,23 +38,21 @@ namespace RenderGL
         }
 
         // clear all entries
-        mEntries.Clear();
+        mEntries.clear();
     }
 
 
     // add the shader to the cache (assume there are no duplicate names)
     void ShaderCache::AddShader(AZStd::string_view filename, Shader* shader)
     {
-        mEntries.AddEmpty();
-        mEntries.GetLast().mName    = filename;
-        mEntries.GetLast().mShader  = shader;
+        mEntries.emplace_back(Entry{filename, shader});
     }
 
 
     // try to locate a shader based on its name
     Shader* ShaderCache::FindShader(AZStd::string_view filename) const
     {
-        const uint32 numEntries = mEntries.GetLength();
+        const uint32 numEntries = mEntries.size();
         for (uint32 i = 0; i < numEntries; ++i)
         {
             if (AzFramework::StringFunc::Equal(mEntries[i].mName, filename, false /* no case */)) // non-case-sensitive name compare
@@ -72,7 +69,7 @@ namespace RenderGL
     // check if we have a given shader in the cache
     bool ShaderCache::CheckIfHasShader(Shader* shader) const
     {
-        const uint32 numEntries = mEntries.GetLength();
+        const uint32 numEntries = mEntries.size();
         for (uint32 i = 0; i < numEntries; ++i)
         {
             if (mEntries[i].mShader == shader)

@@ -57,8 +57,6 @@ namespace EMotionFX
             mInitSettings = *initSettings;
         }
 
-        mParamValues.SetMemoryCategory(EMFX_MEMCATEGORY_ANIMGRAPH_INSTANCE);
-        mObjectFlags.SetMemoryCategory(EMFX_MEMCATEGORY_ANIMGRAPH_INSTANCE);
         m_eventHandlersByEventType.resize(EVENT_TYPE_ANIM_GRAPH_INSTANCE_LAST_EVENT - EVENT_TYPE_ANIM_GRAPH_INSTANCE_FIRST_EVENT + 1);
 
         // init the internal attributes (create them)
@@ -145,7 +143,7 @@ namespace EMotionFX
     {
         if (delFromMem)
         {
-            const uint32 numParams = mParamValues.GetLength();
+            const uint32 numParams = mParamValues.size();
             for (uint32 i = 0; i < numParams; ++i)
             {
                 if (mParamValues[i])
@@ -155,7 +153,7 @@ namespace EMotionFX
             }
         }
 
-        mParamValues.Clear();
+        mParamValues.clear();
     }
 
 
@@ -268,10 +266,10 @@ namespace EMotionFX
         RemoveAllParameters(true);
 
         const ValueParameterVector& valueParameters = mAnimGraph->RecursivelyGetValueParameters();
-        mParamValues.Resize(static_cast<uint32>(valueParameters.size()));
+        mParamValues.resize(static_cast<uint32>(valueParameters.size()));
 
         // init the values
-        const uint32 numParams = mParamValues.GetLength();
+        const uint32 numParams = mParamValues.size();
         for (uint32 i = 0; i < numParams; ++i)
         {
             mParamValues[i] = valueParameters[i]->ConstructDefaultValueAsAttribute();
@@ -284,22 +282,22 @@ namespace EMotionFX
     {
         // check how many parameters we need to add
         const ValueParameterVector& valueParameters = mAnimGraph->RecursivelyGetValueParameters();
-        const int32 numToAdd = static_cast<uint32>(valueParameters.size()) - mParamValues.GetLength();
+        const int32 numToAdd = static_cast<uint32>(valueParameters.size()) - mParamValues.size();
         if (numToAdd <= 0)
         {
             return;
         }
 
         // make sure we have the right space pre-allocated
-        mParamValues.Reserve(static_cast<uint32>(valueParameters.size()));
+        mParamValues.reserve(static_cast<uint32>(valueParameters.size()));
 
         // add the remaining parameters
-        const uint32 startIndex = mParamValues.GetLength();
+        const uint32 startIndex = mParamValues.size();
         for (int32 i = 0; i < numToAdd; ++i)
         {
             const uint32 index = startIndex + i;
-            mParamValues.AddEmpty();
-            mParamValues.GetLast() = valueParameters[index]->ConstructDefaultValueAsAttribute();
+            mParamValues.emplace_back();
+            mParamValues.back() = valueParameters[index]->ConstructDefaultValueAsAttribute();
         }
     }
 
@@ -315,7 +313,7 @@ namespace EMotionFX
             }
         }
 
-        mParamValues.Remove(index);
+        mParamValues.erase(AZStd::next(begin(mParamValues), index));
     }
 
 
@@ -333,7 +331,7 @@ namespace EMotionFX
 
     void AnimGraphInstance::ReInitParameterValues()
     {
-        const AZ::u32 parameterValueCount = mParamValues.GetLength();
+        const AZ::u32 parameterValueCount = mParamValues.size();
         for (AZ::u32 i = 0; i < parameterValueCount; ++i)
         {
             ReInitParameterValue(i);
@@ -503,15 +501,15 @@ namespace EMotionFX
     // add the last anim graph parameter to this instance
     void AnimGraphInstance::AddParameterValue()
     {
-        mParamValues.Add(nullptr);
-        ReInitParameterValue(mParamValues.GetLength() - 1);
+        mParamValues.emplace_back(nullptr);
+        ReInitParameterValue(mParamValues.size() - 1);
     }
 
 
     // add the parameter of the animgraph, at a given index
     void AnimGraphInstance::InsertParameterValue(uint32 index)
     {
-        mParamValues.Insert(index, nullptr);
+        mParamValues.emplace(AZStd::next(begin(mParamValues), index), nullptr);
         ReInitParameterValue(index);
     }
 
@@ -658,7 +656,7 @@ namespace EMotionFX
     void AnimGraphInstance::AddUniqueObjectData()
     {
         m_uniqueDatas.emplace_back(nullptr);
-        mObjectFlags.Add(0);
+        mObjectFlags.emplace_back(0);
     }
 
     // remove the given unique data object
@@ -676,7 +674,7 @@ namespace EMotionFX
         }
 
         m_uniqueDatas.erase(m_uniqueDatas.begin() + index);
-        mObjectFlags.Remove(index);
+        mObjectFlags.erase(AZStd::next(begin(mObjectFlags), index));
     }
 
 
@@ -684,7 +682,7 @@ namespace EMotionFX
     {
         AnimGraphObjectData* data = m_uniqueDatas[index];
         m_uniqueDatas.erase(m_uniqueDatas.begin() + index);
-        mObjectFlags.Remove(static_cast<uint32>(index));
+        mObjectFlags.erase(AZStd::next(begin(mObjectFlags), static_cast<uint32>(index)));
         if (delFromMem && data)
         {
             data->Destroy();
@@ -707,7 +705,7 @@ namespace EMotionFX
         }
 
         m_uniqueDatas.clear();
-        mObjectFlags.Clear();
+        mObjectFlags.clear();
     }
 
 
@@ -813,7 +811,7 @@ namespace EMotionFX
     {
         const uint32 numObjects = mAnimGraph->GetNumObjects();
         m_uniqueDatas.resize(numObjects);
-        mObjectFlags.Resize(numObjects);
+        mObjectFlags.resize(numObjects);
         for (uint32 i = 0; i < numObjects; ++i)
         {
             m_uniqueDatas[i] = nullptr;
@@ -934,7 +932,7 @@ namespace EMotionFX
     // reset all node flags
     void AnimGraphInstance::ResetFlagsForAllObjects(uint32 flagsToDisable)
     {
-        const uint32 numObjects = mObjectFlags.GetLength();
+        const uint32 numObjects = mObjectFlags.size();
         for (uint32 i = 0; i < numObjects; ++i)
         {
             mObjectFlags[i] &= ~flagsToDisable;
@@ -967,7 +965,7 @@ namespace EMotionFX
     // reset all node flags
     void AnimGraphInstance::ResetFlagsForAllObjects()
     {
-        MCore::MemSet(mObjectFlags.GetPtr(), 0, sizeof(uint32) * mObjectFlags.GetLength());
+        MCore::MemSet(mObjectFlags.data(), 0, sizeof(uint32) * mObjectFlags.size());
 
         for (AnimGraphInstance* childInstance : m_childAnimGraphInstances)
         {

@@ -1277,7 +1277,7 @@ namespace EMotionFX
         return result;
     }
 
-    void AnimGraphStateMachine::RecursiveCollectObjects(MCore::Array<AnimGraphObject*>& outObjects) const
+    void AnimGraphStateMachine::RecursiveCollectObjects(AZStd::vector<AnimGraphObject*>& outObjects) const
     {
         for (const AnimGraphStateTransition* transition : mTransitions)
         {

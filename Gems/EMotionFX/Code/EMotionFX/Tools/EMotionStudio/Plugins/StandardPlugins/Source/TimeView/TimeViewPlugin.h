@@ -36,8 +36,6 @@ namespace EMStudio
 
     struct EventSelectionItem
     {
-        MCORE_MEMORYOBJECTCATEGORY(EventSelectionItem, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
-
         EMotionFX::MotionEvent* GetMotionEvent();
         EMotionFX::MotionEventTrack* GetEventTrack();
 
@@ -118,7 +116,7 @@ namespace EMStudio
         void AddTrack(TimeTrack* track);
         void RemoveAllTracks();
         TimeTrack* GetTrack(uint32 index)           { return mTracks[index]; }
-        uint32 GetNumTracks() const                 { return mTracks.GetLength(); }
+        size_t GetNumTracks() const                 { return mTracks.size(); }
         AZ::Outcome<AZ::u32> FindTrackIndex(const TimeTrack* track) const;
         TimeTrack* FindTrackByElement(TimeTrackElement* element) const;
 
@@ -153,10 +151,10 @@ namespace EMStudio
 
         void ZoomRect(const QRect& rect);
 
-        uint32 GetNumSelectedEvents()                                                   { return mSelectedEvents.GetLength(); }
+        size_t GetNumSelectedEvents()                                                   { return mSelectedEvents.size(); }
         EventSelectionItem GetSelectedEvent(uint32 index) const                         { return mSelectedEvents[index]; }
 
-        void Select(const MCore::Array<EventSelectionItem>& selection);
+        void Select(const AZStd::vector<EventSelectionItem>& selection);
 
         MCORE_INLINE EMotionFX::Motion* GetMotion() const                               { return mMotion; }
         void SetRedrawFlag();
@@ -220,7 +218,7 @@ namespace EMStudio
         MotionEventsPlugin*                 mMotionEventsPlugin;
         MotionListWindow*                   mMotionListWindow;
         MotionSetsWindowPlugin*             m_motionSetPlugin;
-        MCore::Array<EventSelectionItem>    mSelectedEvents;
+        AZStd::vector<EventSelectionItem>    mSelectedEvents;
 
         EMotionFX::Recorder::ActorInstanceData* mActorInstanceData;
         EMotionFX::Recorder::NodeHistoryItem*   mNodeHistoryItem;
@@ -238,8 +236,8 @@ namespace EMStudio
         MotionInfo* FindMotionInfo(uint32 motionID);
         void UpdateCurrentMotionInfo();
 
-        MCore::Array<MotionInfo*>   mMotionInfos;
-        MCore::Array<TimeTrack*>    mTracks;
+        AZStd::vector<MotionInfo*>   mMotionInfos;
+        AZStd::vector<TimeTrack*>    mTracks;
 
         double              mPixelsPerSecond;   // pixels per second
         double              mScrollX;           // horizontal scroll offset

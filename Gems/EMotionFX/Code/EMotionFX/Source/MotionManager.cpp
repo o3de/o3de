@@ -29,7 +29,7 @@
 #include <EMotionFX/Source/MotionSet.h>
 #include <EMotionFX/Source/MotionSystem.h>
 #include <EMotionFX/Source/MotionData/MotionDataFactory.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/MultiThreadManager.h>
 
 
@@ -42,11 +42,8 @@ namespace EMotionFX
     MotionManager::MotionManager()
         : BaseObject()
     {
-        mMotions.SetMemoryCategory(EMFX_MEMCATEGORY_MOTIONS_MOTIONMANAGER);
-        mMotionSets.SetMemoryCategory(EMFX_MEMCATEGORY_MOTIONS_MOTIONMANAGER);
-
         // reserve space for 400 motions
-        mMotions.Reserve(400);
+        mMotions.reserve(400);
 
         m_motionDataFactory = aznew MotionDataFactory();
     }
@@ -69,13 +66,13 @@ namespace EMotionFX
         if (delFromMemory)
         {
             // destroy all motion sets, they will internally call RemoveMotionSetWithoutLock(this) in their destructor
-            while (mMotionSets.GetLength() > 0)
+            while (mMotionSets.size() > 0)
             {
                 delete mMotionSets[0];
             }
 
             // destroy all motions, they will internally call RemoveMotionWithoutLock(this) in their destructor
-            while (mMotions.GetLength() > 0)
+            while (mMotions.size() > 0)
             {
                 mMotions[0]->Destroy();
             }
@@ -84,12 +81,12 @@ namespace EMotionFX
         {
             // wait with execution until we can set the lock
             mSetLock.Lock();
-            mMotionSets.Clear();
+            mMotionSets.clear();
             mSetLock.Unlock();
 
             // clear the arrays without destroying the memory of the entries
             mLock.Lock();
-            mMotions.Clear();
+            mMotions.clear();
             mLock.Unlock();
         }
     }
@@ -99,7 +96,7 @@ namespace EMotionFX
     Motion* MotionManager::FindMotionByName(const char* motionName, bool isTool) const
     {
         // get the number of motions and iterate through them
-        const uint32 numMotions = mMotions.GetLength();
+        const uint32 numMotions = mMotions.size();
         for (uint32 i = 0; i < numMotions; ++i)
         {
             if (mMotions[i]->GetIsOwnedByRuntime() == isTool)
@@ -122,7 +119,7 @@ namespace EMotionFX
     Motion* MotionManager::FindMotionByFileName(const char* fileName, bool isTool) const
     {
         // get the number of motions and iterate through them
-        const uint32 numMotions = mMotions.GetLength();
+        const uint32 numMotions = mMotions.size();
         for (uint32 i = 0; i < numMotions; ++i)
         {
             if (mMotions[i]->GetIsOwnedByRuntime() == isTool)
@@ -145,7 +142,7 @@ namespace EMotionFX
     MotionSet* MotionManager::FindMotionSetByFileName(const char* fileName, bool isTool) const
     {
         // get the number of motion sets and iterate through them
-        const uint32 numMotionSets = mMotionSets.GetLength();
+        const uint32 numMotionSets = mMotionSets.size();
         for (uint32 i = 0; i < numMotionSets; ++i)
         {
             MotionSet* motionSet = mMotionSets[i];
@@ -169,7 +166,7 @@ namespace EMotionFX
     MotionSet* MotionManager::FindMotionSetByName(const char* name, bool isOwnedByRuntime) const
     {
         // get the number of motion sets and iterate through them
-        const uint32 numMotionSets = mMotionSets.GetLength();
+        const uint32 numMotionSets = mMotionSets.size();
         for (uint32 i = 0; i < numMotionSets; ++i)
         {
             MotionSet* motionSet = mMotionSets[i];
@@ -192,7 +189,7 @@ namespace EMotionFX
     uint32 MotionManager::FindMotionIndexByName(const char* motionName, bool isTool) const
     {
         // get the number of motions and iterate through them
-        const uint32 numMotions = mMotions.GetLength();
+        const uint32 numMotions = mMotions.size();
         for (uint32 i = 0; i < numMotions; ++i)
         {
             if (mMotions[i]->GetIsOwnedByRuntime() == isTool)
@@ -215,7 +212,7 @@ namespace EMotionFX
     uint32 MotionManager::FindMotionSetIndexByName(const char* name, bool isTool) const
     {
         // get the number of motions and iterate through them
-        const uint32 numMotionSets = mMotionSets.GetLength();
+        const uint32 numMotionSets = mMotionSets.size();
         for (uint32 i = 0; i < numMotionSets; ++i)
         {
             MotionSet* motionSet = mMotionSets[i];
@@ -240,7 +237,7 @@ namespace EMotionFX
     uint32 MotionManager::FindMotionIndexByID(uint32 id) const
     {
         // get the number of motions and iterate through them
-        const uint32 numMotions = mMotions.GetLength();
+        const uint32 numMotions = mMotions.size();
         for (uint32 i = 0; i < numMotions; ++i)
         {
             if (mMotions[i]->GetID() == id)
@@ -257,7 +254,7 @@ namespace EMotionFX
     uint32 MotionManager::FindMotionSetIndexByID(uint32 id) const
     {
         // get the number of motion sets and iterate through them
-        const uint32 numMotionSets = mMotionSets.GetLength();
+        const uint32 numMotionSets = mMotionSets.size();
         for (uint32 i = 0; i < numMotionSets; ++i)
         {
             // compare the motion names
@@ -275,7 +272,7 @@ namespace EMotionFX
     Motion* MotionManager::FindMotionByID(uint32 id) const
     {
         // get the number of motions and iterate through them
-        const uint32 numMotions = mMotions.GetLength();
+        const uint32 numMotions = mMotions.size();
         for (uint32 i = 0; i < numMotions; ++i)
         {
             if (mMotions[i]->GetID() == id)
@@ -292,7 +289,7 @@ namespace EMotionFX
     MotionSet* MotionManager::FindMotionSetByID(uint32 id) const
     {
         // get the number of motion sets and iterate through them
-        const uint32 numMotionSets = mMotionSets.GetLength();
+        const uint32 numMotionSets = mMotionSets.size();
         for (uint32 i = 0; i < numMotionSets; ++i)
         {
             if (mMotionSets[i]->GetID() == id)
@@ -309,7 +306,7 @@ namespace EMotionFX
     uint32 MotionManager::FindMotionSetIndex(MotionSet* motionSet) const
     {
         // get the number of motion sets and iterate through them
-        const uint32 numMotionSets = mMotionSets.GetLength();
+        const uint32 numMotionSets = mMotionSets.size();
         for (uint32 i = 0; i < numMotionSets; ++i)
         {
             if (mMotionSets[i] == motionSet)
@@ -326,7 +323,7 @@ namespace EMotionFX
     uint32 MotionManager::FindMotionIndex(Motion* motion) const
     {
         // get the number of motions and iterate through them
-        const uint32 numMotions = mMotions.GetLength();
+        const uint32 numMotions = mMotions.size();
         for (uint32 i = 0; i < numMotions; ++i)
         {
             // compare the motions
@@ -345,7 +342,7 @@ namespace EMotionFX
     {
         // wait with execution until we can set the lock
         mLock.Lock();
-        mMotions.Add(motion);
+        mMotions.emplace_back(motion);
         mLock.Unlock();
     }
 
@@ -386,7 +383,7 @@ namespace EMotionFX
     uint32 MotionManager::FindMotionIndexByFileName(const char* fileName, bool isTool) const
     {
         // get the number of motions and iterate through them
-        const uint32 numMotions = mMotions.GetLength();
+        const uint32 numMotions = mMotions.size();
         for (uint32 i = 0; i < numMotions; ++i)
         {
             if (mMotions[i]->GetIsOwnedByRuntime() == isTool)
@@ -494,7 +491,7 @@ namespace EMotionFX
         }
 
         // Reset all motion entries in the motion sets of the current motion.
-        const uint32 numMotionSets = mMotionSets.GetLength();
+        const uint32 numMotionSets = mMotionSets.size();
         for (i = 0; i < numMotionSets; ++i)
         {
             MotionSet* motionSet = mMotionSets[i];
@@ -525,11 +522,11 @@ namespace EMotionFX
             // which unregisters the motion from the motion manager
             motion->SetAutoUnregister(false);
             motion->Destroy();
-            mMotions.Remove(index); // only remove the motion from the motion manager without destroying its memory
+            mMotions.erase(AZStd::next(begin(mMotions), index)); // only remove the motion from the motion manager without destroying its memory
         }
         else
         {
-            mMotions.Remove(index); // only remove the motion from the motion manager without destroying its memory
+            mMotions.erase(AZStd::next(begin(mMotions), index)); // only remove the motion from the motion manager without destroying its memory
         }
 
         return true;
@@ -540,7 +537,7 @@ namespace EMotionFX
     void MotionManager::AddMotionSet(MotionSet* motionSet)
     {
         MCore::LockGuard lock(mLock);
-        mMotionSets.Add(motionSet);
+        mMotionSets.emplace_back(motionSet);
     }
 
 
@@ -578,7 +575,7 @@ namespace EMotionFX
             delete motionSet;
         }
 
-        mMotionSets.Remove(index);
+        mMotionSets.erase(AZStd::next(begin(mMotionSets), index));
 
         return true;
     }
@@ -606,7 +603,7 @@ namespace EMotionFX
         uint32 result = 0;
 
         // get the number of motion sets and iterate through them
-        const uint32 numMotionSets = mMotionSets.GetLength();
+        const uint32 numMotionSets = mMotionSets.size();
         for (uint32 i = 0; i < numMotionSets; ++i)
         {
             // sum up the root motion sets
@@ -626,7 +623,7 @@ namespace EMotionFX
         uint32 currentIndex = 0;
 
         // get the number of motion sets and iterate through them
-        const uint32 numMotionSets = mMotionSets.GetLength();
+        const uint32 numMotionSets = mMotionSets.size();
         for (uint32 i = 0; i < numMotionSets; ++i)
         {
             // get the current motion set

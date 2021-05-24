@@ -30,7 +30,7 @@ namespace EMStudio
      * Example:
      * connect( mNodeSelectionWindow,                                               SIGNAL(rejected()),             this, SLOT(UserWantsToCancel_1()) );
      * connect( mNodeSelectionWindow->GetNodeHierarchyWidget()->GetTreeWidget(),    SIGNAL(itemSelectionChanged()), this, SLOT(SelectionChanged_2()) );
-     * connect( mNodeSelectionWindow->GetNodeHierarchyWidget(),                     SIGNAL(OnSelectionDone(MCore::Array<SelectionItem>)), this, SLOT(FinishedSelectionAndPressedOK_3(MCore::Array<SelectionItem>)) );
+     * connect( mNodeSelectionWindow->GetNodeHierarchyWidget(),                     SIGNAL(OnSelectionDone(AZStd::vector<SelectionItem>)), this, SLOT(FinishedSelectionAndPressedOK_3(AZStd::vector<SelectionItem>)) );
     */
     class EMSTUDIO_API NodeSelectionWindow
         : public QDialog
@@ -43,11 +43,11 @@ namespace EMStudio
 
         MCORE_INLINE NodeHierarchyWidget* GetNodeHierarchyWidget()                                                                { return mHierarchyWidget; }
         void Update(uint32 actorInstanceID, CommandSystem::SelectionList* selectionList = nullptr)                                { mHierarchyWidget->Update(actorInstanceID, selectionList); }
-        void Update(const MCore::Array<uint32>& actorInstanceIDs, CommandSystem::SelectionList* selectionList = nullptr)          { mHierarchyWidget->Update(actorInstanceIDs, selectionList); }
+        void Update(const AZStd::vector<uint32>& actorInstanceIDs, CommandSystem::SelectionList* selectionList = nullptr)          { mHierarchyWidget->Update(actorInstanceIDs, selectionList); }
 
     public slots:
         void OnAccept();
-        void OnDoubleClicked(MCore::Array<SelectionItem> selection);
+        void OnDoubleClicked(AZStd::vector<SelectionItem> selection);
 
     private:
         NodeHierarchyWidget*                mHierarchyWidget;

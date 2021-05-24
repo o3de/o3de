@@ -24,22 +24,22 @@ MCORE_INLINE uint32 Mesh::GetNumPolygons() const
 }
 
 
-MCORE_INLINE uint32 Mesh::GetNumSubMeshes() const
+MCORE_INLINE size_t Mesh::GetNumSubMeshes() const
 {
-    return mSubMeshes.GetLength();
+    return mSubMeshes.size();
 }
 
 
 MCORE_INLINE SubMesh* Mesh::GetSubMesh(uint32 nr) const
 {
-    MCORE_ASSERT(nr < mSubMeshes.GetLength());
+    MCORE_ASSERT(nr < mSubMeshes.size());
     return mSubMeshes[nr];
 }
 
 
 MCORE_INLINE void Mesh::AddSubMesh(SubMesh* subMesh)
 {
-    mSubMeshes.Add(subMesh);
+    mSubMeshes.emplace_back(subMesh);
 }
 
 

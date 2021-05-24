@@ -54,7 +54,7 @@ namespace RenderGL
 
         // triangle rendering
         void RenderTriangle(const AZ::Vector3& v1, const AZ::Vector3& v2, const AZ::Vector3& v3, const MCore::RGBAColor& color) override;
-        void RenderTriangles(const MCore::Array<TriangleVertex>& triangleVertices) override;
+        void RenderTriangles(const AZStd::vector<TriangleVertex>& triangleVertices) override;
 
         // text rendering (do not use until really needed, needs to do runtime allocations)
         void RenderTextPeriod(uint32 x, uint32 y, const char* text, float lifeTime, const MCore::RGBAColor& color = MCore::RGBAColor(1.0f, 1.0f, 1.0f), float fontSize = 11.0f, bool centered = false);
@@ -108,7 +108,7 @@ namespace RenderGL
             bool                    mCentered;
         };
 
-        MCore::Array<TextEntry*>    mTextEntries;
+        AZStd::vector<TextEntry*>    mTextEntries;
         TextureEntry*               mTextures;
         uint32                      mNumTextures;
         uint32                      mMaxNumTextures;
