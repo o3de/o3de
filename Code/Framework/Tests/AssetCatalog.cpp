@@ -302,15 +302,16 @@ namespace UnitTest
         {
             AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
 
+            m_app.reset(aznew AzFramework::Application());
+            AZ::ComponentApplication::Descriptor desc;
+            desc.m_useExistingAllocator = true;
+            
             AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
             auto projectPathKey =
                 AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
             registry->Set(projectPathKey, "AutomatedTesting");
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
-            m_app.reset(aznew AzFramework::Application());
-            AZ::ComponentApplication::Descriptor desc;
-            desc.m_useExistingAllocator = true;
             m_app->Start(desc);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
