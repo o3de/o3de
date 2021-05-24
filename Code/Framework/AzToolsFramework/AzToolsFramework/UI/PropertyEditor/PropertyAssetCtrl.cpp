@@ -1229,6 +1229,7 @@ namespace AzToolsFramework
         }
         else if (attrib == AZ_CRC_CE("DefaultStartingDirectoryCallback"))
         {
+            // This is assumed to be an Asset Browser path to a specific folder to be used as a default by the asset picker if provided
             GUI->SetDefaultDirectoryCallback(azdynamic_cast<PropertyAssetCtrl::DefaultDirectoryCallbackType*>(attrValue->GetAttribute()));
         }
         else if (attrib == AZ_CRC("EditCallback", 0xb74f2ee1))
