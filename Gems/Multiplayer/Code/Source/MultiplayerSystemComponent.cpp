@@ -449,6 +449,7 @@ namespace Multiplayer
             {
                 controlledEntity = entityList[0];
                 controlledEntity.GetNetBindComponent()->SetOwningConnectionId(connection->GetConnectionId());
+                controlledEntity.GetNetBindComponent()->SetAllowAutonomy(true);
             }
 
             if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
