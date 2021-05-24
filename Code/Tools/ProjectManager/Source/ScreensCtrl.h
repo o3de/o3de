@@ -52,7 +52,7 @@ namespace O3DE::ProjectManager
         QStack<ProjectManagerScreen> m_screenVisitOrder;
 
         // Used to specify which project to edit when changing settings
-        QString m_currentProject;
+        QString m_currentProjectPath;
     };
 
 } // namespace O3DE::ProjectManager

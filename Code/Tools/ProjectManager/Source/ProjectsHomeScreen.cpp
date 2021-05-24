@@ -137,34 +137,34 @@ namespace O3DE::ProjectManager
     {
         // Do nothing for now
     }
-    void ProjectsHomeScreen::HandleOpenProject(const QString& projectName)
+    void ProjectsHomeScreen::HandleOpenProject(const QString& projectPath)
     {
         // Open the editor with this project open
-        emit NotifyCurrentProject(projectName);
+        emit NotifyCurrentProject(projectPath);
     }
-    void ProjectsHomeScreen::HandleEditProject(const QString& projectName)
+    void ProjectsHomeScreen::HandleEditProject(const QString& projectPath)
     {
-        emit NotifyCurrentProject(projectName);
+        emit NotifyCurrentProject(projectPath);
         emit ResetScreenRequest(ProjectManagerScreen::ProjectSettingsCore);
         emit ChangeScreenRequest(ProjectManagerScreen::ProjectSettingsCore);
     }
-    void ProjectsHomeScreen::HandleEditProjectGems(const QString& projectName)
+    void ProjectsHomeScreen::HandleEditProjectGems(const QString& projectPath)
     {
-        emit NotifyCurrentProject(projectName);
+        emit NotifyCurrentProject(projectPath);
         emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
     }
-    void ProjectsHomeScreen::HandleCopyProject([[maybe_unused]] const QString& projectName)
+    void ProjectsHomeScreen::HandleCopyProject([[maybe_unused]] const QString& projectPath)
     {
         // Open file dialog and choose location for copied project then register copy with O3DE
     }
-    void ProjectsHomeScreen::HandleRemoveProject([[maybe_unused]] const QString& projectName)
+    void ProjectsHomeScreen::HandleRemoveProject([[maybe_unused]] const QString& projectPath)
     {
         // Unregister Project from O3DE 
     }
-    void ProjectsHomeScreen::HandleDeleteProject([[maybe_unused]] const QString& projectName)
+    void ProjectsHomeScreen::HandleDeleteProject([[maybe_unused]] const QString& projectPath)
     {
         // Remove project from 03DE and delete from disk
-        ProjectsHomeScreen::HandleRemoveProject(projectName);
+        ProjectsHomeScreen::HandleRemoveProject(projectPath);
     }
 
 } // namespace O3DE::ProjectManager

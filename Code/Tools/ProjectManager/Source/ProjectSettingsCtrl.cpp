@@ -22,7 +22,7 @@
 
 namespace O3DE::ProjectManager
 {
-    ProjectSettingsCtrl::ProjectSettingsCtrl(QWidget* parent, const QString& projectName)
+    ProjectSettingsCtrl::ProjectSettingsCtrl(QWidget* parent, const QString& projectPath)
         : ScreenWidget(parent)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
@@ -41,7 +41,7 @@ namespace O3DE::ProjectManager
         connect(m_nextButton, &QPushButton::pressed, this, &ProjectSettingsCtrl::HandleNextButton);
 
         // If a projectName was not passed in then we setting up a new project
-        if (projectName.isEmpty())
+        if (projectPath.isEmpty())
         {
             m_screensOrder =
             {
@@ -56,7 +56,7 @@ namespace O3DE::ProjectManager
         // If a projectName was passed in then we editing an exising project, gather it's info
         else
         {
-            auto projectResult = PythonBindingsInterface::Get()->GetProject(projectName);
+            auto projectResult = PythonBindingsInterface::Get()->GetProject(projectPath);
             if (projectResult.IsSuccess())
             {
                 m_projectInfo = projectResult.GetValue();

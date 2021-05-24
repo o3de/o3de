@@ -50,7 +50,7 @@ namespace O3DE::ProjectManager
         void ChangeScreenRequest(ProjectManagerScreen screen);
         void GotoPreviousScreenRequest();
         void ResetScreenRequest(ProjectManagerScreen screen);
-        void NotifyCurrentProject(const QString& projectName);
+        void NotifyCurrentProject(const QString& projectPath);
     };
 
 } // namespace O3DE::ProjectManager
