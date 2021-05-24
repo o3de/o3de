@@ -48,8 +48,8 @@ namespace AzToolsFramework
             void SetSelectedAssetIds(const AZStd::vector<AZ::Data::AssetId>& selectedAssetIds);
             void SetSelectedAssetId(const AZ::Data::AssetId& selectedAssetId);
 
-            void SetDefaultDirectory(const AZStd::string& defaultDirectory);
-            const char* GetDefaultDirectory() const;
+            void SetDefaultDirectory(AZStd::string_view defaultDirectory);
+            AZStd::string_view GetDefaultDirectory() const;
             
             AZStd::vector<const AssetBrowserEntry*>& GetResults();
             const AssetBrowserEntry* GetResult();

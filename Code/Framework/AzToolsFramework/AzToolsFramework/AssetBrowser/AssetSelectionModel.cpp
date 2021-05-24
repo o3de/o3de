@@ -93,14 +93,14 @@ namespace AzToolsFramework
             m_selectedAssetIds.push_back(selectedAssetId);
         }
 
-        void AssetSelectionModel::SetDefaultDirectory(const AZStd::string& defaultDirectory)
+        void AssetSelectionModel::SetDefaultDirectory(AZStd::string_view defaultDirectory)
         {
             m_defaultDirectory = defaultDirectory;
         }
 
-        const char* AssetSelectionModel::GetDefaultDirectory() const
+        AZStd::string_view AssetSelectionModel::GetDefaultDirectory() const
         {
-            return m_defaultDirectory.c_str();
+            return m_defaultDirectory;
         }
 
         AZStd::vector<const AssetBrowserEntry*>& AssetSelectionModel::GetResults()

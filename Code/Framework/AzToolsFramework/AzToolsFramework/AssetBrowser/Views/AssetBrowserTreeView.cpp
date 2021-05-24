@@ -14,6 +14,7 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -270,22 +271,15 @@ namespace AzToolsFramework
             return false;
         }
 
-        void AssetBrowserTreeView::SelectFolder(const AZStd::string& folderPath)
+        void AssetBrowserTreeView::SelectFolder(AZStd::string_view folderPath)
         {
-            QString path = folderPath.c_str();
-
-            if (path.size() == 0)
+            if (folderPath.size() == 0)
             {
                 return;
             }
 
-            QStringList stringList = path.split('/', Qt::SkipEmptyParts);
             AZStd::vector<AZStd::string> entries;
-            for (int index = 0; index < stringList.size(); index++)
-            {
-                AZStd::string entryName(stringList.at(index).toUtf8());
-                entries.push_back(entryName);
-            }
+            AZ::StringFunc::Tokenize(folderPath, entries, "/");
 
             SelectEntry(QModelIndex(), entries, 0, true);
         }
@@ -305,39 +299,43 @@ namespace AzToolsFramework
                 auto rowIdx = model()->index(idx, 0, idxParent);
                 auto rowEntry = GetEntryFromIndex<AssetBrowserEntry>(rowIdx);
 
-                // Check if this entry name matches the query
-                if (rowEntry &&
-                    ((useDisplayName && AzFramework::StringFunc::Equal(entry.c_str(), rowEntry->GetDisplayName().toUtf8(), true)) ||
-                    AzFramework::StringFunc::Equal(entry.c_str(), rowEntry->GetName().c_str(), true)))
+                if (rowEntry)
                 {
-                    // Final entry found - set it as the selected element
-                    if (entryPathIndex == entries.size() - 1)
+                    // Check if this entry name matches the query
+                    AZStd::string_view compareName = useDisplayName ? rowEntry->GetDisplayName().toUtf8() : rowEntry->GetName().c_str();
+
+                    if (AzFramework::StringFunc::Equal(entry.c_str(), compareName, true))
                     {
-                        if (rowEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
+                        // Final entry found - set it as the selected element
+                        if (entryPathIndex == entries.size() - 1)
                         {
-                            // Expand the item itself if it is a folder
-                            expand(rowIdx);
-                        }
+                            if (rowEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
+                            {
+                                // Expand the item itself if it is a folder
+                                expand(rowIdx);
+                            }
 
-                        selectionModel()->clear();
-                        selectionModel()->select(rowIdx, QItemSelectionModel::Select);
-                        setCurrentIndex(rowIdx);
+                            selectionModel()->clear();
+                            selectionModel()->select(rowIdx, QItemSelectionModel::Select);
+                            setCurrentIndex(rowIdx);
 
-                        return true;
-                    }
-
-                    // If this isn't the final entry, it needs to be a folder for the path to be valid (otherwise, early out)
-                    if (rowEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
-                    {
-                        // Folder found - if the final entry is found, expand this folder so the final entry is viewable in the Asset Browser (otherwise, early out)
-                        if (SelectEntry(rowIdx, entries, entryPathIndex + 1, useDisplayName))
-                        {
-                            expand(rowIdx);
                             return true;
                         }
+
+                        // If this isn't the final entry, it needs to be a folder for the path to be valid (otherwise, early out)
+                        if (rowEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
+                        {
+                            // Folder found - if the final entry is found, expand this folder so the final entry is viewable in the Asset
+                            // Browser (otherwise, early out)
+                            if (SelectEntry(rowIdx, entries, entryPathIndex + 1, useDisplayName))
+                            {
+                                expand(rowIdx);
+                                return true;
+                            }
+                        }
+
+                        return false;
                     }
-                    
-                    return false;
                 }
             }
 

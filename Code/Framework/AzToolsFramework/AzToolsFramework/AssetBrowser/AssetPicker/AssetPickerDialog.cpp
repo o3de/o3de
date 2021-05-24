@@ -85,10 +85,10 @@ namespace AzToolsFramework
 
             for (auto& assetId : selection.GetSelectedAssetIds())
             {
-                m_ui->m_assetBrowserTreeViewWidget->SelectProduct(assetId);
                 if (assetId.IsValid())
                 {
                     selectedAsset = true;
+                    m_ui->m_assetBrowserTreeViewWidget->SelectProduct(assetId);
                 }
             }
 

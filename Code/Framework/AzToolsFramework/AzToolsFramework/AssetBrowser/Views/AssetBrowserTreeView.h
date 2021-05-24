@@ -60,7 +60,7 @@ namespace AzToolsFramework
 
             AZStd::vector<AssetBrowserEntry*> GetSelectedAssets() const;
 
-            void SelectFolder(const AZStd::string& folderPath);
+            void SelectFolder(AZStd::string_view folderPath);
 
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserViewRequestBus
