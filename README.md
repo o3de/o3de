@@ -146,7 +146,7 @@ If you have the Git credential manager core or other credential helpers installe
 1.  This will compile after some time and binaries will be available in the build path you've specified
 
 ### Setting up new projects    
-1. Setup new projects using the `o3de create-project` command.
+1. Setup new projects using the `o3de create-project` command. In the 0.5 branch, the project directory must be a subdirectory in the repo folder.
     ```
     <Repo path>\scripts\o3de.bat create-project --project-path <your new project path>
     ```
@@ -156,8 +156,12 @@ If you have the Git credential manager core or other credential helpers installe
     ```
 1.  Once you're ready to build the project, run the same set of commands to configure and build:
     ```
-    cmake -B <your project build path> -S <your new project source path> -G "Visual Studio 16 2019" -DLY_3RDPARTY_PATH=<3rdParty cache path>
+    cmake -B <your project build path> -S <your new project source path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=<3rdParty cache path>
 
+    // For the 0.5 branch, you must build a new Editor for each project:
+    cmake --build <your project build path> --target <New Project Name> Editor --config profile -- /m
+    
+    // For all other branches, just build the project:
     cmake --build <your project build path> --target <New Project Name> --config profile -- /m
     ```
   
