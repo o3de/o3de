@@ -76,7 +76,6 @@ set(FILES
     Source/File.h
     Source/FileSystem.cpp
     Source/FileSystem.h
-    Source/HashFunctions.h
     Source/IDGenerator.cpp
     Source/IDGenerator.h
     Source/LogManager.cpp
