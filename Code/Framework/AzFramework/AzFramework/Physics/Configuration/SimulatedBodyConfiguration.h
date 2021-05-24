@@ -38,7 +38,6 @@ namespace AzPhysics
         // Basic initial settings.
         AZ::Vector3 m_position = AZ::Vector3::CreateZero();
         AZ::Quaternion m_orientation = AZ::Quaternion::CreateIdentity();
-        AZ::Vector3 m_scale = AZ::Vector3::CreateOne();
         bool m_startSimulationEnabled = true;
 
         // Entity/object association.

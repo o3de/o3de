@@ -63,6 +63,11 @@ namespace AzNetworking
         void RegisterCompressorFactory(ICompressorFactory* factory) override;
         AZStd::unique_ptr<ICompressor> CreateCompressor(AZ::Name name) override;
         bool UnregisterCompressorFactory(AZ::Name name) override;
+        const NetworkInterfaces& GetNetworkInterfaces() const override;
+        uint32_t GetTcpListenThreadSocketCount() const override;
+        AZ::TimeMs GetTcpListenThreadUpdateTime() const override;
+        uint32_t GetUdpReaderThreadSocketCount() const override;
+        AZ::TimeMs GetUdpReaderThreadUpdateTime() const override;
         //! @}
 
         //! Console commands.
@@ -74,7 +79,6 @@ namespace AzNetworking
 
         AZ_CONSOLEFUNC(NetworkingSystemComponent, DumpStats, AZ::ConsoleFunctorFlags::Null, "Dumps stats for all instantiated network interfaces");
 
-        using NetworkInterfaces = AZStd::unordered_map<AZ::Name, AZStd::unique_ptr<INetworkInterface>>;
         NetworkInterfaces m_networkInterfaces;
         AZStd::unique_ptr<TcpListenThread> m_listenThread;
         AZStd::unique_ptr<UdpReaderThread> m_readerThread;
