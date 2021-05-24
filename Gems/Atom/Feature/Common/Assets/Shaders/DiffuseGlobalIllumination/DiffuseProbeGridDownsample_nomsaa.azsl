@@ -70,8 +70,8 @@ PSOutput MainPS(VSOutput IN)
     {
         for (uint x = 0; x < ImageScale; ++x)
         {
-            float depth = PassSrg::m_depth.Load(int3(screenCoords, 0), int2(x, y)).r;
-            float4 encodedNormal = PassSrg::m_normal.Load(int3(screenCoords, 0), int2(x, y));
+            float depth = PassSrg::m_depth.Load(int3(screenCoords + int2(x, y), 0)).r;
+            float4 encodedNormal = PassSrg::m_normal.Load(int3(screenCoords + int2(x, y), 0));
 
             // take the closest depth sample to ensure we're getting the normal closest to the viewer 
             // (larger depth value due to reverse depth)

@@ -208,6 +208,7 @@ struct SSystemCVars
     int sys_no_crash_dialog;
     int sys_no_error_report_window;
     int sys_dump_aux_threads;
+    int sys_WER;
     int sys_dump_type;
     int sys_ai;
     int sys_entitysystem;

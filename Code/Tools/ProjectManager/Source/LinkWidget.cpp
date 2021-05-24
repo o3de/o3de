@@ -27,7 +27,12 @@ namespace O3DE::ProjectManager
 
     void LinkLabel::mousePressEvent([[maybe_unused]] QMouseEvent* event)
     {
-        QDesktopServices::openUrl(m_url);
+        if (m_url.isValid())
+        {
+            QDesktopServices::openUrl(m_url);
+        }
+
+        emit clicked();
     }
 
     void LinkLabel::enterEvent([[maybe_unused]] QEvent* event)
