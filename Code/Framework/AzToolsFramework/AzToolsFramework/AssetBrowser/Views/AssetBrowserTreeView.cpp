@@ -99,8 +99,10 @@ namespace AzToolsFramework
 
         AZStd::vector<AssetBrowserEntry*> AssetBrowserTreeView::GetSelectedAssets() const
         {
+            
+            const QModelIndexList& selectedIndexes = selectionModel()->selectedRows();
             QModelIndexList sourceIndexes;
-            for (const auto& index : selectedIndexes())
+            for (const auto& index : selectedIndexes)
             {
                 //If we check for more than one column then the model will try to select the same entry several times.
                 if (index.column() == 0)

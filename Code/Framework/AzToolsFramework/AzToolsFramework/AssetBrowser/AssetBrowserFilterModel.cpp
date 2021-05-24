@@ -23,8 +23,9 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QCollator>
 AZ_POP_DISABLE_WARNING
 
-AZ_CVAR_EXTERNED(bool, ed_useNewAssetBrowserTableView);
-
+AZ_CVAR(
+    bool, ed_useNewAssetBrowserTableView, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Use the new AssetBrowser TableView for searching assets.");
 namespace AzToolsFramework
 {
     namespace AssetBrowser

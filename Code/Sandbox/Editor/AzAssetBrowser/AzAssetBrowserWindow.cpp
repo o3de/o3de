@@ -33,9 +33,8 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <AzAssetBrowser/ui_AzAssetBrowserWindow.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
-AZ_CVAR(
-    bool, ed_useNewAssetBrowserTableView, false, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "Use the new AssetBrowser TableView for searching assets.");
+AZ_CVAR_EXTERNED(bool, ed_useNewAssetBrowserTableView);
+
 
 class ListenerForShowAssetEditorEvent
     : public QObject

@@ -34,7 +34,7 @@ namespace ScriptCanvasEditor
     {
         setDynamicSortFilter(true);
 
-        m_showColumn.insert(AssetBrowserModel::m_column);
+        m_showColumn.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName));
 
         UnitTestWidgetNotificationBus::Handler::BusConnect();
 
