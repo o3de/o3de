@@ -133,6 +133,9 @@ namespace AZ
         // Get the split list of system component tags specified at startup
         const AZStd::vector<Crc32>& GetSystemComponentTags() { return m_systemComponentTags; }
 
+        // Whether the user wants to quit the Application on errors rather than proceeding in a likely bad state
+        bool m_quitRequested = false;
+
     protected:
         ////////////////////////////////////////////////////////////////////////
         // ModuleManagerRequestBus
@@ -148,7 +151,9 @@ namespace AZ
         //! @return shared ptr to an ModuleData structure if the module is loaded and managed by the ModuleManager
         AZStd::shared_ptr<ModuleDataImpl> GetLoadedModule(AZStd::string_view modulePath);
 
-        ////////////////////////////////////////////////////////////////////////
+        //! On dependency sort errors, display error message with details.
+        //! Additionally send the message to NativeUI (if available) and ask user what to do.
+        void HandleDependencySortError(const Entity::DependencySortOutcome& outcome);
 
         ////////////////////////////////////////////////////////////////////////
         // EntityBus

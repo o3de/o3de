@@ -21,6 +21,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/Script/ScriptContext.h>
 
@@ -29,7 +30,7 @@
 
 namespace
 {
-    static const char* s_moduleLoggingScope = "Module";
+    static const char* s_moduleLoggingScope = "Module Manager";
 }
 
 namespace AZ
@@ -602,6 +603,25 @@ namespace AZ
     }
 
     //=========================================================================
+    // HandleDependencySortError
+    //=========================================================================
+    void ModuleManager::HandleDependencySortError(const Entity::DependencySortOutcome& outcome)
+    {
+        // Print a short message to the log, and an extended message to the nativeUI (if available)
+        auto errorMessage = AZStd::string::format("Modules Entities cannot be activated.\n\n%s", outcome.GetError().m_message.c_str());
+        AZ_Error(s_moduleLoggingScope, false, errorMessage.c_str());
+
+        auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get();
+        if (nativeUI)
+        {
+            errorMessage.append("\n\n");
+            errorMessage.append(outcome.GetError().m_extendedMessage);
+            auto choice = nativeUI->DisplayBlockingDialog(s_moduleLoggingScope, errorMessage, {"Quit", "Ignore"});
+            m_quitRequested = (choice == "Quit");
+        }
+    }
+
+    //=========================================================================
     // OnEntityActivated
     //=========================================================================
     void ModuleManager::OnEntityActivated(const AZ::EntityId& entityId)
@@ -687,15 +707,24 @@ namespace AZ
             const Entity::ComponentArrayType& systemEntityComponents = systemEntity->GetComponents();
             componentsToActivate.insert(componentsToActivate.begin(), systemEntityComponents.begin(), systemEntityComponents.end());
         }
-        
+
         // Topo sort components, activate them
         Entity::DependencySortOutcome outcome = ModuleEntity::DependencySort(componentsToActivate);
         if (!outcome.IsSuccess())
         {
-            AZ_Error(s_moduleLoggingScope, false, "Modules Entities cannot be activated. %s", outcome.GetError().m_message.c_str());
+            HandleDependencySortError(outcome);
+            if (m_quitRequested)
+            {
+                // Before letting the application quit, all the module entities should be restored back to Init state
+                // beacuse they never fully exited the Activating state.
+                for (auto& moduleData : modulesToInit)
+                {
+                    moduleData->m_moduleEntity->SetState(Entity::State::Init);
+                }
+            }
             return;
         }
-        
+
         for (auto componentIt = componentsToActivate.begin(); componentIt != componentsToActivate.end(); )
         {
             Component* component = *componentIt;
@@ -711,7 +740,6 @@ namespace AZ
                 ++componentIt;
             }
         }
-        
 
         // Activate the entities in the appropriate order
         for (Component* component : componentsToActivate)
