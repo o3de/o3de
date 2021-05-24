@@ -103,7 +103,7 @@ namespace TestImpact
         return m_modules.size();
     }
 
-    const AZStd::vector<AZStd::string>& TestCoverage::GetSourcesCovered() const
+    const AZStd::vector<RepoPath>& TestCoverage::GetSourcesCovered() const
     {
         return m_sourcesCovered;
     }

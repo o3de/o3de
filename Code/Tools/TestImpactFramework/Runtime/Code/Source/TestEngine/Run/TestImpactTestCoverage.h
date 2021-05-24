@@ -44,7 +44,7 @@ namespace TestImpact
         size_t GetNumModulesCovered() const;
 
         //! Returns the sorted set of unique sources covered (empty if no coverage).
-        const AZStd::vector<AZStd::string>& GetSourcesCovered() const;
+        const AZStd::vector<RepoPath>& GetSourcesCovered() const;
 
         //! Returns the modules covered (empty if no coverage).
         const AZStd::vector<ModuleCoverage>& GetModuleCoverages() const;
@@ -56,7 +56,7 @@ namespace TestImpact
         void CalculateTestMetrics();
 
         AZStd::vector<ModuleCoverage> m_modules;
-        AZStd::vector<AZStd::string> m_sourcesCovered;
+        AZStd::vector<RepoPath> m_sourcesCovered;
         AZStd::optional<CoverageLevel> m_coverageLevel;
     };
 } // namespace TestImpact

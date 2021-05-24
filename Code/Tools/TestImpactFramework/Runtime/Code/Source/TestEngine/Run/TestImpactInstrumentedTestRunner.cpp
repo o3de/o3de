@@ -52,19 +52,18 @@ namespace TestImpact
         return {AZStd::move(run), AZStd::move(coverage)};
     }
 
-    InstrumentedTestRunner::InstrumentedTestRunner(
-        AZStd::optional<ClientJobCallback> clientCallback,
-        size_t maxConcurrentRuns,
-        AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout)
-        : JobRunner(clientCallback, AZStd::nullopt, StdOutputRouting::None, StdErrorRouting::None, maxConcurrentRuns, runTimeout, runnerTimeout)
+    InstrumentedTestRunner::InstrumentedTestRunner(size_t maxConcurrentRuns)
+        : JobRunner(maxConcurrentRuns)
     {
     }
 
-    AZStd::vector<InstrumentedTestRunner::Job> InstrumentedTestRunner::RunInstrumentedTests(
+    AZStd::pair<ProcessSchedulerResult, AZStd::vector<InstrumentedTestRunner::Job>> InstrumentedTestRunner::RunInstrumentedTests(
         const AZStd::vector<JobInfo>& jobInfos,
         CoverageExceptionPolicy coverageExceptionPolicy,
-        JobExceptionPolicy jobExceptionPolicy)
+        JobExceptionPolicy jobExceptionPolicy,
+        AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
+        AZStd::optional<ClientJobCallback> clientCallback)
     {
         const auto payloadGenerator = [this, coverageExceptionPolicy](const JobDataMap& jobDataMap)
         {
@@ -98,6 +97,15 @@ namespace TestImpact
             return runs;
         };
 
-        return ExecuteJobs(jobInfos, payloadGenerator, jobExceptionPolicy);
+        return ExecuteJobs(
+            jobInfos,
+            jobExceptionPolicy,
+            payloadGenerator,
+            StdOutputRouting::None,
+            StdErrorRouting::None,
+            runTimeout,
+            runnerTimeout,
+            clientCallback,
+            AZStd::nullopt);
     }
 } // namespace TestImpact
