@@ -35,16 +35,16 @@ PlatformConfigurationUnitTests::PlatformConfigurationUnitTests()
 
 void PlatformConfigurationUnitTests::SetUp()
 {
-    using namespace AssetProcessor;
-    m_qApp = new QCoreApplication(m_argc, m_argv);
-    AssetProcessorTest::SetUp();
-    AssetUtilities::ResetAssetRoot();
-
     AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
     auto projectPathKey =
         AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
     registry->Set(projectPathKey, "AutomatedTesting");
     AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+
+    using namespace AssetProcessor;
+    m_qApp = new QCoreApplication(m_argc, m_argv);
+    AssetProcessorTest::SetUp();
+    AssetUtilities::ResetAssetRoot();
 }
 
 void PlatformConfigurationUnitTests::TearDown()
