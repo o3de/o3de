@@ -17,6 +17,7 @@
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Asset/AssetBundler.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
@@ -57,11 +58,21 @@ namespace AssetBundler
             UnitTest::ScopedAllocatorSetupFixture::SetUp();
             m_data = AZStd::make_unique<StaticData>();
 
-            AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
-            auto projectPathKey =
-                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            AZ::SettingsRegistryInterface* registry = nullptr;
+            if (!AZ::SettingsRegistry::Get())
+            {
+                AZ::SettingsRegistry::Register(&m_registry);
+                registry = &m_registry;
+            }
+            else
+            {
+                registry = AZ::SettingsRegistry::Get();
+            }
+            auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
+                + "/project_path";
             registry->Set(projectPathKey, "AutomatedTesting");
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+
 
             m_data->m_applicationManager.reset(aznew MockApplicationManagerTest(0, 0));
             m_data->m_applicationManager->Start(AzFramework::Application::Descriptor());
@@ -105,6 +116,7 @@ namespace AssetBundler
         };
 
         AZStd::unique_ptr<StaticData> m_data;
+        AZ::SettingsRegistryImpl m_registry;
     };
 
     TEST_F(ApplicationManagerTest, ValidatePlatformFlags_ReadConfigFiles_OK)

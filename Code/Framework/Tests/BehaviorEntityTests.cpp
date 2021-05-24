@@ -89,14 +89,14 @@ class BehaviorEntityTest
 protected:
     void SetUp() override
     {
+        m_appDescriptor.m_enableScriptReflection = true;
+        FrameworkApplicationFixture::SetUp();
+
         AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
         auto projectPathKey =
             AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
         registry->Set(projectPathKey, "AutomatedTesting");
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
-
-        m_appDescriptor.m_enableScriptReflection = true;
-        FrameworkApplicationFixture::SetUp();
 
         m_application->RegisterComponentDescriptor(HatComponent::CreateDescriptor());
         m_application->RegisterComponentDescriptor(EarComponent::CreateDescriptor());

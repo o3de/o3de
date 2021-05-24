@@ -16,6 +16,7 @@
 #include <AzTest/Utils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
@@ -36,9 +37,18 @@ protected:
     {
         UnitTest::AllocatorsTestFixture::SetUp();
 
-        AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
-        auto projectPathKey =
-            AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+        AZ::SettingsRegistryInterface* registry = nullptr;
+        if (!AZ::SettingsRegistry::Get())
+        {
+            AZ::SettingsRegistry::Register(&m_registry);
+            registry = &m_registry;
+        }
+        else
+        {
+            registry = AZ::SettingsRegistry::Get();
+        }
+        auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
+            + "/project_path";
         registry->Set(projectPathKey, "AutomatedTesting");
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
@@ -128,6 +138,7 @@ protected:
     }
 
     AZStd::unique_ptr<AzToolsFramework::ToolsApplication> m_app;
+    AZ::SettingsRegistryImpl m_registry;
 };
 
 TEST_F(MaterialBuilderTests, MaterialBuilder_EmptyFile_ExpectFailure)
