@@ -19,6 +19,8 @@
 
 namespace AzNetworking
 {
+    using NetworkInterfaces = AZStd::unordered_map<AZ::Name, AZStd::unique_ptr<INetworkInterface>>;
+
     //! @class INetworking
     //! @brief The interface for creating and working with network interfaces.
     class INetworking
@@ -60,5 +62,25 @@ namespace AzNetworking
         //! @param name The name of the Compressor factory to unregister, must match result of factory->GetFactoryName()
         //! @return Whether the factory was found and unregistered
         virtual bool UnregisterCompressorFactory(AZ::Name name) = 0;
+
+        //! Returns the raw network interfaces owned by the networking instance.
+        //! @return the raw network interfaces owned by the networking instance
+        virtual const NetworkInterfaces& GetNetworkInterfaces() const = 0;
+
+        //! Returns the number of sockets monitored by our TcpListenThread.
+        //! @return the number of sockets monitored by our TcpListenThread
+        virtual uint32_t GetTcpListenThreadSocketCount() const = 0;
+
+        //! Returns the total time spent updating our TcpListenThread.
+        //! @return the total time spent updating our TcpListenThread
+        virtual AZ::TimeMs GetTcpListenThreadUpdateTime() const = 0;
+
+        //! Returns the number of sockets monitored by our UdpReaderThread.
+        //! @return the number of sockets monitored by our UdpReaderThread
+        virtual uint32_t GetUdpReaderThreadSocketCount() const = 0;
+
+        //! Returns the total time spent updating our UdpReaderThread.
+        //! @return the total time spent updating our UdpReaderThread
+        virtual AZ::TimeMs GetUdpReaderThreadUpdateTime() const = 0;
     };
 }

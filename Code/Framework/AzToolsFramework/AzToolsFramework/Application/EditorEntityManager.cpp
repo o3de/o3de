@@ -43,7 +43,7 @@ namespace AzToolsFramework
 
     void EditorEntityManager::DeleteEntityById(AZ::EntityId entityId)
     {
-        DeleteEntities({entityId});
+        DeleteEntities(EntityIdList{ entityId });
     }
 
     void EditorEntityManager::DeleteEntities(const EntityIdList& entities)
@@ -53,12 +53,30 @@ namespace AzToolsFramework
 
     void EditorEntityManager::DeleteEntityAndAllDescendants(AZ::EntityId entityId)
     {
-        DeleteEntitiesAndAllDescendants({entityId});
+        DeleteEntitiesAndAllDescendants(EntityIdList{ entityId });
     }
 
     void EditorEntityManager::DeleteEntitiesAndAllDescendants(const EntityIdList& entities)
     {
         m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(entities);
+    }
+
+    void EditorEntityManager::DuplicateSelected()
+    {
+        EntityIdList selectedEntities;
+        ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
+
+        m_prefabPublicInterface->DuplicateEntitiesInInstance(selectedEntities);
+    }
+
+    void EditorEntityManager::DuplicateEntityById(AZ::EntityId entityId)
+    {
+        DuplicateEntities(EntityIdList{ entityId });
+    }
+
+    void EditorEntityManager::DuplicateEntities(const EntityIdList& entities)
+    {
+        m_prefabPublicInterface->DuplicateEntitiesInInstance(entities);
     }
 }
 

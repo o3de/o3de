@@ -133,7 +133,15 @@ namespace AZ
                 if (!id.m_guid.IsNull())
                 {
                     *instance = AssetManager::Instance().FindOrCreateAsset(id, instance->GetType(), instance->GetAutoLoadBehavior());
-
+                    if (!instance->GetId().IsValid())
+                    {
+                        // If the asset failed to be created, FindOrCreateAsset returns an asset instance with a null
+                        // id. To preserve the asset id in the source json, reset the asset to an empty one, but with
+                        // the right id.
+                        const auto loadBehavior = instance->GetAutoLoadBehavior();
+                        *instance = Asset<AssetData>(id, instance->GetType());
+                        instance->SetAutoLoadBehavior(loadBehavior);
+                    }
 
                     result.Combine(context.Report(result, "Successfully created Asset<T> with id."));
                 }
