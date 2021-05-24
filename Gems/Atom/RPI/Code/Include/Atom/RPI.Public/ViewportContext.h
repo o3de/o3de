@@ -107,6 +107,10 @@ namespace AZ
             //! Notifies consumers when the default view has changed.
             void ConnectDefaultViewChangedHandler(ViewChangedEvent::Handler& handler);
 
+            using ViewportIdEvent = AZ::Event<AzFramework::ViewportId>;
+            //! Notifies consumers when this ViewportContext is about to be destroyed.
+            void ConnectAboutToBeDestroyedHandler(ViewportIdEvent::Handler& handler);
+
             // ViewportRequestBus interface
             //! Gets the current camera's view matrix.
             const AZ::Matrix4x4& GetCameraViewMatrix() const override;
@@ -140,6 +144,7 @@ namespace AZ
             SceneChangedEvent m_sceneChangedEvent;
             PipelineChangedEvent m_currentPipelineChangedEvent;
             ViewChangedEvent m_defaultViewChangedEvent;
+            ViewportIdEvent m_aboutToBeDestroyedEvent;
 
             ViewportContextManager* m_manager;
             RenderPipelinePtr m_currentPipeline;

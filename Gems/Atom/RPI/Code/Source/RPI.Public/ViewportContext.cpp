@@ -51,6 +51,8 @@ namespace AZ
 
         ViewportContext::~ViewportContext()
         {
+            m_aboutToBeDestroyedEvent.Signal(m_id);
+
             AzFramework::WindowNotificationBus::Handler::BusDisconnect();
             AzFramework::ViewportRequestBus::Handler::BusDisconnect();
 
@@ -179,6 +181,11 @@ namespace AZ
         void ViewportContext::ConnectDefaultViewChangedHandler(ViewChangedEvent::Handler& handler)
         {
             handler.Connect(m_defaultViewChangedEvent);
+        }
+
+        void ViewportContext::ConnectAboutToBeDestroyedHandler(ViewportIdEvent::Handler& handler)
+        {
+            handler.Connect(m_aboutToBeDestroyedEvent);
         }
 
         const AZ::Matrix4x4& ViewportContext::GetCameraViewMatrix() const
