@@ -108,9 +108,17 @@ namespace PhysX
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
+        /// Returns weak pointers to physx::PxMaterial.
+        /// Equivalent to PhysicsMaterialRequests::GetMaterials but it returns physx::PxMaterial pointers instead.
+        /// @param materialSelection MaterialSelection instance to create or get materials for
+        /// @param outMaterials vector of pointers to physx::PxMaterial to fill with. The vector will be cleared inside the function.
         virtual void GetPxMaterials(const Physics::MaterialSelection& materialSelection, AZStd::vector<physx::PxMaterial*>& outMaterials) = 0;
 
+        /// Returns default material
+        /// @return default PhysX::Material instance
         virtual const AZStd::shared_ptr<Material>& GetDefaultMaterial() = 0;
+
+        /// Releases ownership of all materials created before.
         virtual void ReleaseAllMaterials() = 0;
     };
     using MaterialManagerRequestsBus = AZ::EBus<MaterialManagerRequests>;
@@ -131,35 +139,16 @@ namespace PhysX
         MaterialsManager();
         ~MaterialsManager() override;
 
-        /// Returns a vector of weak pointers to materials selected. 
-        /// To be notified if the pointers are deleted, connect to PhysicsMaterialNotifications::MaterialsReleased().
-        /// @param materialSelection MaterialSelection instance to create or get materials for.
-        /// @param outMaterials Collection of material weak pointers corresponding to the material selection to be returned.
+        // PhysicsMaterialRequestBus::Handler overrides...
         void GetMaterials(const Physics::MaterialSelection& materialSelection
             , AZStd::vector<AZStd::weak_ptr<Physics::Material>>& outMaterials) override;
-
-        /// Returns a weak pointer to physics material with the given name.
         AZStd::weak_ptr<Physics::Material> GetMaterialByName(const AZStd::string& name) override;
-
-        /// Returns index of selected material in its material library. 0 is the Default material.
-        /// @param materialSelection Selection of materials.
         AZ::u32 GetFirstSelectedMaterialIndex(const Physics::MaterialSelection& materialSelection) override;
-
-        /// Slightly faster version of GetMaterials that returns physx::PxMaterial pointers instead. \n
-        /// The rest is equivalent to GetMaterials function.
-        /// @param materialSelection MaterialSelection instance to create or get materials for
-        /// @param outMaterials vector of pointers to physx::PxMaterial to fill with. The vector will be cleared inside the function.
-        void GetPxMaterials(const Physics::MaterialSelection& materialSelection, AZStd::vector<physx::PxMaterial*>& outMaterials) override;
-
-        /// Returns default material
-        /// @return default PhysX::Material instance
-        const AZStd::shared_ptr<Material>& GetDefaultMaterial() override;
-
-        /// Return default material
-        /// @return default Physics::Material instance
         AZStd::shared_ptr<Physics::Material> GetGenericDefaultMaterial() override;
 
-        /// Releases ownership of all materials created before.
+        // MaterialManagerRequestsBus::Handler overrides...
+        void GetPxMaterials(const Physics::MaterialSelection& materialSelection, AZStd::vector<physx::PxMaterial*>& outMaterials) override;
+        const AZStd::shared_ptr<Material>& GetDefaultMaterial() override;
         void ReleaseAllMaterials() override;
 
         /// Connect to any necessary buses

@@ -417,7 +417,7 @@ namespace PhysX
             {
                 if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
                 {
-                    if (auto* materialLibrary = physicsSystem->GetDefaultMaterialLibrary().Get())
+                    if (const auto* materialLibrary = physicsSystem->GetDefaultMaterialLibrary().Get())
                     {
                         Physics::MaterialFromAssetConfiguration materialConfiguration;
                         const Physics::MaterialId materialId = colliderConfig.m_materialSelection.GetMaterialId(elementDebugInfo.m_materialSlotIndex);

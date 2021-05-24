@@ -23,7 +23,6 @@ set(FILES
     Tests/PhysXGenericTest.cpp
     Tests/PhysXSpecificTest.cpp
     Tests/PhysXForceRegionTest.cpp
-    Tests/PhysXMaterialLibraryTest.cpp
     Tests/PhysXCollisionFilteringTest.cpp
     Tests/PhysXJointsTest.cpp
     Tests/PhysXSceneTests.cpp

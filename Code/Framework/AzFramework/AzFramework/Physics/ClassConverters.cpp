@@ -259,14 +259,16 @@ namespace Physics
 
                 if (success)
                 {
-                    success = success && dataElement.RemoveElementByName(AZ_CRC("MaterialId", 0x9360e002));
+                    dataElement.RemoveElementByName(AZ_CRC("MaterialId", 0x9360e002));
+                    success = success && (dataElement.FindElement(AZ_CRC("MaterialId", 0x9360e002)) < 0);
                     success = success && dataElement.AddElementWithData(context, "MaterialIds", AZStd::vector<Physics::MaterialId> { materialId });
                 }
             }
 
             if (success && dataElement.GetVersion() <= 2)
             {
-                success = success && dataElement.RemoveElementByName(AZ_CRC_CE("Material"));
+                dataElement.RemoveElementByName(AZ_CRC_CE("Material"));
+                success = success && (dataElement.FindElement(AZ_CRC_CE("Material")) < 0);
             }
 
             return success;

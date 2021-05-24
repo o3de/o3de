@@ -17,6 +17,21 @@
 
 namespace Physics
 {
+    namespace Internal
+    {
+        bool ShapeConfigurationVersionConverter(
+            [[maybe_unused]] AZ::SerializeContext& context,
+            AZ::SerializeContext::DataElementNode& classElement)
+        {
+            if (classElement.GetVersion() <= 1)
+            {
+                classElement.RemoveElementByName(AZ_CRC_CE("UseMaterialsFromAsset"));
+            }
+
+            return true;
+        }
+    }
+
     void ShapeConfiguration::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -158,18 +173,6 @@ namespace Physics
         m_radius = AZ::GetMin(m_radius, (0.5f - AZ::Constants::FloatEpsilon) * m_height);
     }
 
-    static bool ShapeConfigurationVersionConverter(
-        [[maybe_unused]] AZ::SerializeContext& context,
-        AZ::SerializeContext::DataElementNode& classElement)
-    {
-        if (classElement.GetVersion() <= 1)
-        {
-            classElement.RemoveElementByName(AZ_CRC_CE("UseMaterialsFromAsset"));
-        }
-
-        return true;
-    }
-
     void PhysicsAssetShapeConfiguration::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -178,7 +181,7 @@ namespace Physics
                 ->RegisterGenericType<AZStd::shared_ptr<PhysicsAssetShapeConfiguration>>();
 
             serializeContext->Class<PhysicsAssetShapeConfiguration, ShapeConfiguration>()
-                ->Version(2, &ShapeConfigurationVersionConverter)
+                ->Version(2, &Internal::ShapeConfigurationVersionConverter)
                 ->Field("PhysicsAsset", &PhysicsAssetShapeConfiguration::m_asset)
                 ->Field("AssetScale", &PhysicsAssetShapeConfiguration::m_assetScale)
                 ->Field("SubdivisionLevel", &PhysicsAssetShapeConfiguration::m_subdivisionLevel)
