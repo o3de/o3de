@@ -101,6 +101,12 @@ namespace AssetBundler
             delete m_data->m_localFileIO;
             AZ::IO::FileIOBase::SetInstance(m_data->m_priorFileIO);
 
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if(settingsRegistry == &m_registry)
+            {
+                AZ::SettingsRegistry::Unregister(settingsRegistry);
+            }
+
             m_data->m_applicationManager->Stop();
             m_data->m_applicationManager.reset();
             m_data.reset();

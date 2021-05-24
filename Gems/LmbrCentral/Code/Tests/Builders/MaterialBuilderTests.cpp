@@ -71,6 +71,12 @@ protected:
 
     void TearDown() override
     {
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        if(settingsRegistry == &m_registry)
+        {
+            AZ::SettingsRegistry::Unregister(settingsRegistry);
+        }
+
         AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
         m_app->Stop();
         m_app.reset();

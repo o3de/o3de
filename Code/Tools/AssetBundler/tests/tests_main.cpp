@@ -118,7 +118,6 @@ namespace AssetBundler
             {
                 AZ::SettingsRegistry::Register(&m_registry);
                 registry = &m_registry;
-                
             }
             else
             {
@@ -156,6 +155,12 @@ namespace AssetBundler
             AZ::IO::FileIOBase::SetInstance(nullptr);
             delete m_data->m_localFileIO;
             AZ::IO::FileIOBase::SetInstance(m_data->m_priorFileIO);
+
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if(settingsRegistry == &m_registry)
+            {
+                AZ::SettingsRegistry::Unregister(settingsRegistry);
+            }
 
             m_data->m_gemInfoList.set_capacity(0);
             m_data->m_gemSeedFilePairList.set_capacity(0);
