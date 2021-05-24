@@ -593,9 +593,9 @@ namespace UnitTest
 
         float distance;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
-            distance, entity.GetId(), &LmbrCentral::ShapeComponentRequests::DistanceFromPoint, AZ::Vector3(3.6356f, 30.636f, 40.0f));
+            distance, entity.GetId(), &LmbrCentral::ShapeComponentRequests::DistanceFromPoint, AZ::Vector3(4.0f, 33.5f, 38.0f));
 
-        EXPECT_NEAR(distance, 3.0f, 1e-2f);
+        EXPECT_NEAR(distance, 1.45f, 1e-2f);
     }
 
     // distance scaled
@@ -613,7 +613,7 @@ namespace UnitTest
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
             distance, entity.GetId(), &LmbrCentral::ShapeComponentRequests::DistanceFromPoint, AZ::Vector3(10.0f, 37.0f, 48.0f));
 
-        EXPECT_NEAR(distance, 13.0f, 1e-2f);
+        EXPECT_NEAR(distance, 15.0f, 1e-2f);
     }
 
     TEST_F(BoxShapeTest, DistanceFromPointNonUniformScale)
