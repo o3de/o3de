@@ -76,7 +76,6 @@ namespace AMD
     // This function is mimicking LoadTressFXCollisionMeshData in TressFXBoneSkinning with a few tweaks.
     // 1) It reads from an asset data stream instead of a std file stream.
     // 2) Reading all data to an array of strings at once instead of reading line by line.
-    // 3) The bone index to engine index fixup is done in a later step (from hair component)
     bool TressFXCollisionMesh::LoadMeshData(AZ::Data::AssetDataStream* stream)
     {
         if (!stream->IsOpen())
@@ -191,9 +190,8 @@ namespace AMD
 
                     TressFXBoneSkinningData skinData;
 
-                    // Those indices stored in the skin data are bone indices, not engine indices.
-                    // Bone indices are local to the skinning data (start from 0), while engine indices are local to the entire model.
-                    // We will need fix the bone indices (aka convert them to engine indices) later in the hair component.
+                    // Those indices stored in the skin data refer to local bones specific to this TressFX asset, not emotionFx/global bones.
+                    // Bone indices are local to the skinning data (start from 0), while global bone indices are mapped to the entire skeleton.
                     int boneIndex = atoi(sTokens[7].c_str());
                     skinData.boneIndex[0] = (float)boneIndex;
 
@@ -866,7 +864,6 @@ namespace AMD
                 stream->Read(sizeof(AMD::int32), &boneIndex);
                 assert(boneIndex >= 0);
                 skinData.boneIndex[j] = (float)boneIndex; // Stores the bone index from tfx directly
-                //skinData.boneIndex[j] = (float)skeletonBoneIndices[boneIndex]; // Change the joint index to be what the engine wants
                 stream->Read(sizeof(AMD::real32), &skinData.weight[j]);
             }
 
@@ -941,7 +938,6 @@ namespace AMD
             AZ_Warning("Hair Gem", false, "Loading: Hair properties files was not processed properly");
             return false;
         }
-        m_boneIndicesFixed = false;
 
         // Since the tfxmesh file could be optional, check if we need to export it.
         if (header.offsetTFXMesh != stream->GetLength())
@@ -960,40 +956,13 @@ namespace AMD
         return true;
     }
 
-    bool TressFXAsset::FixBoneIndices(const BoneNameToIndexMap& boneIndicesMap, BoneIndexToEngineIndexLookup& outLookup)
+    bool TressFXAsset::GenerateLocaltoGlobalBoneIndexLookup(const BoneNameToIndexMap& globalBoneIndexMap, LocalToGlobalBoneIndexLookup& outLookup)
     {
-        if (m_boneIndicesFixed)
-        {
-            if (m_collisionMesh)
-            {
-                ResetSkinning(m_collisionMesh->m_boneSkinningData, m_collisionMesh->m_reservedLookup);
-            }
-            m_boneIndicesFixed = false;
-        }
-
-        // The tressFX asset contain two sets of skinning data, one for the hair bone and one for collision mesh.
-        if (!GenerateBoneIndexLookup(boneIndicesMap, m_boneNames, outLookup))
-        {
-            return false;
-        }
-        BoneIndexToEngineIndexLookup collisionMeshSkinningLookup;
-        if (m_collisionMesh && !GenerateBoneIndexLookup(boneIndicesMap, m_collisionMesh->m_boneNames, collisionMeshSkinningLookup))
-        {
-            return false;
-        }
-
-        if (m_collisionMesh)
-        {
-            ConvertLocalToGlobalBoneIndex(m_collisionMesh->m_boneSkinningData, collisionMeshSkinningLookup);
-            m_collisionMesh->m_reservedLookup = collisionMeshSkinningLookup;
-        }
-
-        m_boneIndicesFixed = true;
-        return true;
+        return GenerateLocaltoGlobalBoneIndexLookup(globalBoneIndexMap, m_boneNames, outLookup);
     }
 
-    bool TressFXAsset::GenerateBoneIndexLookup( const BoneNameToIndexMap& boneIndicesMap,
-        const std::vector<std::string>& boneNames, BoneIndexToEngineIndexLookup& outLookup)
+    bool TressFXAsset::GenerateLocaltoGlobalBoneIndexLookup( const BoneNameToIndexMap& boneIndicesMap,
+        const std::vector<std::string>& boneNames, LocalToGlobalBoneIndexLookup& outLookup)
     {
         uint32 numMismatchedBone = 0;
         outLookup.resize(boneNames.size());
@@ -1016,48 +985,6 @@ namespace AMD
             return false;
         }
         return true;
-    }
-
-    void TressFXAsset::ConvertLocalToGlobalBoneIndex(std::vector<TressFXBoneSkinningData>& skinningData, const BoneIndexToEngineIndexLookup& lookup)
-    {
-        if (m_boneIndicesFixed)
-        {
-            AZ_Error("Hair Gem", !m_boneIndicesFixed, "Calling to fix skinning data but the bone indices are already fixed.");
-            return;
-        }
-
-        for (TressFXBoneSkinningData& skinData : skinningData)
-        {
-            for (AMD::int32 index = 0; index < TRESSFX_MAX_INFLUENTIAL_BONE_COUNT; ++index)
-            {
-                const uint32 tressFXBoneIndex = static_cast<uint32>(skinData.boneIndex[index]);
-                skinData.boneIndex[index] = static_cast<float>(lookup[tressFXBoneIndex]);
-            }
-        }
-    }
-
-    void TressFXAsset::ResetSkinning(std::vector<TressFXBoneSkinningData>& skinningData, const BoneIndexToEngineIndexLookup& reservedLookup)
-    {
-        if (!m_boneIndicesFixed)
-        {
-            AZ_Error("Hair Gem", false, "Calling to reset skinning data but the bone indices have not been fixed.");
-            return;
-        }
-
-        std::unordered_map<int, int> engineIndexToBoneIndex;
-        for (int i = 0; i < reservedLookup.size(); ++i)
-        {
-            engineIndexToBoneIndex.emplace(std::pair<int, int>(reservedLookup[i], i));
-        }
-
-        for (TressFXBoneSkinningData& skinData : skinningData)
-        {
-            for (AMD::int32 index = 0; index < TRESSFX_MAX_INFLUENTIAL_BONE_COUNT; ++index)
-            {
-                const uint32 engineBoneIndex = static_cast<uint32>(skinData.boneIndex[index]);
-                skinData.boneIndex[index] = engineIndexToBoneIndex.at(engineBoneIndex);
-            }
-        }
     }
 } // namespace AMD
 

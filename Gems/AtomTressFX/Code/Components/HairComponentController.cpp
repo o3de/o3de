@@ -297,20 +297,20 @@ namespace AZ
                     return false;
                 }
 
-                // Fix the bone indices in the tressFX asset skinning data.
-                AMD::BoneNameToIndexMap nameToIndexMap; 
+                // Generate local TressFX to global Emfx bone index lookup.
+                AMD::BoneNameToIndexMap globalNameToIndexMap; 
                 const EMotionFX::Skeleton* skeleton = actorInstance->GetActor()->GetSkeleton();
                 const u32 numBones = skeleton->GetNumNodes();
-                nameToIndexMap.reserve(numBones);
+                globalNameToIndexMap.reserve(numBones);
                 for (u32 i = 0; i < numBones; ++i)
                 {
                     const char* boneName = skeleton->GetNode(i)->GetName();
-                    nameToIndexMap[boneName] = i;
+                    globalNameToIndexMap[boneName] = i;
                 }
 
-                if (!hairAsset->FixBoneIndices(nameToIndexMap, m_boneIndexLookup))
+                if (!hairAsset->GenerateLocaltoGlobalBoneIndexLookup(globalNameToIndexMap, m_boneIndexLookup))
                 {
-                    AZ_Error("Hair Gem", false, "Cannot convert bone index to engine index. The hair asset may not be compatible with the actor.");
+                    AZ_Error("Hair Gem", false, "Cannot convert local bone index to global bone index. The hair asset may not be compatible with the actor.");
                     return false;
                 }
                 
