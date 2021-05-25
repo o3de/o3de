@@ -18,8 +18,7 @@
     <Include File="AzNetworking/DataStructures/ByteBuffer.h"/>
 
     <NetworkProperty Type="Multiplayer::ClientInputId" Name="LastInputId" Init="Multiplayer::ClientInputId{ 0 }" ReplicateFrom="Authority" ReplicateTo="Server" IsRewindable="false" IsPredictable="false" IsPublic="false" Container="Object" ExposeToEditor="false" GenerateEventBindings="false" />
-    <NetworkProperty Type="int32_t"     Name="myVector" Init="100" ReplicateFrom="Authority" ReplicateTo="Client" IsRewindable="true" IsPredictable="false" IsPublic="true" Container="Vector" Count = "7" ExposeToEditor="false" GenerateEventBindings="false" />
-    
+
     <RemoteProcedure Name="SendClientInput" InvokeFrom="Autonomous" HandleOn="Authority" IsPublic="true" IsReliable="false" GenerateEventBindings="false" Description="Client to server move / input RPC">
         <Param Type="Multiplayer::NetworkInputArray" Name="inputArray"  />
         <Param Type="AZ::HashValue32" Name="stateHash" />
