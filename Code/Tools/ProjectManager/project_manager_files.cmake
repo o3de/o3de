@@ -10,7 +10,8 @@
 #
 
 set(FILES
-    project_manager.qrc
+    Resources/ProjectManager.qrc
+    Resources/ProjectManager.qss
     Source/main.cpp
     Source/ScreenDefs.h
     Source/ScreenFactory.h
@@ -22,6 +23,12 @@ set(FILES
     Source/EngineInfo.cpp
     Source/FirstTimeUseScreen.h
     Source/FirstTimeUseScreen.cpp
+    Source/FormLineEditWidget.h
+    Source/FormLineEditWidget.cpp
+    Source/FormBrowseEditWidget.h
+    Source/FormBrowseEditWidget.cpp
+    Source/PathValidator.h
+    Source/PathValidator.cpp
     Source/ProjectManagerWindow.h
     Source/ProjectManagerWindow.cpp
     Source/ProjectTemplateInfo.h
@@ -45,7 +52,6 @@ set(FILES
     Source/ProjectSettingsScreen.ui
     Source/EngineSettingsScreen.h
     Source/EngineSettingsScreen.cpp
-    Source/EngineSettingsScreen.ui
     Source/ProjectButtonWidget.h
     Source/ProjectButtonWidget.cpp
     Source/LinkWidget.h

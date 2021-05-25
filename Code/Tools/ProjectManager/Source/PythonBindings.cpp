@@ -328,12 +328,91 @@ namespace O3DE::ProjectManager
 
     AZ::Outcome<EngineInfo> PythonBindings::GetEngineInfo()  
     {
+        EngineInfo engineInfo;
+        bool result = ExecuteWithLock([&] {
+            pybind11::str enginePath = m_registration.attr("get_this_engine_path")();
+
+            auto o3deData = m_registration.attr("load_o3de_manifest")();
+            if (pybind11::isinstance<pybind11::dict>(o3deData))
+            {
+                engineInfo.m_path                    = Py_To_String(enginePath); 
+                engineInfo.m_defaultGemsFolder       = Py_To_String(o3deData["default_gems_folder"]); 
+                engineInfo.m_defaultProjectsFolder   = Py_To_String(o3deData["default_projects_folder"]); 
+                engineInfo.m_defaultRestrictedFolder = Py_To_String(o3deData["default_restricted_folder"]); 
+                engineInfo.m_defaultTemplatesFolder  = Py_To_String(o3deData["default_templates_folder"]); 
+                engineInfo.m_thirdPartyPath          = Py_To_String_Optional(o3deData,"third_party_path",""); 
+            }
+
+            auto engineData = m_registration.attr("get_engine_data")(pybind11::none(), enginePath);
+            if (pybind11::isinstance<pybind11::dict>(engineData))
+            {
+                try
+                {
+                    engineInfo.m_version = Py_To_String_Optional(engineData,"O3DEVersion","0.0.0.0"); 
+                    engineInfo.m_name    = Py_To_String_Optional(engineData,"engine_name","O3DE"); 
+                }
+                catch ([[maybe_unused]] const std::exception& e)
+                {
+                    AZ_Warning("PythonBindings", false, "Failed to get EngineInfo from %s", Py_To_String(enginePath));
+                }
+            }
+        });
+
+        if (!result || !engineInfo.IsValid())
+        {
+            return AZ::Failure();
+        }
+        else
+        {
+            return AZ::Success(AZStd::move(engineInfo)); 
+        }
+
         return AZ::Failure();
     }
 
-    bool PythonBindings::SetEngineInfo([[maybe_unused]] const EngineInfo& engineInfo)  
+    bool PythonBindings::SetEngineInfo(const EngineInfo& engineInfo)  
     {
-        return false;
+        bool result = ExecuteWithLock([&] {
+            pybind11::str enginePath             = engineInfo.m_path.toStdString();
+            pybind11::str defaultProjectsFolder  = engineInfo.m_defaultProjectsFolder.toStdString();
+            pybind11::str defaultGemsFolder      = engineInfo.m_defaultGemsFolder.toStdString();
+            pybind11::str defaultTemplatesFolder = engineInfo.m_defaultTemplatesFolder.toStdString();
+
+            auto registrationResult = m_registration.attr("register")(
+                enginePath,       // engine_path 
+                pybind11::none(), // project_path 
+                pybind11::none(), // gem_path 
+                pybind11::none(), // template_path 
+                pybind11::none(), // restricted_path 
+                pybind11::none(), // repo_uri 
+                pybind11::none(), // default_engines_folder
+                defaultProjectsFolder,
+                defaultGemsFolder, 
+                defaultTemplatesFolder 
+                );
+
+            if (registrationResult.cast<int>() != 0)
+            {
+                result = false;
+            }
+
+            auto manifest = m_registration.attr("load_o3de_manifest")();
+            if (pybind11::isinstance<pybind11::dict>(manifest))
+            {
+                try
+                {
+                    manifest["third_party_path"] = engineInfo.m_thirdPartyPath.toStdString();
+                    m_registration.attr("save_o3de_manifest")(manifest);
+                }
+                catch ([[maybe_unused]] const std::exception& e)
+                {
+                    AZ_Warning("PythonBindings", false, "Failed to set third party path.");
+                }
+            }
+
+        });
+
+        return result;
     }
 
     AZ::Outcome<GemInfo> PythonBindings::GetGem(const QString& path)  
