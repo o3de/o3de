@@ -156,6 +156,7 @@ namespace TestImpact
         TestEnumerator::JobInfo::CachePolicy cachePolicy) const
     {
         AZStd::vector<TestEnumerator::JobInfo> jobInfos;
+        jobInfos.reserve(testTargets.size());
         for (size_t jobId = 0; jobId < testTargets.size(); jobId++)
         {
             jobInfos.push_back(GenerateTestEnumerationJobInfo(testTargets[jobId], { jobId }, cachePolicy));
@@ -168,6 +169,7 @@ namespace TestImpact
         const AZStd::vector<const TestTarget*>& testTargets) const
     {
         AZStd::vector<TestRunner::JobInfo> jobInfos;
+        jobInfos.reserve(testTargets.size());
         for (size_t jobId = 0; jobId < testTargets.size(); jobId++)
         {
             jobInfos.push_back(GenerateRegularTestRunJobInfo(testTargets[jobId], { jobId }));
@@ -181,6 +183,7 @@ namespace TestImpact
         CoverageLevel coverageLevel) const
     {
         AZStd::vector<InstrumentedTestRunner::JobInfo> jobInfos;
+        jobInfos.reserve(testTargets.size());
         for (size_t jobId = 0; jobId < testTargets.size(); jobId++)
         {
             jobInfos.push_back(GenerateInstrumentedTestRunJobInfo(testTargets[jobId], { jobId }, coverageLevel));

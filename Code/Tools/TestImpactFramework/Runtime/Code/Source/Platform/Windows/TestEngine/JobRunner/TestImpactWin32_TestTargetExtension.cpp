@@ -10,8 +10,6 @@
  *
  */
 
-#pragma once
-
 #include <Target/TestImpactTestTarget.h>
 #include <TestEngine/TestImpactTestEngineException.h>
 #include <TestEngine/JobRunner/TestImpactTestTargetExtension.h>

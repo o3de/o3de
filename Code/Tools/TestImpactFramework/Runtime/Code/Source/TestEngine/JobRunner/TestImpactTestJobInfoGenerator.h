@@ -25,7 +25,7 @@ namespace TestImpact
 {
     class TestTarget;
 
-    // Generates job information for the different test job runner types.
+    //! Generates job information for the different test job runner types.
     class TestJobInfoGenerator
     {
     public:
@@ -44,7 +44,7 @@ namespace TestImpact
             const RepoPath& testRunnerBinary,
             const RepoPath& instrumentBinary);
 
-        //! Generates a the information for a test enumeration job.
+        //! Generates the information for a test enumeration job.
         //! @param testTarget The test target to generate the job information for.
         //! @param jobId The id to assign for this job.
         //! @param cachePolicy The cache policy to use for this job.
@@ -53,14 +53,14 @@ namespace TestImpact
             TestEnumerator::JobInfo::Id jobId,
             TestEnumerator::JobInfo::CachePolicy cachePolicy) const;
 
-        //! Generates a the information for a test run job.
+        //! Generates the information for a test run job.
         //! @param testTarget The test target to generate the job information for.
         //! @param jobId The id to assign for this job.
         TestRunner::JobInfo GenerateRegularTestRunJobInfo(
             const TestTarget* testTarget,
             TestRunner::JobInfo::Id jobId) const;
 
-        //! Generates a the information for an instrumented test run job.
+        //! Generates the information for an instrumented test run job.
         //! @param testTarget The test target to generate the job information for.
         //! @param jobId The id to assign for this job.
         //! @param coverageLevel The coverage level to use for this job.
