@@ -12,6 +12,8 @@
 
 #include <GemCatalog/GemCatalogScreen.h>
 #include <PythonBindingsInterface.h>
+#include <GemCatalog/GemSortFilterProxyModel.h>
+#include <GemCatalog/GemFilterWidget.h>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -25,15 +27,18 @@ namespace O3DE::ProjectManager
         : ScreenWidget(parent)
     {
         m_gemModel = new GemModel(this);
+        GemSortFilterProxyModel* proxyModel = new GemSortFilterProxyModel(m_gemModel, this);
 
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setMargin(0);
+        vLayout->setSpacing(0);
         setLayout(vLayout);
 
         QHBoxLayout* hLayout = new QHBoxLayout();
+        hLayout->setMargin(0);
         vLayout->addLayout(hLayout);
 
-        m_gemListView = new GemListView(m_gemModel, this);
+        m_gemListView = new GemListView(proxyModel, proxyModel->GetSelectionModel(), this);
         m_gemInspector = new GemInspector(m_gemModel, this);
         m_gemInspector->setFixedWidth(320);
 
@@ -56,8 +61,19 @@ namespace O3DE::ProjectManager
         }
 #endif
 
-        hLayout->addWidget(m_gemListView);
+        GemFilterWidget* filterWidget = new GemFilterWidget(proxyModel);
+        filterWidget->setFixedWidth(250);
+
+        QVBoxLayout* middleVLayout = new QVBoxLayout();
+        middleVLayout->setMargin(0);
+        middleVLayout->setSpacing(0);
+        middleVLayout->addWidget(m_gemListView);
+
+        hLayout->addWidget(filterWidget);
+        hLayout->addLayout(middleVLayout);
         hLayout->addWidget(m_gemInspector);
+
+        proxyModel->InvalidateFilter();
     }
 
     QVector<GemInfo> GemCatalogScreen::GenerateTestData()
@@ -73,10 +89,12 @@ namespace O3DE::ProjectManager
         gem.m_documentationLink = "http://www.amazon.com";
         gem.m_dependingGemUuids = QStringList({"EMotionFX", "Atom"});
         gem.m_conflictingGemUuids = QStringList({"Vegetation", "Camera", "ScriptCanvas", "CloudCanvas", "Networking"});
+        gem.m_types = (GemInfo::Code | GemInfo::Asset);
         gem.m_version = "v1.01";
         gem.m_lastUpdatedDate = "24th April 2021";
         gem.m_binarySizeInKB = 40;
         gem.m_features = QStringList({"Animation", "Assets", "Physics"});
+        gem.m_gemOrigin = GemInfo::O3DEFoundation;
         result.push_back(gem);
 
         gem.m_name = "Atom";
