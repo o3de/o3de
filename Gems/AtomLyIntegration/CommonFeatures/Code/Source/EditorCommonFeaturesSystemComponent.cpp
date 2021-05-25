@@ -44,8 +44,7 @@ namespace AZ
             {
                 serialize->Class<EditorCommonFeaturesSystemComponent, AZ::Component>()
                     ->Version(1)
-                    ->Field("Atom Level Default Slice Path", &EditorCommonFeaturesSystemComponent::m_atomLevelDefaultAssetPath)
-                    ->Field("Atom Level Default Prefab Path", &EditorCommonFeaturesSystemComponent::m_atomLevelDefaultPrefabPath);
+                    ->Field("Atom Level Default Asset Path", &EditorCommonFeaturesSystemComponent::m_atomLevelDefaultAssetPath);
 
                 if (AZ::EditContext* ec = serialize->GetEditContext())
                 {
@@ -54,10 +53,8 @@ namespace AZ
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(nullptr, &EditorCommonFeaturesSystemComponent::m_atomLevelDefaultAssetPath, "Atom Level Default Slice Path",
-                            "path to the slice to instantiate for a new Atom level")
-                        ->DataElement(nullptr, &EditorCommonFeaturesSystemComponent::m_atomLevelDefaultPrefabPath, "Atom Level Default Prefab Path",
-                            "path to the prefab to instantiate for a new Atom level")
+                        ->DataElement(nullptr, &EditorCommonFeaturesSystemComponent::m_atomLevelDefaultAssetPath, "Atom Level Default Asset Path",
+                            "path to the slice the instantiate for a new Atom level")
                         ;
                 }
             }
@@ -149,45 +146,6 @@ namespace AZ
                             AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
                                 &AzToolsFramework::SliceEditorEntityOwnershipServiceRequests::InstantiateEditorSlice, asset,
                                 worldTransform);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                    m_levelDefaultPrefabAssetId, &AZ::Data::AssetCatalogRequests::GetAssetIdByPath, m_atomLevelDefaultAssetPath.c_str(),
-                    azrtti_typeid<AZ::PrefabAsset>(), false);
-
-                if (m_levelDefaultPrefabAssetId.IsValid())
-                {
-                    AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::AssetManager::Instance().GetAsset<AZ::PrefabAsset>(
-                        m_levelDefaultPrefabAssetId, AZ::Data::AssetLoadBehavior::Default);
-
-                    asset.BlockUntilLoadComplete();
-
-                    if (asset)
-                    {
-                        AZ::Vector3 cameraPosition = AZ::Vector3::CreateZero();
-                        bool activeCameraFound = false;
-                        Camera::EditorCameraRequestBus::BroadcastResult(
-                            activeCameraFound, &Camera::EditorCameraRequestBus::Events::GetActiveCameraPosition, cameraPosition);
-
-                        if (activeCameraFound)
-                        {
-//                             AZ::Transform worldTransform = AZ::Transform::CreateTranslation(cameraPosition);
-// 
-//                             AzToolsFramework::PrefabEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
-// 
-//                             if (IEditor* editor = GetLegacyEditor(); !editor->IsUndoSuspended())
-//                             {
-//                                 editor->SuspendUndo();
-//                             }
-// 
-//                             AzToolsFramework::PrefabEditorEntityOwnershipServiceRequestBus::Broadcast(
-//                                 &AzToolsFramework::PrefabEditorEntityOwnershipServiceRequests::InstantiateEditorPrefab, asset,
-//                                 worldTransform);
-                            return;
                         }
                     }
                 }

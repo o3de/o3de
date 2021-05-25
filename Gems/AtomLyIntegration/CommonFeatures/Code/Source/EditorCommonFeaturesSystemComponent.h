@@ -71,8 +71,6 @@ namespace AZ
 
             AZ::Data::AssetId m_levelDefaultSliceAssetId;
             AZStd::string m_atomLevelDefaultAssetPath{ "LevelAssets/default.slice" };
-            AZ::Data::AssetId m_levelDefaultPrefabAssetId;
-            AZStd::string m_atomLevelDefaultPrefabPath{ "LevelAssets/Atom_Default_Environment.prefab" };
             float m_envProbeHeight{ 200.0f };
 
             AZStd::unique_ptr<AZ::LyIntegration::Thumbnails::CommonThumbnailRenderer> m_renderer;
