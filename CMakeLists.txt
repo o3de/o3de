@@ -53,10 +53,21 @@ include(cmake/Monolithic.cmake)
 include(cmake/SettingsRegistry.cmake)
 include(cmake/TestImpactFramework/LYTestImpactFramework.cmake)
 include(cmake/CMakeFiles.cmake)
+include(cmake/O3DEJson.cmake)
 
 ################################################################################
 # Subdirectory processing
 ################################################################################
+
+function(add_engine_json_external_subdirectories)
+    read_json_external_subdirs(external_subdis ${LY_ROOT_FOLDER}/engine.json)
+    foreach(external_subdir ${external_subdis})
+        file(REAL_PATH ${external_subdir} real_external_subdir BASE_DIRECTORY ${LY_ROOT_FOLDER})
+        list(APPEND engine_external_subdirs ${real_external_subdir})
+    endforeach()
+
+    set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS ${engine_external_subdirs})
+endfunction()
 
 # Add the projects first so the Launcher can find them
 include(cmake/Projects.cmake)
@@ -73,11 +84,11 @@ if(NOT INSTALLED_ENGINE)
         add_subdirectory(Tools/RemoteConsole/ly_remote_console/tests/)
     endif()
 
-    include(cmake/EngineJson.cmake)
     # Add external subdirectories listed in the engine.json. LY_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
     # external subdirectories
-    read_engine_external_subdirs(engine_external_subdirectories)
-    list(APPEND LY_EXTERNAL_SUBDIRS ${engine_external_subdirectories})
+    add_engine_json_external_subdirectories()
+    get_property(external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS)
+    list(APPEND LY_EXTERNAL_SUBDIRS ${external_subdirs})
 
     # Loop over the additional external subdirectories and invoke add_subdirectory on them
     foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
