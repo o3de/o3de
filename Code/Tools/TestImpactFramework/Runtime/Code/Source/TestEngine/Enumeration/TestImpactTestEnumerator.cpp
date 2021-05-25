@@ -13,7 +13,7 @@
 #include <TestImpactFramework/TestImpactUtils.h>
 
 #include <Artifact/Factory/TestImpactTestEnumerationSuiteFactory.h>
-#include <TestEngine/Enumeration/TestImpactTestEnumerationException.h>
+#include <TestEngine/TestImpactTestEngineException.h>
 #include <TestEngine/Enumeration/TestImpactTestEnumerationSerializer.h>
 #include <TestEngine/Enumeration/TestImpactTestEnumerator.h>
 #include <TestEngine/Enumeration/TestImpactTestEnumeration.h>
@@ -36,7 +36,7 @@ namespace TestImpact
                     AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
             {
                 AZ_TestImpact_Eval(
-                    !IsFlagSet(cacheExceptionPolicy, Bitwise::CacheExceptionPolicy::OnCacheWriteFailure), TestEnumerationException,
+                    !IsFlagSet(cacheExceptionPolicy, Bitwise::CacheExceptionPolicy::OnCacheWriteFailure), TestEngineException,
                     "Couldn't open cache file for writing");
                 return;
             }
@@ -44,50 +44,16 @@ namespace TestImpact
             if (cacheFile.Write(cacheBytes.data(), cacheBytes.size()) == 0)
             {
                 AZ_TestImpact_Eval(
-                    !IsFlagSet(cacheExceptionPolicy, Bitwise::CacheExceptionPolicy::OnCacheWriteFailure), TestEnumerationException,
+                    !IsFlagSet(cacheExceptionPolicy, Bitwise::CacheExceptionPolicy::OnCacheWriteFailure), TestEngineException,
                     "Couldn't write cache file data");
                 return;
             }
-        }
-
-        AZStd::optional<TestEnumeration> ReadCacheFile(const RepoPath& path, Bitwise::CacheExceptionPolicy cacheExceptionPolicy)
-        {
-            AZ::IO::SystemFile cacheFile;
-            AZStd::string cacheJSON;
-            if (!cacheFile.Open(path.c_str(), AZ::IO::SystemFile::SF_OPEN_READ_ONLY))
-            {
-                AZ_TestImpact_Eval(
-                    !IsFlagSet(cacheExceptionPolicy, Bitwise::CacheExceptionPolicy::OnCacheNotExist), TestEnumerationException,
-                    "Couldn't locate cache file");
-                return AZStd::nullopt;
-            }
-
-            const AZ::IO::SystemFile::SizeType length = cacheFile.Length();
-            if (length == 0)
-            {
-                AZ_TestImpact_Eval(
-                    !IsFlagSet(cacheExceptionPolicy, Bitwise::CacheExceptionPolicy::OnCacheReadFailure), TestEnumerationException,
-                    "Cache file is empty");
-                return AZStd::nullopt;
-            }
-
-            cacheFile.Seek(0, AZ::IO::SystemFile::SF_SEEK_BEGIN);
-            cacheJSON.resize(length);
-            if (cacheFile.Read(length, cacheJSON.data()) != length)
-            {
-                AZ_TestImpact_Eval(
-                    !IsFlagSet(cacheExceptionPolicy, Bitwise::CacheExceptionPolicy::OnCacheReadFailure), TestEnumerationException,
-                    "Couldn't read cache file");
-                return AZStd::nullopt;
-            }
-
-            return DeserializeTestEnumeration(cacheJSON);
         }
     } // namespace
 
     TestEnumeration ParseTestEnumerationFile(const RepoPath& enumerationFile)
     {
-        return TestEnumeration(GTest::TestEnumerationSuitesFactory(ReadFileContents<TestEnumerationException>(enumerationFile)));
+        return TestEnumeration(GTest::TestEnumerationSuitesFactory(ReadFileContents<TestEngineException>(enumerationFile)));
     }
 
     TestEnumerationJobData::TestEnumerationJobData(const RepoPath& enumerationArtifact, AZStd::optional<Cache>&& cache)
@@ -128,7 +94,16 @@ namespace TestImpact
             if (jobInfo.GetCache().has_value() && jobInfo.GetCache()->m_policy == JobData::CachePolicy::Read)
             {
                 JobMeta meta;
-                auto enumeration = ReadCacheFile(jobInfo.GetCache()->m_file, cacheExceptionPolicy);
+                AZStd::optional<TestEnumeration> enumeration;
+
+                try
+                {
+                    enumeration = TestEnumeration(DeserializeTestEnumeration(ReadFileContents<TestEngineException>(jobInfo.GetCache()->m_file)));
+                }
+                catch (const TestEngineException& e)
+                {
+                    AZ_Printf("Enumerate", "Enumeration cache error: %s", e.what());
+                }
 
                 // Even though cached jobs don't get executed we still give the client the opportunity to handle the job state
                 // change in order to make the caching process transparent to the client
@@ -164,12 +139,20 @@ namespace TestImpact
                 const auto& [meta, jobInfo] = jobData;
                 if (meta.m_result == JobResult::ExecutedWithSuccess)
                 {
-                    const auto& enumeration = (enumerations[jobId] = ParseTestEnumerationFile(jobInfo->GetEnumerationArtifactPath()));
-
-                    // Write out the enumeration to a cache file if we have a cache write policy for this job
-                    if (jobInfo->GetCache().has_value() && jobInfo->GetCache()->m_policy == JobData::CachePolicy::Write)
+                    try
                     {
-                        WriteCacheFile(enumeration.value(), jobInfo->GetCache()->m_file, cacheExceptionPolicy);
+                        const auto& enumeration = (enumerations[jobId] = ParseTestEnumerationFile(jobInfo->GetEnumerationArtifactPath()));
+
+                        // Write out the enumeration to a cache file if we have a cache write policy for this job
+                        if (jobInfo->GetCache().has_value() && jobInfo->GetCache()->m_policy == JobData::CachePolicy::Write)
+                        {
+                            WriteCacheFile(enumeration.value(), jobInfo->GetCache()->m_file, cacheExceptionPolicy);
+                        }
+                    }
+                    catch (const Exception& e)
+                    {
+                        AZ_Warning("Enumerate", false, e.what());
+                        enumerations[jobId] = AZStd::nullopt;
                     }
                 }
             }

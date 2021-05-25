@@ -14,8 +14,8 @@
 
 #include <Artifact/Factory/TestImpactModuleCoverageFactory.h>
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
+#include <TestEngine/TestImpactTestEngineException.h>
 #include <TestEngine/Run/TestImpactInstrumentedTestRunner.h>
-#include <TestEngine/Run/TestImpactTestRunException.h>
 #include <TestEngine/Run/TestImpactTestRunSerializer.h>
 
 #include <AzCore/IO/SystemFile.h>
@@ -36,18 +36,10 @@ namespace TestImpact
     InstrumentedTestRunner::JobPayload ParseTestRunAndCoverageFiles(
         const RepoPath& runFile,
         const RepoPath& coverageFile,
-        AZStd::chrono::milliseconds duration,
-        InstrumentedTestRunner::CoverageExceptionPolicy coverageExceptionPolicy)
+        AZStd::chrono::milliseconds duration)
     {
-        TestRun run(GTest::TestRunSuitesFactory(ReadFileContents<TestRunException>(runFile)), duration);
-        AZStd::vector<ModuleCoverage> moduleCoverages = Cobertura::ModuleCoveragesFactory(ReadFileContents<TestRunException>(coverageFile));
-        if (moduleCoverages.empty())
-        {
-            AZ_TestImpact_Eval(
-                !IsFlagSet(coverageExceptionPolicy, Bitwise::CoverageExceptionPolicy::OnEmptyCoverage), TestRunException,
-                AZStd::string::format("No coverage data generated for '%s'", coverageFile.c_str()));
-        }
-
+        TestRun run(GTest::TestRunSuitesFactory(ReadFileContents<TestEngineException>(runFile)), duration);
+        AZStd::vector<ModuleCoverage> moduleCoverages = Cobertura::ModuleCoveragesFactory(ReadFileContents<TestEngineException>(coverageFile));
         TestCoverage coverage(AZStd::move(moduleCoverages));
         return {AZStd::move(run), AZStd::move(coverage)};
     }
@@ -59,13 +51,12 @@ namespace TestImpact
 
     AZStd::pair<ProcessSchedulerResult, AZStd::vector<InstrumentedTestRunner::Job>> InstrumentedTestRunner::RunInstrumentedTests(
         const AZStd::vector<JobInfo>& jobInfos,
-        CoverageExceptionPolicy coverageExceptionPolicy,
         JobExceptionPolicy jobExceptionPolicy,
         AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
         AZStd::optional<ClientJobCallback> clientCallback)
     {
-        const auto payloadGenerator = [this, coverageExceptionPolicy](const JobDataMap& jobDataMap)
+        const auto payloadGenerator = [this](const JobDataMap& jobDataMap)
         {
             PayloadMap<Job> runs;
             for (const auto& [jobId, jobData] : jobDataMap)
@@ -78,18 +69,12 @@ namespace TestImpact
                         runs[jobId] = ParseTestRunAndCoverageFiles(
                             jobInfo->GetRunArtifactPath(),
                             jobInfo->GetCoverageArtifactPath(),
-                            meta.m_duration.value(),
-                            coverageExceptionPolicy);
+                            meta.m_duration.value());
                     }
                     catch (const Exception& e)
                     {
-                        AZ_Warning("RunInstrumentedTests", false, e.what());
+                        AZ_Printf("RunInstrumentedTests", e.what());
                         runs[jobId] = AZStd::nullopt;
-
-                        if (coverageExceptionPolicy == CoverageExceptionPolicy::OnEmptyCoverage)
-                        {
-                            break;
-                        }
                     }
                 }
             }

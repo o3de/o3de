@@ -10,17 +10,18 @@
  *
  */
 
-#pragma once
-
-#include <TestImpactFramework/TestImpactException.h>
+#include <TestEngine/TestImpactTestEngineRegularRun.h>
 
 namespace TestImpact
 {
-    //! Exception for test enumerations and test enumeration related operations.
-    class TestEnumerationException
-        : public Exception
+    TestEngineRegularRun::TestEngineRegularRun(TestEngineJob&& testJob, AZStd::optional<TestRun>&& testRun)
+        : TestEngineJob(AZStd::move(testJob))
+        , m_testRun(AZStd::move(testRun))
     {
-    public:
-        using Exception::Exception;
-    };
+    }
+
+    const AZStd::optional<TestRun>& TestEngineRegularRun::GetTestRun() const
+    {
+        return m_testRun;
+    }
 } // namespace TestImpact

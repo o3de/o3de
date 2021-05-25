@@ -12,14 +12,21 @@
 
 #pragma once
 
-#include <TestImpactFramework/TestImpactException.h>
+#include <TestEngine/TestImpactTestEngineJob.h>
+#include <TestEngine/Enumeration/TestImpactTestEnumeration.h>
 
 namespace TestImpact
 {
-    //! Exception for test runs and test run related operations.
-    class TestRunException : public Exception
+    //! Represents the generated test enumeration data for a test engine enumeration.
+    class TestEngineEnumeration
+        : public TestEngineJob
     {
     public:
-        using Exception::Exception;
+        TestEngineEnumeration(TestEngineJob&& job, AZStd::optional<TestEnumeration>&& enumeration);
+
+        //! Returns the test enumeration payload for this job (if any).
+        const AZStd::optional<TestEnumeration>& GetTestEnumeration() const;
+    private:
+        AZStd::optional<TestEnumeration> m_enumeration;
     };
 } // namespace TestImpact
