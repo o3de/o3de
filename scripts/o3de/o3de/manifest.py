@@ -131,7 +131,7 @@ def get_o3de_manifest() -> pathlib.Path:
         json_data.update({'default_restricted_folder': default_restricted_folder.as_posix()})
 
         json_data.update({'projects': []})
-        json_data.update({'gems': []})
+        json_data.update({'external_subdirectories': []})
         json_data.update({'templates': []})
         json_data.update({'restricted': []})
         json_data.update({'repos': []})
@@ -172,8 +172,15 @@ def get_o3de_manifest() -> pathlib.Path:
     return manifest_path
 
 
-def load_o3de_manifest() -> dict:
-    with get_o3de_manifest().open('r') as f:
+def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
+    """
+    Loads supplied manifest file or ~/.o3de/o3de_manifest.json if None
+
+    :param manifest_path: optional path to manifest file to load
+    """
+    if not manifest_path:
+        manifest_path = get_o3de_manifest()
+    with manifest_path.open('r') as f:
         try:
             json_data = json.load(f)
         except json.JSONDecodeError as e:
@@ -183,8 +190,16 @@ def load_o3de_manifest() -> dict:
             return json_data
 
 
-def save_o3de_manifest(json_data: dict) -> None:
-    with get_o3de_manifest().open('w') as s:
+def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> None:
+    """
+        Save the json dictionary to the supplied manifest file or ~/.o3de/o3de_manifest.json if None
+
+        :param json_data: dictionary to save in json format at the file path
+        :param manifest_path: optional path to manifest file to save
+        """
+    if not manifest_path:
+        manifest_path = get_o3de_manifest()
+    with manifest_path.open('w') as s:
         try:
             s.write(json.dumps(json_data, indent=4))
         except OSError as e:
@@ -198,36 +213,44 @@ def get_this_engine() -> dict:
     return engine_data
 
 
-def get_engines() -> dict:
+def get_engines() -> list:
     json_data = load_o3de_manifest()
     return json_data['engines']
 
 
-def get_projects() -> dict:
+def get_projects() -> list:
     json_data = load_o3de_manifest()
     return json_data['projects']
 
 
-def get_gems() -> dict:
-    json_data = load_o3de_manifest()
-    return json_data['gems']
+def get_gems() -> list:
+    def is_gem_subdirectory(subdir):
+        return (pathlib.Path(subdir) / 'gem.json').exists()
+
+    external_subdirs = get_external_subdirectories()
+    return list(filter(is_gem_subdirectory, external_subdirs)) if external_subdirs else []
 
 
-def get_templates() -> dict:
+def get_templates() -> list:
     json_data = load_o3de_manifest()
     return json_data['templates']
 
 
-def get_restricted() -> dict:
+def get_restricted() -> list:
     json_data = load_o3de_manifest()
     return json_data['restricted']
 
 
-def get_repos() -> dict:
+def get_external_subdirectories() -> list:
+    json_data = load_o3de_manifest()
+    return json_data['external_subdirectories']
+
+
+def get_repos() -> list:
     json_data = load_o3de_manifest()
     return json_data['repos']
 
-
+# engine.json queries
 def get_engine_projects() -> list:
     engine_path = get_this_engine_path()
     engine_object = get_engine_json_data(engine_path=engine_path)
@@ -262,6 +285,21 @@ def get_engine_external_subdirectories() -> list:
     engine_object = get_engine_json_data(engine_path=engine_path)
     return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
                engine_object['external_subdirectories'])) if 'external_subdirectories' in engine_object else []
+
+
+# project.json queries
+def get_project_gems(project_path: pathlib.Path) -> list:
+    def is_gem_subdirectory(subdir):
+        return (pathlib.Path(subdir) / 'gem.json').exists()
+
+    external_subdirs = get_project_external_subdirectories()
+    return list(filter(is_gem_subdirectory, external_subdirs)) if external_subdirs else []
+
+
+def get_project_external_subdirectories(project_path: pathlib.Path) -> list:
+    project_object = get_project_json_data(project_path=project_path)
+    return list(map(lambda rel_path: (pathlib.Path(project_path) / rel_path).as_posix(),
+               project_object['external_subdirectories'])) if 'external_subdirectories' in project_object else []
 
 
 def get_all_projects() -> list:

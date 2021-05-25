@@ -19,7 +19,7 @@ import os
 import pathlib
 import sys
 
-from o3de import add_gem_cmake, cmake, manifest, validation
+from o3de import cmake, manifest, validation
 
 logger = logging.getLogger()
 logging.basicConfig()
@@ -238,9 +238,6 @@ def add_gem_to_project(gem_name: str = None,
                         return 1
                     # add the dependency
                     ret_val = add_gem_dependency(project_server_dependencies_file, gem_target)
-
-    if not ret_val and add_to_cmake:
-        ret_val = add_gem_cmake.add_gem_to_cmake(gem_path=gem_path, engine_path=engine_path)
 
     return ret_val
 

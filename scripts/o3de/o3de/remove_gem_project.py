@@ -18,7 +18,7 @@ import os
 import pathlib
 import sys
 
-from o3de import cmake, remove_gem_cmake
+from o3de import cmake
 
 logger = logging.getLogger()
 logging.basicConfig()
@@ -196,11 +196,6 @@ def remove_gem_from_project(gem_name: str = None,
                     if error_code:
                         ret_val = error_code
 
-    if remove_from_cmake:
-        error_code = remove_gem_cmake.remove_gem_from_cmake(gem_path=gem_path)
-        if error_code:
-            ret_val = error_code
-
     return ret_val
 
 
@@ -256,9 +251,6 @@ def add_parser_args(parser):
                                       default='Common',
                                       help='Optional list of platforms this gem should be removed from'
                                            ' Ex. --platforms Mac,Windows,Linux')
-    parser.add_argument('-r', '--remove-from-cmake', type=bool, required=False,
-                                      default=False,
-                                      help='Automatically call remove-from-cmake.')
 
     parser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
                                       help='By default the home folder is the user folder, override it to this folder.')

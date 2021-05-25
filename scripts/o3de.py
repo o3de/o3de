@@ -40,8 +40,7 @@ def add_args(parser, subparsers) -> None:
         sys.path.remove(str(script_abs_dir.resolve()))
 
     from o3de import engine_template, global_project, register, print_registration, get_registration, download, \
-        add_external_subdirectory, remove_external_subdirectory, add_gem_cmake, remove_gem_cmake, add_gem_project, \
-        remove_gem_project, sha256
+        add_gem_project, remove_gem_project, sha256
 
     if script_abs_dir_removed:
         sys.path.insert(0, str(script_abs_dir))
@@ -64,18 +63,6 @@ def add_args(parser, subparsers) -> None:
 
     # download
     download.add_args(subparsers)
-
-    # add external subdirectories
-    add_external_subdirectory.add_args(subparsers)
-
-    # remove external subdirectories
-    remove_external_subdirectory.add_args(subparsers)
-
-    # add gems to cmake
-    add_gem_cmake.add_args(subparsers)
-
-    # remove gems from cmake
-    remove_gem_cmake.add_args(subparsers)
 
     # add a gem to a project
     add_gem_project.add_args(subparsers)
