@@ -29,14 +29,12 @@ namespace ScriptCanvas
             class FunctionDefinitionNode
                 : public Internal::Nodeling
             {
-            private:
+            public:
                 enum NodeVersion
                 {
-                    Initial  = 1,
+                    Initial = 1,
                     RemoveDefaultDisplayGroup,
                 };
-
-            public:
 
                 SCRIPTCANVAS_NODE(FunctionDefinitionNode);
 
