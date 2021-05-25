@@ -28,7 +28,6 @@ namespace O3DE::ProjectManager
         explicit GemCatalogScreen(QWidget* parent = nullptr);
         ~GemCatalogScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
-        QString GetNextButtonText() override;
 
     private:
         QVector<GemInfo> GenerateTestData();

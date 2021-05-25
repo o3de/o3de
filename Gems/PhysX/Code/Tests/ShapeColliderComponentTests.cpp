@@ -241,7 +241,7 @@ namespace PhysXEditorTests
         SetPolygonPrismHeight(entityId, 2.0f);
 
         // update the transform scale and non-uniform scale
-        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetScale, AZ::Vector3(2.0f));
+        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalUniformScale, 2.0f);
         AZ::NonUniformScaleRequestBus::Event(entityId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(0.5f, 1.5f, 2.0f));
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
@@ -347,6 +347,7 @@ namespace PhysXEditorTests
     TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithUnsupportedShape_HandledGracefully)
     {
         UnitTest::ErrorHandler unsupportedShapeWarningHandler("Unsupported shape");
+        UnitTest::ErrorHandler rigidBodyWarningHandler("No Collider or Shape information found when creating Rigid body");
 
         // create an editor entity with a shape collider component and a cylinder shape component
         // the cylinder shape is not currently supported by the shape collider component
@@ -355,10 +356,8 @@ namespace PhysXEditorTests
         editorEntity->CreateComponent(LmbrCentral::EditorCompoundShapeComponentTypeId);
         editorEntity->Activate();
 
-        // expect 2 warnings
-                //1 raised for the unsupported shape
-                //2 when re-creating the underlying simulated body
-        EXPECT_EQ(unsupportedShapeWarningHandler.GetWarningCount(), 2);
+        EXPECT_EQ(unsupportedShapeWarningHandler.GetExpectedWarningCount(), 1);
+        EXPECT_EQ(rigidBodyWarningHandler.GetExpectedWarningCount(), 1);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
@@ -435,8 +434,8 @@ namespace PhysXEditorTests
             &LmbrCentral::BoxShapeComponentRequests::GetBoxDimensions);
 
         // update the transform
-        const AZ::Vector3 scale(2.0f);
-        AZ::TransformBus::Event(editorEntityId, &AZ::TransformInterface::SetLocalScale, scale);
+        const float scale = 2.0f;
+        AZ::TransformBus::Event(editorEntityId, &AZ::TransformInterface::SetLocalUniformScale, scale);
         const AZ::Vector3 translation(10.0f, 20.0f, 30.0f);
         AZ::TransformBus::Event(editorEntityId, &AZ::TransformInterface::SetWorldTranslation, translation);
 
@@ -527,10 +526,8 @@ namespace PhysXEditorTests
         editorParentEntity->Activate();
 
         // set some scale to parent entity
-        const AZ::Vector3 parentScale(2.0f);
-        AZ::TransformBus::Event(editorParentEntity->GetId(),
-            &AZ::TransformInterface::SetLocalScale,
-            parentScale);
+        const float parentScale = 2.0f;
+        AZ::TransformBus::Event(editorParentEntity->GetId(), &AZ::TransformInterface::SetLocalUniformScale, parentScale);
 
         // create an editor child entity with a shape collider component and a box shape component
         EntityPtr editorChildEntity = CreateInactiveEditorEntity("ChildEntity");
