@@ -30,13 +30,6 @@
 
 namespace O3DE::ProjectManager
 {
-    inline constexpr static int s_contentMargins = 80;
-    inline constexpr static int s_spacerSize = 20;
-    inline constexpr static int s_projectButtonRowCount = 4;
-    inline constexpr static int s_newProjectButtonWidth = 156;
-
-    static QString s_projectPreviewImagePath = "/preview.png";
-
     ProjectsHomeScreen::ProjectsHomeScreen(QWidget* parent)
         : ScreenWidget(parent)
     {
@@ -82,7 +75,7 @@ namespace O3DE::ProjectManager
             for (auto project : projectsResult.GetValue())
             {
                 ProjectButton* projectButton;
-                QString projectPreviewPath = project.m_path + s_projectPreviewImagePath;
+                QString projectPreviewPath = project.m_path + m_projectPreviewImagePath;
                 QFileInfo doesPreviewExist(projectPreviewPath);
                 if (doesPreviewExist.exists() && doesPreviewExist.isFile())
                 {

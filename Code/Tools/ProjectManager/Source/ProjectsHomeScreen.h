@@ -39,6 +39,13 @@ namespace O3DE::ProjectManager
     private:
         QAction* m_createNewProjectAction;
         QAction* m_addExistingProjectAction;
+
+        const QString m_projectPreviewImagePath = "/preview.png";
+        inline constexpr static int s_contentMargins = 80;
+        inline constexpr static int s_spacerSize = 20;
+        inline constexpr static int s_projectButtonRowCount = 4;
+        inline constexpr static int s_newProjectButtonWidth = 156;
+
     };
 
 } // namespace O3DE::ProjectManager
