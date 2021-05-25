@@ -12,7 +12,7 @@
 
 namespace AZ
 {
-    AZ_MATH_INLINE Transform::Transform(const Vector3& translation, const Quaternion& rotation, const float scale)
+    AZ_MATH_INLINE Transform::Transform(const Vector3& translation, const Quaternion& rotation, const Vector3& scale)
         : m_translation(translation)
         , m_rotation(rotation)
         , m_scale(scale)

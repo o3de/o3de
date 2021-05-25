@@ -30,7 +30,7 @@ namespace AzToolsFramework
             EditorTransform()
             {
                 m_translate = AZ::Vector3::CreateZero();
-                m_scale = 1.0f;
+                m_scale = AZ::Vector3::CreateOne();
                 m_rotate = AZ::Vector3::CreateZero();
                 m_locked = false;
             }
@@ -41,7 +41,7 @@ namespace AzToolsFramework
             }
 
             AZ::Vector3 m_translate; //! Translation in engine units (meters)
-            float m_scale;
+            AZ::Vector3 m_scale;
             AZ::Vector3 m_rotate; //! Rotation in degrees
             bool m_locked;
         };

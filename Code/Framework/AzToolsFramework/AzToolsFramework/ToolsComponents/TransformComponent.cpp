@@ -51,9 +51,9 @@ namespace AzToolsFramework
             const AZ::u32 ParentEntityCRC = AZ_CRC("Parent Entity", 0x5b1b276c);
 
             // Decompose a transform into euler angles in degrees, scale (along basis, any shear will be dropped), and translation.
-            void DecomposeTransform(const AZ::Transform& transform, AZ::Vector3& translation, AZ::Vector3& rotation, float& scale)
+            void DecomposeTransform(const AZ::Transform& transform, AZ::Vector3& translation, AZ::Vector3& rotation, AZ::Vector3& scale)
             {
-                scale = transform.GetUniformScale();
+                scale = transform.GetScale();
                 translation = transform.GetTranslation();
                 rotation = transform.GetRotation().GetEulerDegrees();
             }
@@ -357,7 +357,7 @@ namespace AzToolsFramework
 
         AZ::Transform TransformComponent::GetLocalScaleTM() const
         {
-            return AZ::Transform::CreateUniformScale(m_editorTransform.m_scale);
+            return AZ::Transform::CreateUniformScale(m_editorTransform.m_scale.GetMaxElement());
         }
 
         const AZ::Transform& TransformComponent::GetLocalTM()
@@ -374,8 +374,7 @@ namespace AzToolsFramework
         // given a local transform, update local transform.
         void TransformComponent::SetLocalTM(const AZ::Transform& finalTx)
         {
-            AZ::Vector3 tx, rot;
-            float scale;
+            AZ::Vector3 tx, rot, scale;
             Internal::DecomposeTransform(finalTx, tx, rot, scale);
 
             m_editorTransform.m_translate = tx;
@@ -680,13 +679,13 @@ namespace AzToolsFramework
 
         void TransformComponent::SetLocalScale(const AZ::Vector3& scale)
         {
-            m_editorTransform.m_scale = scale.GetMaxElement();
+            m_editorTransform.m_scale = scale;
             TransformChanged();
         }
 
         AZ::Vector3 TransformComponent::GetLocalScale()
         {
-            return AZ::Vector3(m_editorTransform.m_scale);
+            return m_editorTransform.m_scale;
         }
 
         AZ::Vector3 TransformComponent::GetWorldScale()
@@ -696,13 +695,13 @@ namespace AzToolsFramework
 
         void TransformComponent::SetLocalUniformScale(float scale)
         {
-            m_editorTransform.m_scale = scale;
+            m_editorTransform.m_scale = AZ::Vector3(scale);
             TransformChanged();
         }
 
         float TransformComponent::GetLocalUniformScale()
         {
-            return m_editorTransform.m_scale;
+            return m_editorTransform.m_scale.GetMaxElement();
         }
 
         float TransformComponent::GetWorldUniformScale()
@@ -1309,7 +1308,7 @@ namespace AzToolsFramework
                     {
                         AzToolsFramework::ScopedUndoBatch undo("Reset transform values");
                         m_editorTransform.m_translate = AZ::Vector3::CreateZero();
-                        m_editorTransform.m_scale = 1.0f;
+                        m_editorTransform.m_scale = AZ::Vector3::CreateOne();
                         m_editorTransform.m_rotate = AZ::Vector3::CreateZero();
                         OnTransformChanged();
                         SetDirty();

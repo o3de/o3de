@@ -63,7 +63,7 @@ namespace AZ
         Transform() = default;
 
         //! Construct a transform from components.
-        Transform(const Vector3& translation, const Quaternion& rotation, const float scale);
+        Transform(const Vector3& translation, const Quaternion& rotation, const Vector3& scale);
 
         //! Creates an identity transform.
         static Transform CreateIdentity();
@@ -89,7 +89,7 @@ namespace AZ
 
         static Transform CreateFromMatrix3x4(const Matrix3x4& value);
 
-        //! Sets the transform to apply (uniform) scale only, no rotation or translation.
+        //! Sets the transform to apply scale only, no rotation or translation.
         static Transform CreateScale(const AZ::Vector3& scale);
 
         //! Sets the transform to apply (uniform) scale only, no rotation or translation.

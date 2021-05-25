@@ -50,6 +50,7 @@ namespace AZ
                 AZStd::vector<Vector2> vertices = m_shapeBus->GetPolygonPrism()->m_vertexContainer.GetVertices();
 
                 Transform transform = GetTransform();
+                transform.SetUniformScale(transform.GetUniformScale()); // Poly Prism only supports uniform scale.
 
                 AZStd::vector<Vector3> transformedVertices;
                 transformedVertices.reserve(vertices.size());

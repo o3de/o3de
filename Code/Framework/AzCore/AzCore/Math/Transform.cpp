@@ -250,7 +250,7 @@ namespace AZ
                 Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::Value)->
                 Attribute(Script::Attributes::GenericConstructorOverride, &Internal::TransformDefaultConstructor)->
-                Constructor<const Vector3&, const Quaternion&, const float>()->
+                Constructor<const Vector3&, const Quaternion&, const Vector3&>()->
                 Method("GetBasis", &Transform::GetBasis)->
                 Method("GetBasisX", &Transform::GetBasisX)->
                 Method("GetBasisY", &Transform::GetBasisY)->
