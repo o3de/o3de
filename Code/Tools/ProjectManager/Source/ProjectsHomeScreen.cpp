@@ -105,7 +105,7 @@ namespace O3DE::ProjectManager
         }
 
         // Using border-image allows for scaling options background-image does not support
-        setStyleSheet("O3DE--ProjectManager--ScreenWidget { border-image: url(:/Resources/Backgrounds/FirstTimeBackgroundImage.jpg) repeat repeat; }");
+        setStyleSheet("O3DE--ProjectManager--ScreenWidget { border-image: url(:/Backgrounds/FirstTimeBackgroundImage.jpg) repeat repeat; }");
 
         connect(m_createNewProjectAction, &QAction::triggered, this, &ProjectsHomeScreen::HandleNewProjectButton);
         connect(m_addExistingProjectAction, &QAction::triggered, this, &ProjectsHomeScreen::HandleAddProjectButton);
