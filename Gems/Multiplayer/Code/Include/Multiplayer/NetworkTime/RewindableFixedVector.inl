@@ -15,26 +15,22 @@
 namespace Multiplayer
 {
     template <typename TYPE, uint32_t SIZE>
-    inline RewindableFixedVector<TYPE, SIZE>::RewindableFixedVector(const TYPE& initialValue, uint32_t count)
+    constexpr RewindableFixedVector<TYPE, SIZE>::RewindableFixedVector(const TYPE& initialValue, uint32_t count)
     {
-        resize_no_construct(count);
-        for (uint32_t idx = 0l idx < size(); ++idx)
-        {
-            m_container[idx] = initialValue;
-        }
+        m_container.resize(count, initialValue)
     }
 
     template <typename TYPE, uint32_t SIZE>
-    inline RewindableFixedVector<TYPE, SIZE>::~RewindableFixedVector()
+    RewindableFixedVector<TYPE, SIZE>::~RewindableFixedVector()
     {
         ;
     }
 
     template <typename TYPE, uint32_t SIZE>
-    inline bool RewindableFixedVector<TYPE, SIZE>::Serialize(AzNetworking::ISerializer& serializer)
+    constexpr bool RewindableFixedVector<TYPE, SIZE>::Serialize(AzNetworking::ISerializer& serializer)
     {
-        m_size = m_container.size();
-        if(!m_size.Serialize(serializer) && !resize(m_size))
+        m_serializedSize = m_container.size();
+        if(!m_serializedSize.Serialize(serializer) && !resize(m_serializedSize))
         {
             return false;
         }
@@ -51,18 +47,18 @@ namespace Multiplayer
     }
 
     template <typename TYPE, uint32_t SIZE>
-    inline bool RewindableFixedVector<TYPE, SIZE>::Serialize(AzNetworking::ISerializer& serializer, AzNetworking::IBitset& deltaRecord)
+    constexpr bool RewindableFixedVector<TYPE, SIZE>::Serialize(AzNetworking::ISerializer& serializer, AzNetworking::IBitset& deltaRecord)
     {
         if (deltaRecord.GetBit(SIZE))
         {
-            uint32_t origSize = m_size;
-            m_size = m_container.size();
-            if(!m_size.Serialize(serializer) && !resize(m_size))
+            uint32_t origSize = m_serializedSize;
+            m_serializedSize = m_container.size();
+            if(!m_serializedSize.Serialize(serializer) && !resize(m_serializedSize))
             {
                 return false;
             }
 
-            if ((serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject) && origSize == m_size)
+            if ((serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject) && origSize == m_serializedSize)
             {
                 deltaRecord.SetBit(SIZE, false);
             }
@@ -88,7 +84,7 @@ namespace Multiplayer
     }
     
     template <typename TYPE, uint32_t SIZE>
-    inline bool RewindableFixedVector<TYPE, SIZE>::copy_values(const TYPE* buffer, uint32_t bufferSize)
+    constexpr bool RewindableFixedVector<TYPE, SIZE>::copy_values(const TYPE* buffer, uint32_t bufferSize)
     {
         if (!resize(bufferSize))
         {
@@ -99,41 +95,35 @@ namespace Multiplayer
         {
             m_container[idx] = buffer[idx];
         }
-
+        
         return true;
     }
 
-
     template <typename TYPE, uint32_t SIZE>
-    inline RewindableFixedVector<TYPE, SIZE>& RewindableFixedVector<TYPE, SIZE>::operator=(const RewindableFixedVector<TYPE, SIZE>& RHS)
+    constexpr RewindableFixedVector<TYPE, SIZE>& RewindableFixedVector<TYPE, SIZE>::operator=(const RewindableFixedVector<TYPE, SIZE>& rhs)
     {
         resize(RHS.size());
         for (uint32_t idx = 0; idx < size(); ++i)
         {
-            m_container[idx] = RHS.m_container[idx];
+            m_container[idx] = rhs.m_container[idx];
         }
         return *this;
     }
 
     template <typename TYPE, uint32_t SIZE>
-    bool RewindableFixedVector<TYPE, SIZE>::operator ==(const RewindableFixedVector<TYPE, SIZE>& RHS) const
+    constexpr bool RewindableFixedVector<TYPE, SIZE>::operator ==(const RewindableFixedVector<TYPE, SIZE>& rhs) const
     {
-        if (this->size() != RHS.size())
-        {
-            return false;
-        }
-
-        return m_container == RHS.m_container && m_size == m_size;
+        return m_container == rhs.m_container && m_serializedSize == rhs.m_serializedSize && size == rhs.size();
     }
 
     template <typename TYPE, uint32_t SIZE>
-    bool RewindableFixedVector<TYPE, SIZE>::operator !=(const RewindableFixedVector<TYPE, SIZE>& RHS) const
+    constexpr bool RewindableFixedVector<TYPE, SIZE>::operator !=(const RewindableFixedVector<TYPE, SIZE>& rhs) const
     {
-        return !(*this == RHS);
+        return !(*this == rhs);
     }
 
     template <typename TYPE, uint32_t SIZE>
-    bool RewindableFixedVector<TYPE, SIZE>::resize(uint32_t count)
+    constexpr bool RewindableFixedVector<TYPE, SIZE>::resize(uint32_t count)
     {
         if (count > SIZE)
         {
@@ -145,21 +135,13 @@ namespace Multiplayer
             return true;
         }
 
-        if (count > size())
-        {
-            for (uint32_t idx = size(); idx < count; ++idx)
-            {
-                m_container[idx] = TYPE();
-            }
-        }
-
-        m_container.resize(count);
+        m_container.resize(count, TYPE());
 
         return true;
     }
 
     template <typename TYPE, uint32_t SIZE>
-    inline bool RewindableFixedVector<TYPE, SIZE>::resize_no_construct(uint32_t count)
+    constexpr bool RewindableFixedVector<TYPE, SIZE>::resize_no_construct(uint32_t count)
     {
         if (count > SIZE)
         {
@@ -172,70 +154,64 @@ namespace Multiplayer
     }
 
     template <typename TYPE, uint32_t SIZE>
-    inline void RewindableFixedVector<TYPE, SIZE>::clear()
+    constexpr void RewindableFixedVector<TYPE, SIZE>::clear()
     {
-        resize(0);
+        m_container.clear();
     }
 
     template <typename TYPE, uint32_t SIZE>
-    inline const TYPE& RewindableFixedVector<TYPE, SIZE>::operator[](uint32_t index) const
+    constexpr const TYPE& RewindableFixedVector<TYPE, SIZE>::operator[](uint32_t index) const
     {
         AZ_Assert(index < size(), "Out of bounds access (requested %u, reserved %u)", index, size());
         return m_container[index].Get();
     }
 
     template <typename TYPE, uint32_t SIZE>
-    inline TYPE& RewindableFixedVector<TYPE, SIZE>::operator[](uint32_t index)
+    constexpr TYPE& RewindableFixedVector<TYPE, SIZE>::operator[](uint32_t index)
     {
         AZ_Assert(index < size(), "Out of bounds access (requested %u, reserved %u)", index, size());
         return m_container[index].Modify();
     }
 
     template <typename TYPE, uint32_t SIZE>
-    inline bool RewindableFixedVector<TYPE, SIZE>::push_back(const TYPE& value)
+    constexpr bool RewindableFixedVector<TYPE, SIZE>::push_back(const TYPE& value)
     {
-        const uint32_t iBufferSize = size();
-
-        if (!resize(iBufferSize + 1))
+        if (size() < SIZE)
         {
-            return false;
+            m_container.push_back(value);
+            return true;
         }
 
-        m_container[iBufferSize] = value;
-
-        return true;
+        return false;
     }
 
     template <typename TYPE, uint32_t SIZE>
-    inline bool RewindableFixedVector<TYPE, SIZE>::pop_back()
+    constexpr bool RewindableFixedVector<TYPE, SIZE>::pop_back()
     {
-        const uint32_t iBufferSize = size();
-
-        if (iBufferSize <= 0)
+        if (size() > 0)
         {
-            return false;
+            m_container.pop_back();
+            return true;
         }
 
-        resize(iBufferSize - 1);
-
-        return true;
+        return false;
     }
 
     template <typename TYPE, uint32_t SIZE>
-    inline bool RewindableFixedVector<TYPE, SIZE>::empty() const
+    constexpr bool RewindableFixedVector<TYPE, SIZE>::empty() const
     {
         return m_container.empty();
     }
 
     template <typename TYPE, uint32_t SIZE>
-    inline const TYPE& RewindableFixedVector<TYPE, SIZE>::back() const
+    constexpr const TYPE& RewindableFixedVector<TYPE, SIZE>::back() const
     {
         AZ_Assert(size() > 0, "Attempted to get back element of an empty RewindableFixedVector");
-        return m_container[size() - 1].Get();
+        return m_container.back().Get();
     }
 
     template <typename TYPE, uint32_t SIZE>
-    inline uint32_t RewindableFixedVector<TYPE, SIZE>::size() const
+    constexpr uint32_t RewindableFixedVector<TYPE, SIZE>::size() const
     {
         return m_container.size();
     }

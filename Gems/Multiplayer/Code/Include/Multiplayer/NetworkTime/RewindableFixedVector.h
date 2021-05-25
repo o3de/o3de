@@ -30,12 +30,12 @@ namespace Multiplayer
     {
     public:
         //! Default constructor
-        RewindableFixedVector() = default;
+        constexpr RewindableFixedVector() = default;
 
         //! Construct and initialize buffer to the provided value
         //! @param initialValue initial value to set the internal buffer to
         //! @param count        initial value to reserve in the vector
-        RewindableFixedVector(const TYPE& initialValue, uint32_t count);
+        constexpr RewindableFixedVector(const TYPE& initialValue, uint32_t count);
 
         //! Destructor
         ~RewindableFixedVector();
@@ -43,86 +43,86 @@ namespace Multiplayer
         //! Serialization method for fixed vector contained rewindable objects
         //! @param serializer ISerializer instance to use for serialization
         //! @return bool true for success, false for serialization failure
-        bool Serialize(AzNetworking::ISerializer& serializer);
+        constexpr bool Serialize(AzNetworking::ISerializer& serializer);
 
         //! Serialization method for fixed vector contained rewindable objects
         //! @param serializer ISerializer instance to use for serialization
         //! @return bool true for success, false for serialization failure
-        bool Serialize(AzNetworking::ISerializer& serializer, AzNetworking::IBitset &deltaRecord);
+        constexpr bool Serialize(AzNetworking::ISerializer& serializer, AzNetworking::IBitset &deltaRecord);
 
         //! Copies elements from the buffer pointed to by Buffer to this FixedSizeVector instance, vector size will be set to BufferSize
         //! @param buffer     pointer to the buffer to copy
         //! @param bufferSize number of elements in the buffer to copy
         //! @return bool true on success, false if the input data was too large to fit in the vector
-        bool copy_values(const TYPE* buffer, uint32_t bufferSize);
+        constexpr bool copy_values(const TYPE* buffer, uint32_t bufferSize);
 
         //! Copy buffer from the provided vector
         //! @param RHS instance to copy from
-        RewindableFixedVector<TYPE, SIZE>& operator=(const RewindableFixedVector<TYPE, SIZE>& RHS);
+        constexpr RewindableFixedVector<TYPE, SIZE>& operator=(const RewindableFixedVector<TYPE, SIZE>& rhs);
 
         //! Equality operator, returns true if the current instance is equal to RHS
-        //! @param RHS the FixedSizeVector instance to test for equality against
+        //! @param rhs the FixedSizeVector instance to test for equality against
         //! @return bool true if equal, false if not
-        bool operator ==(const RewindableFixedVector<TYPE, SIZE>& RHS) const;
+        constexpr bool operator ==(const RewindableFixedVector<TYPE, SIZE>& rhs) const;
 
         //! Inequality operator, returns true if the current instance is not equal to RHS
-        //! @param RHS the FixedSizeVector instance to test for inequality against
+        //! @param rhs the FixedSizeVector instance to test for inequality against
         //! @return bool false if equal, true if not equal
-        bool operator !=(const RewindableFixedVector<TYPE, SIZE>& RHS) const;
+        constexpr bool operator !=(const RewindableFixedVector<TYPE, SIZE>& rhs) const;
 
         //! Resizes the vector to the requested number of elements, initializing new elements if necessary
         //! @param count the number of elements to size the vector to
         //! @return bool true on success
-        bool resize(uint32_t count);
+        constexpr bool resize(uint32_t count);
 
         //! Resizes the vector to the requested number of elements, without initialization
         //! @param count the number of elements to size the vector to
         //! @return bool true on success
-        bool resize_no_construct(uint32_t count);
+        constexpr bool resize_no_construct(uint32_t count);
 
         //! Resets the vector, returning it to size 0
-        void clear();
+        constexpr void clear();
 
         //! Const element access
         //! @param Index index of the element to return
         //! @return const reference to the requested element
-        const TYPE& operator[](uint32_t index) const;
+        constexpr const TYPE& operator[](uint32_t index) const;
 
         //! Non-const element access
         //! @param Index index of the element to return
         //! @return non-const reference to the requested element
-        TYPE& operator[](uint32_t index);
+        constexpr TYPE& operator[](uint32_t index);
 
         //! Pushes a new element to the back of the vector
         //! @param Value value to append to the back of this vector
         //! @return boolean true on success, false if the vector was full
-        bool push_back(const TYPE& value);
+        constexpr bool push_back(const TYPE& value);
 
         //! Pops the last element off the vector, decreasing the vector's size by one
         //! @return bool true on success, false if the vector was empty
-        bool pop_back();
+        constexpr bool pop_back();
 
         //! Returns if the vector is empty
         //! @return bool true on empty, false if the vector contains valid elements
-        bool empty() const;
+        constexpr bool empty() const;
 
         //! Gets the last element of the vector
-        const TYPE& back() const;
+        constexpr const TYPE& back() const;
 
         //! Gets the size of the vector
-        uint32_t size() const;
+        constexpr uint32_t size() const;
 
         typedef const RewindableObject<TYPE, Multiplayer::RewindHistorySize>* const_iterator;
         const_iterator begin() const { return m_container.cbegin(); }
         const_iterator end() const { return m_container.cend(); }
         typedef RewindableObject<TYPE, Multiplayer::RewindHistorySize>* iterator;
-        iterator begin() { return m_container.begin(); }
-        iterator end() { return m_container.end(); }
+        constexpr iterator begin() { return m_container.begin(); }
+        constexpr iterator end() { return m_container.end(); }
 
     private:
         AZStd::fixed_vector<RewindableObject<TYPE, Multiplayer::RewindHistorySize>, SIZE> m_container;
         // Synchronized value for vector size, prefer using size() locally which checks m_container.size()
-        RewindableObject<uint32_t, Multiplayer::RewindHistorySize> m_size;
+        RewindableObject<uint32_t, Multiplayer::RewindHistorySize> m_serializedSize;
     };
 }
 
