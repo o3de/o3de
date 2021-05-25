@@ -10,7 +10,6 @@
 *
 */
 
-#include "ImageProcessing_precompiled.h"
 #include "AtlasBuilderComponent.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
