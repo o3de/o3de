@@ -110,7 +110,7 @@ namespace AZ
                 Data::Asset<HairAsset> m_hairAsset;
 
                 // Store a cache of the bone index lookup we generated during the creation of hair object.
-                AMD::BoneIndexToEngineIndexLookup m_boneIndexLookup;
+                AMD::LocalToGlobalBoneIndexLookup m_boneIndexLookup;
 
                 // Cache the bone matrices array to avoid frequent allocation.
                 AZStd::vector<AZ::Matrix3x4> m_cachedBoneMatrices;
