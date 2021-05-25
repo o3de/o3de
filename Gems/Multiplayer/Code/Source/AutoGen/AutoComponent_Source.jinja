@@ -654,7 +654,11 @@ const {{ Property.attrib['Type'] }}& {{ ClassName }}::Get{{ UpperFirst(Property.
 }
 
 {%     elif Property.attrib['Container'] == 'Vector' %}
-const AZStd::fixed_vector<{% if Property.attrib['IsRewindable']|booleanTrue %}RewindableObject<{% endif %}{{ Property.attrib['Type'] }}{% if Property.attrib['IsRewindable']|booleanTrue %}, Multiplayer::RewindHistorySize>{% endif %}, {{ Property.attrib['Count'] }}>& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}Vector() const
+{% if Property.attrib['IsRewindable']|booleanTrue %}
+const RewindableFixedVector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}Vector() const
+{% else %}
+const AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& {{ ClassName }}::Get{{ UpperFirst(Property.attrib['Name']) }}Vector() const
+{% endif %}
 {
     return {{ Prefix }}m_{{ LowerFirst(Property.attrib['Name']) }};
 }
