@@ -110,7 +110,7 @@ namespace AzFramework::ProjectManager
             }
 
             AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-            processLaunchInfo.m_commandlineParameters = AZ::IO::FixedMaxPathString(executablePath);
+            processLaunchInfo.m_commandlineParameters = executablePath.String();
             launchSuccess = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
         }
         if (ownsSystemAllocator)
