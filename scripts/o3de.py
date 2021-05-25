@@ -13,27 +13,65 @@ import argparse
 import pathlib
 import sys
 
-# As o3de.py shares the same name as the o3de package attempting to use a regular
-# from o3de import <module> line tries to import from the current o3de.py script and not the package
-# So the current script directory is removed from the sys.path temporary
-SCRIPT_DIR_REMOVED = False
-SCRIPT_DIR = pathlib.Path(__file__).parent.resolve()
-if str(SCRIPT_DIR) in sys.path:
-    SCRIPT_DIR_REMOVED = True
-    sys.path.remove(str(SCRIPT_DIR))
-
-from o3de import engine_template
-from o3de import global_project
-from o3de import registration
-
-if SCRIPT_DIR_REMOVED:
-    sys.path.insert(0, str(SCRIPT_DIR))
-
 
 def add_args(parser, subparsers) -> None:
-    global_project.add_args(parser, subparsers)
-    engine_template.add_args(parser, subparsers)
-    registration.add_args(parser, subparsers)
+    """
+    add_args is called to add expected parser arguments and subparsers arguments to each command such that it can be
+    invoked by o3de.py
+    Ex o3de.py can invoke the register  downloadable commands by importing register,
+    call add_args and execute: python o3de.py register --gem-path "C:/TestGem"
+    :param parser: the caller instantiates a parser and passes it in here
+    :param subparsers: the caller instantiates subparsers and passes it in here
+    """
+
+    # As o3de.py shares the same name as the o3de package attempting to use a regular
+    # from o3de import <module> line tries to import from the current o3de.py script and not the package
+    # So the current script directory is removed from the sys.path temporary
+    script_dir_removed = False
+    script_abs_dir_removed = False
+    script_dir = pathlib.Path(__file__).parent
+    script_abs_dir = pathlib.Path(__file__).parent.resolve()
+    while str(script_dir) in sys.path:
+        script_dir_removed = True
+        sys.path.remove(str(script_dir))
+    while str(script_abs_dir) in sys.path:
+        script_abs_dir_removed = True
+        # Remove the absolute path to the script_dir as well
+        sys.path.remove(str(script_abs_dir.resolve()))
+
+    from o3de import engine_template, global_project, register, print_registration, get_registration, download, \
+        add_gem_project, remove_gem_project, sha256
+
+    if script_abs_dir_removed:
+        sys.path.insert(0, str(script_abs_dir))
+    if script_dir_removed:
+        sys.path.insert(0, str(script_dir))
+
+    # global_project
+    global_project.add_args(subparsers)
+    # engine templaate
+    engine_template.add_args(subparsers)
+
+    # register
+    register.add_args(subparsers)
+
+    # show
+    print_registration.add_args(subparsers)
+
+    # get-registered
+    get_registration.add_args(subparsers)
+
+    # download
+    download.add_args(subparsers)
+
+    # add a gem to a project
+    add_gem_project.add_args(subparsers)
+
+    # remove a gem from a project
+    remove_gem_project.add_args(subparsers)
+
+    # sha256
+    sha256.add_args(subparsers)
 
 
 if __name__ == "__main__":

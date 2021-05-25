@@ -1,6 +1,6 @@
 {
     "template_name": "DefaultProject",
-    "restricted": "o3de",
+    "restricted_name": "o3de",
     "restricted_platform_relative_path": "Templates",
     "origin": "The primary repo for DefaultProject goes here: i.e. http://www.mydomain.com",
     "license": "What license DefaultProject uses goes here: i.e. https://opensource.org/licenses/MIT",
@@ -47,6 +47,12 @@
             "origin": "Code/CMakeLists.txt",
             "isTemplated": true,
             "isOptional": false
+        },
+        {
+            "file": "Code/gem.json",
+            "origin": "Code/gem.json",
+            "isTemplated": true,
+            "isOptional": true
         },
         {
             "file": "Code/Include/${Name}/${Name}Bus.h",

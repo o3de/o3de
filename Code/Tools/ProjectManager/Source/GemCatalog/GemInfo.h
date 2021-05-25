@@ -43,7 +43,6 @@ namespace O3DE::ProjectManager
         QString m_path;
         QString m_name;
         QString m_displayName;
-        AZ::Uuid m_uuid;
         QString m_creator;
         bool m_isAdded = false; //! Is the gem currently added and enabled in the project?
         QString m_summary;

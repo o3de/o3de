@@ -17,16 +17,19 @@ set(FILES
     Configurations.cmake
     Dependencies.cmake
     Deployment.cmake
-    EngineFinder.cmake
+    EngineJson.cmake
     FileUtil.cmake
     Findo3de.cmake
+    GeneralSettings.cmake
     Install.cmake
     LyAutoGen.cmake
+    LYPackage_S3Downloader.cmake
     LySet.cmake
     LYTestWrappers.cmake
     LYPython.cmake
     LYWrappers.cmake
     Monolithic.cmake
+    OutputDirectory.cmake
     Packaging.cmake
     PAL.cmake
     PALTools.cmake

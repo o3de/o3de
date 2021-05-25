@@ -4,7 +4,7 @@ __pycache__
 AssetProcessorTemp/**
 [Bb]uild/**
 [Cc]ache/
-install/
+/install/
 Editor/EditorEventLog.xml
 Editor/EditorLayout.xml
 **/*egg-info/**

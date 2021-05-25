@@ -16,7 +16,7 @@ endif()
 # Add a test to test out the o3de package `o3de.py register` command
 ly_add_pytest(
     NAME o3de_register
-    PATH ${CMAKE_CURRENT_LIST_DIR}/unit_test_registration.py
+    PATH ${CMAKE_CURRENT_LIST_DIR}/unit_test_register.py
     TEST_SUITE smoke
     EXCLUDE_TEST_RUN_TARGET_FROM_IDE
 )
