@@ -32,7 +32,7 @@ namespace AZ
                 if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext)
                 {
                     serializeContext->Class<SceneImporterSettings>()
-                                    ->Version(1)
+                                    ->Version(2)
                                     ->Field("SupportedFileTypeExtensions", &SceneImporterSettings::m_supportedFileTypeExtensions);
                 }
             }
@@ -61,7 +61,9 @@ namespace AZ
                 {
                     serializeContext->Class<FbxImportRequestHandler, AZ::Component>()->Version(1)->Attribute(
                         AZ::Edit::Attributes::SystemComponentTags,
-                        AZStd::vector<AZ::Crc32>({AssetBuilderSDK::ComponentTags::AssetBuilder}));
+                        AZStd::vector<AZ::Crc32>(
+                            {AssetBuilderSDK::ComponentTags::AssetBuilder,
+                            AssetImportRequest::GetAssetImportRequestComponentTag()}));
                     
                 }
             }
