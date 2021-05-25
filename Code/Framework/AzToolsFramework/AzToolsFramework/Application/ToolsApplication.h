@@ -85,6 +85,7 @@ namespace AzToolsFramework
 
         void AddDirtyEntity(AZ::EntityId entityId) override;
         int RemoveDirtyEntity(AZ::EntityId entityId) override;
+        void ClearDirtyEntities() override;
         bool IsDuringUndoRedo() override { return m_isDuringUndoRedo; }
         void UndoPressed() override;
         void RedoPressed() override;
