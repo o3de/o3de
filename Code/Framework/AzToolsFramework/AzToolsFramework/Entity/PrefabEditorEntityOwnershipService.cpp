@@ -233,7 +233,7 @@ namespace AzToolsFramework
             AZ::Data::AssetInfo assetInfo;
             bool sourceInfoFound = false;
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, "Prefabs/Default_Level.prefab",
+                sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, DefaultLevelTemplateName,
                 assetInfo, watchFolder);
 
             if (sourceInfoFound)
