@@ -154,7 +154,9 @@ namespace AzToolsFramework
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
         /// Allow default actions to be added to the Action Manager via a Bus call.
-        virtual void AddActionViaBus(int id, QAction* action) = 0;
+        virtual void AddActionViaBus(int id, QAction* action, QObject* parent) = 0;
+        /// Allow default actions to be added to the Action Manager via a Bus call.
+        virtual void AddActionViaBusCrc(AZ::Crc32 id, QAction* action, QObject* parent) = 0; 
         /// Remove default actions added to the Action Manager via a Bus Call.
         virtual void RemoveActionViaBus(QAction* action) = 0;
         /// Enable all default actions that are active during the normal Editor state.

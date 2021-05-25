@@ -320,7 +320,8 @@ public:
     QList<QAction*> GetActions() const;
 
     // AzToolsFramework::EditorActionRequests
-    void AddActionViaBus(int id, QAction* action) override;
+    void AddActionViaBus(int id, QAction* action, QObject * parent) override;
+    void AddActionViaBusCrc(AZ::Crc32 id, QAction* action, QObject* parent) override;
     void RemoveActionViaBus(QAction* action) override;
     void EnableDefaultActions() override;
     void DisableDefaultActions() override;

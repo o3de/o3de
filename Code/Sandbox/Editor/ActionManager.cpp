@@ -213,16 +213,10 @@ void DynamicMenu::AddAction(int id, QAction* action)
     action->setData(id);
     action->setParent(m_menu);
 
-    //m_actions[id] = action;
     m_menu->addAction(action);
-
 
     connect(action, SIGNAL(triggered()), m_actionMapper, SLOT(map()));
     m_actionMapper->setMapping(action, id);
-
-    AzToolsFramework::EditorActionRequestBus::Broadcast(&AzToolsFramework::EditorActionRequests::AddActionViaBus, id, action, m_menu);
-
-
 }
 
 void DynamicMenu::AddSeparator()
@@ -455,7 +449,8 @@ ActionManager::ActionWrapper ActionManager::AddAction(int id, const QString& nam
 
     action->setData(id);
 
-    connect(action, SIGNAL(triggered()), m_actionMapper, SLOT(map()));
+    void (QSignalMapper::*mapped)() = &QSignalMapper::map;
+    connect(action, &QAction::triggered, m_actionMapper, mapped);
     m_actionMapper->setMapping(action, id);
 
     QWidget* widget = qobject_cast<QWidget*>(parent());
@@ -471,13 +466,15 @@ ActionManager::ActionWrapper ActionManager::AddAction(int id, const QString& nam
 
 ActionManager::ActionWrapper ActionManager::AddAction(AZ::Crc32 id, const QString& name)
 {
-    int new_id = static_cast<int>(id);
+    //careful here (check)
+    
+    AZ::u32 new_id = id;
 
     QAction* action = ActionIsWidget(new_id)
         ? new WidgetAction(id, m_mainWindow, name, this)
     : static_cast<QAction*>(new PatchedAction(name, this)); // static cast to base so ternary compiles
 
-    action->setData(static_cast<int>(new_id));
+    action->setData(new_id);
 
     connect(action, SIGNAL(triggered()), m_actionMapper, SLOT(map()));
     m_actionMapper->setMapping(action, new_id);
@@ -489,12 +486,10 @@ ActionManager::ActionWrapper ActionManager::AddAction(AZ::Crc32 id, const QStrin
         widget->addAction(action);
     }
 
-    m_shortcutDispatcher->AddNewAction(action);
+    m_shortcutDispatcher->AddNewAction(action, id);
 
     return ActionWrapper(action, this);
 }
-
-
 
 bool ActionManager::HasAction(QAction* action) const
 {
@@ -511,7 +506,9 @@ QAction* ActionManager::GetAction(int id) const
     for (unsigned i = 0; i < m_shortcutDispatcher->m_all_actions.size(); i++)
     {
         if (m_shortcutDispatcher->m_all_actions[i].second->data().toInt() == id)
+        {
             return m_shortcutDispatcher->m_all_actions[i].second;
+        }
     }
 
     return nullptr;
@@ -653,11 +650,21 @@ void SetDefaultActionsEnabled(
     });
 }
 
-void ActionManager::AddActionViaBus(int id, QAction* action)
+void ActionManager::AddActionViaBus(int id, QAction* action, QObject* parent)
 {
     action->setData(id);
+    action->setParent(parent);
     m_shortcutDispatcher->AddNewAction(action);
 }
+
+void ActionManager::AddActionViaBusCrc(AZ::Crc32 id, QAction* action, QObject* parent)
+{
+    AZ::u32 new_id = id;
+    action->setData(new_id);
+    action->setParent(parent);
+    m_shortcutDispatcher->AddNewAction(action, id);
+}
+
 
 void ActionManager::RemoveActionViaBus(QAction* action)
 {

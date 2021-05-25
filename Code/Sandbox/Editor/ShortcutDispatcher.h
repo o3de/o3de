@@ -49,7 +49,7 @@ class QKeyEvent;
   Here's some more detailed info regarding shortcuts in Qt. Not specific Lumberyard but
   useful as not explained in Qt docs much.
 
-  P.S.: The following text details the strategy used in an earlier Lumberyard version. Not sure which
+  P.S.: The following text details the strategy used in an earlier Open 3D Engine version. Not sure which
         shortcut context type it uses nowadays, but eitherway, the following text is educational,
         and all the traps still exist in current Qt (5.11).
 
@@ -123,7 +123,6 @@ private:
 
     QWidget* FindParentScopeRoot(QWidget* w);
     bool IsAContainerForB(QWidget* a, QWidget* b);
-    //QList<QAction*> FindCandidateActions(QObject* scopeRoot, const QKeySequence& sequence, QSet<QObject*>& previouslyVisited, bool checkVisibility = true);
     bool FindCandidateActionAndFire(QShortcutEvent* shortcutEvent);
 
     static bool IsShortcutSearchBreak(QWidget* widget);

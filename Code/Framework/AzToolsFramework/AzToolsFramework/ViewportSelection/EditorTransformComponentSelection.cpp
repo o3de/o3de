@@ -2070,7 +2070,7 @@ namespace AzToolsFramework
 
         EditorActionRequestBus::Broadcast(
             &EditorActionRequests::AddActionViaBus,
-            actionId, actions.back().get());
+            actionId, actions.back().get(), nullptr);
     }
 
     void EditorTransformComponentSelection::OnEscape()
