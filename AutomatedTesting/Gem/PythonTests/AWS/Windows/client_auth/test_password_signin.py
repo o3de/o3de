@@ -87,6 +87,9 @@ class TestAWSClientAuthPasswordSignIn(object):
             Username='test1'
         )
 
+        launcher.args = ['+LoadLevel', 'AWS/ClientAuthPasswordSignIn']
+        launcher.args.extend(['-rhi=null'])
+
         with launcher.start(launch_ap=False):
             result = log_monitor.monitor_log_for_lines(
                 expected_lines=['(Script) - SignIn Success', '(Script) - Success credentials'],

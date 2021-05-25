@@ -1,6 +1,6 @@
 <download name="ClientAuthPasswordSignIn" type="Map">
  <index src="filelist.xml" dest="filelist.xml"/>
  <files>
-  <file src="level.pak" dest="level.pak" size="DE7" md5="98951903cc41b6f2b2a22c786239ae96"/>
+  <file src="level.pak" dest="level.pak" size="DE5" md5="53870223ee35155c40002028f0909797"/>
  </files>
 </download>
