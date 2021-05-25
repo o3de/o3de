@@ -321,7 +321,6 @@ namespace AZ
                     AZ_Error("Hair Gem", false, "%zu bones cannot be found under the emotionfx actor. It is likely that the hair asset is incompatible with the actor asset.");
                     return false;
                 }
-                hairAsset->FixBoneIndices(m_boneIndexMap);
                 
                 // First remove the existing hair object - this can happen if the configuration
                 // or the hair asset selected changes.

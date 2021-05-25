@@ -103,10 +103,6 @@ namespace AMD
         using BoneIndexMap = AZStd::vector<uint32>; // Index -> TressFXBoneIndex
                                                     // Value -> EngineBoneIndex (global)
 
-        // When the skinning data populated from the asset, it will be stored as local bone indices. We need to fix the
-        // bone indices in the skinning data to engineBoneIndex in the hairComponent when we have access to the complete actor skeleton.
-        bool m_boneIndicesFixed = false;
-
         // counts on hair data
         AMD::int32 m_numTotalStrands;
         AMD::int32 m_numTotalVertices;
@@ -143,8 +139,6 @@ namespace AMD
         bool LoadHairData(AZ::Data::AssetDataStream* stream);
         void GetBonesNames(AZ::Data::AssetDataStream* stream, std::vector<std::string>& boneNames);
         bool LoadBoneData(AZ::Data::AssetDataStream* stream);
-
-        void FixBoneIndices(const BoneIndexMap& boneIndexMap);
 
         inline AMD::uint32 GetNumHairSegments() { return m_numTotalStrands * (m_numVerticesPerStrand - 1); }
         inline AMD::uint32 GetNumHairTriangleIndices() { return 6 * GetNumHairSegments(); }
