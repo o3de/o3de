@@ -52,9 +52,9 @@ namespace O3DE::ProjectManager
         QVector<ProjectManagerScreen> screenEnums =
         {
             ProjectManagerScreen::FirstTimeUse,
-            ProjectManagerScreen::NewProjectSettingsCore,
+            ProjectManagerScreen::CreateProject,
             ProjectManagerScreen::ProjectsHome,
-            ProjectManagerScreen::ProjectSettingsCore,
+            ProjectManagerScreen::UpdateProject,
             ProjectManagerScreen::EngineSettings
         };
         m_screensCtrl->BuildScreens(screenEnums);

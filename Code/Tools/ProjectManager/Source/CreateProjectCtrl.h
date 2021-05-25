@@ -21,12 +21,12 @@
 
 namespace O3DE::ProjectManager
 {
-    class ProjectSettingsCtrl
+    class CreateProjectCtrl
         : public ScreenWidget
     {
     public:
-        explicit ProjectSettingsCtrl(QWidget* parent = nullptr, const QString& projectName = nullptr);
-        ~ProjectSettingsCtrl() = default;
+        explicit CreateProjectCtrl(QWidget* parent = nullptr);
+        ~CreateProjectCtrl() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
     protected slots:
@@ -43,8 +43,6 @@ namespace O3DE::ProjectManager
 
         QString m_projectTemplatePath;
         ProjectInfo m_projectInfo;
-
-        ProjectManagerScreen m_screenEnum;
     };
 
 } // namespace O3DE::ProjectManager

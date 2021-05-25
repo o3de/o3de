@@ -35,6 +35,9 @@ namespace O3DE::ProjectManager
         ScreenWidget* FindScreen(ProjectManagerScreen screen);
         ScreenWidget* GetCurrentScreen();
 
+    signals:
+        void NotifyCurrentProject(const QString& projectPath);
+
     public slots:
         bool ChangeToScreen(ProjectManagerScreen screen);
         bool ForceChangeToScreen(ProjectManagerScreen screen, bool addVisit = true);
@@ -45,14 +48,9 @@ namespace O3DE::ProjectManager
         void DeleteAllScreens();
 
     private:
-        void SetCurrentProject(const QString& projectName);
-
         QStackedWidget* m_screenStack;
         QHash<ProjectManagerScreen, ScreenWidget*> m_screenMap;
         QStack<ProjectManagerScreen> m_screenVisitOrder;
-
-        // Used to specify which project to edit when changing settings
-        QString m_currentProjectPath;
     };
 
 } // namespace O3DE::ProjectManager

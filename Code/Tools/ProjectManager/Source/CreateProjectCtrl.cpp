@@ -10,7 +10,7 @@
  *
  */
 
-#include <ProjectSettingsCtrl.h>
+#include <CreateProjectCtrl.h>
 #include <ScreensCtrl.h>
 #include <PythonBindingsInterface.h>
 #include <NewProjectSettingsScreen.h>
@@ -22,7 +22,7 @@
 
 namespace O3DE::ProjectManager
 {
-    ProjectSettingsCtrl::ProjectSettingsCtrl(QWidget* parent, const QString& projectPath)
+    CreateProjectCtrl::CreateProjectCtrl(QWidget* parent)
         : ScreenWidget(parent)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
@@ -34,54 +34,29 @@ namespace O3DE::ProjectManager
         QDialogButtonBox* backNextButtons = new QDialogButtonBox();
         vLayout->addWidget(backNextButtons);
 
-        m_backButton = backNextButtons->addButton("Back", QDialogButtonBox::RejectRole);
-        m_nextButton = backNextButtons->addButton("Next", QDialogButtonBox::ApplyRole);
+        m_backButton = backNextButtons->addButton(tr("Back"), QDialogButtonBox::RejectRole);
+        m_nextButton = backNextButtons->addButton(tr("Next"), QDialogButtonBox::ApplyRole);
 
-        connect(m_backButton, &QPushButton::pressed, this, &ProjectSettingsCtrl::HandleBackButton);
-        connect(m_nextButton, &QPushButton::pressed, this, &ProjectSettingsCtrl::HandleNextButton);
+        connect(m_backButton, &QPushButton::pressed, this, &CreateProjectCtrl::HandleBackButton);
+        connect(m_nextButton, &QPushButton::pressed, this, &CreateProjectCtrl::HandleNextButton);
 
-        // If a projectName was not passed in then we setting up a new project
-        if (projectPath.isEmpty())
+        m_screensOrder =
         {
-            m_screensOrder =
-            {
-                ProjectManagerScreen::NewProjectSettings,
-                ProjectManagerScreen::GemCatalog
-            };
-            m_screensCtrl->BuildScreens(m_screensOrder);
-            m_screensCtrl->ForceChangeToScreen(ProjectManagerScreen::NewProjectSettings, false);
-
-            m_screenEnum = ProjectManagerScreen::NewProjectSettingsCore;
-        }
-        // If a projectName was passed in then we editing an exising project, gather it's info
-        else
-        {
-            auto projectResult = PythonBindingsInterface::Get()->GetProject(projectPath);
-            if (projectResult.IsSuccess())
-            {
-                m_projectInfo = projectResult.GetValue();
-            }
-
-            m_screensOrder =
-            {
-                ProjectManagerScreen::ProjectSettings,
-                ProjectManagerScreen::GemCatalog
-            };
-            m_screensCtrl->BuildScreens(m_screensOrder);
-            m_screensCtrl->ForceChangeToScreen(ProjectManagerScreen::ProjectSettings, false);
-
-            m_screenEnum = ProjectManagerScreen::ProjectSettingsCore;
-        }
+            ProjectManagerScreen::NewProjectSettings,
+            ProjectManagerScreen::GemCatalog
+        };
+        m_screensCtrl->BuildScreens(m_screensOrder);
+        m_screensCtrl->ForceChangeToScreen(ProjectManagerScreen::NewProjectSettings, false);
 
         UpdateNextButtonText();
     }
 
-    ProjectManagerScreen ProjectSettingsCtrl::GetScreenEnum()
+    ProjectManagerScreen CreateProjectCtrl::GetScreenEnum()
     {
-        return m_screenEnum;
+        return ProjectManagerScreen::CreateProject;
     }
 
-    void ProjectSettingsCtrl::HandleBackButton()
+    void CreateProjectCtrl::HandleBackButton()
     {
         if (!m_screensCtrl->GotoPreviousScreen())
         {
@@ -92,7 +67,7 @@ namespace O3DE::ProjectManager
             UpdateNextButtonText();
         }
     }
-    void ProjectSettingsCtrl::HandleNextButton()
+    void CreateProjectCtrl::HandleNextButton()
     {
         ScreenWidget* currentScreen = m_screensCtrl->GetCurrentScreen();
         ProjectManagerScreen screenEnum = currentScreen->GetScreenEnum();
@@ -141,9 +116,14 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void ProjectSettingsCtrl::UpdateNextButtonText()
+    void CreateProjectCtrl::UpdateNextButtonText()
     {
-        m_nextButton->setText(m_screensCtrl->GetCurrentScreen()->GetNextButtonText());
+        QString nextButtonText = tr("Next");
+        if (m_screensCtrl->GetCurrentScreen()->GetScreenEnum() == ProjectManagerScreen::GemCatalog)
+        {
+            nextButtonText = tr("Create Project");
+        }
+        m_nextButton->setText(nextButtonText);
     }
 
 } // namespace O3DE::ProjectManager

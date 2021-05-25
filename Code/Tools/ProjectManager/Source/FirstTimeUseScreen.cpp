@@ -79,8 +79,8 @@ namespace O3DE::ProjectManager
 
     void FirstTimeUseScreen::HandleNewProjectButton()
     {
-        emit ResetScreenRequest(ProjectManagerScreen::NewProjectSettingsCore);
-        emit ChangeScreenRequest(ProjectManagerScreen::NewProjectSettingsCore);
+        emit ResetScreenRequest(ProjectManagerScreen::CreateProject);
+        emit ChangeScreenRequest(ProjectManagerScreen::CreateProject);
     }
     void FirstTimeUseScreen::HandleAddProjectButton()
     {

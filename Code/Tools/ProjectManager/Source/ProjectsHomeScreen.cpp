@@ -125,8 +125,8 @@ namespace O3DE::ProjectManager
 
     void ProjectsHomeScreen::HandleNewProjectButton()
     {
-        emit ResetScreenRequest(ProjectManagerScreen::NewProjectSettingsCore);
-        emit ChangeScreenRequest(ProjectManagerScreen::NewProjectSettingsCore);
+        emit ResetScreenRequest(ProjectManagerScreen::CreateProject);
+        emit ChangeScreenRequest(ProjectManagerScreen::CreateProject);
     }
     void ProjectsHomeScreen::HandleAddProjectButton()
     {
@@ -140,8 +140,8 @@ namespace O3DE::ProjectManager
     void ProjectsHomeScreen::HandleEditProject(const QString& projectPath)
     {
         emit NotifyCurrentProject(projectPath);
-        emit ResetScreenRequest(ProjectManagerScreen::ProjectSettingsCore);
-        emit ChangeScreenRequest(ProjectManagerScreen::ProjectSettingsCore);
+        emit ResetScreenRequest(ProjectManagerScreen::UpdateProject);
+        emit ChangeScreenRequest(ProjectManagerScreen::UpdateProject);
     }
     void ProjectsHomeScreen::HandleEditProjectGems(const QString& projectPath)
     {

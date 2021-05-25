@@ -41,10 +41,6 @@ namespace O3DE::ProjectManager
         {
             return true;
         }
-        virtual QString GetNextButtonText()
-        {
-            return "Next";
-        }
 
     signals:
         void ChangeScreenRequest(ProjectManagerScreen screen);

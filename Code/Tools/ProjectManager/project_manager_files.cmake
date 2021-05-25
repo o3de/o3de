@@ -34,8 +34,10 @@ set(FILES
     Source/ProjectInfo.cpp
     Source/NewProjectSettingsScreen.h
     Source/NewProjectSettingsScreen.cpp
-    Source/ProjectSettingsCtrl.h
-    Source/ProjectSettingsCtrl.cpp
+    Source/CreateProjectCtrl.h
+    Source/CreateProjectCtrl.cpp
+    Source/UpdateProjectCtrl.h
+    Source/UpdateProjectCtrl.cpp
     Source/ProjectsHomeScreen.h
     Source/ProjectsHomeScreen.cpp
     Source/ProjectSettingsScreen.h
