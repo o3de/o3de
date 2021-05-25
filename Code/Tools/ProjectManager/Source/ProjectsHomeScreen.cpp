@@ -32,6 +32,7 @@
 #include <QListWidgetItem>
 #include <QFileInfo>
 #include <QScrollArea>
+#include <QMessageBox>
 
 namespace O3DE::ProjectManager
 {
@@ -132,6 +133,8 @@ namespace O3DE::ProjectManager
     }
     void ProjectsHomeScreen::HandleOpenProject(const QString& projectPath)
     {
+        bool launchSuccess = false;
+
         if (!projectPath.isEmpty())
         {
             AZ::IO::FixedMaxPath executableDirectory = AZ::Utils::GetExecutableDirectory();
@@ -141,13 +144,20 @@ namespace O3DE::ProjectManager
 
             AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
             processLaunchInfo.m_commandlineParameters = cmdPath;
-            bool launchSuccess = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
+            launchSuccess = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
             if (!launchSuccess)
             {
                 AZ_Error("ProjectManager", false, "Failed to launch editor");
-
-                // TODO notify the user somehow - messagebox?
             }
+        }
+        else
+        {
+            AZ_Error("ProjectManager", false, "Cannot open editor because an empty project path was provided");
+        }
+
+        if (!launchSuccess)
+        {
+            QMessageBox::critical( this, tr("Error"), tr("Failed to launch the Editor, please validate the selected project's settings and examine the Editor logs."));
         }
     }
     void ProjectsHomeScreen::HandleEditProject(const QString& projectPath)
