@@ -16,8 +16,8 @@ namespace AzFramework
 {
     namespace Components
     {
-        template<typename TController, typename TConfiguration>
-        ComponentAdapter<TController, TConfiguration>::ComponentAdapter(const TConfiguration& configuration)
+        template<typename TController, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        ComponentAdapter<TController, TConfiguration, SupportsMultipleComponentPerEntity>::ComponentAdapter(const TConfiguration& configuration)
             : m_controller(configuration)
         {
         }
@@ -25,8 +25,8 @@ namespace AzFramework
         //////////////////////////////////////////////////////////////////////////
         // Serialization and version conversion
 
-        template<typename TController, typename TConfiguration>
-        void ComponentAdapter<TController, TConfiguration>::Reflect(AZ::ReflectContext* context)
+        template<typename TController, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        void ComponentAdapter<TController, TConfiguration, SupportsMultipleComponentPerEntity>::Reflect(AZ::ReflectContext* context)
         {
             TController::Reflect(context);
 
@@ -42,53 +42,64 @@ namespace AzFramework
         //////////////////////////////////////////////////////////////////////////
         // Get*Services functions
 
-        template<typename TController, typename TConfiguration>
-        void ComponentAdapter<TController, TConfiguration>::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+        template<typename TController, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        void ComponentAdapter<TController, TConfiguration, SupportsMultipleComponentPerEntity>::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
             GetProvidedServicesHelper<TController>(services, typename AZ::HasComponentProvidedServices<TController>::type());
         }
 
-        template<typename TController, typename TConfiguration>
-        void ComponentAdapter<TController, TConfiguration>::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+        template<typename TController, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        void ComponentAdapter<TController, TConfiguration, SupportsMultipleComponentPerEntity>::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
             GetRequiredServicesHelper<TController>(services, typename AZ::HasComponentRequiredServices<TController>::type());
         }
 
-        template<typename TController, typename TConfiguration>
-        void ComponentAdapter<TController, TConfiguration>::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+        template<typename TController, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        void ComponentAdapter<TController, TConfiguration, SupportsMultipleComponentPerEntity>::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
             GetIncompatibleServicesHelper<TController>(services, typename AZ::HasComponentIncompatibleServices<TController>::type());
         }
 
-        template<typename TController, typename TConfiguration>
-        void ComponentAdapter<TController, TConfiguration>::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+        template<typename TController, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        void ComponentAdapter<TController, TConfiguration, SupportsMultipleComponentPerEntity>::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
             GetDependentServicesHelper<TController>(services, typename AZ::HasComponentDependentServices<TController>::type());
         }
 
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Component interface implementation
-
-        template<typename TController, typename TConfiguration>
-        void ComponentAdapter<TController, TConfiguration>::Init()
+        template<typename TController, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        void ComponentAdapter<TController, TConfiguration, SupportsMultipleComponentPerEntity>::Init()
         {
             ComponentInitHelper<TController>::Init(m_controller);
         }
 
-        template<typename TController, typename TConfiguration>
-        void ComponentAdapter<TController, TConfiguration>::Activate()
+        template<typename TController, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        void ComponentAdapter<TController, TConfiguration, SupportsMultipleComponentPerEntity>::Activate()
+        {
+            ActivateImpl();
+        }
+
+        template<typename TController, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        template<bool IsSupportingMultipleComponentPerEntity, typename AZStd::enable_if_t<!IsSupportingMultipleComponentPerEntity>*>
+        void ComponentAdapter<TController, TConfiguration, SupportsMultipleComponentPerEntity>::ActivateImpl()
         {
             m_controller.Activate(GetEntityId());
         }
 
-        template<typename TController, typename TConfiguration>
-        void ComponentAdapter<TController, TConfiguration>::Deactivate()
+        template<typename TController, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        template<bool IsSupportingMultipleComponentPerEntity, typename AZStd::enable_if_t<IsSupportingMultipleComponentPerEntity>*>
+        void ComponentAdapter<TController, TConfiguration, SupportsMultipleComponentPerEntity>::ActivateImpl()
+        {
+            m_controller.Activate(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
+        }
+
+        template<typename TController, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        void ComponentAdapter<TController, TConfiguration, SupportsMultipleComponentPerEntity>::Deactivate()
         {
             m_controller.Deactivate();
         }
 
-        template<typename TController, typename TConfiguration>
-        bool ComponentAdapter<TController, TConfiguration>::ReadInConfig(const AZ::ComponentConfig* baseConfig)
+        template<typename TController, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        bool ComponentAdapter<TController, TConfiguration, SupportsMultipleComponentPerEntity>::ReadInConfig(const AZ::ComponentConfig* baseConfig)
         {
             if (const auto config = azrtti_cast<const TConfiguration*>(baseConfig))
             {
@@ -98,8 +109,8 @@ namespace AzFramework
             return false;
         }
 
-        template<typename TController, typename TConfiguration>
-        bool ComponentAdapter<TController, TConfiguration>::WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const
+        template<typename TController, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        bool ComponentAdapter<TController, TConfiguration, SupportsMultipleComponentPerEntity>::WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const
         {
             if (auto config = azrtti_cast<TConfiguration*>(outBaseConfig))
             {

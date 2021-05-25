@@ -17,14 +17,17 @@ namespace AZ
 {
     namespace Render
     {
-        template<typename TController, typename TRuntimeComponent, typename TConfiguration>
+        template<typename TController, typename TRuntimeComponent, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
         template<int TVersion>
-        bool EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration>::ConvertToEditorRenderComponentAdapter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+        bool EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration, SupportsMultipleComponentPerEntity>::
+            ConvertToEditorRenderComponentAdapter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
         {
             if (classElement.GetVersion() < TVersion)
             {
-                // Get the and remove the EditorComponentAdapter base class data that was previpously serialized
-                AzToolsFramework::Components::EditorComponentAdapter<TController, TRuntimeComponent, TConfiguration> oldBaseClassData;
+                // Get the and remove the EditorComponentAdapter base class data that was previously serialized
+                AzToolsFramework::Components::EditorComponentAdapter<
+                    TController, TRuntimeComponent, TConfiguration, SupportsMultipleComponentPerEntity>
+                    oldBaseClassData;
 
                 if (!classElement.FindSubElementAndGetData(AZ_CRC("BaseClass1", 0xd4925735), oldBaseClassData))
                 {
@@ -39,7 +42,8 @@ namespace AZ
                 }
 
                 // Replace the old base class data with EditorRenderComponentAdapter
-                EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration> newBaseClassData;
+                EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration, SupportsMultipleComponentPerEntity>
+                    newBaseClassData;
 
                 AZ::SerializeContext::DataElementNode& newBaseClassElement = classElement.GetSubElement(
                     classElement.AddElementWithData(context, "BaseClass1", newBaseClassData));
@@ -57,8 +61,8 @@ namespace AZ
             return true;
         }
 
-        template<typename TController, typename TRuntimeComponent, typename TConfiguration>
-        void EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration>::Reflect(AZ::ReflectContext* context)
+        template<typename TController, typename TRuntimeComponent, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        void EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration, SupportsMultipleComponentPerEntity>::Reflect(AZ::ReflectContext* context)
         {
             BaseClass::Reflect(context);
 
@@ -79,50 +83,63 @@ namespace AZ
             }
         }
 
-        template<typename TController, typename TRuntimeComponent, typename TConfiguration>
-        EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration>::EditorRenderComponentAdapter(const TConfiguration& config)
+        template<typename TController, typename TRuntimeComponent, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration, SupportsMultipleComponentPerEntity>::EditorRenderComponentAdapter(const TConfiguration& config)
             : BaseClass(config)
         {
         }
 
-        template<typename TController, typename TRuntimeComponent, typename TConfiguration>
-        void EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration>::Activate()
+        template<typename TController, typename TRuntimeComponent, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        void EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration, SupportsMultipleComponentPerEntity>::Activate()
         {
             BaseClass::Activate();
             AzToolsFramework::EditorEntityVisibilityNotificationBus::Handler::BusConnect(this->GetEntityId());
         }
 
-        template<typename TController, typename TRuntimeComponent, typename TConfiguration>
-        void EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration>::Deactivate()
+        template<typename TController, typename TRuntimeComponent, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        void EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration, SupportsMultipleComponentPerEntity>::Deactivate()
         {
             AzToolsFramework::EditorEntityVisibilityNotificationBus::Handler::BusDisconnect();
             BaseClass::Deactivate();
         }
 
-        template<typename TController, typename TRuntimeComponent, typename TConfiguration>
-        bool EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration>::IsVisible() const
+        template<typename TController, typename TRuntimeComponent, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        bool EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration, SupportsMultipleComponentPerEntity>::IsVisible() const
         {
             bool visible = true;
             AzToolsFramework::EditorEntityInfoRequestBus::EventResult(visible, this->GetEntityId(), &AzToolsFramework::EditorEntityInfoRequestBus::Events::IsVisible);
             return visible;
         }
 
-        template<typename TController, typename TRuntimeComponent, typename TConfiguration>
-        bool EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration>::ShouldActivateController() const
+        template<typename TController, typename TRuntimeComponent, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        bool EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration, SupportsMultipleComponentPerEntity>::ShouldActivateController() const
         {
             return IsVisible();
         }
 
-        template<typename TController, typename TRuntimeComponent, typename TConfiguration>
-        void EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration>::OnEntityVisibilityChanged([[maybe_unused]] bool visibility)
+        template<typename TController, typename TRuntimeComponent, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        void EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration, SupportsMultipleComponentPerEntity>::OnEntityVisibilityChanged([[maybe_unused]] bool visibility)
         {
             this->m_controller.Deactivate();
 
             if (this->ShouldActivateController())
             {
-                this->m_controller.Activate(this->GetEntityId());
+                ActivateImpl();
             }
         }
 
+        template<typename TController, typename TRuntimeComponent, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        template<bool IsSupportingMultipleComponentPerEntity, typename AZStd::enable_if_t<!IsSupportingMultipleComponentPerEntity>*>
+        void EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration, SupportsMultipleComponentPerEntity>::ActivateImpl()
+        {
+            this->m_controller.Activate(this->GetEntityId());
+        }
+
+        template<typename TController, typename TRuntimeComponent, typename TConfiguration, bool SupportsMultipleComponentPerEntity>
+        template<bool IsSupportingMultipleComponentPerEntity, typename AZStd::enable_if_t<IsSupportingMultipleComponentPerEntity>*>
+        void EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration, SupportsMultipleComponentPerEntity>::ActivateImpl()
+        {
+            this->m_controller.Activate(AZ::EntityComponentIdPair(this->GetEntityId(), this->GetId()));
+        }
     } // namespace Render
 } // namespace AZ

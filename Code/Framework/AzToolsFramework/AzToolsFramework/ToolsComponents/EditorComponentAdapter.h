@@ -63,13 +63,15 @@ namespace AzToolsFramework
         It is recommended that TController handle the SerializeContext, but the editor components handle
         the EditContext. TController can friend itself to the editor component to make this work if required.
     */
-        template<typename TController, typename TRuntimeComponent, typename TConfiguration = AZ::ComponentConfig>
-        class EditorComponentAdapter
-            : public EditorComponentBase
+        template<
+            typename TController, typename TRuntimeComponent, typename TConfiguration = AZ::ComponentConfig,
+            bool SupportsMultipleComponentPerEntity = false>
+        class EditorComponentAdapter : public EditorComponentBase
         {
         public:
-
-            AZ_RTTI((EditorComponentAdapter, "{2F5A3669-FFE9-4CD7-B9E2-7FC8100CF1A2}", TController, TRuntimeComponent, TConfiguration), EditorComponentBase);
+            AZ_RTTI(
+                (EditorComponentAdapter, "{2F5A3669-FFE9-4CD7-B9E2-7FC8100CF1A2}", TController, TRuntimeComponent, TConfiguration),
+                EditorComponentBase);
 
             EditorComponentAdapter() = default;
             EditorComponentAdapter(const TConfiguration& configuration);
@@ -100,6 +102,16 @@ namespace AzToolsFramework
             virtual bool ShouldActivateController() const;
 
             TController m_controller;
+
+        private:
+            template<
+                bool IsSupportingMultipleComponentPerEntity = SupportsMultipleComponentPerEntity,
+                typename AZStd::enable_if_t<IsSupportingMultipleComponentPerEntity>* = nullptr>
+            void ActivateImpl();
+            template<
+                bool IsSupportingMultipleComponentPerEntity = SupportsMultipleComponentPerEntity,
+                typename AZStd::enable_if_t<!IsSupportingMultipleComponentPerEntity>* = nullptr>
+            void ActivateImpl();
         };
     } // namespace Components
 } // namespace AzToolsFramework

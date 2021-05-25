@@ -13,10 +13,12 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/ComponentBus.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/typetraits/conditional.h>
 
 namespace AzFramework
 {
@@ -63,12 +65,11 @@ namespace AzFramework
         It is recommended that TController handle the SerializeContext, but the editor components handle
         the EditContext. TController can friend itself to the editor component to make this work if required.
     */
-        template<typename TController, typename TConfiguration = AZ::ComponentConfig>
+        template<typename TController, typename TConfiguration = AZ::ComponentConfig, bool SupportsMultipleComponentPerEntity = false>
         class ComponentAdapter
             : public AZ::Component
         {
         public:
-
             AZ_RTTI((ComponentAdapter, "{644A9187-4FDB-42C1-9D59-DD75304B551A}", TController, TConfiguration), AZ::Component);
 
             ComponentAdapter() = default;
@@ -93,6 +94,16 @@ namespace AzFramework
             bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
             TController m_controller;
+
+        private:
+            template<
+                bool IsSupportingMultipleComponentPerEntity = SupportsMultipleComponentPerEntity,
+                typename AZStd::enable_if_t<IsSupportingMultipleComponentPerEntity>* = nullptr>
+            void ActivateImpl();
+            template<
+                bool IsSupportingMultipleComponentPerEntity = SupportsMultipleComponentPerEntity,
+                typename AZStd::enable_if_t<!IsSupportingMultipleComponentPerEntity>* = nullptr>
+            void ActivateImpl();
         };
     } // namespace Components
 } // namespace AzFramework
