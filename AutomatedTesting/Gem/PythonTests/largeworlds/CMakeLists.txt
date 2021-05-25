@@ -13,22 +13,21 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
 
 ## DynVeg ##
 
-    # Temporarily moving all tests to periodic suite - SPEC-6553
-    #ly_add_pytest(
-    #    NAME AutomatedTesting::DynamicVegetationTests_Main
-    #    TEST_SERIAL
-    #    TEST_SUITE main
-    #    PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
-    #    PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark"
-    #    TIMEOUT 1500
-    #    RUNTIME_DEPENDENCIES
-    #        AZ::AssetProcessor
-    #        Legacy::Editor
-    #        AutomatedTesting.GameLauncher
-    #        AutomatedTesting.Assets
-    #    COMPONENT
-    #        LargeWorlds
-    #)
+    ly_add_pytest(
+        NAME AutomatedTesting::DynamicVegetationTests_Main
+        TEST_SERIAL
+        TEST_SUITE main
+        PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
+        PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark"
+        TIMEOUT 1500
+        RUNTIME_DEPENDENCIES
+            AZ::AssetProcessor
+            Legacy::Editor
+            AutomatedTesting.GameLauncher
+            AutomatedTesting.Assets
+        COMPONENT
+            LargeWorlds
+    )
 
 
     ly_add_pytest(
@@ -137,21 +136,21 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
             LargeWorlds
     )
 ## LandscapeCanvas ##
-    # Temporarily moving all tests to periodic suite - SPEC-6553
-    #ly_add_pytest(
-    #    NAME AutomatedTesting::LandscapeCanvasTests_Main
-    #    TEST_SERIAL
-    #    TEST_SUITE main
-    #    PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/landscape_canvas
-    #    PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark"
-    #    TIMEOUT 1500
-    #    RUNTIME_DEPENDENCIES
-    #       AZ::AssetProcessor
-    #       Legacy::Editor
-    #       AutomatedTesting.Assets
-    #    COMPONENT
-    #        LargeWorlds
-    #)
+
+    ly_add_pytest(
+        NAME AutomatedTesting::LandscapeCanvasTests_Main
+        TEST_SERIAL
+        TEST_SUITE main
+        PATH ${CMAKE_CURRENT_LIST_DIR}/largeworlds/landscape_canvas
+        PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark"
+        TIMEOUT 1500
+        RUNTIME_DEPENDENCIES
+           AZ::AssetProcessor
+           Legacy::Editor
+           AutomatedTesting.Assets
+        COMPONENT
+            LargeWorlds
+    )
 
     ly_add_pytest(
         NAME AutomatedTesting::LandscapeCanvasTests_Periodic
