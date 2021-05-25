@@ -38,7 +38,6 @@ namespace AZ
     {
         namespace FbxSceneBuilder
         {
-            static AZ::SceneAPI::FbxSceneImporter::FbxImportRequestHandler* g_fbxImporter = nullptr;
             static AZStd::vector<AZ::ComponentDescriptor*> g_componentDescriptors;
 
             void Reflect(AZ::SerializeContext* /*context*/)
@@ -98,13 +97,6 @@ namespace AZ
                     }
                     g_componentDescriptors.clear();
                     g_componentDescriptors.shrink_to_fit();
-                }
-
-                if (g_fbxImporter)
-                {
-                    g_fbxImporter->Deactivate();
-                    delete g_fbxImporter;
-                    g_fbxImporter = nullptr;
                 }
             }
         } // namespace FbxSceneBuilder
