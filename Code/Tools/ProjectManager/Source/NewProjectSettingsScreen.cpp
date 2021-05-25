@@ -96,11 +96,6 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::NewProjectSettings;
     }
 
-    QString NewProjectSettingsScreen::GetNextButtonText()
-    {
-        return tr("Next");
-    }
-
     void NewProjectSettingsScreen::HandleBrowseButton()
     {
         QString defaultPath = m_projectPathLineEdit->text();

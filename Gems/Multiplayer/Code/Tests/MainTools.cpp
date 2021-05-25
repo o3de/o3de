@@ -11,6 +11,7 @@
 */
 
 #include <AzCore/UnitTest/UnitTest.h>
+#include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 #include <AzTest/AzTest.h>
 #include <AzTest/GemTestEnvironment.h>
@@ -38,6 +39,15 @@ namespace Multiplayer
             });
 
             AddComponentDescriptors(descriptors);
+        }
+
+        /// Allows derived environments to override to perform additional steps after the system entity is activated.
+        void PostSystemEntityActivate() override
+        {
+            // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
+            // in the unit tests.
+            AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
         }
     };
 } // namespace UnitTest
