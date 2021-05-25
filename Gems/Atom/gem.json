@@ -1,3 +1,5 @@
 {
-    "gem_name": "Atom"
+    "gem_name": "Atom",
+    "display_name": "Atom",
+    "summary": "Next-Gen Rendering Package for the O3DE engine"
 }

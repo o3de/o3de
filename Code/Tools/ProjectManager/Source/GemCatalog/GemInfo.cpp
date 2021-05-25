@@ -25,7 +25,7 @@ namespace O3DE::ProjectManager
 
     bool GemInfo::IsValid() const
     {
-        return !m_path.isEmpty() && !m_uuid.IsNull();
+        return !m_path.isEmpty();
     }
 
 } // namespace O3DE::ProjectManager

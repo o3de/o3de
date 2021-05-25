@@ -31,7 +31,7 @@ set(gem_module_template [[
             "@stripped_gem_target@":
             {
                 "Modules":["$<TARGET_FILE_NAME:@gem_target@>"],
-                "SourcePaths":["@gem_relative_source_dir@"]
+                "SourcePaths":["@gem_module_root_relative_to_engine_root@"]
             }]]
 )
 
@@ -85,6 +85,36 @@ function(ly_get_gem_load_dependencies ly_GEM_LOAD_DEPENDENCIES ly_TARGET)
     set(${ly_GEM_LOAD_DEPENDENCIES} ${all_gem_load_dependencies} PARENT_SCOPE)
 endfunction()
 
+#!ly_get_gem_module_root: Uses the supplied gem_target to lookup the nearest gem.json file above the SOURCE_DIR
+#
+# \arg:gem_target(TARGET) - Target to look upwards from using its SOURCE_DIR property
+function(ly_get_gem_module_root output_gem_module_root gem_target)
+    unset(gem_module_roots)
+    get_property(gem_source_dir TARGET ${gem_target} PROPERTY SOURCE_DIR)
+
+    if(gem_source_dir)
+        set(candidate_gem_dir ${gem_source_dir})
+        # Locate the root of the gem by finding the gem.json location
+        while(NOT EXISTS ${candidate_gem_dir}/gem.json)
+            get_filename_component(parent_dir ${candidate_gem_dir} DIRECTORY)
+            if (${parent_dir} STREQUAL ${candidate_gem_dir})
+                message(WARNING "Did not find a gem.json while processing GEM_MODULE target ${gem_target}!")
+                break()
+            endif()
+            set(candidate_gem_dir ${parent_dir})
+        endwhile()
+    endif()
+
+    if (EXISTS ${candidate_gem_dir}/gem.json)
+        set(gem_source_dir ${candidate_gem_dir})
+    endif()
+
+    # Set the gem module root output directory to the location with the gem.json file within it or
+    # the supplied gem_target SOURCE_DIR location if no gem.json file was found
+    set(${output_gem_module_root} ${gem_source_dir} PARENT_SCOPE)
+endfunction()
+
+
 #! ly_delayed_generate_settings_registry: Generates a .setreg file for each target with dependencies
 #  added to it via ly_add_target_dependencies
 #  The generated file contains the file to the each dependent targets
@@ -102,17 +132,17 @@ function(ly_delayed_generate_settings_registry)
 
         # Retrieve the target name from the back of the list
         list(POP_BACK prefix_target_list target)
-        # Retreives the prefix if available from the remaining element of the list
+        # Retrieves the prefix if available from the remaining element of the list
         list(POP_BACK prefix_target_list prefix)
 
         # Get the gem dependencies for the given project and target combination
         get_property(gem_dependencies GLOBAL PROPERTY LY_DELAYED_LOAD_"${prefix_target}")
         list(REMOVE_DUPLICATES gem_dependencies) # Strip out any duplicate gem targets
-        set(all_gem_dependencies ${gem_dependencies})
+        unset(all_gem_dependencies)
 
         foreach(gem_target ${gem_dependencies})
             ly_get_gem_load_dependencies(gem_load_gem_dependencies ${gem_target})
-            list(APPEND all_gem_dependencies ${gem_load_gem_dependencies})
+            list(APPEND all_gem_dependencies ${gem_load_gem_dependencies} ${gem_target})
         endforeach()
         list(REMOVE_DUPLICATES all_gem_dependencies)
 
@@ -123,20 +153,9 @@ function(ly_delayed_generate_settings_registry)
             if (NOT TARGET ${gem_target})
                 message(FATAL_ERROR "Dependency ${gem_target} from ${target} does not exist")
             endif()
-            get_property(gem_relative_source_dir TARGET ${gem_target} PROPERTY SOURCE_DIR)
 
-            if(gem_relative_source_dir)
-                # Most gems SOURCE dir is nested in the path, we need to find the path where an 'Assets' or 'Code' folder resides
-                while(NOT EXISTS ${gem_relative_source_dir}/Assets AND NOT EXISTS ${gem_relative_source_dir}/Code)
-                    get_filename_component(parent_dir ${gem_relative_source_dir} DIRECTORY)
-                    if (${parent_dir} STREQUAL ${gem_relative_source_dir})
-                        message(FATAL_ERROR "Did not find a Gem source dir while processing target ${gem_target}!")
-                    endif()
-                    set(gem_relative_source_dir ${parent_dir})
-                endwhile()
-                file(TO_CMAKE_PATH ${LY_ROOT_FOLDER} ly_root_folder_cmake)
-                file(RELATIVE_PATH gem_relative_source_dir ${ly_root_folder_cmake} ${gem_relative_source_dir})
-            endif()
+            ly_get_gem_module_root(gem_module_root ${gem_target})
+            file(RELATIVE_PATH gem_module_root_relative_to_engine_root ${LY_ROOT_FOLDER} ${gem_module_root})
 
             # Strip target namespace from gem targets before configuring them into the json template
             ly_strip_target_namespace(TARGET ${gem_target} OUTPUT_VARIABLE stripped_gem_target)
