@@ -25,7 +25,7 @@ ly_add_target(
         PUBLIC
             Gem::Atom_RPI.Public
             Gem::Atom_Feature_Common.Static
-            Gem::LmbrCentral
+            Gem::LmbrCentral.Static
 )
 
 ly_add_target(

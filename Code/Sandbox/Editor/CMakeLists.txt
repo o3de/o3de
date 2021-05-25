@@ -129,6 +129,8 @@ ly_add_target(
             3rdParty::AWSNativeSDK::Core
             3rdParty::Qt::Network
             Legacy::EditorCore
+    RUNTIME_DEPENDENCIES
+        Gem::AtomViewportDisplayInfo
 )
 ly_add_source_properties(
     SOURCES CryEdit.cpp
@@ -243,7 +245,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Legacy::CryCommon
                 AZ::AzToolsFramework
                 Legacy::EditorLib
-                Gem::LmbrCentral
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral
     )
     ly_add_googletest(
         NAME Legacy::EditorLib.Tests

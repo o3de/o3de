@@ -23,7 +23,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             Gem::CameraFramework.Static
-            Gem::LmbrCentral
+            Gem::LmbrCentral.Static
             Legacy::CryCommon
 )
 

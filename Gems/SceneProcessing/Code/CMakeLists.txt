@@ -84,7 +84,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
-                Gem::SceneProcessing
+        RUNTIME_DEPENDENCIES
+            Gem::SceneProcessing
     )
     ly_add_googletest(
         NAME Gem::SceneProcessing.Tests

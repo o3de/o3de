@@ -66,9 +66,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::CryCommon
                 Legacy::Editor.Headers
                 AZ::AzToolsFramework
-                Gem::PhysX
+                Gem::PhysX.Editor
                 Gem::ImGui.imguilib
-                Gem::ImGui
+                Gem::ImGui.Editor
         RUNTIME_DEPENDENCIES
             Gem::PhysX.Editor
             Gem::ImGui.Editor

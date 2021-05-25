@@ -22,7 +22,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
-            Gem::LmbrCentral
 )
 
 ly_add_target(
@@ -39,7 +38,6 @@ ly_add_target(
         PRIVATE
             Legacy::CryCommon
             Gem::Maestro.Static
-            Gem::LmbrCentral
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )
@@ -69,7 +67,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 AZ::AssetBuilderSDK
                 Gem::Maestro.Static
-                Gem::LmbrCentral
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )

@@ -170,7 +170,12 @@ function(ly_delayed_generate_settings_registry)
 
         list(JOIN target_gem_dependencies_names ",\n" target_gem_dependencies_names)
         string(CONFIGURE ${gems_json_template} gem_json @ONLY)
-        set(dependencies_setreg $<TARGET_FILE_DIR:${target}>/Registry/cmake_dependencies.${specialization_name}.setreg)
+        if(prefix)
+            set(target_dir $<TARGET_FILE_DIR:${prefix}>)
+        else()
+            set(target_dir $<TARGET_FILE_DIR:${target}>)
+        endif()
+        set(dependencies_setreg ${target_dir}/Registry/cmake_dependencies.${specialization_name}.setreg)
         file(GENERATE OUTPUT ${dependencies_setreg} CONTENT ${gem_json})
         set_property(TARGET ${target} APPEND PROPERTY INTERFACE_LY_TARGET_FILES "${dependencies_setreg}\nRegistry")
 

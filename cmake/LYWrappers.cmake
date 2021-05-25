@@ -100,22 +100,27 @@ function(ly_add_target)
         ly_include_cmake_file_list(${file_cmake})
     endforeach()
 
-    set(linking_options)
-    set(linking_count)
+    unset(linking_options)
+    unset(linking_count)
+    unset(target_type_options)
     if(ly_add_target_STATIC)
         set(linking_options STATIC)
+        set(target_type_options STATIC)
         set(linking_count "${linking_count}1")
     endif()
     if(ly_add_target_SHARED)
         set(linking_options SHARED)
+        set(target_type_options SHARED)
         set(linking_count "${linking_count}1")
     endif()
     if(ly_add_target_MODULE)
         set(linking_options ${PAL_LINKOPTION_MODULE})
+        set(target_type_options ${PAL_LINKOPTION_MODULE})
         set(linking_count "${linking_count}1")
     endif()
     if(ly_add_target_HEADERONLY)
         set(linking_options INTERFACE)
+        set(target_type_options INTERFACE)
         set(linking_count "${linking_count}1")
         endif()
     if(ly_add_target_EXECUTABLE)
@@ -130,7 +135,7 @@ function(ly_add_target)
         message(FATAL_ERROR "More than one of the following options [STATIC | SHARED | MODULE | HEADERONLY | EXECUTABLE | APPLICATION ] was specified and they are mutually exclusive")
     endif()
     if(ly_add_target_IMPORTED)
-        list(APPEND linking_options IMPORTED GLOBAL)
+        list(APPEND target_type_options IMPORTED GLOBAL)
     endif()
 
     if(ly_add_target_NAMESPACE)
@@ -141,7 +146,8 @@ function(ly_add_target)
 
     set(project_NAME ${ly_add_target_NAME})
     if(ly_add_target_EXECUTABLE)
-        add_executable(${ly_add_target_NAME}
+        add_executable(${ly_add_target_NAME} 
+            ${target_type_options}
             ${ALLFILES} ${ly_add_target_GENERATED_FILES}
         )
         ly_apply_platform_properties(${ly_add_target_NAME})
@@ -149,7 +155,8 @@ function(ly_add_target)
             set_target_properties(${ly_add_target_NAME} PROPERTIES LINKER_LANGUAGE CXX)
         endif()
     elseif(ly_add_target_APPLICATION)
-        add_executable(${ly_add_target_NAME}
+        add_executable(${ly_add_target_NAME} 
+            ${target_type_options}
             ${PAL_EXECUTABLE_APPLICATION_FLAG}
             ${ALLFILES} ${ly_add_target_GENERATED_FILES}
         )
@@ -159,12 +166,12 @@ function(ly_add_target)
         endif()
     elseif(ly_add_target_HEADERONLY)
         add_library(${ly_add_target_NAME}
-            ${linking_options}
+            ${target_type_options}
             ${ALLFILES} ${ly_add_target_GENERATED_FILES}
         )
     else()
         add_library(${ly_add_target_NAME}
-            ${linking_options}
+            ${target_type_options}
             ${ALLFILES} ${ly_add_target_GENERATED_FILES}
         )
         ly_apply_platform_properties(${ly_add_target_NAME})
@@ -302,7 +309,7 @@ function(ly_add_target)
     set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGETS ${interface_name})
 
     set(runtime_dependencies_list SHARED MODULE EXECUTABLE APPLICATION)
-    if(linking_options IN_LIST runtime_dependencies_list)
+    if(NOT ly_add_target_IMPORTED AND linking_options IN_LIST runtime_dependencies_list)
 
         add_custom_command(TARGET ${ly_add_target_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}.cmake
@@ -372,16 +379,9 @@ function(ly_delayed_target_link_libraries)
     list(APPEND CMAKE_MODULE_PATH ${additional_module_paths})
 
     get_property(delayed_targets GLOBAL PROPERTY LY_DELAYED_LINK_TARGETS)
-
     foreach(target ${delayed_targets})
 
         get_property(delayed_link GLOBAL PROPERTY LY_DELAYED_LINK_${target})
-
-        # Cache off the original MANUALLY_ADDED_DEPENDENCIES that were associated with the target
-        # via previous ly_add_dependencies() calls either explicitly or through RUNTIME_DEPENDENCIES
-        get_target_property(target_orig_manually_added_dependencies ${target} MANUALLY_ADDED_DEPENDENCIES)
-        set_property(TARGET ${target} PROPERTY LY_ORIGINAL_MANUALLY_ADDED_DEPENDENCIES ${target_orig_manually_added_dependencies})
-
         if(delayed_link)
 
             cmake_parse_arguments(ly_delayed_target_link_libraries "" "" "${visibilities}" ${delayed_link})
@@ -400,8 +400,6 @@ function(ly_delayed_target_link_libraries)
                         target_link_libraries(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_LINK_LIBRARIES>)
                         target_compile_definitions(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_COMPILE_DEFINITIONS>)
                         target_compile_options(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_COMPILE_OPTIONS>)
-                        # Add it also as a manual dependency so runtime_dependencies walks it through
-                        ly_add_dependencies(${target} ${item})
                     else()
                         ly_parse_third_party_dependencies(${item})
                         target_link_libraries(${target} ${visibility} ${item})

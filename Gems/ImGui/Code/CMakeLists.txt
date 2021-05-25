@@ -53,6 +53,8 @@ ly_add_target(
         PUBLIC
             Gem::ImGui.imguilib
             Legacy::CryCommon
+    RUNTIME_DEPENDENCIES
+        Gem::ImGui.imguilib
 )
 
 ly_add_target(
@@ -70,7 +72,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::ImGui.ImGuiLYUtils
-            Gem::LmbrCentral
+            Gem::LmbrCentral.Static
 )
 
 ly_add_target(

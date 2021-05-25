@@ -29,6 +29,8 @@ ly_add_target(
             AZ::AzCore
             Gem::HttpRequestor
             3rdParty::AWSNativeSDK::Core
+    RUNTIME_DEPENDENCIES
+        Gem::HttpRequestor
 )
 
 ly_add_target(
