@@ -15,6 +15,7 @@
 #include <LyShine/ILyShine.h>
 #include <LyShine/Bus/UiTransformBus.h>
 
+#include <AzFramework/Font/FontInterface.h>
 #include <Atom/Bootstrap/BootstrapNotificationBus.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
@@ -256,9 +257,8 @@ protected: // types and constants
             const Draw2dShaderData& shaderData,
             AZ::RPI::ViewportContextPtr viewportContext) const override;
 
-        STextDrawContext    m_fontContext;
-        IFFont*             m_font;
-        AZ::Vector2         m_position;
+        AzFramework::TextDrawParameters m_drawParameters;
+        AZStd::string       m_fontName;
         std::string         m_string;
     };
 
@@ -288,7 +288,7 @@ protected: // member functions
     void RotatePointsAboutPivot(AZ::Vector2* points, int numPoints, AZ::Vector2 pivot, float angle) const;
 
     //! Helper function to render a text string
-    void DrawTextInternal(const char* textString, IFFont* font, unsigned int effectIndex,
+    void DrawTextInternal(const char* textString, const AZStd::string& fontName, unsigned int effectIndex,
         AZ::Vector2 position, float pointSize, AZ::Color color, float rotation,
         HAlign horizontalAlignment, VAlign verticalAlignment, int baseState);
 
@@ -297,6 +297,9 @@ protected: // member functions
 
     //! Draw or defer a line
     void DrawOrDeferLine(const DeferredLine* line);
+
+    //! Draw or defer a text string
+    void DrawOrDeferTextString(const DeferredText* text);
 
     //! Draw or defer a rect outline
     void DrawOrDeferRectOutline(const DeferredRectOutline* outlineRect);
@@ -491,7 +494,7 @@ public: // member functions
     void SetImageBaseState(int state) { m_imageOptions.baseState = state; }
 
     //! Set the text font.
-    void SetTextFont(IFFont* font) { m_textOptions.font = font; }
+    void SetTextFont(const AZStd::string& fontName) { m_textOptions.fontName = fontName; }
 
     //! Set the text font effect index.
     void SetTextEffectIndex(unsigned int effectIndex) { m_textOptions.effectIndex = effectIndex; }

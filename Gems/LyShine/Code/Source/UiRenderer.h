@@ -136,8 +136,6 @@ protected: // attributes
 
 #ifndef _RELEASE
     int m_debugTextureDataRecordLevel = 0;
-#ifdef LYSHINE_ATOM_TODO // Convert debug code to Atom
-    AZStd::unordered_set<ITexture*> m_texturesUsedInFrame;
-#endif
+    AZStd::unordered_set<ITexture*> m_texturesUsedInFrame; // LYSHINE_ATOM_TODO - convert to RPI::Image
 #endif
 };

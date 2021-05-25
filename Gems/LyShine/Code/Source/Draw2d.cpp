@@ -11,11 +11,13 @@
 */
 #include "LyShine_precompiled.h"
 #include "IFont.h"
+#include <IRenderer.h> // for SVF_P3F_C4B_T2F which will be removed in a coming PR
 
 #include <LyShine/Draw2d.h>
 
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/MatrixUtils.h>
+#include <AzFramework/Font/FontInterface.h>
 
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
@@ -55,7 +57,7 @@ CDraw2d::CDraw2d(AZ::RPI::ViewportContextPtr viewportContext)
     m_defaultImageOptions.pixelRounding = Rounding::Nearest;
     m_defaultImageOptions.baseState = g_defaultBaseState;
 
-    m_defaultTextOptions.font = (gEnv && gEnv->pCryFont != nullptr) ? gEnv->pCryFont->GetFont("default") : nullptr;
+    m_defaultTextOptions.fontName = "default";
     m_defaultTextOptions.effectIndex = 0;
     m_defaultTextOptions.color.Set(1.0f, 1.0f, 1.0f);
     m_defaultTextOptions.horizontalAlignment = HAlign::Left;
@@ -289,7 +291,7 @@ void CDraw2d::DrawText(const char* textString, AZ::Vector2 position, float point
     {
         // calculate the drop shadow pos and render it
         AZ::Vector2 dropShadowPosition(position + actualTextOptions->dropShadowOffset);
-        DrawTextInternal(textString, actualTextOptions->font, actualTextOptions->effectIndex,
+        DrawTextInternal(textString, actualTextOptions->fontName, actualTextOptions->effectIndex,
             dropShadowPosition, pointSize, actualTextOptions->dropShadowColor,
             actualTextOptions->rotation,
             actualTextOptions->horizontalAlignment, actualTextOptions->verticalAlignment,
@@ -298,7 +300,7 @@ void CDraw2d::DrawText(const char* textString, AZ::Vector2 position, float point
 
     // draw the text string
     AZ::Color textColor = AZ::Color::CreateFromVector3AndFloat(actualTextOptions->color, opacity);
-    DrawTextInternal(textString, actualTextOptions->font, actualTextOptions->effectIndex,
+    DrawTextInternal(textString, actualTextOptions->fontName, actualTextOptions->effectIndex,
         position, pointSize, textColor,
         actualTextOptions->rotation,
         actualTextOptions->horizontalAlignment, actualTextOptions->verticalAlignment,
@@ -398,20 +400,35 @@ void CDraw2d::DrawRectOutlineTextured(AZ::Data::Instance<AZ::RPI::Image> image,
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::Vector2 CDraw2d::GetTextSize(const char* textString, float pointSize, TextOptions* textOptions)
 {
-    TextOptions* actualTextOptions = (textOptions) ? textOptions : &m_defaultTextOptions;
-
-    if (!actualTextOptions->font)
+    AzFramework::FontDrawInterface* fontDrawInterface = nullptr;
+    AzFramework::FontQueryInterface* fontQueryInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get();
+    if (fontQueryInterface)
+    {
+        TextOptions* actualTextOptions = (textOptions) ? textOptions : &m_defaultTextOptions;
+        AzFramework::FontId fontId = fontQueryInterface->GetFontId(actualTextOptions->fontName);
+        fontDrawInterface = fontQueryInterface->GetFontDrawInterface(fontId);
+    }
+    if (!fontDrawInterface)
     {
         return AZ::Vector2(0.0f, 0.0f);
     }
 
-    STextDrawContext fontContext;
-    fontContext.SetEffect(actualTextOptions->effectIndex);
-    fontContext.SetSizeIn800x600(false);
-    fontContext.SetSize(vector2f(pointSize, pointSize));
+    // Set up draw parameters
+    AzFramework::TextDrawParameters drawParams;
+    drawParams.m_drawViewportId = m_viewportContext->GetId();
+    drawParams.m_position = AZ::Vector3(0.0f, 0.0f, 1.0f);
+    drawParams.m_effectIndex = 0;
+    drawParams.m_textSizeFactor = pointSize;
+    drawParams.m_scale = AZ::Vector2(1.0f, 1.0f);
+    drawParams.m_lineSpacing = 1.0f;
+    drawParams.m_monospace = false;
+    drawParams.m_depthTest = false;
+    drawParams.m_virtual800x600ScreenSize = false;
+    drawParams.m_scaleWithWindow = false;
+    drawParams.m_multiline = true;
 
-    Vec2 textSize = actualTextOptions->font->GetTextSize(textString, true, fontContext);
-    return AZ::Vector2(textSize.x, textSize.y);
+    AZ::Vector2 textSize = fontDrawInterface->GetTextSize(drawParams, textString);
+    return textSize;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -559,100 +576,89 @@ void CDraw2d::RotatePointsAboutPivot(AZ::Vector2* points, [[maybe_unused]] int n
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CDraw2d::DrawTextInternal(const char* textString, IFFont* font, unsigned int effectIndex,
+void CDraw2d::DrawTextInternal(const char* textString, const AZStd::string& fontName, unsigned int effectIndex,
     AZ::Vector2 position, float pointSize, AZ::Color color, float rotation,
-    HAlign horizontalAlignment, VAlign verticalAlignment, int baseState)
+    HAlign horizontalAlignment, VAlign verticalAlignment, [[maybe_unused]] int baseState)
 {
-    if (!font)
-    {
-        return;
-    }
-
-    STextDrawContext fontContext;
-    fontContext.SetEffect(effectIndex);
-    fontContext.SetSizeIn800x600(false);
-    fontContext.SetSize(vector2f(pointSize, pointSize));
-    fontContext.SetColor(ColorF(color.GetR(), color.GetG(), color.GetB(), color.GetA()));
-    fontContext.m_baseState = baseState;
-    fontContext.SetOverrideViewProjMatrices(false);
-
     // FFont.cpp uses the alpha value of the color to decide whether to use the color, if the alpha value is zero
     // (in a ColorB format) then the color set via SetColor is ignored and it usually ends up drawing with an alpha of 1.
     // This is not what we want so in this case do not draw at all.
-    if (!fontContext.IsColorOverridden())
+    if (AZ::IsClose(color.GetA(), 0.0f))
     {
         return;
     }
 
-    AZ::Vector2 alignedPosition;
-    if (horizontalAlignment == HAlign::Left && verticalAlignment == VAlign::Top)
+    // Convert Draw2d alignment to text alignment
+    AzFramework::TextHorizontalAlignment hAlignment = AzFramework::TextHorizontalAlignment::Left;
+    switch (horizontalAlignment)
     {
-        alignedPosition = position;
+    case HAlign::Left:
+        hAlignment = AzFramework::TextHorizontalAlignment::Left;
+        break;
+    case HAlign::Center:
+        hAlignment = AzFramework::TextHorizontalAlignment::Center;
+        break;
+    case HAlign::Right:
+        hAlignment = AzFramework::TextHorizontalAlignment::Right;
+        break;
+    default:
+        AZ_Assert(false, "Attempting to draw text with unsupported horizontal alignment.");
+        break;
     }
-    else
+
+    AzFramework::TextVerticalAlignment vAlignment = AzFramework::TextVerticalAlignment::Top;
+    switch (verticalAlignment)
     {
-        // we align based on the size of the default font effect, because we do not want the
-        // text to move when the font effect is changed
-        unsigned int fontEffectIndex = fontContext.m_fxIdx;
-        fontContext.SetEffect(0);
-        Vec2 textSize = font->GetTextSize(textString, true, fontContext);
-        fontContext.SetEffect(fontEffectIndex);
-
-        alignedPosition = Align(position, AZ::Vector2(textSize.x, textSize.y), horizontalAlignment, verticalAlignment);
+    case VAlign::Top:
+        vAlignment = AzFramework::TextVerticalAlignment::Top;
+        break;
+    case VAlign::Center:
+        vAlignment = AzFramework::TextVerticalAlignment::Center;
+        break;
+    case VAlign::Bottom:
+        vAlignment = AzFramework::TextVerticalAlignment::Bottom;
+        break;
+    default:
+        AZ_Assert(false, "Attempting to draw text with unsupported vertical alignment.");
+        break;
     }
 
-    int flags = 0;
+    // Set up draw parameters for font interface
+    AzFramework::TextDrawParameters drawParams;
+    drawParams.m_drawViewportId = m_viewportContext->GetId();
+    drawParams.m_position = AZ::Vector3(position.GetX(), position.GetY(), 1.0f);
+    drawParams.m_color = color;
+    drawParams.m_effectIndex = effectIndex;
+    drawParams.m_textSizeFactor = pointSize;
+    drawParams.m_scale = AZ::Vector2(1.0f, 1.0f);
+    drawParams.m_lineSpacing = 1.0f; //!< Spacing between new lines, as a percentage of m_scale.
+    drawParams.m_hAlign = hAlignment;
+    drawParams.m_vAlign = vAlignment;
+    drawParams.m_monospace = false;
+    drawParams.m_depthTest = false;
+    drawParams.m_virtual800x600ScreenSize = false;
+    drawParams.m_scaleWithWindow = false;
+    drawParams.m_multiline = true;
+
     if (rotation != 0.0f)
     {
         // rotate around the position (if aligned to center will rotate about center etc)
         float rotRad = DEG2RAD(rotation);
-        Vec3 pivot(position.GetX(), position.GetY(), 0.0f);
-        Matrix34A moveToPivotSpaceMat = Matrix34A::CreateTranslationMat(-pivot);
-        Matrix34A rotMat = Matrix34A::CreateRotationZ(rotRad);
-        Matrix34A moveFromPivotSpaceMat = Matrix34A::CreateTranslationMat(pivot);
+        AZ::Vector3 pivot(position.GetX(), position.GetY(), 0.0f);
+        AZ::Matrix3x4 moveToPivotSpaceMat = AZ::Matrix3x4::CreateTranslation(-pivot);
+        AZ::Matrix3x4 rotMat = AZ::Matrix3x4::CreateRotationZ(rotRad);
+        AZ::Matrix3x4 moveFromPivotSpaceMat = AZ::Matrix3x4::CreateTranslation(pivot);
 
-        Matrix34A transform = moveFromPivotSpaceMat * rotMat * moveToPivotSpaceMat;
-        fontContext.SetTransform(transform);
-        flags |= eDrawText_UseTransform;
+        drawParams.m_transform = moveFromPivotSpaceMat * rotMat * moveToPivotSpaceMat;
+        drawParams.m_useTransform = true;
     }
 
-    // The font system uses these alignment flags to force text to be in the safe zone
-    // depending on overscan etc
-    if (horizontalAlignment == HAlign::Center)
-    {
-        flags |= eDrawText_Center;
-    }
-    else if (horizontalAlignment == HAlign::Right)
-    {
-        flags |= eDrawText_Right;
-    }
+    DeferredText newText;
+    newText.m_drawParameters = drawParams;
+    newText.m_fontName = fontName;
+    newText.m_string = textString;
 
-    if (verticalAlignment == VAlign::Center)
-    {
-        flags |= eDrawText_CenterV;
-    }
-    else if (verticalAlignment == VAlign::Bottom)
-    {
-        flags |= eDrawText_Bottom;
-    }
-
-    fontContext.SetFlags(flags);
-
-    if (m_deferCalls)
-    {
-        DeferredText* newText = new DeferredText;
-
-        newText->m_fontContext = fontContext;
-        newText->m_font = font;
-        newText->m_position = alignedPosition;
-        newText->m_string = textString;
-
-        m_deferredPrimitives.push_back(newText);
-    }
-    else
-    {
-        font->DrawString(alignedPosition.GetX(), alignedPosition.GetY(), textString, true, fontContext);
-    }
+    DrawOrDeferTextString(&newText);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -682,6 +688,20 @@ void CDraw2d::DrawOrDeferLine(const DeferredLine* line)
     else
     {
         line->Draw(m_dynamicDraw, m_shaderData, GetViewportContext());
+    }
+}
+
+void CDraw2d::DrawOrDeferTextString(const DeferredText* text)
+{
+    if (m_deferCalls)
+    {
+        DeferredText* newText = new DeferredText;
+        *newText = *text;
+        m_deferredPrimitives.push_back(newText);
+    }
+    else
+    {
+        text->Draw(m_dynamicDraw, m_shaderData, GetViewportContext());
     }
 }
 
@@ -919,6 +939,16 @@ void CDraw2d::DeferredText::Draw([[maybe_unused]] AZ::RHI::Ptr<AZ::RPI::DynamicD
     [[maybe_unused]] const Draw2dShaderData& shaderData,
     [[maybe_unused]] AZ::RPI::ViewportContextPtr viewportContext) const
 {
-    m_font->DrawString(m_position.GetX(), m_position.GetY(), m_string.c_str(), true, m_fontContext);
+    AzFramework::FontDrawInterface* fontDrawInterface = nullptr;
+    AzFramework::FontQueryInterface* fontQueryInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get();
+    if (fontQueryInterface)
+    {
+        AzFramework::FontId fontId = fontQueryInterface->GetFontId(m_fontName);
+        fontDrawInterface = fontQueryInterface->GetFontDrawInterface(fontId);
+    }
+    if (fontDrawInterface)
+    {
+        fontDrawInterface->DrawScreenAlignedText2d(m_drawParameters, m_string.c_str());
+    }
 }
 
