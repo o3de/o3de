@@ -21,6 +21,9 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PUBLIC
+            AZ::AtomCore
+            Gem::Atom_RPI.Public
+            Gem::Atom_Bootstrap.Headers
             Legacy::CryCommon
 )
 
@@ -51,6 +54,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Source
             PUBLIC
                 Include
+        COMPILE_DEFINITIONS
+            PRIVATE
+                DEBUGDRAW_GEM_EDITOR=1
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::DebugDraw.Static
