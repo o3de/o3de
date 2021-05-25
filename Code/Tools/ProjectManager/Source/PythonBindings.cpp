@@ -540,7 +540,8 @@ namespace O3DE::ProjectManager
     ProjectInfo PythonBindings::ProjectInfoFromPath(pybind11::handle path)
     {
         ProjectInfo projectInfo;
-        projectInfo.m_path = Py_To_String(path); 
+        projectInfo.m_path = Py_To_String(path);
+        projectInfo.m_isNew = false;
 
         auto projectData = m_registration.attr("get_project_data")(pybind11::none(), path);
         if (pybind11::isinstance<pybind11::dict>(projectData))

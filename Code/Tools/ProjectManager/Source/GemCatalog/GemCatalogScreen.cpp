@@ -178,9 +178,4 @@ namespace O3DE::ProjectManager
     {
         return ProjectManagerScreen::GemCatalog;
     }
-
-    QString GemCatalogScreen::GetNextButtonText()
-    {
-        return "Create Project";
-    }
 } // namespace O3DE::ProjectManager
