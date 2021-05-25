@@ -17,6 +17,7 @@
 #include <AzCore/Platform.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzFramework/AzFramework_Traits_Platform.h>
+#include <AzFramework/Process/ProcessCommon.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -33,6 +34,7 @@
 #include <QFileInfo>
 #include <QScrollArea>
 #include <QMessageBox>
+#include <QTimer>
 
 namespace O3DE::ProjectManager
 {
@@ -133,8 +135,6 @@ namespace O3DE::ProjectManager
     }
     void ProjectsHomeScreen::HandleOpenProject(const QString& projectPath)
     {
-        bool launchSuccess = false;
-
         if (!projectPath.isEmpty())
         {
             AZ::IO::FixedMaxPath executableDirectory = AZ::Utils::GetExecutableDirectory();
@@ -144,21 +144,39 @@ namespace O3DE::ProjectManager
 
             AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
             processLaunchInfo.m_commandlineParameters = cmdPath;
-            launchSuccess = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
-            if (!launchSuccess)
+            bool launchSucceeded = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
+            if (!launchSucceeded)
             {
                 AZ_Error("ProjectManager", false, "Failed to launch editor");
+                QMessageBox::critical( this, tr("Error"), tr("Failed to launch the Editor, please verify the project settings are valid."));
+            }
+            else
+            {
+                // prevent the user from accidentally pressing the button while the editor is launching
+                // and let them know what's happening
+                ProjectButton* button = qobject_cast<ProjectButton*>(sender());
+                if (button)
+                {
+                    button->SetButtonEnabled(false);
+                    button->SetButtonOverlayText(tr("Opening Editor..."));
+                }
+
+                // enable the button after 3 seconds 
+                constexpr int waitTimeInMs = 3000;
+                QTimer::singleShot(waitTimeInMs, this, [this, button] {
+                        if (button)
+                        {
+                            button->SetButtonEnabled(true);
+                        }
+                    });
             }
         }
         else
         {
             AZ_Error("ProjectManager", false, "Cannot open editor because an empty project path was provided");
+            QMessageBox::critical( this, tr("Error"), tr("Failed to launch the Editor because the project path is invalid."));
         }
 
-        if (!launchSuccess)
-        {
-            QMessageBox::critical( this, tr("Error"), tr("Failed to launch the Editor, please validate the selected project's settings and examine the Editor logs."));
-        }
     }
     void ProjectsHomeScreen::HandleEditProject(const QString& projectPath)
     {
