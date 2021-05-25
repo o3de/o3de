@@ -49,6 +49,12 @@
             "isOptional": false
         },
         {
+            "file": "Code/gem.json",
+            "origin": "Code/gem.json",
+            "isTemplated": true,
+            "isOptional": true
+        },
+        {
             "file": "Code/Include/${Name}/${Name}Bus.h",
             "origin": "Code/Include/${Name}/${Name}Bus.h",
             "isTemplated": true,
