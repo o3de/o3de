@@ -12,17 +12,16 @@
 
 #pragma once
 
-#include <ModernViewportCameraControllerRequestBus.h>
-
 #include <Atom/RPI.Public/ViewportContext.h>
+#include <AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Viewport/MultiViewportController.h>
 
-namespace SandboxEditor
+namespace AtomToolsFramework
 {
     class ModernViewportCameraControllerInstance;
-    class ModernViewportCameraController
+    class ModularViewportCameraController
         : public AzFramework::MultiViewportController<
               ModernViewportCameraControllerInstance, AzFramework::ViewportControllerPriority::DispatchToAllPriorities>
     {
@@ -39,19 +38,19 @@ namespace SandboxEditor
     };
 
     class ModernViewportCameraControllerInstance final
-        : public AzFramework::MultiViewportControllerInstanceInterface<ModernViewportCameraController>,
-          public ModernViewportCameraControllerRequestBus::Handler,
+        : public AzFramework::MultiViewportControllerInstanceInterface<ModularViewportCameraController>,
+          public ModularViewportCameraControllerRequestBus::Handler,
           private AzFramework::ViewportDebugDisplayEventBus::Handler
     {
     public:
-        explicit ModernViewportCameraControllerInstance(AzFramework::ViewportId viewportId, ModernViewportCameraController* controller);
+        explicit ModernViewportCameraControllerInstance(AzFramework::ViewportId viewportId, ModularViewportCameraController* controller);
         ~ModernViewportCameraControllerInstance() override;
 
         // MultiViewportControllerInstanceInterface overrides ...
         bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
         void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
 
-        // ModernViewportCameraControllerRequestBus overrides ...
+        // ModularViewportCameraControllerRequestBus overrides ...
         void InterpolateToTransform(const AZ::Transform& worldFromLocal) override;
 
     private:
@@ -76,4 +75,4 @@ namespace SandboxEditor
 
         AZ::RPI::ViewportContext::MatrixChangedEvent::Handler m_cameraViewMatrixChangeHandler;
     };
-} // namespace SandboxEditor
+} // namespace AtomToolsFramework
