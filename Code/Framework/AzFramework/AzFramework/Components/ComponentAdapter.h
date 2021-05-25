@@ -73,7 +73,7 @@ namespace AzFramework
             AZ_RTTI((ComponentAdapter, "{644A9187-4FDB-42C1-9D59-DD75304B551A}", TController, TConfiguration), AZ::Component);
 
             ComponentAdapter() = default;
-            ComponentAdapter(const TConfiguration& configuration);
+            explicit ComponentAdapter(const TConfiguration& configuration);
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);

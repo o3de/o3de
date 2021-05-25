@@ -74,7 +74,7 @@ namespace AzToolsFramework
                 EditorComponentBase);
 
             EditorComponentAdapter() = default;
-            EditorComponentAdapter(const TConfiguration& configuration);
+            explicit EditorComponentAdapter(const TConfiguration& configuration);
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
