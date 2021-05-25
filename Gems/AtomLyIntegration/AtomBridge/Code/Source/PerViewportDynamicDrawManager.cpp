@@ -70,8 +70,8 @@ namespace AZ::AtomBridge
             return nullptr;
         }
 
-        auto viewportContextMananger = RPI::ViewportContextRequests::Get();
-        RPI::ViewportContextPtr viewportContext = viewportContextMananger->GetViewportContextById(viewportId);
+        auto viewportContextManager = RPI::ViewportContextRequests::Get();
+        RPI::ViewportContextPtr viewportContext = viewportContextManager->GetViewportContextById(viewportId);
         if (viewportContext == nullptr)
         {
             return nullptr;
