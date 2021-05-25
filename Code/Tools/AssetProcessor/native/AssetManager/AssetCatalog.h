@@ -95,6 +95,8 @@ namespace AssetProcessor
         const char* GetAbsoluteDevGameFolderPath() override;
         const char* GetAbsoluteDevRootFolderPath() override;
         bool GetRelativeProductPathFromFullSourceOrProductPath(const AZStd::string& fullPath, AZStd::string& relativeProductPath) override;
+        bool GetRelativeSourcePathFromFullSourcePath(
+            const AZStd::string& fullPath, AZStd::string& relativePath, AZStd::string& watchFolder) override;
         bool GetFullSourcePathFromRelativeProductPath(const AZStd::string& relPath, AZStd::string& fullSourcePath) override;
         bool GetAssetInfoById(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType, const AZStd::string& platformName, AZ::Data::AssetInfo& assetInfo, AZStd::string& rootFilePath) override;
         bool GetSourceInfoBySourcePath(const char* sourcePath, AZ::Data::AssetInfo& assetInfo, AZStd::string& watchFolder) override;
@@ -128,6 +130,11 @@ namespace AssetProcessor
         //! string like 'textures/blah.tif' (we don't care about extensions), but eventually, this will
         //! be an actual asset UUID.
         void ProcessGetRelativeProductPathFromFullSourceOrProductPathRequest(const AZStd::string& fullPath, AZStd::string& relativeProductPath);
+
+        //! given a source file's absolute path, respond with its relative path.  For now, this will be a string like
+        //! 'textures/blah.tif' (we don't care about extensions), but eventually, this will be an actual asset UUID.
+        void ProcessGetRelativeSourcePathFromFullSourcePathRequest(
+            const AZStd::string& fullPath, AZStd::string& relativePath, AZStd::string& watchFolder);
 
         //! This function helps in determining the full product path of an relative product path.
         //! In the future we will be sending an asset UUID to this function to request for full path.

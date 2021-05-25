@@ -265,6 +265,9 @@ namespace AssetProcessorMessagesTests
 
         addPairFunc(new GetFullSourcePathFromRelativeProductPathRequest(), new GetFullSourcePathFromRelativeProductPathResponse());
         addPairFunc(new GetRelativeProductPathFromFullSourceOrProductPathRequest(), new GetRelativeProductPathFromFullSourceOrProductPathResponse());
+        addPairFunc(
+            new GetRelativeSourcePathFromFullSourcePathRequest(),
+            new GetRelativeSourcePathFromFullSourcePathResponse());
         addPairFunc(new SourceAssetInfoRequest(), new SourceAssetInfoResponse());
         addPairFunc(new SourceAssetProductsInfoRequest(), new SourceAssetProductsInfoResponse());
         addPairFunc(new GetScanFoldersRequest(), new GetScanFoldersResponse());

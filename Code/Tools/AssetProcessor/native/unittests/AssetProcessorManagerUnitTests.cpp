@@ -51,6 +51,8 @@ namespace AssetProcessor
     public:
         using GetRelativeProductPathFromFullSourceOrProductPathRequest = AzFramework::AssetSystem::GetRelativeProductPathFromFullSourceOrProductPathRequest;
         using GetRelativeProductPathFromFullSourceOrProductPathResponse = AzFramework::AssetSystem::GetRelativeProductPathFromFullSourceOrProductPathResponse;
+        using GetRelativeSourcePathFromFullSourcePathRequest = AzFramework::AssetSystem::GetRelativeSourcePathFromFullSourcePathRequest;
+        using GetRelativeSourcePathFromFullSourcePathResponse = AzFramework::AssetSystem::GetRelativeSourcePathFromFullSourcePathResponse;
         using GetFullSourcePathFromRelativeProductPathRequest = AzFramework::AssetSystem::GetFullSourcePathFromRelativeProductPathRequest;
         using GetFullSourcePathFromRelativeProductPathResponse = AzFramework::AssetSystem::GetFullSourcePathFromRelativeProductPathResponse;
     };

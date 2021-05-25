@@ -289,6 +289,42 @@ namespace AzFramework
         };
 
         //////////////////////////////////////////////////////////////////////////
+        class GetRelativeSourcePathFromFullSourcePathRequest : public BaseAssetProcessorMessage
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(GetRelativeSourcePathFromFullSourcePathRequest, AZ::OSAllocator, 0);
+            AZ_RTTI(GetRelativeSourcePathFromFullSourcePathRequest, "{B3865033-F5A3-4749-8147-7B1AB04D5F6D}",
+                BaseAssetProcessorMessage);
+            static void Reflect(AZ::ReflectContext* context);
+            static constexpr unsigned int MessageType =
+                AZ_CRC_CE("AssetSystem::GetRelativeSourcePathFromFullSourcePathRequest");
+
+            GetRelativeSourcePathFromFullSourcePathRequest() = default;
+            GetRelativeSourcePathFromFullSourcePathRequest(const AZ::OSString& sourcePath);
+            unsigned int GetMessageType() const override;
+
+            AZ::OSString m_sourcePath;
+        };
+
+        class GetRelativeSourcePathFromFullSourcePathResponse : public BaseAssetProcessorMessage
+        {
+        public:
+            AZ_CLASS_ALLOCATOR(GetRelativeSourcePathFromFullSourcePathResponse, AZ::OSAllocator, 0);
+            AZ_RTTI(GetRelativeSourcePathFromFullSourcePathResponse, "{938D33DB-C8F6-4FA4-BC81-2F139A9BE1D7}",
+                BaseAssetProcessorMessage);
+            static void Reflect(AZ::ReflectContext* context);
+
+            GetRelativeSourcePathFromFullSourcePathResponse() = default;
+            GetRelativeSourcePathFromFullSourcePathResponse(
+                bool resolved, const AZ::OSString& relativeSourcePath, const AZ::OSString& rootFolder);
+            unsigned int GetMessageType() const override;
+
+            AZ::OSString m_relativeSourcePath;
+            AZ::OSString m_rootFolder; ///< This is the folder it was found in (the watched/scanned folder, such as gems /assets/ folder)
+            bool m_resolved;
+        };
+
+        //////////////////////////////////////////////////////////////////////////
         class GetFullSourcePathFromRelativeProductPathRequest
             : public BaseAssetProcessorMessage
         {

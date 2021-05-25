@@ -202,6 +202,7 @@ namespace AzFramework
             // Requests
             GetUnresolvedDependencyCountsRequest::Reflect(context);
             GetRelativeProductPathFromFullSourceOrProductPathRequest::Reflect(context);
+            GetRelativeSourcePathFromFullSourcePathRequest::Reflect(context);
             GetFullSourcePathFromRelativeProductPathRequest::Reflect(context);
             SourceAssetInfoRequest::Reflect(context);
             AssetInfoRequest::Reflect(context);
@@ -234,6 +235,7 @@ namespace AzFramework
             // Responses
             GetUnresolvedDependencyCountsResponse::Reflect(context);
             GetRelativeProductPathFromFullSourceOrProductPathResponse::Reflect(context);
+            GetRelativeSourcePathFromFullSourcePathResponse::Reflect(context);
             GetFullSourcePathFromRelativeProductPathResponse::Reflect(context);
             SourceAssetInfoResponse::Reflect(context);
             AssetInfoResponse::Reflect(context);

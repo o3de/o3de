@@ -72,7 +72,15 @@ namespace UnitTest
         return false;
     }
 
-    bool AssetSystemStub::GetFullSourcePathFromRelativeProductPath([[maybe_unused]] const AZStd::string& relPath, [[maybe_unused]] AZStd::string& fullSourcePath)
+    bool AssetSystemStub::GetRelativeSourcePathFromFullSourcePath(
+        [[maybe_unused]] const AZStd::string& fullPath, [[maybe_unused]] AZStd::string& relativePath,
+        [[maybe_unused]] AZStd::string& watchFolder)
+    {
+        return false;
+    }
+
+    bool AssetSystemStub::GetFullSourcePathFromRelativeProductPath(
+        [[maybe_unused]] const AZStd::string& relPath, [[maybe_unused]] AZStd::string& fullSourcePath)
     {
         return false;
     }

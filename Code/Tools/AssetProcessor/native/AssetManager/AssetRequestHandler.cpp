@@ -104,6 +104,27 @@ namespace
         return GetRelativeProductPathFromFullSourceOrProductPathResponse(relPathFound, relProductPath);
     }
 
+    GetRelativeSourcePathFromFullSourcePathResponse HandleGetRelativeSourcePathFromFullSourcePathRequest(
+        MessageData<GetRelativeSourcePathFromFullSourcePathRequest> messageData)
+    {
+        bool relPathFound = false;
+        AZStd::string relPath;
+        AZStd::string watchFolder;
+
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            relPathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetRelativeSourcePathFromFullSourcePath,
+            messageData.m_message->m_sourcePath, relPath, watchFolder);
+
+        if (!relPathFound)
+        {
+            AZ_TracePrintf(
+                AssetProcessor::ConsoleChannel, "Could not find relative source path for the source file (%s).",
+                messageData.m_message->m_sourcePath.c_str());
+        }
+
+        return GetRelativeSourcePathFromFullSourcePathResponse(relPathFound, relPath, watchFolder);
+    }
+
     SourceAssetInfoResponse HandleSourceAssetInfoRequest(MessageData<SourceAssetInfoRequest> messageData)
     {
         SourceAssetInfoResponse response;
@@ -407,6 +428,7 @@ AssetRequestHandler::AssetRequestHandler()
 
     m_requestRouter.RegisterMessageHandler(&HandleGetFullSourcePathFromRelativeProductPathRequest);
     m_requestRouter.RegisterMessageHandler(&HandleGetRelativeProductPathFromFullSourceOrProductPathRequest);
+    m_requestRouter.RegisterMessageHandler(&HandleGetRelativeSourcePathFromFullSourcePathRequest);
     m_requestRouter.RegisterMessageHandler(&HandleSourceAssetInfoRequest);
     m_requestRouter.RegisterMessageHandler(&HandleSourceAssetProductsInfoRequest);
     m_requestRouter.RegisterMessageHandler(&HandleGetScanFoldersRequest);

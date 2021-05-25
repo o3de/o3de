@@ -265,6 +265,30 @@ namespace AzToolsFramework
             return response.m_resolved;
         }
 
+        bool AssetSystemComponent::GetRelativeSourcePathFromFullSourcePath(
+            const AZStd::string& fullPath, AZStd::string& relativePath, AZStd::string& rootFilePath)
+        {
+            AzFramework::SocketConnection* engineConnection = AzFramework::SocketConnection::GetInstance();
+            if (!engineConnection || !engineConnection->IsConnected())
+            {
+                relativePath = fullPath;
+                return false;
+            }
+
+            AzFramework::AssetSystem::GetRelativeSourcePathFromFullSourcePathRequest request(fullPath);
+            AzFramework::AssetSystem::GetRelativeSourcePathFromFullSourcePathResponse response;
+            if (!SendRequest(request, response))
+            {
+                AZ_Error("Editor", false, "Failed to send GetRelativeSourcePathFromFullSourcePath request for %s", fullPath.c_str());
+                relativePath = fullPath;
+                return false;
+            }
+
+            relativePath = response.m_relativeSourcePath;
+            rootFilePath = response.m_rootFolder;
+            return response.m_resolved;
+        }
+
         bool AssetSystemComponent::GetFullSourcePathFromRelativeProductPath(const AZStd::string& relPath, AZStd::string& fullPath)
         {
             auto foundIt = m_assetSourceRelativePathToFullPathCache.find(relPath);
