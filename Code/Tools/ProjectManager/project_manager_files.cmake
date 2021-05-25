@@ -41,16 +41,19 @@ set(FILES
     Source/ProjectInfo.cpp
     Source/NewProjectSettingsScreen.h
     Source/NewProjectSettingsScreen.cpp
-    Source/ProjectSettingsCtrl.h
-    Source/ProjectSettingsCtrl.cpp
+    Source/CreateProjectCtrl.h
+    Source/CreateProjectCtrl.cpp
+    Source/UpdateProjectCtrl.h
+    Source/UpdateProjectCtrl.cpp
     Source/ProjectsHomeScreen.h
     Source/ProjectsHomeScreen.cpp
-    Source/ProjectsHomeScreen.ui
     Source/ProjectSettingsScreen.h
     Source/ProjectSettingsScreen.cpp
     Source/ProjectSettingsScreen.ui
     Source/EngineSettingsScreen.h
     Source/EngineSettingsScreen.cpp
+    Source/ProjectButtonWidget.h
+    Source/ProjectButtonWidget.cpp
     Source/LinkWidget.h
     Source/LinkWidget.cpp
     Source/TagWidget.h
