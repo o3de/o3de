@@ -447,17 +447,14 @@ namespace AzToolsFramework
                 m_radius * viewScale);
 
         debugDisplay.SetColor(ViewColor(manipulatorState.m_mouseOver, m_color, m_mouseOverColor).GetAsVector4());
-
-        // show wireframe if the axis has been corrected/flipped
-        //   note: please see IRenderAuxGeom.h for the definition of e_FillModeWireframe and e_FillModeSolid.
-        //   it is not possible to include IRenderAuxGeom from here and we also don't want to introduce that dependency.
-        //   these legacy enums should be wrapped so set SetFillMode can be used in a type safe way, until then,
-        //   use the values directly until the API has been updated.
-        const AZ::u32 prevFillMode = debugDisplay.SetFillMode(
-            m_shouldCorrect ? /*e_FillModeWireframe =*/ 0x1 << 26 : /*e_FillModeSolid =*/ 0);
-
-        debugDisplay.DrawCone(coneBound.m_base, coneBound.m_axis, coneBound.m_radius, coneBound.m_height, false);
-        debugDisplay.SetFillMode(prevFillMode);
+        if (m_shouldCorrect)
+        {
+            debugDisplay.DrawWireCone(coneBound.m_base, coneBound.m_axis, coneBound.m_radius, coneBound.m_height);
+        }
+        else
+        {
+            debugDisplay.DrawSolidCone(coneBound.m_base, coneBound.m_axis, coneBound.m_radius, coneBound.m_height, false);
+        }
 
         RefreshBoundInternal(managerId, manipulatorId, coneBound);
     }

@@ -63,6 +63,7 @@
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerDisplayOptionsMenu.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSortFilterProxyModel.hxx>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerTreeView.hxx>
+#include <AzToolsFramework/UI/Outliner/EntityOutlinerCacheBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1409,6 +1410,16 @@ namespace AzToolsFramework
     {
         (void)name;
         QueueEntityUpdate(entityId);
+
+        bool isSelected = false;
+        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+            isSelected, &AzToolsFramework::ToolsApplicationRequests::IsSelected, entityId);
+
+        if (isSelected)
+        {
+            // Ask the system to scroll to the entity in case it is off screen after the rename
+            EntityOutlinerModelNotificationBus::Broadcast(&EntityOutlinerModelNotifications::QueueScrollToNewContent, entityId);
+        }
     }
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedUnsavedChanges(AZ::EntityId entityId)

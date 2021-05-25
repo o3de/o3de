@@ -18,17 +18,15 @@
 
 namespace O3DE::ProjectManager
 {
-    GemListView::GemListView(GemModel* model, QWidget *parent) :
-        QListView(parent)
+    GemListView::GemListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, QWidget* parent)
+        : QListView(parent)
     {
         setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 
-        QPalette palette;
-        palette.setColor(QPalette::Window, QColor("#333333"));
-        setPalette(palette);
+        setStyleSheet("background-color: #333333;");
 
         setModel(model);
-        setSelectionModel(model->GetSelectionModel());
+        setSelectionModel(selectionModel);
         setItemDelegate(new GemItemDelegate(model, this));
     }
 } // namespace O3DE::ProjectManager

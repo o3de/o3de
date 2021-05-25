@@ -43,6 +43,7 @@ namespace Blast
         AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC("BlastMeshDataService"));
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void EditorBlastMeshDataComponent::Reflect(AZ::ReflectContext* context)
