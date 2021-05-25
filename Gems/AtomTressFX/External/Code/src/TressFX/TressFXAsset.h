@@ -78,6 +78,27 @@ namespace AMD
     #define EI_Read(ptr, size, pFile) fread(ptr, size, 1, pFile)
     #define EI_Seek(pFile, offset) fseek(pFile, offset, SEEK_SET)
 
+    using BoneIndexToEngineIndexLookup = AZStd::vector<uint32>; // Index -> TressFXBoneIndex
+                                                                // Value -> EngineBoneIndex (global)
+    using BoneNameToIndexMap = std::unordered_map<std::string, int>;
+
+    class TressFXCollisionMesh
+    {
+    public:
+        std::vector<AMD::float3> m_vertices;
+        std::vector<AMD::float3> m_normals;
+        std::vector<int> m_indices;
+
+        // The skinning for the collision mesh only. Do not confuse it with hair skinning or the object skinning.
+        std::vector<TressFXBoneSkinningData> m_boneSkinningData;
+
+        std::vector<std::string> m_boneNames;
+        BoneIndexToEngineIndexLookup m_reservedLookup; // Used to reset the skinning data back to bone index in case the engine index changed.
+
+        // This function is mimicking LoadTressFXCollisionMeshData in TressFXBoneSkinnin
+        bool LoadMeshData(AZ::Data::AssetDataStream* stream);
+    };
+
     class TressFXAsset
     {
     public:
@@ -100,8 +121,11 @@ namespace AMD
 
         // Stores a mapping of the bone index to actual bone names.
         std::vector<std::string> m_boneNames;
-        using BoneIndexMap = AZStd::vector<uint32>; // Index -> TressFXBoneIndex
-                                                    // Value -> EngineBoneIndex (global)
+        BoneIndexToEngineIndexLookup m_reservedLookup; // Used to reset the skinning data back to bone index in case the engine index changed.
+
+        // When the skinning data populated from the asset, it will be stored as local bone indices. We need to fix the
+        // bone indices in the skinning data to engineBoneIndex in the hairComponent when we have access to the complete actor skeleton.
+        bool m_boneIndicesFixed = false;
 
         // counts on hair data
         AMD::int32 m_numTotalStrands;
@@ -111,10 +135,14 @@ namespace AMD
         AMD::int32 m_numGuideVertices;
         AMD::int32 m_numFollowStrandsPerGuide;
 
+        // [TO DO] rhhong - handle multiple collision meshes.
+        // Collision mesh
+        std::unique_ptr<TressFXCollisionMesh> m_collisionMesh = nullptr;
+
         // Loads *.tfx hair data 
         bool LoadHairData(FILE* ioObject);
 
-        //Generates follow hairs procedually.  If numFollowHairsPerGuideHair is zero, then this function won't do anything. 
+        // Generates follow hairs procedually.  If numFollowHairsPerGuideHair is zero, then this function won't do anything. 
         bool GenerateFollowHairs(int numFollowHairsPerGuideHair = 0, float tipSeparationFactor = 0, float maxRadiusAroundGuideHair = 0);
 
         // Computes various parameters for simulation and rendering. After calling this function, data is ready to be passed to hair object. 
@@ -140,11 +168,23 @@ namespace AMD
         void GetBonesNames(AZ::Data::AssetDataStream* stream, std::vector<std::string>& boneNames);
         bool LoadBoneData(AZ::Data::AssetDataStream* stream);
 
+        bool FixBoneIndices(const BoneNameToIndexMap& boneIndicesMap, BoneIndexToEngineIndexLookup& outLookup);
+
         inline AMD::uint32 GetNumHairSegments() { return m_numTotalStrands * (m_numVerticesPerStrand - 1); }
         inline AMD::uint32 GetNumHairTriangleIndices() { return 6 * GetNumHairSegments(); }
         inline AMD::uint32 GetNumHairLineIndices() { return 2 * GetNumHairSegments(); }
 
     private:
+
+        // Generate the bone index to engine index lookup.
+        bool GenerateBoneIndexLookup(const BoneNameToIndexMap& boneIndicesMap /*BoneNames to EngineBoneIndex*/,
+            const std::vector<std::string>& boneNames /*BoneNames used by this skinning data*/, BoneIndexToEngineIndexLookup& outLookup);
+
+        // Fix the skinning from bone index to engine index.
+        void FixSkinningUsingLookup(std::vector<TressFXBoneSkinningData>& skinningData, const BoneIndexToEngineIndexLookup& lookup);
+
+        // Reset the skinning back to bone index, in case when a new set of engine index come in.
+        void ResetSkinning(std::vector<TressFXBoneSkinningData>& skinningData, const BoneIndexToEngineIndexLookup& reservedLookup);
 
         // Helper functions for ProcessAsset. 
         void ComputeThicknessCoeffs();

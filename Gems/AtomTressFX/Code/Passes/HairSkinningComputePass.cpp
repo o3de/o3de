@@ -122,7 +122,7 @@ namespace AZ
 
             bool HairSkinningComputePass::BuildDispatchItem(HairRenderObject* hairObject, DispatchLevel dispatchLevel)
             {
-                return hairObject->BuildDispatchItem(m_shader.get(), m_shaderResourceGroup.get(), dispatchLevel);
+                return hairObject->BuildDispatchItem(m_shader.get(), dispatchLevel);
             }
 
             void HairSkinningComputePass::AddDispatchItem(HairRenderObject* hairObject)
@@ -132,7 +132,7 @@ namespace AZ
                     return;
                 }
 
-                const RHI::DispatchItem* dispatchItem = hairObject->GetDispatchItem(m_shaderResourceGroup.get());
+                const RHI::DispatchItem* dispatchItem = hairObject->GetDispatchItem(m_shader.get());
                 if (!dispatchItem)
                 {
                     return;
