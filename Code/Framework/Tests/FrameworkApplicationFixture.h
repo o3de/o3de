@@ -14,6 +14,7 @@
 #include <AzCore/std/typetraits/alignment_of.h>
 #include <AzCore/std/typetraits/aligned_storage.h>
 #include <AzFramework/Application/Application.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -55,6 +56,12 @@ namespace UnitTest
 
         void SetUp() override
         {
+            AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+            auto projectPathKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+            
             m_appDescriptor.m_allocationRecords = true;
             m_appDescriptor.m_allocationRecordsSaveNames = true;
             m_appDescriptor.m_recordingMode = AZ::Debug::AllocationRecords::Mode::RECORD_FULL;

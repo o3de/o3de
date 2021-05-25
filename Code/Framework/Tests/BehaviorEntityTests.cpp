@@ -12,7 +12,6 @@
 
 #include "FrameworkApplicationFixture.h"
 #include <AzCore/Component/Component.h>
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/Entity/BehaviorEntity.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 
@@ -91,12 +90,6 @@ protected:
     {
         m_appDescriptor.m_enableScriptReflection = true;
         FrameworkApplicationFixture::SetUp();
-
-        AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
-        auto projectPathKey =
-            AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-        registry->Set(projectPathKey, "AutomatedTesting");
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
         m_application->RegisterComponentDescriptor(HatComponent::CreateDescriptor());
         m_application->RegisterComponentDescriptor(EarComponent::CreateDescriptor());

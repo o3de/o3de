@@ -98,15 +98,6 @@ namespace AssetBundler
     public:
         void SetUp() override
         {          
-            m_data = AZStd::make_unique<StaticData>();
-            m_data->m_application.reset(aznew AzToolsFramework::ToolsApplication());
-            m_data->m_application.get()->Start(AzFramework::Application::Descriptor());
-
-            // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
-            // in the unit tests.
-            AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
-
             AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
             if (engineRoot.empty())
             {
@@ -127,6 +118,15 @@ namespace AssetBundler
                 + "/project_path";
             registry->Set(projectPathKey, "AutomatedTesting");
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+
+            m_data = AZStd::make_unique<StaticData>();
+            m_data->m_application.reset(aznew AzToolsFramework::ToolsApplication());
+            m_data->m_application.get()->Start(AzFramework::Application::Descriptor());
+
+            // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // in the unit tests.
+            AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
             m_data->m_testEngineRoot = (engineRoot / RelativeTestFolder).LexicallyNormal().String();
 
