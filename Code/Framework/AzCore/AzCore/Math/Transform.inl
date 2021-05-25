@@ -65,7 +65,7 @@ namespace AZ
 
     AZ_MATH_INLINE Transform Transform::CreateScale(const Vector3& scale)
     {
-        AZ_Warning("Transform", false, "CreateScale is deprecated, please use CreateUniformScale instead.");
+        AZ_WarningOnce("Transform", false, "CreateScale is deprecated, please use CreateUniformScale instead.");
         Transform result;
         result.m_rotation = Quaternion::CreateIdentity();
         result.m_scale = scale;
@@ -162,7 +162,7 @@ namespace AZ
 
     AZ_MATH_INLINE Vector3 Transform::GetScale() const
     {
-        AZ_Warning("Transform", false, "GetScale is deprecated, please use GetUniformScale instead.");
+        AZ_WarningOnce("Transform", false, "GetScale is deprecated, please use GetUniformScale instead.");
         return m_scale;
     }
 
@@ -173,7 +173,7 @@ namespace AZ
 
     AZ_MATH_INLINE void Transform::SetScale(const Vector3& scale)
     {
-        AZ_Warning("Transform", false, "SetScale is deprecated, please use SetUniformScale instead.");
+        AZ_WarningOnce("Transform", false, "SetScale is deprecated, please use SetUniformScale instead.");
         m_scale = scale;
     }
 
@@ -184,7 +184,7 @@ namespace AZ
 
     AZ_MATH_INLINE Vector3 Transform::ExtractScale()
     {
-        AZ_Warning("Transform", false, "ExtractScale is deprecated, please use ExtractUniformScale instead.");
+        AZ_WarningOnce("Transform", false, "ExtractScale is deprecated, please use ExtractUniformScale instead.");
         const Vector3 scale = m_scale;
         m_scale = Vector3::CreateOne();
         return scale;
@@ -199,7 +199,7 @@ namespace AZ
 
     AZ_MATH_INLINE void Transform::MultiplyByScale(const Vector3& scale)
     {
-        AZ_Warning("Transform", false, "MultiplyByScale is deprecated, please use MultiplyByUniformScale instead.");
+        AZ_WarningOnce("Transform", false, "MultiplyByScale is deprecated, please use MultiplyByUniformScale instead.");
         m_scale *= scale;
     }
 
