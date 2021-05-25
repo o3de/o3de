@@ -32,20 +32,15 @@ def run():
     """
     Summary:
     The below common tests are done for each of the components.
-    For each test step, it will generate a general.log() message that is used to verify the step was successful.
-    Each of the test steps for each component are listed below:
-        1) Addition of component to the entity
-        2) UNDO/REDO of addition of component
-        3) Enter/Exit game mode
-        4) Hide/Show entity containing component.
-        5) Deletion of component
-        6) UNDO/REDO of deletion of component
-
-    Some additional tests for specific components include:
-        1) "Display Mapper" component having its required "PostFX Layer" component attached.
-        2)
-        1) Assigning value to some properties of each component
-        2) Verifying if the component is activated only when the required components are added
+    1) Addition of component to the entity
+    2) UNDO/REDO of addition of component
+    3) Enter/Exit game mode
+    4) Hide/Show entity containing component
+    5) Deletion of component
+    6) UNDO/REDO of deletion of component
+    Some additional tests for specific components include
+    1) Assigning value to some properties of each component
+    2) Verifying if the component is activated only when the required components are added
 
     Expected Result:
     1) Component can be added to an entity.
