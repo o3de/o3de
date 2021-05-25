@@ -132,7 +132,7 @@
             "rotateDegrees": -57.599998474121097
         },
         "parallax": {
-            "enable": true
+            "quality": "Medium"
         },
         "uv": {
             "center": [

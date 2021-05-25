@@ -973,7 +973,7 @@
                     "displayName": "Heightmap Scale",
                     "description": "The total height of the heightmap in local model units.",
                     "type": "Float",
-                    "defaultValue": 0.0,
+                    "defaultValue": 0.05,
                     "min": 0.0,
                     "softMax": 0.1,
                     "connection": {
@@ -1011,7 +1011,7 @@
                     "description": "Select the algorithm to use for parallax mapping.",
                     "type": "Enum",
                     "enumValues": [ "Basic", "Steep", "POM", "Relief", "ContactRefinement" ],
-                    "defaultValue": "Basic",
+                    "defaultValue": "POM",
                     "connection": {
                         "type": "ShaderOption",
                         "id": "o_parallax_algorithm"

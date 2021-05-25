@@ -369,15 +369,14 @@
             ],
             "parallax": [
                 {
+                    // Note parallax is enabled by default so that as soon as a user hooks up displacement settings they will see some parallax applied. 
+                    // The functor that controls parallax will set o_parallax_feature_enabled=false when all the individual layers have no displacement, so
+                    // a default value of true here will not have any initial impact on performance.
                     "id": "enable",
                     "displayName": "Enable",
                     "description": "Whether to enable the parallax feature for this material.",
                     "type": "Bool",
-                    "defaultValue": false,
-                    "connection": {
-                        "type": "ShaderOption",
-                        "id": "o_parallax_feature_enabled"
-                    }
+                    "defaultValue": true
                 }, 
                 {
                     "id": "parallaxUv",
@@ -409,7 +408,7 @@
                     "description": "Quality of parallax mapping.",
                     "type": "Enum",
                     "enumValues": [ "Low", "Medium", "High", "Ultra" ],
-                    "defaultValue": "Medium",
+                    "defaultValue": "Low",
                     "connection": {
                         "type": "ShaderOption",
                         "id": "o_parallax_quality"
@@ -1141,7 +1140,7 @@
                     "displayName": "Scale",
                     "description": "The total height of the displacement texture map in local model units.",
                     "type": "Float",
-                    "defaultValue": 0.0,
+                    "defaultValue": 0.05,
                     "min": 0.0,
                     "softMax": 0.1,
                     "connection": {
@@ -1847,7 +1846,7 @@
                     "displayName": "Scale",
                     "description": "The total height of the displacement texture map in local model units.",
                     "type": "Float",
-                    "defaultValue": 0.0,
+                    "defaultValue": 0.05,
                     "min": 0.0,
                     "softMax": 0.1,
                     "connection": {
@@ -2553,7 +2552,7 @@
                     "displayName": "Scale",
                     "description": "The total height of the displacement texture map in local model units.",
                     "type": "Float",
-                    "defaultValue": 0.0,
+                    "defaultValue": 0.05,
                     "min": 0.0,
                     "softMax": 0.1,
                     "connection": {
