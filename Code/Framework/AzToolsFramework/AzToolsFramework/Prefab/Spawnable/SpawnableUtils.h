@@ -17,7 +17,6 @@
 
 namespace AzToolsFramework::Prefab::SpawnableUtils
 {
-    AzFramework::Spawnable CreateSpawnable(const PrefabDom& prefabDom);
     bool CreateSpawnable(AzFramework::Spawnable& spawnable, const PrefabDom& prefabDom);
     bool CreateSpawnable(AzFramework::Spawnable& spawnable, const PrefabDom& prefabDom, AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets);
 
