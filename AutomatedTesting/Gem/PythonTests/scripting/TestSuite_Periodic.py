@@ -76,14 +76,8 @@ class TestAutomation(TestAutomationBase):
         from . import ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage as test_module
         self._run_test(request, workspace, editor, test_module)
 
-<<<<<<< HEAD
     def test_NodePalette_HappyPath_ClearSelection(self, request, workspace, editor, launcher_platform, project):
         from . import NodePalette_HappyPath_ClearSelection as test_module
-=======
-    @pytest.mark.test_case_id("T92562993")
-    def test_NodePalette_ClearSelection(self, request, workspace, editor, launcher_platform, project):
-        from . import NodePalette_ClearSelection as test_module
->>>>>>> main
         self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.parametrize("level", ["tmp_level"])
@@ -119,7 +113,6 @@ class TestAutomation(TestAutomationBase):
         from . import Debugger_HappyPath_TargetMultipleGraphs as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.test_case_id("T92569137")
     def test_Debugging_TargetMultipleGraphs(self, request, workspace, editor, launcher_platform, project):
         from . import Debugging_TargetMultipleGraphs as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -259,6 +252,40 @@ class TestScriptCanvasTests(object):
             editor,
             "VariableManager_Default_CreateDeleteVars.py",
             expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
+
+    @pytest.mark.parametrize(
+        "config",
+        [
+            {
+                "cfg_args": "before_restart",
+                "expected_lines": [
+                    "All the test panes are opened: True",
+                    "Test pane 1 is closed: True",
+                    "Location of test pane 2 changed successfully: True",
+                    "Test pane 3 resized successfully: True",
+                ],
+            },
+            {
+                "cfg_args": "after_restart",
+                "expected_lines": [
+                    "Test pane retained its visiblity on Editor restart: True",
+                    "Test pane retained its location on Editor restart: True",
+                    "Test pane retained its size on Editor restart: True",
+                ],
+            },
+        ],
+    )
+    def test_Pane_PropertiesChanged_RetainsOnRestart(self, request, editor, config, project, launcher_platform):
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "Pane_PropertiesChanged_RetainsOnRestart.py",
+            config.get('expected_lines'),
+            cfg_args=[config.get('cfg_args')],
             auto_test_mode=False,
             timeout=60,
         )

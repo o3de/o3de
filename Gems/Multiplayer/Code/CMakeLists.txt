@@ -96,12 +96,12 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 Gem::Multiplayer.Tools.Static
     )
-    
+
     ly_add_target(
-        NAME Multiplayer.Editor.Static STATIC
+        NAME Multiplayer.Editor GEM_MODULE
         NAMESPACE Gem
         FILES_CMAKE
-            multiplayer_editor_files.cmake
+            multiplayer_editor_shared_files.cmake
         COMPILE_DEFINITIONS
             PUBLIC
                 MULTIPLAYER_EDITOR
@@ -113,7 +113,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 Include
         BUILD_DEPENDENCIES
-            PUBLIC
+            PRIVATE
                 Legacy::CryCommon
                 Legacy::Editor.Headers
                 AZ::AzCore
@@ -121,23 +121,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzNetworking
                 AZ::AzToolsFramework
                 Gem::Multiplayer.Static
-    )
-
-    ly_add_target(
-        NAME Multiplayer.Editor GEM_MODULE
-        NAMESPACE Gem
-        FILES_CMAKE
-            multiplayer_editor_shared_files.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                .
-                Source
-                ${pal_source_dir}
-            PUBLIC
-                Include
-        BUILD_DEPENDENCIES
-            PRIVATE
-                Gem::Multiplayer.Editor.Static
+                Gem::Multiplayer.Tools
     )
 
 endif()
