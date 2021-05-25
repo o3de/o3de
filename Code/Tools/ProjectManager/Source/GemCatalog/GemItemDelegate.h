@@ -15,7 +15,7 @@
 #if !defined(Q_MOC_RUN)
 #include <QStyledItemDelegate>
 #include "GemInfo.h"
-#include "GemModel.h"
+#include <QAbstractItemModel>
 #include <QHash>
 #endif
 
@@ -29,21 +29,12 @@ namespace O3DE::ProjectManager
         Q_OBJECT // AUTOMOC
 
     public:
-        explicit GemItemDelegate(GemModel* gemModel, QObject* parent = nullptr);
+        explicit GemItemDelegate(QAbstractItemModel* model, QObject* parent = nullptr);
         ~GemItemDelegate() = default;
 
         void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const override;
         bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) override;
         QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const override;
-
-    private:
-        void CalcRects(const QStyleOptionViewItem& option, const QModelIndex& modelIndex, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const;
-        QRect GetTextRect(QFont& font, const QString& text, qreal fontSize) const;
-        QRect CalcButtonRect(const QRect& contentRect) const;
-        void DrawPlatformIcons(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const;
-        void DrawButton(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const;
-
-        GemModel* m_gemModel = nullptr;
 
         // Colors
         const QColor m_textColor = QColor("#FFFFFF");
@@ -70,6 +61,15 @@ namespace O3DE::ProjectManager
         inline constexpr static int s_buttonBorderRadius = 12;
         inline constexpr static int s_buttonCircleRadius = s_buttonBorderRadius - 3;
         inline constexpr static qreal s_buttonFontSize = 12.0;
+
+    private:
+        void CalcRects(const QStyleOptionViewItem& option, const QModelIndex& modelIndex, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const;
+        QRect GetTextRect(QFont& font, const QString& text, qreal fontSize) const;
+        QRect CalcButtonRect(const QRect& contentRect) const;
+        void DrawPlatformIcons(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const;
+        void DrawButton(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const;
+
+        QAbstractItemModel* m_model = nullptr;
 
         // Platform icons
         void AddPlatformIcon(GemInfo::Platform platform, const QString& iconPath);

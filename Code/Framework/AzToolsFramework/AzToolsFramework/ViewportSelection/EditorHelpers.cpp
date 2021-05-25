@@ -233,9 +233,9 @@ namespace AzToolsFramework
                 }();
 
                 debugDisplay.SetColor(iconHighlight);
-                debugDisplay.DrawTextureLabel(
-                    iconTextureId, entityPosition, iconSize, iconSize,
-                    /*DisplayContext::ETextureIconFlags::TEXICON_ON_TOP=*/ 0x0008);
+                // debugDisplay.DrawTextureLabel(
+                //     iconTextureId, entityPosition, iconSize, iconSize,
+                //     /*DisplayContext::ETextureIconFlags::TEXICON_ON_TOP=*/ 0x0008);
             }
         }
     }

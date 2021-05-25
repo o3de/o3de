@@ -10,7 +10,8 @@
 #
 
 set(FILES
-    project_manager.qrc
+    Resources/ProjectManager.qrc
+    Resources/ProjectManager.qss
     Source/main.cpp
     Source/ScreenDefs.h
     Source/ScreenFactory.h
@@ -22,6 +23,12 @@ set(FILES
     Source/EngineInfo.cpp
     Source/FirstTimeUseScreen.h
     Source/FirstTimeUseScreen.cpp
+    Source/FormLineEditWidget.h
+    Source/FormLineEditWidget.cpp
+    Source/FormBrowseEditWidget.h
+    Source/FormBrowseEditWidget.cpp
+    Source/PathValidator.h
+    Source/PathValidator.cpp
     Source/ProjectManagerWindow.h
     Source/ProjectManagerWindow.cpp
     Source/ProjectTemplateInfo.h
@@ -44,13 +51,14 @@ set(FILES
     Source/ProjectSettingsScreen.ui
     Source/EngineSettingsScreen.h
     Source/EngineSettingsScreen.cpp
-    Source/EngineSettingsScreen.ui
     Source/LinkWidget.h
     Source/LinkWidget.cpp
     Source/TagWidget.h
     Source/TagWidget.cpp
     Source/GemCatalog/GemCatalogScreen.h
     Source/GemCatalog/GemCatalogScreen.cpp
+    Source/GemCatalog/GemFilterWidget.h
+    Source/GemCatalog/GemFilterWidget.cpp
     Source/GemCatalog/GemInfo.h
     Source/GemCatalog/GemInfo.cpp
     Source/GemCatalog/GemInspector.h
@@ -61,4 +69,6 @@ set(FILES
     Source/GemCatalog/GemListView.cpp
     Source/GemCatalog/GemModel.h
     Source/GemCatalog/GemModel.cpp
+    Source/GemCatalog/GemSortFilterProxyModel.h
+    Source/GemCatalog/GemSortFilterProxyModel.cpp
 )
