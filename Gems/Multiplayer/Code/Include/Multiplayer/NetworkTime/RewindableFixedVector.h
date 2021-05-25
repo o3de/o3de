@@ -122,7 +122,7 @@ namespace Multiplayer
     private:
         AZStd::fixed_vector<RewindableObject<TYPE, Multiplayer::RewindHistorySize>, SIZE> m_container;
         // Synchronized value for vector size, prefer using size() locally which checks m_container.size()
-        RewindableObject<uint32_t, Multiplayer::RewindHistorySize> m_serializedSize;
+        RewindableObject<uint32_t, Multiplayer::RewindHistorySize> m_rewindableSize;
     };
 }
 
