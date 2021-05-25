@@ -117,8 +117,8 @@
                     },
                     "Cached World Transform": {
                         "Translation": [
-                            -9.604647636413575,
-                            17.329538345336915,
+                            0.0,
+                            0.0,
                             9.442070960998536
                         ],
                         "Rotation": [
@@ -167,8 +167,8 @@
                     "Parent Entity": "Entity_[1176639161715]",
                     "Cached World Transform": {
                         "Translation": [
-                            -9.604647636413575,
-                            17.329538345336915,
+                            0.0,
+                            0.0,
                             0.0
                         ]
                     },
@@ -369,8 +369,8 @@
                     "Parent Entity": "Entity_[1176639161715]",
                     "Cached World Transform": {
                         "Translation": [
-                            -9.604647636413575,
-                            17.329538345336915,
+                            0.0,
+                            0.0,
                             0.0
                         ]
                     },
@@ -440,8 +440,8 @@
                     },
                     "Cached World Transform": {
                         "Translation": [
-                            -9.604647636413575,
-                            17.329538345336915,
+                            0.0,
+                            0.0,
                             0.0
                         ],
                         "Rotation": [
@@ -493,8 +493,8 @@
                     "Parent Entity": "Entity_[1146574390643]",
                     "Cached World Transform": {
                         "Translation": [
-                            -9.604647636413575,
-                            17.329538345336915,
+                            0.0,
+                            0.0,
                             0.0
                         ]
                     },
@@ -648,8 +648,8 @@
                     "Parent Entity": "Entity_[1176639161715]",
                     "Cached World Transform": {
                         "Translation": [
-                            -9.604647636413575,
-                            17.329538345336915,
+                            0.0,
+                            0.0,
                             0.0
                         ]
                     },

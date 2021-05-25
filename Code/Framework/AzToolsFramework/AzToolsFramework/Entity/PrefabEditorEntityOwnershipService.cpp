@@ -232,7 +232,7 @@ namespace AzToolsFramework
             AZStd::string fullPath;
 
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                fullPathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath, "Prefabs/Default_Level.prefab",
+                fullPathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath, DefaultLevelTemplateName,
                 fullPath);
 
             if (fullPathFound)
@@ -252,7 +252,7 @@ namespace AzToolsFramework
             }
             else
             {
-                // Create an empty level since we could find a default
+                // Create an empty level since we couldn't find the default template
                 m_rootInstance->m_containerEntity->AddComponent(aznew Prefab::EditorPrefabComponent());
                 HandleEntitiesAdded({ m_rootInstance->m_containerEntity.get() });
 
