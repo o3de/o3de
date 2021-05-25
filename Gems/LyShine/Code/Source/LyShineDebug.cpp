@@ -392,7 +392,7 @@ static void DebugDrawColoredBox(AZ::Vector2 pos, AZ::Vector2 size, AZ::Color col
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
-static void DebugDrawStringWithSizeBox(const AZStd::string& font, unsigned int effectIndex, const char* sizeString,
+static void DebugDrawStringWithSizeBox(AZStd::string_view font, unsigned int effectIndex, const char* sizeString,
     const char* testString, AZ::Vector2 pos, float spacing, float size)
 {
     CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
@@ -427,7 +427,7 @@ static void DebugDrawStringWithSizeBox(const AZStd::string& font, unsigned int e
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
-static void DebugDraw2dFontSizes(const AZStd::string& font, unsigned int effectIndex)
+static void DebugDraw2dFontSizes(AZStd::string_view font, unsigned int effectIndex)
 {
     CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
@@ -436,7 +436,7 @@ static void DebugDraw2dFontSizes(const AZStd::string& font, unsigned int effectI
     float xSpacing = 20.0f;
 
     char buffer[32];
-    sprintf_s(buffer, "Font = %s, effect = %d", font.c_str(), effectIndex);
+    sprintf_s(buffer, "Font = %s, effect = %d", font.data(), effectIndex);
     draw2d->DrawText(buffer, AZ::Vector2(xOffset, yOffset), 32);
     yOffset += 40.0f;
     draw2d->DrawText("NOTE: if the effect includes a drop shadow baked into font then the pixel size",

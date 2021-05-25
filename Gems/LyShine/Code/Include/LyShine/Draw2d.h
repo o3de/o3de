@@ -288,7 +288,7 @@ protected: // member functions
     void RotatePointsAboutPivot(AZ::Vector2* points, int numPoints, AZ::Vector2 pivot, float angle) const;
 
     //! Helper function to render a text string
-    void DrawTextInternal(const char* textString, const AZStd::string& fontName, unsigned int effectIndex,
+    void DrawTextInternal(const char* textString, AZStd::string_view fontName, unsigned int effectIndex,
         AZ::Vector2 position, float pointSize, AZ::Color color, float rotation,
         HAlign horizontalAlignment, VAlign verticalAlignment, int baseState);
 
@@ -494,7 +494,7 @@ public: // member functions
     void SetImageBaseState(int state) { m_imageOptions.baseState = state; }
 
     //! Set the text font.
-    void SetTextFont(const AZStd::string& fontName) { m_textOptions.fontName = fontName; }
+    void SetTextFont(AZStd::string_view fontName) { m_textOptions.fontName = fontName; }
 
     //! Set the text font effect index.
     void SetTextEffectIndex(unsigned int effectIndex) { m_textOptions.effectIndex = effectIndex; }

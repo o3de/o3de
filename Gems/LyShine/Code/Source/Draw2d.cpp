@@ -576,7 +576,7 @@ void CDraw2d::RotatePointsAboutPivot(AZ::Vector2* points, [[maybe_unused]] int n
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CDraw2d::DrawTextInternal(const char* textString, const AZStd::string& fontName, unsigned int effectIndex,
+void CDraw2d::DrawTextInternal(const char* textString, AZStd::string_view fontName, unsigned int effectIndex,
     AZ::Vector2 position, float pointSize, AZ::Color color, float rotation,
     HAlign horizontalAlignment, VAlign verticalAlignment, [[maybe_unused]] int baseState)
 {
