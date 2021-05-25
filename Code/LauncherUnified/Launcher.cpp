@@ -643,7 +643,8 @@ namespace O3DELauncher
             if (gEnv && gEnv->pConsole)
             {
                 // Execute autoexec.cfg to load the initial level
-                AZ::Interface<AZ::IConsole>::Get()->ExecuteConfigFile("autoexec.cfg");
+                auto autoExecFile = AZ::IO::FixedMaxPath{pathToAssets} / "autoexec.cfg";
+                AZ::Interface<AZ::IConsole>::Get()->ExecuteConfigFile(autoExecFile.Native());
 
                 // Find out if console command file was passed 
                 // via --console-command-file=%filename% and execute it
