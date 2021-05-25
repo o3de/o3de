@@ -34,6 +34,7 @@ CGotoPositionDlg::CGotoPositionDlg(QWidget* pParent /*=NULL*/)
 {
     m_ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    setFixedSize(size());
     OnInitDialog();
 
     auto doubleValueChanged = static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged);
@@ -97,6 +98,9 @@ void CGotoPositionDlg::OnInitDialog()
     m_ui->m_labelSegY->setVisible(false);
     m_ui->m_dymSegX->setVisible(false);
     m_ui->m_dymSegY->setVisible(false);
+
+    // Ensure the goto button is highlighted correctly.
+    m_ui->pushButton->setDefault(true);
 
     OnUpdateNumbers();
 }
