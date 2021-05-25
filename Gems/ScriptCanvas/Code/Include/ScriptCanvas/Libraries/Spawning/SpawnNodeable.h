@@ -34,6 +34,10 @@ namespace ScriptCanvas
 
                 SpawnNodeable(const SpawnNodeable& rhs);
 
+                void OnInitializeExecutionState() override;
+
+                void OnDeactivate() override;
+
             private:
                 AZ::Data::Asset<AzFramework::Spawnable> m_spawnableAsset;
                 AzFramework::EntitySpawnTicket m_spawnTicket;
