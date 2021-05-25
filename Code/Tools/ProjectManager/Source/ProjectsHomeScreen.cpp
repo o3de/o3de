@@ -14,6 +14,11 @@
 
 #include <ProjectButtonWidget.h>
 #include <PythonBindingsInterface.h>
+#include <AzCore/Platform.h>
+#include <AzCore/IO/SystemFile.h>
+#include <AzFramework/AzFramework_Traits_Platform.h>
+#include <AzFramework/Process/ProcessWatcher.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -127,8 +132,23 @@ namespace O3DE::ProjectManager
     }
     void ProjectsHomeScreen::HandleOpenProject(const QString& projectPath)
     {
-        // Open the editor with this project open
-        emit NotifyCurrentProject(projectPath);
+        if (!projectPath.isEmpty())
+        {
+            AZ::IO::FixedMaxPath executableDirectory = AZ::Utils::GetExecutableDirectory();
+            AZStd::string executableFilename = "editor";
+            AZ::IO::FixedMaxPath editorExecutablePath = executableDirectory / (executableFilename + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+            auto cmdPath = AZ::IO::FixedMaxPathString::format("%s -regset=\"/Amazon/AzCore/Bootstrap/project_path=%s\"", editorExecutablePath.c_str(), projectPath.toStdString().c_str());
+
+            AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+            processLaunchInfo.m_commandlineParameters = cmdPath;
+            bool launchSuccess = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
+            if (!launchSuccess)
+            {
+                AZ_Error("ProjectManager", false, "Failed to launch editor");
+
+                // TODO notify the user somehow - messagebox?
+            }
+        }
     }
     void ProjectsHomeScreen::HandleEditProject(const QString& projectPath)
     {
