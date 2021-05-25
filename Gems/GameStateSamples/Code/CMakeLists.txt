@@ -44,4 +44,8 @@ ly_add_target(
             AZ::AzFramework
             Gem::LmbrCentral
             Gem::GameStateSamples.Headers
+    RUNTIME_DEPENDENCIES
+        Gem::GameState
+        Gem::LocalUser
+        Gem::LmbrCentral
 )

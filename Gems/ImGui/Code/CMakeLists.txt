@@ -53,6 +53,8 @@ ly_add_target(
         PUBLIC
             Gem::ImGui.imguilib
             Legacy::CryCommon
+    RUNTIME_DEPENDENCIES
+        Gem::ImGui.imguilib
 )
 
 ly_add_target(

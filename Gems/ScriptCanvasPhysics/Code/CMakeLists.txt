@@ -36,6 +36,8 @@ ly_add_target(
         PRIVATE
             Legacy::CryCommon
             Gem::ScriptCanvasPhysics.Static
+    RUNTIME_DEPENDENCIES
+        Gem::ScriptCanvas
 )
 
 ################################################################################

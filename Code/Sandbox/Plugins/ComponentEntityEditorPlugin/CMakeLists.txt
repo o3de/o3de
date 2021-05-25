@@ -36,6 +36,8 @@ ly_add_target(
             Legacy::CryCommon
             Legacy::EditorLib
             Gem::LmbrCentral.Editor
+    RUNTIME_DEPENDENCIES
+        Gem::LmbrCentral.Editor
 )
 
 ly_add_dependencies(Editor ComponentEntityEditorPlugin)
@@ -65,7 +67,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzToolsFrameworkTestCommon
                 Legacy::CryCommon
                 Legacy::EditorLib
-                Gem::LmbrCentral.Editor
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral.Editor
     )
     ly_add_googletest(
         NAME Legacy::ComponentEntityEditorPlugin.Tests

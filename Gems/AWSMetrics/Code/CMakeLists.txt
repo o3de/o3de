@@ -23,6 +23,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
+        PUBLIC
             Gem::AWSCore
 )
 
@@ -40,8 +41,9 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
-            Gem::AWSCore
             Gem::AWSMetrics.Static
+    RUNTIME_DEPENDENCIES
+        Gem::AWSCore
 )
 
 ################################################################################
@@ -63,8 +65,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzCore
                 AZ::AzFramework
-                Gem::AWSCore
                 Gem::AWSMetrics.Static
+        RUNTIME_DEPENDENCIES
+            Gem::AWSCore
     )
     ly_add_googletest(
         NAME Gem::AWSMetrics.Tests
