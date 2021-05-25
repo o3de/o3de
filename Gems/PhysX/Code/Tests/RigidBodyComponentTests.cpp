@@ -38,8 +38,8 @@ namespace PhysXEditorTests
         const AZ::Aabb originalAabb = rigidBodyComponent->GetRigidBody()->GetAabb();
 
         // Update the scale
-        const AZ::Vector3 scale(2.0f);
-        AZ::TransformBus::Event(editorEntity->GetId(), &AZ::TransformInterface::SetLocalScale, scale);
+        float scale = 2.0f;
+        AZ::TransformBus::Event(editorEntity->GetId(), &AZ::TransformInterface::SetLocalUniformScale, scale);
 
         // Trigger editor physics world update so EditorRigidBodyComponent can process scale change
         auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
@@ -89,8 +89,8 @@ namespace PhysXEditorTests
             idPair, &PhysX::EditorColliderComponentRequests::SetColliderOffset, offset);
 
         // Update the scale
-        const AZ::Vector3 scale(2.0f);
-        AZ::TransformBus::Event(editorEntity->GetId(), &AZ::TransformInterface::SetLocalScale, scale);
+        float scale = 2.0f;
+        AZ::TransformBus::Event(editorEntity->GetId(), &AZ::TransformInterface::SetLocalUniformScale, scale);
 
         // Update editor world to let updates to be applied
         physicsSystem->Simulate(0.1f);

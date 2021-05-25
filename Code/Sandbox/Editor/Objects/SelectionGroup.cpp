@@ -482,28 +482,6 @@ void CSelectionGroup::StartScaling()
 }
 
 
-void CSelectionGroup::FinishScaling(const Vec3& scale, [[maybe_unused]] int referenceCoordSys)
-{
-    if (fabs(scale.x - scale.y) < 0.001f &&
-        fabs(scale.y - scale.z) < 0.001f &&
-        fabs(scale.z - scale.x) < 0.001f)
-    {
-        return;
-    }
-
-    for (int i = 0; i < GetFilteredCount(); ++i)
-    {
-        CBaseObject* obj = GetFilteredObject(i);
-        Vec3 OriginalScale;
-        if (obj->GetUntransformedScale(OriginalScale))
-        {
-            obj->TransformScale(scale);
-            obj->SetScale(OriginalScale);
-        }
-    }
-}
-
-
 //////////////////////////////////////////////////////////////////////////
 void CSelectionGroup::Align()
 {
