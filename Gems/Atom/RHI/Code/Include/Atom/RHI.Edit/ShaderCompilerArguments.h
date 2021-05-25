@@ -40,7 +40,7 @@ namespace AZ
             //!          ["-<arg1>", "--<arg2>", "--arg3"]
             //!          For the example shown above it will return this vector:
             //!          ["--use-spaces", "--namespace", "-W1]
-            static AZStd::vector<AZStd::string> ShaderCompilerArguments::GetListOfArgumentNames(AZStd::string_view commandLineString);
+            static AZStd::vector<AZStd::string> GetListOfArgumentNames(AZStd::string_view commandLineString);
 
             //! Helper.
             //! Takes a list of names of command line arguments and removes those arguments from @commandLineString.
@@ -50,13 +50,13 @@ namespace AZ
             //! @param commandLineString: A single string made of several command line arguments
             //! @returns A new string based on @commandLineString but with the matching arguments and their values
             //!          removed from it.
-            static AZStd::string ShaderCompilerArguments::RemoveArgumentsFromCommandLineString(
+            static AZStd::string RemoveArgumentsFromCommandLineString(
                 AZStd::array_view<AZStd::string> listOfArguments, AZStd::string_view commandLineString);
 
             //! Helper.
             //! @param commandLineString: "  --arg1   -arg2     --arg3=foo --arg4=bar  "
             //! @returns "--arg1 -arg2 --arg3=foo --arg4=bar"
-            static AZStd::string ShaderCompilerArguments::RemoveExtraSpaces(AZStd::string_view commandLineString);
+            static AZStd::string RemoveExtraSpaces(AZStd::string_view commandLineString);
 
 
             //! Helper.
@@ -66,13 +66,13 @@ namespace AZ
             //! @param left: "--arg1 -arg2 --arg3=foo"
             //! @param right: "--arg3=bar --arg4"
             //! @returns: "--arg1 -arg2 --arg3=bar --arg4" 
-            static AZStd::string ShaderCompilerArguments::MergeCommandLineArguments(AZStd::string_view left, AZStd::string_view right);
+            static AZStd::string MergeCommandLineArguments(AZStd::string_view left, AZStd::string_view right);
 
             //! Helper.
             //! @param commandLineString: A string that contains a series of command line arguments.
             //! @returns: true if @commandLineString contains macro definitions, e.g:
             //!           "-D MACRO" or "-D MACRO=VALUE" or "-DMACRO", "-DMACRO=VALUE".
-            static bool ShaderCompilerArguments::HasMacroDefinitions(AZStd::string_view commandLineString);
+            static bool HasMacroDefinitions(AZStd::string_view commandLineString);
 
             //! Returns true if either @m_azslcAdditionalFreeArguments or @m_dxcAdditionalFreeArguments contain
             //! macro definitions, e.g. "-D MACRO" or "-D MACRO=VALUE" or "-DMACRO", "-DMACRO=VALUE".
