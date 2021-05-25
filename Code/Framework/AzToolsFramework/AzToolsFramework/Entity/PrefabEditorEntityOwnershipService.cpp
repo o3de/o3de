@@ -29,8 +29,6 @@
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
 
-#pragma optimize("", off)
-
 namespace AzToolsFramework
 {
     PrefabEditorEntityOwnershipService::PrefabEditorEntityOwnershipService(const AzFramework::EntityContextId& entityContextId,
