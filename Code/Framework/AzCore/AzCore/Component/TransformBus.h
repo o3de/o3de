@@ -299,15 +299,16 @@ namespace AZ
         //! @return The scale value in world space.
         virtual AZ::Vector3 GetWorldScale() { return AZ::Vector3(FLT_MAX); }
 
-
+        //! Set the uniform scale value in local space.
         virtual void SetLocalUniformScale([[maybe_unused]] float scale) {}
 
+        //! Get the uniform scale value in local space.
+        //! @return The uniform scale value in local space.
         virtual float GetLocalUniformScale() { return FLT_MAX; }
 
+        //! Get the uniform scale value in world space.
+        //! @return The uniform scale value in world space.
         virtual float GetWorldUniformScale() { return FLT_MAX; }
-
-
-
         //! @}
 
         //! Transform hierarchy
