@@ -17,6 +17,7 @@
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QGridLayout>
 #include <QLabel>
 #include <QPushButton>
 #include <QMenu>
@@ -25,14 +26,14 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QFileInfo>
+#include <QScrollArea>
 
 namespace O3DE::ProjectManager
 {
     inline constexpr static int s_contentMargins = 80;
-    inline constexpr static int s_projectButtonSpacing = 30;
     inline constexpr static int s_spacerSize = 20;
+    inline constexpr static int s_projectButtonRowCount = 4;
     inline constexpr static int s_newProjectButtonWidth = 156;
-    inline constexpr static int s_projectListAdditionalHeight = 40;
 
     static QString s_projectPreviewImagePath = "/preview.png";
 
@@ -66,24 +67,20 @@ namespace O3DE::ProjectManager
 
         vLayout->addLayout(topLayout);
 
-        QSpacerItem* topVerticalSpacer = new QSpacerItem(s_spacerSize, s_spacerSize, QSizePolicy::Minimum, QSizePolicy::Expanding);
-        vLayout->addItem(topVerticalSpacer);
-
         // Get all projects and create a horizontal scrolling list of them
         auto projectsResult = PythonBindingsInterface::Get()->GetProjects();
         if (projectsResult.IsSuccess() && !projectsResult.GetValue().isEmpty())
         {
-            QListWidget* projectsButtonList = new QListWidget;
-            projectsButtonList->setFlow(QListView::Flow::LeftToRight);
-            projectsButtonList->setSpacing(s_projectButtonSpacing);
-            projectsButtonList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+            QScrollArea* projectsScrollArea = new QScrollArea(this);
+            QWidget* scrollWidget = new QWidget();
+            QGridLayout* projectGridLayout = new QGridLayout();
+            scrollWidget->setLayout(projectGridLayout);
+            projectsScrollArea->setWidget(scrollWidget);
+            projectsScrollArea->setWidgetResizable(true);
 
+            int gridIndex = 0;
             for (auto project : projectsResult.GetValue())
             {
-                QListWidgetItem* projectListItem;
-                projectListItem = new QListWidgetItem(projectsButtonList);
-                projectListItem->setBackground(Qt::transparent);
-                projectsButtonList->addItem(projectListItem);
                 ProjectButton* projectButton;
                 QString projectPreviewPath = project.m_path + s_projectPreviewImagePath;
                 QFileInfo doesPreviewExist(projectPreviewPath);
@@ -95,8 +92,9 @@ namespace O3DE::ProjectManager
                 {
                     projectButton = new ProjectButton(project.m_projectName, this);
                 }
-                projectListItem->setSizeHint(projectButton->minimumSizeHint());
-                projectsButtonList->setItemWidget(projectListItem, projectButton);
+
+                // Create rows of projects buttons s_projectButtonRowCount buttons wide
+                projectGridLayout->addWidget(projectButton, gridIndex / s_projectButtonRowCount, gridIndex % s_projectButtonRowCount);
 
                 connect(projectButton, &ProjectButton::OpenProject, this, &ProjectsHomeScreen::HandleOpenProject);
                 connect(projectButton, &ProjectButton::EditProject, this, &ProjectsHomeScreen::HandleEditProject);
@@ -107,14 +105,11 @@ namespace O3DE::ProjectManager
                 connect(projectButton, &ProjectButton::RemoveProject, this, &ProjectsHomeScreen::HandleRemoveProject);
                 connect(projectButton, &ProjectButton::DeleteProject, this, &ProjectsHomeScreen::HandleDeleteProject);
 #endif
+                ++gridIndex;
             }
 
-            projectsButtonList->setFixedHeight(projectsButtonList->sizeHintForRow(0) + s_projectListAdditionalHeight);
-            vLayout->addWidget(projectsButtonList);
+            vLayout->addWidget(projectsScrollArea);
         }
-
-        QSpacerItem* bottomVerticalSpacer = new QSpacerItem(s_spacerSize, s_spacerSize, QSizePolicy::Minimum, QSizePolicy::Expanding);
-        vLayout->addItem(bottomVerticalSpacer);
 
         // Using border-image allows for scaling options background-image does not support
         setStyleSheet("O3DE--ProjectManager--ScreenWidget { border-image: url(:/Resources/Backgrounds/FirstTimeBackgroundImage.jpg) repeat repeat; }");
