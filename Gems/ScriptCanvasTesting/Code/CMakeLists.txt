@@ -45,6 +45,11 @@ ly_add_target(
             *.ScriptCanvasGrammar.xml,ScriptCanvasGrammar_Source.jinja,$path/$fileprefix.generated.cpp
             *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
             *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
+    RUNTIME_DEPENDENCIES
+        Gem::ScriptCanvas
+        Gem::ScriptCanvasEditor
+        Gem::GraphCanvasWidgets
+        Gem::ScriptEvents
 )
 
 ly_add_target(

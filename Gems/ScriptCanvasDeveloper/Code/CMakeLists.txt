@@ -81,5 +81,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::GraphCanvasWidgets
         RUNTIME_DEPENDENCIES
             Gem::ScriptCanvas.Editor
+            Gem::GraphCanvasWidgets
     )
 endif()

@@ -26,13 +26,13 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
-            Gem::LmbrCentral
-            Gem::TextureAtlas
         PUBLIC
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static
             Gem::Atom_Bootstrap.Headers
             Gem::AtomFont
+            Gem::LmbrCentral.Static
+            Gem::TextureAtlas
 )
 
 ly_add_target(
@@ -49,8 +49,6 @@ ly_add_target(
         PRIVATE
             Gem::LyShine.Static
             Legacy::CryCommon
-            Gem::LmbrCentral
-            Gem::TextureAtlas
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
         Gem::TextureAtlas
@@ -85,7 +83,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::EditorCore
                 Gem::LyShine.Static
                 Legacy::CryCommon
-                Gem::LmbrCentral
+                Gem::LmbrCentral.Editor.Static
                 Gem::TextureAtlas
                 Gem::AtomToolsFramework.Static
                 Gem::AtomToolsFramework.Editor
@@ -94,6 +92,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RPI.Public
                 Gem::Atom_Utils.Static
                 Gem::Atom_Bootstrap.Headers
+        RUNTIME_DEPENDENCIES
+            Gem::TextureAtlas
     )
 
     ly_add_target(
@@ -117,7 +117,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::CryCommon
                 AZ::AssetBuilderSDK
                 Gem::LyShine.Editor.Static
-                Gem::LmbrCentral
+                Gem::LmbrCentral.Editor
                 Gem::TextureAtlas
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
@@ -145,8 +145,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 Gem::LyShine.Static
                 Legacy::CryCommon
-                Gem::LmbrCentral
-                Gem::TextureAtlas
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral
+            Gem::TextureAtlas
     )
     ly_add_googletest(
         NAME Gem::LyShine.Tests
@@ -175,9 +176,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTest
                     Legacy::CryCommon
                     AZ::AssetBuilderSDK
-                    Gem::LmbrCentral
-                    Gem::TextureAtlas
                     Gem::LyShine.Editor.Static
+            RUNTIME_DEPENDENCIES
+                Gem::LmbrCentral.Editor
+                Gem::TextureAtlas
         )
         ly_add_googletest(
             NAME Gem::LyShine.Editor.Tests

@@ -46,7 +46,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Legacy::CryCommon
-            Gem::LmbrCentral
+            Gem::LmbrCentral.Static
 )
 
 ly_add_target(
@@ -107,7 +107,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::SceneCore
                 AZ::SceneData
                 Legacy::CryCommon
-                Gem::LmbrCentral
+                Gem::LmbrCentral.Editor.Static
                 Gem::PhysX.NumericalMethods
                 Gem::PhysX.Static
                 Gem::AtomLyIntegration_CommonFeatures.Static

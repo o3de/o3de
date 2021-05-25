@@ -101,7 +101,8 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzFramework
                 Legacy::CryCommon
                 Gem::AudioSystem.Static
-                Gem::LmbrCentral
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral
     )
     ly_add_googletest(
         NAME Gem::AudioSystem.Tests

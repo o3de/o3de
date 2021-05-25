@@ -23,7 +23,7 @@ ly_add_target(
         PUBLIC
             Legacy::CryCommon
             Gem::GradientSignal
-            Gem::LmbrCentral
+            Gem::LmbrCentral.Static
 )
 
 ly_add_target(

@@ -22,7 +22,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Legacy::CryCommon
-            Gem::LmbrCentral
+            Gem::LmbrCentral.Static
             Gem::SurfaceData
             Gem::ImageProcessingAtom.Headers
 )
@@ -44,7 +44,6 @@ ly_add_target(
             Gem::ImageProcessingAtom.Headers # Atom/ImageProcessing/PixelFormats.h is part of a header in Includes
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
-        Gem::SurfaceData
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -67,10 +66,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 3rdParty::Qt::Widgets
                 Legacy::CryCommon
                 AZ::AzToolsFramework
-                Gem::LmbrCentral
-                Gem::SurfaceData
                 AZ::AssetBuilderSDK
                 Gem::GradientSignal.Static
+                Gem::SurfaceData
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral.Editor
     )
 
     ly_add_target(
@@ -89,7 +89,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::GradientSignal.Editor.Static
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
-            Gem::SurfaceData.Editor
     )
 
 endif()

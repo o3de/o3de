@@ -35,16 +35,21 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::CryCommon
                 Legacy::Editor.Headers
                 Legacy::EditorCommon
-                Gem::LmbrCentral
-                Gem::GraphCanvasWidgets
                 Gem::GraphModel.Editor.Static
                 Gem::GradientSignal.Editor
                 Gem::SurfaceData.Editor
                 Gem::Vegetation.Editor
+                Gem::LmbrCentral.Editor
+            PUBLIC
+                Gem::GraphCanvasWidgets
+        RUNTIME_DEPENDENCIES
+            Gem::GradientSignal.Editor
+            Gem::SurfaceData.Editor
+            Gem::Vegetation.Editor
+            Gem::LmbrCentral.Editor
     )
     ly_add_target(
         NAME LandscapeCanvas.Editor GEM_MODULE
-
         NAMESPACE Gem
         FILES_CMAKE
             landscapecanvas_editor_files.cmake
@@ -61,7 +66,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzCore
                 AZ::AzToolsFramework
                 Legacy::Editor.Headers
-                Gem::GraphCanvasWidgets
                 Gem::GraphModel.Editor.Static
                 Gem::LandscapeCanvas.Editor.Static
         RUNTIME_DEPENDENCIES
@@ -97,9 +101,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTest
                     AZ::AzFramework
                     AZ::AzToolsFramework
-                    Gem::GraphCanvasWidgets
                     Gem::GraphModel.Editor.Static
                     Gem::LandscapeCanvas.Editor.Static
+            RUNTIME_DEPENDENCIES
+                Gem::GraphCanvasWidgets
         )
         ly_add_googletest(
             NAME Gem::LandscapeCanvas.Editor.Tests

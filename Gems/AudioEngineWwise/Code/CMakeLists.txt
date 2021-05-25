@@ -205,7 +205,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 AZ::AssetBuilderSDK
                 Gem::AudioEngineWwise.Static
-                Gem::AudioSystem.Editor
+        RUNTIME_DEPENDENCIES
+            Gem::AudioSystem.Editor
     )
 
     ly_add_target(

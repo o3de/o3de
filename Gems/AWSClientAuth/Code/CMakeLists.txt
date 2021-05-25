@@ -29,6 +29,9 @@ ly_add_target(
             Gem::HttpRequestor
             3rdParty::AWSNativeSDK::AWSClientAuth
             3rdParty::AWSNativeSDK::Core
+    RUNTIME_DEPENDENCIES
+        Gem::AWSCore
+        Gem::HttpRequestor
 )
 
 ly_add_target( 
@@ -44,11 +47,13 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Gem::AWSCore
-            Gem::HttpRequestor
             3rdParty::AWSNativeSDK::AWSClientAuth
             3rdParty::AWSNativeSDK::Core
         PUBLIC
             Gem::AWSClientAuth.Static
+    RUNTIME_DEPENDENCIES
+        Gem::AWSCore
+        Gem::HttpRequestor
 )
 
 ################################################################################
@@ -71,10 +76,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 3rdParty::AWSNativeSDK::AWSClientAuth
                 AZ::AzCore
                 AZ::AzFramework
-                Gem::AWSCore
                 Gem::AWSClientAuth.Static
-                AZ::AWSNativeSDKInit
-                Gem::HttpRequestor
+        RUNTIUME_DEPENDENCIES
+            Gem::AWSCore
+            AZ::AWSNativeSDKInit
+            Gem::HttpRequestor
    )
    ly_add_googletest(
         NAME Gem::AWSClientAuth.Tests

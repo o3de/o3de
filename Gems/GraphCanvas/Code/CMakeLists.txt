@@ -51,7 +51,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
         NAME GraphCanvas.Editor GEM_MODULE
-
         NAMESPACE Gem
         AUTOMOC
         AUTORCC
