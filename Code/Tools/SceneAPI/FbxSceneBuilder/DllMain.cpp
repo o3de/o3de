@@ -106,6 +106,11 @@ namespace AZ
 extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env)
 {
     AZ::Environment::Attach(static_cast<AZ::EnvironmentInstance>(env));
+    if (!AZ::SceneAPI::FbxSceneBuilder::g_fbxImporter)
+    {
+        AZ::SceneAPI::FbxSceneBuilder::g_fbxImporter = aznew AZ::SceneAPI::FbxSceneImporter::FbxImportRequestHandler();
+        AZ::SceneAPI::FbxSceneBuilder::g_fbxImporter->Activate();
+    }
 }
 extern "C" AZ_DLL_EXPORT void Reflect(AZ::SerializeContext* context)
 {
