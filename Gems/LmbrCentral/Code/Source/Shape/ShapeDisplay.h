@@ -42,7 +42,11 @@ namespace LmbrCentral
             return;
         }
 
-        debugDisplay.PushMatrix(worldFromLocal);
+        // only uniform scale is supported in physics so the debug visuals reflect this fact
+        AZ::Transform worldFromLocalWithUniformScale = worldFromLocal;
+        worldFromLocalWithUniformScale.SetUniformScale(worldFromLocalWithUniformScale.GetUniformScale());
+
+        debugDisplay.PushMatrix(worldFromLocalWithUniformScale);
 
         drawShape(debugDisplay);
 
