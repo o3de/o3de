@@ -379,16 +379,9 @@ function(ly_delayed_target_link_libraries)
     list(APPEND CMAKE_MODULE_PATH ${additional_module_paths})
 
     get_property(delayed_targets GLOBAL PROPERTY LY_DELAYED_LINK_TARGETS)
-
     foreach(target ${delayed_targets})
 
         get_property(delayed_link GLOBAL PROPERTY LY_DELAYED_LINK_${target})
-
-        # Cache off the original MANUALLY_ADDED_DEPENDENCIES that were associated with the target
-        # via previous ly_add_dependencies() calls either explicitly or through RUNTIME_DEPENDENCIES
-        get_target_property(target_orig_manually_added_dependencies ${target} MANUALLY_ADDED_DEPENDENCIES)
-        set_property(TARGET ${target} PROPERTY LY_ORIGINAL_MANUALLY_ADDED_DEPENDENCIES ${target_orig_manually_added_dependencies})
-
         if(delayed_link)
 
             cmake_parse_arguments(ly_delayed_target_link_libraries "" "" "${visibilities}" ${delayed_link})
