@@ -964,7 +964,6 @@ namespace AMD
     {
         if (m_boneIndicesFixed)
         {
-            ResetSkinning(m_boneSkinningData, m_reservedLookup);
             if (m_collisionMesh)
             {
                 ResetSkinning(m_collisionMesh->m_boneSkinningData, m_collisionMesh->m_reservedLookup);
@@ -973,8 +972,7 @@ namespace AMD
         }
 
         // The tressFX asset contain two sets of skinning data, one for the hair bone and one for collision mesh.
-        BoneIndexToEngineIndexLookup hairBoneSkinningLookup;
-        if (!GenerateBoneIndexLookup(boneIndicesMap, m_boneNames, hairBoneSkinningLookup))
+        if (!GenerateBoneIndexLookup(boneIndicesMap, m_boneNames, outLookup))
         {
             return false;
         }
@@ -984,13 +982,9 @@ namespace AMD
             return false;
         }
 
-        outLookup = hairBoneSkinningLookup;
-        FixSkinningUsingLookup(m_boneSkinningData, hairBoneSkinningLookup);
-        m_reservedLookup = hairBoneSkinningLookup;
-
         if (m_collisionMesh)
         {
-            FixSkinningUsingLookup(m_collisionMesh->m_boneSkinningData, collisionMeshSkinningLookup);
+            ConvertLocalToGlobalBoneIndex(m_collisionMesh->m_boneSkinningData, collisionMeshSkinningLookup);
             m_collisionMesh->m_reservedLookup = collisionMeshSkinningLookup;
         }
 
@@ -1024,7 +1018,7 @@ namespace AMD
         return true;
     }
 
-    void TressFXAsset::FixSkinningUsingLookup(std::vector<TressFXBoneSkinningData>& skinningData, const BoneIndexToEngineIndexLookup& lookup)
+    void TressFXAsset::ConvertLocalToGlobalBoneIndex(std::vector<TressFXBoneSkinningData>& skinningData, const BoneIndexToEngineIndexLookup& lookup)
     {
         if (m_boneIndicesFixed)
         {
