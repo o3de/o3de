@@ -43,12 +43,13 @@ namespace Multiplayer
         //! Serialization method for fixed vector contained rewindable objects
         //! @param serializer ISerializer instance to use for serialization
         //! @return bool true for success, false for serialization failure
-        constexpr bool Serialize(AzNetworking::ISerializer& serializer);
+        bool Serialize(AzNetworking::ISerializer& serializer);
 
         //! Serialization method for fixed vector contained rewindable objects
         //! @param serializer ISerializer instance to use for serialization
+        //! @param deltaRecord Bitset delta record used to detect state change during reconciliation
         //! @return bool true for success, false for serialization failure
-        constexpr bool Serialize(AzNetworking::ISerializer& serializer, AzNetworking::IBitset &deltaRecord);
+        bool Serialize(AzNetworking::ISerializer& serializer, AzNetworking::IBitset &deltaRecord);
 
         //! Copies elements from the buffer pointed to by Buffer to this FixedSizeVector instance, vector size will be set to BufferSize
         //! @param buffer     pointer to the buffer to copy

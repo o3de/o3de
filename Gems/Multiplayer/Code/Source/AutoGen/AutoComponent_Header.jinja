@@ -7,7 +7,11 @@
 {% macro DeclareNetworkPropertyGetter(Property) %}
 {% set PropertyName = UpperFirst(Property.attrib['Name']) %}
 {%     if Property.attrib['Container'] == 'Array' %}
-const AZStd::array<{% if Property.attrib['IsRewindable']|booleanTrue %}Multiplayer::RewindableObject<{% endif %}{{ Property.attrib['Type'] }}{% if Property.attrib['IsRewindable']|booleanTrue %}, Multiplayer::k_RewindHistorySize>{% endif %}, {{ Property.attrib['Count'] }}> &Get{{ PropertyName }}Array() const;
+{% if Property.attrib['IsRewindable']|booleanTrue %}
+const RewindableArray<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> &Get{{ PropertyName }}Array() const;
+{% else %}
+const AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> &Get{{ PropertyName }}Array() const;
+{% endif %}
 const {{ Property.attrib['Type'] }} &Get{{ PropertyName }}(int32_t index) const;
 {%          if Property.attrib['GenerateEventBindings']|booleanTrue %}
 void {{ PropertyName }}AddEvent(AZ::Event<int32_t, {{ Property.attrib['Type'] }}>::Handler& handler);
@@ -160,7 +164,11 @@ AZ::Event<{{ Property.attrib['Type'] }}> m_{{ LowerFirst(Property.attrib['Name']
 {% macro DeclareNetworkPropertyVars(Component, ReplicateFrom, ReplicateTo) %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {%     if Property.attrib['Container'] == 'Array' %}
-AZStd::array<{% if Property.attrib['IsRewindable']|booleanTrue %}Multiplayer::RewindableObject<{% endif %}{{ Property.attrib['Type'] }}{% if Property.attrib['IsRewindable']|booleanTrue %}, Multiplayer::RewindHistorySize>{% endif %}, {{ Property.attrib['Count'] }}> m_{{ LowerFirst(Property.attrib['Name']) }};
+{% if Property.attrib['IsRewindable']|booleanTrue %}
+RewindableArray<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> m_{{ LowerFirst(Property.attrib['Name']) }};
+{% else %}
+AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> m_{{ LowerFirst(Property.attrib['Name']) }};
+{% endif %}
 {%     elif Property.attrib['Container'] == 'Vector' %}
 {% if Property.attrib['IsRewindable']|booleanTrue %}
 RewindableFixedVector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> m_{{ LowerFirst(Property.attrib['Name']) }};
@@ -236,6 +244,7 @@ AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }
 #include <Multiplayer/NetworkEntity/EntityReplication/ReplicationRecord.h>
 #include <Multiplayer/NetworkInput/IMultiplayerComponentInput.h>
 #include <Multiplayer/NetworkInput/NetworkInput.h>
+#include <Multiplayer/NetworkTime/RewindableArray.h>
 #include <Multiplayer/NetworkTime/RewindableFixedVector.h>
 #include <Multiplayer/NetworkTime/RewindableObject.h>
 {% call(Include) AutoComponentMacros.ParseIncludes(Component) %}

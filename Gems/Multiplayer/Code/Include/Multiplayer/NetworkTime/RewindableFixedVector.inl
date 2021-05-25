@@ -28,7 +28,7 @@ namespace Multiplayer
     }
 
     template <typename TYPE, uint32_t SIZE>
-    constexpr bool RewindableFixedVector<TYPE, SIZE>::Serialize(AzNetworking::ISerializer& serializer)
+    bool RewindableFixedVector<TYPE, SIZE>::Serialize(AzNetworking::ISerializer& serializer)
     {
         m_rewindableSize = m_container.size();
         if(!m_rewindableSize.Serialize(serializer) && !resize(m_rewindableSize))
@@ -48,7 +48,7 @@ namespace Multiplayer
     }
 
     template <typename TYPE, uint32_t SIZE>
-    constexpr bool RewindableFixedVector<TYPE, SIZE>::Serialize(AzNetworking::ISerializer& serializer, AzNetworking::IBitset& deltaRecord)
+    bool RewindableFixedVector<TYPE, SIZE>::Serialize(AzNetworking::ISerializer& serializer, AzNetworking::IBitset& deltaRecord)
     {
         if (deltaRecord.GetBit(SIZE))
         {

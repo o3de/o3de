@@ -33,6 +33,8 @@ set(FILES
     Include/Multiplayer/NetworkInput/IMultiplayerComponentInput.h
     Include/Multiplayer/NetworkInput/NetworkInput.h
     Include/Multiplayer/NetworkTime/INetworkTime.h
+    Include/Multiplayer/NetworkTime/RewindableArray.h
+    Include/Multiplayer/NetworkTime/RewindableArray.inl
     Include/Multiplayer/NetworkTime/RewindableFixedVector.h
     Include/Multiplayer/NetworkTime/RewindableFixedVector.inl
     Include/Multiplayer/NetworkTime/RewindableObject.h
