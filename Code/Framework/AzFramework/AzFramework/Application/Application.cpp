@@ -679,7 +679,6 @@ namespace AzFramework
         {
             auto fileIoBase = m_archiveFileIO.get();
             // Set up the default file aliases based on the settings registry
-            fileIoBase->SetAlias("@assets@", "");
             fileIoBase->SetAlias("@root@", GetEngineRoot());
             fileIoBase->SetAlias("@engroot@", GetEngineRoot());
             fileIoBase->SetAlias("@projectroot@", GetEngineRoot());
