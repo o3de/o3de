@@ -14,6 +14,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
@@ -27,6 +28,8 @@
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
+
+#pragma optimize("", off)
 
 namespace AzToolsFramework
 {
@@ -228,15 +231,18 @@ namespace AzToolsFramework
 
         if (templateId == AzToolsFramework::Prefab::InvalidTemplateId)
         {
-            bool fullPathFound = false;
-            AZStd::string fullPath;
-
+            AZStd::string watchFolder;
+            AZ::Data::AssetInfo assetInfo;
+            bool sourceInfoFound = false;
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                fullPathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath, DefaultLevelTemplateName,
-                fullPath);
+                sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, "Prefabs/Default_Level.prefab",
+                assetInfo, watchFolder);
 
-            if (fullPathFound)
+            if (sourceInfoFound)
             {
+                AZStd::string fullPath;
+                AZ::StringFunc::Path::Join(watchFolder.c_str(), assetInfo.m_relativePath.c_str(), fullPath);
+
                 // Get the default prefab and copy the Dom over to the new template being saved
                 Prefab::TemplateId defaultId = m_loaderInterface->LoadTemplateFromFile(fullPath.c_str());
                 Prefab::PrefabDom& dom = m_prefabSystemComponent->FindTemplateDom(defaultId);
