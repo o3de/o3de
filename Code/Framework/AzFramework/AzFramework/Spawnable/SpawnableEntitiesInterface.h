@@ -58,6 +58,72 @@ namespace AzFramework
         AZ::Entity** m_end;
     };
 
+    class SpawnableIndexEntityPair
+    {
+    public:
+        friend class SpawnableIndexEntityIterator;
+
+        AZ::Entity* GetEntity();
+        const AZ::Entity* GetEntity() const;
+        size_t GetIndex() const;
+
+    private:
+        SpawnableIndexEntityPair() = default;
+        SpawnableIndexEntityPair(const SpawnableIndexEntityPair&) = default;
+        SpawnableIndexEntityPair(SpawnableIndexEntityPair&&) = default;
+        SpawnableIndexEntityPair(AZ::Entity** entityIterator, size_t* indexIterator);
+
+        SpawnableIndexEntityPair& operator=(const SpawnableIndexEntityPair&) = default;
+        SpawnableIndexEntityPair& operator=(SpawnableIndexEntityPair&&) = default;
+
+        AZ::Entity** m_entity { nullptr };
+        size_t* m_index { nullptr };
+    };
+
+    class SpawnableIndexEntityIterator
+    {
+    public:
+        // Limited to bidirectional iterator as there's no use case for extending it further, but can be extended if a use case is found.
+        using iterator_category = AZStd::bidirectional_iterator_tag;
+        using value_type = SpawnableIndexEntityPair;
+        using difference_type = size_t;
+        using pointer = SpawnableIndexEntityPair*;
+        using reference = SpawnableIndexEntityPair&;
+
+        SpawnableIndexEntityIterator(AZ::Entity** entityIterator, size_t* indexIterator);
+
+        SpawnableIndexEntityIterator& operator++();
+        SpawnableIndexEntityIterator operator++(int);
+        SpawnableIndexEntityIterator& operator--();
+        SpawnableIndexEntityIterator operator--(int);
+
+        bool operator==(const SpawnableIndexEntityIterator& rhs);
+        bool operator!=(const SpawnableIndexEntityIterator& rhs);
+
+        SpawnableIndexEntityPair& operator*();
+        const SpawnableIndexEntityPair& operator*() const;
+        SpawnableIndexEntityPair* operator->();
+        const SpawnableIndexEntityPair* operator->() const;
+
+    private:
+        SpawnableIndexEntityPair m_value;
+    };
+
+    class SpawnableConstIndexEntityContainerView
+    {
+    public:
+        SpawnableConstIndexEntityContainerView(AZ::Entity** beginEntity, size_t* beginIndices, size_t length);
+
+        const SpawnableIndexEntityIterator& begin();
+        const SpawnableIndexEntityIterator& end();
+        const SpawnableIndexEntityIterator& cbegin();
+        const SpawnableIndexEntityIterator& cend();
+
+    private:
+        SpawnableIndexEntityIterator m_begin;
+        SpawnableIndexEntityIterator m_end;
+    };
+
     //! Requests to the SpawnableEntitiesInterface require a ticket with a valid spawnable that be used as a template. A ticket can
     //! be reused for multiple calls on the same spawnable and is safe to use by multiple threads at the same time. Entities created
     //! from the spawnable may be tracked by the ticket and so using the same ticket is needed to despawn the exact entities created
@@ -88,6 +154,7 @@ namespace AzFramework
     using EntityDespawnCallback = AZStd::function<void(EntitySpawnTicket&)>;
     using ReloadSpawnableCallback = AZStd::function<void(EntitySpawnTicket&, SpawnableConstEntityContainerView)>;
     using ListEntitiesCallback = AZStd::function<void(EntitySpawnTicket&, SpawnableConstEntityContainerView)>;
+    using ListIndicesEntitiesCallback = AZStd::function<void(EntitySpawnTicket&, SpawnableConstIndexEntityContainerView)>;
     using ClaimEntitiesCallback = AZStd::function<void(EntitySpawnTicket&, SpawnableEntityContainerView)>;
     using BarrierCallback = AZStd::function<void(EntitySpawnTicket&)>;
 
@@ -140,6 +207,12 @@ namespace AzFramework
         //! @param ticket Only the entities associated with this ticket will be listed.
         //! @param listCallback Required callback that will be called to list the entities on.
         virtual void ListEntities(EntitySpawnTicket& ticket, ListEntitiesCallback listCallback) = 0;
+        //! List all entities that are spawned using this ticket with their spawnable index.
+        //!     The index will be of the template in the spawnable used to create the entity instance from. The same template can be used
+        //!     for multiple entities so the same index may appear multiple times.
+        //! @param ticket Only the entities associated with this ticket will be listed.
+        //! @param listCallback Required callback that will be called to list the entities and indices on.
+        virtual void ListIndicesAndEntities(EntitySpawnTicket& ticket, ListIndicesEntitiesCallback listCallback) = 0;
         //! Claim all entities that are spawned using this ticket. Ownership of the entities is transferred from the ticket to the
         //!     caller through the callback. After this call the ticket will have no entities associated with it. The caller of
         //!     this function will need to manage the entities after this call.
