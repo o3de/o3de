@@ -23,7 +23,7 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             Legacy::CryCommon
-            Gem::LmbrCentral
+            Gem::LmbrCentral.Static
 )
 
 ly_add_target(

@@ -26,7 +26,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Legacy::CryCommon
-            Gem::LmbrCentral
+            Gem::LmbrCentral.Static
             Gem::GradientSignal
             Gem::SurfaceData.Static
             Gem::AtomLyIntegration_CommonFeatures.Static

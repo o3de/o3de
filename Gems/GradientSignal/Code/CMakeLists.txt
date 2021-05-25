@@ -22,7 +22,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Legacy::CryCommon
-            Gem::LmbrCentral
+            Gem::LmbrCentral.Static
             Gem::SurfaceData
             Gem::ImageProcessingAtom.Headers
 )
@@ -67,7 +67,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 3rdParty::Qt::Widgets
                 Legacy::CryCommon
                 AZ::AzToolsFramework
-                Gem::LmbrCentral
+                Gem::LmbrCentral.Editor
                 Gem::SurfaceData
                 AZ::AssetBuilderSDK
                 Gem::GradientSignal.Static
