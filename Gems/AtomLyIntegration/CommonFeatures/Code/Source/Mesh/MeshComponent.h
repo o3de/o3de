@@ -22,11 +22,10 @@ namespace AZ
     namespace Render
     {
         class MeshComponent final
-            : public AzFramework::Components::ComponentAdapter<MeshComponentController, MeshComponentConfig>
+            : public AzFramework::Components::ComponentAdapter<MeshComponentController, MeshComponentConfig, true>
         {
         public:
-
-            using BaseClass = AzFramework::Components::ComponentAdapter<MeshComponentController, MeshComponentConfig>;
+            using BaseClass = AzFramework::Components::ComponentAdapter<MeshComponentController, MeshComponentConfig, true>;
             AZ_COMPONENT(AZ::Render::MeshComponent, MeshComponentTypeId, BaseClass);
 
             MeshComponent() = default;

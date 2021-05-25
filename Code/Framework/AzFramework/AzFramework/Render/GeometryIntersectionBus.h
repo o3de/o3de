@@ -12,6 +12,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Render/GeometryIntersectionStructures.h>
 
 namespace AzFramework
@@ -35,12 +36,12 @@ namespace AzFramework
             AzFramework::EntityContextId m_contextId;
         };
 
-        //! Interface for intersection requests, implement this interface for making your component
-        //! render geometry intersectable.
+        //! Interface for intersection requests, implement this interface to make your component
+        //! intersect with render geometry.
         class IntersectionRequests
             : public AZ::EBusTraits
         {
-            //! Policy for notifying the Intersector bus of entities connected/disconnected to this ebus
+            //! Policy for notifying the Intersector bus of entities connected/disconnected to this EBus
             //! so it updates the internal data of the entities
             template<class Bus>
             struct IntersectionRequestsConnectionPolicy

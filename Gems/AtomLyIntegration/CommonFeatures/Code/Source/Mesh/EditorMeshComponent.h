@@ -29,14 +29,13 @@ namespace AZ
          * effects when changing fields in the editor.
          */
         class EditorMeshComponent final
-            : public EditorRenderComponentAdapter<MeshComponentController, MeshComponent, MeshComponentConfig>
+            : public EditorRenderComponentAdapter<MeshComponentController, MeshComponent, MeshComponentConfig, true>
             , private AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
             , private AzFramework::EntityDebugDisplayEventBus::Handler
             , private MeshComponentNotificationBus::Handler
         {
         public:
-
-            using BaseClass = EditorRenderComponentAdapter<MeshComponentController, MeshComponent, MeshComponentConfig>;
+            using BaseClass = EditorRenderComponentAdapter<MeshComponentController, MeshComponent, MeshComponentConfig, true>;
             AZ_EDITOR_COMPONENT(AZ::Render::EditorMeshComponent, EditorMeshComponentTypeId, BaseClass);
 
             static void Reflect(AZ::ReflectContext* context);

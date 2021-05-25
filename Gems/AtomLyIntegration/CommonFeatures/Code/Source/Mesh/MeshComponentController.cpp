@@ -177,28 +177,29 @@ namespace AZ
             FixUpModelAsset(m_configuration.m_modelAsset);
         }
 
-        void MeshComponentController::Activate(AZ::EntityId entityId)
+        void MeshComponentController::Activate(const AZ::EntityComponentIdPair& entityComponentIdPair)
         {
             FixUpModelAsset(m_configuration.m_modelAsset);
 
-            m_entityId = entityId;
+            const AZ::EntityId entityId = entityComponentIdPair.GetEntityId();
+            m_entityComponentIdPair = entityComponentIdPair;
 
-            m_transformInterface = TransformBus::FindFirstHandler(m_entityId);
+            m_transformInterface = TransformBus::FindFirstHandler(entityId);
             AZ_Warning("MeshComponentController", m_transformInterface, "Unable to attach to a TransformBus handler. This mesh will always be rendered at the origin.");
 
-            m_meshFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<MeshFeatureProcessorInterface>(m_entityId);
+            m_meshFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<MeshFeatureProcessorInterface>(entityId);
             AZ_Error("MeshComponentController", m_meshFeatureProcessor, "Unable to find a MeshFeatureProcessorInterface on the entityId.");
 
             m_cachedNonUniformScale = AZ::Vector3::CreateOne();
-            AZ::NonUniformScaleRequestBus::EventResult(m_cachedNonUniformScale, m_entityId, &AZ::NonUniformScaleRequests::GetScale);
-            AZ::NonUniformScaleRequestBus::Event(m_entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
+            AZ::NonUniformScaleRequestBus::EventResult(m_cachedNonUniformScale, entityId, &AZ::NonUniformScaleRequests::GetScale);
+            AZ::NonUniformScaleRequestBus::Event(entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
                 m_nonUniformScaleChangedHandler);
 
-            MeshComponentRequestBus::Handler::BusConnect(m_entityId);
-            TransformNotificationBus::Handler::BusConnect(m_entityId);
-            MaterialReceiverRequestBus::Handler::BusConnect(m_entityId);
-            MaterialComponentNotificationBus::Handler::BusConnect(m_entityId);
-            AzFramework::BoundsRequestBus::Handler::BusConnect(m_entityId);
+            MeshComponentRequestBus::Handler::BusConnect(entityId);
+            TransformNotificationBus::Handler::BusConnect(entityId);
+            MaterialReceiverRequestBus::Handler::BusConnect(entityId);
+            MaterialComponentNotificationBus::Handler::BusConnect(entityId);
+            AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
 
             //Buses must be connected before RegisterModel in case requests are made as a result of HandleModelChange
             RegisterModel();
@@ -219,7 +220,7 @@ namespace AZ
 
             m_meshFeatureProcessor = nullptr;
             m_transformInterface = nullptr;
-            m_entityId = AZ::EntityId(AZ::EntityId::InvalidEntityId);
+            m_entityComponentIdPair = AZ::EntityComponentIdPair(AZ::EntityId(), AZ::InvalidComponentId);
             m_configuration.m_modelAsset.Release();
         }
 
@@ -293,10 +294,11 @@ namespace AZ
             Data::Asset<RPI::ModelAsset> modelAsset = m_meshFeatureProcessor->GetModelAsset(m_meshHandle);
             if (model && modelAsset)
             {
+                const AZ::EntityId entityId = m_entityComponentIdPair.GetEntityId();
                 m_configuration.m_modelAsset = modelAsset;
-                MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, m_configuration.m_modelAsset, model);
-                MaterialReceiverNotificationBus::Event(m_entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
-                AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(m_entityId);
+                MeshComponentNotificationBus::Event(entityId, &MeshComponentNotificationBus::Events::OnModelReady, m_configuration.m_modelAsset, model);
+                MaterialReceiverNotificationBus::Event(entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
+                AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(entityId);
             }
         }
 
@@ -304,8 +306,10 @@ namespace AZ
         {
             if (m_meshFeatureProcessor && m_configuration.m_modelAsset.GetId().IsValid())
             {
+                const AZ::EntityId entityId = m_entityComponentIdPair.GetEntityId();
+
                 MaterialAssignmentMap materials;
-                MaterialComponentRequestBus::EventResult(materials, m_entityId, &MaterialComponentRequests::GetMaterialOverrides);
+                MaterialComponentRequestBus::EventResult(materials, entityId, &MaterialComponentRequests::GetMaterialOverrides);
 
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
                 m_meshHandle = m_meshFeatureProcessor->AcquireMesh(m_configuration.m_modelAsset, materials,
@@ -330,7 +334,8 @@ namespace AZ
         {
             if (m_meshFeatureProcessor && m_meshHandle.IsValid())
             {
-                MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelPreDestroy);
+                MeshComponentNotificationBus::Event(
+                    m_entityComponentIdPair.GetEntityId(), &MeshComponentNotificationBus::Events::OnModelPreDestroy);
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
             }
         }
@@ -461,6 +466,30 @@ namespace AZ
             {
                 return Aabb::CreateNull();
             }
+        }
+
+        AzFramework::RenderGeometry::RayResult MeshComponentController::RenderGeometryIntersect(
+            const AzFramework::RenderGeometry::RayRequest& ray)
+        {
+            AzFramework::RenderGeometry::RayResult result;
+            if (const Data::Instance<RPI::Model> model = GetModel())
+            {
+                float distance;
+                AZ::Vector3 normal;
+                if (model->RayIntersection(
+                    m_transformInterface->GetWorldTM(), m_cachedNonUniformScale, ray.m_startWorldPosition,
+                    ray.m_endWorldPosition - ray.m_startWorldPosition, distance, normal))
+                {
+                    result.m_uv = AZ::Vector2::CreateZero();
+                    result.m_worldPosition =
+                        ray.m_startWorldPosition + (ray.m_endWorldPosition - ray.m_startWorldPosition).GetNormalized() * distance;
+                    result.m_worldNormal = normal;
+                    result.m_distance = distance;
+                    result.m_entityAndComponent = m_entityComponentIdPair;
+                }
+            }
+
+            return result;
         }
     } // namespace Render
 } // namespace AZ
