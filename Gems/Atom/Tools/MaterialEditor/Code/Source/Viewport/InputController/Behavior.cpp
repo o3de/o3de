@@ -121,6 +121,7 @@ namespace MaterialEditor
 
     float Behavior::GetSensitivityZ()
     {
+        // adjust zooming sensitivity by model size, so that large models zoom at the same speed as smaller ones
         return 0.001f * AZ::GetMax(0.5f, m_radius);
     }
 
