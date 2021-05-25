@@ -67,7 +67,7 @@ namespace TestImpact
         //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty). 
         //! @param callback The client callback function to handle completed test target enumerations.
         //! @ returns The sequence result and the enumerations for the target that were enumerated.
-        AZStd::pair < TestSequenceResult, AZStd::vector<TestEngineEnumeration>> UpdateEnumerationCache(
+        AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineEnumeration>> UpdateEnumerationCache(
             const AZStd::vector<const TestTarget*>& testTargets,
             Policy::ExecutionFailure executionFailurePolicy,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
@@ -84,7 +84,7 @@ namespace TestImpact
         //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty). 
         //! @param callback The client callback function to handle completed test target runs.
         //! @ returns The sequence result and the test run results for the test targets that were run.
-        [[nodiscard]]AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun>> RegularRun(
+        [[nodiscard]] AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun>> RegularRun(
             const AZStd::vector<const TestTarget*>& testTargets,
             Policy::TestSharding testShardingPolicy,
             Policy::ExecutionFailure executionFailurePolicy,
@@ -105,7 +105,7 @@ namespace TestImpact
         //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty). 
         //! @param callback The client callback function to handle completed test target runs.
         //! @ returns The sequence result and the test run results and test coverages for the test targets that were run.
-        [[nodiscard]]AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun>> InstrumentedRun(
+        [[nodiscard]] AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun>> InstrumentedRun(
             const AZStd::vector<const TestTarget*>& testTargets,
             Policy::TestSharding testShardingPolicy,
             Policy::ExecutionFailure executionFailurePolicy,

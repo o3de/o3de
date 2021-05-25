@@ -26,6 +26,7 @@ namespace TestImpact
 
         //! Returns the test coverage payload for this job (if any).
         const AZStd::optional<TestCoverage>& GetTestCoverge() const;
+
     private:
         AZStd::optional<TestCoverage> m_testCoverage;
     };

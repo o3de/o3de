@@ -33,6 +33,7 @@ namespace TestImpact
 
         //! Returns the command string that was used to execute this job.
         const AZStd::string& GetCommandString() const;
+
     private:
         const TestTarget* m_testTarget;
         AZStd::string m_commandString;
