@@ -10,7 +10,7 @@
 *
 */
 
-#include "GemItemDelegate.h"
+#include <GemCatalog/GemItemDelegate.h>
 #include "GemModel.h"
 #include <QEvent>
 #include <QPainter>
@@ -18,9 +18,9 @@
 
 namespace O3DE::ProjectManager
 {
-    GemItemDelegate::GemItemDelegate(GemModel* gemModel, QObject* parent)
+    GemItemDelegate::GemItemDelegate(QAbstractItemModel* model, QObject* parent)
         : QStyledItemDelegate(parent)
-        , m_gemModel(gemModel)
+        , m_model(model)
     {
         AddPlatformIcon(GemInfo::Android, ":/Android.svg");
         AddPlatformIcon(GemInfo::iOS, ":/iOS.svg");
@@ -78,7 +78,7 @@ namespace O3DE::ProjectManager
         }
 
         // Gem name
-        const QString gemName = m_gemModel->GetName(modelIndex);
+        const QString gemName = GemModel::GetName(modelIndex);
         QFont gemNameFont(options.font);
         gemNameFont.setPixelSize(s_gemNameFontSize);
         gemNameFont.setBold(true);
@@ -90,7 +90,7 @@ namespace O3DE::ProjectManager
         painter->drawText(gemNameRect, Qt::TextSingleLine, gemName);
 
         // Gem creator
-        const QString gemCreator = m_gemModel->GetCreator(modelIndex);
+        const QString gemCreator = GemModel::GetCreator(modelIndex);
         QRect gemCreatorRect = GetTextRect(standardFont, gemCreator, s_fontSize);
         gemCreatorRect.moveTo(contentRect.left(), contentRect.top() + gemNameRect.height());
 
@@ -105,7 +105,7 @@ namespace O3DE::ProjectManager
         painter->setFont(standardFont);
         painter->setPen(m_textColor);
 
-        const QString summary = m_gemModel->GetSummary(modelIndex);
+        const QString summary = GemModel::GetSummary(modelIndex);
         painter->drawText(summaryRect, Qt::AlignLeft | Qt::TextWordWrap, summary);
 
 
@@ -158,7 +158,7 @@ namespace O3DE::ProjectManager
 
     void GemItemDelegate::DrawPlatformIcons(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const
     {
-        const GemInfo::Platforms platforms = m_gemModel->GetPlatforms(modelIndex);
+        const GemInfo::Platforms platforms = GemModel::GetPlatforms(modelIndex);
         int startX = 0;
 
         // Iterate and draw the platforms in the order they are defined in the enum.
@@ -188,7 +188,7 @@ namespace O3DE::ProjectManager
         QPoint circleCenter;
         QString buttonText;
 
-        const bool isAdded = m_gemModel->IsAdded(modelIndex);
+        const bool isAdded = GemModel::IsAdded(modelIndex);
         if (isAdded)
         {
             painter->setBrush(m_buttonEnabledColor);
