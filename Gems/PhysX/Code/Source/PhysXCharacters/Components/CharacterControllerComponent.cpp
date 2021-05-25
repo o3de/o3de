@@ -105,39 +105,73 @@ namespace PhysX
 
     AZ::Vector3 CharacterControllerComponent::GetBasePosition() const
     {
-        return IsPhysicsEnabled() ? m_controller->GetBasePosition() : AZ::Vector3::CreateZero();
+        if (IsPhysicsEnabled())
+        {
+            if (auto* controller = GetControllerConst())
+            {
+                return controller->GetBasePosition();
+            }
+        }
+        return AZ::Vector3::CreateZero();
     }
 
     void CharacterControllerComponent::SetBasePosition(const AZ::Vector3& position)
     {
         if (IsPhysicsEnabled())
         {
-            m_controller->SetBasePosition(position);
-            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTranslation, position);
+            if (auto* controller = GetController())
+            {
+                controller->SetBasePosition(position);
+                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTranslation, position);
+            }
         }
     }
 
     AZ::Vector3 CharacterControllerComponent::GetCenterPosition() const
     {
-        return IsPhysicsEnabled() ? m_controller->GetCenterPosition() : AZ::Vector3::CreateZero();
+        if (IsPhysicsEnabled())
+        {
+            if (auto* controller = GetControllerConst())
+            {
+                return controller->GetCenterPosition();
+            }
+        }
+        return AZ::Vector3::CreateZero();
     }
 
     float CharacterControllerComponent::GetStepHeight() const
     {
-        return IsPhysicsEnabled() ? m_controller->GetStepHeight() : 0.0f;
+        if (IsPhysicsEnabled())
+        {
+            if (auto* controller = GetControllerConst())
+            {
+                return controller->GetStepHeight();
+            }
+        }
+        return 0.0f;
     }
 
     void CharacterControllerComponent::SetStepHeight(float stepHeight)
     {
         if (IsPhysicsEnabled())
         {
-            m_controller->SetStepHeight(stepHeight);
+            if (auto* controller = GetController())
+            {
+                controller->SetStepHeight(stepHeight);
+            }
         }
     }
 
     AZ::Vector3 CharacterControllerComponent::GetUpDirection() const
     {
-        return IsPhysicsEnabled() ? m_controller->GetUpDirection() : AZ::Vector3::CreateZero();
+        if (IsPhysicsEnabled())
+        {
+            if (auto* controller = GetControllerConst())
+            {
+                return controller->GetUpDirection();
+            }
+        }
+        return AZ::Vector3::CreateZero();
     }
 
     void CharacterControllerComponent::SetUpDirection([[maybe_unused]] const AZ::Vector3& upDirection)
@@ -147,14 +181,24 @@ namespace PhysX
 
     float CharacterControllerComponent::GetSlopeLimitDegrees() const
     {
-        return IsPhysicsEnabled() ? m_controller->GetSlopeLimitDegrees() : 0.0f;
+        if (IsPhysicsEnabled())
+        {
+            if (auto* controller = GetControllerConst())
+            {
+                return controller->GetSlopeLimitDegrees();
+            }
+        }
+        return 0.0f;
     }
 
     void CharacterControllerComponent::SetSlopeLimitDegrees(float slopeLimitDegrees)
     {
         if (IsPhysicsEnabled())
         {
-            m_controller->SetSlopeLimitDegrees(slopeLimitDegrees);
+            if (auto* controller = GetController())
+            {
+                controller->SetSlopeLimitDegrees(slopeLimitDegrees);
+            }
         }
     }
 
@@ -162,7 +206,10 @@ namespace PhysX
     {
         if (IsPhysicsEnabled())
         {
-            return m_controller->GetMaximumSpeed();
+            if (auto* controller = GetControllerConst())
+            {
+                return controller->GetMaximumSpeed();
+            }
         }
 
         return 0.0f;
@@ -172,26 +219,39 @@ namespace PhysX
     {
         if (IsPhysicsEnabled())
         {
-            m_controller->SetMaximumSpeed(maximumSpeed);
+            if (auto* controller = GetController())
+            {
+                controller->SetMaximumSpeed(maximumSpeed);
+            }
         }
     }
 
     AZ::Vector3 CharacterControllerComponent::GetVelocity() const
     {
-        return IsPhysicsEnabled() ? m_controller->GetVelocity() : AZ::Vector3::CreateZero();
+        if (IsPhysicsEnabled())
+        {
+            if (auto* controller = GetControllerConst())
+            {
+                return controller->GetVelocity();
+            }
+        }
+        return AZ::Vector3::CreateZero();
     }
 
     void CharacterControllerComponent::AddVelocity(const AZ::Vector3& velocity)
     {
         if (IsPhysicsEnabled())
         {
-            m_controller->AddVelocity(velocity);
+            if (auto* controller = GetController())
+            {
+                controller->AddVelocity(velocity);
+            }
         }
     }
 
     Physics::Character* CharacterControllerComponent::GetCharacter()
     {
-        return m_controller;
+        return GetController();
     }
 
     void CharacterControllerComponent::EnablePhysics()
@@ -206,14 +266,14 @@ namespace PhysX
 
     bool CharacterControllerComponent::IsPhysicsEnabled() const
     {
-        return m_controller != nullptr;
+        return GetControllerConst() != nullptr;
     }
 
     AZ::Aabb CharacterControllerComponent::GetAabb() const
     {
-        if (m_controller)
+        if (auto* controller = GetControllerConst())
         {
-            return m_controller->GetAabb();
+            return controller->GetAabb();
         }
         return AZ::Aabb::CreateNull();
     }
@@ -225,77 +285,109 @@ namespace PhysX
 
     AzPhysics::SimulatedBodyHandle CharacterControllerComponent::GetSimulatedBodyHandle() const
     {
-        if (m_controller)
-        {
-            return m_controller->m_bodyHandle;
-        }
-        return AzPhysics::InvalidSimulatedBodyHandle;
+        return m_controllerBodyHandle;
     }
 
     AzPhysics::SceneQueryHit CharacterControllerComponent::RayCast(const AzPhysics::RayCastRequest& request)
     {
-        if (m_controller)
+        if (auto* controller = GetController())
         {
-            return m_controller->RayCast(request);
+            return controller->RayCast(request);
         }
+
         return AzPhysics::SceneQueryHit();
     }
 
     // CharacterControllerRequestBus
     void CharacterControllerComponent::Resize(float height)
     {
-        return m_controller->Resize(height);
+        if (auto* controller = GetController())
+        {
+            controller->Resize(height);
+        }
     }
 
     float CharacterControllerComponent::GetHeight()
     {
-        return m_controller->GetHeight();
+        if (auto* controller = GetController())
+        {
+            return controller->GetHeight();
+        }
+        return 0.0f;
     }
 
     void CharacterControllerComponent::SetHeight(float height)
     {
-        return m_controller->SetHeight(height);
+        if (auto* controller = GetController())
+        {
+            controller->SetHeight(height);
+        }
     }
 
     float CharacterControllerComponent::GetRadius()
     {
-        return m_controller->GetRadius();
+        if (auto* controller = GetController())
+        {
+            return controller->GetRadius();
+        }
+        return 0.0f;
     }
 
     void CharacterControllerComponent::SetRadius(float radius)
     {
-        return m_controller->SetRadius(radius);
+        if (auto* controller = GetController())
+        {
+            controller->SetRadius(radius);
+        }
     }
 
     float CharacterControllerComponent::GetHalfSideExtent()
     {
-        return m_controller->GetHalfSideExtent();
+        if (auto* controller = GetController())
+        {
+            return controller->GetHalfSideExtent();
+        }
+        return 0.0f;
     }
 
     void CharacterControllerComponent::SetHalfSideExtent(float halfSideExtent)
     {
-        return m_controller->SetHalfSideExtent(halfSideExtent);
+        if (auto* controller = GetController())
+        {
+            controller->SetHalfSideExtent(halfSideExtent);
+        }
     }
 
     float CharacterControllerComponent::GetHalfForwardExtent()
     {
-        return m_controller->GetHalfForwardExtent();
+        if (IsPhysicsEnabled())
+        {
+            if (auto* controller = GetController())
+            {
+                return controller->GetHalfForwardExtent();
+            }
+        }
+        return 0.0f;
     }
 
     void CharacterControllerComponent::SetHalfForwardExtent(float halfForwardExtent)
     {
-        return m_controller->SetHalfForwardExtent(halfForwardExtent);
+        if (auto* controller = GetController())
+        {
+            controller->SetHalfForwardExtent(halfForwardExtent);
+        }
     }
 
     // TransformNotificationBus
     void CharacterControllerComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
-        if (!IsPhysicsEnabled())
+        if (IsPhysicsEnabled())
         {
-            return;
+            if (auto* controller = GetController())
+            {
+                controller->SetBasePosition(world.GetTranslation());
+            }
         }
-
-        m_controller->SetBasePosition(world.GetTranslation());
     }
     
     void CharacterControllerComponent::SetCollisionLayer(const AZStd::string& layerName, AZ::Crc32 colliderTag)
@@ -305,14 +397,20 @@ namespace PhysX
             return;
         }
 
-        if (Physics::Utils::FilterTag(m_controller->GetColliderTag(), colliderTag))
+        auto* controller = GetController();
+        if (controller == nullptr)
+        {
+            return;
+        }
+
+        if (Physics::Utils::FilterTag(controller->GetColliderTag(), colliderTag))
         {
             bool success = false;
             AzPhysics::CollisionLayer collisionLayer;
             Physics::CollisionRequestBus::BroadcastResult(success, &Physics::CollisionRequests::TryGetCollisionLayerByName, layerName, collisionLayer);
             if (success) 
             {
-                m_controller->SetCollisionLayer(collisionLayer);
+                controller->SetCollisionLayer(collisionLayer);
             }
         }
     }
@@ -325,7 +423,14 @@ namespace PhysX
             return layerName;
         }
 
-        Physics::CollisionRequestBus::BroadcastResult(layerName, &Physics::CollisionRequests::GetCollisionLayerName, m_controller->GetCollisionLayer());
+        auto* controller = GetControllerConst();
+        if (controller == nullptr)
+        {
+            return layerName;
+        }
+
+        Physics::CollisionRequestBus::BroadcastResult(
+            layerName, &Physics::CollisionRequests::GetCollisionLayerName, controller->GetCollisionLayer());
         return layerName;
     }
 
@@ -336,14 +441,20 @@ namespace PhysX
             return;
         }
 
-        if (Physics::Utils::FilterTag(m_controller->GetColliderTag(), colliderTag))
+        auto* controller = GetController();
+        if (controller == nullptr)
+        {
+            return;
+        }
+
+        if (Physics::Utils::FilterTag(controller->GetColliderTag(), colliderTag))
         {
             bool success = false;
             AzPhysics::CollisionGroup collisionGroup;
             Physics::CollisionRequestBus::BroadcastResult(success, &Physics::CollisionRequests::TryGetCollisionGroupByName, groupName, collisionGroup);
             if (success)
             {
-                m_controller->SetCollisionGroup(collisionGroup);
+                controller->SetCollisionGroup(collisionGroup);
             }
         }
     }
@@ -355,8 +466,15 @@ namespace PhysX
         {
             return groupName;
         }
-        
-        Physics::CollisionRequestBus::BroadcastResult(groupName, &Physics::CollisionRequests::GetCollisionGroupName, m_controller->GetCollisionGroup());
+
+        auto* controller = GetControllerConst();
+        if (controller == nullptr)
+        {
+            return groupName;
+        }
+
+        Physics::CollisionRequestBus::BroadcastResult(
+            groupName, &Physics::CollisionRequests::GetCollisionGroupName, controller->GetCollisionGroup());
         return groupName;
     }
 
@@ -367,7 +485,13 @@ namespace PhysX
             return;
         }
 
-        if (Physics::Utils::FilterTag(m_controller->GetColliderTag(), colliderTag))
+        auto* controller = GetController();
+        if (controller == nullptr)
+        {
+            return;
+        }
+
+        if (Physics::Utils::FilterTag(controller->GetColliderTag(), colliderTag))
         {
             bool success = false;
             AzPhysics::CollisionLayer collisionLayer;
@@ -375,21 +499,41 @@ namespace PhysX
             if (success)
             {
                 AzPhysics::CollisionLayer layer(layerName);
-                AzPhysics::CollisionGroup group = m_controller->GetCollisionGroup();
+                AzPhysics::CollisionGroup group = controller->GetCollisionGroup();
                 group.SetLayer(layer, enabled);
-                m_controller->SetCollisionGroup(group);
+                controller->SetCollisionGroup(group);
             }
         }
     }
 
     void CharacterControllerComponent::OnPreSimulate(float deltaTime)
     {
-        if (m_controller)
+        if (auto* controller = GetController())
         {
-            m_controller->ApplyRequestedVelocity(deltaTime);
-            const AZ::Vector3 newPosition = GetBasePosition();
+            controller->ApplyRequestedVelocity(deltaTime);
+            const AZ::Vector3 newPosition = controller->GetBasePosition();
             AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTranslation, newPosition);
         }
+    }
+
+    const PhysX::CharacterController* CharacterControllerComponent::GetControllerConst() const
+    {
+        if (m_controllerBodyHandle == AzPhysics::InvalidSimulatedBodyHandle || m_attachedSceneHandle == AzPhysics::InvalidSceneHandle)
+        {
+            return nullptr;
+        }
+
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            return azdynamic_cast<PhysX::CharacterController*>(
+                sceneInterface->GetSimulatedBodyFromHandle(m_attachedSceneHandle, m_controllerBodyHandle));
+        }
+        return nullptr;
+    }
+
+    PhysX::CharacterController* CharacterControllerComponent::GetController()
+    {
+        return const_cast<PhysX::CharacterController*>(GetControllerConst());
     }
 
     void CharacterControllerComponent::CreateController()
@@ -399,9 +543,8 @@ namespace PhysX
             return;
         }
 
-        AzPhysics::SceneHandle defaultSceneHandle = AzPhysics::InvalidSceneHandle;
-        Physics::DefaultWorldBus::BroadcastResult(defaultSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
-        if (defaultSceneHandle == AzPhysics::InvalidSceneHandle)
+        Physics::DefaultWorldBus::BroadcastResult(m_attachedSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
+        if (m_attachedSceneHandle == AzPhysics::InvalidSceneHandle)
         {
             AZ_Error("PhysX Character Controller Component", false, "Failed to retrieve default scene.");
             return;
@@ -427,11 +570,9 @@ namespace PhysX
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         if (sceneInterface != nullptr)
         {
-            m_controllerBodyHandle = sceneInterface->AddSimulatedBody(defaultSceneHandle, m_characterConfig.get());
-            m_controller = azdynamic_cast<PhysX::CharacterController*>(
-                sceneInterface->GetSimulatedBodyFromHandle(defaultSceneHandle, m_controllerBodyHandle));
+            m_controllerBodyHandle = sceneInterface->AddSimulatedBody(m_attachedSceneHandle, m_characterConfig.get());
         }
-        if (m_controller == nullptr)
+        if (m_controllerBodyHandle == AzPhysics::InvalidSimulatedBodyHandle)
         {
             AZ_Error("PhysX Character Controller Component", false, "Failed to create character controller.");
             return;
@@ -447,7 +588,7 @@ namespace PhysX
                         DestroyController();
                     }
                 });
-            sceneInterface->RegisterSimulationBodyRemovedHandler(defaultSceneHandle, m_onSimulatedBodyRemovedHandler);
+            sceneInterface->RegisterSimulationBodyRemovedHandler(m_attachedSceneHandle, m_onSimulatedBodyRemovedHandler);
         }
 
         CharacterControllerRequestBus::Handler::BusConnect(GetEntityId());
@@ -472,11 +613,14 @@ namespace PhysX
             return;
         }
 
-        m_controller->DisablePhysics();
-
-        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        if (auto* controller = GetController())
         {
-            sceneInterface->RemoveSimulatedBody(m_controller->m_sceneOwner, m_controller->m_bodyHandle);
+            controller->DisablePhysics();
+
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                sceneInterface->RemoveSimulatedBody(m_attachedSceneHandle, controller->m_bodyHandle);
+            }
         }
 
         DestroyController();
@@ -484,7 +628,8 @@ namespace PhysX
 
     void CharacterControllerComponent::DestroyController()
     {
-        m_controller = nullptr;
+        m_controllerBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
+        m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
         m_preSimulateHandler.Disconnect();
         m_onSimulatedBodyRemovedHandler.Disconnect();
         CharacterControllerRequestBus::Handler::BusDisconnect();
