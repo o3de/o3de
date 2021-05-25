@@ -21,17 +21,11 @@
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <SceneAPI/SceneUI/SceneUIConfiguration.h>
-
 #endif
 
 namespace AzQtComponents
 {
     class VectorInput;
-}
-
-namespace AzToolsFramework
-{
-    class PropertyDoubleSpinCtrl;
 }
 
 namespace AZ
@@ -57,14 +51,14 @@ namespace AZ
                 const AZ::Vector3& GetRotation() const;
                 void SetRotation(const AZ::Vector3& translation);
 
-                const float GetScale() const;
-                void SetScale(const float scale);
+                const AZ::Vector3& GetScale() const;
+                void SetScale(const AZ::Vector3& scale);
 
             private:
                 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
                 AZ::Vector3 m_translation;
                 AZ::Vector3 m_rotation;
-                float m_scale;
+                AZ::Vector3 m_scale;
                 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
             };
 
@@ -84,7 +78,7 @@ namespace AZ
 
                 AzQtComponents::VectorInput* GetTranslationWidget();
                 AzQtComponents::VectorInput* GetRotationWidget();
-                AzToolsFramework::PropertyDoubleSpinCtrl* GetScaleWidget();
+                AzQtComponents::VectorInput* GetScaleWidget();
 
             protected:
                 ExpandedTransform m_transform;
@@ -93,7 +87,7 @@ namespace AZ
 
                 AzQtComponents::VectorInput* m_translationWidget;
                 AzQtComponents::VectorInput* m_rotationWidget;
-                AzToolsFramework::PropertyDoubleSpinCtrl* m_scaleWidget;
+                AzQtComponents::VectorInput* m_scaleWidget;
             };
         } // namespace SceneUI
     } // namespace SceneAPI

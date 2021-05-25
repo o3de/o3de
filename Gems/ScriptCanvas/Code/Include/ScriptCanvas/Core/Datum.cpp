@@ -2527,15 +2527,15 @@ namespace ScriptCanvas
     {
         Data::TransformType copy(source);
         AZ::Vector3 pos = copy.GetTranslation();
-        float scale = copy.ExtractUniformScale();
+        AZ::Vector3 scale = copy.ExtractScale();
         AZ::Vector3 rotation = AZ::ConvertTransformToEulerDegrees(copy);
         return AZStd::string::format
              ( "(Position: X: %f, Y: %f, Z: %f,"
                " Rotation: X: %f, Y: %f, Z: %f,"
-               " Scale: %f)"
+               " Scale: X: %f, Y: %f, Z: %f)"
              , static_cast<float>(pos.GetX()), static_cast<float>(pos.GetY()), static_cast<float>(pos.GetZ())
              , static_cast<float>(rotation.GetX()), static_cast<float>(rotation.GetY()), static_cast<float>(rotation.GetZ())
-             , scale);
+             , static_cast<float>(scale.GetX()), static_cast<float>(scale.GetY()), static_cast<float>(scale.GetZ()));
     }
 
     AZStd::string Datum::ToStringVector2(const AZ::Vector2& source) const

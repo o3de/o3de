@@ -15,7 +15,6 @@
 #include <QGridLayout>
 #include <SceneAPI/SceneUI/RowWidgets/TransformRowWidget.h>
 #include <AzQtComponents/Components/Widgets/VectorInput.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyDoubleSpinCtrl.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyRowWidget.hxx>
 
@@ -48,7 +47,7 @@ namespace AZ
             ExpandedTransform::ExpandedTransform()
                 : m_translation(0, 0, 0)
                 , m_rotation(0, 0, 0)
-                , m_scale(1)
+                , m_scale(1, 1, 1)
             {
             }
 
@@ -61,14 +60,14 @@ namespace AZ
             {
                 m_translation = transform.GetTranslation();
                 m_rotation = transform.GetEulerDegrees();
-                m_scale = transform.GetUniformScale();
+                m_scale = transform.GetScale();
             }
 
             void ExpandedTransform::GetTransform(AZ::Transform& transform) const
             {
                 transform = Transform::CreateTranslation(m_translation);
                 transform *= AZ::ConvertEulerDegreesToTransform(m_rotation);
-                transform.MultiplyByUniformScale(m_scale);
+                transform.MultiplyByScale(m_scale);
             }
 
             const AZ::Vector3& ExpandedTransform::GetTranslation() const
@@ -91,12 +90,12 @@ namespace AZ
                 m_rotation = rotation;
             }
 
-            const float ExpandedTransform::GetScale() const
+            const AZ::Vector3& ExpandedTransform::GetScale() const
             {
                 return m_scale;
             }
 
-            void ExpandedTransform::SetScale(const float scale)
+            void ExpandedTransform::SetScale(const AZ::Vector3& scale)
             {
                 m_scale = scale;
             }
@@ -132,7 +131,7 @@ namespace AZ
                 m_rotationWidget->setMaximum(360);
                 m_rotationWidget->setSuffix(" degrees");
 
-                m_scaleWidget = new AzToolsFramework::PropertyDoubleSpinCtrl(this);
+                m_scaleWidget = new AzQtComponents::VectorInput(this, 3);
                 m_scaleWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
                 m_scaleWidget->setMinimum(0);
                 m_scaleWidget->setMaximum(10000);
@@ -192,10 +191,13 @@ namespace AZ
                     AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestWrite, this);
                 });
 
-                QObject::connect(m_scaleWidget, &AzToolsFramework::PropertyDoubleSpinCtrl::valueChanged, this, [this]
+                QObject::connect(m_scaleWidget, &AzQtComponents::VectorInput::valueChanged, this, [this]
                 {
-                    AzToolsFramework::PropertyDoubleSpinCtrl* widget = this->GetScaleWidget();
-                    float scale = aznumeric_cast<float>(widget->value());
+                    AzQtComponents::VectorInput* widget = this->GetScaleWidget();
+                    AZ::Vector3 scale;
+
+                    PopulateVector3(widget, scale);
+
                     m_transform.SetScale(scale);
                     AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestWrite, this);
                 });
@@ -222,7 +224,9 @@ namespace AZ
                 m_rotationWidget->setValuebyIndex(m_transform.GetRotation().GetY(), 1);
                 m_rotationWidget->setValuebyIndex(m_transform.GetRotation().GetZ(), 2);
 
-                m_scaleWidget->setValue(m_transform.GetScale());
+                m_scaleWidget->setValuebyIndex(m_transform.GetScale().GetX(), 0);
+                m_scaleWidget->setValuebyIndex(m_transform.GetScale().GetY(), 1);
+                m_scaleWidget->setValuebyIndex(m_transform.GetScale().GetZ(), 2);
 
                 blockSignals(false);
             }
@@ -247,7 +251,7 @@ namespace AZ
                 return m_rotationWidget;
             }
 
-            AzToolsFramework::PropertyDoubleSpinCtrl* TransformRowWidget::GetScaleWidget()
+            AzQtComponents::VectorInput* TransformRowWidget::GetScaleWidget()
             {
                 return m_scaleWidget;
             }
