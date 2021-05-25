@@ -27,5 +27,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RHI.Reflect
                 Gem::Atom_RPI.Public
                 Gem::Atom_Bootstrap.Headers
+                Gem::Atom_AtomBridge.Static
     )
 endif()

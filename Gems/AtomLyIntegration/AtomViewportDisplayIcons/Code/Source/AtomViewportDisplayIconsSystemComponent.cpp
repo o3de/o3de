@@ -29,6 +29,8 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 
+#include <AtomBridge/PerViewportDynamicDrawInterface.h>
+
 namespace AZ::Render
 {
     void AtomViewportDisplayIconsSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -63,6 +65,7 @@ namespace AZ::Render
     void AtomViewportDisplayIconsSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC("RPISystem", 0xf2add773));
+        required.push_back(AZ_CRC("AtomBridgeService", 0xdb816a99));
     }
 
     void AtomViewportDisplayIconsSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -80,11 +83,14 @@ namespace AZ::Render
     {
         Bootstrap::NotificationBus::Handler::BusDisconnect();
 
-        auto dynamicDrawInterface =
-            Interface<RPI::DynamicDrawInterface>::Get();
-        if (dynamicDrawInterface)
+        auto perViewportDynamicDrawInterface = AtomBridge::PerViewportDynamicDraw::Get();
+        if (!perViewportDynamicDrawInterface)
         {
-            dynamicDrawInterface->UnregisterPerViewportDynamicDrawContext(m_drawContextName);
+            return;
+        } 
+        if (perViewportDynamicDrawInterface)
+        {
+            perViewportDynamicDrawInterface->UnregisterDynamicDrawContext(m_drawContextName);
         }
 
         AzToolsFramework::EditorViewportIconDisplay::Unregister(this);
@@ -99,15 +105,15 @@ namespace AZ::Render
         }
         auto view = viewportContext->GetDefaultView();
 
-        auto dynamicDrawInterface =
-            Interface<RPI::DynamicDrawInterface>::Get();
-        if (!dynamicDrawInterface)
+        auto perViewportDynamicDrawInterface =
+            AtomBridge::PerViewportDynamicDraw::Get();
+        if (!perViewportDynamicDrawInterface)
         {
             return;
         } 
 
         RHI::Ptr<RPI::DynamicDrawContext> dynamicDraw =
-            dynamicDrawInterface->GetDynamicDrawContextForViewport(m_drawContextName, drawParameters.m_viewport);
+            perViewportDynamicDrawInterface->GetDynamicDrawContextForViewport(m_drawContextName, drawParameters.m_viewport);
         if (dynamicDraw == nullptr)
         {
             return;
@@ -317,7 +323,7 @@ namespace AZ::Render
 
     void AtomViewportDisplayIconsSystemComponent::OnBootstrapSceneReady([[maybe_unused]]AZ::RPI::Scene* bootstrapScene)
     {
-        Interface<RPI::DynamicDrawInterface>::Get()->RegisterPerViewportDynamicDrawContext(m_drawContextName, [](RPI::Ptr<RPI::DynamicDrawContext> drawContext)
+        AtomBridge::PerViewportDynamicDraw::Get()->RegisterDynamicDrawContext(m_drawContextName, [](RPI::Ptr<RPI::DynamicDrawContext> drawContext)
         {
             auto shader = RPI::LoadShader(s_drawContextShaderPath);
             drawContext->InitShader(shader);
