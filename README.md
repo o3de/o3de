@@ -128,6 +128,7 @@ If you have the Git credential manager core or other credential helpers installe
     ```
     cmake -B <your build path> -S <your source path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=<3rdParty cache path> -DLY_UNITY_BUILD=ON -DLY_PROJECTS=AutomatedTesting 
     ```
+    > Note:  Do not use trailing slashes for the <3rdParty cache path>
 
 1.  Alternatively, you can do this through the CMake GUI:
     
