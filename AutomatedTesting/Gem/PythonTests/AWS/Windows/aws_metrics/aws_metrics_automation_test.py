@@ -138,6 +138,8 @@ class TestAWSMetrics_Windows(object):
         aws_metrics_utils.start_kenisis_data_analytics_application(analytics_application_name)
 
         launcher.args = ['+LoadLevel', level]
+        launcher.args.extend(['-rhi=null'])
+
         with launcher.start(launch_ap=False):
             start_time = datetime.utcnow()
             monitor_metrics_submission(log_monitor)
@@ -175,6 +177,7 @@ class TestAWSMetrics_Windows(object):
         # Set invalid AWS credentials.
         launcher.args = ['+LoadLevel', level, '+cl_awsAccessKey', 'AKIAIOSFODNN7EXAMPLE',
                          '+cl_awsSecretKey', 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY']
+        launcher.args.extend(['-rhi=null'])
 
         with launcher.start(launch_ap=False):
             result = log_monitor.monitor_log_for_lines(
@@ -203,6 +206,8 @@ class TestAWSMetrics_Windows(object):
         analytics_bucket_name = aws_metrics_utils.get_analytics_bucket_name(stack_name)
 
         launcher.args = ['+LoadLevel', level]
+        launcher.args.extend(['-rhi=null'])
+
         with launcher.start(launch_ap=False):
             start_time = datetime.utcnow()
             monitor_metrics_submission(log_monitor)
