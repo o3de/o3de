@@ -121,7 +121,6 @@ namespace AMD
 
         // Stores a mapping of the bone index to actual bone names.
         std::vector<std::string> m_boneNames;
-        BoneIndexToEngineIndexLookup m_reservedLookup; // Used to reset the skinning data back to bone index in case the engine index changed.
 
         // When the skinning data populated from the asset, it will be stored as local bone indices. We need to fix the
         // bone indices in the skinning data to engineBoneIndex in the hairComponent when we have access to the complete actor skeleton.
@@ -181,7 +180,7 @@ namespace AMD
             const std::vector<std::string>& boneNames /*BoneNames used by this skinning data*/, BoneIndexToEngineIndexLookup& outLookup);
 
         // Fix the skinning from bone index to engine index.
-        void FixSkinningUsingLookup(std::vector<TressFXBoneSkinningData>& skinningData, const BoneIndexToEngineIndexLookup& lookup);
+        void ConvertLocalToGlobalBoneIndex(std::vector<TressFXBoneSkinningData>& skinningData, const BoneIndexToEngineIndexLookup& lookup);
 
         // Reset the skinning back to bone index, in case when a new set of engine index come in.
         void ResetSkinning(std::vector<TressFXBoneSkinningData>& skinningData, const BoneIndexToEngineIndexLookup& reservedLookup);
