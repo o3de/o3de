@@ -12,6 +12,8 @@
 
 #include <GemCatalog/GemCatalogScreen.h>
 #include <PythonBindingsInterface.h>
+#include <GemCatalog/GemCatalogHeaderWidget.h>
+#include <GemCatalog/GemListHeaderWidget.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
 #include <GemCatalog/GemFilterWidget.h>
 #include <QVBoxLayout>
@@ -33,6 +35,9 @@ namespace O3DE::ProjectManager
         vLayout->setMargin(0);
         vLayout->setSpacing(0);
         setLayout(vLayout);
+
+        GemCatalogHeaderWidget* headerWidget = new GemCatalogHeaderWidget(proxyModel);
+        vLayout->addWidget(headerWidget);
 
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setMargin(0);
@@ -64,9 +69,12 @@ namespace O3DE::ProjectManager
         GemFilterWidget* filterWidget = new GemFilterWidget(proxyModel);
         filterWidget->setFixedWidth(250);
 
+        GemListHeaderWidget* listHeaderWidget = new GemListHeaderWidget(proxyModel);
+
         QVBoxLayout* middleVLayout = new QVBoxLayout();
         middleVLayout->setMargin(0);
         middleVLayout->setSpacing(0);
+        middleVLayout->addWidget(listHeaderWidget);
         middleVLayout->addWidget(m_gemListView);
 
         hLayout->addWidget(filterWidget);
