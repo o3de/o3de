@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/std/containers/array.h>
+#include <AzNetworking/DataStructures/IBitset.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 
 #include <Multiplayer/NetworkTime/RewindableObject.h>
