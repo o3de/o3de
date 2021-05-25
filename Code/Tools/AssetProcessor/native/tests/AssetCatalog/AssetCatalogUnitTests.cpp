@@ -542,11 +542,9 @@ namespace AssetProcessor
     public:
         QDir GetRoot()
         {
-#if defined(AZ_PLATFORM_WINDOWS)
-            return "c:\\sourceRoot";
-#else
-            return "/sourceRoot";
-#endif
+            // Return an OS-friendly absolute root directory for our tests ("C:/sourceRoot" or "/sourceRoot").  It doesn't
+            // need to exist, it just needs to be an absolute path.
+            return QDir::root().filePath("sourceRoot");
         }
 
         // Set up custom scan folders for the "relative source path" tests, so that we can try out specific combinations of watch folders
