@@ -302,7 +302,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         that generating debug information does not affect asset list creation
         """
         helper = bundler_batch_helper
-        seed_list = os.path.join(workspace.paths.engine_root(), "Engine", "SeedAssetList.seed")  # Engine seed list
+        seed_list = os.path.join(workspace.paths.engine_root(), "Assets", "Engine", "SeedAssetList.seed")  # Engine seed list
         asset = r"levels\testdependencieslevel\level.pak"
 
         # Create Asset list
@@ -377,7 +377,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         subcommands.
         """
         helper = bundler_batch_helper
-        seed_list = os.path.join(workspace.paths.engine_root(), "Engine", "SeedAssetList.seed")  # Engine seed list
+        seed_list = os.path.join(workspace.paths.engine_root(), "Assets", "Engine", "SeedAssetList.seed")  # Engine seed list
         asset = r"levels\testdependencieslevel\level.pak"
 
         # Useful bundle locations / names (2 for comparing contents)
@@ -465,7 +465,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
             "Please rerun with commandline option: '--bundle_platforms=pc,osx_gl'"
         # fmt:on
 
-        seed_list = os.path.join(workspace.paths.engine_root(), "Engine", "SeedAssetList.seed")  # Engine seed list
+        seed_list = os.path.join(workspace.paths.engine_root(), "Assets", "Engine", "SeedAssetList.seed")  # Engine seed list
 
         # Useful bundle / asset list locations
         bundle_dir = os.path.dirname(helper["bundle_file"])
@@ -502,13 +502,13 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         for bundle_file in bundle_files.values():
             assert os.path.isfile(bundle_file)
 
-        # This asset is created on osx_gl platform but not on windows
-        file_to_check = b"engineassets/shading/defaultprobe_cm.dds.5"  # [use byte str because file is in binary]
+        # This asset is created both on osx_gl platform and on windows
+        file_to_check = b"engineassets/shading/defaultprobe_cm_ibldiffuse.tif.streamingimage"  # [use byte str because file is in binary]
 
         # Extract the delta catalog file from pc archive. {file_to_check} SHOULD NOT be present for PC
         file_contents = helper.extract_file_content(bundle_files["pc"], "DeltaCatalog.xml")
         # fmt:off
-        assert file_to_check not in file_contents, \
+        assert file_to_check in file_contents, \
             f"{file_to_check} was found in DeltaCatalog.xml in pc bundle file {bundle_files['pc']}"
         # fmt:on
 
@@ -1046,7 +1046,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
                 "--addDefaultSeedListFiles",
                 "--platform=pc",
                 "--print",
-                f"--project={workspace.project}"
+                f"--project-path={workspace.project}"
             ],
             universal_newlines=True,
         )
@@ -1115,7 +1115,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         bundle_result_path = os.path.join(bundles_folder,
                                           helper.platform_file_name("bundle.pak", workspace.asset_processor_platform))
 
-        bundle_cache_path = os.path.join(workspace.paths.platform_cache(), workspace.project,
+        bundle_cache_path = os.path.join(workspace.paths.platform_cache(),
                                          "Bundles",
                                          helper.platform_file_name("bundle.pak", workspace.asset_processor_platform))
 
@@ -1131,8 +1131,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
             addSeed=level_pak,
             assetListFile=helper["asset_info_file_request"],
         )
-        result, _ = asset_processor.gui_process()
-        assert result, "AP GUI failed"
+        asset_processor.gui_process()
 
         time.sleep(5)
 
@@ -1156,13 +1155,15 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
     # fmt:off
     def test_WindowsAndMac_FilesMarkedSkip_FilesAreSkipped(self, workspace, bundler_batch_helper):
         expected_assets = [
-            "libs/particles/milestone2particles.xml",
-            "textures/milestone2/particles/fx_sparkstreak_01.dds"
+            "ui/canvases/lyshineexamples/animation/multiplesequences.uicanvas",
+            "ui/textures/prefab/button_normal.sprite"
         ]
         bundler_batch_helper.call_assetLists(
             assetListFile=bundler_batch_helper['asset_info_file_request'],
-            addSeed="libs/particles/milestone2particles.xml",
-            skip="textures/milestone2/particles/fx_launchermuzzlering_01.dds,textures/milestone2/particles/fx_launchermuzzlefront_01.dds"
+            addSeed="ui/canvases/lyshineexamples/animation/multiplesequences.uicanvas",
+            skip="ui/textures/prefab/button_disabled.sprite,ui/scripts/lyshineexamples/animation/multiplesequences.luac,"
+                 "ui/textures/prefab/tooltip_sliced.sprite,ui/scripts/lyshineexamples/unloadthiscanvasbutton.luac,fonts/vera.fontfamily,fonts/vera-italic.font,"
+                 "fonts/vera.font,fonts/vera-bold.font,fonts/vera-bold-italic.font,fonts/vera-italic.ttf,fonts/vera.ttf,fonts/vera-bold.ttf,fonts/vera-bold-italic.ttf"
         )
         assert os.path.isfile(bundler_batch_helper["asset_info_file_result"])
         assets_in_list = []

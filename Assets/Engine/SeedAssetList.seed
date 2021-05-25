@@ -67,106 +67,98 @@
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{16983926-6160-5935-853E-641C8BBCFA1B}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/codecoverage/hit.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/codecoverage/hit.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{914896F1-D4A3-5550-9676-8B2D48443335}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/codecoverage/pbar.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/codecoverage/pbar.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{0E4737A6-2B5C-57DB-A0FC-38C2F84D970A}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/codecoverage/unexpected.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{1AE9C4CB-FF24-594B-BC2F-071268E0D6AB}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/geomcaches/defaultgeomcache.cax" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/codecoverage/unexpected.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{34B60E74-28FA-57C4-9A2E-77515A083AC5}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/icons/averagememoryusage.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/icons/averagememoryusage.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{D84DBC88-3637-5876-B249-E92EA9BCD0F5}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/icons/highmemoryusage.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/icons/highmemoryusage.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{98BA37F2-74C0-54CD-8109-F71276E834FE}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/icons/livepreview.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/icons/livepreview.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{DAC6670C-4A48-5661-B0DC-030071B2F2AB}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/icons/lowmemoryusage.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/icons/lowmemoryusage.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{9AF56C8A-4B9F-5B20-A77D-E30114E032D6}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/icons/navigationprocessing.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/icons/navigationprocessing.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{B6A22033-75B8-5580-80D7-0568C08AAFF3}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/icons/nullsoundsystem.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/icons/nullsoundsystem.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{8AE41B60-4004-5749-8B50-5EF6E5151342}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/icons/shadercompiling.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/icons/shadercompiling.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{B150AA1E-B38A-5827-AABE-A072E7C2477F}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/icons/streaming.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/icons/streaming.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{F43241FB-ECDE-55A9-BA59-AE19AF495F62}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/icons/streamingterrain.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/icons/streamingterrain.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
@@ -266,107 +258,99 @@
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{EF904993-701A-59ED-8C7A-DB8D8A067B01}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="255" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/objects/default.cgf" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{04EF85E7-D3F5-5359-A52E-C59566B79C4F}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/screenspace/areatex.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/screenspace/areatex.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{60736D16-139A-5623-A49F-E33C91878CC5}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/screenspace/film_grain.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/screenspace/film_grain.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{1AA9E7E9-6723-5394-88DA-04E9A1CAE19D}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/screenspace/grain_bayer_mul.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/screenspace/grain_bayer_mul.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{C47FD879-9E9D-5FED-A771-AA5DD3FBA1EB}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/screenspace/normalsfitting.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/screenspace/normalsfitting.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{28ABA702-99F9-5B40-84EC-E297D0FB7BCC}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/screenspace/pointsonsphere4x4.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/screenspace/pointsonsphere4x4.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{41E565F8-E384-5C8B-B34B-494A93FC4A15}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/screenspace/pointsonspherevo4x4.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/screenspace/pointsonspherevo4x4.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{90B77841-601D-5CE3-9631-F4219CB561AC}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/screenspace/searchtex.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/screenspace/searchtex.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{52162CD3-1245-5BF8-923F-E8CEC547B227}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1048576" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="3000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/shading/defaultprobe_cm_diff.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/shading/defaultprobe_cm_ibldiffuse.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{52162CD3-1245-5BF8-923F-E8CEC547B227}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="2000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/shading/defaultprobe_cm.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/shading/defaultprobe_cm_iblspecular.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{AFB81122-E810-5940-8C5C-BFC0E1BA0875}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/shading/environmentbrdf.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/shading/environmentbrdf.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{A0F3C5F3-4D9C-5B27-A8D0-9DD98108B0C2}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/shading/vignetting.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/shading/vignetting.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{5B87AD56-9EF7-5750-805D-76AC1C950D63}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/shading/waterfoam.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/shading/waterfoam.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
@@ -387,498 +371,474 @@
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{2D05A7E1-9A9D-593E-B1BE-ACFF1799FBBC}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1048576" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/defaultsolids_diff.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/defaultsolids_diff.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{493ACDCA-0393-5225-B48A-E355516F5E09}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/rcerror.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/rcerror.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{B68E2732-F748-51C3-95BE-4D66073866A4}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/rcerror_a.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/rcerror_a.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{F74A817C-8493-556B-9C5E-9C55B2A6541C}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1048576" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="3000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/rcerror_cm_diff.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/rcerror_cm_ibldiffuse.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{F74A817C-8493-556B-9C5E-9C55B2A6541C}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="2000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/rcerror_cm.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/rcerror_cm_iblspecular.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{9A531C9D-0F6E-5FF4-B853-2BA03994054D}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/rcerror_ddn.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/rcerror_ddn.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{6A4CA27C-E194-5954-888C-F470924B8C9E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/rcerror_ddna.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/rcerror_ddna.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{78C64FA5-267D-543F-87DC-8ACBA422B697}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1048576" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/replacemecm_diff.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{78C64FA5-267D-543F-87DC-8ACBA422B697}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/replacemecm.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/replacemecm.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{76C3ABD1-97B1-5010-8732-27469D27783A}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/replacemerelease.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/replacemerelease.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{45CF823D-491D-5C86-A1D1-E96F9B54BA5E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/shadercompiling.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/shadercompiling.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{5AD90C79-0820-5667-98BA-3B81E8D8316E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/shadererror.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/shadererror.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{30636215-C650-5FB5-97C3-DE456AF8B444}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/black.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/black.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{BA504C07-4568-51E8-AD95-41C6CAAABE71}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/blackalpha.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/blackalpha.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{FA447D02-C5E2-5688-AD42-839E03DF92FB}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1048576" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/blackcm_diff.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{FA447D02-C5E2-5688-AD42-839E03DF92FB}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/blackcm.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/blackcm.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{826DFAB8-AEA4-503C-A5DE-CC31100D5D2D}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/caustics_sampler.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/caustics_sampler.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{A09C44AE-E326-5987-9200-00E18C24BAE4}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/default_cch.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/default_cch.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{80E55B1C-5970-55BA-859C-5650C1B63BA8}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/ghost_grey.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/ghost_grey.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{DB73764D-3DCF-5CEE-BAF4-D4587CB14383}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/icons/ghost.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/icons/ghost.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{D5B8AC4E-5738-5573-BA28-8202D3CB00BA}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/icons/glow.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/icons/glow.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{1616B1E9-CC73-5F2B-8231-6C7F715E6123}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/icons/iris_shafts.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/icons/iris_shafts.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{C8259FF1-D83A-59D0-A011-2A05720C9E48}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/icons/multi_ghost.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/icons/multi_ghost.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{13B4A9B8-8ED5-59BE-897C-CF457E645B85}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/icons/orbs.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/icons/orbs.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{573682BF-D4EC-5F4D-ADC8-CA9155A84537}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/icons/ring.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/icons/ring.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{7A71C338-1EFF-5F32-B24D-638C330172AB}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/icons/vol_shafts.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/icons/vol_shafts.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{6DE56C27-13DD-5E06-A39C-51AA74368239}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/iris_shaft.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/iris_shaft.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{8E964EB9-9199-5FDE-B430-CBC06F1D036B}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/lens_dirtyglass.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/lens_dirtyglass.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{5F65364B-29BC-5952-B19B-63E4413251D0}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/orb_01.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/orb_01.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{07FFB096-FE13-50F9-8D1A-136AF06A788A}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/spectrum_full.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/flares/spectrum_full.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{273044AE-6D8E-5BF9-AB52-27C56794DDDC}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/fogvolshadowjitter.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/fogvolshadowjitter.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{A57190FB-D213-523D-B0E3-80071CF8671B}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/frozen/frost_noise3.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/frozen/frost_noise3.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{9BCC8F01-F26E-50DC-BFEF-FB8BC9B5CDD0}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/frozen/frost_noise4.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/frozen/frost_noise4.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{F0645175-9ED4-5955-B382-E8B286EE272D}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/frozen/snow_spatter.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/frozen/snow_spatter.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{72118AD3-BFE6-5DB1-B54F-565C213EC097}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/glass_decalatlas_ddn.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/glass_decalatlas_ddn.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{A45AFFA5-085F-5FC8-BA00-0D312894CE74}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1048576" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/glass_decalatlas_diff.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/glass_decalatlas_diff.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{D1C27431-940A-5503-BC7D-24A02624954F}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/grey.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/grey.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{91871647-CCA0-5770-BFD1-D18DA323D766}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/jumpnoisehighfrequency_x27y19.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/jumpnoisehighfrequency_x27y19.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{2E988455-2098-589B-A851-9F3E06931E7B}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/noise3d.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/noise3d.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{01FC0C22-A53C-52A0-905F-C6116987CA7B}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/noise.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/noise.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{CE0D25F5-09B2-58BF-B402-0D2B57CDE94C}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/oceanwaves_ddn.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/oceanwaves_ddn.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{44018EF7-DE41-5B2F-ADE1-559A765267C4}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/palletteinst.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/palletteinst.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{957B791A-EEC4-5FCA-BBB1-65BA19A7414F}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/perlinnoise2d.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/perlinnoise2d.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{CCF2215B-CA7B-52E6-984A-02A1A08C8752}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/perlinnoise_sum.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/perlinnoise_sum.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{0AD39162-29A6-5E35-B7D6-486187979ED7}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/perlinnoisederivatives.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/perlinnoisederivatives.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{BC788487-7231-5685-A1D3-B99669088633}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/perlinnoisenormal_ddn.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/perlinnoisenormal_ddn.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{1186F215-63F9-5C9E-BBAE-48A803D0818A}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/pixeltex.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{264D6339-5E73-5545-BE95-562915A23930}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/rotrandom.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/pixeltex.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{839CAA27-2D14-5B0F-8156-5A9A79CF0A33}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/rotrandomcm.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/rotrandomcm.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{62ADE3EE-022B-5729-B614-8F1960FC72BD}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/screen_noisy_bump.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/screen_noisy_bump.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{35DB3C74-85EC-5F8C-A729-160126F53AA3}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/screenfrost_alpha.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/screenfrost_alpha.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{78836DF3-C8DE-538D-9CE8-3ACDB8B58D90}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/screenfrost_ddn.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/screenfrost_ddn.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{DD7CD22E-5686-5349-8D9D-35B8ED7FEADF}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/snowflakes.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/snowflakes.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{128F4EA1-6CC2-5B5C-BA7C-B6ED96F417AC}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/startscreen.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/startscreen.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{0D08102C-D5B0-5EEA-8FE5-50CB48384E2C}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/texelspermetergrad.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/texelspermetergrad.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{9D76262A-B907-569D-828C-D1BA03DE4919}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/user_tex1.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/user_tex1.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{8ACBE475-82F1-52B6-B151-2F782D10AE88}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/user_tex2.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/user_tex2.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{9E9D05D2-C69B-584F-B567-54E0BBDB6D93}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/vector_noise.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/vector_noise.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{BCBE61E6-CB5D-5EC8-9969-6BEE9D855F3D}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/water_droplets.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/water_droplets.dds.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{CA7B4C82-B514-58C7-A67D-B4ED5053E5C8}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/water_gloss.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/water_gloss.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{8AE9BA46-862B-5F85-94FD-F1C407B842A9}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/white.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/white.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{D0A2B3B2-5C08-5F0D-A291-C49959B8E502}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/white_ddn.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/white_ddn.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
@@ -895,14 +855,6 @@
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			<Class name="AZStd::string" field="pathHint" value="fonts/default.font" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{10028A96-742A-5AE1-9AAC-D83754500B5B}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="255" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="libs/flownodes/flownodeblacklist.xml" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
@@ -930,27 +882,11 @@
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{E99797BC-F1F9-55F5-B7B4-973027285630}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="255" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="objects/default/primitive_capsule.cgf" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{81C4A6AF-C57D-5734-81B7-822074358C4D}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="255" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="objects/default/primitive_sphere.cgf" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{0ECD9946-3A20-5DB8-B731-763A1AE69B7F}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="textures/default_icon.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="textures/default_icon.png.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
@@ -1451,146 +1387,146 @@
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{7C8D5984-4282-5A7A-8F1A-128FB539DFB6}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/color_blue.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/color_blue.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{31261B2C-C26D-5FB0-BAE2-D26FB2075E70}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/color_cyan.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/color_cyan.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{A5C4E720-A3C7-5C65-BD8B-DDD9505945FD}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/color_green.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/color_green.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{FAB14BE8-A5E6-5B2D-AAC8-E797951A37D4}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/color_magenta.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/color_magenta.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{6054B7C8-859D-50B6-9D0B-5F9BAC91A71C}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/color_orange.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/color_orange.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{69073C24-F9FC-5B2C-BFD1-983ECC76D9A3}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/color_purple.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/color_purple.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{AB3993B7-F89B-5C86-AFF9-452584B99CA5}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/color_red.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/color_red.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{DA13AE0E-68E0-5FA3-B335-F3209883B49B}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/color_white.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/color_white.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{141C2C7F-AEB2-5121-90D6-807525B168CE}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/color_yellow.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/color_yellow.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{7E73949E-1D79-5B3A-B787-4F098344C26A}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/mipmapdebug.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/mipmapdebug.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{10DCCDD1-60FC-566B-9DE4-936C9DDE01D3}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/replaceme.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/replaceme.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{69015F42-750A-53A2-9D10-B4A22D064DE7}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/texturecompiling.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/texturecompiling.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{B2D65572-A209-5222-AAEB-903220636818}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/texturecompiling_a.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/texturecompiling_a.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{CFED46A4-83E7-5616-B3BB-4BB218927804}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1048576" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="3000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/texturecompiling_cm_diff.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/texturecompiling_cm_ibldiffuse.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{CFED46A4-83E7-5616-B3BB-4BB218927804}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="2000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/texturecompiling_cm.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/texturecompiling_cm_iblspecular.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{254812AC-7A00-5FEE-B9ED-6E181E1F6408}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/texturecompiling_ddn.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/texturecompiling_ddn.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{2873AD02-367D-520B-8D79-58BF25328AF7}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/texturecompiling_ddna.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/texturecompiling_ddna.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{6A04254A-BA1A-5392-B5CC-8585CBB189A6}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/greyalpha.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/greyalpha.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
@@ -1699,42 +1635,42 @@
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{3B3997AF-DDB9-5E52-877D-90C72F2E53EE}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/defaults/16_5.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/defaults/16_5.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{099C5359-AEE0-5158-BBFD-36D3E3C552BD}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/defaults/16_34.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/defaults/16_34.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{AD8E4A1C-BD52-5480-911E-E351EA75DF5B}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/defaults/16_12.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/textures/defaults/16_12.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{E0C71739-AA65-56B4-8D0D-388C853CAE33}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/notfound.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/notfound.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
 			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
 				<Class name="AZ::Uuid" field="guid" value="{16A565B6-FF97-5C0E-A455-58E0D329DA55}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
 			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/notfound_ddna.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+			<Class name="AZStd::string" field="pathHint" value="engineassets/texturemsg/notfound_ddna.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 	</Class>
 </ObjectStream>
