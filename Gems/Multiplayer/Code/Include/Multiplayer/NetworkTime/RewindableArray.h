@@ -12,14 +12,10 @@
 
 #pragma once
 
-#include <Multiplayer/NetworkTime/INetworkTime.h>
-#include <Multiplayer/NetworkTime/RewindableObject.h>
-#include <AzNetworking/Serialization/ISerializer.h>
-#include <AzNetworking/ConnectionLayer/IConnection.h>
-#include <AzNetworking/Utilities/NetworkCommon.h>
 #include <AzCore/std/containers/array.h>
-#include <AzCore/std/string/string.h>
-#include <AzCore/Console/ILogger.h>
+#include <AzNetworking/Serialization/ISerializer.h>
+
+#include <Multiplayer/NetworkTime/RewindableObject.h>
 
 namespace Multiplayer
 {
