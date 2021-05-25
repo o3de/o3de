@@ -20,7 +20,7 @@
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
     Texture2D<float4> m_inputTexture;
-    RWBuffer<uint> m_outputTexture;
+    RWStructuredBuffer<uint> m_outputTexture;
 }
 
 groupshared uint shared_histogramBins[NUM_HISTOGRAM_BINS];
