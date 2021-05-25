@@ -18,7 +18,6 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
-#include <Atom/RPI.Public/ViewportContext.h>
 
 #include <AzCore/Interface/Interface.h>
 
@@ -39,7 +38,6 @@ namespace AZ
                 m_bufferAlloc->Init(descriptor.m_dynamicBufferPoolSize);
                 Interface<DynamicDrawInterface>::Register(this);
             }
-            ViewportContextManagerNotificationsBus::Handler::BusConnect();
         }
 
         void  DynamicDrawSystem::Shutdown()
@@ -51,73 +49,6 @@ namespace AZ
                 m_bufferAlloc = nullptr;
             }
             m_dynamicDrawContexts.clear();
-            ViewportContextManagerNotificationsBus::Handler::BusDisconnect();
-        }
-
-        void DynamicDrawSystem::RegisterPerViewportDynamicDrawContext(AZ::Name name, DrawContextFactory contextInitializer)
-        {
-            AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawContext);
-            m_registeredNamedDrawContexts[name] = contextInitializer;
-        }
-
-        void DynamicDrawSystem::UnregisterPerViewportDynamicDrawContext(AZ::Name name)
-        {
-            AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawContext);
-            m_registeredNamedDrawContexts.erase(name);
-        }
-
-        RHI::Ptr<DynamicDrawContext> DynamicDrawSystem::GetDynamicDrawContextForViewport(AZ::Name name, AzFramework::ViewportId viewportId)
-        {
-            AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawContext);
-
-            auto contextFactoryIt = m_registeredNamedDrawContexts.find(name);
-            if (contextFactoryIt == m_registeredNamedDrawContexts.end())
-            {
-                return nullptr;
-            }
-
-            auto viewportContextMananger = ViewportContextRequests::Get();
-            ViewportContextPtr viewportContext = viewportContextMananger->GetViewportContextById(viewportId);
-            if (viewportContext == nullptr)
-            {
-                return nullptr;
-            }
-
-            NamedDrawContextViewportInfo& contextInfo = m_namedDynamicDrawContextInstances[viewportId];
-            if (!contextInfo.m_initialized)
-            {
-                // Ensure that our cached debug draws use the correct render pipeline info.
-                contextInfo.m_pipelineChangeHandler = AZ::Event<RenderPipelinePtr>::Handler([this, viewportId](RenderPipelinePtr pipeline)
-                {
-                    AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawContext);
-                    NamedDrawContextViewportInfo& contextInfo = m_namedDynamicDrawContextInstances[viewportId];
-                    contextInfo.m_scene = pipeline ? pipeline->GetScene() : nullptr;
-                    for (auto& context : contextInfo.m_dynamicDrawContexts)
-                    {
-                        context.second->SetRenderPipeline(pipeline.get());
-                    }
-                });
-
-                viewportContext->ConnectCurrentPipelineChangedHandler(contextInfo.m_pipelineChangeHandler);
-                contextInfo.m_scene = viewportContext->GetRenderScene().get();
-
-                contextInfo.m_initialized = true;
-            }
-
-            RHI::Ptr<DynamicDrawContext>& context = contextInfo.m_dynamicDrawContexts[name];
-            if (context == nullptr)
-            {
-                RenderPipelinePtr pipeline = viewportContext->GetCurrentPipeline();
-                if (pipeline == nullptr || pipeline->GetScene() == nullptr)
-                {
-                    return nullptr;
-                }
-                context = aznew DynamicDrawContext();
-                context->SetRenderPipeline(pipeline.get());
-                contextFactoryIt->second(context);
-            }
-
-            return context;
         }
 
         RHI::Ptr<DynamicBuffer> DynamicDrawSystem::GetDynamicBuffer(uint32_t size, uint32_t alignment)
@@ -180,20 +111,6 @@ namespace AZ
                         }
                     }
                 }
-
-                for (auto& namedContextInfo : m_namedDynamicDrawContextInstances)
-                {
-                    if (namedContextInfo.second.m_scene == scene)
-                    {
-                        for (auto& view : views)
-                        {
-                            for (auto& drawContextData : namedContextInfo.second.m_dynamicDrawContexts)
-                            {
-                                drawContextData.second->SubmitDrawData(view);
-                            }
-                        }
-                    }
-                }
             }
 
             {
@@ -229,25 +146,12 @@ namespace AZ
                     m_dynamicDrawContexts.begin(), m_dynamicDrawContexts.end(), [](const RHI::Ptr<DynamicDrawContext>& drawContext) {
                         drawContext->FrameEnd();
                     });
-                for (auto& namedContextInfo : m_namedDynamicDrawContextInstances)
-                {
-                    for (auto& drawContextData : namedContextInfo.second.m_dynamicDrawContexts)
-                    {
-                        drawContextData.second->FrameEnd();
-                    }
-                }
             }
 
             {
                 AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawPackets);
                 m_drawPackets.clear();
             }
-        }
-
-        void DynamicDrawSystem::OnViewportContextRemoved(AzFramework::ViewportId viewportId)
-        {
-            AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawContext);
-            m_namedDynamicDrawContextInstances.erase(viewportId);
         }
     }
 }

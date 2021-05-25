@@ -14,8 +14,8 @@
 
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicBufferAllocator.h>
-#include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Reflect/RPISystemDescriptor.h>
+
 
 namespace AZ
 {
@@ -24,12 +24,9 @@ namespace AZ
         //! DynamicDrawSystem is the dynamic draw system in RPI system which implements DynamicDrawInterface
         //! It contains the dynamic buffer allocator which is used to allocate dynamic buffers.
         //! It also responses to submit all the dynamic draw data to the rendering passes.
-        class DynamicDrawSystem final
-            : public DynamicDrawInterface
-            , public ViewportContextManagerNotificationsBus::Handler
+        class DynamicDrawSystem final : public DynamicDrawInterface
         {
             friend class RPISystem;
-
         public:
             AZ_TYPE_INFO(DynamicDrawSystem, "{49D23FE9-352F-4AB0-B9BB-A3B75592023B}");
 
@@ -40,21 +37,15 @@ namespace AZ
             // DynamicDrawInterface overrides...
             RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext(Scene* scene) override;
             RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext(RenderPipeline* pipeline) override;
-            void RegisterPerViewportDynamicDrawContext(AZ::Name name, DrawContextFactory contextInitializer) override;
-            void UnregisterPerViewportDynamicDrawContext(AZ::Name name) override;
-            RHI::Ptr<DynamicDrawContext> GetDynamicDrawContextForViewport(AZ::Name name, AzFramework::ViewportId viewportId) override;
             RHI::Ptr<DynamicBuffer> GetDynamicBuffer(uint32_t size, uint32_t alignment = 1) override;
             void DrawGeometry(Data::Instance<Material> material, const GeometryData& geometry, ScenePtr scene) override;
             void AddDrawPacket(Scene* scene, AZStd::unique_ptr<const RHI::DrawPacket> drawPacket) override;
 
             // Submit draw data for selected scene and pipeline
             void SubmitDrawData(Scene* scene, AZStd::vector<ViewPtr> views);
-
         protected:
-            void FrameEnd();
 
-            // ViewportContextManagerNotificationBus::Handler overrides...
-            void OnViewportContextRemoved(AzFramework::ViewportId viewportId);
+            void FrameEnd();
 
         private:
             AZStd::mutex m_mutexBufferAlloc;
@@ -62,19 +53,6 @@ namespace AZ
 
             AZStd::mutex m_mutexDrawContext;
             AZStd::list<RHI::Ptr<DynamicDrawContext>> m_dynamicDrawContexts;
-            AZStd::unordered_map<AZ::Name, DrawContextFactory> m_registeredNamedDrawContexts;
-            struct NamedDrawContextViewportInfo
-            {
-                AZStd::unordered_map<AZ::Name, RHI::Ptr<DynamicDrawContext>> m_dynamicDrawContexts;
-
-                // Event handlers
-                AZ::Event<RenderPipelinePtr>::Handler m_pipelineChangeHandler;
-
-                // Cached state
-                Scene* m_scene = nullptr;
-                bool m_initialized = false;
-            };
-            AZStd::map<AzFramework::ViewportId, NamedDrawContextViewportInfo> m_namedDynamicDrawContextInstances;
 
             AZStd::mutex m_mutexDrawPackets;
             AZStd::map<Scene*, AZStd::vector<AZStd::unique_ptr<const RHI::DrawPacket>>> m_drawPackets;
