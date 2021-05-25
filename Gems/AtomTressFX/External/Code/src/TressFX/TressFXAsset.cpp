@@ -747,36 +747,8 @@ namespace AMD
             AZ_Warning("LoadHairAsset", false, "Hair properties files was not processed properly");
             return false;
         }
-        m_boneIndicesFixed = false;
 
         return true;
-    }
-
-    void TressFXAsset::FixBoneIndices(const BoneIndexMap& boneIndexMap)
-    {
-        if (boneIndexMap.size() != m_boneNames.size())
-        {
-            AZ_Error("TressFXAsset", false, "The bone index map should be the same size as the bone names.");
-            return;
-        }
-
-        if (m_boneIndicesFixed)
-        {
-            // Note: In case of reload, the tressFXAsset asset is already loaded unless it is
-            // a different asset.
-             return;
-        }
-
-        for (TressFXBoneSkinningData& skinData : m_boneSkinningData)
-        {
-            for (AMD::int32 index = 0; index < TRESSFX_MAX_INFLUENTIAL_BONE_COUNT; ++index)
-            {
-                const uint32 tressFXBoneIndex = static_cast<uint32>(skinData.boneIndex[index]);
-                skinData.boneIndex[index] = static_cast<float>(boneIndexMap[tressFXBoneIndex]);
-            }
-        }
-
-        m_boneIndicesFixed = true;
     }
 } // namespace AMD
 
