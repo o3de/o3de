@@ -12,35 +12,40 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include "ProjectInfo.h"
 #include <ScreenWidget.h>
-#include <ProjectInfo.h>
+#include <ScreensCtrl.h>
+#include <QPushButton>
 #endif
 
-QT_FORWARD_DECLARE_CLASS(QButtonGroup)
-QT_FORWARD_DECLARE_CLASS(QLineEdit)
 
 namespace O3DE::ProjectManager
 {
-    class NewProjectSettingsScreen
+    class UpdateProjectCtrl
         : public ScreenWidget
     {
     public:
-        explicit NewProjectSettingsScreen(QWidget* parent = nullptr);
-        ~NewProjectSettingsScreen() = default;
+        explicit UpdateProjectCtrl(QWidget* parent = nullptr);
+        ~UpdateProjectCtrl() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
-        ProjectInfo GetProjectInfo();
-        QString GetProjectTemplatePath();
-
-        bool Validate();
 
     protected slots:
-        void HandleBrowseButton();
+        void HandleBackButton();
+        void HandleNextButton();
+        void UpdateCurrentProject(const QString& projectPath);
 
     private:
-        QLineEdit* m_projectNameLineEdit;
-        QLineEdit* m_projectPathLineEdit;
-        QButtonGroup* m_projectTemplateButtonGroup;
+        void UpdateNextButtonText();
+
+        ScreensCtrl* m_screensCtrl;
+        QPushButton* m_backButton;
+        QPushButton* m_nextButton;
+        QVector<ProjectManagerScreen> m_screensOrder;
+
+        ProjectInfo m_projectInfo;
+
+        ProjectManagerScreen m_screenEnum;
     };
 
 } // namespace O3DE::ProjectManager
