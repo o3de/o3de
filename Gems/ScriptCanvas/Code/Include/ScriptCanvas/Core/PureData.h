@@ -53,7 +53,9 @@ namespace ScriptCanvas
         template<typename DatumType>
         void AddDefaultInputAndOutputTypeSlot(DatumType&& defaultValue);
         void AddInputTypeAndOutputTypeSlot(const Data::Type& type);
-        
+
+        bool IsDeprecated() const override { return true; }
+
         void OnActivate() override;
         void OnInputChanged(const Datum& input, const SlotId& id) override;
         void MarkDefaultableInput() override {}

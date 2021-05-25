@@ -131,6 +131,8 @@ namespace ScriptCanvas
 
                 const Slot* GetIfBranchSlot(bool branch) const;
 
+                AZ_INLINE const AZStd::string& GetLookupName() const { return m_lookupName; }
+
                 AZ_INLINE AZStd::recursive_mutex& GetMutex() { return m_mutex; }
 
                 ConstSlotsOutcome GetSlotsInExecutionThreadByTypeImpl(const Slot& executionSlot, CombinedSlotType targetSlotType, const Slot* executionChildSlot) const override;
@@ -158,6 +160,8 @@ namespace ScriptCanvas
                 virtual void OnInitializeOutputPre(MethodOutputConfig&) {}
 
                 bool SanityCheckBranchOnResultMethod(const AZ::BehaviorMethod& branchOnResultMethod) const;
+
+                AZ_INLINE void SetClassNamePretty(AZStd::string_view classNamePretty) { m_classNamePretty = classNamePretty; }
 
                 void SetMethodUnchecked(const AZ::BehaviorMethod* method, const AZ::BehaviorClass* behaviorClass);
 

@@ -32,7 +32,8 @@ namespace ScriptCanvas
             private:
                 enum NodeVersion
                 {
-                    Initial  = 1
+                    Initial  = 1,
+                    RemoveDefaultDisplayGroup,
                 };
 
             public:
@@ -78,13 +79,14 @@ namespace ScriptCanvas
 
                 static constexpr AZ::Crc32 GetAddNodelingInputDataSlot() { return AZ_CRC_CE("AddNodelingInputDataSlot"); }
                 static constexpr AZ::Crc32 GetAddNodelingOutputDataSlot() { return AZ_CRC_CE("AddNodelingOutputDataSlot"); }
-                static constexpr AZ::Crc32 GetDataDynamicTypeGroup() { return AZ_CRC_CE("DataGroup"); }
-
+                
                 AZStd::string GetDataDisplayGroup() const { return "DataDisplayGroup"; }
                 
                 SlotId HandleExtension(AZ::Crc32 extensionId) override;
 
                 void ConfigureVisualExtensions() override;
+
+                void OnInit() override;
 
                 void OnSetup() override;
 

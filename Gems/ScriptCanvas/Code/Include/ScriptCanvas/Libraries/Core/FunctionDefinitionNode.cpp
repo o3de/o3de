@@ -113,6 +113,28 @@ namespace ScriptCanvas
                 }
             }
 
+            void FunctionDefinitionNode::OnInit()
+            {
+                Nodeling::OnInit();
+
+                AZ::SerializeContext* serializeContext{};
+                AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+                if (serializeContext)
+                {
+                    const auto& classData = serializeContext->FindClassData(azrtti_typeid<FunctionDefinitionNode>());
+                    if (classData && classData->m_version < NodeVersion::RemoveDefaultDisplayGroup)
+                    {
+                        for (auto& slot : ModAllSlots())
+                        {
+                            if (slot->GetType() == CombinedSlotType::DataIn || slot->GetType() == CombinedSlotType::DataOut)
+                            {
+                                slot->ClearDynamicGroup();
+                            }
+                        }
+                    }
+                }
+            }
+
             void FunctionDefinitionNode::SetupSlots()
             {
                 auto groupedSlots = GetSlotsWithDisplayGroup(GetSlotDisplayGroup());
@@ -208,7 +230,6 @@ namespace ScriptCanvas
                 slotConfiguration.SetConnectionType(connectionType);
 
                 slotConfiguration.m_displayGroup = GetDataDisplayGroup();
-                slotConfiguration.m_dynamicGroup = GetDataDynamicTypeGroup();
                 slotConfiguration.m_dynamicDataType = DynamicDataType::Any;
                 slotConfiguration.m_isUserAdded = true;
 
