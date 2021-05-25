@@ -79,12 +79,12 @@ public:
     //////////////////////////////////////////////////////////////////////////
     void SetPos([[maybe_unused]] float time, [[maybe_unused]] const Vec3& pos) override {};
     void SetRotate([[maybe_unused]] float time, [[maybe_unused]] const Quat& quat) override {};
-    void SetScale([[maybe_unused]] float time, [[maybe_unused]] const float scale) override {};
+    void SetScale([[maybe_unused]] float time, [[maybe_unused]] const Vec3& scale) override {};
 
     Vec3 GetPos() override { return Vec3(0, 0, 0); };
     Quat GetRotate() override { return Quat(0, 0, 0, 0); };
     Quat GetRotate(float /*time*/) override { return Quat(0, 0, 0, 0); };
-    float GetScale() override { return 0.0f; };
+    Vec3 GetScale() override { return Vec3(0, 0, 0); };
 
     virtual Matrix34 GetReferenceMatrix() const;
 

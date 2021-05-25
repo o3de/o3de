@@ -341,10 +341,10 @@ void CAnimComponentNode::ConvertBetweenWorldAndLocalRotation(Quat& rotation, ETr
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimComponentNode::ConvertBetweenWorldAndLocalScale(float& scale, ETransformSpaceConversionDirection conversionDirection) const
+void CAnimComponentNode::ConvertBetweenWorldAndLocalScale(Vec3& scale, ETransformSpaceConversionDirection conversionDirection) const
 {
     AZ::Transform parentTransform = AZ::Transform::Identity();
-    AZ::Transform scaleTransform = AZ::Transform::CreateUniformScale(scale);
+    AZ::Transform scaleTransform = AZ::Transform::CreateScale(AZ::Vector3(scale.x, scale.y, scale.z));
 
     GetParentWorldTransform(parentTransform);
     if (conversionDirection == eTransformConverstionDirection_toLocalSpace)
@@ -353,7 +353,8 @@ void CAnimComponentNode::ConvertBetweenWorldAndLocalScale(float& scale, ETransfo
     }
     scaleTransform = parentTransform * scaleTransform;
 
-    scale = scaleTransform.GetUniformScale();
+    AZ::Vector3 vScale = scaleTransform.GetScale();
+    scale.Set(vScale.GetX(), vScale.GetY(), vScale.GetZ());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -456,7 +457,7 @@ Quat CAnimComponentNode::GetRotate()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimComponentNode::SetScale(float time, float scale)
+void CAnimComponentNode::SetScale(float time, const Vec3& scale)
 {
     if (m_componentTypeId == AZ::Uuid(AZ::EditorTransformComponentTypeId) || m_componentTypeId == AzFramework::TransformComponent::TYPEINFO_Uuid())
     {
@@ -467,7 +468,7 @@ void CAnimComponentNode::SetScale(float time, float scale)
         {
             // Scale is in World space, even if the entity is parented - because Component Entity AZ::Transforms do not correctly set
             // CBaseObject parenting, so we convert it to Local space here. This should probably be fixed, but for now, we explicitly change from World to Local space here.
-            float localScale = scale;
+            Vec3 localScale(scale);
             ConvertBetweenWorldAndLocalScale(localScale, eTransformConverstionDirection_toLocalSpace);
             scaleTrack->SetValue(time, localScale, bDefault);
         }
@@ -479,15 +480,15 @@ void CAnimComponentNode::SetScale(float time, float scale)
     }
 }
 
-float CAnimComponentNode::GetScale()
+Vec3 CAnimComponentNode::GetScale()
 {
     Maestro::SequenceComponentRequests::AnimatablePropertyAddress animatableAddress(m_componentId, "Scale");
-    Maestro::SequenceComponentRequests::AnimatedFloatValue scaleValue(0.0f);
+    Maestro::SequenceComponentRequests::AnimatedVector3Value scaleValue(AZ::Vector3::CreateZero());
     Maestro::SequenceComponentRequestBus::Event(m_pSequence->GetSequenceEntityId(), &Maestro::SequenceComponentRequestBus::Events::GetAnimatedPropertyValue, scaleValue, GetParentAzEntityId(), animatableAddress);
 
     // Always return World scale because Component Entity AZ::Transforms do not correctly set
     // CBaseObject parenting. This should probably be fixed, but for now, we explicitly change from Local to World space here.
-    float worldScale = scaleValue.GetFloatValue();
+    Vec3 worldScale(scaleValue.GetVector3Value());
     ConvertBetweenWorldAndLocalScale(worldScale, eTransformConverstionDirection_toWorldSpace);
 
     return worldScale;

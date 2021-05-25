@@ -695,7 +695,7 @@ public:
     //! Rotate entity node.
     virtual void SetRotate(float time, const Quat& quat) = 0;
     //! Scale entity node.
-    virtual void SetScale(float time, const float scale) = 0;
+    virtual void SetScale(float time, const Vec3& scale) = 0;
 
     //! Compute and return the offset which brings the current position to the given position
     virtual Vec3 GetOffsetPosition(const Vec3& position) { return position - GetPos(); }
@@ -707,7 +707,7 @@ public:
     //! Get entity rotation at specified time.
     virtual Quat GetRotate(float time) = 0;
     //! Get current entity scale.
-    virtual float GetScale() = 0;
+    virtual Vec3 GetScale() = 0;
 
     // General Set param.
     // Set float/vec3/vec4 parameter at given time.

@@ -182,8 +182,8 @@ public:
     // Rotation/Position & Scale
     void SetPos(const Vec3& position);
     Vec3 GetPos() const { return m_animNode->GetPos(); }
-    void SetScale(float scale);
-    float GetScale() const { return m_animNode->GetScale(); }
+    void SetScale(const Vec3& scale);
+    Vec3 GetScale() const { return m_animNode->GetScale(); }
     void SetRotation(const Quat& rotation);
     Quat GetRotation() const { return m_animNode->GetRotate(); }
     Quat GetRotation(float time) const { return m_animNode != nullptr ? m_animNode->GetRotate(time) : Quat(0,0,0,0); }

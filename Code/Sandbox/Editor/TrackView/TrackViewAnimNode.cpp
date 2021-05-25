@@ -1869,7 +1869,7 @@ void CTrackViewAnimNode::SetPos(const Vec3& position)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CTrackViewAnimNode::SetScale(float scale)
+void CTrackViewAnimNode::SetScale(const Vec3& scale)
 {
     CTrackViewTrack* track = GetTrackForParameter(AnimParamType::Scale);
 
@@ -2012,9 +2012,9 @@ void CTrackViewAnimNode::SetPosRotScaleTracksDefaultValues(bool positionAllowed,
             }
             if (scaleAllowed)
             {
-                float scale = 1.0f;
-                AZ::TransformBus::EventResult(scale, entityId, &AZ::TransformBus::Events::GetWorldUniformScale);
-                m_animNode->SetScale(time, scale);
+                AZ::Vector3 scale = AZ::Vector3::CreateOne();
+                AZ::TransformBus::EventResult(scale, entityId, &AZ::TransformBus::Events::GetWorldScale);
+                m_animNode->SetScale(time, AZVec3ToLYVec3(scale));
             }
         }
     }
@@ -2482,11 +2482,11 @@ Quat CTrackViewAnimNode::GetTransformDelegateRotation(const Quat& baseRotation) 
 //////////////////////////////////////////////////////////////////////////
 Vec3 CTrackViewAnimNode::GetTransformDelegateScale(const Vec3& baseScale) const
 {
-     float scale = GetScale();
+    const Vec3 scale = GetScale();
 
-     return Vec3(CheckTrackAnimated(AnimParamType::ScaleX) ? scale : baseScale.x,
-         CheckTrackAnimated(AnimParamType::ScaleY) ? scale : baseScale.y,
-         CheckTrackAnimated(AnimParamType::ScaleZ) ? scale : baseScale.z);
+    return Vec3(CheckTrackAnimated(AnimParamType::ScaleX) ? scale.x : baseScale.x,
+        CheckTrackAnimated(AnimParamType::ScaleY) ? scale.y : baseScale.y,
+        CheckTrackAnimated(AnimParamType::ScaleZ) ? scale.z : baseScale.z);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2504,7 +2504,7 @@ void CTrackViewAnimNode::SetTransformDelegateRotation(const Quat& rotation)
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewAnimNode::SetTransformDelegateScale(const Vec3& scale)
 {
-    SetScale(scale.x);
+    SetScale(scale);
 }
 
 bool CTrackViewAnimNode::IsTransformAnimParamTypeDelegated(const AnimParamType animParamType) const

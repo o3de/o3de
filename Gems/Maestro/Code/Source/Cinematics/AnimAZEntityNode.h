@@ -57,14 +57,14 @@ public:
 
     void SetPos(float time, const Vec3& pos) override;
     void SetRotate(float time, const Quat& quat) override;
-    void SetScale(float time, float scale) override;
+    void SetScale(float time, const Vec3& scale) override;
 
     Vec3 GetOffsetPosition(const Vec3& position) override;
 
     Vec3 GetPos() override;
     Quat GetRotate() override;
     Quat GetRotate(float time) override;
-    float GetScale() override;
+    Vec3 GetScale() override;
     //////////////////////////////////////////////////////////////////////////
 
     void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks);

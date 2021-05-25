@@ -189,7 +189,7 @@ Quat CAnimAzEntityNode::GetRotate(float time)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimAzEntityNode::SetScale(float time, float scale)
+void CAnimAzEntityNode::SetScale(float time, const Vec3& scale)
 {
     CAnimComponentNode* transformComponent = GetTransformComponentNode();
     if (transformComponent)
@@ -198,7 +198,7 @@ void CAnimAzEntityNode::SetScale(float time, float scale)
     }
 }
 
-float CAnimAzEntityNode::GetScale()
+Vec3 CAnimAzEntityNode::GetScale()
 {
     CAnimComponentNode* transformComponent = GetTransformComponentNode();
     if (transformComponent)
@@ -206,7 +206,7 @@ float CAnimAzEntityNode::GetScale()
         return transformComponent->GetScale();
     }
 
-    return 0.0f;
+    return Vec3(.0f, .0f, .0f);
 }
 
 Vec3 CAnimAzEntityNode::GetOffsetPosition(const Vec3& position)
