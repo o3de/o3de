@@ -379,13 +379,13 @@ namespace O3DE::ProjectManager
             pybind11::str defaultTemplatesFolder = engineInfo.m_defaultTemplatesFolder.toStdString();
 
             auto registrationResult = m_registration.attr("register")(
-                enginePath,       // engine_path 
-                pybind11::none(), // project_path 
-                pybind11::none(), // gem_path 
-                pybind11::none(), // template_path 
-                pybind11::none(), // restricted_path 
-                pybind11::none(), // repo_uri 
-                pybind11::none(), // default_engines_folder
+                enginePath,         // engine_path 
+                pybind11::none(),   // project_path 
+                pybind11::none(),   // gem_path 
+                pybind11::none(),   // template_path 
+                pybind11::none(),   // restricted_path 
+                pybind11::none(),   // repo_uri 
+                pybind11::none(),   // default_engines_folder
                 defaultProjectsFolder,
                 defaultGemsFolder, 
                 defaultTemplatesFolder 
@@ -454,6 +454,51 @@ namespace O3DE::ProjectManager
         {
             return AZ::Success(AZStd::move(gems)); 
         }
+    }
+
+    bool PythonBindings::AddProject(const QString& path)
+    {
+        bool registrationResult = false;
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                pybind11::str projectPath = path.toStdString();
+                auto pythonRegistrationResult = m_registration.attr("register")(pybind11::none(), projectPath);
+
+                // Returns an exit code so boolify it then invert result
+                registrationResult = !pythonRegistrationResult.cast<bool>();
+            });
+
+        return result && registrationResult;
+    }
+
+    bool PythonBindings::RemoveProject(const QString& path)
+    {
+        bool registrationResult = false;
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                pybind11::str projectPath = path.toStdString();
+                auto pythonRegistrationResult = m_registration.attr("register")(
+                    pybind11::none(),   // engine_path
+                    projectPath,        // project_path
+                    pybind11::none(),   // gem_path
+                    pybind11::none(),   // template_path
+                    pybind11::none(),   // restricted_path
+                    pybind11::none(),   // repo_uri
+                    pybind11::none(),   // default_engines_folder
+                    pybind11::none(),   // default_gems_folder
+                    pybind11::none(),   // default_templates_folder
+                    pybind11::none(),   // default_restricted_folder
+                    pybind11::none(),   // default_restricted_folder
+                    true                // remove
+                    );
+                
+                // Returns an exit code so boolify it then invert result
+                registrationResult = !pythonRegistrationResult.cast<bool>();
+            });
+
+        return result && registrationResult;
     }
 
     AZ::Outcome<ProjectInfo> PythonBindings::CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo)  

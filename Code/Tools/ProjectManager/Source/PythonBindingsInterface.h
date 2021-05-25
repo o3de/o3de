@@ -88,6 +88,20 @@ namespace O3DE::ProjectManager
          * @return an outcome with ProjectInfos on success 
          */
         virtual AZ::Outcome<QVector<ProjectInfo>> GetProjects() = 0;
+        
+        /**
+         * Adds existing project on disk
+         * @param path the absolute path to the project
+         * @return true on success, false on failure
+         */
+        virtual bool AddProject(const QString& path) = 0;
+
+        /**
+         * Adds existing project on disk
+         * @param path the absolute path to the project
+         * @return true on success, false on failure
+         */
+        virtual bool RemoveProject(const QString& path) = 0;
 
         /**
          * Update a project
