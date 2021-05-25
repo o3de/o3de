@@ -103,7 +103,6 @@ public:
     void StartScaling();
     void Scale(const Vec3& scale, int referenceCoordSys);
     void SetScale(const Vec3& scale, int referenceCoordSys);
-    void FinishScaling(const Vec3& scale, int referenceCoordSys);
     //! Align objects in selection to surface normal
     void Align();
     //! Very special method to move contents of a voxel.
