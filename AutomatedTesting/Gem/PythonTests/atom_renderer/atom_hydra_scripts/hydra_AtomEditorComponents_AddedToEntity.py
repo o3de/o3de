@@ -135,9 +135,7 @@ def run():
     # Delete all existing entities initially
     search_filter = azlmbr.entity.SearchFilter()
     all_entities = entity.SearchBus(azlmbr.bus.Broadcast, "SearchEntities", search_filter)
-    general.idle_wait_frames(1)
     editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntities", all_entities)
-    general.idle_wait_frames(1)
 
     class ComponentTests:
         """Test launcher for each component."""
@@ -149,11 +147,9 @@ def run():
         def run_component_tests(self):
             # Run common and additional tests
             entity_obj = create_entity_undo_redo_component_addition(self.component_name)
-            general.idle_wait(0.5)
 
             # Enter/Exit game mode test
             verify_enter_exit_game_mode(self.component_name)
-            general.idle_wait(0.5)
 
             # Any additional tests are executed here
             for test in self.additional_tests:
@@ -161,16 +157,13 @@ def run():
 
             # Hide/Unhide entity test
             verify_hide_unhide_entity(self.component_name, entity_obj)
-            general.idle_wait(0.5)
 
             # Deletion/Undo/Redo test
             verify_deletion_undo_redo(self.component_name, entity_obj)
-            general.idle_wait(0.5)
 
     # DepthOfField Component
     camera_entity = hydra.Entity("camera_entity")
     camera_entity.create_entity(math.Vector3(512.0, 512.0, 34.0), ["Camera"])
-    general.idle_wait(0.5)
     depth_of_field = "DepthOfField"
     ComponentTests(
         depth_of_field,
