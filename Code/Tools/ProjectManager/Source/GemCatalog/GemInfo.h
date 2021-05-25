@@ -46,6 +46,15 @@ namespace O3DE::ProjectManager
         Q_DECLARE_FLAGS(Types, Type)
         static QString GetTypeString(Type type);
 
+        enum GemOrigin
+        {
+            O3DEFoundation = 1 << 0,
+            Local = 1 << 1,
+            NumGemOrigins = 2
+        };
+        Q_DECLARE_FLAGS(GemOrigins, GemOrigin)
+        static QString GetGemOriginString(GemOrigin origin);
+
         GemInfo() = default;
         GemInfo(const QString& name, const QString& creator, const QString& summary, Platforms platforms, bool isAdded);
         bool IsPlatformSupported(Platform platform) const;
@@ -57,6 +66,7 @@ namespace O3DE::ProjectManager
         QString m_displayName;
         AZ::Uuid m_uuid;
         QString m_creator;
+        GemOrigin m_gemOrigin = Local;
         bool m_isAdded = false; //! Is the gem currently added and enabled in the project?
         QString m_summary;
         Platforms m_platforms;
@@ -74,3 +84,4 @@ namespace O3DE::ProjectManager
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(O3DE::ProjectManager::GemInfo::Platforms)
 Q_DECLARE_OPERATORS_FOR_FLAGS(O3DE::ProjectManager::GemInfo::Types)
+Q_DECLARE_OPERATORS_FOR_FLAGS(O3DE::ProjectManager::GemInfo::GemOrigins)
