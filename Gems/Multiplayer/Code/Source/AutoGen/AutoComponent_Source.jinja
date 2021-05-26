@@ -767,15 +767,15 @@ enum class NetworkProperties
             return {{ Property.attrib['Type'] }}();
         }
 
-        {{ ClassName }}* networkComponent = entity->FindComponent<{{ ClassName }}>();        
+        {{ ClassName }}* networkComponent = entity->FindComponent<{{ ClassName }}>();
         if (!networkComponent)
         {
             AZ_Warning("Network Property", false, "{{ ClassName }} Get{{ UpperFirst(Property.attrib['Name']) }} failed. Entity '%s' (id: %s) is missing {{ ClassName }}, be sure to add {{ ClassName }} to this entity.", entity->GetName().c_str(), id.ToString().c_str())
             return {{ Property.attrib['Type'] }}();
         }
-{%    if ReplicateTo == 'Autonomous' %}
+{%    if (ReplicateTo == 'Autonomous') or (ReplicateFrom == 'Autonomous' and ReplicateTo == 'Authority') %}
 
-        // {{ UpperFirst(Property.attrib['Name']) }} is replicated to Automonous; we must go through the controller in order to get this property
+        // {{ UpperFirst(Property.attrib['Name']) }} is only sent and received between contoller objects (ie Authority, Autonomous); we must go through the controller in order to get this property
         {{ ClassName }}Controller* controller = static_cast<{{ ClassName }}Controller*>(networkComponent->GetController());
         if (!controller)
         {
@@ -1472,10 +1472,8 @@ namespace {{ Component.attrib['Namespace'] }}
     }
 
     {{ DefineNetworkPropertyGets(Component, 'Authority', 'Server', false, ComponentBaseName)|indent(4) -}}
-{{ DefineNetworkPropertyGets(Component, 'Autonomous', 'Authority', false, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Client', false, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Server', true, ComponentBaseName)|indent(4) -}}
-{{ DefineNetworkPropertyGets(Component, 'Autonomous', 'Authority', true, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Client', true, ComponentBaseName)|indent(4) }}
 {{ DefineArchetypePropertyGets(Component, ClassType, ComponentBaseName)|indent(4) -}}
 {{ DefineRpcInvocations(Component, ComponentBaseName, 'Server', 'Authority', false)|indent(4) -}}
