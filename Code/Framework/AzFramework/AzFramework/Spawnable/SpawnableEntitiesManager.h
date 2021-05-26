@@ -50,8 +50,7 @@ namespace AzFramework
             Regular = 1 << 1
         };
 
-        static constexpr SpawnablePriority HighPriorityThreshold = SpawnablePriority { 64 };
-
+        SpawnableEntitiesManager();
         ~SpawnableEntitiesManager() override = default;
 
         //
@@ -202,16 +201,13 @@ namespace AzFramework
         bool ProcessRequest(BarrierCommand& request, AZ::SerializeContext& serializeContext);
         bool ProcessRequest(DestroyTicketCommand& request, AZ::SerializeContext& serializeContext);
 
-        [[nodiscard]] static bool IsEqualTicket(const EntitySpawnTicket* lhs, const EntitySpawnTicket* rhs);
-        [[nodiscard]] static bool IsEqualTicket(const Ticket* lhs, const EntitySpawnTicket* rhs);
-        [[nodiscard]] static bool IsEqualTicket(const EntitySpawnTicket* lhs, const Ticket* rhs);
-        [[nodiscard]] static bool IsEqualTicket(const Ticket* lhs, const Ticket* rhs);
-
         Queue m_highPriorityQueue;
         Queue m_regularPriorityQueue;
 
         AZ::Event<AZ::Data::Asset<Spawnable>> m_onSpawnedEvent;
         AZ::Event<AZ::Data::Asset<Spawnable>> m_onDespawnedEvent;
+
+        SpawnablePriority m_highPriorityThreshold { 64 };
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AzFramework::SpawnableEntitiesManager::CommandQueuePriority);

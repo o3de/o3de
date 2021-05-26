@@ -10,9 +10,11 @@
 *
 */
 
+#include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/IdUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -26,11 +28,21 @@ namespace AzFramework
     void SpawnableEntitiesManager::QueueRequest(EntitySpawnTicket& ticket, SpawnablePriority priority, T&& request)
     {
         request.m_ticket = &GetTicketPayload<Ticket>(ticket);
-        Queue& queue = priority <= HighPriorityThreshold ? m_highPriorityQueue : m_regularPriorityQueue;
+        Queue& queue = priority <= m_highPriorityThreshold ? m_highPriorityQueue : m_regularPriorityQueue;
         {
             AZStd::scoped_lock queueLock(queue.m_pendingRequestMutex);
             request.m_requestId = GetTicketPayload<Ticket>(ticket).m_nextRequestId++;
             queue.m_pendingRequest.push(AZStd::move(request));
+        }
+    }
+
+    SpawnableEntitiesManager::SpawnableEntitiesManager()
+    {
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            AZ::u64 value = 64;
+            settingsRegistry->Get(value, "/O3DE/AzFramework/Spawnables/HighPriorityThreshold");
+            m_highPriorityThreshold = aznumeric_cast<SpawnablePriority>(AZStd::clamp(value, 0llu, 255llu));
         }
     }
 
@@ -607,25 +619,5 @@ namespace AzFramework
         {
             return false;
         }
-    }
-
-    bool SpawnableEntitiesManager::IsEqualTicket(const EntitySpawnTicket* lhs, const EntitySpawnTicket* rhs)
-    {
-        return GetTicketPayload<Ticket>(lhs) == GetTicketPayload<Ticket>(rhs);
-    }
-
-    bool SpawnableEntitiesManager::IsEqualTicket(const Ticket* lhs, const EntitySpawnTicket* rhs)
-    {
-        return lhs == GetTicketPayload<Ticket>(rhs);
-    }
-
-    bool SpawnableEntitiesManager::IsEqualTicket(const EntitySpawnTicket* lhs, const Ticket* rhs)
-    {
-        return GetTicketPayload<Ticket>(lhs) == rhs;
-    }
-
-    bool SpawnableEntitiesManager::IsEqualTicket(const Ticket* lhs, const Ticket* rhs)
-    {
-        return lhs = rhs;
     }
 } // namespace AzFramework
