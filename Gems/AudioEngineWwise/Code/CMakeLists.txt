@@ -207,6 +207,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::EditorCore
             PUBLIC
                 AZ::AssetBuilderSDK
+                Gem::AudioSystem.Editor.Static
                 Gem::AudioEngineWwise.Static
         RUNTIME_DEPENDENCIES
             Gem::AudioSystem.Editor
