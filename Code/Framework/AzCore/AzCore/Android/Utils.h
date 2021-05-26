@@ -73,8 +73,8 @@ namespace AZ
             //! \return The pointer position of the relative asset path
             AZ::IO::FixedMaxPath StripApkPrefix(const char* filePath);
 
-            //! Searches application storage and the APK for bootstrap.cfg.  Will return nullptr
-            //! if bootstrap.cfg is not found.
+            //! Searches application storage and the APK for engine.json.  Will return nullptr
+            //! if engine.json is not found.
             const char* FindAssetsDirectory();
 
             //! Calls into Java to show the splash screen on the main UI (Java) thread

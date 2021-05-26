@@ -35,7 +35,7 @@ namespace AZ
             // This equation is based off of the integration of a line segment against a perpendicular normal pointing at the center of the
             // line segment from some distance away.
 
-            float scale = GetTransform().GetScale().GetMaxElement();
+            float scale = GetTransform().GetUniformScale();
             float h = GetInteriorHeight() * scale;
             float t2 = lightThreshold * lightThreshold;
             float h2 = h * h;
@@ -54,7 +54,7 @@ namespace AZ
                 const auto endpoints = m_shapeBus->GetCapsulePoints();
                 GetFeatureProcessor()->SetCapsuleLineSegment(GetLightHandle(), endpoints.m_begin, endpoints.m_end);
 
-                float scale = GetTransform().GetScale().GetMaxElement();
+                float scale = GetTransform().GetUniformScale();
                 float radius = m_shapeBus->GetRadius();
                 GetFeatureProcessor()->SetCapsuleRadius(GetLightHandle(), scale * radius);
             }
@@ -62,7 +62,7 @@ namespace AZ
 
         float CapsuleLightDelegate::GetSurfaceArea() const
         {
-            float scale = GetTransform().GetScale().GetMaxElement();
+            float scale = GetTransform().GetUniformScale();
             float radius = m_shapeBus->GetRadius();
             float capsArea = 4.0f * Constants::Pi * radius * radius; // both caps make a sphere
             float sideArea = 2.0f * Constants::Pi * radius * GetInteriorHeight(); // cylindrical area of capsule
@@ -77,7 +77,7 @@ namespace AZ
                 float radius = CalculateAttenuationRadius(AreaLightComponentConfig::CutoffIntensity);
 
                 // Add on the caps for the attenuation radius
-                float scale = GetTransform().GetScale().GetMaxElement();
+                float scale = GetTransform().GetUniformScale();
                 float height = m_shapeBus->GetHeight() * scale;
 
                 debugDisplay.SetColor(color);

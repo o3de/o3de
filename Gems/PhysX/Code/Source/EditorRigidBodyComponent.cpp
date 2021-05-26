@@ -365,7 +365,7 @@ namespace PhysX
         }
         
         AZ::Transform colliderTransform = GetWorldTM();
-        colliderTransform.ExtractScale();
+        colliderTransform.ExtractUniformScale();
 
         AzPhysics::RigidBodyConfiguration configuration = m_config;
         configuration.m_orientation = colliderTransform.GetRotation();
