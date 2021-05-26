@@ -273,7 +273,7 @@ namespace LmbrCentral
         const AZ::Transform& currentTransform, const CylinderShapeConfig& configuration,
         [[maybe_unused]] const AZ::Vector3& currentNonUniformScale)
     {
-        const float entityScale = currentTransform.GetScale().GetMaxElement();
+        const float entityScale = currentTransform.GetUniformScale();
         m_axisVector = currentTransform.GetBasisZ().GetNormalizedSafe() * entityScale;
         m_baseCenterPoint = currentTransform.GetTranslation() - m_axisVector * (configuration.m_height * 0.5f);
         m_axisVector = m_axisVector * configuration.m_height;

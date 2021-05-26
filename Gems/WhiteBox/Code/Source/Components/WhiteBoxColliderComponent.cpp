@@ -139,7 +139,7 @@ namespace WhiteBox
     {
         const AZ::Transform worldTransformWithoutScale = [worldTransform = world]() mutable
         {
-            worldTransform.SetScale(AZ::Vector3::CreateOne());
+            worldTransform.SetUniformScale(1.0f);
             return worldTransform;
         }();
 
