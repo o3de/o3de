@@ -18,6 +18,10 @@
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/Bootstrap/BootstrapNotificationBus.h>
 
+#include <QImage>
+#include <QSize>
+#include <QString>
+
 namespace AZ
 {
     class TickRequests;
@@ -53,9 +57,13 @@ namespace AZ
             void OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene) override;
 
         private:
-            static constexpr const char* s_drawContextShaderPath = "Shaders/TexturedIcon.azshader";
+            static constexpr const char* DrawContextShaderPath = "Shaders/TexturedIcon.azshader";
+            static constexpr QSize MinimumRenderedSvgSize = QSize(128, 128);
+            static constexpr QImage::Format QtImageFormat = QImage::Format_RGBA8888;
 
-            bool CheckIfFileExists(AZStd::string_view sourceRelativePath, AZStd::string_view cacheRelativePath) const;
+            QString FindAssetPath(const QString& sourceRelativePath) const;
+            QImage RenderSvgToImage(const QString& svgPath) const;
+            AZ::Data::Instance<AZ::RPI::Image> ConvertToAtomImage(AZ::Uuid assetId, QImage image) const;
 
             Name m_drawContextName = Name("ViewportIconDisplay");
             bool m_shaderIndexesInitialized = false;
@@ -65,7 +73,6 @@ namespace AZ
             struct IconData
             {
                 AZStd::string m_path;
-                Data::Asset<RPI::StreamingImageAsset> m_asset;
                 AZ::Data::Instance<AZ::RPI::Image> m_image = nullptr;
             };
             AZStd::unordered_map<IconId, IconData> m_iconData;

@@ -151,14 +151,6 @@ namespace AZ::Render
         if (auto iconIt = m_iconData.find(drawParameters.m_icon); iconIt != m_iconData.end())
         {
             auto& iconData = iconIt->second;
-            if (!iconData.m_image)
-            {
-                if (iconData.m_asset.IsReady())
-                {
-                    iconData.m_image = AZ::RPI::StreamingImage::FindOrCreate(iconData.m_asset); 
-                }
-            }
-
             if (iconData.m_image)
             {
                 image = iconData.m_image;
@@ -205,42 +197,54 @@ namespace AZ::Render
         dynamicDraw->DrawIndexed(&vertices, vertices.size(), &indices, indices.size(), RHI::IndexFormat::Uint16, drawSrg);
     }
 
-    // Check if a file exists. This does not go through the AssetCatalog so that it can identify files that exist but aren't processed yet,
-    // and so that it will work before the AssetCatalog has loaded
-    bool AtomViewportDisplayIconsSystemComponent::CheckIfFileExists(
-        AZStd::string_view sourceRelativePath, AZStd::string_view cacheRelativePath) const
+    QString AtomViewportDisplayIconsSystemComponent::FindAssetPath(const QString& sourceRelativePath) const
     {
-        // If the file exists, it has already been processed and does not need to be modified
-        bool fileExists = AZ::IO::FileIOBase::GetInstance()->Exists(cacheRelativePath.data());
-
-        if (!fileExists)
+        bool found = false;
+        AZStd::vector<AZStd::string> scanFolders;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            found, &AzToolsFramework::AssetSystemRequestBus::Events::GetScanFolders, scanFolders);
+        if (!found)
         {
-            // If the texture doesn't exist check if it's queued or being compiled.
-            AzFramework::AssetSystem::AssetStatus status;
-            AzFramework::AssetSystemRequestBus::BroadcastResult(
-                status, &AzFramework::AssetSystemRequestBus::Events::GetAssetStatus, sourceRelativePath);
+            AZ_Error("AtomViewportDisplayIconSystemComponent", false, "Failed to load asset scan folders");
+            return QString();
+        }
 
-            switch (status)
+        for (const auto& folder : scanFolders)
+        {
+            QDir dir(folder.data());
+            if (dir.exists(sourceRelativePath))
             {
-            case AzFramework::AssetSystem::AssetStatus_Queued:
-            case AzFramework::AssetSystem::AssetStatus_Compiling:
-            case AzFramework::AssetSystem::AssetStatus_Compiled:
-            case AzFramework::AssetSystem::AssetStatus_Failed: {
-                // The file is queued, in progress, or finished processing after the initial FileIO check
-                fileExists = true;
-                break;
-            }
-            case AzFramework::AssetSystem::AssetStatus_Unknown:
-            case AzFramework::AssetSystem::AssetStatus_Missing:
-            default: {
-                // The file does not exist
-                fileExists = false;
-                break;
-            }
+                return dir.absoluteFilePath(sourceRelativePath);
             }
         }
 
-        return fileExists;
+        return QString();
+    }
+
+    QImage AtomViewportDisplayIconsSystemComponent::RenderSvgToImage(const QString& svgPath) const
+    {
+        QSvgRenderer renderer(svgPath);
+        renderer.setAspectRatioMode(Qt::KeepAspectRatio);
+        QSize size = renderer.defaultSize().expandedTo(MinimumRenderedSvgSize);
+        QImage image(size, QtImageFormat);
+        image.fill(0x00000000);
+        QPainter painter(&image);
+        renderer.render(&painter);
+        return image;
+    }
+
+    AZ::Data::Instance<AZ::RPI::Image> AtomViewportDisplayIconsSystemComponent::ConvertToAtomImage(AZ::Uuid assetId, QImage image) const
+    {
+        image.convertTo(QtImageFormat);
+        Data::Instance<RPI::StreamingImagePool> streamingImagePool = RPI::ImageSystemInterface::Get()->GetSystemStreamingPool();
+        return RPI::StreamingImage::CreateFromCpuData(
+            *streamingImagePool.get(),
+            RHI::ImageDimension::Image2D,
+            RHI::Size(image.width(), image.height(), 1),
+            RHI::Format::R8G8B8A8_UNORM_SRGB,
+            image.bits(),
+            image.sizeInBytes(),
+            assetId);
     }
 
     AzToolsFramework::EditorViewportIconDisplayInterface::IconId AtomViewportDisplayIconsSystemComponent::GetOrLoadIconForPath(
@@ -250,115 +254,46 @@ namespace AZ::Render
             "AtomViewportDisplayIconsSystemComponent", AzFramework::StringFunc::Path::IsRelative(path.data()),
             "GetOrLoadIconForPath assumes that it will always be given a relative path, but got '%s'", path.data());
 
-        bool found = false;
-        AZStd::vector<AZStd::string> scanFolders;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(found, &AzToolsFramework::AssetSystemRequestBus::Events::GetScanFolders, scanFolders);
-        if (!found)
+        auto existingEntryIt = AZStd::find_if(m_iconData.begin(), m_iconData.end(), [&path](const auto& iconData)
         {
-            AZ_Error("AtomViewportDisplayIconSystemComponent", false, "Failed to load asset scan folders");
+            return iconData.second.m_path == path;
+        });
+        if (existingEntryIt != m_iconData.end())
+        {
+            return existingEntryIt->first;
+        }
+
+        AZ::Uuid assetId = AZ::Uuid::CreateName(path.data());
+
+        QString assetPath = FindAssetPath(path.data());
+        if (assetPath.isEmpty())
+        {
+            AZ_Error("AtomViewportDisplayIconSystemComponent", false, "Failed to locate icon on disk: \"%s\"", path.data());
             return InvalidIconId;
         }
+
+        QImage loadedImage;
+
         AZStd::string extension;
         AzFramework::StringFunc::Path::GetExtension(path.data(), extension, false);
         if (extension == "svg")
         {
-            QString qtPath(path.data());
-            for (const auto& folder : scanFolders)
+            loadedImage = RenderSvgToImage(assetPath);
+        }
+        else
+        {
+            const bool loaded = loadedImage.load(assetPath);
+            if (!loaded)
             {
-                QDir dir(folder.data());
-                if (dir.exists(qtPath))
-                {
-                    QString fullPath = dir.absoluteFilePath(qtPath);
-                    QSvgRenderer renderer(fullPath);
-                    renderer.setAspectRatioMode(Qt::KeepAspectRatio);
-                    QSize size = renderer.defaultSize().expandedTo(QSize(128, 128));
-                    QImage image(size, QImage::Format_RGBA8888);
-                    image.fill(0x00000000);
-                    QPainter painter(&image);
-                    renderer.render(&painter);
-
-                    AZ::Uuid assetId = AZ::Uuid::CreateName(path.data());
-
-                    RHI::Format format = RHI::Format::R8G8B8A8_UNORM;
-
-                    constexpr u32 pixelSize = sizeof(u32);
-
-                    Data::Instance<RPI::StreamingImagePool> streamingImagePool = RPI::ImageSystemInterface::Get()->GetSystemStreamingPool();
-                    auto streamingImage = RPI::StreamingImage::CreateFromCpuData(
-                        *streamingImagePool.get(),
-                        RHI::ImageDimension::Image2D,
-                        RHI::Size(image.width(), image.height(), 1),
-                        format,
-                        image.bits(),
-                        image.sizeInBytes(),
-                        assetId);
-
-                    IconId id = m_currentId++;
-                    IconData& iconData = m_iconData[id];
-                    iconData.m_path = path;
-                    iconData.m_image = streamingImage;
-                    return id;
-                }
+                AZ_Error("AtomViewportDisplayIconSystemComponent", false, "Failed to load icon: \"%s\"", assetPath.toUtf8().constData());
+                return InvalidIconId;
             }
         }
-
-        AZStd::string sourceRelativePath(path);
-        AZStd::string cacheRelativePath = sourceRelativePath + ".streamingimage";
-
-        bool textureExists = false;
-        textureExists = CheckIfFileExists(sourceRelativePath, cacheRelativePath);
-
-        if (!textureExists)
-        {
-            // A lot of cry code uses the .dds extension even when the actual source file is .tif.
-            // For the .streamingimage file we need the correct source extension before .streamingimage
-            // So if the file doesn't exist and the extension was .dds then try replacing it with .tif
-            //AZStd::string extension;
-            AzFramework::StringFunc::Path::GetExtension(path.data(), extension, false);
-            if (extension == "dds")
-            {
-                sourceRelativePath = path;
-
-                constexpr const char* textureExtensions[] = {"png", "tif", "tiff", "tga", "jpg", "jpeg", "bmp", "gif"};
-
-                for (const char* extensionReplacement : textureExtensions)
-                {
-                    AzFramework::StringFunc::Path::ReplaceExtension(sourceRelativePath, extensionReplacement);
-                    cacheRelativePath = sourceRelativePath + ".streamingimage";
-
-                    textureExists = CheckIfFileExists(sourceRelativePath, cacheRelativePath);
-                    if (textureExists)
-                    {
-                        break;
-                    }
-                }
-            }
-        }
-
-        if (!textureExists)
-        {
-            AZ_Error("AtomViewportDisplayIconsSystemComponent", false, "Attempted to load '%s', but it does not exist.", path.data());
-            // Since neither the given extension nor the .dds version exist, we'll default to the given extension for hot-reloading in case
-            // the file is added to the source folder later
-            sourceRelativePath = path.data();
-            cacheRelativePath = sourceRelativePath + ".streamingimage";
-        }
-
-        // The file may not be in the AssetCatalog at this point if it is still processing or doesn't exist on disk.
-        // Use GenerateAssetIdTEMP instead of GetAssetIdByPath so that it will return a valid AssetId anyways
-        Data::AssetId streamingImageAssetId;
-        Data::AssetCatalogRequestBus::BroadcastResult(
-            streamingImageAssetId, &Data::AssetCatalogRequestBus::Events::GenerateAssetIdTEMP, sourceRelativePath.c_str());
-        streamingImageAssetId.m_subId = RPI::StreamingImageAsset::GetImageAssetSubId();
-
-        auto streamingImageAsset = Data::AssetManager::Instance().FindOrCreateAsset<RPI::StreamingImageAsset>(
-            streamingImageAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
-        streamingImageAsset.QueueLoad();
 
         IconId id = m_currentId++;
         IconData& iconData = m_iconData[id];
-        iconData.m_path = AZStd::move(sourceRelativePath);
-        iconData.m_asset = AZStd::move(streamingImageAsset);
+        iconData.m_path = path;
+        iconData.m_image = ConvertToAtomImage(assetId, loadedImage);
         return id;
     }
 
@@ -374,22 +309,14 @@ namespace AZ::Render
         {
             return IconLoadStatus::Loaded;
         }
-        const auto& asset = iconIt->second.m_asset;
-        switch (asset.GetStatus())
-        {
-        case Data::AssetData::AssetStatus::Ready:
-            return IconLoadStatus::Loaded;
-        case Data::AssetData::AssetStatus::Error:
-            return IconLoadStatus::Error;
-        }
-        return IconLoadStatus::Loading;
+        return IconLoadStatus::Error;
     }
 
     void AtomViewportDisplayIconsSystemComponent::OnBootstrapSceneReady([[maybe_unused]]AZ::RPI::Scene* bootstrapScene)
     {
         AtomBridge::PerViewportDynamicDraw::Get()->RegisterDynamicDrawContext(m_drawContextName, [](RPI::Ptr<RPI::DynamicDrawContext> drawContext)
         {
-            auto shader = RPI::LoadShader(s_drawContextShaderPath);
+            auto shader = RPI::LoadShader(DrawContextShaderPath);
             drawContext->InitShader(shader);
             drawContext->InitVertexFormat(
                 {{"POSITION", RHI::Format::R32G32B32_FLOAT},
