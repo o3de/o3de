@@ -17,7 +17,7 @@
 #include <Atom/RPI.Reflect/Model/ModelKdTree.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
 #include <Atom/RPI.Reflect/ResourcePoolAssetCreator.h>
-#include <Atom/RPI.Public/Model/ModelLod.h>
+#include <Atom/RPI.Public/Model/UvStreamTangentBitmask.h>
 
 #include <AzCore/std/limits.h>
 #include <AzCore/Component/Entity.h>

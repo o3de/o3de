@@ -439,56 +439,5 @@ namespace AZ
             m_buffers.emplace_back(buffer);
             return static_cast<uint32_t>(m_buffers.size() - 1);
         }
-
-        uint32_t UvStreamTangentBitmask::GetFullTangentBitmask() const
-        {
-            return m_mask;
-        }
-
-        uint32_t UvStreamTangentBitmask::GetUvStreamCount() const
-        {
-            return m_mask >> (sizeof(m_mask) * CHAR_BIT - BitsForUvIndex);
-        }
-
-        uint32_t UvStreamTangentBitmask::GetTangentAtUv(uint32_t uvIndex) const
-        {
-            return (m_mask >> (BitsPerTangent * uvIndex)) & 0b1111u;
-        }
-
-        void UvStreamTangentBitmask::ApplyTangent(uint32_t tangentIndex)
-        {
-            uint32_t currentSlot = GetUvStreamCount();
-            if (currentSlot >= MaxUvSlots)
-            {
-                AZ_Error("UV Stream", false, "Reaching the max of avaiblable stream slots.");
-                return;
-            }
-
-            if (tangentIndex > UnassignedTangent)
-            {
-                AZ_Warning(
-                    "UV Stream", false,
-                    "Tangent index must use %d bits as defined in UvStreamTangentIndex::m_flag. Unassigned index will be applied.",
-                    BitsPerTangent);
-                tangentIndex = UnassignedTangent;
-            }
-
-            uint32_t clearMask = 0b1111u << (BitsPerTangent * currentSlot);
-            clearMask = ~clearMask;
-
-            // Clear the writing bits in case
-            m_mask &= clearMask;
-
-            // Write the bits to the slot
-            m_mask |= (tangentIndex << (BitsPerTangent * currentSlot));
-
-            // Increase the index
-            m_mask += (1u << (sizeof(m_mask) * CHAR_BIT - BitsForUvIndex));
-        }
-
-        void UvStreamTangentBitmask::Reset()
-        {
-            m_mask = 0;
-        }
     } // namespace RPI
 } // namespace AZ
