@@ -83,7 +83,12 @@ set(CPACK_WIX_PRODUCT_ICON ${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/produc
 set(CPACK_WIX_TEMPLATE "${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/Template.wxs.in")
 
 set(CPACK_WIX_EXTRA_SOURCES
+    "${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/PostInstallSetup.wxs"
     "${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/Shortcuts.wxs"
+)
+
+set(CPACK_WIX_EXTENSIONS
+    WixUtilExtension
 )
 
 set(_embed_artifacts "yes")
