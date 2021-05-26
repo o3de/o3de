@@ -59,7 +59,16 @@ namespace EMotionFX
     {
     public:
 
-        ComponentFixtureApp() = default;
+        ComponentFixtureApp()
+        {
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            constexpr auto projectPathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            if(auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                settingsRegistry->Set(projectPathKey, "AutomatedTesting");
+                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
+            }
+        }
 
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {

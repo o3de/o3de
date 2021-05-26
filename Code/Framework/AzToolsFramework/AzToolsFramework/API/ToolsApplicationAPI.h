@@ -240,6 +240,11 @@ namespace AzToolsFramework
         virtual int RemoveDirtyEntity(AZ::EntityId target) = 0;
 
         /*!
+         * Clears the dirty entity set.
+         */
+        virtual void ClearDirtyEntities() = 0;
+
+        /*!
          * \return true if an undo/redo operation is in progress.
          */
         virtual bool IsDuringUndoRedo() = 0;
