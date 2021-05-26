@@ -33,8 +33,8 @@ namespace O3DE::ProjectManager
         void AddGem(const GemInfo& gemInfo);
         void Clear();
 
-        QModelIndex FindIndexByUuidString(const QString& uuidString) const;
-        void FindGemNamesByUuidStrings(QStringList& inOutGemNames);
+        QModelIndex FindIndexByNameString(const QString& nameString) const;
+        void FindGemNamesByNameStrings(QStringList& inOutGemNames);
         QStringList GetDependingGemUuids(const QModelIndex& modelIndex);
         QStringList GetDependingGemNames(const QModelIndex& modelIndex);
         QStringList GetConflictingGemUuids(const QModelIndex& modelIndex);
@@ -43,7 +43,6 @@ namespace O3DE::ProjectManager
         static QString GetName(const QModelIndex& modelIndex);
         static QString GetCreator(const QModelIndex& modelIndex);
         static GemInfo::GemOrigin GetGemOrigin(const QModelIndex& modelIndex);
-        static QString GetUuidString(const QModelIndex& modelIndex);
         static GemInfo::Platforms GetPlatforms(const QModelIndex& modelIndex);
         static GemInfo::Types GetTypes(const QModelIndex& modelIndex);
         static QString GetSummary(const QModelIndex& modelIndex);
@@ -59,7 +58,6 @@ namespace O3DE::ProjectManager
         enum UserRole
         {
             RoleName = Qt::UserRole,
-            RoleUuid,
             RoleCreator,
             RoleGemOrigin,
             RolePlatforms,
@@ -76,7 +74,7 @@ namespace O3DE::ProjectManager
             RoleTypes
         };
 
-        QHash<QString, QModelIndex> m_uuidToIndexMap;
+        QHash<QString, QModelIndex> m_nameToIndexMap;
         QItemSelectionModel* m_selectionModel = nullptr;
     };
 } // namespace O3DE::ProjectManager

@@ -12,7 +12,7 @@
 #pragma once
 
 #include <PythonBindingsInterface.h>
-#include <AzCore/IO/Path/Path.h> 
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/parallel/semaphore.h>
 
 // Qt defines slots, which interferes with the use here.
@@ -25,7 +25,7 @@
 
 namespace O3DE::ProjectManager
 {
-    class PythonBindings 
+    class PythonBindings
         : public PythonBindingsInterface::Registrar
     {
     public:
@@ -66,6 +66,9 @@ namespace O3DE::ProjectManager
         AZ::IO::FixedMaxPath m_enginePath;
         pybind11::handle m_engineTemplate;
         AZStd::recursive_mutex m_lock;
-        pybind11::handle m_registration;
+        pybind11::handle m_register;
+        pybind11::handle m_manifest;
+        pybind11::handle m_addGemProject;
+        pybind11::handle m_removeGemProject;
     };
 }

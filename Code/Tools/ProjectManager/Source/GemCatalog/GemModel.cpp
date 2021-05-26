@@ -33,8 +33,6 @@ namespace O3DE::ProjectManager
         item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 
         item->setData(gemInfo.m_name, RoleName);
-        const QString uuidString = gemInfo.m_uuid.ToString<AZStd::string>().c_str();
-        item->setData(uuidString, RoleUuid);
         item->setData(gemInfo.m_creator, RoleCreator);
         item->setData(gemInfo.m_gemOrigin, RoleGemOrigin);
         item->setData(aznumeric_cast<int>(gemInfo.m_platforms), RolePlatforms);
@@ -53,7 +51,7 @@ namespace O3DE::ProjectManager
         appendRow(item);
 
         const QModelIndex modelIndex = index(rowCount()-1, 0);
-        m_uuidToIndexMap[uuidString] = modelIndex;
+        m_nameToIndexMap[gemInfo.m_name] = modelIndex;
     }
 
     void GemModel::Clear()
@@ -74,11 +72,6 @@ namespace O3DE::ProjectManager
     GemInfo::GemOrigin GemModel::GetGemOrigin(const QModelIndex& modelIndex)
     {
         return static_cast<GemInfo::GemOrigin>(modelIndex.data(RoleGemOrigin).toInt());
-    }
-
-    QString GemModel::GetUuidString(const QModelIndex& modelIndex)
-    {
-        return modelIndex.data(RoleUuid).toString();
     }
 
     GemInfo::Platforms GemModel::GetPlatforms(const QModelIndex& modelIndex)
@@ -111,10 +104,10 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RoleDocLink).toString();
     }
 
-    QModelIndex GemModel::FindIndexByUuidString(const QString& uuidString) const
+    QModelIndex GemModel::FindIndexByNameString(const QString& nameString) const
     {
-        const auto iterator = m_uuidToIndexMap.find(uuidString);
-        if (iterator != m_uuidToIndexMap.end())
+        const auto iterator = m_nameToIndexMap.find(nameString);
+        if (iterator != m_nameToIndexMap.end())
         {
             return iterator.value();
         }
@@ -122,11 +115,11 @@ namespace O3DE::ProjectManager
         return {};
     }
 
-    void GemModel::FindGemNamesByUuidStrings(QStringList& inOutGemNames)
+    void GemModel::FindGemNamesByNameStrings(QStringList& inOutGemNames)
     {
         for (QString& dependingGemString : inOutGemNames)
         {
-            QModelIndex modelIndex = FindIndexByUuidString(dependingGemString);
+            QModelIndex modelIndex = FindIndexByNameString(dependingGemString);
             if (modelIndex.isValid())
             {
                 dependingGemString = GetName(modelIndex);
@@ -147,7 +140,7 @@ namespace O3DE::ProjectManager
             return {};
         }
 
-        FindGemNamesByUuidStrings(result);
+        FindGemNamesByNameStrings(result);
         return result;
     }
 
@@ -164,7 +157,7 @@ namespace O3DE::ProjectManager
             return {};
         }
 
-        FindGemNamesByUuidStrings(result);
+        FindGemNamesByNameStrings(result);
         return result;
     }
 

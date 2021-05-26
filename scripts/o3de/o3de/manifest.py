@@ -322,6 +322,29 @@ def get_all_templates() -> list:
     templates_data.extend(engine_templates)
     return templates_data
 
+def get_project_templates():  # temporary until we have a better way to do this... maybe template_type element
+    project_templates = []
+    for template in get_all_templates():
+        if 'Project' in template:
+            project_templates.append(template)
+    return project_templates
+
+
+def get_gem_templates():  # temporary until we have a better way to do this... maybe template_type element
+    gem_templates = []
+    for template in get_all_templates():
+        if 'Gem' in template:
+            gem_templates.append(template)
+    return gem_templates
+
+
+def get_generic_templates():  # temporary until we have a better way to do this... maybe template_type element
+    generic_templates = []
+    for template in get_all_templates():
+        if 'Project' not in template and  'Gem' not in template:
+            generic_templates.append(template)
+    return generic_templates
+
 
 def get_all_restricted() -> list:
     engine_restricted = get_engine_restricted()
