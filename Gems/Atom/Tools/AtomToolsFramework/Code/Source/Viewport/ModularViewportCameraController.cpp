@@ -10,10 +10,9 @@
  *
  */
 
-#include "ModernViewportCameraController.h"
-
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
+#include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
@@ -23,7 +22,7 @@
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
-namespace SandboxEditor
+namespace AtomToolsFramework
 {
     // debug
     void DrawPreviewAxis(AzFramework::DebugDisplayRequests& display, const AZ::Transform& transform, const float axisLength)
@@ -53,12 +52,12 @@ namespace SandboxEditor
         return viewportContext;
     }
 
-    void ModernViewportCameraController::SetCameraListBuilderCallback(const CameraListBuilder& builder)
+    void ModularViewportCameraController::SetCameraListBuilderCallback(const CameraListBuilder& builder)
     {
         m_cameraListBuilder = builder;
     }
 
-    void ModernViewportCameraController::SetupCameras(AzFramework::Cameras& cameras)
+    void ModularViewportCameraController::SetupCameras(AzFramework::Cameras& cameras)
     {
         if (m_cameraListBuilder)
         {
@@ -67,8 +66,8 @@ namespace SandboxEditor
     }
 
     ModernViewportCameraControllerInstance::ModernViewportCameraControllerInstance(
-        const AzFramework::ViewportId viewportId, ModernViewportCameraController* controller)
-        : MultiViewportControllerInstanceInterface<ModernViewportCameraController>(viewportId, controller)
+        const AzFramework::ViewportId viewportId, ModularViewportCameraController* controller)
+        : MultiViewportControllerInstanceInterface<ModularViewportCameraController>(viewportId, controller)
     {
         controller->SetupCameras(m_cameraSystem.m_cameras);
 
@@ -88,12 +87,12 @@ namespace SandboxEditor
         }
 
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
-        ModernViewportCameraControllerRequestBus::Handler::BusConnect(viewportId);
+        ModularViewportCameraControllerRequestBus::Handler::BusConnect(viewportId);
     }
 
     ModernViewportCameraControllerInstance::~ModernViewportCameraControllerInstance()
     {
-        ModernViewportCameraControllerRequestBus::Handler::BusDisconnect();
+        ModularViewportCameraControllerRequestBus::Handler::BusDisconnect();
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
     }
 
@@ -182,4 +181,4 @@ namespace SandboxEditor
         m_transformStart = m_camera.Transform();
         m_transformEnd = worldFromLocal;
     }
-} // namespace SandboxEditor
+} // namespace AtomToolsFramework

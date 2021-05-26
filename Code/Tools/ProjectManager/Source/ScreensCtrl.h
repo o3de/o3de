@@ -35,6 +35,9 @@ namespace O3DE::ProjectManager
         ScreenWidget* FindScreen(ProjectManagerScreen screen);
         ScreenWidget* GetCurrentScreen();
 
+    signals:
+        void NotifyCurrentProject(const QString& projectPath);
+
     public slots:
         bool ChangeToScreen(ProjectManagerScreen screen);
         bool ForceChangeToScreen(ProjectManagerScreen screen, bool addVisit = true);
