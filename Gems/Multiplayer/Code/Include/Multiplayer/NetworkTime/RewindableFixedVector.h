@@ -112,10 +112,10 @@ namespace Multiplayer
 
         typedef const RewindableObject<TYPE, Multiplayer::RewindHistorySize>* const_iterator;
         const_iterator begin() const { return m_container.cbegin(); }
-        const_iterator end() const { return m_container.cend(); }
+        const_iterator end() const { return m_container.cbegin() + aznumeric_cast<size_t>(size()); }
         typedef RewindableObject<TYPE, Multiplayer::RewindHistorySize>* iterator;
         constexpr iterator begin() { return m_container.begin(); }
-        constexpr iterator end() { return m_container.end(); }
+        constexpr iterator end() { return m_container.begin() + aznumeric_cast<size_t>(size()); }
 
     private:
         AZStd::array<RewindableObject<TYPE, Multiplayer::RewindHistorySize>, SIZE> m_container;
