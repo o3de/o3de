@@ -60,9 +60,19 @@ namespace AzToolsFramework
             //! and is generally checked into source control.
             virtual const char* GetAbsoluteDevRootFolderPath() = 0;
         
-            /// Convert a full source path like "c:\\dev\gamename\\blah\\test.tga" into a relative product path.
+            /// Convert a full source path like "c:\\dev\\gamename\\blah\\test.tga" into a relative product path.
             /// asset paths never mention their alias and are relative to the asset cache root
             virtual bool GetRelativeProductPathFromFullSourceOrProductPath(const AZStd::string& fullPath, AZStd::string& relativeProductPath) = 0;
+
+            /** Convert a source path like "c:\\dev\\gamename\\blah\\test.tga" into a relative source path, like "blah/test.tga".
+            * If no valid relative path could be created, the input source path will be returned in relativePath.
+            * @param sourcePath partial or full path to a source file.  (The file doesn't need to exist)
+            * @param relativePath the output relative path for the source file, if a valid one could be created
+            * @param rootFilePath the root path that relativePath is relative to
+            * @return true if a valid relative path was created, false if it wasn't
+            */
+            virtual bool GenerateRelativeSourcePath(
+                const AZStd::string& sourcePath, AZStd::string& relativePath, AZStd::string& rootFilePath) = 0;
 
             /// Convert a relative asset path like "blah/test.tga" to a full source path path.
             /// Once the asset processor has finished building, this function is capable of handling even when the extension changes

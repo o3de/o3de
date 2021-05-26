@@ -52,7 +52,7 @@ namespace AZ
             static bool ConvertNestedSlices(
                 SliceComponent* sliceComponent, AzToolsFramework::Prefab::Instance* sourceInstance,
                 AZ::SerializeContext* serializeContext, bool isDryRun);
-            static bool SliceConverter::ConvertSliceInstance(
+            static bool ConvertSliceInstance(
                 AZ::SliceComponent::SliceInstance& instance, AZ::Data::Asset<AZ::SliceAsset>& sliceAsset,
                 AzToolsFramework::Prefab::TemplateReference nestedTemplate, AzToolsFramework::Prefab::Instance* topLevelInstance);
             static void PrintPrefab(AzToolsFramework::Prefab::TemplateId templateId);
