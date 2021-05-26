@@ -41,8 +41,6 @@
 #include <QPainter>
 #include <QSvgRenderer>
 
-#pragma optimize("", off)
-
 namespace AZ::Render
 {
     void AtomViewportDisplayIconsSystemComponent::Reflect(AZ::ReflectContext* context)
