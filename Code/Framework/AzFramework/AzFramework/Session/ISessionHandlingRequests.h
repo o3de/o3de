@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/string/string.h>
 
 namespace AzFramework
@@ -49,13 +50,17 @@ namespace AzFramework
     class ISessionHandlingClientRequests
     {
     public:
-        // Handle the player join session process
+        AZ_RTTI(ISessionHandlingClientRequests, "{41DE6BD3-72BC-4443-BFF9-5B1B9396657A}");
+        ISessionHandlingClientRequests() = default;
+        virtual ~ISessionHandlingClientRequests() = default;
+
+        // Request the player join session
         // @param  sessionConnectionConfig The required properties to handle the player join session process
         // @return The result of player join session process
-        virtual bool HandlePlayerJoinSession(const SessionConnectionConfig& sessionConnectionConfig) = 0;
+        virtual bool RequestPlayerJoinSession(const SessionConnectionConfig& sessionConnectionConfig) = 0;
 
-        // Handle the player leave session process
-        virtual void HandlePlayerLeaveSession() = 0;
+        // Request the connected player leave session
+        virtual void RequestPlayerLeaveSession() = 0;
     };
 
     //! ISessionHandlingServerRequests
@@ -63,6 +68,10 @@ namespace AzFramework
     class ISessionHandlingServerRequests
     {
     public:
+        AZ_RTTI(ISessionHandlingServerRequests, "{4F0C17BA-F470-4242-A8CB-EC7EA805257C}");
+        ISessionHandlingServerRequests() = default;
+        virtual ~ISessionHandlingServerRequests() = default;
+
         // Handle the destroy session process
         virtual void HandleDestroySession() = 0;
 
@@ -74,5 +83,10 @@ namespace AzFramework
         // Handle the player leave session process
         // @param  playerConnectionConfig The required properties to handle the player leave session process
         virtual void HandlePlayerLeaveSession(const PlayerConnectionConfig& playerConnectionConfig) = 0;
+
+        // Retrieves the file location of a pem-encoded TLS certificate
+        // @return If successful, returns the file location of TLS certificate file; if not successful, returns
+        //         empty string.
+        virtual AZStd::string GetSessionCertificate() = 0;
     };
 } // namespace AzFramework
