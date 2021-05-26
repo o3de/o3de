@@ -19,6 +19,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
@@ -986,6 +987,216 @@ namespace AzToolsFramework
             return AZ::Success();
         }
 
+        PrefabOperationResult PrefabPublicHandler::DetachPrefabFromParent(const AZ::EntityId& entityId)
+        {
+            if (!entityId.IsValid())
+            {
+                return AZ::Failure(AZStd::string("Cannot detach Prefab Instance with invalid container entity."));
+            }
+
+            if (IsLevelInstanceContainerEntity(entityId))
+            {
+                return AZ::Failure(AZStd::string("Cannot detach level Prefab Instance."));
+            }
+
+            InstanceOptionalReference owningInstance = GetOwnerInstanceByEntityId(entityId);
+            if (owningInstance->get().GetContainerEntityId() != entityId)
+            {
+                return AZ::Failure(AZStd::string("Input entity should be its owning Instance's container entity."));
+            }
+
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+
+            UndoSystem::URSequencePoint* currentUndoBatch = nullptr;
+            ToolsApplicationRequests::Bus::BroadcastResult(currentUndoBatch, &ToolsApplicationRequests::Bus::Events::GetCurrentUndoBatch);
+
+            bool createdUndo = false;
+            if (!currentUndoBatch)
+            {
+                createdUndo = true;
+                ToolsApplicationRequests::Bus::BroadcastResult(
+                    currentUndoBatch, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, "Detach Prefab");
+                AZ_Assert(currentUndoBatch, "Failed to create new undo batch.");
+            }
+
+            // In order to undo Prefab Instance detachment, we have to create a selection command which selects the current selection
+            // and then add the detach as children.
+            // Commands always execute themselves first and then their children (when going forwards)
+            // and do the opposite when going backwards.
+            EntityIdList selectedEntities;
+            ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
+            SelectionCommand* selCommand = aznew SelectionCommand(selectedEntities, "Detach Prefab");
+
+            // We insert a "deselect all" command before we detach the Prefab Instance. This ensures the detach operations aren't changing
+            // selection state, which triggers expensive UI updates. By deselecting up front, we are able to do those expensive
+            // UI updates once at the start instead of once for each entity.
+            {
+                EntityIdList deselection;
+                SelectionCommand* deselectAllCommand = aznew SelectionCommand(deselection, "Deselect Entities");
+                deselectAllCommand->SetParent(selCommand);
+            }
+
+            {
+                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "Internal::DetachPrefab:UndoCapture");
+
+                InstanceOptionalReference parentInstance = owningInstance->get().GetParentInstance();
+                const auto parentTemplateId = parentInstance->get().GetTemplateId();
+
+                Prefab::PrefabDom instanceDomBefore;
+                m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBefore, parentInstance->get());
+
+                {
+                    auto getInstancePtrResult = parentInstance->get().GetNestedInstance(owningInstance->get().GetInstanceAlias());
+                    AZ_Assert(getInstancePtrResult, "Can't find selected container entity's owning Instance.");
+
+                    auto& instancePtr = getInstancePtrResult->get();
+
+                    AZStd::unordered_map<AZ::EntityId, AZStd::string> oldEntityAliases;
+                    oldEntityAliases.emplace(entityId, instancePtr->GetEntityAlias(entityId)->get());
+
+                    auto containerEntityPtr = instancePtr->DetachContainerEntity();
+                    auto& containerEntity = *containerEntityPtr.release();
+                    auto editorPrefabComponent = containerEntity.FindComponent<EditorPrefabComponent>();
+                    containerEntity.Deactivate();
+                    const bool editorPrefabComponentRemoved = containerEntity.RemoveComponent(editorPrefabComponent);
+                    AZ_Assert(editorPrefabComponentRemoved, "Remove EditorPrefabComponent failed.");
+                    delete editorPrefabComponent;
+                    containerEntity.Activate();
+
+                    const bool containerEntityAdded = parentInstance->get().AddEntity(containerEntity);
+                    AZ_Assert(containerEntityAdded, "Add target Instance's container entity to its parent Instance failed.");
+
+                    EntityIdList entityIds;
+                    entityIds.emplace_back(containerEntity.GetId());
+
+                    instancePtr->GetEntities(
+                        [&](AZStd::unique_ptr<AZ::Entity>& entityPtr)
+                    {
+                        oldEntityAliases.emplace(entityPtr->GetId(), instancePtr->GetEntityAlias(entityPtr->GetId())->get());
+                        return true;
+                    });
+
+                    instancePtr->DetachEntities(
+                        [&](AZStd::unique_ptr<AZ::Entity> entityPtr)
+                    {
+                        auto& entity = *entityPtr.release();
+                        const bool entityAdded = parentInstance->get().AddEntity(entity);
+                        AZ_Assert(entityAdded, "Add target Instance's entity to its parent Instance failed.");
+
+                        entityIds.emplace_back(entity.GetId());
+                    });
+
+                    Prefab::PrefabDom instanceDomAfter;
+                    m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfter, parentInstance->get());
+
+                    PrefabUndoInstance* command = aznew PrefabUndoInstance("Instance detachment");
+                    command->Capture(instanceDomBefore, instanceDomAfter, parentTemplateId);
+                    command->SetParent(selCommand);
+
+                    selCommand->SetParent(currentUndoBatch);
+                    {
+                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "Internal::DetachPrefab:RunRedo");
+                        selCommand->RunRedo();
+                    }
+
+                    const auto instanceTemplateId = instancePtr->GetTemplateId();
+                    auto parentContainerEntityId = parentInstance->get().GetContainerEntityId();
+                    instancePtr->GetNestedInstances(
+                        [&](AZStd::unique_ptr<Instance>& nestedInstancePtr)
+                    {
+                        //get previous link patch
+                        auto linkRef = m_prefabSystemComponentInterface->FindLink(nestedInstancePtr->GetLinkId());
+                        PrefabDomValueReference linkPatches = linkRef->get().GetLinkPatches();
+                        AZ_Assert(
+                            linkPatches.has_value(), "Unable to get patches on link with id '%llu' during prefab creation.",
+                            nestedInstancePtr->GetLinkId());
+
+                        PrefabDom linkPatchesCopy;
+                        linkPatchesCopy.CopyFrom(linkPatches->get(), linkPatchesCopy.GetAllocator());
+
+                        RemoveLink(nestedInstancePtr, instanceTemplateId, currentUndoBatch);
+
+                        /*auto getNestedInstanceContainerEntityResult = nestedInstancePtr->GetContainerEntity();
+                        AZ_Assert(getNestedInstanceContainerEntityResult.has_value(), "Can't get nested instance container entitt.");
+
+                        auto& nestedInstanceContainerEntity = getNestedInstanceContainerEntityResult->get();
+                        auto nestedInstanceContainerEntityId = nestedInstanceContainerEntity.GetId();
+
+                        PrefabDom containerEntityDomBefore;
+                        m_instanceToTemplateInterface->GenerateDomForEntity(containerEntityDomBefore, nestedInstanceContainerEntity);
+
+                        AZ::TransformBus::Event(nestedInstanceContainerEntityId, &AZ::TransformInterface::SetParent, containerEntity.GetId());
+
+                        PrefabDom containerEntityDomAfter;
+                        m_instanceToTemplateInterface->GenerateDomForEntity(containerEntityDomAfter, nestedInstanceContainerEntity);
+
+                        PrefabDom reparentPatch;
+                        m_instanceToTemplateInterface->GeneratePatch(reparentPatch, containerEntityDomBefore, containerEntityDomAfter);
+                        m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(reparentPatch, nestedInstanceContainerEntityId);*/
+
+                        PrefabDomUtils::PrintPrefabDomValue("linkPatchesCopy", linkPatchesCopy);
+
+                        //update aliases
+                        rapidjson::StringBuffer buffer;
+                        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+                        linkPatchesCopy.Accept(writer);
+                        QString previousPatchString(buffer.GetString());
+
+                        for (AZ::EntityId entityId : entityIds)
+                        {
+                            AZStd::string oldEntityAlias = oldEntityAliases[entityId];
+                            EntityAliasOptionalReference newEntityAlias = parentInstance->get().GetEntityAlias(entityId);
+                            AZ_Assert(
+                                newEntityAlias.has_value(),
+                                "Could not fetch entity alias for entity with id '%llu' during prefab creation.",
+                                static_cast<AZ::u64>(entityId));
+                            ReplaceOldAliases(previousPatchString, oldEntityAlias, newEntityAlias->get());
+                        }
+
+                        linkPatchesCopy.Parse(previousPatchString.toUtf8().constData());
+
+                        CreateLink(*nestedInstancePtr, parentTemplateId, currentUndoBatch, AZStd::move(linkPatchesCopy), true);
+
+                        //update links?
+                        //// Update the cache - this prevents these changes from being stored in the regular undo/redo nodes as a separate step
+                        //m_prefabUndoCache.Store(nestedInstanceContainerEntityId, AZStd::move(containerEntityDomAfter));
+
+                        //// Save these changes as patches to the link
+                        //PrefabUndoLinkUpdate* linkUpdate = aznew PrefabUndoLinkUpdate(AZStd::to_string(static_cast<AZ::u64>(nestedInstanceContainerEntityId)));
+                        //linkUpdate->SetParent(undoBatch.GetUndoBatch());
+                        //linkUpdate->Capture(reparentPatch, nestedInstance->GetLinkId());
+
+                        //linkUpdate->Redo();
+                    });
+
+                    RemoveLink(instancePtr, parentTemplateId, currentUndoBatch);
+
+                    AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                        &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
+                }
+            }
+
+            if (createdUndo)
+            {
+                ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::EndUndoBatch);
+            }
+
+            return AZ::Success();
+        }
+
+        void PrefabPublicHandler::ReplaceOldAliases(QString& stringToReplace, AZStd::string_view oldAlias, AZStd::string_view newAlias)
+        {
+            QString oldAliasQuotes = QString("\"%1\"").arg(oldAlias.data());
+            QString newAliasQuotes = QString("\"%1\"").arg(newAlias.data());
+
+            stringToReplace.replace(oldAliasQuotes, newAliasQuotes);
+
+            QString oldAliasPathRef = QString("/%1").arg(oldAlias.data());
+            QString newAliasPathRef = QString("/%1").arg(newAlias.data());
+
+            stringToReplace.replace(oldAliasPathRef, newAliasPathRef);
+        }
+
         void PrefabPublicHandler::GenerateContainerEntityTransform(const EntityList& topLevelEntities,
             AZ::Vector3& translation, AZ::Quaternion& rotation)
         {
@@ -1235,19 +1446,6 @@ namespace AzToolsFramework
             }
 
             return true;
-        }
-
-        void PrefabPublicHandler::ReplaceOldAliases(QString& stringToReplace, AZStd::string_view oldAlias, AZStd::string_view newAlias)
-        {
-            QString oldAliasQuotes = QString("\"%1\"").arg(oldAlias.data());
-            QString newAliasQuotes = QString("\"%1\"").arg(newAlias.data());
-
-            stringToReplace.replace(oldAliasQuotes, newAliasQuotes);
-
-            QString oldAliasPathRef = QString("/%1").arg(oldAlias.data());
-            QString newAliasPathRef = QString("/%1").arg(newAlias.data());
-
-            stringToReplace.replace(oldAliasPathRef, newAliasPathRef);
         }
     } // namespace Prefab
 } // namespace AzToolsFramework

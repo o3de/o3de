@@ -237,6 +237,27 @@ namespace AzToolsFramework
             {
                 deleteAction->setDisabled(true);
             }
+
+            QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab..."));
+            if (selectedEntities.size() != 1)
+            {
+                detachPrefabAction->setDisabled(true);
+            }
+            else
+            {
+                AZ::EntityId selectedEntity = selectedEntities[0];
+
+                if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity) &&
+                    !s_prefabPublicInterface->IsLevelInstanceContainerEntity(selectedEntity))
+                {
+                    QObject::connect(detachPrefabAction, &QAction::triggered, detachPrefabAction,
+                        [this, selectedEntity] { ContextMenu_DetachPrefab(selectedEntity); });
+                }
+                else
+                {
+                    detachPrefabAction->setDisabled(true);
+                }
+            }
         }
 
         void PrefabIntegrationManager::HandleSourceFileType(AZStd::string_view sourceFilePath, AZ::EntityId parentId, AZ::Vector3 position) const
@@ -389,6 +410,17 @@ namespace AzToolsFramework
             if (!deleteSelectedResult.IsSuccess())
             {
                 WarnUserOfError("Delete selected entities error", deleteSelectedResult.GetError());
+            }
+        }
+
+        void PrefabIntegrationManager::ContextMenu_DetachPrefab(AZ::EntityId containerEntity)
+        {
+            PrefabOperationResult detachPrefabResult =
+                s_prefabPublicInterface->DetachPrefabFromParent(containerEntity);
+
+            if (!detachPrefabResult.IsSuccess())
+            {
+                WarnUserOfError("Detach Prefab error", detachPrefabResult.GetError());
             }
         }
 

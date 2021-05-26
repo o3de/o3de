@@ -150,6 +150,14 @@ namespace AzToolsFramework
               * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
               */
             virtual PrefabOperationResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) = 0;
+
+            /**
+              * Detaches target container entity's owning instance from its parent instance.
+              * Bails if the entity is not a container entity or belongs to the level prefab instance.
+              * @param entityId The container entity whose instance to detach.
+              * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
+              */
+            virtual PrefabOperationResult DetachPrefabFromParent(const AZ::EntityId& entityId) = 0;
         };
 
     } // namespace Prefab

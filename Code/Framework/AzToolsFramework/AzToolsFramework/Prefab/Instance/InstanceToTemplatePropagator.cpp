@@ -176,9 +176,14 @@ namespace AzToolsFramework
         {
             PrefabDom& templateDomReference = m_prefabSystemComponentInterface->FindTemplateDom(templateId);
 
+            PrefabDomUtils::PrintPrefabDomValue("providedPatch", providedPatch);
+            PrefabDomUtils::PrintPrefabDomValue("templateDomReference", templateDomReference);
+
             //apply patch to template
             AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ApplyPatch(templateDomReference,
                 templateDomReference.GetAllocator(), providedPatch, AZ::JsonMergeApproach::JsonPatch);
+
+            PrefabDomUtils::PrintPrefabDomValue("templateDomReference(Patch applied)", templateDomReference);
 
             //trigger propagation
             if (result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success)
