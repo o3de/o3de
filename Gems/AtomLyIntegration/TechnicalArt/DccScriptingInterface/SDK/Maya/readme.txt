@@ -29,7 +29,7 @@ A general goal of the DCCsi is be self-maintained, and to not taint the users in
 So we boostrap additional access to site-packages in our userSetup.py:
 "C:\Depot\Lumberyard\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\SDK\Maya\Scripts\userSetup.py"
 
-We don't want users to have to install or use Python2.7 although with maya and possibly other dcc tools we don't have that control.  Maya still is on Python2.7, so instead of forcing another install of python we can just use mayapy to manage extensions.
+We don't want users to have to install or use Python2.7 although with maya and possibly other dcc tools we don't have that control.  Maya 2020 and earlier versions are still on Python2.7, so instead of forcing another install of python we can just use mayapy to manage extensions.
 
 Pip may already be installed, you can check like so (your maya install path may be different):
 

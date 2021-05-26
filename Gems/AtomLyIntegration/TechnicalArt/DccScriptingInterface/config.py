@@ -109,11 +109,11 @@ def init_ly_pyside(LY_DEV=None):
                                     'bin',
                                     'profile').resolve()
 
-    # allows to retreive from settings.QTFORPYTHON_PATH
-    from azpy.constants import STR_QTFORPYTHON_PATH  # a path string constructor
-    QTFORPYTHON_PATH = Path(STR_QTFORPYTHON_PATH.format(LY_DEV)).resolve()
-    os.environ["DYNACONF_QTFORPYTHON_PATH"] = str(QTFORPYTHON_PATH)
-    site.addsitedir(str(QTFORPYTHON_PATH))  # PYTHONPATH
+    # # allows to retreive from settings.QTFORPYTHON_PATH
+    # from azpy.constants import STR_QTFORPYTHON_PATH  # a path string constructor
+    # QTFORPYTHON_PATH = Path(STR_QTFORPYTHON_PATH.format(LY_DEV)).resolve()
+    # os.environ["DYNACONF_QTFORPYTHON_PATH"] = str(QTFORPYTHON_PATH)
+    # site.addsitedir(str(QTFORPYTHON_PATH))  # PYTHONPATH
 
     QT_PLUGIN_PATH = Path.joinpath(LY_BIN_PATH,
                                    'EditorPlugins').resolve()
@@ -131,15 +131,15 @@ def init_ly_pyside(LY_DEV=None):
 
     # add Qt binaries to the Windows path to handle findings DLL file dependencies
     if sys.platform.startswith('win'):
-        path = os.environ['PATH']
-        newPath = ''
-        newPath += str(LY_BIN_PATH) + os.pathsep
-        newPath += str(Path.joinpath(QTFORPYTHON_PATH,
-                                     'shiboken2').resolve()) + os.pathsep
-        newPath += str(Path.joinpath(QTFORPYTHON_PATH,
-                                     'PySide2').resolve()) + os.pathsep
-        newPath += path
-        os.environ['PATH']=newPath
+        # path = os.environ['PATH']
+        # newPath = ''
+        # newPath += str(LY_BIN_PATH) + os.pathsep
+        # newPath += str(Path.joinpath(QTFORPYTHON_PATH,
+        #                              'shiboken2').resolve()) + os.pathsep
+        # newPath += str(Path.joinpath(QTFORPYTHON_PATH,
+        #                              'PySide2').resolve()) + os.pathsep
+        # newPath += path
+        # os.environ['PATH']=newPath
         _LOGGER.debug('PySide2 bootstrapped PATH for Windows.')
 
     try:
@@ -319,7 +319,7 @@ if __name__ == '__main__':
 
     settings.setenv()  # doing this will add/set the additional DYNACONF_ envars
 
-    _LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
+    #_LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
     _LOGGER.info('LY_BIN_PATH: {}'.format(settings.LY_BIN_PATH))
     _LOGGER.info('QT_PLUGIN_PATH: {}'.format(settings.QT_PLUGIN_PATH))
     _LOGGER.info('QT_QPA_PLATFORM_PLUGIN_PATH: {}'.format(settings.QT_QPA_PLATFORM_PLUGIN_PATH))
