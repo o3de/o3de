@@ -10,6 +10,7 @@
 *
 */
 
+#include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/string/string.h>
 #include <AzFramework/Spawnable/Spawnable.h>
@@ -87,5 +88,11 @@ namespace AzFramework
     void SpawnableAssetHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)
     {
         extensions.push_back(Spawnable::FileExtension);
+    }
+
+    uint32_t SpawnableAssetHandler::BuildSubId(AZStd::string_view id)
+    {
+        AZ::Uuid subIdHash = AZ::Uuid::CreateData(id.data(), id.size());
+        return azlossy_caster(subIdHash.GetHash());
     }
 } // namespace AzFramework

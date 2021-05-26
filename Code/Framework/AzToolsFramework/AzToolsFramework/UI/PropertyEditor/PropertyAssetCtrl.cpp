@@ -777,6 +777,23 @@ namespace AzToolsFramework
             selection.SetDefaultDirectory(defaultDirectory);
         }
 
+        if (m_hideProductFilesInAssetPicker)
+        {
+            FilterConstType displayFilter = selection.GetDisplayFilter();
+
+            EntryTypeFilter* productsFilter = new EntryTypeFilter();
+            productsFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Product);
+
+            InverseFilter* noProductsFilter = new InverseFilter();
+            noProductsFilter->SetFilter(FilterConstType(productsFilter));
+
+            CompositeFilter* compFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
+            compFilter->AddFilter(FilterConstType(displayFilter));
+            compFilter->AddFilter(FilterConstType(noProductsFilter));
+
+            selection.SetDisplayFilter(FilterConstType(compFilter));
+        }
+
         AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, parentWidget());
         if (selection.IsValid())
         {
@@ -785,7 +802,16 @@ namespace AzToolsFramework
             AZ_Assert(product || folder, "Incorrect entry type selected. Expected product or folder.");
             if (product)
             {
-                SetSelectedAssetID(product->GetAssetId());
+                AZ::Data::AssetId selectedAssetId = product->GetAssetId();
+
+                // If we hid the product files a source asset was picked
+                // Clear the sub id as a source could have N products with different sub ids
+                if (m_hideProductFilesInAssetPicker)
+                {
+                    selectedAssetId.m_subId = 0;
+                }
+
+                SetSelectedAssetID(selectedAssetId);
             }
             else if (folder)
             {
@@ -1172,6 +1198,16 @@ namespace AzToolsFramework
         return m_showProductAssetName;
     }
 
+    void PropertyAssetCtrl::SetHideProductFilesInAssetPicker(bool hide)
+    {
+        m_hideProductFilesInAssetPicker = hide;
+    }
+
+    bool PropertyAssetCtrl::GetHideProductFilesInAssetPicker() const
+    {
+        return m_hideProductFilesInAssetPicker;
+    }
+
     void PropertyAssetCtrl::SetShowThumbnail(bool enable)
     {
         m_showThumbnail = enable;
@@ -1295,6 +1331,14 @@ namespace AzToolsFramework
             if (attrValue->Read<bool>(showProductAssetName))
             {
                 GUI->SetShowProductAssetName(showProductAssetName);
+            }
+        }
+        else if(attrib == AZ::Edit::Attributes::HideProductFilesInAssetPicker)
+        {
+            bool hideProductFilesInAssetPicker = false;
+            if (attrValue->Read<bool>(hideProductFilesInAssetPicker))
+            {
+                GUI->SetHideProductFilesInAssetPicker(hideProductFilesInAssetPicker);
             }
         }
         else if (attrib == AZ::Edit::Attributes::ClearNotify)

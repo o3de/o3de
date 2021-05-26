@@ -7,6 +7,7 @@
          Base="ScriptCanvas::Nodeable"
          Icon="Icons/ScriptCanvas/Placeholder.png"
          Category="Spawning"
+         Version="0"
          GeneratePropertyFriend="True"
          Namespace="ScriptCanvas"
          Description="Spawn">
@@ -20,6 +21,18 @@
     <Output Name="On Spawn">
       <Parameter Name="SpawnedEntitiesList" Type="AZStd::vector&lt;Data::EntityIDType&gt;" Description="List of spawned entities sorted by hiearchy with the root being first"/>
     </Output>/>
+    
+    <Property Name ="m_spawnableAsset" Type="AZ::Data::Asset&lt;AzFramework::Spawnable&gt;" Serialize="true">
+      <PropertyData Name="Prefab Asset"
+                    Description="Prefab source asset to spawn."
+                    Serialize="true"
+                    UIHandler="AZ::Edit::UIHandlers::Default">
+        <EditAttribute Key="AZ::Edit::Attributes::ShowProductAssetFileName" Value="false"/>
+        <EditAttribute Key="AZ::Edit::Attributes::HideProductFilesInAssetPicker" Value="true"/>
+        <EditAttribute Key="AZ::Edit::Attributes::AssetPickerTitle" Value="&quot;a Prefab&quot;"/>
+        <EditAttribute Key="AZ::Edit::Attributes::ChangeNotify" Value="&amp;SpawnNodeable::OnSpawnAssetChanged"/>
+      </PropertyData>
+    </Property>
     
   </Class>
 </ScriptCanvas>

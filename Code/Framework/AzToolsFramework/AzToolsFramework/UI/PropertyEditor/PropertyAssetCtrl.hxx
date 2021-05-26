@@ -158,6 +158,10 @@ namespace AzToolsFramework
         //! Assets can be either source or product assets generated from source assets. By default, source assets are shown in the property asset. You can override that with this flag.
         bool m_showProductAssetName = true;
 
+        //! Assets can be either source or product assets generated from source assets.
+        //! By default the asset picker shows both on an AZ::Asset<> property. You can hide product assets with this flag.
+        bool m_hideProductFilesInAssetPicker = false;
+
         bool m_showThumbnail = false;
         bool m_showThumbnailDropDownButton = false;
         EditCallbackType* m_thumbnailCallback = nullptr;
@@ -210,6 +214,9 @@ namespace AzToolsFramework
         // Otherwise source asset name will shown.
         void SetShowProductAssetName(bool enable);
         bool GetShowProductAssetName() const;
+
+        void SetHideProductFilesInAssetPicker(bool hide);
+        bool GetHideProductFilesInAssetPicker() const;
 
         void SetShowThumbnail(bool enable);
         bool GetShowThumbnail() const;
