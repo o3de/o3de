@@ -34,7 +34,7 @@
 #include <QPixmap>
 #include <QSettings>
 
-#define DISPLAY_PROJECT_DEV_DATA true 
+//#define DISPLAY_PROJECT_DEV_DATA true 
 
 namespace O3DE::ProjectManager
 {
