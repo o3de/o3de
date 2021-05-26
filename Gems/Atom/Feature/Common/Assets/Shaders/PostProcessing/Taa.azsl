@@ -24,7 +24,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Texture2D<float4> m_lastFrameAccumulation;
 
     RWTexture2D<float4> m_outputColor;
-    
+
     Sampler LinearSampler
     {
         MinFilter = Linear;
@@ -60,7 +60,9 @@ void MainCS(
     uint2 pixelCoord = dispatchThreadID.xy;
     float3 color = PassSrg::m_inputColor[pixelCoord].rgb;
     float depth = PassSrg::m_inputDepth[pixelCoord].r;
-    float2 previousPosition = -PassSrg::m_motionVectors[pixelCoord];
+
+    // Motion vectors store the direction of movement, so to look up where things were in the previous frame, it's negated.
+    float2 previousPositionOffset = -PassSrg::m_motionVectors[pixelCoord];
 
     // NaN protection (without this NaNs could get in the history buffer and quickly consume the frame)
     color = max(0.0, color);
@@ -71,9 +73,8 @@ void MainCS(
 
     // Get the uv coordinate for the previous frame.
     uint2 size = PassSrg::m_constantData.m_size;
-    float2 halfPixel = rcp(size * 2.0);
-    float2 uvCoord = pixelCoord / float2(size) + halfPixel;
-    float2 uvOld = float2(uvCoord) + previousPosition;
+    float2 uvCoord = (pixelCoord + 0.5f) / float2(size);
+    float2 uvOld = float2(uvCoord) + previousPositionOffset;
 
     // For now just rely on hardware bilinear filtering but this is something that will be improved.
     // Color in rgb, Depth in a
@@ -82,22 +83,22 @@ void MainCS(
     // Tonemap last frame color
     lastFrameColorDepth.rgb = lastFrameColorDepth / (1.0 + luminance);
 
-    float weight = PassSrg::m_currentFrameMinContribution;
+    float currentFrameWeight = PassSrg::m_currentFrameMinContribution;
 
     // Basic depth rejection
     if (abs(depth - lastFrameColorDepth.a) > 0.001)
     {
-        weight = 1.0f;
+        currentFrameWeight = 1.0f;
     }
 
     // Out of bounds protection.
     if (any(uvOld > 1.0) || any(uvOld < 0.0))
     {
-        weight = 1.0f;
+        currentFrameWeight = 1.0f;
     }
 
     // Blend color with history
-    color = lerp(lastFrameColorDepth.rgb, color, weight);
+    color = lerp(lastFrameColorDepth.rgb, color, currentFrameWeight);
 
     // Un-tonemap color
     color = color * (1.0 + luminance);
