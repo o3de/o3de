@@ -106,7 +106,7 @@ namespace ScriptCanvas
                 void SetupMethodData(const AZ::BehaviorMethod* lookupMethod, const AZ::BehaviorClass* lookupClass);
                 void ConfigureContracts();
 
-                void RefreshActiveIndexes(bool checkForConnections = true);
+                void RefreshActiveIndexes(bool checkForConnections = true, bool adjustSlots = false);
                 void FindDataIndexMappings(DataIndexMapping& inputMapping, DataIndexMapping& outputMapping, bool checkForConnections) const;
 
                 void UpdateSlotDisplay();

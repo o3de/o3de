@@ -11,6 +11,9 @@
         <file>iOS.svg</file>
         <file>Linux.svg</file>
         <file>macOS.svg</file>
+        <file>DefaultProjectImage.png</file>
+        <file>ArrowDownLine.svg</file>
+        <file>ArrowUpLine.svg</file>
         <file>Backgrounds/FirstTimeBackgroundImage.jpg</file>
     </qresource>
 </RCC>

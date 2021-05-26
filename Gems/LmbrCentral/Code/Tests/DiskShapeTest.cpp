@@ -307,7 +307,7 @@ namespace UnitTest
         AZ::Entity entity;
         CreateDisk(
             AZ::Transform::CreateTranslation(AZ::Vector3(100.0f, 200.0f, 300.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(2.5f)),
+            AZ::Transform::CreateUniformScale(2.5f),
             0.5f, entity);
 
         AZ::Aabb aabb;

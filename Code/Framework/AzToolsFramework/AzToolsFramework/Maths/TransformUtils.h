@@ -33,8 +33,7 @@ namespace AzToolsFramework
     inline AZ::Transform TransformUniformScale(const AZ::Transform& transform)
     {
         AZ::Transform transformUniformScale = transform;
-        const float maxScale = transformUniformScale.GetScale().GetMaxElement();
-        transformUniformScale.SetScale(AZ::Vector3(maxScale));
+        transformUniformScale.SetUniformScale(transformUniformScale.GetUniformScale());
         return transformUniformScale;
     }
 
