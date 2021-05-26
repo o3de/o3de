@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1200</width>
+    <height>800</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>O3DE Project Manager</string>
@@ -21,7 +27,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>1200</width>
      <height>36</height>
     </rect>
    </property>
@@ -35,8 +41,8 @@
      <string>Icon</string>
     </property>
     <property name="icon">
-     <iconset resource="../project_manager.qrc">
-      <normaloff>:/Resources/o3de_editor.ico</normaloff>:/Resources/o3de_editor.ico</iconset>
+     <iconset resource="../Resources/ProjectManager.qrc">
+      <normaloff>:/o3de_editor.ico</normaloff>:/o3de_editor.ico</iconset>
     </property>
    </widget>
    <widget class="QMenu" name="projectsMenu">
@@ -55,7 +61,7 @@
   </widget>
  </widget>
  <resources>
-  <include location="../project_manager.qrc"/>
+  <include location="../Resources/ProjectManager.qrc"/>
  </resources>
  <connections/>
 </ui>

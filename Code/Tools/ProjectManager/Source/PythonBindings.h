@@ -43,10 +43,12 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QVector<GemInfo>> GetGems() override;
 
         // Project
-        AZ::Outcome<ProjectInfo> CreateProject(const ProjectTemplateInfo& projectTemplate, const ProjectInfo& projectInfo) override;
+        AZ::Outcome<ProjectInfo> CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo) override;
         AZ::Outcome<ProjectInfo> GetProject(const QString& path) override;
         AZ::Outcome<QVector<ProjectInfo>> GetProjects() override;
         bool UpdateProject(const ProjectInfo& projectInfo) override;
+        bool AddGemToProject(const QString& gemPath, const QString& projectPath) override;
+        bool RemoveGemFromProject(const QString& gemPath, const QString& projectPath) override;
 
         // ProjectTemplate
         AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates() override;
@@ -62,6 +64,7 @@ namespace O3DE::ProjectManager
         bool StopPython();
 
         AZ::IO::FixedMaxPath m_enginePath;
+        pybind11::handle m_engineTemplate;
         AZStd::recursive_mutex m_lock;
         pybind11::handle m_registration;
     };

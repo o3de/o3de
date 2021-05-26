@@ -95,7 +95,7 @@ namespace NvCloth
                 continue;
             }
 
-            for (const Physics::ShapeConfigurationPair& shapeConfigPair : clothNodeConfig.m_shapes)
+            for (const AzPhysics::ShapeColliderPair& shapeConfigPair : clothNodeConfig.m_shapes)
             {
                 const auto& colliderConfig = shapeConfigPair.first;
 

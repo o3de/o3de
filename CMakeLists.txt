@@ -102,7 +102,7 @@ if(NOT INSTALLED_ENGINE)
         string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
         # Use the last directory as the suffix path to use for the Binary Directory
         get_filename_component(directory_name ${external_directory} NAME)
-        add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/External/${directory_name}-${full_directory_hash})
+    add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/External/${directory_name}-${full_directory_hash})
     endforeach()
 
 else()

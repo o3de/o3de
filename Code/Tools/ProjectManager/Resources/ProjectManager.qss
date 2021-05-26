@@ -1,0 +1,73 @@
+/************** General (MainWindow) **************/
+QMainWindow {
+    background-color: #333333;
+}
+
+
+QPushButton:focus {
+    outline: none;
+    border:1px solid #1e70eb;
+}
+
+/************** General (Forms) **************/
+
+#formLineEditWidget,
+#formBrowseEditWidget {
+    max-width: 780px;
+}
+
+#formFrame {
+    max-width: 720px;
+    background-color: #444444;
+    border:1px solid #dddddd;
+    border-radius: 4px;
+    padding: 0px 10px 2px 6px;
+    margin-top:10px;
+    margin-left:30px;
+}
+
+#formFrame[Focus="true"] {
+    border:1px solid #1e70eb;
+}
+
+#formFrame[Valid="false"] {
+    border:1px solid red;
+}
+
+#formFrame QLabel {
+    font-size: 13px;
+    color: #cccccc;
+}
+
+#formFrame QPushButton {
+    background-color: transparent;
+    background:transparent url(:/Select_Folder.svg) no-repeat center;
+    qproperty-flat: true;
+}
+
+#formFrame QPushButton:focus {
+    border:none;
+}
+
+#formFrame QLineEdit {
+    background-color: rgba(0,0,0,0);
+    font-size: 18px;
+    color: #ffffff;
+    border:0;
+    line-height: 30px;
+    height: 1em;
+    padding-top: -4px;
+}
+
+#formErrorLabel {
+    color: #ec3030;
+    font-size: 14px;
+    margin-left: 40px;
+}
+
+#formTitleLabel {
+    font-size:21px;
+    color:#ffffff;
+    margin: 10px 0 10px 30px;
+}
+

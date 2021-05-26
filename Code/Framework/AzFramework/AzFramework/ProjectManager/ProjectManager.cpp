@@ -99,51 +99,18 @@ namespace AzFramework::ProjectManager
             AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
         }
         {
-            const char projectsScript[] = "projects.py";
+            AZStd::string filename = "o3de";
+            AZ::IO::FixedMaxPath executablePath = AZ::Utils::GetExecutableDirectory();
+            executablePath /= filename + AZ_TRAIT_OS_EXECUTABLE_EXTENSION;
 
-            AZ_Warning("ProjectManager", false, "No project provided - launching project selector.");
-
-            if (engineRootPath.empty())
+            if (!AZ::IO::SystemFile::Exists(executablePath.c_str()))
             {
-                AZ_Error("ProjectManager", false, "Couldn't find engine root");
+                AZ_Error("ProjectManager", false, "%s not found", executablePath.c_str());
                 return false;
             }
-            auto projectManagerPath = engineRootPath / "scripts" / "project_manager";
-
-            if (!AZ::IO::SystemFile::Exists((projectManagerPath / projectsScript).c_str()))
-            {
-                AZ_Error("ProjectManager", false, "%s not found at %s!", projectsScript, projectManagerPath.c_str());
-                return false;
-            }
-            AZ::IO::FixedMaxPathString executablePath;
-            AZ::Utils::GetExecutablePathReturnType result = AZ::Utils::GetExecutablePath(executablePath.data(), executablePath.capacity());
-            if (result.m_pathStored != AZ::Utils::ExecutablePathResult::Success)
-            {
-                AZ_Error("ProjectManager", false, "Could not determine executable path!");
-                return false;
-            }
-            AZ::IO::FixedMaxPath parentPath(executablePath.c_str());
-            auto exeFolder = parentPath.ParentPath();
-            AZStd::fixed_string<8> debugOption;
-            auto lastSep = exeFolder.Native().find_last_of(AZ_CORRECT_FILESYSTEM_SEPARATOR);
-            if (lastSep != AZStd::string_view::npos)
-            {
-                exeFolder = exeFolder.Native().substr(lastSep + 1);
-            }
-            if (exeFolder == "debug")
-            {
-                // We need to use the debug version of the python interpreter to load up our debug version of our libraries which work with the debug version of QT living in this folder
-                debugOption = "debug ";
-            }
-            AZ::IO::FixedMaxPath pythonPath = engineRootPath / "python";
-            pythonPath /= AZ_TRAIT_AZFRAMEWORK_PYTHON_SHELL;
-            auto cmdPath = AZ::IO::FixedMaxPathString::format("%s %s%s --executable_path=%s --parent_pid=%" PRIu32, pythonPath.Native().c_str(),
-                debugOption.c_str(), (projectManagerPath / projectsScript).c_str(), executablePath.c_str(), AZ::Platform::GetCurrentProcessId());
 
             AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-
-            processLaunchInfo.m_commandlineParameters = cmdPath;
-            processLaunchInfo.m_showWindow = false;
+            processLaunchInfo.m_commandlineParameters = executablePath.String();
             launchSuccess = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
         }
         if (ownsSystemAllocator)

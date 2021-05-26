@@ -296,6 +296,8 @@ namespace AZ
             //! This updates the shadowmap view.
             void UpdateShadowmapViews(LightHandle handle);
 
+            void UpdateViewsOfCascadeSegments();
+
             //! This calculate shadow view AABB.
             Aabb CalculateShadowViewAabb(
                 LightHandle handle,
@@ -372,6 +374,7 @@ namespace AZ
             uint32_t m_shadowmapIndexTableBufferNameIndex = 0;
 
             Name m_lightTypeName = Name("directional");
+            Name m_directionalShadowFilteringMethodName = Name("o_directional_shadow_filtering_method");
             static constexpr const char* FeatureProcessorName = "DirectionalLightFeatureProcessor";
         };
     } // namespace Render

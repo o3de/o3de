@@ -83,7 +83,7 @@ namespace AzToolsFramework
     protected:
         QWidget* GetFirstInTabOrder() override;
         QWidget* GetLastInTabOrder() override;
-        void UpdateTabOrder() override;        
+        void UpdateTabOrder() override;
 
         void onChildComboBoxValueChange(int comboBoxIndex) override;
 
@@ -93,7 +93,7 @@ namespace AzToolsFramework
 
         void addElementImpl(const AZStd::pair<T, AZStd::string>& genericValue);
 
-        QLabel*    m_warningLabel = nullptr;
+        QLabel* m_warningLabel = nullptr;
         DHQComboBox* m_pComboBox;
         AZStd::vector<AZStd::pair<T, AZStd::string>> m_values;
         AZ::AttributeFunction <void(const T&)>* m_postChangeNotifyCB{};
@@ -131,6 +131,11 @@ namespace AzToolsFramework
     template<typename T>
     AzToolsFramework::PropertyHandlerBase* RegisterGenericComboBoxHandler()
     {
+        if (!AzToolsFramework::PropertyTypeRegistrationMessages::Bus::FindFirstHandler())
+        {
+            return nullptr;
+        }
+
         auto propertyHandler = aznew GenericComboBoxHandler<T>();
         AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(&AzToolsFramework::PropertyTypeRegistrationMessages::RegisterPropertyType, propertyHandler);
         return propertyHandler;

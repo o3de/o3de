@@ -22,10 +22,61 @@ namespace O3DE::ProjectManager
         , m_isAdded(isAdded)
     {
     }
-
+    
     bool GemInfo::IsValid() const
     {
         return !m_path.isEmpty();
     }
 
+    QString GemInfo::GetPlatformString(Platform platform)
+    {
+        switch (platform)
+        {
+        case Android:
+            return "Android";
+        case iOS:
+            return "iOS";
+        case Linux:
+            return "Linux";
+        case macOS:
+            return "macOS";
+        case Windows:
+            return "Windows";
+        default:
+            return "<Unknown Platform>";
+        }
+    }
+
+    QString GemInfo::GetTypeString(Type type)
+    {
+        switch (type)
+        {
+        case Asset:
+            return "Asset";
+        case Code:
+            return "Code";
+        case Tool:
+            return "Tool";
+        default:
+            return "<Unknown Type>";
+        }
+    }
+
+    QString GemInfo::GetGemOriginString(GemOrigin origin)
+    {
+        switch (origin)
+        {
+        case O3DEFoundation:
+            return "Open 3D Foundation";
+        case Local:
+            return "Local";
+        default:
+            return "<Unknown Gem Origin>";
+        }
+    }
+
+    bool GemInfo::IsPlatformSupported(Platform platform) const
+    {
+        return (m_platforms & platform);
+    }
 } // namespace O3DE::ProjectManager

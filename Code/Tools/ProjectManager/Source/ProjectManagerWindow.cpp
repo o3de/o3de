@@ -27,6 +27,10 @@ namespace O3DE::ProjectManager
         , m_ui(new Ui::ProjectManagerWindowClass())
     {
         m_ui->setupUi(this);
+        QLayout* layout = m_ui->centralWidget->layout();
+        layout->setMargin(0);
+        layout->setSpacing(0);
+        layout->setContentsMargins(0, 0, 0, 0);
 
         m_pythonBindings = AZStd::make_unique<PythonBindings>(engineRootPath);
 
@@ -38,17 +42,17 @@ namespace O3DE::ProjectManager
 
         QDir rootDir = QString::fromUtf8(engineRootPath.Native().data(), aznumeric_cast<int>(engineRootPath.Native().size()));
         const auto pathOnDisk = rootDir.absoluteFilePath("Code/Tools/ProjectManager/Resources");
-        const auto qrcPath = QStringLiteral(":/ProjectManagerWindow");
-        AzQtComponents::StyleManager::addSearchPaths("projectmanagerwindow", pathOnDisk, qrcPath, engineRootPath);
+        const auto qrcPath = QStringLiteral(":/ProjectManager/style");
+        AzQtComponents::StyleManager::addSearchPaths("style", pathOnDisk, qrcPath, engineRootPath);
 
-        AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("projectlauncherwindow:ProjectManagerWindow.qss"));
+        AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("style:ProjectManager.qss"));
 
         QVector<ProjectManagerScreen> screenEnums =
         {
             ProjectManagerScreen::FirstTimeUse,
-            ProjectManagerScreen::NewProjectSettingsCore,
+            ProjectManagerScreen::CreateProject,
             ProjectManagerScreen::ProjectsHome,
-            ProjectManagerScreen::ProjectSettings,
+            ProjectManagerScreen::UpdateProject,
             ProjectManagerScreen::EngineSettings
         };
         m_screensCtrl->BuildScreens(screenEnums);
