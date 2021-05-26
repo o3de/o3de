@@ -192,10 +192,6 @@ function(ly_delayed_generate_static_modules_inl)
                     list(APPEND all_server_gem_dependencies ${server_gem_load_dependencies} ${server_gem_dependency})
                 endforeach()
                 foreach(server_gem_dependency ${all_server_gem_dependencies})
-                    # To match the convention on how gems targets vs gem modules are named, we remove the "Gem::" from prefix
-                    # and remove the ".Static" from the suffix
-                    string(REGEX REPLACE "^Gem::" "Gem_" server_gem_dependency ${server_gem_dependency})
-                    string(REGEX REPLACE "^Project::" "Project_" server_gem_dependency ${server_gem_dependency})
                     # Replace "." with "_"
                     string(REPLACE "." "_" server_gem_dependency ${server_gem_dependency})
 
