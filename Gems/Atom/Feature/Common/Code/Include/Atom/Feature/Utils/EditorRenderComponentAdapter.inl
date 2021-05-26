@@ -123,7 +123,7 @@ namespace AZ
             if (this->ShouldActivateController())
             {
                 AzFramework::Components::ComponentActivateHelper<TController>::Activate(
-                    m_controller, AZ::EntityComponentIdPair(GetEntityId(), GetId()));
+                    this->m_controller, AZ::EntityComponentIdPair(this->GetEntityId(), this->GetId()));
             }
         }
     } // namespace Render
