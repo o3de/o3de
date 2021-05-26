@@ -73,7 +73,7 @@ namespace AZ
 
                 static AZ::Crc32 GetAssetImportRequestComponentTag()
                 {
-                    return AZ_CRC("AssetImportRequest");
+                    return AZ_CRC_CE("AssetImportRequest");
                 }
                 
                 virtual ~AssetImportRequest() = 0;
