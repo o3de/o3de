@@ -956,9 +956,18 @@ namespace AMD
         return true;
     }
 
-    bool TressFXAsset::GenerateLocaltoGlobalBoneIndexLookup(const BoneNameToIndexMap& globalBoneIndexMap, LocalToGlobalBoneIndexLookup& outLookup)
+    bool TressFXAsset::GenerateLocaltoGlobalHairBoneIndexLookup(const BoneNameToIndexMap& globalBoneIndexMap, LocalToGlobalBoneIndexLookup& outLookup)
     {
         return GenerateLocaltoGlobalBoneIndexLookup(globalBoneIndexMap, m_boneNames, outLookup);
+    }
+
+    bool TressFXAsset::GenerateLocaltoGlobalCollisionBoneIndexLookup(const BoneNameToIndexMap& globalBoneIndexMap, LocalToGlobalBoneIndexLookup& outLookup)
+    {
+        if (m_collisionMesh)
+        {
+            return GenerateLocaltoGlobalBoneIndexLookup(globalBoneIndexMap, m_collisionMesh->m_boneNames, outLookup);
+        }
+        return true; // do not touch outlookUp, simply return true if there is no associated collision mesh
     }
 
     bool TressFXAsset::GenerateLocaltoGlobalBoneIndexLookup( const BoneNameToIndexMap& boneIndicesMap,

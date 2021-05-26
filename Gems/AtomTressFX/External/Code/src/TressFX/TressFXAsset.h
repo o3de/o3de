@@ -164,12 +164,12 @@ namespace AMD
         inline AMD::uint32 GetNumHairTriangleIndices() { return 6 * GetNumHairSegments(); }
         inline AMD::uint32 GetNumHairLineIndices() { return 2 * GetNumHairSegments(); }
 
-        // Generates a local to global bone index lookup. We are passing only a subset of the full bone information found in an
+        // Generates a local to global bone index lookup for hair and collision. We are passing only a subset of the full bone information found in an
         // emfx actor to the shader. The purpose of the index lookup is to map an emfx actor bone to the subset consisting of
         // TressFX bones. Essentially, the full set of bones found in an emfx actor are the global bones, while the bones in a
         // TressFX asset are the local bones.
-        bool GenerateLocaltoGlobalBoneIndexLookup(const BoneNameToIndexMap& globalBoneIndexMap, LocalToGlobalBoneIndexLookup& outLookup);
-
+        bool GenerateLocaltoGlobalHairBoneIndexLookup(const BoneNameToIndexMap& globalBoneIndexMap, LocalToGlobalBoneIndexLookup& outLookup);
+        bool GenerateLocaltoGlobalCollisionBoneIndexLookup(const BoneNameToIndexMap& globalBoneIndexMap, LocalToGlobalBoneIndexLookup& outLookup);
     private:
 
         // Generates a local to global bone index lookup for specified bones only. This can be called if we only need information
