@@ -1,3 +1,4 @@
+// {BEGIN_LICENSE}
 /*
 * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 * its licensors.
@@ -9,20 +10,15 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
+// {END_LICENSE}
 
-#pragma once
-
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Math/Color.h>
-#include <AzCore/Math/Vector2.h>
-#include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/Vector4.h>
-
-#if !defined(SCRIPTCANVASDIAGNOSTICSLIBRARY_EDITOR)
-
-#include <AzCore/PlatformIncl.h>
-
-#else
-
+#ifndef AZ_COLLECTING_PARTIAL_SRGS
+#error Do not include this file directly. Include the main .srgi file instead.
 #endif
+
+partial ShaderResourceGroup SceneSrg
+{
+    float m_time;
+    float m_deltaTime;
+}
+

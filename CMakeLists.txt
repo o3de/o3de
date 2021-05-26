@@ -25,31 +25,12 @@ include(cmake/LySet.cmake)
 include(cmake/Version.cmake)
 include(cmake/OutputDirectory.cmake)
 
-# Set the engine_path and engine_json
-set(o3de_engine_path ${CMAKE_CURRENT_LIST_DIR})
-set(o3de_engine_json ${o3de_engine_path}/engine.json)
-
 if(NOT PROJECT_NAME)
     project(O3DE
         LANGUAGES C CXX
         VERSION ${LY_VERSION_STRING}
     )
 endif()
-
-################################################################################
-# Resolve this engines name and restricted path
-################################################################################
-include(cmake/o3de_manifest.cmake)
-o3de_engine_name(${o3de_engine_json} o3de_engine_name)
-o3de_restricted_path(${o3de_engine_json} o3de_engine_restricted_path)
-message(STATUS "O3DE Engine Name: ${o3de_engine_name}")
-message(STATUS "O3DE Engine Path: ${o3de_engine_path}")
-if(o3de_engine_restricted_path)
-    message(STATUS "O3DE Engine Restricted Path: ${o3de_engine_restricted_path}")
-endif()
-
-# add the engines cmake folder to the CMAKE_MODULE_PATH
-list(APPEND CMAKE_MODULE_PATH "${o3de_engine_path}/cmake")
 
 ################################################################################
 # Initialize
@@ -72,10 +53,21 @@ include(cmake/Monolithic.cmake)
 include(cmake/SettingsRegistry.cmake)
 include(cmake/TestImpactFramework/LYTestImpactFramework.cmake)
 include(cmake/CMakeFiles.cmake)
+include(cmake/O3DEJson.cmake)
 
 ################################################################################
 # Subdirectory processing
 ################################################################################
+
+function(add_engine_json_external_subdirectories)
+    read_json_external_subdirs(external_subdis ${LY_ROOT_FOLDER}/engine.json)
+    foreach(external_subdir ${external_subdis})
+        file(REAL_PATH ${external_subdir} real_external_subdir BASE_DIRECTORY ${LY_ROOT_FOLDER})
+        list(APPEND engine_external_subdirs ${real_external_subdir})
+    endforeach()
+
+    set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS ${engine_external_subdirs})
+endfunction()
 
 # Add the projects first so the Launcher can find them
 include(cmake/Projects.cmake)
@@ -92,12 +84,11 @@ if(NOT INSTALLED_ENGINE)
         add_subdirectory(Tools/RemoteConsole/ly_remote_console/tests/)
     endif()
 
-    # Add any engine restricted platforms as external subdirs
-    o3de_add_engine_restricted_platform_external_subdirs()
-
-    # Add external subdirectories listed in the manifest. LY_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
+    # Add external subdirectories listed in the engine.json. LY_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
     # external subdirectories
-    list(APPEND LY_EXTERNAL_SUBDIRS ${o3de_engine_external_subdirectories})
+    add_engine_json_external_subdirectories()
+    get_property(external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS)
+    list(APPEND LY_EXTERNAL_SUBDIRS ${external_subdirs})
 
     # Loop over the additional external subdirectories and invoke add_subdirectory on them
     foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
@@ -111,7 +102,7 @@ if(NOT INSTALLED_ENGINE)
         string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
         # Use the last directory as the suffix path to use for the Binary Directory
         get_filename_component(directory_name ${external_directory} NAME)
-        add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/${directory_name}-${full_directory_hash})
+        add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/External/${directory_name}-${full_directory_hash})
     endforeach()
 
 else()
@@ -124,7 +115,7 @@ endif()
 # The following steps have to be done after all targets are registered:
 # 1. generate a settings registry .setreg file for all ly_add_project_dependencies() and ly_add_target_dependencies() calls
 #    to provide applications with the filenames of gem modules to load
-#    This must be done before ly_delayed_target_link_libraries() as that inserts BUILD_DEPENDENCIE as MANUALLY_ADDED_DEPENDENCIES
+#    This must be done before ly_delayed_target_link_libraries() as that inserts BUILD_DEPENDENCIES as MANUALLY_ADDED_DEPENDENCIES
 #    if the build dependency is a MODULE_LIBRARY. That would cause a false load dependency to be generated
 ly_delayed_generate_settings_registry()
 # 2. link targets where the dependency was yet not declared, we need to have the declaration so we do different

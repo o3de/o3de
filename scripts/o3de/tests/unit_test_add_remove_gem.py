@@ -12,7 +12,7 @@
 import os
 import pytest
 
-from . import add_remove_gem
+from o3de import add_gem_project
 
 TEST_WITHOUT_NO_GEM_CONTENT = """
 # {BEGIN_LICENSE}
@@ -105,7 +105,7 @@ def test_add_gem_dependency(tmpdir, contents, gem, expected_result, runtime_pres
         with open(runtime_dependencies_cmake_file, 'a') as s:
             s.write(contents)
 
-    result = add_remove_gem.add_gem_dependency(runtime_dependencies_cmake_file, gem)
+    result = add_gem_project.add_gem_dependency(runtime_dependencies_cmake_file, gem)
 
     if expect_failure:
         assert result != 0

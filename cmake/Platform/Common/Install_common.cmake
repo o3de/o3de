@@ -224,6 +224,16 @@ function(ly_setup_cmake_install)
         REGEX "Platform\/.*\/BuiltInPackages_.*\.cmake" EXCLUDE
     )
 
+    # Transform the LY_EXTERNAL_SUBDIRS list into a json array
+    set(LY_INSTALL_EXTERNAL_SUBDIRS "[]")
+    set(external_subdir_index "0")
+    foreach(external_subdir ${LY_EXTERNAL_SUBDIRS})
+        math(EXPR external_subdir_index "${external_subdir_index} + 1")
+        file(RELATIVE_PATH engine_rel_external_subdir ${LY_ROOT_FOLDER} ${external_subdir})
+        string(JSON LY_INSTALL_EXTERNAL_SUBDIRS ERROR_VARIABLE external_subdir_error SET ${LY_INSTALL_EXTERNAL_SUBDIRS}
+        ${external_subdir_index} "\"${engine_rel_external_subdir}\"")
+    endforeach()
+
     configure_file(${LY_ROOT_FOLDER}/cmake/install/engine.json.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/engine.json @ONLY)
 
     install(
@@ -385,6 +395,7 @@ function(ly_setup_others)
     install(DIRECTORY
         ${LY_ROOT_FOLDER}/scripts/bundler
         ${LY_ROOT_FOLDER}/scripts/project_manager
+        ${LY_ROOT_FOLDER}/scripts/o3de
         DESTINATION ./scripts
         COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
         PATTERN "__pycache__" EXCLUDE

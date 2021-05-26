@@ -112,7 +112,7 @@ namespace O3DE::ProjectManager
             AZ_Warning("ProjectManagerWindow", result != -1, "Append to sys path failed");
 
             // import required modules
-            m_registration = pybind11::module::import("o3de.registration");
+            m_registration = pybind11::module::import("o3de.manifest");
 
             return result == 0 && !PyErr_Occurred();
         } catch ([[maybe_unused]] const std::exception& e)
@@ -227,14 +227,13 @@ namespace O3DE::ProjectManager
         GemInfo gemInfo;
         gemInfo.m_path = Py_To_String(path);
 
-        auto data = m_registration.attr("get_gem_data")(pybind11::none(), path);
+        auto data = m_registration.attr("get_gem_json_data")(pybind11::none(), path);
         if (pybind11::isinstance<pybind11::dict>(data))
         {
             try
             {
                 // required
-                gemInfo.m_name        = Py_To_String(data["Name"]);
-                gemInfo.m_uuid        = AZ::Uuid(Py_To_String(data["Uuid"]));
+                gemInfo.m_name        = Py_To_String(data["gem_name"]);
 
                 // optional
                 gemInfo.m_displayName = Py_To_String_Optional(data, "DisplayName", gemInfo.m_name);
@@ -270,7 +269,7 @@ namespace O3DE::ProjectManager
         ProjectInfo projectInfo;
         projectInfo.m_path = Py_To_String(path);
 
-        auto projectData = m_registration.attr("get_project_data")(pybind11::none(), path);
+        auto projectData = m_registration.attr("get_project_json_data")(pybind11::none(), path);
         if (pybind11::isinstance<pybind11::dict>(projectData))
         {
             try
@@ -327,7 +326,7 @@ namespace O3DE::ProjectManager
         ProjectTemplateInfo templateInfo;
         templateInfo.m_path = Py_To_String(path);
 
-        auto data = m_registration.attr("get_template_data")(pybind11::none(), path);
+        auto data = m_registration.attr("get_template_json_data")(pybind11::none(), path);
         if (pybind11::isinstance<pybind11::dict>(data))
         {
             try

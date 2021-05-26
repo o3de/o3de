@@ -301,7 +301,10 @@ namespace AZ::Render
             lastTime = time;
         }
 
-        const double averageFPS = aznumeric_cast<double>(m_fpsHistory.size()) / actualInterval.count();
+        const double averageFPS = (actualInterval.count() != 0.0)
+            ? aznumeric_cast<double>(m_fpsHistory.size()) / actualInterval.count()
+            : 0.0;
+
         const double frameIntervalSeconds = m_fpsInterval.count();
 
         DrawLine(

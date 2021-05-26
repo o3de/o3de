@@ -1,6 +1,6 @@
 {
     "template_name": "DefaultProject",
-    "restricted": "o3de",
+    "restricted_name": "o3de",
     "restricted_platform_relative_path": "Templates",
     "origin": "The primary repo for DefaultProject goes here: i.e. http://www.mydomain.com",
     "license": "What license DefaultProject uses goes here: i.e. https://opensource.org/licenses/MIT",
@@ -25,6 +25,12 @@
             "isOptional": false
         },
         {
+            "file": "EngineFinder.cmake",
+            "origin": "EngineFinder.cmake",
+            "isTemplated": false,
+            "isOptional": false
+        },
+        {
             "file": "Code/${NameLower}_files.cmake",
             "origin": "Code/${NameLower}_files.cmake",
             "isTemplated": true,
@@ -41,6 +47,12 @@
             "origin": "Code/CMakeLists.txt",
             "isTemplated": true,
             "isOptional": false
+        },
+        {
+            "file": "Code/gem.json",
+            "origin": "Code/gem.json",
+            "isTemplated": true,
+            "isOptional": true
         },
         {
             "file": "Code/Include/${Name}/${Name}Bus.h",
@@ -565,10 +577,10 @@
             "isOptional": false
         },
         {
-            "file": "ShaderLib/raytracingscenesrg.srgi",
-            "origin": "ShaderLib/raytracingscenesrg.srgi",
+            "file": "ShaderLib/README.md",
+            "origin": "ShaderLib/README.md",
             "isTemplated": true,
-            "isOptional": false
+            "isOptional": true
         },
         {
             "file": "ShaderLib/scenesrg.srgi",
@@ -585,6 +597,12 @@
         {
             "file": "Shaders/CommonVS.azsli",
             "origin": "Shaders/CommonVS.azsli",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Shaders/ShaderResourceGroups/SceneSrg.azsli",
+            "origin": "Shaders/ShaderResourceGroups/SceneSrg.azsli",
             "isTemplated": true,
             "isOptional": false
         },
