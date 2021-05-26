@@ -225,7 +225,7 @@ namespace AssetProcessor
         void BuildConfig(const QDir& tempPath, AssetDatabaseConnection* dbConn, PlatformConfiguration& config)
         {
             config.EnablePlatform({ "pc" ,{ "desktop", "renderer" } }, true);
-            config.EnablePlatform({ "es3" ,{ "mobile", "renderer" } }, true);
+            config.EnablePlatform({ "android" ,{ "mobile", "renderer" } }, true);
             config.EnablePlatform({ "fandango" ,{ "console", "renderer" } }, false);
             AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
             config.PopulatePlatformsForScanFolder(platforms);
@@ -243,22 +243,22 @@ namespace AssetProcessor
 
             AssetRecognizer rec;
             AssetPlatformSpec specpc;
-            AssetPlatformSpec speces3;
+            AssetPlatformSpec specandroid;
 
-            speces3.m_extraRCParams = "somerandomparam";
+            specandroid.m_extraRCParams = "somerandomparam";
             rec.m_name = "random files";
             rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.random", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
             rec.m_platformSpecs.insert("pc", specpc);
             config.AddRecognizer(rec);
 
             specpc.m_extraRCParams = ""; // blank must work
-            speces3.m_extraRCParams = "testextraparams";
+            specandroid.m_extraRCParams = "testextraparams";
 
             const char* builderTxt1Name = "txt files";
             rec.m_name = builderTxt1Name;
             rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
             rec.m_platformSpecs.insert("pc", specpc);
-            rec.m_platformSpecs.insert("es3", speces3);
+            rec.m_platformSpecs.insert("android", specandroid);
 
             config.AddRecognizer(rec);
 
@@ -269,7 +269,7 @@ namespace AssetProcessor
             ignore_rec.m_name = "ignore files";
             ignore_rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.ignore", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
             ignore_rec.m_platformSpecs.insert("pc", specpc);
-            ignore_rec.m_platformSpecs.insert("es3", ignore_spec);
+            ignore_rec.m_platformSpecs.insert("android", ignore_spec);
             config.AddRecognizer(ignore_rec);
 
             ExcludeAssetRecognizer excludeRecogniser;
@@ -909,7 +909,7 @@ namespace AssetProcessor
         {
             AssetCatalogTest::SetUp();
             m_platforms.push_back("pc");
-            m_platforms.push_back("es3");
+            m_platforms.push_back("android");
 
             // 4 products for one platform, 1 product for the other.
             m_platformToProductsForSourceWithDifferentProducts["pc"].push_back("subfolder3/basefilez.arc2");
@@ -917,7 +917,7 @@ namespace AssetProcessor
             m_platformToProductsForSourceWithDifferentProducts["pc"].push_back("subfolder3/basefile.arc2");
             m_platformToProductsForSourceWithDifferentProducts["pc"].push_back("subfolder3/basefile.azm2");
 
-            m_platformToProductsForSourceWithDifferentProducts["es3"].push_back("subfolder3/es3exclusivefile.azm2");
+            m_platformToProductsForSourceWithDifferentProducts["android"].push_back("subfolder3/androidexclusivefile.azm2");
 
             m_sourceFileWithDifferentProductsPerPlatform = AZ::Uuid::CreateString("{38032FC9-2838-4D6A-9DA0-79E5E4F20C1B}");
             m_sourceFileWithDependency = AZ::Uuid::CreateString("{807C4174-1D19-42AD-B8BC-A59291D9388C}");
@@ -930,7 +930,7 @@ namespace AssetProcessor
             // resulting in image processing jobs having different products per platform. Because of this, the material jobs will then have different
             // dependencies per platform, because each material will depend on a referenced texture and all of that texture's mipmaps.
 
-            // Add a source file with 4 products on pc, but 1 on es3
+            // Add a source file with 4 products on pc, but 1 on android
             bool result = AddSourceAndJobForMultiplePlatforms(
                 "subfolder3",
                 "MultiplatformFile.txt",
@@ -945,7 +945,7 @@ namespace AssetProcessor
             result = AddSourceAndJobForMultiplePlatforms("subfolder3", "FileWithDependency.txt", &(m_data->m_dbConn), sourceFileWithSameProductsJobsPerPlatform, m_platforms, m_sourceFileWithDependency);
             EXPECT_TRUE(result);
 
-            const AZStd::string fileWithDependencyProductPath = "subfolder3/es3exclusivefile.azm2";
+            const AZStd::string fileWithDependencyProductPath = "subfolder3/androidexclusivefile.azm2";
 
             for (const AZStd::string& platform : m_platforms)
             {

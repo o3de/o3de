@@ -19,7 +19,7 @@ namespace AZ
 {
     inline namespace PlatformDefaults
     {
-        static const char* PlatformNames[PlatformId::NumPlatformIds] = { PlatformPC, PlatformES3, PlatformIOS, PlatformOSX, PlatformProvo, PlatformSalem, PlatformJasper, PlatformServer, PlatformAll, PlatformAllClient };
+        static const char* PlatformNames[PlatformId::NumPlatformIds] = { PlatformPC, PlatformANDROID, PlatformIOS, PlatformOSX, PlatformProvo, PlatformSalem, PlatformJasper, PlatformServer, PlatformAll, PlatformAllClient };
 
         const char* PlatformIdToPalFolder(AZ::PlatformId platform)
         {
@@ -31,7 +31,7 @@ namespace AZ
             {
             case AZ::PC:
                 return "PC";
-            case AZ::ES3:
+            case AZ::ANDROID_ID:
                 return "Android";
             case AZ::IOS:
                 return "iOS";
@@ -70,7 +70,7 @@ namespace AZ
             }
             else if (osPlatform == PlatformCodeNameAndroid)
             {
-                return PlatformES3;
+                return PlatformANDROID;
             }
             else if (osPlatform == PlatformCodeNameiOS)
             {
@@ -207,7 +207,7 @@ namespace AZ
                 platformCodes.emplace_back(PlatformCodeNameWindows);
                 platformCodes.emplace_back(PlatformCodeNameLinux);
                 break;
-            case PlatformId::ES3:
+            case PlatformId::ANDROID_ID:
                 platformCodes.emplace_back(PlatformCodeNameAndroid);
                 break;
             case PlatformId::IOS:

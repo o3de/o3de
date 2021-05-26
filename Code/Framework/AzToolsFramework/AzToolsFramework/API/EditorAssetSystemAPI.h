@@ -110,14 +110,14 @@ namespace AzToolsFramework
 
             /**
             * Query to see if a specific asset platform is enabled
-            * @param platform the asset platform to check e.g. es3, ios, etc.
+            * @param platform the asset platform to check e.g. android, ios, etc.
             * @return true if enabled, false otherwise
             */
             virtual bool IsAssetPlatformEnabled(const char* platform) = 0;
 
             /**
             * Get the total number of pending assets left to process for a specific asset platform
-            * @param platform the asset platform to check e.g. es3, ios, etc.
+            * @param platform the asset platform to check e.g. android, ios, etc.
             * @return -1 if the process fails, a positive number otherwise
             */
             virtual int GetPendingAssetsForPlatform(const char* platform) = 0;
@@ -302,7 +302,7 @@ namespace AzToolsFramework
         inline const char* GetHostAssetPlatform()
         {
 #if defined(AZ_PLATFORM_MAC)
-            return "osx_gl";
+            return "mac";
 #elif defined(AZ_PLATFORM_WINDOWS)
             return "pc";
 #elif defined(AZ_PLATFORM_LINUX)

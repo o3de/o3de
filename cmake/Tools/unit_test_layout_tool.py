@@ -215,9 +215,9 @@ def test_create_link_error():
     "project_path, asset_type, ensure_path, warn_on_missing, expected_result", [
         pytest.param('Foo', 'pc', 'Foo/Cache/pc/bootstrap.cfg', False, 'Foo/Cache/pc'),
         pytest.param('Foo', 'pc', 'dev/bootstrap.cfg', True, None),
-        pytest.param('Foo', 'pc', 'Foo/Cache/es3/bootstrap.cfg', True, None),
+        pytest.param('Foo', 'pc', 'Foo/Cache/android/bootstrap.cfg', True, None),
         pytest.param('Foo', 'pc', 'dev/bootstrap.cfg', False, common.LmbrCmdError),
-        pytest.param('Foo', 'pc', 'Foo/Cache/es3/bootstrap.cfg', False, common.LmbrCmdError),
+        pytest.param('Foo', 'pc', 'Foo/Cache/android/bootstrap.cfg', False, common.LmbrCmdError),
     ]
 )
 def test_construct_and_validate_cache_game_asset_folder_success(tmpdir, project_path, asset_type, ensure_path, warn_on_missing, expected_result):

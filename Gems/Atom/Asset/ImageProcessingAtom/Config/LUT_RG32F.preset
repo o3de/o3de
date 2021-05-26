@@ -12,7 +12,7 @@
             "PixelFormat": "R32G32F"
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{52470B8B-0798-4E03-B0D3-039D5141CFEC}",
                 "Name": "LUT_RG32F",
                 "SourceColor": "Linear",
@@ -26,7 +26,7 @@
                 "DestColor": "Linear",
                 "PixelFormat": "R32G32F"
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{52470B8B-0798-4E03-B0D3-039D5141CFEC}",
                 "Name": "LUT_RG32F",
                 "SourceColor": "Linear",

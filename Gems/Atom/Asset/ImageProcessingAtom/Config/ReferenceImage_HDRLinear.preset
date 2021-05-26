@@ -13,7 +13,7 @@
             "DiscardAlpha": true
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{46D9F30F-793C-4449-BCEF-12A396E61B2C}",
                 "Name": "ReferenceImage_HDRLinear",
                 "SourceColor": "Linear",
@@ -31,7 +31,7 @@
                 "PixelFormat": "R9G9B9E5",
                 "DiscardAlpha": true
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{46D9F30F-793C-4449-BCEF-12A396E61B2C}",
                 "Name": "ReferenceImage_HDRLinear",
                 "SourceColor": "Linear",

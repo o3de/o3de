@@ -121,14 +121,14 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_Regular_Platforms)
 
     // verify the data.
     ASSERT_NE(config.GetPlatformByIdentifier(AzToolsFramework::AssetSystem::GetHostAssetPlatform()), nullptr);
-    ASSERT_NE(config.GetPlatformByIdentifier("es3"), nullptr);
+    ASSERT_NE(config.GetPlatformByIdentifier("android"), nullptr);
     ASSERT_NE(config.GetPlatformByIdentifier("server"), nullptr);
 
-    ASSERT_TRUE(config.GetPlatformByIdentifier("es3")->HasTag("mobile"));
-    ASSERT_TRUE(config.GetPlatformByIdentifier("es3")->HasTag("renderer"));
-    ASSERT_TRUE(config.GetPlatformByIdentifier("es3")->HasTag("android"));
+    ASSERT_TRUE(config.GetPlatformByIdentifier("android")->HasTag("mobile"));
+    ASSERT_TRUE(config.GetPlatformByIdentifier("android")->HasTag("renderer"));
+    ASSERT_TRUE(config.GetPlatformByIdentifier("android")->HasTag("android"));
     ASSERT_TRUE(config.GetPlatformByIdentifier("server")->HasTag("server"));
-    ASSERT_FALSE(config.GetPlatformByIdentifier("es3")->HasTag("server"));
+    ASSERT_FALSE(config.GetPlatformByIdentifier("android")->HasTag("server"));
     ASSERT_FALSE(config.GetPlatformByIdentifier("server")->HasTag("renderer"));
 }
 
@@ -398,7 +398,7 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularScanfolderP
     AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms = config.GetScanFolderAt(0).GetPlatforms();
     ASSERT_EQ(platforms.size(), 4);
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo(AzToolsFramework::AssetSystem::GetHostAssetPlatform(), AZStd::unordered_set<AZStd::string>{})) != platforms.end());
-    ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("es3", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
+    ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("android", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("ios", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("server", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
 
@@ -406,12 +406,12 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularScanfolderP
     platforms = config.GetScanFolderAt(1).GetPlatforms();
     ASSERT_EQ(platforms.size(), 2);
     ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo(AzToolsFramework::AssetSystem::GetHostAssetPlatform(), AZStd::unordered_set<AZStd::string>{})) != platforms.end());
-    ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("es3", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
+    ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("android", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
 
     ASSERT_EQ(config.GetScanFolderAt(2).GetDisplayName(), QString("folder1output"));
     platforms = config.GetScanFolderAt(2).GetPlatforms();
     ASSERT_EQ(platforms.size(), 1);
-    ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("es3", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
+    ASSERT_TRUE(AZStd::find(platforms.begin(), platforms.end(), AssetBuilderSDK::PlatformInfo("android", AZStd::unordered_set<AZStd::string>{})) != platforms.end());
 
     ASSERT_EQ(config.GetScanFolderAt(3).GetDisplayName(), QString("folder2output"));
     platforms = config.GetScanFolderAt(3).GetPlatforms();
@@ -455,7 +455,7 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_Recognizers)
     using namespace AzToolsFramework::AssetSystem;
     using namespace AssetProcessor;
 #if defined(AZ_PLATFORM_WINDOWS)
-    const char* platformWhichIsNotCurrentPlatform = "osx_gl";
+    const char* platformWhichIsNotCurrentPlatform = "mac";
 #else
     const char* platformWhichIsNotCurrentPlatform = "pc";
 #endif
@@ -476,27 +476,27 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_Recognizers)
     ASSERT_EQ(recogs["i_caf"].m_patternMatcher.GetBuilderPattern().m_pattern, "*.i_caf");
     ASSERT_EQ(recogs["i_caf"].m_patternMatcher.GetBuilderPattern().m_type, AssetBuilderSDK::AssetBuilderPattern::Wildcard);
     ASSERT_EQ(recogs["i_caf"].m_platformSpecs.size(), 2);
-    ASSERT_TRUE(recogs["i_caf"].m_platformSpecs.contains("es3"));
+    ASSERT_TRUE(recogs["i_caf"].m_platformSpecs.contains("android"));
     ASSERT_TRUE(recogs["i_caf"].m_platformSpecs.contains(AzToolsFramework::AssetSystem::GetHostAssetPlatform()));
     ASSERT_FALSE(recogs["i_caf"].m_platformSpecs.contains("server")); // server has been set to skip.
-    ASSERT_EQ(recogs["i_caf"].m_platformSpecs["es3"].m_extraRCParams, "mobile");
+    ASSERT_EQ(recogs["i_caf"].m_platformSpecs["android"].m_extraRCParams, "mobile");
     ASSERT_EQ(recogs["i_caf"].m_platformSpecs[AzToolsFramework::AssetSystem::GetHostAssetPlatform()].m_extraRCParams, "defaultparams");
 
     ASSERT_TRUE(recogs.contains("caf"));
-    ASSERT_TRUE(recogs["caf"].m_platformSpecs.contains("es3"));
+    ASSERT_TRUE(recogs["caf"].m_platformSpecs.contains("android"));
     ASSERT_TRUE(recogs["caf"].m_platformSpecs.contains("server"));
     ASSERT_TRUE(recogs["caf"].m_platformSpecs.contains(AzToolsFramework::AssetSystem::GetHostAssetPlatform()));
     ASSERT_EQ(recogs["caf"].m_platformSpecs.size(), 3);
-    ASSERT_EQ(recogs["caf"].m_platformSpecs["es3"].m_extraRCParams, "rendererparams");
+    ASSERT_EQ(recogs["caf"].m_platformSpecs["android"].m_extraRCParams, "rendererparams");
     ASSERT_EQ(recogs["caf"].m_platformSpecs[AzToolsFramework::AssetSystem::GetHostAssetPlatform()].m_extraRCParams, "rendererparams");
     ASSERT_EQ(recogs["caf"].m_platformSpecs["server"].m_extraRCParams, "copy");
 
     ASSERT_TRUE(recogs.contains("mov"));
-    ASSERT_TRUE(recogs["mov"].m_platformSpecs.contains("es3"));
+    ASSERT_TRUE(recogs["mov"].m_platformSpecs.contains("android"));
     ASSERT_TRUE(recogs["mov"].m_platformSpecs.contains("server"));
     ASSERT_TRUE(recogs["mov"].m_platformSpecs.contains(AzToolsFramework::AssetSystem::GetHostAssetPlatform()));
     ASSERT_EQ(recogs["mov"].m_platformSpecs.size(), 3);
-    ASSERT_EQ(recogs["mov"].m_platformSpecs["es3"].m_extraRCParams, "platformspecificoverride");
+    ASSERT_EQ(recogs["mov"].m_platformSpecs["android"].m_extraRCParams, "platformspecificoverride");
     ASSERT_EQ(recogs["mov"].m_platformSpecs[AzToolsFramework::AssetSystem::GetHostAssetPlatform()].m_extraRCParams, "rendererparams");
     ASSERT_EQ(recogs["mov"].m_platformSpecs["server"].m_extraRCParams, "copy");
 
@@ -504,27 +504,27 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_Recognizers)
     // (but platforms can override it)
     ASSERT_TRUE(recogs.contains("rend"));
     ASSERT_TRUE(recogs["rend"].m_platformSpecs.contains(AzToolsFramework::AssetSystem::GetHostAssetPlatform()));
-    ASSERT_TRUE(recogs["rend"].m_platformSpecs.contains("es3"));
+    ASSERT_TRUE(recogs["rend"].m_platformSpecs.contains("android"));
     ASSERT_TRUE(recogs["rend"].m_platformSpecs.contains("server"));
     ASSERT_FALSE(recogs["rend"].m_platformSpecs.contains(platformWhichIsNotCurrentPlatform)); // this is not an enabled platform and should not be there.
     ASSERT_EQ(recogs["rend"].m_platformSpecs.size(), 3);
     ASSERT_EQ(recogs["rend"].m_platformSpecs[AzToolsFramework::AssetSystem::GetHostAssetPlatform()].m_extraRCParams, "rendererparams");
-    ASSERT_EQ(recogs["rend"].m_platformSpecs["es3"].m_extraRCParams, "rendererparams");
+    ASSERT_EQ(recogs["rend"].m_platformSpecs["android"].m_extraRCParams, "rendererparams");
     ASSERT_EQ(recogs["rend"].m_platformSpecs["server"].m_extraRCParams, ""); // default if not specified is empty string
 
     ASSERT_TRUE(recogs.contains("alldefault"));
     ASSERT_TRUE(recogs["alldefault"].m_platformSpecs.contains(AzToolsFramework::AssetSystem::GetHostAssetPlatform()));
-    ASSERT_TRUE(recogs["alldefault"].m_platformSpecs.contains("es3"));
+    ASSERT_TRUE(recogs["alldefault"].m_platformSpecs.contains("android"));
     ASSERT_TRUE(recogs["alldefault"].m_platformSpecs.contains("server"));
     ASSERT_FALSE(recogs["alldefault"].m_platformSpecs.contains(platformWhichIsNotCurrentPlatform)); // this is not an enabled platform and should not be there.
     ASSERT_EQ(recogs["alldefault"].m_platformSpecs.size(), 3);
     ASSERT_EQ(recogs["alldefault"].m_platformSpecs[AzToolsFramework::AssetSystem::GetHostAssetPlatform()].m_extraRCParams, "");
-    ASSERT_EQ(recogs["alldefault"].m_platformSpecs["es3"].m_extraRCParams, "");
+    ASSERT_EQ(recogs["alldefault"].m_platformSpecs["android"].m_extraRCParams, "");
     ASSERT_EQ(recogs["alldefault"].m_platformSpecs["server"].m_extraRCParams, "");
 
     ASSERT_TRUE(recogs.contains("skipallbutone"));
     ASSERT_FALSE(recogs["skipallbutone"].m_platformSpecs.contains(AzToolsFramework::AssetSystem::GetHostAssetPlatform()));
-    ASSERT_FALSE(recogs["skipallbutone"].m_platformSpecs.contains("es3"));
+    ASSERT_FALSE(recogs["skipallbutone"].m_platformSpecs.contains("android"));
     ASSERT_TRUE(recogs["skipallbutone"].m_platformSpecs.contains("server")); // server is only one enabled (set to copy)
     ASSERT_EQ(recogs["skipallbutone"].m_platformSpecs.size(), 1);
     ASSERT_EQ(recogs["skipallbutone"].m_platformSpecs["server"].m_extraRCParams, "copy");
@@ -550,7 +550,7 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_Overrides)
 
     // verify the data.
     ASSERT_NE(config.GetPlatformByIdentifier(AzToolsFramework::AssetSystem::GetHostAssetPlatform()), nullptr);
-    ASSERT_NE(config.GetPlatformByIdentifier("es3"), nullptr);
+    ASSERT_NE(config.GetPlatformByIdentifier("android"), nullptr);
     ASSERT_NE(config.GetPlatformByIdentifier("provo"), nullptr);
     // this override swaps server with provo in that it turns ON provo, turns off server
     ASSERT_EQ(config.GetPlatformByIdentifier("server"), nullptr); // this should be off due to overrides
@@ -567,11 +567,11 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_Overrides)
     ASSERT_EQ(recogs["i_caf"].m_patternMatcher.GetBuilderPattern().m_pattern, "*.i_caf");
     ASSERT_EQ(recogs["i_caf"].m_patternMatcher.GetBuilderPattern().m_type, AssetBuilderSDK::AssetBuilderPattern::Wildcard);
     ASSERT_EQ(recogs["i_caf"].m_platformSpecs.size(), 3);
-    ASSERT_TRUE(recogs["i_caf"].m_platformSpecs.contains("es3"));
+    ASSERT_TRUE(recogs["i_caf"].m_platformSpecs.contains("android"));
     ASSERT_TRUE(recogs["i_caf"].m_platformSpecs.contains("provo"));
     ASSERT_TRUE(recogs["i_caf"].m_platformSpecs.contains(AzToolsFramework::AssetSystem::GetHostAssetPlatform()));
     ASSERT_FALSE(recogs["i_caf"].m_platformSpecs.contains("server")); // server has been set to skip.
-    ASSERT_EQ(recogs["i_caf"].m_platformSpecs["es3"].m_extraRCParams, "mobile");
+    ASSERT_EQ(recogs["i_caf"].m_platformSpecs["android"].m_extraRCParams, "mobile");
     ASSERT_EQ(recogs["i_caf"].m_platformSpecs[AzToolsFramework::AssetSystem::GetHostAssetPlatform()].m_extraRCParams, "defaultparams");
     ASSERT_EQ(recogs["i_caf"].m_platformSpecs["provo"].m_extraRCParams, "copy");
 

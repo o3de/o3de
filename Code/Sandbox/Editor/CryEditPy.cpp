@@ -533,7 +533,7 @@ namespace AzToolsFramework
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
             behaviorContext->EnumProperty<ESystemConfigPlatform::CONFIG_PC>("SystemConfigPlatform_Pc")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
-            behaviorContext->EnumProperty<ESystemConfigPlatform::CONFIG_OSX_GL>("SystemConfigPlatform_OsxGl")
+            behaviorContext->EnumProperty<ESystemConfigPlatform::CONFIG_MAC>("SystemConfigPlatform_OsxGl")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
             behaviorContext->EnumProperty<ESystemConfigPlatform::CONFIG_OSX_METAL>("SystemConfigPlatform_OsxMetal")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
