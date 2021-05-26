@@ -12,6 +12,7 @@
 #include "LyShine_precompiled.h"
 #include "LyShineDebug.h"
 #include "IConsole.h"
+#include "IRenderer.h"
 #include <LyShine/Draw2d.h>
 
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
