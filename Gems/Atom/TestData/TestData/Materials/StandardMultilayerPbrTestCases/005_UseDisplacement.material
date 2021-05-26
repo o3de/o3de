@@ -46,8 +46,8 @@
         },
         "layer2_uv": {
             "center": [
-                0.5,
-                0.5
+                0.0,
+                0.0
             ],
             "offsetU": 0.1599999964237213,
             "offsetV": 0.07999999821186066,
@@ -67,13 +67,15 @@
             "textureMap": "TestData/Textures/cc0/Rocks002_1K_Roughness.jpg"
         },
         "layer3_uv": {
+            "center": [
+                0.0,
+                0.0
+            ],
             "scale": 3.4999988079071047
         },
         "parallax": {
             "algorithm": "Relief",
-            "enable": true,
-            "pdo": true,
-            "quality": "Low"
+            "pdo": true
         }
     }
 }
