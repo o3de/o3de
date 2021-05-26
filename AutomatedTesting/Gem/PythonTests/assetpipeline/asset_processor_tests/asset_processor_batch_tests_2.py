@@ -80,6 +80,15 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         # fmt:on
         """
         Tests that fast scan mode can be used and is faster than full scan mode.
+
+        Test Steps:
+        1. Ensure all assets are processed
+        2. Run Asset Processor without fast scan and measure the time it takes to run
+        3. Capture Full Analysis was performed and number of assets processed
+        4. Run Asset Processor with full scan and measure the time it takes to run
+        5. Capture Full Analysis wans't performed and number of assets processed
+        6. Verify that fast scan was faster than full scan
+        7. Verify that full scan scanned more assets
         """
 
         asset_processor.create_temp_asset_root()
@@ -114,8 +123,18 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.test_case_id("C18787404")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.skip(reason="External project is currently broken.")  # LY-119863
+    @pytest.mark.skip(reason="External project is currently broken.")
     def test_AllSupportedPlatforms_ExternalProject_APRuns(self, workspace, ap_external_project_setup_fixture):
+        """
+        Tests that Asset Processor can process assets for external projects
+
+        Test Steps:
+        1. Setup external project testing environment
+        2. Run Asset Processor against external project
+        3. Verify that asset processor exits cleanly
+        4. Verify that there were no asset failures
+        5. Clean up testing environment
+        """
 
         external_resources = ap_external_project_setup_fixture
         logger.info(f"Running external project test at path {external_resources['project_dir']}")
@@ -181,6 +200,17 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.parametrize("clear_type", ["rewrite", "delete_asset", "delete_dir"])
     def test_AllSupportedPlatforms_DeleteBadAssets_BatchFailedJobsCleared(
             self, workspace, request, ap_setup_fixture, asset_processor,  clear_type):
+        """
+        Tests the ability of Asset Processor to recover from processing of bad assets by removing them from scan folder
+
+        Test Steps:
+        1. Create testing environment with good and multiple bad assets
+        2. Run Asset Processor
+        3. Verify that bad assets fail to process
+        4. Fix a bad asset & delete the others
+        5. Run Asset Processor
+        6. Verify Asset Processor does not have any asset failues
+        """
         env = ap_setup_fixture
         error_search_terms = ["WWWWWWWWWWWW"]
 
@@ -250,6 +280,14 @@ class TestsAssetProcessorBatch_Windows(object):
         Verify the AP batch and Gui can run and process assets independent of the Editor
         We do not want or need to kill running Editors here as they can be involved in other tests
         or simply being run locally in this branch or another
+
+        Test Steps:
+        1. Create temporary testing environment
+        2. Run asset processor GUI
+        3. Verify AP GUI doesn't error
+        4. Stop AP GUI
+        5. Run Asset Processor Batch with Fast Scan
+        5. Verify Asset Processor Batch exits cleanly
         """
 
         asset_processor.create_temp_asset_root()
@@ -272,6 +310,11 @@ class TestsAssetProcessorBatch_Windows(object):
         """
         Request a run for an invalid platform
         "AssetProcessor: Error: Platform in config file or command line 'notaplatform'" should be present in the logs
+
+        Test Steps:
+        1. Create temporary testing environment
+        2. Run Asset Processor with an invalid platform
+        3. Check that asset processor returns an Error notifying the user that the invalid platform is not supported
         """
         asset_processor.create_temp_asset_root()
         error_search_terms = 'AssetProcessor: Error: The list of enabled platforms in the settings registry does not contain platform ' \
