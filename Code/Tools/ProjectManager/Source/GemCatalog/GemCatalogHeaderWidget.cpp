@@ -27,8 +27,8 @@ namespace O3DE::ProjectManager
 
         setStyleSheet("background-color: #1E252F;");
 
-        QLabel* titleLabel = new QLabel("Gem Catalog");
-        titleLabel->setStyleSheet("font-size: 17pt;");
+        QLabel* titleLabel = new QLabel(tr("Gem Catalog"));
+        titleLabel->setStyleSheet("font-size: 21px;");
         hLayout->addWidget(titleLabel);
 
         hLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));

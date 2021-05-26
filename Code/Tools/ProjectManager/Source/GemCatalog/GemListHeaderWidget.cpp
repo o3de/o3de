@@ -40,7 +40,7 @@ namespace O3DE::ProjectManager
         connect(proxyModel, &GemSortFilterProxyModel::OnInvalidated, this, [=]
             {
                 const int numGemsShown = proxyModel->rowCount();
-                showCountLabel->setText(QString("showing %1 Gems").arg(numGemsShown));
+                showCountLabel->setText(QString(tr("showing %1 Gems")).arg(numGemsShown));
             });
 
         topLayout->addSpacing(GemItemDelegate::s_contentMargins.right() + GemItemDelegate::s_borderWidth);
@@ -63,13 +63,13 @@ namespace O3DE::ProjectManager
 
         columnHeaderLayout->addSpacing(31);
 
-        QLabel* gemNameLabel = new QLabel("Gem Name");
+        QLabel* gemNameLabel = new QLabel(tr("Gem Name"));
         gemNameLabel->setStyleSheet("font-size: 11pt;");
         columnHeaderLayout->addWidget(gemNameLabel);
 
         columnHeaderLayout->addSpacing(111);
 
-        QLabel* gemSummaryLabel = new QLabel("Gem Summary");
+        QLabel* gemSummaryLabel = new QLabel(tr("Gem Summary"));
         gemSummaryLabel->setStyleSheet("font-size: 11pt;");
         columnHeaderLayout->addWidget(gemSummaryLabel);
 
