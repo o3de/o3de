@@ -52,19 +52,19 @@ namespace AzToolsFramework
         TransformTestEntityHierarchy hierarchy = BuildTestHierarchy();
 
         // Set scale to parent entity
-        const AZ::Vector3 parentScale(2.0f, 1.0f, 3.0f);
-        AZ::TransformBus::Event(hierarchy.m_parentId, &AZ::TransformInterface::SetLocalScale, parentScale);
+        const float parentScale = 2.0f;
+        AZ::TransformBus::Event(hierarchy.m_parentId, &AZ::TransformInterface::SetLocalUniformScale, parentScale);
 
         // Set scale to child entity
-        const AZ::Vector3 childScale(5.0f, 6.0f, 10.0f);
-        AZ::TransformBus::Event(hierarchy.m_childId, &AZ::TransformInterface::SetLocalScale, childScale);
+        const float childScale = 5.0f;
+        AZ::TransformBus::Event(hierarchy.m_childId, &AZ::TransformInterface::SetLocalUniformScale, childScale);
 
-        const AZ::Vector3 expectedScale = childScale * parentScale;
+        const float expectedScale = childScale * parentScale;
 
-        AZ::Vector3 childWorldScale = AZ::Vector3::CreateOne();
-        AZ::TransformBus::EventResult(childWorldScale, hierarchy.m_childId, &AZ::TransformBus::Events::GetWorldScale);
+        float childWorldScale = 1.0f;
+        AZ::TransformBus::EventResult(childWorldScale, hierarchy.m_childId, &AZ::TransformBus::Events::GetWorldUniformScale);
 
-        EXPECT_THAT(childWorldScale, UnitTest::IsClose(expectedScale));
+        EXPECT_NEAR(childWorldScale, expectedScale, AZ::Constants::Tolerance);
     }
 
     TEST_F(EditorTransformComponentTest, TransformTests_GetChildren_DirectChildrenMatchHierarchy)

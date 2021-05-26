@@ -274,12 +274,15 @@ namespace DebugDraw
         AzFramework::DebugDisplayRequests* debugDisplay =
             AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
 
-        OnTickAabbs(*debugDisplay);
-        OnTickLines(*debugDisplay);
-        OnTickObbs(*debugDisplay);
-        OnTickRays(*debugDisplay);
-        OnTickSpheres(*debugDisplay);
-        OnTickText(*debugDisplay);
+        if (debugDisplay)
+        {
+            OnTickAabbs(*debugDisplay);
+            OnTickLines(*debugDisplay);
+            OnTickObbs(*debugDisplay);
+            OnTickRays(*debugDisplay);
+            OnTickSpheres(*debugDisplay);
+            OnTickText(*debugDisplay);
+        }
     }
 
     template <typename F>

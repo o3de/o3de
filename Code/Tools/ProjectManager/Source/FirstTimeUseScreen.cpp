@@ -21,13 +21,6 @@
 
 namespace O3DE::ProjectManager
 {
-    inline constexpr static int s_contentMargins = 80;
-    inline constexpr static int s_buttonSpacing = 30;
-    inline constexpr static int s_iconSize = 24;
-    inline constexpr static int s_spacerSize = 20;
-    inline constexpr static int s_boxButtonWidth = 210;
-    inline constexpr static int s_boxButtonHeight = 280;
-
     FirstTimeUseScreen::FirstTimeUseScreen(QWidget* parent)
         : ScreenWidget(parent)
     {
@@ -79,8 +72,8 @@ namespace O3DE::ProjectManager
 
     void FirstTimeUseScreen::HandleNewProjectButton()
     {
-        emit ResetScreenRequest(ProjectManagerScreen::NewProjectSettingsCore);
-        emit ChangeScreenRequest(ProjectManagerScreen::NewProjectSettingsCore);
+        emit ResetScreenRequest(ProjectManagerScreen::CreateProject);
+        emit ChangeScreenRequest(ProjectManagerScreen::CreateProject);
     }
     void FirstTimeUseScreen::HandleAddProjectButton()
     {
