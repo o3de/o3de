@@ -158,47 +158,8 @@ namespace AZ
 
         void AtomBridgeSystemComponent::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
         {
-            AZStd::shared_ptr<AZ::RPI::WindowContext> windowContext;
-            AZ::Render::Bootstrap::DefaultWindowBus::BroadcastResult(windowContext, &AZ::Render::Bootstrap::DefaultWindowInterface::GetDefaultWindowContext);
-
-            if (!windowContext)
-            {
-                AZ_Warning("Atom", false, "Cannot initialize Atom because no window context is available");
-                return;
-            }
-
-            AZ::RPI::RenderPipelinePtr renderPipeline = bootstrapScene->GetDefaultRenderPipeline();
-
-            // If RenderPipeline doesn't have a default view, create a view and make it the default view.
-            // These settings will be overridden by the editor or game camera.
-            if (renderPipeline->GetDefaultView() == nullptr)
-            {
-                auto viewContextManager = AZ::Interface<RPI::ViewportContextRequestsInterface>::Get();
-                m_view = AZ::RPI::View::CreateView(AZ::Name("AtomSystem Default View"), RPI::View::UsageCamera);
-                viewContextManager->PushView(viewContextManager->GetDefaultViewportContextName(), m_view);
-                const auto& viewport = windowContext->GetViewport();
-                const float aspectRatio = viewport.m_maxX / viewport.m_maxY;
-
-                // Note: This is projection assumes a setup for reversed depth
-                AZ::Matrix4x4 viewToClipMatrix;
-                AZ::MakePerspectiveFovMatrixRH(viewToClipMatrix, AZ::Constants::HalfPi, aspectRatio, 0.1f, 100.f, true);
-
-                m_view->SetViewToClipMatrix(viewToClipMatrix);
-
-                renderPipeline = bootstrapScene->GetDefaultRenderPipeline();
-                renderPipeline->SetDefaultView(m_view);
-            }
-            else
-            {
-                m_view = renderPipeline->GetDefaultView();
-            }
-            auto auxGeomFP = bootstrapScene->GetFeatureProcessor<RPI::AuxGeomFeatureProcessorInterface>();
-            if (auxGeomFP)
-            {
-                auxGeomFP->GetOrCreateDrawQueueForView(m_view.get());
-            }
-
-            // Make default AtomDebugDisplayViewportInterface for the scene
+            AZ_UNUSED(bootstrapScene);
+            // Make default AtomDebugDisplayViewportInterface
             AZStd::shared_ptr<AtomDebugDisplayViewportInterface> mainEntityDebugDisplay = AZStd::make_shared<AtomDebugDisplayViewportInterface>(AzFramework::g_defaultSceneEntityDebugDisplayId);
             m_activeViewportsList[AzFramework::g_defaultSceneEntityDebugDisplayId] = mainEntityDebugDisplay;
         }

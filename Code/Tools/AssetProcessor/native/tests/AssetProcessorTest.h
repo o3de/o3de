@@ -14,6 +14,7 @@
 #include <AzTest/AzTest.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/Application/Application.h>
 #include <native/utilities/assetUtils.h>
 #include <native/unittests/UnitTestRunner.h> // for the assert absorber.
@@ -44,7 +45,18 @@ namespace AssetProcessor
                 AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
             }
             m_errorAbsorber = new UnitTestUtils::AssertAbsorber();
+
             m_application = AZStd::make_unique<AzFramework::Application>();
+
+            // Inject the AutomatedTesting project as a project path into test fixture
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            constexpr auto projectPathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
+                + "/project_path";
+            if(auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                settingsRegistry->Set(projectPathKey, "AutomatedTesting");
+                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
+            }
         }
 
         void TearDown() override

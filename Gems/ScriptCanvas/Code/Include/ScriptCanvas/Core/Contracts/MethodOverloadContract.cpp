@@ -33,7 +33,7 @@ namespace ScriptCanvas
     {
         if (m_availableIndexes.empty())
         {
-            return -1;
+            return std::numeric_limits<AZ::u32>::max();
         }
 
         return (*m_availableIndexes.begin());
@@ -151,19 +151,22 @@ namespace ScriptCanvas
 
             for (const AZ::BehaviorParameter* behaviorParameter : paramTypes.second)
             {
-                ScriptCanvas::Data::Type dataType = ScriptCanvas::Data::FromAZType(behaviorParameter->m_typeId);
-                if (ScriptCanvas::Data::IsValueType(dataType))
+                if (behaviorParameter)
                 {
-                    isValueType = true;
-                }
-                else if (ScriptCanvas::Data::IsContainerType(dataType))
-                {
-                    isContainerType = true;
-                }
+                    ScriptCanvas::Data::Type dataType = ScriptCanvas::Data::FromAZType(behaviorParameter->m_typeId);
+                    if (ScriptCanvas::Data::IsValueType(dataType))
+                    {
+                        isValueType = true;
+                    }
+                    else if (ScriptCanvas::Data::IsContainerType(dataType))
+                    {
+                        isContainerType = true;
+                    }
 
-                if (isValueType && isContainerType)
-                {
-                    break;
+                    if (isValueType && isContainerType)
+                    {
+                        break;
+                    }
                 }
             }
 

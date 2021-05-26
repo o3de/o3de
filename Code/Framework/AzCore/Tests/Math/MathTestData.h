@@ -61,8 +61,8 @@ namespace MathTestData
     };
 
     static const AZ::Transform NonOrthogonalTransforms[] = {
-    AZ::Transform::CreateScale(AZ::Vector3(2.4f, 0.3f, 1.7f)),
-    AZ::Transform::CreateRotationX(2.2f) * AZ::Transform::CreateScale(AZ::Vector3(0.2f, 0.8f, 1.4f))
+        AZ::Transform::CreateUniformScale(2.4f),
+        AZ::Transform::CreateRotationX(2.2f) * AZ::Transform::CreateUniformScale(0.8f)
     };
 
     static const AZ::Transform OrthogonalTransforms[] = {
