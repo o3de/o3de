@@ -725,7 +725,7 @@
                     "description": "Center point for scaling and rotation transformations.",
                     "type": "vector2",
                     "vectorLabels": [ "U", "V" ],
-                    "defaultValue": [ 0.0, 0.0 ]
+                    "defaultValue": [ 0.5, 0.5 ]
                 },
                 {
                     "id": "tileU",
@@ -1388,7 +1388,7 @@
                     "description": "Center point for scaling and rotation transformations.",
                     "type": "vector2",
                     "vectorLabels": [ "U", "V" ],
-                    "defaultValue": [ 0.0, 0.0 ]
+                    "defaultValue": [ 0.5, 0.5 ]
                 },
                 {
                     "id": "tileU",
