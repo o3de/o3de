@@ -291,7 +291,6 @@ namespace AssetProcessor
                     }
                 }
 
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(registry);
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, platform, specialization, &scratchBuffer);
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, platform, specialization, &scratchBuffer);
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, platform, specialization, &scratchBuffer);

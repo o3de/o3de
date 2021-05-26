@@ -576,6 +576,29 @@ namespace AZ::AtomBridge
         }
     }
 
+    void AtomDebugDisplayViewportInterface::DrawWireOBB(
+        const AZ::Vector3& center, 
+        const AZ::Vector3& axisX, 
+        const AZ::Vector3& axisY, 
+        const AZ::Vector3& axisZ, 
+        const AZ::Vector3& halfExtents)
+    {
+        if (m_auxGeomPtr)
+        {
+            AZ::Quaternion rotation = AZ::Quaternion::CreateFromMatrix3x3(AZ::Matrix3x3::CreateFromColumns(axisX, axisY, axisZ));
+            AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(center, rotation, halfExtents);
+            m_auxGeomPtr->DrawObb(
+                obb,
+                AZ::Vector3::CreateZero(), 
+                m_rendState.m_color, 
+                AZ::RPI::AuxGeomDraw::DrawStyle::Line,
+                m_rendState.m_depthTest,
+                m_rendState.m_depthWrite,
+                m_rendState.m_faceCullMode,
+                m_rendState.m_viewProjOverrideIndex);
+        }
+    }
+
     void AtomDebugDisplayViewportInterface::DrawSolidOBB(
         const AZ::Vector3& center, 
         const AZ::Vector3& axisX, 
@@ -906,7 +929,28 @@ namespace AZ::AtomBridge
         }
     }
 
-    void AtomDebugDisplayViewportInterface::DrawCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height, bool drawShaded)
+    void AtomDebugDisplayViewportInterface::DrawWireCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height)
+    {
+        if (m_auxGeomPtr)
+        {
+            const AZ::Vector3 worldPos = ToWorldSpacePosition(pos);
+            const AZ::Vector3 worldDir = ToWorldSpaceVector(dir);
+            m_auxGeomPtr->DrawCone(
+                worldPos, 
+                worldDir, 
+                radius, 
+                height, 
+                m_rendState.m_color, 
+                AZ::RPI::AuxGeomDraw::DrawStyle::Line,
+                m_rendState.m_depthTest,
+                m_rendState.m_depthWrite,
+                m_rendState.m_faceCullMode,
+                m_rendState.m_viewProjOverrideIndex
+            );
+        }
+    }
+
+    void AtomDebugDisplayViewportInterface::DrawSolidCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height, bool drawShaded)
     {
         if (m_auxGeomPtr)
         {
@@ -1336,8 +1380,6 @@ namespace AZ::AtomBridge
     {
         AZ_Assert(false, "Unexpected use of legacy api, please file a feature request with the rendering team to get this implemented!");
     }
-    // unhandledled on Atom - virtual void DrawTextureLabel(ITexture* texture, const AZ::Vector3& pos, float sizeX, float sizeY, int texIconFlags) override;
-    // void AtomDebugDisplayViewportInterface::DrawTextureLabel(int textureId, const AZ::Vector3& pos, float sizeX, float sizeY, int texIconFlags) override;
 
     void AtomDebugDisplayViewportInterface::SetLineWidth(float width)
     {
