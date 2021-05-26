@@ -13,5 +13,6 @@ set(FILES
     Tests/Main.cpp
     Tests/IMultiplayerConnectionMock.h
     Tests/MultiplayerSystemTests.cpp
+    Tests/RewindableContainerTests.cpp
     Tests/RewindableObjectTests.cpp
 )

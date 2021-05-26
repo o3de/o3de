@@ -17,8 +17,8 @@ namespace Multiplayer
     template <typename TYPE, uint32_t SIZE>
     constexpr RewindableFixedVector<TYPE, SIZE>::RewindableFixedVector(const TYPE& initialValue, uint32_t count)
     {
-        m_container.resize(count, initialValue);
-        m_rewindableSize = m_container.size();
+        m_container.fill(initialValue);
+        m_rewindableSize = count;
     }
 
     template <typename TYPE, uint32_t SIZE>
@@ -30,15 +30,14 @@ namespace Multiplayer
     template <typename TYPE, uint32_t SIZE>
     bool RewindableFixedVector<TYPE, SIZE>::Serialize(AzNetworking::ISerializer& serializer)
     {
-        m_rewindableSize = m_container.size();
-        if(!m_rewindableSize.Serialize(serializer) && !resize(m_rewindableSize))
+        if(!m_rewindableSize.Serialize(serializer))
         {
             return false;
         }
 
-        for (uint32_t i = 0; i < size(); ++i)
+        for (uint32_t idx = 0; idx < size(); ++idx)
         {
-            if(!m_container[i].Serialize(serializer))
+            if(!m_container[idx].Serialize(serializer))
             {
                 return false;
             }
@@ -53,8 +52,7 @@ namespace Multiplayer
         if (deltaRecord.GetBit(SIZE))
         {
             const uint32_t origSize = m_rewindableSize;
-            m_rewindableSize = m_container.size();
-            if(!m_rewindableSize.Serialize(serializer) && !resize(m_rewindableSize))
+            if(!m_rewindableSize.Serialize(serializer))
             {
                 return false;
             }
@@ -64,19 +62,19 @@ namespace Multiplayer
                 deltaRecord.SetBit(SIZE, false);
             }
         }
-        for (uint32_t i = 0; i < size(); ++i)
+        for (uint32_t idx = 0; idx < size(); ++idx)
         {
-            if (deltaRecord.GetBit(i))
+            if (deltaRecord.GetBit(idx))
             {
                 serializer.ClearTrackedChangesFlag();
-                if(!m_container[i].Serialize(serializer))
+                if(!m_container[idx].Serialize(serializer))
                 {
                     return false;
                 }
 
                 if ((serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject) && !serializer.GetTrackedChangesFlag())
                 {
-                    deltaRecord.SetBit(i, false);
+                    deltaRecord.SetBit(idx, false);
                 }
             }
         }
@@ -92,7 +90,7 @@ namespace Multiplayer
             return false;
         }
 
-        for (uint32_t idx = 0; idx < bufferSize; ++i)
+        for (uint32_t idx = 0; idx < bufferSize; ++idx)
         {
             m_container[idx] = buffer[idx];
         }
@@ -104,9 +102,9 @@ namespace Multiplayer
     constexpr RewindableFixedVector<TYPE, SIZE>& RewindableFixedVector<TYPE, SIZE>::operator=(const RewindableFixedVector<TYPE, SIZE>& rhs)
     {
         resize(rhs.size());
-        for (uint32_t idx = 0; idx < size(); ++i)
+        for (uint32_t idx = 0; idx < size(); ++idx)
         {
-            m_container[idx] = rhs.m_container[idx];
+            m_container[idx] = rhs.m_container[idx].Get();
         }
         return *this;
     }
@@ -136,8 +134,14 @@ namespace Multiplayer
             return true;
         }
 
-        m_container.resize(count, TYPE());
-        m_rewindableSize = m_container.size();
+        if (count > size())
+        {
+            for (uint32_t idx = size(); idx < count; ++idx)
+            {
+                m_container[idx] = TYPE();
+            }
+        }
+        m_rewindableSize = count;
 
         return true;
     }
@@ -150,8 +154,7 @@ namespace Multiplayer
             return false;
         }
 
-        m_container.resize_no_construct(count);
-        m_rewindableSize = m_container.size();
+        m_rewindableSize = count;
 
         return true;
     }
@@ -159,8 +162,11 @@ namespace Multiplayer
     template <typename TYPE, uint32_t SIZE>
     constexpr void RewindableFixedVector<TYPE, SIZE>::clear()
     {
-        m_container.clear();
-        m_rewindableSize = m_container.size();
+        for (uint32_t idx = 0; idx < SIZE; ++idx)
+        {
+            m_container[idx] = TYPE();
+        }
+        m_rewindableSize = 0;
     }
 
     template <typename TYPE, uint32_t SIZE>
@@ -182,8 +188,8 @@ namespace Multiplayer
     {
         if (size() < SIZE)
         {
-            m_container.push_back(value);
-            m_rewindableSize = m_container.size();
+            m_container[m_rewindableSize] = value;
+            m_rewindableSize = m_rewindableSize + 1;
             return true;
         }
 
@@ -195,8 +201,8 @@ namespace Multiplayer
     {
         if (size() > 0)
         {
-            m_container.pop_back();
-            m_rewindableSize = m_container.size();
+            m_rewindableSize = m_rewindableSize - 1;
+            m_container[m_rewindableSize] = TYPE();
             return true;
         }
 
@@ -206,14 +212,14 @@ namespace Multiplayer
     template <typename TYPE, uint32_t SIZE>
     constexpr bool RewindableFixedVector<TYPE, SIZE>::empty() const
     {
-        return m_container.empty();
+        return m_rewindableSize.Get() == 0;
     }
 
     template <typename TYPE, uint32_t SIZE>
     constexpr const TYPE& RewindableFixedVector<TYPE, SIZE>::back() const
     {
         AZ_Assert(size() > 0, "Attempted to get back element of an empty RewindableFixedVector");
-        return m_container.back().Get();
+        return m_container[m_rewindableSize - 1].Get();
     }
 
     template <typename TYPE, uint32_t SIZE>
