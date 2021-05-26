@@ -127,16 +127,13 @@ namespace AZ
             m_increments.fill(1); // By default increment by 1 between each number.
         }
 
-        //! Returns a Halton sequence in an array of N length
-        template<uint32_t N>
-        AZStd::array<AZStd::array<float, Dimensions>, N> GetHaltonSequence()
+        template<class Iterator>
+        void FillHaltonSequence(Iterator begin, Iterator end)
         {
-            AZStd::array<AZStd::array<float, Dimensions>, N> result;
-
             AZStd::array<uint32_t, Dimensions> indices = m_offsets;
 
             // Generator that returns the Halton number for all bases for a single entry.
-            auto f = [&] ()
+            auto f = [&]()
             {
                 AZStd::array<float, Dimensions> item;
                 for (auto d = 0; d < Dimensions; ++d)
@@ -147,7 +144,15 @@ namespace AZ
                 return item;
             };
 
-            AZStd::generate(result.begin(), result.end(), f);
+            AZStd::generate(begin, end, f);
+        }
+        
+        //! Returns a Halton sequence in an array of N length
+        template<uint32_t N>
+        AZStd::array<AZStd::array<float, Dimensions>, N> GetHaltonSequence()
+        {
+            AZStd::array<AZStd::array<float, Dimensions>, N> result;
+            FillHaltonSequence(result.begin(), result.end());
             return result;
         }
 
