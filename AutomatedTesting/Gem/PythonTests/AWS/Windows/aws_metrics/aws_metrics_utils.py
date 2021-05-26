@@ -33,7 +33,7 @@ class AWSMetricsUtils:
     def __init__(self, aws_utils: AwsUtils):
         self._aws_util = aws_utils
 
-    def start_kenisis_data_analytics_application(self, application_name: str) -> None:
+    def start_kinesis_data_analytics_application(self, application_name: str) -> None:
         """
         Start the Kenisis Data Analytics application for real-time analytics.
         :param application_name: Name of the Kenisis Data Analytics application.
@@ -81,7 +81,7 @@ class AWSMetricsUtils:
 
         return input_descriptions[0].get('InputId', '')
 
-    def stop_kenisis_data_analytics_application(self, application_name: str) -> None:
+    def stop_kinesis_data_analytics_application(self, application_name: str) -> None:
         """
         Stop the Kenisis Data Analytics application.
         :param application_name: Name of the Kenisis Data Analytics application.

@@ -9,20 +9,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
 import boto3
+import configparser
+import os
 import pytest
-import subprocess
 import typing
-
-import ly_test_tools.environment.process_utils as process_utils
 
 
 class AwsCredentials:
     def __init__(self, profile_name: str):
         self._profile_name = profile_name
 
+        self._credentials_path = os.path.join(os.path.expanduser('~'), '.aws/credentials')
+        self._credentials = configparser.ConfigParser()
+        self._credentials.read(self._credentials_path)
+
+        self._credentials_file_exists = os.path.exists(self._credentials_path)
+
     def get_aws_credentials(self) -> typing.Tuple[str, str, str]:
         """
-        Get aws credentials from the specific named profile.
+        Get aws credentials stored in the specific named profile.
 
         :return AWS credentials.
         """
@@ -50,34 +55,52 @@ class AwsCredentials:
         :param aws_secret_access_key: AWS secrete access key.
         :param aws_session_token: AWS assumed role session.
         """
-        process_utils.check_call(['aws', 'configure', 'set', 'aws_access_key_id',
-                                  aws_access_key_id, '--profile', self._profile_name], shell=True)
-        process_utils.check_call(['aws', 'configure', 'set', 'aws_secret_access_key',
-                                  aws_secret_access_key, '--profile', self._profile_name], shell=True)
-        process_utils.check_call(['aws', 'configure', 'set', 'aws_session_token',
-                                  aws_session_token, '--profile', self._profile_name], shell=True)
+        self._set_aws_credential_attribute_value('aws_access_key_id', aws_access_key_id)
+        self._set_aws_credential_attribute_value('aws_secret_access_key', aws_secret_access_key)
+        self._set_aws_credential_attribute_value('aws_session_token', aws_session_token)
 
-    def _get_aws_credential_attribute_value(self, key_name: str) -> str:
+        if (len(self._credentials.sections()) == 0) and (not self._credentials_file_exists):
+            os.remove(self._credentials_path)
+            return
+
+        with open(self._credentials_path, 'w+') as credential_file:
+            self._credentials.write(credential_file)
+
+    def _get_aws_credential_attribute_value(self, attribute_name: str) -> str:
         """
-        Get the value of an AWS credential attribute from the specific named profile.
+        Get the value of an AWS credential attribute stored in the specific named profile.
 
-        :return Value of an AWS credential attribute.
+        :param attribute_name: Name of the AWS credential attribute.
+        :return Value of the AWS credential attribute.
         """
         try:
-            value = process_utils.check_output(
-                ['aws', 'configure', 'get', f'{self._profile_name}.{key_name}'], shell=True)
-        except subprocess.CalledProcessError as e:
-            if not e.output:
-                # Named profile or key doesn't exist
-                value = ''
-            else:
-                raise e
-
-        if value == '\r\n':
-            # Value is a new line character
-            value = ''
+            value = self._credentials.get(self._profile_name, attribute_name)
+        except configparser.NoSectionError:
+            # Named profile or key doesn't exist
+            value = None
+        except configparser.NoOptionError:
+            # Named profile doesn't have the specified attribute
+            value = None
 
         return value
+
+    def _set_aws_credential_attribute_value(self, attribute_name: str, attribute_value: str) -> None:
+        """
+        Set the value of an AWS credential attribute stored in the specific named profile.
+
+        :param attribute_name: Name of the AWS credential attribute.
+        :param attribute_value: Value of the AWS credential attribute.
+        """
+        if self._profile_name not in self._credentials:
+            self._credentials[self._profile_name] = {}
+
+        if attribute_value is None:
+            self._credentials.remove_option(self._profile_name, attribute_name)
+            # Remove the named profile if it doesn't have any AWS credential attribute.
+            if len(self._credentials[self._profile_name]) == 0:
+                self._credentials.remove_section(self._profile_name)
+        else:
+            self._credentials[self._profile_name][attribute_name] = attribute_value
 
 
 @pytest.fixture(scope='function')

@@ -135,7 +135,7 @@ class TestAWSMetrics_Windows(object):
 
         # Start the Kinesis Data Analytics application for real-time analytics.
         analytics_application_name = f'{stack_name}-AnalyticsApplication'
-        aws_metrics_utils.start_kenisis_data_analytics_application(analytics_application_name)
+        aws_metrics_utils.start_kinesis_data_analytics_application(analytics_application_name)
 
         launcher.args = ['+LoadLevel', level]
         launcher.args.extend(['-rhi=null'])
@@ -160,7 +160,7 @@ class TestAWSMetrics_Windows(object):
             logger.info('Real-time metrics sent to CloudWatch.')
 
         # Stop the Kinesis Data Analytics application.
-        aws_metrics_utils.stop_kenisis_data_analytics_application(analytics_application_name)
+        aws_metrics_utils.stop_kinesis_data_analytics_application(analytics_application_name)
 
     def test_AWSMetrics_UnauthorizedUser_RequestRejected(self,
                                                          level: str,
@@ -229,7 +229,8 @@ class TestAWSMetrics_Windows(object):
         aws_metrics_utils.run_named_queries(f'{stack_name}-AthenaWorkGroup')
         logger.info('Query metrics from S3 successfully.')
 
-        # Wait for all the metrics being sent to S3.
+        # Kinesis Data Firehose buffers incoming data before it delivers it to Amazon S3. Sleep for the
+        # default interval (60s) to make sure that all the metrics are sent to the bucket before cleanup.
         time.sleep(60)
         # Empty the S3 bucket. S3 buckets can only be deleted successfully when it doesn't contain any object.
         aws_metrics_utils.empty_s3_bucket(analytics_bucket_name)
