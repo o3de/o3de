@@ -2963,7 +2963,7 @@ namespace AzToolsFramework
             if (transformIt != transformsBefore.end())
             {
                 AZ::Transform transformBefore = transformIt->second;
-                transformBefore.ExtractScale();
+                transformBefore.ExtractUniformScale();
                 AZ::Transform newWorldFromLocal = transformBefore * scaleTransform;
 
                 SetEntityWorldTransform(entityId, newWorldFromLocal);

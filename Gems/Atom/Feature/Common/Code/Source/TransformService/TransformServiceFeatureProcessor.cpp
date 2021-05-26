@@ -231,7 +231,7 @@ namespace AZ
             AZ_Error("TransformServiceFeatureProcessor", id.IsValid(), "Attempting to get the transform for an invalid handle.");
             AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::CreateFromRowMajorFloat12(m_objectToWorldTransforms.at(id.GetIndex()).m_transform);
             AZ::Transform transform = AZ::Transform::CreateFromMatrix3x4(matrix3x4);
-            transform.ExtractScale();
+            transform.ExtractUniformScale();
             return transform;
         }
 

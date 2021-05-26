@@ -309,7 +309,7 @@ namespace Vegetation
 
         // Create a Transform that represents our instance.
         AZ::Transform world = AZ::Transform::CreateFromQuaternionAndTranslation(instanceData.m_alignment * instanceData.m_rotation, instanceData.m_position);
-        world.MultiplyByScale(AZ::Vector3(instanceData.m_scale));
+        world.MultiplyByUniformScale(instanceData.m_scale);
 
         // Request a new dynamic slice instance.
         AzFramework::SliceInstantiationTicket* ticket = new AzFramework::SliceInstantiationTicket();
