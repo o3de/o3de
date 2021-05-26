@@ -1201,7 +1201,7 @@ bool ApplicationManagerBase::Activate()
     // Shutdown if the disk has less than 128MB of free space
     if (!CheckSufficientDiskSpace(projectCache.absolutePath(), 128 * 1024 * 1024, true))
     {
-       // CheckSufficientDiskSpace reports an error if disk space it low.
+        // CheckSufficientDiskSpace reports an error if disk space is low.
         return false;
     }
 
