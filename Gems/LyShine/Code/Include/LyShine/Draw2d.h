@@ -258,7 +258,7 @@ protected: // types and constants
             AZ::RPI::ViewportContextPtr viewportContext) const override;
 
         AzFramework::TextDrawParameters m_drawParameters;
-        AZStd::string       m_fontName;
+        AzFramework::FontId m_fontId;
         std::string         m_string;
     };
 
@@ -288,7 +288,7 @@ protected: // member functions
     void RotatePointsAboutPivot(AZ::Vector2* points, int numPoints, AZ::Vector2 pivot, float angle) const;
 
     //! Helper function to render a text string
-    void DrawTextInternal(const char* textString, AZStd::string_view fontName, unsigned int effectIndex,
+    void DrawTextInternal(const char* textString, AzFramework::FontId fontId, unsigned int effectIndex,
         AZ::Vector2 position, float pointSize, AZ::Color color, float rotation,
         HAlign horizontalAlignment, VAlign verticalAlignment, int baseState);
 

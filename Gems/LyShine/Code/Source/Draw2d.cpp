@@ -285,13 +285,20 @@ void CDraw2d::DrawText(const char* textString, AZ::Vector2 position, float point
 {
     TextOptions* actualTextOptions = (textOptions) ? textOptions : &m_defaultTextOptions;
 
+    AzFramework::FontId fontId = AzFramework::InvalidFontId;
+    AzFramework::FontQueryInterface* fontQueryInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get();
+    if (fontQueryInterface)
+    {
+        fontId = fontQueryInterface->GetFontId(actualTextOptions->fontName);
+    }
+
     // render the drop shadow, if needed
     if ((actualTextOptions->dropShadowColor.GetA() > 0.0f) &&
         (actualTextOptions->dropShadowOffset.GetX() || actualTextOptions->dropShadowOffset.GetY()))
     {
         // calculate the drop shadow pos and render it
         AZ::Vector2 dropShadowPosition(position + actualTextOptions->dropShadowOffset);
-        DrawTextInternal(textString, actualTextOptions->fontName, actualTextOptions->effectIndex,
+        DrawTextInternal(textString, fontId, actualTextOptions->effectIndex,
             dropShadowPosition, pointSize, actualTextOptions->dropShadowColor,
             actualTextOptions->rotation,
             actualTextOptions->horizontalAlignment, actualTextOptions->verticalAlignment,
@@ -300,7 +307,7 @@ void CDraw2d::DrawText(const char* textString, AZ::Vector2 position, float point
 
     // draw the text string
     AZ::Color textColor = AZ::Color::CreateFromVector3AndFloat(actualTextOptions->color, opacity);
-    DrawTextInternal(textString, actualTextOptions->fontName, actualTextOptions->effectIndex,
+    DrawTextInternal(textString, fontId, actualTextOptions->effectIndex,
         position, pointSize, textColor,
         actualTextOptions->rotation,
         actualTextOptions->horizontalAlignment, actualTextOptions->verticalAlignment,
@@ -415,7 +422,7 @@ AZ::Vector2 CDraw2d::GetTextSize(const char* textString, float pointSize, TextOp
 
     // Set up draw parameters
     AzFramework::TextDrawParameters drawParams;
-    drawParams.m_drawViewportId = m_viewportContext->GetId();
+    drawParams.m_drawViewportId = GetViewportContext()->GetId();
     drawParams.m_position = AZ::Vector3(0.0f, 0.0f, 1.0f);
     drawParams.m_effectIndex = 0;
     drawParams.m_textSizeFactor = pointSize;
@@ -576,7 +583,7 @@ void CDraw2d::RotatePointsAboutPivot(AZ::Vector2* points, [[maybe_unused]] int n
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CDraw2d::DrawTextInternal(const char* textString, AZStd::string_view fontName, unsigned int effectIndex,
+void CDraw2d::DrawTextInternal(const char* textString, AzFramework::FontId fontId, unsigned int effectIndex,
     AZ::Vector2 position, float pointSize, AZ::Color color, float rotation,
     HAlign horizontalAlignment, VAlign verticalAlignment, [[maybe_unused]] int baseState)
 {
@@ -625,7 +632,7 @@ void CDraw2d::DrawTextInternal(const char* textString, AZStd::string_view fontNa
 
     // Set up draw parameters for font interface
     AzFramework::TextDrawParameters drawParams;
-    drawParams.m_drawViewportId = m_viewportContext->GetId();
+    drawParams.m_drawViewportId = GetViewportContext()->GetId();
     drawParams.m_position = AZ::Vector3(position.GetX(), position.GetY(), 1.0f);
     drawParams.m_color = color;
     drawParams.m_effectIndex = effectIndex;
@@ -655,7 +662,7 @@ void CDraw2d::DrawTextInternal(const char* textString, AZStd::string_view fontNa
 
     DeferredText newText;
     newText.m_drawParameters = drawParams;
-    newText.m_fontName = fontName;
+    newText.m_fontId = fontId;
     newText.m_string = textString;
 
     DrawOrDeferTextString(&newText);
@@ -943,12 +950,11 @@ void CDraw2d::DeferredText::Draw([[maybe_unused]] AZ::RHI::Ptr<AZ::RPI::DynamicD
     AzFramework::FontQueryInterface* fontQueryInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get();
     if (fontQueryInterface)
     {
-        AzFramework::FontId fontId = fontQueryInterface->GetFontId(m_fontName);
-        fontDrawInterface = fontQueryInterface->GetFontDrawInterface(fontId);
-    }
-    if (fontDrawInterface)
-    {
-        fontDrawInterface->DrawScreenAlignedText2d(m_drawParameters, m_string.c_str());
+        fontDrawInterface = fontQueryInterface->GetFontDrawInterface(m_fontId);
+        if (fontDrawInterface)
+        {
+            fontDrawInterface->DrawScreenAlignedText2d(m_drawParameters, m_string.c_str());
+        }
     }
 }
 
