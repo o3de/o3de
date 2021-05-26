@@ -203,7 +203,7 @@ namespace LmbrCentral
         const AZ::Transform& currentTransform, const CapsuleShapeConfig& configuration,
         [[maybe_unused]] const AZ::Vector3& currentNonUniformScale)
     {
-        const float entityScale = currentTransform.GetScale().GetMaxElement();
+        const float entityScale = currentTransform.GetUniformScale();
         m_axisVector = currentTransform.GetBasisZ().GetNormalizedSafe() * entityScale;
 
         const float internalCylinderHeight = configuration.m_height - configuration.m_radius * 2.0f;

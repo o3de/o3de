@@ -123,8 +123,9 @@ namespace AzFramework
         OctreeNode* insertCheck = this;
         while (insertCheck != nullptr)
         {
-            if (AZ::ShapeIntersection::Contains(insertCheck->m_bounds, boundingVolume))
+            if (AZ::ShapeIntersection::Contains(insertCheck->m_bounds, boundingVolume) || !insertCheck->m_parent)
             {
+                // Insert here if the entry is fully contained or if we've reached the root node
                 return insertCheck->Insert(octreeScene, entry);
             }
             insertCheck = insertCheck->m_parent;

@@ -610,15 +610,15 @@ namespace AzToolsFramework
         m_layerEntity.m_layer->ClearUnsavedChanges();
 
         // Change the scale of the child entity so it registers as an unsaved change on the layer.
-        AZ::Vector3 scale(-1.0f,0.0f,0.0f);
+        float scale = 0.0f;
         AZ::TransformBus::EventResult(
             scale,
             childEntity->GetId(),
-            &AZ::TransformBus::Events::GetLocalScale);
-        scale.SetX(scale.GetX() + 1.0f);
+            &AZ::TransformBus::Events::GetLocalUniformScale);
+        scale += 1.0f;
         AZ::TransformBus::Event(
             childEntity->GetId(),
-            &AZ::TransformBus::Events::SetLocalScale,
+            &AZ::TransformBus::Events::SetLocalUniformScale,
             scale);
 
         bool hasUnsavedChanges = false;
