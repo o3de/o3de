@@ -10,16 +10,12 @@
 *
 */
 
-#include <AssetProcessor/AssetBuilderSDK/AssetBuilderSDK/AssetBuilderSDK.h>
-#include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/Json/JsonSerialization.h>
-#include <AzCore/Settings/SettingsRegistry.h>
-#include <AzCore/StringFunc/StringFunc.h>
-#include <SceneAPI/FbxSceneBuilder/FbxImportRequestHandler.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Events/CallProcessorBus.h>
 #include <SceneAPI/SceneCore/Events/ImportEventContext.h>
+#include <SceneAPI/FbxSceneBuilder/FbxImportRequestHandler.h>
 
 namespace AZ
 {
@@ -27,25 +23,10 @@ namespace AZ
     {
         namespace FbxSceneImporter
         {
-            void SceneImporterSettings::Reflect(AZ::ReflectContext* context)
-            {
-                if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext)
-                {
-                    serializeContext->Class<SceneImporterSettings>()
-                                    ->Version(1)
-                                    ->Field("SupportedFileTypeExtensions", &SceneImporterSettings::m_supportedFileTypeExtensions);
-                }
-            }
+            const char* FbxImportRequestHandler::s_extension = ".fbx";
 
             void FbxImportRequestHandler::Activate()
             {
-                auto settingsRegistry = AZ::SettingsRegistry::Get();
-                
-                if (settingsRegistry)
-                {
-                    settingsRegistry->GetObject(m_settings, "/O3DE/SceneAPI/AssetImporter");
-                }
-
                 BusConnect();
             }
 
@@ -56,29 +37,21 @@ namespace AZ
 
             void FbxImportRequestHandler::Reflect(ReflectContext* context)
             {
-                SceneImporterSettings::Reflect(context);
-
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<FbxImportRequestHandler, AZ::Component>()->Version(1)->Attribute(
-                        AZ::Edit::Attributes::SystemComponentTags,
-                        AZStd::vector<AZ::Crc32>({AssetBuilderSDK::ComponentTags::AssetBuilder}));
-                    
+                    serializeContext->Class<FbxImportRequestHandler, SceneCore::BehaviorComponent>()->Version(1);
                 }
             }
 
             void FbxImportRequestHandler::GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& extensions)
             {
-                extensions.insert(m_settings.m_supportedFileTypeExtensions.begin(), m_settings.m_supportedFileTypeExtensions.end());
+                extensions.insert(s_extension);
             }
 
             Events::LoadingResult FbxImportRequestHandler::LoadAsset(Containers::Scene& scene, const AZStd::string& path, const Uuid& guid, [[maybe_unused]] RequestingApplication requester)
             {
-                AZStd::string extension;
-                StringFunc::Path::GetExtension(path.c_str(), extension);
-                
-                if (!m_settings.m_supportedFileTypeExtensions.contains(extension))
+                if (!AzFramework::StringFunc::Path::IsExtension(path.c_str(), s_extension))
                 {
                     return Events::LoadingResult::Ignored;
                 }
@@ -99,11 +72,6 @@ namespace AZ
                 {
                     return Events::LoadingResult::AssetFailure;
                 }
-            }
-
-            void FbxImportRequestHandler::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
-            {
-                provided.emplace_back(AZ_CRC_CE("AssetImportRequestHandler"));
             }
         } // namespace Import
     } // namespace SceneAPI
