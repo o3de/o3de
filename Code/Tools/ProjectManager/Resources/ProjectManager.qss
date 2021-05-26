@@ -256,10 +256,6 @@ QTabBar::tab:pressed
     border: 2px solid #ffffff;
 }
 
-#firstTimeContent > QPushButton:text {
-    color: red;
-}
-
 #firstTimeContent > QPushButton:hover {
     border: 2px solid #1e70eb;
     color: #1e70eb;
