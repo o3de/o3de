@@ -70,7 +70,7 @@ namespace AzFramework
             SpawnableEntitiesInterface::Get()->Barrier(
                 m_threadData->m_spawnedEntitiesTicket,
                 SpawnablePriorty_Default,
-                [threadData = m_threadData](EntitySpawnTicket&) mutable
+                [threadData = m_threadData](EntitySpawnTicket::Id) mutable
                 {
                     threadData.reset();
                 });
@@ -89,7 +89,7 @@ namespace AzFramework
         SpawnableEntitiesInterface::Get()->Barrier(
             m_threadData->m_spawnedEntitiesTicket,
             SpawnablePriorty_Default,
-            [generation = m_threadData->m_generation, callback = AZStd::move(callback)](EntitySpawnTicket&)
+            [generation = m_threadData->m_generation, callback = AZStd::move(callback)](EntitySpawnTicket::Id)
             {
                 callback(generation);
             });

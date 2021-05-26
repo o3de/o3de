@@ -239,7 +239,9 @@ namespace AzFramework
     {
         auto manager = SpawnableEntitiesInterface::Get();
         AZ_Assert(manager, "Attempting to create an entity spawn ticket while the SpawnableEntitiesInterface has no implementation.");
-        m_payload = manager->CreateTicket(AZStd::move(spawnable));
+        AZStd::pair<EntitySpawnTicket::Id, void*> result = manager->CreateTicket(AZStd::move(spawnable));
+        m_id = result.first;
+        m_payload = result.second;
     }
 
     EntitySpawnTicket::~EntitySpawnTicket()
@@ -250,6 +252,7 @@ namespace AzFramework
             AZ_Assert(manager, "Attempting to destroy an entity spawn ticket while the SpawnableEntitiesInterface has no implementation.");
             manager->DestroyTicket(m_payload);
             m_payload = nullptr;
+            m_id = 0;
         }
     }
 
@@ -263,10 +266,18 @@ namespace AzFramework
                 AZ_Assert(manager, "Attempting to destroy an entity spawn ticket while the SpawnableEntitiesInterface has no implementation.");
                 manager->DestroyTicket(m_payload);
             }
+            m_id = rhs.m_id;
+            rhs.m_id = 0;
+
             m_payload = rhs.m_payload;
             rhs.m_payload = nullptr;
         }
         return *this;
+    }
+
+    uint64_t EntitySpawnTicket::GetId() const
+    {
+        return m_id;
     }
 
     bool EntitySpawnTicket::IsValid() const

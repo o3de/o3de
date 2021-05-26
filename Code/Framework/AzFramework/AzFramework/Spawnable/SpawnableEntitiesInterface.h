@@ -143,6 +143,8 @@ namespace AzFramework
     public:
         friend class SpawnableEntitiesDefinition;
 
+        using Id = uint64_t;
+
         EntitySpawnTicket() = default;
         EntitySpawnTicket(const EntitySpawnTicket&) = delete;
         EntitySpawnTicket(EntitySpawnTicket&& rhs);
@@ -152,20 +154,22 @@ namespace AzFramework
         EntitySpawnTicket& operator=(const EntitySpawnTicket&) = delete;
         EntitySpawnTicket& operator=(EntitySpawnTicket&& rhs);
 
+        uint64_t GetId() const;
         bool IsValid() const;
 
     private:
         void* m_payload{ nullptr };
+        Id m_id { 0 }; //!< An id that uniquely identifies a ticket.
     };
 
-    using EntitySpawnCallback = AZStd::function<void(EntitySpawnTicket&, SpawnableConstEntityContainerView)>;
-    using EntityPreInsertionCallback = AZStd::function<void(EntitySpawnTicket&, SpawnableEntityContainerView)>;
-    using EntityDespawnCallback = AZStd::function<void(EntitySpawnTicket&)>;
-    using ReloadSpawnableCallback = AZStd::function<void(EntitySpawnTicket&, SpawnableConstEntityContainerView)>;
-    using ListEntitiesCallback = AZStd::function<void(EntitySpawnTicket&, SpawnableConstEntityContainerView)>;
-    using ListIndicesEntitiesCallback = AZStd::function<void(EntitySpawnTicket&, SpawnableConstIndexEntityContainerView)>;
-    using ClaimEntitiesCallback = AZStd::function<void(EntitySpawnTicket&, SpawnableEntityContainerView)>;
-    using BarrierCallback = AZStd::function<void(EntitySpawnTicket&)>;
+    using EntitySpawnCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableConstEntityContainerView)>;
+    using EntityPreInsertionCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableEntityContainerView)>;
+    using EntityDespawnCallback = AZStd::function<void(EntitySpawnTicket::Id)>;
+    using ReloadSpawnableCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableConstEntityContainerView)>;
+    using ListEntitiesCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableConstEntityContainerView)>;
+    using ListIndicesEntitiesCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableConstIndexEntityContainerView)>;
+    using ClaimEntitiesCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableEntityContainerView)>;
+    using BarrierCallback = AZStd::function<void(EntitySpawnTicket::Id)>;
 
     //! Interface definition to (de)spawn entities from a spawnable into the game world.
     //! 
@@ -265,7 +269,7 @@ namespace AzFramework
         virtual void AddOnDespawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>>::Handler& handler) = 0;
 
     protected:
-        [[nodiscard]] virtual void* CreateTicket(AZ::Data::Asset<Spawnable>&& spawnable) = 0;
+        [[nodiscard]] virtual AZStd::pair<EntitySpawnTicket::Id, void*> CreateTicket(AZ::Data::Asset<Spawnable>&& spawnable) = 0;
         virtual void DestroyTicket(void* ticket) = 0;
 
         template<typename T>

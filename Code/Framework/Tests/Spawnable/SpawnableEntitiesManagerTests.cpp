@@ -89,6 +89,10 @@ namespace UnitTest
         TestApplication* m_application { nullptr };
     };
 
+    //
+    // SpawnAllEntitities
+    //
+
     TEST_F(SpawnableEntitiesManagerTest, SpawnAllEntities_Call_AllEntitiesSpawned)
     {
         static constexpr size_t NumEntities = 4;
@@ -96,7 +100,7 @@ namespace UnitTest
 
         size_t spawnedEntitiesCount = 0;
         auto callback =
-            [&spawnedEntitiesCount](AzFramework::EntitySpawnTicket&, AzFramework::SpawnableConstEntityContainerView entities)
+            [&spawnedEntitiesCount](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
             {
                 spawnedEntitiesCount += entities.size();
             };
@@ -106,6 +110,62 @@ namespace UnitTest
         EXPECT_EQ(NumEntities, spawnedEntitiesCount);
     }
 
+    TEST_F(SpawnableEntitiesManagerTest, SpawnAllEntities_DeleteTicketBeforeCall_NoCrash)
+    {
+        {
+            AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
+            m_manager->SpawnAllEntities(ticket, AzFramework::SpawnablePriorty_Default);
+        }
+        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+    }
+
+
+    //
+    // SpawnEntities
+    //
+
+    TEST_F(SpawnableEntitiesManagerTest, SpawnEntities_DeleteTicketBeforeCall_NoCrash)
+    {
+        {
+            AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
+            m_manager->SpawnEntities(ticket, AzFramework::SpawnablePriorty_Default, {});
+        }
+        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+    }
+
+
+    //
+    // DespawnAllEntities
+    //
+
+    TEST_F(SpawnableEntitiesManagerTest, DespawnAllEntities_DeleteTicketBeforeCall_NoCrash)
+    {
+        {
+            AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
+            m_manager->DespawnAllEntities(ticket, AzFramework::SpawnablePriorty_Default);
+        }
+        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+    }
+
+
+    //
+    // ReloadSpawnable
+    //
+
+    TEST_F(SpawnableEntitiesManagerTest, ReloadSpawnable_DeleteTicketBeforeCall_NoCrash)
+    {
+        {
+            AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
+            m_manager->ReloadSpawnable(ticket, AzFramework::SpawnablePriorty_Default, *m_spawnableAsset);
+        }
+        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+    }
+
+
+    //
+    // ListEntitities
+    //
+
     TEST_F(SpawnableEntitiesManagerTest, ListEntities_Call_AllEntitiesAreReported)
     {
         static constexpr size_t NumEntities = 4;
@@ -114,7 +174,7 @@ namespace UnitTest
         bool allValidEntityIds = true;
         size_t spawnedEntitiesCount = 0;
         auto callback = [&allValidEntityIds, &spawnedEntitiesCount]
-            (AzFramework::EntitySpawnTicket&, AzFramework::SpawnableConstEntityContainerView entities)
+            (AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
             {
                 for (auto&& entity : entities)
                 {
@@ -131,6 +191,22 @@ namespace UnitTest
         EXPECT_EQ(NumEntities, spawnedEntitiesCount);
     }
 
+    TEST_F(SpawnableEntitiesManagerTest, ListEntities_DeleteTicketBeforeCall_NoCrash)
+    {
+        auto callback = [](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView) {};
+
+        {
+            AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
+            m_manager->ListEntities(ticket, AzFramework::SpawnablePriorty_Default, AZStd::move(callback));
+        }
+        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+    }
+
+
+    //
+    // ListIndicesAndEntities
+    //
+
     TEST_F(SpawnableEntitiesManagerTest, ListIndicesAndEntities_Call_AllEntitiesAreReportedAndIncrementByOne)
     {
         static constexpr size_t NumEntities = 4;
@@ -139,7 +215,7 @@ namespace UnitTest
         bool allValidEntityIds = true;
         size_t spawnedEntitiesCount = 0;
         auto callback = [&allValidEntityIds, &spawnedEntitiesCount]
-            (AzFramework::EntitySpawnTicket&, AzFramework::SpawnableConstIndexEntityContainerView entities)
+            (AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstIndexEntityContainerView entities)
             {
                 for (auto&& indexEntityPair : entities)
                 {
@@ -160,6 +236,54 @@ namespace UnitTest
         EXPECT_EQ(NumEntities, spawnedEntitiesCount);
     }
 
+    TEST_F(SpawnableEntitiesManagerTest, ListIndicesAndEntities_DeleteTicketBeforeCall_NoCrash)
+    {
+        auto callback = [](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstIndexEntityContainerView) {};
+
+        {
+            AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
+            m_manager->ListIndicesAndEntities(ticket, AzFramework::SpawnablePriorty_Default, AZStd::move(callback));
+        }
+        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+    }
+
+
+    //
+    // ClaimEntities
+    //
+
+    TEST_F(SpawnableEntitiesManagerTest, ClaimEntities_DeleteTicketBeforeCall_NoCrash)
+    {
+        auto callback = [](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableEntityContainerView) {};
+
+        {
+            AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
+            m_manager->ClaimEntities(ticket, AzFramework::SpawnablePriorty_Default, AZStd::move(callback));
+        }
+        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+    }
+
+
+    //
+    // Barrier
+    //
+
+    TEST_F(SpawnableEntitiesManagerTest, Barrier_DeleteTicketBeforeCall_NoCrash)
+    {
+        auto callback = [](AzFramework::EntitySpawnTicket::Id) {};
+
+        {
+            AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
+            m_manager->Barrier(ticket, AzFramework::SpawnablePriorty_Default, AZStd::move(callback));
+        }
+        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+    }
+
+
+    //
+    // Misc. - Priority tests
+    //
+
     TEST_F(SpawnableEntitiesManagerTest, Priority_HighBeforeDefault_HigherPriorityCallHappensBeforeDefaultPriorityEvenWhenQueuedLater)
     {
         static constexpr size_t NumEntities = 4;
@@ -171,12 +295,12 @@ namespace UnitTest
         size_t highPriorityCallId = 0;
         size_t defaultPriorityCallId = 0;
         auto highCallback = [&callCounter, &highPriorityCallId]
-            (AzFramework::EntitySpawnTicket&, AzFramework::SpawnableConstEntityContainerView)
+            (AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView)
             {
                 highPriorityCallId = callCounter++;
             };
         auto defaultCallback = [&callCounter, &defaultPriorityCallId]
-            (AzFramework::EntitySpawnTicket&, AzFramework::SpawnableConstEntityContainerView)
+            (AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView)
             {
                 defaultPriorityCallId = callCounter++;
             };
@@ -199,15 +323,15 @@ namespace UnitTest
         size_t highPriorityCallId = 0;
         size_t defaultPriorityCallId = 0;
         auto highCallback =
-            [&callCounter, &highPriorityCallId](AzFramework::EntitySpawnTicket&, AzFramework::SpawnableConstEntityContainerView)
-        {
-            highPriorityCallId = callCounter++;
-        };
+            [&callCounter, &highPriorityCallId](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView)
+            {
+                highPriorityCallId = callCounter++;
+            };
         auto defaultCallback =
-            [&callCounter, &defaultPriorityCallId](AzFramework::EntitySpawnTicket&, AzFramework::SpawnableConstEntityContainerView)
-        {
-            defaultPriorityCallId = callCounter++;
-        };
+            [&callCounter, &defaultPriorityCallId](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView)
+            {
+                defaultPriorityCallId = callCounter++;
+            };
 
         m_manager->SpawnAllEntities(*m_ticket, AzFramework::SpawnablePriorty_Default, {}, AZStd::move(defaultCallback));
         m_manager->SpawnAllEntities(*m_ticket, AzFramework::SpawnablePriorty_High, {}, AZStd::move(highCallback));
