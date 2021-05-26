@@ -88,7 +88,7 @@ namespace AssetBuilderSDK
         }
         if (azstricmp(newPlatformName, "mac") == 0)
         {
-            return AssetBuilderSDK::Platform_OSX;
+            return AssetBuilderSDK::Platform_MAC;
         }
         if (azstricmp(newPlatformName, "provo") == 0)
         {
@@ -119,7 +119,7 @@ namespace AssetBuilderSDK
             return "android";
         case AssetBuilderSDK::Platform_IOS:
             return "ios";
-        case AssetBuilderSDK::Platform_OSX:
+        case AssetBuilderSDK::Platform_MAC:
             return "mac";
         case AssetBuilderSDK::Platform_PROVO:
             return "provo";

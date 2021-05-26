@@ -27,9 +27,9 @@ namespace AZ
     inline namespace PlatformDefaults
     {
         constexpr char PlatformPC[] = "pc";
-        constexpr char PlatformANDROID[] = "android";
+        constexpr char PlatformAndroid[] = "android";
         constexpr char PlatformIOS[] = "ios";
-        constexpr char PlatformOSX[] = "mac";
+        constexpr char PlatformMac[] = "mac";
         constexpr char PlatformProvo[] = "provo";
         constexpr char PlatformSalem[] = "salem";
         constexpr char PlatformJasper[] = "jasper";
@@ -56,7 +56,7 @@ namespace AZ
             PC,
             ANDROID_ID,
             IOS,
-            OSX,
+            MAC,
             PROVO,
             SALEM,
             JASPER,
@@ -75,7 +75,7 @@ namespace AZ
             Platform_PC = 1 << PlatformId::PC,
             Platform_ANDROID = 1 << PlatformId::ANDROID_ID,
             Platform_IOS = 1 << PlatformId::IOS,
-            Platform_OSX = 1 << PlatformId::OSX,
+            Platform_MAC = 1 << PlatformId::MAC,
             Platform_PROVO = 1 << PlatformId::PROVO,
             Platform_SALEM = 1 << PlatformId::SALEM,
             Platform_JASPER = 1 << PlatformId::JASPER,
@@ -87,7 +87,7 @@ namespace AZ
             // A special platform that will always correspond to all non-server platforms, even if new ones are added
             Platform_ALL_CLIENT = 1ULL << 31,
 
-            AllNamedPlatforms = Platform_PC | Platform_ANDROID | Platform_IOS | Platform_OSX | Platform_PROVO | Platform_SALEM | Platform_JASPER | Platform_SERVER,
+            AllNamedPlatforms = Platform_PC | Platform_ANDROID | Platform_IOS | Platform_MAC | Platform_PROVO | Platform_SALEM | Platform_JASPER | Platform_SERVER,
         };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(PlatformFlags);

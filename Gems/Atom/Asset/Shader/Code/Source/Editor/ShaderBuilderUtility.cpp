@@ -738,7 +738,7 @@ namespace AZ
                 }
                 else if (platformIdentifier == "mac")
                 {
-                    platformId = AzFramework::PlatformId::OSX;
+                    platformId = AzFramework::PlatformId::MAC;
                 }
                 else if (platformIdentifier == "android")
                 {
@@ -790,7 +790,7 @@ namespace AZ
                 }
                 else if (platform == "mac")
                 {
-                    platformId = AzFramework::PlatformId::OSX;
+                    platformId = AzFramework::PlatformId::MAC;
                 }
                 else if (platform == "android")
                 {

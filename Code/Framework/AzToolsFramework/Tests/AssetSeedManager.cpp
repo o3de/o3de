@@ -947,7 +947,7 @@ namespace UnitTest
     {
         using namespace AzFramework;
         PlatformFlags validPlatforms = PlatformFlags::Platform_PC | PlatformFlags::Platform_ANDROID;
-        PlatformFlags inputPlatforms = validPlatforms | PlatformFlags::Platform_OSX;
+        PlatformFlags inputPlatforms = validPlatforms | PlatformFlags::Platform_MAC;
         AZStd::pair<AZ::Data::AssetId, PlatformFlags> result = m_assetSeedManager->AddSeedAssetForValidPlatforms(TestDynamicSliceAssetPath, inputPlatforms);
 
         // Verify the function outputs
@@ -964,7 +964,7 @@ namespace UnitTest
     TEST_F(AssetSeedManagerTest, AddSeedAssetForValidPlatforms_NoPlatformsValid_NoSeedAdded)
     {
         using namespace AzFramework;
-        PlatformFlags inputPlatforms = PlatformFlags::Platform_OSX;
+        PlatformFlags inputPlatforms = PlatformFlags::Platform_MAC;
         AZStd::pair<AZ::Data::AssetId, PlatformFlags> result = m_assetSeedManager->AddSeedAssetForValidPlatforms(TestDynamicSliceAssetPath, inputPlatforms);
 
         // Verify the function outputs
@@ -978,30 +978,30 @@ namespace UnitTest
 
     TEST_F(AssetSeedManagerTest, Valid_Seed_Remove_ForAllPlatform_OK)
     {
-        m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_MAC);
 
-        m_assetSeedManager->RemoveSeedAsset(assets[0].ToString<AZStd::string>(), AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->RemoveSeedAsset(assets[0].ToString<AZStd::string>(), AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_MAC);
         const AzFramework::AssetSeedList& seedList = m_assetSeedManager->GetAssetSeedList();
 
         EXPECT_EQ(seedList.size(), 0);
 
-        m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_MAC);
 
-        m_assetSeedManager->RemoveSeedAsset("asset0.txt", AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->RemoveSeedAsset("asset0.txt", AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_MAC);
         const AzFramework::AssetSeedList& secondSeedList = m_assetSeedManager->GetAssetSeedList();
         EXPECT_EQ(secondSeedList.size(), 0);
     }
 
     TEST_F(AssetSeedManagerTest, Valid_Seed_Remove_ForSpecificPlatform_OK)
     {
-        m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_MAC);
 
-        m_assetSeedManager->RemoveSeedAsset(assets[0].ToString<AZStd::string>(), AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->RemoveSeedAsset(assets[0].ToString<AZStd::string>(), AzFramework::PlatformFlags::Platform_MAC);
         const AzFramework::AssetSeedList& seedList = m_assetSeedManager->GetAssetSeedList();
 
         EXPECT_EQ(seedList.size(), 1);
 
-        m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_MAC);
 
         m_assetSeedManager->RemoveSeedAsset("asset0.txt", AzFramework::PlatformFlags::Platform_PC);
         const AzFramework::AssetSeedList& secondSeedList = m_assetSeedManager->GetAssetSeedList();
@@ -1010,14 +1010,14 @@ namespace UnitTest
 
     TEST_F(AssetSeedManagerTest, Invalid_NotRemove_SeedForAllPlatform_Ok)
     {
-        m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_MAC);
 
-        m_assetSeedManager->RemoveSeedAsset(assets[1].ToString<AZStd::string>(), AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->RemoveSeedAsset(assets[1].ToString<AZStd::string>(), AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_MAC);
         const AzFramework::AssetSeedList& seedList = m_assetSeedManager->GetAssetSeedList();
 
         EXPECT_EQ(seedList.size(), 1);
 
-        m_assetSeedManager->RemoveSeedAsset("asset1.txt", AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->RemoveSeedAsset("asset1.txt", AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_MAC);
         const AzFramework::AssetSeedList& secondSeedList = m_assetSeedManager->GetAssetSeedList();
         EXPECT_EQ(secondSeedList.size(), 1);
     }

@@ -42,10 +42,10 @@
                 // 'enabled' is AUTOMATICALLY TRUE for the current platform that you are running on, so it is not necessary to force it to true for that platform
                 // To enable any additional platform, just uncomment the appropriate line below.
                 "Platforms": {
-                    //"pc": "enabled",
+                    "pc": "enabled",
                     //"android": "enabled",
                     //"ios": "enabled",
-                    //"mac": "enabled",
+                    "mac": "enabled",
                     //"server": "enabled"
                 },
                 // ---- The number of worker jobs, 0 means use the number of Logical Cores

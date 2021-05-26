@@ -80,7 +80,7 @@ namespace AssetProcessor
         ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(0), AssetBuilderSDK::Platform_PC);
         ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(1), AssetBuilderSDK::Platform_ANDROID);
         ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(2), AssetBuilderSDK::Platform_IOS);
-        ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(3), AssetBuilderSDK::Platform_OSX);
+        ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(3), AssetBuilderSDK::Platform_MAC);
         ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(4), AssetBuilderSDK::Platform_NONE);
 
         createJobsRequest.m_enabledPlatforms = {
@@ -135,7 +135,7 @@ namespace AssetProcessor
         ASSERT_TRUE(createJobsRequest.IsPlatformValid(AssetBuilderSDK::Platform_PC));
         ASSERT_TRUE(createJobsRequest.IsPlatformValid(AssetBuilderSDK::Platform_ANDROID));
         ASSERT_TRUE(createJobsRequest.IsPlatformValid(AssetBuilderSDK::Platform_IOS));
-        ASSERT_TRUE(createJobsRequest.IsPlatformValid(AssetBuilderSDK::Platform_OSX));
+        ASSERT_TRUE(createJobsRequest.IsPlatformValid(AssetBuilderSDK::Platform_MAC));
         ASSERT_TRUE(createJobsRequest.IsPlatformValid(AssetBuilderSDK::Platform_PROVO));
         ASSERT_TRUE(createJobsRequest.IsPlatformValid(AssetBuilderSDK::Platform_SALEM));
         ASSERT_TRUE(createJobsRequest.IsPlatformValid(AssetBuilderSDK::Platform_JASPER));
