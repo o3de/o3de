@@ -1,11 +1,11 @@
 {
     "description": "",
     "materialType": "Materials/Types/StandardMultilayerPBR.materialtype",
-    "parentMaterial": "TestData/Materials/StandardMultilayerPbrTestCases/002_ParallaxPdo.material",
+    "parentMaterial": "TestData/Materials/StandardMultilayerPbrTestCases/005_UseDisplacement.material",
     "propertyLayoutVersion": 3,
     "properties": {
         "blend": {
-            "blendSource": "BlendMaskVertexColors"
+            "enableLayer3": false
         }
     }
 }
