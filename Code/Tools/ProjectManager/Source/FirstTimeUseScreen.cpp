@@ -12,7 +12,6 @@
 
 #include <FirstTimeUseScreen.h>
 #include <ProjectUtils.h>
-        #include <QMessageBox>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -65,14 +64,6 @@ namespace O3DE::ProjectManager
 
         connect(m_createProjectButton, &QPushButton::pressed, this, &FirstTimeUseScreen::HandleNewProjectButton);
         connect(m_addProjectButton, &QPushButton::pressed, this, &FirstTimeUseScreen::HandleAddProjectButton);
-
-        QMessageBox* copyWaitDialog = new QMessageBox(this);
-        copyWaitDialog->setWindowTitle(QObject::tr("Copying Project..."));
-        copyWaitDialog->setModal(true);
-        copyWaitDialog->setAttribute(Qt::WA_DeleteOnClose);
-        copyWaitDialog->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
-        copyWaitDialog->setMinimumWidth(200);
-        copyWaitDialog->open();
     }
 
     ProjectManagerScreen FirstTimeUseScreen::GetScreenEnum()
