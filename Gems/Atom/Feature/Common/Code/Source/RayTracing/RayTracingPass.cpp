@@ -111,7 +111,6 @@ namespace AZ
             AZ_Assert(m_globalPipelineState, "Failed to acquire ray tracing global pipeline state");
 
             // create global srg
-            static const uint32_t RayTracingGlobalSrgBindingSlot = 0;
             Data::Asset<RPI::ShaderResourceGroupAsset> globalSrgAsset = m_rayGenerationShader->FindShaderResourceGroupAsset(RayTracingGlobalSrgBindingSlot);
             AZ_Error("PassSystem", globalSrgAsset.GetId().IsValid(), "RayTracingPass [%s] Failed to find RayTracingGlobalSrg asset", GetPathName().GetCStr());
             AZ_Error("PassSystem", globalSrgAsset.IsReady(), "RayTracingPass [%s] asset is not loaded for shader", GetPathName().GetCStr());
@@ -120,9 +119,12 @@ namespace AZ
             AZ_Assert(m_shaderResourceGroup, "RayTracingPass [%s]: Failed to create RayTracingGlobalSrg", GetPathName().GetCStr());
             RPI::PassUtils::BindDataMappingsToSrg(m_passDescriptor, m_shaderResourceGroup.get());
 
-            // check to see if the shader requires a ViewSrg
+            // check to see if the shader requires the View and RayTracingMaterial Srgs
             Data::Asset<RPI::ShaderResourceGroupAsset> viewSrgAsset = m_rayGenerationShader->FindShaderResourceGroupAsset(RPI::SrgBindingSlot::View);
             m_requiresViewSrg = viewSrgAsset.GetId().IsValid();
+
+            Data::Asset<RPI::ShaderResourceGroupAsset> rayTracingMaterialSrgAsset = m_rayGenerationShader->FindShaderResourceGroupAsset(RayTracingMaterialSrgBindingSlot);
+            m_requiresRayTracingMaterialSrg = rayTracingMaterialSrgAsset.GetId().IsValid();
 
             // build the ray tracing pipeline state descriptor
             RHI::RayTracingPipelineStateDescriptor descriptor;
@@ -296,6 +298,11 @@ namespace AZ
                 {
                     shaderResourceGroups.push_back(views[0]->GetRHIShaderResourceGroup());
                 }
+            }
+
+            if (m_requiresRayTracingMaterialSrg)
+            {
+                shaderResourceGroups.push_back(rayTracingFeatureProcessor->GetRayTracingMaterialSrg()->GetRHIShaderResourceGroup());
             }
 
             dispatchRaysItem.m_shaderResourceGroupCount = aznumeric_cast<uint32_t>(shaderResourceGroups.size());

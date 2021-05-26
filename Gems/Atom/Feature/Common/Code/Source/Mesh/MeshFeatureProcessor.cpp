@@ -710,27 +710,53 @@ namespace AZ
             uint32_t rayTracingLod = aznumeric_cast<uint32_t>(modelLods.size() - 1);
             const Data::Instance<RPI::ModelLod>& modelLod = modelLods[rayTracingLod];
 
-            // setup a stream layout and shader input contract for the position and normal streams
+            // setup a stream layout and shader input contract for the vertex streams
             static const char* PositionSemantic = "POSITION";
             static const char* NormalSemantic = "NORMAL";
-            static const RHI::Format StreamFormat = RHI::Format::R32G32B32_FLOAT;
+            static const char* TangentSemantic = "TANGENT";
+            static const char* BitangentSemantic = "BITANGENT";
+            static const char* UVSemantic = "UV";
+            static const RHI::Format PositionStreamFormat = RHI::Format::R32G32B32_FLOAT;
+            static const RHI::Format NormalStreamFormat = RHI::Format::R32G32B32_FLOAT;
+            static const RHI::Format TangentStreamFormat = RHI::Format::R32G32B32_FLOAT;
+            static const RHI::Format BitangentStreamFormat = RHI::Format::R32G32B32_FLOAT;
+            static const RHI::Format UVStreamFormat = RHI::Format::R32G32_FLOAT;
 
             RHI::InputStreamLayoutBuilder layoutBuilder;
-            layoutBuilder.AddBuffer()->Channel(PositionSemantic, StreamFormat);
-            layoutBuilder.AddBuffer()->Channel(NormalSemantic, StreamFormat);
+            layoutBuilder.AddBuffer()->Channel(PositionSemantic, PositionStreamFormat);
+            layoutBuilder.AddBuffer()->Channel(NormalSemantic, NormalStreamFormat);
+            layoutBuilder.AddBuffer()->Channel(UVSemantic, UVStreamFormat);
+            layoutBuilder.AddBuffer()->Channel(TangentSemantic, TangentStreamFormat);
+            layoutBuilder.AddBuffer()->Channel(BitangentSemantic, BitangentStreamFormat);
             RHI::InputStreamLayout inputStreamLayout = layoutBuilder.End();
 
             RPI::ShaderInputContract::StreamChannelInfo positionStreamChannelInfo;
             positionStreamChannelInfo.m_semantic = RHI::ShaderSemantic(AZ::Name(PositionSemantic));
-            positionStreamChannelInfo.m_componentCount = RHI::GetFormatComponentCount(StreamFormat);
+            positionStreamChannelInfo.m_componentCount = RHI::GetFormatComponentCount(PositionStreamFormat);
 
             RPI::ShaderInputContract::StreamChannelInfo normalStreamChannelInfo;
             normalStreamChannelInfo.m_semantic = RHI::ShaderSemantic(AZ::Name(NormalSemantic));
-            normalStreamChannelInfo.m_componentCount = RHI::GetFormatComponentCount(StreamFormat);
+            normalStreamChannelInfo.m_componentCount = RHI::GetFormatComponentCount(NormalStreamFormat);
+
+            RPI::ShaderInputContract::StreamChannelInfo tangentStreamChannelInfo;
+            tangentStreamChannelInfo.m_semantic = RHI::ShaderSemantic(AZ::Name(TangentSemantic));
+            tangentStreamChannelInfo.m_componentCount = RHI::GetFormatComponentCount(TangentStreamFormat);
+
+            RPI::ShaderInputContract::StreamChannelInfo bitangentStreamChannelInfo;
+            bitangentStreamChannelInfo.m_semantic = RHI::ShaderSemantic(AZ::Name(BitangentSemantic));
+            bitangentStreamChannelInfo.m_componentCount = RHI::GetFormatComponentCount(BitangentStreamFormat);
+
+            RPI::ShaderInputContract::StreamChannelInfo uvStreamChannelInfo;
+            uvStreamChannelInfo.m_semantic = RHI::ShaderSemantic(AZ::Name(UVSemantic));
+            uvStreamChannelInfo.m_componentCount = RHI::GetFormatComponentCount(UVStreamFormat);
+            uvStreamChannelInfo.m_isOptional = true;
 
             RPI::ShaderInputContract shaderInputContract;
             shaderInputContract.m_streamChannels.emplace_back(positionStreamChannelInfo);
             shaderInputContract.m_streamChannels.emplace_back(normalStreamChannelInfo);
+            shaderInputContract.m_streamChannels.emplace_back(tangentStreamChannelInfo);
+            shaderInputContract.m_streamChannels.emplace_back(bitangentStreamChannelInfo);
+            shaderInputContract.m_streamChannels.emplace_back(uvStreamChannelInfo);
 
             // setup the raytracing data for each sub-mesh 
             const size_t meshCount = modelLod->GetMeshes().size();
@@ -738,26 +764,6 @@ namespace AZ
             for (uint32_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
             {
                 const RPI::ModelLod::Mesh& mesh = modelLod->GetMeshes()[meshIndex];
-
-                // retrieve vertex/index buffers
-                RPI::ModelLod::StreamBufferViewList streamBufferViews;
-                [[maybe_unused]] bool result = modelLod->GetStreamsForMesh(inputStreamLayout, streamBufferViews, shaderInputContract, meshIndex);
-                AZ_Assert(result, "Failed to retrieve mesh stream buffer views");
-
-                // note that the element count is the size of the entire buffer, even though this mesh may only
-                // occupy a portion of the vertex buffer.  This is necessary since we are accessing it using
-                // a ByteAddressBuffer in the raytracing shaders and passing the byte offset to the shader in a constant buffer.
-                uint32_t vertexBufferByteCount = const_cast<RHI::Buffer*>(streamBufferViews[0].GetBuffer())->GetDescriptor().m_byteCount;
-                RHI::BufferViewDescriptor vertexBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, vertexBufferByteCount);
-
-                const RHI::IndexBufferView& indexBufferView = mesh.m_indexBufferView;
-                uint32_t indexElementSize = indexBufferView.GetIndexFormat() == RHI::IndexFormat::Uint16 ? 2 : 4;
-                uint32_t indexElementCount = (uint32_t)indexBufferView.GetBuffer()->GetDescriptor().m_byteCount / indexElementSize;
-                RHI::BufferViewDescriptor indexBufferDescriptor;
-                indexBufferDescriptor.m_elementOffset = 0;
-                indexBufferDescriptor.m_elementCount = indexElementCount;
-                indexBufferDescriptor.m_elementSize = indexElementSize;
-                indexBufferDescriptor.m_elementFormat = indexBufferView.GetIndexFormat() == RHI::IndexFormat::Uint16 ? RHI::Format::R16_UINT : RHI::Format::R32_UINT;
 
                 // retrieve the material
                 Data::Instance<RPI::Material> material = mesh.m_material;
@@ -769,31 +775,162 @@ namespace AZ
                     material = materialAssignment.m_materialInstance;
                 }
 
-                AZ::Color irradianceColor(1.0f, 1.0f, 1.0f, 1.0f);
+                // retrieve vertex/index buffers
+                RPI::ModelLod::StreamBufferViewList streamBufferViews;
+                [[maybe_unused]] bool result = modelLod->GetStreamsForMesh(
+                    inputStreamLayout,
+                    streamBufferViews,
+                    shaderInputContract,
+                    meshIndex,
+                    materialAssignment.m_matModUvOverrides,
+                    material->GetAsset()->GetMaterialTypeAsset()->GetUvNameMap());
+                AZ_Assert(result, "Failed to retrieve mesh stream buffer views");
+
+                // note that the element count is the size of the entire buffer, even though this mesh may only
+                // occupy a portion of the vertex buffer.  This is necessary since we are accessing it using
+                // a ByteAddressBuffer in the raytracing shaders and passing the byte offset to the shader in a constant buffer.
+                uint32_t positionBufferByteCount = const_cast<RHI::Buffer*>(streamBufferViews[0].GetBuffer())->GetDescriptor().m_byteCount;
+                RHI::BufferViewDescriptor positionBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, positionBufferByteCount);
+
+                uint32_t normalBufferByteCount = const_cast<RHI::Buffer*>(streamBufferViews[1].GetBuffer())->GetDescriptor().m_byteCount;
+                RHI::BufferViewDescriptor normalBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, normalBufferByteCount);
+
+                uint32_t tangentBufferByteCount = const_cast<RHI::Buffer*>(streamBufferViews[2].GetBuffer())->GetDescriptor().m_byteCount;
+                RHI::BufferViewDescriptor tangentBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, tangentBufferByteCount);
+
+                uint32_t bitangentBufferByteCount = const_cast<RHI::Buffer*>(streamBufferViews[3].GetBuffer())->GetDescriptor().m_byteCount;
+                RHI::BufferViewDescriptor bitangentBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, bitangentBufferByteCount);
+
+                uint32_t uvBufferByteCount = const_cast<RHI::Buffer*>(streamBufferViews[4].GetBuffer())->GetDescriptor().m_byteCount;
+                RHI::BufferViewDescriptor uvBufferDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, uvBufferByteCount);
+
+                const RHI::IndexBufferView& indexBufferView = mesh.m_indexBufferView;
+                uint32_t indexElementSize = indexBufferView.GetIndexFormat() == RHI::IndexFormat::Uint16 ? 2 : 4;
+                uint32_t indexElementCount = (uint32_t)indexBufferView.GetBuffer()->GetDescriptor().m_byteCount / indexElementSize;
+                RHI::BufferViewDescriptor indexBufferDescriptor;
+                indexBufferDescriptor.m_elementOffset = 0;
+                indexBufferDescriptor.m_elementCount = indexElementCount;
+                indexBufferDescriptor.m_elementSize = indexElementSize;
+                indexBufferDescriptor.m_elementFormat = indexBufferView.GetIndexFormat() == RHI::IndexFormat::Uint16 ? RHI::Format::R16_UINT : RHI::Format::R32_UINT;
+
+                // set the SubMesh data to pass to the RayTracingFeatureProcessor, starting with vertex/index data
+                RayTracingFeatureProcessor::SubMesh subMesh;
+                subMesh.m_positionFormat = PositionStreamFormat;
+                subMesh.m_positionVertexBufferView = streamBufferViews[0];
+                subMesh.m_positionShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[0].GetBuffer())->GetBufferView(positionBufferDescriptor);
+
+                subMesh.m_normalFormat = NormalStreamFormat;
+                subMesh.m_normalVertexBufferView = streamBufferViews[1];
+                subMesh.m_normalShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[1].GetBuffer())->GetBufferView(normalBufferDescriptor);
+
+                subMesh.m_tangentFormat = TangentStreamFormat;
+                subMesh.m_tangentVertexBufferView = streamBufferViews[2];
+                subMesh.m_tangentShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[2].GetBuffer())->GetBufferView(tangentBufferDescriptor);
+
+                subMesh.m_bitangentFormat = BitangentStreamFormat;
+                subMesh.m_bitangentVertexBufferView = streamBufferViews[3];
+                subMesh.m_bitangentShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[3].GetBuffer())->GetBufferView(bitangentBufferDescriptor);
+
+                if (uvBufferByteCount > 0)
+                {
+                    subMesh.m_bufferFlags |= RayTracingSubMeshBufferFlags::UV;
+                    subMesh.m_uvFormat = UVStreamFormat;
+                    subMesh.m_uvVertexBufferView = streamBufferViews[4];
+                    subMesh.m_uvShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[4].GetBuffer())->GetBufferView(uvBufferDescriptor);
+                }
+
+                subMesh.m_indexBufferView = mesh.m_indexBufferView;
+                subMesh.m_indexShaderBufferView = const_cast<RHI::Buffer*>(mesh.m_indexBufferView.GetBuffer())->GetBufferView(indexBufferDescriptor);
+
+                // add material data
                 if (material)
                 {
+                    // irradiance color
                     RPI::MaterialPropertyIndex propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.color"));
                     if (propertyIndex.IsValid())
                     {
-                        irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
+                        subMesh.m_irradianceColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
                     }
 
                     propertyIndex = material->FindPropertyIndex(AZ::Name("irradiance.factor"));
                     if (propertyIndex.IsValid())
                     {
-                        irradianceColor *= material->GetPropertyValue<float>(propertyIndex);
+                        subMesh.m_irradianceColor *= material->GetPropertyValue<float>(propertyIndex);
+                    }
+
+                    // base color
+                    propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.color"));
+                    if (propertyIndex.IsValid())
+                    {
+                        subMesh.m_baseColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
+                    }
+
+                    propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.factor"));
+                    if (propertyIndex.IsValid())
+                    {
+                        subMesh.m_baseColor *= material->GetPropertyValue<float>(propertyIndex);
+                    }
+
+                    // metallic
+                    propertyIndex = material->FindPropertyIndex(AZ::Name("metallic.factor"));
+                    if (propertyIndex.IsValid())
+                    {
+                        subMesh.m_metallicFactor = material->GetPropertyValue<float>(propertyIndex);
+                    }
+
+                    // roughness
+                    propertyIndex = material->FindPropertyIndex(AZ::Name("roughness.factor"));
+                    if (propertyIndex.IsValid())
+                    {
+                        subMesh.m_roughnessFactor = material->GetPropertyValue<float>(propertyIndex);
+                    }
+
+                    // textures
+                    propertyIndex = material->FindPropertyIndex(AZ::Name("baseColor.textureMap"));
+                    if (propertyIndex.IsValid())
+                    {
+                        Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
+                        if (image.get())
+                        {
+                            subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::BaseColor;
+                            subMesh.m_baseColorImageView = image->GetImageView();
+                        }
+                    }
+
+                    propertyIndex = material->FindPropertyIndex(AZ::Name("normal.textureMap"));
+                    if (propertyIndex.IsValid())
+                    {
+                        Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
+                        if (image.get())
+                        {
+                            subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::Normal;
+                            subMesh.m_normalImageView = image->GetImageView();
+                        }
+                    }
+
+                    propertyIndex = material->FindPropertyIndex(AZ::Name("metallic.textureMap"));
+                    if (propertyIndex.IsValid())
+                    {
+                        Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
+                        if (image.get())
+                        {
+                            subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::Metallic;
+                            subMesh.m_metallicImageView = image->GetImageView();
+                        }
+                    }
+
+                    propertyIndex = material->FindPropertyIndex(AZ::Name("roughness.textureMap"));
+                    if (propertyIndex.IsValid())
+                    {
+                        Data::Instance<RPI::Image> image = material->GetPropertyValue<Data::Instance<RPI::Image>>(propertyIndex);
+                        if (image.get())
+                        {
+                            subMesh.m_textureFlags |= RayTracingSubMeshTextureFlags::Roughness;
+                            subMesh.m_roughnessImageView = image->GetImageView();
+                        }
                     }
                 }
 
-                RayTracingFeatureProcessor::SubMesh subMesh;
-                subMesh.m_vertexFormat = StreamFormat;
-                subMesh.m_positionVertexBufferView = streamBufferViews[0];
-                subMesh.m_positionShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[0].GetBuffer())->GetBufferView(vertexBufferDescriptor);
-                subMesh.m_normalVertexBufferView = streamBufferViews[1];
-                subMesh.m_normalShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[1].GetBuffer())->GetBufferView(vertexBufferDescriptor);
-                subMesh.m_indexBufferView = mesh.m_indexBufferView;
-                subMesh.m_indexShaderBufferView = const_cast<RHI::Buffer*>(mesh.m_indexBufferView.GetBuffer())->GetBufferView(indexBufferDescriptor);
-                subMesh.m_irradianceColor = irradianceColor;
                 subMeshes.push_back(subMesh);
             }
 

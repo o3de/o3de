@@ -76,6 +76,7 @@ namespace AZ
             RHI::ConstPtr<RHI::PipelineState> m_globalPipelineState;
             RHI::Ptr<RHI::RayTracingShaderTable> m_rayTracingShaderTable;
             bool m_requiresViewSrg = false;
+            bool m_requiresRayTracingMaterialSrg = false;
         };
     }   // namespace RPI
 }   // namespace AZ
