@@ -339,8 +339,7 @@ function(ly_add_target)
 
     if(NOT ly_add_target_IMPORTED)
         if(NOT ly_add_target_INSTALL_COMPONENT)
-            #set(ly_add_target_INSTALL_COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT})
-            set(ly_add_target_INSTALL_COMPONENT ${ly_add_target_NAMESPACE})
+            set(ly_add_target_INSTALL_COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT})
         endif()
 
         ly_install_target(
