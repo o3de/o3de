@@ -34,11 +34,11 @@ namespace Multiplayer
     private:
         void OnRotationChangedEvent(const AZ::Quaternion& rotation);
         void OnTranslationChangedEvent(const AZ::Vector3& translation);
-        void OnScaleChangedEvent(const AZ::Vector3& scale);
+        void OnScaleChangedEvent(float scale);
 
         AZ::Event<AZ::Quaternion>::Handler m_rotationEventHandler;
         AZ::Event<AZ::Vector3>::Handler m_translationEventHandler;
-        AZ::Event<AZ::Vector3>::Handler m_scaleEventHandler;
+        AZ::Event<float>::Handler m_scaleEventHandler;
     };
 
     class NetworkTransformComponentController

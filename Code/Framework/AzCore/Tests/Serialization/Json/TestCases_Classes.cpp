@@ -373,6 +373,57 @@ namespace JsonSerializationTests
         return MakeInstanceWithoutDefaults(AZStd::move(instance), json);
     }
 
+    // NonReflectedEnumWrapper
+    bool NonReflectedEnumWrapper::Equals(const NonReflectedEnumWrapper& rhs, bool fullReflection) const
+    {
+        return !fullReflection || (m_enumClass == rhs.m_enumClass && m_rawEnum== rhs.m_rawEnum);
+    }
+
+    void NonReflectedEnumWrapper::Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context, bool fullReflection)
+    {
+        if (fullReflection)
+        {
+            // Note that the enums are not reflected using context->Enum<>
+
+            context->Class<NonReflectedEnumWrapper>()
+                ->Field("enumClass", &NonReflectedEnumWrapper::m_enumClass)
+                ->Field("rawEnum", &NonReflectedEnumWrapper::m_rawEnum);
+        }
+    }
+
+    InstanceWithSomeDefaults<NonReflectedEnumWrapper> NonReflectedEnumWrapper::GetInstanceWithSomeDefaults()
+    {
+        auto instance = AZStd::make_unique<NonReflectedEnumWrapper>();
+        instance->m_enumClass = NonReflectedEnumWrapper::SimpleEnumClass::Option2;
+
+        const char* strippedDefaults = R"(
+            {
+                "enumClass": 2
+            })";
+        const char* keptDefaults = R"(
+            {
+                "enumClass": 2,
+                "rawEnum": 0
+            })";
+
+        return MakeInstanceWithSomeDefaults(AZStd::move(instance),
+            strippedDefaults, keptDefaults);
+    }
+
+    InstanceWithoutDefaults<NonReflectedEnumWrapper> NonReflectedEnumWrapper::GetInstanceWithoutDefaults()
+    {
+        auto instance = AZStd::make_unique<NonReflectedEnumWrapper>();
+        instance->m_enumClass = NonReflectedEnumWrapper::SimpleEnumClass::Option2;
+        instance->m_rawEnum = NonReflectedEnumWrapper::SimpleRawEnum::RawOption1;
+
+        const char* json = R"(
+            {
+                "enumClass": 2,
+                "rawEnum": 1
+            })";
+        return MakeInstanceWithoutDefaults(AZStd::move(instance), json);
+    }
+
     // TemplatedClass<int>
 
     bool TemplatedClass<int>::Equals(const TemplatedClass<int>& rhs, bool fullReflection) const
