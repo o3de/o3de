@@ -80,6 +80,8 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
     def test_WindowsAndMac_RunHelpCmd_ZeroExitCode(self, workspace, bundler_batch_helper):
         """
         Simple calls to all AssetBundlerBatch --help to make sure a non-zero exit codes are returned.
+
+        Test will call each Asset Bundler Batch sub-command with help and will error on a non-0 exit code
         """
         bundler_batch_helper.call_bundlerbatch(help="")
         bundler_batch_helper.call_seeds(help="")
@@ -98,6 +100,12 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         r"""
         Tests that an asset list created maps dependencies correctly.
         testdependencieslevel\level.pak and lists of known dependencies are used for validation
+
+        Test Steps:
+        1. Create an asset list from the level.pak
+        2. Create Lists of expected assets in the level.pak
+        3. Add lists of expected assets to a single list
+        4. Compare list of expected assets to actual assets
         """
         helper = bundler_batch_helper
 
@@ -300,6 +308,16 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         """
         Validates destructive overwriting for asset lists and
         that generating debug information does not affect asset list creation
+
+        1. Create an asset list from seed_list
+        2. Validate asset list was created
+        3. Read and store contents of asset list into memory
+        4. Attempt to create a new asset list in without using --allowOverwrites
+        5. Verify that Asset Bundler returns false
+        6. Verify that file contents of the orignally created asset list did not change from what was stored in memory
+        7. Attempt to create a new asset list without debug while allowing overwrites
+        8. Verify that file contents of the orignally created asset list changed from what was stored in memory
+        9.
         """
         helper = bundler_batch_helper
         seed_list = os.path.join(workspace.paths.engine_root(), "Engine", "SeedAssetList.seed")  # Engine seed list
@@ -375,6 +393,14 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         """
         Validates bundle creation both through the 'bundles' and 'bundlesettings'
         subcommands.
+
+        Test Steps:
+        1. Create an asset list
+        2. Create a bundle with the asset list and without a bundle settings file
+        3. Create a bundle with the asset list and a bundle settings file
+        4. Validate calling bundle doesn't perform destructive overwrite without --allowOverwrites
+        5. Calling bundle again with --alowOverwrites performs destructive overwrite
+        6. Validate contents of original bundle and overwritten bundle
         """
         helper = bundler_batch_helper
         seed_list = os.path.join(workspace.paths.engine_root(), "Engine", "SeedAssetList.seed")  # Engine seed list
@@ -457,6 +483,16 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         """
         Creates bundles using the same asset list and compares that they are created equally. Also
         validates that platform bundles exclude/include an expected file. (excluded for WIN, included for MAC)
+
+        Test Steps:
+        1. Create an asset list
+        2. Create bundles for both PC & Mac
+        3. Validate that bundles were created
+        4. Verify that expected missing file is not in windows bundle
+        5. Verify that expected file is in the mac bundle
+        6. Create duplicate bundles with allowOverwrites
+        7. Verify that files were generated
+        8. Verify original bundle checksums are equal to new bundle checksums
         """
         helper = bundler_batch_helper
         # fmt:off
@@ -571,6 +607,24 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         """
         Validates that the 'seeds' subcommand can add and remove seeds and seed platforms properly.
         Also checks that destructive overwrites require the --allowOverwrites flag
+
+        Test Steps:
+
+        1. Create a PC Seed List from a test asset
+        2. Validate that seed list was generated with proper platform flag
+        3. Add Mac & PC as platforms to the seed list
+        4. Verify that seed has both Mac & PC platform flags
+        5. Remove Mac as a platform from the seed list
+        6. Verify that seed only has PC as a platform flag
+        7. Attempt to add a platform without using the --platform argument
+        8. Verify that asset bundler returns False and file contents did not change
+        9. Add MAC platform via --addPlatformToSeeds
+        10. Validate that seed has both Mac & PC platform flags
+        11. Attempt to remove platform without specifying a platform
+        12. Validate that seed has both Mac & PC platform flags
+        13. Validate that seed list contents did not change
+        14. Remove seed
+        15. Validate that seed was removed from the seed list
         """
         helper = bundler_batch_helper
 
@@ -692,6 +746,12 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         """
         Tests asset list comparison, both by file and by comparison type. Uses a set
         of controlled test assets to compare resulting output asset lists
+
+        1. Create comparison rules files
+        2. Create seed files for different sets of test assets
+        3. Create assetlist files for seed files
+        4. Validate assetlists were created properly
+        5. Compare using comparison rules files and just command line arguments
         """
         helper = bundler_batch_helper
         env = ap_setup_fixture
@@ -1021,6 +1081,16 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         """
         Tests that assetlists are created equivalent to the output while being created, and
         makes sure overwriting an existing file without the --allowOverwrites fails
+
+        Test Steps:
+        1. Check that Asset List creation requires PC platform flag
+        2. Create a PC Asset List using asset info file and default seed lists using --print
+        3. Validate all assets output are present in the asset list
+        4. Create a seed file
+        5. Attempt to overwrite Asset List without using --allowOverwrites
+        6. Validate that command returned an error and file contents did not change
+        7. Specifying platform but not "add" or "remove" should fail
+        8.
         """
         helper = bundler_batch_helper
 
@@ -1102,7 +1172,15 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
     def test_WindowsAndMac_AP_BundleProcessing_BundleProcessedAtRuntime(self, workspace, bundler_batch_helper,
                                                                         asset_processor, request):
         # fmt:on
-        """Test to make sure the AP GUI will process a newly created bundle file"""
+        """
+        Test to make sure the AP GUI will process a newly created bundle file
+
+        Test Steps:
+        1. Make asset list file (used for bundle creation)
+        2. Make bundle in <project_folder>/Bundles
+        3. Validate file was created
+        4. Make sure bundle now exists in cache
+        """
         # Set up helpers and variables
         helper = bundler_batch_helper
 
@@ -1155,6 +1233,12 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
     @pytest.mark.assetpipeline
     # fmt:off
     def test_WindowsAndMac_FilesMarkedSkip_FilesAreSkipped(self, workspace, bundler_batch_helper):
+        """
+        Test Steps:
+        1. Create an asset list with a file marked as skip
+        2. Verify file was created
+        3. Verify that only the expected assets are present in the created asset list
+        """
         expected_assets = [
             "libs/particles/milestone2particles.xml",
             "textures/milestone2/particles/fx_sparkstreak_01.dds"
@@ -1176,6 +1260,12 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
     # fmt:off
     def test_WindowsAndMac_AssetListSkipOneOfTwoParents_SharedDependencyIsIncluded(self, workspace,
                                                                                    bundler_batch_helper):
+        """
+        Test Steps:
+        1. Create Asset List with a parent asset that is skipped
+        2. Verify that Asset List was created
+        3. Verify that only the expected assets are present in the asset list
+        """
         expected_assets = [
             "testassets/bundlerskiptest_grandparent.dynamicslice",
             "testassets/bundlerskiptest_parenta.dynamicslice",
@@ -1204,6 +1294,13 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
     @pytest.mark.assetpipeline
     # fmt:off
     def test_WindowsAndMac_AssetLists_SkipRoot_ExcludesAll(self, workspace, bundler_batch_helper):
+        """
+        Negative scenario test that skips the same file being used as the parent seed.
+
+        Test Steps:
+        1. Create an asset list that skips the root asset
+        2. Verify that asset list was not generated
+        """
 
         result, _ = bundler_batch_helper.call_assetLists(
             assetListFile=bundler_batch_helper['asset_info_file_request'],
@@ -1220,6 +1317,13 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
     @pytest.mark.assetpipeline
     # fmt:off
     def test_WindowsAndMac_AssetLists_SkipUniversalWildcard_ExcludesAll(self, workspace, bundler_batch_helper):
+        """
+        Negative scenario test that uses the all wildcard when generating an asset list.
+
+        Test Steps:
+        1. Create an Asset List while using the universal all wildcard "*"
+        2. Verify that asset list was not generated
+        """
 
         result, _ = bundler_batch_helper.call_assetLists(
             assetListFile=bundler_batch_helper['asset_info_file_request'],
