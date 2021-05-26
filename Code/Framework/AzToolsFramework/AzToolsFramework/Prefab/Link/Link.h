@@ -79,7 +79,7 @@ namespace AzToolsFramework
              */
             void AddLinkIdToInstanceDom(PrefabDomValue& instanceDomValue);
 
-            PrefabDomValueConstReference GetLinkPatches();
+            PrefabDomValueReference GetLinkPatches();
 
         private:
 

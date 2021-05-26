@@ -117,7 +117,7 @@ namespace AzToolsFramework
                     auto linkRef = m_prefabSystemComponentInterface->FindLink(detachingInstanceLinkId);
                     AZ_Assert(linkRef.has_value(), "Unable to find link with id '%llu' during prefab creation.", detachingInstanceLinkId);
 
-                    PrefabDomValueConstReference linkPatches = linkRef->get().GetLinkPatches();
+                    PrefabDomValueReference linkPatches = linkRef->get().GetLinkPatches();
                     AZ_Assert(
                         linkPatches.has_value(), "Unable to get patches on link with id '%llu' during prefab creation.",
                         detachingInstanceLinkId);

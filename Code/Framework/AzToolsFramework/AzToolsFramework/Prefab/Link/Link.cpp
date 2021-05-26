@@ -234,7 +234,7 @@ namespace AzToolsFramework
             }
         }
 
-        PrefabDomValueConstReference Link::GetLinkPatches()
+        PrefabDomValueReference Link::GetLinkPatches()
         {
             return PrefabDomUtils::FindPrefabDomValue(m_linkDom, PrefabDomUtils::PatchesName);
         }
