@@ -57,6 +57,8 @@ set(FILES
     Source/LinkWidget.cpp
     Source/TagWidget.h
     Source/TagWidget.cpp
+    Source/GemCatalog/GemCatalogHeaderWidget.h
+    Source/GemCatalog/GemCatalogHeaderWidget.cpp
     Source/GemCatalog/GemCatalogScreen.h
     Source/GemCatalog/GemCatalogScreen.cpp
     Source/GemCatalog/GemFilterWidget.h
@@ -69,6 +71,8 @@ set(FILES
     Source/GemCatalog/GemItemDelegate.cpp
     Source/GemCatalog/GemListView.h
     Source/GemCatalog/GemListView.cpp
+    Source/GemCatalog/GemListHeaderWidget.h
+    Source/GemCatalog/GemListHeaderWidget.cpp
     Source/GemCatalog/GemModel.h
     Source/GemCatalog/GemModel.cpp
     Source/GemCatalog/GemSortFilterProxyModel.h

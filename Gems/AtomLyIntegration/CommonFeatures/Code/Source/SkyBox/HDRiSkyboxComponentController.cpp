@@ -228,7 +228,7 @@ namespace AZ
 
             // remove scale
             Transform worldNoScale = world;
-            worldNoScale.ExtractScale();
+            worldNoScale.ExtractUniformScale();
             
             AZ::Matrix3x4 transformMatrix = AZ::Matrix3x4::CreateFromTransform(worldNoScale);
             transformMatrix.StoreToRowMajorFloat12(matrix);

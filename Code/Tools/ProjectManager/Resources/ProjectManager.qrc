@@ -24,5 +24,7 @@
         <file>menu.svg</file>
         <file>menu_hover.svg</file>
         <file>Backgrounds/FirstTimeBackgroundImage.jpg</file>
+        <file>ArrowDownLine.svg</file>
+        <file>ArrowUpLine.svg</file>
     </qresource>
 </RCC>

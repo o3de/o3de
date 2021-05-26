@@ -204,6 +204,9 @@ void AssetProcessorManagerTest::SetUp()
     auto cacheRootKey =
         AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_cache_path";
     registry->Set(cacheRootKey, tempPath.absoluteFilePath("Cache").toUtf8().constData());
+    auto projectPathKey =
+        AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+    registry->Set(projectPathKey, "AutomatedTesting");
     AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
     m_data->m_databaseLocationListener.BusConnect();
