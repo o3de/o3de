@@ -105,71 +105,53 @@ namespace PhysX
 
     AZ::Vector3 CharacterControllerComponent::GetBasePosition() const
     {
-        if (IsPhysicsEnabled())
+        if (auto* controller = GetControllerConst())
         {
-            if (auto* controller = GetControllerConst())
-            {
-                return controller->GetBasePosition();
-            }
+            return controller->GetBasePosition();
         }
         return AZ::Vector3::CreateZero();
     }
 
     void CharacterControllerComponent::SetBasePosition(const AZ::Vector3& position)
     {
-        if (IsPhysicsEnabled())
+        if (auto* controller = GetController())
         {
-            if (auto* controller = GetController())
-            {
-                controller->SetBasePosition(position);
-                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTranslation, position);
-            }
+            controller->SetBasePosition(position);
+            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTranslation, position);
         }
     }
 
     AZ::Vector3 CharacterControllerComponent::GetCenterPosition() const
     {
-        if (IsPhysicsEnabled())
+        if (auto* controller = GetControllerConst())
         {
-            if (auto* controller = GetControllerConst())
-            {
-                return controller->GetCenterPosition();
-            }
+            return controller->GetCenterPosition();
         }
         return AZ::Vector3::CreateZero();
     }
 
     float CharacterControllerComponent::GetStepHeight() const
     {
-        if (IsPhysicsEnabled())
+        if (auto* controller = GetControllerConst())
         {
-            if (auto* controller = GetControllerConst())
-            {
-                return controller->GetStepHeight();
-            }
+            return controller->GetStepHeight();
         }
         return 0.0f;
     }
 
     void CharacterControllerComponent::SetStepHeight(float stepHeight)
     {
-        if (IsPhysicsEnabled())
+        if (auto* controller = GetController())
         {
-            if (auto* controller = GetController())
-            {
-                controller->SetStepHeight(stepHeight);
-            }
+            controller->SetStepHeight(stepHeight);
         }
     }
 
     AZ::Vector3 CharacterControllerComponent::GetUpDirection() const
     {
-        if (IsPhysicsEnabled())
+        if (auto* controller = GetControllerConst())
         {
-            if (auto* controller = GetControllerConst())
-            {
-                return controller->GetUpDirection();
-            }
+            return controller->GetUpDirection();
         }
         return AZ::Vector3::CreateZero();
     }
@@ -181,71 +163,52 @@ namespace PhysX
 
     float CharacterControllerComponent::GetSlopeLimitDegrees() const
     {
-        if (IsPhysicsEnabled())
+        if (auto* controller = GetControllerConst())
         {
-            if (auto* controller = GetControllerConst())
-            {
-                return controller->GetSlopeLimitDegrees();
-            }
+            return controller->GetSlopeLimitDegrees();
         }
         return 0.0f;
     }
 
     void CharacterControllerComponent::SetSlopeLimitDegrees(float slopeLimitDegrees)
     {
-        if (IsPhysicsEnabled())
+        if (auto* controller = GetController())
         {
-            if (auto* controller = GetController())
-            {
-                controller->SetSlopeLimitDegrees(slopeLimitDegrees);
-            }
+            controller->SetSlopeLimitDegrees(slopeLimitDegrees);
         }
     }
 
     float CharacterControllerComponent::GetMaximumSpeed() const
     {
-        if (IsPhysicsEnabled())
+        if (auto* controller = GetControllerConst())
         {
-            if (auto* controller = GetControllerConst())
-            {
-                return controller->GetMaximumSpeed();
-            }
+            return controller->GetMaximumSpeed();
         }
-
         return 0.0f;
     }
 
     void CharacterControllerComponent::SetMaximumSpeed(float maximumSpeed)
     {
-        if (IsPhysicsEnabled())
+        if (auto* controller = GetController())
         {
-            if (auto* controller = GetController())
-            {
-                controller->SetMaximumSpeed(maximumSpeed);
-            }
+            controller->SetMaximumSpeed(maximumSpeed);
         }
     }
 
     AZ::Vector3 CharacterControllerComponent::GetVelocity() const
     {
-        if (IsPhysicsEnabled())
+        if (auto* controller = GetControllerConst())
         {
-            if (auto* controller = GetControllerConst())
-            {
-                return controller->GetVelocity();
-            }
+            return controller->GetVelocity();
         }
         return AZ::Vector3::CreateZero();
     }
 
     void CharacterControllerComponent::AddVelocity(const AZ::Vector3& velocity)
     {
-        if (IsPhysicsEnabled())
+        if (auto* controller = GetController())
         {
-            if (auto* controller = GetController())
-            {
-                controller->AddVelocity(velocity);
-            }
+            controller->AddVelocity(velocity);
         }
     }
 
@@ -360,12 +323,9 @@ namespace PhysX
 
     float CharacterControllerComponent::GetHalfForwardExtent()
     {
-        if (IsPhysicsEnabled())
+        if (auto* controller = GetController())
         {
-            if (auto* controller = GetController())
-            {
-                return controller->GetHalfForwardExtent();
-            }
+            return controller->GetHalfForwardExtent();
         }
         return 0.0f;
     }
@@ -381,22 +341,14 @@ namespace PhysX
     // TransformNotificationBus
     void CharacterControllerComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
-        if (IsPhysicsEnabled())
+        if (auto* controller = GetController())
         {
-            if (auto* controller = GetController())
-            {
-                controller->SetBasePosition(world.GetTranslation());
-            }
+            controller->SetBasePosition(world.GetTranslation());
         }
     }
     
     void CharacterControllerComponent::SetCollisionLayer(const AZStd::string& layerName, AZ::Crc32 colliderTag)
     {
-        if (!IsPhysicsEnabled())
-        {
-            return;
-        }
-
         auto* controller = GetController();
         if (controller == nullptr)
         {
@@ -418,11 +370,6 @@ namespace PhysX
     AZStd::string CharacterControllerComponent::GetCollisionLayerName()
     {
         AZStd::string layerName;
-        if (!IsPhysicsEnabled())
-        {
-            return layerName;
-        }
-
         auto* controller = GetControllerConst();
         if (controller == nullptr)
         {
@@ -436,11 +383,6 @@ namespace PhysX
 
     void CharacterControllerComponent::SetCollisionGroup(const AZStd::string& groupName, AZ::Crc32 colliderTag)
     {
-        if (!IsPhysicsEnabled())
-        {
-            return;
-        }
-
         auto* controller = GetController();
         if (controller == nullptr)
         {
@@ -462,11 +404,6 @@ namespace PhysX
     AZStd::string CharacterControllerComponent::GetCollisionGroupName()
     {
         AZStd::string groupName;
-        if (!IsPhysicsEnabled())
-        {
-            return groupName;
-        }
-
         auto* controller = GetControllerConst();
         if (controller == nullptr)
         {
@@ -480,11 +417,6 @@ namespace PhysX
 
     void CharacterControllerComponent::ToggleCollisionLayer(const AZStd::string& layerName, AZ::Crc32 colliderTag, bool enabled)
     {
-        if (!IsPhysicsEnabled())
-        {
-            return;
-        }
-
         auto* controller = GetController();
         if (controller == nullptr)
         {
@@ -608,11 +540,6 @@ namespace PhysX
 
     void CharacterControllerComponent::DisableController()
     {
-        if (!IsPhysicsEnabled())
-        {
-            return;
-        }
-
         if (auto* controller = GetController())
         {
             controller->DisablePhysics();
@@ -621,9 +548,9 @@ namespace PhysX
             {
                 sceneInterface->RemoveSimulatedBody(m_attachedSceneHandle, controller->m_bodyHandle);
             }
-        }
 
-        DestroyController();
+            DestroyController();
+        }
     }
 
     void CharacterControllerComponent::DestroyController()
