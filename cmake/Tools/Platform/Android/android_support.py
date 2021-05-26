@@ -36,16 +36,10 @@ from cmake.Tools import common
 
 
 ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP = {
-    '4.1.0': {'min_gradle_version': '6.5',
-              'sdk_build': '29.0.2',
-              'default_ndk': '21.1.6352462',
-              'min_cmake_version': '3.19',
-              'max_cmake_version': '3.19'},
-
     '4.2.0': {'min_gradle_version': '6.7.1',
               'sdk_build': '30.0.2',
               'default_ndk': '21.4.7075529',
-              'min_cmake_version': '3.19'}
+              'min_cmake_version': '3.20'}
 }
 
 APP_NAME = 'app'

@@ -103,7 +103,6 @@ def build_optional_signing_profile(store_file, store_password, key_alias, key_pa
 
 
 ANDROID_SDK_ARGUMENT_NAME = '--android-sdk-path'
-ANDROID_SDK_PLATFORM_ARGUMENT_NAME_DEPRECATED = '--android-sdk-version'
 ANDROID_SDK_PLATFORM_ARGUMENT_NAME = '--android-sdk-platform'
 ANDROID_SDK_PREFERRED_TOOL_VER = '--android-sdk-build-tool-version'
 
@@ -111,7 +110,7 @@ ANDROID_SDK_PREFERRED_TOOL_VER = '--android-sdk-build-tool-version'
 ANDROID_NDK_PLATFORM_ARGUMENT_NAME = '--android-ndk-version'
 
 ANDROID_GRADLE_PLUGIN_ARGUMENT_NAME = '--gradle-plugin-version'
-ANDROID_GRADLE_MIN_PLUGIN_VERSION = LooseVersion("4.1.0")
+ANDROID_GRADLE_MIN_PLUGIN_VERSION = LooseVersion("4.2.0")
 
 # Constants for asset-related options for APK generation
 INCLUDE_APK_ASSETS_ARGUMENT_NAME = "--include-apk-assets"
@@ -173,10 +172,8 @@ def main(args):
     parser.add_argument('-g', '--project-path',
                         help='The project path to generate an android project')
 
-    parser.add_argument(ANDROID_SDK_PLATFORM_ARGUMENT_NAME_DEPRECATED,
-                        help=f'The android SDK platform number version to use for the APK. (deprecated, please use {ANDROID_SDK_PLATFORM_ARGUMENT_NAME} instead)')
     parser.add_argument(ANDROID_SDK_PLATFORM_ARGUMENT_NAME,
-                        help='The android SDK platform number version to use for the APK. (deprecated, please use {ANDROID_SDK_PLATFORM_ARGUMENT_NAME} instead)')
+                        help='The android SDK platform number version to use for the APK.')
 
     # Override arguments
     parser.add_argument(ANDROID_SDK_PREFERRED_TOOL_VER,
@@ -268,15 +265,7 @@ def main(args):
     logging.info("Detected Ninja version %s", str(ninja_version))
 
     # Get the android sdk platform version to use from the arguments, but also handle the deprecated argument name
-    android_sdk_platform_version_deprecated = parsed_args.get_argument(ANDROID_SDK_PLATFORM_ARGUMENT_NAME_DEPRECATED)
     android_sdk_platform_version = parsed_args.get_argument(ANDROID_SDK_PLATFORM_ARGUMENT_NAME)
-    if not android_sdk_platform_version:
-        if android_sdk_platform_version_deprecated:
-            android_sdk_platform_version = android_sdk_platform_version_deprecated
-            logging.warning(f"Using deprecated argument {ANDROID_SDK_PLATFORM_ARGUMENT_NAME_DEPRECATED} for the android sdk "
-                            f"platform number. Please use {ANDROID_SDK_PLATFORM_ARGUMENT_NAME} instead.")
-        else:
-            raise common.LmbrCmdError(f"Missing required android sdk platform argument: {ANDROID_SDK_PLATFORM_ARGUMENT_NAME}")
 
     # Get the gradle plugin details and validate against the current environment
     android_gradle_plugin_version = parsed_args.get_argument(ANDROID_GRADLE_PLUGIN_ARGUMENT_NAME)
@@ -299,10 +288,21 @@ def main(args):
     # Use the SDK Resolver to make sure the build tools and ndk
     android_sdk = android_support.AndroidSDKResolver(android_sdk_path=parsed_args.get_argument(ANDROID_SDK_ARGUMENT_NAME))
 
+    # If no SDK platform is provided, check for any installed one
+    if not android_sdk_platform_version:
+        installed_android_sdk_platforms = android_sdk.is_package_installed('platforms;*')
+        if not installed_android_sdk_platforms:
+            raise common.LmbrCmdError("No Android SDK Platform specified or installed. Make sure to install an Android SDK Platform.")
+        installed_android_sdk_platform = installed_android_sdk_platforms[0]
+        platform_number_match = re.match(r'platforms;android-([0-9]*)', installed_android_sdk_platform.path)
+        if not platform_number_match:
+            raise common.LmbrCmdError("No Android SDK Platform specified or installed. Make sure to install an Android SDK Platform.")
+        android_sdk_platform_version = str(platform_number_match.group(1))
+
     # Check and make sure that the requested sdk platform exists, download if necessary
     platform_package_name = f"platforms;android-{android_sdk_platform_version}"
-    platform_package = android_sdk.install_package(package_install_path=platform_package_name,
-                                                   package_description=f'Android SDK Platform {android_sdk_platform_version}')
+    android_sdk.install_package(package_install_path=platform_package_name,
+                                package_description=f'Android SDK Platform {android_sdk_platform_version}')
 
     # Make sure we have the extra android packages "market_apk_expansion" and "market_licensing" which is needed by the APK
     android_sdk.install_package(package_install_path='extras;google;market_apk_expansion',
@@ -329,10 +329,9 @@ def main(args):
     is_test_project = parsed_args.unit_test
 
     # Verify the 3rd Party Root Path
-    third_party_path = pathlib.Path(parsed_args.third_party_path) / '3rdParty.txt'
-    if not third_party_path.is_file():
-        raise common.LmbrCmdError("Invalid --third-party-path '{}'. Make sure it exists and contains "
-                                  "3rdParty.txt".format(parsed_args.third_party_path),
+    third_party_path = pathlib.Path(parsed_args.third_party_path)
+    if not third_party_path.is_dir():
+        raise common.LmbrCmdError(f"Invalid --third-party-path '{parsed_args.third_party_path}'.",
                                   common.ERROR_CODE_INVALID_PARAMETER)
     third_party_path = third_party_path.parent
 
