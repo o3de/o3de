@@ -13,12 +13,10 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Component/ComponentBus.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/std/typetraits/conditional.h>
 
 namespace AzFramework
 {
