@@ -51,13 +51,6 @@
             ],
             "Connections": [
                 {
-                    "LocalSlot": "MotionInputOutput",
-                    "AttachmentRef": {
-                        "Pass": "CameraMotionVectorPass",
-                        "Attachment": "Output"
-                    }
-                },
-                {
                     "LocalSlot": "OutputDepthStencil",
                     "AttachmentRef": {
                         "Pass": "This",

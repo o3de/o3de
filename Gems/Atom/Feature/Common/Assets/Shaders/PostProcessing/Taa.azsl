@@ -20,10 +20,11 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 {
     Texture2D<float4> m_inputColor;
     Texture2D<float4> m_inputDepth;
-    RWTexture2D<float4> m_outputColor;
     Texture2D<float2> m_motionVectors;
     Texture2D<float4> m_lastFrameAccumulation;
 
+    RWTexture2D<float4> m_outputColor;
+    
     Sampler LinearSampler
     {
         MinFilter = Linear;
@@ -34,7 +35,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressW = Clamp;
     };
 
-    float m_minContribution;
+    float m_currentFrameMinContribution;
 
     struct Constants
     {
@@ -81,7 +82,7 @@ void MainCS(
     // Tonemap last frame color
     lastFrameColorDepth.rgb = lastFrameColorDepth / (1.0 + luminance);
 
-    float weight = PassSrg::m_minContribution;
+    float weight = PassSrg::m_currentFrameMinContribution;
 
     // Basic depth rejection
     if (abs(depth - lastFrameColorDepth.a) > 0.001)

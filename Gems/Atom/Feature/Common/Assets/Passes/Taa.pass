@@ -93,7 +93,7 @@
                 "ShaderDataMappings": {
                     "FloatMappings": [
                         {
-                            "Name": "m_minContribution",
+                            "Name": "m_currentFrameMinContribution",
                             "Value": 0.1
                         }
                     ]

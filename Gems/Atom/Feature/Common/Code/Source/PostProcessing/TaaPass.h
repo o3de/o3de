@@ -53,11 +53,6 @@ namespace AZ::Render
         /// Creates a TaaPass
         static RPI::Ptr<TaaPass> Create(const RPI::PassDescriptor& descriptor);
         
-        static Name GetTaaPassTemplateName()
-        {
-            return Name("TaaTemplate");
-        }
-
     private:
 
         TaaPass(const RPI::PassDescriptor& descriptor);
