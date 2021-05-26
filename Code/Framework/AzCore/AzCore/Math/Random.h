@@ -126,7 +126,9 @@ namespace AZ
             m_offsets.fill(1); // Halton sequences start at index 1.
             m_increments.fill(1); // By default increment by 1 between each number.
         }
-
+        
+        //! Fills a provided container from begin to end with a Halton sequence
+        //! Entries are expected to be, or implicitely convert to, AZStd::array<float, Dimensions>
         template<class Iterator>
         void FillHaltonSequence(Iterator begin, Iterator end)
         {
