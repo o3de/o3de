@@ -94,7 +94,7 @@ namespace ScriptCanvas
             {
                 if (!m_updatingDisplay)
                 {
-                    RefreshActiveIndexes();
+                    RefreshActiveIndexes(true, true);
                     UpdateSlotDisplay();
                 }
             }
@@ -135,10 +135,8 @@ namespace ScriptCanvas
                 return Data::Type::Invalid();
             }
 
-            AZ::Outcome<AZStd::string, void> MethodOverloaded::GetFunctionCallName(const Slot* slot) const
+            AZ::Outcome<AZStd::string, void> MethodOverloaded::GetFunctionCallName([[maybe_unused]] const Slot* slot) const
             {
-                AZ_UNUSED(slot);
-
                 AZStd::string overloadName;
 
                 int activeIndex = GetActiveIndex();
@@ -188,7 +186,7 @@ namespace ScriptCanvas
 
                 // this prevents repeated updates based on changes to slots
                 Method::InitializeMethod(config);
-
+                SetClassNamePretty("");
                 RefreshActiveIndexes();
 
                 ConfigureContracts();
@@ -197,7 +195,12 @@ namespace ScriptCanvas
             SlotId MethodOverloaded::AddMethodInputSlot(const MethodConfiguration& config, size_t argumentIndex)
             {
                 const AZ::BehaviorParameter* argumentPtr = config.m_method.GetArgument(argumentIndex);
-                AZ_Assert(argumentPtr, "Method: %s had a null argument at index: %d", config.m_lookupName->data(), argumentIndex);
+
+                if (!argumentPtr)
+                {
+                    return SlotId{};
+                }
+
                 const auto& argument = *argumentPtr;
                 auto nameAndToolTip = MethodHelper::GetArgumentNameAndToolTip(config, argumentIndex);
 
@@ -507,7 +510,7 @@ namespace ScriptCanvas
                 }
             }
 
-            void MethodOverloaded::RefreshActiveIndexes(bool checkForConnections)
+            void MethodOverloaded::RefreshActiveIndexes(bool checkForConnections, bool adjustSlots)
             {
                 DataIndexMapping concreteInputTypes;
                 DataIndexMapping concreteOutputTypes;
@@ -519,6 +522,35 @@ namespace ScriptCanvas
                 if (m_overloadSelection.m_availableIndexes.size() == 1)
                 {
                     auto methodOverload = m_overloadConfiguration.m_overloads[(*m_overloadSelection.m_availableIndexes.begin())];
+
+                    if (adjustSlots)
+                    {
+                        const size_t numArguments = methodOverload.first->GetNumArguments();
+                        const size_t numInputSlots = m_orderedInputSlotIds.size();
+
+                        if (numArguments > numInputSlots)
+                        {
+                            MethodConfiguration config(*methodOverload.first, GetMethodType());
+                            AZStd::string_view lookupName = GetLookupName();
+                            config.m_lookupName = &lookupName;
+
+                            for (size_t index = numInputSlots; index != numArguments; ++index)
+                            {
+                                AddMethodInputSlot(config, index);
+                            }
+                        }
+                        else if (numArguments < numInputSlots)
+                        {
+                            const size_t removeCount = numInputSlots - numArguments;
+                            // remove extra slots, assuming remaining ones are of valid type (if not valid name)
+                            for (size_t count = 0; count != removeCount; ++count)
+                            {
+                                RemoveSlot(m_orderedInputSlotIds.back());
+                                m_orderedInputSlotIds.pop_back();
+                            }
+                        }
+                    }
+
                     SetMethodUnchecked(methodOverload.first, methodOverload.second);
                 }
             }
@@ -681,9 +713,6 @@ namespace ScriptCanvas
 
                 return AZ::Success();
             }
-
         } 
-
     } 
-
 } 

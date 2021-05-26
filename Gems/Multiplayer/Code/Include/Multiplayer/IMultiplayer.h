@@ -48,7 +48,6 @@ namespace Multiplayer
     using ConnectionAcquiredEvent = AZ::Event<MultiplayerAgentDatum>;
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using SessionShutdownEvent = AZ::Event<AzNetworking::INetworkInterface*>;
-    using OnConnectFunctor = AZStd::function<NetworkEntityHandle(AzNetworking::IConnection*, MultiplayerAgentDatum)>;
 
     //! IMultiplayer provides insight into the Multiplayer session and its Agents
     class IMultiplayer
@@ -77,10 +76,6 @@ namespace Multiplayer
         //! Adds a SessionShutdownEvent Handler which is invoked when the current network session ends.
         //! @param handler The SessionShutdownEvent handler to add
         virtual void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) = 0;
-
-        //! Overrides the default connect behaviour with the provided functor.
-        //! @param functor the function to invoke during a new connection event
-        virtual void SetOnConnectFunctor(const OnConnectFunctor& functor) = 0;
 
         //! Sends a packet telling if entity update messages can be sent
         //! @param readyForEntityUpdates Ready for entity updates or not

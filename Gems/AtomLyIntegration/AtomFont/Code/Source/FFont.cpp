@@ -1794,18 +1794,17 @@ void AZ::FFont::DrawScreenAlignedText3d(
     }
     AZ::Vector3 positionNDC = AzFramework::WorldToScreenNDC(
         params.m_position,
-        currentView->GetViewToWorldMatrix(),
+        currentView->GetWorldToViewMatrix(),
         currentView->GetViewToClipMatrix()
     );
-    AzFramework::TextDrawParameters param2d = params;
-    param2d.m_position = positionNDC;
+    internalParams.m_ctx.m_sizeIn800x600 = false;
 
     DrawStringUInternal(
         *internalParams.m_viewport, 
         internalParams.m_viewportContext, 
-        internalParams.m_position.GetX(), 
-        internalParams.m_position.GetY(), 
-        params.m_position.GetZ(), // Z
+        positionNDC.GetX() * internalParams.m_viewport->GetWidth(), 
+        (1.0f - positionNDC.GetY()) * internalParams.m_viewport->GetHeight(), 
+        positionNDC.GetZ(), // Z
         text.data(),
         params.m_multiline,
         internalParams.m_ctx

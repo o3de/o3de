@@ -28,6 +28,7 @@ namespace AZ
             
             const char* GetConfigFilePath() const;
             AZ::ComponentTypeList GetRequiredSystemComponents() const override;
+            void QueryApplicationType(AZ::ApplicationTypeQuery& appType) const override;
 
         protected:
             void SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations) override;
