@@ -1,14 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
 
 #pragma once
 
@@ -65,9 +65,8 @@ namespace AzFramework
         It is recommended that TController handle the SerializeContext, but the editor components handle
         the EditContext. TController can friend itself to the editor component to make this work if required.
     */
-        template<typename TController, typename TConfiguration = AZ::ComponentConfig, bool SupportsMultipleComponentPerEntity = false>
-        class ComponentAdapter
-            : public AZ::Component
+        template<typename TController, typename TConfiguration = AZ::ComponentConfig>
+        class ComponentAdapter : public AZ::Component
         {
         public:
             AZ_RTTI((ComponentAdapter, "{644A9187-4FDB-42C1-9D59-DD75304B551A}", TController, TConfiguration), AZ::Component);
@@ -86,7 +85,6 @@ namespace AzFramework
             void Deactivate() override;
 
         protected:
-
             static void Reflect(AZ::ReflectContext* context);
 
             // AZ::Component overrides ...
@@ -94,16 +92,6 @@ namespace AzFramework
             bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
             TController m_controller;
-
-        private:
-            template<
-                bool IsSupportingMultipleComponentPerEntity = SupportsMultipleComponentPerEntity,
-                typename AZStd::enable_if_t<IsSupportingMultipleComponentPerEntity>* = nullptr>
-            void ActivateImpl();
-            template<
-                bool IsSupportingMultipleComponentPerEntity = SupportsMultipleComponentPerEntity,
-                typename AZStd::enable_if_t<!IsSupportingMultipleComponentPerEntity>* = nullptr>
-            void ActivateImpl();
         };
     } // namespace Components
 } // namespace AzFramework

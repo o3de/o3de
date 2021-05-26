@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/EntityBus.h>
 
 namespace AzFramework
 {
@@ -39,6 +40,32 @@ namespace AzFramework
             static void Init(T& common)
             {
                 common.Init();
+            }
+        };
+
+        template<typename T, typename = void>
+        struct ComponentActivateHelper
+        {
+            static void Activate([[maybe_unused]] T& common, const AZ::EntityComponentIdPair& entityComponentIdPair)
+            {
+            }
+        };
+
+        template<typename T>
+        struct ComponentActivateHelper<T, AZStd::void_t<decltype(AZStd::declval<T>().Activate(AZ::EntityId()))>>
+        {
+            static void Activate(T& common, const AZ::EntityComponentIdPair& entityComponentIdPair)
+            {
+                common.Activate(entityComponentIdPair.GetEntityId());
+            }
+        };
+
+        template<typename T>
+        struct ComponentActivateHelper<T, AZStd::void_t<decltype(AZStd::declval<T>().Activate(AZ::EntityComponentIdPair()))>>
+        {
+            static void Activate(T& common, const AZ::EntityComponentIdPair& entityComponentIdPair)
+            {
+                common.Activate(entityComponentIdPair);
             }
         };
 

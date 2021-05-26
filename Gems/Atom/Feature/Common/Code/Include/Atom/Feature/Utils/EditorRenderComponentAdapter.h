@@ -20,17 +20,15 @@ namespace AZ
     namespace Render
     {
         //! Base editor component adapter adding automatic editor visibility support
-        template<typename TController, typename TRuntimeComponent, typename TConfiguration, bool SupportsMultipleComponentPerEntity = false>
+        template<typename TController, typename TRuntimeComponent, typename TConfiguration>
         class EditorRenderComponentAdapter
-            : public AzToolsFramework::Components::EditorComponentAdapter<TController, TRuntimeComponent, TConfiguration, SupportsMultipleComponentPerEntity>
+            : public AzToolsFramework::Components::EditorComponentAdapter<TController, TRuntimeComponent, TConfiguration>
             , public AzToolsFramework::EditorEntityVisibilityNotificationBus::Handler
         {
         public:
-            using BaseClass = AzToolsFramework::Components::EditorComponentAdapter<
-                TController, TRuntimeComponent, TConfiguration, SupportsMultipleComponentPerEntity>;
+            using BaseClass = AzToolsFramework::Components::EditorComponentAdapter<TController, TRuntimeComponent, TConfiguration>;
             AZ_RTTI(
-                (EditorRenderComponentAdapter, "{AAF38BE4-EA2F-408B-9C44-63C7FBAC6B33}", TController, TRuntimeComponent, TConfiguration,
-                 bool),
+                (EditorRenderComponentAdapter, "{AAF38BE4-EA2F-408B-9C44-63C7FBAC6B33}", TController, TRuntimeComponent, TConfiguration),
                 BaseClass);
 
             static void Reflect(AZ::ReflectContext* context);
@@ -55,16 +53,6 @@ namespace AZ
             template<int TVersion>
             static bool ConvertToEditorRenderComponentAdapter(
                 AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
-
-        private:
-            template<
-                bool IsSupportingMultipleComponentPerEntity = SupportsMultipleComponentPerEntity,
-                typename AZStd::enable_if_t<IsSupportingMultipleComponentPerEntity>* = nullptr>
-            void ActivateImpl();
-            template<
-                bool IsSupportingMultipleComponentPerEntity = SupportsMultipleComponentPerEntity,
-                typename AZStd::enable_if_t<!IsSupportingMultipleComponentPerEntity>* = nullptr>
-            void ActivateImpl();
         };
     } // namespace Render
 } // namespace AZ

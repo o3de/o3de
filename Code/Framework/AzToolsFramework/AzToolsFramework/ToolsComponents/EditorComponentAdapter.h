@@ -64,8 +64,7 @@ namespace AzToolsFramework
         the EditContext. TController can friend itself to the editor component to make this work if required.
     */
         template<
-            typename TController, typename TRuntimeComponent, typename TConfiguration = AZ::ComponentConfig,
-            bool SupportsMultipleComponentPerEntity = false>
+            typename TController, typename TRuntimeComponent, typename TConfiguration = AZ::ComponentConfig>
         class EditorComponentAdapter : public EditorComponentBase
         {
         public:
@@ -102,16 +101,6 @@ namespace AzToolsFramework
             virtual bool ShouldActivateController() const;
 
             TController m_controller;
-
-        private:
-            template<
-                bool IsSupportingMultipleComponentPerEntity = SupportsMultipleComponentPerEntity,
-                typename AZStd::enable_if_t<IsSupportingMultipleComponentPerEntity>* = nullptr>
-            void ActivateImpl();
-            template<
-                bool IsSupportingMultipleComponentPerEntity = SupportsMultipleComponentPerEntity,
-                typename AZStd::enable_if_t<!IsSupportingMultipleComponentPerEntity>* = nullptr>
-            void ActivateImpl();
         };
     } // namespace Components
 } // namespace AzToolsFramework
