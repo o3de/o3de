@@ -766,167 +766,49 @@ class ProjectManagerDialog(QObject):
         selected_items = self.enabled_gem_targets_list.selectionModel().selectedRows()
         return [(self.enabled_gem_targets_list.model().data(item)) for item in selected_items]
 
-    def add_runtime_project_gem_targets_handler(self) -> None:
+    def add_project_gem_targets_handler(self) -> None:
         gem_paths = manifest.get_all_gems()
         for gem_target in self.manage_project_gem_targets_get_selected_available_gems():
             for gem_path in gem_paths:
-                this_gems_targets = cmake.get_gem_targets(gem_path=gem_path)
-                for this_gem_target in this_gems_targets:
-                    if gem_target == this_gem_target:
-                        add_gem_project.add_gem_to_project(gem_path=gem_path,
-                                                        gem_target=gem_target,
-                                                        project_path=self.get_selected_project_path(),
-                                                        runtime_dependency=True)
-                        self.refresh_runtime_project_gem_targets_available_list()
-                        self.refresh_runtime_project_gem_targets_enabled_list()
-                        return
+                add_gem_project.add_gem_to_project(gem_path=gem_path,
+                                                   project_path=self.get_selected_project_path())
+                self.refresh_runtime_project_gem_targets_available_list()
+                self.refresh_runtime_project_gem_targets_enabled_list()
+                return
         self.refresh_runtime_project_gem_targets_available_list()
         self.refresh_runtime_project_gem_targets_enabled_list()
 
-    def remove_runtime_project_gem_targets_handler(self):
+    def remove_project_gem_targets_handler(self):
         gem_paths = manifest.get_all_gems()
         for gem_target in self.manage_project_gem_targets_get_selected_enabled_gems():
             for gem_path in gem_paths:
-                this_gems_targets = cmake.get_gem_targets(gem_path=gem_path)
-                for this_gem_target in this_gems_targets:
-                    if gem_target == this_gem_target:
-                        remove_gem_project.remove_gem_from_project(gem_path=gem_path,
-                                                             gem_target=gem_target,
-                                                             project_path=self.get_selected_project_path(),
-                                                             runtime_dependency=True)
-                        self.refresh_runtime_project_gem_targets_available_list()
-                        self.refresh_runtime_project_gem_targets_enabled_list()
-                        return
+                remove_gem_project.remove_gem_from_project(gem_path=gem_path,
+                                                           project_path=self.get_selected_project_path())
+                self.refresh_runtime_project_gem_targets_available_list()
+                self.refresh_runtime_project_gem_targets_enabled_list()
+                return
         self.refresh_runtime_project_gem_targets_available_list()
         self.refresh_runtime_project_gem_targets_enabled_list()
-
-    def add_tool_project_gem_targets_handler(self) -> None:
-        gem_paths = manifest.get_all_gems()
-        for gem_target in self.manage_project_gem_targets_get_selected_available_gems():
-            for gem_path in gem_paths:
-                this_gems_targets = cmake.get_gem_targets(gem_path=gem_path)
-                for this_gem_target in this_gems_targets:
-                    if gem_target == this_gem_target:
-                        add_gem_project.add_gem_to_project(gem_path=gem_path,
-                                                        gem_target=gem_target,
-                                                        project_path=self.get_selected_project_path(),
-                                                        tool_dependency=True)
-                        self.refresh_tool_project_gem_targets_available_list()
-                        self.refresh_tool_project_gem_targets_enabled_list()
-                        return
-        self.refresh_tool_project_gem_targets_available_list()
-        self.refresh_tool_project_gem_targets_enabled_list()
-
-    def remove_tool_project_gem_targets_handler(self):
-        gem_paths = manifest.get_all_gems()
-        for gem_target in self.manage_project_gem_targets_get_selected_enabled_gems():
-            for gem_path in gem_paths:
-                this_gems_targets = cmake.get_gem_targets(gem_path=gem_path)
-                for this_gem_target in this_gems_targets:
-                    if gem_target == this_gem_target:
-                        remove_gem_project.remove_gem_from_project(gem_path=gem_path,
-                                                             gem_target=gem_target,
-                                                             project_path=self.get_selected_project_path(),
-                                                             tool_dependency=True)
-                        self.refresh_tool_project_gem_targets_available_list()
-                        self.refresh_tool_project_gem_targets_enabled_list()
-                        return
-        self.refresh_tool_project_gem_targets_available_list()
-        self.refresh_tool_project_gem_targets_enabled_list()
-        
-    def add_server_project_gem_targets_handler(self) -> None:
-        gem_paths = manifest.get_all_gems()
-        for gem_target in self.manage_project_gem_targets_get_selected_available_gems():
-            for gem_path in gem_paths:
-                this_gems_targets = cmake.get_gem_targets(gem_path=gem_path)
-                for this_gem_target in this_gems_targets:
-                    if gem_target == this_gem_target:
-                        add_gem_project.add_gem_to_project(gem_path=gem_path,
-                                                        gem_target=gem_target,
-                                                        project_path=self.get_selected_project_path(),
-                                                        server_dependency=True)
-                        self.refresh_server_project_gem_targets_available_list()
-                        self.refresh_server_project_gem_targets_enabled_list()
-                        return
-        self.refresh_server_project_gem_targets_available_list()
-        self.refresh_server_project_gem_targets_enabled_list()
-
-    def remove_server_project_gem_targets_handler(self):
-        gem_paths = manifest.get_all_gems()
-        for gem_target in self.manage_project_gem_targets_get_selected_enabled_gems():
-            for gem_path in gem_paths:
-                this_gems_targets = cmake.get_gem_targets(gem_path=gem_path)
-                for this_gem_target in this_gems_targets:
-                    if gem_target == this_gem_target:
-                        remove_gem_project.remove_gem_from_project(gem_path=gem_path,
-                                                             gem_target=gem_target,
-                                                             project_path=self.get_selected_project_path(),
-                                                             server_dependency=True)
-                        self.refresh_server_project_gem_targets_available_list()
-                        self.refresh_server_project_gem_targets_enabled_list()
-                        return
-        self.refresh_server_project_gem_targets_available_list()
-        self.refresh_server_project_gem_targets_enabled_list()
 
     def refresh_runtime_project_gem_targets_enabled_list(self) -> None:
         enabled_project_gem_targets_model = QStandardItemModel()
-        enabled_project_gem_targets = cmake.get_project_runtime_gem_targets(
-            project_path=self.get_selected_project_path())
-        for gem_target in sorted(enabled_project_gem_targets):
+        enabled_project_gems = cmake.get_project_gems(project_path=self.get_selected_project_path())
+        for gem_target in sorted(enabled_project_gems):
             model_item = QStandardItem(gem_target)
             enabled_project_gem_targets_model.appendRow(model_item)
         self.enabled_gem_targets_list.setModel(enabled_project_gem_targets_model)
+
 
     def refresh_runtime_project_gem_targets_available_list(self) -> None:
         available_project_gem_targets_model = QStandardItemModel()
-        enabled_project_gem_targets = cmake.get_project_runtime_gem_targets(
-            project_path=self.get_selected_project_path())
-        all_gem_targets = cmake.get_all_gem_targets()
+        enabled_project_gem_targets = cmake.get_project_gems(project_path=self.get_selected_project_path())
+        all_gem_targets = manifest.get_all_gems()
         for gem_target in sorted(all_gem_targets):
             if gem_target not in enabled_project_gem_targets:
                 model_item = QStandardItem(gem_target)
                 available_project_gem_targets_model.appendRow(model_item)
         self.available_gem_targets_list.setModel(available_project_gem_targets_model)
-        
-    def refresh_tool_project_gem_targets_enabled_list(self) -> None:
-        enabled_project_gem_targets_model = QStandardItemModel()
-        enabled_project_gem_targets = cmake.get_project_tool_gem_targets(
-            project_path=self.get_selected_project_path())
-        for gem_target in sorted(enabled_project_gem_targets):
-            model_item = QStandardItem(gem_target)
-            enabled_project_gem_targets_model.appendRow(model_item)
-        self.enabled_gem_targets_list.setModel(enabled_project_gem_targets_model)
 
-    def refresh_tool_project_gem_targets_available_list(self) -> None:
-        available_project_gem_targets_model = QStandardItemModel()
-        enabled_project_gem_targets = cmake.get_project_tool_gem_targets(
-            project_path=self.get_selected_project_path())
-        all_gem_targets = cmake.get_all_gem_targets()
-        for gem_target in sorted(all_gem_targets):
-            if gem_target not in enabled_project_gem_targets:
-                model_item = QStandardItem(gem_target)
-                available_project_gem_targets_model.appendRow(model_item)
-        self.available_gem_targets_list.setModel(available_project_gem_targets_model)
-        
-    def refresh_server_project_gem_targets_enabled_list(self) -> None:
-        enabled_project_gem_targets_model = QStandardItemModel()
-        enabled_project_gem_targets = cmake.get_project_server_gem_targets(
-            project_path=self.get_selected_project_path())
-        for gem_target in sorted(enabled_project_gem_targets):
-            model_item = QStandardItem(gem_target)
-            enabled_project_gem_targets_model.appendRow(model_item)
-        self.enabled_gem_targets_list.setModel(enabled_project_gem_targets_model)
-
-    def refresh_server_project_gem_targets_available_list(self) -> None:
-        available_project_gem_targets_model = QStandardItemModel()
-        enabled_project_gem_targets = cmake.get_project_server_gem_targets(
-            project_path=self.get_selected_project_path())
-        all_gem_targets = cmake.get_all_gem_targets()
-        for gem_target in sorted(all_gem_targets):
-            if gem_target not in enabled_project_gem_targets:
-                model_item = QStandardItem(gem_target)
-                available_project_gem_targets_model.appendRow(model_item)
-        self.available_gem_targets_list.setModel(available_project_gem_targets_model)
 
     def refresh_create_project_template_list(self) -> None:
         self.create_project_template_model = QStandardItemModel()

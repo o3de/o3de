@@ -574,9 +574,7 @@ def get_registered(engine_name: str = None,
                         return project_path
 
     elif isinstance(gem_name, str):
-        engine_gems = get_engine_gems()
-        gems = json_data['gems'].copy()
-        gems.extend(engine_gems)
+        gems = get_all_gems()
         for gem_path in gems:
             gem_path = pathlib.Path(gem_path).resolve()
             gem_json = gem_path / 'gem.json'

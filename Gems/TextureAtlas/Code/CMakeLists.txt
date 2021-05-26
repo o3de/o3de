@@ -62,10 +62,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::TextureAtlas.Static
                 Gem::ImageProcessingAtom.Headers
     )
+    ly_create_alias(NAME TextureAtlas.Builders NAMESPACE Gem TARGETS Gem::TextureAtlas.Editor)
+    ly_create_alias(NAME TextureAtlas.Tools    NAMESPACE Gem TARGETS Gem::TextureAtlas.Editor)
 endif()
 
 ly_create_alias(NAME TextureAtlas.Servers  NAMESPACE Gem TARGETS Gem::TextureAtlas)
 ly_create_alias(NAME TextureAtlas.Clients  NAMESPACE Gem TARGETS Gem::TextureAtlas)
-ly_create_alias(NAME TextureAtlas.Builders NAMESPACE Gem TARGETS Gem::TextureAtlas.Editor)
-ly_create_alias(NAME TextureAtlas.Tools    NAMESPACE Gem TARGETS Gem::TextureAtlas.Editor)
 

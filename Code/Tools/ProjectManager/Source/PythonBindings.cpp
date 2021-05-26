@@ -591,7 +591,6 @@ namespace O3DE::ProjectManager
             m_addGemProject.attr("add_gem_to_project")(
                 pybind11::none(), // gem_name
                 pyGemPath,
-                pybind11::none(), // gem_target
                 pybind11::none(), // project_name
                 pyProjectPath
                 );
@@ -609,7 +608,6 @@ namespace O3DE::ProjectManager
             m_removeGemProject.attr("remove_gem_from_project")(
                 pybind11::none(), // gem_name
                 pyGemPath,
-                pybind11::none(), // gem_target
                 pybind11::none(), // project_name
                 pyProjectPath
                 );
