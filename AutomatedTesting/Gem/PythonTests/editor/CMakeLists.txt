@@ -11,10 +11,26 @@
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_FOUNDATION_TEST_SUPPORTED)
     ly_add_pytest(
+        NAME AutomatedTesting::EditorTests_Main
+        TEST_SUITE main
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}
+        PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark"
+        TIMEOUT 1500
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+        COMPONENT
+            Editor
+    )
+
+    ly_add_pytest(
         NAME AutomatedTesting::EditorTests_Periodic
         TEST_SUITE periodic
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}
+        PYTEST_MARKS "SUITE_periodic"
         TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor

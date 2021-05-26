@@ -22,12 +22,12 @@ QT_FORWARD_DECLARE_CLASS(QLabel)
 
 namespace O3DE::ProjectManager
 {
-    class ProjectSettingsCtrl
+    class CreateProjectCtrl
         : public ScreenWidget
     {
     public:
-        explicit ProjectSettingsCtrl(QWidget* parent = nullptr);
-        ~ProjectSettingsCtrl() = default;
+        explicit CreateProjectCtrl(QWidget* parent = nullptr);
+        ~CreateProjectCtrl() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
     protected slots:

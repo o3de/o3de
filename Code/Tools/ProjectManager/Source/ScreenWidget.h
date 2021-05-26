@@ -49,15 +49,12 @@ namespace O3DE::ProjectManager
         {
             return tr("Missing");
         }
-        virtual QString GetNextButtonText()
-        {
-            return "Next";
-        }
 
     signals:
         void ChangeScreenRequest(ProjectManagerScreen screen);
         void GotoPreviousScreenRequest();
         void ResetScreenRequest(ProjectManagerScreen screen);
+        void NotifyCurrentProject(const QString& projectPath);
     };
 
 } // namespace O3DE::ProjectManager

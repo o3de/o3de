@@ -10,7 +10,7 @@
  *
  */
 
-#include <ProjectSettingsCtrl.h>
+#include <CreateProjectCtrl.h>
 #include <ScreensCtrl.h>
 #include <PythonBindingsInterface.h>
 #include <NewProjectSettingsScreen.h>
@@ -27,7 +27,7 @@
 
 namespace O3DE::ProjectManager
 {
-    ProjectSettingsCtrl::ProjectSettingsCtrl(QWidget* parent)
+    CreateProjectCtrl::CreateProjectCtrl(QWidget* parent)
         : ScreenWidget(parent)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
@@ -42,7 +42,7 @@ namespace O3DE::ProjectManager
 
             QPushButton* headerBackButton = new QPushButton();
             headerBackButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
-            connect(headerBackButton, &QPushButton::clicked, this, &ProjectSettingsCtrl::HandleBackButton);
+            connect(headerBackButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandleBackButton);
             headerLayout->addWidget(headerBackButton);
 
             QVBoxLayout* titleLayout = new QVBoxLayout();
@@ -72,23 +72,23 @@ namespace O3DE::ProjectManager
         backNextButtons->setObjectName("footer");
         vLayout->addWidget(backNextButtons);
 
-        m_backButton = backNextButtons->addButton("Back", QDialogButtonBox::RejectRole);
+        m_backButton = backNextButtons->addButton(tr("Back"), QDialogButtonBox::RejectRole);
         m_backButton->setProperty("secondary", true);
-        m_nextButton = backNextButtons->addButton("Next", QDialogButtonBox::ApplyRole);
+        m_nextButton = backNextButtons->addButton(tr("Next"), QDialogButtonBox::ApplyRole);
 
-        connect(m_backButton, &QPushButton::clicked, this, &ProjectSettingsCtrl::HandleBackButton);
-        connect(m_nextButton, &QPushButton::clicked, this, &ProjectSettingsCtrl::HandleNextButton);
+        connect(m_backButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandleBackButton);
+        connect(m_nextButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandleNextButton);
 
         Update();
         setLayout(vLayout);
     }
 
-    ProjectManagerScreen ProjectSettingsCtrl::GetScreenEnum()
+    ProjectManagerScreen CreateProjectCtrl::GetScreenEnum()
     {
-        return ProjectManagerScreen::NewProjectSettingsCore;
+        return ProjectManagerScreen::CreateProject;
     }
 
-    void ProjectSettingsCtrl::HandleBackButton()
+    void CreateProjectCtrl::HandleBackButton()
     {
         if (m_stack->currentIndex() > 0)
         {
@@ -100,7 +100,7 @@ namespace O3DE::ProjectManager
             emit GotoPreviousScreenRequest();
         }
     }
-    void ProjectSettingsCtrl::HandleNextButton()
+    void CreateProjectCtrl::HandleNextButton()
     {
         ScreenWidget* currentScreen = reinterpret_cast<ScreenWidget*>(m_stack->currentWidget());
         ProjectManagerScreen screenEnum = currentScreen->GetScreenEnum();
@@ -141,20 +141,20 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void ProjectSettingsCtrl::Update()
+    void CreateProjectCtrl::Update()
     {
         ScreenWidget* currentScreen = reinterpret_cast<ScreenWidget*>(m_stack->currentWidget());
-        m_nextButton->setText(currentScreen->GetNextButtonText());
-
-        if (currentScreen->GetScreenEnum() == ProjectManagerScreen::GemCatalog)
+        if (currentScreen && currentScreen->GetScreenEnum() == ProjectManagerScreen::GemCatalog)
         {
             m_title->setText(tr("Create Project"));
             m_subtitle->setText(tr("Configure project with Gems"));
+            m_nextButton->setText(tr("Create Project"));
         }
         else
         {
             m_title->setText(tr("Create Project"));
             m_subtitle->setText(tr("Enter Project Details"));
+            m_nextButton->setText(tr("Next"));
         }
     }
 

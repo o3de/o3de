@@ -32,9 +32,9 @@ namespace O3DE::ProjectManager
         // currently the tab order on the home page is based on the order of this list
         QVector<ProjectManagerScreen> screenEnums =
         {
-            ProjectManagerScreen::NewProjectSettingsCore,
+            ProjectManagerScreen::CreateProject,
             ProjectManagerScreen::ProjectsHome,
-            ProjectManagerScreen::ProjectSettings,
+            ProjectManagerScreen::UpdateProject,
             ProjectManagerScreen::EngineSettings,
             ProjectManagerScreen::FirstTimeUse 
         };

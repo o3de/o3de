@@ -232,3 +232,43 @@ QTabBar::tab:pressed
     margin-left:30px;
 }
 
+/************** First Time **************/
+#firstTimeScreen > #titleLabel {
+    font-size:60px;
+    margin:0px;
+}
+
+#firstTimeScreen > #introLabel {
+    font-size:14px;
+    margin:10px 0 50px 0;
+}
+
+#firstTimeScreen > QPushButton {
+    min-width: 210px;
+    max-width: 210px;
+    min-height: 90px;
+    max-height: 90px;
+    qproperty-flat: true;
+    background-origin:content;
+    padding:70px 0 110px 0;
+    font-size:14px;
+    border: 1px solid #ffffff;
+}
+
+#firstTimeScreen > QPushButton:hover {
+    border: 1px solid #1e70eb;
+    color: #1e70eb;
+}
+
+#firstTimeScreen > QPushButton:pressed {
+    border: 1px solid #0e60eb;
+    color: #0e60eb;
+}
+
+#createProjectButton {
+    background:rgba(0,0,0,180) url(:/Add.svg) no-repeat center bottom;
+}
+
+#addProjectButton {
+    background:rgba(0,0,0,180) url(:/Select_Folder.svg) no-repeat center bottom;
+}

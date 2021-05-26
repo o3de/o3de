@@ -13,10 +13,12 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
+#include <QPixmap>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QIcon)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
+QT_FORWARD_DECLARE_CLASS(QPaintEvent)
 
 namespace O3DE::ProjectManager
 {
@@ -34,11 +36,19 @@ namespace O3DE::ProjectManager
         void HandleNewProjectButton();
         void HandleAddProjectButton();
 
-    private:
-        QPushButton* CreateLargeBoxButton(const QIcon& icon, const QString& text, QWidget* parent = nullptr);
+        void paintEvent(QPaintEvent* event) override;
 
+    private:
         QPushButton* m_createProjectButton;
         QPushButton* m_addProjectButton;
+        QPixmap m_background;
+
+        inline constexpr static int s_contentMargins = 80;
+        inline constexpr static int s_buttonSpacing = 30;
+        inline constexpr static int s_iconSize = 24;
+        inline constexpr static int s_spacerSize = 20;
+        inline constexpr static int s_boxButtonWidth = 210;
+        inline constexpr static int s_boxButtonHeight = 280;
     };
 
 } // namespace O3DE::ProjectManager

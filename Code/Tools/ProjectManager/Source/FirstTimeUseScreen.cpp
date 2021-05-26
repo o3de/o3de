@@ -18,16 +18,11 @@
 #include <QPushButton>
 #include <QIcon>
 #include <QSpacerItem>
+#include <QPainter>
+#include <QPaintEvent>
 
 namespace O3DE::ProjectManager
 {
-    inline constexpr static int s_contentMargins = 80;
-    inline constexpr static int s_buttonSpacing = 30;
-    inline constexpr static int s_iconSize = 24;
-    inline constexpr static int s_spacerSize = 20;
-    inline constexpr static int s_boxButtonWidth = 210;
-    inline constexpr static int s_boxButtonHeight = 280;
-
     FirstTimeUseScreen::FirstTimeUseScreen(QWidget* parent)
         : ScreenWidget(parent)
     {
@@ -35,26 +30,29 @@ namespace O3DE::ProjectManager
         setLayout(vLayout);
         vLayout->setContentsMargins(s_contentMargins, s_contentMargins, s_contentMargins, s_contentMargins);
 
+        setObjectName("firstTimeScreen");
+
+        m_background.load(":/Backgrounds/FirstTimeBackgroundImage.jpg");
+
         QLabel* titleLabel = new QLabel(this);
-        titleLabel->setText(tr("Ready. Set. Create!"));
-        titleLabel->setStyleSheet("font-size: 60px");
+        titleLabel->setText(tr("Ready. Set. Create."));
+        titleLabel->setObjectName("titleLabel");
         vLayout->addWidget(titleLabel);
 
         QLabel* introLabel = new QLabel(this);
-        introLabel->setTextFormat(Qt::AutoText);
-        introLabel->setText(tr("<html><head/><body><p>Welcome to O3DE! Start something new by creating a project. Not sure what to create? </p><p>Explore what\342\200\231s available by downloading our sample project.</p></body></html>"));
-        introLabel->setStyleSheet("font-size: 14px");
+        introLabel->setObjectName("introLabel");
+        introLabel->setText(tr("Welcome to O3DE! Start something new by creating a project. Not sure what to create? \nExplore what's available by downloading our sample project."));
         vLayout->addWidget(introLabel);
 
         QHBoxLayout* buttonLayout = new QHBoxLayout();
         buttonLayout->setSpacing(s_buttonSpacing);
 
-        m_createProjectButton = CreateLargeBoxButton(QIcon(":/Add.svg"), tr("Create Project"), this);
-        m_createProjectButton->setIconSize(QSize(s_iconSize, s_iconSize));
+        m_createProjectButton = new QPushButton(tr("Create Project"), this);
+        m_createProjectButton->setObjectName("createProjectButton");
         buttonLayout->addWidget(m_createProjectButton);
 
-        m_addProjectButton = CreateLargeBoxButton(QIcon(":/Select_Folder.svg"), tr("Add a Project"), this);
-        m_addProjectButton->setIconSize(QSize(s_iconSize, s_iconSize));
+        m_addProjectButton = new QPushButton(tr("Add a Project"), this);
+        m_addProjectButton->setObjectName("addProjectButton");
         buttonLayout->addWidget(m_addProjectButton);
 
         QSpacerItem* buttonSpacer = new QSpacerItem(s_spacerSize, s_spacerSize, QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -65,11 +63,29 @@ namespace O3DE::ProjectManager
         QSpacerItem* verticalSpacer = new QSpacerItem(s_spacerSize, s_spacerSize, QSizePolicy::Minimum, QSizePolicy::Expanding);
         vLayout->addItem(verticalSpacer);
 
-        // Using border-image allows for scaling options background-image does not support
-        setStyleSheet("O3DE--ProjectManager--ScreenWidget { border-image: url(:/Backgrounds/FirstTimeBackgroundImage.jpg) repeat repeat; }");
-
         connect(m_createProjectButton, &QPushButton::pressed, this, &FirstTimeUseScreen::HandleNewProjectButton);
         connect(m_addProjectButton, &QPushButton::pressed, this, &FirstTimeUseScreen::HandleAddProjectButton);
+    }
+
+    void FirstTimeUseScreen::paintEvent([[maybe_unused]] QPaintEvent* event)
+    {
+        QPainter painter(this);
+
+        auto winSize = size();
+        auto pixmapRatio = (float)m_background.width() / m_background.height();
+        auto windowRatio = (float)winSize.width() / winSize.height();
+
+        if (pixmapRatio > windowRatio)
+        {
+            auto newWidth = (int)(winSize.height() * pixmapRatio);
+            auto offset = (newWidth - winSize.width()) / -2;
+            painter.drawPixmap(offset, 0, newWidth, winSize.height(), m_background);
+        }
+        else
+        {
+            auto newHeight = (int)(winSize.width() / pixmapRatio);
+            painter.drawPixmap(0, 0, winSize.width(), newHeight, m_background);
+        }
     }
 
     bool FirstTimeUseScreen::IsTab()
@@ -89,24 +105,11 @@ namespace O3DE::ProjectManager
 
     void FirstTimeUseScreen::HandleNewProjectButton()
     {
-        emit ResetScreenRequest(ProjectManagerScreen::NewProjectSettingsCore);
-        emit ChangeScreenRequest(ProjectManagerScreen::NewProjectSettingsCore);
+        emit ResetScreenRequest(ProjectManagerScreen::CreateProject);
+        emit ChangeScreenRequest(ProjectManagerScreen::CreateProject);
     }
     void FirstTimeUseScreen::HandleAddProjectButton()
     {
         emit ChangeScreenRequest(ProjectManagerScreen::ProjectsHome);
     }
-
-    QPushButton* FirstTimeUseScreen::CreateLargeBoxButton(const QIcon& icon, const QString& text, QWidget* parent)
-    {
-        QPushButton* largeBoxButton = new QPushButton(icon, text, parent);
-
-        largeBoxButton->setFixedSize(s_boxButtonWidth, s_boxButtonHeight);
-        largeBoxButton->setFlat(true);
-        largeBoxButton->setFocusPolicy(Qt::FocusPolicy::NoFocus);
-        largeBoxButton->setStyleSheet("QPushButton { font-size: 14px; background-color: rgba(0, 0, 0, 191); }");
-
-        return largeBoxButton;
-    }
-
 } // namespace O3DE::ProjectManager
