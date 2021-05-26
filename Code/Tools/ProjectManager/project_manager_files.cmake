@@ -51,6 +51,8 @@ set(FILES
     Source/EngineSettingsScreen.cpp
     Source/ProjectButtonWidget.h
     Source/ProjectButtonWidget.cpp
+    Source/ScreenHeaderWidget.h
+    Source/ScreenHeaderWidget.cpp
     Source/LinkWidget.h
     Source/LinkWidget.cpp
     Source/TagWidget.h

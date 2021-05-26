@@ -14,6 +14,7 @@
 #include <ScreensCtrl.h>
 #include <PythonBindingsInterface.h>
 #include <NewProjectSettingsScreen.h>
+#include <ScreenHeaderWidget.h>
 #include <GemCatalog/GemCatalogScreen.h>
 
 #include <QDialogButtonBox>
@@ -33,33 +34,11 @@ namespace O3DE::ProjectManager
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setContentsMargins(0,0,0,0);
 
-        QWidget* header = new QWidget();
-        header->setObjectName("header");
-        {
-            QHBoxLayout* headerLayout = new QHBoxLayout();
-            headerLayout->setAlignment(Qt::AlignLeft);
-            headerLayout->setContentsMargins(0,0,0,0);
-
-            QPushButton* headerBackButton = new QPushButton();
-            headerBackButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
-            connect(headerBackButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandleBackButton);
-            headerLayout->addWidget(headerBackButton);
-
-            QVBoxLayout* titleLayout = new QVBoxLayout();
-            m_title = new QLabel(tr("Create a New Project"));
-            m_title->setObjectName("headerTitle");
-            titleLayout->addWidget(m_title);
-
-            m_subtitle = new QLabel(tr("Enter Project Details"));
-            m_subtitle->setObjectName("headerSubTitle");
-            titleLayout->addWidget(m_subtitle);
-
-            headerLayout->addLayout(titleLayout);
-
-            // TODO add a progress widget
-            header->setLayout(headerLayout);
-        }
-        vLayout->addWidget(header);
+        m_header = new ScreenHeader(this);
+        m_header->setTitle(tr("Create a New Project"));
+        m_header->setSubTitle(tr("Enter Project Details"));
+        connect(m_header->backButton(), &QPushButton::clicked, this, &CreateProjectCtrl::HandleBackButton);
+        vLayout->addWidget(m_header);
 
         m_stack = new QStackedWidget(this);
         m_stack->setObjectName("body");
@@ -146,14 +125,14 @@ namespace O3DE::ProjectManager
         ScreenWidget* currentScreen = reinterpret_cast<ScreenWidget*>(m_stack->currentWidget());
         if (currentScreen && currentScreen->GetScreenEnum() == ProjectManagerScreen::GemCatalog)
         {
-            m_title->setText(tr("Create Project"));
-            m_subtitle->setText(tr("Configure project with Gems"));
+            m_header->setTitle(tr("Create Project"));
+            m_header->setSubTitle(tr("Configure project with Gems"));
             m_nextButton->setText(tr("Create Project"));
         }
         else
         {
-            m_title->setText(tr("Create Project"));
-            m_subtitle->setText(tr("Enter Project Details"));
+            m_header->setTitle(tr("Create Project"));
+            m_header->setSubTitle(tr("Enter Project Details"));
             m_nextButton->setText(tr("Next"));
         }
     }

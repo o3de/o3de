@@ -253,11 +253,11 @@ QTabBar::tab:pressed
     qproperty-flat: true;
     background-origin:content;
     font-size:14px;
-    border: 2px solid #ffffff;
+    border: 1px solid #ffffff;
 }
 
 #firstTimeContent > QPushButton:hover {
-    border: 2px solid #1e70eb;
+    border: 1px solid #1e70eb;
     color: #1e70eb;
 }
 
@@ -297,11 +297,15 @@ QTabBar::tab:pressed
 }
 
 #projectButton > #labelButton  {
-    border:2px solid white;
+    border:1px solid white;
 }
 #projectButton > #labelButton:hover,
 #projectButton > #labelButton:pressed  {
-    border:2px solid #1e70eb;
+    border:1px solid #1e70eb;
+}
+
+#projectButton > QFrame  {
+    margin-top:6px;
 }
 
 #projectButton > QFrame > QLabel {
@@ -313,8 +317,8 @@ QTabBar::tab:pressed
 #projectMenuButton {
     qproperty-flat: true;
     background:transparent url(:/menu.svg) no-repeat center center;
-    max-width:26px;
-    min-width:26px;
+    max-width:30px;
+    min-width:30px;
     max-height:14px;
     min-height:14px;
 }

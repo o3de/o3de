@@ -22,6 +22,8 @@ QT_FORWARD_DECLARE_CLASS(QLabel)
 
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(ScreenHeader)
+
     class CreateProjectCtrl
         : public ScreenWidget
     {
@@ -38,8 +40,8 @@ namespace O3DE::ProjectManager
         void Update();
 
         QStackedWidget* m_stack;
-        QLabel* m_title;
-        QLabel* m_subtitle;
+        ScreenHeader* m_header;
+
         QPushButton* m_backButton;
         QPushButton* m_nextButton;
 
