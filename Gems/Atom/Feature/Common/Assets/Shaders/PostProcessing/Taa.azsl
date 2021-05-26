@@ -39,7 +39,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 
     struct Constants
     {
-        uint2 m_size;
+        uint2 m_inputColorSize;
+        float2 m_inputColorRcpSize;
     };
     Constants m_constantData;
 }
@@ -72,8 +73,8 @@ void MainCS(
     color = color / (1.0 + luminance);
 
     // Get the uv coordinate for the previous frame.
-    uint2 size = PassSrg::m_constantData.m_size;
-    float2 uvCoord = (pixelCoord + 0.5f) / float2(size);
+    float2 rcpSize = PassSrg::m_constantData.m_inputColorRcpSize;
+    float2 uvCoord = (pixelCoord + 0.5f) * rcpSize;
     float2 uvOld = float2(uvCoord) + previousPositionOffset;
 
     // For now just rely on hardware bilinear filtering but this is something that will be improved.

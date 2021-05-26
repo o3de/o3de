@@ -47,13 +47,15 @@ namespace AZ::Render
         struct TaaConstants
         {
             AZStd::array<uint32_t, 2> m_size = { 1, 1 };
-            AZStd::array<uint32_t, 2> m_padding = { 0, 0 };
+            AZStd::array<float, 2> m_rcpSize = { 0.0, 0.0 };
         };
 
         TaaConstants cb;
         RHI::Size inputSize = m_lastFrameAccumulationBinding->m_attachment->m_descriptor.m_image.m_size;
         cb.m_size[0] = inputSize.m_width;
         cb.m_size[1] = inputSize.m_height;
+        cb.m_rcpSize[0] = 1.0f / inputSize.m_width;
+        cb.m_rcpSize[1] = 1.0f / inputSize.m_height;
         
         m_shaderResourceGroup->SetConstant(m_constantDataIndex, cb);
 
