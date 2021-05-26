@@ -59,6 +59,11 @@ ly_add_target(
         Gem::PhysX
 )
 
+# clients and servers use the above Gem module.
+ly_create_alias(NAME Blast.Servers NAMESPACE Gem TARGETS Gem::Blast)
+ly_create_alias(NAME Blast.Clients NAMESPACE Gem TARGETS Gem::Blast)
+
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
@@ -110,6 +115,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::PhysX.Editor
     )
 
+    # tools and builders use the above module.
+    ly_create_alias(NAME Blast.Tools NAMESPACE    Gem TARGETS Gem::Blast.Editor)
+    ly_create_alias(NAME Blast.Builders NAMESPACE Gem TARGETS Gem::Blast.Editor)
 endif()
 
 ################################################################################

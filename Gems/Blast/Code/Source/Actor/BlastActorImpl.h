@@ -77,5 +77,6 @@ namespace Blast
         AZ::Vector3 m_parentLinearVelocity = AZ::Vector3::CreateZero();
         AZ::Vector3 m_parentCenterOfMass = AZ::Vector3::CreateZero();
         AzPhysics::RigidBodyConfiguration m_bodyConfiguration;
+        float m_scale = 1.0f;
     };
 } // namespace Blast

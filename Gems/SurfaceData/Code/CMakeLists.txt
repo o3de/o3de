@@ -46,6 +46,10 @@ ly_add_target(
         Gem::LmbrCentral
 )
 
+# the above module is for use in all client/server types 
+ly_create_alias(NAME SurfaceData.Servers  NAMESPACE Gem TARGETS Gem::SurfaceData)
+ly_create_alias(NAME SurfaceData.Clients  NAMESPACE Gem TARGETS Gem::SurfaceData)
+
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
@@ -70,6 +74,9 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
+    # the above module is for use in dev tool situations
+    ly_create_alias(NAME SurfaceData.Builders NAMESPACE Gem TARGETS Gem::SurfaceData.Editor)
+    ly_create_alias(NAME SurfaceData.Tools    NAMESPACE Gem TARGETS Gem::SurfaceData.Editor)
 
 endif()
 

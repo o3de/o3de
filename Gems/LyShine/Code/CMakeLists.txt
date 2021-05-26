@@ -54,6 +54,9 @@ ly_add_target(
         Gem::TextureAtlas
 )
 
+# by default, load the above "Gem::LyShine" module in Client applications:
+ly_create_alias(NAME LyShine.Clients NAMESPACE Gem TARGETS Gem::LyShine)
+
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME LyShine.Editor.Static STATIC
@@ -84,7 +87,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::LyShine.Static
                 Legacy::CryCommon
                 Gem::LmbrCentral.Editor.Static
-                Gem::TextureAtlas
+                Gem::TextureAtlas.Editor
                 Gem::AtomToolsFramework.Static
                 Gem::AtomToolsFramework.Editor
                 ${additional_dependencies}
@@ -93,7 +96,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_Utils.Static
                 Gem::Atom_Bootstrap.Headers
         RUNTIME_DEPENDENCIES
-            Gem::TextureAtlas
+            Gem::TextureAtlas.Editor
     )
 
     ly_add_target(
@@ -118,11 +121,15 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AssetBuilderSDK
                 Gem::LyShine.Editor.Static
                 Gem::LmbrCentral.Editor
-                Gem::TextureAtlas
+                Gem::TextureAtlas.Editor
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
-            Gem::TextureAtlas
+            Gem::TextureAtlas.Editor
 )
+
+    # by default, load the above "Gem::LyShine.Editor" module in dev tools:
+    ly_create_alias(NAME LyShine.Builders NAMESPACE Gem TARGETS Gem::LyShine.Editor)
+    ly_create_alias(NAME LyShine.Tools NAMESPACE Gem TARGETS Gem::LyShine.Editor)
 endif()
 
 ################################################################################
@@ -181,7 +188,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     Gem::TextureAtlas
             RUNTIME_DEPENDENCIES
                 Gem::LmbrCentral.Editor
-                Gem::TextureAtlas
+                Gem::TextureAtlas.Editor
         )
         ly_add_googletest(
             NAME Gem::LyShine.Editor.Tests

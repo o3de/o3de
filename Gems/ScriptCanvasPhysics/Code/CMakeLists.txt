@@ -40,6 +40,12 @@ ly_add_target(
         Gem::ScriptCanvas
 )
 
+# By default, the above module is used by all application types
+ly_create_alias(NAME ScriptCanvasPhysics.Clients  NAMESPACE Gem TARGETS Gem::ScriptCanvasPhysics)
+ly_create_alias(NAME ScriptCanvasPhysics.Servers  NAMESPACE Gem TARGETS Gem::ScriptCanvasPhysics)
+ly_create_alias(NAME ScriptCanvasPhysics.Tools    NAMESPACE Gem TARGETS Gem::ScriptCanvasPhysics)
+ly_create_alias(NAME ScriptCanvasPhysics.Builders NAMESPACE Gem TARGETS Gem::ScriptCanvasPhysics)
+
 ################################################################################
 # Tests
 ################################################################################

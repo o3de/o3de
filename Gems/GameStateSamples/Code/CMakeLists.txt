@@ -49,3 +49,7 @@ ly_add_target(
         Gem::LocalUser
         Gem::LmbrCentral
 )
+
+# Clients and Servers use the above module.  There is no editor or tools module required.
+ly_create_alias(NAME GameStateSamples.Clients  NAMESPACE Gem TARGETS GameStateSamples)
+ly_create_alias(NAME GameStateSamples.Servers  NAMESPACE Gem TARGETS GameStateSamples)

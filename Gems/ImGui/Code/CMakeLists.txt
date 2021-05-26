@@ -92,6 +92,10 @@ ly_add_target(
         Gem::LmbrCentral
 )
 
+# Load the above "Gem::ImGui" module in Clients and Servers:
+ly_create_alias(NAME ImGui.Clients NAMESPACE Gem TARGETS Gem::ImGui)
+ly_create_alias(NAME ImGui.Servers NAMESPACE Gem TARGETS Gem::ImGui)
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME ImGui.Editor GEM_MODULE
@@ -115,4 +119,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
+
+    # Load the above "Gem::ImGui.Editor" module in only tools and builders.
+    ly_create_alias(NAME ImGui.Builders NAMESPACE Gem TARGETS Gem::ImGui.Editor)
+    ly_create_alias(NAME ImGui.Tools    NAMESPACE Gem TARGETS Gem::ImGui.Editor)
+
 endif()

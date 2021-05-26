@@ -38,3 +38,7 @@ ly_add_target(
         PRIVATE
             Gem::MessagePopup.Static
 )
+
+# MessagePopup is used only in client applications
+ly_create_alias(NAME MessagePopup.Clients NAMESPACE Gem TARGETS Gem::MessagePopup)
+

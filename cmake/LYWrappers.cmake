@@ -685,6 +685,7 @@ function(ly_de_alias_target target_name output_variable_name)
 
     while(target_name)
         set(de_aliased_target_name ${target_name})
+        
         get_target_property(target_name ${target_name} ALIASED_TARGET)
     endwhile()
 

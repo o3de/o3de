@@ -10,7 +10,8 @@
 #
 
 set(FILES
-    project_manager.qrc
+    Resources/ProjectManager.qrc
+    Resources/ProjectManager.qss
     Source/main.cpp
     Source/ScreenDefs.h
     Source/ScreenFactory.h
@@ -22,7 +23,12 @@ set(FILES
     Source/EngineInfo.cpp
     Source/FirstTimeUseScreen.h
     Source/FirstTimeUseScreen.cpp
-    Source/FirstTimeUseScreen.ui
+    Source/FormLineEditWidget.h
+    Source/FormLineEditWidget.cpp
+    Source/FormBrowseEditWidget.h
+    Source/FormBrowseEditWidget.cpp
+    Source/PathValidator.h
+    Source/PathValidator.cpp
     Source/ProjectManagerWindow.h
     Source/ProjectManagerWindow.cpp
     Source/ProjectTemplateInfo.h
@@ -35,29 +41,37 @@ set(FILES
     Source/ProjectInfo.cpp
     Source/NewProjectSettingsScreen.h
     Source/NewProjectSettingsScreen.cpp
-    Source/ProjectSettingsCtrl.h
-    Source/ProjectSettingsCtrl.cpp
+    Source/CreateProjectCtrl.h
+    Source/CreateProjectCtrl.cpp
+    Source/UpdateProjectCtrl.h
+    Source/UpdateProjectCtrl.cpp
     Source/ProjectsHomeScreen.h
     Source/ProjectsHomeScreen.cpp
-    Source/ProjectsHomeScreen.ui
     Source/ProjectSettingsScreen.h
     Source/ProjectSettingsScreen.cpp
     Source/ProjectSettingsScreen.ui
     Source/EngineSettingsScreen.h
     Source/EngineSettingsScreen.cpp
-    Source/EngineSettingsScreen.ui
+    Source/ProjectButtonWidget.h
+    Source/ProjectButtonWidget.cpp
     Source/LinkWidget.h
     Source/LinkWidget.cpp
     Source/TagWidget.h
     Source/TagWidget.cpp
     Source/GemCatalog/GemCatalogScreen.h
     Source/GemCatalog/GemCatalogScreen.cpp
+    Source/GemCatalog/GemFilterWidget.h
+    Source/GemCatalog/GemFilterWidget.cpp
     Source/GemCatalog/GemInfo.h
     Source/GemCatalog/GemInfo.cpp
+    Source/GemCatalog/GemInspector.h
+    Source/GemCatalog/GemInspector.cpp
     Source/GemCatalog/GemItemDelegate.h
     Source/GemCatalog/GemItemDelegate.cpp
     Source/GemCatalog/GemListView.h
     Source/GemCatalog/GemListView.cpp
     Source/GemCatalog/GemModel.h
     Source/GemCatalog/GemModel.cpp
+    Source/GemCatalog/GemSortFilterProxyModel.h
+    Source/GemCatalog/GemSortFilterProxyModel.cpp
 )

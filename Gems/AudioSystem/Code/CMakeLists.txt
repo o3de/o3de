@@ -61,22 +61,8 @@ ly_add_target(
             Gem::AudioSystem.Static
 )
 
-################################################################################
-# Server
-################################################################################
-if (PAL_TRAIT_BUILD_SERVER_SUPPORTED)
-    # Stub gem for server. Audio system is client only
-    ly_add_target(
-        NAME AudioSystem.Server GEM_MODULE
-
-        NAMESPACE Gem
-        FILES_CMAKE
-            audiosystem_stub_files.cmake
-        BUILD_DEPENDENCIES
-            PRIVATE
-                AZ::AzCore
-    )
-endif ()
+# AudioSystem should use the above target on clients.
+ly_create_alias(NAME AudioSystem.Clients  NAMESPACE Gem TARGETS Gem::AudioSystem)
 
 ################################################################################
 # Tests
@@ -231,6 +217,10 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::AudioSystem.Editor.Static
     )
 
+    # use the above "Editor" target in tools and builders:
+    ly_create_alias(NAME AudioSystem.Tools    NAMESPACE Gem TARGETS Gem::AudioSystem.Editor)
+    ly_create_alias(NAME AudioSystem.Builders NAMESPACE Gem TARGETS Gem::AudioSystem.Editor)
+
     if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         ly_add_target(
             NAME AudioSystem.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
@@ -254,3 +244,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         )
     endif()
 endif ()
+
+
+

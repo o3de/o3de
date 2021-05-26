@@ -1479,10 +1479,10 @@ def create_project(project_path: str,
         logger.info(f'Project Path {project_path} is not a full path, we must assume its relative'
                     f' to default projects path = {new_project_path}')
         project_path = new_project_path
-    if os.path.isdir(project_path):
-        logger.error(f'Project path {project_path} already exists.')
+    if os.path.isdir(project_path) and len(os.listdir(project_path)) > 0:
+        logger.error(f'Project path {project_path} already exists and is not empty.')
         return 1
-    else:
+    elif not os.path.isdir(project_path):
         os.makedirs(project_path)
 
     # project name is now the last component of the project_path

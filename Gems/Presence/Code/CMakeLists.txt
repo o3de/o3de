@@ -44,3 +44,6 @@ ly_add_target(
             AZ::AzFramework
             Gem::Presence.Headers
 )
+
+# we activate the presence gem (if enabled) only on client applications such as the launcher:
+ly_create_alias(NAME Presence.Clients NAMESPACE Gem TARGETS Gem::Presence)

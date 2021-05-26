@@ -28,6 +28,7 @@ namespace AzToolsFramework
             inline static const char* PatchesName = "Patches";
             inline static const char* SourceName = "Source";
             inline static const char* LinkIdName = "LinkId";
+            inline static const char* EntityIdName = "Id";
             inline static const char* EntitiesName = "Entities";
             inline static const char* ContainerEntityName = "ContainerEntity";
 

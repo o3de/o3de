@@ -30,16 +30,18 @@ namespace AZ
     {
         MorphTargetInputBuffers::MorphTargetInputBuffers(const RPI::BufferAssetView& bufferAssetView, const AZStd::string& bufferNamePrefix)
         {            
-            auto buffer = RPI::Buffer::FindOrCreate(bufferAssetView.GetBufferAsset());
-
-            AZ::RHI::Ptr<AZ::RHI::BufferView> bufferView = RHI::Factory::Get().CreateBufferView();
+            m_vertexDeltaBuffer = RPI::Buffer::FindOrCreate(bufferAssetView.GetBufferAsset());
+            if (m_vertexDeltaBuffer)
             {
-                bufferView->SetName(Name(bufferNamePrefix + "MorphTargetVertexDeltaView"));
-                [[maybe_unused]] RHI::ResultCode resultCode = bufferView->Init(*buffer->GetRHIBuffer(), bufferAssetView.GetBufferViewDescriptor());
-                AZ_Error("MorphTargetInputBuffers", resultCode == RHI::ResultCode::Success, "Failed to initialize buffer view for morph target.");
-            }
+                AZ::RHI::Ptr<AZ::RHI::BufferView> bufferView = RHI::Factory::Get().CreateBufferView();
+                {
+                    bufferView->SetName(Name(bufferNamePrefix + "MorphTargetVertexDeltaView"));
+                    [[maybe_unused]] RHI::ResultCode resultCode = bufferView->Init(*m_vertexDeltaBuffer->GetRHIBuffer(), bufferAssetView.GetBufferViewDescriptor());
+                    AZ_Error("MorphTargetInputBuffers", resultCode == RHI::ResultCode::Success, "Failed to initialize buffer view for morph target.");
+                }
 
-            m_vertexDeltaBufferView = bufferView;
+                m_vertexDeltaBufferView = bufferView;
+            }
         }
 
         void MorphTargetInputBuffers::SetBufferViewsOnShaderResourceGroup(const Data::Instance<RPI::ShaderResourceGroup>& perInstanceSRG)

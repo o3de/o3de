@@ -31,27 +31,32 @@ ly_add_target(
 ################################################################################
 # Gem dependencies
 ################################################################################
-ly_add_project_dependencies(
-    PROJECT_NAME
-        AutomatedTesting
-    TARGETS 
-        AutomatedTesting.GameLauncher
-    DEPENDENCIES_FILES
-        runtime_dependencies.cmake
-        ${pal_dir}/runtime_dependencies.cmake
-)
 
-if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    ly_add_project_dependencies(
-        PROJECT_NAME
-            AutomatedTesting
-        TARGETS
-            AssetBuilder
-            AssetProcessor
-            AssetProcessorBatch
-            Editor
-        DEPENDENCIES_FILES
-            tool_dependencies.cmake
-            ${pal_dir}/tool_dependencies.cmake
-    )
+# The GameLauncher uses "Clients" gem variants:
+ly_enable_gems(PROJECT_NAME AutomatedTesting GEM_FILE enabled_gems.cmake
+    TARGETS AutomatedTesting.GameLauncher
+    VARIANTS Clients)
+
+# If we build a server, then apply the gems to the server
+if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
+    # if we're making a server, then add the "Server" gem variants to it:
+    ly_enable_gems(PROJECT_NAME AutomatedTesting GEM_FILE enabled_gems.cmake
+        TARGETS AutomatedTesting.ServerLauncher
+        VARIANTS Servers)
+    
+    set_property(GLOBAL APPEND PROPERTY LY_LAUNCHER_SERVER_PROJECTS AutomatedTesting)
+endif()
+
+if (PAL_TRAIT_BUILD_HOST_TOOLS)
+    # The Editor uses "Tools" gem variants:
+    ly_enable_gems(
+        PROJECT_NAME AutomatedTesting GEM_FILE enabled_gems.cmake
+        TARGETS Editor
+        VARIANTS Tools)
+
+    # The pipeline tools use "Builders" gem variants:
+    ly_enable_gems(
+        PROJECT_NAME AutomatedTesting GEM_FILE enabled_gems.cmake
+        TARGETS AssetBuilder AssetProcessor AssetProcessorBatch
+        VARIANTS Builders)
 endif()

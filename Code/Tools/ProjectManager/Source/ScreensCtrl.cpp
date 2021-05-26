@@ -22,6 +22,9 @@ namespace O3DE::ProjectManager
         : QWidget(parent)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
+        vLayout->setMargin(0);
+        vLayout->setSpacing(0);
+        vLayout->setContentsMargins(0, 0, 0, 0);
         setLayout(vLayout);
 
         m_screenStack = new QStackedWidget();
@@ -114,6 +117,7 @@ namespace O3DE::ProjectManager
         connect(newScreen, &ScreenWidget::ChangeScreenRequest, this, &ScreensCtrl::ChangeToScreen);
         connect(newScreen, &ScreenWidget::GotoPreviousScreenRequest, this, &ScreensCtrl::GotoPreviousScreen);
         connect(newScreen, &ScreenWidget::ResetScreenRequest, this, &ScreensCtrl::ResetScreen);
+        connect(newScreen, &ScreenWidget::NotifyCurrentProject, this, &ScreensCtrl::NotifyCurrentProject);
     }
 
     void ScreensCtrl::ResetAllScreens()

@@ -41,3 +41,7 @@ ly_add_target(
         PRIVATE
             Gem::CertificateManager.Static
 )
+
+# we'll load the above "Gem::CertificateManager" module in Clients and Servers
+ly_create_alias(NAME CertificateManager.Clients NAMESPACE Gem TARGETS Gem::CertificateManager)
+ly_create_alias(NAME CertificateManager.Servers NAMESPACE Gem TARGETS Gem::CertificateManager)

@@ -13,7 +13,8 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include "GemInfo.h"
+#include <GemCatalog/GemInfo.h>
+#include <QAbstractItemModel>
 #include <QStandardItemModel>
 #include <QItemSelectionModel>
 #endif
@@ -32,22 +33,48 @@ namespace O3DE::ProjectManager
         void AddGem(const GemInfo& gemInfo);
         void Clear();
 
-        QString GetName(const QModelIndex& modelIndex) const;
-        QString GetCreator(const QModelIndex& modelIndex) const;
-        GemInfo::Platforms GetPlatforms(const QModelIndex& modelIndex) const;
-        QString GetSummary(const QModelIndex& modelIndex) const;
-        bool IsAdded(const QModelIndex& modelIndex) const;
+        QModelIndex FindIndexByNameString(const QString& nameString) const;
+        void FindGemNamesByNameStrings(QStringList& inOutGemNames);
+        QStringList GetDependingGemUuids(const QModelIndex& modelIndex);
+        QStringList GetDependingGemNames(const QModelIndex& modelIndex);
+        QStringList GetConflictingGemUuids(const QModelIndex& modelIndex);
+        QStringList GetConflictingGemNames(const QModelIndex& modelIndex);
+
+        static QString GetName(const QModelIndex& modelIndex);
+        static QString GetCreator(const QModelIndex& modelIndex);
+        static GemInfo::GemOrigin GetGemOrigin(const QModelIndex& modelIndex);
+        static GemInfo::Platforms GetPlatforms(const QModelIndex& modelIndex);
+        static GemInfo::Types GetTypes(const QModelIndex& modelIndex);
+        static QString GetSummary(const QModelIndex& modelIndex);
+        static bool IsAdded(const QModelIndex& modelIndex);
+        static QString GetDirectoryLink(const QModelIndex& modelIndex);
+        static QString GetDocLink(const QModelIndex& modelIndex);
+        static QString GetVersion(const QModelIndex& modelIndex);
+        static QString GetLastUpdated(const QModelIndex& modelIndex);
+        static int GetBinarySizeInKB(const QModelIndex& modelIndex);
+        static QStringList GetFeatures(const QModelIndex& modelIndex);
 
     private:
         enum UserRole
         {
             RoleName = Qt::UserRole,
             RoleCreator,
+            RoleGemOrigin,
             RolePlatforms,
             RoleSummary,
-            RoleIsAdded
+            RoleIsAdded,
+            RoleDirectoryLink,
+            RoleDocLink,
+            RoleDependingGems,
+            RoleConflictingGems,
+            RoleVersion,
+            RoleLastUpdated,
+            RoleBinarySize,
+            RoleFeatures,
+            RoleTypes
         };
 
+        QHash<QString, QModelIndex> m_nameToIndexMap;
         QItemSelectionModel* m_selectionModel = nullptr;
     };
 } // namespace O3DE::ProjectManager

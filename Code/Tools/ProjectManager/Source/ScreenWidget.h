@@ -15,18 +15,20 @@
 #include <ScreenDefs.h>
 
 #include <QWidget>
+#include <QStyleOption>
+#include <QPainter>
 #endif
 
 namespace O3DE::ProjectManager
 {
     class ScreenWidget
-        : public QWidget
+        : public QFrame
     {
         Q_OBJECT
 
     public:
         explicit ScreenWidget(QWidget* parent = nullptr)
-            : QWidget(parent)
+            : QFrame(parent)
         {
         }
         ~ScreenWidget() = default;
@@ -39,15 +41,12 @@ namespace O3DE::ProjectManager
         {
             return true;
         }
-        virtual QString GetNextButtonText()
-        {
-            return "Next";
-        }
 
     signals:
         void ChangeScreenRequest(ProjectManagerScreen screen);
         void GotoPreviousScreenRequest();
         void ResetScreenRequest(ProjectManagerScreen screen);
+        void NotifyCurrentProject(const QString& projectPath);
     };
 
 } // namespace O3DE::ProjectManager

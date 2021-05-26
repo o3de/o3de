@@ -37,7 +37,7 @@ namespace EMotionFX
             else
             {
                 // Count in only the given collider type.
-                for (const Physics::ShapeConfigurationPair& shapeConfigPair : nodeConfig.m_shapes)
+                for (const AzPhysics::ShapeColliderPair& shapeConfigPair : nodeConfig.m_shapes)
                 {
                     if (shapeConfigPair.second->GetShapeType() == shapeTypeToCount)
                     {

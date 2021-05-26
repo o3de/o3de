@@ -203,7 +203,7 @@ namespace AZ
             if (m_shadowingLightHandle.IsValid())
             {
                 uint32_t shadowFilterMethod = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_shadowFilterMethod;
-                RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(AZ::Name{"o_directional_shadow_filtering_method"}, AZ::RPI::ShaderOptionValue{shadowFilterMethod});
+                RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_directionalShadowFilteringMethodName, AZ::RPI::ShaderOptionValue{shadowFilterMethod});
 
                 const uint32_t cascadeCount = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_cascadeCount;
                 ShadowProperty& property = m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex());
@@ -656,6 +656,7 @@ namespace AZ
             CacheRenderPipelineIdsForPersistentView();
             SetConfigurationToPasses();
             SetCameraViewNameToPass();
+            UpdateViewsOfCascadeSegments();
         }
 
         void DirectionalLightFeatureProcessor::CacheCascadedShadowmapsPass() {
@@ -1341,6 +1342,15 @@ namespace AZ
                         segment.m_view->SetViewToClipMatrix(viewToClipMatrix);
                     }
                 }
+            }
+        }
+
+        void DirectionalLightFeatureProcessor::UpdateViewsOfCascadeSegments()
+        {
+            if (m_shadowingLightHandle.IsValid())
+            {
+                const uint16_t cascadeCount = GetCascadeCount(m_shadowingLightHandle);
+                UpdateViewsOfCascadeSegments(m_shadowingLightHandle, cascadeCount);
             }
         }
 

@@ -11,16 +11,23 @@
  */
 
 #include <NewProjectSettingsScreen.h>
+#include <PythonBindingsInterface.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QFileDialog>
 #include <QLabel>
 #include <QLineEdit>
 #include <QRadioButton>
+#include <QButtonGroup>
+#include <QPushButton>
 #include <QSpacerItem>
+#include <QStandardPaths>
 
 namespace O3DE::ProjectManager
 {
+    constexpr const char* k_pathProperty = "Path";
+
     NewProjectSettingsScreen::NewProjectSettingsScreen(QWidget* parent)
         : ScreenWidget(parent)
     {
@@ -29,19 +36,27 @@ namespace O3DE::ProjectManager
 
         QVBoxLayout* vLayout = new QVBoxLayout(this);
 
-        QLabel* projectNameLabel = new QLabel(this);
-        projectNameLabel->setText("Project Name");
+        QLabel* projectNameLabel = new QLabel(tr("Project Name"), this);
         vLayout->addWidget(projectNameLabel);
 
-        QLineEdit* projectNameLineEdit = new QLineEdit(this);
-        vLayout->addWidget(projectNameLineEdit);
+        m_projectNameLineEdit = new QLineEdit(tr("New Project"), this);
+        vLayout->addWidget(m_projectNameLineEdit);
 
-        QLabel* projectPathLabel = new QLabel(this);
-        projectPathLabel->setText("Project Location");
+        QLabel* projectPathLabel = new QLabel(tr("Project Location"), this);
         vLayout->addWidget(projectPathLabel);
 
-        QLineEdit* projectPathLineEdit = new QLineEdit(this);
-        vLayout->addWidget(projectPathLineEdit);
+        {
+            QHBoxLayout* projectPathLayout = new QHBoxLayout(this);
+
+            m_projectPathLineEdit = new QLineEdit(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation), this);
+            projectPathLayout->addWidget(m_projectPathLineEdit);
+
+            QPushButton* browseButton = new QPushButton(tr("Browse"), this);
+            connect(browseButton, &QPushButton::pressed, this, &NewProjectSettingsScreen::HandleBrowseButton);
+            projectPathLayout->addWidget(browseButton);
+
+            vLayout->addLayout(projectPathLayout);
+        }
 
         QLabel* projectTemplateLabel = new QLabel(this);
         projectTemplateLabel->setText("Project Template");
@@ -50,14 +65,21 @@ namespace O3DE::ProjectManager
         QHBoxLayout* templateLayout = new QHBoxLayout(this);
         vLayout->addItem(templateLayout);
 
-        QRadioButton* projectTemplateStandardRadioButton = new QRadioButton(this);
-        projectTemplateStandardRadioButton->setText("Standard (Recommened)");
-        projectTemplateStandardRadioButton->setChecked(true);
-        templateLayout->addWidget(projectTemplateStandardRadioButton);
+        m_projectTemplateButtonGroup = new QButtonGroup(this);
+        auto templatesResult = PythonBindingsInterface::Get()->GetProjectTemplates();
+        if (templatesResult.IsSuccess() && !templatesResult.GetValue().isEmpty())
+        {
+            for (auto projectTemplate : templatesResult.GetValue())
+            {
+                QRadioButton* radioButton = new QRadioButton(projectTemplate.m_name, this);
+                radioButton->setProperty(k_pathProperty, projectTemplate.m_path);
+                m_projectTemplateButtonGroup->addButton(radioButton);
 
-        QRadioButton* projectTemplateEmptyRadioButton = new QRadioButton(this);
-        projectTemplateEmptyRadioButton->setText("Empty");
-        templateLayout->addWidget(projectTemplateEmptyRadioButton);
+                templateLayout->addWidget(radioButton);
+            }
+
+            m_projectTemplateButtonGroup->buttons().first()->setChecked(true);
+        }
 
         QSpacerItem* verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
         vLayout->addItem(verticalSpacer);
@@ -74,9 +96,54 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::NewProjectSettings;
     }
 
-    QString NewProjectSettingsScreen::GetNextButtonText()
+    void NewProjectSettingsScreen::HandleBrowseButton()
     {
-        return "Create Project";
+        QString defaultPath = m_projectPathLineEdit->text();
+        if (defaultPath.isEmpty())
+        {
+            defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+        }
+
+        QString directory = QDir::toNativeSeparators(QFileDialog::getExistingDirectory(this, tr("New project path"), defaultPath));
+        if (!directory.isEmpty())
+        {
+            m_projectPathLineEdit->setText(directory);
+        }
     }
 
+    ProjectInfo NewProjectSettingsScreen::GetProjectInfo()
+    {
+        ProjectInfo projectInfo;
+        projectInfo.m_projectName = m_projectNameLineEdit->text();
+        projectInfo.m_path        = QDir::toNativeSeparators(m_projectPathLineEdit->text() + "/" + projectInfo.m_projectName);
+        return projectInfo;
+    }
+
+    QString NewProjectSettingsScreen::GetProjectTemplatePath()
+    {
+        return m_projectTemplateButtonGroup->checkedButton()->property(k_pathProperty).toString();
+    }
+
+    bool NewProjectSettingsScreen::Validate()
+    {
+        bool projectNameIsValid = true;
+        if (m_projectNameLineEdit->text().isEmpty())
+        {
+            projectNameIsValid = false;
+        }
+
+        bool projectPathIsValid = true;
+        if (m_projectPathLineEdit->text().isEmpty())
+        {
+            projectPathIsValid = false;
+        }
+
+        QDir path(QDir::toNativeSeparators(m_projectPathLineEdit->text() + "/" + m_projectNameLineEdit->text()));
+        if (path.exists() && !path.isEmpty())
+        {
+            projectPathIsValid = false;
+        }
+
+        return projectNameIsValid && projectPathIsValid;
+    }
 } // namespace O3DE::ProjectManager

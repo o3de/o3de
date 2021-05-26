@@ -242,9 +242,6 @@ typedef uint32 vtx_idx;
     #endif // TESSELLATION
 #endif // !defined(MOBILE)
 
-
-#define USE_GEOM_CACHES
-
 //------------------------------------------------------
 // SVO GI
 //------------------------------------------------------

@@ -35,6 +35,9 @@ ly_add_target(
             AZ::AzToolsFramework
             Legacy::CryCommon
             Legacy::EditorLib
+            AZ::AtomCore
+            Gem::Atom_RPI.Public
+            Gem::AtomToolsFramework.Static
             Gem::LmbrCentral.Editor
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral.Editor
