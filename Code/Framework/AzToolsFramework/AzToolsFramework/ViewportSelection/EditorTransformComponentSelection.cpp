@@ -435,7 +435,7 @@ namespace AzToolsFramework
         }
     }
 
-    static void DestroyTransformModeSelectionCluster(const ViewportUi::ClusterId clusterId)
+    static void DestroyCluster(const ViewportUi::ClusterId clusterId)
     {
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId,
@@ -481,6 +481,26 @@ namespace AzToolsFramework
             worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
 
         return worldFromLocal.TransformPoint(CalculateCenterOffset(entityId, pivot));
+    }
+
+    void EditorTransformComponentSelection::UpdateSpaceCluster(const ReferenceFrame referenceFrame)
+    {
+        auto buttonIdFromFrameFn = [this](const ReferenceFrame referenceFrame) {         
+            switch (referenceFrame)
+            {
+            case ReferenceFrame::Local:
+                return m_spaceCluster.m_localButtonId;
+            case ReferenceFrame::Parent:
+                return m_spaceCluster.m_parentButtonId;
+            case ReferenceFrame::World:
+                return m_spaceCluster.m_worldButtonId;
+            }
+            return m_spaceCluster.m_parentButtonId;
+        };
+
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, m_spaceCluster.m_spaceClusterId,
+            buttonIdFromFrameFn(referenceFrame));
     }
 
     namespace ETCS
@@ -789,13 +809,13 @@ namespace AzToolsFramework
         EntityIdManipulators& entityIdManipulators,
         OptionalFrame& pivotOverrideFrame,
         ViewportInteraction::KeyboardModifiers& prevModifiers,
-        bool& transformChangedInternally)
+        bool& transformChangedInternally, SpaceCluster spaceCluster)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         entityIdManipulators.m_manipulators->SetLocalPosition(action.LocalPosition());
 
-        const ReferenceFrame referenceFrame = ReferenceFrameFromModifiers(action.m_modifiers);
+        const ReferenceFrame referenceFrame = spaceCluster.m_spaceLock ? spaceCluster.m_currentSpace : ReferenceFrameFromModifiers(action.m_modifiers);
 
         if (action.m_modifiers.Ctrl())
         {
@@ -1027,6 +1047,7 @@ namespace AzToolsFramework
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusConnect(entityContextId);
 
         CreateTransformModeSelectionCluster();
+        CreateSpaceSelectionCluster();
         RegisterActions();
         SetupBoxSelect();
         RefreshSelectedEntityIdsAndRegenerateManipulators();
@@ -1037,7 +1058,9 @@ namespace AzToolsFramework
         m_selectedEntityIds.clear();
         DestroyManipulators(m_entityIdManipulators);
 
-        DestroyTransformModeSelectionCluster(m_transformModeClusterId);
+        DestroyCluster(m_transformModeClusterId);
+        DestroyCluster(m_spaceCluster.m_spaceClusterId);
+
         UnregisterActions();
 
         m_pivotOverrideFrame.Reset();
@@ -1274,8 +1297,8 @@ namespace AzToolsFramework
             [this, prevModifiers, manipulatorEntityIds](const LinearManipulator::Action& action) mutable -> void
         {
             UpdateTranslationManipulator(
-                action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators,
-                m_pivotOverrideFrame, prevModifiers, m_transformChangedInternally);
+                action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators, m_pivotOverrideFrame, prevModifiers,
+                    m_transformChangedInternally, m_spaceCluster);
         });
 
         translationManipulators->InstallLinearManipulatorMouseUpCallback(
@@ -1305,8 +1328,8 @@ namespace AzToolsFramework
             [this, prevModifiers, manipulatorEntityIds](const PlanarManipulator::Action& action) mutable -> void
         {
             UpdateTranslationManipulator(
-                action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators,
-                m_pivotOverrideFrame, prevModifiers, m_transformChangedInternally);
+                action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators, m_pivotOverrideFrame, prevModifiers,
+                    m_transformChangedInternally, m_spaceCluster);
         });
 
         translationManipulators->InstallPlanarManipulatorMouseUpCallback(
@@ -1335,8 +1358,8 @@ namespace AzToolsFramework
             [this, prevModifiers, manipulatorEntityIds](const SurfaceManipulator::Action& action) mutable -> void
         {
             UpdateTranslationManipulator(
-                action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators,
-                m_pivotOverrideFrame, prevModifiers, m_transformChangedInternally);
+                action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators, m_pivotOverrideFrame, prevModifiers,
+                    m_transformChangedInternally, m_spaceCluster);
         });
 
         translationManipulators->InstallSurfaceManipulatorMouseUpCallback(
@@ -1414,7 +1437,7 @@ namespace AzToolsFramework
             [this, prevModifiers, sharedRotationState]
             (const AngularManipulator::Action& action) mutable -> void
         {
-            const ReferenceFrame referenceFrame = ReferenceFrameFromModifiers(action.m_modifiers);
+            const ReferenceFrame referenceFrame = m_spaceCluster.m_spaceLock ? m_spaceCluster.m_currentSpace : ReferenceFrameFromModifiers(action.m_modifiers);
 
             const AZ::Quaternion manipulatorOrientation = action.m_start.m_rotation * action.m_current.m_delta;
             // store the pivot override frame when positioning the manipulator manually (ctrl)
@@ -2566,6 +2589,67 @@ namespace AzToolsFramework
             m_transformModeSelectionHandler);
     }
 
+    void EditorTransformComponentSelection::CreateSpaceSelectionCluster()
+    {
+        // create the cluster for switching spaces/reference frames
+        ViewportUi::ViewportUiRequestBus::EventResult(
+            m_spaceCluster.m_spaceClusterId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
+            ViewportUi::Alignment::TopRight);
+
+        // create and register the buttons (strings correspond to icons even if the values appear different)
+        m_spaceCluster.m_worldButtonId = RegisterClusterButton(m_spaceCluster.m_spaceClusterId, "World");
+        m_spaceCluster.m_parentButtonId = RegisterClusterButton(m_spaceCluster.m_spaceClusterId, "Parent");
+        m_spaceCluster.m_localButtonId = RegisterClusterButton(m_spaceCluster.m_spaceClusterId, "Local");
+
+        auto onButtonClicked = [this](ViewportUi::ButtonId buttonId) {
+            if (buttonId == m_spaceCluster.m_localButtonId)
+            {
+                // Unlock
+                if (m_spaceCluster.m_spaceLock && m_spaceCluster.m_currentSpace == ReferenceFrame::Local)
+                {
+                    m_spaceCluster.m_spaceLock = false;
+                }
+                else
+                {
+                    m_spaceCluster.m_spaceLock = true;
+                    m_spaceCluster.m_currentSpace = ReferenceFrame::Local;
+                }
+            }
+            else if (buttonId == m_spaceCluster.m_parentButtonId)
+            {
+                // Unlock
+                if (m_spaceCluster.m_spaceLock && m_spaceCluster.m_currentSpace == ReferenceFrame::Parent)
+                {
+                    m_spaceCluster.m_spaceLock = false;
+                }
+                else
+                {
+                    m_spaceCluster.m_spaceLock = true;
+                    m_spaceCluster.m_currentSpace = ReferenceFrame::Parent;
+                }
+            }
+            else if (buttonId == m_spaceCluster.m_worldButtonId)
+            {
+                // Unlock
+                if (m_spaceCluster.m_spaceLock && m_spaceCluster.m_currentSpace == ReferenceFrame::World)
+                {
+                    m_spaceCluster.m_spaceLock = false;
+                }
+                else
+                {
+                    m_spaceCluster.m_spaceLock = true;
+                    m_spaceCluster.m_currentSpace = ReferenceFrame::World;
+                }
+            }
+        };
+
+        m_spaceCluster.m_spaceSelectionHandler = AZ::Event<ViewportUi::ButtonId>::Handler(onButtonClicked);
+
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
+            m_spaceCluster.m_spaceClusterId, m_spaceCluster.m_spaceSelectionHandler);
+    }
+
     EditorTransformComponentSelectionRequests::Mode EditorTransformComponentSelection::GetTransformMode()
     {
         return m_mode;
@@ -2963,7 +3047,7 @@ namespace AzToolsFramework
             if (transformIt != transformsBefore.end())
             {
                 AZ::Transform transformBefore = transformIt->second;
-                transformBefore.ExtractScale();
+                transformBefore.ExtractUniformScale();
                 AZ::Transform newWorldFromLocal = transformBefore * scaleTransform;
 
                 SetEntityWorldTransform(entityId, newWorldFromLocal);
@@ -3277,7 +3361,10 @@ namespace AzToolsFramework
             ViewportInteraction::BuildMouseButtons(
                 QGuiApplication::mouseButtons()), m_boxSelect.Active());
 
-        const ReferenceFrame referenceFrame = ReferenceFrameFromModifiers(modifiers);
+        const ReferenceFrame referenceFrame =
+            m_spaceCluster.m_spaceLock ? m_spaceCluster.m_currentSpace : ReferenceFrameFromModifiers(modifiers);
+
+        UpdateSpaceCluster(referenceFrame);
 
         bool refresh = false;
         if (referenceFrame != m_referenceFrame)

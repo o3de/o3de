@@ -68,7 +68,7 @@ namespace Blast
 
         auto transform = AZ::Transform::CreateFromQuaternionAndTranslation(
             m_bodyConfiguration.m_orientation, m_bodyConfiguration.m_position);
-        transform.MultiplyByScale(AZ::Vector3(m_scale));
+        transform.MultiplyByUniformScale(m_scale);
 
         AZ::TransformBus::Event(m_entity->GetId(), &AZ::TransformInterface::SetWorldTM, transform);
 

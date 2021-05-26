@@ -15,5 +15,7 @@
         <file>ArrowDownLine.svg</file>
         <file>ArrowUpLine.svg</file>
         <file>Backgrounds/FirstTimeBackgroundImage.jpg</file>
+        <file>ArrowDownLine.svg</file>
+        <file>ArrowUpLine.svg</file>
     </qresource>
 </RCC>

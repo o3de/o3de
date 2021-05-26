@@ -124,12 +124,12 @@ namespace O3DE::ProjectManager
     {
         if (m_collapseButton->isChecked())
         {
-            m_collapseButton->setIcon(QIcon(":/Resources/ArrowDownLine.svg"));
+            m_collapseButton->setIcon(QIcon(":/ArrowDownLine.svg"));
             m_mainWidget->hide();
         }
         else
         {
-            m_collapseButton->setIcon(QIcon(":/Resources/ArrowUpLine.svg"));
+            m_collapseButton->setIcon(QIcon(":/ArrowUpLine.svg"));
             m_mainWidget->show();
         }
     }
