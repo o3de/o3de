@@ -318,7 +318,7 @@ namespace AZ
                 {
                     AZ::Transform meshTransform = transformFeatureProcessor->GetTransformForId(TransformServiceFeatureProcessorInterface::ObjectId(mesh.first));
                     AZ::Transform noScaleTransform = meshTransform;
-                    noScaleTransform.ExtractScale();
+                    noScaleTransform.ExtractUniformScale();
                     AZ::Matrix3x3 rotationMatrix = Matrix3x3::CreateFromTransform(noScaleTransform);
                     rotationMatrix = rotationMatrix.GetInverseFull().GetTranspose();
 
