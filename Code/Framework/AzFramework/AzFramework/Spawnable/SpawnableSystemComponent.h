@@ -28,6 +28,7 @@ namespace AzFramework
     class SpawnableSystemComponent
         : public AZ::Component
         , public AZ::TickBus::Handler
+        , public AZ::SystemTickBus::Handler
         , public AssetCatalogEventBus::Handler
         , public RootSpawnableInterface::Registrar
         , public RootSpawnableNotificationBus::Handler
@@ -58,6 +59,13 @@ namespace AzFramework
         //
 
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+        int GetTickOrder() override;
+
+        //
+        // SystemTickBus
+        //
+
+        void OnSystemTick() override;
 
         //
         // AssetCatalogEventBus

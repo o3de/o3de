@@ -48,8 +48,21 @@ namespace AzFramework
 
     void SpawnableSystemComponent::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
     {
-        m_entitiesManager.ProcessQueue();
+        m_entitiesManager.ProcessQueue(
+            SpawnableEntitiesManager::CommandQueuePriority::High | SpawnableEntitiesManager::CommandQueuePriority::Regular);
         RootSpawnableNotificationBus::ExecuteQueuedEvents();
+    }
+
+    int SpawnableSystemComponent::GetTickOrder()
+    {
+        return AZ::ComponentTickBus::TICK_GAME;
+    }
+
+    void SpawnableSystemComponent::OnSystemTick()
+    {
+        // Handle only high priority spawning events such as those created from network. These need to happen even if the server
+        // doesn't have focus to avoid 
+        m_entitiesManager.ProcessQueue(SpawnableEntitiesManager::CommandQueuePriority::High);
     }
 
     void SpawnableSystemComponent::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
@@ -168,7 +181,8 @@ namespace AzFramework
             SpawnableEntitiesManager::CommandQueueStatus queueStatus;
             do
             {
-                queueStatus = m_entitiesManager.ProcessQueue();
+                queueStatus = m_entitiesManager.ProcessQueue(
+                    SpawnableEntitiesManager::CommandQueuePriority::High | SpawnableEntitiesManager::CommandQueuePriority::Regular);
             } while (queueStatus == SpawnableEntitiesManager::CommandQueueStatus::HasCommandsLeft);
         }
 

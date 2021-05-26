@@ -22,7 +22,19 @@
 
 namespace AzFramework
 {
-    void SpawnableEntitiesManager::SpawnAllEntities(EntitySpawnTicket& ticket, EntityPreInsertionCallback preInsertionCallback,
+    template<typename T>
+    void SpawnableEntitiesManager::QueueRequest(EntitySpawnTicket& ticket, SpawnablePriority priority, T&& request)
+    {
+        Queue& queue = priority <= HighPriorityThreshold ? m_highPriorityQueue : m_regularPriorityQueue;
+        {
+            AZStd::scoped_lock queueLock(queue.m_pendingRequestMutex);
+            request.m_ticketId = GetTicketPayload<Ticket>(ticket).m_nextTicketId++;
+            queue.m_pendingRequest.push(AZStd::move(request));
+        }
+    }
+
+    void SpawnableEntitiesManager::SpawnAllEntities(
+        EntitySpawnTicket& ticket, SpawnablePriority priority, EntityPreInsertionCallback preInsertionCallback,
         EntitySpawnCallback completionCallback)
     {
         AZ_Assert(ticket.IsValid(), "Ticket provided to SpawnAllEntities hasn't been initialized.");
@@ -31,15 +43,11 @@ namespace AzFramework
         queueEntry.m_ticket = &ticket;
         queueEntry.m_completionCallback = AZStd::move(completionCallback);
         queueEntry.m_preInsertionCallback = AZStd::move(preInsertionCallback);
-        {
-            AZStd::scoped_lock queueLock(m_pendingRequestQueueMutex);
-            queueEntry.m_ticketId = GetTicketPayload<Ticket>(ticket).m_nextTicketId++;
-            m_pendingRequestQueue.push(AZStd::move(queueEntry));
-        }
+        QueueRequest(ticket, priority, AZStd::move(queueEntry));
     }
 
     void SpawnableEntitiesManager::SpawnEntities(
-        EntitySpawnTicket& ticket, AZStd::vector<size_t> entityIndices,
+        EntitySpawnTicket& ticket, SpawnablePriority priority, AZStd::vector<size_t> entityIndices,
         EntityPreInsertionCallback preInsertionCallback, EntitySpawnCallback completionCallback)
     {
         AZ_Assert(ticket.IsValid(), "Ticket provided to SpawnEntities hasn't been initialized.");
@@ -49,28 +57,22 @@ namespace AzFramework
         queueEntry.m_entityIndices = AZStd::move(entityIndices);
         queueEntry.m_completionCallback = AZStd::move(completionCallback);
         queueEntry.m_preInsertionCallback = AZStd::move(preInsertionCallback);
-        {
-            AZStd::scoped_lock queueLock(m_pendingRequestQueueMutex);
-            queueEntry.m_ticketId = GetTicketPayload<Ticket>(ticket).m_nextTicketId++;
-            m_pendingRequestQueue.push(AZStd::move(queueEntry));
-        }
+        QueueRequest(ticket, priority, AZStd::move(queueEntry));
     }
 
-    void SpawnableEntitiesManager::DespawnAllEntities(EntitySpawnTicket& ticket, EntityDespawnCallback completionCallback)
+    void SpawnableEntitiesManager::DespawnAllEntities(
+        EntitySpawnTicket& ticket, SpawnablePriority priority, EntityDespawnCallback completionCallback)
     {
         AZ_Assert(ticket.IsValid(), "Ticket provided to DespawnAllEntities hasn't been initialized.");
 
         DespawnAllEntitiesCommand queueEntry;
         queueEntry.m_ticket = &ticket;
         queueEntry.m_completionCallback = AZStd::move(completionCallback);
-        {
-            AZStd::scoped_lock queueLock(m_pendingRequestQueueMutex);
-            queueEntry.m_ticketId = GetTicketPayload<Ticket>(ticket).m_nextTicketId++;
-            m_pendingRequestQueue.push(AZStd::move(queueEntry));
-        }
+        QueueRequest(ticket, priority, AZStd::move(queueEntry));
     }
 
-    void SpawnableEntitiesManager::ReloadSpawnable(EntitySpawnTicket& ticket, AZ::Data::Asset<Spawnable> spawnable,
+    void SpawnableEntitiesManager::ReloadSpawnable(
+        EntitySpawnTicket& ticket, SpawnablePriority priority, AZ::Data::Asset<Spawnable> spawnable,
         ReloadSpawnableCallback completionCallback)
     {
         AZ_Assert(ticket.IsValid(), "Ticket provided to ReloadSpawnable hasn't been initialized.");
@@ -79,14 +81,10 @@ namespace AzFramework
         queueEntry.m_ticket = &ticket;
         queueEntry.m_spawnable = AZStd::move(spawnable);
         queueEntry.m_completionCallback = AZStd::move(completionCallback);
-        {
-            AZStd::scoped_lock queueLock(m_pendingRequestQueueMutex);
-            queueEntry.m_ticketId = GetTicketPayload<Ticket>(ticket).m_nextTicketId++;
-            m_pendingRequestQueue.push(AZStd::move(queueEntry));
-        }
+        QueueRequest(ticket, priority, AZStd::move(queueEntry));
     }
 
-    void SpawnableEntitiesManager::ListEntities(EntitySpawnTicket& ticket, ListEntitiesCallback listCallback)
+    void SpawnableEntitiesManager::ListEntities(EntitySpawnTicket& ticket, SpawnablePriority priority, ListEntitiesCallback listCallback)
     {
         AZ_Assert(listCallback, "ListEntities called on spawnable entities without a valid callback to use.");
         AZ_Assert(ticket.IsValid(), "Ticket provided to ListEntities hasn't been initialized.");
@@ -94,14 +92,11 @@ namespace AzFramework
         ListEntitiesCommand queueEntry;
         queueEntry.m_ticket = &ticket;
         queueEntry.m_listCallback = AZStd::move(listCallback);
-        {
-            AZStd::scoped_lock queueLock(m_pendingRequestQueueMutex);
-            queueEntry.m_ticketId = GetTicketPayload<Ticket>(ticket).m_nextTicketId++;
-            m_pendingRequestQueue.push(AZStd::move(queueEntry));
-        }
+        QueueRequest(ticket, priority, AZStd::move(queueEntry));
     }
 
-    void SpawnableEntitiesManager::ListIndicesAndEntities(EntitySpawnTicket& ticket, ListIndicesEntitiesCallback listCallback)
+    void SpawnableEntitiesManager::ListIndicesAndEntities(
+        EntitySpawnTicket& ticket, SpawnablePriority priority, ListIndicesEntitiesCallback listCallback)
     {
         AZ_Assert(listCallback, "ListEntities called on spawnable entities without a valid callback to use.");
         AZ_Assert(ticket.IsValid(), "Ticket provided to ListEntities hasn't been initialized.");
@@ -109,14 +104,10 @@ namespace AzFramework
         ListIndicesEntitiesCommand queueEntry;
         queueEntry.m_ticket = &ticket;
         queueEntry.m_listCallback = AZStd::move(listCallback);
-        {
-            AZStd::scoped_lock queueLock(m_pendingRequestQueueMutex);
-            queueEntry.m_ticketId = GetTicketPayload<Ticket>(ticket).m_nextTicketId++;
-            m_pendingRequestQueue.push(AZStd::move(queueEntry));
-        }
+        QueueRequest(ticket, priority, AZStd::move(queueEntry));
     }
 
-    void SpawnableEntitiesManager::ClaimEntities(EntitySpawnTicket& ticket, ClaimEntitiesCallback listCallback)
+    void SpawnableEntitiesManager::ClaimEntities(EntitySpawnTicket& ticket, SpawnablePriority priority, ClaimEntitiesCallback listCallback)
     {
         AZ_Assert(listCallback, "ClaimEntities called on spawnable entities without a valid callback to use.");
         AZ_Assert(ticket.IsValid(), "Ticket provided to ClaimEntities hasn't been initialized.");
@@ -124,14 +115,10 @@ namespace AzFramework
         ClaimEntitiesCommand queueEntry;
         queueEntry.m_ticket = &ticket;
         queueEntry.m_listCallback = AZStd::move(listCallback);
-        {
-            AZStd::scoped_lock queueLock(m_pendingRequestQueueMutex);
-            queueEntry.m_ticketId = GetTicketPayload<Ticket>(ticket).m_nextTicketId++;
-            m_pendingRequestQueue.push(AZStd::move(queueEntry));
-        }
+        QueueRequest(ticket, priority, AZStd::move(queueEntry));
     }
 
-    void SpawnableEntitiesManager::Barrier(EntitySpawnTicket& ticket, BarrierCallback completionCallback)
+    void SpawnableEntitiesManager::Barrier(EntitySpawnTicket& ticket, SpawnablePriority priority, BarrierCallback completionCallback)
     {
         AZ_Assert(completionCallback, "Barrier on spawnable entities called without a valid callback to use.");
         AZ_Assert(ticket.IsValid(), "Ticket provided to Barrier hasn't been initialized.");
@@ -139,11 +126,7 @@ namespace AzFramework
         BarrierCommand queueEntry;
         queueEntry.m_ticket = &ticket;
         queueEntry.m_completionCallback = AZStd::move(completionCallback);
-        {
-            AZStd::scoped_lock queueLock(m_pendingRequestQueueMutex);
-            queueEntry.m_ticketId = GetTicketPayload<Ticket>(ticket).m_nextTicketId++;
-            m_pendingRequestQueue.push(AZStd::move(queueEntry));
-        }
+        QueueRequest(ticket, priority, AZStd::move(queueEntry));
     }
 
     void SpawnableEntitiesManager::AddOnSpawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>>::Handler& handler)
@@ -156,34 +139,54 @@ namespace AzFramework
         handler.Connect(m_onDespawnedEvent);
     }
 
-    auto SpawnableEntitiesManager::ProcessQueue() -> CommandQueueStatus
+    auto SpawnableEntitiesManager::ProcessQueue(CommandQueuePriority priority) -> CommandQueueStatus
+    {
+        CommandQueueStatus result = CommandQueueStatus::NoCommandsLeft;
+        if ((priority & CommandQueuePriority::High) == CommandQueuePriority::High)
+        {
+            if (ProcessQueue(m_highPriorityQueue) == CommandQueueStatus::HasCommandsLeft)
+            {
+                result = CommandQueueStatus::HasCommandsLeft;
+            }
+        }
+        if ((priority & CommandQueuePriority::Regular) == CommandQueuePriority::Regular)
+        {
+            if (ProcessQueue(m_regularPriorityQueue) == CommandQueueStatus::HasCommandsLeft)
+            {
+                result = CommandQueueStatus::HasCommandsLeft;
+            }
+        }
+        return result;
+    }
+
+    auto SpawnableEntitiesManager::ProcessQueue(Queue& queue) -> CommandQueueStatus
     {
         AZStd::queue<Requests> pendingRequestQueue;
         {
-            AZStd::scoped_lock queueLock(m_pendingRequestQueueMutex);
-            m_pendingRequestQueue.swap(pendingRequestQueue);
+            AZStd::scoped_lock queueLock(queue.m_pendingRequestMutex);
+            queue.m_pendingRequest.swap(pendingRequestQueue);
         }
 
-        if (!pendingRequestQueue.empty() || !m_delayedQueue.empty())
+        if (!pendingRequestQueue.empty() || !queue.m_delayed.empty())
         {
             AZ::SerializeContext* serializeContext = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(serializeContext, "Failed to retrieve serialization context.");
 
             // Only process the requests that are currently in this queue, not the ones that could be re-added if they still can't complete.
-            size_t delayedSize = m_delayedQueue.size();
+            size_t delayedSize = queue.m_delayed.size();
             for (size_t i = 0; i < delayedSize; ++i)
             {
-                Requests& request = m_delayedQueue.front();
+                Requests& request = queue.m_delayed.front();
                 bool result = AZStd::visit([this, serializeContext](auto&& args) -> bool
                     {
                         return ProcessRequest(args, *serializeContext);
                     }, request);
                 if (!result)
                 {
-                    m_delayedQueue.emplace_back(AZStd::move(request));
+                    queue.m_delayed.emplace_back(AZStd::move(request));
                 }
-                m_delayedQueue.pop_front();
+                queue.m_delayed.pop_front();
             }
 
             do
@@ -197,7 +200,7 @@ namespace AzFramework
                         }, request);
                     if (!result)
                     {
-                        m_delayedQueue.emplace_back(AZStd::move(request));
+                        queue.m_delayed.emplace_back(AZStd::move(request));
                     }
                     pendingRequestQueue.pop();
                 }
@@ -205,13 +208,13 @@ namespace AzFramework
                 // Spawning entities can result in more entities being queued to spawn. Repeat spawning until the queue is
                 // empty to avoid a chain of entity spawning getting dragged out over multiple frames.
                 {
-                    AZStd::scoped_lock queueLock(m_pendingRequestQueueMutex);
-                    m_pendingRequestQueue.swap(pendingRequestQueue);
+                    AZStd::scoped_lock queueLock(queue.m_pendingRequestMutex);
+                    queue.m_pendingRequest.swap(pendingRequestQueue);
                 }
             } while (!pendingRequestQueue.empty());
         }
 
-        return m_delayedQueue.empty() ? CommandQueueStatus::NoCommandLeft : CommandQueueStatus::HasCommandsLeft;
+        return queue.m_delayed.empty() ? CommandQueueStatus::NoCommandsLeft : CommandQueueStatus::HasCommandsLeft;
     }
 
     void* SpawnableEntitiesManager::CreateTicket(AZ::Data::Asset<Spawnable>&& spawnable)
@@ -226,9 +229,9 @@ namespace AzFramework
         DestroyTicketCommand queueEntry;
         queueEntry.m_ticket = reinterpret_cast<Ticket*>(ticket);
         {
-            AZStd::scoped_lock queueLock(m_pendingRequestQueueMutex);
+            AZStd::scoped_lock queueLock(m_regularPriorityQueue.m_pendingRequestMutex);
             queueEntry.m_ticketId = reinterpret_cast<Ticket*>(ticket)->m_nextTicketId++;
-            m_pendingRequestQueue.push(AZStd::move(queueEntry));
+            m_regularPriorityQueue.m_pendingRequest.push(AZStd::move(queueEntry));
         }
     }
 
