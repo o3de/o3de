@@ -9,16 +9,4 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(FILES
-    Include/AtomBridge/AtomBridgeBus.h
-    Include/AtomBridge/FlyCameraInputBus.h
-    Include/AtomBridge/PerViewportDynamicDrawInterface.h
-    Source/AtomBridgeSystemComponent.cpp
-    Source/AtomBridgeSystemComponent.h
-    Source/AtomDebugDisplayViewportInterface.cpp
-    Source/AtomDebugDisplayViewportInterface.h
-    Source/FlyCameraInputComponent.cpp
-    Source/FlyCameraInputComponent.h
-    Source/PerViewportDynamicDrawManager.cpp
-    Source/PerViewportDynamicDrawManager.h
-)
+add_subdirectory(Code)
