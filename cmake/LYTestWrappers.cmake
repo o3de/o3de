@@ -370,6 +370,7 @@ endfunction()
 #! ly_add_googletest: Adds a new RUN_TEST using for the specified target using the supplied command or fallback to running
 #                     googletest tests through AzTestRunner
 # \arg:NAME Name to for the test run target
+# \arg:TARGET Name of the target module that is being run for tests. If not provided, will default to 'NAME'
 # \arg:TEST_REQUIRES(optional) List of system resources that are required to run this test.
 #      Only available option is "gpu"
 # \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "sandbox" - prevents the test from running normally
@@ -384,14 +385,20 @@ function(ly_add_googletest)
         message(FATAL_ERROR "Platform does not support test targets")
     endif()
 
-    set(one_value_args NAME TEST_SUITE) 
+    set(one_value_args NAME TARGET TEST_SUITE) 
     set(multi_value_args TEST_COMMAND COMPONENT)
     cmake_parse_arguments(ly_add_googletest "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
+
+    if (ly_add_googletest_TARGET)
+        set(target_name ${ly_add_googletest_TARGET})
+    else()
+        set(target_name ${ly_add_googletest_NAME})
+    endif()
 
 
     # AzTestRunner modules only supports google test libraries, regardless of whether or not 
     # google test suites are supported
-    set_property(GLOBAL APPEND PROPERTY LY_AZTESTRUNNER_TEST_MODULES "${ly_add_googletest_NAME}")
+    set_property(GLOBAL APPEND PROPERTY LY_AZTESTRUNNER_TEST_MODULES "${target_name}")
 
     if(NOT PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
         return()
@@ -400,7 +407,7 @@ function(ly_add_googletest)
 
     if (ly_add_googletest_TEST_SUITE AND NOT ly_add_googletest_TEST_SUITE STREQUAL "main")
         # if a suite is specified, we filter to only accept things which match that suite (in c++)
-        set(non_ide_params "-gtest_filter=*SUITE_${ly_add_googletest_TEST_SUITE}*")
+        set(non_ide_params "--gtest_filter=*SUITE_${ly_add_googletest_TEST_SUITE}*")
     else()
         # otherwise, if its the main suite we only runs things that dont have any of the other suites. 
         # Note: it doesn't do AND, only 'or' - so specifying SUITE_main:REQUIRES_gpu
@@ -412,11 +419,11 @@ function(ly_add_googletest)
 
     if(NOT ly_add_googletest_TEST_COMMAND)
         # Use the NAME parameter as the build target
-        set(build_target ${ly_add_googletest_NAME})
+        set(build_target ${target_name})
         ly_strip_target_namespace(TARGET ${build_target} OUTPUT_VARIABLE build_target)
 
         if(NOT TARGET ${build_target})
-            message(FATAL_ERROR "A valid build target \"${build_target}\" for test run \"${ly_add_googletest_NAME}\" has not been found.\
+            message(FATAL_ERROR "A valid build target \"${build_target}\" for test run \"${target_name}\" has not been found.\
                 A valid target via the TARGET parameter or a custom TEST_COMMAND must be supplied")
         endif()
 

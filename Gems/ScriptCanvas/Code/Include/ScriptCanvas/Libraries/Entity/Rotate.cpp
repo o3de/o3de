@@ -47,21 +47,10 @@ namespace ScriptCanvas
 
                         AZ::Transform currentTransform = AZ::Transform::CreateIdentity();
                         AZ::TransformBus::EventResult(currentTransform, targetEntity, &AZ::TransformInterface::GetWorldTM);
-                        
-                        AZ::Vector3 position = currentTransform.GetTranslation();
 
-                        AZ::Quaternion currentRotation = currentTransform.GetRotation();
+                        currentTransform.SetRotation((rotation * currentTransform.GetRotation().GetNormalized()));
 
-                        AZ::Quaternion newRotation = (rotation * currentRotation);
-                        newRotation.Normalize();
-
-                        AZ::Transform newTransform = AZ::Transform::CreateIdentity();
-
-                        newTransform.SetScale(currentTransform.GetScale());
-                        newTransform.SetRotation(newRotation);
-                        newTransform.SetTranslation(position);
-
-                        AZ::TransformBus::Event(targetEntity, &AZ::TransformInterface::SetWorldTM, newTransform);
+                        AZ::TransformBus::Event(targetEntity, &AZ::TransformInterface::SetWorldTM, currentTransform);
                     }
                 }
 

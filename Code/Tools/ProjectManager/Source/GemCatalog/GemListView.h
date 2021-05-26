@@ -14,7 +14,8 @@
 
 #if !defined(Q_MOC_RUN)
 #include "GemInfo.h"
-#include "GemModel.h"
+#include <QAbstractItemModel>
+#include <QItemSelectionModel>
 #include <QListView>
 #endif
 
@@ -24,8 +25,9 @@ namespace O3DE::ProjectManager
         : public QListView
     {
         Q_OBJECT // AUTOMOC
+
     public:
-        explicit GemListView(GemModel* model, QWidget *parent = nullptr);
+        explicit GemListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, QWidget* parent = nullptr);
         ~GemListView() = default;
     };
 } // namespace O3DE::ProjectManager

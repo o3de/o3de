@@ -36,6 +36,7 @@ namespace AzFramework
     {
     public:
         AZ_RTTI(AzFramework::SpawnableEntitiesManager, "{6E14333F-128C-464C-94CA-A63B05A5E51C}");
+        AZ_CLASS_ALLOCATOR(SpawnableEntitiesManager, AZ::SystemAllocator, 0);
 
         enum class CommandQueueStatus : bool
         {
@@ -58,6 +59,7 @@ namespace AzFramework
             ReloadSpawnableCallback completionCallback = {}) override;
 
         void ListEntities(EntitySpawnTicket& ticket, ListEntitiesCallback listCallback) override;
+        void ListIndicesAndEntities(EntitySpawnTicket& ticket, ListIndicesEntitiesCallback listCallback) override;
         void ClaimEntities(EntitySpawnTicket& ticket, ClaimEntitiesCallback listCallback) override;
 
         void Barrier(EntitySpawnTicket& spawnInfo, BarrierCallback completionCallback) override;
@@ -123,6 +125,12 @@ namespace AzFramework
             EntitySpawnTicket* m_ticket;
             uint32_t m_ticketId;
         };
+        struct ListIndicesEntitiesCommand
+        {
+            ListIndicesEntitiesCallback m_listCallback;
+            EntitySpawnTicket* m_ticket;
+            uint32_t m_ticketId;
+        };
         struct ClaimEntitiesCommand
         {
             ClaimEntitiesCallback m_listCallback;
@@ -141,8 +149,9 @@ namespace AzFramework
             uint32_t m_ticketId;
         };
 
-        using Requests = AZStd::variant<SpawnAllEntitiesCommand, SpawnEntitiesCommand, DespawnAllEntitiesCommand, ReloadSpawnableCommand,
-            ListEntitiesCommand, ClaimEntitiesCommand, BarrierCommand, DestroyTicketCommand>;
+        using Requests = AZStd::variant<
+            SpawnAllEntitiesCommand, SpawnEntitiesCommand, DespawnAllEntitiesCommand, ReloadSpawnableCommand, ListEntitiesCommand,
+            ListIndicesEntitiesCommand, ClaimEntitiesCommand, BarrierCommand, DestroyTicketCommand>;
 
         AZ::Entity* SpawnSingleEntity(const AZ::Entity& entityTemplate,
             AZ::SerializeContext& serializeContext);
@@ -155,6 +164,7 @@ namespace AzFramework
         bool ProcessRequest(DespawnAllEntitiesCommand& request, AZ::SerializeContext& serializeContext);
         bool ProcessRequest(ReloadSpawnableCommand& request, AZ::SerializeContext& serializeContext);
         bool ProcessRequest(ListEntitiesCommand& request, AZ::SerializeContext& serializeContext);
+        bool ProcessRequest(ListIndicesEntitiesCommand& request, AZ::SerializeContext& serializeContext);
         bool ProcessRequest(ClaimEntitiesCommand& request, AZ::SerializeContext& serializeContext);
         bool ProcessRequest(BarrierCommand& request, AZ::SerializeContext& serializeContext);
         bool ProcessRequest(DestroyTicketCommand& request, AZ::SerializeContext& serializeContext);

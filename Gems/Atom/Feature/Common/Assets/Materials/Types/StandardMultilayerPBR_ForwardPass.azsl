@@ -116,7 +116,7 @@ VSOutput ForwardPassVS(VSInput IN)
     }
     else
     {
-        OUT.m_blendMask = float3(1,1,1);
+        OUT.m_blendMask = float3(0,0,0);
     }
     
     // Shadow coords will be calculated in the pixel shader in this case
@@ -310,38 +310,45 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     s_blendMaskFromVertexStream = IN.m_blendMask;
 
+    LayerBlendSource blendSource = GetFinalLayerBlendSource();
+
     // ------- Tangents & Bitangets -------
+    float3 tangents[UvSetCount] = { IN.m_tangent.xyz, IN.m_tangent.xyz };
+    float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, IN.m_bitangent.xyz };
 
-    // We support two UV streams, but only a single stream of tangent/bitangent. So for UV[1+] we generated the tangent/bitangent in screen-space.
-    float3 tangents[UvSetCount] = { IN.m_tangent.xyz, float3(0, 0, 0) };
-    float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, float3(0, 0, 0) };
-
-    if ((o_parallax_feature_enabled && !o_enableSubsurfaceScattering && MaterialSrg::m_parallaxUvIndex != 0)
-        || (o_layer1_o_normal_useTexture && MaterialSrg::m_layer1_m_normalMapUvIndex != 0)
-        || (o_layer2_o_normal_useTexture && MaterialSrg::m_layer2_m_normalMapUvIndex != 0)
-        || (o_layer3_o_normal_useTexture && MaterialSrg::m_layer3_m_normalMapUvIndex != 0)
-        || (o_layer1_o_clearCoat_normal_useTexture && MaterialSrg::m_layer1_m_clearCoatNormalMapUvIndex != 0)
-        || (o_layer2_o_clearCoat_normal_useTexture && MaterialSrg::m_layer2_m_clearCoatNormalMapUvIndex != 0)
-        || (o_layer3_o_clearCoat_normal_useTexture && MaterialSrg::m_layer3_m_clearCoatNormalMapUvIndex != 0)
+    if ((o_parallax_feature_enabled && !o_enableSubsurfaceScattering)
+        || o_layer1_o_normal_useTexture
+        || o_layer2_o_normal_useTexture
+        || o_layer3_o_normal_useTexture
+        || o_layer1_o_clearCoat_normal_useTexture
+        || o_layer2_o_clearCoat_normal_useTexture
+        || o_layer3_o_clearCoat_normal_useTexture
         )
     {
-        // Generate the tangent/bitangent for UV[1+]
-        const int startIndex = 1;
-        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents, startIndex);
+        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
     }
     
     // ------- Debug Modes -------
 
-    if(o_debugDrawMode == DebugDrawMode::BlendSource)
+    if(o_debugDrawMode == DebugDrawMode::BlendMask)
     {
-        float3 blendSource = GetBlendSourceValues(IN.m_uv[MaterialSrg::m_blendMaskUvIndex]);
-        return DebugOutput(blendSource);
+        float3 blendMaskValues = GetApplicableBlendMaskValues(blendSource, IN.m_uv[MaterialSrg::m_blendMaskUvIndex], IN.m_blendMask);
+        return DebugOutput(blendMaskValues);
     }
     
-    if(o_debugDrawMode == DebugDrawMode::DepthMaps)
+    if(o_debugDrawMode == DebugDrawMode::Displacement)
     {
-        float depth = GetNormalizedDepth(-MaterialSrg::m_displacementMax, -MaterialSrg::m_displacementMin, IN.m_uv[MaterialSrg::m_parallaxUvIndex], float2(0,0), float2(0,0));
-        return DebugOutput(float3(depth,depth,depth));
+        float startDepth = -MaterialSrg::m_displacementMax;
+        float stopDepth = -MaterialSrg::m_displacementMin;
+        float depth = GetNormalizedDepth(startDepth, stopDepth, IN.m_uv[MaterialSrg::m_parallaxUvIndex], float2(0,0), float2(0,0));
+        float height = 1 - saturate(depth);
+        return DebugOutput(float3(height,height,height));
+    }
+    
+    if(o_debugDrawMode == DebugDrawMode::FinalBlendWeights)
+    {
+        float3 blendWeights = GetBlendWeights(blendSource, IN.m_uv[MaterialSrg::m_blendMaskUvIndex], IN.m_blendMask);
+        return DebugOutput(blendWeights);
     }
 
     // ------- Parallax -------
@@ -373,21 +380,27 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // ------- Calculate Layer Blend Mask Values -------
     
     // Now that any parallax has been calculated, we calculate the blend factors for any layers that are impacted by the parallax.
-    float3 blendWeights = GetBlendWeights(IN.m_uv[MaterialSrg::m_blendMaskUvIndex]);
+    float3 blendWeights = GetBlendWeights(blendSource, IN.m_uv[MaterialSrg::m_blendMaskUvIndex], IN.m_blendMask);
 
     // ------- Layer 1 (base layer) -----------
 
     ProcessedMaterialInputs lightingInputLayer1;
+    if(blendWeights.r > 0)
     {
         StandardMaterialInputs inputs;
         FILL_STANDARD_MATERIAL_INPUTS(inputs, MaterialSrg::m_layer1_, o_layer1_, blendWeights.r)
         lightingInputLayer1 = ProcessStandardMaterialInputs(inputs);
     }
+    else
+    {
+        lightingInputLayer1.InitializeToZero();
+        blendWeights.r = 0;
+    }
     
     // ----------- Layer 2 -----------
 
     ProcessedMaterialInputs lightingInputLayer2; 
-    if(o_layer2_enabled)
+    if(o_layer2_enabled && blendWeights.g > 0)
     {
         StandardMaterialInputs inputs;
         FILL_STANDARD_MATERIAL_INPUTS(inputs, MaterialSrg::m_layer2_, o_layer2_, blendWeights.g)
@@ -396,12 +409,13 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     else
     {
         lightingInputLayer2.InitializeToZero();
+        blendWeights.g = 0;
     }
     
     // ----------- Layer 3 -----------
 
     ProcessedMaterialInputs lightingInputLayer3;
-    if(o_layer3_enabled)
+    if(o_layer3_enabled && blendWeights.b > 0)
     {
         StandardMaterialInputs inputs;
         FILL_STANDARD_MATERIAL_INPUTS(inputs, MaterialSrg::m_layer3_, o_layer3_, blendWeights.b)
@@ -410,6 +424,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     else
     {
         lightingInputLayer3.InitializeToZero();
+        blendWeights.b = 0;
     }
 
     // ------- Combine all layers ---------
@@ -420,12 +435,16 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     // ------- Combine Normals ---------
 
-    float3 normalTS = lightingInputLayer1.m_normalTS;
-    if(o_layer2_enabled)
+    float3 normalTS = float3(0,0,1);
+    if(blendWeights.r > 0)
+    {
+        normalTS = lightingInputLayer1.m_normalTS;
+    }
+    if(o_layer2_enabled && blendWeights.g > 0)
     {
         normalTS = ReorientTangentSpaceNormal(normalTS, lightingInputLayer2.m_normalTS);
     }
-    if(o_layer3_enabled)
+    if(o_layer3_enabled && blendWeights.b > 0)
     {
         normalTS = ReorientTangentSpaceNormal(normalTS, lightingInputLayer3.m_normalTS);
     }

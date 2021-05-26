@@ -12,7 +12,7 @@
 
 #include "AssetProcessorTest.h"
 
-
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
 #include "BaseAssetProcessorTest.h"
@@ -67,6 +67,12 @@ namespace AssetProcessor
             static char processName[] = {"AssetProcessorBatch"};
             static char* namePtr = &processName[0];
             static char** paramStringArray = &namePtr;
+
+            auto registry = AZ::SettingsRegistry::Get();
+            auto projectPathKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
             
             m_application.reset(new UnitTestAppManager(&numParams, &paramStringArray));
             ASSERT_EQ(m_application->BeforeRun(), ApplicationManager::Status_Success);
