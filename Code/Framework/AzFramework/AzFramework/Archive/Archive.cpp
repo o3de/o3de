@@ -2008,13 +2008,12 @@ namespace AZ::IO
         // if no bind root is specified, compute one:
         strBindRoot = !bindRoot.empty() ? bindRoot : szFullPath->ParentPath().Native();
 
-        // Check if archive file disk exist on disk or inside of pak.
-        bool bFileExists = IsFileExist(szFullPath->Native());
-
-        if (!bFileExists && (nFactoryFlags & ZipDir::CacheFactory::FLAGS_READ_ONLY))
+        // Check if archive file disk exist on disk.
+        const bool pakOnDisk = FileIOBase::GetDirectInstance()->Exists(szFullPath->c_str());
+        if (!pakOnDisk)
         {
             // Archive file not found.
-            AZ_TracePrintf("Archive", "Cannot open Archive file %s\n", szFullPath->c_str());
+            AZ_TracePrintf("Archive", "Archive file %s does not exist\n", szFullPath->c_str());
             return nullptr;
         }
 
@@ -2492,8 +2491,6 @@ namespace AZ::IO
 
     void Archive::FindCompressionInfo(bool& found, AZ::IO::CompressionInfo& info, const AZStd::string_view filename)
     {
-        constexpr uint32_t s_compressionTag = static_cast<uint32_t>('Z') << 24 | static_cast<uint32_t>('C') << 16 | static_cast<uint32_t>('R') << 8 | static_cast<uint32_t>('Y');
-
         if (!found)
         {
             auto correctedFilename = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(filename);
@@ -2519,7 +2516,6 @@ namespace AZ::IO
                 found = true;
 
                 info.m_archiveFilename.InitFromRelativePath(archive->GetFilePath());
-                info.m_compressionTag.m_code = s_compressionTag;
                 info.m_offset = pFileData->GetFileDataOffset();
                 info.m_compressedSize = entry->desc.lSizeCompressed;
                 info.m_uncompressedSize = entry->desc.lSizeUncompressed;
@@ -2539,9 +2535,8 @@ namespace AZ::IO
                     break;
                 }
 
-                info.m_decompressor = [&s_compressionTag]([[maybe_unused]] const AZ::IO::CompressionInfo& info, const void* compressed, size_t compressedSize, void* uncompressed, size_t uncompressedBufferSize)->bool
+                info.m_decompressor = []([[maybe_unused]] const AZ::IO::CompressionInfo& info, const void* compressed, size_t compressedSize, void* uncompressed, size_t uncompressedBufferSize)->bool
                 {
-                    AZ_Assert(info.m_compressionTag.m_code == s_compressionTag, "Provided compression info isn't supported by this decompressor.");
                     size_t nSizeUncompressed = uncompressedBufferSize;
                     return ZipDir::ZipRawUncompress(uncompressed, &nSizeUncompressed, compressed, compressedSize) == 0;
                 };

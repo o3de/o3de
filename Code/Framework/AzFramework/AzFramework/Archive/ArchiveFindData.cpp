@@ -50,6 +50,7 @@ namespace AZ::IO
         , tWrite{ writeTime }
     {
     }
+
     ArchiveFileIterator::ArchiveFileIterator(FindData* findData, AZStd::string_view filename, const FileDesc& fileDesc)
         : m_findData{ findData }
         , m_filename{ filename }
@@ -108,13 +109,10 @@ namespace AZ::IO
             AZ::StringFunc::Path::GetFullPath(directory.c_str(), searchDirectory);
             AZ::StringFunc::Path::GetFullFileName(directory.c_str(), pattern);
         }
-
         AZ::IO::FileIOBase::GetDirectInstance()->FindFiles(searchDirectory.c_str(), pattern.c_str(), [&](const char* filePath) -> bool
         {
             AZ::IO::FileDesc fileDesc;
-
-            AZStd::string fullFilePath;
-            AZ::StringFunc::Path::GetFullFileName(filePath, fullFilePath);
+            AZStd::string filePathEntry{filePath};
 
             if (AZ::IO::FileIOBase::GetDirectInstance()->IsDirectory(filePath))
             {
@@ -135,9 +133,8 @@ namespace AZ::IO
                 fileDesc.tAccess = fileDesc.tWrite;
                 fileDesc.tCreate = fileDesc.tWrite;
             }
-            [[maybe_unused]] auto result = m_mapFiles.emplace(AZStd::move(fullFilePath), fileDesc);
-            AZ_Assert(result.second, "Failed to insert FindData entry for %s", fullFilePath.c_str());
-
+            [[maybe_unused]] auto result = m_mapFiles.emplace(AZStd::move(filePathEntry), fileDesc);
+            AZ_Assert(result.second, "Failed to insert FindData entry for filePath %s", filePath);
             return true;
         });
     }
@@ -273,7 +270,9 @@ namespace AZ::IO
         }
 
         auto pakFileIter = m_mapFiles.begin();
-        fileIterator.m_filename = pakFileIter->first;
+        AZStd::string fullFilePath;
+        AZ::StringFunc::Path::GetFullFileName(pakFileIter->first.c_str(), fullFilePath);
+        fileIterator.m_filename = AZStd::move(fullFilePath);
         fileIterator.m_fileDesc = pakFileIter->second;
         fileIterator.m_lastFetchValid = true;
 
