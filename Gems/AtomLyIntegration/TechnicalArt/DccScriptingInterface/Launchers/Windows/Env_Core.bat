@@ -78,7 +78,7 @@ IF "%LY_PROJECT%"=="" (set LY_PROJECT=%CD%)
 echo     LY_PROJECT = %LY_PROJECT%
 
 :: set up the default project path (dccsi)
-:: if not set we lso use the DCCsi path as stand-in
+:: if not set we also use the DCCsi path as stand-in
 CD /D ..\..\
 IF "%LY_PROJECT_PATH%"=="" (set LY_PROJECT_PATH=%CD%)
 echo     LY_PROJECT_PATH = %LY_PROJECT_PATH%
