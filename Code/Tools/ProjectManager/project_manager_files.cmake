@@ -21,8 +21,6 @@ set(FILES
     Source/ScreenWidget.h
     Source/EngineInfo.h
     Source/EngineInfo.cpp
-    Source/FirstTimeUseScreen.h
-    Source/FirstTimeUseScreen.cpp
     Source/FormLineEditWidget.h
     Source/FormLineEditWidget.cpp
     Source/FormBrowseEditWidget.h
@@ -44,8 +42,8 @@ set(FILES
     Source/CreateProjectCtrl.cpp
     Source/UpdateProjectCtrl.h
     Source/UpdateProjectCtrl.cpp
-    Source/ProjectsHomeScreen.h
-    Source/ProjectsHomeScreen.cpp
+    Source/ProjectsScreen.h
+    Source/ProjectsScreen.cpp
     Source/ProjectSettingsScreen.h
     Source/ProjectSettingsScreen.cpp
     Source/ProjectSettingsScreen.ui

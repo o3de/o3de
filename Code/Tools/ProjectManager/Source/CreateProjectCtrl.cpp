@@ -132,7 +132,7 @@ namespace O3DE::ProjectManager
             if (result.IsSuccess())
             {
                 // adding gems is not implemented yet because we don't know what targets to add or how to add them
-                emit ChangeScreenRequest(ProjectManagerScreen::ProjectsHome);
+                emit ChangeScreenRequest(ProjectManagerScreen::Projects);
             }
             else
             {

@@ -31,6 +31,7 @@ namespace O3DE::ProjectManager
     LabelButton::LabelButton(QWidget* parent)
         : QLabel(parent)
     {
+        setObjectName("labelButton");
     }
 
     void LabelButton::mousePressEvent([[maybe_unused]] QMouseEvent* event)
@@ -56,6 +57,8 @@ namespace O3DE::ProjectManager
 
     void ProjectButton::Setup()
     {
+        setObjectName("projectButton");
+
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setSpacing(0);
         vLayout->setContentsMargins(0, 0, 0, 0);
@@ -79,14 +82,21 @@ namespace O3DE::ProjectManager
         m_deleteProjectAction = newProjectMenu->addAction(tr("Delete the Project"));
 #endif
 
-        m_projectSettingsMenuButton = new QPushButton(this);
-        m_projectSettingsMenuButton->setText(m_projectName);
-        m_projectSettingsMenuButton->setMenu(newProjectMenu);
-        m_projectSettingsMenuButton->setFocusPolicy(Qt::FocusPolicy::NoFocus);
-        m_projectSettingsMenuButton->setStyleSheet("font-size: 14px; text-align:left;");
-        vLayout->addWidget(m_projectSettingsMenuButton);
+        QFrame* footer = new QFrame(this);
+        QHBoxLayout* hLayout = new QHBoxLayout();
+        hLayout->setContentsMargins(0, 0, 0, 0);
+        footer->setLayout(hLayout);
+        {
+            QLabel* projectNameLabel = new QLabel(m_projectName, this);
+            hLayout->addWidget(projectNameLabel);
 
-        setFixedSize(s_projectImageWidth, s_projectImageHeight + m_projectSettingsMenuButton->height());
+            QPushButton* projectMenuButton = new QPushButton(this);
+            projectMenuButton->setObjectName("projectMenuButton");
+            projectMenuButton->setMenu(newProjectMenu);
+            hLayout->addWidget(projectMenuButton);
+        }
+
+        vLayout->addWidget(footer);
 
         connect(m_projectImageLabel, &LabelButton::triggered, [this]() { emit OpenProject(m_projectName); });
         connect(m_editProjectAction, &QAction::triggered, [this]() { emit EditProject(m_projectName); });

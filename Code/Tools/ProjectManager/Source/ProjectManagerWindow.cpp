@@ -32,11 +32,10 @@ namespace O3DE::ProjectManager
         // currently the tab order on the home page is based on the order of this list
         QVector<ProjectManagerScreen> screenEnums =
         {
-            ProjectManagerScreen::CreateProject,
-            ProjectManagerScreen::ProjectsHome,
-            ProjectManagerScreen::UpdateProject,
+            ProjectManagerScreen::Projects,
             ProjectManagerScreen::EngineSettings,
-            ProjectManagerScreen::FirstTimeUse 
+            ProjectManagerScreen::CreateProject,
+            ProjectManagerScreen::UpdateProject
         };
         screensCtrl->BuildScreens(screenEnums);
 
@@ -51,7 +50,7 @@ namespace O3DE::ProjectManager
         // set stylesheet after creating the screens or their styles won't get updated
         AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("style:ProjectManager.qss"));
 
-        screensCtrl->ForceChangeToScreen(ProjectManagerScreen::FirstTimeUse, false);
+        screensCtrl->ForceChangeToScreen(ProjectManagerScreen::Projects, false);
     }
 
     ProjectManagerWindow::~ProjectManagerWindow()

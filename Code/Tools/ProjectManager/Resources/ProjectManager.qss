@@ -232,43 +232,100 @@ QTabBar::tab:pressed
     margin-left:30px;
 }
 
-/************** First Time **************/
-#firstTimeScreen > #titleLabel {
+/************** Projects **************/
+#firstTimeContent > #titleLabel {
     font-size:60px;
-    margin:0px;
+    margin:73px 0px 0px 0px;
+    qproperty-indent: 0;
 }
 
-#firstTimeScreen > #introLabel {
+#firstTimeContent > #introLabel {
     font-size:14px;
-    margin:10px 0 50px 0;
+    margin:10px 0 60px 0;
+    qproperty-indent: 0;
 }
 
-#firstTimeScreen > QPushButton {
+#firstTimeContent > QPushButton {
     min-width: 210px;
     max-width: 210px;
-    min-height: 90px;
-    max-height: 90px;
+    min-height: 276px;
+    max-height: 276px;
     qproperty-flat: true;
     background-origin:content;
-    padding:70px 0 110px 0;
     font-size:14px;
-    border: 1px solid #ffffff;
+    border: 2px solid #ffffff;
 }
 
-#firstTimeScreen > QPushButton:hover {
-    border: 1px solid #1e70eb;
+#firstTimeContent > QPushButton:text {
+    color: red;
+}
+
+#firstTimeContent > QPushButton:hover {
+    border: 2px solid #1e70eb;
     color: #1e70eb;
 }
 
-#firstTimeScreen > QPushButton:pressed {
+#firstTimeContent > QPushButton:pressed {
     border: 1px solid #0e60eb;
     color: #0e60eb;
 }
 
 #createProjectButton {
-    background:rgba(0,0,0,180) url(:/Add.svg) no-repeat center bottom;
+    background:rgba(0,0,0,180) url(:/AddOffset.svg) no-repeat center center;
+}
+#createProjectButton:hover,
+#createProjectButton:pressed {
+    background:rgba(0,0,0,180) url(:/AddOffset_Hover.svg) no-repeat center center;
 }
 
 #addProjectButton {
-    background:rgba(0,0,0,180) url(:/Select_Folder.svg) no-repeat center bottom;
+    background:rgba(0,0,0,180) url(:/FolderOffset.svg) no-repeat center center;
+}
+#addProjectButton:hover,
+#addProjectButton:pressed {
+    background:rgba(0,0,0,180) url(:/FolderOffset_Hover.svg) no-repeat center center;
+}
+
+#projectsContent > QFrame  {
+    margin-top:60px;
+}
+
+#projectsContent > QFrame > #titleLabel {
+    font-size:24px;
+    qproperty-indent: 0;
+}
+
+#projectsContent > QScrollArea {
+    margin-top:40px;
+    margin-bottom:5px;
+}
+
+#projectButton > #labelButton  {
+    border:2px solid white;
+}
+#projectButton > #labelButton:hover,
+#projectButton > #labelButton:pressed  {
+    border:2px solid #1e70eb;
+}
+
+#projectButton > QFrame > QLabel {
+    font-weight:bold;
+    font-size:14px;
+    qproperty-indent: 0;
+}
+
+#projectMenuButton {
+    qproperty-flat: true;
+    background:transparent url(:/menu.svg) no-repeat center center;
+    max-width:26px;
+    min-width:26px;
+    max-height:14px;
+    min-height:14px;
+}
+
+#projectsContent > QFrame > #newProjectButton {
+    min-width:150px;
+    max-width:150px;
+    min-height:26px;
+    max-height:26px;
 }
