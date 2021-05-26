@@ -190,6 +190,18 @@ class TestAutomation(TestAutomationBase):
         from . import Node_HappyPath_DuplicateNode as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    def test_ScriptEvent_AddRemoveParameter_ActionsSuccessful(self, request, workspace, editor, launcher_platform):
+        def teardown():
+            file_system.delete(
+                [os.path.join(workspace.paths.project(), "ScriptCanvas", "test_file.scriptevent")], True, True
+            )
+        request.addfinalizer(teardown)
+        file_system.delete(
+            [os.path.join(workspace.paths.project(), "ScriptCanvas", "test_file.scriptevent")], True, True
+        )
+        from . import ScriptEvent_AddRemoveParameter_ActionsSuccessful as test_module
+        self._run_test(request, workspace, editor, test_module)
+
 # NOTE: We had to use hydra_test_utils.py, as TestAutomationBase run_test method
 # fails because of pyside_utils import
 @pytest.mark.SUITE_periodic
