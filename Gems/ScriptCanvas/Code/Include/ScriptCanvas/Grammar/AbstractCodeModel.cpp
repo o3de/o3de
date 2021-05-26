@@ -1036,12 +1036,12 @@ namespace ScriptCanvas
                     if (azrtti_istypeof<ScriptCanvas::Nodes::NodeableNodeOverloaded*>(&node))
                     {
                         // todo Add node to these errors
-                        AddError(nullptr, ValidationConstPtr(aznew NotYetImplemented(node.GetEntityId(), AZStd::string::format("NodeableNodeOverloaded doesn't have enough data connected to select a valid overload: %s", node.GetDebugName().data()))));
+                        AddError(nullptr, ValidationConstPtr(aznew Internal::ParseError(node.GetEntityId(), AZStd::string::format("%s: %s", ParseErrors::NodeableNodeOverloadAmbiguous, node.GetDebugName().data()))));
                     }
                     else
                     {
                         // todo Add node to these errors
-                        AddError(nullptr, ValidationConstPtr(aznew NotYetImplemented(node.GetEntityId(), AZStd::string::format("NodeableNode did not construct its internal node: %s", node.GetDebugName().data()))));
+                        AddError(nullptr, ValidationConstPtr(aznew Internal::ParseError(node.GetEntityId(), AZStd::string::format("%s: %s", ParseErrors::NodeableNodeDidNotConstructInternalNodeable, node.GetDebugName().data()))));
                     }
                 }
             }
@@ -2535,7 +2535,7 @@ namespace ScriptCanvas
 
             if (IsInfiniteVariableWriteHandlingLoop(*this, variableHandling, variableHandling->m_function, true))
             {
-                AddError(variableHandling->m_function, aznew NotYetImplemented(AZ::EntityId(), ScriptCanvas::ParseErrors::InfiniteLoopWritingToVariable));
+                AddError(variableHandling->m_function, aznew Internal::ParseError(AZ::EntityId(), ScriptCanvas::ParseErrors::InfiniteLoopWritingToVariable));
                 return false;
             }
 
@@ -3312,7 +3312,7 @@ namespace ScriptCanvas
                     }
                     else
                     {
-                        AddError(execution, aznew NotYetImplemented(execution->GetNodeId(), childOutSlotsOutcome.TakeError()));
+                        AddError(execution, aznew Internal::ParseError(execution->GetNodeId(), childOutSlotsOutcome.TakeError()));
                     }
                 }
             }
@@ -3615,9 +3615,11 @@ namespace ScriptCanvas
 
         void AbstractCodeModel::ParseExecutionMultipleOutSyntaxSugar(ExecutionTreePtr execution, const EndpointsResolved& executionOutNodes, const AZStd::vector<const Slot*>& outSlots)
         {
+            const auto executionNodeId = execution->GetId().m_node ? execution->GetId().m_node->GetEntityId() : AZ::EntityId();
+
             if (executionOutNodes.size() != outSlots.size())
             {
-                AddError(AZ::EntityId(), execution, ParseErrors::ParseExecutionMultipleOutSyntaxSugarMismatchOutSize);
+                AddError(executionNodeId, execution, ParseErrors::ParseExecutionMultipleOutSyntaxSugarMismatchOutSize);
             }
 
             if (execution->GetSymbol() != Symbol::Sequence)
@@ -3630,13 +3632,13 @@ namespace ScriptCanvas
 
                 if (!child)
                 {
-                    AddError(AZ::EntityId(), execution, ParseErrors::ParseExecutionMultipleOutSyntaxSugarNullChildFound);
+                    AddError(executionNodeId, execution, ParseErrors::ParseExecutionMultipleOutSyntaxSugarNullChildFound);
                     return;
                 }
 
                 if (child->m_execution)
                 {
-                    AddError(AZ::EntityId(), execution, ParseErrors::ParseExecutionMultipleOutSyntaxSugarNonNullChildExecutionFound);
+                    AddError(executionNodeId, execution, ParseErrors::ParseExecutionMultipleOutSyntaxSugarNonNullChildExecutionFound);
                     return;
                 }
 
@@ -3660,7 +3662,7 @@ namespace ScriptCanvas
 
                 if (execution->GetChildrenCount() != executionOutNodes.size())
                 {
-                    AddError(AZ::EntityId(), execution, ParseErrors::ParseExecutionMultipleOutSyntaxSugarChildExecutionRemovedAndNotReplaced);
+                    AddError(executionNodeId, execution, ParseErrors::ParseExecutionMultipleOutSyntaxSugarChildExecutionRemovedAndNotReplaced);
                     return;
                 }
             }
@@ -4187,7 +4189,7 @@ namespace ScriptCanvas
                 }
                 else
                 {
-                    AddError(nullptr, aznew NotYetImplemented(execution->GetNodeId(), dataSlotsOutcome.TakeError()));
+                    AddError(nullptr, aznew Internal::ParseError(execution->GetNodeId(), dataSlotsOutcome.TakeError()));
                 }
             }
         }
@@ -4494,13 +4496,13 @@ namespace ScriptCanvas
                     }
                     else
                     {
-                        AddError(execution, aznew NotYetImplemented(execution->GetNodeId(), returnSlotsOutcome.TakeError()));
+                        AddError(execution, aznew Internal::ParseError(execution->GetNodeId(), returnSlotsOutcome.TakeError()));
                     }
                 }
             }
             else
             {
-                AddError(execution, aznew NotYetImplemented(execution->GetNodeId(), outputSlotsOutcome.TakeError()));
+                AddError(execution, aznew Internal::ParseError(execution->GetNodeId(), outputSlotsOutcome.TakeError()));
             }
         }
 

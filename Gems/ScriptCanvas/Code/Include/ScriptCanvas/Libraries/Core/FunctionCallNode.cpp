@@ -410,6 +410,11 @@ namespace ScriptCanvas
                 return m_asset.GetId();
             }
 
+            const AZStd::string& FunctionCallNode::GetAssetHint() const
+            {
+                return m_asset.GetHint();
+            }
+
             AZ::Outcome<DependencyReport, void> FunctionCallNode::GetDependencies() const
             {
                 DependencyReport report;
