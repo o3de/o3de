@@ -1298,10 +1298,10 @@ namespace MCommon
 
 
     // render a cube
-    void RenderUtil::RenderCube(const AZ::Vector3& size, const AZ::Vector3& position, const MCore::RGBAColor& color)
+    void RenderUtil::RenderCube(float size, const AZ::Vector3& position, const MCore::RGBAColor& color)
     {
         // setup the world space matrix of the cube
-        AZ::Transform cubeTransform = AZ::Transform::CreateScale(size);
+        AZ::Transform cubeTransform = AZ::Transform::CreateUniformScale(size);
         cubeTransform.SetTranslation(position);
 
         // render the cube

@@ -58,7 +58,7 @@ namespace MCore
         AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(emfxTransform.mRotation, emfxTransform.mPosition);
         EMFX_SCALECODE
         (
-            transform.MultiplyByScale(emfxTransform.mScale);
+            transform.MultiplyByUniformScale(emfxTransform.mScale.GetMaxElement());
         )
         return transform;
     }
@@ -386,7 +386,7 @@ namespace MCore
         AZ::Transform result;
         result.SetTranslation(translation);
         result.SetRotation(rotation);
-        result.SetScale(scale);
+        result.SetUniformScale(scale.GetMaxElement());
         return result;
     }
 

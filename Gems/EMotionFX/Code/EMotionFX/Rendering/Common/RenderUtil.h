@@ -303,7 +303,7 @@ namespace MCommon
          * @param position The position of the center of the cube.
          * @param color The desired cube color.
          */
-        void RenderCube(const AZ::Vector3& size, const AZ::Vector3& position, const MCore::RGBAColor& color);
+        void RenderCube(float size, const AZ::Vector3& position, const MCore::RGBAColor& color);
 
         /**
          * Render a triangle (CCW).

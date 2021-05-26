@@ -183,7 +183,7 @@ namespace EMotionFX
     {
     #ifndef EMFX_SCALE_DISABLED
         mPosition = transform.GetTranslation();
-        mScale = transform.GetScale();
+        mScale = AZ::Vector3(transform.GetUniformScale());
         mRotation = transform.GetRotation();
     #else
         mPosition = transform.GetTranslation();

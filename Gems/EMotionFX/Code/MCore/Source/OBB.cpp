@@ -96,9 +96,9 @@ namespace MCore
         // create the AABB of (box1 in space of box0)
         const AZ::Transform& mtx = _1in0.mRotation;
 
-        AZ::Vector3 transformedAxisX = mtx.GetScale() * (mtx.GetRotation().GetConjugate().TransformVector(AZ::Vector3::CreateAxisX()));
-        AZ::Vector3 transformedAxisY = mtx.GetScale() * (mtx.GetRotation().GetConjugate().TransformVector(AZ::Vector3::CreateAxisY()));
-        AZ::Vector3 transformedAxisZ = mtx.GetScale() * (mtx.GetRotation().GetConjugate().TransformVector(AZ::Vector3::CreateAxisZ()));
+        AZ::Vector3 transformedAxisX = mtx.GetUniformScale() * (mtx.GetRotation().GetConjugate().TransformVector(AZ::Vector3::CreateAxisX()));
+        AZ::Vector3 transformedAxisY = mtx.GetUniformScale() * (mtx.GetRotation().GetConjugate().TransformVector(AZ::Vector3::CreateAxisY()));
+        AZ::Vector3 transformedAxisZ = mtx.GetUniformScale() * (mtx.GetRotation().GetConjugate().TransformVector(AZ::Vector3::CreateAxisZ()));
 
         float f = transformedAxisX.GetAbs().Dot(mExtents) - box.mExtents.GetX();
         if (f > _1in0.mCenter.GetX())
