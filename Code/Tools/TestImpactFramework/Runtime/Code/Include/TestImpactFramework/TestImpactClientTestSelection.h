@@ -25,6 +25,7 @@ namespace TestImpact
         class TestRunSelection
         {
         public:
+            TestRunSelection(const AZStd::vector<AZStd::string>& includedTests, const AZStd::vector<AZStd::string>& excludedTests);
             TestRunSelection(AZStd::vector<AZStd::string>&& includedTests, AZStd::vector<AZStd::string>&& excludedTests);
 
             //! Returns the test runs that were selected to be run and will actually be run.

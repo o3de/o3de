@@ -37,17 +37,6 @@ namespace TestImpact
             return m_commandString;
         }
 
-        LauncherFailure::LauncherFailure(const AZStd::string& targetName, const AZStd::string& command, int returnCode)
-            : ExecutionFailure(targetName, command)
-            , m_returnCode(returnCode)
-        {
-        }
-
-        int LauncherFailure::GetReturnCode() const
-        {
-            return m_returnCode;
-        }
-
         TestFailure::TestFailure(const AZStd::string& testName, const AZStd::string& errorMessage)
             : m_name(testName)
             , m_errorMessage(errorMessage)
@@ -84,12 +73,15 @@ namespace TestImpact
             : TargetFailure(targetName)
             , m_testCaseFailures(AZStd::move(testFailures))
         {
+            for (const auto& testCase : m_testCaseFailures)
+            {
+                m_numTestFailures += testCase.GetTestFailures().size();
+            }
         }
 
         size_t TestRunFailure::GetNumTestFailures() const
         {
-            // TODO
-            return 1;
+            return m_numTestFailures;
         }
 
         const AZStd::vector<TestCaseFailure>& TestRunFailure::GetTestCaseFailures() const
@@ -99,10 +91,12 @@ namespace TestImpact
 
         SequenceFailure::SequenceFailure(
             AZStd::vector<ExecutionFailure>&& executionFailures,
-            AZStd::vector<LauncherFailure>&& launcherFailures,
+            AZStd::vector<TestRunFailure>&& testRunFailures,
+            AZStd::vector<TargetFailure>&& timedOutTests,
             AZStd::vector<TargetFailure>&& unexecutionTests)
             : m_executionFailures(AZStd::move(executionFailures))
-            , m_launcherFailures(AZStd::move(launcherFailures))
+            , m_testRunFailures(testRunFailures)
+            , m_timedOutTests(AZStd::move(timedOutTests))
             , m_unexecutedTests(AZStd::move(unexecutionTests))
         {
         }
@@ -112,51 +106,19 @@ namespace TestImpact
             return m_executionFailures;
         }
 
-        const AZStd::vector<LauncherFailure>& SequenceFailure::GetLauncherFailures() const
-        {
-            return m_launcherFailures;
-        }
-
-        const AZStd::vector<TargetFailure>& SequenceFailure::GetUnexecutedTest() const
-        {
-            return m_unexecutedTests;
-        }
-
-        RegularSequenceFailure::RegularSequenceFailure(
-            AZStd::vector<ExecutionFailure>&& executionFailures,
-            AZStd::vector<LauncherFailure>&& launcherFailures,
-            AZStd::vector<TestRunFailure>&& testRunFailures,
-            AZStd::vector<TargetFailure>&& unexecutionTests)
-            : SequenceFailure(AZStd::move(executionFailures), AZStd::move(launcherFailures), AZStd::move(unexecutionTests))
-            , m_testRunFailures(AZStd::move(testRunFailures))
-        {
-        }
-        
-        const AZStd::vector<TestRunFailure>& RegularSequenceFailure::GetTestRunFailures() const
+        const AZStd::vector<TestRunFailure>& SequenceFailure::GetTestRunFailures() const
         {
             return m_testRunFailures;
         }
 
-        ImpactAnalysisSequenceFailure::ImpactAnalysisSequenceFailure(
-            AZStd::vector<ExecutionFailure>&& executionFailures,
-            AZStd::vector<LauncherFailure>&& launcherFailures,
-            AZStd::vector<TestRunFailure>&& selectedTestRunFailures,
-            AZStd::vector<TestRunFailure>&& discardedTestRunFailures,
-            AZStd::vector<TargetFailure>&& unexecutionTests)
-            : SequenceFailure(AZStd::move(executionFailures), AZStd::move(launcherFailures), AZStd::move(unexecutionTests))
-            , m_selectedTestRunFailures(AZStd::move(selectedTestRunFailures))
-            , m_discardedTestRunFailures(AZStd::move(discardedTestRunFailures))
+        const AZStd::vector<TargetFailure>& SequenceFailure::GetTimedOutTests() const
         {
+            return m_timedOutTests;
         }
 
-        const AZStd::vector<TestRunFailure> ImpactAnalysisSequenceFailure::GetSelectedTestRunFailures() const
+        const AZStd::vector<TargetFailure>& SequenceFailure::GetUnexecutedTests() const
         {
-            return m_selectedTestRunFailures;
-        }
-
-        const AZStd::vector<TestRunFailure> ImpactAnalysisSequenceFailure::GetDiscardedTestRunFailures() const
-        {
-            return m_discardedTestRunFailures;
-        }
+            return m_unexecutedTests;
+        }        
     }
 }

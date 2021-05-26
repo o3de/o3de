@@ -28,45 +28,100 @@
 
 namespace TestImpact
 {
-    TestTargetMetaMap ReadTestTargetMetaMapFile(const TestTargetMetaConfig& testTargetMetaConfig);
-
-    AZStd::vector<TestImpact::BuildTargetDescriptor> ReadBuildTargetDescriptorFiles(const BuildTargetDescriptorConfig& buildTargetDescriptorConfig);
-
+    //! Construct a dynamic dependency map from the build target descriptors and test target metas.
     AZStd::unique_ptr<TestImpact::DynamicDependencyMap> ConstructDynamicDependencyMap(
-        const TestTargetMetaConfig& testTargetMetaConfig,
-        const BuildTargetDescriptorConfig& buildTargetDescriptorConfig);
+        const BuildTargetDescriptorConfig& buildTargetDescriptorConfig,
+        const TestTargetMetaConfig& testTargetMetaConfig);
 
-    AZStd::unordered_set<const TestTarget*> ConstructTestTargetExcludeList(const TestTargetList& testTargets, const TargetConfig& targetConfig);
+    //! Constructs the 
+    AZStd::unordered_set<const TestTarget*> ConstructTestTargetExcludeList(
+        const TestTargetList& testTargets,
+        const AZStd::vector<AZStd::string>& excludedTstTargets);
 
     AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*> testTargets);
 
-    SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(const AZStd::vector<TestEngineInstrumentedRun>& jobs, const RepoPath& root);
+    SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(
+        const AZStd::vector<TestEngineInstrumentedRun>& jobs,
+        const RepoPath& root);
 
     template<typename TestJob>
-    Client::RegularSequenceFailure CreateRegularFailureReport([[maybe_unused]] const AZStd::vector<TestJob>& testJobs)
+    Client::TestRunFailure ExtractTestRunFailure(const TestJob& testJob)
     {
-        AZStd::vector<Client::ExecutionFailure> executionFailures;
-        AZStd::vector<Client::LauncherFailure> launcherFailures;
-        AZStd::vector<Client::TestRunFailure> testRunFailures;
-        AZStd::vector<Client::TargetFailure> unexecutedTestRsuns;
+        if (testJob.GetTestRun().has_value())
+        {
+            AZStd::vector<Client::TestCaseFailure> testCaseFailures;
+            for (const auto& testSuite : testJob.GetTestRun()->GetTestSuites())
+            {
+                AZStd::vector<Client::TestFailure> testFailures;
+                for (const auto& testCase : testSuite.m_tests)
+                {
+                    if(testCase.m_result.value_or(TestRunResult::Passed) == TestRunResult::Failed)
+                    {
+                        testFailures.push_back(Client::TestFailure(testCase.m_name, "No error message retrieved"));
+                    }
+                }
 
-        //for (const auto& testJob : testJobs)
-        //{
-        //    //switch (testJob.GetResult())
-        //    //{
-        //    //case JobResult::FailedToExecute:
-        //    //{
-        //    //    executionFailures.push_back()
-        //    //}
-        //    //}
-        //}
+                if (!testFailures.empty())
+                {
+                    testCaseFailures.push_back(Client::TestCaseFailure(testSuite.m_name, AZStd::move(testFailures)));
+                }
+            }
 
-        return Client::RegularSequenceFailure(AZStd::move(executionFailures), AZStd::move(launcherFailures), AZStd::move(testRunFailures), AZStd::move(unexecutedTestRsuns));
+            return Client::TestRunFailure(Client::TestRunFailure(testJob.GetTestTarget()->GetName(), AZStd::move(testCaseFailures)));
+        }
+        else
+        {
+            return Client::TestRunFailure(testJob.GetTestTarget()->GetName(), { });
+        }
     }
 
-    Client::ImpactAnalysisSequenceFailure CreateTestImpactFailureReport(
-        [[maybe_unused]] const AZStd::vector<const TestTarget*>& includedTestTargets,
-        [[maybe_unused]] const AZStd::vector<const TestTarget*>& excludedTestTargets,
-        [[maybe_unused]] const AZStd::vector<const TestTarget*>& discardedTests,
-        [[maybe_unused]] const AZStd::vector<const TestTarget*>& draftedTests);
+    template<typename TestJob>
+    Client::SequenceFailure CreateSequenceFailureReport(const AZStd::vector<TestJob>& testJobs)
+    {
+        AZStd::vector<Client::ExecutionFailure> executionFailures;
+        AZStd::vector<Client::TestRunFailure> testRunFailures;
+        AZStd::vector<Client::TargetFailure> timedOutTestRuns;
+        AZStd::vector<Client::TargetFailure> unexecutedTestRuns;
+
+        for (const auto& testJob : testJobs)
+        {
+            switch (testJob.GetTestResult())
+            {
+            case Client::TestRunResult::FailedToExecute:
+            {
+                executionFailures.push_back(Client::ExecutionFailure(testJob.GetTestTarget()->GetName(), testJob.GetCommandString()));
+                break;
+            }
+            case Client::TestRunResult::NotRun:
+            {
+                unexecutedTestRuns.push_back(testJob.GetTestTarget()->GetName());
+                break;
+            }
+            case Client::TestRunResult::Timeout:
+            {
+                timedOutTestRuns.push_back(testJob.GetTestTarget()->GetName());
+                break;
+            }
+            case Client::TestRunResult::AllTestsPass:
+            {
+                break;
+            }
+            case Client::TestRunResult::TestFailures:
+            {
+                testRunFailures.push_back(ExtractTestRunFailure(testJob));
+                break;
+            }
+            default:
+            {
+                throw Exception(AZStd::string::format("Unexpected client test run result: %u", static_cast<unsigned int>(testJob.GetTestResult())));
+            }
+            }
+        }
+
+        return Client::SequenceFailure(
+            AZStd::move(executionFailures),
+            AZStd::move(testRunFailures),
+            AZStd::move(timedOutTestRuns),
+            AZStd::move(unexecutedTestRuns));
+    }
 }

@@ -16,6 +16,12 @@ namespace TestImpact
 {
     namespace Client
     {
+        TestRunSelection::TestRunSelection(const AZStd::vector<AZStd::string>& includedTests, const AZStd::vector<AZStd::string>& excludedTests)
+            : m_includedTestRuns(includedTests)
+            , m_excludedTestRuns(excludedTests)
+        {
+        }
+
         TestRunSelection::TestRunSelection(AZStd::vector<AZStd::string>&& includedTests, AZStd::vector<AZStd::string>&& excludedTests)
             : m_includedTestRuns(AZStd::move(includedTests))
             , m_excludedTestRuns(AZStd::move(excludedTests))

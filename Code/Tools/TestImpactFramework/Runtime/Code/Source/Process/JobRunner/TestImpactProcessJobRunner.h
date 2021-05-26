@@ -51,7 +51,7 @@ namespace TestImpact
     public:
         //! Constructs the job runner with the specified parameters to constrain job runs.
         //! @param maxConcurrentProcesses he maximum number of concurrent jobs in-flight.
-        JobRunner(size_t maxConcurrentProcesses);
+        explicit JobRunner(size_t maxConcurrentProcesses);
            
         //! Executes the specified jobs and returns the products of their labor.
         //! @param jobs The arguments (and other pertinent information) required for each job to be run.

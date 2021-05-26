@@ -16,9 +16,9 @@
 namespace TestImpact
 {
     TestEngineJob::TestEngineJob(const TestTarget* testTarget, const AZStd::string& commandString, const JobMeta& jobMeta, Client::TestRunResult testResult)
-        : m_testTarget(testTarget)
+        : JobMetaWrapper(jobMeta)
+        , m_testTarget(testTarget)
         , m_commandString(commandString)
-        , JobMetaWrapper(jobMeta)
         , m_testResult(testResult)
     {
     }

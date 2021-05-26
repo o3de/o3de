@@ -22,9 +22,9 @@
 
 namespace TestImpact
 {
-    TestTargetMetaMap ReadTestTargetMetaMapFile(const TestTargetMetaConfig& testTargetMetaConfig)
+    TestTargetMetaMap ReadTestTargetMetaMapFile(const RepoPath& testTargetMetaConfigFile)
     {
-        const auto masterTestListData = ReadFileContents<RuntimeException>(testTargetMetaConfig.m_metaFile);
+        const auto masterTestListData = ReadFileContents<RuntimeException>(testTargetMetaConfigFile);
         return TestTargetMetaMapFactory(masterTestListData);
     }
 
@@ -46,20 +46,20 @@ namespace TestImpact
     }
 
     AZStd::unique_ptr<TestImpact::DynamicDependencyMap> ConstructDynamicDependencyMap(
-        const TestTargetMetaConfig& testTargetMetaConfig,
-        const BuildTargetDescriptorConfig& buildTargetDescriptorConfig)
+        const BuildTargetDescriptorConfig& buildTargetDescriptorConfig,
+        const TestTargetMetaConfig& testTargetMetaConfig)
     {
-        auto testTargetmetaMap = ReadTestTargetMetaMapFile(testTargetMetaConfig);
+        auto testTargetmetaMap = ReadTestTargetMetaMapFile(testTargetMetaConfig.m_metaFile);
         auto buildTargetDescriptors = ReadBuildTargetDescriptorFiles(buildTargetDescriptorConfig);
         auto buildTargets = CompileTargetDescriptors(AZStd::move(buildTargetDescriptors), AZStd::move(testTargetmetaMap));
         auto&& [productionTargets, testTargets] = buildTargets;
         return AZStd::make_unique<TestImpact::DynamicDependencyMap>(AZStd::move(productionTargets), AZStd::move(testTargets));
     }
 
-    AZStd::unordered_set<const TestTarget*> ConstructTestTargetExcludeList(const TestTargetList& testTargets, const TargetConfig& targetConfig)
+    AZStd::unordered_set<const TestTarget*> ConstructTestTargetExcludeList(const TestTargetList& testTargets, const AZStd::vector<AZStd::string>& excludedTestTargets)
     {
         AZStd::unordered_set<const TestTarget*> testTargetExcludeList;
-        for (const auto& testTargetName : targetConfig.m_excludedTestTargets)
+        for (const auto& testTargetName : excludedTestTargets)
         {
             if (const auto* testTarget = testTargets.GetTarget(testTargetName); testTarget != nullptr)
             {
@@ -129,36 +129,5 @@ namespace TestImpact
         }
 
         return SourceCoveringTestsList(AZStd::move(sourceCoveringTests));
-    }
-
-    Client::ImpactAnalysisSequenceFailure CreateTestImpactFailureReport(
-        [[maybe_unused]] const AZStd::vector<const TestTarget*>& includedTestTargets,
-        [[maybe_unused]] const AZStd::vector<const TestTarget*>& excludedTestTargets,
-        [[maybe_unused]] const AZStd::vector<const TestTarget*>& discardedTests,
-        [[maybe_unused]] const AZStd::vector<const TestTarget*>& draftedTests)
-    {
-        AZStd::vector<Client::ExecutionFailure> executionFailures;
-        AZStd::vector<Client::LauncherFailure> launcherFailures;
-        AZStd::vector<Client::TestRunFailure> selectedTestRunFailures;
-        AZStd::vector<Client::TestRunFailure> discardedTestRunFailures;
-        AZStd::vector<Client::TargetFailure> unexecutedTests;
-
-        //for (const auto& testJob : testJobs)
-        //{
-        //    //switch (testJob.GetResult())
-        //    //{
-        //    //case JobResult::FailedToExecute:
-        //    //{
-        //    //    executionFailures.push_back()
-        //    //}
-        //    //}
-        //}
-
-        return Client::ImpactAnalysisSequenceFailure(
-            AZStd::move(executionFailures),
-            AZStd::move(launcherFailures),
-            AZStd::move(selectedTestRunFailures),
-            AZStd::move(discardedTestRunFailures),
-            AZStd::move(unexecutedTests));
     }
 }

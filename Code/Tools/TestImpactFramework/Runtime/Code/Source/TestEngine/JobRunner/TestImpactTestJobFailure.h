@@ -12,21 +12,9 @@
 
 #pragma once
 
-#include <TestEngine/TestImpactTestEngineJob.h>
-#include <TestEngine/Enumeration/TestImpactTestEnumeration.h>
+#include <Process/JobRunner/TestImpactProcessJobMeta.h>
 
 namespace TestImpact
 {
-    //! Represents the generated test enumeration data for a test engine enumeration.
-    class TestEngineEnumeration
-        : public TestEngineJob
-    {
-    public:
-        TestEngineEnumeration(TestEngineJob&& job, AZStd::optional<TestEnumeration>&& enumeration);
-
-        //! Returns the test enumeration payload for this job (if any).
-        const AZStd::optional<TestEnumeration>& GetTestEnumeration() const;
-    private:
-        AZStd::optional<TestEnumeration> m_enumeration;
-    };
+    JobResult DetermineCauseOfFailure(ReturnCode returnCode);
 } // namespace TestImpact

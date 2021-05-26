@@ -20,6 +20,8 @@
 
 #include <AzCore/std/containers/unordered_map.h>
 
+#include <iostream>
+
 namespace TestImpact
 {
     // Known error codes for test instrumentation, test runner and unit test library
@@ -142,28 +144,34 @@ namespace TestImpact
             }
         }
 
+        // Map for storing the test engine job data of completed test target runs
         template<typename IdType>
         using TestEngineJobMap = AZStd::unordered_map<IdType, TestEngineJob>;
 
+        // Helper trait for identifying the test engine job specialization for a given test job runner
         template<typename TestJobRunner>
         struct TestJobRunnerTrait
         {};
 
+        // Helper function for getting the type directly of the test job runner trait
         template<typename TestJobRunner>
         using TestEngineJobType = typename TestJobRunnerTrait<TestJobRunner>::TestEngineJobType;
-        
+
+        // Type trait for the test enumerator
         template<>
         struct TestJobRunnerTrait<TestEnumerator>
         {
             using TestEngineJobType = TestEngineEnumeration;
         };
 
+        // Type trait for the test runner
         template<>
         struct TestJobRunnerTrait<TestRunner>
         {
             using TestEngineJobType = TestEngineRegularRun;
         };
 
+        // Type trait for the instrumented test runner
         template<>
         struct TestJobRunnerTrait<InstrumentedTestRunner>
         {
@@ -296,14 +304,12 @@ namespace TestImpact
             ? (TestEnumerator::JobExceptionPolicy::OnExecutedWithFailure | TestEnumerator::JobExceptionPolicy::OnFailedToExecute)
             : TestEnumerator::JobExceptionPolicy::Never;
 
-        TestJobRunnerCallbackHandler<TestEnumerator> jobCallback(testTargets, &engineJobs, &callback);
         auto [result, runnerJobs] = m_testEnumerator->Enumerate(
             jobInfos,
-            TestEnumerator::CacheExceptionPolicy::OnCacheWriteFailure,
             jobExecutionPolicy,
             testTargetTimeout,
             globalTimeout,
-            jobCallback);
+            TestJobRunnerCallbackHandler<TestEnumerator>(testTargets, &engineJobs, &callback));
 
         auto engineRuns = CompileTestEngineRuns<TestEnumerator>(testTargets, runnerJobs, AZStd::move(engineJobs));
         return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
@@ -314,19 +320,18 @@ namespace TestImpact
         [[maybe_unused]]Policy::TestSharding testShardingPolicy,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::TestFailure testFailurePolicy,
-        [[maybe_unused]]TargetOutputCapture targetOutputCapture,
+        [[maybe_unused]]Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestEngineJobCompleteCallback> callback)
     {
         TestEngineJobMap<TestRunner::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateRegularTestRunJobInfos(testTargets);
-        const auto jobExecutionPolicy = GetTestJobExceptionPolicy(executionFailurePolicy, testFailurePolicy);
 
         TestJobRunnerCallbackHandler<TestRunner> jobCallback(testTargets, &engineJobs, &callback);
         auto [result, runnerJobs] = m_testRunner->RunTests(
             jobInfos,
-            jobExecutionPolicy,
+            GetTestJobExceptionPolicy(executionFailurePolicy, testFailurePolicy),
             testTargetTimeout,
             globalTimeout,
             jobCallback);
@@ -341,25 +346,20 @@ namespace TestImpact
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::IntegrityFailure integrityFailurePolicy,
         Policy::TestFailure testFailurePolicy,
-        [[maybe_unused]]TargetOutputCapture targetOutputCapture,
+        [[maybe_unused]]Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestEngineJobCompleteCallback> callback)
     {
-        // Generate a job info with source level coverage for each of the test targets in the list
         TestEngineJobMap<InstrumentedTestRunner::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateInstrumentedTestRunJobInfos(testTargets, CoverageLevel::Source);
 
-        // Set the j
-        const auto jobExecutionPolicy = GetTestJobExceptionPolicy(executionFailurePolicy, testFailurePolicy);
-
-        TestJobRunnerCallbackHandler<InstrumentedTestRunner> jobCallback(testTargets, &engineJobs, &callback);
         auto [result, runnerJobs] = m_instrumentedTestRunner->RunInstrumentedTests(
             jobInfos,
-            jobExecutionPolicy,
+            GetTestJobExceptionPolicy(executionFailurePolicy, testFailurePolicy),
             testTargetTimeout,
             globalTimeout,
-            jobCallback);
+            TestJobRunnerCallbackHandler<InstrumentedTestRunner>(testTargets, &engineJobs, &callback));
 
         auto engineRuns = CompileTestEngineRuns<InstrumentedTestRunner>(testTargets, runnerJobs, AZStd::move(engineJobs));
 
@@ -380,4 +380,4 @@ namespace TestImpact
 
         return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     }
-}
+} // namespace TestImpact

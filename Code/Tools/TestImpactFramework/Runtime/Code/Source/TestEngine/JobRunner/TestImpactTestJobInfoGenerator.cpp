@@ -12,14 +12,10 @@
 
 #include <Target/TestImpactTestTarget.h>
 #include <TestEngine/JobRunner/TestImpactTestJobInfoGenerator.h>
+#include <TestEngine/JobRunner/TestImpactTestTargetExtension.h>
 
 namespace TestImpact
 {
-    static constexpr char* const standAloneExtension = ".exe"; // these are os specific so move these to the platform dir
-    static constexpr char* const testRunnerExtension = ".dll"; // these are os specific so move these to the platform dir
-
-    // SPLIT INTO COMMAND GENERATOR (INSTRUMENT, RUNNER, ENUM, RESULTS)
-
     TestJobInfoGenerator::TestJobInfoGenerator(
         const RepoPath& sourceDir,
         const RepoPath& targetBinaryDir,
@@ -42,8 +38,8 @@ namespace TestImpact
         {
             return AZStd::string::format(
                 "%s%s %s",
-                (m_targetBinaryDir / testTarget->GetOutputName()).c_str(),
-                standAloneExtension,
+                (m_targetBinaryDir / RepoPath(testTarget->GetOutputName())).c_str(),
+                GetTestTargetExtension(testTarget).c_str(),
                 testTarget->GetCustomArgs().c_str()).c_str();
         }
         else
@@ -51,40 +47,30 @@ namespace TestImpact
             return AZStd::string::format(
                 "\"%s\" \"%s%s\" %s",
                 m_testRunnerBinary.c_str(),
-                (m_targetBinaryDir / testTarget->GetOutputName()).c_str(),
-                testRunnerExtension,
+                (m_targetBinaryDir / RepoPath(testTarget->GetOutputName())).c_str(),
+                GetTestTargetExtension(testTarget).c_str(),
                 testTarget->GetCustomArgs().c_str()).c_str();
         }
     }
 
     RepoPath TestJobInfoGenerator::GenerateTargetEnumerationCacheFilePath(const TestTarget* testTarget) const
     {
-        return AZStd::string::format("%s.cache", (m_artifactDir / testTarget->GetName()).c_str());
+        return AZStd::string::format("%s.cache", (m_cacheDir / RepoPath(testTarget->GetName())).c_str());
     }
 
     RepoPath TestJobInfoGenerator::GenerateTargetEnumerationArtifactFilePath(const TestTarget* testTarget) const
     {
-        return AZStd::string::format("%s.Enumeration.xml", (m_artifactDir / testTarget->GetName()).c_str());
+        return AZStd::string::format("%s.Enumeration.xml", (m_artifactDir / RepoPath(testTarget->GetName())).c_str());
     }
 
     RepoPath TestJobInfoGenerator::GenerateTargetRunArtifactFilePath(const TestTarget* testTarget) const
     {
-        return AZStd::string::format("%s.Run.xml", (m_artifactDir / testTarget->GetName()).c_str());
+        return AZStd::string::format("%s.Run.xml", (m_artifactDir / RepoPath(testTarget->GetName())).c_str());
     }
 
     RepoPath TestJobInfoGenerator::GenerateTargetCoverageArtifactFilePath(const TestTarget* testTarget) const
     {
-        return AZStd::string::format("%s.Coverage.xml", (m_artifactDir / testTarget->GetName()).c_str());
-    }
-
-    const RepoPath& TestJobInfoGenerator::GetCacheDir() const
-    {
-        return m_cacheDir;
-    }
-
-    const RepoPath& TestJobInfoGenerator::GetArtifactDir() const
-    {
-        return m_artifactDir;
+        return AZStd::string::format("%s.Coverage.xml", (m_artifactDir / RepoPath(testTarget->GetName())).c_str());
     }
 
     TestEnumerator::JobInfo TestJobInfoGenerator::GenerateTestEnumerationJobInfo(
@@ -170,6 +156,7 @@ namespace TestImpact
         TestEnumerator::JobInfo::CachePolicy cachePolicy) const
     {
         AZStd::vector<TestEnumerator::JobInfo> jobInfos;
+        jobInfos.reserve(testTargets.size());
         for (size_t jobId = 0; jobId < testTargets.size(); jobId++)
         {
             jobInfos.push_back(GenerateTestEnumerationJobInfo(testTargets[jobId], { jobId }, cachePolicy));
@@ -182,6 +169,7 @@ namespace TestImpact
         const AZStd::vector<const TestTarget*>& testTargets) const
     {
         AZStd::vector<TestRunner::JobInfo> jobInfos;
+        jobInfos.reserve(testTargets.size());
         for (size_t jobId = 0; jobId < testTargets.size(); jobId++)
         {
             jobInfos.push_back(GenerateRegularTestRunJobInfo(testTargets[jobId], { jobId }));
@@ -195,6 +183,7 @@ namespace TestImpact
         CoverageLevel coverageLevel) const
     {
         AZStd::vector<InstrumentedTestRunner::JobInfo> jobInfos;
+        jobInfos.reserve(testTargets.size());
         for (size_t jobId = 0; jobId < testTargets.size(); jobId++)
         {
             jobInfos.push_back(GenerateInstrumentedTestRunJobInfo(testTargets[jobId], { jobId }, coverageLevel));

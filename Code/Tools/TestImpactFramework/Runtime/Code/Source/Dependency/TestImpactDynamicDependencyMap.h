@@ -97,6 +97,9 @@ namespace TestImpact
         //! @returns The change list as resolved to the appropriate source dependencies.
         [[nodiscard]] ChangeDependencyList ApplyAndResoveChangeList(const ChangeList& changeList);
 
+        AZStd::vector<const TestTarget*> GetCoveringTests() const;
+        AZStd::vector<const TestTarget*> GetNotCoveringTests() const;
+
     private:
         //! Clears the source coverage of the specified sources.
         //! @note The covering targets for the parent test target(s) will not be pruned if those covering targets are removed.
@@ -116,5 +119,8 @@ namespace TestImpact
 
         //! Mapping of autogen input sources to their generated output sources.
         AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> m_autogenInputToOutputMap;
+
+        //! Number of sources that each test target in the repository covers.
+        AZStd::unordered_map<const TestTarget*, size_t> m_coveringTestTargets;
     };
 } // namespace TestImpact

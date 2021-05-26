@@ -14,7 +14,7 @@
 
 namespace TestImpact
 {
-    //! Convinience namespace for allowing bitwise operations on enum classes.
+    //! Convenience namespace for allowing bitwise operations on enum classes.
     //! @note Any types declared in this namespace will have the bitwise operator overloads declared within.
     namespace Bitwise
     {

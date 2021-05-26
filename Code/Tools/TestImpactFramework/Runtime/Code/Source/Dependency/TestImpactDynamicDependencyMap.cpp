@@ -34,7 +34,7 @@ namespace TestImpact
                 else
                 {
                     // This is a new entry on the dependency map so create an entry with this parent target and no covering targets
-                    m_sourceDependencyMap.emplace(source, DependencyData{ {target}, {} });
+                    m_sourceDependencyMap.emplace(source.String(), DependencyData{ {target}, {} });
                 }
             }
 
@@ -56,6 +56,7 @@ namespace TestImpact
         for (const auto& target : m_testTargets.GetTargets())
         {
             mapBuildTargetSources(&target);
+            m_coveringTestTargets[&target] = 0;
         }
     }
 
@@ -146,6 +147,22 @@ namespace TestImpact
             auto& [key, sourceDependency] = *it;
 
             // Clear any existing coverage for the delta
+            for (const auto& testTarget : sourceDependency.m_coveringTestTargets)
+            {
+                if (testTarget->GetName() == "HttpRequestor.Tests")
+                {
+                    [[maybe_unused]]int x = 10;
+                }
+
+                if (auto testIt = m_coveringTestTargets.find(testTarget);
+                    testIt != m_coveringTestTargets.end())
+                {
+                    if (testIt->second > 0)
+                    {
+                        testIt->second--;
+                    }
+                }
+            }
             sourceDependency.m_coveringTestTargets.clear();
 
             // Update the dependency with any new coverage data
@@ -157,10 +174,16 @@ namespace TestImpact
                     // Source to covering test target mapping
                     sourceDependency.m_coveringTestTargets.insert(testTarget);
 
+                    if (testTarget->GetName() == "HttpRequestor.Tests")
+                    {
+                        [[maybe_unused]] int x = 10;
+                    }
+                    m_coveringTestTargets[testTarget]++;
+
                     // Build target to covering test target mapping
                     for (const auto& parentTarget : sourceDependency.m_parentTargets)
-                    {
-                        m_buildTargetCoverage[parentTarget.GetBuildTarget()].insert(testTarget);
+                    {                        
+                        m_buildTargetCoverage[parentTarget.GetBuildTarget()].insert(testTarget);                        
                     }
                 }
                 else
@@ -405,4 +428,33 @@ namespace TestImpact
 
         return ChangeDependencyList(AZStd::move(createDependencies), AZStd::move(updateDependencies), AZStd::move(deleteDependencies));
     }
+
+    AZStd::vector<const TestTarget*> DynamicDependencyMap::GetCoveringTests() const
+    {
+        AZStd::vector<const TestTarget*> covering;
+        for (const auto& [testTarget, coveringSources] : m_coveringTestTargets)
+        {
+            if (coveringSources > 0)
+            {
+                covering.push_back(testTarget);
+            }
+        }
+
+        return covering;
+    }
+
+    AZStd::vector<const TestTarget*> DynamicDependencyMap::GetNotCoveringTests() const
+    {
+        AZStd::vector<const TestTarget*> notCovering;
+        for(const auto& [testTarget, coveringSources] : m_coveringTestTargets)
+        {
+            if(coveringSources == 0)
+            {
+                notCovering.push_back(testTarget);
+            }
+        }
+
+        return notCovering;
+    }
+
 } // namespace TestImpact

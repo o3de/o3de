@@ -49,7 +49,7 @@ namespace TestImpact
         Policy::TestFailure GetTestFailurePolicy() const;
         Policy::IntegrityFailure GetIntegrityFailurePolicy() const;
         Policy::TestSharding GetTestShardingPolicy() const;
-        TargetOutputCapture GetTargetOutputCapture() const;
+        Policy::TargetOutputCapture GetTargetOutputCapture() const;
         const AZStd::optional<size_t>& GetMaxConcurrency() const;
         const AZStd::optional<AZStd::chrono::milliseconds>& GetTestTargetTimeout() const;
         const AZStd::optional<AZStd::chrono::milliseconds>& GetGlobalTimeout() const;
@@ -66,7 +66,7 @@ namespace TestImpact
         Policy::TestFailure m_testFailurePolicy = Policy::TestFailure::Abort;
         Policy::IntegrityFailure m_integrityFailurePolicy = Policy::IntegrityFailure::Abort;
         Policy::TestSharding m_testShardingPolicy = Policy::TestSharding::Never;
-        TargetOutputCapture m_targetOutputCapture = TargetOutputCapture::None;
+        Policy::TargetOutputCapture m_targetOutputCapture = Policy::TargetOutputCapture::None;
         AZStd::optional<size_t> m_maxConcurrency;
         AZStd::optional<AZStd::chrono::milliseconds> m_testTargetTimeout;
         AZStd::optional<AZStd::chrono::milliseconds> m_globalTimeout;

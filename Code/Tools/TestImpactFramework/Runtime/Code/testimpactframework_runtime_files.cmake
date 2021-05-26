@@ -88,7 +88,6 @@ set(FILES
     Source/Target/TestImpactTestTarget.h
     Source/Target/TestImpactTestTargetList.h
     Source/TestEngine/Enumeration/TestImpactTestEnumeration.h
-    Source/TestEngine/Enumeration/TestImpactTestEnumerationException.h
     Source/TestEngine/Enumeration/TestImpactTestEnumerationSerializer.cpp
     Source/TestEngine/Enumeration/TestImpactTestEnumerationSerializer.h
     Source/TestEngine/Enumeration/TestImpactTestEnumerator.cpp
@@ -105,10 +104,12 @@ set(FILES
     Source/TestEngine/Run/TestImpactTestRunJobData.h
     Source/TestEngine/Run/TestImpactTestCoverage.cpp
     Source/TestEngine/Run/TestImpactTestCoverage.h
-    Source/TestEngine/Run/TestImpactTestRunException.h
     Source/TestEngine/JobRunner/TestImpactTestJobRunner.h
     Source/TestEngine/JobRunner/TestImpactTestJobInfoGenerator.cpp
     Source/TestEngine/JobRunner/TestImpactTestJobInfoGenerator.h
+    Source/TestEngine/JobRunner/TestImpactTestTargetExtension.h
+    Source/TestEngine/JobRunner/TestImpactTestjobFailure.cpp
+    Source/TestEngine/JobRunner/TestImpactTestjobFailure.h
     Source/TestEngine/TestImpactTestSuiteContainer.h
     Source/TestEngine/TestImpactTestEngine.cpp
     Source/TestEngine/TestImpactTestEngine.h
@@ -120,6 +121,7 @@ set(FILES
     Source/TestEngine/TestImpactTestEngineRegularRun.h
     Source/TestEngine/TestImpactTestEngineInstrumentedRun.cpp
     Source/TestEngine/TestImpactTestEngineInstrumentedRun.h
+    Source/TestEngine/TestImpactTestEngineException.h
     Source/TestImpactException.cpp
     Source/TestImpactBitwise.h
     Source/TestImpactRuntime.cpp

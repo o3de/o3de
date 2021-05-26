@@ -59,4 +59,18 @@ namespace TestImpact
         AZ_TestImpact_Eval(
             file.Write(bytes.data(), bytes.size()), ExceptionType, AZStd::string::format("Couldn't write contents for file %s", path.c_str()));
     }
+
+    // Delete any existing data in the test run folder as not to pollute tests with data from previous test runs
+    inline void DeleteFiles(const AZ::IO::Path& path, const AZStd::string& pattern)
+    {
+        AZ::IO::SystemFile::FindFiles(AZStd::string::format("%s/%s", path.c_str(), pattern.c_str()).c_str(), [&path](const char* file, bool isFile)
+        {
+            if (isFile)
+            {
+                AZ::IO::SystemFile::Delete(AZStd::string::format("%s/%s", path.c_str(), file).c_str());
+            }
+
+            return true;
+        });
+    }
 } // namespace TestImpact

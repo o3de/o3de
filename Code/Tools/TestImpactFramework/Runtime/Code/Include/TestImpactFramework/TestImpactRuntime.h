@@ -33,6 +33,7 @@ namespace TestImpact
     class TestSelectorAndPrioritizer;
     class TestEngine;
     class TestTarget;
+    class SourceCoveringTestsList;
 
     //! Callback for a test sequence that isn't using test impact analysis to determine selected tests.
     //! @param tests The tests that will be run for this sequence.
@@ -67,16 +68,22 @@ namespace TestImpact
     //! Callback for end of a test sequence.
     //! @param failureReport The test runs that failed for any reason during this sequence.
     //! @param duration The total duration of this test sequence.
-    using TestSequenceCompleteCallback = AZStd::function<void(Client::RegularSequenceFailure&& failureReport, AZStd::chrono::milliseconds duration)>;
+    using TestSequenceCompleteCallback = AZStd::function<void(
+        Client::SequenceFailure&& failureReport,
+        AZStd::chrono::milliseconds duration)>;
 
     //! Callback for end of a test impact analysis test sequence.
-    //! @param failureReport The test runs that failed for any reason during this sequence.
+    //! @param selectedFailureReport The selected test runs that failed for any reason during this sequence.
+    //! @param discardedFailureReport The discarded test runs that failed for any reason during this sequence.
     //! @param duration The total duration of this test sequence.
-    using ImpactAnalysisTestSequenceCompleteCallback = AZStd::function<void(Client::ImpactAnalysisSequenceFailure&& failureReport, AZStd::chrono::milliseconds duration)>;
+    using SafeTestSequenceCompleteCallback = AZStd::function<void(
+        Client::SequenceFailure&& selectedFailureReport,
+        Client::SequenceFailure&& discardedFailureReport,
+        AZStd::chrono::milliseconds duration)>;
 
     //! Callback for test runs that have completed for any reason.
-    //! test The test that has completed.
-    using TestCompleteCallback = AZStd::function<void(Client::TestRun&& test)>;
+    //! selectedTests The test that has completed.
+    using TestRunCompleteCallback = AZStd::function<void(Client::TestRun&& selectedTests)>;
 
     //! The API exposed to the client responsible for all test runs and persistent data management.
     class Runtime
@@ -96,7 +103,7 @@ namespace TestImpact
             Policy::TestFailure testFailurePolicy,
             Policy::IntegrityFailure integrationFailurePolicy,
             Policy::TestSharding testShardingPolicy,
-            TargetOutputCapture targetOutputCapture,
+            Policy::TargetOutputCapture targetOutputCapture,
             AZStd::optional<size_t> maxConcurrency = AZStd::nullopt);
 
         ~Runtime();
@@ -104,76 +111,91 @@ namespace TestImpact
         //! Runs a test sequence where all tests with a matching suite in the suite filter and also not on the excluded list are selected.
         //! @param suitesFilter The test suites that will be included in the test selection.
         //! @param testTargetTimeout The maximum duration individual test targets may be in flight for (infinite if empty).
-        //! @param testTargetTimeout The maximum duration the entire test sequence may run for (infinite if empty).
+        //! @param globalTimeout The maximum duration the entire test sequence may run for (infinite if empty).
         //! @param testSequenceStartCallback The client function to be called after the test targets have been selected but prior to running the tests.
         //! @param testSequenceCompleteCallback The client function to be called after the test sequence has completed.
         //! @param testRunCompleteCallback The client function to be called after an individual test run has completed.
+        //! @returns
         TestSequenceResult RegularTestSequence(
             const AZStd::unordered_set<AZStd::string> suitesFilter,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
             AZStd::optional<TestSequenceCompleteCallback> testSequenceCompleteCallback,
-            AZStd::optional<TestCompleteCallback> testRunCompleteCallback);
+            AZStd::optional<TestRunCompleteCallback> testRunCompleteCallback);
 
         //! Runs a test sequence where tests are selected according to test impact analysis so long as they are not on the excluded list.
         //! @param changeList The change list used to determine the tests to select.
         //! @param testPrioritizationPolicy Determines how selected tests will be prioritized.
         //! @param testTargetTimeout The maximum duration individual test targets may be in flight for (infinite if empty).
-        //! @param testTargetTimeout The maximum duration the entire test sequence may run for (infinite if empty).
+        //! @param globalTimeout The maximum duration the entire test sequence may run for (infinite if empty).
         //! @param testSequenceStartCallback The client function to be called after the test targets have been selected but prior to running the tests.
         //! @param testSequenceCompleteCallback The client function to be called after the test sequence has completed.
         //! @param testRunCompleteCallback The client function to be called after an individual test run has completed.
+        //! @returns
         TestSequenceResult ImpactAnalysisTestSequence(
             const ChangeList& changeList,
             Policy::TestPrioritization testPrioritizationPolicy,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<ImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
-            AZStd::optional<ImpactAnalysisTestSequenceCompleteCallback> testSequenceCompleteCallback,
-            AZStd::optional<TestCompleteCallback> testRunCompleteCallback);
+            AZStd::optional<TestSequenceCompleteCallback> testSequenceCompleteCallback,
+            AZStd::optional<TestRunCompleteCallback> testRunCompleteCallback);
 
         //! Runs a test sequence as per the ImpactAnalysisTestSequence where the tests not selected are also run (albeit without instrumentation).
         //! @param changeList The change list used to determine the tests to select.
         //! @param suitesFilter The test suites that will be included in the test selection.
         //! @param testPrioritizationPolicy Determines how selected tests will be prioritized.
         //! @param testTargetTimeout The maximum duration individual test targets may be in flight for (infinite if empty).
-        //! @param testTargetTimeout The maximum duration the entire test sequence may run for (infinite if empty).
+        //! @param globalTimeout The maximum duration the entire test sequence may run for (infinite if empty).
         //! @param testSequenceStartCallback The client function to be called after the test targets have been selected but prior to running the tests.
         //! @param testSequenceCompleteCallback The client function to be called after the test sequence has completed.
         //! @param testRunCompleteCallback The client function to be called after an individual test run has completed.
-        TestSequenceResult SafeImpactAnalysisTestSequence(
+        //! @returns
+        AZStd::pair<TestSequenceResult, TestSequenceResult> SafeImpactAnalysisTestSequence(
             const ChangeList& changeList,
             const AZStd::unordered_set<AZStd::string> suitesFilter,
             Policy::TestPrioritization testPrioritizationPolicy,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<SafeImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
-            AZStd::optional<ImpactAnalysisTestSequenceCompleteCallback> testSequenceCompleteCallback,
-            AZStd::optional<TestCompleteCallback> testRunCompleteCallback);
+            AZStd::optional<SafeTestSequenceCompleteCallback> testSequenceCompleteCallback,
+            AZStd::optional<TestRunCompleteCallback> testRunCompleteCallback);
 
         //! Runs all tests not on the excluded list and uses their coverage data to seed the test impact analysis data (ant existing data will be overwritten).
-        //! @param testTargetTimeout The maximum duration the entire test sequence may run for (infinite if empty).
+        //! @param testTargetTimeout The maximum duration individual test targets may be in flight for (infinite if empty).
+        //! @param globalTimeout The maximum duration the entire test sequence may run for (infinite if empty).
         //! @param testSequenceStartCallback The client function to be called after the test targets have been selected but prior to running the tests.
         //! @param testSequenceCompleteCallback The client function to be called after the test sequence has completed.
         //! @param testRunCompleteCallback The client function to be called after an individual test run has completed.
+        //! 
         TestSequenceResult SeededTestSequence(
+            AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
             AZStd::optional<TestSequenceCompleteCallback> testSequenceCompleteCallback,
-            AZStd::optional<TestCompleteCallback> testRunCompleteCallback);
+            AZStd::optional<TestRunCompleteCallback> testRunCompleteCallback);
 
         //! Returns true if the runtime has test impact analysis data (either preexisting or generated).
         bool HasImpactAnalysisData() const;
 
     private:
+        AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> SelectCoveringTestTargetsAndEnumerateMutatedTestTargets(
+            const ChangeList& changeList,
+            Policy::TestPrioritization testPrioritizationPolicy);
+
+        AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> SelectTestTargetsByExcludeList(
+            AZStd::vector<const TestTarget*> testTargets) const;
+
+        void UpdateAndSerializeDynamicDependencyMap(const SourceCoveringTestsList& sourceCoverageTestsList);
+
         RuntimeConfig m_config;
         Policy::ExecutionFailure m_executionFailurePolicy;
         Policy::ExecutionFailureDrafting m_executionFailureDraftingPolicy;
         Policy::TestFailure m_testFailurePolicy;
         Policy::IntegrityFailure m_integrationFailurePolicy;
         Policy::TestSharding m_testShardingPolicy;
-        TargetOutputCapture m_targetOutputCapture;
+        Policy::TargetOutputCapture m_targetOutputCapture;
         size_t m_maxConcurrency = 0;
         AZStd::unique_ptr<DynamicDependencyMap> m_dynamicDependencyMap;
         AZStd::unique_ptr<TestSelectorAndPrioritizer> m_testSelectorAndPrioritizer;

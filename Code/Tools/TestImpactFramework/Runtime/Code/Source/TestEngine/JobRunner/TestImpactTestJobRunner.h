@@ -54,7 +54,7 @@ namespace TestImpact
 
         //! Constructs the job runner with the specified parameters common to all job runs of this runner.
         //! @param maxConcurrentJobs The maximum number of jobs to be in flight at any given time.
-        TestJobRunner(size_t maxConcurrentJobs);
+        explicit TestJobRunner(size_t maxConcurrentJobs);
 
     protected:
         //! Runs the specified jobs and returns the completed payloads produced by each job.

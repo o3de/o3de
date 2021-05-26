@@ -19,13 +19,16 @@
 
 namespace TestImpact
 {
+    //! Represents the generated test run data for a regular test engine run. 
     class TestEngineRegularRun
         : public TestEngineJob
     {
     public:
         TestEngineRegularRun(TestEngineJob&& testJob, AZStd::optional<TestRun>&& testRun);
+
+        //! Returns the test run payload for this job (if any).
         const AZStd::optional<TestRun>& GetTestRun() const;
     private:
-        AZStd::optional<TestRun> m_testRun;        
+        AZStd::optional<TestRun> m_testRun;
     };
 } // namespace TestImpact

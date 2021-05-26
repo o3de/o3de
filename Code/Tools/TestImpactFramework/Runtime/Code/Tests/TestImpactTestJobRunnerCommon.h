@@ -174,19 +174,4 @@ namespace UnitTest
         EXPECT_EQ(actualResult.GetNumRuns(), CalculateNumRunTests(expectedResult.GetTestSuites()));
         EXPECT_EQ(actualResult.GetNumNotRuns(), CalculateNumNotRunTests(expectedResult.GetTestSuites()));
     }
-
-    // Delete any existing data in the test run folder as not to pollute tests with data from previous test runs
-    // Note: the file IO operations of this fixture means it cannot be sharded by the test sharder due to file race conditions
-    inline void DeleteFiles(const AZStd::string& path, const AZStd::string& pattern)
-    {
-        AZ::IO::SystemFile::FindFiles(AZStd::string::format("%s/%s", path.c_str(), pattern.c_str()).c_str(), [&path](const char* file, bool isFile)
-        {
-            if (isFile)
-            {
-                AZ::IO::SystemFile::Delete(AZStd::string::format("%s/%s", path.c_str(), file).c_str());
-            }
-
-            return true;
-        });
-    }
 } // namespace UnitTest

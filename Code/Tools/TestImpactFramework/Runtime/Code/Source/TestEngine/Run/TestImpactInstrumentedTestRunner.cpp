@@ -73,7 +73,7 @@ namespace TestImpact
                     }
                     catch (const Exception& e)
                     {
-                        AZ_Warning("RunInstrumentedTests", false, e.what());
+                        AZ_Printf("RunInstrumentedTests", e.what());
                         runs[jobId] = AZStd::nullopt;
                     }
                 }

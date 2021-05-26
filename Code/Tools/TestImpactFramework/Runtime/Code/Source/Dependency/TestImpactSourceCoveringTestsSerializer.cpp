@@ -40,6 +40,9 @@ namespace TestImpact
             }
         }
 
+        // NEEDED!
+        output += "\n";
+
         return output;
     }
 
@@ -72,6 +75,12 @@ namespace TestImpact
 
             start = end + delim.length();
             end = sourceCoveringTestsListString.find(delim, start);
+        }
+
+        if (!coveringTests.empty())
+        {
+            sourceCoveringTests.push_back(SourceCoveringTests(source, AZStd::move(coveringTests)));
+            coveringTests.clear();
         }
 
         return SourceCoveringTestsList(AZStd::move(sourceCoveringTests));

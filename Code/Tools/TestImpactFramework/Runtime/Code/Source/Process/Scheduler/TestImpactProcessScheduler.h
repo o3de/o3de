@@ -51,9 +51,10 @@ namespace TestImpact
     };
 
     //! Result of the process scheduling sequence.
-    enum class ProcessSchedulerResult : bool
+    enum class ProcessSchedulerResult : AZ::u8
     {
         Graceful, //!< The scheduler completed its run without incident or was terminated gracefully in response to a client callback result.
+        UserAborted, //!< The scheduler aborted prematurely due to the user returning an abort value from thier callback handler.
         Timeout //!< The scheduler aborted its run prematurely due to its runtime exceeding the scheduler timeout value.
     };
 
@@ -88,7 +89,7 @@ namespace TestImpact
     public:
         //! Constructs the scheduler with the specified batch of processes.
         //! @param maxConcurrentProcesses The maximum number of concurrent processes in-flight.
-        ProcessScheduler(size_t maxConcurrentProcesses);
+        explicit ProcessScheduler(size_t maxConcurrentProcesses);
         ~ProcessScheduler();
 
         //! Executes the specified processes and calls the client callbacks (if any) as each process progresses in its life cycle.

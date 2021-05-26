@@ -22,6 +22,7 @@
 #include <TestImpactFramework/TestImpactClientTestSelection.h>
 #include <TestImpactFramework/TestImpactRuntime.h>
 
+#include <TestImpactConsoleTestSequence.h>
 #include <TestImpactCommandLineOptions.h>
 #include <TestImpactConfigurationFactory.h>
 #include <TestImpactCommandLineOptionsException.h>
@@ -84,6 +85,7 @@ namespace TestImpact
 
                 AZ_TestImpact_Eval(options.HasTestSequence(), CommandLineOptionsException, "No action specified");
 
+                std::cout << "Constructing in-memory model of source tree and test coverage, this may take a moment...\n";
                 Runtime runtime(
                     ConfigurationFactory(ReadFileContents<CommandLineOptionsException>(options.GetConfigurationFile())),
                     options.GetExecutionFailurePolicy(),
@@ -93,6 +95,16 @@ namespace TestImpact
                     options.GetTestShardingPolicy(),
                     options.GetTargetOutputCapture(),
                     options.GetMaxConcurrency());
+
+                if (runtime.HasImpactAnalysisData())
+                {
+                    std::cout << "Test impact analysis data for this repository was found.\n";
+                }
+                else
+                {
+
+                    std::cout << "Test impact analysis data for this repository was not found, seed or regular sequence fallbacks will be used.\n";
+                }
 
                 const auto handleTestSequenceResult = [](TestSequenceResult result)
                 {
@@ -110,33 +122,41 @@ namespace TestImpact
                     }
                 };
 
-                size_t numTests = 0;
-                size_t testsComplete = 0;
-
-                const auto impactAnalysisTestSequence = [&options, &runtime, &changeList, &handleTestSequenceResult, &numTests, &testsComplete]()
+                TestSequence sequence(&options.GetSuitesFilter());
+                
+                const auto impactAnalysisTestSequence = [&sequence, &options, &runtime, &changeList, &handleTestSequenceResult]()
                 {
-                    const auto impactSequenceStart = [&numTests]
-                    (Client::TestRunSelection&& selectedTests, AZStd::vector<AZStd::string>&& discardedTests, AZStd::vector<AZStd::string>&& draftedTests)
-                    {
-                        const float totalTests = selectedTests.GetTotalNumTests() + discardedTests.size();
-                        const float saving = (1.0 - (selectedTests.GetTotalNumTests() / totalTests)) * 100.0f;
-                        std::cout << selectedTests.GetTotalNumTests() << " tests selected, " << discardedTests.size() << " tests discarded (" << saving << "% test saving)\n";
-                        std::cout << "Of which " << selectedTests.GetNumExcludedTestRuns() << " tests have been excluded and " << draftedTests.size() << " tests have been drafted\n";
-                    };
-
                     AZ_TestImpact_Eval(changeList.has_value(), CommandLineOptionsException, "Expected a change list for impact analysis but none was provided");
                     TestSequenceResult result = TestSequenceResult::Failure;
                     if (options.HasSafeMode())
                     {
-                        result = runtime.SafeImpactAnalysisTestSequence(
+                        auto [selectedResult, discardedResult] = runtime.SafeImpactAnalysisTestSequence(
                             changeList.value(),
                             options.GetSuitesFilter(),
                             options.GetTestPrioritizationPolicy(),
                             options.GetTestTargetTimeout(),
                             options.GetGlobalTimeout(),
-                            AZStd::nullopt,
-                            AZStd::nullopt,
-                            AZStd::nullopt);
+                            AZStd::ref(sequence),
+                            AZStd::ref(sequence),
+                            AZStd::ref(sequence));
+
+                        // Handling the possible timeout and failure permutations of the selected and discarded test results is splitting hairs
+                        // so apply the following, admittedly arbitrary, rules to determine what the composite test sequence result should be
+                        if (selectedResult == TestSequenceResult::Success && discardedResult == TestSequenceResult::Success)
+                        {
+                            // Trivial case: both sequences succeeded
+                            result = TestSequenceResult::Success;
+                        }
+                        else if (selectedResult == TestSequenceResult::Failure || discardedResult == TestSequenceResult::Failure)
+                        {
+                            // One sequence failed whilst the other sequence either succeeded or timed out
+                            result = TestSequenceResult::Failure;
+                        }
+                        else
+                        {
+                            // One sequence timed out whilst the other sequence succeeded or both sequences timed out
+                            result = TestSequenceResult::Timeout;
+                        }
                     }
                     else
                     {
@@ -145,44 +165,12 @@ namespace TestImpact
                             options.GetTestPrioritizationPolicy(),
                             options.GetTestTargetTimeout(),
                             options.GetGlobalTimeout(),
-                            impactSequenceStart,
-                            AZStd::nullopt,
-                            AZStd::nullopt);
+                            AZStd::ref(sequence),
+                            AZStd::ref(sequence),
+                            AZStd::ref(sequence));
                     }
 
                     return handleTestSequenceResult(result);
-                };
-
-                const auto sequenceStart = [&options, &numTests](Client::TestRunSelection&& testSelection)
-                {
-                    std::cout << "Test suite filter:\n";
-                    if (const auto& suiteFilter = options.GetSuitesFilter(); suiteFilter.empty())
-                    {
-                        std::cout << "  *\n";
-                    }
-                    else
-                    {
-                        for (const auto& suite : suiteFilter)
-                        {
-                            std::cout << "  " << suite.c_str() << "\n";
-                        }
-                    }
-
-                    numTests = testSelection.GetNumIncludedTestRuns();
-                    std::cout << numTests << " tests selected, " << testSelection.GetNumExcludedTestRuns() << " excluded\n";
-                };
-
-                const auto testComplete = [&numTests, &testsComplete](Client::TestRun&& test)
-                {
-                    testsComplete++;
-                    const auto progress = AZStd::string::format("(%02u/%02u)", testsComplete, numTests, test.GetTargetName().c_str());
-                    const auto result = (test.GetResult() == Client::TestRunResult::AllTestsPass) ? "\033[37;42mPASS\033[0m" : "\033[37;41mFAIL\033[0m";
-                    std::wcout << progress.c_str() << " " << result << " "  << test.GetTargetName().c_str() << " (" << (test.GetDuration().count() / 1000.f) << "s)\n";
-                };
-
-                const auto sequenceComplete = []([[maybe_unused]] Client::RegularSequenceFailure&& failureReport, AZStd::chrono::milliseconds duration)
-                {
-                    std::cout << "DURATION: " << (duration.count() / 1000.f) << "s\n";
                 };
 
                 switch (const auto type = *options.GetTestSequenceType())
@@ -193,19 +181,20 @@ namespace TestImpact
                         options.GetSuitesFilter(),
                         options.GetTestTargetTimeout(),
                         options.GetGlobalTimeout(),
-                        sequenceStart,
-                        sequenceComplete,
-                        testComplete);
+                        AZStd::ref(sequence),
+                        AZStd::ref(sequence),
+                        AZStd::ref(sequence));
 
                     return handleTestSequenceResult(result);
                 }
                 case TestSequenceType::Seed:
                 {
                     const auto result = runtime.SeededTestSequence(
+                        options.GetTestTargetTimeout(),
                         options.GetGlobalTimeout(),
-                        sequenceStart,
-                        sequenceComplete,
-                        testComplete);
+                        AZStd::ref(sequence),
+                        AZStd::ref(sequence),
+                        AZStd::ref(sequence));
 
                     return handleTestSequenceResult(result);
                 }
@@ -222,10 +211,11 @@ namespace TestImpact
                     else
                     {
                         const auto result = runtime.SeededTestSequence(
+                            options.GetTestTargetTimeout(),
                             options.GetGlobalTimeout(),
-                            sequenceStart,
-                            AZStd::nullopt,
-                            testComplete);
+                            AZStd::ref(sequence),
+                            AZStd::ref(sequence),
+                            AZStd::ref(sequence));
 
                         return handleTestSequenceResult(result);
                     }

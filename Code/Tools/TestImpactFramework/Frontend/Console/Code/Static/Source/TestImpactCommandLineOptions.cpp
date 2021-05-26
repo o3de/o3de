@@ -239,36 +239,36 @@ namespace TestImpact
             return Policy::TestSharding::Never;
         }
 
-        TargetOutputCapture ParseTargetOutputCapture(const AZ::CommandLine& cmd)
+        Policy::TargetOutputCapture ParseTargetOutputCapture(const AZ::CommandLine& cmd)
         {
             const auto numSwitchValues = cmd.GetNumSwitchValues("targetout");
             if (numSwitchValues)
             {
                 AZ_TestImpact_Eval(numSwitchValues <= 2, CommandLineOptionsException, "Unexpected parameters for target output capture option");
-                TargetOutputCapture targetOutputCapture = TargetOutputCapture::None;
+                Policy::TargetOutputCapture targetOutputCapture = Policy::TargetOutputCapture::None;
                 for (auto i = 0; i < numSwitchValues; i++)
                 {
                     const auto option = cmd.GetSwitchValue("targetout", i);
                     if (option == "stdout")
                     {
-                        if (targetOutputCapture == TargetOutputCapture::File)
+                        if (targetOutputCapture == Policy::TargetOutputCapture::File)
                         {
-                            targetOutputCapture = TargetOutputCapture::StdOutAndFile;
+                            targetOutputCapture = Policy::TargetOutputCapture::StdOutAndFile;
                         }
                         else
                         {
-                            targetOutputCapture = TargetOutputCapture::StdOut;
+                            targetOutputCapture = Policy::TargetOutputCapture::StdOut;
                         }
                     }
                     else if (option == "file")
                     {
-                        if (targetOutputCapture == TargetOutputCapture::StdOut)
+                        if (targetOutputCapture == Policy::TargetOutputCapture::StdOut)
                         {
-                            targetOutputCapture = TargetOutputCapture::StdOutAndFile;
+                            targetOutputCapture = Policy::TargetOutputCapture::StdOutAndFile;
                         }
                         else
                         {
-                            targetOutputCapture = TargetOutputCapture::File;
+                            targetOutputCapture = Policy::TargetOutputCapture::File;
                         }
                     }
                     else
@@ -280,7 +280,7 @@ namespace TestImpact
                 return targetOutputCapture;
             }
 
-            return TargetOutputCapture::None;
+            return Policy::TargetOutputCapture::None;
         }
 
         size_t ParseUnsignedIntegerOrThrow(const char* str)
@@ -309,7 +309,7 @@ namespace TestImpact
             if (numSwitchValues)
             {
                 AZ_TestImpact_Eval(numSwitchValues == 1, CommandLineOptionsException, "Unexpected parameters for test target timeout option");
-                return AZStd::chrono::milliseconds(ParseUnsignedIntegerOrThrow(cmd.GetSwitchValue("ttimeout", 0).c_str()));
+                return AZStd::chrono::seconds(ParseUnsignedIntegerOrThrow(cmd.GetSwitchValue("ttimeout", 0).c_str()));
             }
 
             return AZStd::nullopt;
@@ -321,7 +321,7 @@ namespace TestImpact
             if (numSwitchValues)
             {
                 AZ_TestImpact_Eval(numSwitchValues == 1, CommandLineOptionsException, "Unexpected parameters for global timeout option");
-                return AZStd::chrono::milliseconds(ParseUnsignedIntegerOrThrow(cmd.GetSwitchValue("gtimeout", 0).c_str()));
+                return AZStd::chrono::seconds(ParseUnsignedIntegerOrThrow(cmd.GetSwitchValue("gtimeout", 0).c_str()));
             }
 
             return AZStd::nullopt;
@@ -386,9 +386,9 @@ namespace TestImpact
             "                                                    <tiaf binay build dir>.<tiaf binary build type>.json).\n"
             "    -changelist=<filename>                          Path to the JSON of source file changes to perform test impact \n"
             "                                                    analysis on.\n"
-            "    -gtimeout=<milliseconds>                        Global timeout value to terminate the entire test sequence should it \n"
+            "    -gtimeout=<seconds>                             Global timeout value to terminate the entire test sequence should it \n"
             "                                                    be exceeded.\n"
-            "    -ttimeout=<milliseconds>                        Timeout value to terminate individual test targets should it be \n"
+            "    -ttimeout=<seconds>                             Timeout value to terminate individual test targets should it be \n"
             "                                                    exceeded.\n"
             "    -sequence=<none, seed, regular, tia, tiaorseed> The type of test sequence to perform, where none runs no tests and\n"
             "                                                    will report a all tests successful, seed removes any prior coverage \n"
@@ -539,7 +539,7 @@ namespace TestImpact
         return m_testShardingPolicy;
     }
     
-    TargetOutputCapture CommandLineOptions::GetTargetOutputCapture() const
+    Policy::TargetOutputCapture CommandLineOptions::GetTargetOutputCapture() const
     {
         return m_targetOutputCapture;
     }

@@ -25,6 +25,51 @@
 
 namespace TestImpact
 {
+    namespace
+    {
+        // Simple helper class for tracking basic timing information
+        class Timer
+        {
+        public:
+            Timer()
+                : m_startTime(AZStd::chrono::high_resolution_clock::now())
+            {
+            }
+
+            // Returns the time elapsed (in milliseconds) since the timer was instantiated
+            AZStd::chrono::milliseconds Elapsed()
+            {
+                const auto endTime = AZStd::chrono::high_resolution_clock::now();
+                return AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(endTime - m_startTime);
+            }
+
+        private:
+            AZStd::chrono::high_resolution_clock::time_point m_startTime;
+        };
+
+        // Handler for test run complete events
+        class TestRunCompleteCallbackHandler
+        {
+        public:
+            TestRunCompleteCallbackHandler(AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
+                : m_testCompleteCallback(testCompleteCallback)
+            {
+            }
+
+            void operator()(const TestEngineJob& testJob)
+            {
+                if (m_testCompleteCallback.has_value())
+                {
+                    (*m_testCompleteCallback)
+                        (Client::TestRun(testJob.GetTestTarget()->GetName(), testJob.GetTestResult(), testJob.GetDuration()));
+                }
+            }
+
+        private:
+            AZStd::optional<TestRunCompleteCallback> m_testCompleteCallback;
+        };
+    }
+
     Runtime::Runtime(
         RuntimeConfig&& config,
         Policy::ExecutionFailure executionFailurePolicy,
@@ -32,7 +77,7 @@ namespace TestImpact
         Policy::TestFailure testFailurePolicy,
         Policy::IntegrityFailure integrationFailurePolicy,
         Policy::TestSharding testShardingPolicy,
-        TargetOutputCapture targetOutputCapture,
+        Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<size_t> maxConcurrency)
         : m_config(AZStd::move(config))
         , m_executionFailurePolicy(executionFailurePolicy)
@@ -44,15 +89,13 @@ namespace TestImpact
         , m_maxConcurrency(maxConcurrency.value_or(AZStd::thread::hardware_concurrency()))
     {
         // Construct the dynamic dependency map from the build target descriptors
-        m_dynamicDependencyMap = ConstructDynamicDependencyMap(m_config.m_testTargetMeta, m_config.m_buildTargetDescriptor);
+        m_dynamicDependencyMap = ConstructDynamicDependencyMap(m_config.m_buildTargetDescriptor, m_config.m_testTargetMeta);
 
+        // Construct the test selector and prioritizer from the dependency graph data (NOTE: currently not implemented)
         m_testSelectorAndPrioritizer = AZStd::make_unique<TestSelectorAndPrioritizer>(m_dynamicDependencyMap.get(), DependencyGraphDataMap{});
 
         // Construct the target exclude list from the target configuration data
-        m_testTargetExcludeList = ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetTestTargetList(), m_config.m_target);
-
-        // Enumerate the test targets that have potentially changed since the last run
-        //EnumerateDirtyTestTargets();
+        m_testTargetExcludeList = ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetTestTargetList(), m_config.m_target.m_excludedTestTargets);
 
         // Construct the test engine with the workspace path and launcher binaries
         m_testEngine = AZStd::make_unique<TestEngine>(
@@ -73,6 +116,9 @@ namespace TestImpact
             {
                 m_dynamicDependencyMap->ReplaceSourceCoverage(tiaData);
                 m_hasImpactAnalysisData = true;
+
+                // Enumerate new test targets
+                m_testEngine->UpdateEnumerationCache(m_dynamicDependencyMap->GetNotCoveringTests(), Policy::ExecutionFailure::Ignore, AZStd::nullopt, AZStd::nullopt, AZStd::nullopt);
             }
         }
         catch (const DependencyException& e)
@@ -90,96 +136,63 @@ namespace TestImpact
 
     Runtime::~Runtime() = default;
 
-    TestSequenceResult Runtime::RegularTestSequence(
-        const AZStd::unordered_set<AZStd::string> suitesFilter,
-        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
-        AZStd::optional<TestSequenceCompleteCallback> testSequenceEndCallback,
-        AZStd::optional<TestCompleteCallback> testCompleteCallback)
+    AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> Runtime::SelectCoveringTestTargetsAndEnumerateMutatedTestTargets(
+        const ChangeList& changeList,
+        Policy::TestPrioritization testPrioritizationPolicy)
     {
-        AZStd::vector<const TestTarget*> includedTestTargets;
-        AZStd::vector<const TestTarget*> excludedTestTargets;
-        const AZStd::chrono::high_resolution_clock::time_point startTime = AZStd::chrono::high_resolution_clock::now();
+        AZStd::vector<const TestTarget*> discardedTestTargets;
+        const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList);
+        const auto selectedTestTargets = m_testSelectorAndPrioritizer->SelectTestTargets(changeDependecyList, testPrioritizationPolicy);
+        const AZStd::unordered_set<const TestTarget*> selectedTestTargetSet(selectedTestTargets.begin(), selectedTestTargets.end());
+
+        if (m_testShardingPolicy == Policy::TestSharding::Always)
+        {
+            AZStd::vector<const TestTarget*> testTargets;
+            const auto addMutatedTestTargetsToEnumerationList = [this, &testTargets](const AZStd::vector<SourceDependency>& sourceDependency)
+            {
+                for (const auto& sourceDependency : sourceDependency)
+                {
+                    for (const auto& parentTarget : sourceDependency.GetParentTargets())
+                    {
+                        AZStd::visit([&testTargets]([[maybe_unused]]auto&& target)
+                        {
+                            if constexpr (IsTestTarget<decltype(target)>)
+                            {
+                                testTargets.push_back(target);
+                            }
+                        }, parentTarget.GetTarget());
+                    }
+                }
+            };
+            addMutatedTestTargetsToEnumerationList(changeDependecyList.GetCreateSourceDependencies());
+            addMutatedTestTargetsToEnumerationList(changeDependecyList.GetUpdateSourceDependencies());
+            m_testEngine->UpdateEnumerationCache(testTargets, Policy::ExecutionFailure::Ignore, AZStd::nullopt, AZStd::nullopt, AZStd::nullopt);
+        }
 
         for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
         {
-            if (!m_testTargetExcludeList.contains(&testTarget))
+            if (!selectedTestTargetSet.contains(&testTarget))
             {
-                if (suitesFilter.empty())
-                {
-                    includedTestTargets.push_back(&testTarget);
-                }
-                else if(suitesFilter.contains(testTarget.GetSuite()))
-                {
-                    includedTestTargets.push_back(&testTarget);
-                }
-                else
-                {
-                    excludedTestTargets.push_back(&testTarget);
-                }
-            }
-            else
-            {
-                excludedTestTargets.push_back(&testTarget);
+                discardedTestTargets.push_back(&testTarget);
             }
         }
 
-        if (testSequenceStartCallback.has_value())
-        {
-            (*testSequenceStartCallback)(Client::TestRunSelection(ExtractTestTargetNames(includedTestTargets), ExtractTestTargetNames(excludedTestTargets)));
-        }
-
-        const auto testComplete = [testCompleteCallback](const TestEngineJob& testJob)
-        {
-            if (testCompleteCallback.has_value())
-            {
-                (*testCompleteCallback)(Client::TestRun(testJob.GetTestTarget()->GetName(), testJob.GetTestResult(), testJob.GetDuration()));
-            }
-        };
-
-        const auto [result, testJobs] = m_testEngine->RegularRun(
-            includedTestTargets,
-            m_testShardingPolicy,
-            m_executionFailurePolicy,
-            m_testFailurePolicy,
-            m_targetOutputCapture,
-            testTargetTimeout,
-            globalTimeout,
-            testComplete);
-
-        const AZStd::chrono::high_resolution_clock::time_point endTime = AZStd::chrono::high_resolution_clock::now();
-        const auto duration = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(endTime - startTime);
-
-        if (testSequenceEndCallback.has_value())
-        {
-            (*testSequenceEndCallback)(CreateRegularFailureReport(testJobs), duration);
-        }
-
-        return result;
+        return { selectedTestTargets, discardedTestTargets };
     }
 
-    TestSequenceResult Runtime::ImpactAnalysisTestSequence(
-        [[maybe_unused]]const ChangeList& changeList,
-        [[maybe_unused]]Policy::TestPrioritization testPrioritizationPolicy,
-        [[maybe_unused]]AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        [[maybe_unused]]AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        [[maybe_unused]]AZStd::optional<ImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
-        [[maybe_unused]]AZStd::optional<ImpactAnalysisTestSequenceCompleteCallback> testSequenceEndCallback,
-        [[maybe_unused]]AZStd::optional<TestCompleteCallback> testCompleteCallback)
+    AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> Runtime::SelectTestTargetsByExcludeList(
+        AZStd::vector<const TestTarget*> testTargets) const
     {
         AZStd::vector<const TestTarget*> includedTestTargets;
         AZStd::vector<const TestTarget*> excludedTestTargets;
-        AZStd::vector<const TestTarget*> discardedTests;
-        AZStd::vector<const TestTarget*> draftedTests;
-        AZStd::unordered_set<const TestTarget*> selectedTests;
-        const AZStd::chrono::high_resolution_clock::time_point startTime = AZStd::chrono::high_resolution_clock::now();
-        const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList);
-        const auto selectedTestTargets = m_testSelectorAndPrioritizer->SelectTestTargets(changeDependecyList, testPrioritizationPolicy);
 
-        for (const auto* testTarget : selectedTestTargets)
+        if (m_testTargetExcludeList.empty())
         {
-            selectedTests.insert(testTarget);
+            return { testTargets, {} };
+        }
+
+        for (const auto& testTarget : testTargets)
+        {
             if (!m_testTargetExcludeList.contains(testTarget))
             {
                 includedTestTargets.push_back(testTarget);
@@ -190,80 +203,209 @@ namespace TestImpact
             }
         }
 
-        for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
+        return { includedTestTargets, excludedTestTargets };
+    }
+
+    void Runtime::UpdateAndSerializeDynamicDependencyMap(const SourceCoveringTestsList& sourceCoverageTestsList)
+    {
+        if (!sourceCoverageTestsList.GetNumSources())
         {
-            if (!selectedTests.contains(&testTarget))
-            {
-                discardedTests.push_back(&testTarget);
-            }
+            return;
         }
 
-        if (testSequenceStartCallback.has_value())
-        {
-            (*testSequenceStartCallback)(
-                Client::TestRunSelection(ExtractTestTargetNames(includedTestTargets), ExtractTestTargetNames(excludedTestTargets)),
-                ExtractTestTargetNames(discardedTests),
-                ExtractTestTargetNames(draftedTests));
-        }
-
-        const auto testComplete = [testCompleteCallback](const TestEngineJob& testJob)
-        {
-            if (testCompleteCallback.has_value())
-            {
-                (*testCompleteCallback)(Client::TestRun(testJob.GetTestTarget()->GetName(), testJob.GetTestResult(), testJob.GetDuration()));
-            }
-        };
-
-        const auto [result, testJobs] = m_testEngine->InstrumentedRun(
-            includedTestTargets,
-            m_testShardingPolicy,
-            m_executionFailurePolicy,
-            Policy::IntegrityFailure::Continue,
-            m_testFailurePolicy,
-            m_targetOutputCapture,
-            AZStd::nullopt,
-            globalTimeout,
-            testComplete);
-
-        const auto coverage = CreateSourceCoveringTestFromTestCoverages(testJobs, m_config.m_repo.m_root);
-        m_dynamicDependencyMap->ReplaceSourceCoverage(coverage);
+        m_dynamicDependencyMap->ReplaceSourceCoverage(sourceCoverageTestsList);
         const auto sparTIA = m_dynamicDependencyMap->ExportSourceCoverage();
         const auto sparTIAData = SerializeSourceCoveringTestsList(sparTIA);
         WriteFileContents<RuntimeException>(sparTIAData, m_config.m_workspace.m_active.m_relativePaths.m_sparTIAFile);
         m_hasImpactAnalysisData = true;
+    }
 
-        const AZStd::chrono::high_resolution_clock::time_point endTime = AZStd::chrono::high_resolution_clock::now();
-        const auto duration = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(endTime - startTime);
+    TestSequenceResult Runtime::RegularTestSequence(
+        const AZStd::unordered_set<AZStd::string> suitesFilter,
+        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+        AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
+        AZStd::optional<TestSequenceCompleteCallback> testSequenceEndCallback,
+        AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
+    {
+        Timer timer;
+        AZStd::vector<const TestTarget*> includedTestTargets;
+        AZStd::vector<const TestTarget*> excludedTestTargets;
+
+        // Separate the test targets into those that are excluded by either the test filter or exclusion list and those that are not
+        for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
+        {
+            if (!m_testTargetExcludeList.contains(&testTarget))
+            {
+                if (suitesFilter.empty())
+                {
+                    // Suite filter is empty, all tests that are not on the excluded list are included
+                    includedTestTargets.push_back(&testTarget);
+                }
+                else if(suitesFilter.contains(testTarget.GetSuite()))
+                {
+                    // Test target belonging to a suite in the suite filter are included, provided that are not on the exclude list
+                    includedTestTargets.push_back(&testTarget);
+                }
+                else
+                {
+                    // Test target not belonging to a suite in the suite filter are excluded
+                    excludedTestTargets.push_back(&testTarget);
+                }
+            }
+            else
+            {
+                // Test targets on the exclude list are excluded
+                excludedTestTargets.push_back(&testTarget);
+            }
+        }
+
+        // Sequence start callback
+        if (testSequenceStartCallback.has_value())
+        {
+            (*testSequenceStartCallback)(Client::TestRunSelection(ExtractTestTargetNames(includedTestTargets), ExtractTestTargetNames(excludedTestTargets)));
+        }
+
+        const auto [result, testJobs] = m_testEngine->RegularRun(
+            includedTestTargets,
+            m_testShardingPolicy,
+            m_executionFailurePolicy,
+            m_testFailurePolicy,
+            m_targetOutputCapture,
+            testTargetTimeout,
+            globalTimeout,
+            TestRunCompleteCallbackHandler(testCompleteCallback));
+
         if (testSequenceEndCallback.has_value())
         {
-            (*testSequenceEndCallback)(CreateTestImpactFailureReport(includedTestTargets, excludedTestTargets, discardedTests, draftedTests), duration);
+            (*testSequenceEndCallback)(CreateSequenceFailureReport(testJobs), timer.Elapsed());
         }
 
         return result;
     }
 
-    TestSequenceResult Runtime::SafeImpactAnalysisTestSequence(
-        [[maybe_unused]]const ChangeList& changeList,
-        [[maybe_unused]]const AZStd::unordered_set<AZStd::string> suitesFilter,
-        [[maybe_unused]]Policy::TestPrioritization testPrioritizationPolicy,
-        [[maybe_unused]]AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        [[maybe_unused]]AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        [[maybe_unused]]AZStd::optional<SafeImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
-        [[maybe_unused]]AZStd::optional<ImpactAnalysisTestSequenceCompleteCallback> testSequenceEndCallback,
-        [[maybe_unused]]AZStd::optional<TestCompleteCallback> testCompleteCallback)
+    TestSequenceResult Runtime::ImpactAnalysisTestSequence(
+        const ChangeList& changeList,
+        Policy::TestPrioritization testPrioritizationPolicy,
+        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+        AZStd::optional<ImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
+        AZStd::optional<TestSequenceCompleteCallback> testSequenceEndCallback,
+        AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
     {
-        return TestSequenceResult::Success;
+        Timer timer;
+        AZStd::vector<const TestTarget*> draftedTestTargets;
+
+        auto [selectedTestTargets, discardedTestTargets] = SelectCoveringTestTargetsAndEnumerateMutatedTestTargets(changeList, testPrioritizationPolicy);
+        auto [includedSelectedTestTargets, excludedSelectedTestTargets] = SelectTestTargetsByExcludeList(selectedTestTargets);
+
+        if (testSequenceStartCallback.has_value())
+        {
+            (*testSequenceStartCallback)(
+                Client::TestRunSelection(ExtractTestTargetNames(includedSelectedTestTargets), ExtractTestTargetNames(excludedSelectedTestTargets)),
+                ExtractTestTargetNames(discardedTestTargets),
+                ExtractTestTargetNames(draftedTestTargets));
+        }
+
+        const auto [result, testJobs] = m_testEngine->InstrumentedRun(
+            includedSelectedTestTargets,
+            m_testShardingPolicy,
+            m_executionFailurePolicy,
+            Policy::IntegrityFailure::Continue,
+            m_testFailurePolicy,
+            m_targetOutputCapture,
+            testTargetTimeout,
+            globalTimeout,
+            TestRunCompleteCallbackHandler(testCompleteCallback));
+
+        UpdateAndSerializeDynamicDependencyMap(CreateSourceCoveringTestFromTestCoverages(testJobs, m_config.m_repo.m_root));
+
+        if (testSequenceEndCallback.has_value())
+        {
+            (*testSequenceEndCallback)(CreateSequenceFailureReport(testJobs), timer.Elapsed());
+        }
+
+        return result;
+    }
+
+    AZStd::pair<TestSequenceResult, TestSequenceResult> Runtime::SafeImpactAnalysisTestSequence(
+        const ChangeList& changeList,
+        const AZStd::unordered_set<AZStd::string> suitesFilter,
+        Policy::TestPrioritization testPrioritizationPolicy,
+        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+        AZStd::optional<SafeImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
+        AZStd::optional<SafeTestSequenceCompleteCallback> testSequenceEndCallback,
+        AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
+    {
+        Timer timer;
+        AZStd::vector<const TestTarget*> draftedTestTargets;
+
+        auto [selectedTestTargets, discardedTestTargets] = SelectCoveringTestTargetsAndEnumerateMutatedTestTargets(changeList, testPrioritizationPolicy);
+        auto [includedSelectedTestTargets, excludedSelectedTestTargets] = SelectTestTargetsByExcludeList(selectedTestTargets);
+        auto [includedDiscardedTestTargets, excludedDiscardedTestTargets] = SelectTestTargetsByExcludeList(discardedTestTargets);
+
+        if (testSequenceStartCallback.has_value())
+        {
+            (*testSequenceStartCallback)(
+                Client::TestRunSelection(ExtractTestTargetNames(includedSelectedTestTargets), ExtractTestTargetNames(excludedSelectedTestTargets)),
+                Client::TestRunSelection(ExtractTestTargetNames(includedDiscardedTestTargets), ExtractTestTargetNames(excludedDiscardedTestTargets)),
+                ExtractTestTargetNames(draftedTestTargets));
+        }
+
+        // Impact analysis run of the selected test targets
+        const auto [selectedResult, selectedTestJobs] = m_testEngine->InstrumentedRun(
+            includedSelectedTestTargets,
+            m_testShardingPolicy,
+            m_executionFailurePolicy,
+            Policy::IntegrityFailure::Continue,
+            m_testFailurePolicy,
+            m_targetOutputCapture,
+            testTargetTimeout,
+            globalTimeout,
+            TestRunCompleteCallbackHandler(testCompleteCallback));
+
+        // Carry the remaining global sequence time over to the discarded test run
+        if (globalTimeout.has_value())
+        {
+            const auto elapsed = timer.Elapsed();
+            globalTimeout = elapsed < globalTimeout.value() ? globalTimeout.value() - elapsed : AZStd::chrono::milliseconds(0);
+        }
+
+        // Regular run of the discarded test targets
+        const auto [discardedResult, discardedTestJobs] = m_testEngine->RegularRun(
+            includedDiscardedTestTargets,
+            m_testShardingPolicy,
+            m_executionFailurePolicy,
+            m_testFailurePolicy,
+            m_targetOutputCapture,
+            testTargetTimeout,
+            globalTimeout,
+            TestRunCompleteCallbackHandler(testCompleteCallback));
+
+        UpdateAndSerializeDynamicDependencyMap(CreateSourceCoveringTestFromTestCoverages(selectedTestJobs, m_config.m_repo.m_root));
+
+        if (testSequenceEndCallback.has_value())
+        {
+            (*testSequenceEndCallback)(
+                CreateSequenceFailureReport(selectedTestJobs),
+                CreateSequenceFailureReport(discardedTestJobs),
+                timer.Elapsed());
+        }
+
+        return { selectedResult, discardedResult };
     }
 
     TestSequenceResult Runtime::SeededTestSequence(
+        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
         AZStd::optional<TestSequenceCompleteCallback> testSequenceEndCallback,
-        AZStd::optional<TestCompleteCallback> testCompleteCallback)
-    {        
+        AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
+    {
+        Timer timer;
         AZStd::vector<const TestTarget*> includedTestTargets;
         AZStd::vector<const TestTarget*> excludedTestTargets;
-        const AZStd::chrono::high_resolution_clock::time_point startTime = AZStd::chrono::high_resolution_clock::now();
 
         for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
         {
@@ -282,37 +424,23 @@ namespace TestImpact
             (*testSequenceStartCallback)(Client::TestRunSelection(ExtractTestTargetNames(includedTestTargets), ExtractTestTargetNames(excludedTestTargets)));
         }
 
-        const auto testComplete = [testCompleteCallback](const TestEngineJob& testJob)
-        {
-            if (testCompleteCallback.has_value())
-            {
-                (*testCompleteCallback)(Client::TestRun(testJob.GetTestTarget()->GetName(), testJob.GetTestResult(), testJob.GetDuration()));
-            }
-        };
-
         const auto [result, testJobs] = m_testEngine->InstrumentedRun(
             includedTestTargets,
             m_testShardingPolicy,
-            m_executionFailurePolicy,
+            m_executionFailurePolicy, // NOTE: as exec failures are only known after, the exec failure logic with known error code MUST happen in the test runner!!!!!!!!!!!
             Policy::IntegrityFailure::Continue,
             m_testFailurePolicy,
             m_targetOutputCapture,
-            AZStd::nullopt,
+            testTargetTimeout,
             globalTimeout,
-            testComplete);
+            TestRunCompleteCallbackHandler(testCompleteCallback));
 
-        const auto coverage = CreateSourceCoveringTestFromTestCoverages(testJobs, m_config.m_repo.m_root);
-        m_dynamicDependencyMap->ReplaceSourceCoverage(coverage);
-        const auto sparTIA = m_dynamicDependencyMap->ExportSourceCoverage();
-        const auto sparTIAData = SerializeSourceCoveringTestsList(sparTIA);
-        WriteFileContents<RuntimeException>(sparTIAData, m_config.m_workspace.m_active.m_relativePaths.m_sparTIAFile);
-        m_hasImpactAnalysisData = true;
+        // DELETE THE EXISTING DATA FIRST!!!!
+        UpdateAndSerializeDynamicDependencyMap(CreateSourceCoveringTestFromTestCoverages(testJobs, m_config.m_repo.m_root));
 
-        const AZStd::chrono::high_resolution_clock::time_point endTime = AZStd::chrono::high_resolution_clock::now();
-        const auto duration = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(endTime - startTime);
         if (testSequenceEndCallback.has_value())
         {
-            (*testSequenceEndCallback)(CreateRegularFailureReport(testJobs), duration);
+            (*testSequenceEndCallback)(CreateSequenceFailureReport(testJobs), timer.Elapsed());
         }
 
         return result;

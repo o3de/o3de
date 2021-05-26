@@ -47,7 +47,7 @@ namespace TestImpact
                     }
                     catch (const Exception& e)
                     {
-                        AZ_Warning("RunTests", false, e.what());
+                        AZ_Printf("RunTests", e.what());
                         runs[jobId] = AZStd::nullopt;
                     }
                 }

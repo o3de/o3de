@@ -45,22 +45,21 @@ namespace UnitTest
     {
         InitOptions();
         EXPECT_EQ(m_options->GetConfigurationFile(), LY_TEST_IMPACT_DEFAULT_CONFIG_FILE);
-        EXPECT_EQ(m_options->GetExecutionFailureDraftingPolicy(), TestImpact::ExecutionFailureDraftingPolicy::Always);
-        EXPECT_EQ(m_options->GetExecutionFailurePolicy(), TestImpact::ExecutionFailurePolicy::Continue);
+        EXPECT_EQ(m_options->GetExecutionFailureDraftingPolicy(), TestImpact::Policy::ExecutionFailureDrafting::Always);
+        EXPECT_EQ(m_options->GetExecutionFailurePolicy(), TestImpact::Policy::ExecutionFailure::Continue);
         EXPECT_FALSE(m_options->GetGlobalTimeout().has_value());
         EXPECT_FALSE(m_options->GetTestTargetTimeout().has_value());
         EXPECT_FALSE(m_options->GetMaxConcurrency().has_value());
         EXPECT_FALSE(m_options->HasOutputChangeList());
-        EXPECT_FALSE(m_options->GetOutputChangeList().has_value());
         EXPECT_EQ(m_options->GetTargetOutputCapture(), TestImpact::TargetOutputCapture::None);
-        EXPECT_EQ(m_options->GetTestFailurePolicy(), TestImpact::TestFailurePolicy::Abort);
-        EXPECT_EQ(m_options->GetIntegrityFailurePolicy(), TestImpact::TestFailurePolicy::Abort);
-        EXPECT_EQ(m_options->GetTestPrioritizationPolicy(), TestImpact::TestPrioritizationPolicy::None);
+        EXPECT_EQ(m_options->GetTestFailurePolicy(), TestImpact::Policy::TestFailure::Abort);
+        EXPECT_EQ(m_options->GetIntegrityFailurePolicy(), TestImpact::Policy::IntegrityFailure::Abort);
+        EXPECT_EQ(m_options->GetTestPrioritizationPolicy(), TestImpact::Policy::TestPrioritization::None);
         EXPECT_FALSE(m_options->HasTestSequence());
         EXPECT_FALSE(m_options->GetTestSequenceType().has_value());
-        EXPECT_EQ(m_options->GetTestShardingPolicy(), TestImpact::TestShardingPolicy::Never);
-        EXPECT_FALSE(m_options->HasUnifiedDiffFile());
-        EXPECT_FALSE(m_options->GetUnifiedDiffFile().has_value());
+        EXPECT_EQ(m_options->GetTestShardingPolicy(), TestImpact::Policy::TestSharding::Never);
+        EXPECT_FALSE(m_options->HasChangeListFile());
+        EXPECT_FALSE(m_options->GetChangeListFile().has_value());
         EXPECT_FALSE(m_options->HasSafeMode());
         EXPECT_TRUE(m_options->GetSuitesFilter().empty());
     }
@@ -124,7 +123,7 @@ namespace UnitTest
 
     TEST_F(CommandLineOptionsTestFixture, UnifiedDiffFileHasEmptyPath_ExpectCommandLineOptionsException)
     {
-        m_args.push_back("-unidiff");
+        m_args.push_back("-changelist");
 
         try
         {
@@ -147,16 +146,16 @@ namespace UnitTest
 
     TEST_F(CommandLineOptionsTestFixture, UnifiedDiffFileHasSpecifiedPath_ExpectPath)
     {
-        m_args.push_back("-unidiff");
+        m_args.push_back("-changelist");
         m_args.push_back("Foo\\Bar");
         InitOptions();
-        EXPECT_TRUE(m_options->HasUnifiedDiffFile());
-        EXPECT_STREQ(m_options->GetUnifiedDiffFile()->c_str(), "Foo\\Bar");
+        EXPECT_TRUE(m_options->HasChangeListFile());
+        EXPECT_STREQ(m_options->GetChangeListFile()->c_str(), "Foo\\Bar");
     }
 
     TEST_F(CommandLineOptionsTestFixture, UnifiedDiffFileHasMultiplePaths_ExpectCommandLineOptionsException)
     {
-        m_args.push_back("-unidiff");
+        m_args.push_back("-changelist");
         m_args.push_back("value1,value2");
 
         try
@@ -201,37 +200,6 @@ namespace UnitTest
             // Do not expect any other exceptions
             FAIL();
         }
-    }
-
-    TEST_F(CommandLineOptionsTestFixture, OutputChangeListHasStdOut_ExpectStdOut)
-    {
-        m_args.push_back("-ochangelist");
-        m_args.push_back("stdout");
-        InitOptions();
-        EXPECT_TRUE(m_options->GetOutputChangeList().has_value());
-        EXPECT_TRUE(m_options->GetOutputChangeList()->m_stdOut);
-        EXPECT_FALSE(m_options->GetOutputChangeList()->m_file.has_value());
-    }
-
-    TEST_F(CommandLineOptionsTestFixture, OutputChangeListHasSpecifiedPath_ExpectPath)
-    {
-        m_args.push_back("-ochangelist");
-        m_args.push_back("Foo\\Bar");
-        InitOptions();
-        EXPECT_TRUE(m_options->GetOutputChangeList().has_value());
-        EXPECT_TRUE(m_options->GetOutputChangeList()->m_file.has_value());
-        EXPECT_STREQ(m_options->GetOutputChangeList()->m_file->c_str(), "Foo\\Bar");
-    }
-
-    TEST_F(CommandLineOptionsTestFixture, OutputChangeListHasStdOutAndSpecifiedPath_StdOutAndExpectPath)
-    {
-        m_args.push_back("-ochangelist");
-        m_args.push_back("Foo\\Bar");
-        InitOptions();
-        EXPECT_TRUE(m_options->GetOutputChangeList().has_value());
-        EXPECT_TRUE(m_options->GetOutputChangeList()->m_stdOut);
-        EXPECT_TRUE(m_options->GetOutputChangeList()->m_file.has_value());
-        EXPECT_STREQ(m_options->GetOutputChangeList()->m_file->c_str(), "Foo\\Bar");
     }
 
     TEST_F(CommandLineOptionsTestFixture, OutputChangeListHasMultipleValues_ExpectCommandLineOptionsException)
@@ -410,7 +378,7 @@ namespace UnitTest
         m_args.push_back("-ppolicy");
         m_args.push_back("none");
         InitOptions();
-        EXPECT_EQ(m_options->GetTestPrioritizationPolicy(), TestImpact::TestPrioritizationPolicy::None);
+        EXPECT_EQ(m_options->GetTestPrioritizationPolicy(), TestImpact::Policy::TestPrioritization::None);
     }
 
     TEST_F(CommandLineOptionsTestFixture, TestPrioritizationPolicyHasDependencyLocalityOption_ExpectDependencyLocalityTestPrioritizationPolicy)
@@ -418,7 +386,7 @@ namespace UnitTest
         m_args.push_back("-ppolicy");
         m_args.push_back("locality");
         InitOptions();
-        EXPECT_EQ(m_options->GetTestPrioritizationPolicy(), TestImpact::TestPrioritizationPolicy::DependencyLocality);
+        EXPECT_EQ(m_options->GetTestPrioritizationPolicy(), TestImpact::Policy::TestPrioritization::DependencyLocality);
     }
 
     TEST_F(CommandLineOptionsTestFixture, TestPrioritizationPolicyInvalidOption_ExpectCommandLineOptionsException)
@@ -475,7 +443,7 @@ namespace UnitTest
         m_args.push_back("-epolicy");
         m_args.push_back("abort");
         InitOptions();
-        EXPECT_EQ(m_options->GetExecutionFailurePolicy(), TestImpact::ExecutionFailurePolicy::Abort);
+        EXPECT_EQ(m_options->GetExecutionFailurePolicy(), TestImpact::Policy::ExecutionFailure::Abort);
     }
 
     TEST_F(CommandLineOptionsTestFixture, ExecutionFailurePolicyHasContinueOption_ExpectContinueExecutionFailurePolicy)
@@ -483,7 +451,7 @@ namespace UnitTest
         m_args.push_back("-epolicy");
         m_args.push_back("continue");
         InitOptions();
-        EXPECT_EQ(m_options->GetExecutionFailurePolicy(), TestImpact::ExecutionFailurePolicy::Continue);
+        EXPECT_EQ(m_options->GetExecutionFailurePolicy(), TestImpact::Policy::ExecutionFailure::Continue);
     }
 
     TEST_F(CommandLineOptionsTestFixture, ExecutionFailurePolicyHasIgnoreOption_ExpectIgnoreExecutionFailurePolicy)
@@ -491,7 +459,7 @@ namespace UnitTest
         m_args.push_back("-epolicy");
         m_args.push_back("ignore");
         InitOptions();
-        EXPECT_EQ(m_options->GetExecutionFailurePolicy(), TestImpact::ExecutionFailurePolicy::Ignore);
+        EXPECT_EQ(m_options->GetExecutionFailurePolicy(), TestImpact::Policy::ExecutionFailure::Ignore);
     }
 
     TEST_F(CommandLineOptionsTestFixture, ExecutionFailurePolicyHasInvalidOption_ExpectCommandLineOptionsException)
@@ -572,7 +540,7 @@ namespace UnitTest
         m_args.push_back("-rexecfailures");
         m_args.push_back("on");
         InitOptions();
-        EXPECT_EQ(m_options->GetExecutionFailureDraftingPolicy(), TestImpact::ExecutionFailureDraftingPolicy::Always);
+        EXPECT_EQ(m_options->GetExecutionFailureDraftingPolicy(), TestImpact::Policy::ExecutionFailureDrafting::Always);
     }
 
     TEST_F(CommandLineOptionsTestFixture, ExecutionFailureDraftingPolicyHasOffOption_ExpectOffExecutionFailureDraftingPolicy)
@@ -580,7 +548,7 @@ namespace UnitTest
         m_args.push_back("-rexecfailures");
         m_args.push_back("off");
         InitOptions();
-        EXPECT_EQ(m_options->GetExecutionFailureDraftingPolicy(), TestImpact::ExecutionFailureDraftingPolicy::Never);
+        EXPECT_EQ(m_options->GetExecutionFailureDraftingPolicy(), TestImpact::Policy::ExecutionFailureDrafting::Never);
     }
 
     TEST_F(CommandLineOptionsTestFixture, ExecutionFailureDraftingPolicyInvalidOption_ExpectCommandLineOptionsException)
@@ -661,7 +629,7 @@ namespace UnitTest
         m_args.push_back("-fpolicy");
         m_args.push_back("abort");
         InitOptions();
-        EXPECT_EQ(m_options->GetTestFailurePolicy(), TestImpact::TestFailurePolicy::Abort);
+        EXPECT_EQ(m_options->GetTestFailurePolicy(), TestImpact::Policy::TestFailure::Abort);
     }
 
     TEST_F(CommandLineOptionsTestFixture, TestFailurePolicyHasContinueOption_ExpectContinueTestFailurePolicy)
@@ -669,7 +637,7 @@ namespace UnitTest
         m_args.push_back("-fpolicy");
         m_args.push_back("continue");
         InitOptions();
-        EXPECT_EQ(m_options->GetTestFailurePolicy(), TestImpact::TestFailurePolicy::Continue);
+        EXPECT_EQ(m_options->GetTestFailurePolicy(), TestImpact::Policy::TestFailure::Continue);
     }
 
     TEST_F(CommandLineOptionsTestFixture, TestFailurePolicyInvalidOption_ExpectCommandLineOptionsException)
@@ -750,7 +718,7 @@ namespace UnitTest
         m_args.push_back("-ipolicy");
         m_args.push_back("abort");
         InitOptions();
-        EXPECT_EQ(m_options->GetIntegrityFailurePolicy(), TestImpact::IntegrityFailurePolicy::Abort);
+        EXPECT_EQ(m_options->GetIntegrityFailurePolicy(), TestImpact::Policy::IntegrityFailure::Abort);
     }
 
     TEST_F(CommandLineOptionsTestFixture, IntegrityFailurePolicyHasContinueOption_ExpectContinueIntegrityFailurePolicy)
@@ -758,7 +726,7 @@ namespace UnitTest
         m_args.push_back("-ipolicy");
         m_args.push_back("continue");
         InitOptions();
-        EXPECT_EQ(m_options->GetIntegrityFailurePolicy(), TestImpact::IntegrityFailurePolicy::Continue);
+        EXPECT_EQ(m_options->GetIntegrityFailurePolicy(), TestImpact::Policy::IntegrityFailure::Continue);
     }
 
     TEST_F(CommandLineOptionsTestFixture, IntegrityFailurePolicyInvalidOption_ExpectCommandLineOptionsException)
@@ -839,7 +807,7 @@ namespace UnitTest
         m_args.push_back("-shard");
         m_args.push_back("on");
         InitOptions();
-        EXPECT_EQ(m_options->GetTestShardingPolicy(), TestImpact::TestShardingPolicy::Always);
+        EXPECT_EQ(m_options->GetTestShardingPolicy(), TestImpact::Policy::TestSharding::Always);
     }
 
     TEST_F(CommandLineOptionsTestFixture, TestShardingHasOffOption_ExpectOffTestSharding)
@@ -847,7 +815,7 @@ namespace UnitTest
         m_args.push_back("-shard");
         m_args.push_back("off");
         InitOptions();
-        EXPECT_EQ(m_options->GetTestShardingPolicy(), TestImpact::TestShardingPolicy::Never);
+        EXPECT_EQ(m_options->GetTestShardingPolicy(), TestImpact::Policy::TestSharding::Never);
     }
 
     TEST_F(CommandLineOptionsTestFixture, TestShardingInvalidOption_ExpectCommandLineOptionsException)

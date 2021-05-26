@@ -18,7 +18,7 @@ namespace TestImpact
 {
     namespace
     {
-        AZStd::optional<TestRun> ReleaseTestRun(AZStd::optional<AZStd::pair<TestRun, TestCoverage>>&& testRunAndCoverage)
+        AZStd::optional<TestRun> ReleaseTestRun(AZStd::optional<AZStd::pair<TestRun, TestCoverage>>& testRunAndCoverage)
         {
             if (testRunAndCoverage.has_value())
             {
@@ -28,7 +28,7 @@ namespace TestImpact
             return AZStd::nullopt;
         }
 
-        AZStd::optional<TestCoverage> ReleaseTestCoverage(AZStd::optional<AZStd::pair<TestRun, TestCoverage>>&& testRunAndCoverage)
+        AZStd::optional<TestCoverage> ReleaseTestCoverage(AZStd::optional<AZStd::pair<TestRun, TestCoverage>>& testRunAndCoverage)
         {
             if (testRunAndCoverage.has_value())
             {
@@ -40,8 +40,8 @@ namespace TestImpact
     }
 
     TestEngineInstrumentedRun::TestEngineInstrumentedRun(TestEngineJob&& testJob, AZStd::optional<AZStd::pair<TestRun, TestCoverage>>&& testRunAndCoverage)
-        : TestEngineRegularRun(AZStd::move(testJob), ReleaseTestRun(AZStd::move(testRunAndCoverage)))
-        , m_testCoverage(ReleaseTestCoverage(AZStd::move(testRunAndCoverage)))
+        : TestEngineRegularRun(AZStd::move(testJob), ReleaseTestRun(testRunAndCoverage))
+        , m_testCoverage(ReleaseTestCoverage(testRunAndCoverage))
     {
     }
 

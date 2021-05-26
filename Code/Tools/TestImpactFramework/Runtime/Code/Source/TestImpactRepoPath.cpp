@@ -12,50 +12,25 @@
 
 #include <TestImpactFramework/TestImpactRepoPath.h>
 
-#include <AzCore/StringFunc/StringFunc.h>
-
-constexpr char Separator = AZ_TRAIT_OS_PATH_SEPARATOR;
-
 namespace TestImpact
 {
-    constexpr RepoPath::RepoPath(const string_type& path) noexcept
-        : AZ::IO::Path(path, Separator)
-    {
-    }
+    
 
-    constexpr RepoPath::RepoPath(const value_type* path) noexcept
-        : AZ::IO::Path(path, Separator)
+    RepoPath& RepoPath::operator=(const AZ::IO::Path::string_type& other) noexcept
     {
-    }
-
-    constexpr RepoPath::RepoPath(const AZ::IO::PathView& path)
-        : AZ::IO::Path(AZ::IO::Path(path).String(), Separator)
-    {
-    }
-        
-    constexpr RepoPath::RepoPath(const AZ::IO::Path& path)
-        : AZ::IO::Path(AZ::IO::Path(path).String(), Separator)
-    {
-    }
-
-    RepoPath& RepoPath::operator=(const string_type& other) noexcept
-    {
-        this->~RepoPath();
-        new(this) RepoPath(other);
+        m_path = AZ::IO::Path(other).MakePreferred();
         return *this;
     }
 
-    RepoPath& RepoPath::operator=(const value_type* other) noexcept
+    RepoPath& RepoPath::operator=(const AZ::IO::Path::value_type* other) noexcept
     {
-        this->~RepoPath();
-        new(this) RepoPath(other);
+        m_path = AZ::IO::Path(other).MakePreferred();
         return *this;
     }
 
     RepoPath& RepoPath::operator=(const AZ::IO::Path& other) noexcept
     {
-        this->~RepoPath();
-        new(this) RepoPath(other);
+        m_path = AZ::IO::Path(other).MakePreferred();
         return *this;
     }
 } // namespace TestImpact
