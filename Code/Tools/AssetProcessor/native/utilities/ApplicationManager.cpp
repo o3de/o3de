@@ -622,13 +622,14 @@ bool ApplicationManager::Activate()
 {
     if (!AssetUtilities::ComputeAssetRoot(m_systemRoot))
     {
+        AZ_Error(AssetProcessor::ConsoleChannel, false, "Unable to compute the asset root for the project, this application cannot launch until this is fixed.");
         return false;
     }
 
     auto projectName = AssetUtilities::ComputeProjectName();
     if (projectName.isEmpty())
     {
-        AZ_Error(AssetProcessor::ConsoleChannel, false, "Unable to detect name of current game project.  Is bootstrap.cfg appropriately configured?");
+        AZ_Error(AssetProcessor::ConsoleChannel, false, "Unable to detect name of current game project. Configure your game project name to launch this application.");
         return false;
     }
 
