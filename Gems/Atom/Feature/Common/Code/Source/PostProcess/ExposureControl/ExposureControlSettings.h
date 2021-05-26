@@ -85,7 +85,6 @@ namespace AZ
             void UpdateExposureControlRelatedPassParameters();
             
             void UpdateLuminanceHeatmap();
-            void UpdateEyeAdaptationPass();
             
             PostProcessSettings* m_parentSettings = nullptr;
             bool m_shouldUpdatePassParameters = true;
