@@ -36,7 +36,7 @@ class TestViewManager(TestCase):
 
         main_window_patcher: patch = patch("manager.view_manager.QMainWindow")
         cls._mock_main_window = main_window_patcher.start()
-        window_icon_patcher: patch = patch("manager.view_manager.QPixmap")
+        window_icon_patcher: patch = patch("manager.view_manager.QIcon")
         window_icon_patcher.start()
 
         stacked_pages_patcher: patch = patch("manager.view_manager.QStackedWidget")

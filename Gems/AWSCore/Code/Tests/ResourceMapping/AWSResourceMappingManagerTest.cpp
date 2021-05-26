@@ -119,6 +119,7 @@ public:
     // AWSCoreInternalRequestBus interface implementation
     AZStd::string GetProfileName() const override { return ""; }
     AZStd::string GetResourceMappingConfigFilePath() const override { return m_normalizedConfigFilePath; }
+    AZStd::string GetResourceMappingConfigFolderPath() const override { return m_normalizedConfigFolderPath; }
     void ReloadConfiguration() override { m_reloadConfigurationCounter++; }
 
     AZStd::unique_ptr<AWSCore::AWSResourceMappingManager> m_resourceMappingManager;
