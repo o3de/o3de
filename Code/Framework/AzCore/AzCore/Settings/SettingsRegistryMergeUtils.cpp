@@ -494,13 +494,6 @@ namespace AZ::SettingsRegistryMergeUtils
         return configFileParsed;
     }
 
-    void MergeSettingsToRegistry_Bootstrap(SettingsRegistryInterface& registry)
-    {
-        ConfigParserSettings parserSettings;
-        parserSettings.m_registryRootPointerPath = BootstrapSettingsRootKey;
-        MergeSettingsToRegistry_ConfigFile(registry, "bootstrap.cfg", parserSettings);
-    }
-
     void MergeSettingsToRegistry_AddRuntimeFilePaths(SettingsRegistryInterface& registry)
     {
         using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;

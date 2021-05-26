@@ -101,10 +101,10 @@ namespace AzToolsFramework
         virtual void ResetOrientationForSelectedEntitiesLocal() = 0;
 
         /// Copy scale to each individual entity in local space without moving position.
-        virtual void CopyScaleToSelectedEntitiesIndividualLocal(const AZ::Vector3& scale) = 0;
+        virtual void CopyScaleToSelectedEntitiesIndividualLocal(float scale) = 0;
 
         /// Copy scale to to each individual entity in world (absolute) space.
-        virtual void CopyScaleToSelectedEntitiesIndividualWorld(const AZ::Vector3& scale) = 0;
+        virtual void CopyScaleToSelectedEntitiesIndividualWorld(float scale) = 0;
 
     protected:
         ~EditorTransformComponentSelectionRequests() = default;

@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 from __future__ import annotations
 import logging
 
-from PySide2.QtGui import QPixmap
+from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import (QMainWindow, QStackedWidget, QWidget)
 
 from model import (error_messages, view_size_constants)
@@ -43,7 +43,7 @@ class ViewManager(object):
     def __init__(self) -> None:
         if ViewManager.__instance is None:
             self._main_window: QMainWindow = QMainWindow()
-            self._main_window.setWindowIcon(QPixmap(":/stylesheet/img/ly_application_icon.png"))
+            self._main_window.setWindowIcon(QIcon(":/Application/res/o3de_editor.ico"))
             self._main_window.setWindowTitle("Resource Mapping")
             self._main_window.setGeometry(0, 0,
                                           view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,

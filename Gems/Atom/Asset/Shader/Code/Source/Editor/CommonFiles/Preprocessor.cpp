@@ -60,33 +60,31 @@ namespace AZ
 
         void PreprocessorOptions::RemovePredefinedMacros(const AZStd::vector<AZStd::string>& macroNames)
         {
+            for (const auto& macroName : macroNames)
+            {
                 m_predefinedMacros.erase(
                     AZStd::remove_if(
                         m_predefinedMacros.begin(), m_predefinedMacros.end(),
-                        [&](const AZStd::string& predefinedMacro)
-                        {
-                            for (const auto& macroName : macroNames)
+                        [&](const AZStd::string& predefinedMacro) {
+                            //                                       Haystack,        needle,    bCaseSensitive
+                            if (!AzFramework::StringFunc::StartsWith(predefinedMacro, macroName, true))
                             {
-                                //                                       Haystack,        needle,    bCaseSensitive
-                                if (!AzFramework::StringFunc::StartsWith(predefinedMacro, macroName, true))
-                                {
-                                    return false;
-                                }
-                                // If found, let's make sure it is not just a substring. 
-                                if (predefinedMacro.size() == macroName.size())
-                                {
-                                    return true;
-                                }
-                                // The predefinedMacro can be a string like "macro=value". If we find '=' it is a match.
-                                if (predefinedMacro.c_str()[macroName.size()] == '=')
-                                {
-                                    return true;
-                                }
                                 return false;
+                            }
+                            // If found, let's make sure it is not just a substring.
+                            if (predefinedMacro.size() == macroName.size())
+                            {
+                                return true;
+                            }
+                            // The predefinedMacro can be a string like "macro=value". If we find '=' it is a match.
+                            if (predefinedMacro.c_str()[macroName.size()] == '=')
+                            {
+                                return true;
                             }
                             return false;
                         }),
                     m_predefinedMacros.end());
+            }
         }
 
         //! Binder helper to Matsui C-Pre-Processor library

@@ -167,7 +167,7 @@ namespace LmbrCentral
     {
         m_position = currentTransform.GetTranslation();
         m_normal = currentTransform.GetBasisZ().GetNormalized();
-        m_radius = configuration.m_radius * currentTransform.GetScale().GetMaxElement();
+        m_radius = configuration.m_radius * currentTransform.GetUniformScale();
     }
 
     const DiskShapeConfig& DiskShape::GetDiskConfiguration() const
