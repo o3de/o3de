@@ -313,21 +313,21 @@ void ShortcutDispatcher::DetachOverride()
     m_actionOverrideObject = nullptr;
 }
 
-void ShortcutDispatcher::AddNewAction(QAction* new_action, AZ::Crc32 r_url)
+void ShortcutDispatcher::AddNewAction(QAction* newAction, AZ::Crc32 reverseUrl)
 {
-    const int new_id = new_action->data().toInt();
+    const int new_id = newAction->data().toInt();
 
     unsigned size = m_all_actions.size();
     for (unsigned i = 0; i < size; i++)
     {
-        if (m_all_actions[i].second->data().toInt() == new_id || (m_all_actions[i].first == r_url && m_all_actions[i].first != AZ::Crc32(0)))
+        if (m_all_actions[i].second->data().toInt() == new_id || (m_all_actions[i].first == reverseUrl && m_all_actions[i].first != AZ::Crc32(0)))
         {
             qWarning() << "ActionManager already contains action with id" << new_id;
             Q_ASSERT(false);
         }
     }
 
-    std::pair<AZ::Crc32, QAction*> new_addition(r_url, new_action);
+    AZStd::pair<AZ::Crc32, QAction*> new_addition(reverseUrl, newAction);
     
     m_all_actions.push_back(new_addition);
 }

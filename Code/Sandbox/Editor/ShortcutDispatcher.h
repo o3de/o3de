@@ -115,7 +115,7 @@ public:
 public:
     void AddNewAction(QAction* new_action, AZ::Crc32 r_url = 0);
 
-    std::vector<std::pair<AZ::Crc32, QAction*>> m_all_actions;
+    AZStd::vector<AZStd::pair<AZ::Crc32, QAction*>> m_all_actions;
 
 private:
     bool shortcutFilter(QObject* obj, QShortcutEvent* ev);
