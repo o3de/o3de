@@ -147,7 +147,7 @@ function(ly_delayed_generate_settings_registry)
 
         # de-namespace them
         foreach(gem_target ${all_gem_dependencies})
-            ly_de_alias_target(TARGET ${gem_target} OUTPUT_VARIABLE stripped_gem_target)
+            ly_de_alias_target(${gem_target} stripped_gem_target)
             list(APPEND new_gem_dependencies ${stripped_gem_target})
         endforeach()
         set(all_gem_dependencies ${new_gem_dependencies})
@@ -173,7 +173,7 @@ function(ly_delayed_generate_settings_registry)
             file(RELATIVE_PATH gem_module_root_relative_to_engine_root ${LY_ROOT_FOLDER} ${gem_module_root})
 
             # De-alias namespace from gem targets before configuring them into the json template
-            ly_de_alias_target(TARGET ${gem_target} OUTPUT_VARIABLE stripped_gem_target)
+            ly_de_alias_target(${gem_target} stripped_gem_target)
             string(CONFIGURE ${gem_module_template} gem_module_json @ONLY)
             list(APPEND target_gem_dependencies_names ${gem_module_json})
         endforeach()
