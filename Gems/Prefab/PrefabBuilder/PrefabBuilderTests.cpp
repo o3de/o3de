@@ -14,6 +14,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
 namespace UnitTest
@@ -172,6 +173,12 @@ namespace UnitTest
 
     void PrefabBuilderTests::SetUp()
     {
+        AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+        auto projectPathKey =
+            AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+        registry->Set(projectPathKey, "AutomatedTesting");
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+
         AZ::ComponentApplication::Descriptor desc;
         m_app.Start(desc);
         m_app.CreateReflectionManager();
