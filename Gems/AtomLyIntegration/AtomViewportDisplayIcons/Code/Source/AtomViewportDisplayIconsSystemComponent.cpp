@@ -20,6 +20,7 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -28,8 +29,19 @@
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAssetCreator.h>
+#include <Atom/RPI.Reflect/Image/ImageMipChainAssetCreator.h>
+#include <Atom/RPI.Public/Image/StreamingImagePool.h>
 
 #include <AtomBridge/PerViewportDynamicDrawInterface.h>
+
+#include <QDir>
+#include <QFileInfo>
+#include <QImage>
+#include <QPainter>
+#include <QSvgRenderer>
+
+#pragma optimize("", off)
 
 namespace AZ::Render
 {
@@ -238,6 +250,58 @@ namespace AZ::Render
             "AtomViewportDisplayIconsSystemComponent", AzFramework::StringFunc::Path::IsRelative(path.data()),
             "GetOrLoadIconForPath assumes that it will always be given a relative path, but got '%s'", path.data());
 
+        bool found = false;
+        AZStd::vector<AZStd::string> scanFolders;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(found, &AzToolsFramework::AssetSystemRequestBus::Events::GetScanFolders, scanFolders);
+        if (!found)
+        {
+            AZ_Error("AtomViewportDisplayIconSystemComponent", false, "Failed to load asset scan folders");
+            return InvalidIconId;
+        }
+        AZStd::string extension;
+        AzFramework::StringFunc::Path::GetExtension(path.data(), extension, false);
+        if (extension == "svg")
+        {
+            QString qtPath(path.data());
+            for (const auto& folder : scanFolders)
+            {
+                QDir dir(folder.data());
+                if (dir.exists(qtPath))
+                {
+                    QString fullPath = dir.absoluteFilePath(qtPath);
+                    QSvgRenderer renderer(fullPath);
+                    renderer.setAspectRatioMode(Qt::KeepAspectRatio);
+                    QSize size = renderer.defaultSize().expandedTo(QSize(128, 128));
+                    QImage image(size, QImage::Format_RGBA8888);
+                    image.fill(0x00000000);
+                    QPainter painter(&image);
+                    renderer.render(&painter);
+
+                    AZ::Uuid assetId = AZ::Uuid::CreateName(path.data());
+
+                    RHI::Format format = RHI::Format::R8G8B8A8_UNORM;
+
+                    constexpr u32 pixelSize = sizeof(u32);
+
+                    Data::Instance<RPI::StreamingImagePool> streamingImagePool = RPI::ImageSystemInterface::Get()->GetSystemStreamingPool();
+                    auto streamingImage = RPI::StreamingImage::CreateFromCpuData(
+                        *streamingImagePool.get(),
+                        RHI::ImageDimension::Image2D,
+                        RHI::Size(image.width(), image.height(), 1),
+                        format,
+                        image.bits(),
+                        image.sizeInBytes(),
+                        assetId);
+
+                    IconId id = m_currentId++;
+                    IconData& iconData = m_iconData[id];
+                    iconData.m_path = path;
+                    iconData.m_image = streamingImage;
+                    return id;
+                }
+            }
+        }
+
         AZStd::string sourceRelativePath(path);
         AZStd::string cacheRelativePath = sourceRelativePath + ".streamingimage";
 
@@ -249,7 +313,7 @@ namespace AZ::Render
             // A lot of cry code uses the .dds extension even when the actual source file is .tif.
             // For the .streamingimage file we need the correct source extension before .streamingimage
             // So if the file doesn't exist and the extension was .dds then try replacing it with .tif
-            AZStd::string extension;
+            //AZStd::string extension;
             AzFramework::StringFunc::Path::GetExtension(path.data(), extension, false);
             if (extension == "dds")
             {

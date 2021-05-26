@@ -24,6 +24,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzFramework
                 AZ::AzToolsFramework
                 AZ::AtomCore
+                3rdParty::Qt::Core
+                3rdParty::Qt::Gui
+                3rdParty::Qt::Svg
                 Gem::Atom_RHI.Reflect
                 Gem::Atom_RPI.Public
                 Gem::Atom_Bootstrap.Headers
