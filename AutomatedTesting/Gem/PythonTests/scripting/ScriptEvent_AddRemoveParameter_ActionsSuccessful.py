@@ -33,9 +33,7 @@ def ScriptEvent_AddRemoveParameter_ActionsSuccessful():
      2) Get Asset Editor Qt object
      3) Create new Script Event Asset
      4) Add Parameter to Event
-     5) Verify Parameter exists
-     6) Remove Parameter from Event
-     7) Verify Parameter has been removed
+     5) Remove Parameter from Event
 
     Note:
      - This test file must be called from the Open 3D Engine Editor command terminal
