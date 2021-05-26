@@ -438,20 +438,16 @@ namespace Multiplayer
             m_connAcquiredEvent.Signal(datum);
         }
 
+        // Hosts will spawn a new default player prefab for the user that just connected
         if (GetAgentType() == MultiplayerAgentType::ClientServer
             || GetAgentType() == MultiplayerAgentType::DedicatedServer)
         {
-            PrefabEntityId playerPrefabEntityId(AZ::Name(static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str()), 1);
-            INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, AZ::Transform::CreateIdentity());
-
-            NetworkEntityHandle controlledEntity;
-            if (entityList.size() > 0)
+            NetworkEntityHandle controlledEntity = SpawnDefaultPlayerPrefab();
+            if (controlledEntity.Exists())
             {
-                controlledEntity = entityList[0];
                 controlledEntity.GetNetBindComponent()->SetOwningConnectionId(connection->GetConnectionId());
-                controlledEntity.GetNetBindComponent()->SetAllowAutonomy(true);
             }
-
+            
             if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
             {
                 connection->SetUserData(new ServerToClientConnectionData(connection, *this, controlledEntity));
@@ -523,6 +519,17 @@ namespace Multiplayer
             }
         }
         m_agentType = multiplayerType;
+
+        // Spawn the default player for this host since the host is also a player (not a dedicated server)
+        if (m_agentType == MultiplayerAgentType::ClientServer)
+        {
+            NetworkEntityHandle controlledEntity = SpawnDefaultPlayerPrefab();
+            if (NetBindComponent* controlledEntityNetBindComponent = controlledEntity.GetNetBindComponent())
+            {
+                controlledEntityNetBindComponent->SetAllowAutonomy(true);
+            }
+        }
+        
         AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
     }
 
@@ -628,6 +635,19 @@ namespace Multiplayer
         {
             console->PerformCommand(command.c_str(), AZ::ConsoleSilentMode::NotSilent, AZ::ConsoleInvokedFrom::AzNetworking, requiredSet);
         }
+    }
+
+    NetworkEntityHandle MultiplayerSystemComponent::SpawnDefaultPlayerPrefab()
+    {
+        PrefabEntityId playerPrefabEntityId(AZ::Name(static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str()), 1);
+        INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, AZ::Transform::CreateIdentity());
+
+        NetworkEntityHandle controlledEntity;
+        if (entityList.size() > 0)
+        {
+            controlledEntity = entityList[0];
+        }
+        return controlledEntity;
     }
 
     void host([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
