@@ -98,12 +98,6 @@ namespace AssetBundler
     public:
         void SetUp() override
         {          
-            AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
-            if (engineRoot.empty())
-            {
-                GTEST_FATAL_FAILURE_(AZStd::string::format("Unable to locate engine root.\n").c_str());
-            }
-
             AZ::SettingsRegistryInterface* registry = nullptr;
             if (!AZ::SettingsRegistry::Get())
             {
@@ -118,6 +112,12 @@ namespace AssetBundler
                 + "/project_path";
             registry->Set(projectPathKey, "AutomatedTesting");
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+
+            AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
+            if (engineRoot.empty())
+            {
+                GTEST_FATAL_FAILURE_(AZStd::string::format("Unable to locate engine root.\n").c_str());
+            }
 
             m_data = AZStd::make_unique<StaticData>();
             m_data->m_application.reset(aznew AzToolsFramework::ToolsApplication());
@@ -152,20 +152,24 @@ namespace AssetBundler
         }
         void TearDown() override
         {
-            AZ::IO::FileIOBase::SetInstance(nullptr);
-            delete m_data->m_localFileIO;
-            AZ::IO::FileIOBase::SetInstance(m_data->m_priorFileIO);
+            if (m_data)
+            {
+                AZ::IO::FileIOBase::SetInstance(nullptr);
+                delete m_data->m_localFileIO;
+                AZ::IO::FileIOBase::SetInstance(m_data->m_priorFileIO);
 
-            auto settingsRegistry = AZ::SettingsRegistry::Get();
-            if(settingsRegistry == &m_registry)
+                m_data->m_gemInfoList.set_capacity(0);
+                m_data->m_gemSeedFilePairList.set_capacity(0);
+                m_data->m_application.get()->Stop();
+                m_data->m_application.reset();
+            }
+
+            if(auto settingsRegistry = AZ::SettingsRegistry::Get();
+                settingsRegistry == &m_registry)
             {
                 AZ::SettingsRegistry::Unregister(settingsRegistry);
             }
 
-            m_data->m_gemInfoList.set_capacity(0);
-            m_data->m_gemSeedFilePairList.set_capacity(0);
-            m_data->m_application.get()->Stop();
-            m_data->m_application.reset();
         }
 
         void AddGemData(const char* engineRoot, const char* gemName, bool seedFileExists = true)
