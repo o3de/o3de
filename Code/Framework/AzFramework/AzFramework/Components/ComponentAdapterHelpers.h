@@ -28,9 +28,8 @@ namespace AzFramework
         template<typename T, typename = void>
         struct ComponentInitHelper
         {
-            static void Init(T& controller)
+            static void Init([[maybe_unused]] T& controller)
             {
-                AZ_UNUSED(controller);
             }
         };
 
@@ -46,7 +45,7 @@ namespace AzFramework
         template<typename T, typename = void>
         struct ComponentActivateHelper
         {
-            static void Activate([[maybe_unused]] T& controller, const AZ::EntityComponentIdPair& entityComponentIdPair)
+            static void Activate([[maybe_unused]] T& controller, [[maybe_unused]] const AZ::EntityComponentIdPair& entityComponentIdPair)
             {
             }
         };
