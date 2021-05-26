@@ -208,8 +208,11 @@ namespace AzFramework
         //! @param listCallback Required callback that will be called to list the entities on.
         virtual void ListEntities(EntitySpawnTicket& ticket, ListEntitiesCallback listCallback) = 0;
         //! List all entities that are spawned using this ticket with their spawnable index.
-        //!     The index will be of the template in the spawnable used to create the entity instance from. The same template can be used
-        //!     for multiple entities so the same index may appear multiple times.
+        //!     Spawnables contain a flat list of entities, which are used as templates to spawn entities from. For every spawned entity
+        //!     the index of the entity in the spawnable that was used as a template is stored. This version of ListEntities will return
+        //!     both the entities and this index. The index can be used with SpawnEntities to create the same entities again. Note that
+        //!     the same index may appear multiple times as there are no restriction on how many instance of a specific entity can be
+        //!     created.
         //! @param ticket Only the entities associated with this ticket will be listed.
         //! @param listCallback Required callback that will be called to list the entities and indices on.
         virtual void ListIndicesAndEntities(EntitySpawnTicket& ticket, ListIndicesEntitiesCallback listCallback) = 0;
