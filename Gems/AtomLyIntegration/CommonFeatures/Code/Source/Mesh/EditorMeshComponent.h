@@ -29,19 +29,19 @@ namespace AZ
          * effects when changing fields in the editor.
          */
         class EditorMeshComponent final
-            : public EditorRenderComponentAdapter<MeshComponentController, MeshComponent, MeshComponentConfig, true>
+            : public EditorRenderComponentAdapter<MeshComponentController, MeshComponent, MeshComponentConfig>
             , private AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
             , private AzFramework::EntityDebugDisplayEventBus::Handler
             , private MeshComponentNotificationBus::Handler
         {
         public:
-            using BaseClass = EditorRenderComponentAdapter<MeshComponentController, MeshComponent, MeshComponentConfig, true>;
+            using BaseClass = EditorRenderComponentAdapter<MeshComponentController, MeshComponent, MeshComponentConfig>;
             AZ_EDITOR_COMPONENT(AZ::Render::EditorMeshComponent, EditorMeshComponentTypeId, BaseClass);
 
             static void Reflect(AZ::ReflectContext* context);
 
             EditorMeshComponent() = default;
-            EditorMeshComponent(const MeshComponentConfig& config);
+            explicit EditorMeshComponent(const MeshComponentConfig& config);
 
             // AZ::Component overrides ...
             void Activate() override;
