@@ -14,6 +14,7 @@
 
 #include <ProjectButtonWidget.h>
 #include <PythonBindingsInterface.h>
+#include <ProjectUtils.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -27,6 +28,7 @@
 #include <QListWidgetItem>
 #include <QFileInfo>
 #include <QScrollArea>
+#include <QMessageBox>
 
 namespace O3DE::ProjectManager
 {
@@ -75,28 +77,27 @@ namespace O3DE::ProjectManager
             for (auto project : projectsResult.GetValue())
             {
                 ProjectButton* projectButton;
+
                 QString projectPreviewPath = project.m_path + m_projectPreviewImagePath;
                 QFileInfo doesPreviewExist(projectPreviewPath);
                 if (doesPreviewExist.exists() && doesPreviewExist.isFile())
                 {
-                    projectButton = new ProjectButton(project.m_projectName, projectPreviewPath, this);
+                    project.m_imagePath = projectPreviewPath;
                 }
-                else
-                {
-                    projectButton = new ProjectButton(project.m_projectName, this);
-                }
+
+                projectButton = new ProjectButton(project, this);
 
                 // Create rows of projects buttons s_projectButtonRowCount buttons wide
                 projectGridLayout->addWidget(projectButton, gridIndex / s_projectButtonRowCount, gridIndex % s_projectButtonRowCount);
 
                 connect(projectButton, &ProjectButton::OpenProject, this, &ProjectsHomeScreen::HandleOpenProject);
                 connect(projectButton, &ProjectButton::EditProject, this, &ProjectsHomeScreen::HandleEditProject);
-
-#ifdef SHOW_ALL_PROJECT_ACTIONS
-                connect(projectButton, &ProjectButton::EditProjectGems, this, &ProjectsHomeScreen::HandleEditProjectGems);
                 connect(projectButton, &ProjectButton::CopyProject, this, &ProjectsHomeScreen::HandleCopyProject);
                 connect(projectButton, &ProjectButton::RemoveProject, this, &ProjectsHomeScreen::HandleRemoveProject);
                 connect(projectButton, &ProjectButton::DeleteProject, this, &ProjectsHomeScreen::HandleDeleteProject);
+
+#ifdef SHOW_ALL_PROJECT_ACTIONS
+                connect(projectButton, &ProjectButton::EditProjectGems, this, &ProjectsHomeScreen::HandleEditProjectGems);
 #endif
                 ++gridIndex;
             }
@@ -123,7 +124,11 @@ namespace O3DE::ProjectManager
     }
     void ProjectsHomeScreen::HandleAddProjectButton()
     {
-        // Do nothing for now
+        if (ProjectUtils::AddProjectDialog(this))
+        {
+            emit ResetScreenRequest(ProjectManagerScreen::ProjectsHome);
+            emit ChangeScreenRequest(ProjectManagerScreen::ProjectsHome);
+        }
     }
     void ProjectsHomeScreen::HandleOpenProject(const QString& projectPath)
     {
@@ -141,18 +146,39 @@ namespace O3DE::ProjectManager
         emit NotifyCurrentProject(projectPath);
         emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
     }
-    void ProjectsHomeScreen::HandleCopyProject([[maybe_unused]] const QString& projectPath)
+    void ProjectsHomeScreen::HandleCopyProject(const QString& projectPath)
     {
         // Open file dialog and choose location for copied project then register copy with O3DE
+        if (ProjectUtils::CopyProjectDialog(projectPath, this))
+        {
+            emit ResetScreenRequest(ProjectManagerScreen::ProjectsHome);
+            emit ChangeScreenRequest(ProjectManagerScreen::ProjectsHome);
+        } 
     }
-    void ProjectsHomeScreen::HandleRemoveProject([[maybe_unused]] const QString& projectPath)
+    void ProjectsHomeScreen::HandleRemoveProject(const QString& projectPath)
     {
-        // Unregister Project from O3DE 
+        // Unregister Project from O3DE and reload projects
+        if (ProjectUtils::RemoveProject(projectPath))
+        {
+            emit ResetScreenRequest(ProjectManagerScreen::ProjectsHome);
+            emit ChangeScreenRequest(ProjectManagerScreen::ProjectsHome);
+        } 
     }
-    void ProjectsHomeScreen::HandleDeleteProject([[maybe_unused]] const QString& projectPath)
+    void ProjectsHomeScreen::HandleDeleteProject(const QString& projectPath)
     {
-        // Remove project from 03DE and delete from disk
-        ProjectsHomeScreen::HandleRemoveProject(projectPath);
+        QMessageBox::StandardButton warningResult = QMessageBox::warning(
+            this,
+            tr("Delete Project"),
+            tr("Are you sure?\nProject will be removed from O3DE and directory will be deleted!"),
+            QMessageBox::No | QMessageBox::Yes
+        );
+
+        if (warningResult == QMessageBox::Yes)
+        {
+            // Remove project from O3DE and delete from disk
+            ProjectsHomeScreen::HandleRemoveProject(projectPath);
+            ProjectUtils::DeleteProject(projectPath);
+        }
     }
 
 } // namespace O3DE::ProjectManager

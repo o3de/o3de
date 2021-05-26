@@ -492,7 +492,7 @@ namespace O3DE::ProjectManager
                     pybind11::none(),   // default_restricted_folder
                     pybind11::none(),   // default_restricted_folder
                     true                // remove
-                    );
+                );
                 
                 // Returns an exit code so boolify it then invert result
                 registrationResult = !pythonRegistrationResult.cast<bool>();
@@ -645,7 +645,7 @@ namespace O3DE::ProjectManager
                 pybind11::none(), // gem_target
                 pybind11::none(), // project_name
                 pyProjectPath
-                );
+            );
         });
 
         return result;
@@ -663,7 +663,7 @@ namespace O3DE::ProjectManager
                 pybind11::none(), // gem_target
                 pybind11::none(), // project_name
                 pyProjectPath
-                );
+            );
         });
 
         return result;

@@ -39,6 +39,8 @@ set(FILES
     Source/PythonBindingsInterface.h
     Source/ProjectInfo.h
     Source/ProjectInfo.cpp
+    Source/ProjectUtils.h
+    Source/ProjectUtils.cpp
     Source/NewProjectSettingsScreen.h
     Source/NewProjectSettingsScreen.cpp
     Source/CreateProjectCtrl.h
