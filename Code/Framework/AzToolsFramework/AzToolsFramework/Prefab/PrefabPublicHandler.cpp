@@ -1042,14 +1042,14 @@ namespace AzToolsFramework
                 InstanceOptionalReference parentInstance = owningInstance->get().GetParentInstance();
                 const auto parentTemplateId = parentInstance->get().GetTemplateId();
 
-                Prefab::PrefabDom instanceDomBefore;
-                m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBefore, parentInstance->get());
-
                 {
-                    auto getInstancePtrResult = parentInstance->get().GetNestedInstance(owningInstance->get().GetInstanceAlias());
-                    AZ_Assert(getInstancePtrResult, "Can't find selected container entity's owning Instance.");
+                    auto instancePtr = parentInstance->get().DetachNestedInstance(owningInstance->get().GetInstanceAlias());
+                    AZ_Assert(instancePtr, "Can't detach selected Instance from its parent Instance.");
 
-                    auto& instancePtr = getInstancePtrResult->get();
+                    RemoveLink(instancePtr, parentTemplateId, currentUndoBatch);
+
+                    Prefab::PrefabDom instanceDomBefore;
+                    m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBefore, parentInstance->get());
 
                     AZStd::unordered_map<AZ::EntityId, AZStd::string> oldEntityAliases;
                     oldEntityAliases.emplace(entityId, instancePtr->GetEntityAlias(entityId)->get());
@@ -1115,25 +1115,6 @@ namespace AzToolsFramework
                         linkPatchesCopy.CopyFrom(linkPatches->get(), linkPatchesCopy.GetAllocator());
 
                         RemoveLink(nestedInstancePtr, instanceTemplateId, currentUndoBatch);
-
-                        /*auto getNestedInstanceContainerEntityResult = nestedInstancePtr->GetContainerEntity();
-                        AZ_Assert(getNestedInstanceContainerEntityResult.has_value(), "Can't get nested instance container entitt.");
-
-                        auto& nestedInstanceContainerEntity = getNestedInstanceContainerEntityResult->get();
-                        auto nestedInstanceContainerEntityId = nestedInstanceContainerEntity.GetId();
-
-                        PrefabDom containerEntityDomBefore;
-                        m_instanceToTemplateInterface->GenerateDomForEntity(containerEntityDomBefore, nestedInstanceContainerEntity);
-
-                        AZ::TransformBus::Event(nestedInstanceContainerEntityId, &AZ::TransformInterface::SetParent, containerEntity.GetId());
-
-                        PrefabDom containerEntityDomAfter;
-                        m_instanceToTemplateInterface->GenerateDomForEntity(containerEntityDomAfter, nestedInstanceContainerEntity);
-
-                        PrefabDom reparentPatch;
-                        m_instanceToTemplateInterface->GeneratePatch(reparentPatch, containerEntityDomBefore, containerEntityDomAfter);
-                        m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(reparentPatch, nestedInstanceContainerEntityId);*/
-
                         PrefabDomUtils::PrintPrefabDomValue("linkPatchesCopy", linkPatchesCopy);
 
                         //update aliases
@@ -1156,20 +1137,7 @@ namespace AzToolsFramework
                         linkPatchesCopy.Parse(previousPatchString.toUtf8().constData());
 
                         CreateLink(*nestedInstancePtr, parentTemplateId, currentUndoBatch, AZStd::move(linkPatchesCopy), true);
-
-                        //update links?
-                        //// Update the cache - this prevents these changes from being stored in the regular undo/redo nodes as a separate step
-                        //m_prefabUndoCache.Store(nestedInstanceContainerEntityId, AZStd::move(containerEntityDomAfter));
-
-                        //// Save these changes as patches to the link
-                        //PrefabUndoLinkUpdate* linkUpdate = aznew PrefabUndoLinkUpdate(AZStd::to_string(static_cast<AZ::u64>(nestedInstanceContainerEntityId)));
-                        //linkUpdate->SetParent(undoBatch.GetUndoBatch());
-                        //linkUpdate->Capture(reparentPatch, nestedInstance->GetLinkId());
-
-                        //linkUpdate->Redo();
                     });
-
-                    RemoveLink(instancePtr, parentTemplateId, currentUndoBatch);
 
                     AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                         &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
