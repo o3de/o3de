@@ -24,7 +24,7 @@ function Process(context)
     local shadowMap = context:GetShaderByTag("Shadowmap")
     local forwardPassEDS = context:GetShaderByTag("ForwardPass_EDS")
     local depthPassWithPS = context:GetShaderByTag("DepthPass_WithPS")
-    local shadowMapWitPS = context:GetShaderByTag("Shadowmap_WithPS")
+    local shadowMapWithPS = context:GetShaderByTag("Shadowmap_WithPS")
     local forwardPass = context:GetShaderByTag("ForwardPass")
     
     local shadingAffectsDepth = parallaxEnabled and parallaxPdoEnabled;
@@ -34,6 +34,6 @@ function Process(context)
     forwardPassEDS:SetEnabled(not shadingAffectsDepth)
         
     depthPassWithPS:SetEnabled(shadingAffectsDepth)
-    shadowMapWitPS:SetEnabled(shadingAffectsDepth)
+    shadowMapWithPS:SetEnabled(shadingAffectsDepth)
     forwardPass:SetEnabled(shadingAffectsDepth)
 end

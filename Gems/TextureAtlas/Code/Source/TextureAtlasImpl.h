@@ -20,7 +20,8 @@
 #include "TextureAtlas/TextureAtlas.h"
 #include "TextureAtlas/TextureAtlasBus.h"
 
-#include <ITexture.h>
+#include <Atom/RPI.Reflect/Image/Image.h>
+#include <AtomCore/Instance/Instance.h>
 
 namespace TextureAtlasNamespace
 {
@@ -61,10 +62,10 @@ namespace TextureAtlasNamespace
         AtlasCoordinates GetAtlasCoordinates(const AZStd::string& handle) const override;
         
         //! Links this atlas to an image pointer
-        void SetTexture(ITexture* image) override;
+        void SetTexture(AZ::Data::Instance<AZ::RPI::Image> image) override;
         
         //! Returns the image linked to this atlas
-        ITexture* GetTexture() const override;
+        AZ::Data::Instance<AZ::RPI::Image> GetTexture() const override;
         
         //! Replaces the mappings of this Texture Atlas Object, with the source's mappings
         void OverwriteMappings(TextureAtlasImpl* source);
@@ -80,7 +81,7 @@ namespace TextureAtlasNamespace
 
     private:
         AZStd::unordered_map<AZStd::string, AtlasCoordinates, hash_case_insensitive, equal_to_case_insensitive> m_data;
-        ITexture* m_image;
+        AZ::Data::Instance<AZ::RPI::Image> m_image;
         int m_width;
         int m_height;
     };
