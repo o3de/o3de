@@ -57,8 +57,8 @@ namespace AzFramework
         class GetRelativeProductPathFromFullSourceOrProductPathRequest;
         class GetRelativeProductPathFromFullSourceOrProductPathResponse;
 
-        class GetRelativeSourcePathFromFullSourcePathRequest;
-        class GetRelativeSourcePathFromFullSourcePathResponse;
+        class GenerateRelativeSourcePathRequest;
+        class GenerateRelativeSourcePathResponse;
 
         class GetFullSourcePathFromRelativeProductPathRequest;
         class GetFullSourcePathFromRelativeProductPathResponse;
@@ -107,8 +107,8 @@ namespace AssetProcessor
         using GetAbsoluteAssetDatabaseLocationResponse = AzToolsFramework::AssetSystem::GetAbsoluteAssetDatabaseLocationResponse;
         using GetRelativeProductPathFromFullSourceOrProductPathRequest = AzFramework::AssetSystem::GetRelativeProductPathFromFullSourceOrProductPathRequest;
         using GetRelativeProductPathFromFullSourceOrProductPathResponse = AzFramework::AssetSystem::GetRelativeProductPathFromFullSourceOrProductPathResponse;
-        using GetRelativeSourcePathFromFullSourcePathRequest = AzFramework::AssetSystem::GetRelativeSourcePathFromFullSourcePathRequest;
-        using GetRelativeSourcePathFromFullSourcePathResponse = AzFramework::AssetSystem::GetRelativeSourcePathFromFullSourcePathResponse;
+        using GenerateRelativeSourcePathRequest = AzFramework::AssetSystem::GenerateRelativeSourcePathRequest;
+        using GenerateRelativeSourcePathResponse = AzFramework::AssetSystem::GenerateRelativeSourcePathResponse;
         using GetFullSourcePathFromRelativeProductPathRequest = AzFramework::AssetSystem::GetFullSourcePathFromRelativeProductPathRequest;
         using GetFullSourcePathFromRelativeProductPathResponse = AzFramework::AssetSystem::GetFullSourcePathFromRelativeProductPathResponse;
 

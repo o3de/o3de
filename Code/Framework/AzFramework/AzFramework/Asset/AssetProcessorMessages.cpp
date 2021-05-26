@@ -309,30 +309,30 @@ namespace AzFramework
         }
 
         //---------------------------------------------------------------------
-        GetRelativeSourcePathFromFullSourcePathRequest::GetRelativeSourcePathFromFullSourcePathRequest(const AZ::OSString& sourcePath)
+        GenerateRelativeSourcePathRequest::GenerateRelativeSourcePathRequest(const AZ::OSString& sourcePath)
         {
-            AZ_Assert(!sourcePath.empty(), "GetRelativeSourcePathFromFullSourcePathRequest: asset path is empty");
+            AZ_Assert(!sourcePath.empty(), "GenerateRelativeSourcePathRequest: asset path is empty");
             m_sourcePath = sourcePath;
         }
 
-        unsigned int GetRelativeSourcePathFromFullSourcePathRequest::GetMessageType() const
+        unsigned int GenerateRelativeSourcePathRequest::GetMessageType() const
         {
             return MessageType;
         }
 
-        void GetRelativeSourcePathFromFullSourcePathRequest::Reflect(AZ::ReflectContext* context)
+        void GenerateRelativeSourcePathRequest::Reflect(AZ::ReflectContext* context)
         {
             auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
             if (serialize)
             {
-                serialize->Class<GetRelativeSourcePathFromFullSourcePathRequest, BaseAssetProcessorMessage>()
+                serialize->Class<GenerateRelativeSourcePathRequest, BaseAssetProcessorMessage>()
                     ->Version(1)
-                    ->Field("SourcePath", &GetRelativeSourcePathFromFullSourcePathRequest::m_sourcePath);
+                    ->Field("SourcePath", &GenerateRelativeSourcePathRequest::m_sourcePath);
             }
         }
 
         //---------------------------------------------------------------------
-        GetRelativeSourcePathFromFullSourcePathResponse::GetRelativeSourcePathFromFullSourcePathResponse(
+        GenerateRelativeSourcePathResponse::GenerateRelativeSourcePathResponse(
             bool resolved, const AZ::OSString& relativeSourcePath, const AZ::OSString& rootFolder)
         {
             m_relativeSourcePath = relativeSourcePath;
@@ -340,21 +340,21 @@ namespace AzFramework
             m_rootFolder = rootFolder;
         }
 
-        unsigned int GetRelativeSourcePathFromFullSourcePathResponse::GetMessageType() const
+        unsigned int GenerateRelativeSourcePathResponse::GetMessageType() const
         {
-            return GetRelativeSourcePathFromFullSourcePathRequest::MessageType;
+            return GenerateRelativeSourcePathRequest::MessageType;
         }
 
-        void GetRelativeSourcePathFromFullSourcePathResponse::Reflect(AZ::ReflectContext* context)
+        void GenerateRelativeSourcePathResponse::Reflect(AZ::ReflectContext* context)
         {
             auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
             if (serialize)
             {
-                serialize->Class<GetRelativeSourcePathFromFullSourcePathResponse, BaseAssetProcessorMessage>()
+                serialize->Class<GenerateRelativeSourcePathResponse, BaseAssetProcessorMessage>()
                     ->Version(1)
-                    ->Field("RelativeSourcePath", &GetRelativeSourcePathFromFullSourcePathResponse::m_relativeSourcePath)
-                    ->Field("RootFolder", &GetRelativeSourcePathFromFullSourcePathResponse::m_rootFolder)
-                    ->Field("Resolved", &GetRelativeSourcePathFromFullSourcePathResponse::m_resolved);
+                    ->Field("RelativeSourcePath", &GenerateRelativeSourcePathResponse::m_relativeSourcePath)
+                    ->Field("RootFolder", &GenerateRelativeSourcePathResponse::m_rootFolder)
+                    ->Field("Resolved", &GenerateRelativeSourcePathResponse::m_resolved);
             }
         }
 

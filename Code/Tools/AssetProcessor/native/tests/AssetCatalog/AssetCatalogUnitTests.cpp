@@ -573,17 +573,16 @@ namespace AssetProcessor
                 config, dbConn);
         }
 
-        // Calls the GetRelativeSourcePathFromFullSourcePath function and validates that the results match the expected inputs.
+        // Calls the GenerateRelativeSourcePath function and validates that the results match the expected inputs.
         void TestGetRelativeSourcePath(
-            const AZStd::string& absolutePath, bool expectedToFind, const AZStd::string& expectedPath, const AZStd::string& expectedRoot)
+            const AZStd::string& sourcePath, bool expectedToFind, const AZStd::string& expectedPath, const AZStd::string& expectedRoot)
         {
             bool relPathFound = false;
             AZStd::string relPath;
             AZStd::string rootFolder;
-            AZStd::string fullPath(absolutePath);
 
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                relPathFound, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetRelativeSourcePathFromFullSourcePath, fullPath,
+                relPathFound, &AzToolsFramework::AssetSystem::AssetSystemRequest::GenerateRelativeSourcePath, sourcePath,
                 relPath, rootFolder);
 
             EXPECT_EQ(relPathFound, expectedToFind);
@@ -592,7 +591,7 @@ namespace AssetProcessor
         }
     };
 
-    TEST_F(AssetCatalogTestRelativeSourcePath, GetRelativeSourcePathFromFullSourcePath_EmptySourcePath_ReturnsNoMatch)
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_EmptySourcePath_ReturnsNoMatch)
     {
         // Test passes in an empty source path, which shouldn't produce a valid result.
         // Input:  empty source path
@@ -600,7 +599,7 @@ namespace AssetProcessor
         TestGetRelativeSourcePath("", false, "", "");
     }
 
-    TEST_F(AssetCatalogTestRelativeSourcePath, GetRelativeSourcePathFromFullSourcePath_AbsolutePathOutsideWatchFolders_ReturnsNoMatch)
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_AbsolutePathOutsideWatchFolders_ReturnsNoMatch)
     {
         // Test passes in an invalid absolute source path, which shouldn't produce a valid result.
         // Input:  "/sourceRoot/noWatchFolder/test.txt"
@@ -611,7 +610,7 @@ namespace AssetProcessor
         TestGetRelativeSourcePath(fileToCheck.toUtf8().constData(), false, fileToCheck.toUtf8().constData(), "");
     }
 
-    TEST_F(AssetCatalogTestRelativeSourcePath, GetRelativeSourcePathFromFullSourcePath_AbsolutePathUnderWatchFolder_ReturnsRelativePath)
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_AbsolutePathUnderWatchFolder_ReturnsRelativePath)
     {
         // Test passes in a valid absolute source path, which should produce a valid relative path
         // Input:  "/sourceRoot/noRecurse/test.txt"
@@ -622,7 +621,7 @@ namespace AssetProcessor
         TestGetRelativeSourcePath(fileToCheck.toUtf8().constData(), true, "test.txt", watchFolder.path().toUtf8().constData());
     }
 
-    TEST_F(AssetCatalogTestRelativeSourcePath, GetRelativeSourcePathFromFullSourcePath_AbsolutePathUnderNestedWatchFolders_ReturnsRelativePath)
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_AbsolutePathUnderNestedWatchFolders_ReturnsRelativePath)
     {
         // Test passes in a valid absolute source path that matches a watch folder and a nested watch folder.
         // The output relative path should match the nested folder, because the nested folder has a higher priority registered with the AP.
@@ -634,7 +633,7 @@ namespace AssetProcessor
         TestGetRelativeSourcePath(fileToCheck.toUtf8().constData(), true, "test.txt", watchFolder.path().toUtf8().constData());
     }
 
-    TEST_F(AssetCatalogTestRelativeSourcePath, GetRelativeSourcePathFromFullSourcePath_BareFileNameValidInWatchFolder_ReturnsHighestPriorityWatchFolder)
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_BareFileNameValidInWatchFolder_ReturnsHighestPriorityWatchFolder)
     {
         // Test passes in a simple file name.  The output should be relative to the highest-priority watch folder.
         // Input:  "test.txt"
@@ -644,9 +643,7 @@ namespace AssetProcessor
         TestGetRelativeSourcePath("test.txt", true, "test.txt", watchFolder.path().toUtf8().constData());
     }
 
-    TEST_F(
-        AssetCatalogTestRelativeSourcePath,
-        GetRelativeSourcePathFromFullSourcePath_RelativePathValidInWatchFolder_ReturnsHighestPriorityWatchFolder)
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_RelativePathValidInWatchFolder_ReturnsHighestPriorityWatchFolder)
     {
         // Test passes in a relative path.  The output should preserve the relative path, but list it as relative to the highest-priority
         // watch folder.
@@ -657,9 +654,7 @@ namespace AssetProcessor
         TestGetRelativeSourcePath("a/b/c/test.txt", true, "a/b/c/test.txt", watchFolder.path().toUtf8().constData());
     }
 
-    TEST_F(
-        AssetCatalogTestRelativeSourcePath,
-        GetRelativeSourcePathFromFullSourcePath_RelativePathNotInWatchFolder_ReturnsNoMatch)
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_RelativePathNotInWatchFolder_ReturnsNoMatch)
     {
         // Test passes in a relative path that "backs up" two directories.  This will be invalid, because no matter which watch directory
         // we start at, the result will be outside of any watch directory.
@@ -668,7 +663,7 @@ namespace AssetProcessor
         TestGetRelativeSourcePath("../../test.txt", false, "../../test.txt", "");
     }
 
-    TEST_F(AssetCatalogTestRelativeSourcePath, GetRelativeSourcePathFromFullSourcePath_RelativePathValidFromNestedWatchFolder_ReturnsOuterFolder)
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_RelativePathValidFromNestedWatchFolder_ReturnsOuterFolder)
     {
         // Test passes in a relative path that "backs up" one directory.  This will produce a valid result, because we can back up from
         // the "recurseNested/nested/" watch folder to "recurseNested", which is also a valid watch folder.
@@ -678,9 +673,7 @@ namespace AssetProcessor
         TestGetRelativeSourcePath("../test.txt", true, "test.txt", watchFolder.path().toUtf8().constData());
     }
 
-    TEST_F(
-        AssetCatalogTestRelativeSourcePath,
-        GetRelativeSourcePathFromFullSourcePath_RelativePathMovesToParentWatchFolder_ReturnsOuterFolder)
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_RelativePathMovesToParentWatchFolder_ReturnsOuterFolder)
     {
         // Test passes in a relative path that backs up one directory and then forward into a directory.  This will produce a valid
         // result, because it can validly start in the highest-priority watch folder (recurseNested/nested), move back one into the
@@ -694,9 +687,7 @@ namespace AssetProcessor
         TestGetRelativeSourcePath("../recurseNotNested/test.txt", true, "recurseNotNested/test.txt", watchFolder.path().toUtf8().constData());
     }
 
-    TEST_F(
-        AssetCatalogTestRelativeSourcePath,
-        GetRelativeSourcePathFromFullSourcePath_RelativePathMovesToSiblingWatchFolder_ReturnsSiblingFolder)
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_RelativePathMovesToSiblingWatchFolder_ReturnsSiblingFolder)
     {
         // Test passes in a relative path that backs up two directories and then forward into a directory.  This will produce a valid
         // result, because it can validly start in the recurseNested/nested folder, move back two folders, then forward into the sibling
@@ -708,7 +699,7 @@ namespace AssetProcessor
         TestGetRelativeSourcePath("../../recurseNotNested/test.txt", true, "test.txt", watchFolder.path().toUtf8().constData());
     }
 
-    TEST_F(AssetCatalogTestRelativeSourcePath, GetRelativeSourcePathFromFullSourcePath_RelativePathBacksOutOfWatchFolder_ReturnsNoMatch)
+    TEST_F(AssetCatalogTestRelativeSourcePath, GenerateRelativeSourcePath_RelativePathBacksOutOfWatchFolder_ReturnsNoMatch)
     {
         // Test passes in a relative path that adds a directory, then "backs up" three directories.  This will be invalid, because no
         // matter which watch directory we start at, the result will be outside of any watch directory.

@@ -25,8 +25,8 @@ namespace UnitTests
         MOCK_METHOD0(GetAbsoluteDevGameFolderPath, const char* ());
         MOCK_METHOD0(GetAbsoluteDevRootFolderPath, const char* ());
         MOCK_METHOD2(GetRelativeProductPathFromFullSourceOrProductPath, bool(const AZStd::string& fullPath, AZStd::string& relativeProductPath));
-        MOCK_METHOD3(GetRelativeSourcePathFromFullSourcePath,
-            bool(const AZStd::string& fullPath, AZStd::string& relativeProductPath, AZStd::string& watchFolder));
+        MOCK_METHOD3(GenerateRelativeSourcePath,
+            bool(const AZStd::string& sourcePath, AZStd::string& relativePath, AZStd::string& watchFolder));
         MOCK_METHOD2(GetFullSourcePathFromRelativeProductPath, bool(const AZStd::string& relPath, AZStd::string& fullSourcePath));
         MOCK_METHOD5(GetAssetInfoById, bool(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType, const AZStd::string& platformName, AZ::Data::AssetInfo& assetInfo, AZStd::string& rootFilePath));
         MOCK_METHOD3(GetSourceInfoBySourcePath, bool(const char* sourcePath, AZ::Data::AssetInfo& assetInfo, AZStd::string& watchFolder));

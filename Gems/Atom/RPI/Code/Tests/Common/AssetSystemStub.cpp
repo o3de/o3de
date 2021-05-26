@@ -72,8 +72,8 @@ namespace UnitTest
         return false;
     }
 
-    bool AssetSystemStub::GetRelativeSourcePathFromFullSourcePath(
-        [[maybe_unused]] const AZStd::string& fullPath, [[maybe_unused]] AZStd::string& relativePath,
+    bool AssetSystemStub::GenerateRelativeSourcePath(
+        [[maybe_unused]] const AZStd::string& sourcePath, [[maybe_unused]] AZStd::string& relativePath,
         [[maybe_unused]] AZStd::string& watchFolder)
     {
         return false;

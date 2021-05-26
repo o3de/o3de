@@ -104,15 +104,15 @@ namespace
         return GetRelativeProductPathFromFullSourceOrProductPathResponse(relPathFound, relProductPath);
     }
 
-    GetRelativeSourcePathFromFullSourcePathResponse HandleGetRelativeSourcePathFromFullSourcePathRequest(
-        MessageData<GetRelativeSourcePathFromFullSourcePathRequest> messageData)
+    GenerateRelativeSourcePathResponse HandleGenerateRelativeSourcePathRequest(
+        MessageData<GenerateRelativeSourcePathRequest> messageData)
     {
         bool relPathFound = false;
         AZStd::string relPath;
         AZStd::string watchFolder;
 
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            relPathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetRelativeSourcePathFromFullSourcePath,
+            relPathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath,
             messageData.m_message->m_sourcePath, relPath, watchFolder);
 
         if (!relPathFound)
@@ -122,7 +122,7 @@ namespace
                 messageData.m_message->m_sourcePath.c_str());
         }
 
-        return GetRelativeSourcePathFromFullSourcePathResponse(relPathFound, relPath, watchFolder);
+        return GenerateRelativeSourcePathResponse(relPathFound, relPath, watchFolder);
     }
 
     SourceAssetInfoResponse HandleSourceAssetInfoRequest(MessageData<SourceAssetInfoRequest> messageData)
@@ -428,7 +428,7 @@ AssetRequestHandler::AssetRequestHandler()
 
     m_requestRouter.RegisterMessageHandler(&HandleGetFullSourcePathFromRelativeProductPathRequest);
     m_requestRouter.RegisterMessageHandler(&HandleGetRelativeProductPathFromFullSourceOrProductPathRequest);
-    m_requestRouter.RegisterMessageHandler(&HandleGetRelativeSourcePathFromFullSourcePathRequest);
+    m_requestRouter.RegisterMessageHandler(&HandleGenerateRelativeSourcePathRequest);
     m_requestRouter.RegisterMessageHandler(&HandleSourceAssetInfoRequest);
     m_requestRouter.RegisterMessageHandler(&HandleSourceAssetProductsInfoRequest);
     m_requestRouter.RegisterMessageHandler(&HandleGetScanFoldersRequest);

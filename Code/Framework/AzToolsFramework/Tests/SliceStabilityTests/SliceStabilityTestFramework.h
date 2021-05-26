@@ -149,8 +149,8 @@ namespace UnitTest
         const char* GetAbsoluteDevGameFolderPath() override { return ""; }
         const char* GetAbsoluteDevRootFolderPath() override { return ""; }
         bool GetRelativeProductPathFromFullSourceOrProductPath([[maybe_unused]] const AZStd::string& fullPath, [[maybe_unused]] AZStd::string& relativeProductPath) override { return false; }
-        bool GetRelativeSourcePathFromFullSourcePath(
-            [[maybe_unused]] const AZStd::string& fullPath, [[maybe_unused]] AZStd::string& relativeProductPath,
+        bool GenerateRelativeSourcePath(
+            [[maybe_unused]] const AZStd::string& sourcePath, [[maybe_unused]] AZStd::string& relativePath,
             [[maybe_unused]] AZStd::string& watchFolder) override { return false; }
         bool GetFullSourcePathFromRelativeProductPath([[maybe_unused]] const AZStd::string& relPath, [[maybe_unused]] AZStd::string& fullSourcePath) override { return false; }
         bool GetAssetInfoById([[maybe_unused]] const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetType& assetType, [[maybe_unused]] const AZStd::string& platformName, [[maybe_unused]] AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& rootFilePath) override { return false; }
