@@ -28,25 +28,25 @@ namespace AzFramework
         template<typename T, typename = void>
         struct ComponentInitHelper
         {
-            static void Init(T& common)
+            static void Init(T& controller)
             {
-                AZ_UNUSED(common);
+                AZ_UNUSED(controller);
             }
         };
 
         template<typename T>
         struct ComponentInitHelper<T, AZStd::void_t<decltype(AZStd::declval<T>().Init())>>
         {
-            static void Init(T& common)
+            static void Init(T& controller)
             {
-                common.Init();
+                controller.Init();
             }
         };
 
         template<typename T, typename = void>
         struct ComponentActivateHelper
         {
-            static void Activate([[maybe_unused]] T& common, const AZ::EntityComponentIdPair& entityComponentIdPair)
+            static void Activate([[maybe_unused]] T& controller, const AZ::EntityComponentIdPair& entityComponentIdPair)
             {
             }
         };
@@ -54,18 +54,18 @@ namespace AzFramework
         template<typename T>
         struct ComponentActivateHelper<T, AZStd::void_t<decltype(AZStd::declval<T>().Activate(AZ::EntityId()))>>
         {
-            static void Activate(T& common, const AZ::EntityComponentIdPair& entityComponentIdPair)
+            static void Activate(T& controller, const AZ::EntityComponentIdPair& entityComponentIdPair)
             {
-                common.Activate(entityComponentIdPair.GetEntityId());
+                controller.Activate(entityComponentIdPair.GetEntityId());
             }
         };
 
         template<typename T>
         struct ComponentActivateHelper<T, AZStd::void_t<decltype(AZStd::declval<T>().Activate(AZ::EntityComponentIdPair()))>>
         {
-            static void Activate(T& common, const AZ::EntityComponentIdPair& entityComponentIdPair)
+            static void Activate(T& controller, const AZ::EntityComponentIdPair& entityComponentIdPair)
             {
-                common.Activate(entityComponentIdPair);
+                controller.Activate(entityComponentIdPair);
             }
         };
 
