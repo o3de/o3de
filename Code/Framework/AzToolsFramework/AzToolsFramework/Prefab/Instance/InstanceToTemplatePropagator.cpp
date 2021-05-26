@@ -10,9 +10,10 @@
 *
 */
 
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/JSON/prettywriter.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
 
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
@@ -189,7 +190,11 @@ namespace AzToolsFramework
             }
             else
             {
-                AZ_Error("Prefab", false, "Patch was not successfully applied");
+                rapidjson::StringBuffer prefabBuffer;
+                rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(prefabBuffer);
+                providedPatch.Accept(writer);
+
+                AZ_Error("Prefab", false, "Patch was not successfully applied:\n %s", prefabBuffer.GetString());
                 return false;
             }
         }
