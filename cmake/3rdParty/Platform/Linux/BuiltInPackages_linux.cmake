@@ -33,7 +33,7 @@ ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform      TARG
 
 # platform-specific:
 ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-3.4.1-rev1-linux   			TARGETS AWSGameLiftServerSDK   		PACKAGE_HASH a8149a95bd100384af6ade97e2b21a56173740d921e6c3da8188cd51554d39af)
-ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2104-o3de-rev2-linux	TARGETS DirectXShaderCompilerDxc   	PACKAGE_HASH 05c39267cf6beaabfce39f518736390e7943e1b3885fb7040dc59182516ae6df)
+ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2104-o3de-rev2-linux TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 235606f98512c076a1ba84a8402ad24ac21945998abcea264e8e204678efc0ba)
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-linux          				TARGETS freetype        			PACKAGE_HASH 9ad246873067717962c6b780d28a5ce3cef3321b73c9aea746a039c798f52e93)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-linux               				TARGETS tiff            			PACKAGE_HASH ae92b4d3b189c42ef644abc5cac865d1fb2eb7cb5622ec17e35642b00d1a0a76)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev4-linux   				TARGETS AWSNativeSDK    			PACKAGE_HASH b4db38de49d35a5f7500aed7f4aee5ec511dd3b584ee06fe9097885690191a5d)
