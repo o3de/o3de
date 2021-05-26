@@ -57,7 +57,6 @@ namespace ScriptCanvas
                     AZStd::vector< SourceSlotConfiguration > m_sourceSlotConfigurations;
                 };
 
-                AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> GetReplacementSlotsMap() const override;
                 void CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const override;
 
                 using TypeList = AZStd::vector<AZ::TypeId>;

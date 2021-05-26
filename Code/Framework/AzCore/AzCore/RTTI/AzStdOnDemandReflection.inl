@@ -1020,29 +1020,60 @@ namespace AZ
         }
     };
 
-    /// OnDemand reflection for AZStd::set
+
+    template<class t_Key, class t_Hasher, class t_EqualKey, class t_Allocator>
+    class Iterator_VM<AZStd::unordered_set<t_Key, t_Hasher, t_EqualKey, t_Allocator>>
+    {
+    public:
+        using ContainerType = AZStd::unordered_set<t_Key, t_Hasher, t_EqualKey, t_Allocator>;
+        using IteratorType = typename ContainerType::iterator;
+        Iterator_VM(ContainerType& container)
+            : m_iterator(container.begin())
+            , m_end(container.end())
+        {}
+
+        const t_Key& GetKeyUnchecked() const
+        {
+            return *m_iterator;
+        }
+
+        bool IsNotAtEnd() const
+        {
+            return m_iterator != m_end;
+        }
+
+        t_Key& ModValueUnchecked()
+        {
+            return *m_iterator;
+        }
+
+        void Next()
+        {
+            ++m_iterator;
+        }
+
+    private:
+        IteratorType m_iterator;
+        IteratorType m_end;
+    };
+
+    /// OnDemand reflection for AZStd::unordered_set
     template<class Key, class Hasher, class EqualKey, class Allocator>
     struct OnDemandReflection< AZStd::unordered_set<Key, Hasher, EqualKey, Allocator> >
     {
         using ContainerType = AZStd::unordered_set<Key, Hasher, EqualKey, Allocator>;
         using KeyListType = AZStd::vector<Key, Allocator>;
 
-        static AZ::Outcome<void, void> Erase(ContainerType& thisMap, Key& key)
+        using ValueIteratorType = Iterator_VM<ContainerType>;
+
+        static bool EraseCheck_VM(ContainerType& thisSet, Key& key)
         {
-            const auto result = thisMap.erase(key);
-            if (result)
-            {
-                return AZ::Success();
-            }
-            else
-            {
-                return AZ::Failure();
-            }
+            return thisSet.erase(key) != 0;
         }
 
-        static void Insert(ContainerType& thisSet, Key& key)
+        static ContainerType& ErasePost_VM(ContainerType& thisSet, [[maybe_unused]] Key&)
         {
-            thisSet.insert(key);
+            return thisSet;
         }
 
         static KeyListType GetKeys(ContainerType& thisSet)
@@ -1055,6 +1086,17 @@ namespace AZ
             return keys;
         }
 
+        static ContainerType& Insert(ContainerType& thisSet, Key& key)
+        {
+            thisSet.insert(key);
+            return thisSet;
+        }
+
+        static ValueIteratorType Iterate_VM(ContainerType& thisContainer)
+        {
+            return ValueIteratorType(thisContainer);
+        }
+
         static void Swap(ContainerType& thisSet, ContainerType& otherSet)
         {
             thisSet.swap(otherSet);
@@ -1064,33 +1106,68 @@ namespace AZ
         {
             if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
             {
+                BranchOnResultInfo emptyBranchInfo;
+                emptyBranchInfo.m_returnResultInBranches = true;
+                emptyBranchInfo.m_trueToolTip = "The container is empty";
+                emptyBranchInfo.m_falseToolTip = "The container is not empty";
+
                 auto ContainsTransparent = [](const ContainerType& containerType, typename ContainerType::key_type& key)->bool
                 {
                     return containerType.contains(key);
                 };
 
+                ExplicitOverloadInfo explicitOverloadInfo;
                 behaviorContext->Class<ContainerType>()
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)
                     ->Attribute(AZ::ScriptCanvasAttributes::PrettyName, ScriptCanvasOnDemandReflection::OnDemandPrettyName<ContainerType>::Get(*behaviorContext))
                     ->Attribute(AZ::Script::Attributes::ToolTip, ScriptCanvasOnDemandReflection::OnDemandToolTip<ContainerType>::Get(*behaviorContext))
                     ->Attribute(AZ::Script::Attributes::Category, ScriptCanvasOnDemandReflection::OnDemandCategoryName<ContainerType>::Get(*behaviorContext))
                     ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::ScriptOwn)
                     ->Method("BucketCount", static_cast<typename ContainerType::size_type(ContainerType::*)() const>(&ContainerType::bucket_count))
-                    ->Method("Erase", &Erase)
-                    ->Method("Empty", [](ContainerType& thisSet)->bool { return thisSet.empty(); })
+                    ->Method("Empty", static_cast<bool(ContainerType::*)() const>(&ContainerType::empty), { { { "Container", "The container to check if it is empty", nullptr, {} } } })
+                        ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Is Empty", "Containers"))
+                        ->Attribute(AZ::ScriptCanvasAttributes::BranchOnResult, emptyBranchInfo)
+                    ->Method("EraseCheck_VM", &EraseCheck_VM)
+                        ->Attribute(AZ::Script::Attributes::TreatAsMemberFunction, AZ::AttributeIsValid::IfPresent)
+                        ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                    ->Method("Erase", &ErasePost_VM)
+                        ->Attribute(AZ::Script::Attributes::TreatAsMemberFunction, AZ::AttributeIsValid::IfPresent)
+                        ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Erase", "Containers"))
+                        ->Attribute(AZ::ScriptCanvasAttributes::CheckedOperation, CheckedOperationInfo("EraseCheck_VM", {}, "Out", "Key Not Found", true))
+                        ->Attribute(AZ::ScriptCanvasAttributes::OverloadArgumentGroup, AZ::OverloadArgumentGroupInfo({ "ContainerGroup", "" }, { "ContainerGroup" }))
                     ->Method("contains", ContainsTransparent)
+                        ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Has Key", "Containers"))
                         ->Attribute(AZ::Script::Attributes::TreatAsMemberFunction, AZ::AttributeIsValid::IfPresent)
                     ->Method("Insert", &Insert)
+                        ->Attribute(AZ::Script::Attributes::TreatAsMemberFunction, AZ::AttributeIsValid::IfPresent)
+                        ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Insert", "Containers"))
+                        ->Attribute(AZ::ScriptCanvasAttributes::OverloadArgumentGroup, AZ::OverloadArgumentGroupInfo({ "ContainerGroup", "", "" }, { "ContainerGroup" }))
                     ->Method(k_sizeName, [](ContainerType* thisPtr) { return aznumeric_cast<int>(thisPtr->size()); })
                         ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::Length)
                     ->Method("GetKeys", &GetKeys)
                         ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                    ->Method("GetSize", [](ContainerType& thisPtr) { return aznumeric_cast<int>(thisPtr.size()); })
+                        ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Get Size", "Containers"))
+                        ->Attribute(AZ::Script::Attributes::TreatAsMemberFunction, AZ::AttributeIsValid::IfPresent)
                     ->Method("Reserve", static_cast<void(ContainerType::*)(typename ContainerType::size_type)>(&ContainerType::reserve))
                     ->Method("Swap", &Swap)
+                    ->Method("Clear", [](ContainerType& thisContainer)->ContainerType& { thisContainer.clear(); return thisContainer; })
+                        ->Attribute(AZ::Script::Attributes::TreatAsMemberFunction, AZ::AttributeIsValid::IfPresent)
+                        ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Clear All Elements", "Containers"))
+                        ->Attribute(AZ::ScriptCanvasAttributes::OverloadArgumentGroup, AZ::OverloadArgumentGroupInfo({ "ContainerGroup" }, { "ContainerGroup" }))
+                    ->Method(k_iteratorConstructorName, &Iterate_VM)
+                        ;
+
+                behaviorContext->Class<ValueIteratorType>()
+                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)
+                    ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::ScriptOwn)
+                    ->Method(k_iteratorGetKeyName, &ValueIteratorType::GetKeyUnchecked)
+                    ->Method(k_iteratorModValueName, &ValueIteratorType::ModValueUnchecked)
+                    ->Method(k_iteratorIsNotAtEndName, &ValueIteratorType::IsNotAtEnd)
+                    ->Method(k_iteratorNextName, &ValueIteratorType::Next)
                     ;
             }
         }
-
     };
 
     template <>
