@@ -110,12 +110,12 @@ namespace AZ::Render
 
     void AtomViewportDisplayIconsSystemComponent::DrawIcon(const DrawParameters& drawParameters)
     {
+        // Ensure we have a valid viewport context & dynamic draw interface
         auto viewportContext = RPI::ViewportContextRequests::Get()->GetViewportContextById(drawParameters.m_viewport);
         if (viewportContext == nullptr)
         {
             return;
         }
-        auto view = viewportContext->GetDefaultView();
 
         auto perViewportDynamicDrawInterface =
             AtomBridge::PerViewportDynamicDraw::Get();
@@ -131,22 +131,7 @@ namespace AZ::Render
             return;
         }
 
-        AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
-        if (!m_shaderIndexesInitialized)
-        {
-            auto layout = drawSrg->GetAsset()->GetLayout();
-            m_textureParameterIndex = layout->FindShaderInputImageIndex(AZ::Name("m_texture"));
-            m_viewportSizeIndex = layout->FindShaderInputConstantIndex(AZ::Name("m_viewportSize"));
-
-            m_shaderIndexesInitialized =
-                m_textureParameterIndex.IsValid() &&
-                m_viewportSizeIndex.IsValid();
-            if (!m_shaderIndexesInitialized)
-            {
-                return;
-            }
-        }
-
+        // Find our icon, falling back on a grey placeholder if its image is unavailable
         AZ::Data::Instance<AZ::RPI::Image> image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Grey);
         if (auto iconIt = m_iconData.find(drawParameters.m_icon); iconIt != m_iconData.end())
         {
@@ -156,15 +141,31 @@ namespace AZ::Render
                 image = iconData.m_image;
             }
         }
+        else
+        {
+            return;
+        }
 
+        // Initialize our shader
         auto viewportSize = viewportContext->GetViewportSize();
+        AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
         drawSrg->SetConstant(m_viewportSizeIndex, AZ::Vector2(aznumeric_cast<float>(viewportSize.m_width), aznumeric_cast<float>(viewportSize.m_height)));
         drawSrg->SetImageView(m_textureParameterIndex, image->GetImageView());
         drawSrg->Compile();
 
-        AzFramework::ScreenPoint screenPosition;
-        using ViewportRequestBus = AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus;
-        ViewportRequestBus::EventResult(screenPosition, drawParameters.m_viewport, &ViewportRequestBus::Events::ViewportWorldToScreen, drawParameters.m_position);
+        AZ::Vector3 screenPosition;
+        if (drawParameters.m_positionSpace == CoordinateSpace::ScreenSpace)
+        {
+            screenPosition = drawParameters.m_position;
+        }
+        else if (drawParameters.m_positionSpace == CoordinateSpace::WorldSpace)
+        {
+            using ViewportRequestBus = AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus;
+            AzFramework::ScreenPoint position;
+            ViewportRequestBus::EventResult(position, drawParameters.m_viewport, &ViewportRequestBus::Events::ViewportWorldToScreen, drawParameters.m_position);
+            screenPosition.SetX(aznumeric_cast<float>(position.m_x));
+            screenPosition.SetY(aznumeric_cast<float>(position.m_y));
+        }
 
         struct Vertex
         {
@@ -175,12 +176,13 @@ namespace AZ::Render
         using Indice = AZ::u16;
 
         // Create a vertex offset from the position to draw from based on the icon size
+        // Vertex positions are in screen space coordinates
         auto createVertex = [&](float offsetX, float offsetY, float u, float v) -> Vertex
         {
             Vertex vertex;
-            vertex.m_position[0] = aznumeric_cast<float>(screenPosition.m_x) + offsetX * drawParameters.m_size.GetX();
-            vertex.m_position[1] = aznumeric_cast<float>(screenPosition.m_y) + offsetY * drawParameters.m_size.GetY();
-            vertex.m_position[2] = 0.f;
+            screenPosition.StoreToFloat3(vertex.m_position);
+            vertex.m_position[0] += offsetX * drawParameters.m_size.GetX();
+            vertex.m_position[1] += offsetY * drawParameters.m_size.GetY();
             vertex.m_color = drawParameters.m_color.ToU32();
             vertex.m_uv[0] = u;
             vertex.m_uv[1] = v;
@@ -223,11 +225,16 @@ namespace AZ::Render
 
     QImage AtomViewportDisplayIconsSystemComponent::RenderSvgToImage(const QString& svgPath) const
     {
+        // Set up our SVG renderer
         QSvgRenderer renderer(svgPath);
         renderer.setAspectRatioMode(Qt::KeepAspectRatio);
+
+        // Set up our target image
         QSize size = renderer.defaultSize().expandedTo(MinimumRenderedSvgSize);
         QImage image(size, QtImageFormat);
         image.fill(0x00000000);
+
+        // Render the SVG
         QPainter painter(&image);
         renderer.render(&painter);
         return image;
@@ -235,6 +242,7 @@ namespace AZ::Render
 
     AZ::Data::Instance<AZ::RPI::Image> AtomViewportDisplayIconsSystemComponent::ConvertToAtomImage(AZ::Uuid assetId, QImage image) const
     {
+        // Ensure our image is in the correct pixel format so we can memcpy it to our renderer image
         image.convertTo(QtImageFormat);
         Data::Instance<RPI::StreamingImagePool> streamingImagePool = RPI::ImageSystemInterface::Get()->GetSystemStreamingPool();
         return RPI::StreamingImage::CreateFromCpuData(
@@ -254,6 +262,7 @@ namespace AZ::Render
             "AtomViewportDisplayIconsSystemComponent", AzFramework::StringFunc::Path::IsRelative(path.data()),
             "GetOrLoadIconForPath assumes that it will always be given a relative path, but got '%s'", path.data());
 
+        // Check our cache to see if the image is already loaded
         auto existingEntryIt = AZStd::find_if(m_iconData.begin(), m_iconData.end(), [&path](const auto& iconData)
         {
             return iconData.second.m_path == path;
@@ -265,6 +274,7 @@ namespace AZ::Render
 
         AZ::Uuid assetId = AZ::Uuid::CreateName(path.data());
 
+        // Find the asset to load on disk
         QString assetPath = FindAssetPath(path.data());
         if (assetPath.isEmpty())
         {
@@ -276,10 +286,12 @@ namespace AZ::Render
 
         AZStd::string extension;
         AzFramework::StringFunc::Path::GetExtension(path.data(), extension, false);
+        // For SVGs, we need to actually rasterize to an image
         if (extension == "svg")
         {
             loadedImage = RenderSvgToImage(assetPath);
         }
+        // For everything else, we can just load it through QImage via its image plugins
         else
         {
             const bool loaded = loadedImage.load(assetPath);
@@ -290,6 +302,7 @@ namespace AZ::Render
             }
         }
 
+        // Cache our loaded icon
         IconId id = m_currentId++;
         IconData& iconData = m_iconData[id];
         iconData.m_path = path;

@@ -100,7 +100,7 @@ namespace AZ
             void ConnectSceneChangedHandler(SceneChangedEvent::Handler& handler);
 
             using PipelineChangedEvent = AZ::Event<RenderPipelinePtr>;
-            //! Notifies consumers when the current pipelien associated with our window has changed.
+            //! Notifies consumers when the current pipeline associated with our window has changed.
             void ConnectCurrentPipelineChangedHandler(PipelineChangedEvent::Handler& handler);
 
             using ViewChangedEvent = AZ::Event<ViewPtr>;

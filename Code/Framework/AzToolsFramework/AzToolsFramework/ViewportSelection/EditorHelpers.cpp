@@ -238,6 +238,7 @@ namespace AzToolsFramework
                     iconTextureId,
                     iconHighlight,
                     entityPosition,
+                    EditorViewportIconDisplayInterface::CoordinateSpace::WorldSpace,
                     AZ::Vector2{iconSize, iconSize}
                 });
             }

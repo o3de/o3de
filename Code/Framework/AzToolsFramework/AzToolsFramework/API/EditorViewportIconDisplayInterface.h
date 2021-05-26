@@ -19,7 +19,7 @@
 
 namespace AzToolsFramework
 {
-    //! An interface for loading simple icon assets and rendering them to screen to viewports.
+    //! An interface for loading simple icon assets and rendering them to screen on a per-viewport basis.
     class EditorViewportIconDisplayInterface
     {
     public:
@@ -28,17 +28,29 @@ namespace AzToolsFramework
         using IconId = AZ::s32;
         static constexpr IconId InvalidIconId = -1;
 
+        enum class CoordinateSpace : AZ::u8
+        {
+            ScreenSpace,
+            WorldSpace
+        };
+
         //! These draw parameters control rendering for a single icon to a single viewport.
         struct DrawParameters
         {
-            //! The viewport ID to render to.
+            //! The ViewportId to render to.
             AzFramework::ViewportId m_viewport = AzFramework::InvalidViewportId;
             //! The icon ID, retrieved from GetOrLoadIconForPath, to render to screen.
             IconId m_icon = InvalidIconId;
             //! The color, including opacity, to render the icon with. White will render the icon as opaque in its original color.
             AZ::Color m_color = AZ::Colors::White;
-            //! The position, in world-space, to render the icon to.
+            //! The position to render the icon to, in world or screen space depending on m_positionSpace.
             AZ::Vector3 m_position;
+            //! The coordinate system to use for m_position.
+            //! ScreenSpace will accept m_position in the form of [X, Y, Depth], where X & Y are screen coordinates in
+            //! pixels and Depth is a z-ordering depth value from 0.0f to 1.0f.
+            //! WorldSpace will accept a 3D vector in world space coordinates that will be translated back into screen
+            //! space when the icon is rendered.
+            CoordinateSpace m_positionSpace = CoordinateSpace::ScreenSpace;
             //! The size to render the icon as, in pixels.
             AZ::Vector2 m_size;
         };
@@ -53,11 +65,11 @@ namespace AzToolsFramework
         };
 
         //! Draws an icon to a viewport given a set of draw parameters.
-        //! Requires an icon ID retrieved from GetOrLoadIconForPath.
+        //! Requires an IconId retrieved from GetOrLoadIconForPath.
         virtual void DrawIcon(const DrawParameters& drawParameters) = 0;
-        //! Retrieves a reusable render ID for an icon at a given path.
+        //! Retrieves a reusable IconId for an icon at a given path.
         //! This will load the icon, if it has not already been loaded.
-        //! path should be a relative asset path to an icon image asset.
+        //! @param path should be a relative asset path to an icon image asset.
         //! png and svg icons are currently supported.
         virtual IconId GetOrLoadIconForPath(AZStd::string_view path) = 0;
         //! Gets the current load status of an icon retrieved via GetOrLoadIconForPath.
