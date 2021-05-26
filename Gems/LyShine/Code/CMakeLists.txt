@@ -177,6 +177,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     Legacy::CryCommon
                     AZ::AssetBuilderSDK
                     Gem::LyShine.Editor.Static
+                    Gem::LmbrCentral.Editor
+                    Gem::TextureAtlas
             RUNTIME_DEPENDENCIES
                 Gem::LmbrCentral.Editor
                 Gem::TextureAtlas

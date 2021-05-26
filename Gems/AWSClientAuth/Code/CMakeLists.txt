@@ -76,8 +76,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 3rdParty::AWSNativeSDK::AWSClientAuth
                 AZ::AzCore
                 AZ::AzFramework
+                AZ::AWSNativeSDKInit
                 Gem::AWSClientAuth.Static
-        RUNTIUME_DEPENDENCIES
+                Gem::AWSCore
+                Gem::HttpRequestor
+        RUNTIME_DEPENDENCIES
             Gem::AWSCore
             AZ::AWSNativeSDKInit
             Gem::HttpRequestor

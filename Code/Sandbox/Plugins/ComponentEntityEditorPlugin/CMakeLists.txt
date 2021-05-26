@@ -67,6 +67,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzToolsFrameworkTestCommon
                 Legacy::CryCommon
                 Legacy::EditorLib
+                Gem::LmbrCentral.Editor
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
