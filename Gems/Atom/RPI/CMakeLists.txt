@@ -10,3 +10,9 @@
 #
 
 add_subdirectory(Code)
+
+if (NOT CMAKE_SCRIPT_MODE_FILE)
+    # only installl package when it's not in script mode
+    # this has same condition as \o3de\cmake\LYPython.cmake
+    ly_pip_install_local_package_editable(${CMAKE_CURRENT_LIST_DIR}/Tools Atom_RPI_Tools)
+endif()
