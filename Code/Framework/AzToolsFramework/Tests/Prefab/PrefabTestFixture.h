@@ -31,6 +31,16 @@ namespace UnitTest
     using namespace AzToolsFramework::Prefab;
     using namespace PrefabTestUtils;
 
+    class PrefabTestToolsApplication
+        : public ToolsTestApplication
+    {
+    public:
+        PrefabTestToolsApplication(AZStd::string appName);
+
+        // Make sure our prefab tests always run with prefabs enabled
+        bool IsPrefabSystemEnabled() const override;
+    };
+
     class PrefabTestFixture
         : public ToolsApplicationFixture,
           public UnitTest::TraceBusRedirector
@@ -45,6 +55,8 @@ namespace UnitTest
 
         void SetUpEditorFixtureImpl() override;
 
+        AZStd::unique_ptr<ToolsTestApplication> CreateTestApplication() override;
+
         AZ::Entity* CreateEntity(const char* entityName, const bool shouldActivate = true);
 
         void CompareInstances(const Instance& instanceA, const Instance& instanceB, bool shouldCompareLinkIds = true,
@@ -57,6 +69,7 @@ namespace UnitTest
 
         PrefabSystemComponent* m_prefabSystemComponent = nullptr;
         PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
+        PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
         InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
     };

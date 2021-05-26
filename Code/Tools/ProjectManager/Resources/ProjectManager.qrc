@@ -1,0 +1,21 @@
+<RCC>
+    <qresource prefix="/ProjectManager/style">
+        <file>ProjectManager.qss</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>Add.svg</file>
+        <file>Select_Folder.svg</file>
+        <file>o3de_editor.ico</file>
+        <file>Windows.svg</file>
+        <file>Android.svg</file>
+        <file>iOS.svg</file>
+        <file>Linux.svg</file>
+        <file>macOS.svg</file>
+        <file>DefaultProjectImage.png</file>
+        <file>ArrowDownLine.svg</file>
+        <file>ArrowUpLine.svg</file>
+        <file>Backgrounds/FirstTimeBackgroundImage.jpg</file>
+        <file>ArrowDownLine.svg</file>
+        <file>ArrowUpLine.svg</file>
+    </qresource>
+</RCC>
