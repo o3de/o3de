@@ -189,7 +189,7 @@ namespace JsonSerializationTests
     TEST_F(JsonTransformSerializerTests, Load_FullySetTransform_ReturnsSuccessWithOnlyScale)
     {
         AZ::Transform testTransform = AZ::Transform::CreateIdentity();
-        AZ::Transform expectedTransform = AZ::Transform::CreateScale(AZ::Vector3(5.5f));
+        AZ::Transform expectedTransform = AZ::Transform::CreateUniformScale(5.5f);
 
         rapidjson::Document json;
         json.Parse(R"({ "Scale" : 5.5 })");

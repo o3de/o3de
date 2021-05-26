@@ -13,7 +13,6 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/Outcome/Outcome.h>
 #include <GemCatalog/GemInfo.h>
 #include <QAbstractItemModel>
 #include <QStandardItemModel>
@@ -34,11 +33,16 @@ namespace O3DE::ProjectManager
         void AddGem(const GemInfo& gemInfo);
         void Clear();
 
-        AZ::Outcome<QString> FindGemNameByUuidString(const QString& uuidString) const;
-        QStringList GetDependingGems(const QModelIndex& modelIndex);
+        QModelIndex FindIndexByUuidString(const QString& uuidString) const;
+        void FindGemNamesByUuidStrings(QStringList& inOutGemNames);
+        QStringList GetDependingGemUuids(const QModelIndex& modelIndex);
+        QStringList GetDependingGemNames(const QModelIndex& modelIndex);
+        QStringList GetConflictingGemUuids(const QModelIndex& modelIndex);
+        QStringList GetConflictingGemNames(const QModelIndex& modelIndex);
 
         static QString GetName(const QModelIndex& modelIndex);
         static QString GetCreator(const QModelIndex& modelIndex);
+        static GemInfo::GemOrigin GetGemOrigin(const QModelIndex& modelIndex);
         static QString GetUuidString(const QModelIndex& modelIndex);
         static GemInfo::Platforms GetPlatforms(const QModelIndex& modelIndex);
         static GemInfo::Types GetTypes(const QModelIndex& modelIndex);
@@ -46,7 +50,6 @@ namespace O3DE::ProjectManager
         static bool IsAdded(const QModelIndex& modelIndex);
         static QString GetDirectoryLink(const QModelIndex& modelIndex);
         static QString GetDocLink(const QModelIndex& modelIndex);
-        static QStringList GetConflictingGems(const QModelIndex& modelIndex);
         static QString GetVersion(const QModelIndex& modelIndex);
         static QString GetLastUpdated(const QModelIndex& modelIndex);
         static int GetBinarySizeInKB(const QModelIndex& modelIndex);
@@ -58,6 +61,7 @@ namespace O3DE::ProjectManager
             RoleName = Qt::UserRole,
             RoleUuid,
             RoleCreator,
+            RoleGemOrigin,
             RolePlatforms,
             RoleSummary,
             RoleIsAdded,
@@ -72,7 +76,7 @@ namespace O3DE::ProjectManager
             RoleTypes
         };
 
-        QHash<QString, QString> m_uuidToNameMap;
+        QHash<QString, QModelIndex> m_uuidToIndexMap;
         QItemSelectionModel* m_selectionModel = nullptr;
     };
 } // namespace O3DE::ProjectManager
