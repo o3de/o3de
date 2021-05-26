@@ -34,6 +34,27 @@ class TestLayerBlenderNodeConstruction(EditorTestHelper):
         EditorTestHelper.__init__(self, log_prefix="LayerBlenderNodeConstruction", args=["level"])
 
     def run_test(self):
+        """
+        Summary:
+        This test verifies a Layer Blender vegetation setup can be constructed through Landscape Canvas.
+
+        Expected Behavior:
+        Entities contain all required components and component references after creating nodes and setting connections
+        on a Landscape Canvas graph.
+
+        Test Steps:
+         1) Create a new level
+         2) Open Landscape Canvas and create a new graph
+         3) Add all necessary nodes to the graph and set connections to form a Layer Blender setup
+         4) Verify all components and component references were properly set during graph construction
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
+
+        :return: None
+        """
 
         def onEntityCreated(parameters):
             global newEntityId

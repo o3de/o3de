@@ -33,7 +33,25 @@ class TestDisabledNodeDuplication(EditorTestHelper):
         EditorTestHelper.__init__(self, log_prefix="DisabledNodeDuplication", args=["level"])
 
     def run_test(self):
+        """
+        Summary:
+        This test verifies Editor stability after duplicating disabled Landscape Canvas nodes.
 
+        Expected Behavior:
+        Editor remains stable and free of crashes.
+
+        Test Steps:
+         1) Create a new level
+         2) Open Landscape Canvas and create a new graph
+         3) Create several new nodes, disable the nodes via disabling/deleting components, and duplicate the nodes
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
+
+        :return: None
+        """
         def onEntityCreated(parameters):
             global newEntityId
             newEntityId = parameters[0]

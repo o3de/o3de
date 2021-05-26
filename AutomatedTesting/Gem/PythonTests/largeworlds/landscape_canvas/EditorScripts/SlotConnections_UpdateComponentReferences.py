@@ -33,6 +33,27 @@ class TestSlotConnectionsUpdateComponents(EditorTestHelper):
         EditorTestHelper.__init__(self, log_prefix="SlotConnectionsUpdateComponents", args=["level"])
 
     def run_test(self):
+        """
+        Summary:
+        This test verifies that the Landscape Canvas slot connections properly update component references.
+
+        Expected Behavior:
+        A reference created through slot connections in Landscape Canvas is reflected in the Entity Inspector.
+
+        Test Steps:
+         1) Create a new level
+         2) Open Landscape Canvas and create a new graph
+         3) Several nodes are added to a graph, and connections are set between the nodes
+         4) Component references are verified via Entity Inspector
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
+
+        :return: None
+        """
+
         # Retrieve the proper component TypeIds per component name
         componentNames = [
             'Random Noise Gradient',
