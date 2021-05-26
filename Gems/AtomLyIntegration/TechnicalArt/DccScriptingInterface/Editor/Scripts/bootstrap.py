@@ -121,7 +121,6 @@ if __name__ == '__main__':
             import PySide2
 
         _LOGGER.info(f'PySide2: {PySide2}')
-        #_LOGGER.info(f'QTFORPYTHON_PATH: {_settings.QTFORPYTHON_PATH}')
         _LOGGER.info(f'LY_BIN_PATH: {_settings.LY_BIN_PATH}')
         _LOGGER.info(f'QT_PLUGIN_PATH: {_settings.QT_PLUGIN_PATH}')
         _LOGGER.info(f'QT_QPA_PLATFORM_PLUGIN_PATH: {_settings.QT_QPA_PLATFORM_PLUGIN_PATH}')
