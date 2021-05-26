@@ -12,15 +12,15 @@ REM
 
 pushd %~dp0%
 CD %~dp0..
-SET BASE_PATH=%CD%
+SET "BASE_PATH=%CD%"
 CD %~dp0
-SET PYTHON_DIRECTORY=%BASE_PATH%\python
+SET "PYTHON_DIRECTORY=%BASE_PATH%\python"
 IF EXIST "%PYTHON_DIRECTORY%" GOTO pythonPathAvailable
 GOTO pythonDirNotFound
 :pythonPathAvailable
 SET PYTHON_EXECUTABLE=%PYTHON_DIRECTORY%\python.cmd
 IF NOT EXIST "%PYTHON_EXECUTABLE%" GOTO pythonExeNotFound
-CALL "%PYTHON_EXECUTABLE%" %BASE_PATH%\scripts\o3de.py %*
+CALL "%PYTHON_EXECUTABLE%" "%BASE_PATH%\scripts\o3de.py" %*
 GOTO end
 :pythonDirNotFound
 ECHO Python directory not found: %PYTHON_DIRECTORY%
