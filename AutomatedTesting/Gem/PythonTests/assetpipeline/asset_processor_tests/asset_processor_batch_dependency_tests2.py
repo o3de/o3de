@@ -60,6 +60,15 @@ class TestsAssetProcessorBatch_DependenycyTests(object):
         Verify that Schemas can be loaded via Gems utilizing the fonts schema
 
         :returns: None
+
+        Test Steps:
+        1. Run Missing Dependency Scanner against %fonts%.xml when no fonts are present
+        2. Verify fonts are scanned
+        3. Verify that missing dependencies are found for fonts
+        4. Add fonts to game project
+        5. Run Missing Dependency Scanner against %fonts%.xml when fonts are present
+        6. Verify that same amount of fonts are scanned
+        7. Verify that there are no missing dependencies.
         """
         schema_name = "Font.xmlschema"
         asset_processor.create_temp_asset_root()
