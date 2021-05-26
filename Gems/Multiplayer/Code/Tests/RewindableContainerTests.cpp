@@ -31,7 +31,6 @@ namespace UnitTest
     };
 
     static constexpr uint32_t RewindableContainerSize = 7;
-    static constexpr uint32_t RewindableBufferFrames = 32;
 
     TEST_F(RewindableContainerTests, BasicVectorTest)
     {
