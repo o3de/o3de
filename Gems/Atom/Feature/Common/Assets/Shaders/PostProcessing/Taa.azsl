@@ -11,6 +11,7 @@
 */
 
 #include <scenesrg.srgi>
+#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
 
 #define TILE_DIM_X 16
 #define TILE_DIM_Y 16
@@ -60,6 +61,13 @@ void MainCS(
     float depth = PassSrg::m_inputDepth[pixelCoord].r;
     float2 previousPosition = -PassSrg::m_motionVectors[pixelCoord];
 
+    // NaN protection (without this NaNs could get in the history buffer and quickly consume the frame)
+    color = max(0.0, color);
+
+    // Tonemap color
+    float luminance = GetLuminance(color);
+    color = color / (1.0 + luminance);
+
     // Get the uv coordinate for the previous frame.
     uint2 size = PassSrg::m_constantData.m_size;
     float2 halfPixel = rcp(size * 2.0);
@@ -70,17 +78,33 @@ void MainCS(
     // Color in rgb, Depth in a
     float4 lastFrameColorDepth = PassSrg::m_lastFrameAccumulation.SampleLevel(PassSrg::LinearSampler, uvOld, 0.0);
 
+    // Tonemap last frame color
+    lastFrameColorDepth.rgb = lastFrameColorDepth / (1.0 + luminance);
+
     float weight = PassSrg::m_minContribution;
 
-    // Very basic depth rejection
+    // Basic depth rejection
     if (abs(depth - lastFrameColorDepth.a) > 0.001)
     {
         weight = 1.0f;
     }
 
-    PassSrg::m_outputColor[pixelCoord].rgb = lerp(lastFrameColorDepth.rgb, color, weight);
+    // Out of bounds protection.
+    if (any(uvOld > 1.0) || any(uvOld < 0.0))
+    {
+        weight = 1.0f;
+    }
+
+    // Blend color with history
+    color = lerp(lastFrameColorDepth.rgb, color, weight);
+
+    // Un-tonemap color
+    color = color * (1.0 + luminance);
+
+    PassSrg::m_outputColor[pixelCoord].rgb = color;
 
     // Output depth to check against next frame. This is much higher precision than necessary for a depth rejection, so we'll either move this to a
     // separate buffer or stuff some additional data useful to taa in the same spot.
     PassSrg::m_outputColor[pixelCoord].a = depth;
+    
 }

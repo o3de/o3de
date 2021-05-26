@@ -85,7 +85,7 @@
                 }
             ],
             "PassData": {
-                "$type": "ComputePassData",
+                "$type": "TaaPassData",
                 "ShaderAsset": {
                     "FilePath": "Shaders/Postprocessing/Taa.shader"
                 },
@@ -97,7 +97,8 @@
                             "Value": 0.1
                         }
                     ]
-                }
+                },
+                "NumJitterPositions": 16
             }
         }
     }
