@@ -26,26 +26,15 @@ def add_args(parser, subparsers) -> None:
 
     # As o3de.py shares the same name as the o3de package attempting to use a regular
     # from o3de import <module> line tries to import from the current o3de.py script and not the package
-    # So the current script directory is removed from the sys.path temporary
-    script_dir_removed = False
-    script_abs_dir_removed = False
+    # So the {current script directory} / 'o3de' is added to the front of the sys.path
     script_dir = pathlib.Path(__file__).parent
-    script_abs_dir = pathlib.Path(__file__).parent.resolve()
-    while str(script_dir) in sys.path:
-        script_dir_removed = True
-        sys.path.remove(str(script_dir))
-    while str(script_abs_dir) in sys.path:
-        script_abs_dir_removed = True
-        # Remove the absolute path to the script_dir as well
-        sys.path.remove(str(script_abs_dir.resolve()))
-
+    o3de_package_dir = (script_dir / 'o3de').resolve()
+    # add the scripts/o3de directory to the front of the sys.path
+    sys.path.insert(0, str(o3de_package_dir))
     from o3de import engine_template, global_project, register, print_registration, get_registration, download, \
         add_gem_project, remove_gem_project, sha256
-
-    if script_abs_dir_removed:
-        sys.path.insert(0, str(script_abs_dir))
-    if script_dir_removed:
-        sys.path.insert(0, str(script_dir))
+    # Remove the temporarily added path
+    sys.path = sys.path[1:]
 
     # global_project
     global_project.add_args(subparsers)
