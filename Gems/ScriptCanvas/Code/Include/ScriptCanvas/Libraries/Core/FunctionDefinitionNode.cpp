@@ -19,6 +19,32 @@
 
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/InvalidPropertyEvent.h>
 
+namespace FunctionDefinitionNodeCpp
+{
+    void VersionUpdateRemoveDefaultDisplayGroup(ScriptCanvas::Nodes::Core::FunctionDefinitionNode& node)
+    {
+        using namespace ScriptCanvas;
+        using namespace ScriptCanvas::Nodes::Core;
+
+        AZ::SerializeContext* serializeContext{};
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        if (serializeContext)
+        {
+            const auto& classData = serializeContext->FindClassData(azrtti_typeid<FunctionDefinitionNode>());
+            if (classData && classData->m_version < FunctionDefinitionNode::NodeVersion::RemoveDefaultDisplayGroup)
+            {
+                for (auto& slot : node.ModAllSlots())
+                {
+                    if (slot->GetType() == CombinedSlotType::DataIn || slot->GetType() == CombinedSlotType::DataOut)
+                    {
+                        slot->ClearDynamicGroup();
+                    }
+                }
+            }
+        }
+    }
+}
+
 namespace ScriptCanvas
 {
     namespace Nodes
@@ -111,6 +137,12 @@ namespace ScriptCanvas
                 {
                     GetGraph()->ReportError((*this), "Parse Error", GenerateErrorMessage());
                 }
+            }
+
+            void FunctionDefinitionNode::OnInit()
+            {
+                Nodeling::OnInit();
+                FunctionDefinitionNodeCpp::VersionUpdateRemoveDefaultDisplayGroup(*this);
             }
 
             void FunctionDefinitionNode::SetupSlots()
@@ -208,7 +240,6 @@ namespace ScriptCanvas
                 slotConfiguration.SetConnectionType(connectionType);
 
                 slotConfiguration.m_displayGroup = GetDataDisplayGroup();
-                slotConfiguration.m_dynamicGroup = GetDataDynamicTypeGroup();
                 slotConfiguration.m_dynamicDataType = DynamicDataType::Any;
                 slotConfiguration.m_isUserAdded = true;
 

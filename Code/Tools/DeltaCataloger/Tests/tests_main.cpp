@@ -13,6 +13,7 @@
 #include <AzTest/AzTest.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <AzFramework/Asset/AssetBundleManifest.h>
@@ -45,6 +46,12 @@ public:
 protected:
     void SetUp() override
     {
+        AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+        auto projectPathKey =
+            AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+        registry->Set(projectPathKey, "AutomatedTesting");
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+
         AZ::ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
         desc.m_enableDrilling = false; // we already created a memory driller for the test (AllocatorsFixture)

@@ -15,6 +15,7 @@
 #include <AzToolsFramework/Asset/AssetSeedManager.h>
 #include <AzFramework/Asset/AssetRegistry.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Asset/AssetCatalog.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -61,6 +62,12 @@ namespace UnitTest
             m_application = new ToolsTestApplication("AssetSeedManagerTest");
             m_assetSeedManager = new AzToolsFramework::AssetSeedManager();
             m_assetRegistry = new AzFramework::AssetRegistry();
+
+            AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+            auto projectPathKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
             m_application->Start(AzFramework::Application::Descriptor());
 
