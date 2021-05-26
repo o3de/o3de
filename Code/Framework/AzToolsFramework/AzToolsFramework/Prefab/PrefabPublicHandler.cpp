@@ -10,8 +10,6 @@
 *
 */
 
-#include <AzToolsFramework/Prefab/PrefabPublicHandler.h>
-
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/JSON/stringbuffer.h>
 #include <AzCore/JSON/writer.h>
@@ -28,10 +26,13 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
+#include <AzToolsFramework/Prefab/PrefabPublicHandler.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndo.h>
 #include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
+
+#include <QString>
 
 namespace AzToolsFramework
 {
@@ -226,8 +227,8 @@ namespace AzToolsFramework
                         m_instanceToTemplateInterface->GeneratePatch(reparentPatch, containerEntityDomBefore, containerEntityDomAfter);
                         m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(reparentPatch, nestedInstanceContainerEntityId);
 
-                        // We ar not parenting this undo node to the undo batch because we don't want the user to undo these changes
-                        // so that the newly created template and link remain unaffected for supporting instantiating the template later.
+                        // We won't parent this undo node to the undo batch so that the newly created template and link will remain
+                        // unaffected by undo actions. This is needed so that any future instantiations of the template will work.
                         PrefabUndoLinkUpdate linkUpdate = PrefabUndoLinkUpdate(AZStd::to_string(static_cast<AZ::u64>(nestedInstanceContainerEntityId)));
                         linkUpdate.Capture(reparentPatch, nestedInstance->GetLinkId());
                         linkUpdate.Redo();

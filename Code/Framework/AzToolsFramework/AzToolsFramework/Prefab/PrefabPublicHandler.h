@@ -21,7 +21,7 @@
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoCache.h>
 
-#include <QString>
+class QString;
 
 namespace AzToolsFramework
 {
@@ -30,7 +30,6 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class Instance;
-
         class InstanceEntityMapperInterface;
         class InstanceToTemplateInterface;
         class PrefabLoaderInterface;
