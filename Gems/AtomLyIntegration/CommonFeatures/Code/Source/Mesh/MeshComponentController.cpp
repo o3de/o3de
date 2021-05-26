@@ -200,6 +200,10 @@ namespace AZ
             MaterialReceiverRequestBus::Handler::BusConnect(entityId);
             MaterialComponentNotificationBus::Handler::BusConnect(entityId);
             AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
+            AzFramework::EntityContextId contextId;
+            AzFramework::EntityIdContextQueryBus::EventResult(
+                contextId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
+            AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusConnect({entityId, contextId});
 
             //Buses must be connected before RegisterModel in case requests are made as a result of HandleModelChange
             RegisterModel();
@@ -210,6 +214,7 @@ namespace AZ
             // Buses must be disconnected after unregistering the model, otherwise they can't deliver the events during the process.
             UnregisterModel();
 
+            AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusDisconnect();
             AzFramework::BoundsRequestBus::Handler::BusDisconnect();
             MeshComponentRequestBus::Handler::BusDisconnect();
             TransformNotificationBus::Handler::BusDisconnect();
