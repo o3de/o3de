@@ -1474,7 +1474,7 @@ namespace AzToolsFramework
                         {
                             const AZ::Quaternion rotation = entityIdLookupIt->second.m_initial.GetRotation().GetNormalized();
                             const AZ::Vector3 position = entityIdLookupIt->second.m_initial.GetTranslation();
-                            const AZ::Vector3 scale = entityIdLookupIt->second.m_initial.GetScale();
+                            const float scale = entityIdLookupIt->second.m_initial.GetUniformScale();
 
                             const AZ::Vector3 centerOffset = CalculateCenterOffset(entityId, m_pivotMode);
 
@@ -1485,7 +1485,7 @@ namespace AzToolsFramework
                                     AZ::Transform::CreateFromQuaternion(rotation) *
                                     AZ::Transform::CreateTranslation(centerOffset) * offsetRotation *
                                     AZ::Transform::CreateTranslation(-centerOffset) *
-                                    AZ::Transform::CreateScale(scale));
+                                    AZ::Transform::CreateUniformScale(scale));
                         }
                         break;
                     case ReferenceFrame::Parent:
@@ -1597,16 +1597,15 @@ namespace AzToolsFramework
                 }
 
                 const AZ::Transform initial = entityIdLookupIt->second.m_initial;
-                const AZ::Vector3 initialScale = initial.GetScale();
+                const float initialScale = initial.GetUniformScale();
 
                 const auto sumVectorElements = [](const AZ::Vector3& vec) {
                     return vec.GetX() + vec.GetY() + vec.GetZ();
                 };
 
-                const AZ::Vector3 uniformScale = AZ::Vector3(action.m_start.m_sign * sumVectorElements(action.LocalScaleOffset()));
-                const AZ::Vector3 scale = (AZ::Vector3::CreateOne() +
-                    (uniformScale / initialScale)).GetClamp(AZ::Vector3(AZ::MinTransformScale), AZ::Vector3(AZ::MaxTransformScale));
-                const AZ::Transform scaleTransform = AZ::Transform::CreateScale(scale);
+                const float uniformScale = action.m_start.m_sign * sumVectorElements(action.LocalScaleOffset());
+                const float scale = AZ::GetClamp(1.0f + uniformScale / initialScale, AZ::MinTransformScale, AZ::MaxTransformScale);
+                const AZ::Transform scaleTransform = AZ::Transform::CreateUniformScale(scale);
 
                 if (action.m_modifiers.Alt())
                 {
@@ -1872,7 +1871,7 @@ namespace AzToolsFramework
                         CopyOrientationToSelectedEntitiesGroup(QuaternionFromTransformNoScaling(worldFromLocal));
                         break;
                     case Mode::Scale:
-                        CopyScaleToSelectedEntitiesIndividualWorld(worldFromLocal.GetScale());
+                        CopyScaleToSelectedEntitiesIndividualWorld(worldFromLocal.GetUniformScale());
                         break;
                     case Mode::Translation:
                         CopyTranslationToSelectedEntitiesGroup(worldFromLocal.GetTranslation());
@@ -1901,7 +1900,7 @@ namespace AzToolsFramework
                         CopyOrientationToSelectedEntitiesIndividual(QuaternionFromTransformNoScaling(worldFromLocal));
                         break;
                     case Mode::Scale:
-                        CopyScaleToSelectedEntitiesIndividualWorld(worldFromLocal.GetScale());
+                        CopyScaleToSelectedEntitiesIndividualWorld(worldFromLocal.GetUniformScale());
                         break;
                     case Mode::Translation:
                         CopyTranslationToSelectedEntitiesIndividual(worldFromLocal.GetTranslation());
@@ -2394,7 +2393,7 @@ namespace AzToolsFramework
                 ResetOrientationForSelectedEntitiesLocal();
                 break;
             case Mode::Scale:
-                CopyScaleToSelectedEntitiesIndividualLocal(AZ::Vector3::CreateOne());
+                CopyScaleToSelectedEntitiesIndividualLocal(1.0f);
                 break;
             case Mode::Translation:
                 ResetTranslationForSelectedEntitiesLocal();
@@ -2420,7 +2419,7 @@ namespace AzToolsFramework
                 ResetOrientationForSelectedEntitiesLocal();
                 break;
             case Mode::Scale:
-                CopyScaleToSelectedEntitiesIndividualWorld(AZ::Vector3::CreateOne());
+                CopyScaleToSelectedEntitiesIndividualWorld(1.0f);
                 break;
             case Mode::Translation:
                 // do nothing
@@ -2940,7 +2939,7 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorTransformComponentSelection::CopyScaleToSelectedEntitiesIndividualWorld(const AZ::Vector3& scale)
+    void EditorTransformComponentSelection::CopyScaleToSelectedEntitiesIndividualWorld(float scale)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -2955,7 +2954,7 @@ namespace AzToolsFramework
         const auto transformsBefore = RecordTransformsBefore(manipulatorEntityIds.m_entityIds);
 
         // update scale relative to initial
-        const AZ::Transform scaleTransform = AZ::Transform::CreateScale(scale);
+        const AZ::Transform scaleTransform = AZ::Transform::CreateUniformScale(scale);
         for (AZ::EntityId entityId : manipulatorEntityIds.m_entityIds)
         {
             ScopedUndoBatch::MarkEntityDirty(entityId);
@@ -2964,7 +2963,7 @@ namespace AzToolsFramework
             if (transformIt != transformsBefore.end())
             {
                 AZ::Transform transformBefore = transformIt->second;
-                transformBefore.ExtractScale();
+                transformBefore.ExtractUniformScale();
                 AZ::Transform newWorldFromLocal = transformBefore * scaleTransform;
 
                 SetEntityWorldTransform(entityId, newWorldFromLocal);
@@ -2974,7 +2973,7 @@ namespace AzToolsFramework
         RefreshUiAfterChange(manipulatorEntityIds.m_entityIds);
     }
 
-    void EditorTransformComponentSelection::CopyScaleToSelectedEntitiesIndividualLocal(const AZ::Vector3& scale)
+    void EditorTransformComponentSelection::CopyScaleToSelectedEntitiesIndividualLocal(float scale)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -3020,9 +3019,9 @@ namespace AzToolsFramework
                 if (transformIt != transformsBefore.end())
                 {
                     AZ::Transform newWorldFromLocal = transformIt->second;
-                    const AZ::Vector3 scale = newWorldFromLocal.GetScale();
+                    const float scale = newWorldFromLocal.GetUniformScale();
                     newWorldFromLocal.SetRotation(orientation);
-                    newWorldFromLocal *= AZ::Transform::CreateScale(scale);
+                    newWorldFromLocal *= AZ::Transform::CreateUniformScale(scale);
 
                     SetEntityWorldTransform(entityId, newWorldFromLocal);
                 }
@@ -3669,7 +3668,7 @@ namespace AzToolsFramework
     }
 
     void EditorTransformComponentSelection::SetEntityLocalScale(
-        const AZ::EntityId entityId, const AZ::Vector3& localScale)
+        const AZ::EntityId entityId, const float localScale)
     {
         ETCS::SetEntityLocalScale(entityId, localScale, m_transformChangedInternally);
     }
@@ -3722,11 +3721,11 @@ namespace AzToolsFramework
                 entityId, &AZ::TransformBus::Events::SetWorldTM, worldTransform);
         }
 
-        void SetEntityLocalScale(AZ::EntityId entityId, const AZ::Vector3& localScale, bool& internal)
+        void SetEntityLocalScale(AZ::EntityId entityId, float localScale, bool& internal)
         {
             ScopeSwitch sw(internal);
             AZ::TransformBus::Event(
-                entityId, &AZ::TransformBus::Events::SetLocalScale, localScale);
+                entityId, &AZ::TransformBus::Events::SetLocalUniformScale, localScale);
         }
 
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation, bool& internal)
