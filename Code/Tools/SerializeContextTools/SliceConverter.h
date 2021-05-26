@@ -42,11 +42,20 @@ namespace AZ
             static bool ConvertSliceFiles(Application& application);
 
         private:
+            static bool ConnectToAssetProcessor();
+            static void DisconnectFromAssetProcessor();
 
-            static bool ConvertSliceFile(AzToolsFramework::Prefab::PrefabSystemComponent* prefabSystemComponent,
-                AZ::IO::PathView outputPath, bool isDryRun, AZ::Entity* rootEntity);
-
-            static void PrintPrefab(const AzToolsFramework::Prefab::PrefabDom& prefabDom, const AZ::IO::Path& templatePath);
+            static bool ConvertSliceFile(AZ::SerializeContext* serializeContext, const AZStd::string& slicePath, bool isDryRun);
+            static bool ConvertSliceToPrefab(
+                AZ::SerializeContext* serializeContext,  AZ::IO::PathView outputPath, bool isDryRun, AZ::Entity* rootEntity);
+            static void FixPrefabEntities(AZ::Entity& containerEntity, SliceComponent::EntityList& sliceEntities);
+            static bool ConvertNestedSlices(
+                SliceComponent* sliceComponent, AzToolsFramework::Prefab::Instance* sourceInstance,
+                AZ::SerializeContext* serializeContext, bool isDryRun);
+            static bool SliceConverter::ConvertSliceInstance(
+                AZ::SliceComponent::SliceInstance& instance, AZ::Data::Asset<AZ::SliceAsset>& sliceAsset,
+                AzToolsFramework::Prefab::TemplateReference nestedTemplate, AzToolsFramework::Prefab::Instance* topLevelInstance);
+            static void PrintPrefab(AzToolsFramework::Prefab::TemplateId templateId);
             static bool SavePrefab(AzToolsFramework::Prefab::TemplateId templateId);
         };
     } // namespace SerializeContextTools

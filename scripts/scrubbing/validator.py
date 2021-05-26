@@ -243,7 +243,7 @@ class Validator(object):
                         validations += 1
                 counter += 1
 
-            # Trim out whitelisted subdirectories in the current directory if allowed
+            # Trim out allowlisted subdirectories in the current directory if allowed
             for name in bypassed_directories:
                 if name in dirnames:
                     dirnames.remove(name)

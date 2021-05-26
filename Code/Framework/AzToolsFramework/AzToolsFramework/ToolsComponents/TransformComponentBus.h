@@ -65,7 +65,6 @@ namespace AzToolsFramework
 
             virtual void TranslateBy(const AZ::Vector3&) = 0;
             virtual void RotateBy(const AZ::Vector3&) = 0;
-            virtual void ScaleBy(const AZ::Vector3&) = 0;
 
             virtual bool IsTransformLocked() = 0;
         };
