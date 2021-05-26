@@ -73,13 +73,11 @@ namespace AMD
         float weight[TRESSFX_MAX_INFLUENTIAL_BONE_COUNT];
     };
 
-    //class EI_Scene;
-
     #define EI_Read(ptr, size, pFile) fread(ptr, size, 1, pFile)
     #define EI_Seek(pFile, offset) fseek(pFile, offset, SEEK_SET)
 
-    using BoneIndexToEngineIndexLookup = AZStd::vector<uint32>; // Index -> TressFXBoneIndex
-                                                                // Value -> EngineBoneIndex (global)
+    using LocalToGlobalBoneIndexLookup = AZStd::vector<uint32>; // Index -> TressFX Bone Index (Local set of bones)
+                                                                // Value -> EmotionFX Bone Index (Global set of bones)
     using BoneNameToIndexMap = std::unordered_map<std::string, int>;
 
     class TressFXCollisionMesh
@@ -93,7 +91,6 @@ namespace AMD
         std::vector<TressFXBoneSkinningData> m_boneSkinningData;
 
         std::vector<std::string> m_boneNames;
-        BoneIndexToEngineIndexLookup m_reservedLookup; // Used to reset the skinning data back to bone index in case the engine index changed.
 
         // This function is mimicking LoadTressFXCollisionMeshData in TressFXBoneSkinnin
         bool LoadMeshData(AZ::Data::AssetDataStream* stream);
@@ -121,11 +118,6 @@ namespace AMD
 
         // Stores a mapping of the bone index to actual bone names.
         std::vector<std::string> m_boneNames;
-        BoneIndexToEngineIndexLookup m_reservedLookup; // Used to reset the skinning data back to bone index in case the engine index changed.
-
-        // When the skinning data populated from the asset, it will be stored as local bone indices. We need to fix the
-        // bone indices in the skinning data to engineBoneIndex in the hairComponent when we have access to the complete actor skeleton.
-        bool m_boneIndicesFixed = false;
 
         // counts on hair data
         AMD::int32 m_numTotalStrands;
@@ -168,23 +160,22 @@ namespace AMD
         void GetBonesNames(AZ::Data::AssetDataStream* stream, std::vector<std::string>& boneNames);
         bool LoadBoneData(AZ::Data::AssetDataStream* stream);
 
-        bool FixBoneIndices(const BoneNameToIndexMap& boneIndicesMap, BoneIndexToEngineIndexLookup& outLookup);
-
         inline AMD::uint32 GetNumHairSegments() { return m_numTotalStrands * (m_numVerticesPerStrand - 1); }
         inline AMD::uint32 GetNumHairTriangleIndices() { return 6 * GetNumHairSegments(); }
         inline AMD::uint32 GetNumHairLineIndices() { return 2 * GetNumHairSegments(); }
 
+        // Generates a local to global bone index lookup for hair and collision. We are passing only a subset of the full bone information found in an
+        // emfx actor to the shader. The purpose of the index lookup is to map an emfx actor bone to the subset consisting of
+        // TressFX bones. Essentially, the full set of bones found in an emfx actor are the global bones, while the bones in a
+        // TressFX asset are the local bones.
+        bool GenerateLocaltoGlobalHairBoneIndexLookup(const BoneNameToIndexMap& globalBoneIndexMap, LocalToGlobalBoneIndexLookup& outLookup);
+        bool GenerateLocaltoGlobalCollisionBoneIndexLookup(const BoneNameToIndexMap& globalBoneIndexMap, LocalToGlobalBoneIndexLookup& outLookup);
     private:
 
-        // Generate the bone index to engine index lookup.
-        bool GenerateBoneIndexLookup(const BoneNameToIndexMap& boneIndicesMap /*BoneNames to EngineBoneIndex*/,
-            const std::vector<std::string>& boneNames /*BoneNames used by this skinning data*/, BoneIndexToEngineIndexLookup& outLookup);
-
-        // Fix the skinning from bone index to engine index.
-        void FixSkinningUsingLookup(std::vector<TressFXBoneSkinningData>& skinningData, const BoneIndexToEngineIndexLookup& lookup);
-
-        // Reset the skinning back to bone index, in case when a new set of engine index come in.
-        void ResetSkinning(std::vector<TressFXBoneSkinningData>& skinningData, const BoneIndexToEngineIndexLookup& reservedLookup);
+        // Generates a local to global bone index lookup for specified bones only. This can be called if we only need information
+        // for certain bones such as ones contained in a collision mesh. 
+        bool GenerateLocaltoGlobalBoneIndexLookup(const BoneNameToIndexMap& globalBoneIndexMap /*Global BoneNames to BoneIndex*/,
+            const std::vector<std::string>& boneNames /*BoneNames used by this skinning data*/, LocalToGlobalBoneIndexLookup& outLookup);
 
         // Helper functions for ProcessAsset. 
         void ComputeThicknessCoeffs();

@@ -250,19 +250,22 @@ namespace AZ
 
                 // In EMotionFX the skinning matrices is stored as a 3x4. The conversion to 4x4 matrices happens at the update bone matrices function.
                 // In here we use the boneIndexMap to find the correct EMotionFX bone index (also as the global bone index), and passing the
-                // matrices of those bones to the hair render object.
+                // matrices of those bones to the hair render object. We do this for both hair and collision bone matrices.
                 const AZ::Matrix3x4* matrices = transformData->GetSkinningMatrices();
-                const size_t numBoneMatrices = m_cachedBoneMatrices.size(); // Resizing of this matrices happens at createHairObject().
-                for (AZ::u32 tressFXBoneIndex = 0; tressFXBoneIndex < numBoneMatrices; ++tressFXBoneIndex)
+                for (AZ::u32 tressFXBoneIndex = 0; tressFXBoneIndex < m_cachedHairBoneMatrices.size(); ++tressFXBoneIndex)
                 {
-                    const AZ::u32 emfxBoneIndex = m_boneIndexLookup[tressFXBoneIndex];
-                    m_cachedBoneMatrices[tressFXBoneIndex] = matrices[emfxBoneIndex];
+                    const AZ::u32 emfxBoneIndex = m_hairBoneIndexLookup[tressFXBoneIndex];
+                    m_cachedHairBoneMatrices[tressFXBoneIndex] = matrices[emfxBoneIndex];
+                }
+                for (AZ::u32 tressFXBoneIndex = 0; tressFXBoneIndex < m_cachedCollisionBoneMatrices.size(); ++tressFXBoneIndex)
+                {
+                    const AZ::u32 emfxBoneIndex = m_collisionBoneIndexLookup[tressFXBoneIndex];
+                    m_cachedCollisionBoneMatrices[tressFXBoneIndex] = matrices[emfxBoneIndex];
                 }
 
                 AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
                 m_entityWorldMatrix = Matrix3x4::CreateFromTransform(actorInstance->GetWorldSpaceTransform().ToAZTransform());
-                m_renderObject->UpdateBoneMatrices(m_entityWorldMatrix, m_cachedBoneMatrices);
-
+                m_renderObject->UpdateBoneMatrices(m_entityWorldMatrix, m_cachedHairBoneMatrices);
                 return true;
             }
 
@@ -297,20 +300,21 @@ namespace AZ
                     return false;
                 }
 
-                // Fix the bone indices in the tressFX asset skinning data.
-                AMD::BoneNameToIndexMap nameToIndexMap; 
+                // Generate local TressFX to global Emfx bone index lookup.
+                AMD::BoneNameToIndexMap globalNameToIndexMap; 
                 const EMotionFX::Skeleton* skeleton = actorInstance->GetActor()->GetSkeleton();
                 const u32 numBones = skeleton->GetNumNodes();
-                nameToIndexMap.reserve(numBones);
+                globalNameToIndexMap.reserve(numBones);
                 for (u32 i = 0; i < numBones; ++i)
                 {
                     const char* boneName = skeleton->GetNode(i)->GetName();
-                    nameToIndexMap[boneName] = i;
+                    globalNameToIndexMap[boneName] = i;
                 }
 
-                if (!hairAsset->FixBoneIndices(nameToIndexMap, m_boneIndexLookup))
+                if (!hairAsset->GenerateLocaltoGlobalHairBoneIndexLookup(globalNameToIndexMap, m_hairBoneIndexLookup) ||
+                    !hairAsset->GenerateLocaltoGlobalCollisionBoneIndexLookup(globalNameToIndexMap, m_collisionBoneIndexLookup))
                 {
-                    AZ_Error("Hair Gem", false, "Cannot convert bone index to engine index. The hair asset may not be compatible with the actor.");
+                    AZ_Error("Hair Gem", false, "Cannot convert local bone index to global bone index. The hair asset may not be compatible with the actor.");
                     return false;
                 }
                 
@@ -331,7 +335,8 @@ namespace AZ
                 }
 
                 // Resize the bone matrices array. The size should equal to the number of bones in the tressFXAsset.
-                m_cachedBoneMatrices.resize(m_boneIndexLookup.size());
+                m_cachedHairBoneMatrices.resize(m_hairBoneIndexLookup.size());
+                m_cachedCollisionBoneMatrices.resize(m_collisionBoneIndexLookup.size());
 
                 // Feature processor registration that will hold an instance.
                 // Remark: DO NOT remove the TressFX asset - it's data might be required for
